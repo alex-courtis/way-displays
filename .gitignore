@@ -1,0 +1,12 @@
+**/*.o
+
+pro/*.h
+pro/*.c
+
+way-layout-displays
+test
+
+tags
+
+.copy
+
