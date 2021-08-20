@@ -6,15 +6,18 @@
 #include "listeners.h"
 #include "types.h"
 
+// OutputManager data
+
 static void head(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
-	struct wl_list *heads = data;
+	struct OutputManager *output_manager = data;
 
 	struct Head *head = calloc(1, sizeof(*head));
 	wl_list_init(&head->modes);
+	head->zwlr_head = zwlr_output_head_v1;
 
-	wl_list_insert(heads->prev, &head->link);
+	wl_list_insert(&output_manager->heads, &head->link);
 
 	zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener(), head);
 }
@@ -22,7 +25,8 @@ static void head(void *data,
 static void done(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		uint32_t serial) {
-	// todo: release
+	struct OutputManager *output_manager = data;
+	output_manager->serial = serial;
 }
 
 static void finished(void *data,

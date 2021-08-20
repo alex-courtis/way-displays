@@ -4,6 +4,9 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #include "listeners.h"
+#include "types.h"
+
+// OutputManager data
 
 static void global(void *data,
 		struct wl_registry *wl_registry,
@@ -11,8 +14,13 @@ static void global(void *data,
 		const char *interface,
 		uint32_t version) {
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
-		struct zwlr_output_manager_v1 *output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, 1);
-		zwlr_output_manager_v1_add_listener(output_manager, output_manager_listener(), data);
+		struct OutputManager *output_manager = data;
+
+		output_manager->name = name;
+		output_manager->interface = strdup(interface);
+
+		output_manager->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, version);
+		zwlr_output_manager_v1_add_listener(output_manager->zwlr_output_manager, output_manager_listener(), data);
 	}
 }
 static void global_remove(void *data,

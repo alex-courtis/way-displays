@@ -12,6 +12,7 @@ PRO_O = $(PRO_X:.xml=.o)
 
 TST_C = $(wildcard tst/*.c)
 TST_O = $(TST_C:.c=.o)
+
 TST_LDLIBS  = -lcmocka
 TST_WRAPS = -Wl,--wrap=first,--wrap=second
 
@@ -19,7 +20,7 @@ all: way-layout-displays tags .copy
 
 $(SRC_O): $(INC_H) $(PRO_H)
 $(PRO_O): $(PRO_H)
-$(TST_O): $(INC_H)
+$(TST_O): $(INC_H) $(PRO_H)
 
 way-layout-displays: $(SRC_O) $(PRO_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
@@ -30,8 +31,8 @@ $(PRO_H): $(PRO_X)
 $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
-test: $(SRC_O) $(TST_O)
-	$(CC) -o $(@) $(filter-out %main.o,$(^)) $(LDFLAGS) $(LDLIBS) $(TST_LDLIBS) $(TST_WRAPS)
+test: $(filter-out %main.o,$(SRC_O)) $(PRO_O) $(TST_O)
+	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(TST_LDLIBS) $(TST_WRAPS)
 	./test
 
 clean:
@@ -41,7 +42,8 @@ tags: $(SRC_C) $(INC_H) $(PRO_H)
 	ctags --fields=+S --c-kinds=+p \
 		$(^) \
 		/usr/include/wayland*.h \
-		/usr/include/cmocka*.h
+		/usr/include/cmocka*.h \
+		/usr/include/std*h
 
 .copy: way-layout-displays
 	scp $(^) alw@gigantor:/home/alw/bin || true

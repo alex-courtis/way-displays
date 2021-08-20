@@ -7,6 +7,8 @@
 #include "listeners.h"
 #include "types.h"
 
+// Head data
+
 static void name(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *name) {

@@ -5,6 +5,8 @@
 #include "listeners.h"
 #include "types.h"
 
+// Mode data
+
 static void size(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t width,
