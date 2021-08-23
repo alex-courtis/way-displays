@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -41,7 +40,10 @@ static void mode(void *data,
 	struct Head *head = data;
 
 	struct Mode *mode = calloc(1, sizeof(*mode));
+	mode->zwlr_mode = zwlr_output_mode_v1;
+
 	wl_list_insert(head->modes.prev, &mode->link);
+
 	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, mode_listener(), mode);
 }
 
@@ -55,10 +57,10 @@ static void enabled(void *data,
 
 static void current_mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
-		struct zwlr_output_mode_v1 *mode) {
+		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	head->current_mode = mode;
+	head->zwlr_current_mode = zwlr_output_mode_v1;
 }
 
 static void position(void *data,
@@ -87,11 +89,6 @@ static void scale(void *data,
 	head->scale = scale;
 }
 
-static void finished(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
-	// todo: release
-}
-
 static void make(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *make) {
@@ -116,6 +113,11 @@ static void serial_number(void *data,
 	head->serial_number = strdup(serial_number);
 }
 
+static void finished(void *data,
+		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
+	// TODO release
+}
+
 static const struct zwlr_output_head_v1_listener listener = {
 	.name = name,
 	.description = description,
@@ -126,10 +128,10 @@ static const struct zwlr_output_head_v1_listener listener = {
 	.position = position,
 	.transform = transform,
 	.scale = scale,
-	.finished = finished,
 	.serial_number = serial_number,
 	.model = model,
 	.make = make,
+	.finished = finished,
 };
 
 const struct zwlr_output_head_v1_listener *head_listener() {

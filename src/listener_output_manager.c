@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "wlr-output-management-unstable-v1.h"
@@ -26,12 +25,13 @@ static void done(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		uint32_t serial) {
 	struct OutputManager *output_manager = data;
+
 	output_manager->serial = serial;
 }
 
 static void finished(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1) {
-	// todo: release
+	// TODO release
 }
 
 static const struct zwlr_output_manager_v1_listener listener = {

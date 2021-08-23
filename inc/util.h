@@ -1,0 +1,10 @@
+#include <stddef.h>
+
+#include <wayland-util.h>
+
+#include "types.h"
+
+// preferred, then highest resolution with the highest refresh
+// may return NULL
+struct Mode *optimal_mode(struct wl_list *modes);
+

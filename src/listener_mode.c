@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "wlr-output-management-unstable-v1.h"
@@ -22,19 +23,20 @@ static void refresh(void *data,
 		int32_t refresh) {
 	struct Mode *mode = data;
 
-	mode->refresh = refresh;
+	mode->refresh_mHz = refresh;
 }
 
 static void preferred(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Mode *mode = data;
 
-	mode->preferred = 1;
+	// TODO can there be multiple?
+	mode->preferred = true;
 }
 
 static void finished(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	// todo: release
+	// TODO release
 }
 
 static const struct zwlr_output_mode_v1_listener listener = {

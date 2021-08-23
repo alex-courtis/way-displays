@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 
 #include "wlr-output-management-unstable-v1.h"
 
@@ -7,6 +6,8 @@
 #include "types.h"
 
 // OutputManager data
+
+// TODO this is never invoked
 
 static void succeeded(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {

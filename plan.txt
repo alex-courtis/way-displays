@@ -1,7 +1,7 @@
 - Skeleton makefile project
 - Protocol generation
-Enumerate outputs
-One output at preferred
+- Enumerate outputs
+- One output at preferred
 LTR layout
 Auto scale
 User config file

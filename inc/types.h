@@ -1,6 +1,10 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <stdbool.h>
+
+// TODO convenience functions to free / clear wl_lists of each of these
+
 struct Mode {
 	struct wl_list link;
 
@@ -8,14 +12,15 @@ struct Mode {
 
 	int32_t width;
 	int32_t height;
-	int32_t refresh;
-	int preferred;
+	int32_t refresh_mHz;
+	bool preferred;
 };
 
 struct Head {
 	struct wl_list link;
 
 	struct zwlr_output_head_v1 *zwlr_head;
+	struct zwlr_output_mode_v1 *zwlr_current_mode;
 
 	struct wl_list modes;
 
@@ -23,9 +28,6 @@ struct Head {
 	const char *description;
 	int32_t width_mm;
 	int32_t height_mm;
-	// todo: try and make these into Modes
-	struct zwlr_output_mode_v1 *mode;
-	struct zwlr_output_mode_v1 *current_mode;
 	int enabled;
 	int32_t x;
 	int32_t y;

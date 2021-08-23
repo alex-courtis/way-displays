@@ -16,7 +16,7 @@ TST_O = $(TST_C:.c=.o)
 TST_LDLIBS  = -lcmocka
 TST_WRAPS = -Wl,--wrap=first,--wrap=second
 
-all: way-layout-displays tags .copy
+all: way-layout-displays test tags .copy
 
 $(SRC_O): $(INC_H) $(PRO_H)
 $(PRO_O): $(PRO_H)

@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <string.h>
 
 #include "wlr-output-management-unstable-v1.h"
@@ -20,13 +19,14 @@ static void global(void *data,
 		output_manager->interface = strdup(interface);
 
 		output_manager->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, version);
+
 		zwlr_output_manager_v1_add_listener(output_manager->zwlr_output_manager, output_manager_listener(), data);
 	}
 }
 static void global_remove(void *data,
 		struct wl_registry *wl_registry,
 		uint32_t name) {
-	// todo: release
+	// TODO release
 }
 
 static const struct wl_registry_listener listener = {
