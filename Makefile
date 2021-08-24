@@ -11,7 +11,7 @@ PRO_C = $(PRO_X:.xml=.c)
 PRO_O = $(PRO_X:.xml=.o)
 
 TST_C = $(wildcard tst/*.c)
-TST_O = $(TST_C:.c=.o)
+TST_O = tst/test.o
 
 TST_LDLIBS  = -lcmocka
 TST_WRAPS = -Wl,--wrap=first,--wrap=second
@@ -20,7 +20,7 @@ all: way-layout-displays test tags .copy
 
 $(SRC_O): $(INC_H) $(PRO_H)
 $(PRO_O): $(PRO_H)
-$(TST_O): $(INC_H) $(PRO_H)
+$(TST_O): $(INC_H) $(PRO_H) $(TST_C)
 
 way-layout-displays: $(SRC_O) $(PRO_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
@@ -38,7 +38,7 @@ test: $(filter-out %main.o,$(SRC_O)) $(PRO_O) $(TST_O)
 clean:
 	rm -f way-layout-displays test $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) tags .copy
 
-tags: $(SRC_C) $(INC_H) $(PRO_H)
+tags: $(SRC_C) $(INC_H) $(PRO_H) $(TST_C)
 	ctags --fields=+S --c-kinds=+p \
 		$(^) \
 		/usr/include/wayland*.h \
