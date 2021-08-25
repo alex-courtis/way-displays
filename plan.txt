@@ -3,7 +3,7 @@
 - Enumerate outputs
 - One output at preferred
 LTR layout
-Auto scale
+- Auto scale
 User config file
 Hotplug daemon
 Sanity checking / projector handling

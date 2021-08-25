@@ -36,23 +36,24 @@ main(int argc, const char **argv) {
 		wl_list_for_each(mode, &head->modes, link) {
 			printf("%dx%d@%d %p %s\n", mode->width, mode->height, mode->refresh_mHz, (void*)mode->zwlr_mode, mode->preferred ? "(preferred)" : "");
 		}
-		printf("\n\n");
+	}
+
+	wl_list_for_each(head, &output_manager->heads, link) {
+		head->desired.enabled = true;
+		head->desired.mode = optimal_mode(&head->modes);
+		head->desired.scale = auto_scale(head);
 	}
 
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), 0);
 	wl_list_for_each(head, &output_manager->heads, link) {
-		printf("AMC applying scale 3 to %p\n", (void*)head->zwlr_head);
-		struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_scale(config_head, wl_fixed_from_double(3));
 
-		struct Mode *mode;
-		mode = optimal_mode(&head->modes);
-		if (mode != NULL) {
-			printf("AMC applying optimal mode %dx%d@%d%s\n", mode->width, mode->height, mode->refresh_mHz, mode->preferred ? "(preferred)" : "");
-			/* zwlr_output_configuration_head_v1_set_mode(config_head, mode->zwlr_mode); */
+		if (head->desired.enabled) {
+			struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
+			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
 		} else {
-			printf("AMC no optimal mode found\n");
+			zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 		}
 	}
 

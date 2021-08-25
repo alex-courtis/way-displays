@@ -24,9 +24,6 @@ struct Head {
 
 	struct wl_list modes;
 
-	struct Mode *desired_mode;
-	wl_fixed_t desired_scale;
-
 	const char *name;
 	const char *description;
 	int32_t width_mm;
@@ -39,6 +36,12 @@ struct Head {
 	const char *make;
 	const char *model;
 	const char *serial_number;
+
+	struct {
+		struct Mode *mode;
+		wl_fixed_t scale;
+		int enabled;
+	} desired;
 };
 
 struct OutputManager {

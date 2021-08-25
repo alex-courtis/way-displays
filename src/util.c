@@ -38,17 +38,17 @@ struct Mode *optimal_mode(struct wl_list *modes) {
 
 wl_fixed_t auto_scale(struct Head *head) {
 	if (!head
-			|| !head->desired_mode
-			|| head->desired_mode->width == 0
-			|| head->desired_mode->height == 0
+			|| !head->desired.mode
+			|| head->desired.mode->width == 0
+			|| head->desired.mode->height == 0
 			|| head->width_mm == 0
 			|| head->height_mm == 0) {
 		return wl_fixed_from_int(0);
 	}
 
 	// average dpi
-	double dpi_horiz = (double)(head->desired_mode->width) / head->width_mm * 25.4;
-	double dpi_vert = (double)(head->desired_mode->height) / head->height_mm * 25.4;
+	double dpi_horiz = (double)(head->desired.mode->width) / head->width_mm * 25.4;
+	double dpi_vert = (double)(head->desired.mode->height) / head->height_mm * 25.4;
 	double dpi = (dpi_horiz + dpi_vert) / 2;
 
 	// round the dpi to the nearest 12, so that we get a nice even wl_fixed_t
