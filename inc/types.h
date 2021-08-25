@@ -52,6 +52,18 @@ struct OutputManager {
 	uint32_t serial;
 	uint32_t name;
 	const char *interface;
+
+	struct {
+		struct wl_list heads_enabled;
+		struct wl_list heads_disabled;
+		struct wl_list order;
+	} desired;
+};
+
+struct HeadOrder {
+	struct wl_list link;
+
+	const char *name_desc;
 };
 
 #endif // TYPES_H

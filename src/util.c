@@ -58,3 +58,18 @@ wl_fixed_t auto_scale(struct Head *head) {
 	return 256 * dpi_quantized / 96;
 }
 
+void order_desired_heads(struct OutputManager *output_manager) {
+
+	// TODO apply optional desired.order
+
+	struct Head *head, *head_tmp;
+	wl_list_for_each_safe(head, head_tmp, &output_manager->heads, link) {
+		wl_list_remove(&head->link);
+		if (head->desired.enabled) {
+			wl_list_insert(&output_manager->desired.heads_enabled, &head->link);
+		} else {
+			wl_list_insert(&output_manager->desired.heads_disabled, &head->link);
+		}
+	}
+}
+
