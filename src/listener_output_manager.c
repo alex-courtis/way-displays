@@ -12,7 +12,7 @@ static void head(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 	struct OutputManager *output_manager = data;
 
-	struct Head *head = calloc(1, sizeof(*head));
+	struct Head *head = calloc(1, sizeof(struct Head));
 	wl_list_init(&head->modes);
 	head->zwlr_head = zwlr_output_head_v1;
 

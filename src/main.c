@@ -14,7 +14,7 @@ main(int argc, const char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	struct OutputManager *output_manager = calloc(1, sizeof(*output_manager));
+	struct OutputManager *output_manager = calloc(1, sizeof(struct OutputManager));
 	wl_list_init(&output_manager->heads);
 
 	struct wl_registry *registry = wl_display_get_registry(display);
