@@ -1,7 +1,7 @@
 #include "util.h"
 
 struct StateOptimalMode {
-	struct wl_list modes;
+	struct SList *modes;
 	struct Mode *mode12at3;
 	struct Mode *mode34at1;
 	struct Mode *mode34at2;
@@ -12,19 +12,26 @@ static int optimal_mode_setup(void **state) {
 
 	struct Mode *mode;
 
-	wl_list_init(&s->modes);
-
 	mode = calloc(1, sizeof(struct Mode));
+	mode->width = 1;
+	mode->height = 2;
+	mode->refresh_mHz = 3;
 	s->mode12at3 = mode;
-	wl_list_insert(&s->modes, &mode->link);
+	slist_append(&s->modes, mode);
 
 	mode = calloc(1, sizeof(struct Mode));
 	s->mode34at1 = mode;
-	wl_list_insert(&s->modes, &mode->link);
+	mode->width = 3;
+	mode->height = 4;
+	mode->refresh_mHz = 1;
+	slist_append(&s->modes, mode);
 
 	mode = calloc(1, sizeof(struct Mode));
+	mode->width = 3;
+	mode->height = 4;
+	mode->refresh_mHz = 2;
 	s->mode34at2 = mode;
-	wl_list_insert(&s->modes, &mode->link);
+	slist_append(&s->modes, mode);
 
 	*state = s;
 
@@ -34,12 +41,10 @@ static int optimal_mode_setup(void **state) {
 static int optimal_mode_teardown(void **state) {
 	struct StateOptimalMode *s = *state;
 
-	struct Mode *mode_removing, *mode_tmp;
-	wl_list_for_each_safe(mode_removing, mode_tmp, &s->modes, link) {
-		wl_list_remove(&mode_removing->link);
-		free(mode_removing);
+	for (struct SList *i = s->modes; i; i = i->nex) {
+		free(i->val);
 	}
-
+	slist_free(&s->modes);
 	free(s);
 
 	return 0;
@@ -50,14 +55,14 @@ static void optimal_mode_preferred(void **state) {
 
 	s->mode12at3->preferred = true;
 
-	struct Mode *mode = optimal_mode(&s->modes);
+	struct Mode *mode = optimal_mode(s->modes);
 	assert_ptr_equal(mode, s->mode12at3);
 }
 
 static void optimal_mode_highest(void **state) {
 	struct StateOptimalMode *s = *state;
 
-	struct Mode *mode = optimal_mode(&s->modes);
+	struct Mode *mode = optimal_mode(s->modes);
 	assert_ptr_equal(mode, s->mode34at2);
 }
 

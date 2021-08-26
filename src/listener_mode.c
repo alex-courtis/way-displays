@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "wlr-output-management-unstable-v1.h"
 

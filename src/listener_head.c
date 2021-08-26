@@ -42,7 +42,7 @@ static void mode(void *data,
 	struct Mode *mode = calloc(1, sizeof(struct Mode));
 	mode->zwlr_mode = zwlr_output_mode_v1;
 
-	wl_list_insert(&head->modes, &mode->link);
+	slist_append(&head->modes, mode);
 
 	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, mode_listener(), mode);
 }

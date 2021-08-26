@@ -13,10 +13,9 @@ static void head(void *data,
 	struct OutputManager *output_manager = data;
 
 	struct Head *head = calloc(1, sizeof(struct Head));
-	wl_list_init(&head->modes);
 	head->zwlr_head = zwlr_output_head_v1;
 
-	wl_list_insert(&output_manager->heads, &head->link);
+	slist_append(&output_manager->heads, head);
 
 	zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener(), head);
 }

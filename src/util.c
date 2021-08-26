@@ -1,16 +1,14 @@
-#include <stdio.h>
-
 #include "util.h"
 
-struct Mode *optimal_mode(struct wl_list *modes) {
+struct Mode *optimal_mode(struct SList *modes) {
 	struct Mode *mode, *optimal_mode;
 
 	optimal_mode = NULL;
-	wl_list_for_each(mode, modes, link) {
+	for (struct SList *i = modes; i; i = i->nex) {
+		mode = i->val;
 
 		if (!optimal_mode) {
 			optimal_mode = mode;
-			continue;
 		}
 
 		// preferred first
@@ -62,13 +60,13 @@ void order_desired_heads(struct OutputManager *output_manager) {
 
 	// TODO apply optional desired.order
 
-	struct Head *head, *head_tmp;
-	wl_list_for_each_safe(head, head_tmp, &output_manager->heads, link) {
-		wl_list_remove(&head->link);
+	struct Head *head;
+	for (struct SList *i = output_manager->heads; i; i = i->nex) {
+		head = i->val;
 		if (head->desired.enabled) {
-			wl_list_insert(&output_manager->desired.heads_enabled, &head->link);
+			slist_append(&output_manager->desired.heads_enabled, head);
 		} else {
-			wl_list_insert(&output_manager->desired.heads_disabled, &head->link);
+			slist_append(&output_manager->desired.heads_disabled, head);
 		}
 	}
 }
