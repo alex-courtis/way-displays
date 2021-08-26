@@ -2,12 +2,6 @@
 
 #include "list.h"
 
-
-
-
-
-#include <stdio.h>
-
 void slist_append(struct SList **head, void *val) {
 	struct SList *i, *l;
 
@@ -25,8 +19,6 @@ void slist_append(struct SList **head, void *val) {
 void slist_remove(struct SList **head, void *val) {
 	struct SList *i, *f, *p;
 
-
-	fprintf(stderr, "slist_remove head %p %p val %p\n", (void*)*head, (void*)head, (void*)val);
 	i = *head;
 	p = NULL;
 	f = NULL;
@@ -38,7 +30,6 @@ void slist_remove(struct SList **head, void *val) {
 		}
 		p = i;
 	}
-	fprintf(stderr, "slist_remove found %p\n", (void*)f);
 
 	if (f) {
 		if (p) {
@@ -46,10 +37,8 @@ void slist_remove(struct SList **head, void *val) {
 		} else {
 			*head = f->nex;
 		}
-		fprintf(stderr, "slist_remove reattached\n");
 		free(f);
 	}
-	fprintf(stderr, "slist_remove done\n");
 }
 
 void slist_free(struct SList **head) {

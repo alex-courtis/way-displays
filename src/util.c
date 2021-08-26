@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "util.h"
 
 struct Mode *optimal_mode(struct SList *modes) {
@@ -57,12 +58,16 @@ wl_fixed_t auto_scale(struct Head *head) {
 }
 
 void order_desired_heads(struct OutputManager *output_manager) {
+	struct Head *head;
 
 	// TODO apply optional desired.order
 
-	struct Head *head;
-	for (struct SList *i = output_manager->heads; i; i = i->nex) {
+	struct SList *i = output_manager->heads;
+	while (i) {
 		head = i->val;
+		i = i->nex;
+		slist_remove(&output_manager->heads, head);
+		fprintf(stderr, "%p\n", (void*)output_manager->heads);
 		if (head->desired.enabled) {
 			slist_append(&output_manager->desired.heads_enabled, head);
 		} else {
