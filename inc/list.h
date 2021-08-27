@@ -10,6 +10,8 @@ void slist_append(struct SList **head, void *val);
 
 void slist_remove(struct SList **head, void *val);
 
+struct SList *slist_shallow_clone(struct SList *head);
+
 void slist_free(struct SList **head);
 
 #endif // LIST_H

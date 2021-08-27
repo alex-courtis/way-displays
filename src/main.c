@@ -39,20 +39,17 @@ main(int argc, const char **argv) {
 		}
 	}
 
-	struct HeadOrder *order = calloc(1, sizeof(struct HeadOrder));
-	order->name_desc = strdup("DP-3");
-	slist_append(&output_manager->desired.order, order);
-
-	order = calloc(1, sizeof(struct HeadOrder));
-	order->name_desc = strdup("eDP-1");
-	slist_append(&output_manager->desired.order, order);
-
 	for (struct SList *i = output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
 		head->desired.enabled = true;
 		head->desired.mode = optimal_mode(head->modes);
 		head->desired.scale = auto_scale(head);
 	}
+
+	char *order1 = strdup("DP-3");
+	slist_append(&output_manager->desired.order_name_desc, order1);
+	char *order2 = strdup("eDP-1");
+	slist_append(&output_manager->desired.order_name_desc, order2);
 	order_desired_heads(output_manager);
 
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);

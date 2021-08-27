@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "util.h"
 
 struct StateOptimalMode {
@@ -91,6 +93,7 @@ static int auto_scale_teardown(void **state) {
 
 	return 0;
 }
+
 static void auto_scale_missing(void **state) {
 	struct StateAutoScale *s = *state;
 
@@ -153,9 +156,101 @@ static void auto_scale_valid(void **state) {
 	assert_int_equal(scale, wl_fixed_from_double(2.25));
 }
 
+static void order_desired_heads_valid(void **state) {
+	struct OutputManager *output_manager = calloc(1, sizeof(struct OutputManager));
+	struct Head *head;
+	struct SList *i;
+	char *name_desc;
+
+	slist_append(&output_manager->desired.order_name_desc, strdup("e"));
+	slist_append(&output_manager->desired.order_name_desc, strdup("d"));
+	slist_append(&output_manager->desired.order_name_desc, NULL);
+	slist_append(&output_manager->desired.order_name_desc, strdup("cdesc"));
+
+	head = calloc(1, sizeof(struct Head));
+	head->name = strdup("a");
+	head->desired.enabled = false;
+	slist_append(&output_manager->heads, head);
+
+	head = calloc(1, sizeof(struct Head));
+	head->name = strdup("b");
+	head->desired.enabled = true;
+	slist_append(&output_manager->heads, head);
+
+	head = calloc(1, sizeof(struct Head));
+	head->name = strdup("c");
+	head->description = strdup("cdesc");
+	head->desired.enabled = true;
+	slist_append(&output_manager->heads, head);
+
+	head = calloc(1, sizeof(struct Head));
+	head->name = strdup("d");
+	head->desired.enabled = false;
+	slist_append(&output_manager->heads, head);
+
+	head = calloc(1, sizeof(struct Head));
+	head->name = strdup("e");
+	head->desired.enabled = true;
+	slist_append(&output_manager->heads, head);
+
+
+	// function under test
+	order_desired_heads(output_manager);
+
+	// verify enabled heads
+	head = output_manager->desired.heads_enabled->val;
+	assert_string_equal(head->name, "e");
+	slist_remove(&output_manager->desired.heads_enabled, head);
+
+	head = output_manager->desired.heads_enabled->val;
+	assert_string_equal(head->name, "c");
+	assert_string_equal(head->description, "cdesc");
+	slist_remove(&output_manager->desired.heads_enabled, head);
+
+	head = output_manager->desired.heads_enabled->val;
+	assert_string_equal(head->name, "b");
+	slist_remove(&output_manager->desired.heads_enabled, head);
+
+	assert_null(output_manager->desired.heads_enabled);
+
+	// verify disabled heads
+	head = output_manager->desired.heads_disabled->val;
+	assert_string_equal(head->name, "a");
+	slist_remove(&output_manager->desired.heads_disabled, head);
+
+	head = output_manager->desired.heads_disabled->val;
+	assert_string_equal(head->name, "d");
+	slist_remove(&output_manager->desired.heads_disabled, head);
+
+	assert_null(output_manager->desired.heads_disabled);
+
+
+	i = output_manager->desired.order_name_desc;
+	while (i) {
+		name_desc = i->val;
+		i = i->nex;
+		slist_remove(&output_manager->desired.order_name_desc, name_desc);
+		free(name_desc);
+	}
+	slist_free(&output_manager->desired.order_name_desc);
+
+	i = output_manager->heads;
+	while (i) {
+		head = i->val;
+		i = i->nex;
+		slist_remove(&output_manager->heads, head);
+		free(head->name);
+		free(head);
+	}
+	slist_free(&output_manager->heads);
+
+	free(output_manager);
+}
+
 #define util_tests \
 	cmocka_unit_test_setup_teardown(optimal_mode_highest, optimal_mode_setup, optimal_mode_teardown), \
 	cmocka_unit_test_setup_teardown(optimal_mode_preferred, optimal_mode_setup, optimal_mode_teardown), \
 	cmocka_unit_test_setup_teardown(auto_scale_missing, auto_scale_setup, auto_scale_teardown), \
-	cmocka_unit_test_setup_teardown(auto_scale_valid, auto_scale_setup, auto_scale_teardown)
+	cmocka_unit_test_setup_teardown(auto_scale_valid, auto_scale_setup, auto_scale_teardown), \
+	cmocka_unit_test(order_desired_heads_valid)
 

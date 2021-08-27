@@ -41,6 +41,17 @@ void slist_remove(struct SList **head, void *val) {
 	}
 }
 
+struct SList *slist_shallow_clone(struct SList *head) {
+	struct SList *c, *i;
+
+	c = NULL;
+	for (i = head; i; i = i->nex) {
+		slist_append(&c, i->val);
+	}
+
+	return c;
+}
+
 void slist_free(struct SList **head) {
 	struct SList *i, *f;
 
@@ -48,7 +59,6 @@ void slist_free(struct SList **head) {
 	while (i) {
 		f = i;
 		i = i->nex;
-		/* fprintf(stderr, "freeing %s\n", (char*)f->val); */
 		free(f);
 	}
 

@@ -5,8 +5,6 @@
 
 #include "list.h"
 
-// TODO convenience functions to free / clear wl_lists of each of these
-
 struct Mode {
 	struct zwlr_output_mode_v1 *zwlr_mode;
 
@@ -20,10 +18,10 @@ struct Head {
 	struct zwlr_output_head_v1 *zwlr_head;
 	struct zwlr_output_mode_v1 *zwlr_current_mode;
 
-	struct SList *modes;
+	struct SList *modes;	// Mode
 
-	const char *name;
-	const char *description;
+	char *name;
+	char *description;
 	int32_t width_mm;
 	int32_t height_mm;
 	int enabled;
@@ -31,9 +29,9 @@ struct Head {
 	int32_t y;
 	int32_t transform;
 	wl_fixed_t scale;
-	const char *make;
-	const char *model;
-	const char *serial_number;
+	char *make;
+	char *model;
+	char *serial_number;
 
 	struct {
 		struct Mode *mode;
@@ -45,22 +43,17 @@ struct Head {
 struct OutputManager {
 	struct zwlr_output_manager_v1 *zwlr_output_manager;
 
-	struct SList *heads;
+	struct SList *heads;	// Head
 
 	uint32_t serial;
 	uint32_t name;
-	const char *interface;
+	char *interface;
 
 	struct {
-		struct SList *heads_enabled;
-		struct SList *heads_disabled;
-		struct SList *order;
+		struct SList *heads_enabled;	// Head
+		struct SList *heads_disabled;	// Head
+		struct SList *order_name_desc;	// char*
 	} desired;
-};
-
-struct HeadOrder {
-
-	const char *name_desc;
 };
 
 #endif // TYPES_H

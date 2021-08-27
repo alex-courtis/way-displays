@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include <string.h>
+
 #include "util.h"
 
 struct Mode *optimal_mode(struct SList *modes) {
@@ -59,20 +60,37 @@ wl_fixed_t auto_scale(struct Head *head) {
 
 void order_desired_heads(struct OutputManager *output_manager) {
 	struct Head *head;
+	struct SList *i, *j;
 
-	// TODO apply optional desired.order
+	struct SList *sorting = slist_shallow_clone(output_manager->heads);
 
-	struct SList *i = output_manager->heads;
-	while (i) {
+	// specified order first
+	for (i = output_manager->desired.order_name_desc; i; i = i->nex) {
+		j = sorting;
+		while(j) {
+			head = j->val;
+			j = j->nex;
+			if (i->val &&
+					((head->name && strcmp(i->val, head->name) == 0) ||
+					 (head->description && strcmp(i->val, head->description) == 0)) &&
+					head->desired.enabled) {
+				slist_append(&output_manager->desired.heads_enabled, head);
+				slist_remove(&sorting, head);
+			}
+		}
+	}
+
+	// remaing enabled / disabled in discovered order
+	for (i = sorting; i; i = i->nex) {
 		head = i->val;
-		i = i->nex;
-		slist_remove(&output_manager->heads, head);
-		fprintf(stderr, "%p\n", (void*)output_manager->heads);
+
 		if (head->desired.enabled) {
 			slist_append(&output_manager->desired.heads_enabled, head);
 		} else {
 			slist_append(&output_manager->desired.heads_disabled, head);
 		}
 	}
+
+	slist_free(&sorting);
 }
 
