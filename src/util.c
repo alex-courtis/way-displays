@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include <wayland-util.h>
+
 #include "util.h"
 
 struct Mode *optimal_mode(struct SList *modes) {
@@ -58,7 +60,7 @@ wl_fixed_t auto_scale(struct Head *head) {
 	return 256 * dpi_quantized / 96;
 }
 
-void order_enable_heads(struct SList *order_name_desc, struct SList *heads, struct SList **enabled, struct SList **disabled) {
+void order_enable_heads(struct SList *order_name_desc, struct SList *heads, struct SList **heads_enabled, struct SList **heads_disabled) {
 	struct Head *head;
 	struct SList *i, *j;
 
@@ -74,7 +76,7 @@ void order_enable_heads(struct SList *order_name_desc, struct SList *heads, stru
 					((head->name && strcmp(i->val, head->name) == 0) ||
 					 (head->description && strcmp(i->val, head->description) == 0)) &&
 					head->desired.enabled) {
-				slist_append(enabled, head);
+				slist_append(heads_enabled, head);
 				slist_remove(&sorting, head);
 			}
 		}
@@ -85,9 +87,9 @@ void order_enable_heads(struct SList *order_name_desc, struct SList *heads, stru
 		head = i->val;
 
 		if (head->desired.enabled) {
-			slist_append(enabled, head);
+			slist_append(heads_enabled, head);
 		} else {
-			slist_append(disabled, head);
+			slist_append(heads_disabled, head);
 		}
 	}
 

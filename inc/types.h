@@ -18,7 +18,7 @@ struct Head {
 	struct zwlr_output_head_v1 *zwlr_head;
 	struct zwlr_output_mode_v1 *zwlr_current_mode;
 
-	struct SList *modes;	// Mode
+	struct SList *modes;
 
 	char *name;
 	char *description;
@@ -43,16 +43,16 @@ struct Head {
 struct OutputManager {
 	struct zwlr_output_manager_v1 *zwlr_output_manager;
 
-	struct SList *heads;	// Head
+	struct SList *heads;
 
 	uint32_t serial;
 	uint32_t name;
 	char *interface;
 
 	struct {
-		struct SList *heads_enabled;	// Head
-		struct SList *heads_disabled;	// Head
-		struct SList *order_name_desc;	// char*
+		struct SList *heads_enabled;
+		struct SList *heads_disabled;
+		struct SList *order_name_desc;
 	} desired;
 };
 

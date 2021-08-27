@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include <wayland-util.h>
+
 #include "util.h"
 
 struct StateOptimalMode {
@@ -194,36 +196,36 @@ static void order_enable_heads_valid(void **state) {
 
 
 	// function under test
-	struct SList *enabled = NULL;
-	struct SList *disabled = NULL;
-	order_enable_heads(order_name_desc, heads, &enabled, &disabled);
+	struct SList *heads_enabled = NULL;
+	struct SList *heads_disabled = NULL;
+	order_enable_heads(order_name_desc, heads, &heads_enabled, &heads_disabled);
 
 	// verify enabled heads
-	head = enabled->val;
+	head = heads_enabled->val;
 	assert_string_equal(head->name, "e");
-	slist_remove(&enabled, head);
+	slist_remove(&heads_enabled, head);
 
-	head = enabled->val;
+	head = heads_enabled->val;
 	assert_string_equal(head->name, "c");
 	assert_string_equal(head->description, "cdesc");
-	slist_remove(&enabled, head);
+	slist_remove(&heads_enabled, head);
 
-	head = enabled->val;
+	head = heads_enabled->val;
 	assert_string_equal(head->name, "b");
-	slist_remove(&enabled, head);
+	slist_remove(&heads_enabled, head);
 
-	assert_null(enabled);
+	assert_null(heads_enabled);
 
 	// verify disabled heads
-	head = disabled->val;
+	head = heads_disabled->val;
 	assert_string_equal(head->name, "a");
-	slist_remove(&disabled, head);
+	slist_remove(&heads_disabled, head);
 
-	head = disabled->val;
+	head = heads_disabled->val;
 	assert_string_equal(head->name, "d");
-	slist_remove(&disabled, head);
+	slist_remove(&heads_disabled, head);
 
-	assert_null(disabled);
+	assert_null(heads_disabled);
 
 
 	struct SList *i = order_name_desc;
