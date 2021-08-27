@@ -50,7 +50,10 @@ main(int argc, const char **argv) {
 	slist_append(&output_manager->desired.order_name_desc, order1);
 	char *order2 = strdup("eDP-1");
 	slist_append(&output_manager->desired.order_name_desc, order2);
-	order_enable_heads(output_manager);
+	order_enable_heads(output_manager->desired.order_name_desc,
+			output_manager->heads,
+			&output_manager->desired.heads_disabled,
+			&output_manager->desired.heads_enabled);
 
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), 0);

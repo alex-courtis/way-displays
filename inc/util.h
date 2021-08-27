@@ -13,7 +13,7 @@ struct Mode *optimal_mode(struct SList *modes);
 
 wl_fixed_t auto_scale(struct Head *head);
 
-void order_enable_heads(struct OutputManager *output_manager);
+void order_enable_heads(struct SList *order_name_desc, struct SList *heads, struct SList **enabled, struct SList **disabled);
 
 #endif // UTIL_H
 

@@ -58,14 +58,14 @@ wl_fixed_t auto_scale(struct Head *head) {
 	return 256 * dpi_quantized / 96;
 }
 
-void order_enable_heads(struct OutputManager *output_manager) {
+void order_enable_heads(struct SList *order_name_desc, struct SList *heads, struct SList **enabled, struct SList **disabled) {
 	struct Head *head;
 	struct SList *i, *j;
 
-	struct SList *sorting = slist_shallow_clone(output_manager->heads);
+	struct SList *sorting = slist_shallow_clone(heads);
 
 	// specified order first
-	for (i = output_manager->desired.order_name_desc; i; i = i->nex) {
+	for (i = order_name_desc; i; i = i->nex) {
 		j = sorting;
 		while(j) {
 			head = j->val;
@@ -74,7 +74,7 @@ void order_enable_heads(struct OutputManager *output_manager) {
 					((head->name && strcmp(i->val, head->name) == 0) ||
 					 (head->description && strcmp(i->val, head->description) == 0)) &&
 					head->desired.enabled) {
-				slist_append(&output_manager->desired.heads_enabled, head);
+				slist_append(enabled, head);
 				slist_remove(&sorting, head);
 			}
 		}
@@ -85,9 +85,9 @@ void order_enable_heads(struct OutputManager *output_manager) {
 		head = i->val;
 
 		if (head->desired.enabled) {
-			slist_append(&output_manager->desired.heads_enabled, head);
+			slist_append(enabled, head);
 		} else {
-			slist_append(&output_manager->desired.heads_disabled, head);
+			slist_append(disabled, head);
 		}
 	}
 

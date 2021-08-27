@@ -157,94 +157,94 @@ static void auto_scale_valid(void **state) {
 }
 
 static void order_enable_heads_valid(void **state) {
-	struct OutputManager *output_manager = calloc(1, sizeof(struct OutputManager));
 	struct Head *head;
-	struct SList *i;
-	char *name_desc;
 
-	slist_append(&output_manager->desired.order_name_desc, strdup("e"));
-	slist_append(&output_manager->desired.order_name_desc, strdup("d"));
-	slist_append(&output_manager->desired.order_name_desc, NULL);
-	slist_append(&output_manager->desired.order_name_desc, strdup("cdesc"));
+	struct SList *order_name_desc = NULL;
+	slist_append(&order_name_desc, strdup("e"));
+	slist_append(&order_name_desc, strdup("d"));
+	slist_append(&order_name_desc, NULL);
+	slist_append(&order_name_desc, strdup("cdesc"));
 
+	struct SList *heads = NULL;
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("a");
 	head->desired.enabled = false;
-	slist_append(&output_manager->heads, head);
+	slist_append(&heads, head);
 
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("b");
 	head->desired.enabled = true;
-	slist_append(&output_manager->heads, head);
+	slist_append(&heads, head);
 
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("c");
 	head->description = strdup("cdesc");
 	head->desired.enabled = true;
-	slist_append(&output_manager->heads, head);
+	slist_append(&heads, head);
 
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("d");
 	head->desired.enabled = false;
-	slist_append(&output_manager->heads, head);
+	slist_append(&heads, head);
 
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("e");
 	head->desired.enabled = true;
-	slist_append(&output_manager->heads, head);
+	slist_append(&heads, head);
 
 
 	// function under test
-	order_enable_heads(output_manager);
+	struct SList *enabled = NULL;
+	struct SList *disabled = NULL;
+	order_enable_heads(order_name_desc, heads, &enabled, &disabled);
 
 	// verify enabled heads
-	head = output_manager->desired.heads_enabled->val;
+	head = enabled->val;
 	assert_string_equal(head->name, "e");
-	slist_remove(&output_manager->desired.heads_enabled, head);
+	slist_remove(&enabled, head);
 
-	head = output_manager->desired.heads_enabled->val;
+	head = enabled->val;
 	assert_string_equal(head->name, "c");
 	assert_string_equal(head->description, "cdesc");
-	slist_remove(&output_manager->desired.heads_enabled, head);
+	slist_remove(&enabled, head);
 
-	head = output_manager->desired.heads_enabled->val;
+	head = enabled->val;
 	assert_string_equal(head->name, "b");
-	slist_remove(&output_manager->desired.heads_enabled, head);
+	slist_remove(&enabled, head);
 
-	assert_null(output_manager->desired.heads_enabled);
+	assert_null(enabled);
 
 	// verify disabled heads
-	head = output_manager->desired.heads_disabled->val;
+	head = disabled->val;
 	assert_string_equal(head->name, "a");
-	slist_remove(&output_manager->desired.heads_disabled, head);
+	slist_remove(&disabled, head);
 
-	head = output_manager->desired.heads_disabled->val;
+	head = disabled->val;
 	assert_string_equal(head->name, "d");
-	slist_remove(&output_manager->desired.heads_disabled, head);
+	slist_remove(&disabled, head);
 
-	assert_null(output_manager->desired.heads_disabled);
+	assert_null(disabled);
 
 
-	i = output_manager->desired.order_name_desc;
+	struct SList *i = order_name_desc;
+	char *name_desc;
 	while (i) {
 		name_desc = i->val;
 		i = i->nex;
-		slist_remove(&output_manager->desired.order_name_desc, name_desc);
+		slist_remove(&order_name_desc, name_desc);
 		free(name_desc);
 	}
-	slist_free(&output_manager->desired.order_name_desc);
+	slist_free(&order_name_desc);
 
-	i = output_manager->heads;
+	i = heads;
 	while (i) {
 		head = i->val;
 		i = i->nex;
-		slist_remove(&output_manager->heads, head);
+		slist_remove(&heads, head);
 		free(head->name);
 		free(head);
 	}
-	slist_free(&output_manager->heads);
-
-	free(output_manager);
+	slist_free(&heads);
 }
 
 #define util_tests \
