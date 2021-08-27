@@ -156,7 +156,7 @@ static void auto_scale_valid(void **state) {
 	assert_int_equal(scale, wl_fixed_from_double(2.25));
 }
 
-static void order_desired_heads_valid(void **state) {
+static void order_enable_heads_valid(void **state) {
 	struct OutputManager *output_manager = calloc(1, sizeof(struct OutputManager));
 	struct Head *head;
 	struct SList *i;
@@ -195,7 +195,7 @@ static void order_desired_heads_valid(void **state) {
 
 
 	// function under test
-	order_desired_heads(output_manager);
+	order_enable_heads(output_manager);
 
 	// verify enabled heads
 	head = output_manager->desired.heads_enabled->val;
@@ -252,5 +252,5 @@ static void order_desired_heads_valid(void **state) {
 	cmocka_unit_test_setup_teardown(optimal_mode_preferred, optimal_mode_setup, optimal_mode_teardown), \
 	cmocka_unit_test_setup_teardown(auto_scale_missing, auto_scale_setup, auto_scale_teardown), \
 	cmocka_unit_test_setup_teardown(auto_scale_valid, auto_scale_setup, auto_scale_teardown), \
-	cmocka_unit_test(order_desired_heads_valid)
+	cmocka_unit_test(order_enable_heads_valid)
 

@@ -58,7 +58,7 @@ wl_fixed_t auto_scale(struct Head *head) {
 	return 256 * dpi_quantized / 96;
 }
 
-void order_desired_heads(struct OutputManager *output_manager) {
+void order_enable_heads(struct OutputManager *output_manager) {
 	struct Head *head;
 	struct SList *i, *j;
 
