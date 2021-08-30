@@ -11,6 +11,10 @@ struct Mode *optimal_mode(struct SList *modes) {
 	for (struct SList *i = modes; i; i = i->nex) {
 		mode = i->val;
 
+		if (!mode) {
+			continue;
+		}
+
 		if (!optimal_mode) {
 			optimal_mode = mode;
 		}
@@ -73,6 +77,9 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 		while(j) {
 			head = j->val;
 			j = j->nex;
+			if (!head) {
+				continue;
+			}
 			if (i->val &&
 					((head->name && strcmp(i->val, head->name) == 0) ||
 					 (head->description && strcmp(i->val, head->description) == 0))) {
@@ -85,6 +92,9 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	// remaing in discovered order
 	for (i = sorting; i; i = i->nex) {
 		head = i->val;
+		if (!head) {
+			continue;
+		}
 
 		slist_append(&heads_ordered, head);
 	}

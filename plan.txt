@@ -5,7 +5,6 @@
 - LTR layout
 - Auto scale
 - No more wl_list
-Maybe protect iterating by testing i->val
 Laptop lid handling
 Callback finalisation and cleanup
 User config file
@@ -13,4 +12,6 @@ Hotplug daemon
 Sanity checking / projector handling
 Config file daemon
 Multiple instance checking
+
+Robustify listeners for null data
 

@@ -23,6 +23,8 @@ static int optimal_mode_setup(void **state) {
 	s->mode12at3 = mode;
 	slist_append(&s->modes, mode);
 
+	slist_append(&s->modes, NULL);
+
 	mode = calloc(1, sizeof(struct Mode));
 	s->mode34at1 = mode;
 	mode->width = 3;
@@ -173,6 +175,8 @@ static void order_heads_valid(void **state) {
 	head->desired.enabled = false;
 	slist_append(&heads, head);
 
+	slist_append(&heads, NULL);
+
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("b");
 	head->desired.enabled = true;
@@ -237,8 +241,10 @@ static void order_heads_valid(void **state) {
 		head = i->val;
 		i = i->nex;
 		slist_remove(&heads, head);
-		free(head->name);
-		free(head);
+		if (head) {
+			free(head->name);
+			free(head);
+		}
 	}
 	slist_free(&heads);
 }
