@@ -11,5 +11,7 @@ wl_fixed_t auto_scale(struct Head *head);
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 
+void ltr_heads(struct SList *heads);
+
 #endif // UTIL_H
 

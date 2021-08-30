@@ -94,3 +94,21 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	return heads_ordered;
 }
 
+void ltr_heads(struct SList *heads) {
+	struct Head *head;
+	int32_t x;
+
+	x = 0;
+	for (struct SList *i = heads; i; i = i->nex) {
+		head = i->val;
+		if (!head || !head->desired.mode || !head->enabled) {
+			continue;
+		}
+
+		head->desired.x = x;
+		head->desired.y = 0;
+
+		x += (int32_t)((double)head->desired.mode->width * 256 / head->desired.scale + 0.5);
+	}
+}
+

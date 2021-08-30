@@ -2,9 +2,10 @@
 - Protocol generation
 - Enumerate outputs
 - One output at preferred
-LTR layout
+- LTR layout
 - Auto scale
 - No more wl_list
+Maybe protect iterating by testing i->val
 Laptop lid handling
 Callback finalisation and cleanup
 User config file

@@ -37,6 +37,8 @@ struct Head {
 		struct Mode *mode;
 		wl_fixed_t scale;
 		int enabled;
+		int32_t x;
+		int32_t y;
 	} desired;
 };
 
@@ -51,7 +53,6 @@ struct OutputManager {
 
 	struct {
 		struct SList *heads_ordered;
-		struct SList *order_name_desc;	// TODO move to config
 	} desired;
 };
 

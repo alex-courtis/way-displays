@@ -46,22 +46,25 @@ main(int argc, const char **argv) {
 		head->desired.scale = auto_scale(head);
 	}
 
+	struct SList *order = NULL;
 	char *order1 = strdup("DP-3");
-	slist_append(&output_manager->desired.order_name_desc, order1);
+	slist_append(&order, order1);
 	char *order2 = strdup("eDP-1");
-	slist_append(&output_manager->desired.order_name_desc, order2);
-	output_manager->desired.heads_ordered = order_heads(output_manager->desired.order_name_desc, output_manager->heads);
+	slist_append(&order, order2);
+	output_manager->desired.heads_ordered = order_heads(order, output_manager->heads);
+	ltr_heads(output_manager->desired.heads_ordered);
 
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), 0);
 	for (struct SList *i = output_manager->desired.heads_ordered; i; i = i->nex) {
 		head = (struct Head*)i->val;
 		if (head->desired.enabled) {
-			printf("enabling, scaling to %f and setting mode for %s\n", wl_fixed_to_double(head->desired.scale), head->name);
+			printf("enabling, positioning at %d,%d scaling to %f and setting mode for %s\n", head->desired.x, head->desired.y, wl_fixed_to_double(head->desired.scale), head->name);
 
 			struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
 			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
+			zwlr_output_configuration_head_v1_set_position(config_head, head->desired.x, head->desired.y);
 		} else {
 			printf("disabling %s\n", head->name);
 
