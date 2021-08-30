@@ -60,7 +60,8 @@ wl_fixed_t auto_scale(struct Head *head) {
 	return 256 * dpi_quantized / 96;
 }
 
-void order_enable_heads(struct SList *order_name_desc, struct SList *heads, struct SList **heads_enabled, struct SList **heads_disabled) {
+struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
+	struct SList *heads_ordered = NULL;
 	struct Head *head;
 	struct SList *i, *j;
 
@@ -74,25 +75,22 @@ void order_enable_heads(struct SList *order_name_desc, struct SList *heads, stru
 			j = j->nex;
 			if (i->val &&
 					((head->name && strcmp(i->val, head->name) == 0) ||
-					 (head->description && strcmp(i->val, head->description) == 0)) &&
-					head->desired.enabled) {
-				slist_append(heads_enabled, head);
+					 (head->description && strcmp(i->val, head->description) == 0))) {
+				slist_append(&heads_ordered, head);
 				slist_remove(&sorting, head);
 			}
 		}
 	}
 
-	// remaing enabled / disabled in discovered order
+	// remaing in discovered order
 	for (i = sorting; i; i = i->nex) {
 		head = i->val;
 
-		if (head->desired.enabled) {
-			slist_append(heads_enabled, head);
-		} else {
-			slist_append(heads_disabled, head);
-		}
+		slist_append(&heads_ordered, head);
 	}
 
 	slist_free(&sorting);
+
+	return heads_ordered;
 }
 

@@ -50,9 +50,8 @@ struct OutputManager {
 	char *interface;
 
 	struct {
-		struct SList *heads_enabled;
-		struct SList *heads_disabled;
-		struct SList *order_name_desc;
+		struct SList *heads_ordered;
+		struct SList *order_name_desc;	// TODO move to config
 	} desired;
 };
 

@@ -158,7 +158,7 @@ static void auto_scale_valid(void **state) {
 	assert_int_equal(scale, wl_fixed_from_double(2.25));
 }
 
-static void order_enable_heads_valid(void **state) {
+static void order_heads_valid(void **state) {
 	struct Head *head;
 
 	struct SList *order_name_desc = NULL;
@@ -195,37 +195,31 @@ static void order_enable_heads_valid(void **state) {
 	slist_append(&heads, head);
 
 
-	// function under test
-	struct SList *heads_enabled = NULL;
-	struct SList *heads_disabled = NULL;
-	order_enable_heads(order_name_desc, heads, &heads_enabled, &heads_disabled);
+	struct SList *heads_ordered = NULL;
+	heads_ordered = order_heads(order_name_desc, heads);
 
-	// verify enabled heads
-	head = heads_enabled->val;
+	head = heads_ordered->val;
 	assert_string_equal(head->name, "e");
-	slist_remove(&heads_enabled, head);
+	slist_remove(&heads_ordered, head);
 
-	head = heads_enabled->val;
+	head = heads_ordered->val;
+	assert_string_equal(head->name, "d");
+	slist_remove(&heads_ordered, head);
+
+	head = heads_ordered->val;
 	assert_string_equal(head->name, "c");
 	assert_string_equal(head->description, "cdesc");
-	slist_remove(&heads_enabled, head);
+	slist_remove(&heads_ordered, head);
 
-	head = heads_enabled->val;
-	assert_string_equal(head->name, "b");
-	slist_remove(&heads_enabled, head);
-
-	assert_null(heads_enabled);
-
-	// verify disabled heads
-	head = heads_disabled->val;
+	head = heads_ordered->val;
 	assert_string_equal(head->name, "a");
-	slist_remove(&heads_disabled, head);
+	slist_remove(&heads_ordered, head);
 
-	head = heads_disabled->val;
-	assert_string_equal(head->name, "d");
-	slist_remove(&heads_disabled, head);
+	head = heads_ordered->val;
+	assert_string_equal(head->name, "b");
+	slist_remove(&heads_ordered, head);
 
-	assert_null(heads_disabled);
+	assert_null(heads_ordered);
 
 
 	struct SList *i = order_name_desc;
@@ -254,5 +248,5 @@ static void order_enable_heads_valid(void **state) {
 	cmocka_unit_test_setup_teardown(optimal_mode_preferred, optimal_mode_setup, optimal_mode_teardown), \
 	cmocka_unit_test_setup_teardown(auto_scale_missing, auto_scale_setup, auto_scale_teardown), \
 	cmocka_unit_test_setup_teardown(auto_scale_valid, auto_scale_setup, auto_scale_teardown), \
-	cmocka_unit_test(order_enable_heads_valid)
+	cmocka_unit_test(order_heads_valid)
 

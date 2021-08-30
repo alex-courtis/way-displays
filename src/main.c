@@ -50,27 +50,23 @@ main(int argc, const char **argv) {
 	slist_append(&output_manager->desired.order_name_desc, order1);
 	char *order2 = strdup("eDP-1");
 	slist_append(&output_manager->desired.order_name_desc, order2);
-	order_enable_heads(output_manager->desired.order_name_desc,
-			output_manager->heads,
-			&output_manager->desired.heads_disabled,
-			&output_manager->desired.heads_enabled);
+	output_manager->desired.heads_ordered = order_heads(output_manager->desired.order_name_desc, output_manager->heads);
 
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), 0);
-	for (struct SList *i = output_manager->desired.heads_enabled; i; i = i->nex) {
+	for (struct SList *i = output_manager->desired.heads_ordered; i; i = i->nex) {
 		head = (struct Head*)i->val;
-		printf("enabling, scaling to %f and setting mode for %s\n", wl_fixed_to_double(head->desired.scale), head->name);
+		if (head->desired.enabled) {
+			printf("enabling, scaling to %f and setting mode for %s\n", wl_fixed_to_double(head->desired.scale), head->name);
 
-		struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
-		zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
-	}
+			struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
+			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
+		} else {
+			printf("disabling %s\n", head->name);
 
-	for (struct SList *i = output_manager->desired.heads_disabled; i; i = i->nex) {
-		head = (struct Head*)i->val;
-		printf("disabling %s\n", head->name);
-
-		zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+			zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+		}
 	}
 
 	// TODO something with this result?
