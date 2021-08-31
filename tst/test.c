@@ -5,6 +5,7 @@
 #include <cmocka.h>
 
 #include "test-add.c"
+#include "test-laptop.c"
 #include "test-util.c"
 
 static int setup(void **state) {
@@ -18,6 +19,7 @@ static int teardown(void **state) {
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		add_tests,
+		laptop_tests,
 		util_tests,
 	};
 	return cmocka_run_group_tests(tests, setup, teardown);

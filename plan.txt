@@ -5,7 +5,7 @@
 - LTR layout
 - Auto scale
 - No more wl_list
-Laptop lid handling
+- Laptop lid handling
 Callback finalisation and cleanup
 User config file
 Hotplug daemon

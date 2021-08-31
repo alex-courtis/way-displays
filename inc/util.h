@@ -1,8 +1,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <stddef.h>
-
 #include "types.h"
 
 struct Mode *optimal_mode(struct SList *modes);

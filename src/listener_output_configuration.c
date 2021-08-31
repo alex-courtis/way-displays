@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "wlr-output-management-unstable-v1.h"
 
 #include "listeners.h"
@@ -7,21 +5,18 @@
 
 // OutputManager data
 
-// TODO this is never invoked
+// TODO these are invoked after display changes have been made; handle failure gracefully
 
 static void succeeded(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
-	printf("AMC listener_output_configuration succeeded\n");
 }
 
 static void failed(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
-	printf("AMC listener_output_configuration failed\n");
 }
 
 static void cancelled(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
-	printf("AMC listener_output_configuration cancelled\n");
 }
 
 static const struct zwlr_output_configuration_v1_listener listener = {

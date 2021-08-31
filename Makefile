@@ -43,7 +43,8 @@ tags: $(SRC_C) $(INC_H) $(PRO_H) $(TST_C)
 		$(^) \
 		/usr/include/wayland*.h \
 		/usr/include/cmocka*.h \
-		/usr/include/std*h
+		/usr/include/dirent.h \
+		/usr/include/st*h
 
 .copy: way-layout-displays
 	scp $(^) alw@gigantor:/home/alw/bin || true
