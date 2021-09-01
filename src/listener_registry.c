@@ -13,6 +13,7 @@ static void global(void *data,
 		const char *interface,
 		uint32_t version) {
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
+		fprintf(stderr, "LR global zwlr\n");
 		struct OutputManager *output_manager = data;
 
 		output_manager->name = name;
@@ -23,9 +24,15 @@ static void global(void *data,
 		zwlr_output_manager_v1_add_listener(output_manager->zwlr_output_manager, output_manager_listener(), data);
 	}
 }
+
 static void global_remove(void *data,
 		struct wl_registry *wl_registry,
 		uint32_t name) {
+	struct OutputManager *output_manager = data;
+	if (name == output_manager->name) {
+		fprintf(stderr, "LR global_remove zwlr\n");
+	}
+
 	// TODO release
 }
 

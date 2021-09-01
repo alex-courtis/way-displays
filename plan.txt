@@ -12,6 +12,7 @@ Hotplug daemon
 Sanity checking / projector handling
 Config file daemon
 Multiple instance checking
+Mirror invocation
 
 Robustify listeners for null data
 

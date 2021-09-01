@@ -40,6 +40,7 @@ static void mode(void *data,
 	struct Head *head = data;
 
 	struct Mode *mode = calloc(1, sizeof(struct Mode));
+	mode->head = head;
 	mode->zwlr_mode = zwlr_output_mode_v1;
 
 	slist_append(&head->modes, mode);
@@ -60,7 +61,14 @@ static void current_mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	head->zwlr_current_mode = zwlr_output_mode_v1;
+	struct Mode *mode = NULL;
+	for (struct SList *i = head->modes; i; i = i->nex) {
+		mode = i->val;
+		if (mode && mode->zwlr_mode == zwlr_output_mode_v1) {
+			head->current_mode = mode;
+			break;
+		}
+	}
 }
 
 static void position(void *data,
@@ -115,7 +123,13 @@ static void serial_number(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
-	// TODO release
+	struct Head *head = data;
+
+	fprintf(stderr, "LH finished %s\n", head->name);
+	output_manager_release_head(head->output_manager, head);
+	free_head(head);
+
+	zwlr_output_head_v1_destroy(zwlr_output_head_v1);
 }
 
 static const struct zwlr_output_head_v1_listener listener = {

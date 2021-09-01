@@ -35,7 +35,12 @@ static void preferred(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	// TODO release
+	struct Mode *mode = data;
+
+	head_release_mode(mode->head, mode);
+	free_mode(mode);
+
+	zwlr_output_mode_v1_destroy(zwlr_output_mode_v1);
 }
 
 static const struct zwlr_output_mode_v1_listener listener = {

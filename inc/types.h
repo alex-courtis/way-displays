@@ -1,11 +1,18 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+// TODO remove
+#include <stdio.h>
+
 #include <stdbool.h>
+#include <stdlib.h>
+#include <wayland-util.h>
 
 #include "list.h"
 
 struct Mode {
+	struct Head *head;
+
 	struct zwlr_output_mode_v1 *zwlr_mode;
 
 	int32_t width;
@@ -15,8 +22,9 @@ struct Mode {
 };
 
 struct Head {
+	struct OutputManager *output_manager;
+
 	struct zwlr_output_head_v1 *zwlr_head;
-	struct zwlr_output_mode_v1 *zwlr_current_mode;
 
 	struct SList *modes;
 
@@ -25,6 +33,7 @@ struct Head {
 	int32_t width_mm;
 	int32_t height_mm;
 	int enabled;
+	struct Mode *current_mode;
 	int32_t x;
 	int32_t y;
 	int32_t transform;
@@ -55,6 +64,13 @@ struct OutputManager {
 		struct SList *heads_ordered;
 	} desired;
 };
+
+void free_mode(struct Mode *mode);
+void free_head(struct Head *head);
+void free_output_manager(struct OutputManager *output_manager);
+
+void head_release_mode(struct Head *head, struct Mode *mode);
+void output_manager_release_head(struct OutputManager *output_manager, struct Head *head);
 
 #endif // TYPES_H
 
