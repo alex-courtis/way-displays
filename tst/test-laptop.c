@@ -26,24 +26,24 @@ void create_state_file(const char *contents) {
 }
 
 static void laptop_lid_closed_missing_path(void **state) {
-	assert_false(laptop_lid_closed_path("/tmp/nonexistent"));
+	assert_false(laptop_lid_closed("/tmp/nonexistent"));
 }
 
 static void laptop_lid_closed_missing_file(void **state) {
 	assert_int_equal(0, mkdir("/tmp/wld-lid-state-testing", 0755));
 	assert_int_equal(0, mkdir("/tmp/wld-lid-state-testing/LIDX", 0755));
 
-	assert_false(laptop_lid_closed_path("/tmp/wld-lid-state-testing"));
+	assert_false(laptop_lid_closed("/tmp/wld-lid-state-testing"));
 }
 
 static void laptop_lid_closed_open(void **state) {
 	create_state_file("something OpEn something something\n");
-	assert_false(laptop_lid_closed_path("/tmp/wld-lid-state-testing"));
+	assert_false(laptop_lid_closed("/tmp/wld-lid-state-testing"));
 }
 
 static void laptop_lid_closed_closed(void **state) {
 	create_state_file("something ClOsEd something something\n");
-	assert_true(laptop_lid_closed_path("/tmp/wld-lid-state-testing"));
+	assert_true(laptop_lid_closed("/tmp/wld-lid-state-testing"));
 }
 
 #define laptop_tests \

@@ -5,12 +5,15 @@
 #include "laptop.h"
 
 #define LAPTOP_LID_ROOT_PATH "/proc/acpi/button/lid"
+#define LAPTOP_OUTPUT_PREFIX "eDP"
 
-bool laptop_lid_closed() {
-	return laptop_lid_closed_path(LAPTOP_LID_ROOT_PATH);
+bool closed_laptop_display(const char *name) {
+	return
+		strncasecmp(LAPTOP_OUTPUT_PREFIX, name, strlen(LAPTOP_OUTPUT_PREFIX)) == 0 &&
+		laptop_lid_closed(LAPTOP_LID_ROOT_PATH);
 }
 
-bool laptop_lid_closed_path(const char *root_path) {
+bool laptop_lid_closed(const char *root_path) {
 	static char lidFileName[PATH_MAX];
 	static char line[512];
 	static bool closed;

@@ -57,6 +57,7 @@ struct OutputManager {
 	struct SList *heads;
 
 	uint32_t serial;
+	uint32_t serial_cfg_done;
 	uint32_t name;
 	char *interface;
 

@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 
-bool laptop_lid_closed();
+bool closed_laptop_display(const char *name);
 
-bool laptop_lid_closed_path(const char *root_path);
+bool laptop_lid_closed(const char *root_path);
 
 #endif // UTIL_H
 

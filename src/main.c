@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "laptop.h"
 #include "listeners.h"
 #include "types.h"
 #include "util.h"
@@ -29,53 +30,102 @@ void print_om(struct OutputManager *output_manager) {
 	}
 }
 
-void listen() {
-	int ret;
+void ltr_arrange(struct OutputManager *output_manager) {
+	struct Head *head;
+	for (struct SList *i = output_manager->heads; i; i = i->nex) {
+		head = (struct Head*)i->val;
+		head->desired.enabled = !closed_laptop_display(head->name);
+		head->desired.mode = optimal_mode(head->modes);
+		head->desired.scale = auto_scale(head);
+	}
 
+	struct SList *order = NULL;
+	char *order1 = strdup("DP-3");
+	slist_append(&order, order1);
+	char *order2 = strdup("eDP-1");
+	slist_append(&order, order2);
+	output_manager->desired.heads_ordered = order_heads(order, output_manager->heads);
+	ltr_heads(output_manager->desired.heads_ordered);
+}
+
+void apply_desired(struct OutputManager *output_manager) {
+	struct Head *head;
+
+	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
+	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), output_manager);
+	for (struct SList *i = output_manager->desired.heads_ordered; i; i = i->nex) {
+		head = (struct Head*)i->val;
+		if (head->desired.enabled) {
+			fprintf(stderr, "enabling, positioning at %d,%d scaling to %f and setting mode for %s\n", head->desired.x, head->desired.y, wl_fixed_to_double(head->desired.scale), head->name);
+
+			struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
+			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
+			zwlr_output_configuration_head_v1_set_position(config_head, head->desired.x, head->desired.y);
+		} else {
+			fprintf(stderr, "disabling %s\n", head->name);
+
+			zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+		}
+	}
+
+	// TODO something with this result?
+	/* zwlr_output_configuration_v1_test(zwlr_config); */
+
+	zwlr_output_configuration_v1_apply(zwlr_config);
+}
+
+void listen() {
 	struct pollfd readfds[1] = {0};
 	readfds[0].fd = wl_display_get_fd(display);
 	readfds[0].events = POLLIN;
 
 	int loops = 0;
-	int nloops = 3;
+	int nloops = 6;
 	for (;;) {
 		fprintf(stderr, "listen\n");
-
-
-		print_om(output_manager);
-
-
-		if (loops++ >= nloops) {
-			break;
-		}
 
 
 		fprintf(stderr, "listen preparing read\n");
 		int n = 0;
 		while (wl_display_prepare_read(display) != 0) {
-			if (wl_display_dispatch_pending(display) == -1) {
-				exit(EXIT_FAILURE);
-			}
+			wl_display_dispatch_pending(display);
 			n++;
 		}
 		fprintf(stderr, "listen dispatched %d pending\n", n);
 
 
-		do {
-			fprintf(stderr, "listen polling\n");
-			ret = poll(readfds, sizeof(readfds) / sizeof(readfds[0]), -1);
-		} while (ret == -1 && errno == EINTR);
-		if (ret == -1) {
-			fprintf(stderr, "listen poll fail errno=%d\n", errno);
-			exit(EXIT_FAILURE);
+		fprintf(stderr, "listen flushing\n");
+		wl_display_flush(display);
+
+
+		fprintf(stderr, "listen polling\n");
+		if (poll(readfds, 1, -1) > 0) {
+			wl_display_read_events(display);
+		} else {
+			wl_display_cancel_read(display);
 		}
-		fprintf(stderr, "listen polled ret=%d\n", ret);
 
 
-		fprintf(stderr, "listen wl_display_read_events\n");
-		if (wl_display_read_events(display) == -1) {
-			fprintf(stderr, "listen wl_display_read_events fail -1\n");
-			exit(EXIT_FAILURE);
+		fprintf(stderr, "listen dispatching pending\n");
+		wl_display_dispatch_pending(display);
+
+
+		print_om(output_manager);
+
+
+		if (output_manager->serial_cfg_done &&
+				output_manager->serial >= output_manager->serial_cfg_done) {
+			// do nothing as these were our changes
+			output_manager->serial_cfg_done = 0;
+		} else {
+			ltr_arrange(output_manager);
+			apply_desired(output_manager);
+		}
+
+
+		if (loops++ >= nloops) {
+			break;
 		}
 
 
@@ -103,54 +153,14 @@ main(int argc, const char **argv) {
 
 	wl_display_roundtrip(display);
 
+	print_om(output_manager);
+
+	ltr_arrange(output_manager);
+	apply_desired(output_manager);
+
 	listen();
 
 	wl_display_disconnect(display);
-
-	return EXIT_SUCCESS;
-
-	// TODO work out how to release the display/listener for cleanup
-
-	// TODO handle compositior not supporting wlr-output-management-unstable-v1
-
-	struct Head *head;
-	for (struct SList *i = output_manager->heads; i; i = i->nex) {
-		head = (struct Head*)i->val;
-		head->desired.enabled = true;
-		head->desired.mode = optimal_mode(head->modes);
-		head->desired.scale = auto_scale(head);
-	}
-
-	struct SList *order = NULL;
-	char *order1 = strdup("DP-3");
-	slist_append(&order, order1);
-	char *order2 = strdup("eDP-1");
-	slist_append(&order, order2);
-	output_manager->desired.heads_ordered = order_heads(order, output_manager->heads);
-	ltr_heads(output_manager->desired.heads_ordered);
-
-	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), 0);
-	for (struct SList *i = output_manager->desired.heads_ordered; i; i = i->nex) {
-		head = (struct Head*)i->val;
-		if (head->desired.enabled) {
-			fprintf(stderr, "enabling, positioning at %d,%d scaling to %f and setting mode for %s\n", head->desired.x, head->desired.y, wl_fixed_to_double(head->desired.scale), head->name);
-
-			struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
-			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
-			zwlr_output_configuration_head_v1_set_position(config_head, head->desired.x, head->desired.y);
-		} else {
-			fprintf(stderr, "disabling %s\n", head->name);
-
-			zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
-		}
-	}
-
-	// TODO something with this result?
-	/* zwlr_output_configuration_v1_test(zwlr_config); */
-
-	zwlr_output_configuration_v1_apply(zwlr_config);
 
 	return EXIT_SUCCESS;
 }
