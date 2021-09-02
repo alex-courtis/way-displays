@@ -5,35 +5,50 @@
 #include "listeners.h"
 #include "types.h"
 
-// OutputManager data
+// Displ data
 
 static void global(void *data,
 		struct wl_registry *wl_registry,
 		uint32_t name,
 		const char *interface,
 		uint32_t version) {
-	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
-		fprintf(stderr, "LR global zwlr\n");
-		struct OutputManager *output_manager = data;
 
-		output_manager->name = name;
-		output_manager->interface = strdup(interface);
+	// only register for WLR output manager events
+	if (strcmp(interface, zwlr_output_manager_v1_interface.name) != 0)
+		return;
 
-		output_manager->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, version);
+	fprintf(stderr, "LR global zwlr data %p\n", (void*)data);
+	struct Displ *displ = data;
+	displ->name = name;
 
-		zwlr_output_manager_v1_add_listener(output_manager->zwlr_output_manager, output_manager_listener(), data);
-	}
+	displ->output_manager = calloc(1, sizeof(struct OutputManager));
+	displ->output_manager->displ = displ;
+	displ->output_manager->interface = strdup(interface);
+
+	displ->output_manager->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, version);
+
+	zwlr_output_manager_v1_add_listener(displ->output_manager->zwlr_output_manager, output_manager_listener(), displ->output_manager);
 }
 
 static void global_remove(void *data,
 		struct wl_registry *wl_registry,
 		uint32_t name) {
-	struct OutputManager *output_manager = data;
-	if (name == output_manager->name) {
-		fprintf(stderr, "LR global_remove zwlr\n");
-	}
+	struct Displ *displ = data;
 
-	// TODO release
+	// TODO fake a cleanup test by removing anything
+	if (!displ || displ->name != name)
+		return;
+
+	// TODO call zwlr destroy on each of the objects, to prevent their callbacks
+
+	fprintf(stderr, "LR global_remove freeing OM\n");
+
+	free_output_manager(displ->output_manager);
+	displ->output_manager = NULL;
+
+	fprintf(stderr, "LR global_remove freed OM\n");
+
+	// TODO release like zwlr
 }
 
 static const struct wl_registry_listener listener = {

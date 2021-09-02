@@ -35,6 +35,16 @@ void free_output_manager(struct OutputManager *output_manager) {
 	free(output_manager);
 }
 
+void free_displ(struct Displ *displ) {
+	fprintf(stderr, "free_displ %p\n", (void*)displ);
+	if (!displ)
+		return;
+
+	free_output_manager(displ->output_manager);
+
+	free(displ);
+}
+
 void head_release_mode(struct Head *head, struct Mode *mode) {
 	if (!head || !mode)
 		return;

@@ -17,3 +17,6 @@ Mirror invocation
 
 Robustify listeners for null data
 
+test sway stop
+test registry finalise
+

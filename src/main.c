@@ -10,6 +10,9 @@
 #include "util.h"
 
 void print_om(struct OutputManager *output_manager) {
+	if (!output_manager)
+		return;
+
 	struct Head *head;
 	for (struct SList *i = output_manager->heads; i; i = i->nex) {
 		head = i->val;
@@ -28,6 +31,7 @@ void print_om(struct OutputManager *output_manager) {
 }
 
 void ltr_arrange(struct OutputManager *output_manager) {
+	fprintf(stderr, "ltr_arrange\n");
 	struct Head *head;
 	for (struct SList *i = output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
@@ -49,6 +53,7 @@ void ltr_arrange(struct OutputManager *output_manager) {
 }
 
 void apply_desired(struct OutputManager *output_manager) {
+	fprintf(stderr, "apply_desired\n");
 	struct Head *head;
 
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
@@ -56,14 +61,14 @@ void apply_desired(struct OutputManager *output_manager) {
 	for (struct SList *i = output_manager->desired.heads_ordered; i; i = i->nex) {
 		head = (struct Head*)i->val;
 		if (head->desired.enabled) {
-			fprintf(stderr, "enabling, positioning at %d,%d scaling to %f and setting mode for %s\n", head->desired.x, head->desired.y, wl_fixed_to_double(head->desired.scale), head->name);
+			fprintf(stderr, "apply_desired enabling, positioning at %d,%d scaling to %f and setting mode for %s\n", head->desired.x, head->desired.y, wl_fixed_to_double(head->desired.scale), head->name);
 
 			struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
 			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
 			zwlr_output_configuration_head_v1_set_position(config_head, head->desired.x, head->desired.y);
 		} else {
-			fprintf(stderr, "disabling %s\n", head->name);
+			fprintf(stderr, "apply_desired disabling %s\n", head->name);
 
 			zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 		}
@@ -73,42 +78,51 @@ void apply_desired(struct OutputManager *output_manager) {
 	/* zwlr_output_configuration_v1_test(zwlr_config); */
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
+	fprintf(stderr, "apply_desired done\n");
 }
 
-void listen(struct OutputManager *output_manager) {
+void listen(struct Displ *displ) {
 	struct pollfd readfds[1] = {0};
-	readfds[0].fd = wl_display_get_fd(output_manager->display);
+	readfds[0].fd = wl_display_get_fd(displ->display);
 	readfds[0].events = POLLIN;
 
 	int loops = 0;
-	int nloops = 2;
+	int nloops = 3;
 	for (;;) {
 		fprintf(stderr, "listen\n");
 
 
 		fprintf(stderr, "listen preparing read\n");
 		int n = 0;
-		while (wl_display_prepare_read(output_manager->display) != 0) {
-			wl_display_dispatch_pending(output_manager->display);
+		while (wl_display_prepare_read(displ->display) != 0) {
+			wl_display_dispatch_pending(displ->display);
 			n++;
 		}
 		fprintf(stderr, "listen dispatched %d pending\n", n);
 
 
 		fprintf(stderr, "listen flushing\n");
-		wl_display_flush(output_manager->display);
+		wl_display_flush(displ->display);
 
 
 		fprintf(stderr, "listen polling\n");
 		if (poll(readfds, 1, -1) > 0) {
-			wl_display_read_events(output_manager->display);
+			wl_display_read_events(displ->display);
 		} else {
-			wl_display_cancel_read(output_manager->display);
+			wl_display_cancel_read(displ->display);
 		}
 
 
 		fprintf(stderr, "listen dispatching pending\n");
-		wl_display_dispatch_pending(output_manager->display);
+		wl_display_dispatch_pending(displ->display);
+		fprintf(stderr, "listen dispatched pending\n");
+
+
+		struct OutputManager *output_manager = displ->output_manager;
+		if (!output_manager) {
+			fprintf(stderr, "listen output_manager has been destroyed\n");
+			exit(1);
+		}
 
 
 		print_om(output_manager);
@@ -125,6 +139,7 @@ void listen(struct OutputManager *output_manager) {
 
 
 		if (loops++ >= nloops) {
+			// TODO stop the listening and loop one more, as a test for teardown
 			break;
 		}
 
@@ -132,7 +147,7 @@ void listen(struct OutputManager *output_manager) {
 		fprintf(stderr, "listen end\n");
 	}
 
-	fprintf(stderr, "listen exited after %d loops\n", nloops);
+	fprintf(stderr, "listen exited after %d loops\n", loops);
 }
 
 int
@@ -146,27 +161,29 @@ main(int argc, const char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	struct OutputManager *output_manager = calloc(1, sizeof(struct OutputManager));
-	output_manager->display = display;
+	struct Displ *displ = calloc(1, sizeof(struct Displ));
+	displ->display = display;
 
 	struct wl_registry *registry = wl_display_get_registry(display);
 
-	wl_registry_add_listener(registry, registry_listener(), output_manager);
+	wl_registry_add_listener(registry, registry_listener(), displ);
 
 	wl_display_dispatch(display);
 
 	wl_display_roundtrip(display);
 
-	print_om(output_manager);
+	print_om(displ->output_manager);
 
-	ltr_arrange(output_manager);
-	apply_desired(output_manager);
+	ltr_arrange(displ->output_manager);
+	apply_desired(displ->output_manager);
 
-	listen(output_manager);
+	listen(displ);
 
+	fprintf(stderr, "before wl_display_disconnect\n");
 	wl_display_disconnect(display);
+	fprintf(stderr, "after wl_display_disconnect\n");
 
-	free_output_manager(output_manager);
+	free_displ(displ);
 
 	return EXIT_SUCCESS;
 }

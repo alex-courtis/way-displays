@@ -35,6 +35,7 @@ static void preferred(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
+	/* fprintf(stderr, "LM finished\n"); */
 	struct Mode *mode = data;
 
 	head_release_mode(mode->head, mode);

@@ -52,14 +52,14 @@ struct Head {
 };
 
 struct OutputManager {
+	struct Displ *displ;
+
 	struct zwlr_output_manager_v1 *zwlr_output_manager;
 
 	struct SList *heads;
 
-	struct wl_display *display;
 	uint32_t serial;
 	uint32_t serial_cfg_done;
-	uint32_t name;
 	char *interface;
 
 	struct {
@@ -67,9 +67,18 @@ struct OutputManager {
 	} desired;
 };
 
+struct Displ {
+	struct wl_display *display;
+
+	struct OutputManager *output_manager;
+
+	uint32_t name;
+};
+
 void free_mode(struct Mode *mode);
 void free_head(struct Head *head);
 void free_output_manager(struct OutputManager *output_manager);
+void free_displ(struct Displ *displ);
 
 void head_release_mode(struct Head *head, struct Mode *mode);
 void output_manager_release_head(struct OutputManager *output_manager, struct Head *head);
