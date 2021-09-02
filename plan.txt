@@ -6,9 +6,10 @@
 - Auto scale
 - No more wl_list
 - Laptop lid handling
-Callback finalisation and cleanup
+- Callback finalisation and cleanup
+Error/exit for listen loop
 User config file
-Hotplug daemon
+- Hotplug daemon
 Sanity checking / projector handling
 Config file daemon
 Multiple instance checking

@@ -9,9 +9,6 @@
 #include "types.h"
 #include "util.h"
 
-struct wl_display *display;
-struct OutputManager *output_manager;
-
 void print_om(struct OutputManager *output_manager) {
 	struct Head *head;
 	for (struct SList *i = output_manager->heads; i; i = i->nex) {
@@ -44,7 +41,10 @@ void ltr_arrange(struct OutputManager *output_manager) {
 	slist_append(&order, order1);
 	char *order2 = strdup("eDP-1");
 	slist_append(&order, order2);
+
+	slist_free(&output_manager->desired.heads_ordered);
 	output_manager->desired.heads_ordered = order_heads(order, output_manager->heads);
+
 	ltr_heads(output_manager->desired.heads_ordered);
 }
 
@@ -75,40 +75,40 @@ void apply_desired(struct OutputManager *output_manager) {
 	zwlr_output_configuration_v1_apply(zwlr_config);
 }
 
-void listen() {
+void listen(struct OutputManager *output_manager) {
 	struct pollfd readfds[1] = {0};
-	readfds[0].fd = wl_display_get_fd(display);
+	readfds[0].fd = wl_display_get_fd(output_manager->display);
 	readfds[0].events = POLLIN;
 
 	int loops = 0;
-	int nloops = 6;
+	int nloops = 2;
 	for (;;) {
 		fprintf(stderr, "listen\n");
 
 
 		fprintf(stderr, "listen preparing read\n");
 		int n = 0;
-		while (wl_display_prepare_read(display) != 0) {
-			wl_display_dispatch_pending(display);
+		while (wl_display_prepare_read(output_manager->display) != 0) {
+			wl_display_dispatch_pending(output_manager->display);
 			n++;
 		}
 		fprintf(stderr, "listen dispatched %d pending\n", n);
 
 
 		fprintf(stderr, "listen flushing\n");
-		wl_display_flush(display);
+		wl_display_flush(output_manager->display);
 
 
 		fprintf(stderr, "listen polling\n");
 		if (poll(readfds, 1, -1) > 0) {
-			wl_display_read_events(display);
+			wl_display_read_events(output_manager->display);
 		} else {
-			wl_display_cancel_read(display);
+			wl_display_cancel_read(output_manager->display);
 		}
 
 
 		fprintf(stderr, "listen dispatching pending\n");
-		wl_display_dispatch_pending(display);
+		wl_display_dispatch_pending(output_manager->display);
 
 
 		print_om(output_manager);
@@ -138,15 +138,19 @@ void listen() {
 int
 main(int argc, const char **argv) {
 
+	struct wl_display *display;
+
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
 		fprintf(stderr, "failed to connect to display\n");
 		return EXIT_FAILURE;
 	}
 
-	output_manager = calloc(1, sizeof(struct OutputManager));
+	struct OutputManager *output_manager = calloc(1, sizeof(struct OutputManager));
+	output_manager->display = display;
 
 	struct wl_registry *registry = wl_display_get_registry(display);
+
 	wl_registry_add_listener(registry, registry_listener(), output_manager);
 
 	wl_display_dispatch(display);
@@ -158,9 +162,11 @@ main(int argc, const char **argv) {
 	ltr_arrange(output_manager);
 	apply_desired(output_manager);
 
-	listen();
+	listen(output_manager);
 
 	wl_display_disconnect(display);
+
+	free_output_manager(output_manager);
 
 	return EXIT_SUCCESS;
 }
