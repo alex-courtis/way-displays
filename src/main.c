@@ -10,6 +10,7 @@
 #include "util.h"
 
 void print_om(struct OutputManager *output_manager) {
+	fprintf(stderr, "print_om %p\n", (void*)output_manager);
 	if (!output_manager)
 		return;
 
@@ -66,6 +67,7 @@ void apply_desired(struct OutputManager *output_manager) {
 			struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
 			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
+
 			/* zwlr_output_configuration_head_v1_set_scale(config_head, 0); */
 			zwlr_output_configuration_head_v1_set_position(config_head, head->desired.x, head->desired.y);
 		} else {
@@ -90,7 +92,7 @@ void listen(struct Displ *displ) {
 	int loops = 0;
 	int nloops = 5;
 	for (;;) {
-		fprintf(stderr, "listen %d\n", loops);
+		fprintf(stderr, "\n\nlisten %d\n", loops);
 
 
 		fprintf(stderr, "listen preparing read\n");
@@ -122,7 +124,6 @@ void listen(struct Displ *displ) {
 		struct OutputManager *output_manager = displ->output_manager;
 		if (!output_manager) {
 			fprintf(stderr, "listen output_manager has been destroyed\n");
-			/* exit(1); */
 			return;
 		}
 
@@ -130,15 +131,23 @@ void listen(struct Displ *displ) {
 		print_om(output_manager);
 
 
-		if (output_manager->serial_cfg_done &&
-				output_manager->serial >= output_manager->serial_cfg_done) {
-			// TODO perhaps a dirty on OM down
+		fprintf(stderr, "listen output_manager->heads_dirty %d\n", output_manager->heads_dirty);
+		if (output_manager->changes_complete) {
+
 			// do nothing as these were our changes
-			output_manager->serial_cfg_done = 0;
-		} else {
+			output_manager->changes_complete = false;
+
+		} else if (output_manager->heads_dirty) {
+
+			// respond to changes to the state of the univers
+			output_manager->heads_dirty = false;
 			ltr_arrange(output_manager);
 			apply_desired(output_manager);
+
+		} else {
+			fprintf(stderr, "listen nothingtodohere\n");
 		}
+		fprintf(stderr, "listen output_manager->heads_dirty %d\n", output_manager->heads_dirty);
 
 
 		loops++;

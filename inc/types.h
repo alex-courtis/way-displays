@@ -58,8 +58,10 @@ struct OutputManager {
 
 	struct SList *heads;
 
+	bool heads_dirty;
+	bool changes_complete;
+
 	uint32_t serial;
-	uint32_t serial_cfg_done;
 	char *interface;
 
 	struct {
@@ -75,6 +77,7 @@ struct Displ {
 	uint32_t name;
 };
 
+// TODO move to util and rename existing util to layout
 void free_mode(struct Mode *mode);
 void free_head(struct Head *head);
 void free_output_manager(struct OutputManager *output_manager);
