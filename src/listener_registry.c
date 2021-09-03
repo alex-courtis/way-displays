@@ -35,20 +35,13 @@ static void global_remove(void *data,
 		uint32_t name) {
 	struct Displ *displ = data;
 
-	// TODO fake a cleanup test by removing anything
+	// only interested in the WLR interface
 	if (!displ || displ->name != name)
 		return;
 
-	// TODO call zwlr destroy on each of the objects, to prevent their callbacks
-
-	fprintf(stderr, "LR global_remove freeing OM\n");
-
-	free_output_manager(displ->output_manager);
-	displ->output_manager = NULL;
-
-	fprintf(stderr, "LR global_remove freed OM\n");
-
-	// TODO release like zwlr
+	// a "who cares?" situation in the WLR examples
+	fprintf(stderr, "TODO message\n");
+	exit(1);
 }
 
 static const struct wl_registry_listener listener = {

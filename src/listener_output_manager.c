@@ -40,6 +40,8 @@ static void finished(void *data,
 		output_manager->displ->output_manager = NULL;
 	}
 	free_output_manager(output_manager);
+
+	zwlr_output_manager_v1_destroy(zwlr_output_manager_v1);
 }
 
 static const struct zwlr_output_manager_v1_listener listener = {

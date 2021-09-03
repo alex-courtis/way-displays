@@ -14,9 +14,7 @@ Sanity checking / projector handling
 Config file daemon
 Multiple instance checking
 Mirror invocation
-
-Robustify listeners for null data
+Signal listener with zwlr_output_manager_v1_stop on SIGKILL
 
 test sway stop
-test registry finalise
 

@@ -11,6 +11,7 @@ static void succeeded(void *data,
 	struct OutputManager *output_manager = data;
 
 	output_manager->serial_cfg_done = output_manager->serial;
+	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 	fprintf(stderr, "LOC succeeded serial %d\n", output_manager->serial_cfg_done);
 }
 
@@ -19,9 +20,8 @@ static void failed(void *data,
 	fprintf(stderr, "LOC failed\n");
 	struct OutputManager *output_manager = data;
 
-	// TODO output a message here and for cancelled then carry on, not attempting this change again
 	output_manager->serial_cfg_done = output_manager->serial;
-
+	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 	fprintf(stderr, "LOC failed %d\n", output_manager->serial_cfg_done);
 }
 
@@ -31,6 +31,7 @@ static void cancelled(void *data,
 	struct OutputManager *output_manager = data;
 
 	output_manager->serial_cfg_done = output_manager->serial;
+	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 	fprintf(stderr, "LOC cancelled %d\n", output_manager->serial_cfg_done);
 }
 

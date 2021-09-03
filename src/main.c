@@ -66,6 +66,7 @@ void apply_desired(struct OutputManager *output_manager) {
 			struct zwlr_output_configuration_head_v1 *config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
 			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
+			/* zwlr_output_configuration_head_v1_set_scale(config_head, 0); */
 			zwlr_output_configuration_head_v1_set_position(config_head, head->desired.x, head->desired.y);
 		} else {
 			fprintf(stderr, "apply_desired disabling %s\n", head->name);
@@ -87,9 +88,9 @@ void listen(struct Displ *displ) {
 	readfds[0].events = POLLIN;
 
 	int loops = 0;
-	int nloops = 3;
+	int nloops = 5;
 	for (;;) {
-		fprintf(stderr, "listen\n");
+		fprintf(stderr, "listen %d\n", loops);
 
 
 		fprintf(stderr, "listen preparing read\n");
@@ -121,7 +122,8 @@ void listen(struct Displ *displ) {
 		struct OutputManager *output_manager = displ->output_manager;
 		if (!output_manager) {
 			fprintf(stderr, "listen output_manager has been destroyed\n");
-			exit(1);
+			/* exit(1); */
+			return;
 		}
 
 
@@ -130,6 +132,7 @@ void listen(struct Displ *displ) {
 
 		if (output_manager->serial_cfg_done &&
 				output_manager->serial >= output_manager->serial_cfg_done) {
+			// TODO perhaps a dirty on OM down
 			// do nothing as these were our changes
 			output_manager->serial_cfg_done = 0;
 		} else {
@@ -138,8 +141,15 @@ void listen(struct Displ *displ) {
 		}
 
 
-		if (loops++ >= nloops) {
-			// TODO stop the listening and loop one more, as a test for teardown
+		loops++;
+		/* if (loops == (nloops - 2)) { */
+		/* 	fprintf(stderr, "listen disconnecting\n"); */
+		/* 	zwlr_output_manager_v1_stop(output_manager->zwlr_output_manager); */
+		/* 	/1* wl_display_disconnect(displ->display); *1/ */
+		/* 	continue; */
+		/* } */
+
+		if (loops >= nloops) {
 			break;
 		}
 
@@ -170,18 +180,11 @@ main(int argc, const char **argv) {
 
 	wl_display_dispatch(display);
 
-	wl_display_roundtrip(display);
-
-	print_om(displ->output_manager);
-
-	ltr_arrange(displ->output_manager);
-	apply_desired(displ->output_manager);
-
 	listen(displ);
 
-	fprintf(stderr, "before wl_display_disconnect\n");
+	fprintf(stderr, "disconnecting WL\n");
 	wl_display_disconnect(display);
-	fprintf(stderr, "after wl_display_disconnect\n");
+	fprintf(stderr, "disconnected WL\n");
 
 	free_displ(displ);
 
