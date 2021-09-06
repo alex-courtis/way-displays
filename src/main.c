@@ -77,9 +77,6 @@ void apply_desired(struct OutputManager *output_manager) {
 		}
 	}
 
-	// TODO something with this result?
-	/* zwlr_output_configuration_v1_test(zwlr_config); */
-
 	zwlr_output_configuration_v1_apply(zwlr_config);
 	fprintf(stderr, "apply_desired done\n");
 }
@@ -89,19 +86,24 @@ void listen(struct Displ *displ) {
 	readfds[0].fd = wl_display_get_fd(displ->display);
 	readfds[0].events = POLLIN;
 
+	int ret = 0;
 	int loops = 0;
-	int nloops = 5;
+	int nloops = 7;
 	for (;;) {
 		fprintf(stderr, "\n\nlisten %d\n", loops);
 
 
 		fprintf(stderr, "listen preparing read\n");
-		int n = 0;
 		while (wl_display_prepare_read(displ->display) != 0) {
-			wl_display_dispatch_pending(displ->display);
-			n++;
+			fprintf(stderr, "listen dispatching pending 1\n");
+			ret = wl_display_dispatch_pending(displ->display);
+			if (ret == -1) {
+				ret = wl_display_get_error(displ->display);
+				fprintf(stderr, "TODO message fatal error %d\n", ret);
+				exit(1);
+			}
+			fprintf(stderr, "listen dispatched pending 1\n");
 		}
-		fprintf(stderr, "listen dispatched %d pending\n", n);
 
 
 		fprintf(stderr, "listen flushing\n");
@@ -110,15 +112,22 @@ void listen(struct Displ *displ) {
 
 		fprintf(stderr, "listen polling\n");
 		if (poll(readfds, 1, -1) > 0) {
+			fprintf(stderr, "listen read events\n");
 			wl_display_read_events(displ->display);
 		} else {
+			fprintf(stderr, "listen cancel read\n");
 			wl_display_cancel_read(displ->display);
 		}
 
 
-		fprintf(stderr, "listen dispatching pending\n");
-		wl_display_dispatch_pending(displ->display);
-		fprintf(stderr, "listen dispatched pending\n");
+		fprintf(stderr, "listen dispatching pending 2\n");
+		ret = wl_display_dispatch_pending(displ->display);
+		if (ret == -1) {
+			ret = wl_display_get_error(displ->display);
+			fprintf(stderr, "TODO message fatal error %d\n", ret);
+			exit(1);
+		}
+		fprintf(stderr, "listen dispatched pending 2\n");
 
 
 		struct OutputManager *output_manager = displ->output_manager;
@@ -151,12 +160,12 @@ void listen(struct Displ *displ) {
 
 
 		loops++;
-		/* if (loops == (nloops - 2)) { */
-		/* 	fprintf(stderr, "listen disconnecting\n"); */
-		/* 	zwlr_output_manager_v1_stop(output_manager->zwlr_output_manager); */
-		/* 	/1* wl_display_disconnect(displ->display); *1/ */
-		/* 	continue; */
-		/* } */
+		if (loops == (nloops - 2)) {
+			fprintf(stderr, "listen disconnecting WLR\n");
+			zwlr_output_manager_v1_stop(output_manager->zwlr_output_manager);
+			fprintf(stderr, "listen disconnected WLR\n");
+			continue;
+		}
 
 		if (loops >= nloops) {
 			break;
@@ -176,7 +185,7 @@ main(int argc, const char **argv) {
 
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
-		fprintf(stderr, "failed to connect to display\n");
+		fprintf(stderr, "TODO message failed to connect to display\n");
 		return EXIT_FAILURE;
 	}
 

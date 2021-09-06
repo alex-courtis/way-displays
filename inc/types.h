@@ -59,6 +59,7 @@ struct OutputManager {
 	struct SList *heads;
 
 	bool heads_dirty;
+	// TODO this is not enough; we need proper dirty checking to respond to outside changes e.g. sway reload
 	bool changes_complete;
 
 	uint32_t serial;
