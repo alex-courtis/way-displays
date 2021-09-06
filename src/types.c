@@ -119,6 +119,29 @@ void reset_dirty(struct OutputManager *output_manager) {
 	}
 }
 
+bool is_pending(struct OutputManager *output_manager) {
+	struct SList *i;
+	struct Head *head;
+
+	if (!output_manager)
+		return false;
+
+	for (i = output_manager->heads; i; i = i->nex) {
+		head = i->val;
+		if (!head)
+			continue;
+
+		if (head->pending.mode ||
+				head->pending.scale ||
+				head->pending.enabled ||
+				head->pending.position) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void reset_pending(struct OutputManager *output_manager) {
 	struct SList *i;
 	struct Head *head;

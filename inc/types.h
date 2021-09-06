@@ -98,6 +98,7 @@ void output_manager_release_head(struct OutputManager *output_manager, struct He
 bool is_dirty(struct OutputManager *output_manager);
 void reset_dirty(struct OutputManager *output_manager);
 
+bool is_pending(struct OutputManager *output_manager);
 void reset_pending(struct OutputManager *output_manager);
 
 #endif // TYPES_H

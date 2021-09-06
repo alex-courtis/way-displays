@@ -123,7 +123,6 @@ void listen(struct Displ *displ) {
 		}
 
 
-		// TODO perhaps we might need to repeat this dispatch until WL is happy
 		fprintf(stderr, "listen dispatching pending 2\n");
 		ret = wl_display_dispatch_pending(displ->display);
 		if (ret == -1) {
@@ -144,13 +143,13 @@ void listen(struct Displ *displ) {
 		print_om(output_manager);
 
 
-		if (is_dirty(output_manager)) {
+		if (is_dirty(output_manager) && !is_pending(output_manager)) {
 			fprintf(stderr, "listen dirty, arranging\n");
+
+			reset_dirty(output_manager);
 
 			ltr_arrange(output_manager);
 			apply_desired(output_manager);
-
-			reset_dirty(output_manager);
 		} else {
 			fprintf(stderr, "listen not dirty, nothingtodohere\n");
 		}
