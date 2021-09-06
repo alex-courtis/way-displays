@@ -28,6 +28,8 @@ struct Head {
 
 	struct SList *modes;
 
+	bool dirty;
+
 	char *name;
 	char *description;
 	int32_t width_mm;
@@ -49,6 +51,14 @@ struct Head {
 		int32_t x;
 		int32_t y;
 	} desired;
+
+	// TODO could this be replaced by a single bool?
+	struct {
+		bool mode;
+		bool scale;
+		bool enabled;
+		bool position;
+	} pending;
 };
 
 struct OutputManager {
@@ -58,9 +68,7 @@ struct OutputManager {
 
 	struct SList *heads;
 
-	bool heads_dirty;
-	// TODO this is not enough; we need proper dirty checking to respond to outside changes e.g. sway reload
-	bool changes_complete;
+	bool dirty;
 
 	uint32_t serial;
 	char *interface;
@@ -86,6 +94,11 @@ void free_displ(struct Displ *displ);
 
 void head_release_mode(struct Head *head, struct Mode *mode);
 void output_manager_release_head(struct OutputManager *output_manager, struct Head *head);
+
+bool is_dirty(struct OutputManager *output_manager);
+void reset_dirty(struct OutputManager *output_manager);
+
+void reset_pending(struct OutputManager *output_manager);
 
 #endif // TYPES_H
 

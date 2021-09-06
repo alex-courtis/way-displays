@@ -37,8 +37,11 @@ void ltr_arrange(struct OutputManager *output_manager) {
 	for (struct SList *i = output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
 		head->desired.enabled = !closed_laptop_display(head->name);
+		head->pending.enabled = true;
 		head->desired.mode = optimal_mode(head->modes);
+		head->pending.mode = true;
 		head->desired.scale = auto_scale(head);
+		head->pending.scale = true;
 	}
 
 	struct SList *order = NULL;
@@ -88,7 +91,7 @@ void listen(struct Displ *displ) {
 
 	int ret = 0;
 	int loops = 0;
-	int nloops = 7;
+	int nloops = 9;
 	for (;;) {
 		fprintf(stderr, "\n\nlisten %d\n", loops);
 
@@ -120,6 +123,7 @@ void listen(struct Displ *displ) {
 		}
 
 
+		// TODO perhaps we might need to repeat this dispatch until WL is happy
 		fprintf(stderr, "listen dispatching pending 2\n");
 		ret = wl_display_dispatch_pending(displ->display);
 		if (ret == -1) {
@@ -140,23 +144,16 @@ void listen(struct Displ *displ) {
 		print_om(output_manager);
 
 
-		fprintf(stderr, "listen output_manager->heads_dirty %d\n", output_manager->heads_dirty);
-		if (output_manager->changes_complete) {
+		if (is_dirty(output_manager)) {
+			fprintf(stderr, "listen dirty, arranging\n");
 
-			// do nothing as these were our changes
-			output_manager->changes_complete = false;
-
-		} else if (output_manager->heads_dirty) {
-
-			// respond to changes to the state of the univers
-			output_manager->heads_dirty = false;
 			ltr_arrange(output_manager);
 			apply_desired(output_manager);
 
+			reset_dirty(output_manager);
 		} else {
-			fprintf(stderr, "listen nothingtodohere\n");
+			fprintf(stderr, "listen not dirty, nothingtodohere\n");
 		}
-		fprintf(stderr, "listen output_manager->heads_dirty %d\n", output_manager->heads_dirty);
 
 
 		loops++;

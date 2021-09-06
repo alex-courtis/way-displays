@@ -49,6 +49,8 @@ void head_release_mode(struct Head *head, struct Mode *mode) {
 	if (!head || !mode)
 		return;
 
+	head->dirty = true;
+
 	if (head->desired.mode == mode) {
 		head->desired.mode = NULL;
 	}
@@ -65,9 +67,74 @@ void output_manager_release_head(struct OutputManager *output_manager, struct He
 	if (!output_manager || !head)
 		return;
 
+	output_manager->dirty = true;
+
 	/* fprintf(stderr, "output_manager_release_head head %s\n", head->name); */
 
 	slist_remove(&output_manager->desired.heads_ordered, head);
 	slist_remove(&output_manager->heads, head);
+}
+
+bool is_dirty(struct OutputManager *output_manager) {
+	struct SList *i;
+	struct Head *head;
+
+	if (!output_manager)
+		return false;
+
+	if (output_manager->dirty) {
+		fprintf(stderr, "dirty output_manager\n");
+		return true;
+	}
+
+	for (i = output_manager->heads; i; i = i->nex) {
+		head = i->val;
+		if (!head)
+			continue;
+
+		if (head->dirty) {
+			fprintf(stderr, "dirty head %s\n", head->name);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void reset_dirty(struct OutputManager *output_manager) {
+	struct SList *i;
+	struct Head *head;
+
+	if (!output_manager)
+		return;
+
+	output_manager->dirty = false;
+
+	for (i = output_manager->heads; i; i = i->nex) {
+		head = i->val;
+		if (!head)
+			continue;
+
+		head->dirty = false;
+	}
+}
+
+void reset_pending(struct OutputManager *output_manager) {
+	struct SList *i;
+	struct Head *head;
+
+	if (!output_manager)
+		return;
+
+	for (i = output_manager->heads; i; i = i->nex) {
+		head = i->val;
+		if (!head)
+			continue;
+
+		head->pending.mode = false;
+		head->pending.scale = false;
+		head->pending.enabled = false;
+		head->pending.position = false;
+	}
 }
 

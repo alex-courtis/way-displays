@@ -12,6 +12,7 @@ static void name(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *name) {
 	struct Head *head = data;
+	head->dirty = true;
 
 	head->name = strdup(name);
 }
@@ -20,6 +21,7 @@ static void description(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *description) {
 	struct Head *head = data;
+	head->dirty = true;
 
 	head->description = strdup(description);
 }
@@ -29,6 +31,7 @@ static void physical_size(void *data,
 		int32_t width,
 		int32_t height) {
 	struct Head *head = data;
+	head->dirty = true;
 
 	head->width_mm = width;
 	head->height_mm = height;
@@ -38,6 +41,9 @@ static void mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
+	head->dirty = !head->pending.mode;
+
+	fprintf(stderr, "LH mode %s%s\n", head->name, head->dirty ? " dirty" : "");
 
 	struct Mode *mode = calloc(1, sizeof(struct Mode));
 	mode->head = head;
@@ -52,6 +58,9 @@ static void enabled(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		int32_t enabled) {
 	struct Head *head = data;
+	head->dirty = !head->pending.enabled;
+
+	fprintf(stderr, "LH enabled %s%s\n", head->name, head->dirty ? " dirty" : "");
 
 	head->enabled = enabled;
 }
@@ -60,6 +69,7 @@ static void current_mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
+	head->dirty = true;
 
 	struct Mode *mode = NULL;
 	for (struct SList *i = head->modes; i; i = i->nex) {
@@ -76,6 +86,9 @@ static void position(void *data,
 		int32_t x,
 		int32_t y) {
 	struct Head *head = data;
+	head->dirty = !head->pending.position;
+
+	fprintf(stderr, "LH position %s%s\n", head->name, head->dirty ? " dirty" : "");
 
 	head->x = x;
 	head->y = y;
@@ -85,6 +98,7 @@ static void transform(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		int32_t transform) {
 	struct Head *head = data;
+	head->dirty = true;
 
 	head->transform = transform;
 }
@@ -93,6 +107,9 @@ static void scale(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		wl_fixed_t scale) {
 	struct Head *head = data;
+	head->dirty = !head->pending.scale;
+
+	fprintf(stderr, "LH scale %s%s\n", head->name, head->dirty ? " dirty" : "");
 
 	head->scale = scale;
 }
@@ -101,6 +118,7 @@ static void make(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *make) {
 	struct Head *head = data;
+	head->dirty = true;
 
 	head->make = strdup(make);
 }
@@ -109,6 +127,7 @@ static void model(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *model) {
 	struct Head *head = data;
+	head->dirty = true;
 
 	head->model = strdup(model);
 }
@@ -117,6 +136,7 @@ static void serial_number(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *serial_number) {
 	struct Head *head = data;
+	head->dirty = true;
 
 	head->serial_number = strdup(serial_number);
 }
@@ -127,7 +147,6 @@ static void finished(void *data,
 
 	fprintf(stderr, "LH finished %s\n", head->name);
 	output_manager_release_head(head->output_manager, head);
-	head->output_manager->heads_dirty = true;
 
 	free_head(head);
 

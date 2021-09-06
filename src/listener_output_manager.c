@@ -12,13 +12,13 @@ static void head(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 	fprintf(stderr, "LOM head\n");
 	struct OutputManager *output_manager = data;
+	output_manager->dirty = true;
 
 	struct Head *head = calloc(1, sizeof(struct Head));
 	head->output_manager = output_manager;
 	head->zwlr_head = zwlr_output_head_v1;
 
 	slist_append(&output_manager->heads, head);
-	output_manager->heads_dirty = true;
 
 	zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener(), head);
 }

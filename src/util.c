@@ -115,6 +115,7 @@ void ltr_heads(struct SList *heads) {
 
 		head->desired.x = x;
 		head->desired.y = 0;
+		head->pending.position = true;
 
 		x += (int32_t)((double)head->desired.mode->width * 256 / head->desired.scale + 0.5);
 	}
