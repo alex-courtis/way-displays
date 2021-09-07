@@ -1,7 +1,3 @@
-#include <stdlib.h>
-
-#include "wlr-output-management-unstable-v1.h"
-
 #include "listeners.h"
 #include "types.h"
 

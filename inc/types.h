@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <wayland-client-core.h>
 #include <wayland-util.h>
 
 #include "list.h"

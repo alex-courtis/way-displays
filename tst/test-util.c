@@ -1,7 +1,5 @@
 #include <string.h>
 
-#include <wayland-util.h>
-
 #include "util.h"
 
 struct StateOptimalMode {

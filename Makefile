@@ -42,10 +42,13 @@ tags: $(SRC_C) $(INC_H) $(PRO_H) $(TST_C)
 	ctags --fields=+S --c-kinds=+p \
 		$(^) \
 		/usr/include/wayland*.h \
+		/usr/include/wlr/**/*.h \
 		/usr/include/cmocka*.h \
 		/usr/include/dirent.h \
 		/usr/include/err*.h \
-		/usr/include/st*h
+		/usr/include/st*h \
+		/usr/include/sys*.h \
+		/usr/include/asm-generic/errno*.h
 
 .copy: way-layout-displays
 	scp $(^) alw@gigantor:/home/alw/bin || true

@@ -1,4 +1,4 @@
-#include "wlr-output-management-unstable-v1.h"
+#include <sysexits.h>
 
 #include "listeners.h"
 #include "types.h"
@@ -18,28 +18,18 @@ static void succeeded(void *data,
 
 static void failed(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
-	fprintf(stderr, "LOC failed\n");
-	struct OutputManager *output_manager = data;
-	reset_pending(output_manager);
 
-	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
-
-	fprintf(stderr, "LOC failed %d\n", output_manager->serial);
-	fprintf(stderr, "TODO message\n");
-	exit(1);
+	// not much we can do here and there is no prior art
+	fprintf(stderr, "ERROR: output configuration has failed, exiting\n");
+	exit(EX_SOFTWARE);
 }
 
 static void cancelled(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
-	fprintf(stderr, "LOC cancelled\n");
-	struct OutputManager *output_manager = data;
-	reset_pending(output_manager);
 
-	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
-
-	fprintf(stderr, "LOC cancelled %d\n", output_manager->serial);
-	fprintf(stderr, "TODO message\n");
-	exit(1);
+	// there seems to be no way to recover from this
+	fprintf(stderr, "ERROR: output configuration has been cancelled, exiting\n");
+	exit(EX_SOFTWARE);
 }
 
 static const struct zwlr_output_configuration_v1_listener listener = {

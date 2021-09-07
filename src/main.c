@@ -1,13 +1,12 @@
-#include <errno.h>
 #include <poll.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 
 #include "laptop.h"
 #include "listeners.h"
 #include "types.h"
 #include "util.h"
+#include "wl_wrappers.h"
 
 void print_om(struct OutputManager *output_manager) {
 	fprintf(stderr, "print_om %p\n", (void*)output_manager);
@@ -84,81 +83,62 @@ void apply_desired(struct OutputManager *output_manager) {
 	fprintf(stderr, "apply_desired done\n");
 }
 
+// see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 void listen(struct Displ *displ) {
 	struct pollfd readfds[1] = {0};
 	readfds[0].fd = wl_display_get_fd(displ->display);
 	readfds[0].events = POLLIN;
 
-	int ret = 0;
+	int num_pending = 0;
 	int loops = 0;
-	int nloops = 9;
+	int nloops = 8;
 	for (;;) {
 		fprintf(stderr, "\n\nlisten %d\n", loops);
 
-
-		fprintf(stderr, "listen preparing read\n");
-		while (wl_display_prepare_read(displ->display) != 0) {
-			fprintf(stderr, "listen dispatching pending 1\n");
-			ret = wl_display_dispatch_pending(displ->display);
-			if (ret == -1) {
-				ret = wl_display_get_error(displ->display);
-				fprintf(stderr, "TODO message fatal error %d\n", ret);
-				exit(1);
-			}
-			fprintf(stderr, "listen dispatched pending 1\n");
+		while (checked_wl_display_prepare_read(displ->display) != 0) {
+			num_pending = checked_wl_display_dispatch_pending(displ->display);
+			fprintf(stderr, "listen 1 dispatched %d pending\n", num_pending);
 		}
 
-
-		fprintf(stderr, "listen flushing\n");
-		wl_display_flush(displ->display);
-
+		checked_wl_display_flush(displ->display);
 
 		fprintf(stderr, "listen polling\n");
 		if (poll(readfds, 1, -1) > 0) {
-			fprintf(stderr, "listen read events\n");
-			wl_display_read_events(displ->display);
+			checked_wl_display_read_events(displ->display);
 		} else {
-			fprintf(stderr, "listen cancel read\n");
-			wl_display_cancel_read(displ->display);
+			checked_wl_display_cancel_read(displ->display);
 		}
 
 
-		fprintf(stderr, "listen dispatching pending 2\n");
-		ret = wl_display_dispatch_pending(displ->display);
-		if (ret == -1) {
-			ret = wl_display_get_error(displ->display);
-			fprintf(stderr, "TODO message fatal error %d\n", ret);
-			exit(1);
-		}
-		fprintf(stderr, "listen dispatched pending 2\n");
+		num_pending = checked_wl_display_dispatch_pending(displ->display);
+		fprintf(stderr, "listen 2 dispatched %d pending\n", num_pending);
 
 
-		struct OutputManager *output_manager = displ->output_manager;
-		if (!output_manager) {
-			fprintf(stderr, "listen output_manager has been destroyed\n");
-			return;
+		if (!displ->output_manager) {
+			fprintf(stderr, "ERROR: output manager has been destroyed, exiting\n");
+			exit(EX_SOFTWARE);
 		}
 
 
-		print_om(output_manager);
+		print_om(displ->output_manager);
 
 
-		if (is_dirty(output_manager) && !is_pending(output_manager)) {
+		if (is_dirty(displ->output_manager) && !is_pending(displ->output_manager)) {
 			fprintf(stderr, "listen dirty, arranging\n");
 
-			reset_dirty(output_manager);
+			reset_dirty(displ->output_manager);
 
-			ltr_arrange(output_manager);
-			apply_desired(output_manager);
+			ltr_arrange(displ->output_manager);
+			apply_desired(displ->output_manager);
 		} else {
-			fprintf(stderr, "listen not dirty, nothingtodohere\n");
+			fprintf(stderr, "listen nothingtodohere\n");
 		}
 
 
 		loops++;
 		if (loops == (nloops - 2)) {
 			fprintf(stderr, "listen disconnecting WLR\n");
-			zwlr_output_manager_v1_stop(output_manager->zwlr_output_manager);
+			zwlr_output_manager_v1_stop(displ->output_manager->zwlr_output_manager);
 			fprintf(stderr, "listen disconnected WLR\n");
 			continue;
 		}
@@ -177,27 +157,18 @@ void listen(struct Displ *displ) {
 int
 main(int argc, const char **argv) {
 
-	struct wl_display *display;
-
-	display = wl_display_connect(NULL);
-	if (display == NULL) {
-		fprintf(stderr, "TODO message failed to connect to display\n");
-		return EXIT_FAILURE;
-	}
-
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
-	displ->display = display;
 
-	struct wl_registry *registry = wl_display_get_registry(display);
+	displ->display = checked_wl_display_connect(NULL);
 
+	struct wl_registry *registry = wl_display_get_registry(displ->display);
 	wl_registry_add_listener(registry, registry_listener(), displ);
-
-	wl_display_dispatch(display);
 
 	listen(displ);
 
+	// TODO is this ever necessary? only if we can exit the loop
 	fprintf(stderr, "disconnecting WL\n");
-	wl_display_disconnect(display);
+	wl_display_disconnect(displ->display);
 	fprintf(stderr, "disconnected WL\n");
 
 	free_displ(displ);

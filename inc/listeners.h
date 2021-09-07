@@ -1,7 +1,6 @@
 #ifndef LISTENERS_H
 #define LISTENERS_H
 
-#include <wayland-client-protocol.h>
 #include "wlr-output-management-unstable-v1.h"
 
 // data

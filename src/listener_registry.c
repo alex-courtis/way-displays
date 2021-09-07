@@ -1,4 +1,5 @@
 #include <string.h>
+#include <sysexits.h>
 
 #include "wlr-output-management-unstable-v1.h"
 
@@ -40,8 +41,8 @@ static void global_remove(void *data,
 		return;
 
 	// a "who cares?" situation in the WLR examples
-	fprintf(stderr, "TODO message\n");
-	exit(1);
+	fprintf(stderr, "ERROR: output manager has been removed, exiting\n");
+	exit(EX_SOFTWARE);
 }
 
 static const struct wl_registry_listener listener = {
