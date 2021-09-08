@@ -7,7 +7,7 @@
 - No more wl_list
 - Laptop lid handling
 - Callback finalisation and cleanup
-Error/exit for listen loop
+- Error/exit for listen loop
 User config file
 - Hotplug daemon
 Sanity checking / projector handling
@@ -15,6 +15,4 @@ Config file daemon
 Multiple instance checking
 Mirror invocation
 Signal listener with zwlr_output_manager_v1_stop on SIGKILL
-
-test sway stop
 

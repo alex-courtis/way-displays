@@ -7,6 +7,9 @@ void desire_ltr(struct OutputManager *output_manager) {
 	struct Head *head;
 	struct SList *i;
 
+	if (!output_manager)
+		return;
+
 	// head specific
 	for (i = output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
@@ -30,6 +33,9 @@ void apply_desired(struct OutputManager *output_manager) {
 	struct zwlr_output_configuration_v1 *zwlr_config;
 	struct zwlr_output_configuration_head_v1 *config_head;
 
+	if (!output_manager)
+		return;
+
 	// passed into our configuration listener
 	zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), output_manager);
@@ -43,8 +49,10 @@ void apply_desired(struct OutputManager *output_manager) {
 			config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 			head->pending.enabled = true;
 
-			zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
-			head->pending.mode = head->desired.mode;
+			if (head->desired.mode) {
+				zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
+				head->pending.mode = true;
+			}
 
 			zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
 			head->pending.scale = true;
@@ -123,7 +131,6 @@ void print_desired(struct OutputManager *output_manager) {
 		}
 	}
 
-	// TODO remove
 	fflush(stdout);
 }
 
