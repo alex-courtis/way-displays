@@ -257,7 +257,7 @@ static int ltr_heads_setup(void **state) {
 	head = calloc(1, sizeof(struct Head));
 	head->desired.mode = mode;
 	head->name = strdup("1");
-	head->enabled = true;
+	head->desired.enabled = true;
 	head->desired.scale = wl_fixed_from_int(2);
 	slist_append(&heads, head);
 
@@ -266,13 +266,13 @@ static int ltr_heads_setup(void **state) {
 	head = calloc(1, sizeof(struct Head));
 	head->desired.mode = mode;
 	head->name = strdup("2");
-	head->enabled = false;
+	head->desired.enabled = false;
 	head->desired.scale = wl_fixed_from_int(1);
 	slist_append(&heads, head);
 
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("3");
-	head->enabled = false;
+	head->desired.enabled = false;
 	slist_append(&heads, head);
 
 	mode = calloc(1, sizeof(struct Mode));
@@ -280,7 +280,7 @@ static int ltr_heads_setup(void **state) {
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("4");
 	head->desired.mode = mode;
-	head->enabled = true;
+	head->desired.enabled = true;
 	head->desired.scale = wl_fixed_from_int(4);
 	slist_append(&heads, head);
 
@@ -289,7 +289,7 @@ static int ltr_heads_setup(void **state) {
 	head = calloc(1, sizeof(struct Head));
 	head->name = strdup("5");
 	head->desired.mode = mode;
-	head->enabled = true;
+	head->desired.enabled = true;
 	head->desired.scale = wl_fixed_from_int(1);
 	slist_append(&heads, head);
 

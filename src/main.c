@@ -4,6 +4,7 @@
 
 #include "laptop.h"
 #include "listeners.h"
+#include "layout.h"
 #include "types.h"
 #include "util.h"
 #include "wl_wrappers.h"
@@ -91,7 +92,7 @@ void listen(struct Displ *displ) {
 
 	int num_pending = 0;
 	int loops = 0;
-	int nloops = 8;
+	int nloops = 10;
 	for (;;) {
 		fprintf(stderr, "\n\nlisten %d\n", loops);
 
@@ -129,6 +130,7 @@ void listen(struct Displ *displ) {
 			reset_dirty(displ->output_manager);
 
 			ltr_arrange(displ->output_manager);
+			print_proposed(displ->output_manager);
 			apply_desired(displ->output_manager);
 		} else {
 			fprintf(stderr, "listen nothingtodohere\n");

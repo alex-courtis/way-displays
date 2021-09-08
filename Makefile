@@ -51,8 +51,7 @@ tags: $(SRC_C) $(INC_H) $(PRO_H) $(TST_C)
 		/usr/include/asm-generic/errno*.h
 
 .copy: way-layout-displays
-	scp $(^) alw@gigantor:/home/alw/bin || true
-	scp $(^) emperor:/home/alex/bin || true
+	scp $(^) alw@gigantor:/home/alw/bin
 	@touch .copy
 
 .PHONY: all clean

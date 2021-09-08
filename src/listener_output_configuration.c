@@ -9,7 +9,10 @@ static void succeeded(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
 	fprintf(stderr, "LOC succeeded\n");
 	struct OutputManager *output_manager = data;
+	// TODO clear desired too, or just get rid of pending
 	reset_pending(output_manager);
+
+	printf("Success!\n");
 
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 

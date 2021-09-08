@@ -109,7 +109,7 @@ void ltr_heads(struct SList *heads) {
 	x = 0;
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
-		if (!head || !head->desired.mode || !head->enabled) {
+		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
 
