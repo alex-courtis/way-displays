@@ -75,7 +75,7 @@ struct OutputManager {
 	char *interface;
 
 	struct {
-		struct SList *heads_ordered;
+		struct SList *heads;
 	} desired;
 };
 

@@ -30,7 +30,7 @@ void free_output_manager(struct OutputManager *output_manager) {
 		free_head(i->val);
 	}
 	slist_free(&output_manager->heads);
-	slist_free(&output_manager->desired.heads_ordered);
+	slist_free(&output_manager->desired.heads);
 
 	free(output_manager);
 }
@@ -71,7 +71,7 @@ void output_manager_release_head(struct OutputManager *output_manager, struct He
 
 	/* fprintf(stderr, "output_manager_release_head head %s\n", head->name); */
 
-	slist_remove(&output_manager->desired.heads_ordered, head);
+	slist_remove(&output_manager->desired.heads, head);
 	slist_remove(&output_manager->heads, head);
 }
 
