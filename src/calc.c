@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "util.h"
+#include "calc.h"
 
 struct Mode *optimal_mode(struct SList *modes) {
 	struct Mode *mode, *optimal_mode;

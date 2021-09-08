@@ -2,11 +2,11 @@
 #include <string.h>
 #include <sysexits.h>
 
+#include "calc.h"
 #include "laptop.h"
 #include "listeners.h"
 #include "layout.h"
 #include "types.h"
-#include "util.h"
 #include "wl_wrappers.h"
 
 

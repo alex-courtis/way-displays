@@ -53,7 +53,6 @@ struct Head {
 		int32_t y;
 	} desired;
 
-	// TODO could this be replaced by a single bool?
 	struct {
 		bool mode;
 		bool scale;
@@ -87,7 +86,6 @@ struct Displ {
 	uint32_t name;
 };
 
-// TODO move to util and rename existing util to layout
 void free_mode(struct Mode *mode);
 void free_head(struct Head *head);
 void free_output_manager(struct OutputManager *output_manager);

@@ -3,7 +3,7 @@
 
 #include "laptop.h"
 
-static int laptop_lid_closed_setup_teardown(void **state) {
+static int setup_teardown(void **state) {
 
 	// always try and remove anything from create_state_file
 	remove("/tmp/wld-lid-state-testing/LIDX/state");
@@ -47,8 +47,8 @@ static void laptop_lid_closed_closed(void **state) {
 }
 
 #define laptop_tests \
-	cmocka_unit_test_setup_teardown(laptop_lid_closed_missing_path, laptop_lid_closed_setup_teardown, laptop_lid_closed_setup_teardown), \
-	cmocka_unit_test_setup_teardown(laptop_lid_closed_missing_file, laptop_lid_closed_setup_teardown, laptop_lid_closed_setup_teardown), \
-	cmocka_unit_test_setup_teardown(laptop_lid_closed_open, laptop_lid_closed_setup_teardown, laptop_lid_closed_setup_teardown), \
-	cmocka_unit_test_setup_teardown(laptop_lid_closed_closed, laptop_lid_closed_setup_teardown, laptop_lid_closed_setup_teardown)
+	cmocka_unit_test_setup_teardown(laptop_lid_closed_missing_path, setup_teardown, setup_teardown), \
+	cmocka_unit_test_setup_teardown(laptop_lid_closed_missing_file, setup_teardown, setup_teardown), \
+	cmocka_unit_test_setup_teardown(laptop_lid_closed_open, setup_teardown, setup_teardown), \
+	cmocka_unit_test_setup_teardown(laptop_lid_closed_closed, setup_teardown, setup_teardown)
 

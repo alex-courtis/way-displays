@@ -25,7 +25,6 @@ static void preferred(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Mode *mode = data;
 
-	// TODO can there be multiple?
 	mode->preferred = true;
 }
 

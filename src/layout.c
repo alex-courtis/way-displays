@@ -1,7 +1,7 @@
+#include "calc.h"
 #include "layout.h"
 #include "laptop.h"
 #include "listeners.h"
-#include "util.h"
 
 void desire_ltr(struct OutputManager *output_manager) {
 	struct Head *head;
