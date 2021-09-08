@@ -142,12 +142,14 @@ bool is_pending(struct OutputManager *output_manager) {
 	return false;
 }
 
-void reset_pending(struct OutputManager *output_manager) {
+void reset_pending_desired(struct OutputManager *output_manager) {
 	struct SList *i;
 	struct Head *head;
 
 	if (!output_manager)
 		return;
+
+	slist_free(&output_manager->desired.heads);
 
 	for (i = output_manager->heads; i; i = i->nex) {
 		head = i->val;
@@ -158,6 +160,12 @@ void reset_pending(struct OutputManager *output_manager) {
 		head->pending.scale = false;
 		head->pending.enabled = false;
 		head->pending.position = false;
+
+		head->desired.mode = NULL;
+		head->desired.scale = 0;
+		head->desired.enabled = false;
+		head->desired.x = 0;
+		head->desired.y = 0;
 	}
 }
 

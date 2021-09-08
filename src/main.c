@@ -59,9 +59,9 @@ void listen() {
 
 			reset_dirty(displ->output_manager);
 
-			layout_ltr(displ->output_manager);
-			print_proposed(displ->output_manager);
-			layout_apply(displ->output_manager);
+			desire_ltr(displ->output_manager);
+			print_desired(displ->output_manager);
+			apply_desired(displ->output_manager);
 		} else {
 			fprintf(stderr, "listen nothingtodohere\n");
 		}

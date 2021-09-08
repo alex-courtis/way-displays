@@ -3,11 +3,11 @@
 
 #include "types.h"
 
-void layout_ltr(struct OutputManager *output_manager);
+void desire_ltr(struct OutputManager *output_manager);
 
-void layout_apply(struct OutputManager *output_manager);
+void apply_desired(struct OutputManager *output_manager);
 
-void print_proposed(struct OutputManager *output_manager);
+void print_desired(struct OutputManager *output_manager);
 
 #endif // LAYOUT_H
 

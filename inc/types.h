@@ -100,7 +100,7 @@ bool is_dirty(struct OutputManager *output_manager);
 void reset_dirty(struct OutputManager *output_manager);
 
 bool is_pending(struct OutputManager *output_manager);
-void reset_pending(struct OutputManager *output_manager);
+void reset_pending_desired(struct OutputManager *output_manager);
 
 #endif // TYPES_H
 
