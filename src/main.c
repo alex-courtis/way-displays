@@ -14,7 +14,7 @@
 void listen() {
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
 
-	displ->display = checked_wl_display_connect(NULL);
+	displ->display = checked_wl_display_connect(NULL, __FILE__, __LINE__);
 
 	struct wl_registry *registry = wl_display_get_registry(displ->display);
 	wl_registry_add_listener(registry, registry_listener(), displ);
@@ -29,22 +29,22 @@ void listen() {
 	for (;;) {
 		fprintf(stderr, "\n\nlisten %d\n", loops);
 
-		while (checked_wl_display_prepare_read(displ->display) != 0) {
-			num_pending = checked_wl_display_dispatch_pending(displ->display);
+		while (checked_wl_display_prepare_read(displ->display, __FILE__, __LINE__) != 0) {
+			num_pending = checked_wl_display_dispatch_pending(displ->display, __FILE__, __LINE__);
 			fprintf(stderr, "listen 1 dispatched %d pending\n", num_pending);
 		}
 
-		checked_wl_display_flush(displ->display);
+		checked_wl_display_flush(displ->display, __FILE__, __LINE__);
 
 		fprintf(stderr, "listen polling\n");
 		if (poll(readfds, 1, -1) > 0) {
-			checked_wl_display_read_events(displ->display);
+			checked_wl_display_read_events(displ->display, __FILE__, __LINE__);
 		} else {
-			checked_wl_display_cancel_read(displ->display);
+			checked_wl_display_cancel_read(displ->display, __FILE__, __LINE__);
 		}
 
 
-		num_pending = checked_wl_display_dispatch_pending(displ->display);
+		num_pending = checked_wl_display_dispatch_pending(displ->display, __FILE__, __LINE__);
 		fprintf(stderr, "listen 2 dispatched %d pending\n", num_pending);
 
 
