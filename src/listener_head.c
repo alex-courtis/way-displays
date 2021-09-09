@@ -12,6 +12,10 @@ static void name(void *data,
 	head->dirty = true;
 
 	head->name = strdup(name);
+
+	if (head->name && head->description) {
+		printf("\nArrived:\n  %s %s\n", head->name, head->description);
+	}
 }
 
 static void description(void *data,
@@ -21,6 +25,10 @@ static void description(void *data,
 	head->dirty = true;
 
 	head->description = strdup(description);
+
+	if (head->name && head->description) {
+		printf("\nArrived:\n  %s %s\n", head->name, head->description);
+	}
 }
 
 static void physical_size(void *data,
@@ -141,6 +149,8 @@ static void serial_number(void *data,
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 	struct Head *head = data;
+
+	printf("\nDeparted:\n  %s %s\n", head->name, head->description);
 
 	fprintf(stderr, "LH finished %s\n", head->name);
 	output_manager_release_head(head->output_manager, head);

@@ -54,14 +54,25 @@ void listen() {
 		}
 
 
-		if (is_dirty(displ->output_manager) && !is_pending(displ->output_manager)) {
+		if (is_dirty(displ->output_manager) && !is_pending_output_manager(displ->output_manager)) {
 			fprintf(stderr, "listen dirty, arranging\n");
 
 			reset_dirty(displ->output_manager);
 
 			desire_ltr(displ->output_manager);
-			print_desired(displ->output_manager);
-			apply_desired(displ->output_manager);
+
+			pend_desired(displ->output_manager);
+
+			if (is_pending_output_manager(displ->output_manager)) {
+
+				print_desired(displ->output_manager);
+
+				apply_desired(displ->output_manager);
+			} else {
+
+				// TODO could print out current state, requires breaking up print_desired
+				printf("\nNo changes needed\n");
+			}
 		} else {
 			fprintf(stderr, "listen nothingtodohere\n");
 		}

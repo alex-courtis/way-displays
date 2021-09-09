@@ -5,6 +5,7 @@
 
 #include "wl_wrappers.h"
 
+// TODO file and line for all of these error messages
 int checked_wl_display_prepare_read(struct wl_display *display) {
 	static int ret;
 
