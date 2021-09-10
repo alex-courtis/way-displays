@@ -1,7 +1,6 @@
 #include "types.h"
 
 void free_mode(struct Mode *mode) {
-	/* fprintf(stderr, "free_mode %p\n", (void*)mode); */
 	if (!mode)
 		return;
 
@@ -9,7 +8,6 @@ void free_mode(struct Mode *mode) {
 }
 
 void free_head(struct Head *head) {
-	/* fprintf(stderr, "free_head %p\n", (void*)head); */
 	if (!head)
 		return;
 
@@ -22,7 +20,6 @@ void free_head(struct Head *head) {
 }
 
 void free_output_manager(struct OutputManager *output_manager) {
-	/* fprintf(stderr, "free_output_manager %p\n", (void*)output_manager); */
 	if (!output_manager)
 		return;
 
@@ -36,13 +33,26 @@ void free_output_manager(struct OutputManager *output_manager) {
 }
 
 void free_displ(struct Displ *displ) {
-	fprintf(stderr, "free_displ %p\n", (void*)displ);
 	if (!displ)
 		return;
 
 	free_output_manager(displ->output_manager);
 
+	free_cfg(displ->cfg);
+
 	free(displ);
+}
+
+void free_cfg(struct Cfg *cfg) {
+	if (!cfg)
+		return;
+
+	for (struct SList *i = cfg->order_name_desc; i; i = i->nex) {
+		free(i->val);
+	}
+	slist_free(&cfg->order_name_desc);
+
+	free(cfg);
 }
 
 void head_release_mode(struct Head *head, struct Mode *mode) {
@@ -58,8 +68,6 @@ void head_release_mode(struct Head *head, struct Mode *mode) {
 		head->current_mode = NULL;
 	}
 
-	/* fprintf(stderr, "head_release_mode mode %dx%d\n", mode->width, mode->height); */
-
 	slist_remove(&head->modes, mode);
 }
 
@@ -68,8 +76,6 @@ void output_manager_release_head(struct OutputManager *output_manager, struct He
 		return;
 
 	output_manager->dirty = true;
-
-	/* fprintf(stderr, "output_manager_release_head head %s\n", head->name); */
 
 	slist_remove(&output_manager->desired.heads, head);
 	slist_remove(&output_manager->heads, head);
@@ -83,7 +89,6 @@ bool is_dirty(struct OutputManager *output_manager) {
 		return false;
 
 	if (output_manager->dirty) {
-		fprintf(stderr, "dirty output_manager\n");
 		return true;
 	}
 
@@ -93,7 +98,6 @@ bool is_dirty(struct OutputManager *output_manager) {
 			continue;
 
 		if (head->dirty) {
-			fprintf(stderr, "dirty head %s\n", head->name);
 			return true;
 		}
 	}

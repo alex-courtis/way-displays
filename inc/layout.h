@@ -3,13 +3,13 @@
 
 #include "types.h"
 
-void desire_ltr(struct OutputManager *output_manager);
+void desire_ltr(struct Displ *displ);
 
-void pend_desired(struct OutputManager *output_manager);
+void pend_desired(struct Displ *displ);
 
-void apply_desired(struct OutputManager *output_manager);
+void apply_desired(struct Displ *displ);
 
-void print_desired(struct OutputManager *output_manager);
+void print_desired(struct Displ *displ);
 
 #endif // LAYOUT_H
 

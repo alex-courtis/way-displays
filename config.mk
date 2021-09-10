@@ -3,11 +3,15 @@ INCS += -Iinc -Ipro
 CPPFLAGS += $(INCS) -D_GNU_SOURCE
 
 WFLAGS += -Wall -Wextra -Werror -Wno-unused-parameter
-CFLAGS += -pedantic -O3 -std=gnu17 $(WFLAGS)
+COMPFLAGS = -pedantic -O3 $(WFLAGS)
+
+CFLAGS += $(COMPFLAGS) -std=gnu17
+CXXFLAGS += $(COMPFLAGS) -std=gnu++17
 
 LDFLAGS +=
 
-LDLIBS += -lwayland-client
+LDLIBS += -lwayland-client -lyaml-cpp
 
 CC = gcc
+CXX = g++
 

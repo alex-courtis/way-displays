@@ -4,39 +4,40 @@
 #include "laptop.h"
 #include "listeners.h"
 
-void desire_ltr(struct OutputManager *output_manager) {
+void desire_ltr(struct Displ *displ) {
 	struct Head *head;
 	struct SList *i;
 
-	if (!output_manager)
+	if (!displ || !displ->output_manager || !displ->cfg)
 		return;
 
 	// head specific
-	for (i = output_manager->heads; i; i = i->nex) {
+	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
 
-		if ((head->desired.enabled = !closed_laptop_display(head->name))) {
+		head->lid_closed = closed_laptop_display(head->name, displ->cfg);
+		if ((head->desired.enabled = !head->lid_closed)) {
 			head->desired.mode = optimal_mode(head->modes);
 			head->desired.scale = auto_scale(head);
 		}
 	}
 
 	// head order, including disabled
-	slist_free(&output_manager->desired.heads);
-	output_manager->desired.heads = order_heads(NULL, output_manager->heads);
+	slist_free(&displ->output_manager->desired.heads);
+	displ->output_manager->desired.heads = order_heads(displ->cfg->order_name_desc, displ->output_manager->heads);
 
 	// head position
-	ltr_heads(output_manager->desired.heads);
+	ltr_heads(displ->output_manager->desired.heads);
 }
 
-void pend_desired(struct OutputManager *output_manager) {
+void pend_desired(struct Displ *displ) {
 	struct Head *head;
 	struct SList *i;
 
-	if (!output_manager)
+	if (!displ || !displ->output_manager)
 		return;
 
-	for (i = output_manager->heads; i; i = i->nex) {
+	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
 
 		head->pending.enabled = head->desired.enabled != head->enabled;
@@ -46,20 +47,20 @@ void pend_desired(struct OutputManager *output_manager) {
 	}
 }
 
-void apply_desired(struct OutputManager *output_manager) {
+void apply_desired(struct Displ *displ) {
 	struct Head *head;
 	struct SList *i;
 	struct zwlr_output_configuration_v1 *zwlr_config;
 	struct zwlr_output_configuration_head_v1 *config_head;
 
-	if (!output_manager)
+	if (!displ || !displ->output_manager)
 		return;
 
 	// passed into our configuration listener
-	zwlr_config = zwlr_output_manager_v1_create_configuration(output_manager->zwlr_output_manager, output_manager->serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), output_manager);
+	zwlr_config = zwlr_output_manager_v1_create_configuration(displ->output_manager->zwlr_output_manager, displ->output_manager->serial);
+	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), displ->output_manager);
 
-	for (i = output_manager->desired.heads; i; i = i->nex) {
+	for (i = displ->output_manager->desired.heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
 
 		if (head->desired.enabled) {
@@ -87,15 +88,15 @@ void apply_desired(struct OutputManager *output_manager) {
 	zwlr_output_configuration_v1_apply(zwlr_config);
 }
 
-void print_desired(struct OutputManager *output_manager) {
+void print_desired(struct Displ *displ) {
 	struct Head *head;
 	struct SList *i;
 
-	if (!output_manager)
+	if (!displ || !displ->output_manager)
 		return;
 
 	printf("\nChanging:\n");
-	for (i = output_manager->heads; i; i = i->nex) {
+	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = i->val;
 		if (!head)
 			continue;
@@ -126,6 +127,9 @@ void print_desired(struct OutputManager *output_manager) {
 		if (!head->enabled) {
 			printf("      (disabled)\n");
 		}
+		if (head->lid_closed) {
+			printf("      (lid closed)\n");
+		}
 
 		printf("    to:\n");
 		if (is_pending_head(head)) {
@@ -148,6 +152,9 @@ void print_desired(struct OutputManager *output_manager) {
 							(long)(((double)head->desired.mode->refresh_mHz / 1000 + 0.5)),
 							head->desired.mode->preferred ? "(preferred)" : "           "
 						  );
+				}
+				if (head->pending.enabled && head->desired.enabled) {
+					printf("      (enabled)\n");
 				}
 			} else {
 				printf("      (disabled)\n");

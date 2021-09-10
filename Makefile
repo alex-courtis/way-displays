@@ -3,7 +3,8 @@ include config.mk
 INC_H = $(wildcard inc/*.h)
 
 SRC_C = $(wildcard src/*.c)
-SRC_O = $(SRC_C:.c=.o)
+SRC_CXX = $(wildcard src/*.cpp)
+SRC_O = $(SRC_C:.c=.o) $(SRC_CXX:.cpp=.o)
 
 PRO_X = $(wildcard pro/*.xml)
 PRO_H = $(PRO_X:.xml=.h)
@@ -23,7 +24,7 @@ $(PRO_O): $(PRO_H)
 $(TST_O): $(INC_H) $(PRO_H) $(TST_C)
 
 way-layout-displays: $(SRC_O) $(PRO_O)
-	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 $(PRO_H): $(PRO_X)
 	wayland-scanner client-header $(@:.h=.xml) $@
@@ -32,13 +33,13 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 test: $(filter-out %main.o,$(SRC_O)) $(PRO_O) $(TST_O)
-	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(TST_LDLIBS) $(TST_WRAPS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(TST_LDLIBS) $(TST_WRAPS)
 	./test
 
 clean:
 	rm -f way-layout-displays test $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) tags .copy
 
-tags: $(SRC_C) $(INC_H) $(PRO_H) $(TST_C)
+tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H) $(TST_C)
 	ctags --fields=+S --c-kinds=+p \
 		$(^) \
 		/usr/include/wayland*.h \
@@ -48,7 +49,8 @@ tags: $(SRC_C) $(INC_H) $(PRO_H) $(TST_C)
 		/usr/include/err*.h \
 		/usr/include/st*h \
 		/usr/include/sys*.h \
-		/usr/include/asm-generic/errno*.h
+		/usr/include/asm-generic/errno*.h \
+		/usr/include/yaml-cpp/*.h
 
 .copy: way-layout-displays
 	scp $(^) alw@gigantor:/home/alw/bin

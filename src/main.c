@@ -3,6 +3,7 @@
 #include <sysexits.h>
 
 #include "calc.h"
+#include "cfg.h"
 #include "laptop.h"
 #include "listeners.h"
 #include "layout.h"
@@ -11,8 +12,7 @@
 
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
-void listen() {
-	struct Displ *displ = calloc(1, sizeof(struct Displ));
+void listen(struct Displ *displ) {
 
 	displ->display = checked_wl_display_connect(NULL, __FILE__, __LINE__);
 
@@ -59,15 +59,15 @@ void listen() {
 
 			reset_dirty(displ->output_manager);
 
-			desire_ltr(displ->output_manager);
+			desire_ltr(displ);
 
-			pend_desired(displ->output_manager);
+			pend_desired(displ);
 
 			if (is_pending_output_manager(displ->output_manager)) {
 
-				print_desired(displ->output_manager);
+				print_desired(displ);
 
-				apply_desired(displ->output_manager);
+				apply_desired(displ);
 			} else {
 
 				// TODO could print out current state, requires breaking up print_desired
@@ -100,7 +100,15 @@ void listen() {
 int
 main(int argc, const char **argv) {
 
-	listen();
+	struct Displ *displ = calloc(1, sizeof(struct Displ));
+
+	displ->cfg = read_cfg("./cfg.yaml");
+
+	print_cfg(displ->cfg);
+
+	listen(displ);
+
+	free_displ(displ);
 
 	return EXIT_SUCCESS;
 }

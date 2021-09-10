@@ -4,19 +4,23 @@
 
 #include "laptop.h"
 
-#define LAPTOP_LID_ROOT_PATH "/proc/acpi/button/lid"
-#define LAPTOP_OUTPUT_PREFIX "eDP"
-
-bool closed_laptop_display(const char *name) {
-	return
-		strncasecmp(LAPTOP_OUTPUT_PREFIX, name, strlen(LAPTOP_OUTPUT_PREFIX)) == 0 &&
-		laptop_lid_closed(LAPTOP_LID_ROOT_PATH);
+bool closed_laptop_display(const char *name, struct Cfg *cfg) {
+	if (cfg && cfg->laptop_display_prefix && cfg->laptop_lid_path) {
+		return
+			strncasecmp(cfg->laptop_display_prefix, name, strlen(cfg->laptop_display_prefix)) == 0 &&
+			laptop_lid_closed(cfg->laptop_lid_path);
+	} else {
+		return false;
+	}
 }
 
 bool laptop_lid_closed(const char *root_path) {
 	static char lidFileName[PATH_MAX];
 	static char line[512];
 	static bool closed;
+
+	if (!root_path)
+		return false;
 
 	// find the lid state directory
 	DIR *dir = opendir(root_path);
