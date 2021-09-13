@@ -1,3 +1,4 @@
+#include "info.h"
 #include "listeners.h"
 #include "types.h"
 
@@ -15,6 +16,7 @@ static void head(void *data,
 	head->zwlr_head = zwlr_output_head_v1;
 
 	slist_append(&output_manager->heads, head);
+	slist_append(&output_manager->heads_arrived, head);
 
 	zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener(), head);
 }

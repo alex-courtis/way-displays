@@ -11,7 +11,7 @@ static void succeeded(void *data,
 	struct OutputManager *output_manager = data;
 	reset_pending_desired(output_manager);
 
-	printf("Success!\n");
+	printf("\nChanges successful\n");
 	fflush(stdout);
 
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);

@@ -16,6 +16,12 @@ void free_head(struct Head *head) {
 	}
 	slist_free(&head->modes);
 
+	free(head->name);
+	free(head->description);
+	free(head->make);
+	free(head->model);
+	free(head->serial_number);
+
 	free(head);
 }
 
@@ -28,6 +34,8 @@ void free_output_manager(struct OutputManager *output_manager) {
 	}
 	slist_free(&output_manager->heads);
 	slist_free(&output_manager->desired.heads);
+
+	// TODO heads_departed
 
 	free(output_manager);
 }
@@ -79,6 +87,25 @@ void output_manager_release_head(struct OutputManager *output_manager, struct He
 
 	slist_remove(&output_manager->desired.heads, head);
 	slist_remove(&output_manager->heads, head);
+}
+
+void output_manager_free_heads_departed(struct OutputManager *output_manager) {
+	struct SList *i;
+	struct Head *head;
+
+	if (!output_manager)
+		return;
+
+	i = output_manager->heads_departed;
+	while(i) {
+		head = i->val;
+		i = i->nex;
+
+		fprintf(stderr, "omfhd %s\n", head ? head->name : "null");
+
+		slist_remove(&output_manager->heads_departed, head);
+		free(head);
+	}
 }
 
 bool is_dirty(struct OutputManager *output_manager) {

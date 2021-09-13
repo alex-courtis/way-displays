@@ -9,7 +9,5 @@ void pend_desired(struct Displ *displ);
 
 void apply_desired(struct Displ *displ);
 
-void print_desired(struct Displ *displ);
-
 #endif // LAYOUT_H
 

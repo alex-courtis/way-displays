@@ -73,6 +73,8 @@ struct OutputManager {
 
 	uint32_t serial;
 	char *interface;
+	struct SList *heads_arrived;
+	struct SList *heads_departed;
 
 	struct {
 		struct SList *heads;
@@ -104,6 +106,7 @@ void free_cfg(struct Cfg *cfg);
 
 void head_release_mode(struct Head *head, struct Mode *mode);
 void output_manager_release_head(struct OutputManager *output_manager, struct Head *head);
+void output_manager_free_heads_departed(struct OutputManager *output_manager);
 
 bool is_dirty(struct OutputManager *output_manager);
 void reset_dirty(struct OutputManager *output_manager);

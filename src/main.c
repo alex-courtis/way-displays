@@ -4,6 +4,7 @@
 
 #include "calc.h"
 #include "cfg.h"
+#include "info.h"
 #include "laptop.h"
 #include "listeners.h"
 #include "layout.h"
@@ -54,6 +55,12 @@ void listen(struct Displ *displ) {
 		}
 
 
+		print_heads(ARRIVED, displ->output_manager->heads_arrived);
+		slist_free(&displ->output_manager->heads_arrived);
+
+		print_heads(DEPARTED, displ->output_manager->heads_departed);
+		output_manager_free_heads_departed(displ->output_manager);
+
 		if (is_dirty(displ->output_manager) && !is_pending_output_manager(displ->output_manager)) {
 			fprintf(stderr, "listen dirty, arranging\n");
 
@@ -65,7 +72,7 @@ void listen(struct Displ *displ) {
 
 			if (is_pending_output_manager(displ->output_manager)) {
 
-				print_desired(displ);
+				print_heads(DELTA, displ->output_manager->heads);
 
 				apply_desired(displ);
 			} else {

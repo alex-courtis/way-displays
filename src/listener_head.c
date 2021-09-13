@@ -12,10 +12,6 @@ static void name(void *data,
 	head->dirty = true;
 
 	head->name = strdup(name);
-
-	if (head->name && head->description) {
-		printf("\nArrived:\n  %s %s\n", head->name, head->description);
-	}
 }
 
 static void description(void *data,
@@ -25,10 +21,6 @@ static void description(void *data,
 	head->dirty = true;
 
 	head->description = strdup(description);
-
-	if (head->name && head->description) {
-		printf("\nArrived:\n  %s %s\n", head->name, head->description);
-	}
 }
 
 static void physical_size(void *data,
@@ -75,6 +67,8 @@ static void current_mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 	head->dirty = true;
+
+	fprintf(stderr, "LH current_mode %s%s\n", head->name, head->dirty ? " dirty" : "");
 
 	struct Mode *mode = NULL;
 	for (struct SList *i = head->modes; i; i = i->nex) {
@@ -150,7 +144,15 @@ static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 	struct Head *head = data;
 
-	printf("\nDeparted:\n  %s %s\n", head->name, head->description);
+	// dummy Head, just for printing
+	if (head->output_manager) {
+		struct Head *head_departed = calloc(1, sizeof(struct Head));
+
+		head_departed->name = strdup(head->name);
+		head_departed->description = strdup(head->description);
+
+		slist_append(&head->output_manager->heads_departed, head_departed);
+	}
 
 	fprintf(stderr, "LH finished %s\n", head->name);
 	output_manager_release_head(head->output_manager, head);

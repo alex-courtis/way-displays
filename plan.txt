@@ -8,7 +8,7 @@
 - Laptop lid handling
 - Callback finalisation and cleanup
 - Error/exit for listen loop
-User config file
+- User config file
 - Hotplug daemon
 Sanity checking / projector handling
 Config file daemon
