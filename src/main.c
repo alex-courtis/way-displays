@@ -77,7 +77,6 @@ void listen(struct Displ *displ) {
 				apply_desired(displ);
 			} else {
 
-				// TODO could print out current state, requires breaking up print_desired
 				printf("\nNo changes needed\n");
 			}
 		} else {

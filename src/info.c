@@ -90,7 +90,7 @@ void print_heads(enum event event, struct SList *heads) {
 				printf("    desc:     '%s'\n", head->description);
 				break;
 			case DELTA:
-				printf("%s:\n  from:\n", head->name);
+				printf("%s Changing:\n  from:\n", head->name);
 				print_head_current(head);
 				printf("  to:\n");
 				print_head_desired(head);

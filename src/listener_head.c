@@ -87,7 +87,7 @@ static void position(void *data,
 	struct Head *head = data;
 	head->dirty = !head->pending.position;
 
-	fprintf(stderr, "LH position %s%s\n", head->name, head->dirty ? " dirty" : "");
+	fprintf(stderr, "LH position %s%s x:%d->%d y:%d->%d\n", head->name, head->dirty ? " dirty" : "", head->x, x, head->y, y);
 
 	head->x = x;
 	head->y = y;
