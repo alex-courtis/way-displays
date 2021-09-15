@@ -56,7 +56,7 @@ void listen(struct Displ *displ) {
 
 
 		print_heads(ARRIVED, displ->output_manager->heads_arrived);
-		slist_free(&displ->output_manager->heads_arrived);
+		output_manager_release_heads_arrived(displ->output_manager);
 
 		print_heads(DEPARTED, displ->output_manager->heads_departed);
 		output_manager_free_heads_departed(displ->output_manager);

@@ -63,7 +63,7 @@ void free_cfg(struct Cfg *cfg) {
 	free(cfg);
 }
 
-void head_release_mode(struct Head *head, struct Mode *mode) {
+void head_free_mode(struct Head *head, struct Mode *mode) {
 	if (!head || !mode)
 		return;
 
@@ -77,9 +77,11 @@ void head_release_mode(struct Head *head, struct Mode *mode) {
 	}
 
 	slist_remove_all(&head->modes, mode);
+
+	free_mode(mode);
 }
 
-void output_manager_release_head(struct OutputManager *output_manager, struct Head *head) {
+void output_manager_free_head(struct OutputManager *output_manager, struct Head *head) {
 	if (!output_manager || !head)
 		return;
 
@@ -87,6 +89,8 @@ void output_manager_release_head(struct OutputManager *output_manager, struct He
 
 	slist_remove_all(&output_manager->desired.heads, head);
 	slist_remove_all(&output_manager->heads, head);
+
+	free_head(head);
 }
 
 void output_manager_free_heads_departed(struct OutputManager *output_manager) {
@@ -105,6 +109,10 @@ void output_manager_free_heads_departed(struct OutputManager *output_manager) {
 		slist_remove(&output_manager->heads_departed, &r);
 		free(head);
 	}
+}
+
+void output_manager_release_heads_arrived(struct OutputManager *output_manager) {
+	slist_free(&output_manager->heads_arrived);
 }
 
 bool is_dirty(struct OutputManager *output_manager) {

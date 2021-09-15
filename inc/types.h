@@ -104,10 +104,11 @@ void free_output_manager(struct OutputManager *output_manager);
 void free_displ(struct Displ *displ);
 void free_cfg(struct Cfg *cfg);
 
-// TODO these should also free
-void head_release_mode(struct Head *head, struct Mode *mode);
-void output_manager_release_head(struct OutputManager *output_manager, struct Head *head);
+void head_free_mode(struct Head *head, struct Mode *mode);
+void output_manager_free_head(struct OutputManager *output_manager, struct Head *head);
 void output_manager_free_heads_departed(struct OutputManager *output_manager);
+
+void output_manager_release_heads_arrived(struct OutputManager *output_manager);
 
 bool is_dirty(struct OutputManager *output_manager);
 void reset_dirty(struct OutputManager *output_manager);

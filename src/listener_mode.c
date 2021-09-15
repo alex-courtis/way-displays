@@ -33,8 +33,7 @@ static void finished(void *data,
 	/* fprintf(stderr, "LM finished\n"); */
 	struct Mode *mode = data;
 
-	head_release_mode(mode->head, mode);
-	free_mode(mode);
+	head_free_mode(mode->head, mode);
 
 	zwlr_output_mode_v1_destroy(zwlr_output_mode_v1);
 }

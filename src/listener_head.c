@@ -155,9 +155,7 @@ static void finished(void *data,
 	}
 
 	fprintf(stderr, "LH finished %s\n", head->name);
-	output_manager_release_head(head->output_manager, head);
-
-	free_head(head);
+	output_manager_free_head(head->output_manager, head);
 
 	zwlr_output_head_v1_destroy(zwlr_output_head_v1);
 }
