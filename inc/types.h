@@ -45,6 +45,7 @@ struct Head {
 	char *model;
 	char *serial_number;
 	bool lid_closed;
+	bool size_specified;
 
 	struct {
 		struct Mode *mode;

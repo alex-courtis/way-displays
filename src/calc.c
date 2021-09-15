@@ -42,12 +42,13 @@ struct Mode *optimal_mode(struct SList *modes) {
 
 wl_fixed_t auto_scale(struct Head *head) {
 	if (!head
+			|| !head->size_specified
 			|| !head->desired.mode
 			|| head->desired.mode->width == 0
 			|| head->desired.mode->height == 0
 			|| head->width_mm == 0
 			|| head->height_mm == 0) {
-		return wl_fixed_from_int(0);
+		return wl_fixed_from_int(1);
 	}
 
 	// average dpi

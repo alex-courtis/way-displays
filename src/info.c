@@ -34,9 +34,13 @@ void print_head_desired(struct Head *head) {
 	if (is_pending_head(head)) {
 		if (head->desired.enabled) {
 			if (head->pending.scale) {
-				printf("    scale:    %.2f\n",
+				printf("    scale:    %.2f",
 						wl_fixed_to_double(head->desired.scale)
 					  );
+				if (!head->size_specified) {
+					printf(" (default, size not specified)");
+				}
+				printf("\n");
 			}
 			if (head->pending.position) {
 				printf("    position: %d,%d\n",
@@ -80,8 +84,13 @@ void print_heads(enum event event, struct SList *heads) {
 				printf("\n%s Arrived:\n", head->name);
 				printf("    name:     %s\n", head->name);
 				printf("    desc:     '%s'\n", head->description);
-				printf("    width:    %dmm\n", head->width_mm);
-				printf("    height:   %dmm\n", head->height_mm);
+				if (head->size_specified) {
+					printf("    width:    %dmm\n", head->width_mm);
+					printf("    height:   %dmm\n", head->height_mm);
+				} else {
+					printf("    width:    (not specified)\n");
+					printf("    height:   (not specified)\n");
+				}
 				print_head_current(head);
 				break;
 			case DEPARTED:

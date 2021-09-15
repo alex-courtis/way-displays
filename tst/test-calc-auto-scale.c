@@ -9,6 +9,7 @@ static int auto_scale_setup(void **state) {
 
 	s->head = calloc(1, sizeof(struct Head));
 	s->head->desired.mode = calloc(1, sizeof(struct Mode));
+	s->head->size_specified = true;
 
 	*state = s;
 
@@ -31,33 +32,39 @@ static void auto_scale_missing(void **state) {
 
 	// null head
 	wl_fixed_t scale = auto_scale(NULL);
-	assert_int_equal(scale, wl_fixed_from_int(0));
+	assert_int_equal(scale, wl_fixed_from_int(1));
 
 	// null desired.mode
 	struct Mode *mode = s->head->desired.mode;
 	s->head->desired.mode = NULL;
 	scale = auto_scale(s->head);
-	assert_int_equal(scale, wl_fixed_from_int(0));
+	assert_int_equal(scale, wl_fixed_from_int(1));
 	s->head->desired.mode = mode;
+
+	// size not specified
+	s->head->size_specified = false;
+	scale = auto_scale(s->head);
+	s->head->size_specified = true;
+	assert_int_equal(scale, wl_fixed_from_int(1));
 
 	// zero width_mm
 	scale = auto_scale(s->head);
-	assert_int_equal(scale, wl_fixed_from_int(0));
+	assert_int_equal(scale, wl_fixed_from_int(1));
 
 	// zero height_mm
 	s->head->width_mm = 1;
 	scale = auto_scale(s->head);
-	assert_int_equal(scale, wl_fixed_from_int(0));
+	assert_int_equal(scale, wl_fixed_from_int(1));
 
 	// zero desired width
 	s->head->height_mm = 1;
 	scale = auto_scale(s->head);
-	assert_int_equal(scale, wl_fixed_from_int(0));
+	assert_int_equal(scale, wl_fixed_from_int(1));
 
 	// zero desired height
 	s->head->desired.mode->width = 1;
 	scale = auto_scale(s->head);
-	assert_int_equal(scale, wl_fixed_from_int(0));
+	assert_int_equal(scale, wl_fixed_from_int(1));
 }
 
 static void auto_scale_valid(void **state) {
