@@ -10,9 +10,11 @@
 - Error/exit for listen loop
 - User config file
 - Hotplug daemon
+Lid polling
 Sanity checking / projector handling
 Config file daemon
 Multiple instance checking
 Mirror invocation
 Signal listener with zwlr_output_manager_v1_stop on SIGKILL
+Valgrind
 

@@ -16,7 +16,7 @@ void slist_append(struct SList **head, void *val) {
 	}
 }
 
-void slist_remove(struct SList **head, void *val) {
+void slist_remove(struct SList **head, struct SList **item) {
 	struct SList *i, *f, *p;
 
 	i = *head;
@@ -24,8 +24,8 @@ void slist_remove(struct SList **head, void *val) {
 	f = NULL;
 
 	for (i = *head; i; i = i->nex) {
-		if (val == i->val) {
-			f = i;
+		if (i == *item) {
+			f = *item;
 			break;
 		}
 		p = i;
@@ -38,6 +38,20 @@ void slist_remove(struct SList **head, void *val) {
 			*head = f->nex;
 		}
 		free(f);
+		*item = NULL;
+	}
+}
+
+void slist_remove_all(struct SList **head, void *val) {
+	struct SList *i, *r;
+
+	i = *head;
+	while(i) {
+		r = i;
+		i = i->nex;
+		if (r->val == val) {
+			slist_remove(head, &r);
+		}
 	}
 }
 

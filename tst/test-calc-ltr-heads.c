@@ -70,40 +70,46 @@ static int ltr_heads_teardown(void **state) {
 
 static void ltr_heads_valid(void **state) {
 	struct SList *heads = slist_shallow_clone(*state);
+	struct SList *r = NULL;
 	struct Head *head = NULL;
 
 	ltr_heads(heads);
 
 	head = heads->val;
+	r = heads;
 	assert_string_equal(head->name, "1");
 	assert_int_equal(head->desired.x, 0);
 	assert_int_equal(head->desired.y, 0);
-	slist_remove(&heads, head);
+	slist_remove(&heads, &r);
 
 	head = heads->val;
+	r = heads;
 	assert_string_equal(head->name, "2");
 	assert_int_equal(head->desired.x, 0);
 	assert_int_equal(head->desired.y, 0);
-	slist_remove(&heads, head);
+	slist_remove(&heads, &r);
 
 	head = heads->val;
+	r = heads;
 	assert_string_equal(head->name, "3");
 	assert_int_equal(head->desired.x, 0);
 	assert_int_equal(head->desired.y, 0);
-	slist_remove(&heads, head);
+	slist_remove(&heads, &r);
 
 	head = heads->val;
+	r = heads;
 	assert_string_equal(head->name, "4");
 	assert_int_equal(head->desired.x, 5);
 	assert_int_equal(head->desired.y, 0);
-	slist_remove(&heads, head);
+	slist_remove(&heads, &r);
 
 	head = heads->val;
+	r = heads;
 	assert_string_equal(head->name, "5");
 	// head 4 rounds it up to 3
 	assert_int_equal(head->desired.x, 5 + 3);
 	assert_int_equal(head->desired.y, 0);
-	slist_remove(&heads, head);
+	slist_remove(&heads, &r);
 
 	assert_null(heads);
 }

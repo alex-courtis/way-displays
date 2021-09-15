@@ -104,6 +104,7 @@ void free_output_manager(struct OutputManager *output_manager);
 void free_displ(struct Displ *displ);
 void free_cfg(struct Cfg *cfg);
 
+// TODO these should also free
 void head_release_mode(struct Head *head, struct Mode *mode);
 void output_manager_release_head(struct OutputManager *output_manager, struct Head *head);
 void output_manager_free_heads_departed(struct OutputManager *output_manager);

@@ -44,26 +44,32 @@ static void order_heads_valid(void **state) {
 	struct SList *heads_ordered = NULL;
 	heads_ordered = order_heads(order_name_desc, heads);
 
+	struct SList *r;
 	head = heads_ordered->val;
 	assert_string_equal(head->name, "e");
-	slist_remove(&heads_ordered, head);
+	r = heads_ordered;
+	slist_remove(&heads_ordered, &r);
 
 	head = heads_ordered->val;
 	assert_string_equal(head->name, "d");
-	slist_remove(&heads_ordered, head);
+	r = heads_ordered;
+	slist_remove(&heads_ordered, &r);
 
 	head = heads_ordered->val;
 	assert_string_equal(head->name, "c");
 	assert_string_equal(head->description, "cdesc");
-	slist_remove(&heads_ordered, head);
+	r = heads_ordered;
+	slist_remove(&heads_ordered, &r);
 
 	head = heads_ordered->val;
 	assert_string_equal(head->name, "a");
-	slist_remove(&heads_ordered, head);
+	r = heads_ordered;
+	slist_remove(&heads_ordered, &r);
 
 	head = heads_ordered->val;
 	assert_string_equal(head->name, "b");
-	slist_remove(&heads_ordered, head);
+	r = heads_ordered;
+	slist_remove(&heads_ordered, &r);
 
 	assert_null(heads_ordered);
 
@@ -72,8 +78,9 @@ static void order_heads_valid(void **state) {
 	char *name_desc;
 	while (i) {
 		name_desc = i->val;
+		r = i;
 		i = i->nex;
-		slist_remove(&order_name_desc, name_desc);
+		slist_remove(&order_name_desc, &r);
 		free(name_desc);
 	}
 	slist_free(&order_name_desc);
@@ -81,8 +88,9 @@ static void order_heads_valid(void **state) {
 	i = heads;
 	while (i) {
 		head = i->val;
+		r = i;
 		i = i->nex;
-		slist_remove(&heads, head);
+		slist_remove(&heads, &r);
 		if (head) {
 			free(head->name);
 			free(head);

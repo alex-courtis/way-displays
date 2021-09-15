@@ -76,7 +76,7 @@ void head_release_mode(struct Head *head, struct Mode *mode) {
 		head->current_mode = NULL;
 	}
 
-	slist_remove(&head->modes, mode);
+	slist_remove_all(&head->modes, mode);
 }
 
 void output_manager_release_head(struct OutputManager *output_manager, struct Head *head) {
@@ -85,12 +85,12 @@ void output_manager_release_head(struct OutputManager *output_manager, struct He
 
 	output_manager->dirty = true;
 
-	slist_remove(&output_manager->desired.heads, head);
-	slist_remove(&output_manager->heads, head);
+	slist_remove_all(&output_manager->desired.heads, head);
+	slist_remove_all(&output_manager->heads, head);
 }
 
 void output_manager_free_heads_departed(struct OutputManager *output_manager) {
-	struct SList *i;
+	struct SList *i, *r;
 	struct Head *head;
 
 	if (!output_manager)
@@ -99,9 +99,10 @@ void output_manager_free_heads_departed(struct OutputManager *output_manager) {
 	i = output_manager->heads_departed;
 	while(i) {
 		head = i->val;
+		r = i;
 		i = i->nex;
 
-		slist_remove(&output_manager->heads_departed, head);
+		slist_remove(&output_manager->heads_departed, &r);
 		free(head);
 	}
 }

@@ -65,7 +65,7 @@ wl_fixed_t auto_scale(struct Head *head) {
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	struct SList *heads_ordered = NULL;
 	struct Head *head;
-	struct SList *i, *j;
+	struct SList *i, *j, *r;
 
 	struct SList *sorting = slist_shallow_clone(heads);
 
@@ -74,6 +74,7 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 		j = sorting;
 		while(j) {
 			head = j->val;
+			r = j;
 			j = j->nex;
 			if (!head) {
 				continue;
@@ -82,7 +83,7 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 					((head->name && strcmp(i->val, head->name) == 0) ||
 					 (head->description && strcmp(i->val, head->description) == 0))) {
 				slist_append(&heads_ordered, head);
-				slist_remove(&sorting, head);
+				slist_remove(&sorting, &r);
 			}
 		}
 	}
