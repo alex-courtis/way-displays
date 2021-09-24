@@ -38,7 +38,7 @@ static const struct libinput_interface libinput_impl = {
 	.close_restricted = libinput_close_restricted
 };
 
-struct libinput *create_libinput_discovery_context() {
+struct libinput *create_libinput_discovery() {
 
 	struct udev *udev = udev_new();
 	if (!udev) {
@@ -52,6 +52,7 @@ struct libinput *create_libinput_discovery_context() {
 		return NULL;
 	}
 
+	// TODO not present on emperor, default to seat? maybe seat is not needed any more
 	const char *xdg_seat = getenv("XDG_SEAT");
 	if (!xdg_seat) {
 		fprintf(stderr, "\nERROR: $XDG_SEAT not set, abandoning laptop lid detection\n");
@@ -143,75 +144,71 @@ void update_lid(struct Lid *lid) {
 
 struct Lid *create_lid() {
 	struct Lid *lid	= NULL;
+	struct libinput *libinput_discovery = NULL;
+	char *device_path = NULL;
+
 	fprintf(stderr, "create_lid 0\n");
 
-	struct libinput *libinput_discovery = create_libinput_discovery_context();
+	// discover with a context of all inputs
+	if ((libinput_discovery = create_libinput_discovery())) {
+		fprintf(stderr, "create_lid 1\n");
 
-	if (libinput_discovery) {
-		char *device_path = discover_lid_device(libinput_discovery);
+		device_path = discover_lid_device(libinput_discovery);
 
 		if (!device_path) {
+			fprintf(stderr, "create_lid 2 early end\n");
 			return NULL;
 		}
 
-		lid = calloc(1, sizeof(struct Lid));
-
-		// TODO there might be more to destroy
 		libinput_suspend(libinput_discovery);
-
-		if ((lid->libinput_monitor = create_libinput_monitor_context(device_path)) == 0) {
-			return NULL;
-		}
-		lid->libinput_fd = libinput_get_fd(lid->libinput_monitor);
-
-		update_lid(lid);
+	} else {
+		return NULL;
 	}
 
-	fprintf(stderr, "create_lid 99\n");
+	// provisional lid
+	lid = calloc(1, sizeof(struct Lid));
+	lid->device_path = device_path;
+
+	// monitor in a context of just the lid
+	if ((lid->libinput_monitor = create_libinput_monitor_context(device_path)) == 0) {
+		free_lid(lid);
+		return NULL;
+	}
+	lid->libinput_fd = libinput_get_fd(lid->libinput_monitor);
+
+	// initial state; fd only fires on changes
+	update_lid(lid);
+
 	return lid;
 }
 
-bool closed_laptop_display(const char *name, struct Cfg *cfg) {
-	if (cfg && cfg->laptop_display_prefix && cfg->laptop_lid_path) {
-		return
-			strncasecmp(cfg->laptop_display_prefix, name, strlen(cfg->laptop_display_prefix)) == 0 &&
-			laptop_lid_closed(cfg->laptop_lid_path);
-	} else {
+bool lid_closed(char *name, struct Displ *displ) {
+	if (!name || !displ || !displ->lid || !displ->cfg || !displ->cfg->laptop_display_prefix)
 		return false;
-	}
+
+	return
+		displ->lid->closed &&
+		strncasecmp(displ->cfg->laptop_display_prefix, name, strlen(displ->cfg->laptop_display_prefix)) == 0;
 }
 
-bool laptop_lid_closed(const char *root_path) {
-	static char lidFileName[PATH_MAX];
-	static char line[512];
-	static bool closed;
+void update_heads_lid_closed(struct Displ *displ) {
+	struct Head *head;
+	struct SList *i;
 
-	if (!root_path)
-		return false;
+	if (!displ || !displ->lid || !displ->output_manager || !displ->cfg || !displ->cfg->laptop_display_prefix)
+		return;
 
-	// find the lid state directory
-	DIR *dir = opendir(root_path);
-	if (dir) {
-		struct dirent *dirent;
-		while ((dirent = readdir(dir)) != NULL) {
-			if (dirent->d_type == DT_DIR && strcmp(dirent->d_name, ".") != 0 && strcmp(dirent->d_name, "..") != 0) {
+	for (i = displ->output_manager->heads; i; i = i->nex) {
+		head = i->val;
+		if (!head)
+			continue;
 
-				// read the lid state file
-				snprintf(lidFileName, PATH_MAX, "%s/%s/%s", root_path, dirent->d_name, "state");
-				FILE *lidFile = fopen(lidFileName, "r");
-				if (lidFile) {
-					if (fgets(line, 512, lidFile)) {
-						closed = strcasestr(line, "closed");
-					}
-					fclose(lidFile);
-				}
-
-				// drivers/acpi/button.c acpi_button_add_fs seems to indicate there will be only one file
-				break;
+		if (strncasecmp(displ->cfg->laptop_display_prefix, head->name, strlen(displ->cfg->laptop_display_prefix)) == 0) {
+			if (head->lid_closed != displ->lid->closed) {
+				head->lid_closed = displ->lid->closed;
+				head->dirty = true;
 			}
 		}
-		closedir(dir);
 	}
-	return closed;
 }
 

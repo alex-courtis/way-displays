@@ -18,7 +18,6 @@ using std::stringstream;
 } // namespace
 
 #define DEFAULT_LAPTOP_OUTPUT_PREFIX "eDP"
-#define DEFAULT_LAPTOP_LID_PATH "/proc/acpi/button/lid"
 
 void print_cfg(struct Cfg *cfg) {
 	struct SList *i;
@@ -33,16 +32,6 @@ void print_cfg(struct Cfg *cfg) {
 	if (cfg->laptop_display_prefix) {
 		printf("    '%s'", cfg->laptop_display_prefix);
 		if (strcmp(cfg->laptop_display_prefix, DEFAULT_LAPTOP_OUTPUT_PREFIX) == 0) {
-			printf("  (default)\n");
-		} else {
-			printf("\n");
-		}
-	}
-
-	printf("  Laptop lid path:\n");
-	if (cfg->laptop_lid_path) {
-		printf("    %s", cfg->laptop_lid_path);
-		if (strcmp(cfg->laptop_lid_path, DEFAULT_LAPTOP_LID_PATH) == 0) {
 			printf("  (default)\n");
 		} else {
 			printf("\n");
@@ -64,7 +53,6 @@ struct Cfg *read_cfg(const char *path) {
 
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
-	cfg->laptop_lid_path = strdup(DEFAULT_LAPTOP_LID_PATH);
 
 	if (access(path, R_OK) != 0) {
 		cfg->file_path = NULL;
@@ -76,11 +64,6 @@ struct Cfg *read_cfg(const char *path) {
 			if (config["LAPTOP_DISPLAY_PREFIX"]) {
 				free(cfg->laptop_display_prefix);
 				cfg->laptop_display_prefix = strdup(config["LAPTOP_DISPLAY_PREFIX"].as<string>().c_str());
-			}
-
-			if (config["LAPTOP_LID_PATH"]) {
-				free(cfg->laptop_lid_path);
-				cfg->laptop_lid_path = strdup(config["LAPTOP_LID_PATH"].as<string>().c_str());
 			}
 
 			if (config["ORDER_NAME_DESC"]) {

@@ -12,25 +12,21 @@
 #include "types.h"
 #include "wl_wrappers.h"
 
-enum {
-	RFD_WL,
-	RFD_LI,
-	RFD_NM
-};
-
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 void listen(struct Displ *displ) {
+	struct pollfd *pfds = calloc(displ->lid ? 2 : 1, sizeof(struct pollfd));
+	pfds[0].fd = wl_display_get_fd(displ->display);
+	pfds[0].events = POLLIN;
+	if (displ->lid) {
+		pfds[1].fd = displ->lid->libinput_fd;
+		pfds[1].events = POLLIN;
+	}
+
 
 	displ->display = checked_wl_display_connect(NULL, __FILE__, __LINE__);
 
 	struct wl_registry *registry = wl_display_get_registry(displ->display);
 	wl_registry_add_listener(registry, registry_listener(), displ);
-
-	struct pollfd readfds[RFD_NM] = {0};
-	readfds[RFD_WL].fd = wl_display_get_fd(displ->display);
-	readfds[RFD_WL].events = POLLIN;
-	readfds[RFD_LI].fd = displ->lid->libinput_fd;
-	readfds[RFD_LI].events = POLLIN;
 
 	int num_pending = 0;
 	int loops = 0;
@@ -38,11 +34,11 @@ void listen(struct Displ *displ) {
 	for (;;) {
 		fprintf(stderr, "\n\nlisten 0 loops=%d\n", loops);
 
-		if (readfds[RFD_WL].revents & readfds[RFD_WL].events) {
+		if (pfds[0].revents & pfds[0].events) {
 			fprintf(stderr, "listen last polled RFD_WL\n");
 
 		}
-		if (readfds[RFD_LI].revents & readfds[RFD_LI].events) {
+		if (displ->lid && pfds[1].revents & pfds[1].events) {
 			fprintf(stderr, "listen last polled RFD_LI\n");
 		}
 
@@ -55,7 +51,7 @@ void listen(struct Displ *displ) {
 
 		fprintf(stderr, "listen polling\n");
 		// TODO check poll for -1 error and exit
-		if (poll(readfds, 2, -1) > 0) {
+		if (poll(pfds, 2, -1) > 0) {
 			checked_wl_display_read_events(displ->display, __FILE__, __LINE__);
 		} else {
 			checked_wl_display_cancel_read(displ->display, __FILE__, __LINE__);
@@ -72,9 +68,10 @@ void listen(struct Displ *displ) {
 		}
 
 
-		if (readfds[RFD_LI].revents & readfds[RFD_LI].events) {
+		if (displ->lid && pfds[1].revents & pfds[1].events) {
 			update_lid(displ->lid);
 		}
+		update_heads_lid_closed(displ);
 
 
 		print_heads(ARRIVED, displ->output_manager->heads_arrived);
@@ -83,10 +80,10 @@ void listen(struct Displ *displ) {
 		print_heads(DEPARTED, displ->output_manager->heads_departed);
 		output_manager_free_heads_departed(displ->output_manager);
 
-		if (is_dirty(displ->output_manager) && !is_pending_output_manager(displ->output_manager)) {
+		if (is_dirty(displ) && !is_pending_output_manager(displ->output_manager)) {
 			fprintf(stderr, "listen dirty, arranging\n");
 
-			reset_dirty(displ->output_manager);
+			reset_dirty(displ);
 
 			desire_ltr(displ);
 
@@ -121,6 +118,8 @@ void listen(struct Displ *displ) {
 
 		fprintf(stderr, "listen end\n");
 	}
+
+	free(pfds);
 
 	fprintf(stderr, "listen exited after %d loops\n", loops);
 }

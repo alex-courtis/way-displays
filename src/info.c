@@ -4,24 +4,26 @@ void print_head_current(struct Head *head) {
 	if (!head)
 		return;
 
-	printf("    scale:    %.2f\n    position: %d,%d\n",
-			wl_fixed_to_double(head->scale),
-			head->x,
-			head->y
-		  );
-	if (head->current_mode) {
-		printf("    mode:     %dx%d@%ldHz %s\n",
-				head->current_mode->width,
-				head->current_mode->height,
-				(long)(((double)head->current_mode->refresh_mHz / 1000 + 0.5)),
-				head->current_mode->preferred ? "(preferred)" : "           "
+	if (head->enabled) {
+		printf("    scale:    %.2f\n    position: %d,%d\n",
+				wl_fixed_to_double(head->scale),
+				head->x,
+				head->y
 			  );
+		if (head->current_mode) {
+			printf("    mode:     %dx%d@%ldHz %s\n",
+					head->current_mode->width,
+					head->current_mode->height,
+					(long)(((double)head->current_mode->refresh_mHz / 1000 + 0.5)),
+					head->current_mode->preferred ? "(preferred)" : "           "
+				  );
+		} else {
+			printf("    (no mode)\n");
+		}
 	} else {
-		printf("    (no mode)\n");
-	}
-	if (!head->enabled) {
 		printf("    (disabled)\n");
 	}
+
 	if (head->lid_closed) {
 		printf("    (lid closed)\n");
 	}

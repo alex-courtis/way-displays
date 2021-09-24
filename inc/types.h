@@ -4,6 +4,7 @@
 // TODO remove
 #include <stdio.h>
 
+#include <poll.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <wayland-client-core.h>
@@ -95,7 +96,6 @@ struct Displ {
 struct Cfg {
 	char *file_path;
 	char *laptop_display_prefix;
-	char *laptop_lid_path;
 	struct SList *order_name_desc;
 };
 
@@ -104,6 +104,7 @@ struct Lid {
 
 	bool dirty;
 
+	char *device_path;
 	// TODO release this at some point
 	struct libinput *libinput_monitor;
 	int libinput_fd;
@@ -122,8 +123,8 @@ void output_manager_free_heads_departed(struct OutputManager *output_manager);
 
 void output_manager_release_heads_arrived(struct OutputManager *output_manager);
 
-bool is_dirty(struct OutputManager *output_manager);
-void reset_dirty(struct OutputManager *output_manager);
+bool is_dirty(struct Displ *displ);
+void reset_dirty(struct Displ *displ);
 
 bool is_pending_output_manager(struct OutputManager *output_manager);
 bool is_pending_head(struct Head *head);

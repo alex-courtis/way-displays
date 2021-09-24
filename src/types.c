@@ -67,6 +67,8 @@ void free_lid(struct Lid *lid) {
 	if (!lid)
 		return;
 
+	free(lid->device_path);
+
 	free(lid);
 }
 
@@ -122,18 +124,24 @@ void output_manager_release_heads_arrived(struct OutputManager *output_manager) 
 	slist_free(&output_manager->heads_arrived);
 }
 
-bool is_dirty(struct OutputManager *output_manager) {
+bool is_dirty(struct Displ *displ) {
 	struct SList *i;
 	struct Head *head;
 
-	if (!output_manager)
+	if (!displ)
 		return false;
 
-	if (output_manager->dirty) {
+	if (displ->lid && displ->lid->dirty)
+		return true;
+
+	if (!displ->output_manager)
+		return false;
+
+	if (displ->output_manager->dirty) {
 		return true;
 	}
 
-	for (i = output_manager->heads; i; i = i->nex) {
+	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = i->val;
 		if (!head)
 			continue;
@@ -146,16 +154,22 @@ bool is_dirty(struct OutputManager *output_manager) {
 	return false;
 }
 
-void reset_dirty(struct OutputManager *output_manager) {
+void reset_dirty(struct Displ *displ) {
 	struct SList *i;
 	struct Head *head;
 
-	if (!output_manager)
+	if (!displ)
 		return;
 
-	output_manager->dirty = false;
+	if (displ->lid)
+		displ->lid->dirty = false;
 
-	for (i = output_manager->heads; i; i = i->nex) {
+	if (!displ->output_manager)
+		return;
+
+	displ->output_manager->dirty = false;
+
+	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = i->val;
 		if (!head)
 			continue;

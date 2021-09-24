@@ -15,7 +15,7 @@ void desire_ltr(struct Displ *displ) {
 	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
 
-		head->lid_closed = closed_laptop_display(head->name, displ->cfg);
+		head->lid_closed = lid_closed(head->name, displ);
 		if ((head->desired.enabled = !head->lid_closed)) {
 			head->desired.mode = optimal_mode(head->modes);
 			head->desired.scale = auto_scale(head);
@@ -41,9 +41,16 @@ void pend_desired(struct Displ *displ) {
 		head = (struct Head*)i->val;
 
 		head->pending.enabled = head->desired.enabled != head->enabled;
-		head->pending.mode = head->desired.mode && head->desired.mode != head->current_mode;
-		head->pending.scale = head->desired.scale != head->scale;
-		head->pending.position = (head->desired.x != head->x) || (head->desired.y != head->y);
+		if (head->pending.enabled && head->desired.enabled) {
+			// always confirm when enabling, as some settings (position) seem to be forgotten
+			head->pending.mode = true;
+			head->pending.scale = true;
+			head->pending.position = true;
+		} else {
+			head->pending.mode = head->desired.mode && head->desired.mode != head->current_mode;
+			head->pending.scale = head->desired.scale != head->scale;
+			head->pending.position = (head->desired.x != head->x) || (head->desired.y != head->y);
+		}
 	}
 }
 
