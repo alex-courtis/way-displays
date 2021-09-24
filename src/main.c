@@ -1,3 +1,4 @@
+// #include <libinput.h>
 #include <poll.h>
 #include <string.h>
 #include <sysexits.h>
@@ -11,6 +12,11 @@
 #include "types.h"
 #include "wl_wrappers.h"
 
+enum {
+	RFD_WL,
+	RFD_LI,
+	RFD_NM
+};
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 void listen(struct Displ *displ) {
@@ -20,15 +26,25 @@ void listen(struct Displ *displ) {
 	struct wl_registry *registry = wl_display_get_registry(displ->display);
 	wl_registry_add_listener(registry, registry_listener(), displ);
 
-	struct pollfd readfds[1] = {0};
-	readfds[0].fd = wl_display_get_fd(displ->display);
-	readfds[0].events = POLLIN;
+	struct pollfd readfds[RFD_NM] = {0};
+	readfds[RFD_WL].fd = wl_display_get_fd(displ->display);
+	readfds[RFD_WL].events = POLLIN;
+	readfds[RFD_LI].fd = displ->lid->libinput_fd;
+	readfds[RFD_LI].events = POLLIN;
 
 	int num_pending = 0;
 	int loops = 0;
-	int nloops = 10;
+	int nloops = 20;
 	for (;;) {
-		fprintf(stderr, "\n\nlisten %d\n", loops);
+		fprintf(stderr, "\n\nlisten 0 loops=%d\n", loops);
+
+		if (readfds[RFD_WL].revents & readfds[RFD_WL].events) {
+			fprintf(stderr, "listen last polled RFD_WL\n");
+
+		}
+		if (readfds[RFD_LI].revents & readfds[RFD_LI].events) {
+			fprintf(stderr, "listen last polled RFD_LI\n");
+		}
 
 		while (checked_wl_display_prepare_read(displ->display, __FILE__, __LINE__) != 0) {
 			num_pending = checked_wl_display_dispatch_pending(displ->display, __FILE__, __LINE__);
@@ -38,7 +54,8 @@ void listen(struct Displ *displ) {
 		checked_wl_display_flush(displ->display, __FILE__, __LINE__);
 
 		fprintf(stderr, "listen polling\n");
-		if (poll(readfds, 1, -1) > 0) {
+		// TODO check poll for -1 error and exit
+		if (poll(readfds, 2, -1) > 0) {
 			checked_wl_display_read_events(displ->display, __FILE__, __LINE__);
 		} else {
 			checked_wl_display_cancel_read(displ->display, __FILE__, __LINE__);
@@ -52,6 +69,11 @@ void listen(struct Displ *displ) {
 		if (!displ->output_manager) {
 			fprintf(stderr, "ERROR: output manager has been destroyed, exiting\n");
 			exit(EX_SOFTWARE);
+		}
+
+
+		if (readfds[RFD_LI].revents & readfds[RFD_LI].events) {
+			update_lid(displ->lid);
 		}
 
 
@@ -111,6 +133,8 @@ main(int argc, const char **argv) {
 	displ->cfg = read_cfg("./cfg.yaml");
 
 	print_cfg(displ->cfg);
+
+	displ->lid = create_lid();
 
 	listen(displ);
 

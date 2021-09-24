@@ -16,4 +16,6 @@ Config file daemon
 Multiple instance checking
 Mirror invocation
 Valgrind
+way-displays
+strerror
 

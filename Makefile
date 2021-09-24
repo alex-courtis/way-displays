@@ -17,7 +17,8 @@ TST_O = tst/test.o
 TST_LDLIBS  = -lcmocka
 TST_WRAPS = -Wl,--wrap=first,--wrap=second
 
-all: way-layout-displays test tags .copy
+# all: way-layout-displays test tags .copy
+all: way-layout-displays tags .copy
 
 $(SRC_O): $(INC_H) $(PRO_H)
 $(PRO_O): $(PRO_H)
@@ -44,9 +45,14 @@ tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H) $(TST_C)
 		$(^) \
 		/usr/include/wayland*.h \
 		/usr/include/wlr/**/*.h \
+		/usr/include/bits/poll.h \
 		/usr/include/cmocka*.h \
 		/usr/include/dirent.h \
 		/usr/include/err*.h \
+		/usr/include/fcntl.h \
+		/usr/include/libinput.h \
+		/usr/include/libudev.h \
+		/usr/include/sys/poll.h \
 		/usr/include/st*h \
 		/usr/include/sys*.h \
 		/usr/include/asm-generic/errno*.h \

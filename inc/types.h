@@ -86,8 +86,8 @@ struct Displ {
 	struct wl_display *display;
 
 	struct OutputManager *output_manager;
-
 	struct Cfg *cfg;
+	struct Lid *lid;
 
 	uint32_t name;
 };
@@ -99,11 +99,22 @@ struct Cfg {
 	struct SList *order_name_desc;
 };
 
+struct Lid {
+	bool closed;
+
+	bool dirty;
+
+	// TODO release this at some point
+	struct libinput *libinput_monitor;
+	int libinput_fd;
+};
+
 void free_mode(struct Mode *mode);
 void free_head(struct Head *head);
 void free_output_manager(struct OutputManager *output_manager);
 void free_displ(struct Displ *displ);
 void free_cfg(struct Cfg *cfg);
+void free_lid(struct Lid *lid);
 
 void head_free_mode(struct Head *head, struct Mode *mode);
 void output_manager_free_head(struct OutputManager *output_manager, struct Head *head);

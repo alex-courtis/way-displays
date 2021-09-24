@@ -63,6 +63,13 @@ void free_cfg(struct Cfg *cfg) {
 	free(cfg);
 }
 
+void free_lid(struct Lid *lid) {
+	if (!lid)
+		return;
+
+	free(lid);
+}
+
 void head_free_mode(struct Head *head, struct Mode *mode) {
 	if (!head || !mode)
 		return;
