@@ -14,6 +14,12 @@
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 void listen(struct Displ *displ) {
+
+	displ->display = checked_wl_display_connect(NULL, __FILE__, __LINE__);
+
+	struct wl_registry *registry = wl_display_get_registry(displ->display);
+	wl_registry_add_listener(registry, registry_listener(), displ);
+
 	struct pollfd *pfds = calloc(displ->lid ? 2 : 1, sizeof(struct pollfd));
 	pfds[0].fd = wl_display_get_fd(displ->display);
 	pfds[0].events = POLLIN;
@@ -21,12 +27,6 @@ void listen(struct Displ *displ) {
 		pfds[1].fd = displ->lid->libinput_fd;
 		pfds[1].events = POLLIN;
 	}
-
-
-	displ->display = checked_wl_display_connect(NULL, __FILE__, __LINE__);
-
-	struct wl_registry *registry = wl_display_get_registry(displ->display);
-	wl_registry_add_listener(registry, registry_listener(), displ);
 
 	int num_pending = 0;
 	int loops = 0;
