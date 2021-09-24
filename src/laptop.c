@@ -169,26 +169,17 @@ struct Lid *create_lid() {
 	lid = calloc(1, sizeof(struct Lid));
 	lid->device_path = device_path;
 
-	// monitor in a context of just the lid
+	// monitor in a context with just the lid
 	if ((lid->libinput_monitor = create_libinput_monitor_context(device_path)) == 0) {
 		free_lid(lid);
 		return NULL;
 	}
 	lid->libinput_fd = libinput_get_fd(lid->libinput_monitor);
 
-	// initial state; fd only fires on changes
+	// initial state detection as the fd only fires on changes
 	update_lid(lid);
 
 	return lid;
-}
-
-bool lid_closed(char *name, struct Displ *displ) {
-	if (!name || !displ || !displ->lid || !displ->cfg || !displ->cfg->laptop_display_prefix)
-		return false;
-
-	return
-		displ->lid->closed &&
-		strncasecmp(displ->cfg->laptop_display_prefix, name, strlen(displ->cfg->laptop_display_prefix)) == 0;
 }
 
 void update_heads_lid_closed(struct Displ *displ) {

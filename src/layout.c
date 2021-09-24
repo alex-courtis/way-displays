@@ -15,7 +15,6 @@ void desire_ltr(struct Displ *displ) {
 	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
 
-		head->lid_closed = lid_closed(head->name, displ);
 		if ((head->desired.enabled = !head->lid_closed)) {
 			head->desired.mode = optimal_mode(head->modes);
 			head->desired.scale = auto_scale(head);
