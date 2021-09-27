@@ -3,21 +3,20 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <sysexits.h>
 #include <unistd.h>
 #include <libinput.h>
 
-#include "laptop.h"
+#include "lid.h"
 
 static int libinput_open_restricted(const char *path, int flags, void *data) {
 	fprintf(stderr, "open_restricted %s\n", path);
 
-	// this could be done with proper permissions by, say, libseat
+	// user permissions are sufficient for input devices, no need for systemd
 	int fd = open(path, flags);
 
 	if (fd <= 0) {
-		// TODO give up on lid detection
-		fprintf(stderr, "failed to open '%s' %d %s\n", path, errno, strerror(errno));
-		exit(1);
+		fprintf(stderr, "\nWARNING: open '%s' failed %d: '%s'\n", path, errno, strerror(errno));
 	}
 
 	return fd;
@@ -27,9 +26,7 @@ static void libinput_close_restricted(int fd, void *data) {
 	fprintf(stderr, "close_restricted %d\n", fd);
 
 	if (close(fd) != 0) {
-		// TODO give up on lid detection
-		fprintf(stderr, "failed to close %d %d %s\n", fd, errno, strerror(errno));
-		exit(1);
+		fprintf(stderr, "\nWARNING: close failed %d: '%s'\n", errno, strerror(errno));
 	}
 }
 
@@ -52,11 +49,9 @@ struct libinput *create_libinput_discovery() {
 		return NULL;
 	}
 
-	// TODO not present on emperor, default to seat? maybe seat is not needed any more
 	const char *xdg_seat = getenv("XDG_SEAT");
 	if (!xdg_seat) {
-		fprintf(stderr, "\nERROR: $XDG_SEAT not set, abandoning laptop lid detection\n");
-		return NULL;
+		xdg_seat = "seat0";
 	}
 
 	if (libinput_udev_assign_seat(libinput_context, xdg_seat) != 0) {
@@ -80,19 +75,19 @@ char *discover_lid_device(struct libinput *libinput) {
 	while ((event = libinput_get_event(libinput))) {
 
 		struct libinput_device *device = libinput_event_get_device(event);
-		if (!device)
-			continue;
 
-		if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_SWITCH)) {
+		if (device && libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_SWITCH)) {
 			device_path = calloc(PATH_MAX, sizeof(char));
 			snprintf(device_path, PATH_MAX, "/dev/input/%s", libinput_device_get_sysname(device));
 		}
+
+		libinput_event_destroy(event);
 	}
 
 	return device_path;
 }
 
-struct libinput *create_libinput_monitor_context(char *device_path) {
+struct libinput *create_libinput_monitor(char *device_path) {
 
 	struct libinput *libinput_context = libinput_path_create_context(&libinput_impl, NULL);
 	if (!libinput_context) {
@@ -109,18 +104,43 @@ struct libinput *create_libinput_monitor_context(char *device_path) {
 	return libinput_context;
 }
 
-void update_lid(struct Lid *lid) {
-	if (!lid || !lid->libinput_monitor)
+void destroy_lid(struct Displ *displ) {
+	struct SList *i;
+	struct Head *head;
+	if (!displ || !displ->lid)
 		return;
 
-	bool new_closed = lid->closed;
+	libinput_suspend(displ->lid->libinput_monitor);
+	libinput_unref(displ->lid->libinput_monitor);
 
-	fprintf(stderr, "update_lid begin closed=%d dirty=%d\n", lid->closed, lid->dirty);
+	free_lid(displ->lid);
+	displ->lid = NULL;
 
-	// TODO wrap
-	libinput_dispatch(lid->libinput_monitor);
+	displ->npfds -= 1;
+	displ->pfds = realloc(displ->pfds, sizeof(struct pollfd) * displ->npfds);
+
+	if (displ->output_manager) {
+		for (i = displ->output_manager->heads; i; i = i->nex) {
+			head = i->val;
+			if (!head)
+				continue;
+
+			head->lid_closed = false;
+			head->dirty = true;
+		}
+	}
+}
+
+void update_lid(struct Displ *displ) {
+	if (!displ || !displ->lid || !displ->lid->libinput_monitor)
+		return;
+
+	bool new_closed = displ->lid->closed;
+
+	// TODO wrap and destroy
+	libinput_dispatch(displ->lid->libinput_monitor);
 	struct libinput_event *event;
-	while ((event = libinput_get_event(lid->libinput_monitor))) {
+	while ((event = libinput_get_event(displ->lid->libinput_monitor))) {
 		struct libinput_device *device = libinput_event_get_device(event);
 		fprintf(stderr, "update_lid event %s\n", libinput_device_get_name(device));
 		enum libinput_event_type event_type = libinput_event_get_type(event);
@@ -134,12 +154,12 @@ void update_lid(struct Lid *lid) {
 		} else {
 			fprintf(stderr, "update_lid ???\n");
 		}
+
+		libinput_event_destroy(event);
 	}
 
-	lid->dirty = new_closed != lid->closed;
-	lid->closed = new_closed;
-
-	fprintf(stderr, "update_lid end closed=%d dirty=%d\n", lid->closed, lid->dirty);
+	displ->lid->dirty = new_closed != displ->lid->closed;
+	displ->lid->closed = new_closed;
 }
 
 struct Lid *create_lid() {
@@ -155,29 +175,29 @@ struct Lid *create_lid() {
 
 		device_path = discover_lid_device(libinput_discovery);
 
+		libinput_suspend(libinput_discovery);
+
+		libinput_unref(libinput_discovery);
+
 		if (!device_path) {
 			fprintf(stderr, "create_lid 2 early end\n");
 			return NULL;
 		}
-
-		libinput_suspend(libinput_discovery);
 	} else {
 		return NULL;
 	}
 
 	// provisional lid
 	lid = calloc(1, sizeof(struct Lid));
-	lid->device_path = device_path;
 
 	// monitor in a context with just the lid
-	if ((lid->libinput_monitor = create_libinput_monitor_context(device_path)) == 0) {
+	if ((lid->libinput_monitor = create_libinput_monitor(device_path)) == 0) {
 		free_lid(lid);
 		return NULL;
 	}
 	lid->libinput_fd = libinput_get_fd(lid->libinput_monitor);
 
-	// initial state detection as the fd only fires on changes
-	update_lid(lid);
+	printf("\nMonitoring lid device: %s\n", device_path);
 
 	return lid;
 }

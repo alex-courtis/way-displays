@@ -60,9 +60,9 @@ static void enabled(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		int32_t enabled) {
 	struct Head *head = data;
-	head->dirty = !head->pending.enabled;
+	head->dirty = !head->pending.enabled || enabled == head->lid_closed;
 
-	fprintf(stderr, "LH enabled %s%s\n", head->name, head->dirty ? " dirty" : "");
+	fprintf(stderr, "LH %s %s%s\n", enabled ? "enabled" : "disabled", head->name, head->dirty ? " dirty" : "");
 
 	head->enabled = enabled;
 }

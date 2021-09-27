@@ -48,6 +48,8 @@ void free_displ(struct Displ *displ) {
 
 	free_cfg(displ->cfg);
 
+	free(displ->pfds);
+
 	free(displ);
 }
 
@@ -66,8 +68,6 @@ void free_cfg(struct Cfg *cfg) {
 void free_lid(struct Lid *lid) {
 	if (!lid)
 		return;
-
-	free(lid->device_path);
 
 	free(lid);
 }

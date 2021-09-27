@@ -1,7 +1,7 @@
 #include <string.h>
 #include "calc.h"
 #include "layout.h"
-#include "laptop.h"
+#include "lid.h"
 #include "listeners.h"
 
 void desire_ltr(struct Displ *displ) {

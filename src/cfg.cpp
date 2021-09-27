@@ -23,7 +23,7 @@ void print_cfg(struct Cfg *cfg) {
 	struct SList *i;
 
 	if (cfg->file_path) {
-		printf("\nUsing configuration file: %s\n", cfg->file_path);
+		printf("\nConfiguration file: %s\n", cfg->file_path);
 	} else {
 		printf("\nConfiguration file not found.\n");
 	}
