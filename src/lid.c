@@ -132,27 +132,29 @@ void destroy_lid(struct Displ *displ) {
 }
 
 void update_lid(struct Displ *displ) {
+	struct libinput_event *event;
+	struct libinput_event_switch *event_switch;
+	enum libinput_event_type event_type;
+	enum libinput_switch_state switch_state;
+
 	if (!displ || !displ->lid || !displ->lid->libinput_monitor)
 		return;
 
 	bool new_closed = displ->lid->closed;
 
-	// TODO wrap and destroy
-	libinput_dispatch(displ->lid->libinput_monitor);
-	struct libinput_event *event;
+	if (libinput_dispatch(displ->lid->libinput_monitor) < 0) {
+		fprintf(stderr, "\nERROR: unable to dispatch libinput %d: '%s', abandoning laptop lid detection\n", errno, strerror(errno));
+		destroy_lid(displ);
+		return;
+	}
+
 	while ((event = libinput_get_event(displ->lid->libinput_monitor))) {
-		struct libinput_device *device = libinput_event_get_device(event);
-		fprintf(stderr, "update_lid event %s\n", libinput_device_get_name(device));
-		enum libinput_event_type event_type = libinput_event_get_type(event);
+		event_type = libinput_event_get_type(event);
+
 		if (event_type == LIBINPUT_EVENT_SWITCH_TOGGLE) {
-			fprintf(stderr, "update_lid switch toggle\n");
-			struct libinput_event_switch *event_switch = libinput_event_get_switch_event(event);
-			enum libinput_switch_state switch_state = libinput_event_switch_get_switch_state(event_switch);
+			event_switch = libinput_event_get_switch_event(event);
+			switch_state = libinput_event_switch_get_switch_state(event_switch);
 			new_closed = switch_state == LIBINPUT_SWITCH_STATE_ON;
-		} else if (event_type == LIBINPUT_EVENT_DEVICE_ADDED) {
-			fprintf(stderr, "update_lid added\n");
-		} else {
-			fprintf(stderr, "update_lid ???\n");
 		}
 
 		libinput_event_destroy(event);

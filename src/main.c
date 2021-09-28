@@ -71,7 +71,7 @@ void listen(struct Displ *displ) {
 		}
 
 
-		if (displ->lid && displ->pfds[PFD_LI].revents & displ->pfds[PFD_LI].events) {
+		if (displ->npfds > PFD_LI && displ->pfds[PFD_LI].revents & displ->pfds[PFD_LI].events) {
 			update_lid(displ);
 		}
 		update_heads_lid_closed(displ);
@@ -104,9 +104,6 @@ void listen(struct Displ *displ) {
 				print_heads(DELTA, displ->output_manager->heads);
 
 				apply_desired(displ);
-			} else {
-
-				printf("\nNo changes needed\n");
 			}
 		} else {
 			fprintf(stderr, "listen nothingtodohere\n");
@@ -142,6 +139,8 @@ main(int argc, const char **argv) {
 	print_cfg(displ->cfg);
 
 	displ->lid = create_lid();
+
+	// update once to discover initial switch state
 	update_lid(displ);
 
 	listen(displ);
