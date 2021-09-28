@@ -6,7 +6,7 @@
 
 #include "wl_wrappers.h"
 
-int checked_wl_display_prepare_read(struct wl_display *display, char *file, int line) {
+int _wl_display_prepare_read(struct wl_display *display, char *file, int line) {
 	static int ret;
 
 	if ((ret = wl_display_prepare_read(display)) == -1) {
@@ -19,7 +19,7 @@ int checked_wl_display_prepare_read(struct wl_display *display, char *file, int 
 	return ret;
 }
 
-int checked_wl_display_dispatch_pending(struct wl_display *display, char *file, int line) {
+int _wl_display_dispatch_pending(struct wl_display *display, char *file, int line) {
 	static int ret;
 
 	if ((ret = wl_display_dispatch_pending(display)) == -1) {
@@ -30,7 +30,7 @@ int checked_wl_display_dispatch_pending(struct wl_display *display, char *file, 
 	return ret;
 }
 
-int checked_wl_display_flush(struct wl_display *display, char *file, int line) {
+int _wl_display_flush(struct wl_display *display, char *file, int line) {
 	static int ret;
 
 	if ((ret = wl_display_flush(display)) == -1) {
@@ -41,7 +41,7 @@ int checked_wl_display_flush(struct wl_display *display, char *file, int line) {
 	return ret;
 }
 
-int checked_wl_display_read_events(struct wl_display *display, char *file, int line) {
+int _wl_display_read_events(struct wl_display *display, char *file, int line) {
 	static int ret;
 
 	if ((ret = wl_display_read_events(display)) == -1) {
@@ -57,7 +57,7 @@ int checked_wl_display_read_events(struct wl_display *display, char *file, int l
 	return ret;
 }
 
-struct wl_display *checked_wl_display_connect(const char *name, char *file, int line) {
+struct wl_display *_wl_display_connect(const char *name, char *file, int line) {
 	struct wl_display *display;
 
 	if (!(display = wl_display_connect(name))) {
