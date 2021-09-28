@@ -10,7 +10,7 @@
 - Error/exit for listen loop
 - User config file
 - Hotplug daemon
-Lid polling
+- Lid polling
 - Sanity checking / projector handling
 Config file daemon
 Multiple instance checking

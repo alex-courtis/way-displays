@@ -74,7 +74,7 @@ struct Cfg *read_cfg(const char *path) {
 			}
 
 		} catch (const exception &e) {
-			fprintf(stderr, "ERROR: cannot read '%s': %s, exiting\n", path, e.what());
+			fprintf(stderr, "\nERROR: cannot read '%s': %s, exiting\n", path, e.what());
 			exit(EX_DATAERR);
 		}
 	}

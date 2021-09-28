@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <poll.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,8 +31,8 @@ void create_pfds(struct Displ *displ) {
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 void listen(struct Displ *displ) {
-	struct wl_registry *registry;
 	bool heads_arrived_or_departed;
+	struct wl_registry *registry;
 
 	displ->display = checked_wl_display_connect(NULL, __FILE__, __LINE__);
 
@@ -47,11 +48,11 @@ void listen(struct Displ *displ) {
 
 		checked_wl_display_flush(displ->display, __FILE__, __LINE__);
 
-		// TODO check poll for -1 error and exit
+
 		if (poll(displ->pfds, displ->npfds, -1) > 0) {
 			checked_wl_display_read_events(displ->display, __FILE__, __LINE__);
 		} else {
-			checked_wl_display_cancel_read(displ->display, __FILE__, __LINE__);
+			fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
 		}
 
 
@@ -59,8 +60,8 @@ void listen(struct Displ *displ) {
 
 
 		if (!displ->output_manager) {
-			fprintf(stderr, "ERROR: output manager has been destroyed, exiting\n");
-			exit(EX_SOFTWARE);
+			printf("\nDisplay's output manager has departed, exiting\n");
+			exit(EXIT_SUCCESS);
 		}
 
 

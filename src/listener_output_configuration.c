@@ -22,7 +22,7 @@ static void failed(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
 
 	// not much we can do here and there is no prior art
-	fprintf(stderr, "ERROR: output configuration has failed %s:%d, exiting\n", __FILE__, __LINE__);
+	fprintf(stderr, "\nERROR: output configuration has failed %s:%d, exiting\n", __FILE__, __LINE__);
 	exit(EX_SOFTWARE);
 }
 
@@ -30,7 +30,7 @@ static void cancelled(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
 
 	// there seems to be no way to recover from this
-	fprintf(stderr, "ERROR: output configuration has been cancelled %s:%d, exiting\n", __FILE__, __LINE__);
+	fprintf(stderr, "\nERROR: output configuration has been cancelled %s:%d, exiting\n", __FILE__, __LINE__);
 	exit(EX_SOFTWARE);
 }
 

@@ -13,7 +13,5 @@ int checked_wl_display_flush(struct wl_display *display, char *file, int line);
 
 int checked_wl_display_read_events(struct wl_display *display, char *file, int line);
 
-int checked_wl_display_cancel_read(struct wl_display *display, char *file, int line);
-
 #endif // WL_WRAPPERS
 

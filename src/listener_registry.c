@@ -41,8 +41,8 @@ static void global_remove(void *data,
 		return;
 
 	// a "who cares?" situation in the WLR examples
-	fprintf(stderr, "ERROR: output manager has been removed %s:%d, exiting\n", __FILE__, __LINE__);
-	exit(EX_SOFTWARE);
+	printf("\nDisplay's output manager has been removed, exiting\n");
+	exit(EXIT_SUCCESS);
 }
 
 static const struct wl_registry_listener listener = {
