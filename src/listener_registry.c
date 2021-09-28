@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <sysexits.h>
 
@@ -18,7 +19,6 @@ static void global(void *data,
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) != 0)
 		return;
 
-	fprintf(stderr, "LR global zwlr data %p\n", (void*)data);
 	struct Displ *displ = data;
 	displ->name = name;
 

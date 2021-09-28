@@ -1,9 +1,6 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-// TODO remove
-#include <stdio.h>
-
 #include <poll.h>
 #include <stdbool.h>
 #include <stdlib.h>

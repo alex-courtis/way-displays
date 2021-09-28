@@ -10,7 +10,6 @@
 #include "lid.h"
 
 static int libinput_open_restricted(const char *path, int flags, void *data) {
-	fprintf(stderr, "open_restricted %s\n", path);
 
 	// user permissions are sufficient for input devices, no need for systemd
 	int fd = open(path, flags);
@@ -23,7 +22,6 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 }
 
 static void libinput_close_restricted(int fd, void *data) {
-	fprintf(stderr, "close_restricted %d\n", fd);
 
 	if (close(fd) != 0) {
 		fprintf(stderr, "\nWARNING: close failed %d: '%s'\n", errno, strerror(errno));
@@ -169,11 +167,8 @@ struct Lid *create_lid() {
 	struct libinput *libinput_discovery = NULL;
 	char *device_path = NULL;
 
-	fprintf(stderr, "create_lid 0\n");
-
 	// discover with a context of all inputs
 	if ((libinput_discovery = create_libinput_discovery())) {
-		fprintf(stderr, "create_lid 1\n");
 
 		device_path = discover_lid_device(libinput_discovery);
 
@@ -182,7 +177,6 @@ struct Lid *create_lid() {
 		libinput_unref(libinput_discovery);
 
 		if (!device_path) {
-			fprintf(stderr, "create_lid 2 early end\n");
 			return NULL;
 		}
 	} else {

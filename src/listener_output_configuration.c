@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <sysexits.h>
 
 #include "listeners.h"
@@ -7,16 +8,14 @@
 
 static void succeeded(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
-	fprintf(stderr, "LOC succeeded\n");
 	struct OutputManager *output_manager = data;
+
 	reset_pending_desired(output_manager);
 
 	printf("\nChanges successful\n");
 	fflush(stdout);
 
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
-
-	fprintf(stderr, "LOC succeeded serial %d\n", output_manager->serial);
 }
 
 static void failed(void *data,

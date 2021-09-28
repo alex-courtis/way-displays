@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "info.h"
 
 void print_head_current(struct Head *head) {

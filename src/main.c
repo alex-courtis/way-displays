@@ -1,9 +1,8 @@
-// #include <libinput.h>
 #include <poll.h>
+#include <stdio.h>
 #include <string.h>
 #include <sysexits.h>
 
-#include "calc.h"
 #include "cfg.h"
 #include "info.h"
 #include "lid.h"
@@ -31,28 +30,23 @@ void create_pfds(struct Displ *displ) {
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 void listen(struct Displ *displ) {
+	struct wl_registry *registry;
+	bool heads_arrived_or_departed;
 
 	displ->display = checked_wl_display_connect(NULL, __FILE__, __LINE__);
 
-	struct wl_registry *registry = wl_display_get_registry(displ->display);
+	registry = wl_display_get_registry(displ->display);
 	wl_registry_add_listener(registry, registry_listener(), displ);
 
 	create_pfds(displ);
 
-	int num_pending = 0;
-	int loops = 0;
-	int nloops = 20;
 	for (;;) {
-		fprintf(stderr, "\n\nlisten 0 loops=%d\n", loops);
-
 		while (checked_wl_display_prepare_read(displ->display, __FILE__, __LINE__) != 0) {
-			num_pending = checked_wl_display_dispatch_pending(displ->display, __FILE__, __LINE__);
-			fprintf(stderr, "listen 1 dispatched %d pending\n", num_pending);
+			checked_wl_display_dispatch_pending(displ->display, __FILE__, __LINE__);
 		}
 
 		checked_wl_display_flush(displ->display, __FILE__, __LINE__);
 
-		fprintf(stderr, "listen polling\n");
 		// TODO check poll for -1 error and exit
 		if (poll(displ->pfds, displ->npfds, -1) > 0) {
 			checked_wl_display_read_events(displ->display, __FILE__, __LINE__);
@@ -61,8 +55,7 @@ void listen(struct Displ *displ) {
 		}
 
 
-		num_pending = checked_wl_display_dispatch_pending(displ->display, __FILE__, __LINE__);
-		fprintf(stderr, "listen 2 dispatched %d pending\n", num_pending);
+		checked_wl_display_dispatch_pending(displ->display, __FILE__, __LINE__);
 
 
 		if (!displ->output_manager) {
@@ -77,22 +70,16 @@ void listen(struct Displ *displ) {
 		update_heads_lid_closed(displ);
 
 
+		heads_arrived_or_departed = displ->output_manager->heads_arrived || displ->output_manager->heads_departed;
+
 		print_heads(ARRIVED, displ->output_manager->heads_arrived);
 		output_manager_release_heads_arrived(displ->output_manager);
 
 		print_heads(DEPARTED, displ->output_manager->heads_departed);
 		output_manager_free_heads_departed(displ->output_manager);
 
-		for (struct SList *i = displ->output_manager->heads; i; i = i->nex) {
-			struct Head *head = (struct Head*)i->val;
-
-			fprintf(stderr, " listen enabled=%d lid_closed=%d dirty=%d\n", head->enabled, head->lid_closed, head->dirty);
-		}
-		fprintf(stderr, " listen displ dirty %d pending %d\n", is_dirty(displ), is_pending_output_manager(displ->output_manager));
 
 		if (is_dirty(displ) && !is_pending_output_manager(displ->output_manager)) {
-			fprintf(stderr, "listen dirty, arranging\n");
-
 			reset_dirty(displ);
 
 			desire_ltr(displ);
@@ -104,29 +91,13 @@ void listen(struct Displ *displ) {
 				print_heads(DELTA, displ->output_manager->heads);
 
 				apply_desired(displ);
+
+			} else if (heads_arrived_or_departed) {
+
+				printf("\nNo changes needed\n");
 			}
-		} else {
-			fprintf(stderr, "listen nothingtodohere\n");
 		}
-
-
-		loops++;
-		if (loops == (nloops - 2)) {
-			fprintf(stderr, "listen disconnecting WLR\n");
-			zwlr_output_manager_v1_stop(displ->output_manager->zwlr_output_manager);
-			fprintf(stderr, "listen disconnected WLR\n");
-			continue;
-		}
-
-		if (loops >= nloops) {
-			break;
-		}
-
-
-		fprintf(stderr, "listen end\n");
 	}
-
-	fprintf(stderr, "listen exited after %d loops\n", loops);
 }
 
 int
