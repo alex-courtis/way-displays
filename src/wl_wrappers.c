@@ -57,17 +57,3 @@ int _wl_display_read_events(struct wl_display *display, char *file, int line) {
 	return ret;
 }
 
-struct wl_display *_wl_display_connect(const char *name, char *file, int line) {
-	struct wl_display *display;
-
-	if (!(display = wl_display_connect(name))) {
-		fprintf(stderr, "\nERROR: Unable to connect to the compositor. "
-				"If your compositor is running, check or set the "
-				"WAYLAND_DISPLAY environment variable. "
-				"%s:%d, exiting\n", file, line);
-		exit(EX_SOFTWARE);
-	}
-
-	return display;
-}
-

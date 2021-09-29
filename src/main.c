@@ -12,6 +12,29 @@
 #include "types.h"
 #include "wl_wrappers.h"
 
+void connect_display(struct Displ *displ) {
+	struct wl_registry *registry;
+
+	if (!(displ->display = wl_display_connect(NULL))) {
+		fprintf(stderr, "\nERROR: Unable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting\n");
+		exit(EX_SOFTWARE);
+	}
+
+	registry = wl_display_get_registry(displ->display);
+
+	wl_registry_add_listener(registry, registry_listener(), displ);
+
+	if (wl_display_roundtrip(displ->display) == -1) {
+		fprintf(stderr, "\nERROR: wl_display_roundtrip failed -1, exiting");
+		exit(EX_SOFTWARE);
+	}
+
+	if (!displ->output_manager) {
+		fprintf(stderr, "\nERROR: compositor does not support WLR output manager protocol, exiting\n");
+		exit(EX_SOFTWARE);
+	}
+}
+
 enum {
 	PFD_WL = 0,
 	PFD_LI,
@@ -32,13 +55,6 @@ void create_pfds(struct Displ *displ) {
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 void listen(struct Displ *displ) {
 	bool heads_arrived_or_departed;
-
-	// attach our listeners to the display
-	displ->display = _wl_display_connect(NULL, FL);
-	wl_registry_add_listener(wl_display_get_registry(displ->display), registry_listener(), displ);
-
-	// polling fds for wayland and maybe libinput
-	create_pfds(displ);
 
 	for (;;) {
 
@@ -114,11 +130,17 @@ main(int argc, const char **argv) {
 	// also informs of defaults
 	print_cfg(displ->cfg);
 
+	// discover the output manager via a roundtrip
+	connect_display(displ);
+
 	// this may be null
 	displ->lid = create_lid();
 
 	// update once to discover initial switch state
 	update_lid(displ);
+
+	// polling fds for wayland and maybe libinput
+	create_pfds(displ);
 
 	listen(displ);
 
