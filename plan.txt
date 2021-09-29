@@ -13,10 +13,12 @@
 - Lid polling
 - Sanity checking / projector handling
 XDG_CONFIG_DIR
-Config file daemon
+Auto scale off / override
 Multiple instance checking
-Mirror invocation
 Valgrind
 way-displays
 - strerror
+
+Take display away from sway
+Mirroring via native/scale
 

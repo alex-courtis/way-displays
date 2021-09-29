@@ -1,6 +1,6 @@
-#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <sysexits.h>
@@ -18,6 +18,7 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 		fprintf(stderr, "\nWARNING: open '%s' failed %d: '%s'\n", path, errno, strerror(errno));
 	}
 
+	// TODO negative errno on failure
 	return fd;
 }
 

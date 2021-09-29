@@ -47,14 +47,15 @@ tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H) $(TST_C)
 		/usr/include/wlr/**/*.h \
 		/usr/include/bits/poll.h \
 		/usr/include/cmocka*.h \
-		/usr/include/dirent.h \
 		/usr/include/err*.h \
 		/usr/include/fcntl.h \
 		/usr/include/libinput.h \
 		/usr/include/libudev.h \
+		/usr/include/linux/limits.h \
 		/usr/include/sys/poll.h \
 		/usr/include/st*h \
 		/usr/include/sys*.h \
+		/usr/include/unistd.h \
 		/usr/include/asm-generic/errno*.h \
 		/usr/include/yaml-cpp/*.h
 

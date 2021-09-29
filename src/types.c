@@ -62,6 +62,9 @@ void free_cfg(struct Cfg *cfg) {
 	}
 	slist_free(&cfg->order_name_desc);
 
+	free(cfg->file_path);
+	free(cfg->laptop_display_prefix);
+
 	free(cfg);
 }
 

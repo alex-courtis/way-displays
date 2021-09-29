@@ -7,7 +7,7 @@
 extern "C" { //}
 #endif
 
-struct Cfg *read_cfg(const char *path);
+struct Cfg *read_cfg();
 
 void print_cfg(struct Cfg *cfg);
 

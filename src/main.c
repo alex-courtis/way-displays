@@ -108,8 +108,8 @@ int
 main(int argc, const char **argv) {
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
 
-	// this will always return a cfg regardless of whether the user has a file
-	displ->cfg = read_cfg("./cfg.yaml");
+	// always returns a cfg, possibly default
+	displ->cfg = read_cfg();
 
 	// also informs of defaults
 	print_cfg(displ->cfg);

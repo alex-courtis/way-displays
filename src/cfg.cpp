@@ -1,3 +1,4 @@
+#include <linux/limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
@@ -18,6 +19,11 @@ using std::stringstream;
 } // namespace
 
 #define DEFAULT_LAPTOP_OUTPUT_PREFIX "eDP"
+
+bool access_cfg(char *path, const char *prefix, const char *suffix) {
+    snprintf(path, PATH_MAX, "%s%s/way-layout-displays/cfg.yaml", prefix, suffix);
+	return access(path, R_OK) == 0;
+}
 
 void print_cfg(struct Cfg *cfg) {
 	struct SList *i;
@@ -48,15 +54,22 @@ void print_cfg(struct Cfg *cfg) {
 	}
 }
 
-struct Cfg *read_cfg(const char *path) {
+struct Cfg *read_cfg() {
 	YAML::Node config;
+    char path[PATH_MAX];
+	bool found = false;
 
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
 
-	if (access(path, R_OK) != 0) {
-		cfg->file_path = NULL;
-	} else {
+	if (getenv("XDG_CONFIG_HOME"))
+		found = access_cfg(path, getenv("XDG_CONFIG_HOME"), "");
+	if (!found && getenv("HOME"))
+		found = access_cfg(path, getenv("HOME"), "/.config");
+	if (!found)
+		found = access_cfg(path, "/etc", "");
+
+	if (found) {
 		cfg->file_path = strdup(path);
 		try {
 			config = YAML::LoadFile(path);
