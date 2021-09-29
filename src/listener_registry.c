@@ -19,8 +19,6 @@ static void global(void *data,
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) != 0)
 		return;
 
-	// TODO exit with an appropriate message if we never get an output manager (gnome)
-
 	struct Displ *displ = data;
 	displ->name = name;
 

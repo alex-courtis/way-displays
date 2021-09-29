@@ -48,7 +48,6 @@ tags: $(SRC_C) $(INC_H) $(PRO_H) $(TST_C)
 
 .copy: way-layout-displays
 	scp $(^) alw@gigantor:/home/alw/bin
-	scp cfg.yaml alw@gigantor:.config/way-layout-displays/cfg.yaml
 	@touch .copy
 
 .PHONY: all clean

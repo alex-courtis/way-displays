@@ -16,9 +16,9 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 
 	if (fd <= 0) {
 		fprintf(stderr, "\nWARNING: open '%s' failed %d: '%s'\n", path, errno, strerror(errno));
+		return -errno;
 	}
 
-	// TODO negative errno on failure
 	return fd;
 }
 
