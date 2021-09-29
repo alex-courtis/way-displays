@@ -1,8 +1,24 @@
+#include <stdio.h>
 #include <string.h>
 #include "calc.h"
 #include "layout.h"
 #include "lid.h"
 #include "listeners.h"
+
+wl_fixed_t scale_head(struct Head *head, struct Cfg *cfg) {
+	struct UserScale *user_scale;
+
+	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
+		user_scale = (struct UserScale*)i->val;
+		if (user_scale->name_desc &&
+				(strcmp(user_scale->name_desc, head->name) == 0 ||
+				 strcmp(user_scale->name_desc, head->description) == 0)) {
+			return wl_fixed_from_double(user_scale->scale);
+		}
+	}
+
+	return auto_scale(head);
+}
 
 void desire_ltr(struct Displ *displ) {
 	struct Head *head;
@@ -17,7 +33,7 @@ void desire_ltr(struct Displ *displ) {
 
 		if ((head->desired.enabled = !head->lid_closed)) {
 			head->desired.mode = optimal_mode(head->modes);
-			head->desired.scale = auto_scale(head);
+			head->desired.scale = scale_head(head, displ->cfg);
 		}
 	}
 

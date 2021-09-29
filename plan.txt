@@ -12,13 +12,14 @@
 - Hotplug daemon
 - Lid polling
 - Sanity checking / projector handling
-XDG_CONFIG_DIR
-Auto scale off / override
+- XDG_CONFIG_DIR
+- Auto scale off / override
 Multiple instance checking
 Valgrind
 way-displays
 - strerror
 
+systemd service
 Take display away from sway
 Mirroring via native/scale
 

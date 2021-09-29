@@ -40,24 +40,11 @@ test: $(filter-out %main.o,$(SRC_O)) $(PRO_O) $(TST_O)
 clean:
 	rm -f way-layout-displays test $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) tags .copy
 
-tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H) $(TST_C)
-	ctags --fields=+S --c-kinds=+p \
-		$(^) \
-		/usr/include/wayland*.h \
-		/usr/include/wlr/**/*.h \
-		/usr/include/bits/poll.h \
-		/usr/include/cmocka*.h \
-		/usr/include/err*.h \
-		/usr/include/fcntl.h \
-		/usr/include/libinput.h \
-		/usr/include/libudev.h \
-		/usr/include/linux/limits.h \
-		/usr/include/sys/poll.h \
-		/usr/include/st*h \
-		/usr/include/sys*.h \
-		/usr/include/unistd.h \
-		/usr/include/asm-generic/errno*.h \
-		/usr/include/yaml-cpp/*.h
+# https://github.com/alex-courtis/arch/blob/b530f331dacaaba27484593a87ca20a9f53ab73f/home/bin/ctags-something
+tags: $(SRC_C) $(INC_H) $(PRO_H) $(TST_C)
+	which ctags-c > /dev/null 2>&1 && \
+		ctags-c $(CFLAGS) $(CPPFLAGS) --project-src $(^) || \
+		true
 
 .copy: way-layout-displays
 	scp $(^) alw@gigantor:/home/alw/bin

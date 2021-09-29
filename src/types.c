@@ -53,6 +53,15 @@ void free_displ(struct Displ *displ) {
 	free(displ);
 }
 
+void free_user_scale(struct UserScale *user_scale) {
+	if (!user_scale)
+		return;
+
+	free(user_scale->name_desc);
+
+	free(user_scale);
+}
+
 void free_cfg(struct Cfg *cfg) {
 	if (!cfg)
 		return;
@@ -61,6 +70,11 @@ void free_cfg(struct Cfg *cfg) {
 		free(i->val);
 	}
 	slist_free(&cfg->order_name_desc);
+
+	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
+		free_user_scale(i->val);
+	}
+	slist_free(&cfg->user_scales);
 
 	free(cfg->file_path);
 	free(cfg->laptop_display_prefix);

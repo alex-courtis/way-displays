@@ -93,10 +93,18 @@ struct Displ {
 	uint32_t name;
 };
 
+struct UserScale {
+	char *name_desc;
+	float scale;
+};
+
 struct Cfg {
 	char *file_path;
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
+	bool auto_scale;
+
+	struct SList *user_scales;
 };
 
 struct Lid {
@@ -112,6 +120,7 @@ void free_mode(struct Mode *mode);
 void free_head(struct Head *head);
 void free_output_manager(struct OutputManager *output_manager);
 void free_displ(struct Displ *displ);
+void free_user_scale(struct UserScale *user_scale);
 void free_cfg(struct Cfg *cfg);
 void free_lid(struct Lid *lid);
 
