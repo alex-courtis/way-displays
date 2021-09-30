@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <sysexits.h>
 
 #include "listeners.h"
 #include "types.h"
@@ -23,7 +22,7 @@ static void failed(void *data,
 
 	// not much we can do here and there is no prior art
 	fprintf(stderr, "\nERROR: output configuration has failed %s:%d, exiting\n", __FILE__, __LINE__);
-	exit(EX_SOFTWARE);
+	exit(EXIT_FAILURE);
 }
 
 static void cancelled(void *data,
@@ -31,7 +30,7 @@ static void cancelled(void *data,
 
 	// there seems to be no way to recover from this
 	fprintf(stderr, "\nERROR: output configuration has been cancelled %s:%d, exiting\n", __FILE__, __LINE__);
-	exit(EX_SOFTWARE);
+	exit(EXIT_FAILURE);
 }
 
 static const struct zwlr_output_configuration_v1_listener listener = {

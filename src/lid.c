@@ -3,7 +3,6 @@
 #include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 #include <libinput.h>
 

@@ -2,13 +2,13 @@
 #include <poll.h>
 #include <stdio.h>
 #include <string.h>
-#include <sysexits.h>
 
 #include "cfg.h"
 #include "info.h"
 #include "lid.h"
 #include "listeners.h"
 #include "layout.h"
+#include "process.h"
 #include "types.h"
 #include "wl_wrappers.h"
 
@@ -17,7 +17,7 @@ void connect_display(struct Displ *displ) {
 
 	if (!(displ->display = wl_display_connect(NULL))) {
 		fprintf(stderr, "\nERROR: Unable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting\n");
-		exit(EX_SOFTWARE);
+		exit(EXIT_FAILURE);
 	}
 
 	registry = wl_display_get_registry(displ->display);
@@ -26,12 +26,12 @@ void connect_display(struct Displ *displ) {
 
 	if (wl_display_roundtrip(displ->display) == -1) {
 		fprintf(stderr, "\nERROR: wl_display_roundtrip failed -1, exiting");
-		exit(EX_SOFTWARE);
+		exit(EXIT_FAILURE);
 	}
 
 	if (!displ->output_manager) {
 		fprintf(stderr, "\nERROR: compositor does not support WLR output manager protocol, exiting\n");
-		exit(EX_SOFTWARE);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -123,6 +123,9 @@ void listen(struct Displ *displ) {
 int
 main(int argc, const char **argv) {
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
+
+	// only one instance
+	ensure_singleton();
 
 	// always returns a cfg, possibly default
 	displ->cfg = read_cfg();

@@ -1,7 +1,6 @@
 #include <linux/limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
 
@@ -119,7 +118,7 @@ struct Cfg *read_cfg() {
 
 		} catch (const exception &e) {
 			fprintf(stderr, "\nERROR: cannot read '%s': %s, exiting\n", path, e.what());
-			exit(EX_DATAERR);
+			exit(EXIT_FAILURE);
 		}
 	}
 

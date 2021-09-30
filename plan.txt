@@ -14,7 +14,7 @@
 - Sanity checking / projector handling
 - XDG_CONFIG_DIR
 - Auto scale off / override
-Multiple instance checking
+- Multiple instance checking
 Valgrind
 way-displays
 - strerror

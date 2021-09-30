@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <sysexits.h>
-
 #include "wlr-output-management-unstable-v1.h"
 
 #include "listeners.h"
