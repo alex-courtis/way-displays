@@ -7,10 +7,11 @@
 #include <unistd.h>
 
 #define PID_FN "/tmp/way-layout-displays.pid"
+#define NPBUF 11
+
+char pbuf[NPBUF] = "";
 
 void ensure_singleton() {
-	const int NBUF = 11;
-	char buf[NBUF];
 
 	int fd = open(PID_FN, O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR);
 	if (fd == -1) {
@@ -24,9 +25,12 @@ void ensure_singleton() {
 			exit(EXIT_FAILURE);
 		}
 
-		buf[0] = '\0';
-		read(fd, buf, NBUF);
-		fprintf(stderr, "ERROR: another instance %s is running, exiting\n", buf);
+		if (read(fd, pbuf, NPBUF) == -1) {
+			fprintf(stderr, "ERROR: unable to read pid file '%s' %d: %s, exiting\n", PID_FN, errno, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		fprintf(stderr, "ERROR: another instance %s is running, exiting\n", pbuf);
 		exit(EXIT_FAILURE);
 	}
 
@@ -35,9 +39,9 @@ void ensure_singleton() {
 		exit(EXIT_FAILURE);
 	}
 
-	snprintf(buf, NBUF, "%d", getpid());
-	if (write(fd, buf, NBUF) == -1) {
-		fprintf(stderr, "ERROR: unable to write to pid file '%s' %d: %s, exiting\n", PID_FN, errno, strerror(errno));
+	snprintf(pbuf, NPBUF, "%d", getpid());
+	if (write(fd, pbuf, NPBUF) == -1) {
+		fprintf(stderr, "ERROR: unable to write pid file '%s' %d: %s, exiting\n", PID_FN, errno, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 }
