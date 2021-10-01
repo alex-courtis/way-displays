@@ -87,9 +87,6 @@ struct Displ {
 	struct Cfg *cfg;
 	struct Lid *lid;
 
-	struct pollfd *pfds;
-	int npfds;
-
 	uint32_t name;
 };
 
@@ -112,6 +109,7 @@ struct Lid {
 
 	bool dirty;
 
+	char *device_path;
 	struct libinput *libinput_monitor;
 	int libinput_fd;
 };

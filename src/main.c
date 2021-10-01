@@ -41,15 +41,23 @@ enum {
 	PFD_MAX,
 };
 
+int npfds;
+struct pollfd *pfds;
+
 void create_pfds(struct Displ *displ) {
-	displ->npfds = displ->lid ? PFD_MAX : PFD_MAX - 1;
-	displ->pfds = calloc(displ->npfds, sizeof(struct pollfd));
-	displ->pfds[PFD_WL].fd = wl_display_get_fd(displ->display);
-	displ->pfds[PFD_WL].events = POLLIN;
+	npfds = displ->lid ? PFD_MAX : PFD_MAX - 1;
+	pfds = calloc(npfds, sizeof(struct pollfd));
+	pfds[PFD_WL].fd = wl_display_get_fd(displ->display);
+	pfds[PFD_WL].events = POLLIN;
 	if (displ->lid) {
-		displ->pfds[PFD_LI].fd = displ->lid->libinput_fd;
-		displ->pfds[PFD_LI].events = POLLIN;
+		pfds[PFD_LI].fd = displ->lid->libinput_fd;
+		pfds[PFD_LI].events = POLLIN;
 	}
+}
+
+void destroy_pfds() {
+	npfds = 0;
+	free(pfds);
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
@@ -66,7 +74,8 @@ void listen(struct Displ *displ) {
 
 
 		// poll for wayland and libinput events
-		if (poll(displ->pfds, displ->npfds, -1) < 0) {
+		create_pfds(displ);
+		if (poll(pfds, npfds, -1) < 0) {
 			fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
 		}
 
@@ -83,7 +92,7 @@ void listen(struct Displ *displ) {
 
 
 		// dispatch libinput events only when we have received a change
-		if (displ->npfds > PFD_LI && displ->pfds[PFD_LI].revents & displ->pfds[PFD_LI].events) {
+		if (npfds > PFD_LI && pfds[PFD_LI].revents & pfds[PFD_LI].events) {
 			update_lid(displ);
 		}
 
@@ -117,6 +126,8 @@ void listen(struct Displ *displ) {
 				printf("\nNo changes needed\n");
 			}
 		}
+
+		destroy_pfds();
 	}
 }
 
@@ -142,11 +153,11 @@ main(int argc, const char **argv) {
 	// update once to discover initial switch state
 	update_lid(displ);
 
-	// polling fds for wayland and maybe libinput
-	create_pfds(displ);
-
 	listen(displ);
 
-	// unreachable
+	// TODO destroy everything cleanly
+	destroy_lid(displ);
+	free_displ(displ);
+	return EXIT_SUCCESS;
 }
 

@@ -34,6 +34,7 @@ static const struct libinput_interface libinput_impl = {
 };
 
 struct libinput *create_libinput_discovery() {
+	struct libinput *libinput = NULL;
 
 	struct udev *udev = udev_new();
 	if (!udev) {
@@ -41,45 +42,65 @@ struct libinput *create_libinput_discovery() {
 		return NULL;
 	}
 
-	struct libinput *libinput_context = libinput_udev_create_context(&libinput_impl, NULL, udev);
-	if (!libinput_context) {
+	libinput = libinput_udev_create_context(&libinput_impl, NULL, udev);
+	if (!libinput) {
 		fprintf(stderr, "\nERROR: unable to create libinput discovery context, abandoning laptop lid detection\n");
 		return NULL;
 	}
+
+	libinput_set_user_data(libinput, udev);
 
 	const char *xdg_seat = getenv("XDG_SEAT");
 	if (!xdg_seat) {
 		xdg_seat = "seat0";
 	}
 
-	if (libinput_udev_assign_seat(libinput_context, xdg_seat) != 0) {
+	if (libinput_udev_assign_seat(libinput, xdg_seat) != 0) {
 		fprintf(stderr, "\nERROR: failed to assign seat to libinput, abandoning laptop lid detection\n");
 		return NULL;
 	}
 
-	return libinput_context;
+	return libinput;
+}
+
+void destroy_libinput_discovery(struct libinput *libinput) {
+	if (!libinput)
+		return;
+
+	udev_unref(libinput_get_user_data(libinput));
+
+	libinput_suspend(libinput);
+
+	libinput_unref(libinput);
 }
 
 char *discover_lid_device(struct libinput *libinput) {
+	char *device_path = NULL;
+	struct libinput_event *event;
+	struct libinput_device *device;
 
 	if (libinput_dispatch(libinput) != 0) {
 		fprintf(stderr, "\nERROR: failed to dispatch libinput, abandoning laptop lid detection\n");
 		return NULL;
 	}
 
-	char *device_path = NULL;
-	struct libinput_event *event;
-
 	while ((event = libinput_get_event(libinput))) {
 
-		struct libinput_device *device = libinput_event_get_device(event);
+		device = libinput_event_get_device(event);
 
-		if (device && libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_SWITCH)) {
+		if (device &&
+				libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_SWITCH) &&
+				(libinput_device_switch_has_switch(device, LIBINPUT_SWITCH_LID) == 1)) {
 			device_path = calloc(PATH_MAX, sizeof(char));
 			snprintf(device_path, PATH_MAX, "/dev/input/%s", libinput_device_get_sysname(device));
 		}
 
 		libinput_event_destroy(event);
+
+		// there may be multiple (e.g. thinkpad extra buttons) however first is acceptable
+		if (device_path) {
+			break;
+		}
 	}
 
 	return device_path;
@@ -102,20 +123,25 @@ struct libinput *create_libinput_monitor(char *device_path) {
 	return libinput_context;
 }
 
+void destroy_libinput_monitor(struct libinput* libinput) {
+	if (!libinput)
+		return;
+
+	libinput_suspend(libinput);
+
+	libinput_unref(libinput);
+}
+
 void destroy_lid(struct Displ *displ) {
 	struct SList *i;
 	struct Head *head;
 	if (!displ || !displ->lid)
 		return;
 
-	libinput_suspend(displ->lid->libinput_monitor);
-	libinput_unref(displ->lid->libinput_monitor);
+	destroy_libinput_monitor(displ->lid->libinput_monitor);
 
 	free_lid(displ->lid);
 	displ->lid = NULL;
-
-	displ->npfds -= 1;
-	displ->pfds = realloc(displ->pfds, sizeof(struct pollfd) * displ->npfds);
 
 	if (displ->output_manager) {
 		for (i = displ->output_manager->heads; i; i = i->nex) {
@@ -165,6 +191,7 @@ void update_lid(struct Displ *displ) {
 struct Lid *create_lid() {
 	struct Lid *lid	= NULL;
 	struct libinput *libinput_discovery = NULL;
+	struct libinput *libinput_monitor = NULL;
 	char *device_path = NULL;
 
 	// discover with a context of all inputs
@@ -172,9 +199,7 @@ struct Lid *create_lid() {
 
 		device_path = discover_lid_device(libinput_discovery);
 
-		libinput_suspend(libinput_discovery);
-
-		libinput_unref(libinput_discovery);
+		destroy_libinput_discovery(libinput_discovery);
 
 		if (!device_path) {
 			return NULL;
@@ -183,17 +208,17 @@ struct Lid *create_lid() {
 		return NULL;
 	}
 
-	// provisional lid
-	lid = calloc(1, sizeof(struct Lid));
-
 	// monitor in a context with just the lid
-	if ((lid->libinput_monitor = create_libinput_monitor(device_path)) == 0) {
-		free_lid(lid);
+	if (!(libinput_monitor = create_libinput_monitor(device_path))) {
 		return NULL;
 	}
-	lid->libinput_fd = libinput_get_fd(lid->libinput_monitor);
 
 	printf("\nMonitoring lid device: %s\n", device_path);
+
+	lid = calloc(1, sizeof(struct Lid));
+	lid->device_path = device_path;
+	lid->libinput_fd = libinput_get_fd(libinput_monitor);
+	lid->libinput_monitor = libinput_monitor;
 
 	return lid;
 }
