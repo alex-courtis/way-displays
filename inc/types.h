@@ -83,6 +83,8 @@ struct OutputManager {
 struct Displ {
 	struct wl_display *display;
 
+	struct wl_registry *registry;
+
 	struct OutputManager *output_manager;
 	struct Cfg *cfg;
 	struct Lid *lid;

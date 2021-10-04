@@ -35,6 +35,8 @@ void free_output_manager(struct OutputManager *output_manager) {
 	slist_free(&output_manager->heads);
 	slist_free(&output_manager->desired.heads);
 
+	free(output_manager->interface);
+
 	output_manager_free_heads_departed(output_manager);
 
 	free(output_manager);
