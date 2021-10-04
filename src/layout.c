@@ -17,7 +17,11 @@ wl_fixed_t scale_head(struct Head *head, struct Cfg *cfg) {
 		}
 	}
 
-	return auto_scale(head);
+	if (cfg->auto_scale) {
+		return auto_scale(head);
+	} else {
+		return wl_fixed_from_int(1);
+	}
 }
 
 void desire_ltr(struct Displ *displ) {

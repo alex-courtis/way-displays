@@ -69,6 +69,7 @@ struct Cfg *read_cfg() {
 
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
+	cfg->auto_scale = true;
 
 	if (getenv("XDG_CONFIG_HOME"))
 		found = access_cfg(path, getenv("XDG_CONFIG_HOME"), "");
