@@ -25,6 +25,8 @@ struct Head {
 
 	struct zwlr_output_head_v1 *zwlr_head;
 
+	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
+
 	struct SList *modes;
 
 	bool dirty;

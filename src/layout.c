@@ -77,7 +77,6 @@ void apply_desired(struct Displ *displ) {
 	struct Head *head;
 	struct SList *i;
 	struct zwlr_output_configuration_v1 *zwlr_config;
-	struct zwlr_output_configuration_head_v1 *config_head;
 
 	if (!displ || !displ->output_manager)
 		return;
@@ -92,18 +91,18 @@ void apply_desired(struct Displ *displ) {
 		if (head->desired.enabled) {
 
 			// Just a handle for subsequent calls; it's why we always enable instead of just on changes.
-			config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+			head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 
 			if (head->desired.mode && head->pending.mode) {
-				zwlr_output_configuration_head_v1_set_mode(config_head, head->desired.mode->zwlr_mode);
+				zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
 			}
 
 			if (head->pending.scale) {
-				zwlr_output_configuration_head_v1_set_scale(config_head, head->desired.scale);
+				zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
 			}
 
 			if (head->pending.position) {
-				zwlr_output_configuration_head_v1_set_position(config_head, head->desired.x, head->desired.y);
+				zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
 			}
 
 		} else {

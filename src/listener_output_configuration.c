@@ -14,6 +14,13 @@ static void succeeded(void *data,
 	printf("\nChanges successful\n");
 	fflush(stdout);
 
+	for (struct SList *i = output_manager->heads; i; i = i->nex) {
+		struct Head *head = i->val;
+		if (head->zwlr_config_head) {
+			zwlr_output_configuration_head_v1_destroy(head->zwlr_config_head);
+			head->zwlr_config_head = NULL;
+		}
+	}
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 }
 

@@ -15,7 +15,7 @@
 - XDG_CONFIG_DIR
 - Auto scale off / override
 - Multiple instance checking
-Valgrind
+- Valgrind
 way-displays
 - strerror
 
