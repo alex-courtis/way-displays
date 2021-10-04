@@ -1,7 +1,9 @@
 #include <errno.h>
 #include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/signalfd.h>
 
 #include "cfg.h"
 #include "displ.h"
@@ -14,19 +16,36 @@
 #include "wl_wrappers.h"
 
 enum {
-	PFD_WL = 0,
+	PFD_SI = 0,
+	PFD_WL,
 	PFD_LI,
 	PFD_MAX,
 };
 
 int npfds;
 struct pollfd *pfds;
+int sfd = 0;
 
 void create_pfds(struct Displ *displ) {
+	if (!sfd) {
+		sigset_t mask;
+		sigemptyset(&mask);
+		sigaddset(&mask, SIGINT);
+		sigaddset(&mask, SIGQUIT);
+		sigaddset(&mask, SIGTERM);
+		sigprocmask(SIG_BLOCK, &mask, NULL);
+		sfd = signalfd(-1, &mask, 0);
+	}
+
 	npfds = displ->lid ? PFD_MAX : PFD_MAX - 1;
 	pfds = calloc(npfds, sizeof(struct pollfd));
+
+	pfds[PFD_SI].fd = sfd;
+	pfds[PFD_SI].events = POLLIN;
+
 	pfds[PFD_WL].fd = wl_display_get_fd(displ->display);
 	pfds[PFD_WL].events = POLLIN;
+
 	if (displ->lid) {
 		pfds[PFD_LI].fd = displ->lid->libinput_fd;
 		pfds[PFD_LI].events = POLLIN;
@@ -51,10 +70,16 @@ void listen(struct Displ *displ) {
 		_wl_display_flush(displ->display, FL);
 
 
-		// poll for wayland and libinput events
+		// poll for signal, wayland and maybe libinput events
 		create_pfds(displ);
 		if (poll(pfds, npfds, -1) < 0) {
 			fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
+		}
+
+
+		// subscribed signals are all a clean exit, no need to read
+		if (pfds[PFD_SI].revents & pfds[PFD_SI].events) {
+			return;
 		}
 
 
