@@ -137,7 +137,7 @@ void output_manager_free_heads_departed(struct OutputManager *output_manager) {
 		i = i->nex;
 
 		slist_remove(&output_manager->heads_departed, &r);
-		free(head);
+		free_head(head);
 	}
 }
 

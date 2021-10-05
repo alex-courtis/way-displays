@@ -1,4 +1,4 @@
-INCS += -Iinc -Ipro
+INCS = -Iinc -Ipro
 
 CPPFLAGS += $(INCS) -D_GNU_SOURCE
 
@@ -7,7 +7,7 @@ ifdef VALGRIND
 else
 	OFLAGS = -O3
 endif
-WFLAGS += -Wall -Wextra -Werror -Wno-unused-parameter
+WFLAGS = -Wall -Wextra -Werror -Wno-unused-parameter
 COMPFLAGS = -pedantic $(WFLAGS) $(OFLAGS)
 
 CFLAGS += $(COMPFLAGS) -std=gnu17
