@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/signalfd.h>
+#include <unistd.h>
 
 #include "cfg.h"
 #include "displ.h"
@@ -58,7 +59,7 @@ void destroy_pfds() {
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
-void listen(struct Displ *displ) {
+int listen(struct Displ *displ) {
 	bool heads_arrived_or_departed;
 
 	for (;;) {
@@ -77,9 +78,11 @@ void listen(struct Displ *displ) {
 		}
 
 
-		// subscribed signals are all a clean exit, no need to read
+		// subscribed signals are all a clean exit
 		if (pfds[PFD_SI].revents & pfds[PFD_SI].events) {
-			return;
+			struct signalfd_siginfo fdsi;
+			read(sfd, &fdsi, sizeof(fdsi));
+			return fdsi.ssi_signo;
 		}
 
 
@@ -156,10 +159,12 @@ main(int argc, const char **argv) {
 	// update once to discover initial switch state
 	update_lid(displ);
 
-	listen(displ);
+	// only stops when signalled
+	int sig = listen(displ);
 
+	// release what remote resources we can
 	destroy_display(displ);
 
-	return EXIT_SUCCESS;
+	return sig;
 }
 
