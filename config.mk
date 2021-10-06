@@ -7,8 +7,8 @@ ifdef VALGRIND
 else
 	OFLAGS = -O3
 endif
-WFLAGS = -Wall -Wextra -Werror -Wno-unused-parameter
-COMPFLAGS = -pedantic $(WFLAGS) $(OFLAGS)
+WFLAGS = -pedantic -Wall -Wextra -Werror -Wno-unused-parameter
+COMPFLAGS = $(WFLAGS) $(OFLAGS)
 
 CFLAGS += $(COMPFLAGS) -std=gnu17
 CXXFLAGS += $(COMPFLAGS) -std=gnu++17

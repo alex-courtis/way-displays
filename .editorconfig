@@ -4,18 +4,10 @@ root = true
 charset = utf-8
 end_of_line = lf
 indent_size = 4
+indent_style = tab
 trim_trailing_whitespace = true
 
-[*.{c,h}]
-indent_style = tab
-
-[Makefile]
-indent_style = tab
-
-[*.{xml,yml}]
-indent_style = space
-
-[config]
+[*.{yml,yaml}]
 indent_style = space
 
 [*.md]
