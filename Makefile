@@ -11,12 +11,12 @@ PRO_H = $(PRO_X:.xml=.h)
 PRO_C = $(PRO_X:.xml=.c)
 PRO_O = $(PRO_X:.xml=.o)
 
-all: way-layout-displays tags .copy
+all: way-displays tags .copy
 
 $(SRC_O): $(INC_H) $(PRO_H)
 $(PRO_O): $(PRO_H)
 
-way-layout-displays: $(SRC_O) $(PRO_O)
+way-displays: $(SRC_O) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 $(PRO_H): $(PRO_X)
@@ -26,7 +26,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
-	rm -f way-layout-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) tags .copy
+	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) tags .copy
 
 # https://github.com/alex-courtis/arch/blob/b530f331dacaaba27484593a87ca20a9f53ab73f/home/bin/ctags-something
 tags: $(SRC_C) $(INC_H) $(PRO_H)
@@ -34,7 +34,7 @@ tags: $(SRC_C) $(INC_H) $(PRO_H)
 		ctags-c $(CFLAGS) $(CPPFLAGS) --project-src $(^) || \
 		true
 
-.copy: way-layout-displays
+.copy: way-displays
 	scp $(^) alw@gigantor:/home/alw/bin
 	@touch .copy
 

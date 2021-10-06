@@ -8,7 +8,7 @@
 
 #include "process.h"
 
-#define PID_FN "/tmp/way-layout-displays.pid"
+#define PID_FN "/tmp/way-displays.pid"
 #define NPBUF 11
 
 char pbuf[NPBUF] = "";

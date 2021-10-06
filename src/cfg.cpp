@@ -17,7 +17,7 @@ using std::stringstream;
 #define DEFAULT_LAPTOP_OUTPUT_PREFIX "eDP"
 
 bool access_cfg(char *path, const char *prefix, const char *suffix) {
-	snprintf(path, PATH_MAX, "%s%s/way-layout-displays/cfg.yaml", prefix, suffix);
+	snprintf(path, PATH_MAX, "%s%s/way-displays/cfg.yaml", prefix, suffix);
 	return access(path, R_OK) == 0;
 }
 

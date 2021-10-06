@@ -16,7 +16,7 @@
 - Auto scale off / override
 - Multiple instance checking
 - Valgrind
-way-displays
+- way-displays
 - strerror
 
 systemd service
