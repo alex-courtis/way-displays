@@ -1,11 +1,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <poll.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <wayland-client-core.h>
-#include <wayland-util.h>
 
 #include "list.h"
 

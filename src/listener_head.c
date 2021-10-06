@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "listeners.h"
+
 #include "types.h"
 
 // Head data

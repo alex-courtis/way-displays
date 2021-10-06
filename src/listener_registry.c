@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include "wlr-output-management-unstable-v1.h"
 
 #include "listeners.h"
+
 #include "types.h"
 
 // Displ data

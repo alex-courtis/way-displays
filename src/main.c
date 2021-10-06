@@ -10,7 +10,6 @@
 #include "displ.h"
 #include "info.h"
 #include "lid.h"
-#include "listeners.h"
 #include "layout.h"
 #include "process.h"
 #include "types.h"

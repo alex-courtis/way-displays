@@ -2,6 +2,8 @@
 
 #include "info.h"
 
+#include "types.h"
+
 void print_head_current(struct Head *head) {
 	if (!head)
 		return;

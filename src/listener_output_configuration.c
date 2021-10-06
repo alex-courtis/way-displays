@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "listeners.h"
+
 #include "types.h"
 
 // OutputManager data

@@ -1,7 +1,7 @@
 #ifndef INFO_H
 #define INFO_H
 
-#include "types.h"
+#include "list.h"
 
 enum event {
 	ARRIVED,

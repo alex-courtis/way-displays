@@ -2,6 +2,7 @@
 #include <wayland-client-protocol.h>
 
 #include "displ.h"
+
 #include "lid.h"
 #include "listeners.h"
 

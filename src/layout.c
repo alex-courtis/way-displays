@@ -1,8 +1,8 @@
-#include <stdio.h>
 #include <string.h>
-#include "calc.h"
+
 #include "layout.h"
-#include "lid.h"
+
+#include "calc.h"
 #include "listeners.h"
 
 wl_fixed_t scale_head(struct Head *head, struct Cfg *cfg) {

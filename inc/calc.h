@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef CALC_H
+#define CALC_H
 
 #include "types.h"
 
@@ -11,5 +11,5 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 
 void ltr_heads(struct SList *heads);
 
-#endif // UTIL_H
+#endif // CALC_H
 

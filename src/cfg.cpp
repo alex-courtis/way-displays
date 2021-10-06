@@ -1,13 +1,10 @@
 #include <linux/limits.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
 
 extern "C" {
 #include "cfg.h"
-#include "list.h"
-#include "types.h"
 }
 
 namespace { // }

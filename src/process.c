@@ -6,6 +6,8 @@
 #include <sys/file.h>
 #include <unistd.h>
 
+#include "process.h"
+
 #define PID_FN "/tmp/way-layout-displays.pid"
 #define NPBUF 11
 
