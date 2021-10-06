@@ -82,7 +82,7 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 			}
 			if (i->val &&
 					((head->name && strcmp(i->val, head->name) == 0) ||
-					 (head->description && strcmp(i->val, head->description) == 0))) {
+					 (head->description && strcasestr(head->description, i->val)))) {
 				slist_append(&heads_ordered, head);
 				slist_remove(&sorting, &r);
 			}

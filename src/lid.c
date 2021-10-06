@@ -214,6 +214,7 @@ struct Lid *create_lid() {
 	}
 
 	printf("\nMonitoring lid device: %s\n", device_path);
+	fflush(stdout);
 
 	lid = calloc(1, sizeof(struct Lid));
 	lid->device_path = device_path;

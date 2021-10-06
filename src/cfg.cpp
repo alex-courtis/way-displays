@@ -31,32 +31,26 @@ void print_cfg(struct Cfg *cfg) {
 		printf("\nConfiguration file not found.\n");
 	}
 
-	printf("  Auto scale:\n");
-	if (cfg->auto_scale) {
-		printf("    ON\n");
-	} else {
-		printf("    OFF\n");
-	}
+	printf("  Auto scale: %s\n", cfg->auto_scale ? "ON" : "OFF");
 
-	printf("  Laptop display prefix:\n");
-	if (cfg->laptop_display_prefix) {
-		printf("    %s\n", cfg->laptop_display_prefix);
-	}
+	printf("  Laptop display prefix: '%s'\n", cfg->laptop_display_prefix);
 
 	if (cfg->order_name_desc) {
-		printf("  Display order:\n");
+		printf("  Order:\n");
 		for (i = cfg->order_name_desc; i; i = i->nex) {
 			printf("    %s\n", (char*)i->val);
 		}
 	}
 
 	if (cfg->user_scales) {
-		printf("  Display scales:\n");
+		printf("  Scale:\n");
 		for (i = cfg->user_scales; i; i = i->nex) {
 			user_scale = (struct UserScale*)i->val;
 			printf("    %s: %.2f\n", user_scale->name_desc, user_scale->scale);
 		}
 	}
+
+	fflush(stdout);
 }
 
 struct Cfg *read_cfg() {

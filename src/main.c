@@ -129,6 +129,7 @@ int listen(struct Displ *displ) {
 
 			} else if (heads_arrived_or_departed) {
 				printf("\nNo changes needed\n");
+				fflush(stdout);
 			}
 		}
 

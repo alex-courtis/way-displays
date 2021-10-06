@@ -12,7 +12,7 @@ wl_fixed_t scale_head(struct Head *head, struct Cfg *cfg) {
 		user_scale = (struct UserScale*)i->val;
 		if (user_scale->name_desc &&
 				(strcmp(user_scale->name_desc, head->name) == 0 ||
-				 strcmp(user_scale->name_desc, head->description) == 0)) {
+				 strcasestr(head->description, user_scale->name_desc))) {
 			return wl_fixed_from_double(user_scale->scale);
 		}
 	}

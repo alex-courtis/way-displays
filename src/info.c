@@ -88,7 +88,7 @@ void print_heads(enum event event, struct SList *heads) {
 		switch (event) {
 			case ARRIVED:
 				printf("\n%s Arrived:\n", head->name);
-				printf("    name:     %s\n", head->name);
+				printf("    name:     '%s'\n", head->name);
 				printf("    desc:     '%s'\n", head->description);
 				if (head->size_specified) {
 					printf("    width:    %dmm\n", head->width_mm);
@@ -100,8 +100,8 @@ void print_heads(enum event event, struct SList *heads) {
 				print_head_current(head);
 				break;
 			case DEPARTED:
-				printf("\n%s Departed:\n", head->name);
-				printf("    name:     %s\n", head->name);
+				printf("\n'%s' Departed:\n", head->name);
+				printf("    name:     '%s'\n", head->name);
 				printf("    desc:     '%s'\n", head->description);
 				break;
 			case DELTA:
