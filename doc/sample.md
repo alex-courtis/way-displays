@@ -56,11 +56,19 @@ DP-3 Arrived:
     desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
     width:    700mm
     height:   390mm
-    scale:    1.25
+    scale:    1.00
     position: 1280,0
     mode:     2560x1440@144Hz (preferred)
 
-No changes needed
+DP-3 Changing:
+  from:
+    scale:    1.00
+    position: 1280,0
+    mode:     2560x1440@144Hz (preferred)
+  to:
+    scale:    1.25
+
+Changes successful
 ```
 
 Closed the laptop lid:

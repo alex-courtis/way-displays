@@ -37,39 +37,35 @@ void print_head_desired(struct Head *head) {
 	if (!head)
 		return;
 
-	if (is_pending_head(head)) {
-		if (head->desired.enabled) {
-			if (head->pending.scale) {
-				printf("    scale:    %.2f",
-						wl_fixed_to_double(head->desired.scale)
-					  );
-				if (!head->size_specified) {
-					printf(" (default, size not specified)");
-				}
-				printf("\n");
+	if (head->desired.enabled) {
+		if (head->pending.scale) {
+			printf("    scale:    %.2f",
+					wl_fixed_to_double(head->desired.scale)
+				  );
+			if (!head->size_specified) {
+				printf(" (default, size not specified)");
 			}
-			if (head->pending.position) {
-				printf("    position: %d,%d\n",
-						head->desired.x,
-						head->desired.y
-					  );
-			}
-			if (head->pending.mode && head->desired.mode) {
-				printf("    mode:     %dx%d@%ldHz %s\n",
-						head->desired.mode->width,
-						head->desired.mode->height,
-						(long)(((double)head->desired.mode->refresh_mHz / 1000 + 0.5)),
-						head->desired.mode->preferred ? "(preferred)" : "           "
-					  );
-			}
-			if (head->pending.enabled && head->desired.enabled) {
-				printf("    (enabled)\n");
-			}
-		} else {
-			printf("    (disabled)\n");
+			printf("\n");
+		}
+		if (head->pending.position) {
+			printf("    position: %d,%d\n",
+					head->desired.x,
+					head->desired.y
+				  );
+		}
+		if (head->pending.mode && head->desired.mode) {
+			printf("    mode:     %dx%d@%ldHz %s\n",
+					head->desired.mode->width,
+					head->desired.mode->height,
+					(long)(((double)head->desired.mode->refresh_mHz / 1000 + 0.5)),
+					head->desired.mode->preferred ? "(preferred)" : "           "
+				  );
+		}
+		if (head->pending.enabled && head->desired.enabled) {
+			printf("    (enabled)\n");
 		}
 	} else {
-		printf("    (no change)\n");
+		printf("    (disabled)\n");
 	}
 }
 
@@ -105,10 +101,12 @@ void print_heads(enum event event, struct SList *heads) {
 				printf("    desc:     '%s'\n", head->description);
 				break;
 			case DELTA:
-				printf("%s Changing:\n  from:\n", head->name);
-				print_head_current(head);
-				printf("  to:\n");
-				print_head_desired(head);
+				if (is_pending_head(head)) {
+					printf("%s Changing:\n  from:\n", head->name);
+					print_head_current(head);
+					printf("  to:\n");
+					print_head_desired(head);
+				}
 				break;
 			default:
 				break;
