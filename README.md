@@ -6,9 +6,19 @@
 1. Reacts when displays are plugged/unplugged
 1. Reacts when laptop lid is closed/opened
 
+See an [example session](doc/example-session.md) for more details.
+
 Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay)
 
-# TODO requirements
+# Requirements
+
+The wayland compositor must support the WLR (wayland roots) Output Management protocol.
+
+Compositors built on wayland roots support this, such as the following:
+* [sway](https://swaywm.org/)
+* [hikari](https://hikari.acmelabs.space)
+* [Way Cooler](http://way-cooler.org/)
+* [Wayfire](https://github.com/WayfireWM/wayfire)
 
 # Usage
 
@@ -29,33 +39,46 @@ Look at `/tmp/way-displays.1.me.log` to see what has been going on.
 
 # Configuration
 
-TODO where
+The following are used, in order: `$XDG_CONFIG_HOME/way-displays/cfg.yaml`, `$HOME/.config/way-displays/cfg.yaml`, `/usr/local/etc/way-displays/cfg.yaml`, `/etc/way-displays/cfg.yaml`
+
+See [default configuration](cfg.yaml) at `/etc/way-displays/cfg.yaml`.
+
+To get started:
+```
+mkdir ~/.config/way-displays
+cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
+```
+
+TODO reloading
 
 ## Option: Order
 
 The default left to right order is simply the order in which the displays are discovered.
 
-Define this yourself e.g.
+Define this own e.g.:
 ```yaml
-ORDER_NAME_DESC:
+ORDER:
     - 'DP-2'
     - 'Monitor Maker ABC123'
 ```
 
 ## Option: Auto Scaling
 
-The default is to scale each display by DPI. This may be disabled:
+The default is to scale each display by DPI.
+
+This may be disabled and scale 1 will be used, unless a `SCALE` has been specified.
+
 ```yaml
 AUTO_SCALE: false
 ```
 
 ## Option: Custom Scales
 
-Auto scale may be overridden by display e.g.:
+Auto scale may be overridden for each display e.g.
 ```yaml
-DISPLAY_SCALE:
+SCALE:
     - NAME_DESC: 'Monitor Maker ABC123'
-      SCALE: 1.25
+      SCALE: 1.75
 ```
 
 ## Option: Laptop Display Name Prefix
@@ -74,7 +97,7 @@ DP-3 Arrived:
     desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
 ```
 
-It is recommended to use the description rather than the name, as the name may change over time and will definitely be different on different PCs.
+It is recommended to use the description rather than the name, as the name may change over time and will most likely be different on different PCs.
 
 The description does contain information about how it is connected, so strip that out. In the above example, you would use the description `Monitor Maker ABC123`.
 
@@ -82,7 +105,7 @@ The description does contain information about how it is connected, so strip tha
 
 ## TODO AUR
 
-## Building From Source
+## Build From Source
 
 Dependencies:
 * gcc
@@ -110,6 +133,16 @@ make
 sudo make install
 sudo make uninstall
 ```
+
+# On Scale And Blurring
+
+When using a display scale that is not a whole number, the result will not be a pixel perfect rendition of the unscaled content. As has been mentioned elsewhere, there are no fractional pixels so there will be rounding and thus some blurring.
+
+To ameliorate this, we always round our scale to a multiple of one eighth. This results in a nice round binary number, which minimises some of the rounding and results in a smoother image. If you're interested, our rounded scale is a [wl_fixed_t](https://wayland.freedesktop.org/docs/html/apb.html).
+
+# Help, Questions, Suggestions And Ideas
+
+Please create a [github issue](https://github.com/alex-courtis/way-displays/issues).
 
 # Contributing
 

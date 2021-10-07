@@ -1,0 +1,29 @@
+# Default cfg.yaml for way-displays.
+# Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
+
+
+# The default left to right order is simply the order in which the displays are
+# discovered.
+# Define this own.
+ORDER:
+  #- 'DP-2'
+  #- 'monitor description'
+  #- 'HDMI-1'
+
+
+# The default is to scale each display by DPI.
+# This may be disabled and scale 1 will be used, unless a SCALE has been
+# specified.
+#AUTO_SCALE: false
+
+
+# Auto scale may be overridden for each display.
+SCALE:
+  #- NAME_DESC: 'monitor description'
+  #  SCALE: 1.75
+
+
+# Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
+# your laptop is different.
+#LAPTOP_DISPLAY_PREFIX: 'eDP'
+

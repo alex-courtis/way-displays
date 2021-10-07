@@ -1,25 +1,25 @@
 This session was run using the following configuration:
 ```yaml
-# my laptop is weird
-LAPTOP_DISPLAY_PREFIX: 'eDRP'
-
-ORDER_NAME_DESC:
+ORDER:
     # I like my laptop on the left
     - 'Laptop Company 0x123A 456'
     - 'Monitor Maker ABC123'
     - 'DP-2'
 
-DISPLAY_SCALE:
+SCALE:
     # this one is too far away; scale it up!
     - NAME_DESC: 'Monitor Maker ABC123'
       SCALE: 1.25
+
+# my laptop is weird
+LAPTOP_DISPLAY_PREFIX: 'eDERP'
 ```
 
 Starting up:
 ```
 Configuration file: /home/me/.config/way-displays/cfg.yaml
   Auto scale: ON
-  Laptop display prefix: 'eDRP'
+  Laptop display prefix: 'eDERP'
   Order:
     Laptop Company 0x123A 456
     Monitor Maker ABC123
@@ -29,16 +29,16 @@ Configuration file: /home/me/.config/way-displays/cfg.yaml
 
 Monitoring lid device: /dev/input/event0
 
-eDRP-1 Arrived:
-    name:     'eDRP-1'
-    desc:     'Laptop Company 0x123A 456 (eDRP-1)'
+eDERP-1 Arrived:
+    name:     'eDERP-1'
+    desc:     'Laptop Company 0x123A 456 (eDERP-1)'
     width:    340mm
     height:   190mm
     scale:    1.00
     position: 0,0
     mode:     3840x2160@60Hz (preferred)
 
-eDRP-1 Changing:
+eDERP-1 Changing:
   from:
     scale:    1.00
     position: 0,0
@@ -73,7 +73,7 @@ Changes successful
 
 Closed the laptop lid:
 ```
-eDRP-1 Changing:
+eDERP-1 Changing:
   from:
     scale:    3.00
     position: 0,0
@@ -94,7 +94,7 @@ Changes successful
 
 Opened the laptop lid:
 ```
-eDRP-1 Changing:
+eDERP-1 Changing:
   from:
     (disabled)
   to:

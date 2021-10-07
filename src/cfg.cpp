@@ -81,8 +81,8 @@ struct Cfg *read_cfg() {
 				cfg->laptop_display_prefix = strdup(config["LAPTOP_DISPLAY_PREFIX"].as<string>().c_str());
 			}
 
-			if (config["ORDER_NAME_DESC"]) {
-				const auto &orders = config["ORDER_NAME_DESC"];
+			if (config["ORDER"]) {
+				const auto &orders = config["ORDER"];
 				for (const auto &order : orders) {
 					slist_append(&cfg->order_name_desc, strdup(order.as<string>().c_str()));
 				}
@@ -93,8 +93,8 @@ struct Cfg *read_cfg() {
 				cfg->auto_scale = orders.as<bool>();
 			}
 
-			if (config["DISPLAY_SCALE"]) {
-				const auto &display_scales = config["DISPLAY_SCALE"];
+			if (config["SCALE"]) {
+				const auto &display_scales = config["SCALE"];
 				for (const auto &display_scale : display_scales) {
 					if (display_scale["NAME_DESC"] && display_scale["SCALE"]) {
 						struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
