@@ -1,8 +1,10 @@
+VERSION ?= "1.0.0-SNAPSHOT"
+
 PREFIX ?= /usr/local
 
 INCS = -Iinc -Ipro
 
-CPPFLAGS += $(INCS) -D_GNU_SOURCE
+CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\"
 
 ifdef VALGRIND
 	OFLAGS = -O0 -g

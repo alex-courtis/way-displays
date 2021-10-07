@@ -141,6 +141,8 @@ int
 main(int argc, const char **argv) {
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
 
+	printf("\nway-displays version %s\n", VERSION);
+
 	// only one instance
 	ensure_singleton();
 

@@ -57,7 +57,7 @@ DP-3 Arrived:
     width:    700mm
     height:   390mm
     scale:    1.00
-    position: 1280,0
+    position: 0,0
     mode:     2560x1440@144Hz (preferred)
 
 DP-3 Changing:
@@ -67,6 +67,7 @@ DP-3 Changing:
     mode:     2560x1440@144Hz (preferred)
   to:
     scale:    1.25
+    position: 1280,0
 
 Changes successful
 ```
