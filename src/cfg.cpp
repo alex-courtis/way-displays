@@ -67,6 +67,8 @@ struct Cfg *read_cfg() {
 	if (!found && getenv("HOME"))
 		found = access_cfg(path, getenv("HOME"), "/.config");
 	if (!found)
+		found = access_cfg(path, "/usr/local/etc", "");
+	if (!found)
 		found = access_cfg(path, "/etc", "");
 
 	if (found) {

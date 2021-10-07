@@ -1,3 +1,5 @@
+PREFIX ?= /usr/local
+
 INCS = -Iinc -Ipro
 
 CPPFLAGS += $(INCS) -D_GNU_SOURCE

@@ -18,6 +18,10 @@
 - Valgrind
 - way-displays
 - strerror
+- install
+AUR
+version
+https://github.com/swaywm/sway/wiki/Useful-add-ons-for-sway
 
 systemd service
 Take display away from sway
