@@ -40,10 +40,11 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/way-displays
 	rm -rf $(DESTDIR)$(PREFIX)/etc/way-displays
 
-# https://github.com/alex-courtis/arch/blob/b530f331dacaaba27484593a87ca20a9f53ab73f/home/bin/ctags-something
-tags: $(SRC_C) $(INC_H) $(PRO_H)
-	which ctags-c > /dev/null 2>&1 && \
-		ctags-c $(CFLAGS) $(CPPFLAGS) --project-src $(^) || \
+# https://github.com/alex-courtis/arch/blob/7ca6c8d7f7aa910ec522470bb7a96ddb24c9a1ea/bin/ctags-something
+tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
+	which ctags-c > /dev/null 2>&1 && which ctags-c++ > /dev/null 2>&1 && \
+		ctags-c   $(CFLAGS)   $(CPPFLAGS) --project-src $(SRC_C)   $(INC_H) $(PRO_H) && \
+		ctags-c++ $(CXXFLAGS) $(CPPFLAGS) --project-src $(SRC_CXX) $(INC_H) $(PRO_H) --append || \
 		true
 
 .copy: way-displays
