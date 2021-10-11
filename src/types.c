@@ -78,7 +78,9 @@ void free_cfg(struct Cfg *cfg) {
 	}
 	slist_free(&cfg->user_scales);
 
-	free(cfg->file_path);
+	free(cfg->path_dir);
+	free(cfg->path_file);
+
 	free(cfg->laptop_display_prefix);
 
 	free(cfg);

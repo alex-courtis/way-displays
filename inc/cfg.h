@@ -7,9 +7,9 @@
 extern "C" { //}
 #endif
 
-struct Cfg *read_cfg();
-
 void print_cfg(struct Cfg *cfg);
+
+struct Cfg *read_cfg();
 
 #if __cplusplus
 } // extern "C"

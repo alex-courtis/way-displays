@@ -47,8 +47,9 @@ tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
 		ctags-c++ $(CXXFLAGS) $(CPPFLAGS) --project-src $(SRC_CXX) $(INC_H) $(PRO_H) --append || \
 		true
 
-.copy: way-displays
-	scp $(^) alw@gigantor:/home/alw/bin
+.copy: way-displays cfg.yaml
+	scp way-displays alw@gigantor:/home/alw/bin
+	scp cfg.yaml alw@gigantor:/home/alw/.config/way-displays
 	@touch .copy
 
 .PHONY: all clean

@@ -14,19 +14,81 @@ using std::string;
 using std::stringstream;
 } // namespace
 
+#define CFG_FILE_NAME "cfg.yaml"
 #define DEFAULT_LAPTOP_OUTPUT_PREFIX "eDP"
 
-bool access_cfg(char *path, const char *prefix, const char *suffix) {
-	snprintf(path, PATH_MAX, "%s%s/way-displays/cfg.yaml", prefix, suffix);
-	return access(path, R_OK) == 0;
+bool resolve(struct Cfg *cfg, const char *prefix, const char *suffix) {
+	if (!cfg)
+		return false;
+
+	char path_dir[PATH_MAX];
+	char path_file[PATH_MAX];
+
+	snprintf(path_dir, PATH_MAX,  "%s%s/way-displays", prefix, suffix);
+	snprintf(path_file, PATH_MAX, "%s%s/way-displays/%s", prefix, suffix, CFG_FILE_NAME);
+
+	if (access(path_file, R_OK) == 0) {
+		cfg->path_dir = strdup(path_dir);
+		cfg->path_file = strdup(path_file);
+		return true;
+	} else {
+		return false;
+	}
+}
+
+void parse(struct Cfg *cfg) {
+	if (!cfg || !cfg->path_file)
+		return;
+
+	try {
+		YAML::Node config = YAML::LoadFile(cfg->path_file);
+
+		if (config["LAPTOP_DISPLAY_PREFIX"]) {
+			free(cfg->laptop_display_prefix);
+			cfg->laptop_display_prefix = strdup(config["LAPTOP_DISPLAY_PREFIX"].as<string>().c_str());
+		}
+
+		if (config["ORDER"]) {
+			const auto &orders = config["ORDER"];
+			for (const auto &order : orders) {
+				slist_append(&cfg->order_name_desc, strdup(order.as<string>().c_str()));
+			}
+		}
+
+		if (config["AUTO_SCALE"]) {
+			const auto &orders = config["AUTO_SCALE"];
+			cfg->auto_scale = orders.as<bool>();
+		}
+
+		if (config["SCALE"]) {
+			const auto &display_scales = config["SCALE"];
+			for (const auto &display_scale : display_scales) {
+				if (display_scale["NAME_DESC"] && display_scale["SCALE"]) {
+					struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+					user_scale->name_desc = strdup(display_scale["NAME_DESC"].as<string>().c_str());
+					user_scale->scale = display_scale["SCALE"].as<float>();
+					if (user_scale->scale <= 0) {
+						printf("\nIgnoring invalid scale for %s: %.2f\n", user_scale->name_desc, user_scale->scale);
+						free(user_scale);
+					} else {
+						slist_append(&cfg->user_scales, user_scale);
+					}
+				}
+			}
+		}
+
+	} catch (const exception &e) {
+		fprintf(stderr, "\nERROR: cannot read '%s': %s, exiting\n", cfg->path_file, e.what());
+		exit(EXIT_FAILURE);
+	}
 }
 
 void print_cfg(struct Cfg *cfg) {
 	struct UserScale *user_scale;
 	struct SList *i;
 
-	if (cfg->file_path) {
-		printf("\nConfiguration file: %s\n", cfg->file_path);
+	if (cfg->path_file) {
+		printf("\nConfiguration file: %s\n", cfg->path_file);
 	} else {
 		printf("\nConfiguration file not found.\n");
 	}
@@ -54,8 +116,6 @@ void print_cfg(struct Cfg *cfg) {
 }
 
 struct Cfg *read_cfg() {
-	YAML::Node config;
-	char path[PATH_MAX];
 	bool found = false;
 
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
@@ -63,57 +123,16 @@ struct Cfg *read_cfg() {
 	cfg->auto_scale = true;
 
 	if (getenv("XDG_CONFIG_HOME"))
-		found = access_cfg(path, getenv("XDG_CONFIG_HOME"), "");
+		found = resolve(cfg, getenv("XDG_CONFIG_HOME"), "");
 	if (!found && getenv("HOME"))
-		found = access_cfg(path, getenv("HOME"), "/.config");
+		found = resolve(cfg, getenv("HOME"), "/.config");
 	if (!found)
-		found = access_cfg(path, "/usr/local/etc", "");
+		found = resolve(cfg, "/usr/local/etc", "");
 	if (!found)
-		found = access_cfg(path, "/etc", "");
+		found = resolve(cfg, "/etc", "");
 
 	if (found) {
-		cfg->file_path = strdup(path);
-		try {
-			config = YAML::LoadFile(path);
-
-			if (config["LAPTOP_DISPLAY_PREFIX"]) {
-				free(cfg->laptop_display_prefix);
-				cfg->laptop_display_prefix = strdup(config["LAPTOP_DISPLAY_PREFIX"].as<string>().c_str());
-			}
-
-			if (config["ORDER"]) {
-				const auto &orders = config["ORDER"];
-				for (const auto &order : orders) {
-					slist_append(&cfg->order_name_desc, strdup(order.as<string>().c_str()));
-				}
-			}
-
-			if (config["AUTO_SCALE"]) {
-				const auto &orders = config["AUTO_SCALE"];
-				cfg->auto_scale = orders.as<bool>();
-			}
-
-			if (config["SCALE"]) {
-				const auto &display_scales = config["SCALE"];
-				for (const auto &display_scale : display_scales) {
-					if (display_scale["NAME_DESC"] && display_scale["SCALE"]) {
-						struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-						user_scale->name_desc = strdup(display_scale["NAME_DESC"].as<string>().c_str());
-						user_scale->scale = display_scale["SCALE"].as<float>();
-						if (user_scale->scale <= 0) {
-							printf("\nIgnoring invalid scale for %s: %.2f\n", user_scale->name_desc, user_scale->scale);
-							free(user_scale);
-						} else {
-							slist_append(&cfg->user_scales, user_scale);
-						}
-					}
-				}
-			}
-
-		} catch (const exception &e) {
-			fprintf(stderr, "\nERROR: cannot read '%s': %s, exiting\n", path, e.what());
-			exit(EXIT_FAILURE);
-		}
+		parse(cfg);
 	}
 
 	return cfg;

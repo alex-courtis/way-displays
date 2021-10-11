@@ -1,6 +1,5 @@
 #include <errno.h>
 #include <poll.h>
-#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/signalfd.h>
@@ -8,54 +7,13 @@
 
 #include "cfg.h"
 #include "displ.h"
+#include "fds.h"
 #include "info.h"
 #include "lid.h"
 #include "layout.h"
 #include "process.h"
 #include "types.h"
 #include "wl_wrappers.h"
-
-enum {
-	PFD_SI = 0,
-	PFD_WL,
-	PFD_LI,
-	PFD_MAX,
-};
-
-int npfds;
-struct pollfd *pfds;
-int sfd = 0;
-
-void create_pfds(struct Displ *displ) {
-	if (!sfd) {
-		sigset_t mask;
-		sigemptyset(&mask);
-		sigaddset(&mask, SIGINT);
-		sigaddset(&mask, SIGQUIT);
-		sigaddset(&mask, SIGTERM);
-		sigprocmask(SIG_BLOCK, &mask, NULL);
-		sfd = signalfd(-1, &mask, 0);
-	}
-
-	npfds = displ->lid ? PFD_MAX : PFD_MAX - 1;
-	pfds = calloc(npfds, sizeof(struct pollfd));
-
-	pfds[PFD_SI].fd = sfd;
-	pfds[PFD_SI].events = POLLIN;
-
-	pfds[PFD_WL].fd = wl_display_get_fd(displ->display);
-	pfds[PFD_WL].events = POLLIN;
-
-	if (displ->lid) {
-		pfds[PFD_LI].fd = displ->lid->libinput_fd;
-		pfds[PFD_LI].events = POLLIN;
-	}
-}
-
-void destroy_pfds() {
-	npfds = 0;
-	free(pfds);
-}
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 int listen(struct Displ *displ) {
@@ -70,7 +28,7 @@ int listen(struct Displ *displ) {
 		_wl_display_flush(displ->display, FL);
 
 
-		// poll for signal, wayland and maybe libinput events
+		// poll for signal, wayland and maybe libinput, cfg file events
 		create_pfds(displ);
 		if (poll(pfds, npfds, -1) < 0) {
 			fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
@@ -78,9 +36,9 @@ int listen(struct Displ *displ) {
 
 
 		// subscribed signals are all a clean exit
-		if (pfds[PFD_SI].revents & pfds[PFD_SI].events) {
+		if (pfd_signal && pfd_signal->revents & pfd_signal->events) {
 			struct signalfd_siginfo fdsi;
-			read(sfd, &fdsi, sizeof(fdsi));
+			read(fd_signal, &fdsi, sizeof(fdsi));
 			return fdsi.ssi_signo;
 		}
 
@@ -97,7 +55,7 @@ int listen(struct Displ *displ) {
 
 
 		// dispatch libinput events only when we have received a change
-		if (npfds > PFD_LI && pfds[PFD_LI].revents & pfds[PFD_LI].events) {
+		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
 			update_lid(displ);
 		}
 
@@ -105,6 +63,7 @@ int listen(struct Displ *displ) {
 		update_heads_lid_closed(displ);
 
 
+		// TODO extract and add lid/cfg notifications
 		// inform of arrivals and departures, usually a NOP
 		heads_arrived_or_departed = displ->output_manager->heads_arrived || displ->output_manager->heads_departed;
 		print_heads(ARRIVED, displ->output_manager->heads_arrived);

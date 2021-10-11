@@ -98,7 +98,9 @@ struct UserScale {
 };
 
 struct Cfg {
-	char *file_path;
+	char *path_dir;
+	char *path_file;
+
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
 	bool auto_scale;
