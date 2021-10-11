@@ -144,10 +144,6 @@ void output_manager_free_heads_departed(struct OutputManager *output_manager) {
 	}
 }
 
-void output_manager_release_heads_arrived(struct OutputManager *output_manager) {
-	slist_free(&output_manager->heads_arrived);
-}
-
 bool is_dirty(struct Displ *displ) {
 	struct SList *i;
 	struct Head *head;

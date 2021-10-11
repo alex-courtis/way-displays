@@ -17,9 +17,11 @@
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 int listen(struct Displ *displ) {
-	bool heads_arrived_or_departed;
+	bool user_changes;
 
 	for (;;) {
+		user_changes = false;
+
 
 		// prepare for reading wayland events
 		while (_wl_display_prepare_read(displ->display, FL) != 0) {
@@ -46,6 +48,7 @@ int listen(struct Displ *displ) {
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
 			if (cfg_file_written(displ->cfg->file_name)) {
+				user_changes = true;
 				displ->cfg = reload_cfg(displ->cfg);
 			}
 		}
@@ -71,13 +74,8 @@ int listen(struct Displ *displ) {
 		update_heads_lid_closed(displ);
 
 
-		// TODO extract and add lid/cfg notifications
-		// inform of arrivals and departures, usually a NOP
-		heads_arrived_or_departed = displ->output_manager->heads_arrived || displ->output_manager->heads_departed;
-		print_heads(ARRIVED, displ->output_manager->heads_arrived);
-		output_manager_release_heads_arrived(displ->output_manager);
-		print_heads(DEPARTED, displ->output_manager->heads_departed);
-		output_manager_free_heads_departed(displ->output_manager);
+		// inform of head arrivals and departures then cleans them
+		user_changes = user_changes || consume_arrived_departed(displ->output_manager);
 
 
 		// if we have no changes in progress we can maybe make changes
@@ -94,7 +92,7 @@ int listen(struct Displ *displ) {
 				print_heads(DELTA, displ->output_manager->heads);
 				apply_desired(displ);
 
-			} else if (heads_arrived_or_departed) {
+			} else if (user_changes) {
 				printf("\nNo changes needed\n");
 				fflush(stdout);
 			}

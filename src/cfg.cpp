@@ -48,9 +48,9 @@ bool resolve(struct Cfg *cfg, const char *prefix, const char *suffix) {
 	}
 }
 
-void parse(struct Cfg *cfg) {
+bool parse(struct Cfg *cfg) {
 	if (!cfg || !cfg->file_path)
-		return;
+		return false;
 
 	try {
 		YAML::Node config = YAML::LoadFile(cfg->file_path);
@@ -90,19 +90,23 @@ void parse(struct Cfg *cfg) {
 		}
 
 	} catch (const exception &e) {
-		fprintf(stderr, "\nERROR: cannot read '%s': %s, exiting\n", cfg->file_path, e.what());
-		exit(EXIT_FAILURE);
+		fprintf(stderr, "\nERROR: cannot read '%s': %s\n", cfg->file_path, e.what());
+		return false;
 	}
+	return true;
 }
 
 void print_cfg(struct Cfg *cfg) {
+	if (!cfg)
+		return;
+
 	struct UserScale *user_scale;
 	struct SList *i;
 
 	if (cfg->file_path) {
-		printf("\nConfiguration file: %s\n", cfg->file_path);
+		printf("\nRead configuration file: %s\n", cfg->file_path);
 	} else {
-		printf("\nConfiguration file not found.\n");
+		printf("\nNo configuration file found.\n");
 	}
 
 	printf("  Auto scale: %s\n", cfg->auto_scale ? "ON" : "OFF");
@@ -157,12 +161,13 @@ struct Cfg *reload_cfg(struct Cfg *cfg) {
 	cfg_new->file_path = strdup(cfg->file_path);
 	cfg_new->file_name = strdup(cfg->file_name);
 
-	parse(cfg_new);
-
-	print_cfg(cfg_new);
-
-	free_cfg(cfg);
-
-	return cfg_new;
+	if (parse(cfg_new)) {
+		print_cfg(cfg_new);
+		free_cfg(cfg);
+		return cfg_new;
+	} else {
+		free_cfg(cfg_new);
+		return cfg;
+	}
 }
 

@@ -132,8 +132,6 @@ void head_free_mode(struct Head *head, struct Mode *mode);
 void output_manager_free_head(struct OutputManager *output_manager, struct Head *head);
 void output_manager_free_heads_departed(struct OutputManager *output_manager);
 
-void output_manager_release_heads_arrived(struct OutputManager *output_manager);
-
 bool is_dirty(struct Displ *displ);
 void reset_dirty(struct Displ *displ);
 

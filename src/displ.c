@@ -3,6 +3,7 @@
 
 #include "displ.h"
 
+#include "info.h"
 #include "lid.h"
 #include "listeners.h"
 
@@ -43,5 +44,20 @@ void destroy_display(struct Displ *displ) {
 	destroy_lid(displ);
 
 	free_displ(displ);
+}
+
+bool consume_arrived_departed(struct OutputManager *output_manager) {
+	if (!output_manager)
+		return false;
+
+	bool user_changes = output_manager->heads_arrived || output_manager->heads_departed;
+
+	print_heads(ARRIVED, output_manager->heads_arrived);
+	slist_free(&output_manager->heads_arrived);
+
+	print_heads(DEPARTED, output_manager->heads_departed);
+	output_manager_free_heads_departed(output_manager);
+
+	return user_changes;
 }
 
