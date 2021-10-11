@@ -9,7 +9,9 @@ extern "C" { //}
 
 void print_cfg(struct Cfg *cfg);
 
-struct Cfg *read_cfg();
+struct Cfg *load_cfg();
+
+struct Cfg *reload_cfg(struct Cfg *cfg);
 
 #if __cplusplus
 } // extern "C"

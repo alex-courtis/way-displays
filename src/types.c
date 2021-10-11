@@ -68,6 +68,10 @@ void free_cfg(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
+	free(cfg->dir_path);
+	free(cfg->file_path);
+	free(cfg->file_name);
+
 	for (struct SList *i = cfg->order_name_desc; i; i = i->nex) {
 		free(i->val);
 	}
@@ -77,9 +81,6 @@ void free_cfg(struct Cfg *cfg) {
 		free_user_scale(i->val);
 	}
 	slist_free(&cfg->user_scales);
-
-	free(cfg->path_dir);
-	free(cfg->path_file);
 
 	free(cfg->laptop_display_prefix);
 
@@ -154,6 +155,9 @@ bool is_dirty(struct Displ *displ) {
 	if (!displ)
 		return false;
 
+	if (displ->cfg && displ->cfg->dirty)
+		return true;
+
 	if (displ->lid && displ->lid->dirty)
 		return true;
 
@@ -183,6 +187,9 @@ void reset_dirty(struct Displ *displ) {
 
 	if (!displ)
 		return;
+
+	if (displ->cfg)
+		displ->cfg->dirty = false;
 
 	if (displ->lid)
 		displ->lid->dirty = false;

@@ -17,6 +17,17 @@ using std::stringstream;
 #define CFG_FILE_NAME "cfg.yaml"
 #define DEFAULT_LAPTOP_OUTPUT_PREFIX "eDP"
 
+struct Cfg *default_cfg() {
+	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+
+	cfg->dirty = true;
+
+	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
+	cfg->auto_scale = true;
+
+	return cfg;
+}
+
 bool resolve(struct Cfg *cfg, const char *prefix, const char *suffix) {
 	if (!cfg)
 		return false;
@@ -28,8 +39,9 @@ bool resolve(struct Cfg *cfg, const char *prefix, const char *suffix) {
 	snprintf(path_file, PATH_MAX, "%s%s/way-displays/%s", prefix, suffix, CFG_FILE_NAME);
 
 	if (access(path_file, R_OK) == 0) {
-		cfg->path_dir = strdup(path_dir);
-		cfg->path_file = strdup(path_file);
+		cfg->dir_path = strdup(path_dir);
+		cfg->file_path = strdup(path_file);
+		cfg->file_name = strdup(CFG_FILE_NAME);
 		return true;
 	} else {
 		return false;
@@ -37,11 +49,11 @@ bool resolve(struct Cfg *cfg, const char *prefix, const char *suffix) {
 }
 
 void parse(struct Cfg *cfg) {
-	if (!cfg || !cfg->path_file)
+	if (!cfg || !cfg->file_path)
 		return;
 
 	try {
-		YAML::Node config = YAML::LoadFile(cfg->path_file);
+		YAML::Node config = YAML::LoadFile(cfg->file_path);
 
 		if (config["LAPTOP_DISPLAY_PREFIX"]) {
 			free(cfg->laptop_display_prefix);
@@ -78,7 +90,7 @@ void parse(struct Cfg *cfg) {
 		}
 
 	} catch (const exception &e) {
-		fprintf(stderr, "\nERROR: cannot read '%s': %s, exiting\n", cfg->path_file, e.what());
+		fprintf(stderr, "\nERROR: cannot read '%s': %s, exiting\n", cfg->file_path, e.what());
 		exit(EXIT_FAILURE);
 	}
 }
@@ -87,8 +99,8 @@ void print_cfg(struct Cfg *cfg) {
 	struct UserScale *user_scale;
 	struct SList *i;
 
-	if (cfg->path_file) {
-		printf("\nConfiguration file: %s\n", cfg->path_file);
+	if (cfg->file_path) {
+		printf("\nConfiguration file: %s\n", cfg->file_path);
 	} else {
 		printf("\nConfiguration file not found.\n");
 	}
@@ -115,12 +127,10 @@ void print_cfg(struct Cfg *cfg) {
 	fflush(stdout);
 }
 
-struct Cfg *read_cfg() {
+struct Cfg *load_cfg() {
 	bool found = false;
 
-	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
-	cfg->auto_scale = true;
+	struct Cfg *cfg = default_cfg();
 
 	if (getenv("XDG_CONFIG_HOME"))
 		found = resolve(cfg, getenv("XDG_CONFIG_HOME"), "");
@@ -136,5 +146,23 @@ struct Cfg *read_cfg() {
 	}
 
 	return cfg;
+}
+
+struct Cfg *reload_cfg(struct Cfg *cfg) {
+	if (!cfg || !cfg->file_path)
+		return cfg;
+
+	struct Cfg *cfg_new = default_cfg();
+	cfg_new->dir_path = strdup(cfg->dir_path);
+	cfg_new->file_path = strdup(cfg->file_path);
+	cfg_new->file_name = strdup(cfg->file_name);
+
+	parse(cfg_new);
+
+	print_cfg(cfg_new);
+
+	free_cfg(cfg);
+
+	return cfg_new;
 }
 

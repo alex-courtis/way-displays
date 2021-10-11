@@ -98,13 +98,15 @@ struct UserScale {
 };
 
 struct Cfg {
-	char *path_dir;
-	char *path_file;
+	char *dir_path;
+	char *file_path;
+	char *file_name;
+
+	bool dirty;
 
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
 	bool auto_scale;
-
 	struct SList *user_scales;
 };
 

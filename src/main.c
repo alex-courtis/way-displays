@@ -43,6 +43,14 @@ int listen(struct Displ *displ) {
 		}
 
 
+		// cfg directory change
+		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
+			if (cfg_file_written(displ->cfg->file_name)) {
+				displ->cfg = reload_cfg(displ->cfg);
+			}
+		}
+
+
 		// safe to always read and dispatch wayland events
 		_wl_display_read_events(displ->display, FL);
 		_wl_display_dispatch_pending(displ->display, FL);
@@ -106,7 +114,7 @@ main(int argc, const char **argv) {
 	ensure_singleton();
 
 	// always returns a cfg, possibly default
-	displ->cfg = read_cfg();
+	displ->cfg = load_cfg();
 
 	// also informs of defaults
 	print_cfg(displ->cfg);
