@@ -23,8 +23,8 @@
 AUR
 - version
 https://github.com/swaywm/sway/wiki/Useful-add-ons-for-sway
-Faster startup of lid
-Suppress known external leaks
+- Faster startup of lid
+- Suppress known external leaks
 
 systemd service
 Take display away from sway

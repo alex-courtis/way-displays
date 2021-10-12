@@ -1,0 +1,27 @@
+{
+   wl_display_read_events - always
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:wl_display_read_events
+   fun:_wl_display_read_events
+   fun:listen
+   fun:main
+}
+
+{
+   libinput_udev_assign_seat - sporadic
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:/usr/lib/libinput.so.10.13.0
+   obj:/usr/lib/libinput.so.10.13.0
+   obj:/usr/lib/libinput.so.10.13.0
+   obj:/usr/lib/libinput.so.10.13.0
+   fun:libinput_udev_assign_seat
+   fun:create_libinput_discovery
+   fun:create_lid
+   fun:listen
+   fun:main
+}
+
