@@ -17,10 +17,13 @@
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 int listen(struct Displ *displ) {
-	bool user_changes;
+	bool user_changes = false;
+	bool initial_run_complete = false;
+	bool lid_discovery_complete = false;
 
 	for (;;) {
 		user_changes = false;
+		create_pfds(displ);
 
 
 		// prepare for reading wayland events
@@ -30,10 +33,18 @@ int listen(struct Displ *displ) {
 		_wl_display_flush(displ->display, FL);
 
 
-		// poll for signal, wayland and maybe libinput, cfg file events
-		create_pfds(displ);
-		if (poll(pfds, npfds, -1) < 0) {
-			fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
+		if (initial_run_complete && !lid_discovery_complete) {
+
+			// takes ~1 sec hence we defer
+			displ->lid = create_lid();
+			update_lid(displ);
+			lid_discovery_complete = true;
+		} else {
+
+			// poll for signal, wayland and maybe libinput, cfg file events
+			if (poll(pfds, npfds, -1) < 0) {
+				fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
+			}
 		}
 
 
@@ -67,18 +78,18 @@ int listen(struct Displ *displ) {
 
 		// dispatch libinput events only when we have received a change
 		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
-			update_lid(displ);
+			user_changes = user_changes || update_lid(displ);
 		}
 
-		// always do this, for the case of new arrivals
+		// always do this, to cover the initial case
 		update_heads_lid_closed(displ);
 
 
-		// inform of head arrivals and departures then cleans them
+		// inform of head arrivals and departures and clean them
 		user_changes = user_changes || consume_arrived_departed(displ->output_manager);
 
 
-		// if we have no changes in progress we can maybe make changes
+		// if we have no changes in progress we can maybe react to inital or modified state
 		if (is_dirty(displ) && !is_pending_output_manager(displ->output_manager)) {
 
 			// prepare possible changes
@@ -92,9 +103,13 @@ int listen(struct Displ *displ) {
 				print_heads(DELTA, displ->output_manager->heads);
 				apply_desired(displ);
 
-			} else if (user_changes) {
-				printf("\nNo changes needed\n");
-				fflush(stdout);
+			} else {
+				initial_run_complete = true;
+
+				if (user_changes) {
+					printf("\nNo changes needed\n");
+					fflush(stdout);
+				}
 			}
 		}
 
@@ -120,13 +135,7 @@ main(int argc, const char **argv) {
 	// discover the output manager via a roundtrip
 	connect_display(displ);
 
-	// this may be null
-	displ->lid = create_lid();
-
-	// update once to discover initial switch state
-	update_lid(displ);
-
-	// only stops when signalled
+	// only stops when signalled or display goes away
 	int sig = listen(displ);
 
 	// release what remote resources we can

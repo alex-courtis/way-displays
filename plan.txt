@@ -19,7 +19,7 @@
 - way-displays
 - strerror
 - install
-config file reload
+- config file reload
 AUR
 - version
 https://github.com/swaywm/sway/wiki/Useful-add-ons-for-sway

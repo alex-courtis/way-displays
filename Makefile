@@ -49,7 +49,9 @@ tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
 
 .copy: way-displays cfg.yaml
 	scp way-displays alw@gigantor:/home/alw/bin
+	scp way-displays emperor:/home/alex/bin
 	scp cfg.yaml alw@gigantor:/home/alw/.config/way-displays
+	scp cfg.yaml emperor:/home/alex/.config/way-displays
 	@touch .copy
 
 .PHONY: all clean

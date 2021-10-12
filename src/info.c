@@ -73,9 +73,6 @@ void print_heads(enum event event, struct SList *heads) {
 	struct Head *head;
 	struct SList *i;
 
-	if (event == DELTA)
-		printf("\n");
-
 	for (i = heads; i; i = i->nex) {
 		head = i->val;
 		if (!head)
@@ -96,13 +93,13 @@ void print_heads(enum event event, struct SList *heads) {
 				print_head_current(head);
 				break;
 			case DEPARTED:
-				printf("\n'%s' Departed:\n", head->name);
+				printf("\n%s Departed:\n", head->name);
 				printf("    name:     '%s'\n", head->name);
 				printf("    desc:     '%s'\n", head->description);
 				break;
 			case DELTA:
 				if (is_pending_head(head)) {
-					printf("%s Changing:\n  from:\n", head->name);
+					printf("\n%s Changing:\n  from:\n", head->name);
 					print_head_current(head);
 					printf("  to:\n");
 					print_head_desired(head);

@@ -155,21 +155,21 @@ void destroy_lid(struct Displ *displ) {
 	}
 }
 
-void update_lid(struct Displ *displ) {
+bool update_lid(struct Displ *displ) {
 	struct libinput_event *event;
 	struct libinput_event_switch *event_switch;
 	enum libinput_event_type event_type;
 	enum libinput_switch_state switch_state;
 
 	if (!displ || !displ->lid || !displ->lid->libinput_monitor)
-		return;
+		return false;
 
 	bool new_closed = displ->lid->closed;
 
 	if (libinput_dispatch(displ->lid->libinput_monitor) < 0) {
 		fprintf(stderr, "\nERROR: unable to dispatch libinput %d: '%s', abandoning laptop lid detection\n", errno, strerror(errno));
 		destroy_lid(displ);
-		return;
+		return false;
 	}
 
 	while ((event = libinput_get_event(displ->lid->libinput_monitor))) {
@@ -186,6 +186,12 @@ void update_lid(struct Displ *displ) {
 
 	displ->lid->dirty = new_closed != displ->lid->closed;
 	displ->lid->closed = new_closed;
+
+	if (displ->lid->dirty) {
+		printf("\nLid %s\n", displ->lid->closed ? "closed" : "opened");
+	}
+
+	return displ->lid->dirty;
 }
 
 struct Lid *create_lid() {
