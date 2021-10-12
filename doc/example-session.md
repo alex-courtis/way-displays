@@ -74,6 +74,8 @@ Changes successful
 
 Closed the laptop lid:
 ```
+Lid closed
+
 eDERP-1 Changing:
   from:
     scale:    3.00
@@ -82,6 +84,7 @@ eDERP-1 Changing:
     (lid closed)
   to:
     (disabled)
+
 DP-3 Changing:
   from:
     scale:    1.25
@@ -95,6 +98,8 @@ Changes successful
 
 Opened the laptop lid:
 ```
+Lid opened
+
 eDERP-1 Changing:
   from:
     (disabled)
@@ -103,6 +108,7 @@ eDERP-1 Changing:
     position: 0,0
     mode:     3840x2160@60Hz (preferred)
     (enabled)
+
 DP-3 Changing:
   from:
     scale:    1.25
