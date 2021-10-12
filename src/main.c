@@ -33,15 +33,8 @@ int listen(struct Displ *displ) {
 		_wl_display_flush(displ->display, FL);
 
 
-		if (initial_run_complete && !lid_discovery_complete) {
-
-			// takes ~1 sec hence we defer
-			displ->lid = create_lid();
-			update_lid(displ);
-			lid_discovery_complete = true;
-		} else {
-
-			// poll for signal, wayland and maybe libinput, cfg file events
+		// poll for signal, wayland and maybe libinput, cfg file events
+		if (!initial_run_complete || lid_discovery_complete) {
 			if (poll(pfds, npfds, -1) < 0) {
 				fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
 			}
@@ -76,11 +69,16 @@ int listen(struct Displ *displ) {
 		}
 
 
+		// takes ~1 sec hence we defer
+		if (initial_run_complete && !lid_discovery_complete) {
+			displ->lid = create_lid();
+			update_lid(displ);
+			lid_discovery_complete = true;
+		}
 		// dispatch libinput events only when we have received a change
 		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
 			user_changes = user_changes || update_lid(displ);
 		}
-
 		// always do this, to cover the initial case
 		update_heads_lid_closed(displ);
 
