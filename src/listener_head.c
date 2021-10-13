@@ -33,13 +33,8 @@ static void physical_size(void *data,
 
 	head->dirty = true;
 
-	if (width != 0 && height != 0) {
-		head->width_mm = width;
-		head->height_mm = height;
-		head->size_specified = true;
-	} else {
-		head->size_specified = false;
-	}
+	head->width_mm = width;
+	head->height_mm = height;
 }
 
 static void mode(void *data,

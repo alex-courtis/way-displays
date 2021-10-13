@@ -27,6 +27,10 @@ static void preferred(void *data,
 	struct Mode *mode = data;
 
 	mode->preferred = true;
+
+	if (mode->head) {
+		mode->head->preferred_mode = mode;
+	}
 }
 
 static void finished(void *data,

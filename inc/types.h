@@ -35,6 +35,7 @@ struct Head {
 	int32_t height_mm;
 	int enabled;
 	struct Mode *current_mode;
+	struct Mode *preferred_mode;
 	int32_t x;
 	int32_t y;
 	int32_t transform;
@@ -43,7 +44,6 @@ struct Head {
 	char *model;
 	char *serial_number;
 	bool lid_closed;
-	bool size_specified;
 
 	struct {
 		struct Mode *mode;

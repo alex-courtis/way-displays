@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+double calc_dpi(struct Mode *mode);
+
 struct Mode *optimal_mode(struct SList *modes);
 
 wl_fixed_t auto_scale(struct Head *head);

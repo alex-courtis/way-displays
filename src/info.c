@@ -2,7 +2,17 @@
 
 #include "info.h"
 
+#include "calc.h"
 #include "types.h"
+
+void print_mode(struct Mode *mode) {
+	printf("    mode:     %dx%d@%ldHz %s\n",
+			mode->width,
+			mode->height,
+			(long)(((double)mode->refresh_mHz / 1000 + 0.5)),
+			mode->preferred ? "(preferred)" : "           "
+		  );
+}
 
 void print_head_current(struct Head *head) {
 	if (!head)
@@ -15,12 +25,7 @@ void print_head_current(struct Head *head) {
 				head->y
 			  );
 		if (head->current_mode) {
-			printf("    mode:     %dx%d@%ldHz %s\n",
-					head->current_mode->width,
-					head->current_mode->height,
-					(long)(((double)head->current_mode->refresh_mHz / 1000 + 0.5)),
-					head->current_mode->preferred ? "(preferred)" : "           "
-				  );
+			print_mode(head->current_mode);
 		} else {
 			printf("    (no mode)\n");
 		}
@@ -42,7 +47,7 @@ void print_head_desired(struct Head *head) {
 			printf("    scale:    %.2f",
 					wl_fixed_to_double(head->desired.scale)
 				  );
-			if (!head->size_specified) {
+			if (!head->width_mm || !head->height_mm) {
 				printf(" (default, size not specified)");
 			}
 			printf("\n");
@@ -54,12 +59,7 @@ void print_head_desired(struct Head *head) {
 				  );
 		}
 		if (head->pending.mode && head->desired.mode) {
-			printf("    mode:     %dx%d@%ldHz %s\n",
-					head->desired.mode->width,
-					head->desired.mode->height,
-					(long)(((double)head->desired.mode->refresh_mHz / 1000 + 0.5)),
-					head->desired.mode->preferred ? "(preferred)" : "           "
-				  );
+			print_mode(head->desired.mode);
 		}
 		if (head->pending.enabled && head->desired.enabled) {
 			printf("    (enabled)\n");
@@ -81,15 +81,20 @@ void print_heads(enum event event, struct SList *heads) {
 		switch (event) {
 			case ARRIVED:
 				printf("\n%s Arrived:\n", head->name);
+				printf("  info:\n");
 				printf("    name:     '%s'\n", head->name);
 				printf("    desc:     '%s'\n", head->description);
-				if (head->size_specified) {
+				if (head->width_mm && head->height_mm) {
 					printf("    width:    %dmm\n", head->width_mm);
 					printf("    height:   %dmm\n", head->height_mm);
+					if (head->preferred_mode) {
+						printf("    dpi:      %.2f @ %dx%d\n", calc_dpi(head->preferred_mode), head->preferred_mode->width, head->preferred_mode->height);
+					}
 				} else {
 					printf("    width:    (not specified)\n");
 					printf("    height:   (not specified)\n");
 				}
+				printf("  current:\n");
 				print_head_current(head);
 				break;
 			case DEPARTED:

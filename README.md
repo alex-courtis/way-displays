@@ -49,7 +49,7 @@ mkdir ~/.config/way-displays
 cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
 ```
 
-TODO reloading
+`cfg.yaml` will be monitored for changes, which will be immediately applied.
 
 ## Option: Order
 

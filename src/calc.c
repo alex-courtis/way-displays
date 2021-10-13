@@ -2,6 +2,16 @@
 
 #include "calc.h"
 
+double calc_dpi(struct Mode *mode) {
+	if (!mode || !mode->head || !mode->head->width_mm || !mode->head->height_mm) {
+		return 0;
+	}
+
+	double dpi_horiz = (double)(mode->width) / mode->head->width_mm * 25.4;
+	double dpi_vert = (double)(mode->height) / mode->head->height_mm * 25.4;
+	return (dpi_horiz + dpi_vert) / 2;
+}
+
 struct Mode *optimal_mode(struct SList *modes) {
 	struct Mode *mode, *optimal_mode;
 
@@ -41,20 +51,15 @@ struct Mode *optimal_mode(struct SList *modes) {
 }
 
 wl_fixed_t auto_scale(struct Head *head) {
-	if (!head
-			|| !head->size_specified
-			|| !head->desired.mode
-			|| head->desired.mode->width == 0
-			|| head->desired.mode->height == 0
-			|| head->width_mm == 0
-			|| head->height_mm == 0) {
+	if (!head || !head->desired.mode) {
 		return wl_fixed_from_int(1);
 	}
 
 	// average dpi
-	double dpi_horiz = (double)(head->desired.mode->width) / head->width_mm * 25.4;
-	double dpi_vert = (double)(head->desired.mode->height) / head->height_mm * 25.4;
-	double dpi = (dpi_horiz + dpi_vert) / 2;
+	double dpi = calc_dpi(head->desired.mode);
+	if (dpi == 0) {
+		return wl_fixed_from_int(1);
+	}
 
 	// round the dpi to the nearest 12, so that we get a nice even wl_fixed_t
 	long dpi_quantized = (long)(dpi / 12 + 0.5) * 12;
