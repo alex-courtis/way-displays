@@ -14,7 +14,7 @@ Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdis
 
 The wayland compositor must support the WLR (wayland roots) Output Management protocol.
 
-Compositors built on wayland roots support this, such as the following:
+Such compositors include:
 * [sway](https://swaywm.org/)
 * [hikari](https://hikari.acmelabs.space)
 * [Way Cooler](http://way-cooler.org/)
@@ -85,7 +85,7 @@ SCALE:
 
 Laptop displays usually start with `eDP` e.g. `eDP-1`. This may be overridden if your laptop is different e.g.:
 ```yaml
-LAPTOP_DISPLAY_PREFIX: 'eDERP'
+LAPTOP_DISPLAY_PREFIX: 'eDPP'
 ```
 
 ## On Names and Descriptions
@@ -136,7 +136,7 @@ sudo make uninstall
 
 # On Scale And Blurring
 
-When using a display scale that is not a whole number, the result will not be a pixel perfect rendition of the unscaled content. As has been mentioned elsewhere, there are no fractional pixels so there will be rounding and thus some blurring.
+When using a display scale that is not a whole number, the result will not be a pixel perfect rendition of the unscaled content. There are no fractional pixels so there will be rounding and thus some blurring.
 
 To ameliorate this, we always round our scale to a multiple of one eighth. This results in a nice round binary number, which minimises some of the rounding and results in a smoother image. If you're interested, our rounded scale is a [wl_fixed_t](https://wayland.freedesktop.org/docs/html/apb.html).
 
