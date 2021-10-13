@@ -11,7 +11,7 @@ PRO_H = $(PRO_X:.xml=.h)
 PRO_C = $(PRO_X:.xml=.c)
 PRO_O = $(PRO_X:.xml=.o)
 
-all: way-displays tags .copy
+all: way-displays
 
 $(SRC_O): $(INC_H) $(PRO_H)
 $(PRO_O): $(PRO_H)
@@ -46,13 +46,6 @@ tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
 		ctags-c   $(CFLAGS)   $(CPPFLAGS) --project-src $(SRC_C)   $(INC_H) $(PRO_H) && \
 		ctags-c++ $(CXXFLAGS) $(CPPFLAGS) --project-src $(SRC_CXX) $(INC_H) $(PRO_H) --append || \
 		true
-
-.copy: way-displays cfg.yaml
-	scp way-displays alw@gigantor:/home/alw/bin
-	scp way-displays emperor:/home/alex/bin
-	scp cfg.yaml alw@gigantor:/home/alw/.config/way-displays
-	scp cfg.yaml emperor:/home/alex/.config/way-displays
-	@touch .copy
 
 .PHONY: all clean
 

@@ -50,8 +50,9 @@ int listen(struct Displ *displ) {
 		// subscribed signals are all a clean exit
 		if (pfd_signal && pfd_signal->revents & pfd_signal->events) {
 			struct signalfd_siginfo fdsi;
-			read(fd_signal, &fdsi, sizeof(fdsi));
-			return fdsi.ssi_signo;
+			if (read(fd_signal, &fdsi, sizeof(fdsi)) == sizeof(fdsi)) {
+				return fdsi.ssi_signo;
+			}
 		}
 
 

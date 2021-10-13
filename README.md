@@ -1,4 +1,4 @@
-# way-displays Manages Your Wayland Displays
+# way-displays: Manage Your Wayland Displays
 
 1. Sets preferred mode or highest at maximum refresh
 1. Arranges left to right
