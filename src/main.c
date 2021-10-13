@@ -33,11 +33,17 @@ int listen(struct Displ *displ) {
 		_wl_display_flush(displ->display, FL);
 
 
-		// poll for signal, wayland and maybe libinput, cfg file events
+		fflush(stdout);
 		if (!initial_run_complete || lid_discovery_complete) {
+			// poll for signal, wayland and maybe libinput, cfg file events
 			if (poll(pfds, npfds, -1) < 0) {
 				fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
 			}
+		} else {
+			// takes ~1 sec hence we defer
+			displ->lid = create_lid();
+			update_lid(displ);
+			lid_discovery_complete = true;
 		}
 
 
@@ -69,12 +75,6 @@ int listen(struct Displ *displ) {
 		}
 
 
-		// takes ~1 sec hence we defer
-		if (initial_run_complete && !lid_discovery_complete) {
-			displ->lid = create_lid();
-			update_lid(displ);
-			lid_discovery_complete = true;
-		}
 		// dispatch libinput events only when we have received a change
 		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
 			user_changes = user_changes || update_lid(displ);
@@ -101,15 +101,17 @@ int listen(struct Displ *displ) {
 				print_heads(DELTA, displ->output_manager->heads);
 				apply_desired(displ);
 
-			} else {
-				initial_run_complete = true;
-
-				if (user_changes) {
-					printf("\nNo changes needed\n");
-					fflush(stdout);
-				}
+			} else if (user_changes) {
+				printf("\nNo changes needed\n");
 			}
 		}
+
+
+		// no changes are outstanding
+		if (!is_pending_output_manager(displ->output_manager)) {
+			initial_run_complete = true;
+		}
+
 
 		destroy_pfds();
 	}

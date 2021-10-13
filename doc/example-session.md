@@ -3,42 +3,45 @@ This session was run using the following configuration:
 ORDER:
     # I like my laptop on the left
     - 'Laptop Company 0x123A 456'
-    - 'Monitor Maker ABC123'
     - 'DP-2'
+    - 'Monitor Maker ABC123'
 
 SCALE:
     # this one is too far away; scale it up!
     - NAME_DESC: 'Monitor Maker ABC123'
       SCALE: 1.25
 
-# my laptop is weird
-LAPTOP_DISPLAY_PREFIX: 'eDERP'
+# my laptop is unusual
+LAPTOP_DISPLAY_PREFIX: 'eDPP'
 ```
 
 Starting up:
 ```
-Configuration file: /home/me/.config/way-displays/cfg.yaml
+way-displays version 1.0.0
+
+Read configuration file: /home/me/.config/way-displays/cfg.yaml
   Auto scale: ON
-  Laptop display prefix: 'eDERP'
+  Laptop display prefix: 'eDPP'
   Order:
     Laptop Company 0x123A 456
-    Monitor Maker ABC123
     DP-2
+    Monitor Maker ABC123
   Scale:
     Monitor Maker ABC123: 1.25
 
-Monitoring lid device: /dev/input/event0
-
-eDERP-1 Arrived:
-    name:     'eDERP-1'
-    desc:     'Laptop Company 0x123A 456 (eDERP-1)'
+eDPP-1 Arrived:
+  info:
+    name:     'eDPP-1'
+    desc:     'Laptop Company 0x123A 456 (eDPP-1)'
     width:    340mm
     height:   190mm
+    dpi:      287.81 @ 3840x2160
+  current:
     scale:    1.00
     position: 0,0
     mode:     3840x2160@60Hz (preferred)
 
-eDERP-1 Changing:
+eDPP-1 Changing:
   from:
     scale:    1.00
     position: 0,0
@@ -47,15 +50,20 @@ eDERP-1 Changing:
     scale:    3.00
 
 Changes successful
+
+Monitoring lid device: /dev/input/event0
 ```
 
 Plugged in a monitor:
 ```
 DP-3 Arrived:
+  info:
     name:     'DP-3'
-    desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
+    desc:     'Monitor Maker ABC123 (DP-3 via HDMI)'
     width:    700mm
     height:   390mm
+    dpi:      93.34 @ 2560x1440
+  current:
     scale:    1.00
     position: 0,0
     mode:     2560x1440@144Hz (preferred)
@@ -63,7 +71,7 @@ DP-3 Arrived:
 DP-3 Changing:
   from:
     scale:    1.00
-    position: 1280,0
+    position: 0,0
     mode:     2560x1440@144Hz (preferred)
   to:
     scale:    1.25
@@ -76,7 +84,7 @@ Closed the laptop lid:
 ```
 Lid closed
 
-eDERP-1 Changing:
+eDPP-1 Changing:
   from:
     scale:    3.00
     position: 0,0
@@ -100,7 +108,7 @@ Opened the laptop lid:
 ```
 Lid opened
 
-eDERP-1 Changing:
+eDPP-1 Changing:
   from:
     (disabled)
   to:
@@ -122,9 +130,9 @@ Changes successful
 
 Unplugged the monitor:
 ```
-'DP-3' Departed:
+DP-3 Departed:
     name:     'DP-3'
-    desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
+    desc:     'Monitor Maker ABC123 (DP-3 via HDMI)'
 
 No changes needed
 ```

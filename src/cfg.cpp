@@ -127,8 +127,6 @@ void print_cfg(struct Cfg *cfg) {
 			printf("    %s: %.2f\n", user_scale->name_desc, user_scale->scale);
 		}
 	}
-
-	fflush(stdout);
 }
 
 struct Cfg *load_cfg() {

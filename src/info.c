@@ -114,7 +114,5 @@ void print_heads(enum event event, struct SList *heads) {
 				break;
 		}
 	}
-
-	fflush(stdout);
 }
 

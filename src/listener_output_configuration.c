@@ -13,7 +13,6 @@ static void succeeded(void *data,
 	reset_pending_desired(output_manager);
 
 	printf("\nChanges successful\n");
-	fflush(stdout);
 
 	for (struct SList *i = output_manager->heads; i; i = i->nex) {
 		struct Head *head = i->val;
