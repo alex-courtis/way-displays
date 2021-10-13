@@ -103,7 +103,11 @@ The description does contain information about how it is connected, so strip tha
 
 # Installation
 
-## TODO AUR
+## AUR
+
+[way-displays](https://aur.archlinux.org/packages/way-displays/)
+
+Install with your favourite package manager e.g. `pacaur -S way-displays`
 
 ## Build From Source
 
