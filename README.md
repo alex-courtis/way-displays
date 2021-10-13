@@ -6,6 +6,8 @@
 1. Reacts when displays are plugged/unplugged
 1. Reacts when laptop lid is closed/opened
 
+Works out of the box: no configuration required.
+
 See an [example session](doc/example-session.md) for more details.
 
 Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay)
