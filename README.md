@@ -10,6 +10,8 @@ See an [example session](doc/example-session.md) for more details.
 
 Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay)
 
+Inspired by [kanshi](https://sr.ht/~emersion/kanshi/)
+
 # Requirements
 
 The wayland compositor must support the WLR (wayland roots) Output Management protocol.
