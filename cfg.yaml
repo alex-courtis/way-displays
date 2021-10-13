@@ -4,7 +4,7 @@
 
 # The default left to right order is simply the order in which the displays are
 # discovered.
-# Define this own.
+# Define your own.
 ORDER:
   #- 'DP-2'
   #- 'monitor description'
