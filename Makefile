@@ -32,13 +32,13 @@ install: way-displays cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f way-displays $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/way-displays
-	mkdir -p $(DESTDIR)$(PREFIX)/etc/way-displays
-	cp -f cfg.yaml $(DESTDIR)$(PREFIX)/etc/way-displays
-	chmod 644 $(DESTDIR)$(PREFIX)/etc/way-displays/cfg.yaml
+	mkdir -p $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
+	cp -f cfg.yaml $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
+	chmod 644 $(DESTDIR)$(PREFIX_ETC)/etc/way-displays/cfg.yaml
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/way-displays
-	rm -rf $(DESTDIR)$(PREFIX)/etc/way-displays
+	rm -rf $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 
 # https://github.com/alex-courtis/arch/blob/7ca6c8d7f7aa910ec522470bb7a96ddb24c9a1ea/bin/ctags-something
 tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)

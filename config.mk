@@ -1,6 +1,7 @@
 VERSION ?= "1.0.0"
 
 PREFIX ?= /usr/local
+PREFIX_ETC ?= /usr/local
 
 INCS = -Iinc -Ipro
 
