@@ -33,7 +33,6 @@ int listen(struct Displ *displ) {
 		_wl_display_flush(displ->display, FL);
 
 
-		fflush(stdout);
 		if (!initial_run_complete || lid_discovery_complete) {
 			// poll for signal, wayland and maybe libinput, cfg file events
 			if (poll(pfds, npfds, -1) < 0) {
@@ -120,6 +119,8 @@ int listen(struct Displ *displ) {
 
 int
 main(int argc, const char **argv) {
+	setlinebuf(stdout);
+
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
 
 	printf("\nway-displays version %s\n", VERSION);

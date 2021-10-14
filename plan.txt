@@ -29,4 +29,5 @@
 systemd service
 commandeer displays
 mirror via native/scale
+drop wlroots for more compatibility
 
