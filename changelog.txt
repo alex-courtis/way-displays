@@ -1,3 +1,8 @@
+way-displays 1.0.1 2021-10-15
+-----------------------------
+- Fix #1 Hot Reload Not Working For symlinks
+- Fix #2 Unable to open pid file from another user
+
 way-displays 1.0.0 2021-10-13
 -----------------------------
 - Initial Release
