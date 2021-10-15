@@ -1,3 +1,4 @@
+#include <libgen.h>
 #include <linux/limits.h>
 #include <string.h>
 #include <unistd.h>
@@ -32,20 +33,30 @@ bool resolve(struct Cfg *cfg, const char *prefix, const char *suffix) {
 	if (!cfg)
 		return false;
 
-	char path_dir[PATH_MAX];
-	char path_file[PATH_MAX];
-
-	snprintf(path_dir, PATH_MAX,  "%s%s/way-displays", prefix, suffix);
-	snprintf(path_file, PATH_MAX, "%s%s/way-displays/%s", prefix, suffix, CFG_FILE_NAME);
-
-	if (access(path_file, R_OK) == 0) {
-		cfg->dir_path = strdup(path_dir);
-		cfg->file_path = strdup(path_file);
-		cfg->file_name = strdup(CFG_FILE_NAME);
-		return true;
-	} else {
+	char path[PATH_MAX];
+	snprintf(path, PATH_MAX, "%s%s/way-displays/%s", prefix, suffix, CFG_FILE_NAME);
+	if (access(path, R_OK) != 0) {
 		return false;
 	}
+
+	char *file_path = realpath(path, NULL);
+	if (!file_path) {
+		return false;
+	}
+	if (access(file_path, R_OK) != 0) {
+		free(file_path);
+		return false;
+	}
+
+	cfg->file_path = file_path;
+
+	strcpy(path, file_path);
+	cfg->dir_path = strdup(dirname(path));
+
+	strcpy(path, file_path);
+	cfg->file_name = strdup(basename(path));
+
+	return true;
 }
 
 bool parse(struct Cfg *cfg) {
