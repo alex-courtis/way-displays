@@ -18,7 +18,7 @@ void print_head_current(struct Head *head) {
 		return;
 
 	if (head->enabled) {
-		log_info("    scale:    %.2f\n", wl_fixed_to_double(head->scale));
+		log_info("    scale:    %.3f\n", wl_fixed_to_double(head->scale));
 		log_info("    position: %d,%d\n", head->x, head->y);
 		if (head->current_mode) {
 			print_mode(head->current_mode);
@@ -40,7 +40,7 @@ void print_head_desired(struct Head *head) {
 
 	if (head->desired.enabled) {
 		if (head->pending.scale) {
-			log_info("    scale:    %.2f%s\n",
+			log_info("    scale:    %.3f%s\n",
 					wl_fixed_to_double(head->desired.scale),
 					(!head->width_mm || !head->height_mm) ? " (default, size not specified)" : ""
 				  );
@@ -97,8 +97,8 @@ void print_heads(enum event event, struct SList *heads) {
 				break;
 			case DELTA:
 				if (is_pending_head(head)) {
-					log_info("\n%s Changing:\n");
-					log_info("from:\n");
+					log_info("\n%s Changing:\n", head->name);
+					log_info("  from:\n");
 					print_head_current(head);
 					log_info("  to:\n");
 					print_head_desired(head);
