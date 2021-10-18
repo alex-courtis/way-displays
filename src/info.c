@@ -97,7 +97,8 @@ void print_heads(enum event event, struct SList *heads) {
 				break;
 			case DELTA:
 				if (is_pending_head(head)) {
-					log_info("\n%s Changing:\n  from:\n", head->name);
+					log_info("\n%s Changing:\n");
+					log_info("from:\n");
 					print_head_current(head);
 					log_info("  to:\n");
 					print_head_desired(head);
