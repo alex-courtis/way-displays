@@ -152,6 +152,8 @@ To ameliorate this, we always round our scale to a multiple of one eighth. This 
 
 Please create a [github issue](https://github.com/alex-courtis/way-displays/issues).
 
+Attaching the log e.g. `/tmp/way-displays.1.me.log` would be useful.
+
 # Contributing
 
 Enhancements and bug fixes are very welcome: please raise an issue or fork this repo and submit a PR.
