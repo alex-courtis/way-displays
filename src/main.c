@@ -10,6 +10,7 @@
 #include "fds.h"
 #include "info.h"
 #include "lid.h"
+#include "log.h"
 #include "layout.h"
 #include "process.h"
 #include "types.h"
@@ -36,7 +37,7 @@ int listen(struct Displ *displ) {
 		if (!initial_run_complete || lid_discovery_complete) {
 			// poll for signal, wayland and maybe libinput, cfg file events
 			if (poll(pfds, npfds, -1) < 0) {
-				fprintf(stderr, "\nERROR: poll failed %d: '%s', exiting\n", errno, strerror(errno));
+				log_error("\npoll failed %d: '%s', exiting\n", errno, strerror(errno));
 			}
 		} else {
 			// takes ~1 sec hence we defer
@@ -70,7 +71,7 @@ int listen(struct Displ *displ) {
 
 
 		if (!displ->output_manager) {
-			printf("\nDisplay's output manager has departed, exiting\n");
+			log_info("\nDisplay's output manager has departed, exiting\n");
 			exit(EXIT_SUCCESS);
 		}
 
@@ -102,7 +103,7 @@ int listen(struct Displ *displ) {
 				apply_desired(displ);
 
 			} else if (user_changes) {
-				printf("\nNo changes needed\n");
+				log_info("\nNo changes needed\n");
 			}
 		}
 
@@ -123,7 +124,7 @@ main(int argc, const char **argv) {
 
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
 
-	printf("\nway-displays version %s\n", VERSION);
+	log_info("way-displays version %s\n", VERSION);
 
 	// only one instance
 	ensure_singleton();

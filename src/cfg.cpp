@@ -6,6 +6,7 @@
 
 extern "C" {
 #include "cfg.h"
+#include "log.h"
 }
 
 namespace { // }
@@ -83,6 +84,22 @@ bool parse(struct Cfg *cfg) {
 			cfg->auto_scale = orders.as<bool>();
 		}
 
+		if (config["LOG_THRESHOLD"]) {
+			const auto &level = config["LOG_THRESHOLD"].as<string>();
+			if (level == "DEBUG") {
+				log_threshold = LOG_LEVEL_DEBUG;
+			} else if (level == "INFO") {
+				log_threshold = LOG_LEVEL_INFO;
+			} else if (level == "WARNING") {
+				log_threshold = LOG_LEVEL_WARNING;
+			} else if (level == "ERROR") {
+				log_threshold = LOG_LEVEL_ERROR;
+			} else {
+				log_threshold = LOG_LEVEL_INFO;
+				log_warn("\nIgnoring invalid LOG_THRESHOLD: '%s', using default 'INFO'\n", level.c_str());
+			}
+		}
+
 		if (config["SCALE"]) {
 			const auto &display_scales = config["SCALE"];
 			for (const auto &display_scale : display_scales) {
@@ -91,7 +108,7 @@ bool parse(struct Cfg *cfg) {
 					user_scale->name_desc = strdup(display_scale["NAME_DESC"].as<string>().c_str());
 					user_scale->scale = display_scale["SCALE"].as<float>();
 					if (user_scale->scale <= 0) {
-						printf("\nIgnoring invalid scale for %s: %.2f\n", user_scale->name_desc, user_scale->scale);
+						log_warn("\nIgnoring invalid scale for %s: %.2f\n", user_scale->name_desc, user_scale->scale);
 						free(user_scale);
 					} else {
 						slist_append(&cfg->user_scales, user_scale);
@@ -101,7 +118,7 @@ bool parse(struct Cfg *cfg) {
 		}
 
 	} catch (const exception &e) {
-		fprintf(stderr, "\nERROR: cannot read '%s': %s\n", cfg->file_path, e.what());
+		log_error("\ncannot read '%s': %s\n", cfg->file_path, e.what());
 		return false;
 	}
 	return true;
@@ -115,27 +132,27 @@ void print_cfg(struct Cfg *cfg) {
 	struct SList *i;
 
 	if (cfg->file_path) {
-		printf("\nRead configuration file: %s\n", cfg->file_path);
+		log_info("\nRead configuration file: %s\n", cfg->file_path);
 	} else {
-		printf("\nNo configuration file found.\n");
+		log_info("\nNo configuration file found.\n");
 	}
 
-	printf("  Auto scale: %s\n", cfg->auto_scale ? "ON" : "OFF");
+	log_info("  Auto scale: %s\n", cfg->auto_scale ? "ON" : "OFF");
 
-	printf("  Laptop display prefix: '%s'\n", cfg->laptop_display_prefix);
+	log_info("  Laptop display prefix: '%s'\n", cfg->laptop_display_prefix);
 
 	if (cfg->order_name_desc) {
-		printf("  Order:\n");
+		log_info("  Order:\n");
 		for (i = cfg->order_name_desc; i; i = i->nex) {
-			printf("    %s\n", (char*)i->val);
+			log_info("    %s\n", (char*)i->val);
 		}
 	}
 
 	if (cfg->user_scales) {
-		printf("  Scale:\n");
+		log_info("  Scale:\n");
 		for (i = cfg->user_scales; i; i = i->nex) {
 			user_scale = (struct UserScale*)i->val;
-			printf("    %s: %.2f\n", user_scale->name_desc, user_scale->scale);
+			log_info("    %s: %.2f\n", user_scale->name_desc, user_scale->scale);
 		}
 	}
 }

@@ -1,8 +1,8 @@
-#include <stdio.h>
 #include <string.h>
 
 #include "listeners.h"
 
+#include "log.h"
 #include "types.h"
 
 // Displ data
@@ -39,7 +39,7 @@ static void global_remove(void *data,
 		return;
 
 	// a "who cares?" situation in the WLR examples
-	printf("\nDisplay's output manager has been removed, exiting\n");
+	log_info("\nDisplay's output manager has been removed, exiting\n");
 	exit(EXIT_SUCCESS);
 }
 

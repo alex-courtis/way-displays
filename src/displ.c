@@ -1,16 +1,16 @@
-#include <stdio.h>
 #include <wayland-client-protocol.h>
 
 #include "displ.h"
 
 #include "info.h"
 #include "lid.h"
+#include "log.h"
 #include "listeners.h"
 
 void connect_display(struct Displ *displ) {
 
 	if (!(displ->display = wl_display_connect(NULL))) {
-		fprintf(stderr, "\nERROR: Unable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting\n");
+		log_error("\nUnable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -19,12 +19,12 @@ void connect_display(struct Displ *displ) {
 	wl_registry_add_listener(displ->registry, registry_listener(), displ);
 
 	if (wl_display_roundtrip(displ->display) == -1) {
-		fprintf(stderr, "\nERROR: wl_display_roundtrip failed -1, exiting");
+		log_error("\nwl_display_roundtrip failed -1, exiting");
 		exit(EXIT_FAILURE);
 	}
 
 	if (!displ->output_manager) {
-		fprintf(stderr, "\nERROR: compositor does not support WLR output manager protocol, exiting\n");
+		log_error("\ncompositor does not support WLR output manager protocol, exiting\n");
 		exit(EXIT_FAILURE);
 	}
 }

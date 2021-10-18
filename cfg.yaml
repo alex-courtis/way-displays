@@ -27,3 +27,7 @@ SCALE:
 # your laptop is different.
 #LAPTOP_DISPLAY_PREFIX: 'eDP'
 
+
+# One of: ERROR, WARNING, INFO (default), DEBUG
+#LOG_THRESHOLD: INFO
+

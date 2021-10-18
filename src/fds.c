@@ -8,7 +8,7 @@
 
 #include "fds.h"
 
-#include <stdio.h>
+#include "log.h"
 
 int fd_signal = 0;
 int fd_cfg_dir = 0;
@@ -39,7 +39,7 @@ void create_fd_cfg_dir(struct Cfg *cfg) {
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
 	if (inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE) == -1) {
-		fprintf(stderr, "\nERROR: unable to create config file watch for '%s' %d: '%s', exiting\n", cfg->dir_path, errno, strerror(errno));
+		log_error("\nunable to create config file watch for '%s' %d: '%s', exiting\n", cfg->dir_path, errno, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 }

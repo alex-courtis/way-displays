@@ -10,6 +10,8 @@
 
 #include "process.h"
 
+#include "log.h"
+
 #define NPBUF 11
 
 char pbuf[NPBUF] = "";
@@ -20,14 +22,14 @@ void ensure_singleton() {
 	// singleton in our session only
 	char *vtnr = getenv("XDG_VTNR");
 	if (!vtnr) {
-		fprintf(stderr, "WARNING: XDG_VTNR not set: way-displays will not be able to run for multiple sessions.\n");
+		log_warn("\nXDG_VTNR not set: way-displays will not be able to run for multiple sessions.\n");
 	}
 	snprintf(pid_path, PATH_MAX, "/tmp/way-displays.%s.pid", vtnr ? vtnr : "XDG_VTNR");
 
 	// attempt to use existing, regardless of owner
 	int fd = open(pid_path, O_RDWR | O_CLOEXEC);
 	if (fd == -1 && errno != ENOENT) {
-		fprintf(stderr, "ERROR: unable to open existing pid file for writing '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
+		log_error("\nunable to open existing pid file for writing '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -37,7 +39,7 @@ void ensure_singleton() {
 		fd = open(pid_path, O_RDWR | O_CLOEXEC | O_CREAT, 0666);
 		umask(umask_prev);
 		if (fd == -1) {
-			fprintf(stderr, "ERROR: unable to create pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
+			log_error("\nnunable to create pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -45,25 +47,25 @@ void ensure_singleton() {
 	// lock it forever
 	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
 		if (errno != EWOULDBLOCK) {
-			fprintf(stderr, "ERROR: unable to lock pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
+			log_error("\nunable to lock pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		if (read(fd, pbuf, NPBUF) == -1) {
-			fprintf(stderr, "ERROR: unable to read pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
+			log_error("\nunable to read pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
-		fprintf(stderr, "ERROR: another instance %s is running, exiting\n", pbuf);
+		log_error("\nanother instance %s is running, exiting\n", pbuf);
 		exit(EXIT_FAILURE);
 	}
 
 	// write the new pid
 	if (ftruncate(fd, 0) == -1) {
-		fprintf(stderr, "ERROR: unable to truncate pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
+		log_error("\nunable to truncate pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	snprintf(pbuf, NPBUF, "%d", getpid());
 	if (write(fd, pbuf, NPBUF) == -1) {
-		fprintf(stderr, "ERROR: unable to write pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
+		log_error("\nunable to write pid file '%s' %d: %s, exiting\n", pid_path, errno, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 }
