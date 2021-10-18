@@ -10,7 +10,7 @@
 void connect_display(struct Displ *displ) {
 
 	if (!(displ->display = wl_display_connect(NULL))) {
-		log_error("\nUnable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting\n");
+		log_error("\nUnable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting");
 		exit(EXIT_FAILURE);
 	}
 
@@ -24,7 +24,7 @@ void connect_display(struct Displ *displ) {
 	}
 
 	if (!displ->output_manager) {
-		log_error("\ncompositor does not support WLR output manager protocol, exiting\n");
+		log_error("\ncompositor does not support WLR output manager protocol, exiting");
 		exit(EXIT_FAILURE);
 	}
 }

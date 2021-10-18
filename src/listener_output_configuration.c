@@ -11,7 +11,7 @@ static void succeeded(void *data,
 
 	reset_pending_desired(output_manager);
 
-	log_info("\nChanges successful\n");
+	log_info("\nChanges successful");
 
 	for (struct SList *i = output_manager->heads; i; i = i->nex) {
 		struct Head *head = i->val;
@@ -27,7 +27,7 @@ static void failed(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
 
 	// not much we can do here and there is no prior art
-	log_error("\noutput configuration has failed %s:%d, exiting\n", __FILE__, __LINE__);
+	log_error("\noutput configuration has failed %s:%d, exiting", __FILE__, __LINE__);
 	exit(EXIT_FAILURE);
 }
 
@@ -35,7 +35,7 @@ static void cancelled(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
 
 	// there seems to be no way to recover from this
-	log_error("\noutput configuration has been cancelled %s:%d, exiting\n", __FILE__, __LINE__);
+	log_error("\noutput configuration has been cancelled %s:%d, exiting", __FILE__, __LINE__);
 	exit(EXIT_FAILURE);
 }
 

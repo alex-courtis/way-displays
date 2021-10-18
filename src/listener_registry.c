@@ -39,7 +39,7 @@ static void global_remove(void *data,
 		return;
 
 	// a "who cares?" situation in the WLR examples
-	log_info("\nDisplay's output manager has been removed, exiting\n");
+	log_info("\nDisplay's output manager has been removed, exiting");
 	exit(EXIT_SUCCESS);
 }
 

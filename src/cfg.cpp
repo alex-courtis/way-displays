@@ -96,7 +96,7 @@ bool parse(struct Cfg *cfg) {
 				log_threshold = LOG_LEVEL_ERROR;
 			} else {
 				log_threshold = LOG_LEVEL_INFO;
-				log_warn("\nIgnoring invalid LOG_THRESHOLD: '%s', using default 'INFO'\n", level.c_str());
+				log_warn("\nIgnoring invalid LOG_THRESHOLD: '%s', using default 'INFO'", level.c_str());
 			}
 		}
 
@@ -108,7 +108,7 @@ bool parse(struct Cfg *cfg) {
 					user_scale->name_desc = strdup(display_scale["NAME_DESC"].as<string>().c_str());
 					user_scale->scale = display_scale["SCALE"].as<float>();
 					if (user_scale->scale <= 0) {
-						log_warn("\nIgnoring invalid scale for %s: %.2f\n", user_scale->name_desc, user_scale->scale);
+						log_warn("\nIgnoring invalid scale for %s: %.3f", user_scale->name_desc, user_scale->scale);
 						free(user_scale);
 					} else {
 						slist_append(&cfg->user_scales, user_scale);
@@ -118,7 +118,7 @@ bool parse(struct Cfg *cfg) {
 		}
 
 	} catch (const exception &e) {
-		log_error("\ncannot read '%s': %s\n", cfg->file_path, e.what());
+		log_error("\ncannot read '%s': %s", cfg->file_path, e.what());
 		return false;
 	}
 	return true;
@@ -132,27 +132,27 @@ void print_cfg(struct Cfg *cfg) {
 	struct SList *i;
 
 	if (cfg->file_path) {
-		log_info("\nRead configuration file: %s\n", cfg->file_path);
+		log_info("\nRead configuration file: %s", cfg->file_path);
 	} else {
-		log_info("\nNo configuration file found.\n");
+		log_info("\nNo configuration file found.");
 	}
 
-	log_info("  Auto scale: %s\n", cfg->auto_scale ? "ON" : "OFF");
+	log_info("  Auto scale: %s", cfg->auto_scale ? "ON" : "OFF");
 
-	log_info("  Laptop display prefix: '%s'\n", cfg->laptop_display_prefix);
+	log_info("  Laptop display prefix: '%s'", cfg->laptop_display_prefix);
 
 	if (cfg->order_name_desc) {
-		log_info("  Order:\n");
+		log_info("  Order:");
 		for (i = cfg->order_name_desc; i; i = i->nex) {
-			log_info("    %s\n", (char*)i->val);
+			log_info("    %s", (char*)i->val);
 		}
 	}
 
 	if (cfg->user_scales) {
-		log_info("  Scale:\n");
+		log_info("  Scale:");
 		for (i = cfg->user_scales; i; i = i->nex) {
 			user_scale = (struct UserScale*)i->val;
-			log_info("    %s: %.2f\n", user_scale->name_desc, user_scale->scale);
+			log_info("    %s: %.3f", user_scale->name_desc, user_scale->scale);
 		}
 	}
 }

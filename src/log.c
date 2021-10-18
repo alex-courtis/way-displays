@@ -24,6 +24,7 @@ void log_print(const char *prefix, const char *suffix, FILE *__restrict __stream
 
 	fprintf(__stream, "%s [%02d:%02d:%02d.%03ld] %s", prefix, tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec / 1000, suffix);
 	vfprintf(__stream, format_stripped, __args);
+	fprintf(__stream, "\n");
 }
 
 void log_info(const char *__restrict __format, ...) {

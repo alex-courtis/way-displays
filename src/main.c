@@ -37,7 +37,7 @@ int listen(struct Displ *displ) {
 		if (!initial_run_complete || lid_discovery_complete) {
 			// poll for signal, wayland and maybe libinput, cfg file events
 			if (poll(pfds, npfds, -1) < 0) {
-				log_error("\npoll failed %d: '%s', exiting\n", errno, strerror(errno));
+				log_error("\npoll failed %d: '%s', exiting", errno, strerror(errno));
 			}
 		} else {
 			// takes ~1 sec hence we defer
@@ -71,7 +71,7 @@ int listen(struct Displ *displ) {
 
 
 		if (!displ->output_manager) {
-			log_info("\nDisplay's output manager has departed, exiting\n");
+			log_info("\nDisplay's output manager has departed, exiting");
 			exit(EXIT_SUCCESS);
 		}
 
@@ -103,7 +103,7 @@ int listen(struct Displ *displ) {
 				apply_desired(displ);
 
 			} else if (user_changes) {
-				log_info("\nNo changes needed\n");
+				log_info("\nNo changes needed");
 			}
 		}
 
@@ -124,7 +124,7 @@ main(int argc, const char **argv) {
 
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
 
-	log_info("way-displays version %s\n", VERSION);
+	log_info("way-displays version %s", VERSION);
 
 	// only one instance
 	ensure_singleton();

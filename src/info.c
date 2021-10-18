@@ -5,7 +5,7 @@
 #include "types.h"
 
 void print_mode(struct Mode *mode) {
-	log_info("    mode:     %dx%d@%ldHz %s\n",
+	log_info("    mode:     %dx%d@%ldHz %s",
 			mode->width,
 			mode->height,
 			(long)(((double)mode->refresh_mHz / 1000 + 0.5)),
@@ -18,19 +18,19 @@ void print_head_current(struct Head *head) {
 		return;
 
 	if (head->enabled) {
-		log_info("    scale:    %.3f\n", wl_fixed_to_double(head->scale));
-		log_info("    position: %d,%d\n", head->x, head->y);
+		log_info("    scale:    %.3f", wl_fixed_to_double(head->scale));
+		log_info("    position: %d,%d", head->x, head->y);
 		if (head->current_mode) {
 			print_mode(head->current_mode);
 		} else {
-			log_info("    (no mode)\n");
+			log_info("    (no mode)");
 		}
 	} else {
-		log_info("    (disabled)\n");
+		log_info("    (disabled)");
 	}
 
 	if (head->lid_closed) {
-		log_info("    (lid closed)\n");
+		log_info("    (lid closed)");
 	}
 }
 
@@ -40,13 +40,13 @@ void print_head_desired(struct Head *head) {
 
 	if (head->desired.enabled) {
 		if (head->pending.scale) {
-			log_info("    scale:    %.3f%s\n",
+			log_info("    scale:    %.3f%s",
 					wl_fixed_to_double(head->desired.scale),
 					(!head->width_mm || !head->height_mm) ? " (default, size not specified)" : ""
 				  );
 		}
 		if (head->pending.position) {
-			log_info("    position: %d,%d\n",
+			log_info("    position: %d,%d",
 					head->desired.x,
 					head->desired.y
 				  );
@@ -55,10 +55,10 @@ void print_head_desired(struct Head *head) {
 			print_mode(head->desired.mode);
 		}
 		if (head->pending.enabled && head->desired.enabled) {
-			log_info("    (enabled)\n");
+			log_info("    (enabled)");
 		}
 	} else {
-		log_info("    (disabled)\n");
+		log_info("    (disabled)");
 	}
 }
 
@@ -73,34 +73,34 @@ void print_heads(enum event event, struct SList *heads) {
 
 		switch (event) {
 			case ARRIVED:
-				log_info("\n%s Arrived:\n", head->name);
-				log_info("  info:\n");
-				log_info("    name:     '%s'\n", head->name);
-				log_info("    desc:     '%s'\n", head->description);
+				log_info("\n%s Arrived:", head->name);
+				log_info("  info:");
+				log_info("    name:     '%s'", head->name);
+				log_info("    desc:     '%s'", head->description);
 				if (head->width_mm && head->height_mm) {
-					log_info("    width:    %dmm\n", head->width_mm);
-					log_info("    height:   %dmm\n", head->height_mm);
+					log_info("    width:    %dmm", head->width_mm);
+					log_info("    height:   %dmm", head->height_mm);
 					if (head->preferred_mode) {
-						log_info("    dpi:      %.2f @ %dx%d\n", calc_dpi(head->preferred_mode), head->preferred_mode->width, head->preferred_mode->height);
+						log_info("    dpi:      %.2f @ %dx%d", calc_dpi(head->preferred_mode), head->preferred_mode->width, head->preferred_mode->height);
 					}
 				} else {
-					log_info("    width:    (not specified)\n");
-					log_info("    height:   (not specified)\n");
+					log_info("    width:    (not specified)");
+					log_info("    height:   (not specified)");
 				}
-				log_info("  current:\n");
+				log_info("  current:");
 				print_head_current(head);
 				break;
 			case DEPARTED:
-				log_info("\n%s Departed:\n", head->name);
-				log_info("    name:     '%s'\n", head->name);
-				log_info("    desc:     '%s'\n", head->description);
+				log_info("\n%s Departed:", head->name);
+				log_info("    name:     '%s'", head->name);
+				log_info("    desc:     '%s'", head->description);
 				break;
 			case DELTA:
 				if (is_pending_head(head)) {
-					log_info("\n%s Changing:\n", head->name);
-					log_info("  from:\n");
+					log_info("\n%s Changing:", head->name);
+					log_info("  from:");
 					print_head_current(head);
-					log_info("  to:\n");
+					log_info("  to:");
 					print_head_desired(head);
 				}
 				break;
