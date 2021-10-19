@@ -118,6 +118,7 @@ LAPTOP_DISPLAY_PREFIX: 'eDPP'
 
 <details><summary>On Names and Descriptions</summary><br>
 You can configure displays by name or description. You can find these by looking at the logs e.g.
+	
 ```
 DP-3 Arrived:
     name:     'DP-3'
