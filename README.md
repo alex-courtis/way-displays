@@ -1,4 +1,4 @@
-# way-displays: Manage Your Wayland Displays
+# way-displays: Auto Manage Your Wayland Displays
 
 1. Sets preferred mode or highest at maximum refresh
 1. Arranges left to right
@@ -8,9 +8,15 @@
 
 Works out of the box: no configuration required.
 
-See an [example session](doc/example-session.md) for more details.
-
 Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
+
+<details><summary>Screenshot</summary><br>
+
+See the [example session](doc/example-session.md) for full details.
+
+![way-displays in action](doc/screenshot.png)
+
+</details>
 
 # Requirements
 
