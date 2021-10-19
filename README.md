@@ -45,17 +45,7 @@ Look at `/tmp/way-displays.1.me.log` to see what has been going on.
 
 # Configuration
 
-<details><summary>File Locations</summary><br>
-
-The following are used, in order:
-* `$XDG_CONFIG_HOME/way-displays/cfg.yaml`
-* `$HOME/.config/way-displays/cfg.yaml`
-* `/usr/local/etc/way-displays/cfg.yaml`
-* `/etc/way-displays/cfg.yaml`
-
-See [default configuration](cfg.yaml) at `/etc/way-displays/cfg.yaml`.
-
-</details>
+[default configuration](cfg.yaml) at `/etc/way-displays/cfg.yaml`.
 
 Quick start:
 ```
@@ -65,11 +55,21 @@ cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
 
 `cfg.yaml` will be monitored for changes, which will be immediately applied.
 
+<details><summary>File Locations</summary><br>
+
+The following are used, in order:
+* `$XDG_CONFIG_HOME/way-displays/cfg.yaml`
+* `$HOME/.config/way-displays/cfg.yaml`
+* `/usr/local/etc/way-displays/cfg.yaml`
+* `/etc/way-displays/cfg.yaml`
+
+</details>
+
 <details><summary>ORDER</summary><br>
 
 The default left to right order is simply the order in which the displays are discovered.
 
-Define this own e.g.:
+Define your own e.g.:
 ```yaml
 ORDER:
     - 'DP-2'
