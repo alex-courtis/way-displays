@@ -38,6 +38,7 @@ int listen(struct Displ *displ) {
 			// poll for signal, wayland and maybe libinput, cfg file events
 			if (poll(pfds, npfds, -1) < 0) {
 				log_error("\npoll failed %d: '%s', exiting", errno, strerror(errno));
+				exit(EXIT_FAILURE);
 			}
 		} else {
 			// takes ~1 sec hence we defer
@@ -131,9 +132,6 @@ main(int argc, const char **argv) {
 
 	// always returns a cfg, possibly default
 	displ->cfg = load_cfg();
-
-	// also informs of defaults
-	print_cfg(displ->cfg);
 
 	// discover the output manager via a roundtrip
 	connect_display(displ);

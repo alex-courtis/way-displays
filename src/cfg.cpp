@@ -104,21 +104,29 @@ bool parse(struct Cfg *cfg) {
 			const auto &display_scales = config["SCALE"];
 			for (const auto &display_scale : display_scales) {
 				if (display_scale["NAME_DESC"] && display_scale["SCALE"]) {
-					struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-					user_scale->name_desc = strdup(display_scale["NAME_DESC"].as<string>().c_str());
-					user_scale->scale = display_scale["SCALE"].as<float>();
-					if (user_scale->scale <= 0) {
-						log_warn("\nIgnoring invalid scale for %s: %.3f", user_scale->name_desc, user_scale->scale);
-						free(user_scale);
-					} else {
-						slist_append(&cfg->user_scales, user_scale);
+					struct UserScale *user_scale = NULL;
+					try {
+						user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+						user_scale->name_desc = strdup(display_scale["NAME_DESC"].as<string>().c_str());
+						user_scale->scale = display_scale["SCALE"].as<float>();
+						if (user_scale->scale <= 0) {
+							log_warn("\nIgnoring invalid scale for %s: %.3f", user_scale->name_desc, user_scale->scale);
+							free(user_scale);
+						} else {
+							slist_append(&cfg->user_scales, user_scale);
+						}
+					} catch (...) {
+						if (user_scale) {
+							free_user_scale(user_scale);
+						}
+						throw;
 					}
 				}
 			}
 		}
 
 	} catch (const exception &e) {
-		log_error("\ncannot read '%s': %s", cfg->file_path, e.what());
+		log_error("\ncannot parse '%s': %s", cfg->file_path, e.what());
 		return false;
 	}
 	return true;
@@ -130,12 +138,6 @@ void print_cfg(struct Cfg *cfg) {
 
 	struct UserScale *user_scale;
 	struct SList *i;
-
-	if (cfg->file_path) {
-		log_info("\nRead configuration file: %s", cfg->file_path);
-	} else {
-		log_info("\nNo configuration file found.");
-	}
 
 	log_info("  Auto scale: %s", cfg->auto_scale ? "ON" : "OFF");
 
@@ -172,8 +174,20 @@ struct Cfg *load_cfg() {
 		found = resolve(cfg, "/etc", "");
 
 	if (found) {
-		parse(cfg);
+		log_info("\nFound configuration file: %s", cfg->file_path);
+		if (!parse(cfg)) {
+			log_info("\nUsing default configuration:");
+			struct Cfg *cfg_def = default_cfg();
+			cfg_def->dir_path = strdup(cfg->dir_path);
+			cfg_def->file_path = strdup(cfg->file_path);
+			cfg_def->file_name = strdup(cfg->file_name);
+			free_cfg(cfg);
+			cfg = cfg_def;
+		}
+	} else {
+		log_info("\nNo configuration file found, using defaults:");
 	}
+	print_cfg(cfg);
 
 	return cfg;
 }
@@ -187,11 +201,14 @@ struct Cfg *reload_cfg(struct Cfg *cfg) {
 	cfg_new->file_path = strdup(cfg->file_path);
 	cfg_new->file_name = strdup(cfg->file_name);
 
+	log_info("\nReloading configuration file: %s", cfg->file_path);
 	if (parse(cfg_new)) {
 		print_cfg(cfg_new);
 		free_cfg(cfg);
 		return cfg_new;
 	} else {
+		log_info("\nConfiguration unchanged:");
+		print_cfg(cfg);
 		free_cfg(cfg_new);
 		return cfg;
 	}
