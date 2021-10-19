@@ -16,7 +16,7 @@ Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdis
 
 The wayland compositor must support the WLR (wayland roots) Output Management protocol.
 
-<details><summary>Some Such Compositors</summary><br>
+<details><summary>Popular WLR Compositors</summary><br>
 
 * [sway](https://swaywm.org/)
 * [hikari](https://hikari.acmelabs.space)
@@ -30,7 +30,7 @@ Run once after your wayland compositor has been started. `way-displays` will rem
 
 `way-displays` will print messages to inform you of everything that is going on.
 
-<details><summary>sway</summary><br>
+<details><summary>sway config</summary><br>
 
 [sway](https://swaywm.org/) will start way-displays once on startup via the `exec` command. See `man 5 sway`.
 
@@ -45,11 +45,19 @@ Look at `/tmp/way-displays.1.me.log` to see what has been going on.
 
 # Configuration
 
-The following are used, in order: `$XDG_CONFIG_HOME/way-displays/cfg.yaml`, `$HOME/.config/way-displays/cfg.yaml`, `/usr/local/etc/way-displays/cfg.yaml`, `/etc/way-displays/cfg.yaml`
+<details><summary>File Locations</summary><br>
+
+The following are used, in order:
+* `$XDG_CONFIG_HOME/way-displays/cfg.yaml`
+* `$HOME/.config/way-displays/cfg.yaml`
+* `/usr/local/etc/way-displays/cfg.yaml`
+* `/etc/way-displays/cfg.yaml`
 
 See [default configuration](cfg.yaml) at `/etc/way-displays/cfg.yaml`.
 
-To get started:
+</details>
+
+Quick start:
 ```
 mkdir ~/.config/way-displays
 cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
