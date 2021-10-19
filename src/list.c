@@ -66,6 +66,16 @@ struct SList *slist_shallow_clone(struct SList *head) {
 	return c;
 }
 
+long slist_length(struct SList *head) {
+	long length = 0;
+
+	for (struct SList *i = head; i; i = i->nex) {
+		length++;
+	}
+
+	return length;
+}
+
 void slist_free(struct SList **head) {
 	struct SList *i, *f;
 

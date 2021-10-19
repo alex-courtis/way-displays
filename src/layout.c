@@ -31,11 +31,20 @@ void desire_ltr(struct Displ *displ) {
 	if (!displ || !displ->output_manager || !displ->cfg)
 		return;
 
+	long num_heads = slist_length(displ->output_manager->heads);
+
 	// head specific
 	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = (struct Head*)i->val;
 
-		if ((head->desired.enabled = !head->lid_closed)) {
+		// ignore lid close when there is only the laptop display, for smoother sleeping
+		if (num_heads == 1 && head->lid_closed) {
+			head->desired.enabled = true;
+		} else {
+			head->desired.enabled = !head->lid_closed;
+		}
+
+		if (head->desired.enabled) {
 			head->desired.mode = optimal_mode(head->modes);
 			head->desired.scale = scale_head(head, displ->cfg);
 		}
