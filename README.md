@@ -10,19 +10,19 @@ Works out of the box: no configuration required.
 
 See an [example session](doc/example-session.md) for more details.
 
-Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay)
-
-Inspired by [kanshi](https://sr.ht/~emersion/kanshi/)
+Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
 
 # Requirements
 
 The wayland compositor must support the WLR (wayland roots) Output Management protocol.
 
-Such compositors include:
+<details><summary>Some Such Compositors</summary><br>
+
 * [sway](https://swaywm.org/)
 * [hikari](https://hikari.acmelabs.space)
 * [Way Cooler](http://way-cooler.org/)
 * [Wayfire](https://github.com/WayfireWM/wayfire)
+</details>
 
 # Usage
 
@@ -30,9 +30,9 @@ Run once after your wayland compositor has been started. `way-displays` will rem
 
 `way-displays` will print messages to inform you of everything that is going on.
 
-## Example: [sway](https://swaywm.org/)
+<details><summary>sway</summary><br>
 
-sway will start way-displays once on startup via the `exec` command. See `man 5 sway`.
+[sway](https://swaywm.org/) will start way-displays once on startup via the `exec` command. See `man 5 sway`.
 
 Remove any `output` commands from your sway config file and add the following:
 ```
@@ -40,6 +40,8 @@ exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 ```
 
 Look at `/tmp/way-displays.1.me.log` to see what has been going on.
+
+</details>
 
 # Configuration
 
@@ -55,7 +57,7 @@ cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
 
 `cfg.yaml` will be monitored for changes, which will be immediately applied.
 
-## Option: Order
+<details><summary>ORDER</summary><br>
 
 The default left to right order is simply the order in which the displays are discovered.
 
@@ -66,7 +68,9 @@ ORDER:
     - 'Monitor Maker ABC123'
 ```
 
-## Option: Auto Scaling
+</details>
+
+<details><summary>AUTO_SCALE</summary><br>
 
 The default is to scale each display by DPI.
 
@@ -76,24 +80,29 @@ This may be disabled and scale 1 will be used, unless a `SCALE` has been specifi
 AUTO_SCALE: false
 ```
 
-## Option: Custom Scales
+</details>
 
-Auto scale may be overridden for each display e.g.
+<details><summary>SCALE</summary><br>
+
+Auto scale may be overridden with custom scales for each display e.g.
 ```yaml
 SCALE:
     - NAME_DESC: 'Monitor Maker ABC123'
       SCALE: 1.75
 ```
 
-## Option: Laptop Display Name Prefix
+</details>
+
+<details><summary>LAPTOP_DISPLAY_PREFIX</summary><br>
 
 Laptop displays usually start with `eDP` e.g. `eDP-1`. This may be overridden if your laptop is different e.g.:
 ```yaml
 LAPTOP_DISPLAY_PREFIX: 'eDPP'
 ```
 
-## On Names and Descriptions
+</details>
 
+<details><summary>On Names and Descriptions</summary><br>
 You can configure displays by name or description. You can find these by looking at the logs e.g.
 ```
 DP-3 Arrived:
@@ -105,17 +114,24 @@ It is recommended to use the description rather than the name, as the name may c
 
 The description does contain information about how it is connected, so strip that out. In the above example, you would use the description `Monitor Maker ABC123`.
 
+</details>
+
 # Installation
 
-## AUR
+## Package Manager
+
+<details><summary>AUR</summary><br>
 
 [way-displays](https://aur.archlinux.org/packages/way-displays/)
 
-Install with your favourite package manager e.g. `pacaur -S way-displays`
+Install with your favourite AUR package manager e.g. `pacaur -S way-displays`
+</details>
 
-## Build From Source
+## From Source
 
-Dependencies:
+<details><summary>Build</summary>
+
+### Dependencies
 * gcc
 * wayland
 * wayland-protocols
@@ -141,6 +157,7 @@ make
 sudo make install
 sudo make uninstall
 ```
+</details>
 
 # On Scale And Blurring
 

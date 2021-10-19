@@ -1,4 +1,5 @@
-This session was run using the following configuration:
+## This session was run using the following configuration:
+
 ```yaml
 ORDER:
     # I like my laptop on the left
@@ -15,7 +16,7 @@ SCALE:
 LAPTOP_DISPLAY_PREFIX: 'eDPP'
 ```
 
-Starting up:
+## Starting up:
 ```
 way-displays version 1.0.2
 
@@ -54,7 +55,7 @@ Changes successful
 Monitoring lid device: /dev/input/event0
 ```
 
-Plugged in a monitor:
+## Plugged in a monitor:
 ```
 DP-3 Arrived:
   info:
@@ -80,8 +81,24 @@ DP-3 Changing:
 Changes successful
 ```
 
-Closed the laptop lid:
+## Closed the laptop lid:
 ```
+eDPP-1 Changing:
+  from:
+    scale:    3.00
+    position: 0,0
+    mode:     3840x2160@60Hz (preferred)
+    (lid closed)
+  to:
+    (disabled)
+
+DP-3 Changing:
+  from:
+    scale:    1.25
+    position: 1280,0
+    mode:     2560x1440@144Hz (preferred)
+  to:
+    position: 0,0
 Lid closed
 
 eDPP-1 Changing:
@@ -104,7 +121,7 @@ DP-3 Changing:
 Changes successful
 ```
 
-Opened the laptop lid:
+## Opened the laptop lid:
 ```
 Lid opened
 
@@ -128,7 +145,7 @@ DP-3 Changing:
 Changes successful
 ```
 
-Unplugged the monitor:
+## Unplugged the monitor:
 ```
 DP-3 Departed:
     name:     'DP-3'
