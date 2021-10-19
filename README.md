@@ -45,7 +45,7 @@ Look at `/tmp/way-displays.1.me.log` to see what has been going on.
 
 # Configuration
 
-[default configuration](cfg.yaml) at `/etc/way-displays/cfg.yaml`.
+See the [default cfg.yaml](cfg.yaml) installed at `/etc/way-displays/cfg.yaml`.
 
 Quick start:
 ```
