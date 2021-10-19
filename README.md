@@ -18,11 +18,13 @@ Inspired by [kanshi](https://sr.ht/~emersion/kanshi/)
 
 The wayland compositor must support the WLR (wayland roots) Output Management protocol.
 
-Such compositors include:
+<details><summary>Some Such Compositors</summary>
+
 * [sway](https://swaywm.org/)
 * [hikari](https://hikari.acmelabs.space)
 * [Way Cooler](http://way-cooler.org/)
 * [Wayfire](https://github.com/WayfireWM/wayfire)
+</details>
 
 # Usage
 
@@ -30,9 +32,9 @@ Run once after your wayland compositor has been started. `way-displays` will rem
 
 `way-displays` will print messages to inform you of everything that is going on.
 
-## Example: [sway](https://swaywm.org/)
+<details><summary>sway</summary><br>
 
-sway will start way-displays once on startup via the `exec` command. See `man 5 sway`.
+[sway](https://swaywm.org/) will start way-displays once on startup via the `exec` command. See `man 5 sway`.
 
 Remove any `output` commands from your sway config file and add the following:
 ```
@@ -40,6 +42,8 @@ exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 ```
 
 Look at `/tmp/way-displays.1.me.log` to see what has been going on.
+
+</details>
 
 # Configuration
 
@@ -107,15 +111,20 @@ The description does contain information about how it is connected, so strip tha
 
 # Installation
 
-## AUR
+## Package Manager
+
+<details><summary>AUR</summary><br>
 
 [way-displays](https://aur.archlinux.org/packages/way-displays/)
 
-Install with your favourite package manager e.g. `pacaur -S way-displays`
+Install with your favourite AUR package manager e.g. `pacaur -S way-displays`
+</details>
 
-## Build From Source
+## From Source
 
-Dependencies:
+<details><summary>Build</summary>
+
+## Dependencies
 * gcc
 * wayland
 * wayland-protocols
@@ -141,6 +150,7 @@ make
 sudo make install
 sudo make uninstall
 ```
+</details>
 
 # On Scale And Blurring
 
