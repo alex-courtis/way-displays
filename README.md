@@ -10,15 +10,13 @@ Works out of the box: no configuration required.
 
 See an [example session](doc/example-session.md) for more details.
 
-Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay)
-
-Inspired by [kanshi](https://sr.ht/~emersion/kanshi/)
+Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
 
 # Requirements
 
 The wayland compositor must support the WLR (wayland roots) Output Management protocol.
 
-<details><summary>Some Such Compositors</summary>
+<details><summary>Some Such Compositors</summary><br>
 
 * [sway](https://swaywm.org/)
 * [hikari](https://hikari.acmelabs.space)
@@ -59,7 +57,7 @@ cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
 
 `cfg.yaml` will be monitored for changes, which will be immediately applied.
 
-## Option: Order
+<details><summary>ORDER</summary><br>
 
 The default left to right order is simply the order in which the displays are discovered.
 
@@ -70,7 +68,9 @@ ORDER:
     - 'Monitor Maker ABC123'
 ```
 
-## Option: Auto Scaling
+</details>
+
+<details><summary>AUTO_SCALE</summary><br>
 
 The default is to scale each display by DPI.
 
@@ -80,24 +80,29 @@ This may be disabled and scale 1 will be used, unless a `SCALE` has been specifi
 AUTO_SCALE: false
 ```
 
-## Option: Custom Scales
+</details>
 
-Auto scale may be overridden for each display e.g.
+<details><summary>SCALE</summary><br>
+
+Auto scale may be overridden with custom scales for each display e.g.
 ```yaml
 SCALE:
     - NAME_DESC: 'Monitor Maker ABC123'
       SCALE: 1.75
 ```
 
-## Option: Laptop Display Name Prefix
+</details>
+
+<details><summary>LAPTOP_DISPLAY_PREFIX</summary><br>
 
 Laptop displays usually start with `eDP` e.g. `eDP-1`. This may be overridden if your laptop is different e.g.:
 ```yaml
 LAPTOP_DISPLAY_PREFIX: 'eDPP'
 ```
 
-## On Names and Descriptions
+</details>
 
+<details><summary>On Names and Descriptions</summary><br>
 You can configure displays by name or description. You can find these by looking at the logs e.g.
 ```
 DP-3 Arrived:
@@ -108,6 +113,8 @@ DP-3 Arrived:
 It is recommended to use the description rather than the name, as the name may change over time and will most likely be different on different PCs.
 
 The description does contain information about how it is connected, so strip that out. In the above example, you would use the description `Monitor Maker ABC123`.
+
+</details>
 
 # Installation
 
@@ -124,7 +131,7 @@ Install with your favourite AUR package manager e.g. `pacaur -S way-displays`
 
 <details><summary>Build</summary>
 
-## Dependencies
+### Dependencies
 * gcc
 * wayland
 * wayland-protocols
