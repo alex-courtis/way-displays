@@ -17,9 +17,9 @@ LAPTOP_DISPLAY_PREFIX: 'eDPP'
 
 Starting up:
 ```
-way-displays version 1.0.0
+way-displays version 1.0.2
 
-Read configuration file: /home/me/.config/way-displays/cfg.yaml
+Found configuration file: /home/me/.config/way-displays/cfg.yaml
   Auto scale: ON
   Laptop display prefix: 'eDPP'
   Order:
@@ -37,17 +37,17 @@ eDPP-1 Arrived:
     height:   190mm
     dpi:      287.81 @ 3840x2160
   current:
-    scale:    1.00
+    scale:    1.000
     position: 0,0
     mode:     3840x2160@60Hz (preferred)
 
 eDPP-1 Changing:
   from:
-    scale:    1.00
+    scale:    1.000
     position: 0,0
     mode:     3840x2160@60Hz (preferred)
   to:
-    scale:    3.00
+    scale:    3.000
 
 Changes successful
 
@@ -64,17 +64,17 @@ DP-3 Arrived:
     height:   390mm
     dpi:      93.34 @ 2560x1440
   current:
-    scale:    1.00
+    scale:    1.000
     position: 0,0
     mode:     2560x1440@144Hz (preferred)
 
 DP-3 Changing:
   from:
-    scale:    1.00
+    scale:    1.000
     position: 0,0
     mode:     2560x1440@144Hz (preferred)
   to:
-    scale:    1.25
+    scale:    1.250
     position: 1280,0
 
 Changes successful
@@ -86,7 +86,7 @@ Lid closed
 
 eDPP-1 Changing:
   from:
-    scale:    3.00
+    scale:    3.000
     position: 0,0
     mode:     3840x2160@60Hz (preferred)
     (lid closed)
@@ -95,7 +95,7 @@ eDPP-1 Changing:
 
 DP-3 Changing:
   from:
-    scale:    1.25
+    scale:    1.250
     position: 1280,0
     mode:     2560x1440@144Hz (preferred)
   to:
@@ -112,14 +112,14 @@ eDPP-1 Changing:
   from:
     (disabled)
   to:
-    scale:    3.00
+    scale:    3.000
     position: 0,0
     mode:     3840x2160@60Hz (preferred)
     (enabled)
 
 DP-3 Changing:
   from:
-    scale:    1.25
+    scale:    1.250
     position: 0,0
     mode:     2560x1440@144Hz (preferred)
   to:
