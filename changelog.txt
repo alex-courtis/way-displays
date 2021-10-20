@@ -1,3 +1,10 @@
+way-displays 1.0.2 2021-10-20
+-----------------------------
+- Fix #3 Possibly Corrupted Configuation On Bad Read
+- Fix #4 Ignore laptop lid closed / opened when no external displays connected
+- Add time to logs and log threshold
+- Print scale at 3dp
+
 way-displays 1.0.1 2021-10-15
 -----------------------------
 - Fix #1 Hot Reload Not Working For symlinks
