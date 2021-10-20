@@ -25,9 +25,5 @@
 - Suppress known external leaks
 - Print preferred dpi
 - AUR
-
-systemd service
-commandeer displays
-mirror via native/scale
-drop wlroots for more compatibility
+- Clarify messages on bad cfg read
 
