@@ -4,8 +4,11 @@
 #include "log.h"
 #include "types.h"
 
-void print_mode(struct Mode *mode) {
-	log_info("    mode:     %dx%d@%ldHz %s",
+void print_mode(void (*log_fn)(const char*, ...), struct Mode *mode) {
+	if (!log_fn || !mode)
+		return;
+
+	log_fn("    mode:     %dx%d@%ldHz %s",
 			mode->width,
 			mode->height,
 			(long)(((double)mode->refresh_mHz / 1000 + 0.5)),
@@ -21,7 +24,7 @@ void print_head_current(struct Head *head) {
 		log_info("    scale:    %.3f", wl_fixed_to_double(head->scale));
 		log_info("    position: %d,%d", head->x, head->y);
 		if (head->current_mode) {
-			print_mode(head->current_mode);
+			print_mode(log_info, head->current_mode);
 		} else {
 			log_info("    (no mode)");
 		}
@@ -52,7 +55,7 @@ void print_head_desired(struct Head *head) {
 				  );
 		}
 		if (head->pending.mode && head->desired.mode) {
-			print_mode(head->desired.mode);
+			print_mode(log_info, head->desired.mode);
 		}
 		if (head->pending.enabled && head->desired.enabled) {
 			log_info("    (enabled)");
@@ -64,7 +67,7 @@ void print_head_desired(struct Head *head) {
 
 void print_heads(enum event event, struct SList *heads) {
 	struct Head *head;
-	struct SList *i;
+	struct SList *i, *j;
 
 	for (i = heads; i; i = i->nex) {
 		head = i->val;
@@ -86,6 +89,9 @@ void print_heads(enum event event, struct SList *heads) {
 				} else {
 					log_info("    width:    (not specified)");
 					log_info("    height:   (not specified)");
+				}
+				for (j = head->modes; j; j = j->nex) {
+					print_mode(log_debug, j->val);
 				}
 				log_info("  current:");
 				print_head_current(head);
