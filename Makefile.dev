@@ -1,6 +1,6 @@
-include Makefile
+all: tags .copy
 
-all: tags way-displays .copy
+include Makefile
 
 # https://github.com/alex-courtis/arch/blob/7ca6c8d7f7aa910ec522470bb7a96ddb24c9a1ea/bin/ctags-something
 tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)

@@ -67,23 +67,6 @@ bool parse(struct Cfg *cfg) {
 	try {
 		YAML::Node config = YAML::LoadFile(cfg->file_path);
 
-		if (config["LAPTOP_DISPLAY_PREFIX"]) {
-			free(cfg->laptop_display_prefix);
-			cfg->laptop_display_prefix = strdup(config["LAPTOP_DISPLAY_PREFIX"].as<string>().c_str());
-		}
-
-		if (config["ORDER"]) {
-			const auto &orders = config["ORDER"];
-			for (const auto &order : orders) {
-				slist_append(&cfg->order_name_desc, strdup(order.as<string>().c_str()));
-			}
-		}
-
-		if (config["AUTO_SCALE"]) {
-			const auto &orders = config["AUTO_SCALE"];
-			cfg->auto_scale = orders.as<bool>();
-		}
-
 		if (config["LOG_THRESHOLD"]) {
 			const auto &level = config["LOG_THRESHOLD"].as<string>();
 			if (level == "DEBUG") {
@@ -98,6 +81,36 @@ bool parse(struct Cfg *cfg) {
 				log_threshold = LOG_LEVEL_INFO;
 				log_warn("\nIgnoring invalid LOG_THRESHOLD: '%s', using default 'INFO'", level.c_str());
 			}
+		}
+
+		if (config["LAPTOP_DISPLAY_PREFIX"]) {
+			free(cfg->laptop_display_prefix);
+			cfg->laptop_display_prefix = strdup(config["LAPTOP_DISPLAY_PREFIX"].as<string>().c_str());
+		}
+
+		if (config["ORDER"]) {
+			const auto &orders = config["ORDER"];
+			for (const auto &order : orders) {
+				slist_append(&cfg->order_name_desc, strdup(order.as<string>().c_str()));
+			}
+		}
+
+		if (config["LEFT_TO_RIGHT_ALIGN"]) {
+			const auto &ltr_align = config["LEFT_TO_RIGHT_ALIGN"].as<string>();
+			if (ltr_align == "TOP") {
+				cfg->ltr_align = TOP;
+			} else if (ltr_align == "BOTTOM") {
+				cfg->ltr_align = BOTTOM;
+			} else {
+				cfg->ltr_align = TOP;
+				log_warn("\nIgnoring invalid LEFT_TO_RIGHT_ALIGN: '%s', using default 'TOP'", ltr_align.c_str());
+			}
+		}
+
+
+		if (config["AUTO_SCALE"]) {
+			const auto &orders = config["AUTO_SCALE"];
+			cfg->auto_scale = orders.as<bool>();
 		}
 
 		if (config["SCALE"]) {
@@ -139,16 +152,25 @@ void print_cfg(struct Cfg *cfg) {
 	struct UserScale *user_scale;
 	struct SList *i;
 
-	log_info("  Auto scale: %s", cfg->auto_scale ? "ON" : "OFF");
-
-	log_info("  Laptop display prefix: '%s'", cfg->laptop_display_prefix);
-
 	if (cfg->order_name_desc) {
 		log_info("  Order:");
 		for (i = cfg->order_name_desc; i; i = i->nex) {
 			log_info("    %s", (char*)i->val);
 		}
 	}
+
+	switch (cfg->ltr_align) {
+		case TOP:
+			log_info("  LTR alignment: TOP");
+			break;
+		case BOTTOM:
+			log_info("  LTR alignment: BOTTOM");
+			break;
+		default:
+			break;
+	}
+
+	log_info("  Auto scale: %s", cfg->auto_scale ? "ON" : "OFF");
 
 	if (cfg->user_scales) {
 		log_info("  Scale:");
@@ -157,6 +179,8 @@ void print_cfg(struct Cfg *cfg) {
 			log_info("    %s: %.3f", user_scale->name_desc, user_scale->scale);
 		}
 	}
+
+	log_info("  Laptop display prefix: '%s'", cfg->laptop_display_prefix);
 }
 
 struct Cfg *load_cfg() {

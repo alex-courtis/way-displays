@@ -68,6 +68,15 @@ wl_fixed_t auto_scale(struct Head *head) {
 	return 256 * dpi_quantized / 96;
 }
 
+void calc_relative_dimensions(struct Head *head) {
+	if (!head || !head->desired.mode || !head->desired.scale) {
+		return;
+	}
+
+	head->desired.height_rel = (int32_t)((double)head->desired.mode->height * 256 / head->desired.scale + 0.5);
+	head->desired.width_rel = (int32_t)((double)head->desired.mode->width * 256 / head->desired.scale + 0.5);
+}
+
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	struct SList *heads_ordered = NULL;
 	struct Head *head;
@@ -109,21 +118,42 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	return heads_ordered;
 }
 
-void ltr_heads(struct SList *heads) {
+void ltr_heads(struct SList *heads, enum LtrAlign align) {
 	struct Head *head;
-	int32_t x;
+	int32_t tallest_rel = 0, x_rel = 0;
 
-	x = 0;
+	// find tallest
+	for (struct SList *i = heads; i; i = i->nex) {
+		head = i->val;
+		if (!head || !head->desired.mode || !head->desired.enabled) {
+			continue;
+		}
+		if (head->desired.height_rel > tallest_rel) {
+			tallest_rel = head->desired.height_rel;
+		}
+	}
+
+	// position each
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
 		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
 
-		head->desired.x = x;
-		head->desired.y = 0;
+		// shift left
+		head->desired.x = x_rel;
+		x_rel += head->desired.width_rel;
 
-		x += (int32_t)((double)head->desired.mode->width * 256 / head->desired.scale + 0.5);
+		// shift down
+		switch (align) {
+			case BOTTOM:
+				head->desired.y = tallest_rel - head->desired.height_rel;
+				break;
+			case TOP:
+			default:
+				head->desired.y = 0;
+				break;
+		}
 	}
 }
 

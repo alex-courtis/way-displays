@@ -51,6 +51,8 @@ struct Head {
 		int enabled;
 		int32_t x;
 		int32_t y;
+		int32_t width_rel;
+		int32_t height_rel;
 	} desired;
 
 	struct {
@@ -97,6 +99,11 @@ struct UserScale {
 	float scale;
 };
 
+enum LtrAlign {
+	TOP = 1,
+	BOTTOM,
+};
+
 struct Cfg {
 	char *dir_path;
 	char *file_path;
@@ -106,6 +113,7 @@ struct Cfg {
 
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
+	enum LtrAlign ltr_align;
 	bool auto_scale;
 	struct SList *user_scales;
 };
