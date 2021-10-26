@@ -84,6 +84,16 @@ ORDER:
 
 </details>
 
+<details><summary>LEFT_TO_RIGHT_ALIGN</summary><br>
+
+Displays are laid out in a left to right manner and may be aligned vertically by their TOP (default) or BOTTOM edges.
+
+```yaml
+LEFT_TO_RIGHT_ALIGN: BOTTOM
+```
+
+</details>
+
 <details><summary>AUTO_SCALE</summary><br>
 
 The default is to scale each display by DPI.
