@@ -118,11 +118,11 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	return heads_ordered;
 }
 
-void ltr_heads(struct SList *heads, enum LtrAlign align) {
+void position_heads(struct SList *heads, struct Cfg *cfg) {
 	struct Head *head;
-	int32_t tallest_rel = 0, x_rel = 0;
+	int32_t tallest_rel = 0, widest_rel = 0, x_rel = 0, y_rel = 0;
 
-	// find tallest
+	// find tallest/widest
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
 		if (!head || !head->desired.mode || !head->desired.enabled) {
@@ -131,27 +131,57 @@ void ltr_heads(struct SList *heads, enum LtrAlign align) {
 		if (head->desired.height_rel > tallest_rel) {
 			tallest_rel = head->desired.height_rel;
 		}
+		if (head->desired.width_rel > widest_rel) {
+			widest_rel = head->desired.width_rel;
+		}
 	}
 
-	// position each
+	// arrange each in the predefined order
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
 		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
 
-		// shift left
-		head->desired.x = x_rel;
-		x_rel += head->desired.width_rel;
+		switch (cfg ? cfg->arrange : ROW) {
+			case COL:
+				// position
+				head->desired.y = y_rel;
+				y_rel += head->desired.height_rel;
 
-		// shift down
-		switch (align) {
-			case BOTTOM:
-				head->desired.y = tallest_rel - head->desired.height_rel;
+				// align
+				switch (cfg ? cfg->col_align : RA_TOP) {
+					case CA_RIGHT:
+						head->desired.x = widest_rel - head->desired.width_rel;
+						break;
+					case CA_MIDDLE:
+						head->desired.x = (widest_rel - head->desired.width_rel + 0.5) / 2;
+						break;
+					case CA_LEFT:
+					default:
+						head->desired.x = 0;
+						break;
+				}
 				break;
-			case TOP:
+			case ROW:
 			default:
-				head->desired.y = 0;
+				// position
+				head->desired.x = x_rel;
+				x_rel += head->desired.width_rel;
+
+				// align
+				switch (cfg ? cfg->row_align : RA_TOP) {
+					case RA_BOTTOM:
+						head->desired.y = tallest_rel - head->desired.height_rel;
+						break;
+					case RA_MIDDLE:
+						head->desired.y = (tallest_rel - head->desired.height_rel + 0.5) / 2;
+						break;
+					case RA_TOP:
+					default:
+						head->desired.y = 0;
+						break;
+				}
 				break;
 		}
 	}

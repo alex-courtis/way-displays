@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-void desire_ltr(struct Displ *displ);
+void desire_arrangement(struct Displ *displ);
 
 void pend_desired(struct Displ *displ);
 

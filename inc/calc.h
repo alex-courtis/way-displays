@@ -13,7 +13,7 @@ void calc_relative_dimensions(struct Head *head);
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 
-void ltr_heads(struct SList *heads, enum LtrAlign align);
+void position_heads(struct SList *heads, struct Cfg *cfg);
 
 #endif // CALC_H
 

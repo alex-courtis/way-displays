@@ -24,8 +24,11 @@ struct Cfg *default_cfg() {
 
 	cfg->dirty = true;
 
-	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
+	cfg->arrange = ROW;
+	cfg->row_align = RA_TOP;
+	cfg->col_align = CA_LEFT;
 	cfg->auto_scale = true;
+	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
 
 	return cfg;
 }
@@ -95,18 +98,42 @@ bool parse(struct Cfg *cfg) {
 			}
 		}
 
-		if (config["LEFT_TO_RIGHT_ALIGN"]) {
-			const auto &ltr_align = config["LEFT_TO_RIGHT_ALIGN"].as<string>();
-			if (ltr_align == "TOP") {
-				cfg->ltr_align = TOP;
-			} else if (ltr_align == "BOTTOM") {
-				cfg->ltr_align = BOTTOM;
+		if (config["ARRANGE"]) {
+			const auto &arrange = config["ARRANGE"].as<string>();
+			if (arrange == "ROW") {
+				cfg->arrange = ROW;
+			} else if (arrange == "COLUMN") {
+				cfg->arrange = COL;
 			} else {
-				cfg->ltr_align = TOP;
-				log_warn("\nIgnoring invalid LEFT_TO_RIGHT_ALIGN: '%s', using default 'TOP'", ltr_align.c_str());
+				log_warn("\nIgnoring invalid ARRANGE: '%s', using default 'ROW'", arrange.c_str());
 			}
 		}
 
+		if (config["ROW_ALIGN"]) {
+			const auto &row_align = config["ROW_ALIGN"].as<string>();
+			if (row_align == "TOP") {
+				cfg->row_align = RA_TOP;
+			} else if (row_align == "MIDDLE") {
+				cfg->row_align = RA_MIDDLE;
+			} else if (row_align == "BOTTOM") {
+				cfg->row_align = RA_BOTTOM;
+			} else {
+				log_warn("\nIgnoring invalid ROW_ALIGN: '%s', using default 'TOP'", row_align.c_str());
+			}
+		}
+
+		if (config["COLUMN_ALIGN"]) {
+			const auto &col_align = config["COLUMN_ALIGN"].as<string>();
+			if (col_align == "LEFT") {
+				cfg->col_align = CA_LEFT;
+			} else if (col_align == "MIDDLE") {
+				cfg->col_align = CA_MIDDLE;
+			} else if (col_align == "RIGHT") {
+				cfg->col_align = CA_RIGHT;
+			} else {
+				log_warn("\nIgnoring invalid COLUMN_ALIGN: '%s', using default 'LEFT'", col_align.c_str());
+			}
+		}
 
 		if (config["AUTO_SCALE"]) {
 			const auto &orders = config["AUTO_SCALE"];
@@ -152,22 +179,54 @@ void print_cfg(struct Cfg *cfg) {
 	struct UserScale *user_scale;
 	struct SList *i;
 
+	// longest text length 42 "Arrange in a COLUMN, aligned at the MIDDLE"
+	char buf[128];
+	char *pbuf = buf;
+
+	pbuf += sprintf(pbuf, "Arrange in a ");
+	switch (cfg->arrange) {
+		case ROW:
+			pbuf += sprintf(pbuf, "ROW aligned at the ");
+			switch (cfg->row_align) {
+				case RA_TOP:
+					pbuf += sprintf(pbuf, "TOP");
+					break;
+				case RA_MIDDLE:
+					pbuf += sprintf(pbuf, "MIDDLE");
+					break;
+				case RA_BOTTOM:
+					pbuf += sprintf(pbuf, "BOTTOM");
+					break;
+				default:
+					break;
+			}
+			break;
+		case COL:
+			pbuf += sprintf(pbuf, "COLUMN aligned at the ");
+			switch (cfg->col_align) {
+				case CA_LEFT:
+					pbuf += sprintf(pbuf, "LEFT");
+					break;
+				case CA_MIDDLE:
+					pbuf += sprintf(pbuf, "MIDDLE");
+					break;
+				case CA_RIGHT:
+					pbuf += sprintf(pbuf, "RIGHT");
+					break;
+				default:
+					break;
+			}
+			break;
+		default:
+			break;
+	}
+	log_info("  %s", buf);
+
 	if (cfg->order_name_desc) {
 		log_info("  Order:");
 		for (i = cfg->order_name_desc; i; i = i->nex) {
 			log_info("    %s", (char*)i->val);
 		}
-	}
-
-	switch (cfg->ltr_align) {
-		case TOP:
-			log_info("  LTR alignment: TOP");
-			break;
-		case BOTTOM:
-			log_info("  LTR alignment: BOTTOM");
-			break;
-		default:
-			break;
 	}
 
 	log_info("  Auto scale: %s", cfg->auto_scale ? "ON" : "OFF");
@@ -180,7 +239,9 @@ void print_cfg(struct Cfg *cfg) {
 		}
 	}
 
-	log_info("  Laptop display prefix: '%s'", cfg->laptop_display_prefix);
+	if (strcmp(cfg->laptop_display_prefix, DEFAULT_LAPTOP_OUTPUT_PREFIX) != 0) {
+		log_info("  Laptop display prefix: '%s'", cfg->laptop_display_prefix);
+	}
 }
 
 struct Cfg *load_cfg() {

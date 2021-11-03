@@ -99,9 +99,21 @@ struct UserScale {
 	float scale;
 };
 
-enum LtrAlign {
-	TOP = 1,
-	BOTTOM,
+enum Arrange {
+	ROW = 1,
+	COL,
+};
+
+enum RowAlign {
+	RA_TOP = 1,
+	RA_MIDDLE,
+	RA_BOTTOM,
+};
+
+enum ColAlign {
+	CA_LEFT = 1,
+	CA_MIDDLE,
+	CA_RIGHT,
 };
 
 struct Cfg {
@@ -113,7 +125,9 @@ struct Cfg {
 
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
-	enum LtrAlign ltr_align;
+	enum Arrange arrange;
+	enum RowAlign row_align;
+	enum ColAlign col_align;
 	bool auto_scale;
 	struct SList *user_scales;
 };

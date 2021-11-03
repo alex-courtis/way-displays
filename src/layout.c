@@ -24,7 +24,7 @@ wl_fixed_t scale_head(struct Head *head, struct Cfg *cfg) {
 	}
 }
 
-void desire_ltr(struct Displ *displ) {
+void desire_arrangement(struct Displ *displ) {
 	struct Head *head;
 	struct SList *i;
 
@@ -56,7 +56,7 @@ void desire_ltr(struct Displ *displ) {
 	displ->output_manager->desired.heads = order_heads(displ->cfg->order_name_desc, displ->output_manager->heads);
 
 	// head position
-	ltr_heads(displ->output_manager->desired.heads, displ->cfg->ltr_align);
+	position_heads(displ->output_manager->desired.heads, displ->cfg);
 }
 
 void pend_desired(struct Displ *displ) {
