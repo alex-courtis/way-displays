@@ -100,20 +100,16 @@ struct UserScale {
 };
 
 enum Arrange {
-	ROW = 1,
+	ROW,
 	COL,
 };
 
-enum RowAlign {
-	RA_TOP = 1,
-	RA_MIDDLE,
-	RA_BOTTOM,
-};
-
-enum ColAlign {
-	CA_LEFT = 1,
-	CA_MIDDLE,
-	CA_RIGHT,
+enum Align {
+	TOP,
+	MIDDLE,
+	BOTTOM,
+	LEFT,
+	RIGHT,
 };
 
 struct Cfg {
@@ -126,8 +122,7 @@ struct Cfg {
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
 	enum Arrange arrange;
-	enum RowAlign row_align;
-	enum ColAlign col_align;
+	enum Align align;
 	bool auto_scale;
 	struct SList *user_scales;
 };

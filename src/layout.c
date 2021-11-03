@@ -24,7 +24,7 @@ wl_fixed_t scale_head(struct Head *head, struct Cfg *cfg) {
 	}
 }
 
-void desire_arrangement(struct Displ *displ) {
+void desire_arrange(struct Displ *displ) {
 	struct Head *head;
 	struct SList *i;
 

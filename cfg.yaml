@@ -6,10 +6,9 @@
 ARRANGE: ROW
 
 # Align ROWs at the TOP (default), MIDDLE or BOTTOM
-ROW_ALIGN: TOP
-
 # Align COLUMNs at the LEFT (default), MIDDLE or RIGHT
-COLUMN_ALIGN: LEFT
+ALIGN: TOP
+
 
 # Align displays on the TOP (default) or BOTTOM edge.
 LEFT_TO_RIGHT_ALIGN: BOTTOM
