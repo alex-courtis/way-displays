@@ -10,13 +10,16 @@ ARRANGE: ROW
 ALIGN: TOP
 
 
-# Align displays on the TOP (default) or BOTTOM edge.
-LEFT_TO_RIGHT_ALIGN: BOTTOM
+# The default ORDER is simply the order in which the displays are discovered.
+# Define your own.
+ORDER:
+  #- 'DP-2'
+  #- 'monitor description'
+  #- 'HDMI-1'
 
 
 # The default is to scale each display by DPI.
-# This may be disabled and scale 1 will be used, unless a SCALE has been
-# specified.
+# This may be disabled and scale 1 will be used, unless a SCALE has been specified.
 #AUTO_SCALE: false
 
 
