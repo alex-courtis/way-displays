@@ -1,5 +1,5 @@
 ## This session was run using the following configuration:
-```
+```yaml
 # layout left to right, aligned at the bottom
 ARRANGE: ROW
 ALIGN: BOTTOM

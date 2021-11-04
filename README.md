@@ -1,7 +1,7 @@
 # way-displays: Auto Manage Your Wayland Displays
 
 1. Sets preferred mode or highest at maximum refresh
-1. Arranges left to right
+1. Arranges in a row or a column
 1. Auto scales based on DPI: 96 is a scale of 1
 1. Reacts when displays are plugged/unplugged
 1. Reacts when laptop lid is closed/opened
@@ -97,23 +97,13 @@ ALIGN: MIDDLE
 
 <details><summary>ORDER</summary><br>
 
-The default left to right order is simply the order in which the displays are discovered.
+The default `ROW` (left to right) or `COLUMN` (top to bottom) `ORDER` is simply the order in which the displays are discovered.
 
 Define your own e.g.:
 ```yaml
 ORDER:
     - 'DP-2'
     - 'Monitor Maker ABC123'
-```
-
-</details>
-
-<details><summary>LEFT_TO_RIGHT_ALIGN</summary><br>
-
-Displays are laid out in a left to right manner and may be aligned vertically by their TOP (default) or BOTTOM edges.
-
-```yaml
-LEFT_TO_RIGHT_ALIGN: BOTTOM
 ```
 
 </details>
