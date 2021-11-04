@@ -1,7 +1,7 @@
 # way-displays: Auto Manage Your Wayland Displays
 
 1. Sets preferred mode or highest at maximum refresh
-1. Arranges left to right
+1. Arranges in a row or a column
 1. Auto scales based on DPI: 96 is a scale of 1
 1. Reacts when displays are plugged/unplugged
 1. Reacts when laptop lid is closed/opened
@@ -10,13 +10,13 @@ Works out of the box: no configuration required.
 
 Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
 
-<details><summary>Screenshot</summary><br>
+<details><summary>"Screenshot"</summary><br>
 
-See the [example session](doc/example-session.md) for full details.
-
-![way-displays in action](doc/screenshot.png)
+![layouts](doc/layouts.png)
 
 </details>
+
+See an [example session](doc/example-session.md) for full details.
 
 # Requirements
 
@@ -71,9 +71,33 @@ The following are used, in order:
 
 </details>
 
+<details><summary>ARRANGE and ALIGN</summary><br>
+
+The default is to arrange in a row, aligned at the top of the displays. This is very configurable:
+
+![layouts](doc/layouts.png)
+
+`ARRANGE` may be a `ROW` (left to right) or a `COLUMN` (top to bottom).
+
+`ALIGN` for a `ROW` may be `TOP`, `MIDDLE`, `BOTTOM`.
+
+`ALIGN` for a `COLUMN` may be `LEFT`, `MIDDLE`, `RIGHT`.
+
+Layout to suit you e.g. top to bottom, aligned in the centre:
+```yaml
+# Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom)
+ARRANGE: COLUMN
+
+# Align ROWs at the TOP (default), MIDDLE or BOTTOM
+# Align COLUMNs at the LEFT (default), MIDDLE or RIGHT
+ALIGN: MIDDLE
+```
+
+</details>
+
 <details><summary>ORDER</summary><br>
 
-The default left to right order is simply the order in which the displays are discovered.
+The default `ROW` (left to right) or `COLUMN` (top to bottom) `ORDER` is simply the order in which the displays are discovered.
 
 Define your own e.g.:
 ```yaml
@@ -118,7 +142,7 @@ LAPTOP_DISPLAY_PREFIX: 'eDPP'
 
 <details><summary>On Names and Descriptions</summary><br>
 You can configure displays by name or description. You can find these by looking at the logs e.g.
-	
+
 ```
 DP-3 Arrived:
     name:     'DP-3'

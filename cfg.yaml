@@ -2,8 +2,15 @@
 # Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
 
 
-# The default left to right order is simply the order in which the displays are
-# discovered.
+# Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom)
+ARRANGE: ROW
+
+# Align ROWs at the TOP (default), MIDDLE or BOTTOM
+# Align COLUMNs at the LEFT (default), MIDDLE or RIGHT
+ALIGN: TOP
+
+
+# The default ORDER is simply the order in which the displays are discovered.
 # Define your own.
 ORDER:
   #- 'DP-2'
@@ -12,8 +19,7 @@ ORDER:
 
 
 # The default is to scale each display by DPI.
-# This may be disabled and scale 1 will be used, unless a SCALE has been
-# specified.
+# This may be disabled and scale 1 will be used, unless a SCALE has been specified.
 #AUTO_SCALE: false
 
 

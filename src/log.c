@@ -8,7 +8,7 @@
 #include "types.h"
 
 // we are single threaded
-enum log_level log_threshold = LOG_LEVEL_INFO;
+enum LogLevel log_threshold = LOG_LEVEL_INFO;
 struct timeval tv;
 
 void log_print(const char *prefix, const char *suffix, FILE *__restrict __stream, const char *__restrict __format, va_list __args) {

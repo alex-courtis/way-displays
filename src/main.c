@@ -94,7 +94,7 @@ int listen(struct Displ *displ) {
 
 			// prepare possible changes
 			reset_dirty(displ);
-			desire_ltr(displ);
+			desire_arrange(displ);
 			pend_desired(displ);
 
 			if (is_pending_output_manager(displ->output_manager)) {

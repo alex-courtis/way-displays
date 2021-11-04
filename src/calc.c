@@ -68,6 +68,15 @@ wl_fixed_t auto_scale(struct Head *head) {
 	return 256 * dpi_quantized / 96;
 }
 
+void calc_relative_dimensions(struct Head *head) {
+	if (!head || !head->desired.mode || !head->desired.scale) {
+		return;
+	}
+
+	head->desired.height_rel = (int32_t)((double)head->desired.mode->height * 256 / head->desired.scale + 0.5);
+	head->desired.width_rel = (int32_t)((double)head->desired.mode->width * 256 / head->desired.scale + 0.5);
+}
+
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	struct SList *heads_ordered = NULL;
 	struct Head *head;
@@ -109,21 +118,72 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	return heads_ordered;
 }
 
-void ltr_heads(struct SList *heads) {
+void position_heads(struct SList *heads, struct Cfg *cfg) {
 	struct Head *head;
-	int32_t x;
+	int32_t tallest_rel = 0, widest_rel = 0, x_rel = 0, y_rel = 0;
 
-	x = 0;
+	// find tallest/widest
+	for (struct SList *i = heads; i; i = i->nex) {
+		head = i->val;
+		if (!head || !head->desired.mode || !head->desired.enabled) {
+			continue;
+		}
+		if (head->desired.height_rel > tallest_rel) {
+			tallest_rel = head->desired.height_rel;
+		}
+		if (head->desired.width_rel > widest_rel) {
+			widest_rel = head->desired.width_rel;
+		}
+	}
+
+	// arrange each in the predefined order
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
 		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
 
-		head->desired.x = x;
-		head->desired.y = 0;
+		switch (cfg ? cfg->arrange : ROW) {
+			case COL:
+				// position
+				head->desired.y = y_rel;
+				y_rel += head->desired.height_rel;
 
-		x += (int32_t)((double)head->desired.mode->width * 256 / head->desired.scale + 0.5);
+				// align
+				switch (cfg ? cfg->align : LEFT) {
+					case RIGHT:
+						head->desired.x = widest_rel - head->desired.width_rel;
+						break;
+					case MIDDLE:
+						head->desired.x = (widest_rel - head->desired.width_rel + 0.5) / 2;
+						break;
+					case LEFT:
+					default:
+						head->desired.x = 0;
+						break;
+				}
+				break;
+			case ROW:
+			default:
+				// position
+				head->desired.x = x_rel;
+				x_rel += head->desired.width_rel;
+
+				// align
+				switch (cfg ? cfg->align : TOP) {
+					case BOTTOM:
+						head->desired.y = tallest_rel - head->desired.height_rel;
+						break;
+					case MIDDLE:
+						head->desired.y = (tallest_rel - head->desired.height_rel + 0.5) / 2;
+						break;
+					case TOP:
+					default:
+						head->desired.y = 0;
+						break;
+				}
+				break;
+		}
 	}
 }
 

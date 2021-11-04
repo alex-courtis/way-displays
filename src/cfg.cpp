@@ -19,13 +19,52 @@ using std::stringstream;
 #define CFG_FILE_NAME "cfg.yaml"
 #define DEFAULT_LAPTOP_OUTPUT_PREFIX "eDP"
 
+char *arrange_name(enum Arrange arrange) {
+	static char buf[64];
+	switch (arrange) {
+		case COL:
+			snprintf(buf, 64, "COLUMN");
+			break;
+		case ROW:
+		default:
+			snprintf(buf, 64, "ROW");
+			break;
+	}
+	return buf;
+}
+
+char *align_name(enum Align align) {
+	static char buf[64];
+	switch (align) {
+		case MIDDLE:
+			snprintf(buf, 64, "MIDDLE");
+			break;
+		case BOTTOM:
+			snprintf(buf, 64, "BOTTOM");
+			break;
+		case LEFT:
+			snprintf(buf, 64, "LEFT");
+			break;
+		case RIGHT:
+			snprintf(buf, 64, "RIGHT");
+			break;
+		case TOP:
+		default:
+			snprintf(buf, 64, "TOP");
+			break;
+	}
+	return buf;
+}
+
 struct Cfg *default_cfg() {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
 	cfg->dirty = true;
 
-	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
+	cfg->arrange = ROW;
+	cfg->align = TOP;
 	cfg->auto_scale = true;
+	cfg->laptop_display_prefix = strdup(DEFAULT_LAPTOP_OUTPUT_PREFIX);
 
 	return cfg;
 }
@@ -67,23 +106,6 @@ bool parse(struct Cfg *cfg) {
 	try {
 		YAML::Node config = YAML::LoadFile(cfg->file_path);
 
-		if (config["LAPTOP_DISPLAY_PREFIX"]) {
-			free(cfg->laptop_display_prefix);
-			cfg->laptop_display_prefix = strdup(config["LAPTOP_DISPLAY_PREFIX"].as<string>().c_str());
-		}
-
-		if (config["ORDER"]) {
-			const auto &orders = config["ORDER"];
-			for (const auto &order : orders) {
-				slist_append(&cfg->order_name_desc, strdup(order.as<string>().c_str()));
-			}
-		}
-
-		if (config["AUTO_SCALE"]) {
-			const auto &orders = config["AUTO_SCALE"];
-			cfg->auto_scale = orders.as<bool>();
-		}
-
 		if (config["LOG_THRESHOLD"]) {
 			const auto &level = config["LOG_THRESHOLD"].as<string>();
 			if (level == "DEBUG") {
@@ -96,8 +118,53 @@ bool parse(struct Cfg *cfg) {
 				log_threshold = LOG_LEVEL_ERROR;
 			} else {
 				log_threshold = LOG_LEVEL_INFO;
-				log_warn("\nIgnoring invalid LOG_THRESHOLD: '%s', using default 'INFO'", level.c_str());
+				log_warn("\nIgnoring invalid LOG_THRESHOLD: %s, using default INFO", level.c_str());
 			}
+		}
+
+		if (config["LAPTOP_DISPLAY_PREFIX"]) {
+			free(cfg->laptop_display_prefix);
+			cfg->laptop_display_prefix = strdup(config["LAPTOP_DISPLAY_PREFIX"].as<string>().c_str());
+		}
+
+		if (config["ORDER"]) {
+			const auto &orders = config["ORDER"];
+			for (const auto &order : orders) {
+				slist_append(&cfg->order_name_desc, strdup(order.as<string>().c_str()));
+			}
+		}
+
+		if (config["ARRANGE"]) {
+			const auto &arrange = config["ARRANGE"].as<string>();
+			if (arrange == "ROW") {
+				cfg->arrange = ROW;
+			} else if (arrange == "COLUMN") {
+				cfg->arrange = COL;
+			} else {
+				log_warn("\nIgnoring invalid ARRANGE: %s, using default %s", arrange.c_str(), arrange_name(cfg->arrange));
+			}
+		}
+
+		if (config["ALIGN"]) {
+			const auto &align = config["ALIGN"].as<string>();
+			if (align == "TOP") {
+				cfg->align = TOP;
+			} else if (align == "MIDDLE") {
+				cfg->align = MIDDLE;
+			} else if (align == "BOTTOM") {
+				cfg->align = BOTTOM;
+			} else if (align == "LEFT") {
+				cfg->align = LEFT;
+			} else if (align == "RIGHT") {
+				cfg->align = RIGHT;
+			} else {
+				log_warn("\nIgnoring invalid ALIGN: %s, using default %s", align.c_str(), align_name(cfg->align));
+			}
+		}
+
+		if (config["AUTO_SCALE"]) {
+			const auto &orders = config["AUTO_SCALE"];
+			cfg->auto_scale = orders.as<bool>();
 		}
 
 		if (config["SCALE"]) {
@@ -132,6 +199,24 @@ bool parse(struct Cfg *cfg) {
 	return true;
 }
 
+void check_cfg(struct Cfg *cfg) {
+	switch(cfg->arrange) {
+		case COL:
+			if (cfg->align != LEFT && cfg->align != MIDDLE && cfg->align != RIGHT) {
+				log_warn("\nIgnoring invalid ALIGN: %s for %s arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.", align_name(cfg->align), arrange_name(cfg->arrange));
+				cfg->align = LEFT;
+			}
+			break;
+		case ROW:
+		default:
+			if (cfg->align != TOP && cfg->align != MIDDLE && cfg->align != BOTTOM) {
+				log_warn("\nIgnoring invalid ALIGN: %s for %s arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.", align_name(cfg->align), arrange_name(cfg->arrange));
+				cfg->align = TOP;
+			}
+			break;
+	}
+}
+
 void print_cfg(struct Cfg *cfg) {
 	if (!cfg)
 		return;
@@ -139,9 +224,7 @@ void print_cfg(struct Cfg *cfg) {
 	struct UserScale *user_scale;
 	struct SList *i;
 
-	log_info("  Auto scale: %s", cfg->auto_scale ? "ON" : "OFF");
-
-	log_info("  Laptop display prefix: '%s'", cfg->laptop_display_prefix);
+	log_info("  Arrange in a %s aligned at the %s", arrange_name(cfg->arrange), align_name(cfg->align));
 
 	if (cfg->order_name_desc) {
 		log_info("  Order:");
@@ -150,12 +233,18 @@ void print_cfg(struct Cfg *cfg) {
 		}
 	}
 
+	log_info("  Auto scale: %s", cfg->auto_scale ? "ON" : "OFF");
+
 	if (cfg->user_scales) {
 		log_info("  Scale:");
 		for (i = cfg->user_scales; i; i = i->nex) {
 			user_scale = (struct UserScale*)i->val;
 			log_info("    %s: %.3f", user_scale->name_desc, user_scale->scale);
 		}
+	}
+
+	if (strcmp(cfg->laptop_display_prefix, DEFAULT_LAPTOP_OUTPUT_PREFIX) != 0) {
+		log_info("  Laptop display prefix: '%s'", cfg->laptop_display_prefix);
 	}
 }
 
@@ -187,6 +276,7 @@ struct Cfg *load_cfg() {
 	} else {
 		log_info("\nNo configuration file found, using defaults:");
 	}
+	check_cfg(cfg);
 	print_cfg(cfg);
 
 	return cfg;
@@ -203,6 +293,7 @@ struct Cfg *reload_cfg(struct Cfg *cfg) {
 
 	log_info("\nReloading configuration file: %s", cfg->file_path);
 	if (parse(cfg_new)) {
+		check_cfg(cfg_new);
 		print_cfg(cfg_new);
 		free_cfg(cfg);
 		return cfg_new;

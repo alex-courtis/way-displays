@@ -1,6 +1,9 @@
 ## This session was run using the following configuration:
-
 ```yaml
+# layout left to right, aligned at the bottom
+ARRANGE: ROW
+ALIGN: BOTTOM
+
 ORDER:
     # I like my laptop on the left
     - 'Laptop Company 0x123A 456'
@@ -18,17 +21,18 @@ LAPTOP_DISPLAY_PREFIX: 'eDPP'
 
 ## Starting up:
 ```
-way-displays version 1.0.2
+way-displays version 1.1.0
 
 Found configuration file: /home/me/.config/way-displays/cfg.yaml
-  Auto scale: ON
-  Laptop display prefix: 'eDPP'
+  Arrange in a ROW aligned at the BOTTOM
   Order:
     Laptop Company 0x123A 456
     DP-2
     Monitor Maker ABC123
+  Auto scale: ON
   Scale:
-    Monitor Maker ABC123: 1.25
+    Monitor Maker ABC123: 1.250
+  Laptop display prefix: 'eDPP'
 
 eDPP-1 Arrived:
   info:
@@ -69,6 +73,14 @@ DP-3 Arrived:
     position: 0,0
     mode:     2560x1440@144Hz (preferred)
 
+eDPP-1 Changing:
+  from:
+    scale:    3.000
+    position: 0,0
+    mode:     3840x2160@60Hz (preferred)
+  to:
+    position: 0,432
+
 DP-3 Changing:
   from:
     scale:    1.000
@@ -83,28 +95,12 @@ Changes successful
 
 ## Closed the laptop lid:
 ```
-eDPP-1 Changing:
-  from:
-    scale:    3.00
-    position: 0,0
-    mode:     3840x2160@60Hz (preferred)
-    (lid closed)
-  to:
-    (disabled)
-
-DP-3 Changing:
-  from:
-    scale:    1.25
-    position: 1280,0
-    mode:     2560x1440@144Hz (preferred)
-  to:
-    position: 0,0
 Lid closed
 
 eDPP-1 Changing:
   from:
     scale:    3.000
-    position: 0,0
+    position: 0,432
     mode:     3840x2160@60Hz (preferred)
     (lid closed)
   to:
@@ -130,7 +126,7 @@ eDPP-1 Changing:
     (disabled)
   to:
     scale:    3.000
-    position: 0,0
+    position: 0,432
     mode:     3840x2160@60Hz (preferred)
     (enabled)
 
@@ -151,6 +147,13 @@ DP-3 Departed:
     name:     'DP-3'
     desc:     'Monitor Maker ABC123 (DP-3 via HDMI)'
 
-No changes needed
-```
+eDPP-1 Changing:
+  from:
+    scale:    3.000
+    position: 0,432
+    mode:     3840x2160@60Hz (preferred)
+  to:
+    position: 0,0
 
+Changes successful
+```

@@ -9,9 +9,11 @@ struct Mode *optimal_mode(struct SList *modes);
 
 wl_fixed_t auto_scale(struct Head *head);
 
+void calc_relative_dimensions(struct Head *head);
+
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 
-void ltr_heads(struct SList *heads);
+void position_heads(struct SList *heads, struct Cfg *cfg);
 
 #endif // CALC_H
 
