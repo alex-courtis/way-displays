@@ -210,7 +210,14 @@ Please create a [github issue](https://github.com/alex-courtis/way-displays/issu
 
 Attaching the log e.g. `/tmp/way-displays.1.me.log` would be useful.
 
-# Contributing
+# Developing
 
-Enhancements and bug fixes are very welcome: please raise an issue or fork this repo and submit a PR.
+Enhancements and bug fixes are very welcome: please raise a [github issue](https://github.com/alex-courtis/way-displays/issues) or fork this repo and submit a PR.
 
+## Author
+
+Alexander Courtis
+
+## Contributors
+
+Stephen Barratt
