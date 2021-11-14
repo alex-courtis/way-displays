@@ -204,6 +204,16 @@ When using a display scale that is not a whole number, the result will not be a 
 
 To ameliorate this, we always round our scale to a multiple of one eighth. This results in a nice round binary number, which minimises some of the rounding and results in a smoother image. If you're interested, our rounded scale is a [wl_fixed_t](https://wayland.freedesktop.org/docs/html/apb.html).
 
+# On Games And Scale
+
+When a display is scaled (X11) linux games will render at the display's scaled resolution, rather than the monitor's native resolution. There is [work underway](https://gitlab.freedesktop.org/wlroots/wlroots/-/issues/2125) to fix this.
+
+In the meantime, we can work around this by temporarily disabling scaling before starting and playing the game.
+
+1. Set `AUTO_SCALE: TRUE` in your configuration.
+1. Add the executable [togglescale](https://github.com/alex-courtis/arch/blob/master/bin/togglescaling) script to your path.
+1. Create a compositor keybinding e.g. sway `bindsym $mod+Shift+Ctrl+s exec togglescaling`
+
 # Help, Questions, Suggestions And Ideas
 
 Please create a [github issue](https://github.com/alex-courtis/way-displays/issues).
