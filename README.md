@@ -211,7 +211,7 @@ When a display is scaled (X11) linux games will render at the display's scaled r
 In the meantime, we can work around this by temporarily disabling scaling before starting and playing the game.
 
 1. Set `AUTO_SCALE: TRUE` in your configuration.
-1. Add the executable [togglescale](https://github.com/alex-courtis/arch/blob/master/bin/togglescaling) script to your path.
+1. Add the executable [togglescaling](https://github.com/alex-courtis/arch/blob/master/bin/togglescaling) script to your path.
 1. Create a compositor keybinding e.g. sway `bindsym $mod+Shift+Ctrl+s exec togglescaling`
 
 # Help, Questions, Suggestions And Ideas
