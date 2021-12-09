@@ -2,6 +2,8 @@
 
 #include "calc.h"
 
+#include "log.h"
+
 double calc_dpi(struct Mode *mode) {
 	if (!mode || !mode->head || !mode->head->width_mm || !mode->head->height_mm) {
 		return 0;
@@ -13,9 +15,10 @@ double calc_dpi(struct Mode *mode) {
 }
 
 struct Mode *optimal_mode(struct SList *modes) {
-	struct Mode *mode, *optimal_mode;
+	struct Mode *mode, *optimal_mode, *preferred_mode;
 
 	optimal_mode = NULL;
+	preferred_mode = NULL;
 	for (struct SList *i = modes; i; i = i->nex) {
 		mode = i->val;
 
@@ -29,7 +32,9 @@ struct Mode *optimal_mode(struct SList *modes) {
 
 		// preferred first
 		if (mode->preferred) {
-			return mode;
+			optimal_mode = mode;
+			preferred_mode = mode;
+			break;
 		}
 
 		// highest resolution
@@ -44,6 +49,22 @@ struct Mode *optimal_mode(struct SList *modes) {
 				mode->refresh_mHz > optimal_mode->refresh_mHz) {
 			optimal_mode = mode;
 			continue;
+		}
+	}
+
+	if (preferred_mode) {
+		optimal_mode = preferred_mode;
+		for (struct SList *i = modes; i; i = i->nex) {
+			mode = i->val;
+			if (mode->width == optimal_mode->width && mode->height == optimal_mode->height) {
+				if (mode->refresh_mHz > preferred_mode->refresh_mHz) {
+					optimal_mode = mode;
+				}
+			}
+		}
+		// TODO AMC remove
+		if (optimal_mode != preferred_mode) {
+			log_debug("  overriding preferred mode refresh to %dmHz", optimal_mode->refresh_mHz);
 		}
 	}
 
