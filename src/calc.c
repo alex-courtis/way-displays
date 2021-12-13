@@ -57,7 +57,7 @@ struct Mode *optimal_mode(struct SList *modes) {
 		for (struct SList *i = modes; i; i = i->nex) {
 			mode = i->val;
 			if (mode->width == optimal_mode->width && mode->height == optimal_mode->height) {
-				if (mode->refresh_mHz > preferred_mode->refresh_mHz) {
+				if (mode->refresh_mHz > optimal_mode->refresh_mHz) {
 					optimal_mode = mode;
 				}
 			}
