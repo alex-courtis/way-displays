@@ -192,6 +192,13 @@ bool parse(struct Cfg *cfg) {
 			}
 		}
 
+		if (config["MAX_PREFERRED_REFRESH"]) {
+			const auto &name_desc = config["MAX_PREFERRED_REFRESH"];
+			for (const auto &name_desc : name_desc) {
+				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(name_desc.as<string>().c_str()));
+			}
+		}
+
 	} catch (const exception &e) {
 		log_error("\ncannot parse '%s': %s", cfg->file_path, e.what());
 		return false;
@@ -240,6 +247,13 @@ void print_cfg(struct Cfg *cfg) {
 		for (i = cfg->user_scales; i; i = i->nex) {
 			user_scale = (struct UserScale*)i->val;
 			log_info("    %s: %.3f", user_scale->name_desc, user_scale->scale);
+		}
+	}
+
+	if (cfg->max_preferred_refresh_name_desc) {
+		log_info("  Max preferred refresh:");
+		for (i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
+			log_info("    %s", (char*)i->val);
 		}
 	}
 

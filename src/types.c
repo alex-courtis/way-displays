@@ -82,6 +82,11 @@ void free_cfg(struct Cfg *cfg) {
 	}
 	slist_free(&cfg->user_scales);
 
+	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
+		free(i->val);
+	}
+	slist_free(&cfg->max_preferred_refresh_name_desc);
+
 	free(cfg->laptop_display_prefix);
 
 	free(cfg);

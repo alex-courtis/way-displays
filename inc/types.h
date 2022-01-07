@@ -44,6 +44,7 @@ struct Head {
 	char *model;
 	char *serial_number;
 	bool lid_closed;
+	bool max_preferred_refresh;
 
 	struct {
 		struct Mode *mode;
@@ -125,6 +126,7 @@ struct Cfg {
 	enum Align align;
 	bool auto_scale;
 	struct SList *user_scales;
+	struct SList *max_preferred_refresh_name_desc;
 };
 
 struct Lid {

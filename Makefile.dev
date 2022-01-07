@@ -8,7 +8,7 @@ tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
 	ctags-c++ $(CXXFLAGS) $(CPPFLAGS) --project-src $(SRC_CXX) $(INC_H) $(PRO_H) --append
 
 .copy: way-displays cfg.yaml
-	# scp cfg.yaml gigantor:.config/way-displays/cfg.yaml
-	scp way-displays gigantor:bin
+	scp cfg.yaml duke:.config/way-displays/cfg.yaml
+	scp way-displays duke:bin
 	touch .copy
 
