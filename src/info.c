@@ -8,12 +8,10 @@ void print_mode(void (*log_fn)(const char*, ...), struct Mode *mode) {
 	if (!log_fn || !mode)
 		return;
 
-	// TODO AMC revert back to Hz
-	log_fn("    mode:     %dx%d@%ldmHz %s",
+	log_fn("    mode:     %dx%d@%ldHz %s",
 			mode->width,
 			mode->height,
-			// (long)(((double)mode->refresh_mHz / 1000 + 0.5)),
-			mode->refresh_mHz,
+			(long)(((double)mode->refresh_mHz / 1000 + 0.5)),
 			mode->preferred ? "(preferred)" : "           "
 		  );
 }
