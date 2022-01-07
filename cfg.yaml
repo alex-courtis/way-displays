@@ -34,6 +34,13 @@ SCALE:
 #LAPTOP_DISPLAY_PREFIX: 'eDP'
 
 
+# Use the maximum refresh rate for resolution of the preferred mode.
+# Warning: this may result in an unusable display.
+MAX_PREFERRED_REFRESH:
+  #- 'monitor description'
+  #- 'HDMI-1'
+
+
 # One of: ERROR, WARNING, INFO (default), DEBUG
-#LOG_THRESHOLD: INFO
+LOG_THRESHOLD: INFO
 

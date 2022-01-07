@@ -45,7 +45,7 @@ void desire_arrange(struct Displ *displ) {
 		}
 
 		if (head->desired.enabled) {
-			head->desired.mode = optimal_mode(head->modes);
+			head->desired.mode = optimal_mode(head->modes, head->max_preferred_refresh);
 			head->desired.scale = scale_head(head, displ->cfg);
 			calc_relative_dimensions(head);
 		}
