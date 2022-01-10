@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <wayland-client-core.h>
+#include <wayland-client-protocol.h>
 
 #include "list.h"
 
@@ -38,7 +39,7 @@ struct Head {
 	struct Mode *preferred_mode;
 	int32_t x;
 	int32_t y;
-	int32_t transform;
+	enum wl_output_transform transform;
 	wl_fixed_t scale;
 	char *make;
 	char *model;
@@ -50,10 +51,11 @@ struct Head {
 		struct Mode *mode;
 		wl_fixed_t scale;
 		int enabled;
+		// layout coords
 		int32_t x;
 		int32_t y;
-		int32_t width_rel;
-		int32_t height_rel;
+		int32_t width;
+		int32_t height;
 	} desired;
 
 	struct {
