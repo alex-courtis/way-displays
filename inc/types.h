@@ -80,6 +80,8 @@ struct OutputManager {
 	struct SList *heads_arrived;
 	struct SList *heads_departed;
 
+	int retries;
+
 	struct {
 		struct SList *heads;
 	} desired;

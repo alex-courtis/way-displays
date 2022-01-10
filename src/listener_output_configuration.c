@@ -3,6 +3,8 @@
 #include "log.h"
 #include "types.h"
 
+#define MAX_RETRIES 3
+
 // OutputManager data
 
 static void succeeded(void *data,
@@ -10,6 +12,7 @@ static void succeeded(void *data,
 	struct OutputManager *output_manager = data;
 
 	reset_pending_desired(output_manager);
+	output_manager->retries = 0;
 
 	log_info("\nChanges successful");
 
@@ -25,18 +28,36 @@ static void succeeded(void *data,
 
 static void failed(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
+	struct OutputManager *output_manager = data;
 
-	// not much we can do here and there is no prior art
-	log_error("\noutput configuration has failed %s:%d, exiting", __FILE__, __LINE__);
-	exit(EXIT_FAILURE);
+	if (++output_manager->retries > MAX_RETRIES) {
+		log_error("\nToo many retries, exiting", __FILE__, __LINE__);
+		exit(EXIT_FAILURE);
+	}
+	log_info("\nChanges failed, retrying %d/%d", output_manager->retries, MAX_RETRIES);
+
+	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
+
+	// try again with new state
+	output_manager->dirty = true;
+	reset_pending_desired(output_manager);
 }
 
 static void cancelled(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
+	struct OutputManager *output_manager = data;
 
-	// there seems to be no way to recover from this
-	log_error("\noutput configuration has been cancelled %s:%d, exiting", __FILE__, __LINE__);
-	exit(EXIT_FAILURE);
+	if (++output_manager->retries > MAX_RETRIES) {
+		log_error("\nToo many retries, exiting", __FILE__, __LINE__);
+		exit(EXIT_FAILURE);
+	}
+	log_info("\nChanges cancelled, retrying %d/%d", output_manager->retries, MAX_RETRIES);
+
+	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
+
+	// try again with new state
+	output_manager->dirty = true;
+	reset_pending_desired(output_manager);
 }
 
 static const struct zwlr_output_configuration_v1_listener listener = {
