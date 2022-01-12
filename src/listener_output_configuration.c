@@ -30,16 +30,17 @@ static void failed(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
 	struct OutputManager *output_manager = data;
 
-	if (++output_manager->retries > MAX_RETRIES) {
-		log_error("\nToo many retries, exiting", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
-	}
-	log_info("\nChanges failed, retrying %d/%d", output_manager->retries, MAX_RETRIES);
-
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 
-	// try again with new state
-	output_manager->dirty = true;
+	if (++output_manager->retries > MAX_RETRIES) {
+		log_error("\nToo many retries, abandoning changes", __FILE__, __LINE__);
+		output_manager->dirty = false;
+	} else {
+		log_info("\nChanges failed, retrying %d/%d", output_manager->retries, MAX_RETRIES);
+		// try again with new state
+		output_manager->dirty = true;
+	}
+
 	reset_pending_desired(output_manager);
 }
 
@@ -47,16 +48,17 @@ static void cancelled(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
 	struct OutputManager *output_manager = data;
 
-	if (++output_manager->retries > MAX_RETRIES) {
-		log_error("\nToo many retries, exiting", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
-	}
-	log_info("\nChanges cancelled, retrying %d/%d", output_manager->retries, MAX_RETRIES);
-
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 
-	// try again with new state
-	output_manager->dirty = true;
+	if (++output_manager->retries > MAX_RETRIES) {
+		log_error("\nToo many retries, abandoning changes", __FILE__, __LINE__);
+		output_manager->dirty = false;
+	} else {
+		log_info("\nChanges cancelled, retrying %d/%d", output_manager->retries, MAX_RETRIES);
+		// try again with new state
+		output_manager->dirty = true;
+	}
+
 	reset_pending_desired(output_manager);
 }
 
