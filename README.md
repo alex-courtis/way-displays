@@ -142,13 +142,17 @@ LAPTOP_DISPLAY_PREFIX: 'eDPP'
 
 <details><summary>MAX_PREFERRED_REFRESH</summary><br>
 
-Use the maximum refresh rate for resolution of the preferred mode. e.g.
+For the specified displays, use the maximum avalable refresh rate for resolution of the preferred mode.
+
+e.g. when preferred mode is `1920x1080@60Hz`, use `1920x1080@165Hz`
+
+Warning: this may result in an unusable display.
+
 ```yaml
 MAX_PREFERRED_REFRESH:
   - 'Monitor Maker ABC123'
   - 'HDMI-1'
 ```
-Warning: this may result in an unusable display.
 
 </details>
 
