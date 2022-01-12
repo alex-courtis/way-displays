@@ -1,3 +1,8 @@
+way-displays 1.2.1 YYYY-MM-DD
+-----------------------------
+- Bug #12 handle rotated displays
+- Bug #11 allow retries after config update during a change
+
 way-displays 1.2.0 2022-01-07
 -----------------------------
 - Feature #10 Maximum Preferred Refresh

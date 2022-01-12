@@ -140,6 +140,18 @@ LAPTOP_DISPLAY_PREFIX: 'eDPP'
 
 </details>
 
+<details><summary>MAX_PREFERRED_REFRESH</summary><br>
+
+Use the maximum refresh rate for resolution of the preferred mode. e.g.
+```yaml
+MAX_PREFERRED_REFRESH:
+  - 'Monitor Maker ABC123'
+  - 'HDMI-1'
+```
+Warning: this may result in an unusable display.
+
+</details>
+
 <details><summary>On Names and Descriptions</summary><br>
 You can configure displays by name or description. You can find these by looking at the logs e.g.
 

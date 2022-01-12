@@ -13,6 +13,8 @@ ALIGN: TOP
 # The default ORDER is simply the order in which the displays are discovered.
 # Define your own.
 ORDER:
+  # - 'HDMI-A-1'
+  # - 'eDP-1'
   #- 'DP-2'
   #- 'monitor description'
   #- 'HDMI-1'
