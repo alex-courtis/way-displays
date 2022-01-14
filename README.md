@@ -243,7 +243,7 @@ In the meantime, we can work around this by temporarily disabling scaling before
 
 # Help, Questions, Suggestions And Ideas
 
-Please create a [github issue](https://github.com/alex-courtis/way-displays/issues) and attaching the log `/tmp/way-displays.1.me.log`.
+Please create a [github issue](https://github.com/alex-courtis/way-displays/issues) and attach the log `/tmp/way-displays.1.me.log`.
 
 # Developing
 
