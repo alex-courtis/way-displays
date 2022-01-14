@@ -214,6 +214,17 @@ sudo make uninstall
 ```
 </details>
 
+# Known Issues
+
+<details><summary>Laptop Lid Not Detected</summary><br>
+
+```
+W [10:09:44.542] WARNING: open '/dev/input/event0' failed 13: 'Permission denied'
+```
+
+User must be in the `input` group to monitor libinput events.
+</details>
+
 # On Scale And Blurring
 
 When using a display scale that is not a whole number, the result will not be a pixel perfect rendition of the unscaled content. There are no fractional pixels so there will be rounding and thus some blurring.
