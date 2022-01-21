@@ -4,6 +4,7 @@
 
 #include "calc.h"
 #include "listeners.h"
+#include "log.h"
 
 wl_fixed_t scale_head(struct Head *head, struct Cfg *cfg) {
 	struct UserScale *user_scale;
@@ -26,7 +27,7 @@ wl_fixed_t scale_head(struct Head *head, struct Cfg *cfg) {
 
 void desire_arrange(struct Displ *displ) {
 	struct Head *head;
-	struct SList *i;
+	struct SList *i, *j;
 
 	if (!displ || !displ->output_manager || !displ->cfg)
 		return;
@@ -42,6 +43,14 @@ void desire_arrange(struct Displ *displ) {
 			head->desired.enabled = true;
 		} else {
 			head->desired.enabled = !head->lid_closed;
+		}
+
+		// explicitly disabled
+		for (j = displ->cfg->disabled_name_desc; j; j = j->nex) {
+			if ((head->name && strcmp(j->val, head->name) == 0) ||
+					(head->description && strcasestr(head->description, j->val))) {
+				head->desired.enabled = false;
+			}
 		}
 
 		if (head->desired.enabled) {
