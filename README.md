@@ -235,11 +235,17 @@ To ameliorate this, we always round our scale to a multiple of one eighth. This 
 
 When a display is scaled (X11) linux games will render at the display's scaled resolution, rather than the monitor's native resolution. There is [work underway](https://gitlab.freedesktop.org/wlroots/wlroots/-/issues/2125) to fix this.
 
-In the meantime, we can work around this by temporarily disabling scaling before starting and playing the game.
+In the meantime, we can work around this by toggling auto scaling in our `cfg.yaml` using [yq](https://mikefarah.gitbook.io/yq/):
+```
+yq -y -i 'if has("AUTO_SCALE") then .AUTO_SCALE |= not else .AUTO_SCALE = false end' ~/.config/way-displays/cfg.yaml
+```
 
-1. Set `AUTO_SCALE: TRUE` in your configuration.
-1. Add the executable [togglescaling](https://github.com/alex-courtis/arch/blob/master/bin/togglescaling) script to your path.
-1. Create a compositor keybinding e.g. sway `bindsym $mod+Shift+Ctrl+s exec togglescaling`
+You could create a sway keybinding e.g.:
+```
+bindsym Mod1+Ctrl+Shift+s exec yq -y ...
+```
+
+Be warned that this will strip comments/whitespace from your `cfg.yaml`. Any explicily specified `SCALE` values will override `AUTO_SCALE: false`, so you would need to also remove/add those in the yq query.
 
 # Help, Questions, Suggestions And Ideas
 
