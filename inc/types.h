@@ -131,6 +131,7 @@ struct Cfg {
 	bool auto_scale;
 	struct SList *user_scales;
 	struct SList *max_preferred_refresh_name_desc;
+	struct SList *disabled_name_desc;
 };
 
 struct Lid {
