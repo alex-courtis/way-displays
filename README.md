@@ -254,12 +254,12 @@ We can add/remove from the `DISABLED` list e.g.
 
 Disable eDP-1:
 ```
-yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end' ~/.config/way-displays/cfg.yaml
+yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end | .DISABLED |= . + [ "eDP-1"]' ~/.config/way-displays/cfg.yaml
 ```
 
 Enable eDP-1:
 ```
-yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end | .DISABLED |= . + [ "eDP-1"]' ~/.config/way-displays/cfg.yaml
+yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end' ~/.config/way-displays/cfg.yaml
 ```
 </details>
 
