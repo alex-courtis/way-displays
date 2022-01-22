@@ -241,18 +241,22 @@ User must be in the `input` group to monitor libinput events.
 
 Changes to `cfg.yaml` will be immediately applied without needing to restart. Following are some recipes for such changes, using [yq](https://mikefarah.gitbook.io/yq/).
 
-You can create a sway keybinding for these changes e.g. `bindsym Mod1+Ctrl+Shift+s exec yq -y -i '...`
+You can create a sway keybinding for these changes e.g.
+```
+bindsym Mod1+Ctrl+Shift+s exec yq -y -i '...
+```
 
 Note that comments / whitespace will be stripped from your `cfg.yaml` when using this method.
 
-<details><summary>Disabling Displays</summary><br>
+<details><summary>Disable/Enable Displays</summary><br>
 
-We can disable/enable displays via the `DISABLED` list e.g.
+We can add/remove from the `DISABLED` list e.g.
 
 Disable eDP-1:
 ```
 yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end' ~/.config/way-displays/cfg.yaml
 ```
+
 Enable eDP-1:
 ```
 yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end | .DISABLED |= . + [ "eDP-1"]' ~/.config/way-displays/cfg.yaml
