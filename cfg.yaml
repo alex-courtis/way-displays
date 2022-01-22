@@ -45,9 +45,8 @@ MAX_PREFERRED_REFRESH:
 LOG_THRESHOLD: INFO
 
 
-# Displays may be individually disabled. To change "on the fly" you can use yq e.g.:
-# disable: yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end' ~/.config/way-displays/cfg.yaml
-# enable:  yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end | .DISABLED |= . + [ "eDP-1"]' ~/.config/way-displays/cfg.yaml
+# Disable the specified displays.
+# See TODO recipe to disable/enable on-the-fly.
 DISABLED:
   #- "eDP-1"
 

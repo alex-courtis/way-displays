@@ -156,6 +156,18 @@ MAX_PREFERRED_REFRESH:
 
 </details>
 
+<details><summary>DISABLED</summary><br>
+
+Disable the specified displays.
+
+```yaml
+DISABLED:
+  - 'Monitor Maker ABC123'
+  - 'HDMI-1'
+```
+
+</details>
+
 <details><summary>On Names and Descriptions</summary><br>
 You can configure displays by name or description. You can find these by looking at the logs e.g.
 
@@ -225,27 +237,45 @@ W [10:09:44.542] WARNING: open '/dev/input/event0' failed 13: 'Permission denied
 User must be in the `input` group to monitor libinput events.
 </details>
 
+# On-The-Fly Recipes
+
+Changes to `cfg.yaml` will be immediately applied without needing to restart. Following are some recipes for such changes, using [yq](https://mikefarah.gitbook.io/yq/).
+
+You can create a sway keybinding for these changes e.g. `bindsym Mod1+Ctrl+Shift+s exec yq -y -i '...`
+
+Note that comments / whitespace will be stripped from your `cfg.yaml` when using this method.
+
+<details><summary>Disabling Displays</summary><br>
+
+We can disable/enable displays via the `DISABLED` list e.g.
+
+Disable eDP-1:
+```
+yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end' ~/.config/way-displays/cfg.yaml
+```
+Enable eDP-1:
+```
+yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end | .DISABLED |= . + [ "eDP-1"]' ~/.config/way-displays/cfg.yaml
+```
+</details>
+
+<details><summary>Disable Auto Scale</summary><br>
+
+When a display is scaled (X11) linux games will render at the display's scaled resolution, rather than the monitor's native resolution. There is [work underway](https://gitlab.freedesktop.org/wlroots/wlroots/-/issues/2125) to fix this.
+
+Toggle `AUTO_SCALE`:
+```
+yq -y -i 'if has("AUTO_SCALE") then .AUTO_SCALE |= not else .AUTO_SCALE = false end' ~/.config/way-displays/cfg.yaml
+```
+
+Any explicily specified `SCALE` values will override `AUTO_SCALE: false`, so you would need to also remove/add those in your yq invocation.
+</details>
+
 # On Scale And Blurring
 
 When using a display scale that is not a whole number, the result will not be a pixel perfect rendition of the unscaled content. There are no fractional pixels so there will be rounding and thus some blurring.
 
 To ameliorate this, we always round our scale to a multiple of one eighth. This results in a nice round binary number, which minimises some of the rounding and results in a smoother image. If you're interested, our rounded scale is a [wl_fixed_t](https://wayland.freedesktop.org/docs/html/apb.html).
-
-# On Games And Scale
-
-When a display is scaled (X11) linux games will render at the display's scaled resolution, rather than the monitor's native resolution. There is [work underway](https://gitlab.freedesktop.org/wlroots/wlroots/-/issues/2125) to fix this.
-
-In the meantime, we can work around this by toggling auto scaling in our `cfg.yaml` using [yq](https://mikefarah.gitbook.io/yq/):
-```
-yq -y -i 'if has("AUTO_SCALE") then .AUTO_SCALE |= not else .AUTO_SCALE = false end' ~/.config/way-displays/cfg.yaml
-```
-
-You could create a sway keybinding e.g.:
-```
-bindsym Mod1+Ctrl+Shift+s exec yq -y ...
-```
-
-Be warned that this will strip comments/whitespace from your `cfg.yaml`. Any explicily specified `SCALE` values will override `AUTO_SCALE: false`, so you would need to also remove/add those in the yq query.
 
 # Help, Questions, Suggestions And Ideas
 
