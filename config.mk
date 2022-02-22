@@ -1,4 +1,4 @@
-VERSION ?= "1.4.1-SNAPSHOT"
+VERSION ?= "1.4.0"
 
 PREFIX ?= /usr/local
 PREFIX_ETC ?= /usr/local
@@ -16,8 +16,10 @@ CXXFLAGS += $(COMPFLAGS) -std=gnu++17
 
 LDFLAGS +=
 
-LDLIBS += -lwayland-client -lyaml-cpp -linput -ludev -lstdc++
+PKGS = wayland-client yaml-cpp libinput libudev
+CFLAGS += $(foreach p,$(PKGS),$(shell pkg-config --cflags $(p)))
+LDLIBS += $(foreach p,$(PKGS),$(shell pkg-config --libs $(p)))
 
-CC = gcc
-CXX = g++
+CC ?= gcc
+CXX ?= g++
 
