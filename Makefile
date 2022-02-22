@@ -40,5 +40,9 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/way-displays
 	rm -rf $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 
+man: way-displays.1.pandoc
+	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
+	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc=)
+
 .PHONY: all clean
 

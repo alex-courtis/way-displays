@@ -8,9 +8,11 @@
 
 Works out of the box: no configuration required.
 
+Command line client to inspect, modify and persist changes to the active configuration.
+
 Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
 
-<details><summary>"Screenshot"</summary><br>
+<details><summary>Arrangements</summary><br>
 
 ![layouts](doc/layouts.png)
 
@@ -183,6 +185,28 @@ The description does contain information about how it is connected, so strip tha
 
 </details>
 
+# Command Line Configuration
+
+Manages the server. The active configuration and display state may be inspected, and the configuration modified.
+
+The active configuration can be written to disk, however any comments and formatting will be lost.
+
+See `way-displays --help` and `man way-displays` for details.
+
+<details><summary>Examples</summary><br>
+
+Show current configuration and display state: `way-displays -g`
+
+Arrange left to right, aligned at the bottom: `way-displays -s ARRANGE_ALIGN row bottom`
+
+Set the order for arrangement: `way-displays -s ORDER HDMI-1 "monitor maker ABC model XYZ" eDP-1`
+
+Set a scale: `way-displays -s SCALE "eDP-1" 3`
+
+Persist your changes to your cfg.yaml: `way-displays -w`
+
+</details>
+
 # Installation
 
 ## Package Manager
@@ -237,42 +261,13 @@ W [10:09:44.542] WARNING: open '/dev/input/event0' failed 13: 'Permission denied
 User must be in the `input` group to monitor libinput events.
 </details>
 
-# On-The-Fly Recipes
-
-Changes to `cfg.yaml` will be immediately applied without needing to restart. Following are some recipes for such changes, using [yq](https://mikefarah.gitbook.io/yq/).
-
-You can create a sway keybinding for these changes e.g.
-```
-bindsym Mod1+Ctrl+Shift+s exec yq -y -i '...
-```
-
-Note that comments / whitespace will be stripped from your `cfg.yaml` when using this method.
-
-<details><summary>Disable/Enable Displays</summary><br>
-
-We can add/remove from the `DISABLED` list e.g.
-
-Disable eDP-1:
-```
-yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end | .DISABLED |= . + [ "eDP-1"]' ~/.config/way-displays/cfg.yaml
-```
-
-Enable eDP-1:
-```
-yq -y -i 'if .DISABLED then .DISABLED |= . - [ "eDP-1" ] else . end' ~/.config/way-displays/cfg.yaml
-```
-</details>
-
-<details><summary>Disable Auto Scale</summary><br>
+<details><summary>Scaling Breaks X11 Games</summary><br>
 
 When a display is scaled (X11) linux games will render at the display's scaled resolution, rather than the monitor's native resolution. There is [work underway](https://gitlab.freedesktop.org/wlroots/wlroots/-/issues/2125) to fix this.
 
-Toggle `AUTO_SCALE`:
-```
-yq -y -i 'if has("AUTO_SCALE") then .AUTO_SCALE |= not else .AUTO_SCALE = false end' ~/.config/way-displays/cfg.yaml
-```
+In the meantime, auto scale may be temporarily disabled via `way-displays -s AUTO_SCALE off`.
 
-Any explicily specified `SCALE` values will override `AUTO_SCALE: false`, so you would need to also remove/add those in your yq invocation.
+Any explicily specified `SCALE` values will override `AUTO_SCALE: false`, so you would need to temporarily remove those via `way-displays -d SCALE "my monitor"`
 </details>
 
 # On Scale And Blurring

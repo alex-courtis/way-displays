@@ -2,11 +2,9 @@
 #define TYPES_H
 
 #include <stdbool.h>
-#include <stdlib.h>
-#include <wayland-client-core.h>
+#include <stdint.h>
 #include <wayland-client-protocol.h>
-
-#include "list.h"
+#include <wayland-util.h>
 
 struct Mode {
 	struct Head *head;
@@ -99,62 +97,12 @@ struct Displ {
 	uint32_t name;
 };
 
-struct UserScale {
-	char *name_desc;
-	float scale;
-};
-
-enum Arrange {
-	ROW,
-	COL,
-};
-
-enum Align {
-	TOP,
-	MIDDLE,
-	BOTTOM,
-	LEFT,
-	RIGHT,
-};
-
-struct Cfg {
-	char *dir_path;
-	char *file_path;
-	char *file_name;
-
-	bool dirty;
-
-	char *laptop_display_prefix;
-	struct SList *order_name_desc;
-	enum Arrange arrange;
-	enum Align align;
-	bool auto_scale;
-	struct SList *user_scales;
-	struct SList *max_preferred_refresh_name_desc;
-	struct SList *disabled_name_desc;
-};
-
-struct Lid {
-	bool closed;
-
-	bool dirty;
-
-	char *device_path;
-	struct libinput *libinput_monitor;
-	int libinput_fd;
-};
-
-void free_mode(struct Mode *mode);
-void free_head(struct Head *head);
-void free_output_manager(struct OutputManager *output_manager);
-void free_displ(struct Displ *displ);
-void free_user_scale(struct UserScale *user_scale);
-void free_cfg(struct Cfg *cfg);
-void free_lid(struct Lid *lid);
+void free_mode(void *mode);
+void free_head(void *head);
+void free_output_manager(void *output_manager);
+void free_displ(void *displ);
 
 void head_free_mode(struct Head *head, struct Mode *mode);
-void output_manager_free_head(struct OutputManager *output_manager, struct Head *head);
-void output_manager_free_heads_departed(struct OutputManager *output_manager);
 
 bool is_dirty(struct Displ *displ);
 void reset_dirty(struct Displ *displ);

@@ -1,6 +1,13 @@
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
+#include <wayland-util.h>
 
 #include "calc.h"
+
+#include "cfg.h"
+#include "list.h"
+#include "types.h"
 
 double calc_dpi(struct Mode *mode) {
 	if (!mode || !mode->head || !mode->head->width_mm || !mode->head->height_mm) {
@@ -166,14 +173,14 @@ void position_heads(struct SList *heads, struct Cfg *cfg) {
 			continue;
 		}
 
-		switch (cfg ? cfg->arrange : ROW) {
+		switch (cfg->arrange) {
 			case COL:
 				// position
 				head->desired.y = y;
 				y += head->desired.height;
 
 				// align
-				switch (cfg ? cfg->align : LEFT) {
+				switch (cfg->align) {
 					case RIGHT:
 						head->desired.x = widest - head->desired.width;
 						break;
@@ -193,7 +200,7 @@ void position_heads(struct SList *heads, struct Cfg *cfg) {
 				x += head->desired.width;
 
 				// align
-				switch (cfg ? cfg->align : TOP) {
+				switch (cfg->align) {
 					case BOTTOM:
 						head->desired.y = tallest - head->desired.height;
 						break;

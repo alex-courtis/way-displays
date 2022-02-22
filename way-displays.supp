@@ -4,9 +4,7 @@
    match-leak-kinds: definite
    fun:calloc
    fun:wl_display_read_events
-   fun:_wl_display_read_events
-   fun:listen
-   fun:main
+   ...
 }
 
 {
@@ -14,14 +12,108 @@
    Memcheck:Leak
    match-leak-kinds: definite
    fun:calloc
-   obj:/usr/lib/libinput.so.10.13.0
-   obj:/usr/lib/libinput.so.10.13.0
-   obj:/usr/lib/libinput.so.10.13.0
-   obj:/usr/lib/libinput.so.10.13.0
+   obj:/usr/lib/libinput*
+   obj:/usr/lib/libinput*
+   obj:/usr/lib/libinput*
+   obj:/usr/lib/libinput*
    fun:libinput_udev_assign_seat
    fun:create_libinput_discovery
    fun:create_lid
    fun:listen
    fun:main
+}
+
+{
+   glib-g_*alloc*
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   fun:g_*alloc*
+   ...
+   obj:/usr/lib/libglib-2.0*
+   ...
+}
+{
+   glib-g_slice_alloc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/libglib-2.0*
+   ...
+   fun:g_slice_alloc
+   ...
+}
+{
+   glib-g_*_new_valist
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   ...
+   obj:/usr/lib/libglib-2.0*
+   ...
+   fun:g_*_new_valist
+   ...
+}
+
+{
+   gobject-g_*alloc*
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   fun:g_*alloc*
+   ...
+   obj:/usr/lib/libgobject-2.0*
+   ...
+}
+{
+   gobject-g_type_register_fundamental
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   obj:/usr/lib/libgobject-2.0*
+   fun:g_type_register_fundamental
+   obj:/usr/lib/libgobject-2.0*
+   ...
+}
+{
+   gobject-g_object_new_valist
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   obj:/usr/lib/libgobject-2.0*
+   fun:g_object_new_valist
+   ...
+}
+
+{
+   gudev-g_type_create_instance
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:g_type_create_instance
+   ...
+   obj:/usr/lib/libgudev-1.0*
+   ...
+}
+{
+   gudev-g_closure_new_simple
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:g_closure_new_simple
+   ...
+   obj:/usr/lib/libgudev-1.0*
+   ...
+}
+
+{
+   ld-_dl_init-g*-2.0
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   obj:/usr/lib/libg*-2.0*
+   ...
+   fun:call_init
+   fun:_dl_init
+   obj:/usr/lib/ld-2.33*
 }
 

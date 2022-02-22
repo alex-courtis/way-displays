@@ -1,64 +1,79 @@
-#include <errno.h>
 #include <poll.h>
 #include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/inotify.h>
 #include <sys/signalfd.h>
 #include <unistd.h>
+#include <wayland-client-core.h>
 
 #include "fds.h"
 
+#include "cfg.h"
+#include "lid.h"
 #include "log.h"
+#include "sockets.h"
+#include "types.h"
 
-int fd_signal = 0;
-int fd_cfg_dir = 0;
+#define PFDS_SIZE 5
 
-int npfds = 0;
-struct pollfd *pfds = NULL;
+int fd_signal = -1;
+int fd_ipc = -1;
+int fd_cfg_dir = -1;
+
+nfds_t npfds = 0;
+struct pollfd pfds[PFDS_SIZE];
 
 struct pollfd *pfd_signal = NULL;
+struct pollfd *pfd_ipc = NULL;
 struct pollfd *pfd_wayland = NULL;
 struct pollfd *pfd_lid = NULL;
 struct pollfd *pfd_cfg_dir = NULL;
 
-void create_fd_signal() {
-	if (!fd_signal) {
-		sigset_t mask;
-		sigemptyset(&mask);
-		sigaddset(&mask, SIGINT);
-		sigaddset(&mask, SIGQUIT);
-		sigaddset(&mask, SIGTERM);
-		sigprocmask(SIG_BLOCK, &mask, NULL);
-		fd_signal = signalfd(-1, &mask, 0);
-	}
+int create_fd_signal() {
+	sigset_t mask;
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGQUIT);
+	sigaddset(&mask, SIGTERM);
+	sigaddset(&mask, SIGPIPE);
+	sigprocmask(SIG_BLOCK, &mask, NULL);
+	return signalfd(-1, &mask, 0);
 }
 
-void create_fd_cfg_dir(struct Cfg *cfg) {
-	if (fd_cfg_dir || !cfg || !cfg->dir_path)
-		return;
+int create_fd_cfg_dir(struct Cfg *cfg) {
+	if (!cfg || !cfg->dir_path)
+		return -1;
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
 	if (inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE) == -1) {
-		log_error("\nunable to create config file watch for '%s' %d: '%s', exiting", cfg->dir_path, errno, strerror(errno));
+		log_error_errno("\nunable to create config file watch for %s, exiting", cfg->dir_path);
 		exit(EXIT_FAILURE);
 	}
+
+	return fd_cfg_dir;
+}
+
+void init_fds(struct Cfg *cfg) {
+	fd_signal = create_fd_signal();
+	fd_ipc = create_fd_ipc_server();
+	fd_cfg_dir = create_fd_cfg_dir(cfg);
 }
 
 void create_pfds(struct Displ *displ) {
 	if (!displ || !displ->display)
 		return;
 
-	create_fd_signal();
-	create_fd_cfg_dir(displ->cfg);
-
 	// wayland and signal are always present, others are optional
 	npfds = 2;
 	if (displ->lid)
 		npfds++;
-	if (fd_cfg_dir)
+	if (fd_ipc != -1)
 		npfds++;
-
-	pfds = calloc(npfds, sizeof(struct pollfd));
+	if (fd_cfg_dir != -1)
+		npfds++;
 
 	int i = 0;
 
@@ -70,13 +85,19 @@ void create_pfds(struct Displ *displ) {
 	pfd_wayland->fd = wl_display_get_fd(displ->display);
 	pfd_wayland->events = POLLIN;
 
+	if (fd_ipc != -1) {
+		pfd_ipc = &pfds[i++];
+		pfd_ipc->fd = fd_ipc;
+		pfd_ipc->events = POLLIN;
+	}
+
 	if (displ->lid) {
 		pfd_lid = &pfds[i++];
 		pfd_lid->fd = displ->lid->libinput_fd;
 		pfd_lid->events = POLLIN;
 	}
 
-	if (fd_cfg_dir) {
+	if (fd_cfg_dir != -1) {
 		pfd_cfg_dir = &pfds[i++];
 		pfd_cfg_dir->fd = fd_cfg_dir;
 		pfd_cfg_dir->events = POLLIN;
@@ -89,13 +110,21 @@ void destroy_pfds() {
 	pfd_signal = NULL;
 	pfd_wayland = NULL;
 	pfd_lid = NULL;
+	pfd_ipc = NULL;
 	pfd_cfg_dir = NULL;
 
-	free(pfds);
+	for (size_t i = 0; i < PFDS_SIZE; i++) {
+		pfds[i].fd = 0;
+		pfds[i].events = 0;
+		pfds[i].revents = 0;
+	}
 }
 
 // see man 7 inotify
-bool cfg_file_written(char *file_name) {
+bool cfg_file_modified(char *file_name) {
+	if (!file_name) {
+		return false;
+	}
 
 	char buf[4096] __attribute__ ((aligned(__alignof__(struct inotify_event))));
 	const struct inotify_event *event;

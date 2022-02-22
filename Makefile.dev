@@ -2,13 +2,24 @@ all: tags .copy
 
 include Makefile
 
+COMPFLAGS := $(subst -O3,-O0,$(COMPFLAGS)) -g
+
+IWYU = /usr/bin/include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
+
+# make -k iwyu
+iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
+iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/cfg.h" -Xiwyu --check_also="inc/ipc.h"
+iwyu: clean $(SRC_O)
+
 # https://github.com/alex-courtis/arch/blob/7ca6c8d7f7aa910ec522470bb7a96ddb24c9a1ea/bin/ctags-something
 tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
 	ctags-c   $(CFLAGS)   $(CPPFLAGS) --project-src $(SRC_C)   $(INC_H) $(PRO_H)
 	ctags-c++ $(CXXFLAGS) $(CPPFLAGS) --project-src $(SRC_CXX) $(INC_H) $(PRO_H) --append
 
-.copy: way-displays cfg.yaml
-	scp cfg.yaml duke:.config/way-displays/cfg.yaml
+.copy: way-displays cfg.yaml cfg.dev.yaml way-displays.supp
+	ssh duke -C pkill -9 -f way-displays || true
 	scp way-displays duke:bin
+	scp cfg.dev.yaml duke:.config/way-displays/cfg.yaml
+	scp way-displays.supp duke:/tmp
 	touch .copy
 

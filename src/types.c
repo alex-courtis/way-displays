@@ -1,20 +1,28 @@
+#include <stdbool.h>
+#include <stdlib.h>
+
 #include "types.h"
 
-void free_mode(struct Mode *mode) {
+#include "cfg.h"
+#include "lid.h"
+#include "list.h"
+
+void free_mode(void *data) {
+	struct Mode *mode = data;
+
 	if (!mode)
 		return;
 
 	free(mode);
 }
 
-void free_head(struct Head *head) {
+void free_head(void *data) {
+	struct Head *head = data;
+
 	if (!head)
 		return;
 
-	for (struct SList *i = head->modes; i; i = i->nex) {
-		free_mode(i->val);
-	}
-	slist_free(&head->modes);
+	slist_free_vals(&head->modes, free_mode);
 
 	free(head->name);
 	free(head->description);
@@ -25,24 +33,26 @@ void free_head(struct Head *head) {
 	free(head);
 }
 
-void free_output_manager(struct OutputManager *output_manager) {
+void free_output_manager(void *data) {
+	struct OutputManager *output_manager = data;
+
 	if (!output_manager)
 		return;
 
-	for (struct SList *i = output_manager->heads; i; i = i->nex) {
-		free_head(i->val);
-	}
-	slist_free(&output_manager->heads);
+	slist_free_vals(&output_manager->heads, free_head);
+	slist_free_vals(&output_manager->heads_departed, free_head);
+
+	slist_free(&output_manager->heads_arrived);
 	slist_free(&output_manager->desired.heads);
 
 	free(output_manager->interface);
 
-	output_manager_free_heads_departed(output_manager);
-
 	free(output_manager);
 }
 
-void free_displ(struct Displ *displ) {
+void free_displ(void *data) {
+	struct Displ *displ = data;
+
 	if (!displ)
 		return;
 
@@ -53,57 +63,6 @@ void free_displ(struct Displ *displ) {
 	free_lid(displ->lid);
 
 	free(displ);
-}
-
-void free_user_scale(struct UserScale *user_scale) {
-	if (!user_scale)
-		return;
-
-	free(user_scale->name_desc);
-
-	free(user_scale);
-}
-
-void free_cfg(struct Cfg *cfg) {
-	if (!cfg)
-		return;
-
-	free(cfg->dir_path);
-	free(cfg->file_path);
-	free(cfg->file_name);
-
-	for (struct SList *i = cfg->order_name_desc; i; i = i->nex) {
-		free(i->val);
-	}
-	slist_free(&cfg->order_name_desc);
-
-	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
-		free_user_scale(i->val);
-	}
-	slist_free(&cfg->user_scales);
-
-	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
-		free(i->val);
-	}
-	slist_free(&cfg->max_preferred_refresh_name_desc);
-
-	for (struct SList *i = cfg->disabled_name_desc; i; i = i->nex) {
-		free(i->val);
-	}
-	slist_free(&cfg->disabled_name_desc);
-
-	free(cfg->laptop_display_prefix);
-
-	free(cfg);
-}
-
-void free_lid(struct Lid *lid) {
-	if (!lid)
-		return;
-
-	free(lid->device_path);
-
-	free(lid);
 }
 
 void head_free_mode(struct Head *head, struct Mode *mode) {
@@ -119,39 +78,9 @@ void head_free_mode(struct Head *head, struct Mode *mode) {
 		head->current_mode = NULL;
 	}
 
-	slist_remove_all(&head->modes, mode);
+	slist_remove_all(&head->modes, NULL, mode);
 
 	free_mode(mode);
-}
-
-void output_manager_free_head(struct OutputManager *output_manager, struct Head *head) {
-	if (!output_manager || !head)
-		return;
-
-	output_manager->dirty = true;
-
-	slist_remove_all(&output_manager->desired.heads, head);
-	slist_remove_all(&output_manager->heads, head);
-
-	free_head(head);
-}
-
-void output_manager_free_heads_departed(struct OutputManager *output_manager) {
-	struct SList *i, *r;
-	struct Head *head;
-
-	if (!output_manager)
-		return;
-
-	i = output_manager->heads_departed;
-	while(i) {
-		head = i->val;
-		r = i;
-		i = i->nex;
-
-		slist_remove(&output_manager->heads_departed, &r);
-		free_head(head);
-	}
 }
 
 bool is_dirty(struct Displ *displ) {

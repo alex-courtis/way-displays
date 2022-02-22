@@ -1,7 +1,11 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-void ensure_singleton();
+#include <sys/types.h>
+
+__pid_t pid_active_server();
+
+void pid_file_create();
 
 #endif // PROCESS_H
 

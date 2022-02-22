@@ -1,8 +1,67 @@
+#include <string.h>
+#include <wayland-util.h>
+
 #include "info.h"
 
 #include "calc.h"
+#include "cfg.h"
+#include "convert.h"
+#include "list.h"
 #include "log.h"
 #include "types.h"
+
+void print_cfg(struct Cfg *cfg) {
+	if (!cfg)
+		return;
+
+	struct UserScale *user_scale;
+	struct SList *i;
+
+	if (cfg->arrange && cfg->align) {
+		log_info("  Arrange in a %s aligned at the %s", arrange_name(cfg->arrange), align_name(cfg->align));
+	} else if (cfg->arrange) {
+		log_info("  Arrange in a %s", arrange_name(cfg->arrange));
+	} else if (cfg->align) {
+		log_info("  Align at the %s", align_name(cfg->align));
+	}
+
+	if (cfg->order_name_desc) {
+		log_info("  Order:");
+		for (i = cfg->order_name_desc; i; i = i->nex) {
+			log_info("    %s", (char*)i->val);
+		}
+	}
+
+	if (cfg->auto_scale) {
+		log_info("  Auto scale: %s", auto_scale_name(cfg->auto_scale));
+	}
+
+	if (cfg->user_scales) {
+		log_info("  Scale:");
+		for (i = cfg->user_scales; i; i = i->nex) {
+			user_scale = (struct UserScale*)i->val;
+			log_info("    %s: %.3f", user_scale->name_desc, user_scale->scale);
+		}
+	}
+
+	if (cfg->max_preferred_refresh_name_desc) {
+		log_info("  Max preferred refresh:");
+		for (i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
+			log_info("    %s", (char*)i->val);
+		}
+	}
+
+	if (cfg->disabled_name_desc) {
+		log_info("  Disabled:");
+		for (i = cfg->disabled_name_desc; i; i = i->nex) {
+			log_info("    %s", (char*)i->val);
+		}
+	}
+
+	if (cfg->laptop_display_prefix && strcmp(cfg->laptop_display_prefix, LAPTOP_DISPLAY_PREFIX_DEFAULT) != 0) {
+		log_info("  Laptop display prefix: %s", cfg->laptop_display_prefix);
+	}
+}
 
 void print_mode(void (*log_fn)(const char*, ...), struct Mode *mode) {
 	if (!log_fn || !mode)
@@ -76,7 +135,8 @@ void print_heads(enum event event, struct SList *heads) {
 
 		switch (event) {
 			case ARRIVED:
-				log_info("\n%s Arrived:", head->name);
+			case NONE:
+				log_info("\n%s%s:", head->name, event == ARRIVED ? " Arrived" : "");
 				log_info("  info:");
 				log_info("    name:     '%s'", head->name);
 				log_info("    desc:     '%s'", head->description);

@@ -1,9 +1,14 @@
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
+#include <wayland-util.h>
 
 #include "listeners.h"
 
 #include "log.h"
 #include "types.h"
+#include "wlr-output-management-unstable-v1.h"
 
 // Displ data
 

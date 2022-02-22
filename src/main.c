@@ -1,147 +1,273 @@
-#include <errno.h>
-#include <poll.h>
+// IWYU pragma: no_include <bits/getopt_core.h>
+#include <getopt.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <sys/signalfd.h>
-#include <unistd.h>
 
 #include "cfg.h"
-#include "displ.h"
-#include "fds.h"
-#include "info.h"
-#include "lid.h"
+#include "client.h"
+#include "convert.h"
+#include "ipc.h"
+#include "list.h"
 #include "log.h"
-#include "layout.h"
-#include "process.h"
-#include "types.h"
-#include "wl_wrappers.h"
+#include "server.h"
 
-// see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
-int listen(struct Displ *displ) {
-	bool user_changes = false;
-	bool initial_run_complete = false;
-	bool lid_discovery_complete = false;
+void usage(FILE *stream) {
+	static char mesg[] =
+		"\n"
+		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
+		"  Runs the server when no COMMAND specified.\n"
+		"OPTIONS\n"
+		"  -L, --l[og-threshold]     <debug|info|warning|error>\n"
+		"COMMANDS\n"
+		"  -h, --h[elp]     show this message\n"
+		"  -v, --v[ersion]  display version information\n"
+		"  -g, --g[et]      show the active settings\n"
+		"  -s, --s[et]      add or change\n"
+		"     ARRANGE_ALIGN          <row|column> <top|middle|bottom|left|right>\n"
+		"     ORDER                  <name> ...\n"
+		"     AUTO_SCALE             <on|off>\n"
+		"     SCALE                  <name> <scale>\n"
+		"     MAX_PREFERRED_REFRESH  <name>\n"
+		"     DISABLED               <name>\n"
+		"  -d, --d[elete]   remove\n"
+		"     SCALE                  <name>\n"
+		"     MAX_PREFERRED_REFRESH  <name>\n"
+		"     DISABLED               <name>\n"
+		"  -w, --w[rite]    write active to cfg.yaml; removes any whitespace or comments\n"
+		"\n"
+		;
+	fprintf(stream, "%s", mesg);
+}
 
-	for (;;) {
-		user_changes = false;
-		create_pfds(displ);
+struct Cfg *parse_element(enum IpcRequestCommand command, enum CfgElement element, int argc, char **argv) {
+	struct UserScale *user_scale = NULL;
 
+	struct Cfg *cfg = calloc(1, sizeof(struct Cfg));
 
-		// prepare for reading wayland events
-		while (_wl_display_prepare_read(displ->display, FL) != 0) {
-			_wl_display_dispatch_pending(displ->display, FL);
+	bool parsed = false;
+	switch (element) {
+		case ARRANGE_ALIGN:
+			parsed = (cfg->arrange = arrange_val_start(argv[optind]));
+			parsed = (cfg->align = align_val_start(argv[optind + 1]));
+			break;
+		case AUTO_SCALE:
+			parsed = (cfg->auto_scale = auto_scale_val(argv[optind]));
+			break;
+		case SCALE:
+			switch (command) {
+				case CFG_SET:
+					// parse input value
+					user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+					user_scale->name_desc = strdup(argv[optind]);
+					parsed = ((user_scale->scale = strtof(argv[optind + 1], NULL)) > 0);
+					slist_append(&cfg->user_scales, user_scale);
+					break;
+				case CFG_DEL:
+					// dummy values
+					for (int i = optind; i < argc; i++) {
+						user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+						user_scale->name_desc = strdup(argv[i]);
+						user_scale->scale = 1;
+						slist_append(&cfg->user_scales, user_scale);
+						parsed = true;
+					}
+					break;
+				default:
+					break;
+			}
+			break;
+		case DISABLED:
+			for (int i = optind; i < argc; i++) {
+				slist_append(&cfg->disabled_name_desc, strdup(argv[i]));
+			}
+			parsed = true;
+			break;
+		case ORDER:
+			for (int i = optind; i < argc; i++) {
+				slist_append(&cfg->order_name_desc, strdup(argv[i]));
+			}
+			parsed = true;
+			break;
+		case MAX_PREFERRED_REFRESH:
+			for (int i = optind; i < argc; i++) {
+				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(argv[i]));
+			}
+			parsed = true;
+			break;
+		default:
+			break;
+	}
+
+	if (!parsed) {
+		char buf[256];
+		char *bp = buf;
+		for (int i = optind; i < argc; i++) {
+			bp += snprintf(bp, sizeof(buf) - (bp - buf), " %s", argv[i]);
 		}
-		_wl_display_flush(displ->display, FL);
+		log_error("invalid %s%s", cfg_element_name(element), buf);
+		exit(EXIT_FAILURE);
+	}
 
+	return cfg;
+}
 
-		if (!initial_run_complete || lid_discovery_complete) {
-			// poll for signal, wayland and maybe libinput, cfg file events
-			if (poll(pfds, npfds, -1) < 0) {
-				log_error("\npoll failed %d: '%s', exiting", errno, strerror(errno));
+struct IpcRequest *parse_get(int argc, char **argv) {
+	if (optind != argc) {
+		log_error("--get takes no arguments");
+		exit(EXIT_FAILURE);
+	}
+
+	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
+	request->command = CFG_GET;
+
+	return request;
+}
+
+struct IpcRequest *parse_write(int argc, char **argv) {
+	if (optind != argc) {
+		log_error("--write takes no arguments");
+		exit(EXIT_FAILURE);
+	}
+
+	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
+	request->command = CFG_WRITE;
+
+	return request;
+}
+
+struct IpcRequest *parse_set(int argc, char **argv) {
+	enum CfgElement element = cfg_element_val(optarg);
+	switch (element) {
+		case ARRANGE_ALIGN:
+		case SCALE:
+			if (optind + 2 != argc) {
+				log_error("%s requires two arguments", cfg_element_name(element));
 				exit(EXIT_FAILURE);
 			}
-		} else {
-			// takes ~1 sec hence we defer
-			displ->lid = create_lid();
-			update_lid(displ);
-			lid_discovery_complete = true;
-		}
-
-
-		// subscribed signals are all a clean exit
-		if (pfd_signal && pfd_signal->revents & pfd_signal->events) {
-			struct signalfd_siginfo fdsi;
-			if (read(fd_signal, &fdsi, sizeof(fdsi)) == sizeof(fdsi)) {
-				return fdsi.ssi_signo;
+			break;
+		case AUTO_SCALE:
+		case MAX_PREFERRED_REFRESH:
+		case DISABLED:
+			if (optind + 1 != argc) {
+				log_error("%s requires one argument", cfg_element_name(element));
+				exit(EXIT_FAILURE);
 			}
-		}
-
-
-		// cfg directory change
-		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (cfg_file_written(displ->cfg->file_name)) {
-				user_changes = true;
-				displ->cfg = reload_cfg(displ->cfg);
+			break;
+		case ORDER:
+			if (optind >= argc) {
+				log_error("%s requires at least one argument", cfg_element_name(element));
+				exit(EXIT_FAILURE);
 			}
-		}
-
-
-		// safe to always read and dispatch wayland events
-		_wl_display_read_events(displ->display, FL);
-		_wl_display_dispatch_pending(displ->display, FL);
-
-
-		if (!displ->output_manager) {
-			log_info("\nDisplay's output manager has departed, exiting");
-			exit(EXIT_SUCCESS);
-		}
-
-
-		// dispatch libinput events only when we have received a change
-		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
-			user_changes = user_changes || update_lid(displ);
-		}
-		// always do this, to cover the initial case
-		update_heads_lid_closed(displ);
-
-
-		// inform of head arrivals and departures and clean them
-		user_changes = user_changes || consume_arrived_departed(displ->output_manager);
-
-
-		// if we have no changes in progress we can maybe react to inital or modified state
-		if (is_dirty(displ) && !is_pending_output_manager(displ->output_manager)) {
-
-			// prepare possible changes
-			reset_dirty(displ);
-			desire_arrange(displ);
-			pend_desired(displ);
-
-			if (is_pending_output_manager(displ->output_manager)) {
-
-				// inform and apply
-				print_heads(DELTA, displ->output_manager->heads);
-				apply_desired(displ);
-
-			} else if (user_changes) {
-				log_info("\nNo changes needed");
-			}
-		}
-
-
-		// no changes are outstanding
-		if (!is_pending_output_manager(displ->output_manager)) {
-			initial_run_complete = true;
-		}
-
-
-		destroy_pfds();
+			break;
+		default:
+			log_error("invalid %s: %s", ipc_request_command_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
+			exit(EXIT_FAILURE);
 	}
+
+	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
+	request->command = CFG_SET;
+	request->cfg = parse_element(CFG_SET, element, argc, argv);
+
+	return request;
+}
+
+struct IpcRequest *parse_del(int argc, char **argv) {
+	enum CfgElement element = cfg_element_val(optarg);
+	switch (element) {
+		case SCALE:
+		case MAX_PREFERRED_REFRESH:
+		case DISABLED:
+			if (optind + 1 != argc) {
+				log_error("%s requires one argument", cfg_element_name(element));
+				exit(EXIT_FAILURE);
+			}
+			break;
+		default:
+			log_error("invalid %s: %s", ipc_request_command_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
+			exit(EXIT_FAILURE);
+	}
+
+	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
+	request->command = CFG_DEL;
+	request->cfg = parse_element(CFG_DEL, element, argc, argv);
+
+	return request;
+}
+
+bool parse_log_threshold(char *optarg) {
+	enum LogThreshold threshold = log_threshold_val(optarg);
+
+	if (!threshold) {
+		log_error("invalid --log-threshold %s", optarg);
+		return false;
+	}
+
+	log_set_threshold(threshold, true);
+
+	return true;
+}
+
+struct IpcRequest *parse_args(int argc, char **argv) {
+	static struct option long_options[] = {
+		{ "delete",        required_argument, 0, 'd' },
+		{ "get",           no_argument,       0, 'g' },
+		{ "help",          no_argument,       0, 'h' },
+		{ "log-threshold", required_argument, 0, 'L' },
+		{ "set",           required_argument, 0, 's' },
+		{ "version",       no_argument,       0, 'v' },
+		{ "write",         no_argument,       0, 'w' },
+		{ 0,               0,                 0,  0  }
+	};
+	static char *short_options = "d:ghL:s:vw";
+
+	int c;
+	while (1) {
+		int long_index = 0;
+		c = getopt_long(argc, argv, short_options, long_options, &long_index);
+		if (c == -1)
+			break;
+		switch (c) {
+			case 'L':
+				if (!parse_log_threshold(optarg)) {
+					exit(EXIT_FAILURE);
+				}
+				break;
+			case 'h':
+				usage(stdout);
+				exit(EXIT_SUCCESS);
+			case 'v':
+				log_info("way-displays version %s", VERSION);
+				exit(EXIT_SUCCESS);
+			case 'g':
+				return parse_get(argc, argv);
+			case 's':
+				return parse_set(argc, argv);
+			case 'd':
+				return parse_del(argc, argv);
+			case 'w':
+				return parse_write(argc, argv);
+			case '?':
+			default:
+				usage(stderr);
+				exit(EXIT_FAILURE);
+		}
+	}
+
+	return NULL;
 }
 
 int
-main(int argc, const char **argv) {
+main(int argc, char **argv) {
 	setlinebuf(stdout);
 
-	struct Displ *displ = calloc(1, sizeof(struct Displ));
+	struct IpcRequest *ipc_request = parse_args(argc, argv);
 
-	log_info("way-displays version %s", VERSION);
-
-	// only one instance
-	ensure_singleton();
-
-	// always returns a cfg, possibly default
-	displ->cfg = load_cfg();
-
-	// discover the output manager via a roundtrip
-	connect_display(displ);
-
-	// only stops when signalled or display goes away
-	int sig = listen(displ);
-
-	// release what remote resources we can
-	destroy_display(displ);
-
-	return sig;
+	if (ipc_request) {
+		return client(ipc_request);
+	} else {
+		return server();
+	}
 }
 

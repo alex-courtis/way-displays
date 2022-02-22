@@ -1,6 +1,11 @@
 #ifndef CALC_H
 #define CALC_H
 
+#include <stdbool.h>
+#include <wayland-util.h>
+
+#include "cfg.h"
+#include "list.h"
 #include "types.h"
 
 double calc_dpi(struct Mode *mode);

@@ -1,11 +1,16 @@
+#include <stdbool.h>
+#include <stdlib.h>
+#include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
 #include "displ.h"
 
 #include "info.h"
 #include "lid.h"
-#include "log.h"
+#include "list.h"
 #include "listeners.h"
+#include "log.h"
+#include "types.h"
 
 void connect_display(struct Displ *displ) {
 
@@ -56,7 +61,7 @@ bool consume_arrived_departed(struct OutputManager *output_manager) {
 	slist_free(&output_manager->heads_arrived);
 
 	print_heads(DEPARTED, output_manager->heads_departed);
-	output_manager_free_heads_departed(output_manager);
+	slist_free_vals(&output_manager->heads_departed, free_head);
 
 	return user_changes;
 }

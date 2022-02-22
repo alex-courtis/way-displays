@@ -1,6 +1,10 @@
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "listeners.h"
 
 #include "types.h"
+#include "wlr-output-management-unstable-v1.h"
 
 // Mode data
 

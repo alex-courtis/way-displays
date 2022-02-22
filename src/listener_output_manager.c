@@ -1,6 +1,12 @@
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 #include "listeners.h"
 
+#include "list.h"
 #include "types.h"
+#include "wlr-output-management-unstable-v1.h"
 
 // OutputManager data
 

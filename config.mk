@@ -7,11 +7,7 @@ INCS = -Iinc -Ipro
 
 CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\"
 
-ifdef VALGRIND
-	OFLAGS = -O0 -g
-else
-	OFLAGS = -O3
-endif
+OFLAGS = -O3
 WFLAGS = -pedantic -Wall -Wextra -Werror -Wno-unused-parameter
 COMPFLAGS = $(WFLAGS) $(OFLAGS)
 
@@ -20,7 +16,7 @@ CXXFLAGS += $(COMPFLAGS) -std=gnu++17
 
 LDFLAGS +=
 
-LDLIBS += -lwayland-client -lyaml-cpp -linput -ludev
+LDLIBS += -lwayland-client -lyaml-cpp -linput -ludev -lstdc++
 
 CC = gcc
 CXX = g++

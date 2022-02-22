@@ -1,8 +1,6 @@
 #ifndef LISTENERS_H
 #define LISTENERS_H
 
-#include "wlr-output-management-unstable-v1.h"
-
 // data
 const struct wl_registry_listener *registry_listener();
 const struct zwlr_output_manager_v1_listener *output_manager_listener();
