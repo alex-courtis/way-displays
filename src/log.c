@@ -71,7 +71,7 @@ void print_line(enum LogThreshold threshold, const char *prefix, int eno, FILE *
 	n = 0;
 	l[0] = '\0';
 
-	if (__format && __args) {
+	if (__format) {
 		n += vsnprintf(l + n, LS - n, __format, __args);
 	}
 	if (eno) {
@@ -103,7 +103,7 @@ void print_log(enum LogThreshold threshold, int eno, FILE *__restrict __stream, 
 
 	format = __format;
 	while (*format == '\n') {
-		print_line(threshold, "", 0, __stream, NULL, NULL);
+		print_line(threshold, "", 0, __stream, NULL, __args);
 		format++;
 	}
 	print_line(threshold, threshold_prefix[threshold], eno, __stream, format, __args);
