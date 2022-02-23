@@ -1,6 +1,6 @@
 all: tags .copy
 
-include Makefile
+include GNUmakefile
 
 COMPFLAGS := $(subst -O3,-O0,$(COMPFLAGS)) -g
 

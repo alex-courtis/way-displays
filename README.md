@@ -228,6 +228,7 @@ Install the `x11/way-displays` port.
 <details><summary>Build</summary>
 
 ### Dependencies
+* GNU make
 * gcc
 * wayland
 * wayland-protocols
@@ -238,6 +239,8 @@ Install the `x11/way-displays` port.
 Most will be available if you are running a wlroots based compositor like sway.
 
 yaml-cpp will need to be installed via your distribution's package manager.
+
+Set `CC=mycompiler` and `CXX=mycompiler++` if you don't like gcc.
 
 ### Build
 
