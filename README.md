@@ -211,11 +211,16 @@ Persist your changes to your cfg.yaml: `way-displays -w`
 
 ## Package Manager
 
-<details><summary>AUR</summary><br>
+<details><summary>Arch Linux - AUR</summary><br>
 
 [way-displays](https://aur.archlinux.org/packages/way-displays/)
 
 Install with your favourite AUR package manager e.g. `pacaur -S way-displays`
+</details>
+
+<details><summary>FreeBSD - Port</summary><br>
+
+Install the `x11/way-displays` port.
 </details>
 
 ## From Source

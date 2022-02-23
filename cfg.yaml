@@ -46,7 +46,6 @@ LOG_THRESHOLD: INFO
 
 
 # Disable the specified displays.
-# To disable/enable on-the-fly see recipe: https://github.com/alex-courtis/way-displays#on-the-fly-recipes
 DISABLED:
   #- "eDP-1"
 
