@@ -48,13 +48,14 @@ char *threshold_prefix[] = {
 };
 
 void print_time(enum LogThreshold threshold, FILE *__restrict __stream) {
-	static struct timeval tv;
-	static struct tm *tm;
+	static char buf[16];
+	static time_t t;
 
-	gettimeofday(&tv, NULL);
-	tm = localtime(&tv.tv_sec);
+	t = time(NULL);
 
-	fprintf(__stream, "%c [%02d:%02d:%02d.%03ld] ", threshold_char[threshold], tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec / 1000);
+	strftime(buf, sizeof(buf), "%H:%M:%S", localtime(&t));
+
+	fprintf(__stream, "%c [%s] ", threshold_char[threshold], buf);
 }
 
 void capture_line(enum LogThreshold threshold, char *l) {
