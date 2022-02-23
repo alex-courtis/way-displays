@@ -1,4 +1,3 @@
-#include <bits/types/struct_tm.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
