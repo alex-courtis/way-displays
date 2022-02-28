@@ -189,6 +189,7 @@ struct Cfg *cfg_default() {
 	cfg->arrange = ARRANGE_DEFAULT;
 	cfg->align = ALIGN_DEFAULT;
 	cfg->auto_scale = AUTO_SCALE_DEFAULT;
+	cfg->log_threshold = LOG_THRESHOLD_DEFAULT;
 	cfg->laptop_display_prefix = strdup(LAPTOP_DISPLAY_PREFIX_DEFAULT);
 
 	return cfg;
@@ -233,8 +234,8 @@ void cfg_parse_node(struct Cfg *cfg, YAML::Node &node) {
 		const std::string &threshold_str = node["LOG_THRESHOLD"].as<std::string>();
 		cfg->log_threshold = log_threshold_val(threshold_str.c_str());
 		if (!cfg->log_threshold) {
-			log_warn("Ignoring invalid LOG_THRESHOLD %s, using default %s", threshold_str.c_str(), log_threshold_name(LOG_THRESHOLD_DEFAULT));
 			cfg->log_threshold = LOG_THRESHOLD_DEFAULT;
+			log_warn("Ignoring invalid LOG_THRESHOLD %s, using default %s", threshold_str.c_str(), log_threshold_name(cfg->log_threshold));
 		}
 	}
 
@@ -348,6 +349,8 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 		return;
 	}
 
+	struct Cfg *cfg_def = cfg_default();
+
 	e << YAML::BeginMap;
 
 	if (cfg->arrange) {
@@ -389,7 +392,7 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 		e << YAML::EndSeq;
 	}
 
-	if (cfg->laptop_display_prefix) {
+	if (cfg->laptop_display_prefix && strcmp(cfg->laptop_display_prefix, cfg_def->laptop_display_prefix) != 0) {
 		e << YAML::Key << "LAPTOP_DISPLAY_PREFIX";
 		e << YAML::Value << cfg->laptop_display_prefix;
 	}
@@ -412,12 +415,14 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 		e << YAML::EndSeq;
 	}
 
-	if (cfg->log_threshold) {
+	if (log_get_threshold() != cfg_def->log_threshold) {
 		e << YAML::Key << "LOG_THRESHOLD";
-		e << YAML::Value << log_threshold_name(cfg->log_threshold);
+		e << YAML::Value << log_threshold_name(log_get_threshold());
 	}
 
 	e << YAML::EndMap;
+
+	free_cfg(cfg_def);
 }
 
 void cfg_fix(struct Cfg *cfg) {
