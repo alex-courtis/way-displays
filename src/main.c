@@ -15,28 +15,24 @@
 
 void usage(FILE *stream) {
 	static char mesg[] =
-		"\n"
 		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
 		"  Runs the server when no COMMAND specified.\n"
 		"OPTIONS\n"
-		"  -L, --l[og-threshold]     <debug|info|warning|error>\n"
+		"  -L, --l[og-threshold] <debug|info|warning|error>\n"
 		"COMMANDS\n"
-		"  -h, --h[elp]     show this message\n"
-		"  -v, --v[ersion]  display version information\n"
-		"  -g, --g[et]      show the active settings\n"
-		"  -s, --s[et]      add or change\n"
-		"     ARRANGE_ALIGN          <row|column> <top|middle|bottom|left|right>\n"
-		"     ORDER                  <name> ...\n"
-		"     AUTO_SCALE             <on|off>\n"
-		"     SCALE                  <name> <scale>\n"
-		"     MAX_PREFERRED_REFRESH  <name>\n"
-		"     DISABLED               <name>\n"
-		"  -d, --d[elete]   remove\n"
-		"     SCALE                  <name>\n"
-		"     MAX_PREFERRED_REFRESH  <name>\n"
-		"     DISABLED               <name>\n"
-		"  -w, --w[rite]    write active to cfg.yaml; removes any whitespace or comments\n"
-		"\n"
+		"  -h, --h[elp]    show this message\n"
+		"  -v, --v[ersion] display version information\n"
+		"  -g, --g[et]     show the active settings\n"
+		"  -w, --w[rite]   write active to cfg.yaml\n"
+		"  -s, --s[et]     add or change\n"
+		"     ARRANGE_ALIGN <row|column> <top|middle|bottom|left|right>\n"
+		"     ORDER <name> ...\n"
+		"     AUTO_SCALE <on|off>\n"
+		"     SCALE <name> <scale>\n"
+		"     DISABLED <name>\n"
+		"  -d, --d[elete]  remove\n"
+		"     SCALE <name>\n"
+		"     DISABLED <name>\n"
 		;
 	fprintf(stream, "%s", mesg);
 }
@@ -87,12 +83,6 @@ struct Cfg *parse_element(enum IpcRequestCommand command, enum CfgElement elemen
 		case ORDER:
 			for (int i = optind; i < argc; i++) {
 				slist_append(&cfg->order_name_desc, strdup(argv[i]));
-			}
-			parsed = true;
-			break;
-		case MAX_PREFERRED_REFRESH:
-			for (int i = optind; i < argc; i++) {
-				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(argv[i]));
 			}
 			parsed = true;
 			break;
@@ -148,7 +138,6 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 			}
 			break;
 		case AUTO_SCALE:
-		case MAX_PREFERRED_REFRESH:
 		case DISABLED:
 			if (optind + 1 != argc) {
 				log_error("%s requires one argument", cfg_element_name(element));
@@ -177,7 +166,6 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case SCALE:
-		case MAX_PREFERRED_REFRESH:
 		case DISABLED:
 			if (optind + 1 != argc) {
 				log_error("%s requires one argument", cfg_element_name(element));

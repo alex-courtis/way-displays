@@ -56,52 +56,11 @@
 }
 
 {
-   gobject-g_*alloc*
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:*alloc
-   fun:g_*alloc*
-   ...
-   obj:/usr/lib/libgobject-2.0*
-   ...
-}
-{
-   gobject-g_type_register_fundamental
+   gobject-anything
    Memcheck:Leak
    match-leak-kinds: reachable
    ...
    obj:/usr/lib/libgobject-2.0*
-   fun:g_type_register_fundamental
-   obj:/usr/lib/libgobject-2.0*
-   ...
-}
-{
-   gobject-g_object_new_valist
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
-   ...
-   obj:/usr/lib/libgobject-2.0*
-   fun:g_object_new_valist
-   ...
-}
-
-{
-   gudev-g_type_create_instance
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:g_type_create_instance
-   ...
-   obj:/usr/lib/libgudev-1.0*
-   ...
-}
-{
-   gudev-g_closure_new_simple
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:g_closure_new_simple
-   ...
-   obj:/usr/lib/libgudev-1.0*
    ...
 }
 
