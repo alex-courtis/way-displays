@@ -508,13 +508,6 @@ struct Cfg *cfg_merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
-	// MAX_PREFERRED_REFRESH
-	for (i = from->max_preferred_refresh_name_desc; i; i = i->nex) {
-		if (!slist_find(&merged->max_preferred_refresh_name_desc, slist_test_strcasecmp, i->val)) {
-			slist_append(&merged->max_preferred_refresh_name_desc, strdup((char*)i->val));
-		}
-	}
-
 	// DISABLED
 	for (i = from->disabled_name_desc; i; i = i->nex) {
 		if (!slist_find(&merged->disabled_name_desc, slist_test_strcasecmp, i->val)) {
@@ -542,11 +535,6 @@ struct Cfg *cfg_merge_del(struct Cfg *to, struct Cfg *from) {
 	// SCALE
 	for (i = from->user_scales; i; i = i->nex) {
 		slist_remove_all_free(&merged->user_scales, slist_test_scale_name, i->val, free_user_scale);
-	}
-
-	// MAX_PREFERRED_REFRESH
-	for (i = from->max_preferred_refresh_name_desc; i; i = i->nex) {
-		slist_remove_all_free(&merged->max_preferred_refresh_name_desc, slist_test_strcasecmp, i->val, NULL);
 	}
 
 	// DISABLED

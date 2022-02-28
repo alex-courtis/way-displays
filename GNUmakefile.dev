@@ -23,3 +23,5 @@ tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
 	scp way-displays.supp duke:/tmp
 	touch .copy
 
+# vim: set filetype=make :
+

@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2022/02/22
+% 2022/02/28
 
 # NAME
 
@@ -74,9 +74,6 @@ The active configuration can be written to disk, however any comments and format
 	`SCALE` <*name*> <*scale*>
 	: Set the scale for a specific display.
 
-	`MAX_PREFERRED_REFRESH` <*name*>
-	: Direct a display to use the maximum refresh rate for its preferred resolution.
-
 	`DISABLED` <*name*>
 	: Disable a display.
 
@@ -85,9 +82,6 @@ The active configuration can be written to disk, however any comments and format
 
 	`SCALE` <*name*>
 	: Use auto scaling for the display, if enabled.
-
-	`MAX_PREFERRED_REFRESH` <*name*>
-	: Use the preferred mode's refresh rate.
 
 	`DISABLED` <*name*>
 	: Enable a display.
