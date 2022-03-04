@@ -61,8 +61,6 @@ struct Cfg {
 	enum LogThreshold log_threshold;
 };
 
-extern const char *LAPTOP_DISPLAY_PREFIX_DEFAULT;
-
 enum CfgElement {
 	ARRANGE = 1,
 	ALIGN,

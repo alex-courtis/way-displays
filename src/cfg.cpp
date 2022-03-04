@@ -30,7 +30,6 @@ extern "C" {
 enum Arrange ARRANGE_DEFAULT = ROW;
 enum Align ALIGN_DEFAULT = TOP;
 enum AutoScale AUTO_SCALE_DEFAULT = ON;
-const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
 
 bool slist_test_scale_name(const void *value, const void *data) {
 	if (!value || !data) {
@@ -189,8 +188,6 @@ struct Cfg *cfg_default() {
 	cfg->arrange = ARRANGE_DEFAULT;
 	cfg->align = ALIGN_DEFAULT;
 	cfg->auto_scale = AUTO_SCALE_DEFAULT;
-	cfg->log_threshold = LOG_THRESHOLD_DEFAULT;
-	cfg->laptop_display_prefix = strdup(LAPTOP_DISPLAY_PREFIX_DEFAULT);
 
 	return cfg;
 }
@@ -234,8 +231,7 @@ void cfg_parse_node(struct Cfg *cfg, YAML::Node &node) {
 		const std::string &threshold_str = node["LOG_THRESHOLD"].as<std::string>();
 		cfg->log_threshold = log_threshold_val(threshold_str.c_str());
 		if (!cfg->log_threshold) {
-			cfg->log_threshold = LOG_THRESHOLD_DEFAULT;
-			log_warn("Ignoring invalid LOG_THRESHOLD %s, using default %s", threshold_str.c_str(), log_threshold_name(cfg->log_threshold));
+			log_warn("Ignoring invalid LOG_THRESHOLD %s, using default %s", threshold_str.c_str(), log_threshold_name(LOG_THRESHOLD_DEFAULT));
 		}
 	}
 
@@ -392,7 +388,7 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 		e << YAML::EndSeq;
 	}
 
-	if (cfg->laptop_display_prefix && strcmp(cfg->laptop_display_prefix, cfg_def->laptop_display_prefix) != 0) {
+	if (cfg->laptop_display_prefix) {
 		e << YAML::Key << "LAPTOP_DISPLAY_PREFIX";
 		e << YAML::Value << cfg->laptop_display_prefix;
 	}
@@ -415,9 +411,9 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 		e << YAML::EndSeq;
 	}
 
-	if (log_get_threshold() != cfg_def->log_threshold) {
+	if (cfg->log_threshold) {
 		e << YAML::Key << "LOG_THRESHOLD";
-		e << YAML::Value << log_threshold_name(log_get_threshold());
+		e << YAML::Value << log_threshold_name(cfg->log_threshold);
 	}
 
 	e << YAML::EndMap;
@@ -518,11 +514,6 @@ struct Cfg *cfg_merge_set(struct Cfg *to, struct Cfg *from) {
 		if (!slist_find(&merged->disabled_name_desc, slist_test_strcasecmp, i->val)) {
 			slist_append(&merged->disabled_name_desc, strdup((char*)i->val));
 		}
-	}
-
-	// LOG_THRESHOLD
-	if (from->log_threshold) {
-		merged->log_threshold = from->log_threshold;
 	}
 
 	return merged;

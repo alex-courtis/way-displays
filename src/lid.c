@@ -17,6 +17,8 @@
 #include "log.h"
 #include "types.h"
 
+static const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
+
 static int libinput_open_restricted(const char *path, int flags, void *data) {
 
 	// user permissions are sufficient for input devices, no need for systemd
@@ -242,15 +244,22 @@ void update_heads_lid_closed(struct Displ *displ) {
 	struct Head *head;
 	struct SList *i;
 
-	if (!displ || !displ->lid || !displ->output_manager || !displ->cfg || !displ->cfg->laptop_display_prefix)
+	if (!displ || !displ->lid || !displ->output_manager || !displ->cfg)
 		return;
+
+	const char *laptop_display_prefix;
+	if (displ->cfg->laptop_display_prefix) {
+		laptop_display_prefix = displ->cfg->laptop_display_prefix;
+	} else {
+		laptop_display_prefix = LAPTOP_DISPLAY_PREFIX_DEFAULT;
+	}
 
 	for (i = displ->output_manager->heads; i; i = i->nex) {
 		head = i->val;
 		if (!head)
 			continue;
 
-		if (strncasecmp(displ->cfg->laptop_display_prefix, head->name, strlen(displ->cfg->laptop_display_prefix)) == 0) {
+		if (strncasecmp(laptop_display_prefix, head->name, strlen(laptop_display_prefix)) == 0) {
 			if (head->lid_closed != displ->lid->closed) {
 				head->lid_closed = displ->lid->closed;
 				head->dirty = true;
