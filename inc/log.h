@@ -8,8 +8,8 @@ enum LogThreshold {
 	INFO,
 	WARNING,
 	ERROR,
+	LOG_THRESHOLD_DEFAULT = INFO,
 };
-extern enum LogThreshold LOG_THRESHOLD_DEFAULT;
 
 struct LogCapLine {
 	char *line;

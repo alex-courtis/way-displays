@@ -88,8 +88,6 @@ void handle_ipc(int fd_sock) {
 		ipc_response->done = true;
 	}
 
-	log_set_threshold(displ->cfg->log_threshold, false);
-
 	print_cfg(displ->cfg);
 
 	if (ipc_request->command == CFG_GET) {
