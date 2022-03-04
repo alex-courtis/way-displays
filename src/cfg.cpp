@@ -30,7 +30,6 @@ extern "C" {
 enum Arrange ARRANGE_DEFAULT = ROW;
 enum Align ALIGN_DEFAULT = TOP;
 enum AutoScale AUTO_SCALE_DEFAULT = ON;
-const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
 
 bool slist_test_scale_name(const void *value, const void *data) {
 	if (!value || !data) {
@@ -189,7 +188,6 @@ struct Cfg *cfg_default() {
 	cfg->arrange = ARRANGE_DEFAULT;
 	cfg->align = ALIGN_DEFAULT;
 	cfg->auto_scale = AUTO_SCALE_DEFAULT;
-	cfg->laptop_display_prefix = strdup(LAPTOP_DISPLAY_PREFIX_DEFAULT);
 
 	return cfg;
 }
@@ -390,7 +388,7 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 		e << YAML::EndSeq;
 	}
 
-	if (cfg->laptop_display_prefix && strcmp(cfg->laptop_display_prefix, cfg_def->laptop_display_prefix) != 0) {
+	if (cfg->laptop_display_prefix) {
 		e << YAML::Key << "LAPTOP_DISPLAY_PREFIX";
 		e << YAML::Value << cfg->laptop_display_prefix;
 	}

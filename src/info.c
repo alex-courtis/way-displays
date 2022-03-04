@@ -58,7 +58,7 @@ void print_cfg(struct Cfg *cfg) {
 		}
 	}
 
-	if (cfg->laptop_display_prefix && strcmp(cfg->laptop_display_prefix, LAPTOP_DISPLAY_PREFIX_DEFAULT) != 0) {
+	if (cfg->laptop_display_prefix) {
 		log_info("  Laptop display prefix: %s", cfg->laptop_display_prefix);
 	}
 }
