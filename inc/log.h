@@ -19,7 +19,7 @@ extern struct SList *log_cap_lines;
 
 void log_set_threshold(enum LogThreshold threshold, bool cli);
 
-enum LogThreshold log_get_threshold();
+enum LogThreshold log_get_threshold(void);
 
 void log_set_times(bool times);
 
@@ -37,11 +37,11 @@ void log_error(const char *__restrict __format, ...);
 
 void log_error_errno(const char *__restrict __format, ...);
 
-void log_capture_start();
+void log_capture_start(void);
 
-void log_capture_end();
+void log_capture_end(void);
 
-void log_capture_reset();
+void log_capture_reset(void);
 
 #endif // LOG_H
 

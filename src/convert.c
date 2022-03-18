@@ -20,6 +20,7 @@ static struct NameVal cfg_elements[] = {
 	{ .val = ORDER,                 .name = "ORDER",                 },
 	{ .val = AUTO_SCALE,            .name = "AUTO_SCALE",            },
 	{ .val = SCALE,                 .name = "SCALE",                 },
+	{ .val = MODE,                  .name = "MODE",                  },
 	{ .val = LAPTOP_DISPLAY_PREFIX, .name = "LAPTOP_DISPLAY_PREFIX", },
 	{ .val = MAX_PREFERRED_REFRESH, .name = "MAX_PREFERRED_REFRESH", },
 	{ .val = LOG_THRESHOLD,         .name = "LOG_THRESHOLD",         },

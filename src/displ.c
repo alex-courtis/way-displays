@@ -1,18 +1,17 @@
-#include <stdbool.h>
 #include <stdlib.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
 #include "displ.h"
 
-#include "info.h"
-#include "lid.h"
-#include "list.h"
 #include "listeners.h"
 #include "log.h"
-#include "types.h"
+#include "process.h"
+#include "server.h"
 
-void connect_display(struct Displ *displ) {
+void displ_init(void) {
+
+	displ = calloc(1, sizeof(struct Displ));
 
 	if (!(displ->display = wl_display_connect(NULL))) {
 		log_error("\nUnable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting");
@@ -25,7 +24,7 @@ void connect_display(struct Displ *displ) {
 
 	if (wl_display_roundtrip(displ->display) == -1) {
 		log_error("\nwl_display_roundtrip failed -1, exiting");
-		exit(EXIT_FAILURE);
+		exit_fail();
 	}
 
 	if (!displ->output_manager) {
@@ -34,35 +33,19 @@ void connect_display(struct Displ *displ) {
 	}
 }
 
-void destroy_display(struct Displ *displ) {
-	if (!displ)
-		return;
+void displ_destroy(void) {
 
-	if (displ->output_manager && displ->output_manager->zwlr_output_manager) {
-		wl_proxy_destroy((struct wl_proxy*) displ->output_manager->zwlr_output_manager);
+	if (displ->output_manager) {
+		wl_proxy_destroy((struct wl_proxy*) displ->output_manager);
 	}
 
 	wl_registry_destroy(displ->registry);
 
 	wl_display_disconnect(displ->display);
 
-	destroy_lid(displ);
+	free(displ->interface);
 
-	free_displ(displ);
-}
-
-bool consume_arrived_departed(struct OutputManager *output_manager) {
-	if (!output_manager)
-		return false;
-
-	bool user_changes = output_manager->heads_arrived || output_manager->heads_departed;
-
-	print_heads(ARRIVED, output_manager->heads_arrived);
-	slist_free(&output_manager->heads_arrived);
-
-	print_heads(DEPARTED, output_manager->heads_departed);
-	slist_free_vals(&output_manager->heads_departed, free_head);
-
-	return user_changes;
+	free(displ);
+	displ = NULL;
 }
 

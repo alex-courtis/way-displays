@@ -2,7 +2,6 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/inotify.h>
 #include <sys/signalfd.h>
@@ -14,14 +13,17 @@
 #include "cfg.h"
 #include "lid.h"
 #include "log.h"
+#include "displ.h"
+#include "process.h"
+#include "server.h"
 #include "sockets.h"
-#include "types.h"
 
 #define PFDS_SIZE 5
 
 int fd_signal = -1;
 int fd_ipc = -1;
 int fd_cfg_dir = -1;
+bool fds_created = false;
 
 nfds_t npfds = 0;
 struct pollfd pfds[PFDS_SIZE];
@@ -32,7 +34,7 @@ struct pollfd *pfd_wayland = NULL;
 struct pollfd *pfd_lid = NULL;
 struct pollfd *pfd_cfg_dir = NULL;
 
-int create_fd_signal() {
+int create_fd_signal(void) {
 	sigset_t mask;
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGINT);
@@ -43,32 +45,34 @@ int create_fd_signal() {
 	return signalfd(-1, &mask, 0);
 }
 
-int create_fd_cfg_dir(struct Cfg *cfg) {
-	if (!cfg || !cfg->dir_path)
+int create_fd_cfg_dir(void) {
+	if (!cfg->dir_path)
 		return -1;
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
 	if (inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE) == -1) {
 		log_error_errno("\nunable to create config file watch for %s, exiting", cfg->dir_path);
-		exit(EXIT_FAILURE);
+		exit_fail();
 	}
 
 	return fd_cfg_dir;
 }
 
-void init_fds(struct Cfg *cfg) {
+void create_fds(void) {
 	fd_signal = create_fd_signal();
 	fd_ipc = create_fd_ipc_server();
-	fd_cfg_dir = create_fd_cfg_dir(cfg);
+	fd_cfg_dir = create_fd_cfg_dir();
+
+	fds_created = true;
 }
 
-void create_pfds(struct Displ *displ) {
-	if (!displ || !displ->display)
-		return;
+void init_pfds(void) {
+	if (!fds_created)
+		create_fds();
 
 	// wayland and signal are always present, others are optional
 	npfds = 2;
-	if (displ->lid)
+	if (lid)
 		npfds++;
 	if (fd_ipc != -1)
 		npfds++;
@@ -91,9 +95,9 @@ void create_pfds(struct Displ *displ) {
 		pfd_ipc->events = POLLIN;
 	}
 
-	if (displ->lid) {
+	if (lid) {
 		pfd_lid = &pfds[i++];
-		pfd_lid->fd = displ->lid->libinput_fd;
+		pfd_lid->fd = lid->libinput_fd;
 		pfd_lid->events = POLLIN;
 	}
 
@@ -104,7 +108,7 @@ void create_pfds(struct Displ *displ) {
 	}
 }
 
-void destroy_pfds() {
+void destroy_pfds(void) {
 	npfds = 0;
 
 	pfd_signal = NULL;

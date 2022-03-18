@@ -13,7 +13,7 @@
 
 #include "log.h"
 
-char *pid_path() {
+char *pid_path(void) {
 	char *path = calloc(1, PATH_MAX);
 
 	const char *xdg_vtnr = getenv("XDG_VTNR");
@@ -26,7 +26,7 @@ char *pid_path() {
 	return path;
 }
 
-__pid_t pid_active_server() {
+__pid_t pid_active_server(void) {
 	static char pbuf[11];
 
 	__pid_t pid = 0;
@@ -50,7 +50,7 @@ __pid_t pid_active_server() {
 	return pid;
 }
 
-void pid_file_create() {
+void pid_file_create(void) {
 	char *path = pid_path();
 
 	__pid_t pid = pid_active_server();
@@ -63,7 +63,7 @@ void pid_file_create() {
 	int fd = open(path, O_RDWR | O_CLOEXEC);
 	if (fd == -1 && errno != ENOENT) {
 		log_error_errno("\nunable to open existing pid file for writing %s, exiting", path);
-		exit(EXIT_FAILURE);
+		exit_fail();
 	}
 
 	// create a new file
@@ -73,28 +73,34 @@ void pid_file_create() {
 		umask(umask_prev);
 		if (fd == -1) {
 			log_error_errno("\nunable to create pid file %s, exiting", path);
-			exit(EXIT_FAILURE);
+			exit_fail();
 		}
 	}
 
 	// lock it forever
 	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
 		log_error_errno("\nunable to lock pid file %s, exiting", path);
-		exit(EXIT_FAILURE);
+		exit_fail();
 	}
 
 	// clear it
 	if (ftruncate(fd, 0) == -1) {
 		log_error_errno("\nunable to truncate pid file %s, exiting", path);
-		exit(EXIT_FAILURE);
+		exit_fail();
 	}
 
 	// write the new pid
 	if (dprintf(fd, "%d", getpid()) <= 0) {
 		log_error_errno("\nunable to write to pid file %s, exiting", path);
-		exit(EXIT_FAILURE);
+		exit_fail();
 	}
 
 	free(path);
+}
+
+void exit_fail(void) {
+	log_error("\nPlease raise an issue: https://github.com/alex-courtis/way-displays/issues");
+	log_error("Attach this log and describe the events that occurred before this failure.");
+	exit(EXIT_FAILURE);
 }
 

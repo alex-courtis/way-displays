@@ -11,8 +11,8 @@ struct SList *slist_append(struct SList **head, void *val) {
 	i->val = val;
 
 	if (*head) {
-        for (l = *head; l->nex; l = l->nex);
-        l->nex = i;
+		for (l = *head; l->nex; l = l->nex);
+		l->nex = i;
 	} else {
 		*head = i;
 	}
@@ -20,12 +20,35 @@ struct SList *slist_append(struct SList **head, void *val) {
 	return i;
 }
 
-struct SList *slist_find(struct SList **head, bool (*test)(const void *val, const void *data), const void *data) {
+struct SList *slist_find(struct SList *head, bool (*test)(const void *val)) {
 	struct SList *i;
 
-	for (i = *head; i; i = i->nex) {
-		if (test) {
-			if (test(i->val, data)) {
+	if (!test)
+		return NULL;
+
+	for (i = head; i; i = i->nex) {
+		if (test(i->val)) {
+			return i;
+		}
+	}
+
+	return NULL;
+}
+
+void *slist_find_val(struct SList *head, bool (*test)(const void *val)) {
+	struct SList *f = slist_find(head, test);
+	if (f)
+		return f->val;
+	else
+		return NULL;
+}
+
+struct SList *slist_find_equal(struct SList *head, bool (*equal)(const void *val, const void *data), const void *data) {
+	struct SList *i;
+
+	for (i = head; i; i = i->nex) {
+		if (equal) {
+			if (equal(i->val, data)) {
 				return i;
 			}
 		} else if (i->val == data) {
@@ -36,12 +59,20 @@ struct SList *slist_find(struct SList **head, bool (*test)(const void *val, cons
 	return NULL;
 }
 
-bool slist_equal(struct SList *a, struct SList *b, bool (*test)(const void *val, const void *data)) {
+void *slist_find_equal_val(struct SList *head, bool (*equal)(const void *val, const void *data), const void *data) {
+	struct SList *f = slist_find_equal(head, equal, data);
+	if (f)
+		return f->val;
+	else
+		return NULL;
+}
+
+bool slist_equal(struct SList *a, struct SList *b, bool (*equal)(const void *a, const void *b)) {
 	struct SList *ai, *bi;
 
 	for (ai = a, bi = b; ai && bi; ai = ai->nex, bi = bi->nex) {
-		if (test) {
-			if (!test(ai->val, bi->val)) {
+		if (equal) {
+			if (!equal(ai->val, bi->val)) {
 				return false;
 			}
 		} else if (ai->val != bi->val) {
@@ -86,11 +117,11 @@ void *slist_remove(struct SList **head, struct SList **item) {
 	return removed;
 }
 
-unsigned long slist_remove_all(struct SList **head, bool (*test)(const void *val, const void *data), const void *data) {
+unsigned long slist_remove_all(struct SList **head, bool (*equal)(const void *val, const void *data), const void *data) {
 	struct SList *i;
 	unsigned long removed = 0;
 
-	while ((i = slist_find(head, test, data))) {
+	while ((i = slist_find_equal(*head, equal, data))) {
 		slist_remove(head, &i);
 		removed++;
 	}
@@ -98,11 +129,11 @@ unsigned long slist_remove_all(struct SList **head, bool (*test)(const void *val
 	return removed;
 }
 
-unsigned long slist_remove_all_free(struct SList **head, bool (*test)(const void *val, const void *data), const void *data, void (*free_val)(void *val)) {
+unsigned long slist_remove_all_free(struct SList **head, bool (*equal)(const void *val, const void *data), const void *data, void (*free_val)(void *val)) {
 	struct SList *i;
 	unsigned long removed = 0;
 
-	while ((i = slist_find(head, test, data))) {
+	while ((i = slist_find_equal(*head, equal, data))) {
 		if (free_val) {
 			free_val(i->val);
 		} else {
@@ -136,6 +167,41 @@ unsigned long slist_length(struct SList *head) {
 	return length;
 }
 
+struct SList *slist_sort(struct SList *head, bool (*before)(const void *a, const void *b)) {
+	struct SList *sorted = NULL;
+
+	if (!head || !before) {
+		return sorted;
+	}
+
+	if (!head->nex) {
+		slist_append(&sorted, head->val);
+		return sorted;
+	}
+
+	struct SList *sorting = slist_shallow_clone(head);
+
+	struct SList *sorting_head  = sorting;
+	struct SList **sorted_trail = &sorted;
+
+	while (sorting != NULL) {
+		sorting_head = sorting;
+		sorted_trail = &sorted;
+
+		sorting = sorting->nex;
+
+		while (!(*sorted_trail == NULL || before(sorting_head->val, (*sorted_trail)->val))) {
+			sorted_trail = &(*sorted_trail)->nex;
+		}
+
+		sorting_head->nex = *sorted_trail;
+		*sorted_trail = sorting_head;
+	}
+
+	slist_free(&sorting);
+	return sorted;
+}
+
 void slist_free(struct SList **head) {
 	struct SList *i, *f;
 
@@ -163,7 +229,7 @@ void slist_free_vals(struct SList **head, void (*free_val)(void *val)) {
 	slist_free(head);
 }
 
-bool slist_test_strcasecmp(const void *val, const void *data) {
+bool slist_equal_strcasecmp(const void *val, const void *data) {
 	if (!val || !data) {
 		return false;
 	}

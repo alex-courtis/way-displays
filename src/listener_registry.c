@@ -6,8 +6,8 @@
 
 #include "listeners.h"
 
+#include "displ.h"
 #include "log.h"
-#include "types.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Displ data
@@ -25,13 +25,11 @@ static void global(void *data,
 	struct Displ *displ = data;
 	displ->name = name;
 
-	displ->output_manager = calloc(1, sizeof(struct OutputManager));
-	displ->output_manager->displ = displ;
-	displ->output_manager->interface = strdup(interface);
+	displ->interface = strdup(interface);
 
-	displ->output_manager->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, version);
+	displ->output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, version);
 
-	zwlr_output_manager_v1_add_listener(displ->output_manager->zwlr_output_manager, output_manager_listener(), displ->output_manager);
+	zwlr_output_manager_v1_add_listener(displ->output_manager, output_manager_listener(), displ);
 }
 
 static void global_remove(void *data,
@@ -53,7 +51,7 @@ static const struct wl_registry_listener listener = {
 	.global_remove = global_remove,
 };
 
-const struct wl_registry_listener *registry_listener() {
+const struct wl_registry_listener *registry_listener(void) {
 	return &listener;
 }
 

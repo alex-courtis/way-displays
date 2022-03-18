@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "cfg.h"
 #include "client.h"
@@ -29,8 +30,11 @@ void usage(FILE *stream) {
 		"     ORDER <name> ...\n"
 		"     AUTO_SCALE <on|off>\n"
 		"     SCALE <name> <scale>\n"
+		"     MODE <name> MAX\n"
+		"     MODE <name> <width> <height> [<hz>]\n"
 		"     DISABLED <name>\n"
 		"  -d, --d[elete]  remove\n"
+		"     MODE <name>\n"
 		"     SCALE <name>\n"
 		"     DISABLED <name>\n"
 		;
@@ -39,6 +43,7 @@ void usage(FILE *stream) {
 
 struct Cfg *parse_element(enum IpcRequestCommand command, enum CfgElement element, int argc, char **argv) {
 	struct UserScale *user_scale = NULL;
+	struct UserMode *user_mode = NULL;
 
 	struct Cfg *cfg = calloc(1, sizeof(struct Cfg));
 
@@ -61,14 +66,44 @@ struct Cfg *parse_element(enum IpcRequestCommand command, enum CfgElement elemen
 					slist_append(&cfg->user_scales, user_scale);
 					break;
 				case CFG_DEL:
-					// dummy values
-					for (int i = optind; i < argc; i++) {
-						user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-						user_scale->name_desc = strdup(argv[i]);
-						user_scale->scale = 1;
-						slist_append(&cfg->user_scales, user_scale);
+					// dummy value
+					user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+					user_scale->name_desc = strdup(argv[optind]);
+					user_scale->scale = 1;
+					slist_append(&cfg->user_scales, user_scale);
+					parsed = true;
+					break;
+				default:
+					break;
+			}
+			break;
+		case MODE:
+			switch (command) {
+				case CFG_SET:
+					// parse input value
+					user_mode = cfg_user_mode_default();
+					user_mode->name_desc = strdup(argv[optind]);
+					if (strcasecmp(argv[optind + 1], "MAX") == 0) {
+						user_mode->max = true;
 						parsed = true;
+					} else {
+						if (optind + 2 < argc) {
+							parsed = ((user_mode->width = atoi(argv[optind + 1])) > 0);
+							parsed = ((user_mode->height = atoi(argv[optind + 2])) > 0);
+						}
+						if (optind + 3 < argc) {
+							parsed = ((user_mode->refresh_hz = atoi(argv[optind + 3])) > 0);
+						}
 					}
+					slist_append(&cfg->user_modes, user_mode);
+					break;
+				case CFG_DEL:
+					// dummy value
+					user_mode = cfg_user_mode_default();
+					user_mode->name_desc = strdup(argv[optind]);
+					user_mode->max = true;
+					slist_append(&cfg->user_modes, user_mode);
+					parsed = true;
 					break;
 				default:
 					break;
@@ -130,6 +165,12 @@ struct IpcRequest *parse_write(int argc, char **argv) {
 struct IpcRequest *parse_set(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
+		case MODE:
+			if (optind + 2 > argc || optind + 4 < argc) {
+				log_error("%s requires two to four arguments", cfg_element_name(element));
+				exit(EXIT_FAILURE);
+			}
+			break;
 		case ARRANGE_ALIGN:
 		case SCALE:
 			if (optind + 2 != argc) {
@@ -145,7 +186,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 			}
 			break;
 		case ORDER:
-			if (optind >= argc) {
+			if (optind + 1 > argc) {
 				log_error("%s requires at least one argument", cfg_element_name(element));
 				exit(EXIT_FAILURE);
 			}
@@ -165,6 +206,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 struct IpcRequest *parse_del(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
+		case MODE:
 		case SCALE:
 		case DISABLED:
 			if (optind + 1 != argc) {

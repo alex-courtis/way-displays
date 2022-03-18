@@ -3,27 +3,21 @@
 
 #include <stdbool.h>
 
-#include "types.h"
-
 struct Lid {
 	bool closed;
-
-	bool dirty;
 
 	char *device_path;
 	struct libinput *libinput_monitor;
 	int libinput_fd;
 };
 
-struct Lid *create_lid();
+void lid_init(void);
 
-void destroy_lid(struct Displ *displ);
+void lid_update(void);
 
-bool update_lid(struct Displ *displ);
+bool lid_is_closed(char *name);
 
-void update_heads_lid_closed(struct Displ *displ);
-
-void free_lid(struct Lid *lid);
+void lid_destroy(void);
 
 #endif // LID_H
 

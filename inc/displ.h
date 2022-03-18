@@ -1,14 +1,32 @@
 #ifndef DISPL_H
 #define DISPL_H
 
-#include <stdbool.h>
+#include <stdint.h>
 
-#include "types.h"
+enum ConfigState {
+	IDLE = 0,
+	SUCCEEDED,
+	OUTSTANDING,
+	CANCELLED,
+	FAILED,
+};
 
-void connect_display(struct Displ *displ);
+struct Displ {
+	// global
+	struct wl_display *display;
+	struct wl_registry *registry;
+	uint32_t name;
 
-void destroy_display(struct Displ *displ);
+	// output manager
+	struct zwlr_output_manager_v1 *output_manager;
+	uint32_t serial;
+	char *interface;
 
-bool consume_arrived_departed(struct OutputManager *output_manager);
+	enum ConfigState config_state;
+};
+
+void displ_init(void);
+
+void displ_destroy(void);
 
 #endif // DISPL_H

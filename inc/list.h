@@ -15,22 +15,34 @@ struct SList *slist_append(struct SList **head, void *val);
 void *slist_remove(struct SList **head, struct SList **item);
 
 // remove items, null test is val pointer comparison
-unsigned long slist_remove_all(struct SList **head, bool (*test)(const void *val, const void *data), const void *data);
+unsigned long slist_remove_all(struct SList **head, bool (*equal)(const void *val, const void *data), const void *data);
 
 // remove items and free vals, null test is val pointer comparison, null free_val calls free()
-unsigned long slist_remove_all_free(struct SList **head, bool (*test)(const void *val, const void *data), const void *data, void (*free_val)(void *val));
+unsigned long slist_remove_all_free(struct SList **head, bool (*equal)(const void *val, const void *data), const void *data, void (*free_val)(void *val));
+
+// find
+struct SList *slist_find(struct SList *head, bool (*test)(const void *val));
+
+// find a val
+void *slist_find_val(struct SList *head, bool (*test)(const void *val));
+
+// find, null test is val pointer comparison
+struct SList *slist_find_equal(struct SList *head, bool (*equal)(const void *val, const void *data), const void *data);
 
 // find a val, null test is val pointer comparison
-struct SList *slist_find(struct SList **head, bool (*test)(const void *val, const void *data), const void *data);
+void *slist_find_equal_val(struct SList *head, bool (*equal)(const void *val, const void *data), const void *data);
 
 // same length and every item passes test in order
-bool slist_equal(struct SList *a, struct SList *b, bool (*test)(const void *val, const void *data));
+bool slist_equal(struct SList *a, struct SList *b, bool (*equal)(const void *a, const void *b));
 
 // length
 unsigned long slist_length(struct SList *head);
 
 // clone the list, setting val pointers
 struct SList *slist_shallow_clone(struct SList *head);
+
+// sort into a new list
+struct SList *slist_sort(struct SList *head, bool (*before)(const void *a, const void *b));
 
 // free list
 void slist_free(struct SList **head);
@@ -39,7 +51,7 @@ void slist_free(struct SList **head);
 void slist_free_vals(struct SList **head, void (*free_val)(void *val));
 
 // test val for equality using strcasecmp
-bool slist_test_strcasecmp(const void *val, const void *data);
+bool slist_equal_strcasecmp(const void *val, const void *data);
 
 #endif // LIST_H
 

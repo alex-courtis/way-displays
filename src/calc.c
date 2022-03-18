@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include <wayland-util.h>
@@ -6,79 +5,18 @@
 #include "calc.h"
 
 #include "cfg.h"
+#include "head.h"
 #include "list.h"
-#include "types.h"
+#include "mode.h"
+#include "server.h"
 
-double calc_dpi(struct Mode *mode) {
-	if (!mode || !mode->head || !mode->head->width_mm || !mode->head->height_mm) {
-		return 0;
-	}
-
-	double dpi_horiz = (double)(mode->width) / mode->head->width_mm * 25.4;
-	double dpi_vert = (double)(mode->height) / mode->head->height_mm * 25.4;
-	return (dpi_horiz + dpi_vert) / 2;
-}
-
-struct Mode *optimal_mode(struct SList *modes, bool max_preferred_refresh) {
-	struct Mode *mode, *optimal_mode, *preferred_mode;
-
-	optimal_mode = NULL;
-	preferred_mode = NULL;
-	for (struct SList *i = modes; i; i = i->nex) {
-		mode = i->val;
-
-		if (!mode) {
-			continue;
-		}
-
-		if (!optimal_mode) {
-			optimal_mode = mode;
-		}
-
-		// preferred first
-		if (mode->preferred) {
-			optimal_mode = mode;
-			preferred_mode = mode;
-			break;
-		}
-
-		// highest resolution
-		if (mode->width * mode->height > optimal_mode->width * optimal_mode->height) {
-			optimal_mode = mode;
-			continue;
-		}
-
-		// highest refresh at highest resolution
-		if (mode->width == optimal_mode->width &&
-				mode->height == optimal_mode->height &&
-				mode->refresh_mHz > optimal_mode->refresh_mHz) {
-			optimal_mode = mode;
-			continue;
-		}
-	}
-
-	if (preferred_mode && max_preferred_refresh) {
-		optimal_mode = preferred_mode;
-		for (struct SList *i = modes; i; i = i->nex) {
-			mode = i->val;
-			if (mode->width == optimal_mode->width && mode->height == optimal_mode->height) {
-				if (mode->refresh_mHz > optimal_mode->refresh_mHz) {
-					optimal_mode = mode;
-				}
-			}
-		}
-	}
-
-	return optimal_mode;
-}
-
-wl_fixed_t auto_scale(struct Head *head) {
+wl_fixed_t calc_auto_scale(struct Head *head) {
 	if (!head || !head->desired.mode) {
 		return wl_fixed_from_int(1);
 	}
 
 	// average dpi
-	double dpi = calc_dpi(head->desired.mode);
+	double dpi = mode_dpi(head->desired.mode);
 	if (dpi == 0) {
 		return wl_fixed_from_int(1);
 	}
@@ -90,24 +28,24 @@ wl_fixed_t auto_scale(struct Head *head) {
 	return 256 * dpi_quantized / 96;
 }
 
-void calc_layout_dimensions(struct Head *head) {
+void calc_scaled_dimensions(struct Head *head) {
 	if (!head || !head->desired.mode || !head->desired.scale) {
 		return;
 	}
 
 	if (head->transform % 2 == 0) {
-		head->desired.width = head->desired.mode->width;
-		head->desired.height = head->desired.mode->height;
+		head->scaled.width = head->desired.mode->width;
+		head->scaled.height = head->desired.mode->height;
 	} else {
-		head->desired.width = head->desired.mode->height;
-		head->desired.height = head->desired.mode->width;
+		head->scaled.width = head->desired.mode->height;
+		head->scaled.height = head->desired.mode->width;
 	}
 
-	head->desired.height = (int32_t)((double)head->desired.height * 256 / head->desired.scale + 0.5);
-	head->desired.width = (int32_t)((double)head->desired.width * 256 / head->desired.scale + 0.5);
+	head->scaled.height = (int32_t)((double)head->scaled.height * 256 / head->desired.scale + 0.5);
+	head->scaled.width = (int32_t)((double)head->scaled.width * 256 / head->desired.scale + 0.5);
 }
 
-struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
+struct SList *calc_head_order(struct SList *order_name_desc, struct SList *heads) {
 	struct SList *heads_ordered = NULL;
 	struct Head *head;
 	struct SList *i, *j, *r;
@@ -124,9 +62,7 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 			if (!head) {
 				continue;
 			}
-			if (i->val &&
-					((head->name && strcmp(i->val, head->name) == 0) ||
-					 (head->description && strcasestr(head->description, i->val)))) {
+			if (i->val && head_matches_name_desc(i->val, head)) {
 				slist_append(&heads_ordered, head);
 				slist_remove(&sorting, &r);
 			}
@@ -148,7 +84,7 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	return heads_ordered;
 }
 
-void position_heads(struct SList *heads, struct Cfg *cfg) {
+void calc_head_positions(struct SList *heads) {
 	struct Head *head;
 	int32_t tallest = 0, widest = 0, x = 0, y = 0;
 
@@ -158,11 +94,11 @@ void position_heads(struct SList *heads, struct Cfg *cfg) {
 		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
-		if (head->desired.height > tallest) {
-			tallest = head->desired.height;
+		if (head->scaled.height > tallest) {
+			tallest = head->scaled.height;
 		}
-		if (head->desired.width > widest) {
-			widest = head->desired.width;
+		if (head->scaled.width > widest) {
+			widest = head->scaled.width;
 		}
 	}
 
@@ -177,15 +113,15 @@ void position_heads(struct SList *heads, struct Cfg *cfg) {
 			case COL:
 				// position
 				head->desired.y = y;
-				y += head->desired.height;
+				y += head->scaled.height;
 
 				// align
 				switch (cfg->align) {
 					case RIGHT:
-						head->desired.x = widest - head->desired.width;
+						head->desired.x = widest - head->scaled.width;
 						break;
 					case MIDDLE:
-						head->desired.x = (widest - head->desired.width + 0.5) / 2;
+						head->desired.x = (widest - head->scaled.width + 0.5) / 2;
 						break;
 					case LEFT:
 					default:
@@ -197,15 +133,15 @@ void position_heads(struct SList *heads, struct Cfg *cfg) {
 			default:
 				// position
 				head->desired.x = x;
-				x += head->desired.width;
+				x += head->scaled.width;
 
 				// align
 				switch (cfg->align) {
 					case BOTTOM:
-						head->desired.y = tallest - head->desired.height;
+						head->desired.y = tallest - head->scaled.height;
 						break;
 					case MIDDLE:
-						head->desired.y = (tallest - head->desired.height + 0.5) / 2;
+						head->desired.y = (tallest - head->scaled.height + 0.5) / 2;
 						break;
 					case TOP:
 					default:

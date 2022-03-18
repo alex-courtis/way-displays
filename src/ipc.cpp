@@ -203,7 +203,7 @@ struct IpcResponse *unmarshal_response(char *yaml) {
 			}
 
 			if (i->first.as<std::string>() == "MESSAGES" && i->second.IsMap()) {
-				for (YAML::const_iterator j = i->second.begin(); j != i->second.end(); j++) {
+				for (YAML::const_iterator j = i->second.begin(); j != i->second.end(); ++j) {
 					enum LogThreshold threshold = log_threshold_val(j->first.as<std::string>().c_str());
 					if (threshold) {
 						log_(threshold, "%s", j->second.as<std::string>().c_str());
@@ -230,7 +230,7 @@ int ipc_request_send(struct IpcRequest *request) {
 
 	log_debug("========sending server request==========\n%s\n----------------------------------------", yaml);
 	log_info("Sending %s request:", ipc_request_command_friendly(request->command));
-	print_cfg(request->cfg);
+	print_cfg(INFO, request->cfg, request->command == CFG_DEL);
 
 	if ((fd = create_fd_ipc_client()) == -1) {
 		goto end;
@@ -341,7 +341,7 @@ void free_ipc_request(struct IpcRequest *request) {
 		return;
 	}
 
-	free_cfg(request->cfg);
+	cfg_free(request->cfg);
 
 	free(request);
 }

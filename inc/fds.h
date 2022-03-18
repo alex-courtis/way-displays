@@ -4,9 +4,6 @@
 #include <poll.h>
 #include <stdbool.h>
 
-#include "cfg.h"
-#include "types.h"
-
 extern int fd_signal;
 extern int fd_ipc;
 extern int fd_cfg_dir;
@@ -20,11 +17,9 @@ extern struct pollfd *pfd_wayland;
 extern struct pollfd *pfd_lid;
 extern struct pollfd *pfd_cfg_dir;
 
-void init_fds(struct Cfg *cfg);
+void init_pfds(void);
 
-void create_pfds(struct Displ *displ);
-
-void destroy_pfds();
+void destroy_pfds(void);
 
 bool cfg_file_modified(char *file_name);
 

@@ -11,7 +11,7 @@ OFLAGS = -O3
 WFLAGS = -pedantic -Wall -Wextra -Werror -Wno-unused-parameter
 COMPFLAGS = $(WFLAGS) $(OFLAGS)
 
-CFLAGS += $(COMPFLAGS) -std=gnu17
+CFLAGS += $(COMPFLAGS) -std=gnu17 -Wold-style-definition -Wstrict-prototypes
 CXXFLAGS += $(COMPFLAGS) -std=gnu++17
 
 LDFLAGS +=

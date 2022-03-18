@@ -13,8 +13,8 @@ PRO_O = $(PRO_X:.xml=.o)
 
 all: way-displays
 
-$(SRC_O): $(INC_H) $(PRO_H)
-$(PRO_O): $(PRO_H)
+$(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
+$(PRO_O): $(PRO_H) config.mk GNUmakefile
 
 way-displays: $(SRC_O) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)

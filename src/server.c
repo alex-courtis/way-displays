@@ -6,30 +6,30 @@
 #include <sys/signalfd.h>
 #include <unistd.h>
 
+#include "wl_wrappers.h"
+
 #include "server.h"
 
 #include "cfg.h"
 #include "convert.h"
 #include "displ.h"
 #include "fds.h"
+#include "head.h"
 #include "info.h"
 #include "ipc.h"
 #include "layout.h"
 #include "lid.h"
 #include "log.h"
 #include "process.h"
-#include "types.h"
-#include "wl_wrappers.h"
 
 struct Displ *displ = NULL;
+struct Lid *lid = NULL;
+struct Cfg *cfg = NULL;
 
 struct IpcResponse *ipc_response = NULL;
 
-bool user_changes = false;
-bool initial_run_complete = false;
-bool lid_discovery_complete = false;
-
-void handle_ipc(int fd_sock) {
+// returns true if processed immediately
+bool handle_ipc(int fd_sock) {
 
 	ipc_response = NULL;
 	free_ipc_response(ipc_response);
@@ -37,7 +37,7 @@ void handle_ipc(int fd_sock) {
 	struct IpcRequest *ipc_request = ipc_request_receive(fd_sock);
 	if (!ipc_request) {
 		log_error("\nFailed to read IPC request");
-		return;
+		return true;
 	}
 
 	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
@@ -52,7 +52,7 @@ void handle_ipc(int fd_sock) {
 
 	log_info("\nServer received %s request:", ipc_request_command_friendly(ipc_request->command));
 	if (ipc_request->cfg) {
-		print_cfg(ipc_request->cfg);
+		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
 	log_capture_start();
@@ -60,13 +60,13 @@ void handle_ipc(int fd_sock) {
 	struct Cfg *cfg_merged = NULL;
 	switch (ipc_request->command) {
 		case CFG_SET:
-			cfg_merged = cfg_merge(displ->cfg, ipc_request->cfg, SET);
+			cfg_merged = cfg_merge(cfg, ipc_request->cfg, SET);
 			break;
 		case CFG_DEL:
-			cfg_merged = cfg_merge(displ->cfg, ipc_request->cfg, DEL);
+			cfg_merged = cfg_merge(cfg, ipc_request->cfg, DEL);
 			break;
 		case CFG_WRITE:
-			cfg_file_write(displ->cfg);
+			cfg_file_write();
 			break;
 		case CFG_GET:
 		default:
@@ -74,24 +74,23 @@ void handle_ipc(int fd_sock) {
 			break;
 	}
 
-	if (displ->cfg->written) {
-		log_info("\nWrote configuration file: %s", displ->cfg->file_path);
+	if (cfg->written) {
+		log_info("\nWrote configuration file: %s", cfg->file_path);
 	}
 
 	if (cfg_merged) {
-		free_cfg(displ->cfg);
-		displ->cfg = cfg_merged;
-		displ->cfg->dirty = true;
+		cfg_free(cfg);
+		cfg = cfg_merged;
 		log_info("\nApplying new configuration:");
 	} else {
 		log_info("\nActive configuration:");
 		ipc_response->done = true;
 	}
 
-	print_cfg(displ->cfg);
+	print_cfg(INFO, cfg, false);
 
 	if (ipc_request->command == CFG_GET) {
-		print_heads(NONE, displ->output_manager->heads);
+		print_heads(INFO, NONE, heads);
 	}
 
 end:
@@ -104,10 +103,13 @@ end:
 	if (ipc_response->done) {
 		free_ipc_response(ipc_response);
 		ipc_response = NULL;
+		return true;
+	} else {
+		return false;
 	}
 }
 
-void finish_ipc() {
+void finish_ipc(void) {
 	if (!ipc_response) {
 		return;
 	}
@@ -120,41 +122,11 @@ void finish_ipc() {
 	ipc_response = NULL;
 }
 
-void handle_changes() {
-
-	// if we have no changes in progress we can maybe react to inital or modified state
-	if (is_dirty(displ) && !is_pending_output_manager(displ->output_manager)) {
-
-		// prepare possible changes
-		reset_dirty(displ);
-		desire_arrange(displ);
-		pend_desired(displ);
-
-		if (is_pending_output_manager(displ->output_manager)) {
-
-			// inform and apply
-			print_heads(DELTA, displ->output_manager->heads);
-			apply_desired(displ);
-
-		} else if (user_changes) {
-			log_info("\nNo changes needed");
-		}
-	}
-
-	// no changes are outstanding
-	if (!is_pending_output_manager(displ->output_manager)) {
-		finish_ipc();
-		initial_run_complete = true;
-	}
-}
-
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
-int loop() {
+int loop(void) {
 
-	init_fds(displ->cfg);
 	for (;;) {
-		user_changes = false;
-		create_pfds(displ);
+		init_pfds();
 
 
 		// prepare for reading wayland events
@@ -164,16 +136,19 @@ int loop() {
 		_wl_display_flush(displ->display, FL);
 
 
-		if (!initial_run_complete || lid_discovery_complete) {
-			if (poll(pfds, npfds, -1) < 0) {
-				log_error_errno("\npoll failed, exiting");
-				exit(EXIT_FAILURE);
-			}
-		} else {
-			// takes ~1 sec hence we defer
-			displ->lid = create_lid();
-			update_lid(displ);
-			lid_discovery_complete = true;
+		// poll for all events
+		if (poll(pfds, npfds, -1) < 0) {
+			log_error_errno("\npoll failed, exiting");
+			exit_fail();
+		}
+
+
+		// always read and dispatch wayland events; stop the file descriptor from getting stale
+		_wl_display_read_events(displ->display, FL);
+		_wl_display_dispatch_pending(displ->display, FL);
+		if (!displ->output_manager) {
+			log_info("\nDisplay's output manager has departed, exiting");
+			exit(EXIT_SUCCESS);
 		}
 
 
@@ -190,48 +165,36 @@ int loop() {
 
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (cfg_file_modified(displ->cfg->file_name)) {
-				if (displ->cfg->written) {
-					displ->cfg->written = false;
+			if (cfg_file_modified(cfg->file_name)) {
+				if (cfg->written) {
+					cfg->written = false;
 				} else {
-					user_changes = true;
-					displ->cfg = cfg_file_reload(displ->cfg);
+					cfg_file_reload();
 				}
 			}
 		}
 
 
-		// ipc client message
-		if (pfd_ipc && pfd_ipc->revents & pfd_ipc->events) {
-			handle_ipc(fd_ipc);
-			user_changes = (ipc_response != NULL);
-		}
-
-
-		// safe to always read and dispatch wayland events
-		_wl_display_read_events(displ->display, FL);
-		_wl_display_dispatch_pending(displ->display, FL);
-
-
-		if (!displ->output_manager) {
-			log_info("\nDisplay's output manager has departed, exiting");
-			exit(EXIT_SUCCESS);
-		}
-
-
-		// dispatch libinput events only when we have received a change
+		// libinput lid event
 		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
-			user_changes = user_changes || update_lid(displ);
+			lid_update();
 		}
-		// always do this, to cover the initial case
-		update_heads_lid_closed(displ);
 
 
-		// inform of head arrivals and departures and clean them
-		user_changes = user_changes || consume_arrived_departed(displ->output_manager);
+		// ipc client message
+		if (pfd_ipc && (pfd_ipc->revents & pfd_ipc->events)) {
+			handle_ipc(fd_ipc);
+		}
 
 
-		handle_changes();
+		// maybe make some changes
+		layout();
+
+
+		// reply to the client when we are done
+		if (displ->config_state == IDLE) {
+			finish_ipc();
+		};
 
 
 		destroy_pfds();
@@ -239,27 +202,32 @@ int loop() {
 }
 
 int
-server() {
+server(void) {
 	log_set_times(true);
-
-	displ = calloc(1, sizeof(struct Displ));
 
 	log_info("way-displays version %s", VERSION);
 
 	// only one instance
 	pid_file_create();
 
-	// always returns a cfg, possibly default
-	displ->cfg = cfg_file_load();
+	// maybe default
+	cfg_init();
 
-	// discover the output manager via a roundtrip
-	connect_display(displ);
+	// discover the lid state immediately
+	lid_init();
+	lid_update();
+
+	// discover the output manager; it will call back
+	displ_init();
 
 	// only stops when signalled or display goes away
 	int sig = loop();
 
 	// release what remote resources we can
-	destroy_display(displ);
+	heads_destroy();
+	lid_destroy();
+	cfg_destroy();
+	displ_destroy();
 
 	return sig;
 }

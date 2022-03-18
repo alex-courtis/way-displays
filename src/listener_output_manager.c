@@ -1,28 +1,24 @@
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "listeners.h"
 
+#include "displ.h"
+#include "head.h"
 #include "list.h"
-#include "types.h"
 #include "wlr-output-management-unstable-v1.h"
 
-// OutputManager data
+// Displ data
 
 static void head(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
-	struct OutputManager *output_manager = data;
-
-	output_manager->dirty = true;
 
 	struct Head *head = calloc(1, sizeof(struct Head));
-	head->output_manager = output_manager;
 	head->zwlr_head = zwlr_output_head_v1;
 
-	slist_append(&output_manager->heads, head);
-	slist_append(&output_manager->heads_arrived, head);
+	slist_append(&heads, head);
+	slist_append(&heads_arrived, head);
 
 	zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener(), head);
 }
@@ -30,21 +26,18 @@ static void head(void *data,
 static void done(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		uint32_t serial) {
-	struct OutputManager *output_manager = data;
+	struct Displ *displ = data;
 
-	output_manager->serial = serial;
+	displ->serial = serial;
 }
 
 static void finished(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1) {
-	struct OutputManager *output_manager = data;
+	struct Displ *displ = data;
 
-	if (output_manager->displ) {
-		output_manager->displ->output_manager = NULL;
+	if (displ->output_manager) {
+		zwlr_output_manager_v1_destroy(displ->output_manager);
 	}
-	free_output_manager(output_manager);
-
-	zwlr_output_manager_v1_destroy(zwlr_output_manager_v1);
 }
 
 static const struct zwlr_output_manager_v1_listener listener = {
@@ -53,7 +46,7 @@ static const struct zwlr_output_manager_v1_listener listener = {
 	.finished = finished,
 };
 
-const struct zwlr_output_manager_v1_listener *output_manager_listener() {
+const struct zwlr_output_manager_v1_listener *output_manager_listener(void) {
 	return &listener;
 }
 

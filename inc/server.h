@@ -1,7 +1,11 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-int server();
+extern struct Displ *displ;
+extern struct Cfg *cfg;
+extern struct Lid *lid;
+
+int server(void);
 
 #endif // SERVER_H
 

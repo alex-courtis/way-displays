@@ -13,9 +13,8 @@
 #include "lid.h"
 
 #include "cfg.h"
-#include "list.h"
 #include "log.h"
-#include "types.h"
+#include "server.h"
 
 static const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
 
@@ -44,7 +43,7 @@ static const struct libinput_interface libinput_impl = {
 	.close_restricted = libinput_close_restricted
 };
 
-struct libinput *create_libinput_discovery() {
+struct libinput *create_libinput_discovery(void) {
 	struct libinput *libinput = NULL;
 
 	struct udev *udev = udev_new();
@@ -87,19 +86,14 @@ void destroy_libinput_discovery(struct libinput *libinput) {
 
 char *discover_lid_device(struct libinput *libinput) {
 	char *device_path = NULL;
+
 	struct libinput_event *event;
-	struct libinput_device *device;
 
-	if (libinput_dispatch(libinput) != 0) {
-		log_error("\nfailed to dispatch libinput, abandoning laptop lid detection");
-		return NULL;
-	}
-
+	libinput_dispatch(libinput);
 	while ((event = libinput_get_event(libinput))) {
+		struct libinput_device *device = libinput_event_get_device(event);
 
-		device = libinput_event_get_device(event);
-
-		if (device &&
+		if (device && !device_path &&
 				libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_SWITCH) &&
 				(libinput_device_switch_has_switch(device, LIBINPUT_SWITCH_LID) == 1)) {
 			device_path = calloc(PATH_MAX, sizeof(char));
@@ -107,11 +101,7 @@ char *discover_lid_device(struct libinput *libinput) {
 		}
 
 		libinput_event_destroy(event);
-
-		// there may be multiple (e.g. thinkpad extra buttons) however first is acceptable
-		if (device_path) {
-			break;
-		}
+		libinput_dispatch(libinput);
 	}
 
 	return device_path;
@@ -143,70 +133,42 @@ void destroy_libinput_monitor(struct libinput* libinput) {
 	libinput_unref(libinput);
 }
 
-void destroy_lid(struct Displ *displ) {
-	struct SList *i;
-	struct Head *head;
-	if (!displ || !displ->lid)
+void lid_destroy(void) {
+	if (!lid)
 		return;
 
-	destroy_libinput_monitor(displ->lid->libinput_monitor);
+	destroy_libinput_monitor(lid->libinput_monitor);
 
-	free_lid(displ->lid);
-	displ->lid = NULL;
+	free(lid->device_path);
 
-	if (displ->output_manager) {
-		for (i = displ->output_manager->heads; i; i = i->nex) {
-			head = i->val;
-			if (!head)
-				continue;
-
-			head->lid_closed = false;
-			head->dirty = true;
-		}
-	}
+	free(lid);
+	lid = NULL;
 }
 
-bool update_lid(struct Displ *displ) {
+void lid_update(void) {
+	if (!lid || !lid->libinput_monitor)
+		return;
+
 	struct libinput_event *event;
-	struct libinput_event_switch *event_switch;
-	enum libinput_event_type event_type;
-	enum libinput_switch_state switch_state;
 
-	if (!displ || !displ->lid || !displ->lid->libinput_monitor)
-		return false;
-
-	bool new_closed = displ->lid->closed;
-
-	if (libinput_dispatch(displ->lid->libinput_monitor) < 0) {
-		log_error("\nunable to dispatch libinput, abandoning laptop lid detection");
-		destroy_lid(displ);
-		return false;
-	}
-
-	while ((event = libinput_get_event(displ->lid->libinput_monitor))) {
-		event_type = libinput_event_get_type(event);
+	libinput_dispatch(lid->libinput_monitor);
+	while ((event = libinput_get_event(lid->libinput_monitor))) {
+		enum libinput_event_type event_type = libinput_event_get_type(event);
 
 		if (event_type == LIBINPUT_EVENT_SWITCH_TOGGLE) {
-			event_switch = libinput_event_get_switch_event(event);
-			switch_state = libinput_event_switch_get_switch_state(event_switch);
-			new_closed = switch_state == LIBINPUT_SWITCH_STATE_ON;
+			struct libinput_event_switch *event_switch = libinput_event_get_switch_event(event);
+			lid->closed = libinput_event_switch_get_switch_state(event_switch) == LIBINPUT_SWITCH_STATE_ON;
 		}
 
 		libinput_event_destroy(event);
+		libinput_dispatch(lid->libinput_monitor);
 	}
 
-	displ->lid->dirty = new_closed != displ->lid->closed;
-	displ->lid->closed = new_closed;
-
-	if (displ->lid->dirty) {
-		log_info("\nLid %s", displ->lid->closed ? "closed" : "opened");
-	}
-
-	return displ->lid->dirty;
+	log_info("\nLid %s", lid->closed ? "closed" : "open");
 }
 
-struct Lid *create_lid() {
-	struct Lid *lid	= NULL;
+void lid_init(void) {
+	lid = NULL;
 	struct libinput *libinput_discovery = NULL;
 	struct libinput *libinput_monitor = NULL;
 	char *device_path = NULL;
@@ -219,15 +181,15 @@ struct Lid *create_lid() {
 		destroy_libinput_discovery(libinput_discovery);
 
 		if (!device_path) {
-			return NULL;
+			return;
 		}
 	} else {
-		return NULL;
+		return;
 	}
 
 	// monitor in a context with just the lid
 	if (!(libinput_monitor = create_libinput_monitor(device_path))) {
-		return NULL;
+		return;
 	}
 
 	log_info("\nMonitoring lid device: %s", device_path);
@@ -236,44 +198,23 @@ struct Lid *create_lid() {
 	lid->device_path = device_path;
 	lid->libinput_fd = libinput_get_fd(libinput_monitor);
 	lid->libinput_monitor = libinput_monitor;
-
-	return lid;
 }
 
-void update_heads_lid_closed(struct Displ *displ) {
-	struct Head *head;
-	struct SList *i;
-
-	if (!displ || !displ->lid || !displ->output_manager || !displ->cfg)
-		return;
+bool lid_is_closed(char *name) {
+	if (!name)
+		return false;
 
 	const char *laptop_display_prefix;
-	if (displ->cfg->laptop_display_prefix) {
-		laptop_display_prefix = displ->cfg->laptop_display_prefix;
+	if (cfg->laptop_display_prefix) {
+		laptop_display_prefix = cfg->laptop_display_prefix;
 	} else {
 		laptop_display_prefix = LAPTOP_DISPLAY_PREFIX_DEFAULT;
 	}
 
-	for (i = displ->output_manager->heads; i; i = i->nex) {
-		head = i->val;
-		if (!head)
-			continue;
-
-		if (strncasecmp(laptop_display_prefix, head->name, strlen(laptop_display_prefix)) == 0) {
-			if (head->lid_closed != displ->lid->closed) {
-				head->lid_closed = displ->lid->closed;
-				head->dirty = true;
-			}
-		}
+	if (strncasecmp(laptop_display_prefix, name, strlen(laptop_display_prefix)) == 0) {
+		return lid->closed;
+	} else {
+		return false;
 	}
-}
-
-void free_lid(struct Lid *lid) {
-	if (!lid)
-		return;
-
-	free(lid->device_path);
-
-	free(lid);
 }
 

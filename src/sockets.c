@@ -87,24 +87,21 @@ ssize_t socket_write(int fd, char *data, size_t len) {
 void socket_path(struct sockaddr_un *addr) {
 	size_t sun_path_size = sizeof(addr->sun_path);
 
-	const char *xdg_vtnr = getenv("XDG_VTNR");
-
 	char name[sun_path_size];
-	if (xdg_vtnr) {
-		snprintf(name, sizeof(name), "/way-displays.%s.sock", xdg_vtnr);
+	if (getenv("XDG_VTNR")) {
+		snprintf(name, sizeof(name), "/way-displays.%s.sock", getenv("XDG_VTNR"));
 	} else {
 		snprintf(name, sizeof(name), "/way-displays.sock");
 	}
 
-	const char *xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
-	if (!xdg_runtime_dir || strlen(name) + strlen(xdg_runtime_dir) > sun_path_size) {
+	if (!getenv("XDG_RUNTIME_DIR") || strlen(name) + strlen(getenv("XDG_RUNTIME_DIR")) > sun_path_size) {
 		snprintf(addr->sun_path, sun_path_size, "/tmp%s", name);
 	} else {
-		snprintf(addr->sun_path, sun_path_size, "%s%s", xdg_runtime_dir, name);
+		snprintf(addr->sun_path, sun_path_size, "%s%s", getenv("XDG_RUNTIME_DIR"), name);
 	}
 }
 
-int create_fd_ipc_server() {
+int create_fd_ipc_server(void) {
 	int fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1) {
 		log_error_errno("\nServer socket failed, clients unavailable");
@@ -137,7 +134,7 @@ int create_fd_ipc_server() {
 	return fd;
 }
 
-int create_fd_ipc_client() {
+int create_fd_ipc_client(void) {
 
 	int fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1) {

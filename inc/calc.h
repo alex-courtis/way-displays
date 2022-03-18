@@ -1,24 +1,17 @@
 #ifndef CALC_H
 #define CALC_H
 
-#include <stdbool.h>
 #include <wayland-util.h>
-
-#include "cfg.h"
+#include "head.h"
 #include "list.h"
-#include "types.h"
 
-double calc_dpi(struct Mode *mode);
+wl_fixed_t calc_auto_scale(struct Head *head);
 
-struct Mode *optimal_mode(struct SList *modes, bool max_preferred_refresh);
+void calc_scaled_dimensions(struct Head *head);
 
-wl_fixed_t auto_scale(struct Head *head);
+struct SList *calc_head_order(struct SList *order_name_desc, struct SList *heads);
 
-void calc_layout_dimensions(struct Head *head);
-
-struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
-
-void position_heads(struct SList *heads, struct Cfg *cfg);
+void calc_head_positions(struct SList *heads);
 
 #endif // CALC_H
 

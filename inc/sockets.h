@@ -3,9 +3,9 @@
 
 #include <sys/types.h>
 
-int create_fd_ipc_server();
+int create_fd_ipc_server(void);
 
-int create_fd_ipc_client();
+int create_fd_ipc_client(void);
 
 int socket_accept(int fd_sock);
 
