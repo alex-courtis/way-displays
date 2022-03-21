@@ -105,7 +105,7 @@ ALIGN: MIDDLE
 
 <details><summary>ORDER</summary><br>
 
-The default `ROW` (left to right) or `COLUMN` (top to bottom) `ORDER` is simply the order in which the displays are discovered.
+`ROW` is arranged in order left to right. `COLUMN` is top to bottom. `ORDER` defaults to the order in which displays are discovered.
 
 Define your own e.g.:
 ```yaml
@@ -141,7 +141,7 @@ SCALE:
 
 <details><summary>MODE</summary><br>
 
-Caveat: selecting some modes may result in an unusable (blank screen, powered off) monitor. Select a different mode if this happens.
+Caveat: selecting some modes may result in an unusable (blank screen or powered off) monitor. Try a different mode if this happens.
 
 Resolution with highest refresh:
 ```yaml
