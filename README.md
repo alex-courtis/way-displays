@@ -149,7 +149,9 @@ SCALE:
 
 <details><summary>MODE</summary><br>
 
-Caveat: selecting some modes may result in an unusable (blank screen or powered off) monitor. Try a different mode if this happens.
+*Caveat:* selecting some modes may result in an unusable (blank screen or powered off) monitor. Try a different mode if this happens.
+	
+If the specified mode cannot be found or activated, `way-displays` will fall back to the preferred mode, then the highest available resolution / refresh.
 
 Resolution with highest refresh:
 ```yaml
