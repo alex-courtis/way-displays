@@ -55,13 +55,13 @@ Alternatively, use the [command line](#command-line-configuration) to make your 
 
 # Usage
 
-Run `way-displays` once with no arguments after your wayland compositor has been started, which will start a server.
+Start the `way-displays` server by running once with no arguments after your wayland compositor has been started.
 
 It will remain in the background, responding to changes, such as plugging in a display, and will terminate when you exit the compositor.
 
 It will print messages to inform you of everything that is going on.
 
-You can interact with `way-displays` via the [command line](#command-line-configuration)
+You can interact with the server via the [command line](#command-line-configuration)
 
 # What Is Preferred Mode?
 
@@ -168,13 +168,14 @@ MODE:
       HZ: 60
 ```
 
+When selecting a mode, `way-displays` will use the highest refresh that matches. There will usually be several refresh rates will match a specified number of Hz, differing only by a few mHz. These will be tried in descending order until a working one is found.
+
 Maximum resolution and refresh:
 ```yaml
 MODE:
     - NAME_DESC: HDMI-A-1
       MAX: TRUE
 ```
-
 </details>
 
 <details><summary>LAPTOP_DISPLAY_PREFIX</summary><br>
