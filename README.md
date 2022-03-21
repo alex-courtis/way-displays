@@ -1,6 +1,9 @@
 # way-displays: Auto Manage Your Wayland Displays
 
-1. Sets preferred mode or highest at maximum refresh
+1. Sets mode:
+    * user specified resolution/refresh OR
+    * display's preferred OR
+    * highest resolution/refresh
 1. Arranges in a row or a column
 1. Auto scales based on DPI: 96 is a scale of 1
 1. Reacts when displays are plugged/unplugged
@@ -32,34 +35,45 @@ The wayland compositor must support the WLR (wayland roots) Output Management pr
 * [Wayfire](https://github.com/WayfireWM/wayfire)
 </details>
 
-# Usage
+# Quick Start - Sway
 
-Run once after your wayland compositor has been started. `way-displays` will remain in the background, responding to changes, such as plugging in a display, and will terminate when you exit the compositor.
-
-`way-displays` will print messages to inform you of everything that is going on.
-
-<details><summary>sway config</summary><br>
-
-[sway](https://swaywm.org/) will start way-displays once on startup via the `exec` command. See `man 5 sway`.
+```
+mkdir -p ~/.config/way-displays
+cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
+```
 
 Remove any `output` commands from your sway config file and add the following:
 ```
 exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 ```
 
-Look at `/tmp/way-displays.1.me.log` to see what has been going on.
+Restart sway and look at `/tmp/way-displays.1.me.log` to see what has been going on. You can tail it whilst you customise.
 
-</details>
+Tweak `cfg.yaml` to your liking and save it. Changes will be immediately applied.
 
-# Configuration
+Alternatively, use the [command line](#command-line-configuration) to make your changes then persist them with `way-displays -w`.
 
-See the [default cfg.yaml](cfg.yaml) installed at `/etc/way-displays/cfg.yaml`.
+# Usage
 
-Quick start:
-```
-mkdir ~/.config/way-displays
-cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
-```
+Start the `way-displays` server by running once with no arguments after your wayland compositor has been started.
+
+It will remain in the background, responding to changes, such as plugging in a display, and will terminate when you exit the compositor.
+
+It will print messages to inform you of everything that is going on.
+
+You can interact with the server via the [command line](#command-line-configuration)
+
+# What Is Preferred Mode?
+
+Displays advertise their available modes when plugged in. Some displays specify a mode as "preferred".
+
+The preferred mode is usually the highest resolution/refresh available and it's a good default. You shouldn't need to tweak this.
+
+In some cases the preferred mode is a horrid "compatibility" mode e.g. `1024x768@60Hz`. You could fix this by setting `MODE` to `MAX` for that display.
+
+# cfg.yaml Configuration
+
+See the [default cfg.yaml](cfg.yaml), usually installed at `/etc/way-displays/cfg.yaml`.
 
 `cfg.yaml` will be monitored for changes, which will be immediately applied.
 
@@ -99,7 +113,7 @@ ALIGN: MIDDLE
 
 <details><summary>ORDER</summary><br>
 
-The default `ROW` (left to right) or `COLUMN` (top to bottom) `ORDER` is simply the order in which the displays are discovered.
+`ROW` is arranged in order left to right. `COLUMN` is top to bottom. `ORDER` defaults to the order in which displays are discovered.
 
 Define your own e.g.:
 ```yaml
@@ -133,6 +147,39 @@ SCALE:
 
 </details>
 
+<details><summary>MODE</summary><br>
+
+*Caveat:* selecting some modes may result in an unusable (blank screen or powered off) monitor. Try a different mode if this happens.
+	
+If the specified mode cannot be found or activated, `way-displays` will fall back to the preferred mode, then the highest available resolution / refresh.
+
+Resolution with highest refresh:
+```yaml
+MODE:
+    - NAME_DESC: HDMI-A-1
+      WIDTH: 1920
+      HEIGHT: 1080
+```
+
+Resolution and refresh:
+```yaml
+MODE:
+    - NAME_DESC: HDMI-A-1
+      WIDTH: 1920
+      HEIGHT: 1080
+      HZ: 60
+```
+
+When selecting a mode, `way-displays` will use the highest refresh that matches. There will usually be several refresh rates will match a specified number of Hz, differing only by a few mHz. These will be tried in descending order until a working one is found.
+
+Maximum resolution and refresh:
+```yaml
+MODE:
+    - NAME_DESC: HDMI-A-1
+      MAX: TRUE
+```
+</details>
+
 <details><summary>LAPTOP_DISPLAY_PREFIX</summary><br>
 
 Laptop displays usually start with `eDP` e.g. `eDP-1`. This may be overridden if your laptop is different e.g.:
@@ -142,19 +189,9 @@ LAPTOP_DISPLAY_PREFIX: 'eDPP'
 
 </details>
 
-<details><summary>MAX_PREFERRED_REFRESH</summary><br>
+<details><summary>MAX_PREFERRED_REFRESH (deprecated)</summary><br>
 
-For the specified displays, use the maximum avalable refresh rate for resolution of the preferred mode.
-
-e.g. when preferred mode is `1920x1080@60Hz`, use `1920x1080@165Hz`
-
-Warning: this may result in an unusable display.
-
-```yaml
-MAX_PREFERRED_REFRESH:
-  - 'Monitor Maker ABC123'
-  - 'HDMI-1'
-```
+Use `MODE`, specifying the preferred resolution.
 
 </details>
 
@@ -204,6 +241,8 @@ Arrange left to right, aligned at the bottom: `way-displays -s ARRANGE_ALIGN row
 Set the order for arrangement: `way-displays -s ORDER HDMI-1 "monitor maker ABC model XYZ" eDP-1`
 
 Set a scale: `way-displays -s SCALE "eDP-1" 3`
+
+Use 3840x2160@24Hz: `way-displays -s MODE HDMI-A-1 3840 2160 24`
 
 Persist your changes to your cfg.yaml: `way-displays -w`
 

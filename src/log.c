@@ -117,10 +117,6 @@ void log_set_threshold(enum LogThreshold threshold, bool cli) {
 	}
 }
 
-enum LogThreshold log_get_threshold(void) {
-	return active.threshold;
-}
-
 void log_set_times(bool times) {
 	active.times = times;
 }
