@@ -248,15 +248,60 @@ sudo make uninstall
 ```
 </details>
 
-# Known Issues
+# Known Issues with Workarounds
 
-<details><summary>Laptop Lid Not Detected</summary><br>
+<details><summary>Laptop Lid Not Detected - Permission Denied</summary><br>
 
 ```
 W [10:09:44.542] WARNING: open '/dev/input/event0' failed 13: 'Permission denied'
 ```
 
 User must be in the `input` group to monitor libinput events.
+</details>
+
+<details><summary>Laptop Lid Not Closed At Startup</summary><br>
+
+libinput only reports lid state at startup for _some_ lids. We can direct libinput to always report for our lid. See [Installing temporary local device quirks](https://wayland.freedesktop.org/libinput/doc/latest/device-quirks.html#device-quirks-local) for reference.
+
+### 0 - Test Whether libinput Reports Your Lid
+Note your lid's event device at way-displays startup e.g.
+```
+I [11:34:05] Monitoring lid device: /dev/input/event1
+```
+
+Run `libinput quirks list /dev/input/eventX`. If you don't see `AttrLidSwitchReliability=reliable`, libinput won't report the startup state.
+
+### 1 - Determine Lid Switch's DMI
+```
+libinput record /dev/input/eventX | grep ^dmi
+^C
+```
+Example dmi for ct31 switch:
+```
+Recording to 'stdout'.
+dmi: "dmi:bvnLENOVO:bvrN2WET25W(1.15):bd12/07/2020:br1.15:efr1.9:svnLENOVO:pn20UBCTO1WW:pvrThinkPadX1YogaGen5:rvnLENOVO:rn20UBCTO1WW:rvrSDK0J40709WIN:cvnLENOVO:ct31:cvrNone:skuLENOVO_MT_20UB_BU_Think_FM_ThinkPadX1YogaGen5:"
+```
+
+### 2 - Create `/etc/libinput/local-overrides.quirks`:
+```
+[Lid Switch Ct31]
+MatchName=*Lid Switch*
+MatchDMIModalias=dmi:*:ct31:*
+AttrLidSwitchReliability=reliable
+```
+
+You can put the entire dmi string in `MatchDMIModalias` or just the ctXX bit.
+
+### 3 - Test libinput And way-displays
+`libinput quirks list /dev/input/eventX`. You should see `AttrLidSwitchReliability=reliable`.
+
+Close the lid and start way-displays. You should see:
+```
+I [11:34:05] Monitoring lid device: /dev/input/event1
+I [11:34:05]
+I [11:34:05] Lid closed
+```
+
 </details>
 
 <details><summary>Scaling Breaks X11 Games</summary><br>
