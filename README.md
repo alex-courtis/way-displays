@@ -183,6 +183,8 @@ It is recommended to use the description rather than the name, as the name may c
 
 The description does contain information about how it is connected, so strip that out. In the above example, you would use the description `Monitor Maker ABC123`.
 
+The name should be at least 3 characters long, to avoid any unwanted extra matches.
+
 </details>
 
 # Command Line Configuration
