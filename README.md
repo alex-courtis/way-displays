@@ -1,6 +1,6 @@
 # way-displays: Auto Manage Your Wayland Displays
 
-1. Sets preferred mode or highest at maximum refresh
+1. User specified resolution/refresh, monitor preferred or highest resolution/refresh
 1. Arranges in a row or a column
 1. Auto scales based on DPI: 96 is a scale of 1
 1. Reacts when displays are plugged/unplugged
@@ -133,6 +133,36 @@ SCALE:
 
 </details>
 
+<details><summary>MODE</summary><br>
+
+Caveat: selecting some modes may result in an unusable (blank screen, powered off) monitor. Select a different mode if this happens.
+
+Resolution with highest refresh:
+```yaml
+MODE:
+    - NAME_DESC: HDMI-A-1
+      WIDTH: 1920
+      HEIGHT: 1080
+```
+
+Resolution and refresh:
+```yaml
+MODE:
+    - NAME_DESC: HDMI-A-1
+      WIDTH: 1920
+      HEIGHT: 1080
+      HZ: 60
+```
+
+Maximum resolution and refresh:
+```yaml
+MODE:
+    - NAME_DESC: HDMI-A-1
+      MAX: TRUE
+```
+
+</details>
+
 <details><summary>LAPTOP_DISPLAY_PREFIX</summary><br>
 
 Laptop displays usually start with `eDP` e.g. `eDP-1`. This may be overridden if your laptop is different e.g.:
@@ -142,19 +172,9 @@ LAPTOP_DISPLAY_PREFIX: 'eDPP'
 
 </details>
 
-<details><summary>MAX_PREFERRED_REFRESH</summary><br>
+<details><summary>MAX_PREFERRED_REFRESH (deprecated)</summary><br>
 
-For the specified displays, use the maximum avalable refresh rate for resolution of the preferred mode.
-
-e.g. when preferred mode is `1920x1080@60Hz`, use `1920x1080@165Hz`
-
-Warning: this may result in an unusable display.
-
-```yaml
-MAX_PREFERRED_REFRESH:
-  - 'Monitor Maker ABC123'
-  - 'HDMI-1'
-```
+Use `MODE`, specifying the preferred resolution.
 
 </details>
 
@@ -204,6 +224,8 @@ Arrange left to right, aligned at the bottom: `way-displays -s ARRANGE_ALIGN row
 Set the order for arrangement: `way-displays -s ORDER HDMI-1 "monitor maker ABC model XYZ" eDP-1`
 
 Set a scale: `way-displays -s SCALE "eDP-1" 3`
+
+Use 3840x2160@24Hz: `way-displays -s MODE HDMI-A-1 3840 2160 24`
 
 Persist your changes to your cfg.yaml: `way-displays -w`
 

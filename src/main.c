@@ -31,11 +31,11 @@ void usage(FILE *stream) {
 		"     AUTO_SCALE <on|off>\n"
 		"     SCALE <name> <scale>\n"
 		"     MODE <name> MAX\n"
-		"     MODE <name> <width> <height> [<hz>]\n"
+		"     MODE <name> <width> <height> [<Hz>]\n"
 		"     DISABLED <name>\n"
 		"  -d, --d[elete]  remove\n"
-		"     MODE <name>\n"
 		"     SCALE <name>\n"
+		"     MODE <name>\n"
 		"     DISABLED <name>\n"
 		;
 	fprintf(stream, "%s", mesg);
