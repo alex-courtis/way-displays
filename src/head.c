@@ -1,8 +1,10 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <wayland-util.h>
 
 #include "head.h"
 
@@ -155,6 +157,41 @@ bool head_matches_name_desc(const void *a, const void *b) {
 			(head->name && strcasecmp(name_desc, head->name) == 0) ||
 			(head->description && strcasestr(head->description, name_desc))
 		   );
+}
+
+wl_fixed_t head_auto_scale(struct Head *head) {
+	if (!head || !head->desired.mode) {
+		return wl_fixed_from_int(1);
+	}
+
+	// average dpi
+	double dpi = mode_dpi(head->desired.mode);
+	if (dpi == 0) {
+		return wl_fixed_from_int(1);
+	}
+
+	// round the dpi to the nearest 12, so that we get a nice even wl_fixed_t
+	long dpi_quantized = (long)(dpi / 12 + 0.5) * 12;
+
+	// 96dpi approximately correct for older monitors and became the convention for 1:1 scaling
+	return 256 * dpi_quantized / 96;
+}
+
+void head_scaled_dimensions(struct Head *head) {
+	if (!head || !head->desired.mode || !head->desired.scale) {
+		return;
+	}
+
+	if (head->transform % 2 == 0) {
+		head->scaled.width = head->desired.mode->width;
+		head->scaled.height = head->desired.mode->height;
+	} else {
+		head->scaled.width = head->desired.mode->height;
+		head->scaled.height = head->desired.mode->width;
+	}
+
+	head->scaled.height = (int32_t)((double)head->scaled.height * 256 / head->desired.scale + 0.5);
+	head->scaled.width = (int32_t)((double)head->scaled.width * 256 / head->desired.scale + 0.5);
 }
 
 struct Mode *head_find_mode(struct Head *head) {

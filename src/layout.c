@@ -1,11 +1,11 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-util.h>
 
 #include "layout.h"
 
-#include "calc.h"
 #include "cfg.h"
 #include "displ.h"
 #include "head.h"
@@ -20,6 +20,114 @@
 #include "wlr-output-management-unstable-v1.h"
 
 struct Head *head_changing_mode = NULL;
+
+void position_heads(struct SList *heads) {
+	struct Head *head;
+	int32_t tallest = 0, widest = 0, x = 0, y = 0;
+
+	// find tallest/widest
+	for (struct SList *i = heads; i; i = i->nex) {
+		head = i->val;
+		if (!head || !head->desired.mode || !head->desired.enabled) {
+			continue;
+		}
+		if (head->scaled.height > tallest) {
+			tallest = head->scaled.height;
+		}
+		if (head->scaled.width > widest) {
+			widest = head->scaled.width;
+		}
+	}
+
+	// arrange each in the predefined order
+	for (struct SList *i = heads; i; i = i->nex) {
+		head = i->val;
+		if (!head || !head->desired.mode || !head->desired.enabled) {
+			continue;
+		}
+
+		switch (cfg->arrange) {
+			case COL:
+				// position
+				head->desired.y = y;
+				y += head->scaled.height;
+
+				// align
+				switch (cfg->align) {
+					case RIGHT:
+						head->desired.x = widest - head->scaled.width;
+						break;
+					case MIDDLE:
+						head->desired.x = (widest - head->scaled.width + 0.5) / 2;
+						break;
+					case LEFT:
+					default:
+						head->desired.x = 0;
+						break;
+				}
+				break;
+			case ROW:
+			default:
+				// position
+				head->desired.x = x;
+				x += head->scaled.width;
+
+				// align
+				switch (cfg->align) {
+					case BOTTOM:
+						head->desired.y = tallest - head->scaled.height;
+						break;
+					case MIDDLE:
+						head->desired.y = (tallest - head->scaled.height + 0.5) / 2;
+						break;
+					case TOP:
+					default:
+						head->desired.y = 0;
+						break;
+				}
+				break;
+		}
+	}
+}
+
+struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
+	struct SList *heads_ordered = NULL;
+	struct Head *head;
+	struct SList *i, *j, *r;
+
+	struct SList *sorting = slist_shallow_clone(heads);
+
+	// specified order first
+	for (i = order_name_desc; i; i = i->nex) {
+		j = sorting;
+		while(j) {
+			head = j->val;
+			r = j;
+			j = j->nex;
+			if (!head) {
+				continue;
+			}
+			if (i->val && head_matches_name_desc(i->val, head)) {
+				slist_append(&heads_ordered, head);
+				slist_remove(&sorting, &r);
+			}
+		}
+	}
+
+	// remaing in discovered order
+	for (i = sorting; i; i = i->nex) {
+		head = i->val;
+		if (!head) {
+			continue;
+		}
+
+		slist_append(&heads_ordered, head);
+	}
+
+	slist_free(&sorting);
+
+	return heads_ordered;
+}
 
 void desire_enabled(struct Head *head) {
 
@@ -69,7 +177,7 @@ void desire_scale(struct Head *head) {
 
 	// auto or 1
 	if (cfg->auto_scale == ON) {
-		head->desired.scale = calc_auto_scale(head);
+		head->desired.scale = head_auto_scale(head);
 	} else {
 		head->desired.scale = wl_fixed_from_int(1);
 	}
@@ -86,12 +194,12 @@ void desire(void) {
 		desire_mode(head);
 		desire_scale(head);
 
-		calc_scaled_dimensions(head);
+		head_scaled_dimensions(head);
 	}
 
-	struct SList *heads_ordered = calc_head_order(cfg->order_name_desc, heads);
+	struct SList *heads_ordered = order_heads(cfg->order_name_desc, heads);
 
-	calc_head_positions(heads_ordered);
+	position_heads(heads_ordered);
 
 	slist_free(&heads_ordered);
 }
