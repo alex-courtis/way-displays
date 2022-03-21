@@ -19,8 +19,6 @@ extern struct SList *log_cap_lines;
 
 void log_set_threshold(enum LogThreshold threshold, bool cli);
 
-enum LogThreshold log_get_threshold(void);
-
 void log_set_times(bool times);
 
 void log_(enum LogThreshold threshold, const char *__restrict __format, ...);
