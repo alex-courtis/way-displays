@@ -55,7 +55,7 @@ Alternatively, use the [command line](#command-line-configuration) to make your 
 
 # Usage
 
-Run once with no arguments after your wayland compositor has been started, which will start a server.
+Run `way-displays` once with no arguments after your wayland compositor has been started, which will start a server.
 
 It will remain in the background, responding to changes, such as plugging in a display, and will terminate when you exit the compositor.
 
