@@ -1,3 +1,8 @@
+way-displays 1.5.0 2022-03-14
+-----------------------------
+- Feature #19 user specified MODE resolution/refresh/max
+- Bug #27 detect laptop lid before starting
+
 way-displays 1.4.1 2022-02-23
 -----------------------------
 - Minor safety improvements
