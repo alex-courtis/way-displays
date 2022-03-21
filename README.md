@@ -1,6 +1,6 @@
 # way-displays: Auto Manage Your Wayland Displays
 
-1. User specified resolution/refresh, monitor preferred or highest resolution/refresh
+1. Sets mode: user specified resolution/refresh OR monitor preferred OR highest resolution/refresh
 1. Arranges in a row or a column
 1. Auto scales based on DPI: 96 is a scale of 1
 1. Reacts when displays are plugged/unplugged
