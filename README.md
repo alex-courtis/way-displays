@@ -2,7 +2,7 @@
 
 1. Sets mode:
     * user specified resolution/refresh OR
-    * monitor preferred OR
+    * display's preferred OR
     * highest resolution/refresh
 1. Arranges in a row or a column
 1. Auto scales based on DPI: 96 is a scale of 1
@@ -63,7 +63,15 @@ It will print messages to inform you of everything that is going on.
 
 You can interact with `way-displays` via the [command line](#command-line-configuration)
 
-# Configuration
+# What Is Preferred Mode?
+
+Displays advertise their available modes when plugged in. Some displays specify a mode as "preferred".
+
+The preferred mode is usually the highest resolution/refresh available and it's a good default. You shouldn't need to tweak this.
+
+In some cases the preferred mode is a horrid "compatibility" mode e.g. `1024x768@60Hz`. You could fix this by setting `MODE` to `MAX` for that display.
+
+# cfg.yaml Configuration
 
 See the [default cfg.yaml](cfg.yaml), usually installed at `/etc/way-displays/cfg.yaml`.
 
