@@ -10,7 +10,7 @@
 #include "log.h"
 #include "mode.h"
 
-enum event {
+enum InfoEvent {
 	ARRIVED,
 	DEPARTED,
 	DELTA,
@@ -19,9 +19,9 @@ enum event {
 
 void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del);
 
-void print_head(enum LogThreshold t, enum event event, struct Head *head);
+void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head);
 
-void print_heads(enum LogThreshold t, enum event event, struct SList *heads);
+void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads);
 
 void print_mode(enum LogThreshold t, struct Mode *mode);
 

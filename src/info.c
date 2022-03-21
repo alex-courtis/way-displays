@@ -126,6 +126,7 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 	struct UserMode *user_mode;
 	struct SList *i;
 
+	log_info("\nActive configuration:");
 	if (cfg->arrange && cfg->align) {
 		log_(t, "  Arrange in a %s aligned at the %s", arrange_name(cfg->arrange), align_name(cfg->align));
 	} else if (cfg->arrange) {
@@ -236,7 +237,7 @@ void print_head_desired(enum LogThreshold t, struct Head *head) {
 	}
 }
 
-void print_head(enum LogThreshold t, enum event event, struct Head *head) {
+void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 	if (!head)
 		return;
 
@@ -281,7 +282,7 @@ void print_head(enum LogThreshold t, enum event event, struct Head *head) {
 	}
 }
 
-void print_heads(enum LogThreshold t, enum event event, struct SList *heads) {
+void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads) {
 	for (struct SList *i = heads; i; i = i->nex) {
 		print_head(t, event, i->val);
 	}

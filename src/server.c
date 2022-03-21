@@ -83,7 +83,6 @@ bool handle_ipc(int fd_sock) {
 		cfg = cfg_merged;
 		log_info("\nApplying new configuration:");
 	} else {
-		log_info("\nActive configuration:");
 		ipc_response->done = true;
 	}
 
@@ -205,6 +204,10 @@ int
 server(void) {
 	log_set_times(true);
 
+	// don't log anything until cfg log level is known
+	log_capture_start();
+	log_suppress_start();
+
 	log_info("way-displays version %s", VERSION);
 
 	// only one instance
@@ -212,6 +215,12 @@ server(void) {
 
 	// maybe default
 	cfg_init();
+
+	// play back captured logs from cfg parse
+	log_set_threshold(cfg->log_threshold, false);
+	log_suppress_end();
+	log_capture_playback();
+	log_capture_reset();
 
 	// discover the lid state immediately
 	lid_init();

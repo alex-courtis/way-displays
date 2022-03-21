@@ -172,7 +172,7 @@ bool invalid_user_scale(const void *value, const void *data) {
 	struct UserScale *user_scale = (struct UserScale*)value;
 
 	if (user_scale->scale <= 0) {
-		log_warn("Ignoring non-positive SCALE %s %.3f", user_scale->name_desc, user_scale->scale);
+		log_warn("\nIgnoring non-positive SCALE %s %.3f", user_scale->name_desc, user_scale->scale);
 		return true;
 	}
 
@@ -186,25 +186,25 @@ bool invalid_user_mode(const void *value, const void *data) {
 	struct UserMode *user_mode = (struct UserMode*)value;
 
 	if (user_mode->width != -1 && user_mode->width <= 0) {
-		log_warn("Ignoring non-positive MODE %s WIDTH %d", user_mode->name_desc, user_mode->width);
+		log_warn("\nIgnoring non-positive MODE %s WIDTH %d", user_mode->name_desc, user_mode->width);
 		return true;
 	}
 	if (user_mode->height != -1 && user_mode->height <= 0) {
-		log_warn("Ignoring non-positive MODE %s HEIGHT %d", user_mode->name_desc, user_mode->height);
+		log_warn("\nIgnoring non-positive MODE %s HEIGHT %d", user_mode->name_desc, user_mode->height);
 		return true;
 	}
 	if (user_mode->refresh_hz != -1 && user_mode->refresh_hz <= 0) {
-		log_warn("Ignoring non-positive MODE %s HZ %d", user_mode->name_desc, user_mode->refresh_hz);
+		log_warn("\nIgnoring non-positive MODE %s HZ %d", user_mode->name_desc, user_mode->refresh_hz);
 		return true;
 	}
 
 	if (!user_mode->max) {
 		if (user_mode->width == -1) {
-			log_warn("Ignoring invalid MODE %s missing WIDTH", user_mode->name_desc);
+			log_warn("\nIgnoring invalid MODE %s missing WIDTH", user_mode->name_desc);
 			return true;
 		}
 		if (user_mode->height == -1) {
-			log_warn("Ignoring invalid MODE %s missing HEIGHT", user_mode->name_desc);
+			log_warn("\nIgnoring invalid MODE %s missing HEIGHT", user_mode->name_desc);
 			return true;
 		}
 	}
@@ -654,14 +654,14 @@ void validate_fix(struct Cfg *cfg) {
 	switch(arrange) {
 		case COL:
 			if (align != LEFT && align != MIDDLE && align != RIGHT) {
-				log_warn("Ignoring invalid ALIGN %s for %s arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.", align_name(align), arrange_name(arrange));
+				log_warn("\nIgnoring invalid ALIGN %s for %s arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.", align_name(align), arrange_name(arrange));
 				cfg->align = LEFT;
 			}
 			break;
 		case ROW:
 		default:
 			if (align != TOP && align != MIDDLE && align != BOTTOM) {
-				log_warn("Ignoring invalid ALIGN %s for %s arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.", align_name(align), arrange_name(arrange));
+				log_warn("\nIgnoring invalid ALIGN %s for %s arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.", align_name(align), arrange_name(arrange));
 				cfg->align = TOP;
 			}
 			break;
@@ -883,7 +883,6 @@ void cfg_init(void) {
 	} else {
 		log_info("\nNo configuration file found, using defaults:");
 	}
-	log_set_threshold(cfg->log_threshold, false);
 	validate_fix(cfg);
 	print_cfg(INFO, cfg, false);
 	validate_warn(cfg);

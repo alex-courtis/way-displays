@@ -12,17 +12,19 @@
 
 #define LS 16384
 
-struct active {
+struct LogActive {
 	enum LogThreshold threshold;
 	bool threshold_cli;
 	bool times;
 	bool capturing;
+	bool suppressing;
 };
-struct active active = {
+struct LogActive active = {
 	.threshold = LOG_THRESHOLD_DEFAULT,
 	.threshold_cli = false,
 	.times = false,
 	.capturing = false,
+	.suppressing = false,
 };
 
 struct SList *log_cap_lines = NULL;
@@ -61,7 +63,24 @@ void capture_line(enum LogThreshold threshold, char *l) {
 	slist_append(&log_cap_lines, cap_line);
 }
 
-void print_line(enum LogThreshold threshold, const char *prefix, int eno, FILE *__restrict __stream, const char *__restrict __format, va_list __args) {
+void print_raw(enum LogThreshold threshold, bool prefix, const char *l) {
+	static FILE *stream;
+
+	stream = threshold == ERROR ? stderr : stdout;
+
+	if (threshold >= active.threshold && !active.suppressing) {
+		if (active.times) {
+			print_time(threshold, stream);
+		}
+		if (l[0] != '\0') {
+			fprintf(stream, "%s%s\n", prefix ? threshold_prefix[threshold] : "", l);
+		} else {
+			fprintf(stream, "\n");
+		}
+	}
+}
+
+void print_line(enum LogThreshold threshold, bool prefix, int eno, const char *__restrict __format, va_list __args) {
 	static char l[LS];
 	static size_t n;
 
@@ -83,27 +102,18 @@ void print_line(enum LogThreshold threshold, const char *prefix, int eno, FILE *
 		capture_line(threshold, l);
 	}
 
-	if (threshold >= active.threshold) {
-		if (active.times) {
-			print_time(threshold, __stream);
-		}
-		if (l[0] != '\0') {
-			fprintf(__stream, "%s%s\n", prefix, l);
-		} else {
-			fprintf(__stream, "\n");
-		}
-	}
+	print_raw(threshold, prefix, l);
 }
 
-void print_log(enum LogThreshold threshold, int eno, FILE *__restrict __stream, const char *__restrict __format, va_list __args) {
+void print_log(enum LogThreshold threshold, int eno, const char *__restrict __format, va_list __args) {
 	static const char *format;
 
 	format = __format;
 	while (*format == '\n') {
-		print_line(threshold, "", 0, __stream, NULL, __args);
+		print_line(threshold, false, 0, NULL, __args);
 		format++;
 	}
-	print_line(threshold, threshold_prefix[threshold], eno, __stream, format, __args);
+	print_line(threshold, true, eno, format, __args);
 }
 
 void log_set_threshold(enum LogThreshold threshold, bool cli) {
@@ -124,49 +134,49 @@ void log_set_times(bool times) {
 void log_(enum LogThreshold threshold, const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(threshold, 0, stdout, __format, args);
+	print_log(threshold, 0, __format, args);
 	va_end(args);
 }
 
 void log_debug(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(DEBUG, 0, stdout, __format, args);
+	print_log(DEBUG, 0, __format, args);
 	va_end(args);
 }
 
 void log_info(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(INFO, 0, stdout, __format, args);
+	print_log(INFO, 0, __format, args);
 	va_end(args);
 }
 
 void log_warn(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(WARNING, 0, stderr, __format, args);
+	print_log(WARNING, 0, __format, args);
 	va_end(args);
 }
 
 void log_warn_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(WARNING, errno, stderr, __format, args);
+	print_log(WARNING, errno, __format, args);
 	va_end(args);
 }
 
 void log_error(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(ERROR, 0, stderr, __format, args);
+	print_log(ERROR, 0, __format, args);
 	va_end(args);
 }
 
 void log_error_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(ERROR, errno, stderr, __format, args);
+	print_log(ERROR, errno, __format, args);
 	va_end(args);
 }
 
@@ -184,6 +194,14 @@ void free_log_cap_line(void *data) {
 	free(cap_line);
 }
 
+void log_suppress_start(void) {
+	active.suppressing = true;
+}
+
+void log_suppress_end(void) {
+	active.suppressing = false;
+}
+
 void log_capture_start(void) {
 	active.capturing = true;
 }
@@ -196,5 +214,20 @@ void log_capture_reset(void) {
 	slist_free_vals(&log_cap_lines, free_log_cap_line);
 
 	active.capturing = false;
+}
+
+void log_capture_playback(void) {
+	bool was_capturing = active.capturing;
+	active.capturing = false;
+
+	for (struct SList *i = log_cap_lines; i; i = i->nex) {
+		struct LogCapLine *cap_line = i->val;
+		if (!cap_line)
+			continue;
+
+		print_raw(cap_line->threshold, true, cap_line->line);
+	}
+
+	active.capturing = was_capturing;
 }
 

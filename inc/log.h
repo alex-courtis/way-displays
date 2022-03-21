@@ -35,11 +35,17 @@ void log_error(const char *__restrict __format, ...);
 
 void log_error_errno(const char *__restrict __format, ...);
 
+void log_suppress_start(void);
+
+void log_suppress_end(void);
+
 void log_capture_start(void);
 
 void log_capture_end(void);
 
 void log_capture_reset(void);
+
+void log_capture_playback(void);
 
 #endif // LOG_H
 
