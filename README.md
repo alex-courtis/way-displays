@@ -35,34 +35,37 @@ The wayland compositor must support the WLR (wayland roots) Output Management pr
 * [Wayfire](https://github.com/WayfireWM/wayfire)
 </details>
 
-# Usage
+# Quick Start - Sway
 
-Run once after your wayland compositor has been started. `way-displays` will remain in the background, responding to changes, such as plugging in a display, and will terminate when you exit the compositor.
-
-`way-displays` will print messages to inform you of everything that is going on.
-
-<details><summary>sway config</summary><br>
-
-[sway](https://swaywm.org/) will start way-displays once on startup via the `exec` command. See `man 5 sway`.
+```
+mkdir -p ~/.config/way-displays
+cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
+```
 
 Remove any `output` commands from your sway config file and add the following:
 ```
 exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 ```
 
-Look at `/tmp/way-displays.1.me.log` to see what has been going on.
+Restart sway and look at `/tmp/way-displays.1.me.log` to see what has been going on. You can tail it whilst you customise.
 
-</details>
+Tweak `cfg.yaml` to your liking and save it. Changes will be immediately applied.
+
+Alternatively, use the [command line](#command-line-configuration) to make your changes then persist them with `way-displays -w`.
+
+# Usage
+
+Run once with no arguments after your wayland compositor has been started, which will start a server.
+
+It will remain in the background, responding to changes, such as plugging in a display, and will terminate when you exit the compositor.
+
+It will print messages to inform you of everything that is going on.
+
+You can interact with `way-displays` via the [command line](#command-line-configuration)
 
 # Configuration
 
-See the [default cfg.yaml](cfg.yaml) installed at `/etc/way-displays/cfg.yaml`.
-
-Quick start:
-```
-mkdir ~/.config/way-displays
-cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
-```
+See the [default cfg.yaml](cfg.yaml), usually installed at `/etc/way-displays/cfg.yaml`.
 
 `cfg.yaml` will be monitored for changes, which will be immediately applied.
 
