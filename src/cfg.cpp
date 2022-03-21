@@ -212,6 +212,15 @@ bool invalid_user_mode(const void *value, const void *data) {
 	return false;
 }
 
+void warn_short_name_desc(const char *name_desc, const char *element) {
+	if (!name_desc)
+		return;
+
+	if (strlen(name_desc) < 4) {
+		log_warn("\n%s '%s' is less than 4 characters, which may result in some unwanted matches.", element, name_desc);
+	}
+}
+
 struct Cfg *clone_cfg(struct Cfg *from) {
 	if (!from) {
 		return NULL;
@@ -663,6 +672,41 @@ void validate_fix(struct Cfg *cfg) {
 	slist_remove_all_free(&cfg->user_modes, invalid_user_mode, NULL, cfg_user_mode_free);
 }
 
+void validate_warn(struct Cfg *cfg) {
+	if (!cfg)
+		return;
+
+	struct SList *i = NULL;
+
+	for (i = cfg->user_scales; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		struct UserScale *user_scale = (struct UserScale*)i->val;
+		warn_short_name_desc(user_scale->name_desc, "SCALE");
+	}
+	for (i = cfg->user_modes; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		struct UserMode *user_mode = (struct UserMode*)i->val;
+		warn_short_name_desc(user_mode->name_desc, "MODE");
+	}
+	for (i = cfg->order_name_desc; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		warn_short_name_desc((const char*)i->val, "ORDER");
+	}
+	for (i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		warn_short_name_desc((const char*)i->val, "MAX_PREFERRED_REFRESH");
+	}
+	for (i = cfg->disabled_name_desc; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		warn_short_name_desc((const char*)i->val, "DISABLED");
+	}
+}
+
 bool parse_file(struct Cfg *cfg) {
 	if (!cfg->file_path) {
 		return false;
@@ -799,6 +843,7 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum CfgMergeType merge_
 
 	if (merged) {
 		validate_fix(merged);
+		validate_warn(merged);
 
 		if (equal_cfg(merged, to)) {
 			log_info("\nNo changes to make.");
@@ -841,6 +886,7 @@ void cfg_init(void) {
 	log_set_threshold(cfg->log_threshold, false);
 	validate_fix(cfg);
 	print_cfg(INFO, cfg, false);
+	validate_warn(cfg);
 }
 
 void cfg_file_reload(void) {
@@ -859,6 +905,7 @@ void cfg_file_reload(void) {
 		log_set_threshold(cfg->log_threshold, false);
 		validate_fix(cfg);
 		print_cfg(INFO, cfg, false);
+		validate_warn(cfg);
 	} else {
 		log_info("\nConfiguration unchanged:");
 		print_cfg(INFO, cfg, false);
