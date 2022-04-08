@@ -204,16 +204,16 @@ int
 server(void) {
 	log_set_times(true);
 
+	// only one instance
+	pid_file_create();
+
 	// don't log anything until cfg log level is known
 	log_capture_start();
 	log_suppress_start();
 
 	log_info("way-displays version %s", VERSION);
 
-	// only one instance
-	pid_file_create();
-
-	// maybe default
+	// maybe default, never exits
 	cfg_init();
 
 	// play back captured logs from cfg parse
