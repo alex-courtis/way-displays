@@ -12,7 +12,7 @@ int _wl_display_prepare_read(struct wl_display *display, char *file, int line) {
 
 	if ((ret = wl_display_prepare_read(display)) == -1) {
 		if (errno != EAGAIN) {
-			log_error_errno("\nwl_display_prepare_read failed at %s:%d, exiting", file, line);
+			log_efl_(ERROR, errno, file, line, "\nwl_display_prepare_read failed, exiting");
 			exit_fail();
 		}
 	}
@@ -24,7 +24,7 @@ int _wl_display_dispatch_pending(struct wl_display *display, char *file, int lin
 	static int ret;
 
 	if ((ret = wl_display_dispatch_pending(display)) == -1) {
-		log_error_errno("\nwl_display_dispatch_pending failed at %s:%d, exiting", file, line);
+		log_efl_(ERROR, errno, file, line, "\nwl_display_dispatch_pending failed, exiting");
 		exit_fail();
 	}
 
@@ -35,7 +35,7 @@ int _wl_display_flush(struct wl_display *display, char *file, int line) {
 	static int ret;
 
 	if ((ret = wl_display_flush(display)) == -1) {
-		log_error_errno("\nwl_display_flush failed at %s:%d, exiting", file, line);
+		log_efl_(ERROR, errno, file, line, "\nwl_display_flush failed, exiting");
 		exit_fail();
 	}
 
@@ -50,7 +50,7 @@ int _wl_display_read_events(struct wl_display *display, char *file, int line) {
 			log_info("\nWayland display terminated, exiting.");
 			exit(EXIT_SUCCESS);
 		} else {
-			log_error_errno("\nwl_display_read_events failed at %s:%d, exiting", file, line);
+			log_efl_(ERROR, errno, file, line, "\nwl_display_read_events failed, exiting");
 			exit_fail();
 		}
 	}
