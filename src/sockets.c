@@ -87,7 +87,7 @@ ssize_t socket_write(int fd, char *data, size_t len) {
 void socket_path(struct sockaddr_un *addr) {
 	size_t sun_path_size = sizeof(addr->sun_path);
 
-	char name[sun_path_size];
+	char name[sun_path_size - 4];
 	if (getenv("XDG_VTNR")) {
 		snprintf(name, sizeof(name), "/way-displays.%s.sock", getenv("XDG_VTNR"));
 	} else {
