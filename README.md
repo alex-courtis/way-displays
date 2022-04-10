@@ -7,7 +7,7 @@
 1. Arranges in a row or a column
 1. Auto scales based on DPI: 96 is a scale of 1
 1. Reacts when displays are plugged/unplugged
-1. Reacts when laptop lid is closed/opened
+1. Reacts when laptop lid is closed/opened and no other displays connected
 
 Works out of the box: no configuration required.
 

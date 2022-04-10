@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2022/03/21
+% 2022/04/10
 
 # NAME
 
@@ -21,7 +21,7 @@ way-displays manages your wayland displays:
 1. Arranges in a row or a column
 1. Auto scales based on DPI: 96 is a scale of 1
 1. Reacts when displays are plugged/unplugged
-1. Reacts when laptop lid is closed/opened
+1. Reacts when laptop lid is closed/opened and no other displays connected
 
 Works out of the box: no configuration required.
 
