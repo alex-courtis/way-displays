@@ -23,19 +23,17 @@ void log_set_times(bool times);
 
 void log_(enum LogThreshold threshold, const char *__restrict __format, ...);
 
-void log_efl_(enum LogThreshold threshold, int eno, char *file, int line, const char *__restrict __format, ...);
+void log_debug(const char *__restrict __format, ...);
 
-#define log_debug(__format, ...) log_efl_(DEBUG, 0, (char*)__FILE__, __LINE__, __format, ##__VA_ARGS__)
+void log_info(const char *__restrict __format, ...);
 
-#define log_info(__format, ...) log_efl_(INFO, 0, NULL, 0, __format, ##__VA_ARGS__)
+void log_warn(const char *__restrict __format, ...);
 
-#define log_warn(__format, ...) log_efl_(WARNING, 0, NULL, 0, __format, ##__VA_ARGS__)
+void log_warn_errno(const char *__restrict __format, ...);
 
-#define log_warn_errno(__format, ...) log_efl_(WARNING, errno, NULL, 0, __format, ##__VA_ARGS__)
+void log_error(const char *__restrict __format, ...);
 
-#define log_error(__format, ...) log_efl_(ERROR, 0, (char*)__FILE__, __LINE__, __format, ##__VA_ARGS__)
-
-#define log_error_errno(__format, ...) log_efl_(ERROR, errno, (char*)__FILE__, __LINE__, __format, ##__VA_ARGS__)
+void log_error_errno(const char *__restrict __format, ...);
 
 void log_suppress_start(void);
 

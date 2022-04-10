@@ -80,16 +80,13 @@ void print_raw(enum LogThreshold threshold, bool prefix, const char *l) {
 	}
 }
 
-void print_line(enum LogThreshold threshold, bool prefix, int eno, char *file, int line, const char *__restrict __format, va_list __args) {
+void print_line(enum LogThreshold threshold, bool prefix, int eno, const char *__restrict __format, va_list __args) {
 	static char l[LS];
 	static size_t n;
 
 	n = 0;
 	l[0] = '\0';
 
-	if (file) {
-		n += snprintf(l + n, LS - n, "[%s:%d] ", (char*)file, line);
-	}
 	if (__format) {
 		n += vsnprintf(l + n, LS - n, __format, __args);
 	}
@@ -108,15 +105,15 @@ void print_line(enum LogThreshold threshold, bool prefix, int eno, char *file, i
 	print_raw(threshold, prefix, l);
 }
 
-void print_log(enum LogThreshold threshold, int eno, char *file, int line, const char *__restrict __format, va_list __args) {
+void print_log(enum LogThreshold threshold, int eno, const char *__restrict __format, va_list __args) {
 	static const char *format;
 
 	format = __format;
 	while (*format == '\n') {
-		print_line(threshold, false, 0, NULL, 0, NULL, __args);
+		print_line(threshold, false, 0, NULL, __args);
 		format++;
 	}
-	print_line(threshold, true, eno, file, line, format, __args);
+	print_line(threshold, true, eno, format, __args);
 }
 
 void log_set_threshold(enum LogThreshold threshold, bool cli) {
@@ -137,14 +134,49 @@ void log_set_times(bool times) {
 void log_(enum LogThreshold threshold, const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(threshold, 0, NULL, 0, __format, args);
+	print_log(threshold, 0, __format, args);
 	va_end(args);
 }
 
-void log_efl_(enum LogThreshold threshold, int eno, char *file, int line, const char *__restrict __format, ...) {
+void log_debug(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(threshold, eno, file, line, __format, args);
+	print_log(DEBUG, 0, __format, args);
+	va_end(args);
+}
+
+void log_info(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	print_log(INFO, 0, __format, args);
+	va_end(args);
+}
+
+void log_warn(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	print_log(WARNING, 0, __format, args);
+	va_end(args);
+}
+
+void log_warn_errno(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	print_log(WARNING, errno, __format, args);
+	va_end(args);
+}
+
+void log_error(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	print_log(ERROR, 0, __format, args);
+	va_end(args);
+}
+
+void log_error_errno(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	print_log(ERROR, errno, __format, args);
 	va_end(args);
 }
 
