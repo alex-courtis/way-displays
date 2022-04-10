@@ -1,3 +1,8 @@
+way-displays 1.5.1 2022-04-10
+-----------------------------
+- Bug #33 prevent infinite loop following some mode change failures
+- Compilation fixes for alternate architectures/distros
+
 way-displays 1.5.0 2022-03-14
 -----------------------------
 - Feature #19 user specified MODE resolution/refresh/max
