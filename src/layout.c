@@ -253,6 +253,16 @@ void apply(void) {
 	slist_free(&heads_changing);
 }
 
+void handle_success(void) {
+	if (head_changing_mode) {
+
+		// succesful mode change is not always reported
+		head_changing_mode->current.mode = head_changing_mode->desired.mode;
+
+		head_changing_mode = NULL;
+	}
+}
+
 void handle_failure(void) {
 
 	if (head_changing_mode) {
@@ -265,6 +275,7 @@ void handle_failure(void) {
 		// current mode may be misreported
 		head_changing_mode->current.mode = NULL;
 
+		head_changing_mode = NULL;
 	} else {
 
 		// any other failures are fatal
@@ -283,6 +294,7 @@ void layout(void) {
 	switch (displ->config_state) {
 		case SUCCEEDED:
 			log_info("\nChanges successful");
+			handle_success();
 			displ->config_state = IDLE;
 			break;
 
