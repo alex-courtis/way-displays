@@ -1,3 +1,7 @@
+way-displays 1.5.2 2022-04-10
+-----------------------------
+- Bug #37 clang compilation failure
+
 way-displays 1.5.1 2022-04-10
 -----------------------------
 - Bug #33 prevent infinite loop following some mode change failures
