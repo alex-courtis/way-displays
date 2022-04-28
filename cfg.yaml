@@ -29,7 +29,8 @@ SCALE:
   #  SCALE: 1.75
 
 # Override the preferred mode.
-# Warning: this may result in an unusable display.
+# WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
+# for a possible workaround.
 MODE:
     # Resolution and refresh
     #- NAME_DESC: HDMI-A-1

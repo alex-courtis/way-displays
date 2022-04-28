@@ -149,8 +149,8 @@ SCALE:
 
 <details><summary>MODE</summary><br>
 
-*Caveat:* selecting some modes may result in an unusable (blank screen or powered off) monitor. Try a different mode if this happens.
-	
+*WARNING:* selecting some modes may result in an unusable (blank screen or powered off) monitor. Try this [workaround](#known-issues-with-workarounds) if you experience problems.
+
 If the specified mode cannot be found or activated, `way-displays` will fall back to the preferred mode, then the highest available resolution / refresh.
 
 Resolution with highest refresh:
@@ -302,6 +302,10 @@ User must be in the `input` group to monitor libinput events.
 
 <details><summary>Laptop Lid Not Closed At Startup</summary><br>
 
+This will be [resolved](https://gitlab.freedesktop.org/libinput/libinput/-/merge_requests/759) with the release of libinput 1.21.0.
+
+In the meantime, it can be worked around:
+
 libinput only reports lid state at startup for _some_ lids. We can direct libinput to always report for our lid. See [Installing temporary local device quirks](https://wayland.freedesktop.org/libinput/doc/latest/device-quirks.html#device-quirks-local) for reference.
 
 ### 0 - Test Whether libinput Reports Your Lid
@@ -341,6 +345,24 @@ Close the lid and start way-displays. You should see:
 I [11:34:05] Monitoring lid device: /dev/input/event1
 I [11:34:05]
 I [11:34:05] Lid closed
+```
+
+</details>
+
+<details><summary>Unusable Displays Following MODE</summary><br>
+
+One or many displays may be rendered unusable after setting a `MODE`. This has occurred when a higher resolution/refresh than the preferred has been selected, particularly when using a HDMI cable.
+
+It may be possible to work around this by setting `WLR_DRM_NO_MODIFIERS=1`. See [wlroots documentation](https://gitlab.freedesktop.org/wlroots/wlroots/-/blob/master/docs/env_vars.md) for details.
+
+You can set it when directly starting sway e.g.
+```shell
+WLR_DRM_NO_MODIFIERS=1 sway ...
+```
+
+If you use a display manager, you will need to export it from your non-login shell environment e.g. `.zshenv`.
+```shell
+export WLR_DRM_NO_MODIFIERS=1
 ```
 
 </details>
