@@ -1,0 +1,18 @@
+clang
+
+-Iinc
+-Ipro
+
+-D_GNU_SOURCE
+-DVERSION="DUMMY"
+
+-pedantic
+-Wall
+-Wextra
+-Wno-unused-parameter
+
+%c -Wold-style-definition
+%c -Wstrict-prototypes
+
+%c -std=gnu17
+%cpp -std=gnu++17
