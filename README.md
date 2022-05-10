@@ -25,29 +25,34 @@ See an [example session](doc/example-session.md) for full details.
 
 # Requirements
 
-The wayland compositor must support the WLR (wayland roots) Output Management protocol.
+way-displays is known to work on [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river). It may work on any wlroots compositor that supports the WLR Output Management protocol.
 
-<details><summary>Popular WLR Compositors</summary><br>
-
-* [sway](https://swaywm.org/)
-* [hikari](https://hikari.acmelabs.space)
-* [Way Cooler](http://way-cooler.org/)
-* [Wayfire](https://github.com/WayfireWM/wayfire)
-</details>
-
-# Quick Start - Sway
+# Quick Start
 
 ```
 mkdir -p ~/.config/way-displays
 cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
 ```
 
+<details><summary>Sway</summary><br>
+
 Remove any `output` commands from your sway config file and add the following:
 ```
 exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 ```
 
-Restart sway and look at `/tmp/way-displays.1.me.log` to see what has been going on. You can tail it whilst you customise.
+</details>
+
+<details><summary>River</summary><br>
+
+Add the following to your `init`:
+```
+way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
+```
+
+</details>
+
+Restart the compositor and look at `/tmp/way-displays.1.me.log` to see what has been going on. You can tail it whilst you customise.
 
 Tweak `cfg.yaml` to your liking and save it. Changes will be immediately applied.
 
