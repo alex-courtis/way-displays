@@ -103,6 +103,21 @@ bool equal_user_mode_name(const void *value, const void *data) {
 	return strcasecmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
+bool equal_user_transform_name(const void *value, const void *data) {
+	if (!value || !data) {
+		return false;
+	}
+
+	struct UserTransform *lhs = (struct UserTransform*)value;
+	struct UserTransform *rhs = (struct UserTransform*)data;
+
+	if (!lhs->name_desc || !rhs->name_desc) {
+		return false;
+	}
+
+	return strcasecmp(lhs->name_desc, rhs->name_desc) == 0;
+}
+
 bool equal_user_scale_name(const void *value, const void *data) {
 	if (!value || !data) {
 		return false;
@@ -158,6 +173,25 @@ bool equal_user_mode(const void *value, const void *data) {
 	}
 
 	if ((lhs->refresh_hz != -1 || rhs->refresh_hz != -1) && lhs->refresh_hz != rhs->refresh_hz) {
+		return false;
+	}
+
+	return true;
+}
+
+bool equal_user_transform(const void *value, const void *data) {
+	if (!value || !data) {
+		return false;
+	}
+
+	struct UserTransform *lhs = (struct UserTransform*)value;
+	struct UserTransform *rhs = (struct UserTransform*)data;
+
+	if (!lhs->name_desc || !rhs->name_desc) {
+		return false;
+	}
+
+	if (!lhs->transform || !rhs->transform) {
 		return false;
 	}
 
@@ -275,6 +309,15 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 		slist_append(&to->user_modes, to_user_mode);
 	}
 
+	// TRANSFORM
+	for (i = from->user_transform; i; i = i->nex) {
+		struct UserTransform *from_user_transform = (struct UserTransform*)i->val;
+		struct UserTransform *to_user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+		to_user_transform->name_desc = strdup(from_user_transform->name_desc);
+		to_user_transform->transform = from_user_transform->transform;
+		slist_append(&to->user_transform, to_user_transform);
+	}
+
 	// LAPTOP_DISPLAY_PREFIX
 	if (from->laptop_display_prefix) {
 		to->laptop_display_prefix = strdup(from->laptop_display_prefix);
@@ -333,6 +376,11 @@ bool equal_cfg(struct Cfg *a, struct Cfg* b) {
 		return false;
 	}
 
+	// TRANSFORM
+	if (!slist_equal(a->user_transform, b->user_transform, equal_user_transform)) {
+		return false;
+	}
+
 	// LAPTOP_DISPLAY_PREFIX
 	char *al = a->laptop_display_prefix;
 	char *bl = b->laptop_display_prefix;
@@ -376,6 +424,14 @@ struct UserMode *cfg_user_mode_default() {
 	user_mode->refresh_hz = -1;
 
 	return user_mode;
+}
+
+struct UserTransform *cfg_user_transform_default() {
+	struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+
+	user_transform->transform = WL_OUTPUT_TRANSFORM_NORMAL;
+
+	return user_transform;
 }
 
 bool resolve_paths(struct Cfg *cfg, const char *prefix, const char *suffix) {
@@ -516,6 +572,24 @@ void cfg_parse_node(struct Cfg *cfg, YAML::Node &node) {
 		}
 	}
 
+	if (node["TRANSFORM"]) {
+		for (const auto &transform : node["TRANSFORM"]) {
+			struct UserTransform *user_transform = cfg_user_transform_default();
+
+			if (!parse_node_val_string(transform, "NAME_DESC", &user_transform->name_desc, "TRANSFORM", "")) {
+				cfg_user_mode_free(user_transform);
+				continue;
+			}
+			if (!parse_node_val_int(transform, "DEGREE", &user_transform->transform, "TRANSFORM", user_transform->name_desc)) {
+				cfg_user_transform_free(user_transform);
+				continue;
+			}
+
+			slist_remove_all_free(&cfg->user_transform, equal_user_transform_name, user_transform, cfg_user_transform_free);
+			slist_append(&cfg->user_transform, user_transform);
+		}
+	}
+
 	if (node["MAX_PREFERRED_REFRESH"]) {
 		const auto &name_desc = node["MAX_PREFERRED_REFRESH"];
 		for (const auto &name_desc : name_desc) {
@@ -612,6 +686,22 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 		e << YAML::EndSeq;
 	}
 
+	if (cfg->user_transform) {
+		e << YAML::Key << "TRANSFORM";
+		e << YAML::BeginSeq;
+		for (struct SList *i = cfg->user_modes; i; i = i->nex) {
+			struct UserTransform *user_transform = (struct UserTransform*)i->val;
+			e << YAML::BeginMap;
+			e << YAML::Key << "NAME_DESC";
+			e << YAML::Value << user_transform->name_desc;
+
+			e << YAML::Key << "DEGREE";
+			e << YAML::Value << user_transform->transform;
+			e << YAML::EndMap;
+		}
+		e << YAML::EndSeq;
+	}
+
 	if (cfg->laptop_display_prefix) {
 		e << YAML::Key << "LAPTOP_DISPLAY_PREFIX";
 		e << YAML::Value << cfg->laptop_display_prefix;
@@ -689,6 +779,12 @@ void validate_warn(struct Cfg *cfg) {
 			continue;
 		struct UserMode *user_mode = (struct UserMode*)i->val;
 		warn_short_name_desc(user_mode->name_desc, "MODE");
+	}
+	for (i = cfg->user_transform; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		struct UserTransform *user_transform = (struct UserTransform*) i->val;
+		warn_short_name_desc(user_transform->name_desc, "TRANSFORM");
 	}
 	for (i = cfg->order_name_desc; i; i = i->nex) {
 		if (!i->val)
@@ -786,6 +882,19 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		merged_user_mode->warned_no_mode = set_user_mode->warned_no_mode;
 	}
 
+	// TRANSFORM
+	struct UserTransform *set_user_transform = NULL;
+	struct UserTransform *merged_user_transform = NULL;
+	for (i = from->user_transform; i; i = i->nex) {
+		set_user_transform = (struct UserTransform*)i->val;
+		if (!(merged_user_transform = (struct UserTransform*)slist_find_equal_val(merged->user_transform, equal_user_transform_name, set_user_transform))) {
+			merged_user_transform = cfg_user_transform_default();
+			merged_user_transform->name_desc = strdup(set_user_transform->name_desc);
+			slist_append(&merged->user_modes, merged_user_transform);
+		}
+		merged_user_transform->transform = set_user_transform->transform;
+	}
+
 	// DISABLED
 	for (i = from->disabled_name_desc; i; i = i->nex) {
 		if (!slist_find_equal(merged->disabled_name_desc, slist_equal_strcasecmp, i->val)) {
@@ -813,6 +922,11 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	// MODE
 	for (i = from->user_modes; i; i = i->nex) {
 		slist_remove_all_free(&merged->user_modes, equal_user_mode_name, i->val, cfg_user_mode_free);
+	}
+
+	// TRANSFORM
+	for (i = from->user_transform; i; i = i->nex) {
+		slist_remove_all_free(&merged->user_transform, equal_user_transform_name, i->val, cfg_user_transform_free);
 	}
 
 	// DISABLED
@@ -982,6 +1096,11 @@ void cfg_free(struct Cfg *cfg) {
 	}
 	slist_free(&cfg->user_modes);
 
+	for (struct SList *i = cfg->user_transform; i; i = i->nex) {
+		cfg_user_transform_free((struct UserTransform*)i->val);
+	}
+	slist_free(&cfg->user_transform);
+
 	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
 		free(i->val);
 	}
@@ -1019,5 +1138,15 @@ void cfg_user_mode_free(void *data) {
 	free(user_mode->name_desc);
 
 	free(user_mode);
+}
+
+void cfg_user_transform_free(void *data) {
+	struct UserTransform *user_transform = (struct UserTransform*)data;
+
+	if (!user_transform)
+		return;
+
+	free(user_transform->name_desc);
+	free(user_transform);
 }
 

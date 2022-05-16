@@ -52,6 +52,11 @@ struct UserMode {
 	bool warned_no_mode;
 };
 
+struct UserTransform {
+	char *name_desc;
+	int32_t transform;
+};
+
 struct Cfg {
 	char *dir_path;
 	char *file_path;
@@ -66,6 +71,7 @@ struct Cfg {
 	enum AutoScale auto_scale;
 	struct SList *user_scales;
 	struct SList *user_modes;
+	struct SList *user_transform;
 	struct SList *max_preferred_refresh_name_desc;
 	struct SList *disabled_name_desc;
 	enum LogThreshold log_threshold;
@@ -78,6 +84,7 @@ enum CfgElement {
 	AUTO_SCALE,
 	SCALE,
 	MODE,
+	TRANSFORM,
 	LAPTOP_DISPLAY_PREFIX,
 	MAX_PREFERRED_REFRESH,
 	LOG_THRESHOLD,
@@ -102,9 +109,13 @@ struct Cfg *cfg_default(void);
 
 struct UserMode *cfg_user_mode_default(void);
 
+struct UserTransform *cfg_user_transform_default(void);
+
 void cfg_user_scale_free(void *user_scale);
 
 void cfg_user_mode_free(void *user_mode);
+
+void cfg_user_transform_free(void *user_transform);
 
 void cfg_destroy(void);
 
