@@ -19,6 +19,9 @@ struct HeadState {
 	// layout coords
 	int32_t x;
 	int32_t y;
+
+    // Display rotataion
+    enum wl_output_transform transform;
 };
 
 struct Head {
