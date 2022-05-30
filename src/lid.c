@@ -207,6 +207,9 @@ bool lid_is_closed(char *name) {
 	if (!name)
 		return false;
 
+	if (!lid)
+		return false;
+
 	const char *laptop_display_prefix;
 	if (cfg->laptop_display_prefix) {
 		laptop_display_prefix = cfg->laptop_display_prefix;
