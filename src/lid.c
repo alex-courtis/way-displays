@@ -181,14 +181,17 @@ void lid_init(void) {
 		destroy_libinput_discovery(libinput_discovery);
 
 		if (!device_path) {
+			log_warn("No lid device was discovered; lid remains unitialized");
 			return;
 		}
 	} else {
+		log_warn("Unable to start libinput discovery for lid device");
 		return;
 	}
 
 	// monitor in a context with just the lid
 	if (!(libinput_monitor = create_libinput_monitor(device_path))) {
+		log_warn("Unable to create libinput monitor for lid device %s", device_path);
 		return;
 	}
 
