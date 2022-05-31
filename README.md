@@ -401,4 +401,4 @@ Alexander Courtis
 
 ## Contributors
 
-Stephen Barratt, Joost Molenaar
+Stephen Barratt, Jan Beich, Joost Molenaar
