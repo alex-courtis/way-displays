@@ -181,7 +181,6 @@ void lid_init(void) {
 		destroy_libinput_discovery(libinput_discovery);
 
 		if (!device_path) {
-			log_warn("No lid device was discovered; lid remains unitialized");
 			return;
 		}
 	} else {
