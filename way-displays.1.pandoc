@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2022/04/10
+% 2022/06/20
 
 # NAME
 
@@ -45,6 +45,12 @@ Server is run when no commands are specified.
 Manages the server. The active configuration and display state may be inspected, and the configuration modified.
 
 The active configuration can be written to disk, however any comments and formatting will be lost.
+
+# REQUIREMENTS
+
+way-displays is known to work on the sway and river compositors. It may work on any wlroots compositor that supports the WLR Output Management protocol.
+
+The user must be a member of the `input` group.
 
 # OPTIONS
 

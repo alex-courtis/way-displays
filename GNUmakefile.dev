@@ -11,9 +11,6 @@ iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/cfg.h" -Xiwyu --check_also="inc/ipc.h"
 iwyu: clean $(SRC_O)
 
-cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H)
-	cppcheck $(^) --enable=warning,unusedFunction,performance,portability $(CPPFLAGS)
-
 # https://github.com/alex-courtis/arch/blob/7ca6c8d7f7aa910ec522470bb7a96ddb24c9a1ea/bin/ctags-something
 tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
 	ctags-c   $(CFLAGS)   $(CPPFLAGS) --project-src $(SRC_C)   $(INC_H) $(PRO_H)
@@ -25,6 +22,8 @@ tags: $(SRC_C) $(SRC_CXX) $(INC_H) $(PRO_H)
 	scp cfg.yaml duke:.config/way-displays/cfg.yaml
 	scp way-displays.supp duke:/tmp/vg.supp
 	touch .copy
+
+.PHONY: iwyu
 
 # vim: set filetype=make :
 
