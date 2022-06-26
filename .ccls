@@ -5,6 +5,7 @@ clang
 
 -D_GNU_SOURCE
 -DVERSION="DUMMY"
+-DROOT_ETC="/etc"
 
 -pedantic
 -Wall
