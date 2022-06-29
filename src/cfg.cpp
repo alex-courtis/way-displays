@@ -867,7 +867,7 @@ void cfg_init(void) {
 	if (!found)
 		found = resolve_paths(cfg, "/usr/local/etc", "");
 	if (!found)
-		found = resolve_paths(cfg, "/etc", "");
+		found = resolve_paths(cfg, ROOT_ETC, "");
 
 	if (found) {
 		log_info("\nFound configuration file: %s", cfg->file_path);
