@@ -8,7 +8,7 @@ IWYU = /usr/bin/include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments 
 
 # make -k iwyu
 iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
-iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/cfg.h" -Xiwyu --check_also="inc/ipc.h"
+iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
 iwyu: clean $(SRC_O)
 
 # https://github.com/alex-courtis/arch/blob/7ca6c8d7f7aa910ec522470bb7a96ddb24c9a1ea/bin/ctags-something

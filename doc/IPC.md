@@ -2,9 +2,9 @@
 
 way-displays server creates a socket `${XDG_RUNTIME_DIR}/way-displays.${XDG_VTNR}.sock`. If `XDG_RUNTIME_DIR` is unset the socket will be `/tmp/way-displays.${XDG_VTNR}.sock`.
 
-Clients send an `!!ipc_request` and will receive multiple `!!ipc_response` until the operation is complete and the socket closed.
+Clients send an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) and will receive [!!ipc_response](YAML_SCHEMAS.md#ipc_response) until the operation is complete and the socket closed.
 
-`MESSAGES` will contain log messages by threshold, with human readable messages as written by the server. These are intended to be streamed to the user.
+`MESSAGES` will contain log messages by [!!log_threshold](YAML_SCHEMAS.md#log_threshold), with human readable messages as written by the server. These are intended to be streamed to the user.
 
 `DONE` will be set when the operation is complete.
 
@@ -14,19 +14,19 @@ Clients send an `!!ipc_request` and will receive multiple `!!ipc_response` until
 
 Retrieves the current configuration along with human readable messages describing the configuration and current state.
 
-Client sends an [!!ipc_request](#ipc_request) with [!!ipc_operation](#ipc_operation) `CFG_GET` and an empty [!!cfg](#cfg).
+Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operation](YAML_SCHEMAS.md#ipc_operation) `CFG_GET` and an empty [!!cfg](#cfg).
 
 ## CFG_WRITE
 
 Persists the current configuration to the active `cfg.yaml`.
 
-Client sends an [!!ipc_request](#ipc_request) with [!!ipc_operation](#ipc_operation) `CFG_WRITE` and an empty [!!cfg](#cfg).
+Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operation](YAML_SCHEMAS.md#ipc_operation) `CFG_WRITE` and an empty [!!cfg](#cfg).
 
 ## CFG_SET
 
 Configure multiple elements.
 
-Client sends an [!!ipc_request](#ipc_request) with [!!ipc_operation](#ipc_operation) `CFG_SET`.
+Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operation](YAML_SCHEMAS.md#ipc_operation) `CFG_SET`.
 
 [!!cfg](#cfg) may only contain:
 - `ARRANGE_ALIGN`
@@ -40,7 +40,7 @@ Client sends an [!!ipc_request](#ipc_request) with [!!ipc_operation](#ipc_operat
 
 Remove multiple elements.
 
-Client sends an [!!ipc_request](#ipc_request) with [!!ipc_operation](#ipc_operation) `CFG_DEL`.
+Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operation](YAML_SCHEMAS.md#ipc_operation) `CFG_DEL`.
 
 [!!cfg](#cfg) may only contain:
 - `SCALE`

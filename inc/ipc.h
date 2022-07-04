@@ -1,13 +1,7 @@
 #ifndef IPC_H
 #define IPC_H
 
-#ifndef __cplusplus
 #include <stdbool.h>
-#endif
-
-#ifdef __cplusplus
-extern "C" { //}
-#endif
 
 enum IpcRequestCommand {
 	CFG_GET = 1,
@@ -48,10 +42,6 @@ struct IpcResponse *ipc_response_receive(int fd);
 void free_ipc_request(struct IpcRequest *request);
 
 void free_ipc_response(struct IpcResponse *response);
-
-#if __cplusplus
-} // extern "C"
-#endif
 
 #endif // IPC_H
 

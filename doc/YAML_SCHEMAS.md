@@ -6,15 +6,19 @@ Document loosely follow the YAML [failsafe + JSON](https://yaml.org/spec/1.2.2/#
 
 ### !!arrange
 
-`!!str` `<ROW | COL>`
+`!!str` : `<ROW | COL>`
 
 ### !!align
 
-`!!str` `<TOP | MIDDLE | BOTTOM | LEFT | RIGHT>`
+`!!str` : `<TOP | MIDDLE | BOTTOM | LEFT | RIGHT>`
 
-### !!logthreshold
+### !!log_threshold
 
-`!!str` `<ERROR | WARNING | INFO | DEBUG>`
+`!!str` : `<ERROR | WARNING | INFO | DEBUG>`
+
+## !!ipc_operation
+
+`!!str` : `<CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
 
 ## !!cfg
 
@@ -46,13 +50,9 @@ MODE: !!seq
     MAX: !!bool
 DISABLED: !!seq
   - !!str
-LOG_THRESHOLD: !!logthreshold
+LOG_THRESHOLD: !!log_threshold
 LAPTOP_DISPLAY_PREFIX: !!str
 ```
-
-## !!ipc_operation
-
-`!!str` `<CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
 
 ## !!ipc_request
 
@@ -71,6 +71,6 @@ RC: !!int
 CFG: !!cfg
 MESSAGES: !!seq
   - !!map
-    !!logthreshold: !!str
+    !!log_threshold: !!str
 ```
 

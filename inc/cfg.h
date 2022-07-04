@@ -1,19 +1,7 @@
 #ifndef CFG_H
 #define CFG_H
 
-#ifdef __cplusplus
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/node/node.h>
-#endif
-
-#ifndef __cplusplus
 #include <stdbool.h>
-#endif
-
-#ifdef __cplusplus
-extern "C" { //}
-#endif
-
 #include <stdint.h>
 #include "log.h"
 
@@ -102,6 +90,10 @@ struct Cfg *cfg_default(void);
 
 struct UserMode *cfg_user_mode_default(void);
 
+bool cfg_equal_user_scale_name(const void *value, const void *data);
+
+bool cfg_equal_user_mode_name(const void *value, const void *data);
+
 void cfg_user_scale_free(void *user_scale);
 
 void cfg_user_mode_free(void *user_mode);
@@ -109,18 +101,6 @@ void cfg_user_mode_free(void *user_mode);
 void cfg_destroy(void);
 
 void cfg_free(struct Cfg *cfg);
-
-#if __cplusplus
-} // extern "C"
-#endif
-
-#ifdef __cplusplus
-
-void cfg_emit(YAML::Emitter &e, struct Cfg *cfg);
-
-void cfg_parse_node(struct Cfg *cfg, YAML::Node &node);
-
-#endif
 
 #endif // CFG_H
 
