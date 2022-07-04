@@ -47,6 +47,15 @@ MODE:
     #- NAME_DESC: DP-2
     #  MAX: TRUE
 
+# Override the screen orientation. Rotation occurs anti-clockwise
+# Possible value of degree: 0 - Normal, 1 - 90 degree, 2 - 180 degree, 3 - 270 degree
+TRANSFORM:
+    # Screen rotation:
+    #- NAME_DESC: eDP-1
+    #  DEGREE: 0      
+    #- NAME_DESC: HDMI-A-1
+    #  DEGREE: 1                Rotate HDMI-A-1 90 degree anti-clockwise
+
 # Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
 # your laptop is different.
 #LAPTOP_DISPLAY_PREFIX: 'eDP'

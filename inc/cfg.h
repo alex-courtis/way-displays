@@ -17,6 +17,7 @@ extern "C" { //}
 #include <stdint.h>
 #include "log.h"
 
+#include <wayland-client-protocol.h>
 struct UserScale {
 	char *name_desc;
 	float scale;
@@ -54,7 +55,7 @@ struct UserMode {
 
 struct UserTransform {
 	char *name_desc;
-	int32_t transform;
+	enum wl_output_transform transform;
 };
 
 struct Cfg {

@@ -64,6 +64,8 @@ void head_scaled_dimensions(struct Head *head);
 
 struct Mode *head_find_mode(struct Head *head);
 
+enum wl_output_transform head_find_transform(struct Head *head);
+
 bool head_current_not_desired(const void *head);
 
 bool head_current_mode_not_desired(const void *head);

@@ -124,6 +124,7 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 
 	struct UserScale *user_scale;
 	struct UserMode *user_mode;
+	struct UserTransform *user_transform;
 	struct SList *i;
 
 	log_info("\nActive configuration:");
@@ -165,6 +166,13 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 			print_user_mode(t, user_mode, del);
 		}
 	}
+	if (cfg->user_transform) {
+		log_(t, "  Rotation:");
+		for (i = cfg->user_transform; i; i = i->nex) {
+			user_transform = (struct UserTransform*)i->val;
+			log_(t, "    %s: %d", (char*)user_transform->name_desc, user_transform->transform);
+		}
+	}
 
 	if (cfg->max_preferred_refresh_name_desc) {
 		log_(t, "  Max preferred refresh:");
@@ -192,6 +200,7 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 	if (head->current.enabled) {
 		log_(t, "    scale:    %.3f", wl_fixed_to_double(head->current.scale));
 		log_(t, "    position: %d,%d", head->current.x, head->current.y);
+		log_(t, "    rotation: %d", head->transform);
 	}
 
 	print_mode(t, head->current.mode);
@@ -227,6 +236,9 @@ void print_head_desired(enum LogThreshold t, struct Head *head) {
 						head->desired.x,
 						head->desired.y
 					);
+			}
+			if (!head->current.enabled || head->current.transform != head->desired.transform) {
+				log_(t, "    rotation: %d", head->desired.transform);
 			}
 		}
 		if (!head->current.enabled) {

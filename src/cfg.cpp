@@ -187,10 +187,6 @@ bool equal_user_transform(const void *value, const void *data) {
 	struct UserTransform *lhs = (struct UserTransform*)value;
 	struct UserTransform *rhs = (struct UserTransform*)data;
 
-	if (!lhs->name_desc || !rhs->name_desc) {
-		return false;
-	}
-
 	if (!lhs->transform || !rhs->transform) {
 		return false;
 	}
@@ -577,10 +573,10 @@ void cfg_parse_node(struct Cfg *cfg, YAML::Node &node) {
 			struct UserTransform *user_transform = cfg_user_transform_default();
 
 			if (!parse_node_val_string(transform, "NAME_DESC", &user_transform->name_desc, "TRANSFORM", "")) {
-				cfg_user_mode_free(user_transform);
+				cfg_user_transform_free(user_transform);
 				continue;
 			}
-			if (!parse_node_val_int(transform, "DEGREE", &user_transform->transform, "TRANSFORM", user_transform->name_desc)) {
+			if (!parse_node_val_int(transform, "DEGREE", (int *) &user_transform->transform, "TRANSFORM", user_transform->name_desc)) {
 				cfg_user_transform_free(user_transform);
 				continue;
 			}
