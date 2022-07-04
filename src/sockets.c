@@ -70,6 +70,8 @@ char *socket_read(int fd) {
 		return NULL;
 	}
 
+	log_debug("Read %d bytes from socket", n);
+
 	return buf;
 }
 
@@ -80,6 +82,8 @@ ssize_t socket_write(int fd, char *data, size_t len) {
 		log_error_errno("\nSocket write failed");
 		return -1;
 	}
+
+	log_debug("Wrote %d bytes to socket", n);
 
 	return n;
 }
@@ -99,6 +103,8 @@ void socket_path(struct sockaddr_un *addr) {
 	} else {
 		snprintf(addr->sun_path, sun_path_size, "%s%s", getenv("XDG_RUNTIME_DIR"), name);
 	}
+
+	log_debug("Server socket %s", addr->sun_path);
 }
 
 int create_fd_ipc_server(void) {

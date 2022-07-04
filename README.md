@@ -39,7 +39,7 @@ The user must be a member of the `input` group.
 
 ## Quick Start
 
-[Configuration](doc/configuration.md)
+[CONFIGURATION](doc/CONFIGURATION.md)
 
 ```
 mkdir -p ~/.config/way-displays
@@ -64,13 +64,13 @@ way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
 
 Restart the compositor and look at `/tmp/way-displays.1.me.log` to see what has been going on. You can tail it whilst you customise.
 
-[Tweak cfg.yaml](doc/configuration.md#cfgyaml) to your liking and save it. Changes will be immediately applied.
+[Tweak cfg.yaml](doc/CONFIGURATION.md#cfgyaml) to your liking and save it. Changes will be immediately applied.
 
-Alternatively, use the [command line](doc/configuration.md#command-line) to make your changes then persist them with `way-displays -w`.
+Alternatively, use the [command line](doc/CONFIGURATION.md#command-line) to make your changes then persist them with `way-displays -w`.
 
 ## Usage
 
-See [configuration](doc/configuration.md) for details on `cfg.yaml` and the command line.
+See [CONFIGURATION](doc/CONFIGURATION.md) for details on `cfg.yaml` and the command line.
 
 Start the `way-displays` server by running once with no arguments after your wayland compositor has been started.
 
@@ -78,7 +78,7 @@ It will remain in the background, responding to changes, such as plugging in a d
 
 It will print messages to inform you of everything that is going on.
 
-You can interact with the server via the [command line](doc/configuration.md#command-line).
+You can interact with the server via the [command line](doc/CONFIGURATION.md#command-line).
 
 ## Installation
 
