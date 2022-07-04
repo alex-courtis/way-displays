@@ -17,9 +17,10 @@ enum IpcRequestCommand {
 };
 
 enum IpcResponseField {
-	RC = 1,
+	DONE = 1,
+	RC,
+	CFG,
 	MESSAGES,
-	DONE,
 };
 
 struct IpcRequest {
@@ -32,6 +33,7 @@ struct IpcRequest {
 struct IpcResponse {
 	bool done;
 	int rc;
+	struct Cfg *cfg;
 	int fd;
 };
 

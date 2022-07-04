@@ -4,15 +4,15 @@ Document loosely follow the YAML [failsafe + JSON](https://yaml.org/spec/1.2.2/#
 
 ## Enums
 
-### `!!arrange`
+### !!arrange
 
 `!!str` `<ROW | COL>`
 
-### `!!align`
+### !!align
 
 `!!str` `<TOP | MIDDLE | BOTTOM | LEFT | RIGHT>`
 
-### `!!logthreshold`
+### !!logthreshold
 
 `!!str` `<ERROR | WARNING | INFO | DEBUG>`
 
@@ -50,61 +50,27 @@ LOG_THRESHOLD: !!logthreshold
 LAPTOP_DISPLAY_PREFIX: !!str
 ```
 
-## !!cfg_get
+## !!ipc_operation
+
+`!!str` `<CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
+
+## !!ipc_request
 
 ```yaml
 !!map
-CFG_GET: !!map
-```
-
-Map must be empty.
-
-## !!cfg_write
-
-```yaml
-!!map
-CFG_WRITE: !!map
-```
-
-Map must be empty.
-
-## !!cfg_set
-
-```yaml
-!!map
-CFG_SET: !!map
+!!ipc_operation:
   !!cfg
 ```
 
-May only include:
-- `ARRANGE_ALIGN`
-- `ORDER`
-- `AUTO_SCALE`
-- `SCALE`
-- `MODE`
-- `DISABLED`
-
-## !!cfg_del
-
-```yaml
-!!map
-CFG_DEL: !!map
-  !!cfg
-```
-
-May only include:
-- `SCALE`
-- `MODE`
-- `DISABLED`
-
-## !!response
+## !!ipc_response
 
 ```yaml
 !!map
 DONE: !!bool
+RC: !!int
+CFG: !!cfg
 MESSAGES: !!seq
   - !!map
     !!logthreshold: !!str
-RC: !!int
 ```
 

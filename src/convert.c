@@ -63,9 +63,10 @@ static struct NameVal ipc_request_commands[] = {
 };
 
 static struct NameVal ipc_response_fields[] = {
-	{ .val = RC,         .name = "RC",         },
-	{ .val = MESSAGES,   .name = "MESSAGES",   },
 	{ .val = DONE,       .name = "DONE",       },
+	{ .val = RC,         .name = "RC",         },
+	{ .val = CFG,        .name = "CFG",        },
+	{ .val = MESSAGES,   .name = "MESSAGES",   },
 	{ .val = 0,          .name = NULL,         },
 };
 

@@ -85,6 +85,7 @@ bool handle_ipc(int fd_sock) {
 	} else {
 		ipc_response->done = true;
 	}
+	ipc_response->cfg = cfg;
 
 	print_cfg(INFO, cfg, false);
 

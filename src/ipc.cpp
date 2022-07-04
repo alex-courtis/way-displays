@@ -127,6 +127,14 @@ char *marshal_response(struct IpcResponse *response) {
 		e << YAML::Key << ipc_response_field_name(DONE);
 		e << YAML::Value << response->done;
 
+		e << YAML::Key << ipc_response_field_name(RC);
+		e << YAML::Value << response->rc;
+
+		if (response->cfg && response->done) {
+			e << YAML::Key << ipc_response_field_name(CFG);
+			cfg_emit(e, response->cfg);
+		}
+
 		if (log_cap_lines) {
 
 			e << YAML::Key << ipc_response_field_name(MESSAGES);
@@ -146,9 +154,6 @@ char *marshal_response(struct IpcResponse *response) {
 
 			e << YAML::EndMap;
 		}
-
-		e << YAML::Key << ipc_response_field_name(RC);
-		e << YAML::Value << response->rc;
 
 		e << YAML::EndMap;
 
