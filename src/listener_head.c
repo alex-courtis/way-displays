@@ -90,7 +90,7 @@ static void transform(void *data,
 		int32_t transform) {
 	struct Head *head = data;
 
-	head->transform = transform;
+	head->current.transform = transform;
 }
 
 static void scale(void *data,

@@ -35,6 +35,10 @@ bool head_matches_user_mode(const void *user_mode, const void *head) {
 	return user_mode && head && head_matches_name_desc(((struct UserMode*)user_mode)->name_desc, (struct Head*)head);
 }
 
+bool head_matches_user_transform(const void *user_transform, const void *head) {
+	return user_transform && head && head_matches_name_desc(((struct UserTransform*)user_transform)->name_desc, (struct Head*)head);
+}
+
 struct Mode *user_mode(struct Head *head, struct UserMode *user_mode) {
 	if (!head || !head->name || !user_mode)
 		return NULL;
@@ -183,11 +187,19 @@ void head_scaled_dimensions(struct Head *head) {
 	}
 
 	if (head->transform % 2 == 0) {
+
 		head->scaled.width = head->desired.mode->width;
 		head->scaled.height = head->desired.mode->height;
-	} else {
+
+	} else if (head->transform == WL_OUTPUT_TRANSFORM_90 || 
+			   head->transform == WL_OUTPUT_TRANSFORM_270) {
+
 		head->scaled.width = head->desired.mode->height;
 		head->scaled.height = head->desired.mode->width;
+
+	} else {
+		head->scaled.width = head->desired.mode->width;
+		head->scaled.height = head->desired.mode->height;
 	}
 
 	head->scaled.height = (int32_t)((double)head->scaled.height * 256 / head->desired.scale + 0.5);
@@ -238,6 +250,22 @@ struct Mode *head_find_mode(struct Head *head) {
 	return mode;
 }
 
+enum wl_output_transform head_find_transform(struct Head *head){
+	if (!head)
+		return WL_OUTPUT_TRANSFORM_NORMAL;
+	enum wl_output_transform transform;
+
+	// User transform value from config file
+	struct UserTransform *ut = slist_find_equal_val(cfg->user_transform, head_matches_user_transform, head);
+
+	if (ut) {
+		transform = ut->transform;
+	} else {
+		transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	}
+	return transform;
+}
+
 bool head_current_not_desired(const void *data) {
 	const struct Head *head = data;
 
@@ -246,7 +274,8 @@ bool head_current_not_desired(const void *data) {
 			 head->desired.scale != head->current.scale ||
 			 head->desired.enabled != head->current.enabled ||
 			 head->desired.x != head->current.x ||
-			 head->desired.y != head->current.y));
+			 head->desired.y != head->current.y ||
+			 head->desired.transform != head->current.transform));
 }
 
 bool head_current_mode_not_desired(const void *data) {

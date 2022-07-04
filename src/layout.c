@@ -183,6 +183,21 @@ void desire_scale(struct Head *head) {
 	}
 }
 
+void desire_transform(struct Head *head) {
+    if (!head->desired.enabled)
+        return;
+
+    // attempt to find a mode
+	enum wl_output_transform transform = head_find_transform(head);
+
+	if (transform) {
+		head->desired.transform = transform;
+	} else {
+		head->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	}
+    
+}
+
 void desire(void) {
 
 	for (struct SList *i = heads; i; i = i->nex) {
@@ -193,6 +208,7 @@ void desire(void) {
 		desire_enabled(head);
 		desire_mode(head);
 		desire_scale(head);
+		desire_transform(head);
 
 		head_scaled_dimensions(head);
 	}
@@ -240,6 +256,7 @@ void apply(void) {
 				head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 				zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
 				zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
+				zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
 			} else {
 				zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 			}

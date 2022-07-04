@@ -32,10 +32,12 @@ void usage(FILE *stream) {
 		"     SCALE <name> <scale>\n"
 		"     MODE <name> MAX\n"
 		"     MODE <name> <width> <height> [<Hz>]\n"
+		"     TRANSFORM <name> <degree>\n"
 		"     DISABLED <name>\n"
 		"  -d, --d[elete]  remove\n"
 		"     SCALE <name>\n"
 		"     MODE <name>\n"
+		"     TRANSFORM <name>\n"
 		"     DISABLED <name>\n"
 		;
 	fprintf(stream, "%s", mesg);
@@ -44,6 +46,7 @@ void usage(FILE *stream) {
 struct Cfg *parse_element(enum IpcRequestCommand command, enum CfgElement element, int argc, char **argv) {
 	struct UserScale *user_scale = NULL;
 	struct UserMode *user_mode = NULL;
+	struct UserTransform *user_transform = NULL;
 
 	struct Cfg *cfg = calloc(1, sizeof(struct Cfg));
 
@@ -103,6 +106,27 @@ struct Cfg *parse_element(enum IpcRequestCommand command, enum CfgElement elemen
 					user_mode->name_desc = strdup(argv[optind]);
 					user_mode->max = true;
 					slist_append(&cfg->user_modes, user_mode);
+					parsed = true;
+					break;
+				default:
+					break;
+			}
+			break;
+		case TRANSFORM:
+			switch (command) {
+				case CFG_SET:
+					// parse input value
+					user_transform = cfg_user_transform_default();
+					user_transform->name_desc = strdup(argv[optind]);
+					parsed = ((user_transform->transform = atoi(argv[optind + 1])) > 0);
+					slist_append(&cfg->user_transform, user_transform);
+					break;
+				case CFG_DEL:
+					// dummy value
+					user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+					user_transform->name_desc = strdup(argv[optind]);
+					user_transform->transform = 0;
+					slist_append(&cfg->user_transform, user_transform);
 					parsed = true;
 					break;
 				default:
@@ -171,6 +195,12 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 				exit(EXIT_FAILURE);
 			}
 			break;
+		case TRANSFORM:
+			if (optind + 2 != argc) {
+				log_error("%s requires two arguments", cfg_element_name(element));
+				exit(EXIT_FAILURE);
+			}
+			break;
 		case ARRANGE_ALIGN:
 		case SCALE:
 			if (optind + 2 != argc) {
@@ -207,6 +237,7 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case MODE:
+		case TRANSFORM:
 		case SCALE:
 		case DISABLED:
 			if (optind + 1 != argc) {
