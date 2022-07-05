@@ -46,7 +46,7 @@ bool cfg_equal_user_scale_name(const void *value, const void *data) {
 	return strcasecmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
-bool equal_user_scale(const void *value, const void *data) {
+bool cfg_equal_user_scale(const void *value, const void *data) {
 	if (!value || !data) {
 		return false;
 	}
@@ -61,7 +61,7 @@ bool equal_user_scale(const void *value, const void *data) {
 	return strcasecmp(lhs->name_desc, rhs->name_desc) == 0 && lhs->scale == rhs->scale;
 }
 
-bool equal_user_mode(const void *value, const void *data) {
+bool cfg_equal_user_mode(const void *value, const void *data) {
 	if (!value || !data) {
 		return false;
 	}
@@ -252,12 +252,12 @@ bool equal_cfg(struct Cfg *a, struct Cfg* b) {
 	}
 
 	// SCALE
-	if (!slist_equal(a->user_scales, b->user_scales, equal_user_scale)) {
+	if (!slist_equal(a->user_scales, b->user_scales, cfg_equal_user_scale)) {
 		return false;
 	}
 
 	// MODE
-	if (!slist_equal(a->user_modes, b->user_modes, equal_user_mode)) {
+	if (!slist_equal(a->user_modes, b->user_modes, cfg_equal_user_mode)) {
 		return false;
 	}
 
