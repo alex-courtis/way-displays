@@ -88,6 +88,7 @@ bool handle_ipc(int fd_sock) {
 		ipc_response->done = true;
 	}
 
+	// TODO #49 incorrect
 	switch (ipc_request->command) {
 		case ALL_GET:
 			print_cfg(INFO, cfg, false);

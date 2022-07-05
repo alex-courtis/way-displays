@@ -22,7 +22,7 @@ When the request sets `HUMAN`, the response will contain log `MESSAGES` by [!!lo
 
 An [!!ipc_request](YAML_SCHEMAS.md#ipc_request) must contain one [COMMAND](YAML_SCHEMAS.md#ipc_command).
 
-Unless stated otherwise, `STATE` and `CFG` will be populated in the response.
+Unless stated otherwise, `STATE` and `CFG` will be populated in the response. The server will print those for humans and return via `MESSAGES`.
 
 ### ALL_GET
 
@@ -36,7 +36,7 @@ HUMAN: TRUE
 
 ### STATE_GET
 
-Retrieves `STATE`.
+Retrieves only `STATE`.
 
 example request:
 ```yaml
@@ -95,7 +95,7 @@ MESSAGES:
 
 ### CFG_GET
 
-Retrieves `CFG`.
+Retrieves only `CFG`.
 
 example request:
 ```yaml
@@ -201,7 +201,7 @@ CFG:
   LAPTOP_DISPLAY_PREFIX: FFF
 ```
 
-example responses:
+example response stream:
 ```yaml
 DONE: FALSE
 RC: 0
@@ -400,7 +400,7 @@ CFG:
     - STU 901
 ```
 
-example responses:
+example response stream:
 ```yaml
 DONE: FALSE
 RC: 0
