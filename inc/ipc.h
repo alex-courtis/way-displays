@@ -4,27 +4,23 @@
 #include <stdbool.h>
 
 enum IpcRequestCommand {
-	CFG_GET = 1,
+	STATE_GET = 1,
+	CFG_GET,
 	CFG_SET,
 	CFG_DEL,
 	CFG_WRITE,
 };
 
-enum IpcResponseField {
-	DONE = 1,
-	RC,
-	CFG,
-	MESSAGES,
-};
-
 struct IpcRequest {
 	enum IpcRequestCommand command;
+	bool human;
 	struct Cfg *cfg;
 	int fd;
 	bool bad;
 };
 
 struct IpcResponse {
+	bool human;
 	bool done;
 	int rc;
 	struct Cfg *cfg;

@@ -3,6 +3,7 @@
    Memcheck:Leak
    match-leak-kinds: definite
    fun:calloc
+   ...
    fun:wl_display_read_events
    ...
 }

@@ -22,8 +22,6 @@ char *pid_path(void) {
 		snprintf(path, PATH_MAX, "/tmp/way-displays.pid");
 	}
 
-	log_debug("Server PID file %s", path);
-
 	return path;
 }
 
@@ -47,8 +45,6 @@ pid_t pid_active_server(void) {
 	}
 
 	free(path);
-
-	log_debug("Server PID %d", pid);
 
 	return pid;
 }

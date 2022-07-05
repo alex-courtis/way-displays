@@ -4,31 +4,41 @@ way-displays server creates a socket `${XDG_RUNTIME_DIR}/way-displays.${XDG_VTNR
 
 Clients send an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) and will receive [!!ipc_response](YAML_SCHEMAS.md#ipc_response) until the operation is complete and the socket closed.
 
-`MESSAGES` will contain log messages by [!!log_threshold](YAML_SCHEMAS.md#log_threshold), with human readable messages as written by the server. These are intended to be streamed to the user.
+## Response
+
+When the request sets `HUMAN`, the response will contain log `MESSAGES` by [!!log_threshold](YAML_SCHEMAS.md#log_threshold), with human readable messages as written by the server. These are intended to be streamed to the user.
+
+[STATE](YAML_SCHEMAS.md#state) contains the device states.
+
+[CFG](YAML_SCHEMAS.md#cfg) contains the active configuration.
 
 `DONE` will be set when the operation is complete.
 
 `RC` will be nonzero on failure when complete.
 
-## CFG_GET
+## Request
 
-Retrieves the current configuration along with human readable messages describing the configuration and current state.
+An [!!ipc_request](YAML_SCHEMAS.md#ipc_request) must contain one [COMMAND](YAML_SCHEMAS.md#ipc_command)
 
-Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operation](YAML_SCHEMAS.md#ipc_operation) `CFG_GET` and an empty [!!cfg](#cfg).
+Other fields are only used by certain commands.
 
-## CFG_WRITE
+### STATE_GET
 
-Persists the current configuration to the active `cfg.yaml`.
+Retrieves the current state of devices.
 
-Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operation](YAML_SCHEMAS.md#ipc_operation) `CFG_WRITE` and an empty [!!cfg](#cfg).
+### CFG_GET
 
-## CFG_SET
+Retrieves the active configuration.
 
-Configure multiple elements.
+### CFG_WRITE
 
-Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operation](YAML_SCHEMAS.md#ipc_operation) `CFG_SET`.
+Persists the active configuration to `cfg.yaml`.
 
-[!!cfg](#cfg) may only contain:
+### CFG_SET
+
+Add or change multiple configuration values.
+
+[CFG](YAML_SCHEMAS.md#cfg) elements that may be set:
 - `ARRANGE_ALIGN`
 - `ORDER`
 - `AUTO_SCALE`
@@ -36,13 +46,11 @@ Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operati
 - `MODE`
 - `DISABLED`
 
-## CFG_DEL
+### CFG_DEL
 
-Remove multiple elements.
+Remove multiple configuration values.
 
-Client sends an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) with [!!ipc_operation](YAML_SCHEMAS.md#ipc_operation) `CFG_DEL`.
-
-[!!cfg](#cfg) may only contain:
+[CFG](YAML_SCHEMAS.md#cfg) elements that may be deleted:
 - `SCALE`
 - `MODE`
 - `DISABLED`

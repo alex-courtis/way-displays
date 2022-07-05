@@ -2,6 +2,9 @@
 #define SOCKETS_H
 
 #include <sys/types.h>
+#include <sys/un.h>
+
+void socket_path(struct sockaddr_un *addr);
 
 int create_fd_ipc_server(void);
 

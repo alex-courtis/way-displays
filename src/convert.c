@@ -62,14 +62,6 @@ static struct NameVal ipc_request_commands[] = {
 	{ .val = 0,         .name = NULL,        .friendly = NULL,     },
 };
 
-static struct NameVal ipc_response_fields[] = {
-	{ .val = DONE,       .name = "DONE",       },
-	{ .val = RC,         .name = "RC",         },
-	{ .val = CFG,        .name = "CFG",        },
-	{ .val = MESSAGES,   .name = "MESSAGES",   },
-	{ .val = 0,          .name = NULL,         },
-};
-
 static struct NameVal log_thresholds[] = {
 	{ .val = DEBUG,   .name = "DEBUG",   },
 	{ .val = INFO,    .name = "INFO",    },
@@ -166,16 +158,12 @@ enum IpcRequestCommand ipc_request_command_val(const char *name) {
 	return val(ipc_request_commands, name);
 }
 
-const char *ipc_request_command_name(enum IpcRequestCommand ipc_request_command) {
-	return name(ipc_request_commands, ipc_request_command);
+const char *ipc_request_command_name(enum IpcRequestCommand ipc_request_op) {
+	return name(ipc_request_commands, ipc_request_op);
 }
 
-const char *ipc_request_command_friendly(enum IpcRequestCommand ipc_request_command) {
-	return friendly(ipc_request_commands, ipc_request_command);
-}
-
-const char *ipc_response_field_name(enum IpcResponseField ipc_response_field) {
-	return name(ipc_response_fields, ipc_response_field);
+const char *ipc_request_command_friendly(enum IpcRequestCommand ipc_request_op) {
+	return friendly(ipc_request_commands, ipc_request_op);
 }
 
 enum LogThreshold log_threshold_val(const char *name) {

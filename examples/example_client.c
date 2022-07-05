@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/un.h>
 #include <unistd.h>
 
 #include "convert.h"
@@ -36,7 +37,8 @@ void execute(enum IpcRequestCommand command, char *request) {
 
 void cfg_get(void) {
 	char *request = "\
-CFG_GET:\n\
+OP: CFG_GET\n\
+HUMAN: TRUE\n\
 ";
 
 	execute(CFG_GET, request);
@@ -44,7 +46,8 @@ CFG_GET:\n\
 
 void cfg_write(void) {
 	char *request = "\
-CFG_WRITE:\n\
+OP: CFG_WRITE\n\
+HUMAN: TRUE\n\
 ";
 
 	execute(CFG_WRITE, request);
@@ -52,7 +55,9 @@ CFG_WRITE:\n\
 
 void cfg_set(void) {
 	char *request = "\
-CFG_SET:\n\
+OP: CFG_SET\n\
+HUMAN: TRUE\n\
+CFG: \n\
   ARRANGE: COL\n\
   ALIGN: RIGHT\n\
   ORDER:\n\
@@ -86,7 +91,9 @@ CFG_SET:\n\
 
 void cfg_del(void) {
 	char *request = "\
-CFG_DEL:\n\
+OP: CFG_DEL\n\
+HUMAN: TRUE\n\
+CFG:\n\
   SCALE:\n\
     - NAME_DESC: DEF 456\n\
       SCALE: 1\n\
@@ -132,10 +139,20 @@ main(int argc, char **argv) {
 	}
 	log_debug("XDG_VTNR=%s", getenv("XDG_VTNR"));
 
-	if (pid_active_server() == 0) {
+	char *path = pid_path();
+	log_debug("Server PID file %s", path);
+	free(path);
+
+	pid_t pid = pid_active_server();
+	if (pid == 0) {
 		log_error("way-displays not running");
 		exit(1);
 	}
+	log_debug("Server PID %d", pid);
+
+	struct sockaddr_un addr;
+	socket_path(&addr);
+	log_debug("Server socket %s", addr.sun_path);
 
 	fn();
 

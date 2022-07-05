@@ -41,6 +41,7 @@ bool handle_ipc(int fd_sock) {
 	}
 
 	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+	ipc_response->human = ipc_request->human;
 	ipc_response->rc = EXIT_SUCCESS;
 	ipc_response->done = false;
 

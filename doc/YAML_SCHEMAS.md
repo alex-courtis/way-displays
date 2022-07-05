@@ -16,9 +16,9 @@ Document loosely follow the YAML [failsafe + JSON](https://yaml.org/spec/1.2.2/#
 
 `!!str` : `<ERROR | WARNING | INFO | DEBUG>`
 
-## !!ipc_operation
+## !!ipc_command
 
-`!!str` : `<CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
+`!!str` : `<STATE_GET | CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
 
 ## !!cfg
 
@@ -54,12 +54,17 @@ LOG_THRESHOLD: !!log_threshold
 LAPTOP_DISPLAY_PREFIX: !!str
 ```
 
+## !!state
+
+TODO
+
 ## !!ipc_request
 
 ```yaml
 !!map
-!!ipc_operation:
-  !!cfg
+COMMAND: !!ipc_command
+HUMAN: !!bool
+CFG: !!cfg
 ```
 
 ## !!ipc_response
@@ -68,6 +73,7 @@ LAPTOP_DISPLAY_PREFIX: !!str
 !!map
 DONE: !!bool
 RC: !!int
+STATE: !!state
 CFG: !!cfg
 MESSAGES: !!seq
   - !!map

@@ -103,8 +103,6 @@ void socket_path(struct sockaddr_un *addr) {
 	} else {
 		snprintf(addr->sun_path, sun_path_size, "%s%s", getenv("XDG_RUNTIME_DIR"), name);
 	}
-
-	log_debug("Server socket %s", addr->sun_path);
 }
 
 int create_fd_ipc_server(void) {

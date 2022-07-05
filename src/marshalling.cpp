@@ -85,7 +85,7 @@ bool parse_node_val_float(const YAML::Node &node, const char *key, float *val, c
 	return true;
 }
 
-char *yaml_with_newline(YAML::Emitter &e) {
+char *yaml_with_newline(const YAML::Emitter &e) {
 	char *yaml = (char*)calloc(e.size() + 2, sizeof(char));
 	snprintf(yaml, e.size() + 2, "%s\n", e.c_str());
 	return yaml;
@@ -199,9 +199,9 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 	cfg_free(def);
 }
 
-void cfg_parse_node(struct Cfg *cfg, YAML::Node &node) {
+void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 	if (!cfg || !node || !node.IsMap()) {
-		throw std::runtime_error("missing cfg");
+		throw std::runtime_error("empty CFG");
 	}
 
 	if (node["LOG_THRESHOLD"]) {
@@ -340,12 +340,12 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 
 		e << YAML::BeginMap;
 
-		e << YAML::Key << ipc_request_command_name(request->command);
+		e << YAML::Key << "OP";
+		e << YAML::Value << ipc_request_command_name(request->command);
 
 		if (request->cfg) {
+			e << YAML::Key << "CFG";
 			cfg_emit(e, request->cfg);
-		} else {
-			e << YAML::Value << "";
 		}
 
 		e << YAML::EndMap;
@@ -373,28 +373,27 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 	try {
 		YAML::Node node = YAML::Load(yaml);
 		if (!node.IsMap()) {
-			throw std::runtime_error("no commands");
+			throw std::runtime_error("empty request");
 		}
 
-		if (node.size() != 1) {
-			throw std::runtime_error("multiple commands");
+		const YAML::Node node_op = node["OP"];
+		if (node_op) {
+			const std::string &op_str = node_op.as<std::string>();
+			request->command = ipc_request_command_val(op_str.c_str());
+			if (!request->command) {
+				throw std::runtime_error("invalid OP '" + op_str + "'");
+			}
+		} else {
+			throw std::runtime_error("missing OP");
 		}
 
-		request->command = ipc_request_command_val(node.begin()->first.as<std::string>().c_str());
-		if (!request->command) {
-			throw std::runtime_error("invalid command");
+		const YAML::Node node_cfg = node["CFG"];
+		if (node_cfg && node_cfg.IsMap()) {
+			request->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+			cfg_parse_node(request->cfg, node_cfg);
 		}
 
-		switch (request->command) {
-			case CFG_SET:
-			case CFG_DEL:
-				request->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-				cfg_parse_node(request->cfg, node.begin()->second);
-				break;
-			case CFG_GET:
-			default:
-				break;
-		}
+		parse_node_val_bool(node, "HUMAN", &request->human, "", "");
 
 		return request;
 
@@ -418,20 +417,20 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 
 		e << YAML::BeginMap;
 
-		e << YAML::Key << ipc_response_field_name(DONE);
+		e << YAML::Key << "DONE";
 		e << YAML::Value << response->done;
 
-		e << YAML::Key << ipc_response_field_name(RC);
+		e << YAML::Key << "RC";
 		e << YAML::Value << response->rc;
 
-		if (response->cfg && response->done) {
-			e << YAML::Key << ipc_response_field_name(CFG);
+		if (response->cfg) {
+			e << YAML::Key << "CFG";
 			cfg_emit(e, response->cfg);
 		}
 
-		if (log_cap_lines) {
+		if (response->human && log_cap_lines) {
 
-			e << YAML::Key << ipc_response_field_name(MESSAGES);
+			e << YAML::Key << "MESSAGES";
 
 			e << YAML::BeginMap;
 
