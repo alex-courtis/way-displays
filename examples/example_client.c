@@ -35,6 +35,24 @@ void execute(enum IpcRequestCommand command, char *request) {
 	close(fd);
 }
 
+void all_get(void) {
+	char *request = "\
+OP: ALL_GET\n\
+HUMAN: TRUE\n\
+";
+
+	execute(ALL_GET, request);
+}
+
+void state_get(void) {
+	char *request = "\
+OP: STATE_GET\n\
+HUMAN: TRUE\n\
+";
+
+	execute(STATE_GET, request);
+}
+
 void cfg_get(void) {
 	char *request = "\
 OP: CFG_GET\n\
@@ -108,7 +126,7 @@ CFG:\n\
 }
 
 void usage(void) {
-	fprintf(stderr, "Usage: example_client <CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>\n");
+	fprintf(stderr, "Usage: example_client <ALL_GET | STATE_GET | CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>\n");
 	exit(1);
 }
 
@@ -121,7 +139,11 @@ main(int argc, char **argv) {
 	}
 
 	void (*fn)(void);
-	if (strcmp(argv[1], ipc_request_command_name(CFG_GET)) == 0) {
+	if (strcmp(argv[1], ipc_request_command_name(ALL_GET)) == 0) {
+		fn = all_get;
+	} else if (strcmp(argv[1], ipc_request_command_name(STATE_GET)) == 0) {
+		fn = state_get;
+	} else if (strcmp(argv[1], ipc_request_command_name(CFG_GET)) == 0) {
 		fn = cfg_get;
 	} else if (strcmp(argv[1], ipc_request_command_name(CFG_WRITE)) == 0) {
 		fn = cfg_write;

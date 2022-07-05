@@ -69,6 +69,7 @@ bool handle_ipc(int fd_sock) {
 		case CFG_WRITE:
 			cfg_file_write();
 			break;
+		case STATE_GET:
 		case CFG_GET:
 		default:
 			// return the active
@@ -87,20 +88,38 @@ bool handle_ipc(int fd_sock) {
 		ipc_response->done = true;
 	}
 
-	print_cfg(INFO, cfg, false);
-
-	if (ipc_request->command == CFG_GET) {
-		print_heads(INFO, NONE, heads);
+	switch (ipc_request->command) {
+		case ALL_GET:
+			print_cfg(INFO, cfg, false);
+			print_heads(INFO, NONE, heads);
+			ipc_response->lid = lid;
+			ipc_response->heads = heads;
+			ipc_response->cfg = cfg;
+			break;
+		case STATE_GET:
+			print_heads(INFO, NONE, heads);
+			ipc_response->lid = lid;
+			ipc_response->heads = heads;
+			break;
+		case CFG_GET:
+			print_cfg(INFO, cfg, false);
+			ipc_response->cfg = cfg;
+			break;
+		case CFG_SET:
+		case CFG_DEL:
+		case CFG_WRITE:
+		default:
+			print_cfg(INFO, cfg, false);
+			ipc_response->cfg = cfg;
+			ipc_response->lid = lid;
+			ipc_response->heads = heads;
+			break;
 	}
 
 end:
 	ipc_response->fd = ipc_request->fd;
 
 	free_ipc_request(ipc_request);
-
-	ipc_response->cfg = cfg;
-	ipc_response->lid = lid;
-	ipc_response->heads = heads;
 
 	ipc_response_send(ipc_response);
 

@@ -55,11 +55,13 @@ static struct NameVal auto_scales[] = {
 };
 
 static struct NameVal ipc_request_commands[] = {
-	{ .val = CFG_GET,   .name = "CFG_GET",   .friendly = "get",    },
-	{ .val = CFG_SET,   .name = "CFG_SET",   .friendly = "set",    },
-	{ .val = CFG_DEL,   .name = "CFG_DEL",   .friendly = "delete", },
-	{ .val = CFG_WRITE, .name = "CFG_WRITE", .friendly = "write",  },
-	{ .val = 0,         .name = NULL,        .friendly = NULL,     },
+	{ .val = ALL_GET,   .name = "ALL_GET",   .friendly = "get",       },
+	{ .val = STATE_GET, .name = "STATE_GET", .friendly = "state_get", },
+	{ .val = CFG_GET,   .name = "CFG_GET",   .friendly = "cfg_get",   },
+	{ .val = CFG_SET,   .name = "CFG_SET",   .friendly = "set",       },
+	{ .val = CFG_DEL,   .name = "CFG_DEL",   .friendly = "delete",    },
+	{ .val = CFG_WRITE, .name = "CFG_WRITE", .friendly = "write",     },
+	{ .val = 0,         .name = NULL,        .friendly = NULL,        },
 };
 
 static struct NameVal log_thresholds[] = {

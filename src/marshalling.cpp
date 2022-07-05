@@ -451,23 +451,24 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 				e << YAML::Key << "CFG" << YAML::BeginMap << *response->cfg << YAML::EndMap;
 			}
 
-			e << YAML::Key << "STATE" << YAML::BeginMap; {
-				if (response->lid) {
-					e << YAML::Key << "LID" << YAML::BeginMap; {
-						e << YAML::Key << "CLOSED" << YAML::Value << response->lid->closed;
-						e << YAML::Key << "DEVICE_PATH" << YAML::Value << response->lid->device_path;
-					} e << YAML::EndMap;
-				}
+			if (response->lid || response->heads) {
+				e << YAML::Key << "STATE" << YAML::BeginMap; {
+					if (response->lid) {
+						e << YAML::Key << "LID" << YAML::BeginMap; {
+							e << YAML::Key << "CLOSED" << YAML::Value << response->lid->closed;
+							e << YAML::Key << "DEVICE_PATH" << YAML::Value << response->lid->device_path;
+						} e << YAML::EndMap;
+					}
 
-				if (response->heads) {
-					e << YAML::Key << "HEADS" << YAML::BeginSeq; {
-						for (struct SList *i = response->heads; i; i = i->nex) {
-							e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
-							e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
-						}
-					} e << YAML::EndSeq;
-				}
-			} e << YAML::EndMap;
+					if (response->heads) {
+						e << YAML::Key << "HEADS" << YAML::BeginSeq; {
+							for (struct SList *i = response->heads; i; i = i->nex) {
+								e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
+							}
+						} e << YAML::EndSeq;
+					}
+				} e << YAML::EndMap;
+			}
 
 			if (response->human && log_cap_lines) {
 				e << YAML::Key << "MESSAGES";

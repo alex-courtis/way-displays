@@ -22,7 +22,7 @@ Document loosely follow the YAML [failsafe + JSON](https://yaml.org/spec/1.2.2/#
 
 ## !!ipc_command
 
-`!!str` : `<STATE_GET | CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
+`!!str` : `<GET | STATE_GET | CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
 
 ## !!cfg
 
