@@ -16,6 +16,10 @@ Document loosely follow the YAML [failsafe + JSON](https://yaml.org/spec/1.2.2/#
 
 `!!str` : `<ERROR | WARNING | INFO | DEBUG>`
 
+### !!transform
+
+`!!str` : `<90 | 180 | 270 | FLIPPED | FLIPPED-90 | FLIPPED-180 | FLIPPED-270>
+
 ## !!ipc_command
 
 `!!str` : `<STATE_GET | CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
@@ -54,9 +58,53 @@ LOG_THRESHOLD: !!log_threshold
 LAPTOP_DISPLAY_PREFIX: !!str
 ```
 
-## !!state
+## !!lid
 
-TODO
+```yaml
+!!map
+CLOSED: !!bool
+DEVICE_PATH: !!str
+```
+
+## !!head_state
+
+```yaml
+!!map
+SCALE: !!float
+ENABLED: !!bool
+X: !!int
+Y: !!int
+???current mode???
+```
+
+## !!mode
+
+```yaml
+!!map
+WIDTH: !!int
+HEIGHT: !!int
+REFRESH_MHZ: !!int
+PREFERRED: !!bool
+CURRENT: !!bool
+```
+
+## !!head
+
+```yaml
+!!map
+NAME: !!str
+DESCRIPTION: !!str
+WIDTH_MM: !!int
+HEIGHT_MM: !!int
+TRANSFORM: !!int
+MAKE: !!str
+MODEL: !!str
+SERIAL_NUMBER: !!str
+CURRENT: !!head_state
+DESIRED: !!head_state
+MODES: !!seq
+  - !!mode
+```
 
 ## !!ipc_request
 
@@ -73,7 +121,10 @@ CFG: !!cfg
 !!map
 DONE: !!bool
 RC: !!int
-STATE: !!state
+STATE:
+  HEADS: !!seq
+  - !!head
+  LID: !!lid
 CFG: !!cfg
 MESSAGES: !!seq
   - !!map

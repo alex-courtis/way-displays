@@ -25,6 +25,8 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
+	ipc_request->human = true;
+
 	int fd = ipc_request_send(ipc_request);
 	if (fd == -1) {
 		rc = EXIT_FAILURE;

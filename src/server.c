@@ -86,7 +86,6 @@ bool handle_ipc(int fd_sock) {
 	} else {
 		ipc_response->done = true;
 	}
-	ipc_response->cfg = cfg;
 
 	print_cfg(INFO, cfg, false);
 
@@ -98,6 +97,10 @@ end:
 	ipc_response->fd = ipc_request->fd;
 
 	free_ipc_request(ipc_request);
+
+	ipc_response->cfg = cfg;
+	ipc_response->lid = lid;
+	ipc_response->heads = heads;
 
 	ipc_response_send(ipc_response);
 
