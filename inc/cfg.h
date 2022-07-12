@@ -73,14 +73,9 @@ enum CfgElement {
 	ARRANGE_ALIGN,
 };
 
-enum CfgMergeType {
-	SET = 1,
-	DEL,
-};
-
 void cfg_init(void);
 
-struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum CfgMergeType merge_type);
+struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del);
 
 void cfg_file_reload(void);
 

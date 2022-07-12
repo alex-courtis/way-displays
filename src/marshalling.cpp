@@ -25,6 +25,7 @@ extern "C" {
 #include "lid.h"
 #include "list.h"
 #include "log.h"
+#include "server.h"
 }
 
 bool parse_node_val_bool(const YAML::Node &node, const char *key, bool *val, const char *desc1, const char *desc2) {
@@ -442,23 +443,23 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
 		e << YAML::Key << "RC" << YAML::Value << response->rc;
 
-		if (response->cfg) {
-			e << YAML::Key << "CFG" << YAML::BeginMap << *response->cfg << YAML::EndMap;
+		if (cfg) {
+			e << YAML::Key << "CFG" << YAML::BeginMap << *cfg << YAML::EndMap;
 		}
 
-		if (response->lid || response->heads) {
+		if (lid || heads) {
 			e << YAML::Key << "STATE" << YAML::BeginMap;
 
-			if (response->lid) {
+			if (lid) {
 				e << YAML::Key << "LID" << YAML::BeginMap;
-				e << YAML::Key << "CLOSED" << YAML::Value << response->lid->closed;
-				e << YAML::Key << "DEVICE_PATH" << YAML::Value << response->lid->device_path;
+				e << YAML::Key << "CLOSED" << YAML::Value << lid->closed;
+				e << YAML::Key << "DEVICE_PATH" << YAML::Value << lid->device_path;
 				e << YAML::EndMap; // LID
 			}
 
-			if (response->heads) {
+			if (heads) {
 				e << YAML::Key << "HEADS" << YAML::BeginSeq;
-				for (struct SList *i = response->heads; i; i = i->nex) {
+				for (struct SList *i = heads; i; i = i->nex) {
 					e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
 				}
 				e << YAML::EndSeq; // HEADS

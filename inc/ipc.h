@@ -22,9 +22,6 @@ struct IpcRequest {
 struct IpcResponse {
 	bool done;
 	int rc;
-	struct Cfg *cfg;
-	struct Lid *lid;
-	struct SList *heads;
 	int fd;
 };
 

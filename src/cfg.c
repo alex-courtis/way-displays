@@ -497,22 +497,17 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum CfgMergeType merge_type) {
-	if (!to || !from || !merge_type) {
+struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
+	if (!to || !from) {
 		return NULL;
 	}
 
 	struct Cfg *merged = NULL;
 
-	switch (merge_type) {
-		case SET:
-			merged = merge_set(to, from);
-			break;
-		case DEL:
-			merged = merge_del(to, from);
-			break;
-		default:
-			break;
+	if (del) {
+		merged = merge_del(to, from);
+	} else {
+		merged = merge_set(to, from);
 	}
 
 	if (merged) {
@@ -520,7 +515,6 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum CfgMergeType merge_
 		validate_warn(merged);
 
 		if (equal_cfg(merged, to)) {
-			log_info("\nNo changes to make.");
 			cfg_free(merged);
 			merged = NULL;
 		}

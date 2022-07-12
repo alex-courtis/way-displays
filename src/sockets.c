@@ -70,7 +70,7 @@ char *socket_read(int fd) {
 		return NULL;
 	}
 
-	log_debug("Read %d bytes from socket", n);
+	log_debug("\nRead %d bytes from socket", n);
 
 	return buf;
 }
@@ -83,7 +83,7 @@ ssize_t socket_write(int fd, char *data, size_t len) {
 		return -1;
 	}
 
-	log_debug_nocap("Wrote %d bytes to socket", n);
+	log_debug_nocap("\nWrote %d bytes to socket", n);
 
 	return n;
 }
