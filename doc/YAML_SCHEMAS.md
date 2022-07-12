@@ -18,11 +18,11 @@ Document loosely follow the YAML [failsafe + JSON](https://yaml.org/spec/1.2.2/#
 
 ### !!transform
 
-`!!str` : `<90 | 180 | 270 | FLIPPED | FLIPPED-90 | FLIPPED-180 | FLIPPED-270>
+`!!str` : `<90 | 180 | 270 | FLIPPED | FLIPPED-90 | FLIPPED-180 | FLIPPED-270>`
 
 ## !!ipc_command
 
-`!!str` : `<GET | STATE_GET | CFG_GET | CFG_WRITE | CFG_SET | CFG_DEL>`
+`!!str` : `<GET | CFG_WRITE | CFG_SET | CFG_DEL>`
 
 ## !!cfg
 

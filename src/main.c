@@ -145,7 +145,7 @@ struct IpcRequest *parse_get(int argc, char **argv) {
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = ALL_GET;
+	request->command = GET;
 
 	return request;
 }

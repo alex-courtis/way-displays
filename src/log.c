@@ -185,6 +185,18 @@ void log_error(const char *__restrict __format, ...) {
 	va_end(args);
 }
 
+void log_error_nocap(const char *__restrict __format, ...) {
+	bool was_capturing = active.capturing;
+	active.capturing = false;
+
+	va_list args;
+	va_start(args, __format);
+	print_log(ERROR, 0, __format, args);
+	va_end(args);
+
+	active.capturing = was_capturing;
+}
+
 void log_error_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);

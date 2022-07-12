@@ -4,9 +4,7 @@
 #include <stdbool.h>
 
 enum IpcRequestCommand {
-	ALL_GET = 1,
-	STATE_GET,
-	CFG_GET,
+	GET = 1,
 	CFG_SET,
 	CFG_DEL,
 	CFG_WRITE,

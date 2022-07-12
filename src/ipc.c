@@ -53,12 +53,6 @@ void ipc_response_send(struct IpcResponse *response) {
 	}
 
 	free(yaml);
-
-	if (response->done) {
-		log_capture_stop();
-		log_capture_clear();
-		close(response->fd);
-	}
 }
 
 struct IpcRequest *ipc_request_receive(int fd_sock) {

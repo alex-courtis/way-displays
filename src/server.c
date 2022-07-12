@@ -37,19 +37,27 @@ void finish_ipc(void) {
 
 	ipc_response_send(ipc_response);
 
-	free_ipc_response(ipc_response);
-	ipc_response = NULL;
 	log_capture_stop();
 	log_capture_clear();
+
+	close(ipc_response->fd);
+
+	free_ipc_response(ipc_response);
+	ipc_response = NULL;
 }
 
 void handle_ipc(int fd_sock) {
 
 	free_ipc_response(ipc_response);
 
+	log_capture_clear();
+	log_capture_start();
+
 	struct IpcRequest *ipc_request = ipc_request_receive(fd_sock);
 	if (!ipc_request) {
 		log_error("\nFailed to read IPC request");
+		log_capture_stop();
+		log_capture_clear();
 		return;
 	}
 
@@ -66,9 +74,6 @@ void handle_ipc(int fd_sock) {
 	if (ipc_request->cfg) {
 		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
-
-	log_capture_clear();
-	log_capture_start();
 
 	switch (ipc_request->command) {
 		case CFG_DEL:
@@ -95,10 +100,11 @@ void handle_ipc(int fd_sock) {
 				log_info("\nWrote configuration file: %s", cfg->file_path);
 				break;
 			}
-		case ALL_GET:
+		case GET:
 		default:
 			{
 				// complete
+				log_info("\nActive configuration:");
 				print_cfg(INFO, cfg, false);
 				print_heads(INFO, NONE, heads);
 				break;

@@ -552,6 +552,7 @@ void cfg_init(void) {
 		log_info("\nNo configuration file found, using defaults:");
 	}
 	validate_fix(cfg);
+	log_info("\nActive configuration:");
 	print_cfg(INFO, cfg, false);
 	validate_warn(cfg);
 }
@@ -571,6 +572,7 @@ void cfg_file_reload(void) {
 		cfg = reloaded;
 		log_set_threshold(cfg->log_threshold, false);
 		validate_fix(cfg);
+		log_info("\nNew configuration:");
 		print_cfg(INFO, cfg, false);
 		validate_warn(cfg);
 	} else {

@@ -385,7 +385,7 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 		return yaml_with_newline(e);
 
 	} catch (const std::exception &e) {
-		log_error("marshalling ipc request: %s\n%s", e.what());
+		log_error("\nmarshalling ipc request: %s\n%s", e.what());
 		return NULL;
 	}
 }
@@ -423,7 +423,8 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 		return request;
 
 	} catch (const std::exception &e) {
-		log_error("unmarshalling ipc request: %s\n========================================\n%s\n----------------------------------------", e.what(), yaml);
+		log_error("\nunmarshalling ipc request: %s", e.what());
+		log_error_nocap("========================================\n%s\n----------------------------------------", yaml);
 		free_ipc_request(request);
 		return NULL;
 	}
@@ -544,7 +545,8 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 		}
 
 	} catch (const std::exception &e) {
-		log_error("unmarshalling ipc response: %s\n========================================\n%s\n----------------------------------------", e.what(), yaml);
+		log_error("\nunmarshalling ipc response: %s", e.what());
+		log_error_nocap("========================================\n%s\n----------------------------------------", yaml);
 		response->rc = EXIT_FAILURE;
 	}
 
