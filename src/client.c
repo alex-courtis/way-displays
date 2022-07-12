@@ -40,9 +40,14 @@ int client(struct IpcRequest *ipc_request) {
 	bool done = false;
 	while (!done) {
 		ipc_response = ipc_response_receive(fd);
-		rc = ipc_response->rc;
-		done = ipc_response->done;
-		free_ipc_response(ipc_response);
+		if (ipc_response) {
+			rc = ipc_response->rc;
+			done = ipc_response->done;
+			free_ipc_response(ipc_response);
+		} else {
+			rc = IPC_RC_BAD_RESPONSE;
+			done = true;
+		}
 	}
 
 	close(fd);

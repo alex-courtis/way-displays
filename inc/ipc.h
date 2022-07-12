@@ -3,6 +3,13 @@
 
 #include <stdbool.h>
 
+#define IPC_RC_SUCCESS 0
+#define IPC_RC_WARN 1
+#define IPC_RC_ERROR 2
+#define IPC_RC_BAD_REQUEST 11
+#define IPC_RC_BAD_RESPONSE 12
+#define IPC_RC_REQUEST_IN_PROGRESS 13
+
 enum IpcRequestCommand {
 	GET = 1,
 	CFG_SET,

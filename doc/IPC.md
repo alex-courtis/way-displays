@@ -16,7 +16,7 @@ See [example_client.c](../examples/example_client.c) for a standalone client tha
 
 `DONE` will be set when the operation is complete.
 
-`RC` will be nonzero on failure when complete.
+`RC` on completion: 0 on success, see `[ipc.h](../inc/ipc.h)` for failure codes.
 
 ## Request
 

@@ -62,11 +62,10 @@ void handle_ipc(int fd_sock) {
 	}
 
 	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	ipc_response->rc = EXIT_SUCCESS;
 	ipc_response->done = true;
 
 	if (ipc_request->bad) {
-		ipc_response->rc = EXIT_FAILURE;
+		ipc_response->rc = IPC_RC_BAD_REQUEST;
 		goto send;
 	}
 

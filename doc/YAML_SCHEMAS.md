@@ -130,3 +130,5 @@ MESSAGES: !!seq
     !!log_threshold: !!str
 ```
 
+`RC` 0 on success, see `[ipc.h](../inc/ipc.h)` for failure codes.
+

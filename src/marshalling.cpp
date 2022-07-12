@@ -474,8 +474,11 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 			if (cap_line && cap_line->line) {
 				e << YAML::Key << log_threshold_name(cap_line->threshold);
 				e << YAML::Value << cap_line->line;
-				if (cap_line->threshold == ERROR) {
-					response->rc = EXIT_FAILURE;
+				if (cap_line->threshold == WARNING && response->rc < IPC_RC_WARN) {
+					response->rc = IPC_RC_WARN;
+				}
+				if (cap_line->threshold == ERROR && response->rc < IPC_RC_ERROR) {
+					response->rc = IPC_RC_ERROR;
 				}
 			}
 		}
@@ -500,13 +503,11 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 }
 
 struct IpcResponse *unmarshal_ipc_response(char *yaml) {
-	struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	response->rc = EXIT_FAILURE;
-	response->done = true;
-
 	if (!yaml) {
-		return response;
+		return NULL;
 	}
+
+	struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
 
 	try {
 		const YAML::Node node = YAML::Load(yaml);
@@ -546,7 +547,8 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 	} catch (const std::exception &e) {
 		log_error("\nunmarshalling ipc response: %s", e.what());
 		log_error_nocap("========================================\n%s\n----------------------------------------", yaml);
-		response->rc = EXIT_FAILURE;
+		free_ipc_response(response);
+		response = NULL;
 	}
 
 	return response;

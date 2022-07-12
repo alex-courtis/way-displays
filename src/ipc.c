@@ -92,26 +92,17 @@ struct IpcResponse *ipc_response_receive(int fd) {
 
 	if (fd == -1) {
 		log_error("invalid fd for ipc response receive");
-		goto err;
+		return NULL;
 	}
 
 	if (!(yaml = socket_read(fd))) {
-		goto err;
+		return NULL;
 	}
 
 	log_debug_nocap("========received server response========\n%s\n----------------------------------------", yaml);
 
 	response = unmarshal_ipc_response(yaml);
 	free(yaml);
-
-	return response;
-
-err:
-	log_error("\nFailed to read IPC response");
-
-	response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	response->done = true;
-	response->rc = 1;
 
 	return response;
 }
