@@ -8,11 +8,11 @@ See [example_client.c](../examples/example_client.c) for a standalone client tha
 
 ## Response
 
-When the request sets `HUMAN`, the response will contain log `MESSAGES` by [!!log_threshold](YAML_SCHEMAS.md#log_threshold), with human readable messages as written by the server. These are intended to be streamed to the user.
-
 [STATE](YAML_SCHEMAS.md#state) contains the device states.
 
 [CFG](YAML_SCHEMAS.md#cfg) contains the active configuration.
+
+`MESSAGES` contains human readable messages by [!!log_threshold](YAML_SCHEMAS.md#log_threshold) as written by the server. These are intended to be streamed to the user.
 
 `DONE` will be set when the operation is complete.
 
@@ -22,8 +22,6 @@ When the request sets `HUMAN`, the response will contain log `MESSAGES` by [!!lo
 
 An [!!ipc_request](YAML_SCHEMAS.md#ipc_request) must contain one [COMMAND](YAML_SCHEMAS.md#ipc_command).
 
-Unless stated otherwise, `STATE` and `CFG` will be populated in the response. The server will print those for humans and return via `MESSAGES`.
-
 ### ALL_GET
 
 Retrieves `CFG` and `STATE`.
@@ -31,7 +29,6 @@ Retrieves `CFG` and `STATE`.
 example request:
 ```yaml
 OP: ALL_GET
-HUMAN: TRUE
 ```
 
 ### STATE_GET
@@ -41,7 +38,6 @@ Retrieves only `STATE`.
 example request:
 ```yaml
 OP: STATE_GET
-HUMAN: TRUE
 ```
 
 example response:
@@ -100,7 +96,6 @@ Retrieves only `CFG`.
 example request:
 ```yaml
 OP: CFG_GET
-HUMAN: TRUE
 ```
 
 example response:
@@ -152,7 +147,6 @@ Persists the active configuration to `cfg.yaml`.
 example request:
 ```yaml
 OP: CFG_WRITE
-HUMAN: TRUE
 ```
 
 ### CFG_SET
@@ -171,7 +165,6 @@ Add or change multiple configuration values.
 example request:
 ```yaml
 OP: CFG_SET
-HUMAN: TRUE
 CFG:
   ARRANGE: COL
   ALIGN: RIGHT
@@ -388,7 +381,6 @@ Remove multiple configuration values.
 example request:
 ```yaml
 OP: CFG_DEL
-HUMAN: TRUE
 CFG:
   SCALE:
     - NAME_DESC: DEF 456

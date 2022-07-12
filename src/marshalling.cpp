@@ -370,8 +370,6 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 
 		e << YAML::Key << "OP" << YAML::Value << ipc_request_command_name(request->command);
 
-		e << YAML::Key << "HUMAN" << YAML::Value << request->human;
-
 		if (request->cfg) {
 			e << YAML::Key << "CFG" << YAML::BeginMap << *request->cfg << YAML::EndMap;
 		}
@@ -421,8 +419,6 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 			cfg_parse_node(request->cfg, node_cfg);
 		}
 
-		parse_node_val_bool(node, "HUMAN", &request->human, "", "");
-
 		return request;
 
 	} catch (const std::exception &e) {
@@ -434,8 +430,6 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 
 char *marshal_ipc_response(struct IpcResponse *response) {
 	char *yaml = NULL;
-
-	log_capture_end();
 
 	try {
 		YAML::Emitter e;
@@ -473,20 +467,18 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 			e << YAML::EndMap; // STATE
 		}
 
-		if (response->human && log_cap_lines) {
-			e << YAML::Key << "MESSAGES" << YAML::BeginMap;
-			for (struct SList *i = log_cap_lines; i; i = i->nex) {
-				struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
-				if (cap_line && cap_line->line) {
-					e << YAML::Key << log_threshold_name(cap_line->threshold);
-					e << YAML::Value << cap_line->line;
-					if (cap_line->threshold == ERROR) {
-						response->rc = EXIT_FAILURE;
-					}
+		e << YAML::Key << "MESSAGES" << YAML::BeginMap;
+		for (struct SList *i = log_cap_lines; i; i = i->nex) {
+			struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+			if (cap_line && cap_line->line) {
+				e << YAML::Key << log_threshold_name(cap_line->threshold);
+				e << YAML::Value << cap_line->line;
+				if (cap_line->threshold == ERROR) {
+					response->rc = EXIT_FAILURE;
 				}
 			}
-			e << YAML::EndMap; // MESSAGES
 		}
+		e << YAML::EndMap; // MESSAGES
 
 		e << YAML::EndMap; // root
 
@@ -501,7 +493,7 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		log_error("marshalling ipc response: %s\n%s", e.what());
 	}
 
-	log_capture_reset();
+	log_capture_clear();
 
 	return yaml;
 }

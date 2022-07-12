@@ -14,14 +14,12 @@ enum IpcRequestCommand {
 
 struct IpcRequest {
 	enum IpcRequestCommand command;
-	bool human;
 	struct Cfg *cfg;
 	int fd;
 	bool bad;
 };
 
 struct IpcResponse {
-	bool human;
 	bool done;
 	int rc;
 	struct Cfg *cfg;

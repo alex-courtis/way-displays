@@ -31,7 +31,6 @@ struct IpcResponse *ipc_response = NULL;
 // returns true if processed immediately
 bool handle_ipc(int fd_sock) {
 
-	ipc_response = NULL;
 	free_ipc_response(ipc_response);
 
 	struct IpcRequest *ipc_request = ipc_request_receive(fd_sock);
@@ -41,7 +40,6 @@ bool handle_ipc(int fd_sock) {
 	}
 
 	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	ipc_response->human = ipc_request->human;
 	ipc_response->rc = EXIT_SUCCESS;
 	ipc_response->done = false;
 
@@ -51,11 +49,12 @@ bool handle_ipc(int fd_sock) {
 		goto end;
 	}
 
-	log_info("\nServer received %s request:", ipc_request_command_friendly(ipc_request->command));
+	log_info("\nReceived request: %s", ipc_request_command_friendly(ipc_request->command));
 	if (ipc_request->cfg) {
 		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
+	log_capture_clear();
 	log_capture_start();
 
 	struct Cfg *cfg_merged = NULL;
@@ -243,9 +242,10 @@ server(void) {
 
 	// play back captured logs from cfg parse
 	log_set_threshold(cfg->log_threshold, false);
-	log_suppress_end();
+	log_suppress_stop();
+	log_capture_stop();
 	log_capture_playback();
-	log_capture_reset();
+	log_capture_clear();
 
 	// discover the lid state immediately
 	lid_init();

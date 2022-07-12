@@ -38,7 +38,6 @@ void execute(enum IpcRequestCommand command, char *request) {
 void all_get(void) {
 	char *request = "\
 OP: ALL_GET\n\
-HUMAN: TRUE\n\
 ";
 
 	execute(ALL_GET, request);
@@ -47,7 +46,6 @@ HUMAN: TRUE\n\
 void state_get(void) {
 	char *request = "\
 OP: STATE_GET\n\
-HUMAN: TRUE\n\
 ";
 
 	execute(STATE_GET, request);
@@ -56,7 +54,6 @@ HUMAN: TRUE\n\
 void cfg_get(void) {
 	char *request = "\
 OP: CFG_GET\n\
-HUMAN: TRUE\n\
 ";
 
 	execute(CFG_GET, request);
@@ -65,7 +62,6 @@ HUMAN: TRUE\n\
 void cfg_write(void) {
 	char *request = "\
 OP: CFG_WRITE\n\
-HUMAN: TRUE\n\
 ";
 
 	execute(CFG_WRITE, request);
@@ -74,7 +70,6 @@ HUMAN: TRUE\n\
 void cfg_set(void) {
 	char *request = "\
 OP: CFG_SET\n\
-HUMAN: TRUE\n\
 CFG: \n\
   ARRANGE: COL\n\
   ALIGN: RIGHT\n\
@@ -110,7 +105,6 @@ CFG: \n\
 void cfg_del(void) {
 	char *request = "\
 OP: CFG_DEL\n\
-HUMAN: TRUE\n\
 CFG:\n\
   SCALE:\n\
     - NAME_DESC: DEF 456\n\
@@ -155,11 +149,12 @@ main(int argc, char **argv) {
 		usage();
 	}
 
-	if (!getenv("XDG_VTNR")) {
-		log_error("environment variable $XDG_VTNR missing");
+	if (!getenv("WAYLAND_DISPLAY")) {
+		log_error("environment variable $WAYLAND_DISPLAY missing");
 		exit(1);
 	}
-	log_debug("XDG_VTNR=%s", getenv("XDG_VTNR"));
+	log_debug("WAYLAND_DISPLAY=%s", getenv("WAYLAND_DISPLAY") ? getenv("WAYLAND_DISPLAY") : "");
+	log_debug("XDG_VTNR=%s", getenv("XDG_VTNR") ? getenv("XDG_VTNR") : "");
 
 	char *path = pid_path();
 	log_debug("Server PID file %s", path);

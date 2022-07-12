@@ -20,9 +20,7 @@ int ipc_request_send(struct IpcRequest *request) {
 		goto end;
 	}
 
-	log_debug("========sending server request==========\n%s\n----------------------------------------", yaml);
-	log_info("Sending %s request:", ipc_request_command_friendly(request->command));
-	print_cfg(INFO, request->cfg, request->command == CFG_DEL);
+	log_debug_nocap("========sending server request==========\n%s\n----------------------------------------", yaml);
 
 	if ((fd = create_fd_ipc_client()) == -1) {
 		goto end;
@@ -48,7 +46,7 @@ void ipc_response_send(struct IpcResponse *response) {
 		return;
 	}
 
-	log_debug("========sending client response==========\n%s----------------------------------------", yaml);
+	log_debug_nocap("========sending client response==========\n%s----------------------------------------", yaml);
 
 	if (socket_write(response->fd, yaml, strlen(yaml)) == -1) {
 		response->done = true;
@@ -57,9 +55,9 @@ void ipc_response_send(struct IpcResponse *response) {
 	free(yaml);
 
 	if (response->done) {
+		log_capture_stop();
+		log_capture_clear();
 		close(response->fd);
-	} else {
-		log_capture_start();
 	}
 }
 
@@ -77,14 +75,10 @@ struct IpcRequest *ipc_request_receive(int fd_sock) {
 		return NULL;
 	}
 
-	log_debug("========received client request=========\n%s\n----------------------------------------", yaml);
-
-	log_capture_start();
+	log_debug_nocap("========received client request=========\n%s\n----------------------------------------", yaml);
 
 	request = unmarshal_ipc_request(yaml);
 	free(yaml);
-
-	log_capture_end();
 
 	if (!request) {
 		request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
@@ -111,7 +105,7 @@ struct IpcResponse *ipc_response_receive(int fd) {
 		goto err;
 	}
 
-	log_debug("========received server response========\n%s\n----------------------------------------", yaml);
+	log_debug_nocap("========received server response========\n%s\n----------------------------------------", yaml);
 
 	response = unmarshal_ipc_response(yaml);
 	free(yaml);

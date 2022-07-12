@@ -83,7 +83,7 @@ ssize_t socket_write(int fd, char *data, size_t len) {
 		return -1;
 	}
 
-	log_debug("Wrote %d bytes to socket", n);
+	log_debug_nocap("Wrote %d bytes to socket", n);
 
 	return n;
 }

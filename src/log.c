@@ -145,6 +145,18 @@ void log_debug(const char *__restrict __format, ...) {
 	va_end(args);
 }
 
+void log_debug_nocap(const char *__restrict __format, ...) {
+	bool was_capturing = active.capturing;
+	active.capturing = false;
+
+	va_list args;
+	va_start(args, __format);
+	print_log(DEBUG, 0, __format, args);
+	va_end(args);
+
+	active.capturing = was_capturing;
+}
+
 void log_info(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
@@ -195,25 +207,28 @@ void free_log_cap_line(void *data) {
 }
 
 void log_suppress_start(void) {
+	fprintf(stdout, "log_suppress_start\n");
 	active.suppressing = true;
 }
 
-void log_suppress_end(void) {
+void log_suppress_stop(void) {
+	fprintf(stdout, "log_suppress_stop\n");
 	active.suppressing = false;
 }
 
 void log_capture_start(void) {
+	fprintf(stdout, "log_capture_start\n");
 	active.capturing = true;
 }
 
-void log_capture_end(void) {
+void log_capture_stop(void) {
+	fprintf(stdout, "log_capture_stop\n");
 	active.capturing = false;
 }
 
-void log_capture_reset(void) {
+void log_capture_clear(void) {
+	fprintf(stdout, "log_capture_clear\n");
 	slist_free_vals(&log_cap_lines, free_log_cap_line);
-
-	active.capturing = false;
 }
 
 void log_capture_playback(void) {

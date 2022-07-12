@@ -5,6 +5,8 @@
 
 #include "client.h"
 
+#include "convert.h"
+#include "info.h"
 #include "ipc.h"
 #include "log.h"
 #include "process.h"
@@ -25,7 +27,8 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	ipc_request->human = true;
+	log_info("\nSending request: %s", ipc_request_command_friendly(ipc_request->command));
+	print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 
 	int fd = ipc_request_send(ipc_request);
 	if (fd == -1) {

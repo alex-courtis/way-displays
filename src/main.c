@@ -292,6 +292,11 @@ int
 main(int argc, char **argv) {
 	setlinebuf(stdout);
 
+	if (!getenv("WAYLAND_DISPLAY")) {
+		log_error("environment variable $WAYLAND_DISPLAY missing");
+		exit(1);
+	}
+
 	struct IpcRequest *ipc_request = parse_args(argc, argv);
 
 	if (ipc_request) {

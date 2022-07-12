@@ -111,7 +111,6 @@ MODES: !!seq
 ```yaml
 !!map
 COMMAND: !!ipc_command
-HUMAN: !!bool
 CFG: !!cfg
 ```
 
