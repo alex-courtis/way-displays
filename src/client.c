@@ -27,7 +27,7 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	log_info("\nSending request: %s", ipc_request_command_friendly(ipc_request->command));
+	log_info("\nClient sending request: %s", ipc_request_command_friendly(ipc_request->command));
 	print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 
 	int fd = ipc_request_send(ipc_request);

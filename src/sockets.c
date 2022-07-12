@@ -70,7 +70,7 @@ char *socket_read(int fd) {
 		return NULL;
 	}
 
-	log_debug("\nRead %d bytes from socket", n);
+	log_debug_nocap("\nRead %d bytes from socket", n);
 
 	return buf;
 }

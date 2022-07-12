@@ -28,22 +28,22 @@ struct Cfg *cfg = NULL;
 
 struct IpcResponse *ipc_response = NULL;
 
-void finish_ipc(void) {
+void send_ipc_response(void) {
 	if (!ipc_response) {
 		return;
 	}
 
-	ipc_response->done = true;
-
 	ipc_response_send(ipc_response);
 
-	log_capture_stop();
-	log_capture_clear();
+	if (ipc_response->done) {
+		log_capture_stop();
+		log_capture_clear();
 
-	close(ipc_response->fd);
+		close(ipc_response->fd);
 
-	free_ipc_response(ipc_response);
-	ipc_response = NULL;
+		free_ipc_response(ipc_response);
+		ipc_response = NULL;
+	}
 }
 
 void handle_ipc(int fd_sock) {
@@ -70,7 +70,7 @@ void handle_ipc(int fd_sock) {
 		goto send;
 	}
 
-	log_info("\nReceived request: %s", ipc_request_command_friendly(ipc_request->command));
+	log_info("\nServer received request: %s", ipc_request_command_friendly(ipc_request->command));
 	if (ipc_request->cfg) {
 		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
@@ -85,7 +85,7 @@ void handle_ipc(int fd_sock) {
 					ipc_response->done = false;
 					cfg_free(cfg);
 					cfg = cfg_merged;
-					log_info("\nApplying new configuration:");
+					log_info("\nNew configuration:");
 					print_cfg(INFO, cfg, false);
 				} else {
 					// complete
@@ -116,11 +116,7 @@ send:
 
 	free_ipc_request(ipc_request);
 
-	if (ipc_response->done) {
-		finish_ipc();
-	} else {
-		ipc_response_send(ipc_response);
-	}
+	send_ipc_response();
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
@@ -192,9 +188,10 @@ int loop(void) {
 		layout();
 
 
-		// reply to the client when we are done
-		if (displ->config_state == IDLE) {
-			finish_ipc();
+		// inform the client
+		if (ipc_response) {
+			ipc_response->done = displ->config_state == IDLE;
+			send_ipc_response();
 		};
 
 

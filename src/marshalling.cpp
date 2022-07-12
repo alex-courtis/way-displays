@@ -207,7 +207,6 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	e << YAML::Key << "SERIAL_NUMBER" << YAML::Value << head.serial_number;
 
 	e << YAML::Key << "CURRENT" << YAML::BeginMap << head.current << YAML::EndMap;
-	// TODO #49 this has not yet been set by layout
 	e << YAML::Key << "DESIRED" << YAML::BeginMap << head.desired << YAML::EndMap;
 
 	if (head.modes) {
