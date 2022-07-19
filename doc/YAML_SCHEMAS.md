@@ -74,7 +74,6 @@ SCALE: !!float
 ENABLED: !!bool
 X: !!int
 Y: !!int
-???current mode???
 ```
 
 ## !!mode

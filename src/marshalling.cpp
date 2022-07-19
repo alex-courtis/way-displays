@@ -105,11 +105,11 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	}
 
 	if (cfg.order_name_desc) {
-		e << YAML::Key << "ORDER" << YAML::BeginSeq;
+		e << YAML::Key << "ORDER" << YAML::BeginSeq;					// ORDER
 		for (struct SList *i = cfg.order_name_desc; i; i = i->nex) {
 			e << (char*)i->val;
 		}
-		e << YAML::EndSeq; // ORDER
+		e << YAML::EndSeq;												// ORDER
 	}
 
 	if (cfg.auto_scale) {
@@ -117,22 +117,22 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	}
 
 	if (cfg.user_scales) {
-		e << YAML::Key << "SCALE" << YAML::BeginSeq;
+		e << YAML::Key << "SCALE" << YAML::BeginSeq;					// SCALE
 		for (struct SList *i = cfg.user_scales; i; i = i->nex) {
 			struct UserScale *user_scale = (struct UserScale*)i->val;
-			e << YAML::BeginMap;
+			e << YAML::BeginMap;											// scale
 			e << YAML::Key << "NAME_DESC" << YAML::Value << user_scale->name_desc;
 			e << YAML::Key << "SCALE" << YAML::Value << user_scale->scale;
-			e << YAML::EndMap;
+			e << YAML::EndMap;												// scale
 		}
-		e << YAML::EndSeq; // SCALE
+		e << YAML::EndSeq;												// SCALE
 	}
 
 	if (cfg.user_modes) {
-		e << YAML::Key << "MODE" << YAML::BeginSeq;
+		e << YAML::Key << "MODE" << YAML::BeginSeq;						// MODE
 		for (struct SList *i = cfg.user_modes; i; i = i->nex) {
 			struct UserMode *user_mode = (struct UserMode*)i->val;
-			e << YAML::BeginMap;
+			e << YAML::BeginMap;											// mode
 			e << YAML::Key << "NAME_DESC" << YAML::Value << user_mode->name_desc;
 			if (user_mode->max) {
 				e << YAML::Key << "MAX" << YAML::Value << true;
@@ -143,9 +143,9 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 					e << YAML::Key << "HZ" << YAML::Value << user_mode->refresh_hz;
 				}
 			}
-			e << YAML::EndMap;
+			e << YAML::EndMap;												// mode
 		}
-		e << YAML::EndSeq; // MODE
+		e << YAML::EndSeq;												// MODE
 	}
 
 	if (cfg.laptop_display_prefix) {
@@ -153,19 +153,19 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	}
 
 	if (cfg.max_preferred_refresh_name_desc) {
-		e << YAML::Key << "MAX_PREFERRED_REFRESH" << YAML::BeginSeq;
+		e << YAML::Key << "MAX_PREFERRED_REFRESH" << YAML::BeginSeq;	// MAX_PREFERRED_REFRESH
 		for (struct SList *i = cfg.max_preferred_refresh_name_desc; i; i = i->nex) {
 			e << (char*)i->val;
 		}
-		e << YAML::EndSeq; // MAX_PREFERRED_REFRESH
+		e << YAML::EndSeq;												// MAX_PREFERRED_REFRESH
 	}
 
 	if (cfg.disabled_name_desc) {
-		e << YAML::Key << "DISABLED" << YAML::BeginSeq;
+		e << YAML::Key << "DISABLED" << YAML::BeginSeq;					// DISABLED
 		for (struct SList *i = cfg.disabled_name_desc; i; i = i->nex) {
 			e << (char*)i->val;
 		}
-		e << YAML::EndSeq; // DISABLED
+		e << YAML::EndSeq;												// DISABLED
 	}
 
 	if (cfg.log_threshold) {
@@ -206,22 +206,25 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	e << YAML::Key << "MODEL" << YAML::Value << head.model;
 	e << YAML::Key << "SERIAL_NUMBER" << YAML::Value << head.serial_number;
 
-	e << YAML::Key << "CURRENT" << YAML::BeginMap << head.current << YAML::EndMap;
-	e << YAML::Key << "DESIRED" << YAML::BeginMap << head.desired << YAML::EndMap;
+	e << YAML::Key << "CURRENT" << YAML::BeginMap;		// CURRENT
+	e << head.current;
+	e << YAML::EndMap;									// CURRENT
+
+	e << YAML::Key << "DESIRED" << YAML::BeginMap;		// DESIRED
+	e << head.desired;
+	e << YAML::EndMap;									// DESIRED
 
 	if (head.modes) {
-		e << YAML::Key << "MODES" << YAML::BeginSeq;
+		e << YAML::Key << "MODES" << YAML::BeginSeq;	// MODES
 
 		for (struct SList *i = head.modes; i; i = i->nex) {
-			e << YAML::BeginMap;
+			e << YAML::BeginMap;							// mode
 			e << *(Mode*)(i->val);
-			if (head.current.mode == i->val) {
-				e << "CURRENT" << true;
-			}
-			e << YAML::EndMap;
+			e << "CURRENT" << (head.current.mode == i->val);
+			e << YAML::EndMap;								// mode
 		}
 
-		e << YAML::EndSeq; // MODES
+		e << YAML::EndSeq;								// MODES
 	}
 
 	return e;
@@ -366,15 +369,17 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
-		e << YAML::BeginMap;
+		e << YAML::BeginMap;						// root
 
 		e << YAML::Key << "OP" << YAML::Value << ipc_request_command_name(request->command);
 
 		if (request->cfg) {
-			e << YAML::Key << "CFG" << YAML::BeginMap << *request->cfg << YAML::EndMap;
+			e << YAML::Key << "CFG" << YAML::BeginMap;	// CFG
+			e << *request->cfg;
+			e << YAML::EndMap;							// CFG
 		}
 
-		e << YAML::EndMap; // root
+		e << YAML::EndMap;							// root
 
 		if (!e.good()) {
 			log_error("marshalling ipc request: %s", e.GetLastError().c_str());
@@ -438,37 +443,39 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
-		e << YAML::BeginMap;
+		e << YAML::BeginMap;							// root
 
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
 		e << YAML::Key << "RC" << YAML::Value << response->rc;
 
 		if (cfg) {
-			e << YAML::Key << "CFG" << YAML::BeginMap << *cfg << YAML::EndMap;
+			e << YAML::Key << "CFG" << YAML::BeginMap;		// CFG
+			e << *cfg;
+			e << YAML::EndMap;								// CFG
 		}
 
 		if (lid || heads) {
-			e << YAML::Key << "STATE" << YAML::BeginMap;
+			e << YAML::Key << "STATE" << YAML::BeginMap;	// STATE
 
 			if (lid) {
-				e << YAML::Key << "LID" << YAML::BeginMap;
+				e << YAML::Key << "LID" << YAML::BeginMap;		// LID
 				e << YAML::Key << "CLOSED" << YAML::Value << lid->closed;
 				e << YAML::Key << "DEVICE_PATH" << YAML::Value << lid->device_path;
-				e << YAML::EndMap; // LID
+				e << YAML::EndMap;								// LID
 			}
 
 			if (heads) {
-				e << YAML::Key << "HEADS" << YAML::BeginSeq;
+				e << YAML::Key << "HEADS" << YAML::BeginSeq;	// HEADS
 				for (struct SList *i = heads; i; i = i->nex) {
 					e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
 				}
-				e << YAML::EndSeq; // HEADS
+				e << YAML::EndSeq;								// HEADS
 			}
 
-			e << YAML::EndMap; // STATE
+			e << YAML::EndMap;								// STATE
 		}
 
-		e << YAML::Key << "MESSAGES" << YAML::BeginMap;
+		e << YAML::Key << "MESSAGES" << YAML::BeginMap;		// MESSAGES
 		for (struct SList *i = log_cap_lines; i; i = i->nex) {
 			struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 			if (cap_line && cap_line->line) {
@@ -482,9 +489,9 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 				}
 			}
 		}
-		e << YAML::EndMap; // MESSAGES
+		e << YAML::EndMap;									// MESSAGES
 
-		e << YAML::EndMap; // root
+		e << YAML::EndMap;								// root
 
 		if (!e.good()) {
 			log_error("marshalling ipc response: %s", e.GetLastError().c_str());
@@ -565,7 +572,9 @@ char *marshal_cfg(struct Cfg *cfg) {
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
-		e << YAML::BeginMap << *cfg << YAML::EndMap;
+		e << YAML::BeginMap;	// root
+		e << *cfg;
+		e << YAML::EndMap;		// root
 
 		if (!e.good()) {
 			log_error("marshalling cfg: %s", e.GetLastError().c_str());
