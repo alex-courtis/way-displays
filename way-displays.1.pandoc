@@ -36,9 +36,11 @@ Background process that performs the management. Configuration is read from a fi
 
 cfg.yaml will be monitored for changes, which will be immediately applied.
 
-See the default /etc/way-displays/cfg.yaml for details on individual configurable settings.
+See the default /etc/way-displays/cfg.yaml and https://github.com/alex-courtis/way-displays/blob/master/doc/CONFIGURATION.md for details on individual configurable settings.
 
 Server is run when no commands are specified.
+
+Server responds to IPC requests to fetch and mutate state: https://github.com/alex-courtis/way-displays/blob/master/doc/IPC.md
 
 ## Client
 

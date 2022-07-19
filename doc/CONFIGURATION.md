@@ -21,7 +21,7 @@ See the [default cfg.yaml](../cfg.yaml), usually installed at `/etc/way-displays
 
 `cfg.yaml` will be monitored for changes, which will be immediately applied.
 
-See [YAML_SCHEMAS](YAML_SCHEMAS.md) for full syntax.
+See [YAML_SCHEMAS](YAML_SCHEMAS.md) for syntax.
 
 ### File Locations
 

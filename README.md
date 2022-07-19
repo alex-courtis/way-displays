@@ -80,6 +80,8 @@ It will print messages to inform you of everything that is going on.
 
 You can interact with the server via the [command line](doc/CONFIGURATION.md#command-line).
 
+The server responds to [IPC](doc/IPC.md) requests to fetch and mutate state.
+
 ## Installation
 
 ### Package Manager
@@ -182,5 +184,5 @@ way-displays can currently be configured via the configuration file and CLI.
 
 A GUI client would greatly enhance usability.
 
-The client could use the same IPC socket and YAML streaming protocol as the CLI.
+The client could use the same [IPC socket and YAML streaming protocol](doc/IPC.md) as the CLI.
 

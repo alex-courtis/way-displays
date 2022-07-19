@@ -35,7 +35,8 @@ example request:
 OP: GET
 ```
 
-<details><summary>example response</summary><br>
+<details><summary>Example Response</summary><br>
+
 ```yaml
 DONE: TRUE
 RC: 0
@@ -147,12 +148,13 @@ MESSAGES:
 
 Persists the active configuration to `cfg.yaml`.
 
-example request:
+Example Request:
 ```yaml
 OP: CFG_WRITE
 ```
 
-<details><summary>example response</summary><br>
+<details><summary>Example Response</summary><br>
+
 ```yaml
 DONE: TRUE
 RC: 0
@@ -273,7 +275,8 @@ CFG:
   LAPTOP_DISPLAY_PREFIX: FFF
 ```
 
-<details><summary>example stream</summary><br>
+<details><summary>Example Response Stream</summary><br>
+
 ```yaml
 DONE: FALSE
 RC: 0
@@ -560,7 +563,8 @@ CFG:
     - eDP-1
 ```
 
-<details><summary>example stream</summary><br>
+<details><summary>Example Response Stream</summary><br>
+
 ```yaml
 DONE: FALSE
 RC: 0
