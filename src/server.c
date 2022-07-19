@@ -85,7 +85,7 @@ void handle_ipc_request(int fd_sock) {
 	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
 	ipc_response->fd = ipc_request->fd;
 	ipc_response->done = true;
-	ipc_response->messages = false;
+	ipc_response->messages = true;
 	ipc_response->status = true;
 
 	if (ipc_request->bad) {

@@ -20,9 +20,20 @@ Document loosely follow the YAML [failsafe + JSON](https://yaml.org/spec/1.2.2/#
 
 `!!str` : `<90 | 180 | 270 | FLIPPED | FLIPPED-90 | FLIPPED-180 | FLIPPED-270>`
 
-## !!ipc_command
+### !!ipc_op
 
 `!!str` : `<GET | CFG_WRITE | CFG_SET | CFG_DEL>`
+
+## !!rc
+
+See `[ipc.h](../inc/ipc.h)`
+
+0: success
+1: warning
+2: error
+11: bad request
+12: bad response
+13: request in progress
 
 ## !!cfg
 
@@ -95,7 +106,7 @@ NAME: !!str
 DESCRIPTION: !!str
 WIDTH_MM: !!int
 HEIGHT_MM: !!int
-TRANSFORM: !!int
+TRANSFORM: !!transform
 MAKE: !!str
 MODEL: !!str
 SERIAL_NUMBER: !!str
@@ -109,7 +120,7 @@ MODES: !!seq
 
 ```yaml
 !!map
-COMMAND: !!ipc_command
+OP: !!ipc_op
 CFG: !!cfg
 ```
 
@@ -118,7 +129,7 @@ CFG: !!cfg
 ```yaml
 !!map
 DONE: !!bool
-RC: !!int
+RC: !!rc
 STATE:
   HEADS: !!seq
   - !!head
@@ -128,6 +139,4 @@ MESSAGES: !!seq
   - !!map
     !!log_threshold: !!str
 ```
-
-`RC` 0 on success, see `[ipc.h](../inc/ipc.h)` for failure codes.
 

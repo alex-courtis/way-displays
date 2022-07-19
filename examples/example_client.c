@@ -98,6 +98,7 @@ CFG:\n\
   DISABLED:\n\
     - PQR 678\n\
     - STU 901\n\
+    - eDP-1\n\
 ";
 
 	execute(CFG_DEL, request);
