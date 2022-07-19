@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-util.h>
 #include <yaml-cpp/yaml.h> // IWYU pragma: keep
 #include <yaml-cpp/emitter.h>
 #include <yaml-cpp/emittermanip.h>
@@ -25,6 +26,7 @@ extern "C" {
 #include "lid.h"
 #include "list.h"
 #include "log.h"
+#include "mode.h"
 #include "server.h"
 }
 

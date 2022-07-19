@@ -2,10 +2,6 @@
 #define MARSHALLING_H
 
 #ifdef __cplusplus
-#include <yaml-cpp/node/node.h>
-#endif
-
-#ifdef __cplusplus
 extern "C" { //}
 #else
 #include <stdbool.h>

@@ -6,8 +6,6 @@
 #include "ipc.h"
 
 #include "cfg.h"
-#include "convert.h"
-#include "info.h"
 #include "log.h"
 #include "marshalling.h"
 #include "sockets.h"
