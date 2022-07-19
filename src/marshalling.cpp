@@ -443,55 +443,59 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
-		e << YAML::BeginMap;							// root
+		e << YAML::BeginMap;								// root
 
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
 		e << YAML::Key << "RC" << YAML::Value << response->rc;
 
-		if (cfg) {
-			e << YAML::Key << "CFG" << YAML::BeginMap;		// CFG
-			e << *cfg;
-			e << YAML::EndMap;								// CFG
-		}
-
-		if (lid || heads) {
-			e << YAML::Key << "STATE" << YAML::BeginMap;	// STATE
-
-			if (lid) {
-				e << YAML::Key << "LID" << YAML::BeginMap;		// LID
-				e << YAML::Key << "CLOSED" << YAML::Value << lid->closed;
-				e << YAML::Key << "DEVICE_PATH" << YAML::Value << lid->device_path;
-				e << YAML::EndMap;								// LID
+		if (response->status) {
+			if (cfg) {
+				e << YAML::Key << "CFG" << YAML::BeginMap;		// CFG
+				e << *cfg;
+				e << YAML::EndMap;								// CFG
 			}
 
-			if (heads) {
-				e << YAML::Key << "HEADS" << YAML::BeginSeq;	// HEADS
-				for (struct SList *i = heads; i; i = i->nex) {
-					e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
-				}
-				e << YAML::EndSeq;								// HEADS
-			}
+			if (lid || heads) {
+				e << YAML::Key << "STATE" << YAML::BeginMap;	// STATE
 
-			e << YAML::EndMap;								// STATE
-		}
+				if (lid) {
+					e << YAML::Key << "LID" << YAML::BeginMap;		// LID
+					e << YAML::Key << "CLOSED" << YAML::Value << lid->closed;
+					e << YAML::Key << "DEVICE_PATH" << YAML::Value << lid->device_path;
+					e << YAML::EndMap;								// LID
+				}
 
-		e << YAML::Key << "MESSAGES" << YAML::BeginMap;		// MESSAGES
-		for (struct SList *i = log_cap_lines; i; i = i->nex) {
-			struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
-			if (cap_line && cap_line->line) {
-				e << YAML::Key << log_threshold_name(cap_line->threshold);
-				e << YAML::Value << cap_line->line;
-				if (cap_line->threshold == WARNING && response->rc < IPC_RC_WARN) {
-					response->rc = IPC_RC_WARN;
+				if (heads) {
+					e << YAML::Key << "HEADS" << YAML::BeginSeq;	// HEADS
+					for (struct SList *i = heads; i; i = i->nex) {
+						e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
+					}
+					e << YAML::EndSeq;								// HEADS
 				}
-				if (cap_line->threshold == ERROR && response->rc < IPC_RC_ERROR) {
-					response->rc = IPC_RC_ERROR;
-				}
+
+				e << YAML::EndMap;								// STATE
 			}
 		}
-		e << YAML::EndMap;									// MESSAGES
 
-		e << YAML::EndMap;								// root
+		if (response->messages) {
+			e << YAML::Key << "MESSAGES" << YAML::BeginMap;		// MESSAGES
+			for (struct SList *i = log_cap_lines; i; i = i->nex) {
+				struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+				if (cap_line && cap_line->line) {
+					e << YAML::Key << log_threshold_name(cap_line->threshold);
+					e << YAML::Value << cap_line->line;
+					if (cap_line->threshold == WARNING && response->rc < IPC_RC_WARN) {
+						response->rc = IPC_RC_WARN;
+					}
+					if (cap_line->threshold == ERROR && response->rc < IPC_RC_ERROR) {
+						response->rc = IPC_RC_ERROR;
+					}
+				}
+			}
+			e << YAML::EndMap;									// MESSAGES
+		}
+
+		e << YAML::EndMap;									// root
 
 		if (!e.good()) {
 			log_error("marshalling ipc response: %s", e.GetLastError().c_str());
@@ -504,7 +508,9 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		log_error("marshalling ipc response: %s\n%s", e.what());
 	}
 
-	log_capture_clear();
+	if (response->messages) {
+		log_capture_clear();
+	}
 
 	return yaml;
 }

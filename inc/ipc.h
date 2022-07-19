@@ -28,6 +28,8 @@ struct IpcResponse {
 	bool done;
 	int rc;
 	int fd;
+	bool messages;
+	bool status;
 };
 
 int ipc_request_send(struct IpcRequest *request);

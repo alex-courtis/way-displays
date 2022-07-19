@@ -28,7 +28,26 @@ struct Cfg *cfg = NULL;
 
 struct IpcResponse *ipc_response = NULL;
 
-void send_ipc_response(void) {
+void handle_ipc_in_progress(int fd_sock) {
+	struct IpcRequest *request = ipc_request_receive(fd_sock);
+	if (!request) {
+		log_error("\nFailed to read IPC request");
+		return;
+	}
+
+	struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+	response->fd = request->fd;
+	response->done = true;
+	response->rc = IPC_RC_REQUEST_IN_PROGRESS;
+
+	ipc_response_send(response);
+
+	close(response->fd);
+
+	free_ipc_response(response);
+}
+
+void handle_ipc_response(void) {
 	if (!ipc_response) {
 		return;
 	}
@@ -46,9 +65,11 @@ void send_ipc_response(void) {
 	}
 }
 
-void handle_ipc(int fd_sock) {
-
-	free_ipc_response(ipc_response);
+void handle_ipc_request(int fd_sock) {
+	if (ipc_response) {
+		handle_ipc_in_progress(fd_sock);
+		return;
+	}
 
 	log_capture_clear();
 	log_capture_start();
@@ -62,10 +83,14 @@ void handle_ipc(int fd_sock) {
 	}
 
 	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+	ipc_response->fd = ipc_request->fd;
 	ipc_response->done = true;
+	ipc_response->messages = false;
+	ipc_response->status = true;
 
 	if (ipc_request->bad) {
 		ipc_response->rc = IPC_RC_BAD_REQUEST;
+		ipc_response->status = false;
 		goto send;
 	}
 
@@ -111,11 +136,9 @@ void handle_ipc(int fd_sock) {
 	}
 
 send:
-	ipc_response->fd = ipc_request->fd;
-
 	free_ipc_request(ipc_request);
 
-	send_ipc_response();
+	handle_ipc_response();
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
@@ -179,7 +202,7 @@ int loop(void) {
 
 		// ipc client message
 		if (pfd_ipc && (pfd_ipc->revents & pfd_ipc->events)) {
-			handle_ipc(fd_ipc);
+			handle_ipc_request(fd_ipc);
 		}
 
 
@@ -190,7 +213,7 @@ int loop(void) {
 		// inform the client
 		if (ipc_response) {
 			ipc_response->done = displ->config_state == IDLE;
-			send_ipc_response();
+			handle_ipc_response();
 		};
 
 

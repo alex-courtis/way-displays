@@ -43,6 +43,7 @@ void ipc_response_send(struct IpcResponse *response) {
 	char *yaml = marshal_ipc_response(response);
 
 	if (!yaml) {
+		response->done = true;
 		return;
 	}
 
