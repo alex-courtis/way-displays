@@ -126,7 +126,6 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 	struct UserMode *user_mode;
 	struct SList *i;
 
-	log_info("\nActive configuration:");
 	if (cfg->arrange && cfg->align) {
 		log_(t, "  Arrange in a %s aligned at the %s", arrange_name(cfg->arrange), align_name(cfg->align));
 	} else if (cfg->arrange) {

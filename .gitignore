@@ -4,6 +4,7 @@ pro/*.h
 pro/*.c
 
 way-displays
+example-client
 test
 
 tags

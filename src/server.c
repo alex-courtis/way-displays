@@ -28,97 +28,117 @@ struct Cfg *cfg = NULL;
 
 struct IpcResponse *ipc_response = NULL;
 
-// returns true if processed immediately
-bool handle_ipc(int fd_sock) {
-
-	ipc_response = NULL;
-	free_ipc_response(ipc_response);
-
-	struct IpcRequest *ipc_request = ipc_request_receive(fd_sock);
-	if (!ipc_request) {
+void handle_ipc_in_progress(int fd_sock) {
+	struct IpcRequest *request = ipc_request_receive(fd_sock);
+	if (!request) {
 		log_error("\nFailed to read IPC request");
-		return true;
+		return;
 	}
 
-	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	ipc_response->rc = EXIT_SUCCESS;
-	ipc_response->done = false;
+	struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+	response->fd = request->fd;
+	response->done = true;
+	response->rc = IPC_RC_REQUEST_IN_PROGRESS;
 
-	if (ipc_request->bad) {
-		ipc_response->rc = EXIT_FAILURE;
-		ipc_response->done = true;
-		goto end;
-	}
+	ipc_response_send(response);
 
-	log_info("\nServer received %s request:", ipc_request_command_friendly(ipc_request->command));
-	if (ipc_request->cfg) {
-		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
-	}
+	close(response->fd);
 
-	log_capture_start();
-
-	struct Cfg *cfg_merged = NULL;
-	switch (ipc_request->command) {
-		case CFG_SET:
-			cfg_merged = cfg_merge(cfg, ipc_request->cfg, SET);
-			break;
-		case CFG_DEL:
-			cfg_merged = cfg_merge(cfg, ipc_request->cfg, DEL);
-			break;
-		case CFG_WRITE:
-			cfg_file_write();
-			break;
-		case CFG_GET:
-		default:
-			// return the active
-			break;
-	}
-
-	if (cfg->written) {
-		log_info("\nWrote configuration file: %s", cfg->file_path);
-	}
-
-	if (cfg_merged) {
-		cfg_free(cfg);
-		cfg = cfg_merged;
-		log_info("\nApplying new configuration:");
-	} else {
-		ipc_response->done = true;
-	}
-
-	print_cfg(INFO, cfg, false);
-
-	if (ipc_request->command == CFG_GET) {
-		print_heads(INFO, NONE, heads);
-	}
-
-end:
-	ipc_response->fd = ipc_request->fd;
-
-	free_ipc_request(ipc_request);
-
-	ipc_response_send(ipc_response);
-
-	if (ipc_response->done) {
-		free_ipc_response(ipc_response);
-		ipc_response = NULL;
-		return true;
-	} else {
-		return false;
-	}
+	free_ipc_response(response);
 }
 
-void finish_ipc(void) {
+void handle_ipc_response(void) {
 	if (!ipc_response) {
 		return;
 	}
 
-	ipc_response->done = true;
-
 	ipc_response_send(ipc_response);
 
-	free_ipc_response(ipc_response);
-	ipc_response = NULL;
+	if (ipc_response->done) {
+		log_capture_stop();
+		log_capture_clear();
+
+		close(ipc_response->fd);
+
+		free_ipc_response(ipc_response);
+		ipc_response = NULL;
+	}
+}
+
+void handle_ipc_request(int fd_sock) {
+	if (ipc_response) {
+		handle_ipc_in_progress(fd_sock);
+		return;
+	}
+
+	log_capture_clear();
+	log_capture_start();
+
+	struct IpcRequest *ipc_request = ipc_request_receive(fd_sock);
+	if (!ipc_request) {
+		log_error("\nFailed to read IPC request");
+		log_capture_stop();
+		log_capture_clear();
+		return;
+	}
+
+	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+	ipc_response->fd = ipc_request->fd;
+	ipc_response->done = true;
+	ipc_response->messages = true;
+	ipc_response->status = true;
+
+	if (ipc_request->bad) {
+		ipc_response->rc = IPC_RC_BAD_REQUEST;
+		ipc_response->status = false;
+		goto send;
+	}
+
+	log_info("\nServer received request: %s", ipc_request_command_friendly(ipc_request->command));
+	if (ipc_request->cfg) {
+		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+	}
+
+	switch (ipc_request->command) {
+		case CFG_DEL:
+		case CFG_SET:
+			{
+				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->command == CFG_DEL);
+				if (cfg_merged) {
+					// ongoing
+					ipc_response->done = false;
+					cfg_free(cfg);
+					cfg = cfg_merged;
+					log_info("\nNew configuration:");
+					print_cfg(INFO, cfg, false);
+				} else {
+					// complete
+					log_info("\nNo changes to make.");
+				}
+				break;
+			}
+		case CFG_WRITE:
+			{
+				// complete
+				cfg_file_write();
+				log_info("\nWrote configuration file: %s", cfg->file_path);
+				break;
+			}
+		case GET:
+		default:
+			{
+				// complete
+				log_info("\nActive configuration:");
+				print_cfg(INFO, cfg, false);
+				print_heads(INFO, NONE, heads);
+				break;
+			}
+	}
+
+send:
+	free_ipc_request(ipc_request);
+
+	handle_ipc_response();
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
@@ -182,7 +202,7 @@ int loop(void) {
 
 		// ipc client message
 		if (pfd_ipc && (pfd_ipc->revents & pfd_ipc->events)) {
-			handle_ipc(fd_ipc);
+			handle_ipc_request(fd_ipc);
 		}
 
 
@@ -190,9 +210,10 @@ int loop(void) {
 		layout();
 
 
-		// reply to the client when we are done
-		if (displ->config_state == IDLE) {
-			finish_ipc();
+		// inform the client
+		if (ipc_response) {
+			ipc_response->done = displ->config_state == IDLE;
+			handle_ipc_response();
 		};
 
 
@@ -218,9 +239,10 @@ server(void) {
 
 	// play back captured logs from cfg parse
 	log_set_threshold(cfg->log_threshold, false);
-	log_suppress_end();
+	log_suppress_stop();
+	log_capture_stop();
 	log_capture_playback();
-	log_capture_reset();
+	log_capture_clear();
 
 	// discover the lid state immediately
 	lid_init();
