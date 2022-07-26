@@ -15,7 +15,7 @@ extern struct SList *heads_departed;
 struct HeadState {
 	struct Mode *mode;
 	wl_fixed_t scale;
-	int enabled;
+	bool enabled;
 	// layout coords
 	int32_t x;
 	int32_t y;

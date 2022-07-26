@@ -5,6 +5,8 @@
 
 #include "client.h"
 
+#include "convert.h"
+#include "info.h"
 #include "ipc.h"
 #include "log.h"
 #include "process.h"
@@ -25,6 +27,9 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
+	log_info("\nClient sending request: %s", ipc_request_command_friendly(ipc_request->command));
+	print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+
 	int fd = ipc_request_send(ipc_request);
 	if (fd == -1) {
 		rc = EXIT_FAILURE;
@@ -35,9 +40,14 @@ int client(struct IpcRequest *ipc_request) {
 	bool done = false;
 	while (!done) {
 		ipc_response = ipc_response_receive(fd);
-		rc = ipc_response->rc;
-		done = ipc_response->done;
-		free_ipc_response(ipc_response);
+		if (ipc_response) {
+			rc = ipc_response->rc;
+			done = ipc_response->done;
+			free_ipc_response(ipc_response);
+		} else {
+			rc = IPC_RC_BAD_RESPONSE;
+			done = true;
+		}
 	}
 
 	close(fd);

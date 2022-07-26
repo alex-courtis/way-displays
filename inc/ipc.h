@@ -1,25 +1,20 @@
 #ifndef IPC_H
 #define IPC_H
 
-#ifndef __cplusplus
 #include <stdbool.h>
-#endif
 
-#ifdef __cplusplus
-extern "C" { //}
-#endif
+#define IPC_RC_SUCCESS 0
+#define IPC_RC_WARN 1
+#define IPC_RC_ERROR 2
+#define IPC_RC_BAD_REQUEST 11
+#define IPC_RC_BAD_RESPONSE 12
+#define IPC_RC_REQUEST_IN_PROGRESS 13
 
 enum IpcRequestCommand {
-	CFG_GET = 1,
+	GET = 1,
 	CFG_SET,
 	CFG_DEL,
 	CFG_WRITE,
-};
-
-enum IpcResponseField {
-	RC = 1,
-	MESSAGES,
-	DONE,
 };
 
 struct IpcRequest {
@@ -33,6 +28,8 @@ struct IpcResponse {
 	bool done;
 	int rc;
 	int fd;
+	bool messages;
+	bool status;
 };
 
 int ipc_request_send(struct IpcRequest *request);
@@ -46,10 +43,6 @@ struct IpcResponse *ipc_response_receive(int fd);
 void free_ipc_request(struct IpcRequest *request);
 
 void free_ipc_response(struct IpcResponse *response);
-
-#if __cplusplus
-} // extern "C"
-#endif
 
 #endif // IPC_H
 

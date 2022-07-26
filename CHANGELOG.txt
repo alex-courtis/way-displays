@@ -1,3 +1,11 @@
+way-displays 1.6.0 2022-07-19
+-----------------------------
+- Feature #49 IPC API
+
+way-displays 1.5.3 2022-05-31
+-----------------------------
+- Fix segfault when no lid present; thank you Joost Molenaar
+
 way-displays 1.5.2 2022-04-10
 -----------------------------
 - Bug #37 clang compilation failure

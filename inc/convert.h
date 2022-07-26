@@ -21,8 +21,6 @@ enum IpcRequestCommand ipc_request_command_val(const char *name);
 const char *ipc_request_command_name(enum IpcRequestCommand ipc_request_command);
 const char *ipc_request_command_friendly(enum IpcRequestCommand ipc_request_command);
 
-const char *ipc_response_field_name(enum IpcResponseField ipc_response_field);
-
 enum LogThreshold log_threshold_val(const char *name);
 const char *log_threshold_name(enum LogThreshold log_threshold);
 

@@ -1,11 +1,12 @@
-VERSION ?= "1.5.3-SNAPSHOT"
+VERSION ?= "1.6.1-SNAPSHOT"
 
 PREFIX ?= /usr/local
 PREFIX_ETC ?= /usr/local
+ROOT_ETC ?= /etc
 
 INCS = -Iinc -Ipro
 
-CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\"
+CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" -DROOT_ETC=\"$(ROOT_ETC)\"
 
 OFLAGS = -O3
 WFLAGS = -pedantic -Wall -Wextra -Werror -Wno-unused-parameter
