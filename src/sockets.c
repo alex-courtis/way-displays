@@ -70,6 +70,8 @@ char *socket_read(int fd) {
 		return NULL;
 	}
 
+	log_debug_nocap("\nRead %d bytes from socket", n);
+
 	return buf;
 }
 
@@ -80,6 +82,8 @@ ssize_t socket_write(int fd, char *data, size_t len) {
 		log_error_errno("\nSocket write failed");
 		return -1;
 	}
+
+	log_debug_nocap("\nWrote %d bytes to socket", n);
 
 	return n;
 }

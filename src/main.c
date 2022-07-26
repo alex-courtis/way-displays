@@ -169,7 +169,7 @@ struct IpcRequest *parse_get(int argc, char **argv) {
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_GET;
+	request->command = GET;
 
 	return request;
 }
@@ -322,6 +322,11 @@ struct IpcRequest *parse_args(int argc, char **argv) {
 int
 main(int argc, char **argv) {
 	setlinebuf(stdout);
+
+	if (!getenv("WAYLAND_DISPLAY")) {
+		log_error("environment variable $WAYLAND_DISPLAY missing");
+		exit(1);
+	}
 
 	struct IpcRequest *ipc_request = parse_args(argc, argv);
 

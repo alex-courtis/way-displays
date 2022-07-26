@@ -25,6 +25,8 @@ void log_(enum LogThreshold threshold, const char *__restrict __format, ...);
 
 void log_debug(const char *__restrict __format, ...);
 
+void log_debug_nocap(const char *__restrict __format, ...);
+
 void log_info(const char *__restrict __format, ...);
 
 void log_warn(const char *__restrict __format, ...);
@@ -33,17 +35,19 @@ void log_warn_errno(const char *__restrict __format, ...);
 
 void log_error(const char *__restrict __format, ...);
 
+void log_error_nocap(const char *__restrict __format, ...);
+
 void log_error_errno(const char *__restrict __format, ...);
 
 void log_suppress_start(void);
 
-void log_suppress_end(void);
+void log_suppress_stop(void);
 
 void log_capture_start(void);
 
-void log_capture_end(void);
+void log_capture_stop(void);
 
-void log_capture_reset(void);
+void log_capture_clear(void);
 
 void log_capture_playback(void);
 
