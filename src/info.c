@@ -200,7 +200,7 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 	if (head->current.enabled) {
 		log_(t, "    scale:    %.3f", wl_fixed_to_double(head->current.scale));
 		log_(t, "    position: %d,%d", head->current.x, head->current.y);
-		log_(t, "    rotation: %d", head->transform);
+		log_(t, "    rotation: %d", head->current.transform);
 	}
 
 	print_mode(t, head->current.mode);

@@ -186,20 +186,12 @@ void head_scaled_dimensions(struct Head *head) {
 		return;
 	}
 
-	if (head->transform % 2 == 0) {
-
+	if (head->desired.transform % 2 == 0) {
 		head->scaled.width = head->desired.mode->width;
 		head->scaled.height = head->desired.mode->height;
-
-	} else if (head->transform == WL_OUTPUT_TRANSFORM_90 || 
-			   head->transform == WL_OUTPUT_TRANSFORM_270) {
-
+	} else {
 		head->scaled.width = head->desired.mode->height;
 		head->scaled.height = head->desired.mode->width;
-
-	} else {
-		head->scaled.width = head->desired.mode->width;
-		head->scaled.height = head->desired.mode->height;
 	}
 
 	head->scaled.height = (int32_t)((double)head->scaled.height * 256 / head->desired.scale + 0.5);
