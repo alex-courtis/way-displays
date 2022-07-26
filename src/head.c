@@ -5,6 +5,7 @@
 #include <string.h>
 #include <strings.h>
 #include <wayland-util.h>
+#include <wayland-client-protocol.h>
 
 #include "head.h"
 
