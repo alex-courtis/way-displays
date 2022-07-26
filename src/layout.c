@@ -184,10 +184,10 @@ void desire_scale(struct Head *head) {
 }
 
 void desire_transform(struct Head *head) {
-    if (!head->desired.enabled)
-        return;
+	if (!head->desired.enabled)
+		return;
 
-    // attempt to find a mode
+	// attempt to find a mode
 	enum wl_output_transform transform = head_find_transform(head);
 
 	if (transform) {
@@ -195,7 +195,6 @@ void desire_transform(struct Head *head) {
 	} else {
 		head->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	}
-    
 }
 
 void desire(void) {
