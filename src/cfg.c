@@ -358,7 +358,7 @@ struct UserMode *cfg_user_mode_default(void) {
 	return user_mode;
 }
 
-struct UserTransform *cfg_user_transform_default() {
+struct UserTransform *cfg_user_transform_default(void) {
 	struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
 	user_transform->transform = WL_OUTPUT_TRANSFORM_NORMAL;
