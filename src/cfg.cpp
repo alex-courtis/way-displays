@@ -187,7 +187,15 @@ bool equal_user_transform(const void *value, const void *data) {
 	struct UserTransform *lhs = (struct UserTransform*)value;
 	struct UserTransform *rhs = (struct UserTransform*)data;
 
-	if (!lhs->transform || !rhs->transform) {
+	if (!lhs->name_desc || !rhs->name_desc) {
+		return false;
+	}
+
+	if (strcasecmp(lhs->name_desc, rhs->name_desc) != 0) {
+		return false;
+	}
+
+	if (lhs->transform != rhs->transform) {
 		return false;
 	}
 
@@ -685,7 +693,7 @@ void cfg_emit(YAML::Emitter &e, struct Cfg *cfg) {
 	if (cfg->user_transform) {
 		e << YAML::Key << "TRANSFORM";
 		e << YAML::BeginSeq;
-		for (struct SList *i = cfg->user_modes; i; i = i->nex) {
+		for (struct SList *i = cfg->user_transform; i; i = i->nex) {
 			struct UserTransform *user_transform = (struct UserTransform*)i->val;
 			e << YAML::BeginMap;
 			e << YAML::Key << "NAME_DESC";
@@ -886,7 +894,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		if (!(merged_user_transform = (struct UserTransform*)slist_find_equal_val(merged->user_transform, equal_user_transform_name, set_user_transform))) {
 			merged_user_transform = cfg_user_transform_default();
 			merged_user_transform->name_desc = strdup(set_user_transform->name_desc);
-			slist_append(&merged->user_modes, merged_user_transform);
+			slist_append(&merged->user_transform, merged_user_transform);
 		}
 		merged_user_transform->transform = set_user_transform->transform;
 	}
