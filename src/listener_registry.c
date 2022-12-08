@@ -27,7 +27,7 @@ static void global(void *data,
 
 	displ->interface = strdup(interface);
 
-	displ->output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, version);
+	displ->output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, 2);
 
 	zwlr_output_manager_v1_add_listener(displ->output_manager, output_manager_listener(), displ);
 }
