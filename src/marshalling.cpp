@@ -199,14 +199,19 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct HeadState& head_state) {
 
 YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 
-	e << YAML::Key << "NAME" << YAML::Value << head.name;
-	e << YAML::Key << "DESCRIPTION" << YAML::Value << head.description;
+	if (head.name)
+		e << YAML::Key << "NAME" << YAML::Value << head.name;
+	if (head.description)
+		e << YAML::Key << "DESCRIPTION" << YAML::Value << head.description;
+	if (head.make)
+		e << YAML::Key << "MAKE" << YAML::Value << head.make;
+	if (head.model)
+		e << YAML::Key << "MODEL" << YAML::Value << head.model;
+	if (head.serial_number)
+		e << YAML::Key << "SERIAL_NUMBER" << YAML::Value << head.serial_number;
 	e << YAML::Key << "WIDTH_MM" << YAML::Value << head.width_mm;
 	e << YAML::Key << "HEIGHT_MM" << YAML::Value << head.height_mm;
 	e << YAML::Key << "TRANSFORM" << YAML::Value << head.transform;
-	e << YAML::Key << "MAKE" << YAML::Value << head.make;
-	e << YAML::Key << "MODEL" << YAML::Value << head.model;
-	e << YAML::Key << "SERIAL_NUMBER" << YAML::Value << head.serial_number;
 
 	e << YAML::Key << "CURRENT" << YAML::BeginMap;		// CURRENT
 	e << head.current;
