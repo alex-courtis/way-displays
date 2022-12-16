@@ -245,8 +245,16 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 		case NONE:
 			log_(t, "\n%s%s:", head->name, event == ARRIVED ? " Arrived" : "");
 			log_(t, "  info:");
-			log_(t, "    name:     '%s'", head->name);
-			log_(t, "    desc:     '%s'", head->description);
+			if (head->name)
+				log_(t, "    name:     '%s'", head->name);
+			if (head->make)
+				log_(t, "    make:     '%s'", head->make);
+			if (head->model)
+				log_(t, "    model:    '%s'", head->model);
+			if (head->serial_number)
+				log_(t, "    serial:   '%s'", head->serial_number);
+			if (head->description)
+				log_(t, "    desc:     '%s'", head->description);
 			if (head->width_mm && head->height_mm) {
 				log_(t, "    width:    %dmm", head->width_mm);
 				log_(t, "    height:   %dmm", head->height_mm);
@@ -264,8 +272,10 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 			break;
 		case DEPARTED:
 			log_(t, "\n%s Departed:", head->name);
-			log_(t, "    name:     '%s'", head->name);
-			log_(t, "    desc:     '%s'", head->description);
+			if (head->name)
+				log_(t, "    name:     '%s'", head->name);
+			if (head->description)
+				log_(t, "    desc:     '%s'", head->description);
 			break;
 		case DELTA:
 			if (head_current_not_desired(head)) {
