@@ -1,3 +1,8 @@
+way-displays 1.6.2 2022-12-16
+-----------------------------
+- Bug #56 handle missing head fields on way-displays -g
+- Print head fields: make, model, serial
+
 way-displays 1.6.1 2022-12-08
 -----------------------------
 - Bug #49 wlroots 0.16.0 compatibility
