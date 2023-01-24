@@ -1,3 +1,7 @@
+way-displays 1.7.1 2023-01-24
+-----------------------------
+- Add VRR / adaptive sync support for river
+
 way-displays 1.7.0 2023-01-24
 -----------------------------
 - Add VRR / adaptive sync support
