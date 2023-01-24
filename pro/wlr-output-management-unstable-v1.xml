@@ -39,7 +39,7 @@
     interface version number is reset.
   </description>
 
-  <interface name="zwlr_output_manager_v1" version="2">
+  <interface name="zwlr_output_manager_v1" version="4">
     <description summary="output device configuration manager">
       This interface is a manager that allows reading and writing the current
       output device configuration.
@@ -115,7 +115,7 @@
       </description>
     </request>
 
-    <event name="finished">
+    <event name="finished" type="destructor">
       <description summary="the compositor has finished with the manager">
         This event indicates that the compositor is done sending manager events.
         The compositor will destroy the object immediately after sending this
@@ -125,7 +125,7 @@
     </event>
   </interface>
 
-  <interface name="zwlr_output_head_v1" version="2">
+  <interface name="zwlr_output_head_v1" version="4">
     <description summary="output device">
       A head is an output device. The difference between a wl_output object and
       a head is that heads are advertised even if they are turned off. A head
@@ -251,14 +251,15 @@
     </event>
 
     <event name="finished">
-      <description summary="the head has been destroyed">
-        The compositor will destroy the object immediately after sending this
-        event, so it will become invalid and the client should release any
-        resources associated with it.
+      <description summary="the head has disappeared">
+        This event indicates that the head is no longer available. The head
+        object becomes inert. Clients should send a destroy request and release
+        any resources associated with it.
       </description>
     </event>
 
     <!-- Version 2 additions -->
+
     <event name="make" since="2">
       <description summary="head manufacturer">
         This event describes the manufacturer of the head.
@@ -328,9 +329,34 @@
       </description>
       <arg name="serial_number" type="string"/>
     </event>
+
+    <!-- Version 3 additions -->
+
+    <request name="release" type="destructor" since="3">
+      <description summary="destroy the head object">
+        This request indicates that the client will no longer use this head
+        object.
+      </description>
+    </request>
+
+    <!-- Version 4 additions -->
+
+    <enum name="adaptive_sync_state" since="4">
+      <entry name="disabled" value="0" summary="adaptive sync is disabled"/>
+      <entry name="enabled" value="1" summary="adaptive sync is enabled"/>
+    </enum>
+
+    <event name="adaptive_sync" since="4">
+      <description summary="current adaptive sync state">
+        This event describes whether adaptive sync is currently enabled for
+        the head or not. Adaptive sync is also known as Variable Refresh
+        Rate or VRR.
+      </description>
+      <arg name="state" type="uint" enum="adaptive_sync_state"/>
+    </event>
   </interface>
 
-  <interface name="zwlr_output_mode_v1" version="2">
+  <interface name="zwlr_output_mode_v1" version="3">
     <description summary="output mode">
       This object describes an output mode.
 
@@ -368,15 +394,24 @@
     </event>
 
     <event name="finished">
-      <description summary="the mode has been destroyed">
-        The compositor will destroy the object immediately after sending this
-        event, so it will become invalid and the client should release any
-        resources associated with it.
+      <description summary="the mode has disappeared">
+        This event indicates that the mode is no longer available. The mode
+        object becomes inert. Clients should send a destroy request and release
+        any resources associated with it.
       </description>
     </event>
+
+    <!-- Version 3 additions -->
+
+    <request name="release" type="destructor" since="3">
+      <description summary="destroy the mode object">
+        This request indicates that the client will no longer use this mode
+        object.
+      </description>
+    </request>
   </interface>
 
-  <interface name="zwlr_output_configuration_v1" version="2">
+  <interface name="zwlr_output_configuration_v1" version="4">
     <description summary="output configuration">
       This object is used by the client to describe a full output configuration.
 
@@ -494,7 +529,7 @@
     </request>
   </interface>
 
-  <interface name="zwlr_output_configuration_head_v1" version="2">
+  <interface name="zwlr_output_configuration_head_v1" version="4">
     <description summary="head configuration">
       This object is used by the client to update a single head's configuration.
 
@@ -507,6 +542,8 @@
       <entry name="invalid_custom_mode" value="3" summary="mode is invalid"/>
       <entry name="invalid_transform" value="4" summary="transform value outside enum"/>
       <entry name="invalid_scale" value="5" summary="scale negative or zero"/>
+      <entry name="invalid_adaptive_sync_state" value="6" since="4"
+        summary="invalid enum value used in the set_adaptive_sync request"/>
     </enum>
 
     <request name="set_mode">
@@ -549,6 +586,16 @@
         This request sets the head's scale.
       </description>
       <arg name="scale" type="fixed"/>
+    </request>
+
+    <!-- Version 4 additions -->
+
+    <request name="set_adaptive_sync" since="4">
+      <description summary="enable/disable adaptive sync">
+        This request enables/disables adaptive sync. Adaptive sync is also
+        known as Variable Refresh Rate or VRR.
+      </description>
+      <arg name="state" type="uint" enum="zwlr_output_head_v1.adaptive_sync_state"/>
     </request>
   </interface>
 </protocol>

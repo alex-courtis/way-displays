@@ -10,7 +10,8 @@ CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" -DROOT_ETC=\"$(ROOT_E
 
 OFLAGS = -O3
 WFLAGS = -pedantic -Wall -Wextra -Werror -Wno-unused-parameter
-COMPFLAGS = $(WFLAGS) $(OFLAGS)
+DFLAGS = -g
+COMPFLAGS = $(WFLAGS) $(OFLAGS) $(DFLAGS)
 
 CFLAGS += $(COMPFLAGS) -std=gnu17 -Wold-style-definition -Wstrict-prototypes
 CXXFLAGS += $(COMPFLAGS) -std=gnu++17

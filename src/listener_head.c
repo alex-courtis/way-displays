@@ -5,6 +5,7 @@
 
 #include "listeners.h"
 
+#include "displ.h"
 #include "head.h"
 #include "list.h"
 #include "mode.h"
@@ -125,6 +126,14 @@ static void serial_number(void *data,
 	head->serial_number = strdup(serial_number);
 }
 
+static void adaptive_sync(void *data,
+		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		uint32_t state) {
+	struct Head *head = data;
+
+	head->adaptive_sync = state;
+}
+
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 	struct Head *head = data;
@@ -141,7 +150,7 @@ static void finished(void *data,
 	zwlr_output_head_v1_destroy(zwlr_output_head_v1);
 }
 
-static const struct zwlr_output_head_v1_listener listener = {
+static const struct zwlr_output_head_v1_listener listener_min = {
 	.name = name,
 	.description = description,
 	.physical_size = physical_size,
@@ -156,6 +165,27 @@ static const struct zwlr_output_head_v1_listener listener = {
 	.make = make,
 	.finished = finished,
 };
+
+static const struct zwlr_output_head_v1_listener listener = {
+	.name = name,
+	.description = description,
+	.physical_size = physical_size,
+	.mode = mode,
+	.enabled = enabled,
+	.current_mode = current_mode,
+	.position = position,
+	.transform = transform,
+	.scale = scale,
+	.serial_number = serial_number,
+	.model = model,
+	.make = make,
+	.finished = finished,
+	.adaptive_sync = adaptive_sync,
+};
+
+const struct zwlr_output_head_v1_listener *head_listener_min(void) {
+	return &listener_min;
+}
 
 const struct zwlr_output_head_v1_listener *head_listener(void) {
 	return &listener;

@@ -7,6 +7,7 @@
 #include <wayland-util.h>
 
 #include "mode.h"
+#include "wlr-output-management-unstable-v1.h"
 
 extern struct SList *heads;
 extern struct SList *heads_arrived;
@@ -38,6 +39,7 @@ struct Head {
 	char *make;
 	char *model;
 	char *serial_number;
+	enum zwlr_output_head_v1_adaptive_sync_state adaptive_sync;
 
 	struct HeadState current;
 	struct HeadState desired;
