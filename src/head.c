@@ -24,7 +24,7 @@ bool head_is_max_preferred_refresh(struct Head *head) {
 		return false;
 
 	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
-		if (head_matches_name_desc(i->val, head)) {
+		if (head_matches_name_desc_partial(i->val, head)) {
 			return true;
 		}
 	}
@@ -32,7 +32,7 @@ bool head_is_max_preferred_refresh(struct Head *head) {
 }
 
 bool head_matches_user_mode(const void *user_mode, const void *head) {
-	return user_mode && head && head_matches_name_desc(((struct UserMode*)user_mode)->name_desc, (struct Head*)head);
+	return user_mode && head && head_matches_name_desc_partial(((struct UserMode*)user_mode)->name_desc, (struct Head*)head);
 }
 
 struct Mode *user_mode(struct Head *head, struct UserMode *user_mode) {
@@ -146,7 +146,20 @@ struct Mode *max_mode(struct Head *head) {
 	return max;
 }
 
-bool head_matches_name_desc(const void *a, const void *b) {
+bool head_matches_name_desc_exact(const void *a, const void *b) {
+	const char *name_desc = a;
+	const struct Head *head = b;
+
+	if (!name_desc || !head)
+		return false;
+
+	return (
+			(head->name && strcmp(name_desc, head->name) == 0) ||
+			(head->description && strcmp(head->description, name_desc) == 0)
+		   );
+}
+
+bool head_matches_name_desc_partial(const void *a, const void *b) {
 	const char *name_desc = a;
 	const struct Head *head = b;
 

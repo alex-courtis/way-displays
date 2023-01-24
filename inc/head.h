@@ -56,7 +56,9 @@ struct Head {
 	bool warned_no_mode;
 };
 
-bool head_matches_name_desc(const void *name_desc, const void *head);
+bool head_matches_name_desc_exact(const void *name_desc, const void *head);
+
+bool head_matches_name_desc_partial(const void *name_desc, const void *head);
 
 wl_fixed_t head_auto_scale(struct Head *head);
 
