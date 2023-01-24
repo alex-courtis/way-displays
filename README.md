@@ -64,11 +64,13 @@ way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
 
 ### Configure
 
-Restart the compositor and look at `/tmp/way-displays.1.me.log` to see what has been going on. You can tail it whilst you customise.
+Restart the compositor and run `way-displays -g` or look at `/tmp/way-displays.1.me.log`.
 
 [Tweak cfg.yaml](doc/CONFIGURATION.md#cfgyaml) to your liking and save it. Changes will be immediately applied.
 
 Alternatively, use the [command line](doc/CONFIGURATION.md#command-line) to make your changes then persist them with `way-displays -w`.
+
+You might want to `tail -f /tmp/way-displays.1.me.log` whilst you are tweaking.
 
 ## Usage
 
