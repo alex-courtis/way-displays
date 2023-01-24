@@ -1,3 +1,8 @@
+way-displays 1.7.0 2023-01-24
+-----------------------------
+- Add VRR / adaptive sync support
+- Bug #60 order exact name / description matches first
+
 way-displays 1.6.2 2022-12-16
 -----------------------------
 - Bug #56 handle missing head fields on way-displays -g
