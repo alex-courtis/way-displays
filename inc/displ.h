@@ -21,6 +21,7 @@ struct Displ {
 	struct zwlr_output_manager_v1 *output_manager;
 	uint32_t serial;
 	char *interface;
+	uint32_t output_manager_version;
 
 	enum ConfigState config_state;
 };

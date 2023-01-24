@@ -24,10 +24,19 @@ static void global(void *data,
 
 	struct Displ *displ = data;
 	displ->name = name;
-
 	displ->interface = strdup(interface);
 
-	displ->output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, 2);
+	if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
+		log_error("\nwlr-output-management version %d found, minimum %d required, exiting. Consider upgrading your compositor.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN);
+		exit(EXIT_FAILURE);
+	} else if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION) {
+		log_warn("\nwlr-output-management version %d found; %d required for full functionality. Consider upgrading your compositor.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION);
+		displ->output_manager_version = ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN;
+	} else {
+		displ->output_manager_version = ZWLR_OUTPUT_MANAGER_V1_VERSION;
+	}
+
+	displ->output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->output_manager_version);
 
 	zwlr_output_manager_v1_add_listener(displ->output_manager, output_manager_listener(), displ);
 }
