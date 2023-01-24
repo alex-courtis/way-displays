@@ -20,6 +20,7 @@
 #include "wlr-output-management-unstable-v1.h"
 
 struct Head *head_changing_mode = NULL;
+struct Head *head_changing_adaptive_sync = NULL;
 
 void position_heads(struct SList *heads) {
 	struct Head *head;
@@ -183,6 +184,15 @@ void desire_scale(struct Head *head) {
 	}
 }
 
+void desire_adaptive_sync(struct Head *head) {
+	if (!head->desired.enabled)
+		return;
+
+	if (!head->adaptive_sync_failed) {
+		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	}
+}
+
 void desire(void) {
 
 	for (struct SList *i = heads; i; i = i->nex) {
@@ -193,6 +203,7 @@ void desire(void) {
 		desire_enabled(head);
 		desire_mode(head);
 		desire_scale(head);
+		desire_adaptive_sync(head);
 
 		head_scaled_dimensions(head);
 	}
@@ -228,6 +239,14 @@ void apply(void) {
 		head_changing_mode->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_changing_mode->zwlr_head);
 		zwlr_output_configuration_head_v1_set_mode(head_changing_mode->zwlr_config_head, head_changing_mode->desired.mode->zwlr_mode);
 
+	} else if ((head_changing_adaptive_sync = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
+
+		print_head(INFO, DELTA, head_changing_adaptive_sync);
+
+		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
+		head_changing_adaptive_sync->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_changing_adaptive_sync->zwlr_head);
+		zwlr_output_configuration_head_v1_set_adaptive_sync(head_changing_adaptive_sync->zwlr_config_head, head_changing_adaptive_sync->desired.adaptive_sync);
+
 	} else {
 
 		print_heads(INFO, DELTA, heads);
@@ -253,14 +272,25 @@ void apply(void) {
 	slist_free(&heads_changing);
 }
 
-void handle_success(void) {
+bool handle_success(void) {
 	if (head_changing_mode) {
 
 		// succesful mode change is not always reported
 		head_changing_mode->current.mode = head_changing_mode->desired.mode;
 
 		head_changing_mode = NULL;
+
+	} else if (head_changing_adaptive_sync) {
+
+		// adaptive sync changes are not reported as failures, but never try again
+		if (head_current_adaptive_sync_not_desired(head_changing_adaptive_sync)) {
+			log_info("\n%s: Cannot enable VRR, compositor may not support it.", head_changing_adaptive_sync->name);
+			head_changing_adaptive_sync->adaptive_sync_failed = true;
+			return false;
+		}
 	}
+
+	return true;
 }
 
 void handle_failure(void) {
@@ -293,8 +323,9 @@ void layout(void) {
 
 	switch (displ->config_state) {
 		case SUCCEEDED:
-			log_info("\nChanges successful");
-			handle_success();
+			if (handle_success()) {
+				log_info("\nChanges successful");
+			}
 			displ->config_state = IDLE;
 			break;
 

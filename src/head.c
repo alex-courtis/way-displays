@@ -246,13 +246,20 @@ bool head_current_not_desired(const void *data) {
 			 head->desired.scale != head->current.scale ||
 			 head->desired.enabled != head->current.enabled ||
 			 head->desired.x != head->current.x ||
-			 head->desired.y != head->current.y));
+			 head->desired.y != head->current.y ||
+			 head->desired.adaptive_sync != head->current.adaptive_sync));
 }
 
 bool head_current_mode_not_desired(const void *data) {
 	const struct Head *head = data;
 
 	return (head && head->desired.mode != head->current.mode);
+}
+
+bool head_current_adaptive_sync_not_desired(const void *data) {
+	const struct Head *head = data;
+
+	return (head && head->desired.adaptive_sync != head->current.adaptive_sync);
 }
 
 void head_free(void *data) {

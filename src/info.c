@@ -11,6 +11,7 @@
 #include "list.h"
 #include "log.h"
 #include "mode.h"
+#include "wlr-output-management-unstable-v1.h"
 
 void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf) {
 	if (!user_mode) {
@@ -194,6 +195,7 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 	}
 
 	print_mode(t, head->current.mode);
+	log_(t, "    VRR:      %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 
 	if (!head->current.enabled) {
 		log_(t, "    (disabled)");
@@ -214,6 +216,9 @@ void print_head_desired(enum LogThreshold t, struct Head *head) {
 			if (!head->current.enabled || head->current.mode != head->desired.mode) {
 				print_mode(t, head->desired.mode);
 			}
+		} else if (head_current_adaptive_sync_not_desired(head)) {
+			// adaptive sync changes happen in their own operation
+			log_(t, "    VRR:      %s", head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 		} else {
 			if (!head->current.enabled || head->current.scale != head->desired.scale) {
 				log_(t, "    scale:    %.3f%s",

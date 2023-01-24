@@ -20,6 +20,7 @@ struct HeadState {
 	// layout coords
 	int32_t x;
 	int32_t y;
+	enum zwlr_output_head_v1_adaptive_sync_state adaptive_sync;
 };
 
 struct Head {
@@ -39,12 +40,12 @@ struct Head {
 	char *make;
 	char *model;
 	char *serial_number;
-	enum zwlr_output_head_v1_adaptive_sync_state adaptive_sync;
 
 	struct HeadState current;
 	struct HeadState desired;
 
 	struct SList *modes_failed;
+	bool adaptive_sync_failed;
 
 	struct {
 		int32_t width;
@@ -66,6 +67,8 @@ struct Mode *head_find_mode(struct Head *head);
 bool head_current_not_desired(const void *head);
 
 bool head_current_mode_not_desired(const void *head);
+
+bool head_current_adaptive_sync_not_desired(const void *head);
 
 void head_release_mode(struct Head *head, struct Mode *mode);
 
