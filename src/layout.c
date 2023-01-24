@@ -98,7 +98,7 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 
 	struct SList *sorting = slist_shallow_clone(heads);
 
-	// specified order first
+	// specified order - exact match
 	for (i = order_name_desc; i; i = i->nex) {
 		j = sorting;
 		while(j) {
@@ -108,7 +108,24 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 			if (!head) {
 				continue;
 			}
-			if (i->val && head_matches_name_desc(i->val, head)) {
+			if (i->val && head_matches_name_desc_exact(i->val, head)) {
+				slist_append(&heads_ordered, head);
+				slist_remove(&sorting, &r);
+			}
+		}
+	}
+
+	// specified order - partial match
+	for (i = order_name_desc; i; i = i->nex) {
+		j = sorting;
+		while(j) {
+			head = j->val;
+			r = j;
+			j = j->nex;
+			if (!head) {
+				continue;
+			}
+			if (i->val && head_matches_name_desc_partial(i->val, head)) {
 				slist_append(&heads_ordered, head);
 				slist_remove(&sorting, &r);
 			}
@@ -139,7 +156,7 @@ void desire_enabled(struct Head *head) {
 	head->desired.enabled |= slist_length(heads) == 1;
 
 	// explicitly disabled
-	head->desired.enabled &= slist_find_equal(cfg->disabled_name_desc, head_matches_name_desc, head) == NULL;
+	head->desired.enabled &= slist_find_equal(cfg->disabled_name_desc, head_matches_name_desc_partial, head) == NULL;
 }
 
 void desire_mode(struct Head *head) {
@@ -170,7 +187,7 @@ void desire_scale(struct Head *head) {
 	struct UserScale *user_scale;
 	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
 		user_scale = (struct UserScale*)i->val;
-		if (head_matches_name_desc(user_scale->name_desc, head)) {
+		if (head_matches_name_desc_partial(user_scale->name_desc, head)) {
 			head->desired.scale = wl_fixed_from_double(user_scale->scale);
 			return;
 		}
@@ -284,7 +301,7 @@ bool handle_success(void) {
 
 		// adaptive sync changes are not reported as failures, but never try again
 		if (head_current_adaptive_sync_not_desired(head_changing_adaptive_sync)) {
-			log_info("\n%s: Cannot enable VRR, compositor may not support it.", head_changing_adaptive_sync->name);
+			log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head_changing_adaptive_sync->name);
 			head_changing_adaptive_sync->adaptive_sync_failed = true;
 			return false;
 		}
