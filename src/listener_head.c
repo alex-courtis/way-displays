@@ -5,7 +5,6 @@
 
 #include "listeners.h"
 
-#include "displ.h"
 #include "head.h"
 #include "list.h"
 #include "mode.h"
@@ -131,7 +130,7 @@ static void adaptive_sync(void *data,
 		uint32_t state) {
 	struct Head *head = data;
 
-	head->adaptive_sync = state;
+	head->current.adaptive_sync = state;
 }
 
 static void finished(void *data,
@@ -163,6 +162,7 @@ static const struct zwlr_output_head_v1_listener listener_min = {
 	.serial_number = serial_number,
 	.model = model,
 	.make = make,
+	.adaptive_sync = adaptive_sync,
 	.finished = finished,
 };
 
