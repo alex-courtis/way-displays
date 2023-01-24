@@ -2,7 +2,9 @@
 
 <img align="right" width="427" height="189" title="credit: Stephen Barratt" src="doc/layouts.png?raw=true">
 
-1. Set mode: user, preferred or highest
+1. Set resolution/refresh: preferred, highest or custom
+
+1. Enable VRR / adaptive sync
 
 1. Arrange in a row or a column
 
