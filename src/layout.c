@@ -289,7 +289,7 @@ void apply(void) {
 	slist_free(&heads_changing);
 }
 
-bool handle_success(void) {
+void handle_success(void) {
 	if (head_changing_mode) {
 
 		// succesful mode change is not always reported
@@ -299,20 +299,21 @@ bool handle_success(void) {
 
 	} else if (head_changing_adaptive_sync) {
 
-		// adaptive sync changes are not reported as failures, but never try again
+		// sway reports adaptive sync failure as success
 		if (head_current_adaptive_sync_not_desired(head_changing_adaptive_sync)) {
 			log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head_changing_adaptive_sync->name);
 			head_changing_adaptive_sync->adaptive_sync_failed = true;
-			return false;
+			return;
 		}
 	}
 
-	return true;
+	log_info("\nChanges successful");
 }
 
 void handle_failure(void) {
 
 	if (head_changing_mode) {
+		log_error("\nChanges failed");
 
 		// mode setting failure, try again
 		log_error("  %s:", head_changing_mode->name);
@@ -323,7 +324,15 @@ void handle_failure(void) {
 		head_changing_mode->current.mode = NULL;
 
 		head_changing_mode = NULL;
+
+	} else if (head_changing_adaptive_sync && head_current_adaptive_sync_not_desired(head_changing_adaptive_sync)) {
+
+		// river reports adaptive sync failure as failure
+		log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head_changing_adaptive_sync->name);
+		head_changing_adaptive_sync->adaptive_sync_failed = true;
+
 	} else {
+		log_error("\nChanges failed");
 
 		// any other failures are fatal
 		exit_fail();
@@ -340,9 +349,7 @@ void layout(void) {
 
 	switch (displ->config_state) {
 		case SUCCEEDED:
-			if (handle_success()) {
-				log_info("\nChanges successful");
-			}
+			handle_success();
 			displ->config_state = IDLE;
 			break;
 
@@ -351,7 +358,6 @@ void layout(void) {
 			return;
 
 		case FAILED:
-			log_error("\nChanges failed");
 			handle_failure();
 			displ->config_state = IDLE;
 			break;
