@@ -98,6 +98,23 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 
 	struct SList *sorting = slist_shallow_clone(heads);
 
+	// specified order - regex match
+	for (i = order_name_desc; i; i = i->nex) {
+		j = sorting;
+		while(j) {
+			head = j->val;
+			r = j;
+			j = j->nex;
+			if (!head) {
+				continue;
+			}
+			if (i->val && head_matches_name_desc_regex(i->val, head)) {
+				slist_append(&heads_ordered, head);
+				slist_remove(&sorting, &r);
+			}
+		}
+	}
+
 	// specified order - exact match
 	for (i = order_name_desc; i; i = i->nex) {
 		j = sorting;
