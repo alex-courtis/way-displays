@@ -177,24 +177,11 @@ bool head_matches_name_desc_regex(const void *a, const void *b) {
     return !result;
 }
 
-bool head_matches_name_desc_exact(const void *a, const void *b) {
-	const char *name_desc = a;
-	const struct Head *head = b;
-
-	if (!name_desc || !head)
-		return false;
-
-	return (
-			(head->name && strcmp(name_desc, head->name) == 0) ||
-			(head->description && strcmp(head->description, name_desc) == 0)
-		   );
-}
-
 bool head_matches_name_desc_partial(const void *a, const void *b) {
 	const char *name_desc = a;
 	const struct Head *head = b;
 
-	if (!name_desc || !head)
+	if (!name_desc || !head || name_desc[0] == '!')
 		return false;
 
 	return (
