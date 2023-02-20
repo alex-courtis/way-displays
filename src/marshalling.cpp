@@ -259,7 +259,6 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 	}
 
 	if (node["ORDER"]) {
-		regex_t regex;
 		const auto &orders = node["ORDER"];
 		for (const auto &order : orders) {
 			const std::string &order_str = order.as<std::string>();
@@ -267,9 +266,14 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 			if (!slist_find_equal(cfg->order_name_desc, slist_equal_strcasecmp, order_cstr)) {
 				// If this is a regex pattern, attempt to compile it before
                 // including it in order configuration.
-                if (order_cstr[0] == '!' && regcomp(&regex, order_cstr + 1, REG_EXTENDED)) {
-                    log_debug("Could not compile regex '%s'\n", order_cstr + 1);
-                    continue;
+                if (order_cstr[0] == '!') {
+		            regex_t regex;
+                    int result = regcomp(&regex, order_cstr + 1, REG_EXTENDED);
+                    regfree(&regex);
+                    if (result) {
+                        log_debug("Could not compile regex '%s'\n", order_cstr + 1);
+                        continue;
+                    }
                 }
 				slist_append(&cfg->order_name_desc, strdup(order_cstr));
 			}
