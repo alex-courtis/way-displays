@@ -15,11 +15,11 @@ TST_E = $(TST_O:tst/%.o=%)
 
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
-tst-head: tst/tst-head.o
-	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+tst-head: tst/tst-head.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 tst-layout: tst/tst-layout.o
-	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 tst-all: $(TST_E)
 	@for e in $(^); do echo; echo $$e; ./$$e; done

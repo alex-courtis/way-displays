@@ -56,6 +56,8 @@ struct Head {
 	bool warned_no_mode;
 };
 
+bool head_is_max_preferred_refresh(struct Head *head);
+
 bool head_matches_name_desc_exact(const void *name_desc, const void *head);
 
 bool head_matches_name_desc_partial(const void *name_desc, const void *head);

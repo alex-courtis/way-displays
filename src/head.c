@@ -167,7 +167,7 @@ bool head_matches_name_desc_partial(const void *a, const void *b) {
 		return false;
 
 	return (
-			(head->name && strcasecmp(name_desc, head->name) == 0) ||
+			(head->name && strcasestr(head->name, name_desc)) ||
 			(head->description && strcasestr(head->description, name_desc))
 		   );
 }
