@@ -14,11 +14,17 @@ PRO_H = $(PRO_X:.xml=.h)
 PRO_C = $(PRO_X:.xml=.c)
 PRO_O = $(PRO_X:.xml=.o)
 
+TST_C = $(wildcard tst/*.c)
+TST_H = $(wildcard tst/*.h)
+TST_O = $(TST_C:.c=.o)
+TST_E = $(TST_C:tst/%.c=%)
+
 all: way-displays
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
+$(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile
 
 way-displays: $(SRC_O) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
@@ -33,7 +39,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
-	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C) tags .copy
+	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E)
 
 install: way-displays way-displays.1 cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -63,6 +69,15 @@ iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
 iwyu: clean $(SRC_O)
 IWYU = /usr/bin/include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
+
+tst-head: tst/tst-head.o
+	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS_TST)
+
+tst-layout: tst/tst-layout.o
+	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS_TST)
+
+test: $(TST_E)
+	@for e in $(^); do echo; echo $$e; ./$$e; done
 
 .PHONY: all clean install uninstall man cppcheck iwyu
 

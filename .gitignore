@@ -3,13 +3,7 @@
 pro/*.h
 pro/*.c
 
-way-displays
-example-client
-test
-
-tags
-
-.copy
-
-cfg.dev.yaml
+/way-displays
+/example-client
+/tst-*
 

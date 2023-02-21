@@ -2,6 +2,7 @@ clang
 
 -Iinc
 -Ipro
+-Itst
 
 -D_GNU_SOURCE
 -DVERSION="DUMMY"
