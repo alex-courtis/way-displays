@@ -27,12 +27,6 @@ CFLAGS += $(foreach p,$(PKGS),$(shell pkg-config --cflags $(p)))
 CXXFLAGS += $(foreach p,$(PKGS),$(shell pkg-config --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS),$(shell pkg-config --libs $(p)))
 
-CPPFLAGS_TST += $(CPPFLAGS) -Itst
-PKGS_TST = cmocka
-CFLAGS_TST += $(CFLAGS) $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
-CXXFLAGS_TST += $(CXXFLAGS) $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
-LDLIBS_TST += $(LDLIBS) $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
-
 CC = gcc
 CXX = g++
 
