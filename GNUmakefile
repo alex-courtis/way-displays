@@ -65,10 +65,10 @@ iwyu: clean $(SRC_O)
 IWYU = /usr/bin/include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
 
 test:
-	$(MAKE) -f tst/GNUmakefile test-run
+	$(MAKE) -f tst/GNUmakefile tst-all
 
 clean-test:
-	$(MAKE) -f tst/GNUmakefile test-clean
+	$(MAKE) -f tst/GNUmakefile tst-clean
 
-.PHONY: all clean install uninstall man cppcheck iwyu test clean-test test-run test-clean
+.PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-all tst-clean
 

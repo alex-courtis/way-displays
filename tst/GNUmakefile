@@ -21,9 +21,9 @@ tst-head: tst/tst-head.o
 tst-layout: tst/tst-layout.o
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-test-all: $(TST_E)
+tst-all: $(TST_E)
 	@for e in $(^); do echo; echo $$e; ./$$e; done
 
-test-clean:
+tst-clean:
 	rm -f $(TST_O) $(TST_E)
 
