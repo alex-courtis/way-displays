@@ -1,9 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <wayland-util.h>
 
 #include "head.h"

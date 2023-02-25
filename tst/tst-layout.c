@@ -1,16 +1,20 @@
-// IWYU pragma: no_include <cmocka.h>
-#include "tst.h" // IWYU pragma: keep
+#include "tst.h"
 
-#include <stddef.h>
+#include <cmocka.h>
 
-#include "layout.h"
-#include "list.h"
-
-int setup(void **state) {
+int before_all(void **state) {
 	return 0;
 }
 
-int teardown(void **state) {
+int after_all(void **state) {
+	return 0;
+}
+
+int before_each(void **state) {
+	return 0;
+}
+
+int after_each(void **state) {
 	return 0;
 }
 
@@ -20,9 +24,9 @@ void blargh(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(blargh),
+		TEST(blargh),
 	};
 
-	return cmocka_run_group_tests(tests, setup, teardown);
+	return RUN(tests);
 }
 

@@ -1,12 +1,14 @@
-// IWYU pragma: no_include <cmocka.h>
-#include "tst.h" // IWYU pragma: keep
+#include "tst.h"
+#include "asserts.h"
 
-#include <stddef.h>
-#include <stdio.h>
+#include <cmocka.h>
+#include <string.h>
 
-#include <head.h>
-#include <server.h>
-#include <list.h>
+#include "cfg.h"
+#include "head.h"
+#include "list.h"
+#include "mode.h"
+#include "server.h"
 
 int before_all(void **state) {
 	return 0;
@@ -83,10 +85,10 @@ void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
 
 	// no head
-	assert_int_equal(wl_fixed_from_int(1), head_auto_scale(NULL));
+	assert_wl_fixed_t_equal_double(head_auto_scale(NULL), 1);
 
 	// no desired mode
-	assert_int_equal(wl_fixed_from_int(1), head_auto_scale(&head));
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 1);
 }
 
 void head_auto_scale__mode(void **state) {
@@ -97,22 +99,22 @@ void head_auto_scale__mode(void **state) {
 	// dpi 0 defaults to 96
 	expect_value(__wrap_mode_dpi, mode, &mode);
 	will_return(__wrap_mode_dpi, 0);
-	assert_int_equal(wl_fixed_from_double(96 / 96), head_auto_scale(&head));
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 1);
 
 	// even 144
 	expect_value(__wrap_mode_dpi, mode, &mode);
 	will_return(__wrap_mode_dpi, 144);
-	assert_int_equal(wl_fixed_from_double(144.0 / 96), head_auto_scale(&head));
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 144.0 / 96);
 
-	// rounded down 156
+	// rounded down to 156
 	expect_value(__wrap_mode_dpi, mode, &mode);
 	will_return(__wrap_mode_dpi, 161);
-	assert_int_equal(wl_fixed_from_double(156.0 / 96), head_auto_scale(&head));
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 156.0 / 96);
 
-	// rounded up 168
+	// rounded up to 168
 	expect_value(__wrap_mode_dpi, mode, &mode);
 	will_return(__wrap_mode_dpi, 162);
-	assert_int_equal(wl_fixed_from_double(168.0 / 96), head_auto_scale(&head));
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 168.0 / 96);
 }
 
 int main(void) {

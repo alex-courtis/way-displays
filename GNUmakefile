@@ -59,10 +59,8 @@ cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C)
 	cppcheck $(^) --enable=warning,unusedFunction,performance,portability $(CPPFLAGS)
 
 # make -k iwyu
-iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
-iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
-iwyu: clean $(SRC_O)
-IWYU = /usr/bin/include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
+iwyu:
+	$(MAKE) -f tst/GNUmakefile tst-iwyu
 
 test:
 	$(MAKE) -f tst/GNUmakefile tst-all
@@ -70,5 +68,5 @@ test:
 clean-test:
 	$(MAKE) -f tst/GNUmakefile tst-clean
 
-.PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-all tst-clean
+.PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-all tst-clean
 

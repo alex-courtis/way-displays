@@ -27,3 +27,7 @@ tst-all: $(TST_E)
 tst-clean:
 	rm -f $(TST_O) $(TST_E)
 
+tst-iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
+tst-iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
+tst-iwyu: clean $(TST_O)
+IWYU = /usr/bin/include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
