@@ -8,22 +8,27 @@
 #include <server.h>
 #include <list.h>
 
-int setup_all(void **state) {
+int before_all(void **state) {
 	return 0;
 }
 
-int teardown_all(void **state) {
+int after_all(void **state) {
 	return 0;
 }
 
-int setup_each(void **state) {
+int before_each(void **state) {
 	cfg = cfg_default();
 	return 0;
 }
 
-int teardown_each(void **state) {
+int after_each(void **state) {
 	cfg_destroy();
 	return 0;
+}
+
+double __wrap_mode_dpi(struct Mode *mode) {
+	check_expected(mode);
+	return mock();
 }
 
 void head_is_max_preferred_refresh__nohead(void **state) {
@@ -50,24 +55,31 @@ void head_matches_name_desc_exact__(void **state) {
 	struct Head head = { .name = "NN", .description = "DD", };
 
 	assert_true(head_matches_name_desc_exact("NN", &head));
+	assert_false(head_matches_name_desc_exact("N", &head));
+	assert_false(head_matches_name_desc_exact("NNN", &head));
+
 	assert_true(head_matches_name_desc_exact("DD", &head));
+	assert_false(head_matches_name_desc_exact("D", &head));
+	assert_false(head_matches_name_desc_exact("DDD", &head));
 
 	assert_false(head_matches_name_desc_exact("ZZ", &head));
 }
 
 void head_matches_name_desc_partial__(void **state) {
-	struct Head head = { .name = "NNNN", .description = "DDDD", };
+	struct Head head = { .name = "NN", .description = "DD", };
 
+	assert_true(head_matches_name_desc_partial("N", &head));
 	assert_true(head_matches_name_desc_partial("NN", &head));
-	assert_true(head_matches_name_desc_partial("NNNN", &head));
-	assert_false(head_matches_name_desc_partial("__NN__", &head));
+	assert_false(head_matches_name_desc_partial("NNN", &head));
 
+	assert_true(head_matches_name_desc_partial("D", &head));
 	assert_true(head_matches_name_desc_partial("DD", &head));
-	assert_true(head_matches_name_desc_partial("DDDD", &head));
-	assert_false(head_matches_name_desc_partial("--DD--", &head));
+	assert_false(head_matches_name_desc_partial("DDD", &head));
+
+	assert_false(head_matches_name_desc_partial("Z", &head));
 }
 
-void head_auto_scale__absent(void **state) {
+void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
 
 	// no head
@@ -75,22 +87,47 @@ void head_auto_scale__absent(void **state) {
 
 	// no desired mode
 	assert_int_equal(wl_fixed_from_int(1), head_auto_scale(&head));
+}
 
-	// TODO mock mode_dpi here
+void head_auto_scale__mode(void **state) {
+	struct Mode mode = { 0 };
+	struct Head head = { 0 };
+	head.desired.mode = &mode;
+
+	// dpi 0 defaults to 96
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 0);
+	assert_int_equal(wl_fixed_from_double(96 / 96), head_auto_scale(&head));
+
+	// even 144
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 144);
+	assert_int_equal(wl_fixed_from_double(144.0 / 96), head_auto_scale(&head));
+
+	// rounded down 156
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 161);
+	assert_int_equal(wl_fixed_from_double(156.0 / 96), head_auto_scale(&head));
+
+	// rounded up 168
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 162);
+	assert_int_equal(wl_fixed_from_double(168.0 / 96), head_auto_scale(&head));
 }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(head_is_max_preferred_refresh__nohead, setup_each, teardown_each),
-		cmocka_unit_test_setup_teardown(head_is_max_preferred_refresh__match, setup_each, teardown_each),
-		cmocka_unit_test_setup_teardown(head_is_max_preferred_refresh__nomatch, setup_each, teardown_each),
+		TEST(head_is_max_preferred_refresh__nohead),
+		TEST(head_is_max_preferred_refresh__match),
+		TEST(head_is_max_preferred_refresh__nomatch),
 
-		cmocka_unit_test(head_matches_name_desc_exact__),
-		cmocka_unit_test(head_matches_name_desc_partial__),
+		TEST(head_matches_name_desc_exact__),
+		TEST(head_matches_name_desc_partial__),
 
-		cmocka_unit_test(head_auto_scale__absent),
+		TEST(head_auto_scale__default),
+		TEST(head_auto_scale__mode),
 	};
 
-	return cmocka_run_group_tests(tests, setup_all, teardown_all);
+	return RUN(tests);
 }
 
