@@ -16,7 +16,7 @@ TST_E = $(TST_O:tst/%.o=%)
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
 tst-head: tst/tst-head.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,--wrap=mode_dpi,--wrap=log_info
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,--wrap=mode_dpi,--wrap=mode_user_mode,--wrap=log_info,--wrap=log_warn
 
 tst-layout: tst/tst-layout.o
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)

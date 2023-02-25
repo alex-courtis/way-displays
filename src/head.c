@@ -33,31 +33,6 @@ bool head_matches_user_mode(const void *user_mode, const void *head) {
 	return user_mode && head && head_matches_name_desc_partial(((struct UserMode*)user_mode)->name_desc, (struct Head*)head);
 }
 
-struct Mode *user_mode(struct Head *head, struct UserMode *user_mode) {
-	if (!head || !head->name || !user_mode)
-		return NULL;
-
-	struct SList *i, *j;
-
-	// highest mode matching the user mode
-	struct SList *mrrs = modes_res_refresh(head->modes);
-	for (i = mrrs; i; i = i->nex) {
-		struct ModesResRefresh *mrr = i->val;
-		if (mrr && mrr_satisfies_user_mode(mrr, user_mode)) {
-			for (j = mrr->modes; j; j = j->nex) {
-				struct Mode *mode = j->val;
-				if (!slist_find_equal(head->modes_failed, NULL, mode)) {
-					slist_free_vals(&mrrs, mode_res_refresh_free);
-					return mode;
-				}
-			}
-		}
-	}
-	slist_free_vals(&mrrs, mode_res_refresh_free);
-
-	return NULL;
-}
-
 struct Mode *preferred_mode(struct Head *head) {
 	if (!head)
 		return NULL;
@@ -220,7 +195,7 @@ struct Mode *head_find_mode(struct Head *head) {
 	// maybe a user mode
 	struct UserMode *um = slist_find_equal_val(cfg->user_modes, head_matches_user_mode, head);
 	if (um) {
-		mode = user_mode(head, um);
+		mode = mode_user_mode(head->modes, head->modes_failed, um);
 		if (!mode && !um->warned_no_mode) {
 			um->warned_no_mode = true;
 			info_user_mode_string(um, buf, sizeof(buf));

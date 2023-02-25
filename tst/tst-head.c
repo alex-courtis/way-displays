@@ -2,7 +2,10 @@
 #include "asserts.h"
 
 #include <cmocka.h>
+#include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
+#include <wayland-util.h>
 
 #include "cfg.h"
 #include "head.h"
@@ -34,7 +37,18 @@ double __wrap_mode_dpi(struct Mode *mode) {
 	return mock();
 }
 
+struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode) {
+	check_expected(modes);
+	check_expected(modes_failed);
+	check_expected(user_mode);
+	return (struct Mode *)mock();
+}
+
 void __wrap_log_info(const char *__restrict __format, ...) {
+	check_expected(__format);
+}
+
+void __wrap_log_warn(const char *__restrict __format, ...) {
 	check_expected(__format);
 }
 
@@ -176,6 +190,61 @@ void head_find_mode__none(void **state) {
 	assert_null(head_find_mode(&head));
 }
 
+void head_find_mode__user_available(void **state) {
+	struct Head head = { 0 };
+	struct Mode mode = { 0 };
+	slist_append(&head.modes, &mode);
+
+	// user preferred head
+	struct UserMode *user_mode = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+	user_mode->name_desc = strdup("HEAD");
+	slist_append(&cfg->user_modes, user_mode);
+	head.name = strdup("HEAD");
+
+	// mode matched to user
+	struct Mode expected = { 0 };
+	expect_value(__wrap_mode_user_mode, modes, head.modes);
+	expect_value(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	expect_value(__wrap_mode_user_mode, user_mode, user_mode);
+	will_return(__wrap_mode_user_mode, &expected);
+
+	assert_ptr_equal(head_find_mode(&head), &expected);
+}
+
+void head_find_mode__user_failed(void **state) {
+	struct Head head = { 0 };
+	struct Mode mode = { 0 };
+	slist_append(&head.modes, &mode);
+
+	// user preferred head
+	struct UserMode *user_mode = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+	user_mode->name_desc = strdup("HEAD");
+	slist_append(&cfg->user_modes, user_mode);
+	head.name = strdup("HEAD");
+
+	// mode not matched to user
+	expect_value(__wrap_mode_user_mode, modes, head.modes);
+	expect_value(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	expect_value(__wrap_mode_user_mode, user_mode, user_mode);
+	will_return(__wrap_mode_user_mode, NULL);
+
+	// one and only notices: falling back to preferred then max
+	expect_any(__wrap_log_warn, __format);
+	expect_any(__wrap_log_info, __format);
+
+	// user failed, fall back to max
+	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	// try a second time
+	expect_value(__wrap_mode_user_mode, modes, head.modes);
+	expect_value(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	expect_value(__wrap_mode_user_mode, user_mode, user_mode);
+	will_return(__wrap_mode_user_mode, NULL);
+
+	// no notices this time
+	assert_ptr_equal(head_find_mode(&head), &mode);
+}
+
 void head_find_mode__max(void **state) {
 	struct Head head = { 0 };
 	struct Mode mode = { 0 };
@@ -206,6 +275,8 @@ int main(void) {
 		TEST(head_scaled_dimensions__calculated),
 
 		TEST(head_find_mode__none),
+		TEST(head_find_mode__user_available),
+		TEST(head_find_mode__user_failed),
 		TEST(head_find_mode__max),
 	};
 

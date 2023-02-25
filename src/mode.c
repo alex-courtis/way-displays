@@ -99,6 +99,31 @@ struct SList *modes_res_refresh(struct SList *modes) {
 	return mrrs;
 }
 
+struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode) {
+	if (!modes || !user_mode)
+		return NULL;
+
+	struct SList *i, *j;
+
+	// highest mode matching the user mode
+	struct SList *mrrs = modes_res_refresh(modes);
+	for (i = mrrs; i; i = i->nex) {
+		struct ModesResRefresh *mrr = i->val;
+		if (mrr && mrr_satisfies_user_mode(mrr, user_mode)) {
+			for (j = mrr->modes; j; j = j->nex) {
+				struct Mode *mode = j->val;
+				if (!slist_find_equal(modes_failed, NULL, mode)) {
+					slist_free_vals(&mrrs, mode_res_refresh_free);
+					return mode;
+				}
+			}
+		}
+	}
+	slist_free_vals(&mrrs, mode_res_refresh_free);
+
+	return NULL;
+}
+
 void mode_free(void *data) {
 	struct Mode *mode = data;
 
