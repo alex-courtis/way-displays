@@ -1,3 +1,4 @@
+#include <regex.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -119,24 +120,41 @@ struct Mode *max_mode(struct Head *head) {
 	return max;
 }
 
-bool head_matches_name_desc_exact(const void *a, const void *b) {
+bool head_matches_name_desc_regex(const void *a, const void *b) {
 	const char *name_desc = a;
 	const struct Head *head = b;
 
-	if (!name_desc || !head)
-		return false;
+    if (name_desc[0] != '!')
+        return false;
 
-	return (
-			(head->name && strcmp(name_desc, head->name) == 0) ||
-			(head->description && strcmp(head->description, name_desc) == 0)
-		   );
+    const char *regex_pattern = name_desc + 1;
+
+    regex_t regex;
+    int result;
+    char error_msg[100];
+
+    result = regcomp(&regex, regex_pattern, REG_EXTENDED);
+    if (result) {
+        log_debug("Could not compile regex '%s'\n", regex_pattern);
+        return false;
+    }
+    result = regexec(&regex, head->name, 0, NULL, 0);
+    if (result)
+        result = regexec(&regex, head->description, 0, NULL, 0);
+    if (result && result != REG_NOMATCH) {
+        regerror(result, &regex, error_msg, sizeof(error_msg));
+        log_debug("Regex match failed: %s\n", error_msg);
+    }
+    regfree(&regex);
+
+    return !result;
 }
 
 bool head_matches_name_desc_partial(const void *a, const void *b) {
 	const char *name_desc = a;
 	const struct Head *head = b;
 
-	if (!name_desc || !head)
+	if (!name_desc || !head || name_desc[0] == '!')
 		return false;
 
 	return (

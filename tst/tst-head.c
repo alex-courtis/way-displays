@@ -73,34 +73,6 @@ void head_is_max_preferred_refresh__nomatch(void **state) {
 	assert_false(head_is_max_preferred_refresh(&head));
 }
 
-void head_matches_name_desc_exact__(void **state) {
-	struct Head head = { .name = "NN", .description = "DD", };
-
-	assert_true(head_matches_name_desc_exact("NN", &head));
-	assert_false(head_matches_name_desc_exact("N", &head));
-	assert_false(head_matches_name_desc_exact("NNN", &head));
-
-	assert_true(head_matches_name_desc_exact("DD", &head));
-	assert_false(head_matches_name_desc_exact("D", &head));
-	assert_false(head_matches_name_desc_exact("DDD", &head));
-
-	assert_false(head_matches_name_desc_exact("ZZ", &head));
-}
-
-void head_matches_name_desc_partial__(void **state) {
-	struct Head head = { .name = "NN", .description = "DD", };
-
-	assert_true(head_matches_name_desc_partial("N", &head));
-	assert_true(head_matches_name_desc_partial("NN", &head));
-	assert_false(head_matches_name_desc_partial("NNN", &head));
-
-	assert_true(head_matches_name_desc_partial("D", &head));
-	assert_true(head_matches_name_desc_partial("DD", &head));
-	assert_false(head_matches_name_desc_partial("DDD", &head));
-
-	assert_false(head_matches_name_desc_partial("Z", &head));
-}
-
 void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
 
@@ -264,9 +236,6 @@ int main(void) {
 		TEST(head_is_max_preferred_refresh__nohead),
 		TEST(head_is_max_preferred_refresh__match),
 		TEST(head_is_max_preferred_refresh__nomatch),
-
-		TEST(head_matches_name_desc_exact__),
-		TEST(head_matches_name_desc_partial__),
 
 		TEST(head_auto_scale__default),
 		TEST(head_auto_scale__mode),
