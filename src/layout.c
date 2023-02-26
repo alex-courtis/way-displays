@@ -109,9 +109,9 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 				continue;
 			}
 			if (i->val && (
-				head_matches_name_desc_regex(i->val, head)
-				| head_matches_name_desc_partial(i->val, head)
-			)) {
+						head_matches_name_desc_regex(i->val, head) ||
+						head_matches_name_desc_partial(i->val, head)
+						)) {
 				slist_append(&heads_ordered, head);
 				slist_remove(&sorting, &r);
 			}
