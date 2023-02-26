@@ -19,6 +19,11 @@
 #include "server.h"
 #include "wlr-output-management-unstable-v1.h"
 
+
+
+
+
+#include <stdio.h>
 struct Head *head_changing_mode = NULL;
 struct Head *head_changing_adaptive_sync = NULL;
 
@@ -92,45 +97,56 @@ void position_heads(struct SList *heads) {
 }
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
-	struct SList *heads_ordered = NULL;
-	struct Head *head;
-	struct SList *i, *j, *r;
+	if (!heads)
+		return NULL;
 
+	unsigned long n_order = slist_length(order_name_desc);
+	unsigned long i;
 	struct SList *sorting = slist_shallow_clone(heads);
 
-	// specified order - regex match
-	for (i = order_name_desc; i; i = i->nex) {
-		j = sorting;
-		while(j) {
-			head = j->val;
-			r = j;
-			j = j->nex;
-			if (!head) {
-				continue;
-			}
-			if (i->val && (
-						head_matches_name_desc_regex(i->val, head) ||
-						head_matches_name_desc_partial(i->val, head)
-						)) {
-				slist_append(&heads_ordered, head);
-				slist_remove(&sorting, &r);
-			}
+	// array of order to list of heads matched
+	struct SList **order_heads = calloc(n_order, sizeof(struct SList*));
+
+	// exact match
+	i = 0;
+	for (struct SList *o = order_name_desc; o; o = o->nex) {
+		slist_move(&order_heads[i], &sorting, head_matches_name_desc_exact, o->val);
+		i++;
+	}
+
+	// regex
+	i = 0;
+	for (struct SList *o = order_name_desc; o; o = o->nex) {
+		slist_move(&order_heads[i], &sorting, head_matches_name_desc_regex, o->val);
+		i++;
+	}
+
+	// partial
+	i = 0;
+	for (struct SList *o = order_name_desc; o; o = o->nex) {
+		slist_move(&order_heads[i], &sorting, head_matches_name_desc_partial, o->val);
+		i++;
+	}
+
+	// marshal the ordered
+	struct SList *sorted = NULL;
+	for (i = 0; i < n_order; i++) {
+		struct SList *order_list = (struct SList*)order_heads[i];
+		for (struct SList *h = order_list; h; h = h->nex) {
+			slist_append(&sorted, h->val);
 		}
+		slist_free(&order_list);
 	}
 
 	// remaing in discovered order
-	for (i = sorting; i; i = i->nex) {
-		head = i->val;
-		if (!head) {
-			continue;
-		}
-
-		slist_append(&heads_ordered, head);
+	for (struct SList *h = sorting; h; h = h->nex) {
+		slist_append(&sorted, h->val);
 	}
 
 	slist_free(&sorting);
+	free(order_heads);
 
-	return heads_ordered;
+	return sorted;
 }
 
 void desire_enabled(struct Head *head) {
@@ -142,7 +158,7 @@ void desire_enabled(struct Head *head) {
 	head->desired.enabled |= slist_length(heads) == 1;
 
 	// explicitly disabled
-	head->desired.enabled &= slist_find_equal(cfg->disabled_name_desc, head_matches_name_desc_partial, head) == NULL;
+	head->desired.enabled &= slist_find_equal(cfg->disabled_name_desc, head_name_desc_partial_matches_head, head) == NULL;
 }
 
 void desire_mode(struct Head *head) {
@@ -173,7 +189,7 @@ void desire_scale(struct Head *head) {
 	struct UserScale *user_scale;
 	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
 		user_scale = (struct UserScale*)i->val;
-		if (head_matches_name_desc_partial(user_scale->name_desc, head)) {
+		if (head_matches_name_desc_partial(head, user_scale->name_desc)) {
 			head->desired.scale = wl_fixed_from_double(user_scale->scale);
 			return;
 		}

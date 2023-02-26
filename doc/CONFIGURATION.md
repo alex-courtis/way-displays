@@ -65,8 +65,13 @@ ORDER:
     - '!^my_regex_here[0-9]+'
 ```
 
-Note that any item prefixed with an `!` will be interpreted as extended POSIX regex, allowing for one to easily create generic rules (e.g. "!^DP-", which will often be sufficient to put external monitors at the top of a column). Regex strings **must** be quoted otherwise its value
-will not be parsed.
+Note that any item prefixed with an `!` will be interpreted as extended POSIX regex, allowing for one to easily create generic rules (e.g. "!^DP-", which will often be sufficient to put external monitors at the top of a column). Regex strings **must** be quoted otherwise its value will not be parsed.
+
+Order will be applied as follows:
+1. Exact match
+1. Regex match
+1. Partial match
+1. Unspecified, in discovered order
 
 ### AUTO_SCALE
 

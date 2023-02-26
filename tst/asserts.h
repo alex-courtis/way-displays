@@ -2,8 +2,11 @@
 #define ASSERTS_H
 
 #include <cmocka.h>
+#include <stdio.h>
+#include <wayland-util.h>
 
-#include "wayland-util.h"
+#include "head.h"
+#include "list.h"
 
 static void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b,
 	const char * const file, const int line) {
@@ -14,6 +17,31 @@ static void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b,
 	}
 }
 #define assert_wl_fixed_t_equal_double(a, b) _assert_wl_fixed_t_equal_double(a, b, __FILE__, __LINE__)
+
+static void _assert_heads_equal(struct SList *a, struct SList *b,
+	const char * const file, const int line) {
+	if (!slist_equal(a, b, NULL)) {
+		char expected[2048];
+		char *ep = expected;
+		*ep = '\0';
+		for (struct SList *i = b; i; i = i->nex) {
+			struct Head *head = i->val;
+			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
+		}
+
+		char actual[2048];
+		char *ap = actual;
+		*ap = '\0';
+		for (struct SList *i = a; i; i = i->nex) {
+			struct Head *head = i->val;
+			ap += sprintf(ap, "\n .name = '%s', .description = '%s',", head->name, head->description);
+		}
+
+		cmocka_print_error("assert_heads_equal\nexpected:%s\nactual:%s\n\n", expected, actual);
+		_fail(file, line);
+	}
+}
+#define assert_heads_equal(a, b) _assert_heads_equal(a, b, __FILE__, __LINE__)
 
 #endif // ASSERTS_H
 

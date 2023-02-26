@@ -43,12 +43,12 @@ void *slist_find_val(struct SList *head, bool (*test)(const void *val)) {
 		return NULL;
 }
 
-struct SList *slist_find_equal(struct SList *head, bool (*equal)(const void *val, const void *data), const void *data) {
+struct SList *slist_find_equal(struct SList *head, bool (*predicate)(const void *val, const void *data), const void *data) {
 	struct SList *i;
 
 	for (i = head; i; i = i->nex) {
-		if (equal) {
-			if (equal(i->val, data)) {
+		if (predicate) {
+			if (predicate(i->val, data)) {
 				return i;
 			}
 		} else if (i->val == data) {
@@ -59,8 +59,8 @@ struct SList *slist_find_equal(struct SList *head, bool (*equal)(const void *val
 	return NULL;
 }
 
-void *slist_find_equal_val(struct SList *head, bool (*equal)(const void *val, const void *data), const void *data) {
-	struct SList *f = slist_find_equal(head, equal, data);
+void *slist_find_equal_val(struct SList *head, bool (*predicate)(const void *val, const void *data), const void *data) {
+	struct SList *f = slist_find_equal(head, predicate, data);
 	if (f)
 		return f->val;
 	else
@@ -117,11 +117,11 @@ void *slist_remove(struct SList **head, struct SList **item) {
 	return removed;
 }
 
-unsigned long slist_remove_all(struct SList **head, bool (*equal)(const void *val, const void *data), const void *data) {
+unsigned long slist_remove_all(struct SList **head, bool (*predicate)(const void *val, const void *data), const void *data) {
 	struct SList *i;
 	unsigned long removed = 0;
 
-	while ((i = slist_find_equal(*head, equal, data))) {
+	while ((i = slist_find_equal(*head, predicate, data))) {
 		slist_remove(head, &i);
 		removed++;
 	}
@@ -129,11 +129,11 @@ unsigned long slist_remove_all(struct SList **head, bool (*equal)(const void *va
 	return removed;
 }
 
-unsigned long slist_remove_all_free(struct SList **head, bool (*equal)(const void *val, const void *data), const void *data, void (*free_val)(void *val)) {
+unsigned long slist_remove_all_free(struct SList **head, bool (*predicate)(const void *val, const void *data), const void *data, void (*free_val)(void *val)) {
 	struct SList *i;
 	unsigned long removed = 0;
 
-	while ((i = slist_find_equal(*head, equal, data))) {
+	while ((i = slist_find_equal(*head, predicate, data))) {
 		if (free_val) {
 			free_val(i->val);
 		} else {
@@ -200,6 +200,22 @@ struct SList *slist_sort(struct SList *head, bool (*before)(const void *a, const
 
 	slist_free(&sorting);
 	return sorted;
+}
+
+void slist_move(struct SList **to, struct SList **from, bool (*predicate)(const void *val, const void *data), const void *data) {
+	if (!to || !from || !predicate)
+		return;
+
+	struct SList *f = *from;
+	while (f) {
+		struct SList *r = f;
+		void *val = f->val;
+		f = f->nex;
+		if (predicate(val, data)) {
+			slist_append(to, val);
+			slist_remove(from, &r);
+		}
+	}
 }
 
 void slist_free(struct SList **head) {
