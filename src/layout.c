@@ -19,11 +19,6 @@
 #include "server.h"
 #include "wlr-output-management-unstable-v1.h"
 
-
-
-
-
-#include <stdio.h>
 struct Head *head_changing_mode = NULL;
 struct Head *head_changing_adaptive_sync = NULL;
 
