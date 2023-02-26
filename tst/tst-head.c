@@ -53,26 +53,6 @@ void __wrap_log_warn(const char *__restrict __format, ...) {
 }
 
 
-void head_is_max_preferred_refresh__nohead(void **state) {
-	assert_false(head_is_max_preferred_refresh(NULL));
-}
-
-void head_is_max_preferred_refresh__match(void **state) {
-	slist_append(&cfg->max_preferred_refresh_name_desc, strdup("AA"));
-
-	struct Head head = { .name = "AA", };
-
-	assert_true(head_is_max_preferred_refresh(&head));
-}
-
-void head_is_max_preferred_refresh__nomatch(void **state) {
-	slist_append(&cfg->max_preferred_refresh_name_desc, strdup("AA"));
-
-	struct Head head = { .name = "ZZ", };
-
-	assert_false(head_is_max_preferred_refresh(&head));
-}
-
 void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
 
@@ -233,10 +213,6 @@ void head_find_mode__max(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(head_is_max_preferred_refresh__nohead),
-		TEST(head_is_max_preferred_refresh__match),
-		TEST(head_is_max_preferred_refresh__nomatch),
-
 		TEST(head_auto_scale__default),
 		TEST(head_auto_scale__mode),
 
