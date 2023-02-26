@@ -37,5 +37,7 @@ void mode_free(void *mode);
 
 void mode_res_refresh_free(void *mode);
 
+struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode);
+
 #endif // MODE_H
 
