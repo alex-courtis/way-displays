@@ -138,9 +138,14 @@ bool head_matches_name_desc_regex(const void *h, const void *n) {
 		log_debug("Could not compile regex '%s'\n", regex_pattern);
 		return false;
 	}
-	result = regexec(&regex, head->name, 0, NULL, 0);
-	if (result)
+
+	result = REG_NOMATCH;
+	if (head->name) {
+		result = regexec(&regex, head->name, 0, NULL, 0);
+	}
+	if (result && head->description) {
 		result = regexec(&regex, head->description, 0, NULL, 0);
+	}
 	if (result && result != REG_NOMATCH) {
 		regerror(result, &regex, error_msg, sizeof(error_msg));
 		log_debug("Regex match failed: %s\n", error_msg);
