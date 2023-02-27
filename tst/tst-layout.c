@@ -2,13 +2,22 @@
 #include "asserts.h"
 
 #include <cmocka.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "head.h"
 #include "list.h"
+#include "server.h"
 
 // forward declarations
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
+void position_heads(struct SList *heads);
+
+
+struct State {
+	struct Mode *mode;
+	struct SList *heads;
+};
 
 
 int before_all(void **state) {
@@ -20,10 +29,31 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	cfg = cfg_default();
+
+	struct State *s = calloc(1, sizeof(struct State));
+
+	s->mode = calloc(1, sizeof(struct Mode));
+	for (int i = 0; i < 10; i++) {
+		struct Head *head = calloc(1, sizeof(struct Head));
+		head->desired.enabled = true;
+		head->desired.mode = s->mode;
+		slist_append(&s->heads, head);
+	}
+
+	*state = s;
 	return 0;
 }
 
 int after_each(void **state) {
+	cfg_destroy();
+
+	struct State *s = *state;
+
+	slist_free_vals(&s->heads, NULL);
+	free(s->mode);
+
+	free(s);
 	return 0;
 }
 
@@ -119,7 +149,6 @@ void order_heads__exact_regex_catchall(void **state) {
 }
 
 void order_heads__no_order(void **state) {
-
 	struct SList *heads = NULL;
 	struct Head head = { .name = "head", };
 
@@ -132,11 +161,126 @@ void order_heads__no_order(void **state) {
 	slist_free(&heads);
 }
 
+void position_heads__col_left(void **state) {
+	struct State *s = *state;
+	struct Head *head;
+
+	cfg->arrange = COL;
+	cfg->align = LEFT;
+
+	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
+	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+
+	position_heads(s->heads);
+
+	head = slist_at(s->heads, 0); assert_head_position(head, 0, 0);
+	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
+	head = slist_at(s->heads, 2); assert_head_position(head, 0, 5);
+}
+
+void position_heads__col_mid(void **state) {
+	struct State *s = *state;
+	struct Head *head;
+
+	cfg->arrange = COL;
+	cfg->align = MIDDLE;
+
+	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
+	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+
+	position_heads(s->heads);
+
+	head = slist_at(s->heads, 0); assert_head_position(head, 2, 0);
+	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
+	head = slist_at(s->heads, 2); assert_head_position(head, 3, 5);
+}
+
+void position_heads__col_right(void **state) {
+	struct State *s = *state;
+	struct Head *head;
+
+	cfg->arrange = COL;
+	cfg->align = RIGHT;
+
+	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
+	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+
+	position_heads(s->heads);
+
+	head = slist_at(s->heads, 0); assert_head_position(head, 3, 0);
+	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
+	head = slist_at(s->heads, 2); assert_head_position(head, 5, 5);
+}
+
+void position_heads__row_top(void **state) {
+	struct State *s = *state;
+	struct Head *head;
+
+	cfg->arrange = ROW;
+	cfg->align = TOP;
+
+	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
+	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+
+	position_heads(s->heads);
+
+	head = slist_at(s->heads, 0); assert_head_position(head, 0, 0);
+	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
+	head = slist_at(s->heads, 2); assert_head_position(head, 11, 0);
+}
+
+void position_heads__row_mid(void **state) {
+	struct State *s = *state;
+	struct Head *head;
+
+	cfg->arrange = ROW;
+	cfg->align = MIDDLE;
+
+	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
+	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+
+	position_heads(s->heads);
+
+	head = slist_at(s->heads, 0); assert_head_position(head, 0, 2);
+	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
+	head = slist_at(s->heads, 2); assert_head_position(head, 11, 2);
+}
+
+void position_heads__row_bottom(void **state) {
+	struct State *s = *state;
+	struct Head *head;
+
+	cfg->arrange = ROW;
+	cfg->align = BOTTOM;
+
+	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
+	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+
+	position_heads(s->heads);
+
+	head = slist_at(s->heads, 0); assert_head_position(head, 0, 3);
+	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
+	head = slist_at(s->heads, 2); assert_head_position(head, 11, 4);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(order_heads__exact_partial_regex),
 		TEST(order_heads__exact_regex_catchall),
 		TEST(order_heads__no_order),
+
+		TEST(position_heads__col_left),
+		TEST(position_heads__col_mid),
+		TEST(position_heads__col_right),
+		TEST(position_heads__row_top),
+		TEST(position_heads__row_mid),
+		TEST(position_heads__row_bottom),
 	};
 
 	return RUN(tests);
