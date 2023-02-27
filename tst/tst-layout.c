@@ -27,7 +27,7 @@ int after_each(void **state) {
 	return 0;
 }
 
-void order_heads__order(void **state) {
+void order_heads__exact_partial_regex(void **state) {
 	struct SList *order_name_desc = NULL;
 	struct SList *heads = NULL;
 	struct SList *expected = NULL;
@@ -76,6 +76,48 @@ void order_heads__order(void **state) {
 	slist_free(&heads_ordered);
 }
 
+void order_heads__exact_regex_catchall(void **state) {
+	struct SList *order_name_desc = NULL;
+	struct SList *heads = NULL;
+	struct SList *expected = NULL;
+
+	// ORDER
+	slist_append(&order_name_desc, strdup("exact0"));
+	slist_append(&order_name_desc, strdup("!.*regex.*"));
+	slist_append(&order_name_desc, strdup("!.*$"));
+	slist_append(&order_name_desc, strdup("exact9"));
+
+	// heads
+	struct Head exact9 =          { .description = "exact9" };
+	struct Head not_specified_1 = { .description = "not specified 1", };
+	struct Head regex_match_1 =   { .description = "a regex match" };
+	struct Head exact0 =          { .description = "exact0" };
+	struct Head regex_match_2 =   { .description = "another regex match" };
+	struct Head not_specified_2 = { .description = "not specified 2" };
+	slist_append(&heads, &not_specified_1);
+	slist_append(&heads, &regex_match_1);
+	slist_append(&heads, &exact0);
+	slist_append(&heads, &regex_match_2);
+	slist_append(&heads, &not_specified_2);
+	slist_append(&heads, &exact9);
+
+	// expected
+	slist_append(&expected, &exact0);
+	slist_append(&expected, &regex_match_1);
+	slist_append(&expected, &regex_match_2);
+	slist_append(&expected, &not_specified_1);
+	slist_append(&expected, &not_specified_2);
+	slist_append(&expected, &exact9);
+
+	struct SList *heads_ordered = order_heads(order_name_desc, heads);
+
+	assert_heads_equal(heads_ordered, expected);
+
+	slist_free_vals(&order_name_desc, NULL);
+	slist_free(&heads);
+	slist_free(&heads_ordered);
+}
+
 void order_heads__no_order(void **state) {
 
 	struct SList *heads = NULL;
@@ -92,7 +134,8 @@ void order_heads__no_order(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(order_heads__order),
+		TEST(order_heads__exact_partial_regex),
+		TEST(order_heads__exact_regex_catchall),
 		TEST(order_heads__no_order),
 	};
 
