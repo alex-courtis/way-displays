@@ -23,7 +23,7 @@ bool head_is_max_preferred_refresh(struct Head *head) {
 		return false;
 
 	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
-		if (head_matches_name_desc_partial(i->val, head)) {
+		if (head_matches_name_desc_partial(head, i->val)) {
 			return true;
 		}
 	}
@@ -31,7 +31,7 @@ bool head_is_max_preferred_refresh(struct Head *head) {
 }
 
 bool head_matches_user_mode(const void *user_mode, const void *head) {
-	return user_mode && head && head_matches_name_desc_partial(((struct UserMode*)user_mode)->name_desc, (struct Head*)head);
+	return user_mode && head && head_matches_name_desc_partial((struct Head*)head, ((struct UserMode*)user_mode)->name_desc);
 }
 
 struct Mode *preferred_mode(struct Head *head) {
@@ -120,39 +120,44 @@ struct Mode *max_mode(struct Head *head) {
 	return max;
 }
 
-bool head_matches_name_desc_regex(const void *a, const void *b) {
-	const char *name_desc = a;
-	const struct Head *head = b;
+bool head_matches_name_desc_regex(const void *h, const void *n) {
+	const struct Head *head = h;
+	const char *name_desc = n;
 
-    if (name_desc[0] != '!')
-        return false;
+	if (name_desc[0] != '!')
+		return false;
 
-    const char *regex_pattern = name_desc + 1;
+	const char *regex_pattern = name_desc + 1;
 
-    regex_t regex;
-    int result;
-    char error_msg[100];
+	regex_t regex;
+	int result;
+	char error_msg[100];
 
-    result = regcomp(&regex, regex_pattern, REG_EXTENDED);
-    if (result) {
-        log_debug("Could not compile regex '%s'\n", regex_pattern);
-        return false;
-    }
-    result = regexec(&regex, head->name, 0, NULL, 0);
-    if (result)
-        result = regexec(&regex, head->description, 0, NULL, 0);
-    if (result && result != REG_NOMATCH) {
-        regerror(result, &regex, error_msg, sizeof(error_msg));
-        log_debug("Regex match failed: %s\n", error_msg);
-    }
-    regfree(&regex);
+	result = regcomp(&regex, regex_pattern, REG_EXTENDED);
+	if (result) {
+		log_debug("Could not compile regex '%s'\n", regex_pattern);
+		return false;
+	}
 
-    return !result;
+	result = REG_NOMATCH;
+	if (head->name) {
+		result = regexec(&regex, head->name, 0, NULL, 0);
+	}
+	if (result && head->description) {
+		result = regexec(&regex, head->description, 0, NULL, 0);
+	}
+	if (result && result != REG_NOMATCH) {
+		regerror(result, &regex, error_msg, sizeof(error_msg));
+		log_debug("Regex match failed: %s\n", error_msg);
+	}
+	regfree(&regex);
+
+	return !result;
 }
 
-bool head_matches_name_desc_partial(const void *a, const void *b) {
-	const char *name_desc = a;
-	const struct Head *head = b;
+bool head_matches_name_desc_partial(const void *h, const void *n) {
+	const struct Head *head = h;
+	const char *name_desc = n;
 
 	if (!name_desc || !head || name_desc[0] == '!')
 		return false;
@@ -161,6 +166,21 @@ bool head_matches_name_desc_partial(const void *a, const void *b) {
 			(head->name && strcasestr(head->name, name_desc)) ||
 			(head->description && strcasestr(head->description, name_desc))
 		   );
+}
+
+bool head_name_desc_partial_matches_head(const void *n, const void *h) {
+	return head_matches_name_desc_partial(h, n);
+}
+
+bool head_matches_name_desc_exact(const void *h, const void *n) {
+	const struct Head *head = h;
+	const char *name_desc = n;
+
+	if (!name_desc || !head)
+		return false;
+
+	return (head->name && strcmp(head->name, name_desc) == 0) ||
+		(head->description && strcmp(head->description, name_desc) == 0);
 }
 
 wl_fixed_t head_auto_scale(struct Head *head) {

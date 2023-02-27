@@ -11,9 +11,9 @@ DP-3 Arrived:
 
 It is recommended to use the description rather than the name, as the name may change over time and will most likely be different on different PCs.
 
-The description does contain information about how it is connected, so strip that out. In the above example, you would use the description `Monitor Maker ABC123`.
+Using a regex is preferred, however partial string matches of at least 3 characters may be used.
 
-The name should be at least 3 characters long, to avoid any unwanted extra matches.
+The description does contain information about how it is connected, so don't match that. In the above example, you could use `!.*Monitor Maker ABC123.*` or `Monitor Maker ABC123`.
 
 ## cfg.yaml
 
@@ -65,8 +65,22 @@ ORDER:
     - '!^my_regex_here[0-9]+'
 ```
 
-Note that any item prefixed with an `!` will be interpreted as extended POSIX regex, allowing for one to easily create generic rules (e.g. "!^DP-", which will often be sufficient to put external monitors at the top of a column). Regex strings **must** be quoted otherwise its value
-will not be parsed.
+Note that any item prefixed with an `!` will be interpreted as extended POSIX regex, allowing for one to easily create generic rules (e.g. "!^DP-", which will often be sufficient to put external monitors at the top of a column). Regex strings **must** be quoted otherwise its value will not be parsed.
+
+Three passes will be made over ORDER to match displays:
+1. Exact match
+1. Regex match
+1. Partial match
+Remaining displays will be used in their discovered order.
+
+Some displays may be ordered last, by using a "catchall" regex e.g.
+```yaml
+ORDER:
+    - '!.*Monitor Maker ABC123.*$'
+    - '!.*$'
+    - 'DP-5'
+```
+Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
 
 ### AUTO_SCALE
 
