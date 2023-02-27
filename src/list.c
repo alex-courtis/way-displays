@@ -167,6 +167,17 @@ unsigned long slist_length(struct SList *head) {
 	return length;
 }
 
+void *slist_at(struct SList *head, unsigned long index) {
+	unsigned long c = 0;
+	for (struct SList *i = head; i; i = i->nex, c++) {
+		if (c == index) {
+			return i->val;
+		}
+	}
+
+	return NULL;
+}
+
 struct SList *slist_sort(struct SList *head, bool (*before)(const void *a, const void *b)) {
 	struct SList *sorted = NULL;
 
