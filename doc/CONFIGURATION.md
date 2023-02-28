@@ -23,6 +23,8 @@ See the [default cfg.yaml](../cfg.yaml), usually installed at `/etc/way-displays
 
 See [YAML_SCHEMAS](YAML_SCHEMAS.md) for syntax.
 
+The file may be specified via the `--config` command line option.
+
 ### File Locations
 
 The following are used, in order:
@@ -166,6 +168,7 @@ Usage: way-displays [OPTIONS...] [COMMAND]
   Runs the server when no COMMAND specified.
 OPTIONS
   -L, --l[og-threshold] <debug|info|warning|error>
+  -c, --c[onfig]        <path>
 COMMANDS
   -h, --h[elp]    show this message
   -v, --v[ersion] display version information

@@ -221,7 +221,7 @@ int loop(void) {
 }
 
 int
-server(void) {
+server(char *cfg_path) {
 	log_set_times(true);
 
 	// only one instance
@@ -234,7 +234,8 @@ server(void) {
 	log_info("way-displays version %s", VERSION);
 
 	// maybe default, never exits
-	cfg_init();
+	cfg_init(cfg_path);
+	free(cfg_path);
 
 	// play back captured logs from cfg parse
 	log_set_threshold(cfg->log_threshold, false);

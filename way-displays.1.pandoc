@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2023/02/16
+% 2023/02/28
 
 # NAME
 
@@ -35,6 +35,8 @@ Background process that performs the management. Configuration is read from a fi
 	/usr/local/etc/way-displays/cfg.yaml
 	/etc/way-displays/cfg.yaml
 
+The file may be specified via the `--config` option.
+
 cfg.yaml will be monitored for changes, which will be immediately applied.
 
 See the default /etc/way-displays/cfg.yaml and https://github.com/alex-courtis/way-displays/blob/master/doc/CONFIGURATION.md for details on individual configurable settings.
@@ -59,6 +61,9 @@ The user must be a member of the `input` group.
 
 `-L` | `--l[og-threshold]` <*debug*|*info*|*warning*|*error*>
 : Overrides cfg.yaml. *info* is default.
+
+`-c` | `--c[onfig]` <*path*>
+: Configuration file, falls back to defaults if not found.
 
 # COMMANDS
 

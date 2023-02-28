@@ -21,6 +21,7 @@ void usage(FILE *stream) {
 		"  Runs the server when no COMMAND specified.\n"
 		"OPTIONS\n"
 		"  -L, --l[og-threshold] <debug|info|warning|error>\n"
+		"  -c, --c[onfig]        <path>\n"
 		"COMMANDS\n"
 		"  -h, --h[elp]    show this message\n"
 		"  -v, --v[ersion] display version information\n"
@@ -240,8 +241,9 @@ bool parse_log_threshold(char *optarg) {
 	return true;
 }
 
-struct IpcRequest *parse_args(int argc, char **argv) {
+void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
 	static struct option long_options[] = {
+		{ "config",        required_argument, 0, 'c' },
 		{ "delete",        required_argument, 0, 'd' },
 		{ "get",           no_argument,       0, 'g' },
 		{ "help",          no_argument,       0, 'h' },
@@ -251,7 +253,7 @@ struct IpcRequest *parse_args(int argc, char **argv) {
 		{ "write",         no_argument,       0, 'w' },
 		{ 0,               0,                 0,  0  }
 	};
-	static char *short_options = "d:ghL:s:vw";
+	static char *short_options = "c:d:ghL:s:vw";
 
 	int c;
 	while (1) {
@@ -268,25 +270,30 @@ struct IpcRequest *parse_args(int argc, char **argv) {
 			case 'h':
 				usage(stdout);
 				exit(EXIT_SUCCESS);
+			case 'c':
+				*cfg_path = strdup(optarg);
+				break;
 			case 'v':
 				log_info("way-displays version %s", VERSION);
 				exit(EXIT_SUCCESS);
 			case 'g':
-				return parse_get(argc, argv);
+				*ipc_request = parse_get(argc, argv);
+				return;
 			case 's':
-				return parse_set(argc, argv);
+				*ipc_request = parse_set(argc, argv);
+				return;
 			case 'd':
-				return parse_del(argc, argv);
+				*ipc_request = parse_del(argc, argv);
+				return;
 			case 'w':
-				return parse_write(argc, argv);
+				*ipc_request = parse_write(argc, argv);
+				return;
 			case '?':
 			default:
 				usage(stderr);
 				exit(EXIT_FAILURE);
 		}
 	}
-
-	return NULL;
 }
 
 int
@@ -298,12 +305,16 @@ main(int argc, char **argv) {
 		exit(1);
 	}
 
-	struct IpcRequest *ipc_request = parse_args(argc, argv);
+	// consumer frees
+	struct IpcRequest *ipc_request = NULL;
+	char *cfg_path = NULL;
+
+	parse_args(argc, argv, &ipc_request, &cfg_path);
 
 	if (ipc_request) {
 		return client(ipc_request);
 	} else {
-		return server();
+		return server(cfg_path);
 	}
 }
 

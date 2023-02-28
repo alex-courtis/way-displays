@@ -73,7 +73,7 @@ enum CfgElement {
 	ARRANGE_ALIGN,
 };
 
-void cfg_init(void);
+void cfg_init(const char *cfg_path);
 
 struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del);
 

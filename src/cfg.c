@@ -306,12 +306,18 @@ struct UserMode *cfg_user_mode_default(void) {
 	return user_mode;
 }
 
-bool resolve_paths(struct Cfg *cfg, const char *prefix, const char *suffix) {
+bool resolve_paths(struct Cfg *cfg, const char *cfg_path, const char *prefix, const char *suffix) {
 	if (!cfg)
 		return false;
 
 	char path[PATH_MAX];
-	snprintf(path, PATH_MAX, "%s%s/way-displays/cfg.yaml", prefix, suffix);
+
+	if (cfg_path) {
+		snprintf(path, PATH_MAX, "%s", cfg_path);
+	} else {
+		snprintf(path, PATH_MAX, "%s%s/way-displays/cfg.yaml", prefix, suffix);
+	}
+
 	if (access(path, R_OK) != 0) {
 		return false;
 	}
@@ -523,19 +529,25 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
 	return merged;
 }
 
-void cfg_init(void) {
+void cfg_init(const char *cfg_path) {
 	bool found = false;
 
 	cfg = cfg_default();
 
-	if (getenv("XDG_CONFIG_HOME"))
-		found = resolve_paths(cfg, getenv("XDG_CONFIG_HOME"), "");
+	if (cfg_path) {
+		found = resolve_paths(cfg, cfg_path, NULL, NULL);
+		if (!found) {
+			log_warn("\n%s not found", cfg_path);
+		}
+	}
+	if (!found && getenv("XDG_CONFIG_HOME"))
+		found = resolve_paths(cfg, NULL, getenv("XDG_CONFIG_HOME"), "");
 	if (!found && getenv("HOME"))
-		found = resolve_paths(cfg, getenv("HOME"), "/.config");
+		found = resolve_paths(cfg, NULL, getenv("HOME"), "/.config");
 	if (!found)
-		found = resolve_paths(cfg, "/usr/local/etc", "");
+		found = resolve_paths(cfg, NULL, "/usr/local/etc", "");
 	if (!found)
-		found = resolve_paths(cfg, ROOT_ETC, "");
+		found = resolve_paths(cfg, NULL, ROOT_ETC, "");
 
 	if (found) {
 		log_info("\nFound configuration file: %s", cfg->file_path);
