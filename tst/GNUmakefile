@@ -32,3 +32,6 @@ tst-iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 tst-iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
 tst-iwyu: clean $(TST_O)
 IWYU = /usr/bin/include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
+
+tst-cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C) $(TST_CXX)
+	cppcheck $(^) --enable=warning,unusedFunction,performance,portability $(CPPFLAGS)

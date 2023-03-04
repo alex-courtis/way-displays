@@ -55,12 +55,12 @@ man: way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc=)
 
-cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C)
-	cppcheck $(^) --enable=warning,unusedFunction,performance,portability $(CPPFLAGS)
-
 # make -k iwyu
 iwyu:
 	$(MAKE) -f tst/GNUmakefile tst-iwyu
+
+cppcheck:
+	$(MAKE) -f tst/GNUmakefile tst-cppcheck
 
 test:
 	$(MAKE) -f tst/GNUmakefile tst-all
@@ -68,5 +68,5 @@ test:
 clean-test:
 	$(MAKE) -f tst/GNUmakefile tst-clean
 
-.PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-all tst-clean
+.PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-cppcheck tst-all tst-clean
 
