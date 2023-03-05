@@ -6,6 +6,20 @@ Ideas, bug fixes and enhancements are always welcome.
 
 Please raise an [issue](https://github.com/alex-courtis/way-displays/issues), fork the repository and raise a [PR](https://github.com/alex-courtis/way-displays/pulls).
 
+## Dependencies
+
+* GNU make
+* gcc or clang
+* wayland
+* wayland-protocols
+* wlroots
+* libinput
+* yaml-cpp
+
+Most will be available if you are running a wlroots based compositor like sway.
+
+yaml-cpp will need to be installed via your distribution's package manager.
+
 ## Development
 
 gcc is the default for packaging reasons, however clang is preferred.
