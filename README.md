@@ -96,7 +96,7 @@ The server responds to [IPC](doc/IPC.md) requests to fetch and mutate state.
 
 #### Dependencies
 * GNU make
-* gcc
+* gcc or clang
 * wayland
 * wayland-protocols
 * wlroots
@@ -107,14 +107,12 @@ Most will be available if you are running a wlroots based compositor like sway.
 
 yaml-cpp will need to be installed via your distribution's package manager.
 
-Set `CC=mycompiler` and `CXX=mycompiler++` if you don't like gcc.
-
 #### Build
 
 ```
 git clone git@github.com:alex-courtis/way-displays.git
 cd way-displays
-make
+make CC=clang CXX=clang++
 ```
 
 #### Install / Uninstall

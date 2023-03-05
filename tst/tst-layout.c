@@ -2,11 +2,13 @@
 #include "asserts.h"
 
 #include <cmocka.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "head.h"
 #include "list.h"
+#include "mode.h"
 #include "server.h"
 
 // forward declarations

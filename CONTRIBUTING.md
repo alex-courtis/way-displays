@@ -6,6 +6,38 @@ Ideas, bug fixes and enhancements are always welcome.
 
 Please raise an [issue](https://github.com/alex-courtis/way-displays/issues), fork the repository and raise a [PR](https://github.com/alex-courtis/way-displays/pulls).
 
+## Development
+
+gcc is the default for packaging reasons, however clang is preferred.
+
+[ccls](https://github.com/MaskRay/ccls) using clang is configured via `.ccls`, for editors that support the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
+
+### Compile
+
+`make CC=clang CXX=clang++`
+
+### Test
+
+`make CC=clang CXX=clang++ test`
+
+[cmocka](https://cmocka.org/) is used for unit testing. Individual tests with `--wrap` definitions are defined in `tst/GNUmakefile`.
+
+Please add tests when defining new functionality.
+
+### Lint
+
+`make cppcheck`
+
+Please resolve all issues before committing.
+
+### Includes (Bonus Points)
+
+[include-what-you-use](https://include-what-you-use.org/) is configured to run for `src` and `tst`.
+
+`make -k iwyu`
+
+Necessary changes will be indicated in the output with "should".
+
 ## Documentation
 
 Please update `README.md` and `doc/configuration.md`.
@@ -16,11 +48,9 @@ Please update the man page:
   * preview the man page via `man -l way-displays.1`
 * commit both `way-displays.1.pandoc` and `way-displays.1`
 
-## Styling and Linting
+## Style
 
 Please match the style of the surrounding code and obey `.editorconfig`. Default vim C-indenting `gg=G` is preferred.
-
-Please run `make cppcheck` and resolve all issues before committing.
 
 ## Adding Options
 
