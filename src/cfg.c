@@ -226,7 +226,7 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 	return to;
 }
 
-bool equal_cfg(struct Cfg *a, struct Cfg* b) {
+bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -404,7 +404,7 @@ void validate_warn(struct Cfg *cfg) {
 	}
 }
 
-struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
+struct Cfg *cfg_merge_set(struct Cfg *to, struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -513,14 +513,14 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
 	if (del) {
 		merged = merge_del(to, from);
 	} else {
-		merged = merge_set(to, from);
+		merged = cfg_merge_set(to, from);
 	}
 
 	if (merged) {
 		validate_fix(merged);
 		validate_warn(merged);
 
-		if (equal_cfg(merged, to)) {
+		if (cfg_equal(merged, to)) {
 			cfg_free(merged);
 			merged = NULL;
 		}

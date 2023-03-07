@@ -22,8 +22,18 @@ tst-head: tst/tst-head.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 tst-layout: tst/tst-layout.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
+tst-cfg: tst/tst-cfg.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+
 tst-all: $(TST_E)
-	@for e in $(^); do echo; echo $$e; ./$$e; done
+	@for e in $(^); do \
+		echo ;\
+		echo $$e ;\
+		./$$e ;\
+		if [ $$? -ne 0 ]; then \
+			exit 1 ;\
+		fi ;\
+	done
 
 tst-clean:
 	rm -f $(TST_O) $(TST_E)
