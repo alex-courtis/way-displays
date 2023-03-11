@@ -404,7 +404,7 @@ void validate_warn(struct Cfg *cfg) {
 	}
 }
 
-struct Cfg *cfg_merge_set(struct Cfg *to, struct Cfg *from) {
+struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -476,7 +476,7 @@ struct Cfg *cfg_merge_set(struct Cfg *to, struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *cfg_merge_del(struct Cfg *to, struct Cfg *from) {
+struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -511,9 +511,9 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
 	struct Cfg *merged = NULL;
 
 	if (del) {
-		merged = cfg_merge_del(to, from);
+		merged = merge_del(to, from);
 	} else {
-		merged = cfg_merge_set(to, from);
+		merged = merge_set(to, from);
 	}
 
 	if (merged) {

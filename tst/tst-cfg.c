@@ -8,6 +8,10 @@
 #include "cfg.h"
 #include "list.h"
 
+// forward declarations
+struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
+struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
+
 struct UserScale *us(const char *name_desc, const float scale) {
 	struct UserScale *us = calloc(1, sizeof(struct UserScale));
 
@@ -72,7 +76,7 @@ void merge_set__arrange(void **state) {
 	s->from->arrange = COL;
 	s->expected->arrange = COL;
 
-	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+	struct Cfg *merged = merge_set(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -85,7 +89,7 @@ void merge_set__align(void **state) {
 	s->from->align = MIDDLE;
 	s->expected->align = MIDDLE;
 
-	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+	struct Cfg *merged = merge_set(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -100,7 +104,7 @@ void merge_set__order(void **state) {
 
 	slist_append(&s->expected->order_name_desc, strdup("X"));
 
-	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+	struct Cfg *merged = merge_set(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -113,7 +117,7 @@ void merge_set__auto_scale(void **state) {
 	s->from->auto_scale = OFF;
 	s->expected->auto_scale = OFF;
 
-	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+	struct Cfg *merged = merge_set(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -133,7 +137,7 @@ void merge_set__user_scale(void **state) {
 	slist_append(&s->expected->user_scales, us("both", 4));
 	slist_append(&s->expected->user_scales, us("from", 3));
 
-	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+	struct Cfg *merged = merge_set(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -153,7 +157,7 @@ void merge_set__mode(void **state) {
 	slist_append(&s->expected->user_modes, um("both", false, 10, 11, 12, true));
 	slist_append(&s->expected->user_modes, um("from", false, 7, 8, 9, true));
 
-	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+	struct Cfg *merged = merge_set(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -173,7 +177,7 @@ void merge_set__disabled(void **state) {
 	slist_append(&s->expected->disabled_name_desc, strdup("both"));
 	slist_append(&s->expected->disabled_name_desc, strdup("from"));
 
-	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+	struct Cfg *merged = merge_set(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -191,7 +195,7 @@ void merge_del__scale(void **state) {
 
 	slist_append(&s->expected->user_scales, us("1", 1));
 
-	struct Cfg *merged = cfg_merge_del(s->to, s->from);
+	struct Cfg *merged = merge_del(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -209,7 +213,7 @@ void merge_del__mode(void **state) {
 
 	slist_append(&s->from->user_modes, um("1", false, 1, 1, 1, false));
 
-	struct Cfg *merged = cfg_merge_del(s->to, s->from);
+	struct Cfg *merged = merge_del(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
@@ -227,7 +231,7 @@ void merge_del__disabled(void **state) {
 
 	slist_append(&s->expected->disabled_name_desc, strdup("1"));
 
-	struct Cfg *merged = cfg_merge_del(s->to, s->from);
+	struct Cfg *merged = merge_del(s->to, s->from);
 
 	assert_cfg_equal(merged, s->expected);
 
