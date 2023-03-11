@@ -8,6 +8,28 @@
 #include "cfg.h"
 #include "list.h"
 
+struct UserScale *us(const char *name_desc, const float scale) {
+	struct UserScale *us = calloc(1, sizeof(struct UserScale));
+
+	us->name_desc = strdup(name_desc);
+	us->scale = scale;
+
+	return us;
+}
+
+struct UserMode *um(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode) {
+	struct UserMode *um = calloc(1, sizeof(struct UserMode));
+
+	um->name_desc = strdup(name_desc);
+	um->max = max;
+	um->width = width;
+	um->height = height;
+	um->refresh_hz = refresh_hz;
+	um->warned_no_mode = warned_no_mode;
+
+	return um;
+}
+
 struct State {
 	struct Cfg *from;
 	struct Cfg *to;
@@ -98,6 +120,65 @@ void merge_set__auto_scale(void **state) {
 	cfg_free(merged);
 }
 
+void merge_set__user_scale(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->user_scales, us("to", 1));
+	slist_append(&s->to->user_scales, us("both", 2));
+
+	slist_append(&s->from->user_scales, us("from", 3));
+	slist_append(&s->from->user_scales, us("both", 4));
+
+	slist_append(&s->expected->user_scales, us("to", 1));
+	slist_append(&s->expected->user_scales, us("both", 4));
+	slist_append(&s->expected->user_scales, us("from", 3));
+
+	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_set__mode(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->user_modes, um("to", false, 1, 2, 3, false));
+	slist_append(&s->to->user_modes, um("both", false, 4, 5, 6, false));
+
+	slist_append(&s->from->user_modes, um("from", false, 7, 8, 9, true));
+	slist_append(&s->from->user_modes, um("both", false, 10, 11, 12, true));
+
+	slist_append(&s->expected->user_modes, um("to", false, 1, 2, 3, false));
+	slist_append(&s->expected->user_modes, um("both", false, 10, 11, 12, true));
+	slist_append(&s->expected->user_modes, um("from", false, 7, 8, 9, true));
+
+	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_set__disabled(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->disabled_name_desc, strdup("to"));
+	slist_append(&s->to->disabled_name_desc, strdup("both"));
+
+	slist_append(&s->from->disabled_name_desc, strdup("from"));
+	slist_append(&s->from->disabled_name_desc, strdup("both"));
+
+	slist_append(&s->expected->disabled_name_desc, strdup("to"));
+	slist_append(&s->expected->disabled_name_desc, strdup("both"));
+	slist_append(&s->expected->disabled_name_desc, strdup("from"));
+
+	struct Cfg *merged = cfg_merge_set(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
@@ -105,6 +186,9 @@ int main(void) {
 		TEST(merge_set__align),
 		TEST(merge_set__order),
 		TEST(merge_set__auto_scale),
+		TEST(merge_set__user_scale),
+		TEST(merge_set__mode),
+		TEST(merge_set__disabled),
 	};
 
 	return RUN(tests);
