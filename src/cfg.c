@@ -226,7 +226,7 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 	return to;
 }
 
-bool cfg_equal(struct Cfg *a, struct Cfg *b) {
+bool equal_cfg(struct Cfg *a, struct Cfg *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -520,7 +520,7 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
 		validate_fix(merged);
 		validate_warn(merged);
 
-		if (cfg_equal(merged, to)) {
+		if (equal_cfg(merged, to)) {
 			cfg_free(merged);
 			merged = NULL;
 		}

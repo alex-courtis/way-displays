@@ -2,6 +2,8 @@
 #include "asserts.h"
 
 #include <cmocka.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -78,7 +80,7 @@ void merge_set__arrange(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -91,7 +93,7 @@ void merge_set__align(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -106,7 +108,7 @@ void merge_set__order(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -119,7 +121,7 @@ void merge_set__auto_scale(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -139,7 +141,7 @@ void merge_set__user_scale(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -159,7 +161,7 @@ void merge_set__mode(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -179,7 +181,7 @@ void merge_set__disabled(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -197,7 +199,7 @@ void merge_del__scale(void **state) {
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -215,7 +217,7 @@ void merge_del__mode(void **state) {
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -233,7 +235,7 @@ void merge_del__disabled(void **state) {
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
-	assert_cfg_equal(merged, s->expected);
+	assert_equal_cfg(merged, s->expected);
 
 	cfg_free(merged);
 }

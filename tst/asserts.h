@@ -9,6 +9,9 @@
 #include "list.h"
 #include "marshalling.h"
 
+// forward declarations
+bool equal_cfg(struct Cfg *a, struct Cfg *b);
+
 static void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const file, const int line) {
 
 	if (a != wl_fixed_from_double(b)) {
@@ -51,14 +54,14 @@ static void _assert_head_position(struct Head *head, int32_t x, int32_t y, const
 
 #define assert_head_position(h, x, y) _assert_head_position(h, x, y, __FILE__, __LINE__)
 
-static void _assert_cfg_equal(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
-	if (!cfg_equal(a, b)) {
+static void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
+	if (!equal_cfg(a, b)) {
 		cmocka_print_error("assert_cfg_equal\nactual:\n\n%s\nexpected:\n\n%s\n\n", marshal_cfg(a), marshal_cfg(b));
 		_fail(file, line);
 	}
 }
 
-#define assert_cfg_equal(a, b) _assert_cfg_equal(a, b, __FILE__, __LINE__)
+#define assert_equal_cfg(a, b) _assert_equal_cfg(a, b, __FILE__, __LINE__)
 
 #endif // ASSERTS_H
 

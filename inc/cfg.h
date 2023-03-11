@@ -85,8 +85,6 @@ struct Cfg *cfg_default(void);
 
 struct UserMode *cfg_user_mode_default(void);
 
-bool cfg_equal(struct Cfg *a, struct Cfg *b);
-
 bool cfg_equal_user_scale_name(const void *value, const void *data);
 
 bool cfg_equal_user_scale(const void *value, const void *data);
