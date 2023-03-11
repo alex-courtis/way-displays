@@ -23,7 +23,7 @@ tst-layout: tst/tst-layout.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 tst-cfg: tst/tst-cfg.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,--wrap=log_warn
 
 tst-all: $(TST_E)
 	@for e in $(^); do \
