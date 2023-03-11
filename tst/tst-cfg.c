@@ -180,6 +180,60 @@ void merge_set__disabled(void **state) {
 	cfg_free(merged);
 }
 
+void merge_del__scale(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->user_scales, us("1", 1));
+	slist_append(&s->to->user_scales, us("2", 2));
+
+	slist_append(&s->from->user_scales, us("2", 3));
+	slist_append(&s->from->user_scales, us("3", 4));
+
+	slist_append(&s->expected->user_scales, us("1", 1));
+
+	struct Cfg *merged = cfg_merge_del(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_del__mode(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->user_modes, um("1", false, 1, 1, 1, false));
+	slist_append(&s->to->user_modes, um("2", false, 2, 2, 2, false));
+
+	slist_append(&s->from->user_modes, um("2", false, 2, 2, 2, false));
+	slist_append(&s->from->user_modes, um("3", false, 3, 3, 3, false));
+
+	slist_append(&s->from->user_modes, um("1", false, 1, 1, 1, false));
+
+	struct Cfg *merged = cfg_merge_del(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_del__disabled(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->disabled_name_desc, strdup("1"));
+	slist_append(&s->to->disabled_name_desc, strdup("2"));
+
+	slist_append(&s->from->disabled_name_desc, strdup("2"));
+	slist_append(&s->from->disabled_name_desc, strdup("3"));
+
+	slist_append(&s->expected->disabled_name_desc, strdup("1"));
+
+	struct Cfg *merged = cfg_merge_del(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(merge_set__arrange),
@@ -189,6 +243,10 @@ int main(void) {
 		TEST(merge_set__user_scale),
 		TEST(merge_set__mode),
 		TEST(merge_set__disabled),
+
+		TEST(merge_del__scale),
+		TEST(merge_del__mode),
+		TEST(merge_del__disabled),
 	};
 
 	return RUN(tests);
