@@ -25,6 +25,9 @@ tst-layout: tst/tst-layout.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 tst-cfg: tst/tst-cfg.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,--wrap=log_warn
 
+tst-marshalling: tst/tst-marshalling.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+
 tst-all: $(TST_E)
 	@for e in $(^); do \
 		echo ;\
