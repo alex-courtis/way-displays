@@ -1,5 +1,6 @@
 #include "tst.h"
 #include "asserts.h"
+#include "wraps.h"
 
 #include <cmocka.h>
 #include <stdlib.h>
@@ -43,15 +44,6 @@ struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_fail
 	check_expected(user_mode);
 	return (struct Mode *)mock();
 }
-
-void __wrap_log_info(const char *__restrict __format, ...) {
-	check_expected(__format);
-}
-
-void __wrap_log_warn(const char *__restrict __format, ...) {
-	check_expected(__format);
-}
-
 
 void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
@@ -181,8 +173,8 @@ void head_find_mode__user_failed(void **state) {
 	will_return(__wrap_mode_user_mode, NULL);
 
 	// one and only notices: falling back to preferred then max
-	expect_any(__wrap_log_warn, __format);
-	expect_any(__wrap_log_info, __format);
+	expect_log_warn("\n%s: No available mode for %s, falling back to preferred", "HEAD", "0x0@0Hz", NULL, NULL);
+	expect_log_info("\n%s: No preferred mode, falling back to maximum available", "HEAD", NULL, NULL, NULL);
 
 	// user failed, fall back to max
 	assert_ptr_equal(head_find_mode(&head), &mode);
@@ -198,13 +190,14 @@ void head_find_mode__user_failed(void **state) {
 }
 
 void head_find_mode__max(void **state) {
-	struct Head head = { 0 };
+	struct Head head = { .name = "name", };
 	struct Mode mode = { 0 };
 
 	slist_append(&head.modes, &mode);
 
 	// one and only notice
-	expect_any(__wrap_log_info, __format);
+	expect_log_info("\n%s: No preferred mode, falling back to maximum available", "name", NULL, NULL, NULL);
+
 	assert_ptr_equal(head_find_mode(&head), &mode);
 
 	// no notice

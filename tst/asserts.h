@@ -27,7 +27,7 @@ static void _assert_heads_equal(struct SList *a, struct SList *b, const char * c
 		char *ap = actual;
 		*ap = '\0';
 		for (struct SList *i = a; i; i = i->nex) {
-			struct Head *head = i->val;
+			struct Head *head = (struct Head*)i->val;
 			ap += sprintf(ap, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 
@@ -35,7 +35,7 @@ static void _assert_heads_equal(struct SList *a, struct SList *b, const char * c
 		char *ep = expected;
 		*ep = '\0';
 		for (struct SList *i = b; i; i = i->nex) {
-			struct Head *head = i->val;
+			struct Head *head = (struct Head*)i->val;
 			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 

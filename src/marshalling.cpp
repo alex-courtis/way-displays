@@ -395,7 +395,13 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 
 		e << YAML::BeginMap;						// root
 
-		e << YAML::Key << "OP" << YAML::Value << ipc_request_command_name(request->command);
+		const char *command_name = ipc_request_command_name(request->command);
+		if (command_name) {
+			e << YAML::Key << "OP" << YAML::Value << command_name;
+		} else {
+			log_error("marshalling ipc request: missing OP");
+			return NULL;
+		}
 
 		if (request->cfg) {
 			e << YAML::Key << "CFG" << YAML::BeginMap;	// CFG
