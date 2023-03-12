@@ -9,14 +9,14 @@
 #include "process.h"
 #include "sockets.h"
 
-void execute(enum IpcRequestCommand command, char *request) {
+void execute(enum IpcRequestOperation op, char *request) {
 	int fd;
 
 	if ((fd = create_fd_ipc_client()) == -1) {
 		exit(1);
 	}
 
-	log_debug("========%s request=================\n%s\n----------------------------------------", ipc_request_command_name(command), request);
+	log_debug("========%s request=================\n%s\n----------------------------------------", ipc_request_op_name(op), request);
 	if (socket_write(fd, request, strlen(request)) == -1) {
 		exit(1);
 	}
@@ -26,7 +26,7 @@ void execute(enum IpcRequestCommand command, char *request) {
 		if (!(response = socket_read(fd))) { // yup, that's a memory leak
 			exit(1);
 		}
-		log_debug("========%s response================\n%s\n----------------------------------------", ipc_request_command_name(command), response);
+		log_debug("========%s response================\n%s\n----------------------------------------", ipc_request_op_name(op), response);
 		if (strstr(response, "DONE: TRUE")) {
 			break;
 		}
@@ -118,13 +118,13 @@ main(int argc, char **argv) {
 	}
 
 	void (*fn)(void);
-	if (strcmp(argv[1], ipc_request_command_name(GET)) == 0) {
+	if (strcmp(argv[1], ipc_request_op_name(GET)) == 0) {
 		fn = get;
-	} else if (strcmp(argv[1], ipc_request_command_name(CFG_WRITE)) == 0) {
+	} else if (strcmp(argv[1], ipc_request_op_name(CFG_WRITE)) == 0) {
 		fn = cfg_write;
-	} else if (strcmp(argv[1], ipc_request_command_name(CFG_SET)) == 0) {
+	} else if (strcmp(argv[1], ipc_request_op_name(CFG_SET)) == 0) {
 		fn = cfg_set;
-	} else if (strcmp(argv[1], ipc_request_command_name(CFG_DEL)) == 0) {
+	} else if (strcmp(argv[1], ipc_request_op_name(CFG_DEL)) == 0) {
 		fn = cfg_del;
 	} else {
 		usage();

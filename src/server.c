@@ -93,16 +93,16 @@ void handle_ipc_request(int fd_sock) {
 		goto send;
 	}
 
-	log_info("\nServer received request: %s", ipc_request_command_friendly(ipc_request->command));
+	log_info("\nServer received request: %s", ipc_request_op_friendly(ipc_request->op));
 	if (ipc_request->cfg) {
-		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+		print_cfg(INFO, ipc_request->cfg, ipc_request->op == CFG_DEL);
 	}
 
-	switch (ipc_request->command) {
+	switch (ipc_request->op) {
 		case CFG_DEL:
 		case CFG_SET:
 			{
-				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->command == CFG_DEL);
+				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->op == CFG_DEL);
 				if (cfg_merged) {
 					// ongoing
 					ipc_response->done = false;

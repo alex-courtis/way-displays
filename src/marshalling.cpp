@@ -395,9 +395,9 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 
 		e << YAML::BeginMap;						// root
 
-		const char *command_name = ipc_request_command_name(request->command);
-		if (command_name) {
-			e << YAML::Key << "OP" << YAML::Value << command_name;
+		const char *op_name = ipc_request_op_name(request->op);
+		if (op_name) {
+			e << YAML::Key << "OP" << YAML::Value << op_name;
 		} else {
 			log_error("marshalling ipc request: missing OP");
 			return NULL;
@@ -440,8 +440,8 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 		const YAML::Node node_op = node["OP"];
 		if (node_op) {
 			const std::string &op_str = node_op.as<std::string>();
-			request->command = ipc_request_command_val(op_str.c_str());
-			if (!request->command) {
+			request->op = ipc_request_op_val(op_str.c_str());
+			if (!request->op) {
 				throw std::runtime_error("invalid OP '" + op_str + "'");
 			}
 		} else {

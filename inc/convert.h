@@ -17,9 +17,9 @@ const char *align_name(enum Align align);
 enum AutoScale auto_scale_val(const char *name);
 const char *auto_scale_name(enum AutoScale auto_scale);
 
-enum IpcRequestCommand ipc_request_command_val(const char *name);
-const char *ipc_request_command_name(enum IpcRequestCommand ipc_request_command);
-const char *ipc_request_command_friendly(enum IpcRequestCommand ipc_request_command);
+enum IpcRequestOperation ipc_request_op_val(const char *name);
+const char *ipc_request_op_name(enum IpcRequestOperation ipc_request_op);
+const char *ipc_request_op_friendly(enum IpcRequestOperation ipc_request_op);
 
 enum LogThreshold log_threshold_val(const char *name);
 const char *log_threshold_name(enum LogThreshold log_threshold);

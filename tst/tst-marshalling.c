@@ -98,7 +98,7 @@ struct Cfg *cfg_ok(void) {
 // ipc-request-get.yaml
 struct IpcRequest *ipc_request_get(void) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->command = GET;
+	ipc_request->op = GET;
 
 	return ipc_request;
 }
@@ -197,7 +197,7 @@ void marshal_ipc_request__no_op(void **state) {
 
 void marshal_ipc_request__get(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->command = GET;
+	ipc_request->op = GET;
 
 	char *actual = marshal_ipc_request(ipc_request);
 
