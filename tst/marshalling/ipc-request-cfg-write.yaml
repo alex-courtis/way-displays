@@ -1,0 +1,29 @@
+OP: CFG_WRITE
+CFG:
+  ARRANGE: COLUMN
+  ALIGN: BOTTOM
+  ORDER:
+    - one
+    - ONE
+    - "!two"
+  AUTO_SCALE: FALSE
+  SCALE:
+    - NAME_DESC: three
+      SCALE: 3
+    - NAME_DESC: four
+      SCALE: 4
+  MODE:
+    - NAME_DESC: five
+      WIDTH: 1920
+      HEIGHT: 1080
+      HZ: 60
+    - NAME_DESC: six
+      WIDTH: 2560
+      HEIGHT: 1440
+    - NAME_DESC: seven
+      MAX: TRUE
+  DISABLED:
+    - eight
+    - EIGHT
+    - nine
+  LOG_THRESHOLD: ERROR

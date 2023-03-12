@@ -68,8 +68,8 @@ int after_each(void **state) {
 	return 0;
 }
 
-// cfg-ok.yaml
-struct Cfg *cfg_ok(void) {
+// cfg-all.yaml
+struct Cfg *cfg_all(void) {
 	struct Cfg *cfg = cfg_default();
 
 	cfg->arrange = COL;
@@ -106,11 +106,11 @@ struct IpcRequest *ipc_request_get(void) {
 void unmarshal_cfg_from_file__ok(void **state) {
 
 	struct Cfg *read = cfg_default();
-	read->file_path = strdup("tst/marshalling/cfg-ok.yaml");
+	read->file_path = strdup("tst/marshalling/cfg-all.yaml");
 
 	assert_true(unmarshal_cfg_from_file(read));
 
-	struct Cfg *expected = cfg_ok();
+	struct Cfg *expected = cfg_all();
 
 	assert_equal_cfg(read, expected);
 
@@ -172,11 +172,11 @@ void unmarshal_cfg_from_file__bad(void **state) {
 }
 
 void marshal_cfg__ok(void **state) {
-	struct Cfg *cfg = cfg_ok();
+	struct Cfg *cfg = cfg_all();
 
 	char *actual = marshal_cfg(cfg);
 
-	char *expected = read_file("tst/marshalling/cfg-ok.yaml");
+	char *expected = read_file("tst/marshalling/cfg-all.yaml");
 
 	assert_string_equal(actual, expected);
 
@@ -210,6 +210,60 @@ void marshal_ipc_request__get(void **state) {
 	free(expected);
 }
 
+void marshal_ipc_request__cfg_set(void **state) {
+	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
+	ipc_request->op = CFG_SET;
+
+	struct Cfg *cfg = cfg_all();
+	ipc_request->cfg = cfg;
+
+	char *actual = marshal_ipc_request(ipc_request);
+
+	char *expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
+
+	assert_string_equal(actual, expected);
+
+	free_ipc_request(ipc_request);
+	free(actual);
+	free(expected);
+}
+
+void marshal_ipc_request__cfg_del(void **state) {
+	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
+	ipc_request->op = CFG_DEL;
+
+	struct Cfg *cfg = cfg_all();
+	ipc_request->cfg = cfg;
+
+	char *actual = marshal_ipc_request(ipc_request);
+
+	char *expected = read_file("tst/marshalling/ipc-request-cfg-del.yaml");
+
+	assert_string_equal(actual, expected);
+
+	free_ipc_request(ipc_request);
+	free(actual);
+	free(expected);
+}
+
+void marshal_ipc_request__cfg_write(void **state) {
+	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
+	ipc_request->op = CFG_WRITE;
+
+	struct Cfg *cfg = cfg_all();
+	ipc_request->cfg = cfg;
+
+	char *actual = marshal_ipc_request(ipc_request);
+
+	char *expected = read_file("tst/marshalling/ipc-request-cfg-write.yaml");
+
+	assert_string_equal(actual, expected);
+
+	free_ipc_request(ipc_request);
+	free(actual);
+	free(expected);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
@@ -222,6 +276,9 @@ int main(void) {
 
 		TEST(marshal_ipc_request__no_op),
 		TEST(marshal_ipc_request__get),
+		TEST(marshal_ipc_request__cfg_set),
+		TEST(marshal_ipc_request__cfg_del),
+		TEST(marshal_ipc_request__cfg_write),
 	};
 
 	return RUN(tests);
