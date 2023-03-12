@@ -2,7 +2,8 @@ ARRANGE: COL
 ALIGN: BOTTOM
 ORDER:
   - one
-  - two
+  - ONE
+  - '!two'
 AUTO_SCALE: FALSE
 SCALE:
   - NAME_DESC: three
@@ -22,5 +23,6 @@ MODE:
 LOG_THRESHOLD: ERROR
 DISABLED:
   - eight
+  - EIGHT
   - nine
 

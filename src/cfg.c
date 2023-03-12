@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <unistd.h>
 
 #include "cfg.h"
@@ -28,7 +27,7 @@ bool cfg_equal_user_mode_name(const void *value, const void *data) {
 		return false;
 	}
 
-	return strcasecmp(lhs->name_desc, rhs->name_desc) == 0;
+	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
 bool cfg_equal_user_scale_name(const void *value, const void *data) {
@@ -43,7 +42,7 @@ bool cfg_equal_user_scale_name(const void *value, const void *data) {
 		return false;
 	}
 
-	return strcasecmp(lhs->name_desc, rhs->name_desc) == 0;
+	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
 bool cfg_equal_user_scale(const void *value, const void *data) {
@@ -58,7 +57,7 @@ bool cfg_equal_user_scale(const void *value, const void *data) {
 		return false;
 	}
 
-	return strcasecmp(lhs->name_desc, rhs->name_desc) == 0 && lhs->scale == rhs->scale;
+	return strcmp(lhs->name_desc, rhs->name_desc) == 0 && lhs->scale == rhs->scale;
 }
 
 bool cfg_equal_user_mode(const void *value, const void *data) {
@@ -73,7 +72,7 @@ bool cfg_equal_user_mode(const void *value, const void *data) {
 		return false;
 	}
 
-	if (strcasecmp(lhs->name_desc, rhs->name_desc) != 0) {
+	if (strcmp(lhs->name_desc, rhs->name_desc) != 0) {
 		return false;
 	}
 
@@ -242,7 +241,7 @@ bool equal_cfg(struct Cfg *a, struct Cfg *b) {
 	}
 
 	// ORDER
-	if (!slist_equal(a->order_name_desc, b->order_name_desc, slist_equal_strcasecmp)) {
+	if (!slist_equal(a->order_name_desc, b->order_name_desc, slist_equal_strcmp)) {
 		return false;
 	}
 
@@ -264,17 +263,17 @@ bool equal_cfg(struct Cfg *a, struct Cfg *b) {
 	// LAPTOP_DISPLAY_PREFIX
 	char *al = a->laptop_display_prefix;
 	char *bl = b->laptop_display_prefix;
-	if ((al && !bl) || (!al && bl) || (al && bl && strcasecmp(al, bl) != 0)) {
+	if ((al && !bl) || (!al && bl) || (al && bl && strcmp(al, bl) != 0)) {
 		return false;
 	}
 
 	// MAX_PREFERRED_REFRESH
-	if (!slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, slist_equal_strcasecmp)) {
+	if (!slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, slist_equal_strcmp)) {
 		return false;
 	}
 
 	// DISABLED
-	if (!slist_equal(a->disabled_name_desc, b->disabled_name_desc, slist_equal_strcasecmp)) {
+	if (!slist_equal(a->disabled_name_desc, b->disabled_name_desc, slist_equal_strcmp)) {
 		return false;
 	}
 
@@ -468,7 +467,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 
 	// DISABLED
 	for (i = from->disabled_name_desc; i; i = i->nex) {
-		if (!slist_find_equal(merged->disabled_name_desc, slist_equal_strcasecmp, i->val)) {
+		if (!slist_find_equal(merged->disabled_name_desc, slist_equal_strcmp, i->val)) {
 			slist_append(&merged->disabled_name_desc, strdup((char*)i->val));
 		}
 	}
@@ -497,7 +496,7 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 
 	// DISABLED
 	for (i = from->disabled_name_desc; i; i = i->nex) {
-		slist_remove_all_free(&merged->disabled_name_desc, slist_equal_strcasecmp, i->val, NULL);
+		slist_remove_all_free(&merged->disabled_name_desc, slist_equal_strcmp, i->val, NULL);
 	}
 
 	return merged;

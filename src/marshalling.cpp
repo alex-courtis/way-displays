@@ -263,7 +263,7 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 		for (const auto &order : orders) {
 			const std::string &order_str = order.as<std::string>();
 			const char *order_cstr = order_str.c_str();
-			if (!slist_find_equal(cfg->order_name_desc, slist_equal_strcasecmp, order_cstr)) {
+			if (!slist_find_equal(cfg->order_name_desc, slist_equal_strcmp, order_cstr)) {
 				// If this is a regex pattern, attempt to compile it before
 				// including it in order configuration.
 				if (order_cstr[0] == '!') {
@@ -365,7 +365,7 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 		const auto &name_desc = node["MAX_PREFERRED_REFRESH"];
 		for (const auto &name_desc : name_desc) {
 			const std::string &name_desc_str = name_desc.as<std::string>();
-			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_equal_strcasecmp, name_desc_str.c_str())) {
+			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_equal_strcmp, name_desc_str.c_str())) {
 				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(name_desc_str.c_str()));
 			}
 		}
@@ -375,7 +375,7 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 		const auto &name_desc = node["DISABLED"];
 		for (const auto &name_desc : name_desc) {
 			const std::string &name_desc_str = name_desc.as<std::string>();
-			if (!slist_find_equal(cfg->disabled_name_desc, slist_equal_strcasecmp, name_desc_str.c_str())) {
+			if (!slist_find_equal(cfg->disabled_name_desc, slist_equal_strcmp, name_desc_str.c_str())) {
 				slist_append(&cfg->disabled_name_desc, strdup(name_desc_str.c_str()));
 			}
 		}

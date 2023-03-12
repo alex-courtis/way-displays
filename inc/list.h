@@ -56,8 +56,8 @@ void slist_free(struct SList **head);
 // free list and vals, null free_val uses free()
 void slist_free_vals(struct SList **head, void (*free_val)(void *val));
 
-// test val for equality using strcasecmp
-bool slist_equal_strcasecmp(const void *val, const void *data);
+// test val for equality using strcmp
+bool slist_equal_strcmp(const void *val, const void *data);
 
 #endif // LIST_H
 

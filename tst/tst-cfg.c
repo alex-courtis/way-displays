@@ -74,7 +74,7 @@ int after_each(void **state) {
 	return 0;
 }
 
-void __wrap_log_warn(const char *__restrict __format, const char *arg1, const char *arg2, ...) {
+void __wrap_log_warn(const char *__restrict __format, const void *arg1, const void *arg2, ...) {
 	check_expected(__format);
 	check_expected(arg1);
 	check_expected(arg2);
