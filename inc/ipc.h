@@ -40,9 +40,9 @@ struct IpcRequest *ipc_request_receive(int fd_sock);
 
 struct IpcResponse *ipc_response_receive(int fd);
 
-void free_ipc_request(struct IpcRequest *request);
+void ipc_request_free(struct IpcRequest *request);
 
-void free_ipc_response(struct IpcResponse *response);
+void ipc_response_free(struct IpcResponse *response);
 
 #endif // IPC_H
 

@@ -43,7 +43,7 @@ int client(struct IpcRequest *ipc_request) {
 		if (ipc_response) {
 			rc = ipc_response->rc;
 			done = ipc_response->done;
-			free_ipc_response(ipc_response);
+			ipc_response_free(ipc_response);
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;
@@ -53,7 +53,7 @@ int client(struct IpcRequest *ipc_request) {
 	close(fd);
 
 end:
-	free_ipc_request(ipc_request);
+	ipc_request_free(ipc_request);
 
 	return rc;
 }

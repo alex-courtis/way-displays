@@ -14,19 +14,21 @@ TST_CXX = $(wildcard tst/*.cpp)
 TST_O = $(TST_C:.c=.o) $(TST_CXX:.cpp=.o)
 TST_E = $(TST_O:tst/%.o=%)
 
+WRAPS = -Wl,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_nocap,--wrap=log_
+
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
 tst-head: tst/tst-head.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,--wrap=mode_dpi,--wrap=mode_user_mode,--wrap=log_info,--wrap=log_warn
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=mode_dpi,--wrap=mode_user_mode
 
 tst-layout: tst/tst-layout.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
 
 tst-cfg: tst/tst-cfg.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,--wrap=log_warn
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
 
 tst-marshalling: tst/tst-marshalling.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,--wrap=log_warn,--wrap=log_error
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
 
 tst-all: $(TST_E)
 	@for e in $(^); do \

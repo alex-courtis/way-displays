@@ -459,7 +459,7 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 	} catch (const std::exception &e) {
 		log_error("\nunmarshalling ipc request: %s", e.what());
 		log_error_nocap("========================================\n%s\n----------------------------------------", yaml);
-		free_ipc_request(request);
+		ipc_request_free(request);
 		return NULL;
 	}
 }
@@ -590,7 +590,7 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 	} catch (const std::exception &e) {
 		log_error("\nunmarshalling ipc response: %s", e.what());
 		log_error_nocap("========================================\n%s\n----------------------------------------", yaml);
-		free_ipc_response(response);
+		ipc_response_free(response);
 		response = NULL;
 	}
 

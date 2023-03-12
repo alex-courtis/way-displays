@@ -1,6 +1,6 @@
 #include "tst.h"
 #include "asserts.h"
-#include "wraps.h"
+#include "wraps-log.h"
 
 #include <cmocka.h>
 #include <stdlib.h>

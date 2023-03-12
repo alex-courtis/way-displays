@@ -1,0 +1,7 @@
+DONE: TRUE
+RC: 1
+MESSAGES:
+  DEBUG: dbg
+  INFO: inf
+  WARNING: war
+  ERROR: err

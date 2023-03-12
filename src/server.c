@@ -43,7 +43,7 @@ void handle_ipc_in_progress(int fd_sock) {
 
 	close(response->fd);
 
-	free_ipc_response(response);
+	ipc_response_free(response);
 }
 
 void handle_ipc_response(void) {
@@ -59,7 +59,7 @@ void handle_ipc_response(void) {
 
 		close(ipc_response->fd);
 
-		free_ipc_response(ipc_response);
+		ipc_response_free(ipc_response);
 		ipc_response = NULL;
 	}
 }
@@ -135,7 +135,7 @@ void handle_ipc_request(int fd_sock) {
 	}
 
 send:
-	free_ipc_request(ipc_request);
+	ipc_request_free(ipc_request);
 
 	handle_ipc_response();
 }
