@@ -308,6 +308,7 @@ void marshal_ipc_response__ok(void **state) {
 
 	assert_non_null(actual);
 
+	// TODO RC should be set to IPC_RC_ERROR
 	char *expected = read_file("tst/marshalling/ipc-response-ok.yaml");
 
 	assert_string_equal(actual, expected);
@@ -426,7 +427,7 @@ void unmarshal_ipc_response__ok(void **state) {
 
 	assert_non_null(actual);
 	assert_true(actual->done);
-	assert_int_equal(actual->rc, 1);
+	assert_int_equal(actual->rc, 2);
 
 	ipc_response_free(actual);
 	free(yaml);

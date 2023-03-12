@@ -476,7 +476,6 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		e << YAML::BeginMap;								// root
 
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
-		e << YAML::Key << "RC" << YAML::Value << response->rc;
 
 		if (response->status) {
 			if (cfg) {
@@ -524,6 +523,8 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 			}
 			e << YAML::EndMap;									// MESSAGES
 		}
+
+		e << YAML::Key << "RC" << YAML::Value << response->rc;
 
 		e << YAML::EndMap;									// root
 

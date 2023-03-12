@@ -1,5 +1,4 @@
 DONE: TRUE
-RC: 1
 CFG:
   ARRANGE: COLUMN
   ALIGN: BOTTOM
@@ -67,3 +66,4 @@ MESSAGES:
   INFO: inf
   WARNING: war
   ERROR: err
+RC: 2
