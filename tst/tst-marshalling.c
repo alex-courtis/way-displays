@@ -13,9 +13,11 @@
 
 #include "cfg.h"
 #include "ipc.h"
+#include "lid.h"
 #include "list.h"
 #include "log.h"
 #include "marshalling.h"
+#include "server.h"
 
 struct UserScale *us(const char *name_desc, const float scale) {
 	struct UserScale *us = (struct UserScale*)calloc(1, sizeof(struct UserScale));
@@ -37,6 +39,15 @@ struct UserMode *um(const char *name_desc, const bool max, const int32_t width, 
 	um->warned_no_mode = warned_no_mode;
 
 	return um;
+}
+
+void lcl(enum LogThreshold threshold, char *line) {
+	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
+
+	lcl->threshold = threshold;
+	lcl->line = strdup(line);
+
+	slist_append(&log_cap_lines, lcl);
 }
 
 char *read_file(const char *path) {
@@ -65,6 +76,12 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
+	log_capture_clear();
+	cfg_free(cfg);
+	cfg = NULL;
+	free(lid);
+	lid = NULL;
+	slist_free(&heads);
 	return 0;
 }
 
@@ -228,6 +245,79 @@ void marshal_ipc_request__cfg_set(void **state) {
 	free(expected);
 }
 
+void marshal_ipc_response__ok(void **state) {
+	struct IpcResponse *ipc_response = calloc(1, sizeof(struct IpcResponse));
+	ipc_response->done = true;
+	ipc_response->rc = 1;
+	ipc_response->messages = true;
+	ipc_response->status = true;
+
+	cfg = cfg_all();
+
+	lid = calloc(1, sizeof(struct Lid));
+	lid->closed = true;
+	lid->device_path = "/path/to/lid";
+
+	lcl(DEBUG, "dbg");
+	lcl(INFO, "inf");
+	lcl(WARNING, "war");
+	lcl(ERROR, "err");
+
+	struct Mode mode1 = {
+		.width = 10,
+		.height = 11,
+		.refresh_mhz = 12,
+		.preferred = true,
+	};
+	struct Mode mode2 = {
+		.width = 13,
+		.height = 14,
+		.refresh_mhz = 15,
+		.preferred = false,
+	};
+	struct Head head = {
+		.name = "name",
+		.description = "desc",
+		.width_mm = 1,
+		.height_mm = 2,
+		.transform = WL_OUTPUT_TRANSFORM_270, // 3
+		.make = "make",
+		.model = "model",
+		.serial_number = "serial",
+		.current = {
+			.scale = wl_fixed_from_double(4.0),
+			.enabled = true,
+			.x = 5,
+			.y = 6,
+			.mode = &mode1,
+		},
+		.desired = {
+			.scale = wl_fixed_from_double(7.0),
+			.enabled = true,
+			.x = 8,
+			.y = 9,
+		},
+	};
+
+	slist_append(&head.modes, &mode1);
+	slist_append(&head.modes, &mode2);
+
+	slist_append(&heads, &head);
+
+	char *actual = marshal_ipc_response(ipc_response);
+
+	assert_non_null(actual);
+
+	char *expected = read_file("tst/marshalling/ipc-response-ok.yaml");
+
+	assert_string_equal(actual, expected);
+
+	ipc_response_free(ipc_response);
+	free(actual);
+	free(expected);
+	slist_free(&head.modes);
+}
+
 void unmarshal_ipc_request__empty(void **state) {
 	char yaml[] = "";
 
@@ -355,6 +445,8 @@ int main(void) {
 		TEST(marshal_ipc_request__no_op),
 		TEST(marshal_ipc_request__get),
 		TEST(marshal_ipc_request__cfg_set),
+
+		TEST(marshal_ipc_response__ok),
 
 		TEST(unmarshal_ipc_request__empty),
 		TEST(unmarshal_ipc_request__bad_op),
