@@ -8,12 +8,6 @@ CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 CXXFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
 
-TST_H = $(wildcard tst/*.h)
-TST_C = $(wildcard tst/*.c)
-TST_CXX = $(wildcard tst/*.cpp)
-TST_O = $(TST_C:.c=.o) $(TST_CXX:.cpp=.o)
-TST_E = $(TST_O:tst/%.o=%)
-
 WRAPS = -Wl,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_nocap,--wrap=log_
 
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
@@ -39,9 +33,6 @@ tst-all: $(TST_E)
 			exit 1 ;\
 		fi ;\
 	done
-
-tst-clean:
-	rm -f $(TST_O) $(TST_E)
 
 tst-iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 tst-iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"

@@ -14,6 +14,12 @@ PRO_H = $(PRO_X:.xml=.h)
 PRO_C = $(PRO_X:.xml=.c)
 PRO_O = $(PRO_X:.xml=.o)
 
+TST_H = $(wildcard tst/*.h)
+TST_C = $(wildcard tst/*.c)
+TST_CXX = $(wildcard tst/*.cpp)
+TST_O = $(TST_C:.c=.o) $(TST_CXX:.cpp=.o)
+TST_E = $(TST_O:tst/%.o=%)
+
 all: way-displays
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
@@ -33,7 +39,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
-	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C)
+	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E)
 
 install: way-displays way-displays.1 cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -64,9 +70,6 @@ cppcheck:
 
 test:
 	$(MAKE) -f tst/GNUmakefile tst-all
-
-clean-test:
-	$(MAKE) -f tst/GNUmakefile tst-clean
 
 .PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-cppcheck tst-all tst-clean
 
