@@ -10,13 +10,17 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <wayland-client-protocol.h>
+#include <wayland-util.h>
 
 #include "cfg.h"
+#include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "list.h"
 #include "log.h"
 #include "marshalling.h"
+#include "mode.h"
 #include "server.h"
 
 struct UserScale *us(const char *name_desc, const float scale) {
@@ -308,7 +312,6 @@ void marshal_ipc_response__ok(void **state) {
 
 	assert_non_null(actual);
 
-	// TODO RC should be set to IPC_RC_ERROR
 	char *expected = read_file("tst/marshalling/ipc-response-ok.yaml");
 
 	assert_string_equal(actual, expected);

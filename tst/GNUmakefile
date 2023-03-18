@@ -8,21 +8,24 @@ CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 CXXFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
 
-WRAPS = -Wl,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_nocap,--wrap=log_
+WRAPS_LOG = --wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_nocap,--wrap=log_
 
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
+tst-cli: tst/tst-cli.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,$(WRAPS_LOG),--wrap=wd_exit
+
 tst-head: tst/tst-head.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=mode_dpi,--wrap=mode_user_mode
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,$(WRAPS_LOG),--wrap=mode_dpi,--wrap=mode_user_mode
 
 tst-layout: tst/tst-layout.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 tst-cfg: tst/tst-cfg.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,$(WRAPS_LOG)
 
 tst-marshalling: tst/tst-marshalling.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) -Wl,$(WRAPS_LOG)
 
 tst-all: $(TST_E)
 	@for e in $(^); do \
