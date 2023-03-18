@@ -1,12 +1,17 @@
 #include "tst.h"
+#include "asserts.h"
 #include "wraps-log.h"
 
 #include <cmocka.h>
+#include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
+#include "cfg.h"
 #include "cli.h"
 #include "ipc.h"
+#include "list.h"
 
 int before_all(void **state) {
 	return 0;
@@ -26,6 +31,268 @@ int after_each(void **state) {
 
 extern void __wrap_wd_exit(int __status) {
 	check_expected(__status);
+}
+
+void parse_element__arrange_align_invalid_arrange(void **state) {
+	optind = 0;
+	char *argv[] = { "ROW", "INVALID" };
+
+	expect_log_error("invalid %s%s", "ARRANGE_ALIGN", " ROW INVALID", NULL, NULL);
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
+}
+
+void parse_element__arrange_align_invalid_align(void **state) {
+	optind = 0;
+	char *argv[] = { "INVALID", "LEFT" };
+
+	expect_log_error("invalid %s%s", "ARRANGE_ALIGN", " INVALID LEFT", NULL, NULL);
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
+}
+
+void parse_element__arrange_align_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "ROW", "LEFT" };
+
+	struct Cfg *actual = parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv);
+
+	struct Cfg expected = {
+		.arrange = ROW,
+		.align = LEFT,
+	};
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+}
+
+void parse_element__auto_scale_invalid(void **state) {
+	optind = 0;
+	char *argv[] = { "INVALID", };
+
+	expect_log_error("invalid %s%s", "AUTO_SCALE", " INVALID", NULL, NULL);
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_element(CFG_SET, AUTO_SCALE, 1, argv));
+}
+
+void parse_element__auto_scale_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "ON", };
+
+	struct Cfg *actual = parse_element(CFG_SET, AUTO_SCALE, 1, argv);
+
+	struct Cfg expected = {
+		.auto_scale = ON,
+	};
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+}
+
+void parse_element__scale_set_invalid(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", "NOTANUMBER", };
+
+	expect_log_error("invalid %s%s", "SCALE", " DISPL NOTANUMBER", NULL, NULL);
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_element(CFG_SET, SCALE, 2, argv));
+}
+
+void parse_element__scale_set_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", "1234.5" };
+
+	struct Cfg *actual = parse_element(CFG_SET, SCALE, 2, argv);
+
+	struct UserScale expectedUserScale = {
+		.name_desc = "DISPL",
+		.scale = 1234.5,
+	};
+	struct Cfg expected = {
+		.user_scales = NULL,
+	};
+	slist_append(&expected.user_scales, &expectedUserScale);
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.user_scales);
+}
+
+void parse_element__scale_del_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", };
+
+	struct Cfg *actual = parse_element(CFG_DEL, SCALE, 1, argv);
+
+	struct UserScale expectedUserScale = {
+		.name_desc = "DISPL",
+		.scale = 1,
+	};
+	struct Cfg expected = { 0 };
+	slist_append(&expected.user_scales, &expectedUserScale);
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.user_scales);
+}
+
+void parse_element__mode_set_invalid_width(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", "NAN", "2", "3", };
+
+	expect_log_error("invalid %s%s", "MODE", " DISPL NAN 2 3", NULL, NULL);
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_element(CFG_SET, MODE, 4, argv));
+}
+
+void parse_element__mode_set_invalid_height(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", "1", "NAN", "3", };
+
+	expect_log_error("invalid %s%s", "MODE", " DISPL 1 NAN 3", NULL, NULL);
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_element(CFG_SET, MODE, 4, argv));
+}
+
+void parse_element__mode_set_invalid_refresh(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", "1", "2", "NAN", };
+
+	expect_log_error("invalid %s%s", "MODE", " DISPL 1 2 NAN", NULL, NULL);
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_element(CFG_SET, MODE, 4, argv));
+}
+
+void parse_element__mode_set_max(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", "MAX" };
+
+	struct Cfg *actual = parse_element(CFG_SET, MODE, 2, argv);
+
+	struct UserMode *expectedUserMode = cfg_user_mode_default();
+	expectedUserMode->name_desc = strdup("DISPL");
+	expectedUserMode->max = true;
+
+	struct Cfg expected = { 0 };
+	slist_append(&expected.user_modes, expectedUserMode);
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.user_scales);
+}
+
+void parse_element__mode_set_res(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", "1", "2" };
+
+	struct Cfg *actual = parse_element(CFG_SET, MODE, 3, argv);
+
+	struct UserMode *expectedUserMode = cfg_user_mode_default();
+	expectedUserMode->name_desc = strdup("DISPL");
+	expectedUserMode->max = false;
+	expectedUserMode->width = 1;
+	expectedUserMode->height = 2;
+
+	struct Cfg expected = { 0 };
+	slist_append(&expected.user_modes, expectedUserMode);
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.user_scales);
+}
+
+void parse_element__mode_set_res_refresh(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", "1", "2", "3", };
+
+	struct Cfg *actual = parse_element(CFG_SET, MODE, 4, argv);
+
+	struct UserMode *expectedUserMode = cfg_user_mode_default();
+	expectedUserMode->name_desc = strdup("DISPL");
+	expectedUserMode->max = false;
+	expectedUserMode->width = 1;
+	expectedUserMode->height = 2;
+	expectedUserMode->refresh_hz = 3;
+
+	struct Cfg expected = { 0 };
+	slist_append(&expected.user_modes, expectedUserMode);
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.user_scales);
+}
+
+void parse_element__mode_del_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", };
+
+	struct Cfg *actual = parse_element(CFG_DEL, MODE, 1, argv);
+
+	struct UserMode *expectedUserMode = cfg_user_mode_default();
+	expectedUserMode->name_desc = strdup("DISPL");
+	expectedUserMode->max = true;
+
+	struct Cfg expected = { 0 };
+	slist_append(&expected.user_modes, expectedUserMode);
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.user_scales);
+}
+
+void parse_element__disabled_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "ONE", "TWO", };
+
+	struct Cfg *actual = parse_element(CFG_SET, DISABLED, 2, argv);
+
+	struct Cfg expected = { 0 };
+	slist_append(&expected.disabled_name_desc, "ONE");
+	slist_append(&expected.disabled_name_desc, "TWO");
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.disabled_name_desc);
+}
+
+void parse_element__order_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "ONE", "TWO", };
+
+	struct Cfg *actual = parse_element(CFG_SET, ORDER, 2, argv);
+
+	struct Cfg expected = { 0 };
+	slist_append(&expected.order_name_desc, "ONE");
+	slist_append(&expected.order_name_desc, "TWO");
+
+	assert_equal_cfg(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.order_name_desc);
 }
 
 void parse_write__nargs(void **state) {
@@ -124,7 +391,7 @@ void parse_set__invalid(void **state) {
 
 void parse_set__ok(void **state) {
 	optind = 0;
-	static char *argv[1] = { "arg0", };
+	char *argv[] = { "arg0", };
 
 	optarg = "DISABLED";
 
@@ -176,7 +443,7 @@ void parse_del__invalid(void **state) {
 
 void parse_del__ok(void **state) {
 	optind = 0;
-	static char *argv[1] = { "arg0", };
+	char *argv[] = { "arg0", };
 
 	optarg = "MODE";
 
@@ -188,6 +455,29 @@ void parse_del__ok(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST(parse_element__arrange_align_invalid_arrange),
+		TEST(parse_element__arrange_align_invalid_align),
+		TEST(parse_element__arrange_align_ok),
+
+		TEST(parse_element__auto_scale_invalid),
+		TEST(parse_element__auto_scale_ok),
+
+		TEST(parse_element__scale_set_invalid),
+		TEST(parse_element__scale_set_ok),
+		TEST(parse_element__scale_del_ok),
+
+		TEST(parse_element__mode_set_invalid_width),
+		TEST(parse_element__mode_set_invalid_height),
+		TEST(parse_element__mode_set_invalid_refresh),
+		TEST(parse_element__mode_set_max),
+		TEST(parse_element__mode_set_res),
+		TEST(parse_element__mode_set_res_refresh),
+		TEST(parse_element__mode_del_ok),
+
+		TEST(parse_element__disabled_ok),
+
+		TEST(parse_element__order_ok),
+
 		TEST(parse_write__nargs),
 		TEST(parse_write__ok),
 

@@ -53,7 +53,7 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 	switch (element) {
 		case ARRANGE_ALIGN:
 			parsed = (cfg->arrange = arrange_val_start(argv[optind]));
-			parsed = (cfg->align = align_val_start(argv[optind + 1]));
+			parsed = parsed && (cfg->align = align_val_start(argv[optind + 1]));
 			break;
 		case AUTO_SCALE:
 			parsed = (cfg->auto_scale = auto_scale_val(argv[optind]));
@@ -91,10 +91,10 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 					} else {
 						if (optind + 2 < argc) {
 							parsed = ((user_mode->width = atoi(argv[optind + 1])) > 0);
-							parsed = ((user_mode->height = atoi(argv[optind + 2])) > 0);
+							parsed = parsed && ((user_mode->height = atoi(argv[optind + 2])) > 0);
 						}
 						if (optind + 3 < argc) {
-							parsed = ((user_mode->refresh_hz = atoi(argv[optind + 3])) > 0);
+							parsed = parsed && ((user_mode->refresh_hz = atoi(argv[optind + 3])) > 0);
 						}
 					}
 					slist_append(&cfg->user_modes, user_mode);
