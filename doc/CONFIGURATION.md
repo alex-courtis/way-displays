@@ -11,6 +11,8 @@ DP-3 Arrived:
 
 It is recommended to use the description rather than the name, as the name may change over time and will most likely be different on different PCs.
 
+Any item prefixed with a `!` will be interpreted as extended POSIX regex e.g. `'!^DP-.*'`. Regex strings **must** be single quoted.
+
 Using a regex is preferred, however partial string matches of at least 3 characters may be used.
 
 The description does contain information about how it is connected, so don't match that. In the above example, you could use `!.*Monitor Maker ABC123.*` or `Monitor Maker ABC123`.
@@ -67,7 +69,7 @@ ORDER:
     - '!^my_regex_here[0-9]+'
 ```
 
-Note that any item prefixed with an `!` will be interpreted as extended POSIX regex, allowing for one to easily create generic rules (e.g. "!^DP-", which will often be sufficient to put external monitors at the top of a column). Regex strings **must** be quoted otherwise its value will not be parsed.
+Regexes are encouraged, allowing for one to easily create generic rules e.g. "!^DP-", which will often be sufficient to put external monitors at the top of a column.
 
 Three passes will be made over ORDER to match displays:
 1. Exact match
