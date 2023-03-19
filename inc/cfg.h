@@ -83,7 +83,11 @@ void cfg_file_write(void);
 
 struct Cfg *cfg_default(void);
 
+struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
+
 struct UserMode *cfg_user_mode_default(void);
+
+struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale);
 
 bool cfg_equal_user_scale_name(const void *value, const void *data);
 

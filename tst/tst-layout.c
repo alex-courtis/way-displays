@@ -14,11 +14,28 @@
 #include "mode.h"
 #include "server.h"
 
-// forward declarations
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
 void desire_enabled(struct Head *head);
 void desire_mode(struct Head *head);
+void desire_scale(struct Head *head);
+void desire_adaptive_sync(struct Head *head);
+
+
+bool __wrap_lid_is_closed(char *name) {
+	check_expected(name);
+	return mock();
+}
+
+struct Mode *__wrap_head_find_mode(struct Head *head) {
+	check_expected(head);
+	return (struct Mode *)mock();
+}
+
+wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
+	check_expected(head);
+	return mock();
+}
 
 
 struct State {
@@ -66,15 +83,6 @@ int after_each(void **state) {
 	return 0;
 }
 
-bool __wrap_lid_is_closed(char *name) {
-	check_expected(name);
-	return mock();
-}
-
-struct Mode *__wrap_head_find_mode(struct Head *head) {
-	check_expected(head);
-	return (struct Mode *)mock();
-}
 
 void order_heads__exact_partial_regex(void **state) {
 	struct SList *order_name_desc = NULL;
@@ -416,6 +424,87 @@ void desire_mode__ok(void **state) {
 	assert_false(head0.warned_no_mode);
 }
 
+void desire_scale__disabled(void **state) {
+	struct Head head0 = {
+		.desired.enabled = false,
+	};
+
+	desire_scale(&head0);
+}
+
+void desire_scale__no_auto(void **state) {
+	struct Head head0 = {
+		.desired.enabled = true,
+	};
+	cfg->auto_scale = OFF;
+
+	desire_scale(&head0);
+
+	assert_wl_fixed_t_equal_double(head0.desired.scale, 1);
+}
+
+void desire_scale__auto(void **state) {
+	struct Head head0 = {
+		.desired.enabled = true,
+	};
+	cfg->auto_scale = ON;
+
+	expect_value(__wrap_head_auto_scale, head, &head0);
+	will_return(__wrap_head_auto_scale, wl_fixed_from_double(2.5));
+
+	desire_scale(&head0);
+
+	assert_wl_fixed_t_equal_double(head0.desired.scale, 2.5);
+}
+
+void desire_scale__user(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+	};
+
+	slist_append(&cfg->user_scales, cfg_user_scale_init("head0", 3.5));
+	slist_append(&cfg->user_scales, cfg_user_scale_init("head1", 7.5));
+
+	desire_scale(&head0);
+
+	assert_wl_fixed_t_equal_double(head0.desired.scale, 3.5);
+}
+
+void desire_adaptive_sync__disabled(void **state) {
+	struct Head head0 = {
+		.desired.enabled = false,
+		.desired.adaptive_sync = true,
+	};
+
+	desire_adaptive_sync(&head0);
+
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+}
+
+void desire_adaptive_sync__failed(void **state) {
+	struct Head head0 = {
+		.desired.enabled = true,
+		.desired.adaptive_sync = true,
+		.adaptive_sync_failed = true,
+	};
+
+	desire_adaptive_sync(&head0);
+
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+}
+
+void desire_adaptive_sync__ok(void **state) {
+	struct Head head0 = {
+		.desired.enabled = true,
+		.desired.adaptive_sync = true,
+	};
+
+	desire_adaptive_sync(&head0);
+
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(order_heads__exact_partial_regex),
@@ -437,6 +526,15 @@ int main(void) {
 		TEST(desire_mode__no_mode),
 		TEST(desire_mode__no_mode_warned),
 		TEST(desire_mode__ok),
+
+		TEST(desire_scale__disabled),
+		TEST(desire_scale__no_auto),
+		TEST(desire_scale__auto),
+		TEST(desire_scale__user),
+
+		TEST(desire_adaptive_sync__disabled),
+		TEST(desire_adaptive_sync__failed),
+		TEST(desire_adaptive_sync__ok),
 	};
 
 	return RUN(tests);

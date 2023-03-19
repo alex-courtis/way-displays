@@ -157,8 +157,9 @@ void desire_enabled(struct Head *head) {
 }
 
 void desire_mode(struct Head *head) {
+	head->desired.mode = NULL;
+
 	if (!head->desired.enabled) {
-		head->desired.mode = NULL;
 		return;
 	}
 
@@ -180,8 +181,11 @@ void desire_mode(struct Head *head) {
 }
 
 void desire_scale(struct Head *head) {
-	if (!head->desired.enabled)
+	head->desired.scale = 0;
+
+	if (!head->desired.enabled) {
 		return;
+	}
 
 	// user scale first
 	struct UserScale *user_scale;
@@ -202,8 +206,11 @@ void desire_scale(struct Head *head) {
 }
 
 void desire_adaptive_sync(struct Head *head) {
-	if (!head->desired.enabled)
+	head->desired.adaptive_sync = false;
+
+	if (!head->desired.enabled) {
 		return;
+	}
 
 	if (!head->adaptive_sync_failed) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;

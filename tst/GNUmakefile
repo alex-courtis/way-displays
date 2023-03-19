@@ -24,7 +24,7 @@ tst-head: tst/tst-head.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=mode_dpi,--wrap=mode_user_mode
 
 tst-layout: tst/tst-layout.o $(OBJS)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=lid_is_closed,--wrap=head_find_mode
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=lid_is_closed,--wrap=head_find_mode,--wrap=head_auto_scale
 
 tst-cfg: tst/tst-cfg.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)

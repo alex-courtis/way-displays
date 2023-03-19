@@ -15,6 +15,19 @@
 
 #include "head.h"
 
+double __wrap_mode_dpi(struct Mode *mode) {
+	check_expected(mode);
+	return mock();
+}
+
+struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode) {
+	check_expected(modes);
+	check_expected(modes_failed);
+	check_expected(user_mode);
+	return (struct Mode *)mock();
+}
+
+
 int before_all(void **state) {
 	return 0;
 }
@@ -33,18 +46,6 @@ int after_each(void **state) {
 	return 0;
 }
 
-
-double __wrap_mode_dpi(struct Mode *mode) {
-	check_expected(mode);
-	return mock();
-}
-
-struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode) {
-	check_expected(modes);
-	check_expected(modes_failed);
-	check_expected(user_mode);
-	return (struct Mode *)mock();
-}
 
 void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
@@ -141,7 +142,7 @@ void head_find_mode__user_available(void **state) {
 	slist_append(&head.modes, &mode);
 
 	// user preferred head
-	struct UserMode *user_mode = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+	struct UserMode *user_mode = cfg_user_mode_default();
 	user_mode->name_desc = strdup("HEAD");
 	slist_append(&cfg->user_modes, user_mode);
 	head.name = strdup("HEAD");
@@ -162,7 +163,7 @@ void head_find_mode__user_failed(void **state) {
 	slist_append(&head.modes, &mode);
 
 	// user preferred head
-	struct UserMode *user_mode = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+	struct UserMode *user_mode = cfg_user_mode_default();
 	user_mode->name_desc = strdup("HEAD");
 	slist_append(&cfg->user_modes, user_mode);
 	head.name = strdup("HEAD");
@@ -174,7 +175,7 @@ void head_find_mode__user_failed(void **state) {
 	will_return(__wrap_mode_user_mode, NULL);
 
 	// one and only notices: falling back to preferred then max
-	expect_log_warn("\n%s: No available mode for %s, falling back to preferred", "HEAD", "0x0@0Hz", NULL, NULL);
+	expect_log_warn("\n%s: No available mode for %s, falling back to preferred", "HEAD", "-1x-1", NULL, NULL);
 	expect_log_info("\n%s: No preferred mode, falling back to maximum available", "HEAD", NULL, NULL, NULL);
 
 	// user failed, fall back to max

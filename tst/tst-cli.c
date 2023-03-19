@@ -13,7 +13,6 @@
 #include "list.h"
 #include "log.h"
 
-// forward declarations
 struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv);
 struct IpcRequest *parse_write(int argc, char **argv);
 struct IpcRequest *parse_set(int argc, char **argv);
@@ -36,6 +35,7 @@ int before_each(void **state) {
 int after_each(void **state) {
 	return 0;
 }
+
 
 void parse_element__arrange_align_invalid_arrange(void **state) {
 	optind = 0;

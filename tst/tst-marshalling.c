@@ -24,28 +24,6 @@
 
 #include "marshalling.h"
 
-struct UserScale *us(const char *name_desc, const float scale) {
-	struct UserScale *us = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-
-	us->name_desc = strdup(name_desc);
-	us->scale = scale;
-
-	return us;
-}
-
-struct UserMode *um(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode) {
-	struct UserMode *um = (struct UserMode*)calloc(1, sizeof(struct UserMode));
-
-	um->name_desc = strdup(name_desc);
-	um->max = max;
-	um->width = width;
-	um->height = height;
-	um->refresh_hz = refresh_hz;
-	um->warned_no_mode = warned_no_mode;
-
-	return um;
-}
-
 void lcl(enum LogThreshold threshold, char *line) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
@@ -67,6 +45,7 @@ char *read_file(const char *path) {
 
 	return out;
 }
+
 
 int before_all(void **state) {
 	return 0;
@@ -90,6 +69,7 @@ int after_each(void **state) {
 	return 0;
 }
 
+
 // cfg-all.yaml
 struct Cfg *cfg_all(void) {
 	struct Cfg *cfg = cfg_default();
@@ -103,12 +83,12 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->order_name_desc, strdup("ONE"));
 	slist_append(&cfg->order_name_desc, strdup("!two"));
 
-	slist_append(&cfg->user_scales, us("three", 3));
-	slist_append(&cfg->user_scales, us("four", 4));
+	slist_append(&cfg->user_scales, cfg_user_scale_init("three", 3));
+	slist_append(&cfg->user_scales, cfg_user_scale_init("four", 4));
 
-	slist_append(&cfg->user_modes, um("five", false, 1920, 1080, 60, false));
-	slist_append(&cfg->user_modes, um("six", false, 2560, 1440, -1, false));
-	slist_append(&cfg->user_modes, um("seven", true, -1, -1, -1, false));
+	slist_append(&cfg->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 60, false));
+	slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
 
 	slist_append(&cfg->disabled_name_desc, strdup("eight"));
 	slist_append(&cfg->disabled_name_desc, strdup("EIGHT"));

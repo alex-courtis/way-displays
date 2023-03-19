@@ -12,33 +12,11 @@
 
 #include "cfg.h"
 
-// forward declarations
 struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
 struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
 void validate_warn(struct Cfg *cfg);
 void validate_fix(struct Cfg *cfg);
 
-struct UserScale *us(const char *name_desc, const float scale) {
-	struct UserScale *us = calloc(1, sizeof(struct UserScale));
-
-	us->name_desc = strdup(name_desc);
-	us->scale = scale;
-
-	return us;
-}
-
-struct UserMode *um(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode) {
-	struct UserMode *um = calloc(1, sizeof(struct UserMode));
-
-	um->name_desc = strdup(name_desc);
-	um->max = max;
-	um->width = width;
-	um->height = height;
-	um->refresh_hz = refresh_hz;
-	um->warned_no_mode = warned_no_mode;
-
-	return um;
-}
 
 struct State {
 	struct Cfg *from;
@@ -75,6 +53,7 @@ int after_each(void **state) {
 	free(s);
 	return 0;
 }
+
 
 void merge_set__arrange(void **state) {
 	struct State *s = *state;
@@ -133,15 +112,15 @@ void merge_set__auto_scale(void **state) {
 void merge_set__user_scale(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_scales, us("to", 1));
-	slist_append(&s->to->user_scales, us("both", 2));
+	slist_append(&s->to->user_scales, cfg_user_scale_init("to", 1));
+	slist_append(&s->to->user_scales, cfg_user_scale_init("both", 2));
 
-	slist_append(&s->from->user_scales, us("from", 3));
-	slist_append(&s->from->user_scales, us("both", 4));
+	slist_append(&s->from->user_scales, cfg_user_scale_init("from", 3));
+	slist_append(&s->from->user_scales, cfg_user_scale_init("both", 4));
 
-	slist_append(&s->expected->user_scales, us("to", 1));
-	slist_append(&s->expected->user_scales, us("both", 4));
-	slist_append(&s->expected->user_scales, us("from", 3));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("to", 1));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("both", 4));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("from", 3));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -153,15 +132,15 @@ void merge_set__user_scale(void **state) {
 void merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_modes, um("to", false, 1, 2, 3, false));
-	slist_append(&s->to->user_modes, um("both", false, 4, 5, 6, false));
+	slist_append(&s->to->user_modes, cfg_user_mode_init("to", false, 1, 2, 3, false));
+	slist_append(&s->to->user_modes, cfg_user_mode_init("both", false, 4, 5, 6, false));
 
-	slist_append(&s->from->user_modes, um("from", false, 7, 8, 9, true));
-	slist_append(&s->from->user_modes, um("both", false, 10, 11, 12, true));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("from", false, 7, 8, 9, true));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("both", false, 10, 11, 12, true));
 
-	slist_append(&s->expected->user_modes, um("to", false, 1, 2, 3, false));
-	slist_append(&s->expected->user_modes, um("both", false, 10, 11, 12, true));
-	slist_append(&s->expected->user_modes, um("from", false, 7, 8, 9, true));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("to", false, 1, 2, 3, false));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("both", false, 10, 11, 12, true));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("from", false, 7, 8, 9, true));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -193,13 +172,13 @@ void merge_set__disabled(void **state) {
 void merge_del__scale(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_scales, us("1", 1));
-	slist_append(&s->to->user_scales, us("2", 2));
+	slist_append(&s->to->user_scales, cfg_user_scale_init("1", 1));
+	slist_append(&s->to->user_scales, cfg_user_scale_init("2", 2));
 
-	slist_append(&s->from->user_scales, us("2", 3));
-	slist_append(&s->from->user_scales, us("3", 4));
+	slist_append(&s->from->user_scales, cfg_user_scale_init("2", 3));
+	slist_append(&s->from->user_scales, cfg_user_scale_init("3", 4));
 
-	slist_append(&s->expected->user_scales, us("1", 1));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("1", 1));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -211,13 +190,13 @@ void merge_del__scale(void **state) {
 void merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_modes, um("1", false, 1, 1, 1, false));
-	slist_append(&s->to->user_modes, um("2", false, 2, 2, 2, false));
+	slist_append(&s->to->user_modes, cfg_user_mode_init("1", false, 1, 1, 1, false));
+	slist_append(&s->to->user_modes, cfg_user_mode_init("2", false, 2, 2, 2, false));
 
-	slist_append(&s->from->user_modes, um("2", false, 2, 2, 2, false));
-	slist_append(&s->from->user_modes, um("3", false, 3, 3, 3, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("2", false, 2, 2, 2, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("3", false, 3, 3, 3, false));
 
-	slist_append(&s->from->user_modes, um("1", false, 1, 1, 1, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("1", false, 1, 1, 1, false));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -279,17 +258,17 @@ void validate_fix__scale(void **state) {
 
 	char FMT[] = "\nIgnoring non-positive SCALE %s %.3f";
 
-	slist_append(&s->from->user_scales, us("ok", 1));
+	slist_append(&s->from->user_scales, cfg_user_scale_init("ok", 1));
 
-	slist_append(&s->from->user_scales, us("neg", -1));
+	slist_append(&s->from->user_scales, cfg_user_scale_init("neg", -1));
 	expect_log_warn(FMT, "neg", NULL, NULL, NULL);
 
-	slist_append(&s->from->user_scales, us("zero", 0));
+	slist_append(&s->from->user_scales, cfg_user_scale_init("zero", 0));
 	expect_log_warn(FMT, "zero", NULL, NULL, NULL);
 
 	validate_fix(s->from);
 
-	slist_append(&s->expected->user_scales, us("ok", 1));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
 
 	assert_equal_cfg(s->from, s->expected);
 }
@@ -297,28 +276,28 @@ void validate_fix__scale(void **state) {
 void validate_fix__mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->from->user_modes, um("ok", false, 1, 2, 3, false));
-	slist_append(&s->from->user_modes, um("max", true, -1, -1, -1, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
 
-	slist_append(&s->from->user_modes, um("negative width", false, -99, 2, 3, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("negative width", false, -99, 2, 3, false));
 	expect_log_warn("\nIgnoring non-positive MODE %s WIDTH %d", "negative width", NULL, NULL, NULL);
 
-	slist_append(&s->from->user_modes, um("negative height", false, 1, -99, 3, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("negative height", false, 1, -99, 3, false));
 	expect_log_warn("\nIgnoring non-positive MODE %s HEIGHT %d", "negative height", NULL, NULL, NULL);
 
-	slist_append(&s->from->user_modes, um("negative hz", false, 1, 2, -99, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("negative hz", false, 1, 2, -99, false));
 	expect_log_warn("\nIgnoring non-positive MODE %s HZ %d", "negative hz", NULL, NULL, NULL);
 
-	slist_append(&s->from->user_modes, um("missing width", false, -1, 2, 3, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("missing width", false, -1, 2, 3, false));
 	expect_log_warn("\nIgnoring invalid MODE %s missing WIDTH", "missing width", NULL, NULL, NULL);
 
-	slist_append(&s->from->user_modes, um("missing height", false, 1, -1, 3, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("missing height", false, 1, -1, 3, false));
 	expect_log_warn("\nIgnoring invalid MODE %s missing HEIGHT", "missing height", NULL, NULL, NULL);
 
 	validate_fix(s->from);
 
-	slist_append(&s->expected->user_modes, um("ok", false, 1, 2, 3, false));
-	slist_append(&s->expected->user_modes, um("max", true, -1, -1, -1, false));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
 
 	assert_equal_cfg(s->from, s->expected);
 }
@@ -328,12 +307,12 @@ void validate_warn__(void **state) {
 
 	char FMT[] = "\n%s '%s' is less than 4 characters, which may result in some unwanted matches.";
 
-	slist_append(&s->expected->user_scales, us("sss", 1));
-	slist_append(&s->expected->user_scales, us("ssssssss", 2));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("sss", 1));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("ssssssss", 2));
 	expect_log_warn(FMT, "SCALE", "sss", NULL, NULL);
 
-	slist_append(&s->expected->user_modes, um("mmm", false, 1, 1, 1, false));
-	slist_append(&s->expected->user_modes, um("mmmmmmmm", false, 1, 1, 1, false));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmm", false, 1, 1, 1, false));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
 	expect_log_warn(FMT, "MODE", "mmm", NULL, NULL);
 
 	slist_append(&s->expected->order_name_desc, strdup("ooo"));

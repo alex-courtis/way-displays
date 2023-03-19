@@ -296,13 +296,31 @@ struct Cfg *cfg_default(void) {
 }
 
 struct UserMode *cfg_user_mode_default(void) {
-	struct UserMode *user_mode = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+	return cfg_user_mode_init(NULL, false, -1, -1, -1, false);
+}
 
-	user_mode->width = -1;
-	user_mode->height = -1;
-	user_mode->refresh_hz = -1;
+struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode) {
+	struct UserMode *um = (struct UserMode*)calloc(1, sizeof(struct UserMode));
 
-	return user_mode;
+	if (name_desc) {
+		um->name_desc = strdup(name_desc);
+	}
+	um->max = max;
+	um->width = width;
+	um->height = height;
+	um->refresh_hz = refresh_hz;
+	um->warned_no_mode = warned_no_mode;
+
+	return um;
+}
+
+struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) {
+	struct UserScale *us = calloc(1, sizeof(struct UserScale));
+
+	us->name_desc = strdup(name_desc);
+	us->scale = scale;
+
+	return us;
 }
 
 bool resolve_paths(struct Cfg *cfg, const char *cfg_path, const char *prefix, const char *suffix) {
