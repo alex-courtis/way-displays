@@ -6,13 +6,16 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-util.h>
 
 #include "cfg.h"
 #include "head.h"
 #include "info.h"
 #include "list.h"
+#include "log.h"
 #include "mode.h"
 #include "server.h"
+#include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
