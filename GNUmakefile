@@ -62,11 +62,13 @@ man: way-displays.1.pandoc
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc=)
 
 # make -k iwyu
-iwyu:
-	$(MAKE) -f tst/GNUmakefile tst-iwyu
+iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
+iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
+iwyu: clean $(SRC_O) $(TST_O)
+IWYU = /usr/bin/include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
 
-cppcheck:
-	$(MAKE) -f tst/GNUmakefile tst-cppcheck
+cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
+	cppcheck $(^) --enable=warning,unusedFunction,performance,portability $(CPPFLAGS)
 
 test:
 	$(MAKE) -f tst/GNUmakefile tst-all

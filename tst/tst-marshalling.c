@@ -218,8 +218,7 @@ void marshal_ipc_request__no_op(void **state) {
 }
 
 void marshal_ipc_request__get(void **state) {
-	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->op = GET;
+	struct IpcRequest *ipc_request = ipc_request_get();
 
 	char *actual = marshal_ipc_request(ipc_request);
 
