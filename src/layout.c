@@ -157,8 +157,10 @@ void desire_enabled(struct Head *head) {
 }
 
 void desire_mode(struct Head *head) {
-	if (!head->desired.enabled)
+	if (!head->desired.enabled) {
+		head->desired.mode = NULL;
 		return;
+	}
 
 	// attempt to find a mode
 	struct Mode *mode = head_find_mode(head);
@@ -173,6 +175,7 @@ void desire_mode(struct Head *head) {
 			head->warned_no_mode = true;
 		}
 		head->desired.enabled = false;
+		head->desired.mode = NULL;
 	}
 }
 

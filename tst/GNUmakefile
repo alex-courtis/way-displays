@@ -12,6 +12,7 @@ OBJS = $(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
 WRAPS = -Wl,$\
 	--wrap=log_set_threshold,$\
 	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_nocap,$\
+	--wrap=print_head,$\
 	--wrap=wd_exit,--wrap=wd_exit_message
 
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
@@ -23,7 +24,7 @@ tst-head: tst/tst-head.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=mode_dpi,--wrap=mode_user_mode
 
 tst-layout: tst/tst-layout.o $(OBJS)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=lid_is_closed,--wrap=head_find_mode
 
 tst-cfg: tst/tst-cfg.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)

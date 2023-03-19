@@ -1,5 +1,6 @@
 #include "tst.h"
 #include "asserts.h"
+#include "expects.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -8,6 +9,7 @@
 
 #include "cfg.h"
 #include "head.h"
+#include "info.h"
 #include "list.h"
 #include "mode.h"
 #include "server.h"
@@ -15,6 +17,8 @@
 // forward declarations
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
+void desire_enabled(struct Head *head);
+void desire_mode(struct Head *head);
 
 
 struct State {
@@ -49,6 +53,8 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
+	slist_free(&heads);
+
 	cfg_destroy();
 
 	struct State *s = *state;
@@ -58,6 +64,16 @@ int after_each(void **state) {
 
 	free(s);
 	return 0;
+}
+
+bool __wrap_lid_is_closed(char *name) {
+	check_expected(name);
+	return mock();
+}
+
+struct Mode *__wrap_head_find_mode(struct Head *head) {
+	check_expected(head);
+	return (struct Mode *)mock();
 }
 
 void order_heads__exact_partial_regex(void **state) {
@@ -272,6 +288,134 @@ void position_heads__row_bottom(void **state) {
 	head = slist_at(s->heads, 2); assert_head_position(head, 11, 4);
 }
 
+void desire_enabled__lid_closed_many(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+	};
+	slist_append(&heads, &head0);
+	struct Head head1 = {
+		.name = "head1",
+		.desired.enabled = true,
+	};
+	slist_append(&heads, &head1);
+
+	expect_string(__wrap_lid_is_closed, name, "head0");
+	will_return(__wrap_lid_is_closed, true);
+
+	desire_enabled(&head0);
+
+	assert_false(head0.desired.enabled);
+}
+
+void desire_enabled__lid_closed_one(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+	};
+	slist_append(&heads, &head0);
+
+	expect_string(__wrap_lid_is_closed, name, "head0");
+	will_return(__wrap_lid_is_closed, true);
+
+	desire_enabled(&head0);
+
+	assert_true(head0.desired.enabled);
+}
+
+void desire_enabled__lid_closed_one_disabled(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+	};
+	slist_append(&heads, &head0);
+
+	slist_append(&cfg->disabled_name_desc, strdup("head0"));
+
+	expect_string(__wrap_lid_is_closed, name, "head0");
+	will_return(__wrap_lid_is_closed, true);
+
+	desire_enabled(&head0);
+
+	assert_false(head0.desired.enabled);
+}
+
+void desire_mode__disabled(void **state) {
+	struct Mode mode0 = { 0 };
+	struct Head head0 = {
+		.name = "head0",
+		.desired.mode = &mode0,
+	};
+
+	desire_mode(&head0);
+
+	assert_null(head0.desired.mode);
+	assert_false(head0.desired.enabled);
+	assert_false(head0.warned_no_mode);
+}
+
+void desire_mode__no_mode(void **state) {
+	struct Mode mode0 = { 0 };
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+		.desired.mode = &mode0,
+	};
+
+	expect_value(__wrap_head_find_mode, head, &head0);
+	will_return(__wrap_head_find_mode, NULL);
+
+	expect_log_warn("\nNo mode for %s, disabling.", "head0", NULL, NULL, NULL);
+
+	expect_value(__wrap_print_head, t, WARNING);
+	expect_value(__wrap_print_head, event, NONE);
+	expect_value(__wrap_print_head, head, &head0);
+
+	desire_mode(&head0);
+
+	assert_null(head0.desired.mode);
+	assert_false(head0.desired.enabled);
+	assert_true(head0.warned_no_mode);
+}
+
+void desire_mode__no_mode_warned(void **state) {
+	struct Mode mode0 = { 0 };
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+		.desired.mode = &mode0,
+		.warned_no_mode = true,
+	};
+
+	expect_value(__wrap_head_find_mode, head, &head0);
+	will_return(__wrap_head_find_mode, NULL);
+
+	desire_mode(&head0);
+
+	assert_null(head0.desired.mode);
+	assert_false(head0.desired.enabled);
+	assert_true(head0.warned_no_mode);
+}
+
+void desire_mode__ok(void **state) {
+	struct Mode mode0 = { 0 };
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+		.desired.mode = &mode0,
+	};
+	struct Mode mode1 = { 0 };
+
+	expect_value(__wrap_head_find_mode, head, &head0);
+	will_return(__wrap_head_find_mode, &mode1);
+
+	desire_mode(&head0);
+
+	assert_ptr_equal(head0.desired.mode, &mode1);
+	assert_true(head0.desired.enabled);
+	assert_false(head0.warned_no_mode);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(order_heads__exact_partial_regex),
@@ -284,6 +428,15 @@ int main(void) {
 		TEST(position_heads__row_top),
 		TEST(position_heads__row_mid),
 		TEST(position_heads__row_bottom),
+
+		TEST(desire_enabled__lid_closed_many),
+		TEST(desire_enabled__lid_closed_one_disabled),
+		TEST(desire_enabled__lid_closed_one),
+
+		TEST(desire_mode__disabled),
+		TEST(desire_mode__no_mode),
+		TEST(desire_mode__no_mode_warned),
+		TEST(desire_mode__ok),
 	};
 
 	return RUN(tests);
