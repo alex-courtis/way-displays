@@ -3,8 +3,14 @@
 
 #include <cmocka.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "log.h"
+
+void __wrap_log_set_threshold(enum LogThreshold threshold, bool cli) {
+	check_expected(threshold);
+	check_expected(cli);
+}
 
 void __wrap_log_(enum LogThreshold threshold, const char *__restrict __format, const void *arg1, const void *arg2, const void *arg3, const void *arg4, ...) {
 	if (LOG_PRINT) {

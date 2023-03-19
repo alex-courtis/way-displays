@@ -11,11 +11,14 @@
 #include "cfg.h"
 #include "ipc.h"
 #include "list.h"
-
-#include "cli.h"
+#include "log.h"
 
 // forward declarations
 struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv);
+struct IpcRequest *parse_write(int argc, char **argv);
+struct IpcRequest *parse_set(int argc, char **argv);
+struct IpcRequest *parse_del(int argc, char **argv);
+bool parse_log_threshold(char *optarg);
 
 
 int before_all(void **state) {
@@ -454,6 +457,19 @@ void parse_del__ok(void **state) {
 	assert_int_equal(request->op, CFG_DEL);
 }
 
+void parse_log_threshold__invalid(void **state) {
+	expect_log_error("invalid --log-threshold %s", "INVALID", NULL, NULL, NULL);
+
+	assert_false(parse_log_threshold("INVALID"));
+}
+
+void parse_log_threshold__ok(void **state) {
+	expect_value(__wrap_log_set_threshold, threshold, WARNING);
+	expect_value(__wrap_log_set_threshold, cli, true);
+
+	assert_true(parse_log_threshold("WARNING"));
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(parse_element__arrange_align_invalid_arrange),
@@ -496,6 +512,9 @@ int main(void) {
 		TEST(parse_del__disabled_nargs),
 		TEST(parse_del__invalid),
 		TEST(parse_del__ok),
+
+		TEST(parse_log_threshold__invalid),
+		TEST(parse_log_threshold__ok),
 	};
 
 	return RUN(tests);

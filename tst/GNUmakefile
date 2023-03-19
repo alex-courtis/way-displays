@@ -9,7 +9,10 @@ OBJS = $(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
 	   $(filter-out src/main.o,$(SRC_O)) \
 	   $(PRO_O)
 
-WRAPS = -Wl,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_nocap,--wrap=log_,--wrap=wd_exit
+WRAPS = -Wl,$\
+	--wrap=log_set_threshold,$\
+	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_nocap,$\
+	--wrap=wd_exit
 
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
