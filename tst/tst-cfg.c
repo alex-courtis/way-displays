@@ -1,6 +1,6 @@
 #include "tst.h"
 #include "asserts.h"
-#include "wraps-log.h"
+#include "expects.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cfg.h"
 #include "list.h"
+
+#include "cfg.h"
 
 // forward declarations
 struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);

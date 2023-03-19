@@ -1,6 +1,6 @@
 #include "tst.h"
 #include "asserts.h"
-#include "wraps-log.h"
+#include "expects.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -9,9 +9,14 @@
 #include <unistd.h>
 
 #include "cfg.h"
-#include "cli.h"
 #include "ipc.h"
 #include "list.h"
+
+#include "cli.h"
+
+// forward declarations
+struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv);
+
 
 int before_all(void **state) {
 	return 0;
@@ -27,10 +32,6 @@ int before_each(void **state) {
 
 int after_each(void **state) {
 	return 0;
-}
-
-extern void __wrap_wd_exit(int __status) {
-	check_expected(__status);
 }
 
 void parse_element__arrange_align_invalid_arrange(void **state) {

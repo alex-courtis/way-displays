@@ -18,7 +18,7 @@ TST_H = $(wildcard tst/*.h)
 TST_C = $(wildcard tst/*.c)
 TST_CXX = $(wildcard tst/*.cpp)
 TST_O = $(TST_C:.c=.o) $(TST_CXX:.cpp=.o)
-TST_E = $(TST_O:tst/%.o=%)
+TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 
 all: way-displays
 

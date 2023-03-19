@@ -1,17 +1,10 @@
+#include "tst.h" // IWYU pragma: keep
+#include "expects.h"
+
 #include <cmocka.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
-#include <sys/file.h>
-#include <sys/mman.h>
-#include <unistd.h>
 
 #include "log.h"
-
-// also prints log messages, useful when debugging tests
-#define LOG_PRINT false
 
 void __wrap_log_(enum LogThreshold threshold, const char *__restrict __format, const void *arg1, const void *arg2, const void *arg3, const void *arg4, ...) {
 	if (LOG_PRINT) {

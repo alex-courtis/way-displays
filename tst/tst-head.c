@@ -1,6 +1,6 @@
 #include "tst.h"
 #include "asserts.h"
-#include "wraps-log.h"
+#include "expects.h"
 
 #include <cmocka.h>
 #include <stdlib.h>
@@ -9,10 +9,11 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
-#include "head.h"
 #include "list.h"
 #include "mode.h"
 #include "server.h"
+
+#include "head.h"
 
 int before_all(void **state) {
 	return 0;

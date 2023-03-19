@@ -1,6 +1,6 @@
 #include "tst.h"
 #include "asserts.h"
-#include "wraps-log.h"
+#include "expects.h"
 
 #include <cmocka.h>
 #include <fcntl.h>
@@ -19,9 +19,10 @@
 #include "lid.h"
 #include "list.h"
 #include "log.h"
-#include "marshalling.h"
 #include "mode.h"
 #include "server.h"
+
+#include "marshalling.h"
 
 struct UserScale *us(const char *name_desc, const float scale) {
 	struct UserScale *us = (struct UserScale*)calloc(1, sizeof(struct UserScale));

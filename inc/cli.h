@@ -1,10 +1,7 @@
 #ifndef CLI_H
 #define CLI_H
 
-#include "cfg.h"
 #include "ipc.h"
-
-struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv);
 
 struct IpcRequest *parse_write(int argc, char **argv);
 
