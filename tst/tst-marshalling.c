@@ -93,8 +93,6 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->disabled_name_desc, strdup("EIGHT"));
 	slist_append(&cfg->disabled_name_desc, strdup("nine"));
 
-	slist_append(&cfg->max_preferred_refresh_name_desc, strdup("!ten"));
-
 	return cfg;
 }
 
