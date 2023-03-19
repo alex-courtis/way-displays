@@ -11,7 +11,7 @@
 #include "ipc.h"
 #include "list.h"
 #include "log.h"
-#include "util.h"
+#include "process.h"
 
 #include "cli.h"
 
@@ -274,18 +274,21 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		switch (c) {
 			case 'L':
 				if (!parse_log_threshold(optarg)) {
-					exit(EXIT_FAILURE);
+					wd_exit(EXIT_FAILURE);
+					return;
 				}
 				break;
 			case 'h':
 				usage(stdout);
-				exit(EXIT_SUCCESS);
+				wd_exit(EXIT_SUCCESS);
+				return;
 			case 'c':
 				*cfg_path = strdup(optarg);
 				break;
 			case 'v':
 				log_info("way-displays version %s", VERSION);
-				exit(EXIT_SUCCESS);
+				wd_exit(EXIT_SUCCESS);
+				return;
 			case 'g':
 				*ipc_request = parse_get(argc, argv);
 				return;
@@ -301,7 +304,8 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 			case '?':
 			default:
 				usage(stderr);
-				exit(EXIT_FAILURE);
+				wd_exit(EXIT_FAILURE);
+				return;
 		}
 	}
 }

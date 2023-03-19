@@ -157,7 +157,8 @@ int loop(void) {
 		// poll for all events
 		if (poll(pfds, npfds, -1) < 0) {
 			log_error_errno("\npoll failed, exiting");
-			exit_fail();
+			wd_exit_message(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 
 
@@ -166,7 +167,8 @@ int loop(void) {
 		_wl_display_dispatch_pending(displ->display, FL);
 		if (!displ->output_manager) {
 			log_info("\nDisplay's output manager has departed, exiting");
-			exit(EXIT_SUCCESS);
+			wd_exit(EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		}
 
 

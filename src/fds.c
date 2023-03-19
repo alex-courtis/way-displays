@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/inotify.h>
 #include <sys/signalfd.h>
 #include <unistd.h>
@@ -51,7 +52,8 @@ int create_fd_cfg_dir(void) {
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
 	if (inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE) == -1) {
 		log_error_errno("\nunable to create config file watch for %s, exiting", cfg->dir_path);
-		exit_fail();
+		wd_exit_message(EXIT_FAILURE);
+		return -1;
 	}
 
 	return fd_cfg_dir;

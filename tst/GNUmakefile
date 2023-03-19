@@ -12,7 +12,7 @@ OBJS = $(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
 WRAPS = -Wl,$\
 	--wrap=log_set_threshold,$\
 	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_nocap,$\
-	--wrap=wd_exit
+	--wrap=wd_exit,--wrap=wd_exit_message
 
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 

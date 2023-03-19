@@ -12,7 +12,7 @@ main(int argc, char **argv) {
 
 	if (!getenv("WAYLAND_DISPLAY")) {
 		log_error("environment variable $WAYLAND_DISPLAY missing");
-		exit(1);
+		return EXIT_FAILURE;
 	}
 
 	// consumer frees

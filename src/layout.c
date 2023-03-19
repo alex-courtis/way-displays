@@ -332,7 +332,7 @@ void handle_failure(void) {
 		log_error("\nChanges failed");
 
 		// any other failures are fatal
-		exit_fail();
+		wd_exit_message(EXIT_FAILURE);
 	}
 }
 
