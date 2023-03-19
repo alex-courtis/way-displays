@@ -21,7 +21,7 @@ tst-cli: tst/tst-cli.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
 
 tst-head: tst/tst-head.o $(OBJS)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=mode_dpi,--wrap=mode_user_mode
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=mode_dpi,--wrap=mode_user_mode,--wrap=mode_max_preferred
 
 tst-layout: tst/tst-layout.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=lid_is_closed,--wrap=head_find_mode,--wrap=head_auto_scale

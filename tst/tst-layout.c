@@ -341,7 +341,7 @@ void desire_enabled__lid_closed_one_disabled(void **state) {
 	};
 	slist_append(&heads, &head0);
 
-	slist_append(&cfg->disabled_name_desc, strdup("head0"));
+	slist_append(&cfg->disabled_name_desc, strdup("![hH]ead[0-9]"));
 
 	expect_string(__wrap_lid_is_closed, name, "head0");
 	will_return(__wrap_lid_is_closed, true);
@@ -466,7 +466,7 @@ void desire_scale__user(void **state) {
 		.desired.enabled = true,
 	};
 
-	slist_append(&cfg->user_scales, cfg_user_scale_init("head0", 3.5));
+	slist_append(&cfg->user_scales, cfg_user_scale_init("![Hh]ea.*", 3.5));
 	slist_append(&cfg->user_scales, cfg_user_scale_init("head1", 7.5));
 
 	desire_scale(&head0);

@@ -23,7 +23,7 @@ bool head_is_max_preferred_refresh(struct Head *head) {
 		return false;
 
 	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
-		if (head_matches_name_desc_partial(head, i->val)) {
+		if (head_matches_name_desc(head, i->val)) {
 			return true;
 		}
 	}
@@ -31,56 +31,7 @@ bool head_is_max_preferred_refresh(struct Head *head) {
 }
 
 bool head_matches_user_mode(const void *user_mode, const void *head) {
-	return user_mode && head && head_matches_name_desc_partial((struct Head*)head, ((struct UserMode*)user_mode)->name_desc);
-}
-
-struct Mode *preferred_mode(struct Head *head) {
-	if (!head)
-		return NULL;
-
-	struct Mode *mode = NULL;
-	for (struct SList *i = head->modes; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		mode = i->val;
-
-		if (mode->preferred && !slist_find_equal(head->modes_failed, NULL, mode)) {
-			return mode;
-		}
-	}
-
-	return NULL;
-}
-
-struct Mode *max_preferred_mode(struct Head *head) {
-	struct Mode *preferred = preferred_mode(head);
-
-	if (!preferred)
-		return NULL;
-
-	struct Mode *mode = NULL, *max = NULL;
-
-	for (struct SList *i = head->modes; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		mode = i->val;
-
-		if (slist_find_equal(head->modes_failed, NULL, mode)) {
-			continue;
-		}
-
-		if (mode->width != preferred->width || mode->height != preferred->height) {
-			continue;
-		}
-
-		if (!max) {
-			max = mode;
-		} else if (mode->refresh_mhz > max->refresh_mhz) {
-			max = mode;
-		}
-	}
-
-	return max;
+	return user_mode && head && head_matches_name_desc((struct Head*)head, ((struct UserMode*)user_mode)->name_desc);
 }
 
 struct Mode *max_mode(struct Head *head) {
@@ -155,7 +106,7 @@ bool head_matches_name_desc_regex(const void *h, const void *n) {
 	return !result;
 }
 
-bool head_matches_name_desc_partial(const void *h, const void *n) {
+bool head_matches_name_desc_fuzzy(const void *h, const void *n) {
 	const struct Head *head = h;
 	const char *name_desc = n;
 
@@ -168,8 +119,14 @@ bool head_matches_name_desc_partial(const void *h, const void *n) {
 		   );
 }
 
-bool head_name_desc_partial_matches_head(const void *n, const void *h) {
-	return head_matches_name_desc_partial(h, n);
+bool head_matches_name_desc(const void *h, const void *n) {
+	return head_matches_name_desc_exact(h, n) ||
+		head_matches_name_desc_regex(h, n) ||
+		head_matches_name_desc_fuzzy(h, n);
+}
+
+bool head_name_desc_matches_head(const void *n, const void *h) {
+	return head_matches_name_desc(h, n);
 }
 
 bool head_matches_name_desc_exact(const void *h, const void *n) {
@@ -244,9 +201,9 @@ struct Mode *head_find_mode(struct Head *head) {
 	// always preferred
 	if (!mode) {
 		if (head_is_max_preferred_refresh(head)) {
-			mode = max_preferred_mode(head);
+			mode = mode_max_preferred(head);
 		} else {
-			mode = preferred_mode(head);
+			mode = mode_preferred(head);
 		}
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
@@ -254,7 +211,7 @@ struct Mode *head_find_mode(struct Head *head) {
 		}
 	}
 
-	// last change maximum
+	// last chance maximum
 	if (!mode) {
 		mode = max_mode(head);
 	}

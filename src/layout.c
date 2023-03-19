@@ -116,10 +116,10 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 		i++;
 	}
 
-	// partial
+	// fuzzy
 	i = 0;
 	for (struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, head_matches_name_desc_partial, o->val);
+		slist_move(&order_heads[i], &sorting, head_matches_name_desc_fuzzy, o->val);
 		i++;
 	}
 
@@ -153,7 +153,7 @@ void desire_enabled(struct Head *head) {
 	head->desired.enabled |= slist_length(heads) == 1;
 
 	// explicitly disabled
-	head->desired.enabled &= slist_find_equal(cfg->disabled_name_desc, head_name_desc_partial_matches_head, head) == NULL;
+	head->desired.enabled &= slist_find_equal(cfg->disabled_name_desc, head_name_desc_matches_head, head) == NULL;
 }
 
 void desire_mode(struct Head *head) {
@@ -191,7 +191,7 @@ void desire_scale(struct Head *head) {
 	struct UserScale *user_scale;
 	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
 		user_scale = (struct UserScale*)i->val;
-		if (head_matches_name_desc_partial(head, user_scale->name_desc)) {
+		if (head_matches_name_desc(head, user_scale->name_desc)) {
 			head->desired.scale = wl_fixed_from_double(user_scale->scale);
 			return;
 		}

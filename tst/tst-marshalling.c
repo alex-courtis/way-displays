@@ -138,7 +138,7 @@ void unmarshal_cfg_from_file__bad(void **state) {
 
 	expect_log_warn("Ignoring invalid LOG_THRESHOLD %s, using default %s", "BAD_LOG_THRESHOLD", "INFO", NULL, NULL);
 
-	expect_log_warn("\nCould not compile ORDER regex '%s':  %s", "(", NULL, NULL, NULL);
+	expect_log_warn("Ignoring bad %s regex '%s':  %s", "ORDER", "(order", NULL, NULL);
 
 	expect_log_warn("Ignoring invalid ARRANGE %s, using default %s", "BAD_ARRANGE", "ROW", NULL, NULL);
 
@@ -152,6 +152,8 @@ void unmarshal_cfg_from_file__bad(void **state) {
 
 	expect_log_warn("Ignoring missing %s %s %s", "SCALE", "MISSING_SCALE_VALUE", "SCALE", NULL);
 
+	expect_log_warn("Ignoring bad %s regex '%s':  %s", "SCALE", "(scale", NULL, NULL);
+
 	expect_log_warn("Ignoring missing %s %s %s", "MODE", "", "NAME_DESC", NULL);
 
 	expect_log_warn("Ignoring invalid %s %s %s %s", "MODE", "BAD_MODE_MAX", "MAX", "BAD_MAX");
@@ -161,6 +163,12 @@ void unmarshal_cfg_from_file__bad(void **state) {
 	expect_log_warn("Ignoring invalid %s %s %s %s", "MODE", "BAD_MODE_HEIGHT", "HEIGHT", "BAD_HEIGHT");
 
 	expect_log_warn("Ignoring invalid %s %s %s %s", "MODE", "BAD_MODE_HZ", "HZ", "BAD_HZ");
+
+	expect_log_warn("Ignoring bad %s regex '%s':  %s", "MODE", "(mode", NULL, NULL);
+
+	expect_log_warn("Ignoring bad %s regex '%s':  %s", "MAX_PREFERRED_REFRESH", "(max", NULL, NULL);
+
+	expect_log_warn("Ignoring bad %s regex '%s':  %s", "DISABLED", "(disabled", NULL, NULL);
 
 	assert_true(unmarshal_cfg_from_file(read));
 

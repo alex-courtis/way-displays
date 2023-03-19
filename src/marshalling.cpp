@@ -31,6 +31,23 @@ extern "C" {
 #include "server.h"
 }
 
+// If this is a regex pattern, attempt to compile it before including it in configuration.
+bool validate_regex(const char *pattern, enum CfgElement element) {
+	bool rc = true;
+	if (pattern[0] == '!') {
+		regex_t regex;
+		int result = regcomp(&regex, pattern + 1, REG_EXTENDED);
+		if (result) {
+			char err[1024];
+			regerror(result, &regex, err, 1024);
+			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(element), pattern + 1, err);
+			rc = false;
+		}
+		regfree(&regex);
+	}
+	return rc;
+}
+
 bool parse_node_val_bool(const YAML::Node &node, const char *key, bool *val, const char *desc1, const char *desc2) {
 	if (node[key]) {
 		try {
@@ -264,20 +281,8 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 			const std::string &order_str = order.as<std::string>();
 			const char *order_cstr = order_str.c_str();
 			if (!slist_find_equal(cfg->order_name_desc, slist_equal_strcmp, order_cstr)) {
-				// If this is a regex pattern, attempt to compile it before
-				// including it in order configuration.
-				if (order_cstr[0] == '!') {
-					regex_t regex;
-					int result = regcomp(&regex, order_cstr + 1, REG_EXTENDED);
-					if (result) {
-						char err[1024];
-						regerror(result, &regex, err, 1024);
-						log_warn("\nCould not compile ORDER regex '%s':  %s", order_cstr + 1, err);
-						regfree(&regex);
-						continue;
-					} else {
-						regfree(&regex);
-					}
+				if (!validate_regex(order_cstr, ORDER)) {
+					continue;
 				}
 				slist_append(&cfg->order_name_desc, strdup(order_cstr));
 			}
@@ -321,6 +326,10 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 				cfg_user_scale_free(user_scale);
 				continue;
 			}
+			if (!validate_regex(user_scale->name_desc, SCALE)) {
+				cfg_user_mode_free(user_scale);
+				continue;
+			}
 			if (!parse_node_val_float(scale, "SCALE", &user_scale->scale, "SCALE", user_scale->name_desc)) {
 				cfg_user_scale_free(user_scale);
 				continue;
@@ -336,6 +345,10 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 			struct UserMode *user_mode = cfg_user_mode_default();
 
 			if (!parse_node_val_string(mode, "NAME_DESC", &user_mode->name_desc, "MODE", "")) {
+				cfg_user_mode_free(user_mode);
+				continue;
+			}
+			if (!validate_regex(user_mode->name_desc, MODE)) {
 				cfg_user_mode_free(user_mode);
 				continue;
 			}
@@ -362,21 +375,29 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 	}
 
 	if (node["MAX_PREFERRED_REFRESH"]) {
-		const auto &name_desc = node["MAX_PREFERRED_REFRESH"];
-		for (const auto &name_desc : name_desc) {
-			const std::string &name_desc_str = name_desc.as<std::string>();
-			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_equal_strcmp, name_desc_str.c_str())) {
-				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(name_desc_str.c_str()));
+		const auto &maxes = node["MAX_PREFERRED_REFRESH"];
+		for (const auto &max : maxes) {
+			const std::string &max_str = max.as<std::string>();
+			const char *max_cstr = max_str.c_str();
+			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_equal_strcmp, max_cstr)) {
+				if (!validate_regex(max_cstr, MAX_PREFERRED_REFRESH)) {
+					continue;
+				}
+				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(max_cstr));
 			}
 		}
 	}
 
 	if (node["DISABLED"]) {
-		const auto &name_desc = node["DISABLED"];
-		for (const auto &name_desc : name_desc) {
-			const std::string &name_desc_str = name_desc.as<std::string>();
-			if (!slist_find_equal(cfg->disabled_name_desc, slist_equal_strcmp, name_desc_str.c_str())) {
-				slist_append(&cfg->disabled_name_desc, strdup(name_desc_str.c_str()));
+		const auto &disableds = node["DISABLED"];
+		for (const auto &disabled : disableds) {
+			const std::string &disabled_str = disabled.as<std::string>();
+			const char *disabled_cstr = disabled_str.c_str();
+			if (!slist_find_equal(cfg->disabled_name_desc, slist_equal_strcmp, disabled_cstr)) {
+				if (!validate_regex(disabled_cstr, DISABLED)) {
+					continue;
+				}
+				slist_append(&cfg->disabled_name_desc, strdup(disabled_cstr));
 			}
 		}
 	}
