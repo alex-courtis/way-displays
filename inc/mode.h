@@ -25,6 +25,10 @@ struct ModesResRefresh {
 	struct SList *modes;
 };
 
+struct Mode *mode_preferred(struct Head *head);
+
+struct Mode *mode_max_preferred(struct Head *head);
+
 int32_t mhz_to_hz(int32_t mhz);
 
 double mode_dpi(struct Mode *mode);

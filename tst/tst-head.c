@@ -27,6 +27,11 @@ struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_fail
 	return (struct Mode *)mock();
 }
 
+struct Mode *__wrap_mode_max_preferred(struct Head *head) {
+	check_expected(head);
+	return (struct Mode *)mock();
+}
+
 
 int before_all(void **state) {
 	return 0;
@@ -143,7 +148,7 @@ void head_find_mode__user_available(void **state) {
 
 	// user preferred head
 	struct UserMode *user_mode = cfg_user_mode_default();
-	user_mode->name_desc = strdup("HEAD");
+	user_mode->name_desc = strdup("!.*EAD");
 	slist_append(&cfg->user_modes, user_mode);
 	head.name = strdup("HEAD");
 
@@ -164,7 +169,7 @@ void head_find_mode__user_failed(void **state) {
 
 	// user preferred head
 	struct UserMode *user_mode = cfg_user_mode_default();
-	user_mode->name_desc = strdup("HEAD");
+	user_mode->name_desc = strdup("!HEA.*");
 	slist_append(&cfg->user_modes, user_mode);
 	head.name = strdup("HEAD");
 
@@ -188,6 +193,29 @@ void head_find_mode__user_failed(void **state) {
 	will_return(__wrap_mode_user_mode, NULL);
 
 	// no notices this time
+	assert_ptr_equal(head_find_mode(&head), &mode);
+}
+
+void head_find_mode__preferred(void **state) {
+	struct Head head = { .name = "name", };
+	struct Mode mode = { .preferred = true, };
+
+	slist_append(&head.modes, &mode);
+
+	assert_ptr_equal(head_find_mode(&head), &mode);
+}
+
+void head_find_mode__max_preferred_refresh(void **state) {
+	struct Head head = { .name = "name", };
+	struct Mode mode = { 0 };
+
+	slist_append(&cfg->max_preferred_refresh_name_desc, strdup("!nam.*"));
+
+	slist_append(&head.modes, &mode);
+
+	expect_value(__wrap_mode_max_preferred, head, &head);
+	will_return(__wrap_mode_max_preferred, &mode);
+
 	assert_ptr_equal(head_find_mode(&head), &mode);
 }
 
@@ -217,6 +245,8 @@ int main(void) {
 		TEST(head_find_mode__none),
 		TEST(head_find_mode__user_available),
 		TEST(head_find_mode__user_failed),
+		TEST(head_find_mode__preferred),
+		TEST(head_find_mode__max_preferred_refresh),
 		TEST(head_find_mode__max),
 	};
 

@@ -8,6 +8,55 @@
 #include "head.h"
 #include "list.h"
 
+struct Mode *mode_preferred(struct Head *head) {
+	if (!head)
+		return NULL;
+
+	struct Mode *mode = NULL;
+	for (struct SList *i = head->modes; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		mode = i->val;
+
+		if (mode->preferred && !slist_find_equal(head->modes_failed, NULL, mode)) {
+			return mode;
+		}
+	}
+
+	return NULL;
+}
+
+struct Mode *mode_max_preferred(struct Head *head) {
+	struct Mode *preferred = mode_preferred(head);
+
+	if (!preferred)
+		return NULL;
+
+	struct Mode *mode = NULL, *max = NULL;
+
+	for (struct SList *i = head->modes; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		mode = i->val;
+
+		if (slist_find_equal(head->modes_failed, NULL, mode)) {
+			continue;
+		}
+
+		if (mode->width != preferred->width || mode->height != preferred->height) {
+			continue;
+		}
+
+		if (!max) {
+			max = mode;
+		} else if (mode->refresh_mhz > max->refresh_mhz) {
+			max = mode;
+		}
+	}
+
+	return max;
+}
+
 int32_t mhz_to_hz(int32_t mhz) {
 	return (mhz + 500) / 1000;
 }

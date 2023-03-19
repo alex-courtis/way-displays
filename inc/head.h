@@ -60,8 +60,13 @@ bool head_matches_name_desc_exact(const void *head, const void *name_desc);
 
 bool head_matches_name_desc_regex(const void *head, const void *name_desc);
 
+bool head_matches_name_desc_fuzzy(const void *h, const void *name_desc);
+
 bool head_matches_name_desc_partial(const void *head, const void *name_desc);
-bool head_name_desc_partial_matches_head(const void *name_desc, const void *head);
+
+bool head_matches_name_desc(const void *head, const void *name_desc);
+
+bool head_name_desc_matches_head(const void *name_desc, const void *head);
 
 wl_fixed_t head_auto_scale(struct Head *head);
 
