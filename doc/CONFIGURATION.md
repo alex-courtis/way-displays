@@ -69,7 +69,7 @@ ORDER:
     - '!^my_regex_here[0-9]+'
 ```
 
-Regexes are encouraged, allowing for one to easily create generic rules e.g. "!^DP-", which will often be sufficient to put external monitors at the top of a column.
+Regexes are encouraged, allowing for one to easily create generic rules e.g. `'!^DP-'`, which will often be sufficient to put external monitors at the top of a column.
 
 Three passes will be made over ORDER to match displays:
 1. Exact match
