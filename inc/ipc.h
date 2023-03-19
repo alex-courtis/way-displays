@@ -10,7 +10,7 @@
 #define IPC_RC_BAD_RESPONSE 12
 #define IPC_RC_REQUEST_IN_PROGRESS 13
 
-enum IpcRequestCommand {
+enum IpcRequestOperation {
 	GET = 1,
 	CFG_SET,
 	CFG_DEL,
@@ -18,7 +18,7 @@ enum IpcRequestCommand {
 };
 
 struct IpcRequest {
-	enum IpcRequestCommand command;
+	enum IpcRequestOperation op;
 	struct Cfg *cfg;
 	int fd;
 	bool bad;
@@ -40,9 +40,9 @@ struct IpcRequest *ipc_request_receive(int fd_sock);
 
 struct IpcResponse *ipc_response_receive(int fd);
 
-void free_ipc_request(struct IpcRequest *request);
+void ipc_request_free(struct IpcRequest *request);
 
-void free_ipc_response(struct IpcResponse *response);
+void ipc_response_free(struct IpcResponse *response);
 
 #endif // IPC_H
 

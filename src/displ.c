@@ -15,7 +15,8 @@ void displ_init(void) {
 
 	if (!(displ->display = wl_display_connect(NULL))) {
 		log_error("\nUnable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting");
-		exit(EXIT_FAILURE);
+		wd_exit(EXIT_FAILURE);
+		return;
 	}
 
 	displ->registry = wl_display_get_registry(displ->display);
@@ -24,12 +25,14 @@ void displ_init(void) {
 
 	if (wl_display_roundtrip(displ->display) == -1) {
 		log_error("\nwl_display_roundtrip failed -1, exiting");
-		exit_fail();
+		wd_exit_message(EXIT_FAILURE);
+		return;
 	}
 
 	if (!displ->output_manager) {
 		log_error("\ncompositor does not support WLR output manager protocol, exiting");
-		exit(EXIT_FAILURE);
+		wd_exit(EXIT_FAILURE);
+		return;
 	}
 }
 

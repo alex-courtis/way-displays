@@ -54,7 +54,7 @@ static struct NameVal auto_scales[] = {
 	{ .val = 0,   .name = NULL,    },
 };
 
-static struct NameVal ipc_request_commands[] = {
+static struct NameVal ipc_request_ops[] = {
 	{ .val = GET,       .name = "GET",       .friendly = "get",    },
 	{ .val = CFG_SET,   .name = "CFG_SET",   .friendly = "set",    },
 	{ .val = CFG_DEL,   .name = "CFG_DEL",   .friendly = "delete", },
@@ -154,16 +154,16 @@ const char *auto_scale_name(enum AutoScale auto_scale) {
 	return name(auto_scales, auto_scale);
 }
 
-enum IpcRequestCommand ipc_request_command_val(const char *name) {
-	return val(ipc_request_commands, name);
+enum IpcRequestOperation ipc_request_op_val(const char *name) {
+	return val(ipc_request_ops, name);
 }
 
-const char *ipc_request_command_name(enum IpcRequestCommand ipc_request_op) {
-	return name(ipc_request_commands, ipc_request_op);
+const char *ipc_request_op_name(enum IpcRequestOperation ipc_request_op) {
+	return name(ipc_request_ops, ipc_request_op);
 }
 
-const char *ipc_request_command_friendly(enum IpcRequestCommand ipc_request_op) {
-	return friendly(ipc_request_commands, ipc_request_op);
+const char *ipc_request_op_friendly(enum IpcRequestOperation ipc_request_op) {
+	return friendly(ipc_request_ops, ipc_request_op);
 }
 
 enum LogThreshold log_threshold_val(const char *name) {

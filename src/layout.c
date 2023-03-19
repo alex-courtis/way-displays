@@ -157,8 +157,11 @@ void desire_enabled(struct Head *head) {
 }
 
 void desire_mode(struct Head *head) {
-	if (!head->desired.enabled)
+	head->desired.mode = NULL;
+
+	if (!head->desired.enabled) {
 		return;
+	}
 
 	// attempt to find a mode
 	struct Mode *mode = head_find_mode(head);
@@ -173,12 +176,16 @@ void desire_mode(struct Head *head) {
 			head->warned_no_mode = true;
 		}
 		head->desired.enabled = false;
+		head->desired.mode = NULL;
 	}
 }
 
 void desire_scale(struct Head *head) {
-	if (!head->desired.enabled)
+	head->desired.scale = 0;
+
+	if (!head->desired.enabled) {
 		return;
+	}
 
 	// user scale first
 	struct UserScale *user_scale;
@@ -199,8 +206,11 @@ void desire_scale(struct Head *head) {
 }
 
 void desire_adaptive_sync(struct Head *head) {
-	if (!head->desired.enabled)
+	head->desired.adaptive_sync = false;
+
+	if (!head->desired.enabled) {
 		return;
+	}
 
 	if (!head->adaptive_sync_failed) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -332,7 +342,7 @@ void handle_failure(void) {
 		log_error("\nChanges failed");
 
 		// any other failures are fatal
-		exit_fail();
+		wd_exit_message(EXIT_FAILURE);
 	}
 }
 

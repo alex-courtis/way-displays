@@ -16,5 +16,7 @@ clang
 %c -Wold-style-definition
 %c -Wstrict-prototypes
 
+%cpp -Wno-c99-extensions
+
 %c -std=gnu17
 %cpp -std=gnu++17

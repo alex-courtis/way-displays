@@ -106,7 +106,7 @@ struct IpcResponse *ipc_response_receive(int fd) {
 	return response;
 }
 
-void free_ipc_request(struct IpcRequest *request) {
+void ipc_request_free(struct IpcRequest *request) {
 	if (!request) {
 		return;
 	}
@@ -116,7 +116,7 @@ void free_ipc_request(struct IpcRequest *request) {
 	free(request);
 }
 
-void free_ipc_response(struct IpcResponse *response) {
+void ipc_response_free(struct IpcResponse *response) {
 	if (!response) {
 		return;
 	}

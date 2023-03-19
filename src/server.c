@@ -43,7 +43,7 @@ void handle_ipc_in_progress(int fd_sock) {
 
 	close(response->fd);
 
-	free_ipc_response(response);
+	ipc_response_free(response);
 }
 
 void handle_ipc_response(void) {
@@ -59,7 +59,7 @@ void handle_ipc_response(void) {
 
 		close(ipc_response->fd);
 
-		free_ipc_response(ipc_response);
+		ipc_response_free(ipc_response);
 		ipc_response = NULL;
 	}
 }
@@ -93,16 +93,16 @@ void handle_ipc_request(int fd_sock) {
 		goto send;
 	}
 
-	log_info("\nServer received request: %s", ipc_request_command_friendly(ipc_request->command));
+	log_info("\nServer received request: %s", ipc_request_op_friendly(ipc_request->op));
 	if (ipc_request->cfg) {
-		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+		print_cfg(INFO, ipc_request->cfg, ipc_request->op == CFG_DEL);
 	}
 
-	switch (ipc_request->command) {
+	switch (ipc_request->op) {
 		case CFG_DEL:
 		case CFG_SET:
 			{
-				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->command == CFG_DEL);
+				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->op == CFG_DEL);
 				if (cfg_merged) {
 					// ongoing
 					ipc_response->done = false;
@@ -135,7 +135,7 @@ void handle_ipc_request(int fd_sock) {
 	}
 
 send:
-	free_ipc_request(ipc_request);
+	ipc_request_free(ipc_request);
 
 	handle_ipc_response();
 }
@@ -157,7 +157,8 @@ int loop(void) {
 		// poll for all events
 		if (poll(pfds, npfds, -1) < 0) {
 			log_error_errno("\npoll failed, exiting");
-			exit_fail();
+			wd_exit_message(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 
 
@@ -166,7 +167,8 @@ int loop(void) {
 		_wl_display_dispatch_pending(displ->display, FL);
 		if (!displ->output_manager) {
 			log_info("\nDisplay's output manager has departed, exiting");
-			exit(EXIT_SUCCESS);
+			wd_exit(EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		}
 
 

@@ -8,6 +8,9 @@
 
 #include <cmocka.h>
 
+// print log messages, useful when debugging tests
+#define LOG_PRINT false
+
 //
 // test definition
 //

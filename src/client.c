@@ -1,4 +1,3 @@
-// IWYU pragma: no_include <bits/getopt_core.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -27,8 +26,8 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	log_info("\nClient sending request: %s", ipc_request_command_friendly(ipc_request->command));
-	print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+	log_info("\nClient sending request: %s", ipc_request_op_friendly(ipc_request->op));
+	print_cfg(INFO, ipc_request->cfg, ipc_request->op == CFG_DEL);
 
 	int fd = ipc_request_send(ipc_request);
 	if (fd == -1) {
@@ -43,7 +42,7 @@ int client(struct IpcRequest *ipc_request) {
 		if (ipc_response) {
 			rc = ipc_response->rc;
 			done = ipc_response->done;
-			free_ipc_response(ipc_response);
+			ipc_response_free(ipc_response);
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;
@@ -53,7 +52,7 @@ int client(struct IpcRequest *ipc_request) {
 	close(fd);
 
 end:
-	free_ipc_request(ipc_request);
+	ipc_request_free(ipc_request);
 
 	return rc;
 }

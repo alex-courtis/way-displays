@@ -263,7 +263,7 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 		for (const auto &order : orders) {
 			const std::string &order_str = order.as<std::string>();
 			const char *order_cstr = order_str.c_str();
-			if (!slist_find_equal(cfg->order_name_desc, slist_equal_strcasecmp, order_cstr)) {
+			if (!slist_find_equal(cfg->order_name_desc, slist_equal_strcmp, order_cstr)) {
 				// If this is a regex pattern, attempt to compile it before
 				// including it in order configuration.
 				if (order_cstr[0] == '!') {
@@ -365,7 +365,7 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 		const auto &name_desc = node["MAX_PREFERRED_REFRESH"];
 		for (const auto &name_desc : name_desc) {
 			const std::string &name_desc_str = name_desc.as<std::string>();
-			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_equal_strcasecmp, name_desc_str.c_str())) {
+			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_equal_strcmp, name_desc_str.c_str())) {
 				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(name_desc_str.c_str()));
 			}
 		}
@@ -375,7 +375,7 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 		const auto &name_desc = node["DISABLED"];
 		for (const auto &name_desc : name_desc) {
 			const std::string &name_desc_str = name_desc.as<std::string>();
-			if (!slist_find_equal(cfg->disabled_name_desc, slist_equal_strcasecmp, name_desc_str.c_str())) {
+			if (!slist_find_equal(cfg->disabled_name_desc, slist_equal_strcmp, name_desc_str.c_str())) {
 				slist_append(&cfg->disabled_name_desc, strdup(name_desc_str.c_str()));
 			}
 		}
@@ -395,7 +395,13 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 
 		e << YAML::BeginMap;						// root
 
-		e << YAML::Key << "OP" << YAML::Value << ipc_request_command_name(request->command);
+		const char *op_name = ipc_request_op_name(request->op);
+		if (op_name) {
+			e << YAML::Key << "OP" << YAML::Value << op_name;
+		} else {
+			log_error("marshalling ipc request: missing OP");
+			return NULL;
+		}
 
 		if (request->cfg) {
 			e << YAML::Key << "CFG" << YAML::BeginMap;	// CFG
@@ -434,8 +440,8 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 		const YAML::Node node_op = node["OP"];
 		if (node_op) {
 			const std::string &op_str = node_op.as<std::string>();
-			request->command = ipc_request_command_val(op_str.c_str());
-			if (!request->command) {
+			request->op = ipc_request_op_val(op_str.c_str());
+			if (!request->op) {
 				throw std::runtime_error("invalid OP '" + op_str + "'");
 			}
 		} else {
@@ -453,7 +459,7 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 	} catch (const std::exception &e) {
 		log_error("\nunmarshalling ipc request: %s", e.what());
 		log_error_nocap("========================================\n%s\n----------------------------------------", yaml);
-		free_ipc_request(request);
+		ipc_request_free(request);
 		return NULL;
 	}
 }
@@ -470,7 +476,6 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		e << YAML::BeginMap;								// root
 
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
-		e << YAML::Key << "RC" << YAML::Value << response->rc;
 
 		if (response->status) {
 			if (cfg) {
@@ -518,6 +523,8 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 			}
 			e << YAML::EndMap;									// MESSAGES
 		}
+
+		e << YAML::Key << "RC" << YAML::Value << response->rc;
 
 		e << YAML::EndMap;									// root
 
@@ -584,7 +591,7 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 	} catch (const std::exception &e) {
 		log_error("\nunmarshalling ipc response: %s", e.what());
 		log_error_nocap("========================================\n%s\n----------------------------------------", yaml);
-		free_ipc_response(response);
+		ipc_response_free(response);
 		response = NULL;
 	}
 

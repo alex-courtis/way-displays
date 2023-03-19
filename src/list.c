@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 #include "list.h"
 
@@ -256,10 +256,10 @@ void slist_free_vals(struct SList **head, void (*free_val)(void *val)) {
 	slist_free(head);
 }
 
-bool slist_equal_strcasecmp(const void *val, const void *data) {
+bool slist_equal_strcmp(const void *val, const void *data) {
 	if (!val || !data) {
 		return false;
 	}
-	return strcasecmp(val, data) == 0;
+	return strcmp(val, data) == 0;
 }
 

@@ -8,6 +8,7 @@
 
 #include "displ.h"
 #include "log.h"
+#include "process.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Displ data
@@ -28,7 +29,7 @@ static void global(void *data,
 
 	if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
 		log_error("\nwlr-output-management version %d found, minimum %d required, exiting. Consider upgrading your compositor.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN);
-		exit(EXIT_FAILURE);
+		wd_exit(EXIT_FAILURE);
 	} else if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION) {
 		log_warn("\nwlr-output-management version %d found; %d required for full functionality. Consider upgrading your compositor.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION);
 		displ->output_manager_version = ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN;
@@ -52,7 +53,7 @@ static void global_remove(void *data,
 
 	// a "who cares?" situation in the WLR examples
 	log_info("\nDisplay's output manager has been removed, exiting");
-	exit(EXIT_SUCCESS);
+	wd_exit(EXIT_SUCCESS);
 }
 
 static const struct wl_registry_listener listener = {
