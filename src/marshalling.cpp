@@ -375,11 +375,15 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 	}
 
 	if (node["MAX_PREFERRED_REFRESH"]) {
-		const auto &name_desc = node["MAX_PREFERRED_REFRESH"];
-		for (const auto &name_desc : name_desc) {
-			const std::string &name_desc_str = name_desc.as<std::string>();
-			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_equal_strcmp, name_desc_str.c_str())) {
-				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(name_desc_str.c_str()));
+		const auto &maxes = node["MAX_PREFERRED_REFRESH"];
+		for (const auto &max : maxes) {
+			const std::string &max_str = max.as<std::string>();
+			const char *max_cstr = max_str.c_str();
+			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_equal_strcmp, max_cstr)) {
+				if (!validate_regex(max_cstr, MAX_PREFERRED_REFRESH)) {
+					continue;
+				}
+				slist_append(&cfg->max_preferred_refresh_name_desc, strdup(max_cstr));
 			}
 		}
 	}
@@ -393,7 +397,7 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 				if (!validate_regex(disabled_cstr, DISABLED)) {
 					continue;
 				}
-				slist_append(&cfg->disabled_name_desc, strdup(disabled_str.c_str()));
+				slist_append(&cfg->disabled_name_desc, strdup(disabled_cstr));
 			}
 		}
 	}

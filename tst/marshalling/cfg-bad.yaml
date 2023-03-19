@@ -21,6 +21,8 @@ MODE:
   - NAME_DESC: BAD_MODE_HZ
     HZ: BAD_HZ
   - NAME_DESC: '!(mode'
+MAX_PREFERRED_REFRESH:
+  - '!(max'
 DISABLED:
   - '!(disabled'
 

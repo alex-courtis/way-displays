@@ -93,6 +93,8 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->disabled_name_desc, strdup("EIGHT"));
 	slist_append(&cfg->disabled_name_desc, strdup("nine"));
 
+	slist_append(&cfg->max_preferred_refresh_name_desc, strdup("!ten"));
+
 	return cfg;
 }
 
@@ -165,6 +167,8 @@ void unmarshal_cfg_from_file__bad(void **state) {
 	expect_log_warn("Ignoring invalid %s %s %s %s", "MODE", "BAD_MODE_HZ", "HZ", "BAD_HZ");
 
 	expect_log_warn("Ignoring bad %s regex '%s':  %s", "MODE", "(mode", NULL, NULL);
+
+	expect_log_warn("Ignoring bad %s regex '%s':  %s", "MAX_PREFERRED_REFRESH", "(max", NULL, NULL);
 
 	expect_log_warn("Ignoring bad %s regex '%s':  %s", "DISABLED", "(disabled", NULL, NULL);
 
