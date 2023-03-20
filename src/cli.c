@@ -22,7 +22,6 @@ void usage(FILE *stream) {
 		"OPTIONS\n"
 		"  -L, --l[og-threshold] <debug|info|warning|error>\n"
 		"  -c, --c[onfig]        <path>\n"
-		"  -y, --y[aml]          YAML client output\n"
 		"COMMANDS\n"
 		"  -h, --h[elp]    show this message\n"
 		"  -v, --v[ersion] display version information\n"
@@ -135,9 +134,6 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			bp += snprintf(bp, sizeof(buf) - (bp - buf), " %s", argv[i]);
 		}
 		log_error("invalid %s%s", cfg_element_name(element), buf);
-		if (cfg) {
-			cfg_free(cfg);
-		}
 		wd_exit(EXIT_FAILURE);
 		return NULL;
 	}
@@ -255,7 +251,7 @@ bool parse_log_threshold(char *optarg) {
 	return true;
 }
 
-void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path, bool *yaml) {
+void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
 	static struct option long_options[] = {
 		{ "config",        required_argument, 0, 'c' },
 		{ "delete",        required_argument, 0, 'd' },
@@ -265,10 +261,9 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		{ "set",           required_argument, 0, 's' },
 		{ "version",       no_argument,       0, 'v' },
 		{ "write",         no_argument,       0, 'w' },
-		{ "yaml",          no_argument,       0, 'y' },
 		{ 0,               0,                 0,  0  }
 	};
-	static char *short_options = "c:d:ghL:s:vwy";
+	static char *short_options = "c:d:ghL:s:vw";
 
 	int c;
 	while (1) {
@@ -294,9 +289,6 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				log_info("way-displays version %s", VERSION);
 				wd_exit(EXIT_SUCCESS);
 				return;
-			case 'y':
-				*yaml = true;
-				break;
 			case 'g':
 				*ipc_request = parse_get(argc, argv);
 				return;

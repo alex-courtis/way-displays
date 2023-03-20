@@ -19,12 +19,11 @@ main(int argc, char **argv) {
 	// consumer frees
 	struct IpcRequest *ipc_request = NULL;
 	char *cfg_path = NULL;
-	bool yaml = false;
 
-	parse_args(argc, argv, &ipc_request, &cfg_path, &yaml);
+	parse_args(argc, argv, &ipc_request, &cfg_path);
 
 	if (ipc_request) {
-		return client(ipc_request, yaml);
+		return client(ipc_request);
 	} else {
 		return server(cfg_path);
 	}

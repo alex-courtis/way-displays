@@ -5,7 +5,7 @@
 
 #include "ipc.h"
 
-int client(struct IpcRequest *ipc_request, bool yaml);
+int client(struct IpcRequest *ipc_request);
 
 #endif // CLIENT_H
 

@@ -85,20 +85,18 @@ struct IpcRequest *ipc_request_receive(int fd_sock) {
 	return request;
 }
 
-char *ipc_receive_fd(int fd) {
+struct IpcResponse *ipc_response_receive(int fd) {
+	struct IpcResponse *response = NULL;
 	char *yaml = NULL;
+
+	if (fd == -1) {
+		log_error("invalid fd for ipc response receive");
+		return NULL;
+	}
 
 	if (!(yaml = socket_read(fd))) {
 		return NULL;
 	}
-
-	return yaml;
-}
-
-struct IpcResponse *ipc_response_receive(int fd) {
-	struct IpcResponse *response = NULL;
-
-	char *yaml = ipc_receive_fd(fd);
 
 	log_debug_nocap("========received server response========\n%s\n----------------------------------------", yaml);
 

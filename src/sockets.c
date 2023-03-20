@@ -59,6 +59,7 @@ char *socket_read(int fd) {
 		return NULL;
 	}
 	if (n == 0) {
+		log_error("\nSocket no data");
 		return NULL;
 	}
 
