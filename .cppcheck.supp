@@ -1,0 +1,2 @@
+incorrectStringBooleanError:tst/tst-*.c
+unusedFunction:tst/wrap-*.c
