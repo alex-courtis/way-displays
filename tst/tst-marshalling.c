@@ -418,12 +418,8 @@ void unmarshal_ipc_response__ok(void **state) {
 	assert_true(actual->done);
 	assert_int_equal(actual->rc, 2);
 
-	struct Cfg *cfg_expected = cfg_all();
-	assert_equal_cfg(actual->cfg, cfg_expected);
-
 	ipc_response_free(actual);
 	free(yaml);
-	cfg_free(cfg_expected);
 }
 
 int main(void) {

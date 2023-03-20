@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -18,11 +19,12 @@ main(int argc, char **argv) {
 	// consumer frees
 	struct IpcRequest *ipc_request = NULL;
 	char *cfg_path = NULL;
+	bool yaml = false;
 
-	parse_args(argc, argv, &ipc_request, &cfg_path);
+	parse_args(argc, argv, &ipc_request, &cfg_path, &yaml);
 
 	if (ipc_request) {
-		return client(ipc_request);
+		return client(ipc_request, yaml);
 	} else {
 		return server(cfg_path);
 	}

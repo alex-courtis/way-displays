@@ -607,11 +607,6 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 					}
 				}
 			}
-
-			if (i->first.as<std::string>() == "CFG") {
-				response->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-				cfg_parse_node(response->cfg, i->second);
-			}
 		}
 
 	} catch (const std::exception &e) {
