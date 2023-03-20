@@ -25,9 +25,9 @@ struct ModesResRefresh {
 	struct SList *modes;
 };
 
-struct Mode *mode_preferred(struct Head *head);
+struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed);
 
-struct Mode *mode_max_preferred(struct Head *head);
+struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed);
 
 int32_t mhz_to_hz(int32_t mhz);
 

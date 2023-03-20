@@ -201,9 +201,9 @@ struct Mode *head_find_mode(struct Head *head) {
 	// always preferred
 	if (!mode) {
 		if (head_is_max_preferred_refresh(head)) {
-			mode = mode_max_preferred(head);
+			mode = mode_max_preferred(head->modes, head->modes_failed);
 		} else {
-			mode = mode_preferred(head);
+			mode = mode_preferred(head->modes, head->modes_failed);
 		}
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;

@@ -255,15 +255,15 @@ void validate_fix__row(void **state) {
 void validate_fix__scale(void **state) {
 	struct State *s = *state;
 
-	char FMT[] = "\nIgnoring non-positive SCALE %s %.3f";
+	char *fmt = "\nIgnoring non-positive SCALE %s %.3f";
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("ok", 1));
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("neg", -1));
-	expect_log_warn(FMT, "neg", NULL, NULL, NULL);
+	expect_log_warn(fmt, "neg", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("zero", 0));
-	expect_log_warn(FMT, "zero", NULL, NULL, NULL);
+	expect_log_warn(fmt, "zero", NULL, NULL, NULL);
 
 	validate_fix(s->from);
 
@@ -304,27 +304,27 @@ void validate_fix__mode(void **state) {
 void validate_warn__(void **state) {
 	struct State *s = *state;
 
-	char FMT[] = "\n%s '%s' is less than 4 characters, which may result in some unwanted matches.";
+	char *fmt = "\n%s '%s' is less than 4 characters, which may result in some unwanted matches.";
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("sss", 1));
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ssssssss", 2));
-	expect_log_warn(FMT, "SCALE", "sss", NULL, NULL);
+	expect_log_warn(fmt, "SCALE", "sss", NULL, NULL);
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmm", false, 1, 1, 1, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
-	expect_log_warn(FMT, "MODE", "mmm", NULL, NULL);
+	expect_log_warn(fmt, "MODE", "mmm", NULL, NULL);
 
 	slist_append(&s->expected->order_name_desc, strdup("ooo"));
 	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
-	expect_log_warn(FMT, "ORDER", "ooo", NULL, NULL);
+	expect_log_warn(fmt, "ORDER", "ooo", NULL, NULL);
 
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
-	expect_log_warn(FMT, "MAX_PREFERRED_REFRESH", "ppp", NULL, NULL);
+	expect_log_warn(fmt, "MAX_PREFERRED_REFRESH", "ppp", NULL, NULL);
 
 	slist_append(&s->expected->disabled_name_desc, strdup("ddd"));
 	slist_append(&s->expected->disabled_name_desc, strdup("dddddddddd"));
-	expect_log_warn(FMT, "DISABLED", "ddd", NULL, NULL);
+	expect_log_warn(fmt, "DISABLED", "ddd", NULL, NULL);
 
 	validate_warn(s->expected);
 }

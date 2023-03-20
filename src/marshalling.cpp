@@ -498,7 +498,7 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
 
-		if (response->status) {
+		if (response->state) {
 			if (cfg) {
 				e << YAML::Key << "CFG" << YAML::BeginMap;		// CFG
 				e << *cfg;

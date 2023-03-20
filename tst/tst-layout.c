@@ -133,6 +133,7 @@ void order_heads__exact_partial_regex(void **state) {
 
 	slist_free_vals(&order_name_desc, NULL);
 	slist_free(&heads);
+	slist_free(&expected);
 	slist_free(&heads_ordered);
 }
 
@@ -175,6 +176,7 @@ void order_heads__exact_regex_catchall(void **state) {
 
 	slist_free_vals(&order_name_desc, NULL);
 	slist_free(&heads);
+	slist_free(&expected);
 	slist_free(&heads_ordered);
 }
 
@@ -188,6 +190,7 @@ void order_heads__no_order(void **state) {
 	struct SList *heads_ordered = order_heads(NULL, heads);
 	assert_heads_equal(heads_ordered, heads);
 
+	slist_free(&heads_ordered);
 	slist_free(&heads);
 }
 

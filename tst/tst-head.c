@@ -3,6 +3,7 @@
 #include "expects.h"
 
 #include <cmocka.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
@@ -27,8 +28,9 @@ struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_fail
 	return (struct Mode *)mock();
 }
 
-struct Mode *__wrap_mode_max_preferred(struct Head *head) {
-	check_expected(head);
+struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
+	check_expected(modes);
+	check_expected(modes_failed);
 	return (struct Mode *)mock();
 }
 
@@ -139,6 +141,9 @@ void head_find_mode__none(void **state) {
 	slist_append(&head.modes, &mode);
 	slist_append(&head.modes_failed, &mode);
 	assert_null(head_find_mode(&head));
+
+	slist_free(&head.modes);
+	slist_free(&head.modes_failed);
 }
 
 void head_find_mode__user_available(void **state) {
@@ -160,6 +165,9 @@ void head_find_mode__user_available(void **state) {
 	will_return(__wrap_mode_user_mode, &expected);
 
 	assert_ptr_equal(head_find_mode(&head), &expected);
+
+	slist_free(&head.modes);
+	free(head.name);
 }
 
 void head_find_mode__user_failed(void **state) {
@@ -194,6 +202,9 @@ void head_find_mode__user_failed(void **state) {
 
 	// no notices this time
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	slist_free(&head.modes);
+	free(head.name);
 }
 
 void head_find_mode__preferred(void **state) {
@@ -203,6 +214,8 @@ void head_find_mode__preferred(void **state) {
 	slist_append(&head.modes, &mode);
 
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	slist_free(&head.modes);
 }
 
 void head_find_mode__max_preferred_refresh(void **state) {
@@ -213,10 +226,13 @@ void head_find_mode__max_preferred_refresh(void **state) {
 
 	slist_append(&head.modes, &mode);
 
-	expect_value(__wrap_mode_max_preferred, head, &head);
+	expect_value(__wrap_mode_max_preferred, modes, head.modes);
+	expect_value(__wrap_mode_max_preferred, modes_failed, head.modes_failed);
 	will_return(__wrap_mode_max_preferred, &mode);
 
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	slist_free(&head.modes);
 }
 
 void head_find_mode__max(void **state) {
@@ -232,6 +248,8 @@ void head_find_mode__max(void **state) {
 
 	// no notice
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	slist_free(&head.modes);
 }
 
 int main(void) {

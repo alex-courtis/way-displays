@@ -197,7 +197,8 @@ void parse_element__mode_set_max(void **state) {
 
 	cfg_free(actual);
 
-	slist_free(&expected.user_scales);
+	slist_free(&expected.user_modes);
+	cfg_user_mode_free(expectedUserMode);
 }
 
 void parse_element__mode_set_res(void **state) {
@@ -219,7 +220,8 @@ void parse_element__mode_set_res(void **state) {
 
 	cfg_free(actual);
 
-	slist_free(&expected.user_scales);
+	slist_free(&expected.user_modes);
+	cfg_user_mode_free(expectedUserMode);
 }
 
 void parse_element__mode_set_res_refresh(void **state) {
@@ -242,7 +244,8 @@ void parse_element__mode_set_res_refresh(void **state) {
 
 	cfg_free(actual);
 
-	slist_free(&expected.user_scales);
+	slist_free(&expected.user_modes);
+	cfg_user_mode_free(expectedUserMode);
 }
 
 void parse_element__mode_del_ok(void **state) {
@@ -262,7 +265,8 @@ void parse_element__mode_del_ok(void **state) {
 
 	cfg_free(actual);
 
-	slist_free(&expected.user_scales);
+	slist_free(&expected.user_modes);
+	cfg_user_mode_free(expectedUserMode);
 }
 
 void parse_element__disabled_ok(void **state) {
@@ -316,6 +320,8 @@ void parse_write__ok(void **state) {
 
 	assert_non_null(request);
 	assert_int_equal(request->op, CFG_WRITE);
+
+	ipc_request_free(request);
 }
 
 void parse_set__mode_nargs(void **state) {
@@ -403,6 +409,8 @@ void parse_set__ok(void **state) {
 
 	assert_non_null(request);
 	assert_int_equal(request->op, CFG_SET);
+
+	ipc_request_free(request);
 }
 
 void parse_del__mode_nargs(void **state) {
@@ -455,6 +463,8 @@ void parse_del__ok(void **state) {
 
 	assert_non_null(request);
 	assert_int_equal(request->op, CFG_DEL);
+
+	ipc_request_free(request);
 }
 
 void parse_log_threshold__invalid(void **state) {

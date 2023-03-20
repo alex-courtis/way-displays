@@ -8,17 +8,15 @@
 #include "head.h"
 #include "list.h"
 
-struct Mode *mode_preferred(struct Head *head) {
-	if (!head)
-		return NULL;
-
+struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed) {
 	struct Mode *mode = NULL;
-	for (struct SList *i = head->modes; i; i = i->nex) {
+
+	for (struct SList *i = modes; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		mode = i->val;
 
-		if (mode->preferred && !slist_find_equal(head->modes_failed, NULL, mode)) {
+		if (mode->preferred && !slist_find_equal(modes_failed, NULL, mode)) {
 			return mode;
 		}
 	}
@@ -26,20 +24,20 @@ struct Mode *mode_preferred(struct Head *head) {
 	return NULL;
 }
 
-struct Mode *mode_max_preferred(struct Head *head) {
-	struct Mode *preferred = mode_preferred(head);
+struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
+	struct Mode *preferred = mode_preferred(modes, modes_failed);
 
 	if (!preferred)
 		return NULL;
 
 	struct Mode *mode = NULL, *max = NULL;
 
-	for (struct SList *i = head->modes; i; i = i->nex) {
+	for (struct SList *i = modes; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		mode = i->val;
 
-		if (slist_find_equal(head->modes_failed, NULL, mode)) {
+		if (slist_find_equal(modes_failed, NULL, mode)) {
 			continue;
 		}
 

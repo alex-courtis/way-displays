@@ -38,7 +38,7 @@ char *read_file(const char *path) {
 
 	char *out = calloc(len, sizeof(char));
 
-	memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len);
+	memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len - 1);
 
 	close(fd);
 
@@ -64,7 +64,6 @@ int after_each(void **state) {
 	cfg = NULL;
 	free(lid);
 	lid = NULL;
-	slist_free(&heads);
 	return 0;
 }
 
@@ -181,15 +180,15 @@ void unmarshal_cfg_from_file__bad(void **state) {
 }
 
 void marshal_cfg__ok(void **state) {
-	struct Cfg *cfg = cfg_all();
+	struct Cfg *cfg_actual = cfg_all();
 
-	char *actual = marshal_cfg(cfg);
+	char *actual = marshal_cfg(cfg_actual);
 
 	char *expected = read_file("tst/marshalling/cfg-all.yaml");
 
 	assert_string_equal(actual, expected);
 
-	cfg_free(cfg);
+	cfg_free(cfg_actual);
 	free(actual);
 	free(expected);
 }
@@ -222,8 +221,7 @@ void marshal_ipc_request__cfg_set(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 	ipc_request->op = CFG_SET;
 
-	struct Cfg *cfg = cfg_all();
-	ipc_request->cfg = cfg;
+	ipc_request->cfg = cfg_all();
 
 	char *actual = marshal_ipc_request(ipc_request);
 
@@ -241,7 +239,7 @@ void marshal_ipc_response__ok(void **state) {
 	ipc_response->done = true;
 	ipc_response->rc = 1;
 	ipc_response->messages = true;
-	ipc_response->status = true;
+	ipc_response->state = true;
 
 	cfg = cfg_all();
 
@@ -307,10 +305,11 @@ void marshal_ipc_response__ok(void **state) {
 	free(actual);
 	free(expected);
 	slist_free(&head.modes);
+	slist_free(&heads);
 }
 
 void unmarshal_ipc_request__empty(void **state) {
-	char yaml[] = "";
+	char *yaml = "";
 
 	expect_log_error(NULL, "empty request", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -321,7 +320,7 @@ void unmarshal_ipc_request__empty(void **state) {
 }
 
 void unmarshal_ipc_request__bad_op(void **state) {
-	char yaml[] = "OP: aoeu";
+	char *yaml = "OP: aoeu";
 
 	expect_log_error(NULL, "invalid OP 'aoeu'", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -332,7 +331,7 @@ void unmarshal_ipc_request__bad_op(void **state) {
 }
 
 void unmarshal_ipc_request__no_op(void **state) {
-	char yaml[] = "FOO: BAR";
+	char *yaml = "FOO: BAR";
 
 	expect_log_error(NULL, "missing OP", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -373,7 +372,7 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 }
 
 void unmarshal_ipc_response__empty(void **state) {
-	char yaml[] = "";
+	char *yaml = "";
 
 	expect_log_error(NULL, "invalid response", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -384,7 +383,7 @@ void unmarshal_ipc_response__empty(void **state) {
 }
 
 void unmarshal_ipc_response__no_done(void **state) {
-	char yaml[] = "RC: 0";
+	char *yaml = "RC: 0";
 
 	expect_log_error(NULL, "DONE missing", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -395,7 +394,7 @@ void unmarshal_ipc_response__no_done(void **state) {
 }
 
 void unmarshal_ipc_response__no_rc(void **state) {
-	char yaml[] = "DONE: TRUE";
+	char *yaml = "DONE: TRUE";
 
 	expect_log_error(NULL, "RC missing", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
