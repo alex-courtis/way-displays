@@ -36,8 +36,6 @@ int ipc_request_send(struct IpcRequest *request);
 
 void ipc_response_send(struct IpcResponse *response);
 
-char *ipc_receive_fd(int fd);
-
 struct IpcRequest *ipc_request_receive(int fd_sock);
 
 struct IpcResponse *ipc_response_receive(int fd);
