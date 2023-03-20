@@ -9,10 +9,8 @@
 #include "list.h"
 
 struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed) {
-	if (!modes)
-		return NULL;
-
 	struct Mode *mode = NULL;
+
 	for (struct SList *i = modes; i; i = i->nex) {
 		if (!i->val)
 			continue;
