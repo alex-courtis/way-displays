@@ -28,8 +28,9 @@ struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_fail
 	return (struct Mode *)mock();
 }
 
-struct Mode *__wrap_mode_max_preferred(struct Head *head) {
-	check_expected(head);
+struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
+	check_expected(modes);
+	check_expected(modes_failed);
 	return (struct Mode *)mock();
 }
 
@@ -225,7 +226,8 @@ void head_find_mode__max_preferred_refresh(void **state) {
 
 	slist_append(&head.modes, &mode);
 
-	expect_value(__wrap_mode_max_preferred, head, &head);
+	expect_value(__wrap_mode_max_preferred, modes, head.modes);
+	expect_value(__wrap_mode_max_preferred, modes_failed, head.modes_failed);
 	will_return(__wrap_mode_max_preferred, &mode);
 
 	assert_ptr_equal(head_find_mode(&head), &mode);
