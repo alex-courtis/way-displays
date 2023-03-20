@@ -42,11 +42,14 @@ int client(struct IpcRequest *ipc_request) {
 		if (ipc_response) {
 			rc = ipc_response->rc;
 			done = ipc_response->done;
-			ipc_response_free(ipc_response);
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;
 		}
+	}
+
+	if (ipc_response) {
+		ipc_response_free(ipc_response);
 	}
 
 	close(fd);

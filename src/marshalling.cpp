@@ -498,7 +498,7 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
 
-		if (response->status) {
+		if (response->state) {
 			if (cfg) {
 				e << YAML::Key << "CFG" << YAML::BeginMap;		// CFG
 				e << *cfg;
@@ -606,6 +606,11 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 						log_(threshold, "%s", j->second.as<std::string>().c_str());
 					}
 				}
+			}
+
+			if (i->first.as<std::string>() == "CFG") {
+				response->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+				cfg_parse_node(response->cfg, i->second);
 			}
 		}
 

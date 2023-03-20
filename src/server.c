@@ -85,11 +85,11 @@ void handle_ipc_request(int fd_sock) {
 	ipc_response->fd = ipc_request->fd;
 	ipc_response->done = true;
 	ipc_response->messages = true;
-	ipc_response->status = true;
+	ipc_response->state = true;
 
 	if (ipc_request->bad) {
 		ipc_response->rc = IPC_RC_BAD_REQUEST;
-		ipc_response->status = false;
+		ipc_response->state = false;
 		goto send;
 	}
 

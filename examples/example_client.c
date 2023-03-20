@@ -104,7 +104,7 @@ CFG:\n\
 	execute(CFG_DEL, request);
 }
 
-void usage(void) {
+void example_usage(void) {
 	fprintf(stderr, "Usage: example_client <GET | CFG_WRITE | CFG_SET | CFG_DEL>\n");
 	exit(1);
 }
@@ -114,7 +114,7 @@ main(int argc, char **argv) {
 	log_set_threshold(DEBUG, true);
 
 	if (argc != 2) {
-		usage();
+		example_usage();
 	}
 
 	void (*fn)(void);
@@ -127,7 +127,7 @@ main(int argc, char **argv) {
 	} else if (strcmp(argv[1], ipc_request_op_name(CFG_DEL)) == 0) {
 		fn = cfg_del;
 	} else {
-		usage();
+		example_usage();
 	}
 
 	if (!getenv("WAYLAND_DISPLAY")) {

@@ -121,6 +121,8 @@ void ipc_response_free(struct IpcResponse *response) {
 		return;
 	}
 
+	cfg_free(response->cfg);
+
 	free(response);
 }
 

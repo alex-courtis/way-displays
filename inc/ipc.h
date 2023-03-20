@@ -29,7 +29,8 @@ struct IpcResponse {
 	int rc;
 	int fd;
 	bool messages;
-	bool status;
+	bool state;
+	struct Cfg *cfg;
 };
 
 int ipc_request_send(struct IpcRequest *request);
