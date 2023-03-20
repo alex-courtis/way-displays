@@ -139,6 +139,9 @@ void head_find_mode__none(void **state) {
 	slist_append(&head.modes, &mode);
 	slist_append(&head.modes_failed, &mode);
 	assert_null(head_find_mode(&head));
+
+	slist_free(&head.modes);
+	slist_free(&head.modes_failed);
 }
 
 void head_find_mode__user_available(void **state) {
@@ -160,6 +163,9 @@ void head_find_mode__user_available(void **state) {
 	will_return(__wrap_mode_user_mode, &expected);
 
 	assert_ptr_equal(head_find_mode(&head), &expected);
+
+	slist_free(&head.modes);
+	free(head.name);
 }
 
 void head_find_mode__user_failed(void **state) {
@@ -194,6 +200,9 @@ void head_find_mode__user_failed(void **state) {
 
 	// no notices this time
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	slist_free(&head.modes);
+	free(head.name);
 }
 
 void head_find_mode__preferred(void **state) {
@@ -203,6 +212,8 @@ void head_find_mode__preferred(void **state) {
 	slist_append(&head.modes, &mode);
 
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	slist_free(&head.modes);
 }
 
 void head_find_mode__max_preferred_refresh(void **state) {
@@ -217,6 +228,8 @@ void head_find_mode__max_preferred_refresh(void **state) {
 	will_return(__wrap_mode_max_preferred, &mode);
 
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	slist_free(&head.modes);
 }
 
 void head_find_mode__max(void **state) {
@@ -232,6 +245,8 @@ void head_find_mode__max(void **state) {
 
 	// no notice
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	slist_free(&head.modes);
 }
 
 int main(void) {

@@ -134,6 +134,9 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			bp += snprintf(bp, sizeof(buf) - (bp - buf), " %s", argv[i]);
 		}
 		log_error("invalid %s%s", cfg_element_name(element), buf);
+		if (cfg) {
+			cfg_free(cfg);
+		}
 		wd_exit(EXIT_FAILURE);
 		return NULL;
 	}
