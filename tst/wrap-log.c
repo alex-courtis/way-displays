@@ -1,5 +1,4 @@
 #include "tst.h" // IWYU pragma: keep
-#include "expects.h"
 
 #include <cmocka.h>
 #include <stdio.h>
