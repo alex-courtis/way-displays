@@ -309,7 +309,7 @@ void marshal_ipc_response__ok(void **state) {
 }
 
 void unmarshal_ipc_request__empty(void **state) {
-	char yaml[] = "";
+	char *yaml = "";
 
 	expect_log_error(NULL, "empty request", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -320,7 +320,7 @@ void unmarshal_ipc_request__empty(void **state) {
 }
 
 void unmarshal_ipc_request__bad_op(void **state) {
-	char yaml[] = "OP: aoeu";
+	char *yaml = "OP: aoeu";
 
 	expect_log_error(NULL, "invalid OP 'aoeu'", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -331,7 +331,7 @@ void unmarshal_ipc_request__bad_op(void **state) {
 }
 
 void unmarshal_ipc_request__no_op(void **state) {
-	char yaml[] = "FOO: BAR";
+	char *yaml = "FOO: BAR";
 
 	expect_log_error(NULL, "missing OP", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -372,7 +372,7 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 }
 
 void unmarshal_ipc_response__empty(void **state) {
-	char yaml[] = "";
+	char *yaml = "";
 
 	expect_log_error(NULL, "invalid response", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -383,7 +383,7 @@ void unmarshal_ipc_response__empty(void **state) {
 }
 
 void unmarshal_ipc_response__no_done(void **state) {
-	char yaml[] = "RC: 0";
+	char *yaml = "RC: 0";
 
 	expect_log_error(NULL, "DONE missing", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
@@ -394,7 +394,7 @@ void unmarshal_ipc_response__no_done(void **state) {
 }
 
 void unmarshal_ipc_response__no_rc(void **state) {
-	char yaml[] = "DONE: TRUE";
+	char *yaml = "DONE: TRUE";
 
 	expect_log_error(NULL, "RC missing", NULL, NULL, NULL);
 	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
