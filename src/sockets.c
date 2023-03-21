@@ -14,9 +14,9 @@
 #define SERVER_TIMEOUT_SEC 2
 #define CLIENT_TIMEOUT_SEC 10
 
-bool set_socket_timeout(int fd, struct timeval timeout) {
+bool set_socket_timeout(int socket, struct timeval timeout) {
 
-	if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
+	if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
 		log_error_errno("\nSocket set timeout failed");
 		return false;
 	}
@@ -24,26 +24,27 @@ bool set_socket_timeout(int fd, struct timeval timeout) {
 	return true;
 }
 
-int socket_accept(int fd_sock) {
+int socket_accept(int socket_server) {
 
-	int fd = accept(fd_sock, NULL, NULL);
-	if (fd == -1) {
+	int socket_client = accept(socket_server, NULL, NULL);
+
+	if (socket_client == -1) {
 		log_error_errno("\nSocket accept failed");
 		return -1;
 	}
 
 	struct timeval timeout = { .tv_sec = SERVER_TIMEOUT_SEC, .tv_usec = 0, };
-	if (!set_socket_timeout(fd, timeout)) {
+	if (!set_socket_timeout(socket_client, timeout)) {
 		return -1;
 	}
 
-	return fd;
+	return socket_client;
 }
 
-char *socket_read(int fd) {
+char *socket_read(int socket_client) {
 
 	// peek, as the sender may experience delay between connecting and sending
-	if (recv(fd, NULL, 0, MSG_PEEK) == -1) {
+	if (recv(socket_client, NULL, 0, MSG_PEEK) == -1) {
 		if (errno == EAGAIN) {
 			log_error("\nSocket read timeout");
 		} else {
@@ -54,18 +55,17 @@ char *socket_read(int fd) {
 
 	// total message size right now; further data will be disregarded
 	int n = 0;
-	if (ioctl(fd, FIONREAD, &n) == -1) {
+	if (ioctl(socket_client, FIONREAD, &n) == -1) {
 		log_error_errno("\nServer FIONREAD failed");
 		return NULL;
 	}
 	if (n == 0) {
-		log_error("\nSocket no data");
 		return NULL;
 	}
 
 	// read it
 	char *buf = calloc(n + 1, sizeof(char));
-	if (recv(fd, buf, n, 0) == -1) {
+	if (recv(socket_client, buf, n, 0) == -1) {
 		log_error_errno("\nSocket recv failed");
 		return NULL;
 	}
@@ -75,10 +75,9 @@ char *socket_read(int fd) {
 	return buf;
 }
 
-ssize_t socket_write(int fd, char *data, size_t len) {
-
+ssize_t socket_write(int socket_client, char *data, size_t len) {
 	ssize_t n;
-	if ((n = write(fd, data, len)) == -1) {
+	if ((n = write(socket_client, data, len)) == -1) {
 		log_error_errno("\nSocket write failed");
 		return -1;
 	}
@@ -105,9 +104,9 @@ void socket_path(struct sockaddr_un *addr) {
 	}
 }
 
-int create_fd_ipc_server(void) {
-	int fd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (fd == -1) {
+int create_socket_server(void) {
+	int socket_server = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (socket_server == -1) {
 		log_error_errno("\nServer socket failed, clients unavailable");
 		return -1;
 	}
@@ -117,31 +116,30 @@ int create_fd_ipc_server(void) {
 	socket_path(&addr);
 	unlink(addr.sun_path);
 
-	if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+	if (bind(socket_server, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
 		log_error_errno("\nServer socket bind failed, clients unavailable");
-		close(fd);
+		close(socket_server);
 		return -1;
 	}
 
-	if (listen(fd, 3) < 0) {
+	if (listen(socket_server, 3) < 0) {
 		log_error_errno("\nServer socket listen failed, clients unavailable");
-		close(fd);
+		close(socket_server);
 		return -1;
 	}
 
 	struct timeval timeout = { .tv_sec = SERVER_TIMEOUT_SEC, .tv_usec = 0, };
-	if (!set_socket_timeout(fd, timeout)) {
-		close(fd);
+	if (!set_socket_timeout(socket_server, timeout)) {
+		close(socket_server);
 		return -1;
 	}
 
-	return fd;
+	return socket_server;
 }
 
-int create_fd_ipc_client(void) {
-
-	int fd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (fd == -1) {
+int create_socket_client(void) {
+	int socket_client = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (socket_client == -1) {
 		log_error_errno("\nSocket create failed");
 		return -1;
 	}
@@ -150,18 +148,18 @@ int create_fd_ipc_client(void) {
 	addr.sun_family = AF_UNIX;
 	socket_path(&addr);
 
-	if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+	if (connect(socket_client, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
 		log_error_errno("\nSocket connect failed");
-		close(fd);
+		close(socket_client);
 		return -1;
 	}
 
 	struct timeval timeout = { .tv_sec = CLIENT_TIMEOUT_SEC, .tv_usec = 0, };
-	if (!set_socket_timeout(fd, timeout)) {
-		close(fd);
+	if (!set_socket_timeout(socket_client, timeout)) {
+		close(socket_client);
 		return -1;
 	}
 
-	return fd;
+	return socket_client;
 }
 

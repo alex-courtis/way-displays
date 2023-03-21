@@ -22,6 +22,7 @@ void usage(FILE *stream) {
 		"OPTIONS\n"
 		"  -L, --l[og-threshold] <debug|info|warning|error>\n"
 		"  -c, --c[onfig]        <path>\n"
+		"  -y, --y[aml]          YAML client output\n"
 		"COMMANDS\n"
 		"  -h, --h[elp]    show this message\n"
 		"  -v, --v[ersion] display version information\n"
@@ -134,6 +135,9 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			bp += snprintf(bp, sizeof(buf) - (bp - buf), " %s", argv[i]);
 		}
 		log_error("invalid %s%s", cfg_element_name(element), buf);
+		if (cfg) {
+			cfg_free(cfg);
+		}
 		wd_exit(EXIT_FAILURE);
 		return NULL;
 	}
@@ -261,9 +265,12 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		{ "set",           required_argument, 0, 's' },
 		{ "version",       no_argument,       0, 'v' },
 		{ "write",         no_argument,       0, 'w' },
+		{ "yaml",          no_argument,       0, 'y' },
 		{ 0,               0,                 0,  0  }
 	};
-	static char *short_options = "c:d:ghL:s:vw";
+	static char *short_options = "c:d:ghL:s:vwy";
+
+	bool raw = false;
 
 	int c;
 	while (1) {
@@ -288,25 +295,32 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 			case 'v':
 				log_info("way-displays version %s", VERSION);
 				wd_exit(EXIT_SUCCESS);
-				return;
+				break;
+			case 'y':
+				raw = true;
+				break;
 			case 'g':
 				*ipc_request = parse_get(argc, argv);
-				return;
+				break;
 			case 's':
 				*ipc_request = parse_set(argc, argv);
-				return;
+				break;
 			case 'd':
 				*ipc_request = parse_del(argc, argv);
-				return;
+				break;
 			case 'w':
 				*ipc_request = parse_write(argc, argv);
-				return;
+				break;
 			case '?':
 			default:
 				usage(stderr);
 				wd_exit(EXIT_FAILURE);
 				return;
 		}
+	}
+
+	if (*ipc_request) {
+		(*ipc_request)->raw = raw;
 	}
 }
 

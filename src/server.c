@@ -27,21 +27,21 @@ struct Cfg *cfg = NULL;
 
 struct IpcResponse *ipc_response = NULL;
 
-void handle_ipc_in_progress(int fd_sock) {
-	struct IpcRequest *request = ipc_request_receive(fd_sock);
+void handle_ipc_in_progress(int server_socket) {
+	struct IpcRequest *request = ipc_receive_request_server(server_socket);
 	if (!request) {
 		log_error("\nFailed to read IPC request");
 		return;
 	}
 
 	struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	response->fd = request->fd;
+	response->socket_client = request->socket_client;
 	response->done = true;
 	response->rc = IPC_RC_REQUEST_IN_PROGRESS;
 
-	ipc_response_send(response);
+	ipc_send_response(response);
 
-	close(response->fd);
+	close(response->socket_client);
 
 	ipc_response_free(response);
 }
@@ -51,29 +51,29 @@ void handle_ipc_response(void) {
 		return;
 	}
 
-	ipc_response_send(ipc_response);
+	ipc_send_response(ipc_response);
 
 	if (ipc_response->done) {
 		log_capture_stop();
 		log_capture_clear();
 
-		close(ipc_response->fd);
+		close(ipc_response->socket_client);
 
 		ipc_response_free(ipc_response);
 		ipc_response = NULL;
 	}
 }
 
-void handle_ipc_request(int fd_sock) {
+void handle_ipc_request(int server_socket) {
 	if (ipc_response) {
-		handle_ipc_in_progress(fd_sock);
+		handle_ipc_in_progress(server_socket);
 		return;
 	}
 
 	log_capture_clear();
 	log_capture_start();
 
-	struct IpcRequest *ipc_request = ipc_request_receive(fd_sock);
+	struct IpcRequest *ipc_request = ipc_receive_request_server(server_socket);
 	if (!ipc_request) {
 		log_error("\nFailed to read IPC request");
 		log_capture_stop();
@@ -82,7 +82,7 @@ void handle_ipc_request(int fd_sock) {
 	}
 
 	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	ipc_response->fd = ipc_request->fd;
+	ipc_response->socket_client = ipc_request->socket_client;
 	ipc_response->done = true;
 	ipc_response->messages = true;
 	ipc_response->state = true;
@@ -203,7 +203,7 @@ int loop(void) {
 
 		// ipc client message
 		if (pfd_ipc && (pfd_ipc->revents & pfd_ipc->events)) {
-			handle_ipc_request(fd_ipc);
+			handle_ipc_request(fd_socket_server);
 		}
 
 
