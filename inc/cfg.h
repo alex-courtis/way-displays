@@ -54,6 +54,7 @@ struct Cfg {
 	enum AutoScale auto_scale;
 	struct SList *user_scales;
 	struct SList *user_modes;
+	struct SList *vrr_off_name_desc;
 	struct SList *max_preferred_refresh_name_desc;
 	struct SList *disabled_name_desc;
 	enum LogThreshold log_threshold;
@@ -66,6 +67,7 @@ enum CfgElement {
 	AUTO_SCALE,
 	SCALE,
 	MODE,
+	VRR_OFF,
 	LAPTOP_DISPLAY_PREFIX,
 	MAX_PREFERRED_REFRESH,
 	LOG_THRESHOLD,
@@ -74,6 +76,8 @@ enum CfgElement {
 };
 
 void cfg_init(const char *cfg_path);
+
+bool cfg_equal(struct Cfg *a, struct Cfg *b);
 
 struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del);
 

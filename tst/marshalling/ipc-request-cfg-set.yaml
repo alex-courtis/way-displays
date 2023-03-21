@@ -22,6 +22,9 @@ CFG:
       HEIGHT: 1440
     - NAME_DESC: seven
       MAX: TRUE
+  VRR_OFF:
+    - ten
+    - ELEVEN
   DISABLED:
     - eight
     - EIGHT

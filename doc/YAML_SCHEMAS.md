@@ -63,6 +63,8 @@ MODE: !!seq
   - !!map
     NAME_DESC: !!str
     MAX: !!bool
+VRR_OFF: !!seq
+  - !!str
 DISABLED: !!seq
   - !!str
 LOG_THRESHOLD: !!log_threshold

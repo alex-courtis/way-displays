@@ -68,7 +68,7 @@ void parse_element__arrange_align_ok(void **state) {
 		.align = LEFT,
 	};
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 }
@@ -93,7 +93,7 @@ void parse_element__auto_scale_ok(void **state) {
 		.auto_scale = ON,
 	};
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 }
@@ -123,7 +123,7 @@ void parse_element__scale_set_ok(void **state) {
 	};
 	slist_append(&expected.user_scales, &expectedUserScale);
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 
@@ -143,7 +143,7 @@ void parse_element__scale_del_ok(void **state) {
 	struct Cfg expected = { 0 };
 	slist_append(&expected.user_scales, &expectedUserScale);
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 
@@ -193,7 +193,7 @@ void parse_element__mode_set_max(void **state) {
 	struct Cfg expected = { 0 };
 	slist_append(&expected.user_modes, expectedUserMode);
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 
@@ -216,7 +216,7 @@ void parse_element__mode_set_res(void **state) {
 	struct Cfg expected = { 0 };
 	slist_append(&expected.user_modes, expectedUserMode);
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 
@@ -240,7 +240,7 @@ void parse_element__mode_set_res_refresh(void **state) {
 	struct Cfg expected = { 0 };
 	slist_append(&expected.user_modes, expectedUserMode);
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 
@@ -261,7 +261,7 @@ void parse_element__mode_del_ok(void **state) {
 	struct Cfg expected = { 0 };
 	slist_append(&expected.user_modes, expectedUserMode);
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 
@@ -279,7 +279,7 @@ void parse_element__disabled_ok(void **state) {
 	slist_append(&expected.disabled_name_desc, "ONE");
 	slist_append(&expected.disabled_name_desc, "TWO");
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 
@@ -296,7 +296,7 @@ void parse_element__order_ok(void **state) {
 	slist_append(&expected.order_name_desc, "ONE");
 	slist_append(&expected.order_name_desc, "TWO");
 
-	assert_equal_cfg(actual, &expected);
+	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 

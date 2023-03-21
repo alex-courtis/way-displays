@@ -168,6 +168,14 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::EndSeq;												// MODE
 	}
 
+	if (cfg.vrr_off_name_desc) {
+		e << YAML::Key << "VRR_OFF" << YAML::BeginSeq;					// VRR_OFF
+		for (struct SList *i = cfg.vrr_off_name_desc; i; i = i->nex) {
+			e << (char*)i->val;
+		}
+		e << YAML::EndSeq;												// VRR_OFF
+	}
+
 	if (cfg.laptop_display_prefix) {
 		e << YAML::Key << "LAPTOP_DISPLAY_PREFIX" << YAML::Value << cfg.laptop_display_prefix;
 	}
@@ -371,6 +379,20 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 
 			slist_remove_all_free(&cfg->user_modes, cfg_equal_user_mode_name, user_mode, cfg_user_mode_free);
 			slist_append(&cfg->user_modes, user_mode);
+		}
+	}
+
+	if (node["VRR_OFF"]) {
+		const auto &offs = node["VRR_OFF"];
+		for (const auto &off : offs) {
+			const std::string &off_str = off.as<std::string>();
+			const char *off_cstr = off_str.c_str();
+			if (!slist_find_equal(cfg->vrr_off_name_desc, slist_equal_strcmp, off_cstr)) {
+				if (!validate_regex(off_cstr, VRR_OFF)) {
+					continue;
+				}
+				slist_append(&cfg->vrr_off_name_desc, strdup(off_cstr));
+			}
 		}
 	}
 
