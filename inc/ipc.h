@@ -20,25 +20,28 @@ enum IpcRequestOperation {
 struct IpcRequest {
 	enum IpcRequestOperation op;
 	struct Cfg *cfg;
-	int fd;
+	int socket_client;
 	bool bad;
+	bool raw;
 };
 
 struct IpcResponse {
 	bool done;
 	int rc;
-	int fd;
+	int socket_client;
 	bool messages;
 	bool state;
 };
 
-int ipc_request_send(struct IpcRequest *request);
+void ipc_send_request(struct IpcRequest *request);
 
-void ipc_response_send(struct IpcResponse *response);
+void ipc_send_response(struct IpcResponse *response);
 
-struct IpcRequest *ipc_request_receive(int fd_sock);
+char *ipc_receive_raw_client(int socket_client);
 
-struct IpcResponse *ipc_response_receive(int fd);
+struct IpcRequest *ipc_receive_request_server(int socket_server);
+
+struct IpcResponse *ipc_receive_response_client(int socket_client);
 
 void ipc_request_free(struct IpcRequest *request);
 

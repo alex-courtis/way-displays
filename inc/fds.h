@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 extern int fd_signal;
-extern int fd_ipc;
+extern int fd_socket_server;
 extern int fd_cfg_dir;
 
 extern nfds_t npfds;

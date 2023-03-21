@@ -21,7 +21,7 @@
 #define PFDS_SIZE 5
 
 int fd_signal = -1;
-int fd_ipc = -1;
+int fd_socket_server = -1;
 int fd_cfg_dir = -1;
 bool fds_created = false;
 
@@ -61,7 +61,7 @@ int create_fd_cfg_dir(void) {
 
 void create_fds(void) {
 	fd_signal = create_fd_signal();
-	fd_ipc = create_fd_ipc_server();
+	fd_socket_server = create_socket_server();
 	fd_cfg_dir = create_fd_cfg_dir();
 
 	fds_created = true;
@@ -75,7 +75,7 @@ void init_pfds(void) {
 	npfds = 2;
 	if (lid)
 		npfds++;
-	if (fd_ipc != -1)
+	if (fd_socket_server != -1)
 		npfds++;
 	if (fd_cfg_dir != -1)
 		npfds++;
@@ -90,9 +90,9 @@ void init_pfds(void) {
 	pfd_wayland->fd = wl_display_get_fd(displ->display);
 	pfd_wayland->events = POLLIN;
 
-	if (fd_ipc != -1) {
+	if (fd_socket_server != -1) {
 		pfd_ipc = &pfds[i++];
-		pfd_ipc->fd = fd_ipc;
+		pfd_ipc->fd = fd_socket_server;
 		pfd_ipc->events = POLLIN;
 	}
 

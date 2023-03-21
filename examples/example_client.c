@@ -12,7 +12,7 @@
 void execute(enum IpcRequestOperation op, char *request) {
 	int fd;
 
-	if ((fd = create_fd_ipc_client()) == -1) {
+	if ((fd = create_socket_client()) == -1) {
 		exit(1);
 	}
 

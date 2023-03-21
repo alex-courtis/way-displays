@@ -6,15 +6,15 @@
 
 void socket_path(struct sockaddr_un *addr);
 
-int create_fd_ipc_server(void);
+int create_socket_server(void);
 
-int create_fd_ipc_client(void);
+int create_socket_client(void);
 
-int socket_accept(int fd_sock);
+int socket_accept(int socket_server);
 
-char *socket_read(int fd);
+char *socket_read(int socket_client);
 
-ssize_t socket_write(int fd, char *data, size_t len);
+ssize_t socket_write(int socket_client, char *data, size_t len);
 
 #endif // SOCKETS_H
 

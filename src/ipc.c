@@ -10,8 +10,7 @@
 #include "marshalling.h"
 #include "sockets.h"
 
-int ipc_request_send(struct IpcRequest *request) {
-	int fd = -1;
+void ipc_send_request(struct IpcRequest *request) {
 
 	char *yaml = marshal_ipc_request(request);
 	if (!yaml) {
@@ -20,12 +19,12 @@ int ipc_request_send(struct IpcRequest *request) {
 
 	log_debug_nocap("========sending server request==========\n%s\n----------------------------------------", yaml);
 
-	if ((fd = create_fd_ipc_client()) == -1) {
+	if ((request->socket_client = create_socket_client()) == -1) {
 		goto end;
 	}
 
-	if (socket_write(fd, yaml, strlen(yaml)) == -1) {
-		fd = -1;
+	if (socket_write(request->socket_client, yaml, strlen(yaml)) == -1) {
+		request->socket_client = -1;
 		goto end;
 	}
 
@@ -33,11 +32,9 @@ end:
 	if (yaml) {
 		free(yaml);
 	}
-
-	return fd;
 }
 
-void ipc_response_send(struct IpcResponse *response) {
+void ipc_send_response(struct IpcResponse *response) {
 	char *yaml = marshal_ipc_response(response);
 
 	if (!yaml) {
@@ -47,24 +44,34 @@ void ipc_response_send(struct IpcResponse *response) {
 
 	log_debug_nocap("========sending client response==========\n%s----------------------------------------", yaml);
 
-	if (socket_write(response->fd, yaml, strlen(yaml)) == -1) {
+	if (socket_write(response->socket_client, yaml, strlen(yaml)) == -1) {
 		response->done = true;
 	}
 
 	free(yaml);
 }
 
-struct IpcRequest *ipc_request_receive(int fd_sock) {
-	struct IpcRequest *request = NULL;
+char *ipc_receive_raw_client(int socket_client) {
 	char *yaml = NULL;
-	int fd = -1;
 
-	if ((fd = socket_accept(fd_sock)) == -1) {
+	if (!(yaml = socket_read(socket_client))) {
+		close(socket_client);
 		return NULL;
 	}
 
-	if (!(yaml = socket_read(fd))) {
-		close(fd);
+	return yaml;
+}
+
+struct IpcRequest *ipc_receive_request_server(int socket_server) {
+	struct IpcRequest *request = NULL;
+	int socket_client = -1;
+	char *yaml = NULL;
+
+	if ((socket_client = socket_accept(socket_server)) == -1) {
+		return NULL;
+	}
+
+	if (!(yaml = ipc_receive_raw_client(socket_client))) {
 		return NULL;
 	}
 
@@ -76,25 +83,20 @@ struct IpcRequest *ipc_request_receive(int fd_sock) {
 	if (!request) {
 		request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
 		request->bad = true;
-		request->fd = fd;
+		request->socket_client = socket_client;
 		return request;
 	}
 
-	request->fd = fd;
+	request->socket_client = socket_client;
 
 	return request;
 }
 
-struct IpcResponse *ipc_response_receive(int fd) {
+struct IpcResponse *ipc_receive_response_client(int socket_client) {
 	struct IpcResponse *response = NULL;
 	char *yaml = NULL;
 
-	if (fd == -1) {
-		log_error("invalid fd for ipc response receive");
-		return NULL;
-	}
-
-	if (!(yaml = socket_read(fd))) {
+	if (!(yaml = ipc_receive_raw_client(socket_client))) {
 		return NULL;
 	}
 
