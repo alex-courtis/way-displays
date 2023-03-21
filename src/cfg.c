@@ -204,8 +204,8 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	for (i = from->vrr_off_name_desc; i; i = i->nex) {
-		slist_append(&to->vrr_off_name_desc, strdup((char*)i->val));
+	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
+		slist_append(&to->adaptive_sync_off_name_desc, strdup((char*)i->val));
 	}
 
 	// LAPTOP_DISPLAY_PREFIX
@@ -267,7 +267,7 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 	}
 
 	// VRR_OFF
-	if (!slist_equal(a->vrr_off_name_desc, b->vrr_off_name_desc, slist_equal_strcmp)) {
+	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, slist_equal_strcmp)) {
 		return false;
 	}
 
@@ -420,7 +420,7 @@ void validate_warn(struct Cfg *cfg) {
 			continue;
 		warn_short_name_desc((const char*)i->val, "ORDER");
 	}
-	for (i = cfg->vrr_off_name_desc; i; i = i->nex) {
+	for (i = cfg->adaptive_sync_off_name_desc; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		warn_short_name_desc((const char*)i->val, "VRR_OFF");
@@ -500,9 +500,9 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	for (i = from->vrr_off_name_desc; i; i = i->nex) {
-		if (!slist_find_equal(merged->vrr_off_name_desc, slist_equal_strcmp, i->val)) {
-			slist_append(&merged->vrr_off_name_desc, strdup((char*)i->val));
+	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
+		if (!slist_find_equal(merged->adaptive_sync_off_name_desc, slist_equal_strcmp, i->val)) {
+			slist_append(&merged->adaptive_sync_off_name_desc, strdup((char*)i->val));
 		}
 	}
 
@@ -536,8 +536,8 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	for (i = from->vrr_off_name_desc; i; i = i->nex) {
-		slist_remove_all_free(&merged->vrr_off_name_desc, slist_equal_strcmp, i->val, NULL);
+	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
+		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, slist_equal_strcmp, i->val, NULL);
 	}
 
 	// DISABLED
@@ -685,7 +685,7 @@ void cfg_free(struct Cfg *cfg) {
 
 	slist_free_vals(&cfg->user_modes, cfg_user_mode_free);
 
-	slist_free_vals(&cfg->vrr_off_name_desc, NULL);
+	slist_free_vals(&cfg->adaptive_sync_off_name_desc, NULL);
 
 	slist_free_vals(&cfg->max_preferred_refresh_name_desc, NULL);
 

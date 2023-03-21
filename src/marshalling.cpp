@@ -168,9 +168,9 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::EndSeq;												// MODE
 	}
 
-	if (cfg.vrr_off_name_desc) {
+	if (cfg.adaptive_sync_off_name_desc) {
 		e << YAML::Key << "VRR_OFF" << YAML::BeginSeq;					// VRR_OFF
-		for (struct SList *i = cfg.vrr_off_name_desc; i; i = i->nex) {
+		for (struct SList *i = cfg.adaptive_sync_off_name_desc; i; i = i->nex) {
 			e << (char*)i->val;
 		}
 		e << YAML::EndSeq;												// VRR_OFF
@@ -387,11 +387,11 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 		for (const auto &off : offs) {
 			const std::string &off_str = off.as<std::string>();
 			const char *off_cstr = off_str.c_str();
-			if (!slist_find_equal(cfg->vrr_off_name_desc, slist_equal_strcmp, off_cstr)) {
+			if (!slist_find_equal(cfg->adaptive_sync_off_name_desc, slist_equal_strcmp, off_cstr)) {
 				if (!validate_regex(off_cstr, VRR_OFF)) {
 					continue;
 				}
-				slist_append(&cfg->vrr_off_name_desc, strdup(off_cstr));
+				slist_append(&cfg->adaptive_sync_off_name_desc, strdup(off_cstr));
 			}
 		}
 	}

@@ -88,8 +88,8 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
 
-	slist_append(&cfg->vrr_off_name_desc, strdup("ten"));
-	slist_append(&cfg->vrr_off_name_desc, strdup("ELEVEN"));
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));
 
 	slist_append(&cfg->disabled_name_desc, strdup("eight"));
 	slist_append(&cfg->disabled_name_desc, strdup("EIGHT"));

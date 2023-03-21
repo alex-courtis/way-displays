@@ -54,7 +54,7 @@ struct Cfg {
 	enum AutoScale auto_scale;
 	struct SList *user_scales;
 	struct SList *user_modes;
-	struct SList *vrr_off_name_desc;
+	struct SList *adaptive_sync_off_name_desc;
 	struct SList *max_preferred_refresh_name_desc;
 	struct SList *disabled_name_desc;
 	enum LogThreshold log_threshold;

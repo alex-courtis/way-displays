@@ -148,18 +148,18 @@ void merge_set__mode(void **state) {
 	cfg_free(merged);
 }
 
-void merge_set__vrr_off(void **state) {
+void merge_set__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->vrr_off_name_desc, strdup("to"));
-	slist_append(&s->to->vrr_off_name_desc, strdup("both"));
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("to"));
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("both"));
 
-	slist_append(&s->from->vrr_off_name_desc, strdup("from"));
-	slist_append(&s->from->vrr_off_name_desc, strdup("both"));
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("from"));
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("both"));
 
-	slist_append(&s->expected->vrr_off_name_desc, strdup("to"));
-	slist_append(&s->expected->vrr_off_name_desc, strdup("both"));
-	slist_append(&s->expected->vrr_off_name_desc, strdup("from"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("to"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("both"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("from"));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -224,16 +224,16 @@ void merge_del__mode(void **state) {
 	cfg_free(merged);
 }
 
-void merge_del__vrr_off(void **state) {
+void merge_del__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->vrr_off_name_desc, strdup("1"));
-	slist_append(&s->to->vrr_off_name_desc, strdup("2"));
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("1"));
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("2"));
 
-	slist_append(&s->from->vrr_off_name_desc, strdup("2"));
-	slist_append(&s->from->vrr_off_name_desc, strdup("3"));
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("2"));
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("3"));
 
-	slist_append(&s->expected->vrr_off_name_desc, strdup("1"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("1"));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -356,8 +356,8 @@ void validate_warn__(void **state) {
 	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
 	expect_log_warn(fmt, "ORDER", "ooo", NULL, NULL);
 
-	slist_append(&s->expected->vrr_off_name_desc, strdup("vvv"));
-	slist_append(&s->expected->vrr_off_name_desc, strdup("vvvvvvvvvv"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvv"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvvvvvvvvv"));
 	expect_log_warn(fmt, "VRR_OFF", "vvv", NULL, NULL);
 
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
@@ -379,12 +379,12 @@ int main(void) {
 		TEST(merge_set__auto_scale),
 		TEST(merge_set__user_scale),
 		TEST(merge_set__mode),
-		TEST(merge_set__vrr_off),
+		TEST(merge_set__adaptive_sync_off),
 		TEST(merge_set__disabled),
 
 		TEST(merge_del__scale),
 		TEST(merge_del__mode),
-		TEST(merge_del__vrr_off),
+		TEST(merge_del__adaptive_sync_off),
 		TEST(merge_del__disabled),
 
 		TEST(validate_fix__col),
