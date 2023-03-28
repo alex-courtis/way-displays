@@ -4,10 +4,10 @@
 
 #include "displ.h"
 
+#include "global.h"
 #include "listeners.h"
 #include "log.h"
 #include "process.h"
-#include "server.h"
 
 void displ_init(void) {
 

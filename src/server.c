@@ -13,6 +13,7 @@
 #include "convert.h"
 #include "displ.h"
 #include "fds.h"
+#include "global.h"
 #include "head.h"
 #include "info.h"
 #include "ipc.h"
@@ -20,10 +21,6 @@
 #include "lid.h"
 #include "log.h"
 #include "process.h"
-
-struct Displ *displ = NULL;
-struct Lid *lid = NULL;
-struct Cfg *cfg = NULL;
 
 struct IpcResponse *ipc_response = NULL;
 

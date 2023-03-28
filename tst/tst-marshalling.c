@@ -13,13 +13,13 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "global.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "list.h"
 #include "log.h"
 #include "mode.h"
-#include "server.h"
 
 #include "marshalling.h"
 

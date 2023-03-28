@@ -9,12 +9,12 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "global.h"
 #include "head.h"
 #include "info.h"
 #include "list.h"
 #include "log.h"
 #include "mode.h"
-#include "server.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
@@ -23,7 +23,7 @@ void desire_enabled(struct Head *head);
 void desire_mode(struct Head *head);
 void desire_scale(struct Head *head);
 void desire_adaptive_sync(struct Head *head);
-
+void handle_success(void);
 
 bool __wrap_lid_is_closed(char *name) {
 	check_expected(name);
@@ -74,6 +74,9 @@ int before_each(void **state) {
 
 int after_each(void **state) {
 	slist_free(&heads);
+
+	head_changing_mode = NULL;
+	head_changing_adaptive_sync = NULL;
 
 	cfg_destroy();
 
@@ -525,6 +528,59 @@ void desire_adaptive_sync__ok(void **state) {
 	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
 }
 
+void handle_success__head_changing_adaptive_sync(void **state) {
+	struct Head head = {
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+		.adaptive_sync_failed = false,
+	};
+	head_changing_adaptive_sync = &head;
+
+	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
+
+	handle_success();
+
+	assert_null(head_changing_adaptive_sync);
+	assert_false(head.adaptive_sync_failed);
+}
+
+void handle_success__head_changing_adaptive_sync_fail(void **state) {
+	struct Head head = {
+		.name = "head",
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
+	};
+	head_changing_adaptive_sync = &head;
+
+	expect_log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", "head", NULL, NULL, NULL);
+
+	handle_success();
+
+	assert_null(head_changing_adaptive_sync);
+	assert_true(head.adaptive_sync_failed);
+}
+
+void handle_success__head_changing_mode(void **state) {
+	struct Mode mode = { 0 };
+	struct Head head = {
+		.desired.mode = &mode,
+	};
+	head_changing_mode = &head;
+
+	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
+
+	handle_success();
+
+	assert_ptr_equal(head.current.mode, &mode);
+	assert_null(head_changing_mode);
+}
+
+void handle_success__ok(void **state) {
+	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
+
+	handle_success();
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(order_heads__exact_partial_regex),
@@ -556,6 +612,11 @@ int main(void) {
 		TEST(desire_adaptive_sync__failed),
 		TEST(desire_adaptive_sync__adaptive_sync_off),
 		TEST(desire_adaptive_sync__ok),
+
+		TEST(handle_success__head_changing_adaptive_sync),
+		TEST(handle_success__head_changing_adaptive_sync_fail),
+		TEST(handle_success__head_changing_mode),
+		TEST(handle_success__ok),
 	};
 
 	return RUN(tests);

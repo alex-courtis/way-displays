@@ -10,11 +10,11 @@
 #include "cfg.h"
 
 #include "convert.h"
+#include "global.h"
 #include "info.h"
 #include "list.h"
 #include "log.h"
 #include "marshalling.h"
-#include "server.h"
 
 bool cfg_equal_user_mode_name(const void *value, const void *data) {
 	if (!value || !data) {

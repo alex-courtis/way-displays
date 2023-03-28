@@ -8,6 +8,7 @@
 
 #include "cfg.h"
 #include "displ.h"
+#include "global.h"
 #include "head.h"
 #include "info.h"
 #include "lid.h"
@@ -16,11 +17,7 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
-#include "server.h"
 #include "wlr-output-management-unstable-v1.h"
-
-struct Head *head_changing_mode = NULL;
-struct Head *head_changing_adaptive_sync = NULL;
 
 void position_heads(struct SList *heads) {
 	struct Head *head;
@@ -310,10 +307,13 @@ void handle_success(void) {
 
 	} else if (head_changing_adaptive_sync) {
 
+		struct Head *head = head_changing_adaptive_sync;
+		head_changing_adaptive_sync = NULL;
+
 		// sway reports adaptive sync failure as success
-		if (head_current_adaptive_sync_not_desired(head_changing_adaptive_sync)) {
-			log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head_changing_adaptive_sync->name);
-			head_changing_adaptive_sync->adaptive_sync_failed = true;
+		if (head_current_adaptive_sync_not_desired(head)) {
+			log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head->name);
+			head->adaptive_sync_failed = true;
 			return;
 		}
 	}

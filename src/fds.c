@@ -11,11 +11,11 @@
 #include "fds.h"
 
 #include "cfg.h"
+#include "displ.h"
 #include "lid.h"
 #include "log.h"
-#include "displ.h"
+#include "global.h"
 #include "process.h"
-#include "server.h"
 #include "sockets.h"
 
 #define PFDS_SIZE 5

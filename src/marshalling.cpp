@@ -22,13 +22,13 @@
 extern "C" {
 #include "cfg.h"
 #include "convert.h"
+#include "global.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "list.h"
 #include "log.h"
 #include "mode.h"
-#include "server.h"
 }
 
 // If this is a regex pattern, attempt to compile it before including it in configuration.
