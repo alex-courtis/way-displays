@@ -136,6 +136,17 @@ MODE:
     - NAME_DESC: HDMI-A-1
       MAX: TRUE
 ```
+
+### VRR_OFF
+
+Adaptive sync is enabled by default. Disable it per display.
+
+```yaml
+VRR_OFF:
+    - DP-2
+    - '!.*my monitor.*'
+```
+
 ### LAPTOP_DISPLAY_PREFIX
 
 Laptop displays usually start with `eDP` e.g. `eDP-1`. This may be overridden if your laptop is different e.g.:

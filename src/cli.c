@@ -112,6 +112,12 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 					break;
 			}
 			break;
+		case VRR_OFF:
+			for (int i = optind; i < argc; i++) {
+				slist_append(&cfg->adaptive_sync_off_name_desc, strdup(argv[i]));
+			}
+			parsed = true;
+			break;
 		case DISABLED:
 			for (int i = optind; i < argc; i++) {
 				slist_append(&cfg->disabled_name_desc, strdup(argv[i]));
@@ -191,6 +197,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 			break;
 		case AUTO_SCALE:
 		case DISABLED:
+		case VRR_OFF:
 			if (optind + 1 != argc) {
 				log_error("%s requires one argument", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);

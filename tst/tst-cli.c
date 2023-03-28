@@ -269,6 +269,23 @@ void parse_element__mode_del_ok(void **state) {
 	cfg_user_mode_free(expectedUserMode);
 }
 
+void parse_element__adaptive_sync_off_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "ONE", "TWO", };
+
+	struct Cfg *actual = parse_element(CFG_SET, VRR_OFF, 2, argv);
+
+	struct Cfg expected = { 0 };
+	slist_append(&expected.adaptive_sync_off_name_desc, "ONE");
+	slist_append(&expected.adaptive_sync_off_name_desc, "TWO");
+
+	assert_cfg_equal(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.disabled_name_desc);
+}
+
 void parse_element__disabled_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "ONE", "TWO", };
@@ -372,6 +389,16 @@ void parse_set__auto_scale_nargs(void **state) {
 void parse_set__disabled_nargs(void **state) {
 	optind = 0;
 	optarg = "DISABLED";
+
+	expect_log_error("%s requires one argument", optarg, NULL, NULL, NULL);
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_set(0, NULL));
+}
+
+void parse_set__adaptive_sync_off_nargs(void **state) {
+	optind = 0;
+	optarg = "VRR_OFF";
 
 	expect_log_error("%s requires one argument", optarg, NULL, NULL, NULL);
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
@@ -501,6 +528,8 @@ int main(void) {
 		TEST(parse_element__mode_set_res_refresh),
 		TEST(parse_element__mode_del_ok),
 
+		TEST(parse_element__adaptive_sync_off_ok),
+
 		TEST(parse_element__disabled_ok),
 
 		TEST(parse_element__order_ok),
@@ -513,6 +542,7 @@ int main(void) {
 		TEST(parse_set__scale_nargs),
 		TEST(parse_set__auto_scale_nargs),
 		TEST(parse_set__disabled_nargs),
+		TEST(parse_set__adaptive_sync_off_nargs),
 		TEST(parse_set__order_nargs),
 		TEST(parse_set__invalid),
 		TEST(parse_set__ok),
