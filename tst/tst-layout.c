@@ -24,6 +24,7 @@ void desire_mode(struct Head *head);
 void desire_scale(struct Head *head);
 void desire_adaptive_sync(struct Head *head);
 void handle_success(void);
+void handle_failure(void);
 
 bool __wrap_lid_is_closed(char *name) {
 	check_expected(name);
@@ -581,6 +582,55 @@ void handle_success__ok(void **state) {
 	handle_success();
 }
 
+void handle_failure__mode(void **state) {
+	struct Mode mode_cur = { 0 };
+	struct Mode mode_des = { 0 };
+	struct Head head = {
+		.name = "nam",
+		.current.mode = &mode_cur,
+		.desired.mode = &mode_des,
+	};
+	head_changing_mode = &head;
+
+	expect_log_error("\nChanges failed", NULL, NULL, NULL, NULL);
+	expect_log_error("  %s:", "nam", NULL, NULL, NULL);
+	expect_value(__wrap_print_mode, t, ERROR);
+	expect_value(__wrap_print_mode, mode, &mode_des);
+
+	handle_failure();
+
+	assert_null(head_changing_mode);
+
+	assert_null(head.current.mode);
+	assert_ptr_equal(head.desired.mode, &mode_des);
+
+	assert_ptr_equal(slist_find_equal_val(head.modes_failed, NULL, &mode_des), &mode_des);
+}
+
+void handle_failure__adaptive_sync(void **state) {
+	struct Head head = {
+		.name = "nam",
+		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+	};
+	head_changing_adaptive_sync = &head;
+
+	expect_log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", "nam", NULL, NULL, NULL);
+
+	handle_failure();
+
+	assert_null(head_changing_adaptive_sync);
+
+	assert_true(head.adaptive_sync_failed);
+}
+
+void handle_failure__unspecified(void **state) {
+	expect_log_error("\nChanges failed", NULL, NULL, NULL, NULL);
+	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
+
+	handle_failure();
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(order_heads__exact_partial_regex),
@@ -617,6 +667,10 @@ int main(void) {
 		TEST(handle_success__head_changing_adaptive_sync_fail),
 		TEST(handle_success__head_changing_mode),
 		TEST(handle_success__ok),
+
+		TEST(handle_failure__mode),
+		TEST(handle_failure__adaptive_sync),
+		TEST(handle_failure__unspecified),
 	};
 
 	return RUN(tests);

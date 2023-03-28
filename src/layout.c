@@ -242,6 +242,8 @@ void desire(void) {
 
 void apply(void) {
 	struct SList *heads_changing = NULL;
+	head_changing_mode = NULL;
+	head_changing_adaptive_sync = NULL;
 
 	// determine whether changes are needed before initiating output configuration
 	struct SList *i = heads;
@@ -341,6 +343,8 @@ void handle_failure(void) {
 		// river reports adaptive sync failure as failure
 		log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head_changing_adaptive_sync->name);
 		head_changing_adaptive_sync->adaptive_sync_failed = true;
+
+		head_changing_adaptive_sync = NULL;
 
 	} else {
 		log_error("\nChanges failed");

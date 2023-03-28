@@ -13,3 +13,8 @@ void __wrap_print_head(enum LogThreshold t, enum InfoEvent event, struct Head *h
 	check_expected(head);
 }
 
+void __wrap_print_mode(enum LogThreshold t, struct Mode *mode) {
+	check_expected(t);
+	check_expected(mode);
+}
+
