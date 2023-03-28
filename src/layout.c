@@ -206,13 +206,17 @@ void desire_scale(struct Head *head) {
 }
 
 void desire_adaptive_sync(struct Head *head) {
-	head->desired.adaptive_sync = false;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	if (!head->desired.enabled) {
 		return;
 	}
 
-	if (!head->adaptive_sync_failed) {
+	if (head->adaptive_sync_failed) {
+		return;
+	}
+
+	if (!slist_find_equal(cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	}
 }

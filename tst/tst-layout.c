@@ -477,7 +477,7 @@ void desire_scale__user(void **state) {
 	assert_wl_fixed_t_equal_double(head0.desired.scale, 3.5);
 }
 
-void desire_adaptive_sync__disabled(void **state) {
+void desire_adaptive_sync__head_disabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = false,
 		.desired.adaptive_sync = true,
@@ -494,6 +494,20 @@ void desire_adaptive_sync__failed(void **state) {
 		.desired.adaptive_sync = true,
 		.adaptive_sync_failed = true,
 	};
+
+	desire_adaptive_sync(&head0);
+
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+}
+
+void desire_adaptive_sync__adaptive_sync_off(void **state) {
+	struct Head head0 = {
+		.name = "some head",
+		.desired.enabled = true,
+		.desired.adaptive_sync = true,
+	};
+
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("!.*hea"));
 
 	desire_adaptive_sync(&head0);
 
@@ -538,8 +552,9 @@ int main(void) {
 		TEST(desire_scale__auto),
 		TEST(desire_scale__user),
 
-		TEST(desire_adaptive_sync__disabled),
+		TEST(desire_adaptive_sync__head_disabled),
 		TEST(desire_adaptive_sync__failed),
+		TEST(desire_adaptive_sync__adaptive_sync_off),
 		TEST(desire_adaptive_sync__ok),
 	};
 
