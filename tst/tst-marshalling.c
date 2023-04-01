@@ -13,13 +13,13 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "global.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "list.h"
 #include "log.h"
 #include "mode.h"
-#include "server.h"
 
 #include "marshalling.h"
 
@@ -88,6 +88,9 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
 
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));
+
 	slist_append(&cfg->disabled_name_desc, strdup("eight"));
 	slist_append(&cfg->disabled_name_desc, strdup("EIGHT"));
 	slist_append(&cfg->disabled_name_desc, strdup("nine"));
@@ -112,7 +115,7 @@ void unmarshal_cfg_from_file__ok(void **state) {
 
 	struct Cfg *expected = cfg_all();
 
-	assert_equal_cfg(read, expected);
+	assert_cfg_equal(read, expected);
 
 	cfg_free(read);
 	cfg_free(expected);
@@ -165,6 +168,8 @@ void unmarshal_cfg_from_file__bad(void **state) {
 
 	expect_log_warn("Ignoring bad %s regex '%s':  %s", "MODE", "(mode", NULL, NULL);
 
+	expect_log_warn("Ignoring bad %s regex '%s':  %s", "VRR_OFF", "(vrroff", NULL, NULL);
+
 	expect_log_warn("Ignoring bad %s regex '%s':  %s", "MAX_PREFERRED_REFRESH", "(max", NULL, NULL);
 
 	expect_log_warn("Ignoring bad %s regex '%s':  %s", "DISABLED", "(disabled", NULL, NULL);
@@ -173,7 +178,7 @@ void unmarshal_cfg_from_file__bad(void **state) {
 
 	struct Cfg *expected = cfg_default();
 
-	assert_equal_cfg(read, expected);
+	assert_cfg_equal(read, expected);
 
 	cfg_free(read);
 	cfg_free(expected);
@@ -364,7 +369,7 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 
 	struct Cfg *expected_cfg = cfg_all();
 
-	assert_equal_cfg(actual->cfg, expected_cfg);
+	assert_cfg_equal(actual->cfg, expected_cfg);
 
 	ipc_request_free(actual);
 	cfg_free(expected_cfg);

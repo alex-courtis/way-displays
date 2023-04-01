@@ -5,12 +5,10 @@
 #include <stdio.h>
 #include <wayland-util.h>
 
+#include "cfg.h"
 #include "head.h"
 #include "list.h"
 #include "marshalling.h"
-
-// forward declarations
-bool equal_cfg(struct Cfg *a, struct Cfg *b);
 
 void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const file, const int line) {
 
@@ -55,13 +53,13 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 #define assert_head_position(h, x, y) _assert_head_position(h, x, y, __FILE__, __LINE__)
 
 void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
-	if (!equal_cfg(a, b)) {
+	if (!cfg_equal(a, b)) {
 		cmocka_print_error("assert_cfg_equal\nactual:\n\n%s\nexpected:\n\n%s\n\n", marshal_cfg(a), marshal_cfg(b));
 		_fail(file, line);
 	}
 }
 
-#define assert_equal_cfg(a, b) _assert_equal_cfg(a, b, __FILE__, __LINE__)
+#define assert_cfg_equal(a, b) _assert_equal_cfg(a, b, __FILE__, __LINE__)
 
 #endif // ASSERTS_H
 

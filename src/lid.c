@@ -13,8 +13,8 @@
 #include "lid.h"
 
 #include "cfg.h"
+#include "global.h"
 #include "log.h"
-#include "server.h"
 
 static const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
 

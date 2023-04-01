@@ -8,11 +8,11 @@
 #include "head.h"
 
 #include "cfg.h"
+#include "global.h"
 #include "info.h"
 #include "list.h"
 #include "log.h"
 #include "mode.h"
-#include "server.h"
 
 struct SList *heads = NULL;
 struct SList *heads_arrived = NULL;

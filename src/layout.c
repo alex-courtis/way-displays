@@ -8,6 +8,7 @@
 
 #include "cfg.h"
 #include "displ.h"
+#include "global.h"
 #include "head.h"
 #include "info.h"
 #include "lid.h"
@@ -16,11 +17,7 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
-#include "server.h"
 #include "wlr-output-management-unstable-v1.h"
-
-struct Head *head_changing_mode = NULL;
-struct Head *head_changing_adaptive_sync = NULL;
 
 void position_heads(struct SList *heads) {
 	struct Head *head;
@@ -206,13 +203,17 @@ void desire_scale(struct Head *head) {
 }
 
 void desire_adaptive_sync(struct Head *head) {
-	head->desired.adaptive_sync = false;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	if (!head->desired.enabled) {
 		return;
 	}
 
-	if (!head->adaptive_sync_failed) {
+	if (head->adaptive_sync_failed) {
+		return;
+	}
+
+	if (!slist_find_equal(cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	}
 }
@@ -241,6 +242,8 @@ void desire(void) {
 
 void apply(void) {
 	struct SList *heads_changing = NULL;
+	head_changing_mode = NULL;
+	head_changing_adaptive_sync = NULL;
 
 	// determine whether changes are needed before initiating output configuration
 	struct SList *i = heads;
@@ -306,10 +309,13 @@ void handle_success(void) {
 
 	} else if (head_changing_adaptive_sync) {
 
+		struct Head *head = head_changing_adaptive_sync;
+		head_changing_adaptive_sync = NULL;
+
 		// sway reports adaptive sync failure as success
-		if (head_current_adaptive_sync_not_desired(head_changing_adaptive_sync)) {
-			log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head_changing_adaptive_sync->name);
-			head_changing_adaptive_sync->adaptive_sync_failed = true;
+		if (head_current_adaptive_sync_not_desired(head)) {
+			log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head->name);
+			head->adaptive_sync_failed = true;
 			return;
 		}
 	}
@@ -337,6 +343,8 @@ void handle_failure(void) {
 		// river reports adaptive sync failure as failure
 		log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head_changing_adaptive_sync->name);
 		head_changing_adaptive_sync->adaptive_sync_failed = true;
+
+		head_changing_adaptive_sync = NULL;
 
 	} else {
 		log_error("\nChanges failed");

@@ -49,6 +49,12 @@ MODE:
     #- NAME_DESC: DP-2
     #  MAX: TRUE
 
+# VRR / adaptive sync is enabled by default. Disable it per display.
+VRR_OFF:
+  # - DP-2
+  # - '!.*my monitor.*'
+
+
 # Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
 # your laptop is different.
 #LAPTOP_DISPLAY_PREFIX: 'eDP'

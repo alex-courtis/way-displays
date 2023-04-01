@@ -20,7 +20,7 @@ TST_CXX = $(wildcard tst/*.cpp)
 TST_O = $(TST_C:.c=.o) $(TST_CXX:.cpp=.o)
 TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 
-all: way-displays
+all: way-displays /tmp/vg.supp
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
@@ -40,6 +40,9 @@ $(PRO_C): $(PRO_X)
 
 clean:
 	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E)
+
+/tmp/vg.supp: .vg.supp
+	cp .vg.supp /tmp/vg.supp
 
 install: way-displays way-displays.1 cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin

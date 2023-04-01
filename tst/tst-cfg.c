@@ -62,7 +62,7 @@ void merge_set__arrange(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -75,7 +75,7 @@ void merge_set__align(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -90,7 +90,7 @@ void merge_set__order(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -103,7 +103,7 @@ void merge_set__auto_scale(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -123,7 +123,7 @@ void merge_set__user_scale(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -143,7 +143,27 @@ void merge_set__mode(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_set__adaptive_sync_off(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("to"));
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("both"));
+
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("from"));
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("both"));
+
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("to"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("both"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("from"));
+
+	struct Cfg *merged = merge_set(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -163,7 +183,7 @@ void merge_set__disabled(void **state) {
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -181,7 +201,7 @@ void merge_del__scale(void **state) {
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -199,7 +219,25 @@ void merge_del__mode(void **state) {
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_del__adaptive_sync_off(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("1"));
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("2"));
+
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("2"));
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("3"));
+
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("1"));
+
+	struct Cfg *merged = merge_del(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -217,7 +255,7 @@ void merge_del__disabled(void **state) {
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
-	assert_equal_cfg(merged, s->expected);
+	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
 }
@@ -234,7 +272,7 @@ void validate_fix__col(void **state) {
 
 	validate_fix(s->from);
 
-	assert_equal_cfg(s->from, s->expected);
+	assert_cfg_equal(s->from, s->expected);
 }
 
 void validate_fix__row(void **state) {
@@ -249,7 +287,7 @@ void validate_fix__row(void **state) {
 
 	validate_fix(s->from);
 
-	assert_equal_cfg(s->from, s->expected);
+	assert_cfg_equal(s->from, s->expected);
 }
 
 void validate_fix__scale(void **state) {
@@ -269,7 +307,7 @@ void validate_fix__scale(void **state) {
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
 
-	assert_equal_cfg(s->from, s->expected);
+	assert_cfg_equal(s->from, s->expected);
 }
 
 void validate_fix__mode(void **state) {
@@ -298,7 +336,7 @@ void validate_fix__mode(void **state) {
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
 
-	assert_equal_cfg(s->from, s->expected);
+	assert_cfg_equal(s->from, s->expected);
 }
 
 void validate_warn__(void **state) {
@@ -317,6 +355,10 @@ void validate_warn__(void **state) {
 	slist_append(&s->expected->order_name_desc, strdup("ooo"));
 	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
 	expect_log_warn(fmt, "ORDER", "ooo", NULL, NULL);
+
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvv"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvvvvvvvvv"));
+	expect_log_warn(fmt, "VRR_OFF", "vvv", NULL, NULL);
 
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
@@ -337,10 +379,12 @@ int main(void) {
 		TEST(merge_set__auto_scale),
 		TEST(merge_set__user_scale),
 		TEST(merge_set__mode),
+		TEST(merge_set__adaptive_sync_off),
 		TEST(merge_set__disabled),
 
 		TEST(merge_del__scale),
 		TEST(merge_del__mode),
+		TEST(merge_del__adaptive_sync_off),
 		TEST(merge_del__disabled),
 
 		TEST(validate_fix__col),

@@ -9,12 +9,12 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "global.h"
 #include "head.h"
 #include "info.h"
 #include "list.h"
 #include "log.h"
 #include "mode.h"
-#include "server.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
@@ -23,7 +23,8 @@ void desire_enabled(struct Head *head);
 void desire_mode(struct Head *head);
 void desire_scale(struct Head *head);
 void desire_adaptive_sync(struct Head *head);
-
+void handle_success(void);
+void handle_failure(void);
 
 bool __wrap_lid_is_closed(char *name) {
 	check_expected(name);
@@ -74,6 +75,9 @@ int before_each(void **state) {
 
 int after_each(void **state) {
 	slist_free(&heads);
+
+	head_changing_mode = NULL;
+	head_changing_adaptive_sync = NULL;
 
 	cfg_destroy();
 
@@ -477,7 +481,7 @@ void desire_scale__user(void **state) {
 	assert_wl_fixed_t_equal_double(head0.desired.scale, 3.5);
 }
 
-void desire_adaptive_sync__disabled(void **state) {
+void desire_adaptive_sync__head_disabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = false,
 		.desired.adaptive_sync = true,
@@ -500,6 +504,20 @@ void desire_adaptive_sync__failed(void **state) {
 	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 }
 
+void desire_adaptive_sync__adaptive_sync_off(void **state) {
+	struct Head head0 = {
+		.name = "some head",
+		.desired.enabled = true,
+		.desired.adaptive_sync = true,
+	};
+
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("!.*hea"));
+
+	desire_adaptive_sync(&head0);
+
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+}
+
 void desire_adaptive_sync__ok(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
@@ -509,6 +527,108 @@ void desire_adaptive_sync__ok(void **state) {
 	desire_adaptive_sync(&head0);
 
 	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+}
+
+void handle_success__head_changing_adaptive_sync(void **state) {
+	struct Head head = {
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+		.adaptive_sync_failed = false,
+	};
+	head_changing_adaptive_sync = &head;
+
+	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
+
+	handle_success();
+
+	assert_null(head_changing_adaptive_sync);
+	assert_false(head.adaptive_sync_failed);
+}
+
+void handle_success__head_changing_adaptive_sync_fail(void **state) {
+	struct Head head = {
+		.name = "head",
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
+	};
+	head_changing_adaptive_sync = &head;
+
+	expect_log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", "head", NULL, NULL, NULL);
+
+	handle_success();
+
+	assert_null(head_changing_adaptive_sync);
+	assert_true(head.adaptive_sync_failed);
+}
+
+void handle_success__head_changing_mode(void **state) {
+	struct Mode mode = { 0 };
+	struct Head head = {
+		.desired.mode = &mode,
+	};
+	head_changing_mode = &head;
+
+	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
+
+	handle_success();
+
+	assert_ptr_equal(head.current.mode, &mode);
+	assert_null(head_changing_mode);
+}
+
+void handle_success__ok(void **state) {
+	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
+
+	handle_success();
+}
+
+void handle_failure__mode(void **state) {
+	struct Mode mode_cur = { 0 };
+	struct Mode mode_des = { 0 };
+	struct Head head = {
+		.name = "nam",
+		.current.mode = &mode_cur,
+		.desired.mode = &mode_des,
+	};
+	head_changing_mode = &head;
+
+	expect_log_error("\nChanges failed", NULL, NULL, NULL, NULL);
+	expect_log_error("  %s:", "nam", NULL, NULL, NULL);
+	expect_value(__wrap_print_mode, t, ERROR);
+	expect_value(__wrap_print_mode, mode, &mode_des);
+
+	handle_failure();
+
+	assert_null(head_changing_mode);
+
+	assert_null(head.current.mode);
+	assert_ptr_equal(head.desired.mode, &mode_des);
+
+	assert_ptr_equal(slist_find_equal_val(head.modes_failed, NULL, &mode_des), &mode_des);
+}
+
+void handle_failure__adaptive_sync(void **state) {
+	struct Head head = {
+		.name = "nam",
+		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+	};
+	head_changing_adaptive_sync = &head;
+
+	expect_log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", "nam", NULL, NULL, NULL);
+
+	handle_failure();
+
+	assert_null(head_changing_adaptive_sync);
+
+	assert_true(head.adaptive_sync_failed);
+}
+
+void handle_failure__unspecified(void **state) {
+	expect_log_error("\nChanges failed", NULL, NULL, NULL, NULL);
+	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
+
+	handle_failure();
 }
 
 int main(void) {
@@ -538,9 +658,19 @@ int main(void) {
 		TEST(desire_scale__auto),
 		TEST(desire_scale__user),
 
-		TEST(desire_adaptive_sync__disabled),
+		TEST(desire_adaptive_sync__head_disabled),
 		TEST(desire_adaptive_sync__failed),
+		TEST(desire_adaptive_sync__adaptive_sync_off),
 		TEST(desire_adaptive_sync__ok),
+
+		TEST(handle_success__head_changing_adaptive_sync),
+		TEST(handle_success__head_changing_adaptive_sync_fail),
+		TEST(handle_success__head_changing_mode),
+		TEST(handle_success__ok),
+
+		TEST(handle_failure__mode),
+		TEST(handle_failure__adaptive_sync),
+		TEST(handle_failure__unspecified),
 	};
 
 	return RUN(tests);

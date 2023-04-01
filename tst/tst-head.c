@@ -10,9 +10,9 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "global.h"
 #include "list.h"
 #include "mode.h"
-#include "server.h"
 
 #include "head.h"
 

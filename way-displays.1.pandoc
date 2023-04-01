@@ -97,6 +97,9 @@ The user must be a member of the `input` group.
 	`MODE` <*name*> <*width*> <*height*> [<*Hz*>]
 	: Specified resolution at its highest refresh. Optional refresh will choose a mode +-0.5Hz.
 
+	`VRR_OFF` <*name*>
+	: Disable VRR for a display.
+
 	`DISABLED` <*name*>
 	: Disable a display.
 
@@ -108,6 +111,9 @@ The user must be a member of the `input` group.
 
 	`MODE` <*name*>
 	: Use preferred or highest availble if no preferred.
+
+	`VRR_OFF` <*name*>
+	: Enable VRR for a display.
 
 	`DISABLED` <*name*>
 	: Enable a display.
