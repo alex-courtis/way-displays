@@ -60,6 +60,18 @@ void __wrap_log_error(const char *__restrict __format, const void *arg1, const v
 	check_expected(arg4);
 }
 
+void __wrap_log_error_errno(const char *__restrict __format, const void *arg1, const void *arg2, const void *arg3, const void *arg4, ...) {
+	if (LOG_PRINT) {
+		fprintf(stderr, __format, arg1, arg2, arg3, arg4);
+		fprintf(stderr, "\n");
+	}
+	check_expected(__format);
+	check_expected(arg1);
+	check_expected(arg2);
+	check_expected(arg3);
+	check_expected(arg4);
+}
+
 void __wrap_log_error_nocap(const char *__restrict __format, const void *arg1, const void *arg2, const void *arg3, const void *arg4, ...) {
 	if (LOG_PRINT) {
 		fprintf(stderr, __format, arg1, arg2, arg3, arg4);

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "cfg.h"
@@ -334,6 +335,38 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) 
 	return us;
 }
 
+bool mkdir_p(char *path, mode_t mode) {
+	bool rc = false;
+	char *dir_path = NULL;
+
+	if (!path) {
+		goto end;
+	}
+
+	struct stat sb;
+	if (stat(path, &sb) == 0) {
+		rc = true;
+		goto end;
+	}
+
+	dir_path = strdup(path);
+	if (!mkdir_p(dirname(dir_path), mode)) {
+		goto end;
+	}
+
+	if (mkdir(path, mode) != 0) {
+		log_error_errno("\nCannot create directory %s", path);
+		goto end;
+	}
+
+	rc = true;
+
+end:
+	free(dir_path);
+
+	return rc;
+}
+
 bool resolve_paths(struct Cfg *cfg, const char *cfg_path, const char *prefix, const char *suffix) {
 	if (!cfg)
 		return false;
@@ -641,6 +674,12 @@ void cfg_file_reload(void) {
 
 void cfg_file_write(void) {
 	char *yaml = NULL;
+
+	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
+	mode |=       S_IRGRP | S_IXGRP;
+	mode |=       S_IROTH | S_IXOTH;
+	int rc = mkdir_p("/home/alex/foo/bar", mode);
+	log_info("mkpath rc=%d", rc);
 
 	if (!cfg->file_path) {
 		log_error("\nMissing file path");

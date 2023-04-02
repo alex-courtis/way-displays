@@ -47,6 +47,9 @@
 #define expect_log_error_nocap(f, a1, a2, a3, a4) \
 	expect_log(__wrap_log_error_nocap, f, a1, a2, a3, a4)
 
+#define expect_log_error_errno(f, a1, a2, a3, a4) \
+	expect_log(__wrap_log_error_errno, f, a1, a2, a3, a4)
+
 #define expect_log_(t, f, a1, a2, a3, a4) \
 	expect_value(__wrap_log_, threshold, t); \
 	expect_log(__wrap_log_, f, a1, a2, a3, a4)

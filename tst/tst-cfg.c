@@ -3,9 +3,12 @@
 #include "expects.h"
 
 #include <cmocka.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "list.h"
 
@@ -15,6 +18,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
 struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
 void validate_warn(struct Cfg *cfg);
 void validate_fix(struct Cfg *cfg);
+bool mkdir_p(char *path, mode_t mode);
 
 
 struct State {
@@ -24,10 +28,17 @@ struct State {
 };
 
 int before_all(void **state) {
+	rmdir("foo/bar/baz");
+	rmdir("foo/bar");
+	rmdir("foo");
+
 	return 0;
 }
 
 int after_all(void **state) {
+	rmdir("foo/bar/baz");
+	rmdir("foo/bar");
+
 	return 0;
 }
 
@@ -371,6 +382,43 @@ void validate_warn__(void **state) {
 	validate_warn(s->expected);
 }
 
+void mkdir_p__no_perm(void **state) {
+	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
+	mode |=       S_IRGRP | S_IXGRP;
+	mode |=       S_IROTH | S_IXOTH;
+
+	expect_log_error_errno("\nCannot create directory %s", "/foo", NULL, NULL, NULL);
+
+	assert_false(mkdir_p("/foo/bar/baz", mode));
+
+	struct stat sb;
+	assert_int_equal(stat("/foo/bar/baz", &sb), -1);
+	assert_int_equal(errno, ENOENT);
+}
+
+void mkdir_p__ok(void **state) {
+	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
+	mode |=       S_IRGRP | S_IXGRP;
+	mode |=       S_IROTH | S_IXOTH;
+
+	assert_true(mkdir_p("foo/bar/baz", mode));
+
+	struct stat sb;
+	assert_int_equal(stat("foo/bar/baz", &sb), 0);
+}
+
+// created by mkdir_p__ok
+void mkdir_p__exists(void **state) {
+	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
+	mode |=       S_IRGRP | S_IXGRP;
+	mode |=       S_IROTH | S_IXOTH;
+
+	assert_true(mkdir_p("foo/bar/baz", mode));
+
+	struct stat sb;
+	assert_int_equal(stat("foo/bar/baz", &sb), 0);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(merge_set__arrange),
@@ -393,6 +441,10 @@ int main(void) {
 		TEST(validate_fix__mode),
 
 		TEST(validate_warn__),
+
+		TEST(mkdir_p__no_perm),
+		TEST(mkdir_p__ok),
+		TEST(mkdir_p__exists),
 	};
 
 	return RUN(tests);
