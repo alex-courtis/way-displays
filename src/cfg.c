@@ -675,12 +675,6 @@ void cfg_file_reload(void) {
 void cfg_file_write(void) {
 	char *yaml = NULL;
 
-	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
-	mode |=       S_IRGRP | S_IXGRP;
-	mode |=       S_IROTH | S_IXOTH;
-	int rc = mkdir_p("/home/alex/foo/bar", mode);
-	log_info("mkpath rc=%d", rc);
-
 	if (!cfg->file_path) {
 		log_error("\nMissing file path");
 		goto end;

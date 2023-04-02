@@ -1,6 +1,7 @@
 #include "tst.h"
 #include "asserts.h"
 #include "expects.h"
+#include "util.h"
 
 #include <cmocka.h>
 #include <fcntl.h>
@@ -30,19 +31,6 @@ void lcl(enum LogThreshold threshold, char *line) {
 	lcl->line = strdup(line);
 
 	slist_append(&log_cap_lines, lcl);
-}
-
-char *read_file(const char *path) {
-	int fd = open(path, O_RDONLY);
-	int len = lseek(fd, 0, SEEK_END);
-
-	char *out = calloc(len, sizeof(char));
-
-	memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len - 1);
-
-	close(fd);
-
-	return out;
 }
 
 

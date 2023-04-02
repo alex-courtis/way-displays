@@ -1,6 +1,7 @@
 #include "tst.h"
 #include "asserts.h"
 #include "expects.h"
+#include "util.h"
 
 #include <cmocka.h>
 #include <errno.h>
@@ -10,6 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "global.h"
 #include "list.h"
 
 #include "cfg.h"
@@ -21,6 +23,12 @@ void validate_fix(struct Cfg *cfg);
 bool mkdir_p(char *path, mode_t mode);
 
 
+char *__wrap_marshal_cfg(struct Cfg *cfg) {
+	check_expected(cfg);
+	return mock_type(char*);
+}
+
+
 struct State {
 	struct Cfg *from;
 	struct Cfg *to;
@@ -28,22 +36,24 @@ struct State {
 };
 
 int before_all(void **state) {
-	rmdir("foo/bar/baz");
-	rmdir("foo/bar");
-	rmdir("foo");
 
 	return 0;
 }
 
 int after_all(void **state) {
-	rmdir("foo/bar/baz");
-	rmdir("foo/bar");
 
 	return 0;
 }
 
 int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
+
+	rmdir("foo/bar/baz");
+	rmdir("foo/bar");
+	rmdir("foo");
+	remove("/tmp/cfg.yaml");
+
+	cfg = cfg_default();
 
 	s->from = cfg_default();
 	s->to = cfg_default();
@@ -55,6 +65,13 @@ int before_each(void **state) {
 
 int after_each(void **state) {
 	struct State *s = *state;
+
+	rmdir("foo/bar/baz");
+	rmdir("foo/bar");
+	rmdir("foo");
+	remove("/tmp/cfg.yaml");
+
+	cfg_destroy();
 
 	cfg_free(s->from);
 	cfg_free(s->to);
@@ -407,7 +424,6 @@ void mkdir_p__ok(void **state) {
 	assert_int_equal(stat("foo/bar/baz", &sb), 0);
 }
 
-// created by mkdir_p__ok
 void mkdir_p__exists(void **state) {
 	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
 	mode |=       S_IRGRP | S_IXGRP;
@@ -415,8 +431,52 @@ void mkdir_p__exists(void **state) {
 
 	assert_true(mkdir_p("foo/bar/baz", mode));
 
+	assert_true(mkdir_p("foo/bar/baz", mode));
+
 	struct stat sb;
 	assert_int_equal(stat("foo/bar/baz", &sb), 0);
+}
+
+void cfg_file_write__cannot_write(void **state) {
+	cfg->file_path = strdup("/foo/bar/baz/cfg.yaml");
+
+	char *expected = strdup("XXXX");
+
+	expect_string(__wrap_marshal_cfg, cfg, cfg);
+	will_return(__wrap_marshal_cfg, strdup(expected));
+
+	expect_log_error_errno("\nUnable to write to %s", cfg->file_path, NULL, NULL, NULL);
+
+	cfg_file_write();
+
+	FILE *f = fopen(cfg->file_path, "r");
+	assert_null(f);
+
+	free(expected);
+}
+
+void cfg_file_write__existing(void **state) {
+	cfg->file_path = strdup("/tmp/cfg.yaml");
+
+	FILE *f = fopen(cfg->file_path, "w");
+	assert_non_null(f);
+	assert_int_equal(fclose(f), 0);
+
+	char *expected = strdup("XXXX");
+
+	expect_string(__wrap_marshal_cfg, cfg, cfg);
+	will_return(__wrap_marshal_cfg, strdup(expected));
+
+	expect_log_info("\nWrote configuration file: %s", cfg->file_path, NULL, NULL, NULL);
+
+	cfg_file_write();
+
+	char *actual = read_file("/tmp/cfg.yaml");
+
+	assert_string_equal(actual, expected);
+
+	free(expected);
+	free(actual);
 }
 
 int main(void) {
@@ -445,6 +505,9 @@ int main(void) {
 		TEST(mkdir_p__no_perm),
 		TEST(mkdir_p__ok),
 		TEST(mkdir_p__exists),
+
+		TEST(cfg_file_write__cannot_write),
+		TEST(cfg_file_write__existing),
 	};
 
 	return RUN(tests);

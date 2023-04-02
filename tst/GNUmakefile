@@ -5,8 +5,8 @@ CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 CXXFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
 
-OBJS = $(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
-	   $(filter-out src/main.o,$(SRC_O)) \
+OBJS = $(filter-out src/main.o,$(SRC_O)) \
+	   $(filter-out tst/tst-%.o,$(TST_O)) \
 	   $(PRO_O)
 
 WRAPS = -Wl,$\
@@ -27,7 +27,7 @@ tst-layout: tst/tst-layout.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=lid_is_closed,--wrap=head_find_mode,--wrap=head_auto_scale
 
 tst-cfg: tst/tst-cfg.o $(OBJS)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=marshal_cfg
 
 tst-marshalling: tst/tst-marshalling.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
