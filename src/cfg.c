@@ -640,29 +640,34 @@ void cfg_file_reload(void) {
 }
 
 void cfg_file_write(void) {
+	char *yaml = NULL;
+
 	if (!cfg->file_path) {
 		log_error("\nMissing file path");
-		return;
+		goto end;
 	}
 
-	char *yaml = marshal_cfg(cfg);
+	yaml = marshal_cfg(cfg);
 	if (!yaml) {
-		return;
+		goto end;
 	}
 
 	FILE *f = fopen(cfg->file_path, "w");
 	if (!f) {
 		log_error_errno("\nUnable to write to %s", cfg->file_path);
-		return;
+		goto end;
 	}
 
 	fprintf(f, "%s\n", yaml);
 
 	fclose(f);
 
-	free(yaml);
-
 	cfg->written = true;
+
+	log_info("\nWrote configuration file: %s", cfg->file_path);
+
+end:
+	free(yaml);
 }
 
 void cfg_destroy(void) {

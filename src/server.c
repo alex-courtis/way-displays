@@ -117,7 +117,6 @@ void handle_ipc_request(int server_socket) {
 			{
 				// complete
 				cfg_file_write();
-				log_info("\nWrote configuration file: %s", cfg->file_path);
 				break;
 			}
 		case GET:
