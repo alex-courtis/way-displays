@@ -23,10 +23,10 @@ PKGS += epoll-shim libinotify
 endif
 
 PKGS += wayland-client yaml-cpp libinput libudev
-CFLAGS += $(foreach p,$(PKGS),$(shell pkg-config --cflags $(p)))
-CXXFLAGS += $(foreach p,$(PKGS),$(shell pkg-config --cflags $(p)))
-LDLIBS += $(foreach p,$(PKGS),$(shell pkg-config --libs $(p)))
+PKG_CONFIG ?= pkg-config
+CFLAGS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --cflags $(p)))
+CXXFLAGS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --cflags $(p)))
+LDLIBS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --libs $(p)))
 
 CC = gcc
 CXX = g++
-
