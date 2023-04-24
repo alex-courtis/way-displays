@@ -155,7 +155,7 @@ wl_fixed_t head_auto_scale(struct Head *head) {
 	long dpi_quantized = (long)(dpi / 12 + 0.5) * 12;
 
 	// 96dpi approximately correct for older monitors and became the convention for 1:1 scaling
-	return 256 * dpi_quantized / 96;
+	return wl_fixed_from_double((double)dpi_quantized / 96);
 }
 
 void head_scaled_dimensions(struct Head *head) {

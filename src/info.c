@@ -190,7 +190,7 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 		return;
 
 	if (head->current.enabled) {
-		log_(t, "    scale:    %.3f", wl_fixed_to_double(head->current.scale));
+		log_(t, "    scale:    %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.mode));
 		log_(t, "    position: %d,%d", head->current.x, head->current.y);
 	}
 
