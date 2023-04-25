@@ -1,0 +1,4 @@
+[submodule "lib/cmocka"]
+	path = lib/cmocka
+	url = https://gitlab.com/cmocka/cmocka.git
+	branch = stable-1.1
