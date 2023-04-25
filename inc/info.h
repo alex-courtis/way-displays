@@ -19,6 +19,8 @@ enum InfoEvent {
 
 void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del);
 
+void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg);
+
 void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head);
 
 void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads);
