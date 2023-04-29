@@ -58,7 +58,7 @@ void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
 
 	// no head
-	assert_wl_fixed_t_equal_double(head_auto_scale(NULL), 1);
+	assert_wl_fixed_t_equal_double(head_auto_scale(NULL), 2);
 
 	// no desired mode
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 1);
