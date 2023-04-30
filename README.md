@@ -94,6 +94,8 @@ The server responds to [IPC](doc/IPC.md) requests to fetch and mutate state.
 
 ### From Source
 
+[![CI](https://github.com/alex-courtis/way-displays/actions/workflows/ci.yml/badge.svg)](https://github.com/alex-courtis/way-displays/actions/workflows/ci.yml)
+
 See [CONTRIBUTING](CONTRIBUTING.md)
 
 #### Install / Uninstall
