@@ -1,0 +1,19 @@
+Ignoring invalid LOG_THRESHOLD BAD_LOG_THRESHOLD, using default INFO
+Ignoring bad ORDER regex '(order':  Unmatched ( or \(
+Ignoring invalid ARRANGE BAD_ARRANGE, using default ROW
+Ignoring invalid ALIGN BAD_ALIGN, using default TOP
+Ignoring invalid   AUTO_SCALE BAD_AUTO_SCALE
+Ignoring missing SCALE  NAME_DESC
+Ignoring invalid SCALE BAD_SCALE_NAME SCALE BAD_SCALE_VAL
+Ignoring missing SCALE MISSING_SCALE_VALUE SCALE
+Ignoring bad SCALE regex '(scale':  Unmatched ( or \(
+Ignoring missing MODE  NAME_DESC
+Ignoring invalid MODE BAD_MODE_MAX MAX BAD_MAX
+Ignoring invalid MODE BAD_MODE_WIDTH WIDTH BAD_WIDTH
+Ignoring invalid MODE BAD_MODE_HEIGHT HEIGHT BAD_HEIGHT
+Ignoring invalid MODE BAD_MODE_HZ HZ BAD_HZ
+Ignoring bad MODE regex '(mode':  Unmatched ( or \(
+Ignoring bad VRR_OFF regex '(vrroff':  Unmatched ( or \(
+Ignoring bad MAX_PREFERRED_REFRESH regex '(max':  Unmatched ( or \(
+Ignoring bad DISABLED regex '(disabled':  Unmatched ( or \(
+

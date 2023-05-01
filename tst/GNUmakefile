@@ -5,15 +5,16 @@ CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 CXXFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
 
-OBJS = $(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
-	   $(filter-out src/main.o,$(SRC_O)) \
-	   $(PRO_O)
+OBJS =  tst/tst.o \
+		$(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
+		$(filter-out src/main.o,$(SRC_O)) \
+		$(PRO_O)
 
 WRAPS = -Wl,$\
-	--wrap=log_set_threshold,$\
-	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_nocap,$\
-	--wrap=print_head,--wrap=print_mode,$\
-	--wrap=wd_exit,--wrap=wd_exit_message
+		--wrap=log_set_threshold,$\
+		--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_nocap,$\
+		--wrap=print_head,--wrap=print_mode,$\
+		--wrap=wd_exit,--wrap=wd_exit_message
 
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
@@ -41,7 +42,7 @@ tst-all: $(TST_E)
 		echo $$e ;\
 		./$$e ;\
 		if [ $$? -ne 0 ]; then \
-			exit 1 ;\
+		exit 1 ;\
 		fi ;\
-	done
+		done
 

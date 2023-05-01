@@ -1,0 +1,11 @@
+way-displays -s ARRANGE_ALIGN COLUMN RIGHT
+way-displays -s ORDER 'one' 'two' 'three' 
+way-displays -s AUTO_SCALE OFF
+way-displays -s SCALE 'one' 1.000
+way-displays -s SCALE 'two' 2.346
+way-displays -s MODE 'all' 1 2 3
+way-displays -s MODE 'res' 4 5
+way-displays -s MODE 'max' MAX
+way-displays -s DISABLED 'one'
+way-displays -s DISABLED 'two'
+

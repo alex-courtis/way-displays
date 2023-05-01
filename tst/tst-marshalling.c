@@ -1,14 +1,10 @@
 #include "tst.h"
 #include "asserts.h"
-#include "expects.h"
 
 #include <cmocka.h>
-#include <fcntl.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <unistd.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
@@ -32,20 +28,6 @@ void lcl(enum LogThreshold threshold, char *line) {
 	slist_append(&log_cap_lines, lcl);
 }
 
-char *read_file(const char *path) {
-	int fd = open(path, O_RDONLY);
-	int len = lseek(fd, 0, SEEK_END);
-
-	char *out = calloc(len, sizeof(char));
-
-	memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len - 1);
-
-	close(fd);
-
-	return out;
-}
-
-
 int before_all(void **state) {
 	return 0;
 }
@@ -60,6 +42,7 @@ int before_each(void **state) {
 
 int after_each(void **state) {
 	log_capture_clear();
+	assert_logs_empty();
 	cfg_free(cfg);
 	cfg = NULL;
 	free(lid);
@@ -126,9 +109,9 @@ void unmarshal_cfg_from_file__empty(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-empty.yaml");
 
-	expect_log_error("\nparsing file %s %s", "tst/marshalling/cfg-empty.yaml", "empty CFG", NULL, NULL);
-
 	assert_false(unmarshal_cfg_from_file(read));
+
+	assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml empty CFG\n");
 
 	cfg_free(read);
 }
@@ -138,47 +121,13 @@ void unmarshal_cfg_from_file__bad(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-bad.yaml");
 
-	expect_log_warn("Ignoring invalid LOG_THRESHOLD %s, using default %s", "BAD_LOG_THRESHOLD", "INFO", NULL, NULL);
-
-	expect_log_warn("Ignoring bad %s regex '%s':  %s", "ORDER", "(order", NULL, NULL);
-
-	expect_log_warn("Ignoring invalid ARRANGE %s, using default %s", "BAD_ARRANGE", "ROW", NULL, NULL);
-
-	expect_log_warn("Ignoring invalid ALIGN %s, using default %s", "BAD_ALIGN", "TOP", NULL, NULL);
-
-	expect_log_warn("Ignoring invalid %s %s %s %s", "", "", "AUTO_SCALE", "BAD_AUTO_SCALE");
-
-	expect_log_warn("Ignoring missing %s %s %s", "SCALE", "", "NAME_DESC", NULL);
-
-	expect_log_warn("Ignoring invalid %s %s %s %s", "SCALE", "BAD_SCALE_NAME", "SCALE", "BAD_SCALE_VAL");
-
-	expect_log_warn("Ignoring missing %s %s %s", "SCALE", "MISSING_SCALE_VALUE", "SCALE", NULL);
-
-	expect_log_warn("Ignoring bad %s regex '%s':  %s", "SCALE", "(scale", NULL, NULL);
-
-	expect_log_warn("Ignoring missing %s %s %s", "MODE", "", "NAME_DESC", NULL);
-
-	expect_log_warn("Ignoring invalid %s %s %s %s", "MODE", "BAD_MODE_MAX", "MAX", "BAD_MAX");
-
-	expect_log_warn("Ignoring invalid %s %s %s %s", "MODE", "BAD_MODE_WIDTH", "WIDTH", "BAD_WIDTH");
-
-	expect_log_warn("Ignoring invalid %s %s %s %s", "MODE", "BAD_MODE_HEIGHT", "HEIGHT", "BAD_HEIGHT");
-
-	expect_log_warn("Ignoring invalid %s %s %s %s", "MODE", "BAD_MODE_HZ", "HZ", "BAD_HZ");
-
-	expect_log_warn("Ignoring bad %s regex '%s':  %s", "MODE", "(mode", NULL, NULL);
-
-	expect_log_warn("Ignoring bad %s regex '%s':  %s", "VRR_OFF", "(vrroff", NULL, NULL);
-
-	expect_log_warn("Ignoring bad %s regex '%s':  %s", "MAX_PREFERRED_REFRESH", "(max", NULL, NULL);
-
-	expect_log_warn("Ignoring bad %s regex '%s':  %s", "DISABLED", "(disabled", NULL, NULL);
-
 	assert_true(unmarshal_cfg_from_file(read));
 
 	struct Cfg *expected = cfg_default();
 
 	assert_cfg_equal(read, expected);
+
+	assert_log(WARNING, read_file("tst/marshalling/cfg-bad.log"));
 
 	cfg_free(read);
 	cfg_free(expected);
@@ -201,9 +150,9 @@ void marshal_cfg__ok(void **state) {
 void marshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
-	expect_log_error("marshalling ipc request: missing OP", NULL, NULL, NULL, NULL);
-
 	assert_null(marshal_ipc_request(ipc_request));
+
+	assert_log(ERROR, "marshalling ipc request: missing OP\n");
 
 	ipc_request_free(ipc_request);
 }
@@ -316,10 +265,9 @@ void marshal_ipc_response__ok(void **state) {
 void unmarshal_ipc_request__empty(void **state) {
 	char *yaml = "";
 
-	expect_log_error(NULL, "empty request", NULL, NULL, NULL);
-	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
-
 	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
+
+	assert_log(ERROR, read_file("tst/marshalling/ipc-request-empty.log"));
 
 	assert_null(actual);
 }
@@ -327,10 +275,9 @@ void unmarshal_ipc_request__empty(void **state) {
 void unmarshal_ipc_request__bad_op(void **state) {
 	char *yaml = "OP: aoeu";
 
-	expect_log_error(NULL, "invalid OP 'aoeu'", NULL, NULL, NULL);
-	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
-
 	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
+
+	assert_log(ERROR, read_file("tst/marshalling/ipc-request-bad-op.log"));
 
 	assert_null(actual);
 }
@@ -338,10 +285,9 @@ void unmarshal_ipc_request__bad_op(void **state) {
 void unmarshal_ipc_request__no_op(void **state) {
 	char *yaml = "FOO: BAR";
 
-	expect_log_error(NULL, "missing OP", NULL, NULL, NULL);
-	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
-
 	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
+
+	assert_log(ERROR, read_file("tst/marshalling/ipc-request-no-op.log"));
 
 	assert_null(actual);
 }
@@ -379,10 +325,9 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 void unmarshal_ipc_response__empty(void **state) {
 	char *yaml = "";
 
-	expect_log_error(NULL, "invalid response", NULL, NULL, NULL);
-	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
-
 	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
+
+	assert_log(ERROR, read_file("tst/marshalling/ipc-response-empty.log"));
 
 	assert_null(actual);
 }
@@ -390,10 +335,9 @@ void unmarshal_ipc_response__empty(void **state) {
 void unmarshal_ipc_response__no_done(void **state) {
 	char *yaml = "RC: 0";
 
-	expect_log_error(NULL, "DONE missing", NULL, NULL, NULL);
-	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
-
 	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
+
+	assert_log(ERROR, read_file("tst/marshalling/ipc-response-no-done.log"));
 
 	assert_null(actual);
 }
@@ -401,10 +345,9 @@ void unmarshal_ipc_response__no_done(void **state) {
 void unmarshal_ipc_response__no_rc(void **state) {
 	char *yaml = "DONE: TRUE";
 
-	expect_log_error(NULL, "RC missing", NULL, NULL, NULL);
-	expect_log_error_nocap(NULL, yaml, NULL, NULL, NULL);
-
 	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
+
+	assert_log(ERROR, read_file("tst/marshalling/ipc-response-no-rc.log"));
 
 	assert_null(actual);
 }
@@ -412,16 +355,16 @@ void unmarshal_ipc_response__no_rc(void **state) {
 void unmarshal_ipc_response__ok(void **state) {
 	char *yaml = read_file("tst/marshalling/ipc-response-ok.yaml");
 
-	expect_log_(DEBUG, NULL, "dbg", NULL, NULL, NULL);
-	expect_log_(INFO, NULL, "inf", NULL, NULL, NULL);
-	expect_log_(WARNING, NULL, "war", NULL, NULL, NULL);
-	expect_log_(ERROR, NULL, "err", NULL, NULL, NULL);
-
 	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
 
 	assert_non_null(actual);
 	assert_true(actual->done);
 	assert_int_equal(actual->rc, 2);
+
+	assert_log(DEBUG, "dbg\n");
+	assert_log(INFO, "inf\n");
+	assert_log(WARNING, "war\n");
+	assert_log(ERROR, "err\n");
 
 	ipc_response_free(actual);
 	free(yaml);
