@@ -7,3 +7,4 @@ pro/*.c
 /example-client
 /tst-*
 
+/.ccls-cache
