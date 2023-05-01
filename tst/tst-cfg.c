@@ -1,6 +1,5 @@
 #include "tst.h"
 #include "asserts.h"
-#include "expects.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -8,6 +7,7 @@
 #include <string.h>
 
 #include "list.h"
+#include "log.h"
 
 #include "cfg.h"
 
@@ -44,6 +44,8 @@ int before_each(void **state) {
 
 int after_each(void **state) {
 	struct State *s = *state;
+
+	assert_logs_empty();
 
 	cfg_free(s->from);
 	cfg_free(s->to);
@@ -265,12 +267,13 @@ void validate_fix__col(void **state) {
 
 	s->from->arrange = COL;
 	s->from->align = TOP;
-	expect_log_warn("\nIgnoring invalid ALIGN %s for %s arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.", "TOP", "COLUMN", NULL, NULL);
 
 	s->expected->arrange = COL;
 	s->expected->align = LEFT;
 
 	validate_fix(s->from);
+
+	assert_log(WARNING, "\nIgnoring invalid ALIGN TOP for COLUMN arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.\n");
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -280,12 +283,13 @@ void validate_fix__row(void **state) {
 
 	s->from->arrange = ROW;
 	s->from->align = RIGHT;
-	expect_log_warn("\nIgnoring invalid ALIGN %s for %s arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.", "RIGHT", "ROW", NULL, NULL);
 
 	s->expected->arrange = ROW;
 	s->expected->align = TOP;
 
 	validate_fix(s->from);
+
+	assert_log(WARNING, "\nIgnoring invalid ALIGN RIGHT for ROW arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.\n");
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -293,17 +297,15 @@ void validate_fix__row(void **state) {
 void validate_fix__scale(void **state) {
 	struct State *s = *state;
 
-	char *fmt = "\nIgnoring non-positive SCALE %s %.3f";
-
 	slist_append(&s->from->user_scales, cfg_user_scale_init("ok", 1));
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("neg", -1));
-	expect_log_warn(fmt, "neg", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("zero", 0));
-	expect_log_warn(fmt, "zero", NULL, NULL, NULL);
 
 	validate_fix(s->from);
+
+	assert_log(WARNING, read_file("tst/cfg/validate-fix-scale.log"));
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
 
@@ -317,21 +319,18 @@ void validate_fix__mode(void **state) {
 	slist_append(&s->from->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("negative width", false, -99, 2, 3, false));
-	expect_log_warn("\nIgnoring non-positive MODE %s WIDTH %d", "negative width", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("negative height", false, 1, -99, 3, false));
-	expect_log_warn("\nIgnoring non-positive MODE %s HEIGHT %d", "negative height", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("negative hz", false, 1, 2, -99, false));
-	expect_log_warn("\nIgnoring non-positive MODE %s HZ %d", "negative hz", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("missing width", false, -1, 2, 3, false));
-	expect_log_warn("\nIgnoring invalid MODE %s missing WIDTH", "missing width", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("missing height", false, 1, -1, 3, false));
-	expect_log_warn("\nIgnoring invalid MODE %s missing HEIGHT", "missing height", NULL, NULL, NULL);
 
 	validate_fix(s->from);
+
+	assert_log(WARNING, read_file("tst/cfg/validate-fix-mode.log"));
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
@@ -342,33 +341,27 @@ void validate_fix__mode(void **state) {
 void validate_warn__(void **state) {
 	struct State *s = *state;
 
-	char *fmt = "\n%s '%s' is less than 4 characters, which may result in some unwanted matches.";
-
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("sss", 1));
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ssssssss", 2));
-	expect_log_warn(fmt, "SCALE", "sss", NULL, NULL);
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmm", false, 1, 1, 1, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
-	expect_log_warn(fmt, "MODE", "mmm", NULL, NULL);
 
 	slist_append(&s->expected->order_name_desc, strdup("ooo"));
 	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
-	expect_log_warn(fmt, "ORDER", "ooo", NULL, NULL);
 
 	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvv"));
 	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvvvvvvvvv"));
-	expect_log_warn(fmt, "VRR_OFF", "vvv", NULL, NULL);
 
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
-	expect_log_warn(fmt, "MAX_PREFERRED_REFRESH", "ppp", NULL, NULL);
 
 	slist_append(&s->expected->disabled_name_desc, strdup("ddd"));
 	slist_append(&s->expected->disabled_name_desc, strdup("dddddddddd"));
-	expect_log_warn(fmt, "DISABLED", "ddd", NULL, NULL);
 
 	validate_warn(s->expected);
+
+	assert_log(WARNING, read_file("tst/cfg/validate-warn.log"));
 }
 
 int main(void) {

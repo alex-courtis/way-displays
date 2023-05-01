@@ -185,6 +185,59 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 	}
 }
 
+void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
+	if (!cfg)
+		return;
+
+	static char buf[2048];
+	char *bp;
+
+	struct SList *i = NULL;
+
+	if (cfg->align && cfg->arrange) {
+		log_(t, "\nway-displays -s ARRANGE_ALIGN %s %s", arrange_name(cfg->arrange), align_name(cfg->align));
+	}
+
+	if (cfg->order_name_desc) {
+		bp = buf;
+		*bp = '\0';
+
+		for (i = cfg->order_name_desc; i; i = i->nex) {
+			bp += snprintf(bp, sizeof(buf) - (bp - buf), "'%s' ", (char*)i->val);
+		}
+
+		log_(t, "way-displays -s ORDER %s", buf);
+	}
+
+	if (cfg->auto_scale) {
+		log_(t, "way-displays -s AUTO_SCALE %s", auto_scale_name(cfg->auto_scale));
+	}
+
+	for (i = cfg->user_scales; i; i = i->nex) {
+		struct UserScale *user_scale = (struct UserScale*)i->val;
+		snprintf(buf, sizeof(buf), "%.3f", user_scale->scale);
+		log_(t, "way-displays -s SCALE '%s' %s", user_scale->name_desc, buf);
+	}
+
+	for (i = cfg->user_modes; i; i = i->nex) {
+		struct UserMode *user_mode = (struct UserMode*)i->val;
+
+		if (user_mode->max) {
+			snprintf(buf, sizeof(buf), "MAX");
+		} else if (user_mode->refresh_hz != -1) {
+			snprintf(buf, sizeof(buf), "%d %d %d", user_mode->width, user_mode->height, user_mode->refresh_hz);
+		} else {
+			snprintf(buf, sizeof(buf), "%d %d", user_mode->width, user_mode->height);
+		}
+
+		log_(t, "way-displays -s MODE '%s' %s", user_mode->name_desc, buf);
+	}
+
+	for (i = cfg->disabled_name_desc; i; i = i->nex) {
+		log_(t, "way-displays -s DISABLED '%s'", (char*)i->val);
+	}
+}
+
 void print_head_current(enum LogThreshold t, struct Head *head) {
 	if (!head)
 		return;

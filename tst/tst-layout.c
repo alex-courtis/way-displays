@@ -1,6 +1,5 @@
 #include "tst.h"
 #include "asserts.h"
-#include "expects.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -74,6 +73,8 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
+	assert_logs_empty();
+
 	slist_free(&heads);
 
 	head_changing_mode = NULL;
@@ -383,13 +384,13 @@ void desire_mode__no_mode(void **state) {
 	expect_value(__wrap_head_find_mode, head, &head0);
 	will_return(__wrap_head_find_mode, NULL);
 
-	expect_log_warn("\nNo mode for %s, disabling.", "head0", NULL, NULL, NULL);
-
 	expect_value(__wrap_print_head, t, WARNING);
 	expect_value(__wrap_print_head, event, NONE);
 	expect_value(__wrap_print_head, head, &head0);
 
 	desire_mode(&head0);
+
+	assert_log(WARNING, "\nNo mode for head0, disabling.\n");
 
 	assert_null(head0.desired.mode);
 	assert_false(head0.desired.enabled);
@@ -537,9 +538,9 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 	};
 	head_changing_adaptive_sync = &head;
 
-	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
-
 	handle_success();
+
+	assert_log(INFO, "\nChanges successful\n");
 
 	assert_null(head_changing_adaptive_sync);
 	assert_false(head.adaptive_sync_failed);
@@ -553,9 +554,9 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	};
 	head_changing_adaptive_sync = &head;
 
-	expect_log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", "head", NULL, NULL, NULL);
-
 	handle_success();
+
+	assert_log(INFO, "\nhead: Cannot enable VRR, display or compositor may not support it.\n");
 
 	assert_null(head_changing_adaptive_sync);
 	assert_true(head.adaptive_sync_failed);
@@ -568,18 +569,18 @@ void handle_success__head_changing_mode(void **state) {
 	};
 	head_changing_mode = &head;
 
-	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
-
 	handle_success();
+
+	assert_log(INFO, "\nChanges successful\n");
 
 	assert_ptr_equal(head.current.mode, &mode);
 	assert_null(head_changing_mode);
 }
 
 void handle_success__ok(void **state) {
-	expect_log_info("\nChanges successful", NULL, NULL, NULL, NULL);
-
 	handle_success();
+
+	assert_log(INFO, "\nChanges successful\n");
 }
 
 void handle_failure__mode(void **state) {
@@ -592,12 +593,12 @@ void handle_failure__mode(void **state) {
 	};
 	head_changing_mode = &head;
 
-	expect_log_error("\nChanges failed", NULL, NULL, NULL, NULL);
-	expect_log_error("  %s:", "nam", NULL, NULL, NULL);
 	expect_value(__wrap_print_mode, t, ERROR);
 	expect_value(__wrap_print_mode, mode, &mode_des);
 
 	handle_failure();
+
+	assert_log(ERROR, "\nChanges failed\n  nam:\n");
 
 	assert_null(head_changing_mode);
 
@@ -615,9 +616,9 @@ void handle_failure__adaptive_sync(void **state) {
 	};
 	head_changing_adaptive_sync = &head;
 
-	expect_log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", "nam", NULL, NULL, NULL);
-
 	handle_failure();
+
+	assert_log(INFO, "\nnam: Cannot enable VRR, display or compositor may not support it.\n");
 
 	assert_null(head_changing_adaptive_sync);
 
@@ -625,10 +626,11 @@ void handle_failure__adaptive_sync(void **state) {
 }
 
 void handle_failure__unspecified(void **state) {
-	expect_log_error("\nChanges failed", NULL, NULL, NULL, NULL);
 	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
 	handle_failure();
+
+	assert_log(ERROR, "\nChanges failed\n");
 }
 
 int main(void) {

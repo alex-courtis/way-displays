@@ -61,5 +61,11 @@ void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, co
 
 #define assert_cfg_equal(a, b) _assert_equal_cfg(a, b, __FILE__, __LINE__)
 
+void _assert_log(enum LogThreshold t, const char* s, const char * const file, const int line);
+#define assert_log(t, s) _assert_log(t, s, __FILE__, __LINE__)
+
+void _assert_logs_empty(const char * const file, const int line);
+#define assert_logs_empty() _assert_logs_empty(__FILE__, __LINE__)
+
 #endif // ASSERTS_H
 

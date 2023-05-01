@@ -12,6 +12,11 @@
 #define LOG_PRINT false
 
 //
+// utility
+//
+char *read_file(const char *path);
+
+//
 // test definition
 //
 #define TEST(t) cmocka_unit_test_setup_teardown(t, before_each, after_each)
