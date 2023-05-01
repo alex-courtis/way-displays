@@ -6,7 +6,7 @@
 
 #include "head.h"
 #include "info.h"
-#include "head.h"
+#include "mode.h"
 
 void __wrap_print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 	check_expected(t);

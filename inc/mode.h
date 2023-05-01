@@ -33,6 +33,8 @@ int32_t mhz_to_hz(int32_t mhz);
 
 double mode_dpi(struct Mode *mode);
 
+double mode_scale(struct Mode *mode);
+
 struct SList *modes_res_refresh(struct SList *modes);
 
 bool mrr_satisfies_user_mode(struct ModesResRefresh *mrr, struct UserMode *user_mode);

@@ -1,6 +1,5 @@
 #include "tst.h"
 #include "asserts.h"
-#include "expects.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -12,6 +11,7 @@
 #include "cfg.h"
 #include "global.h"
 #include "list.h"
+#include "log.h"
 #include "mode.h"
 
 #include "head.h"
@@ -50,6 +50,7 @@ int before_each(void **state) {
 
 int after_each(void **state) {
 	cfg_destroy();
+	assert_logs_empty();
 	return 0;
 }
 
@@ -187,21 +188,25 @@ void head_find_mode__user_failed(void **state) {
 	expect_value(__wrap_mode_user_mode, user_mode, user_mode);
 	will_return(__wrap_mode_user_mode, NULL);
 
-	// one and only notices: falling back to preferred then max
-	expect_log_warn("\n%s: No available mode for %s, falling back to preferred", "HEAD", "-1x-1", NULL, NULL);
-	expect_log_info("\n%s: No preferred mode, falling back to maximum available", "HEAD", NULL, NULL, NULL);
-
 	// user failed, fall back to max
 	assert_ptr_equal(head_find_mode(&head), &mode);
 
-	// try a second time
+	// one and only notices: falling back to preferred then max
+	assert_log(WARNING, "\nHEAD: No available mode for -1x-1, falling back to preferred\n");
+	assert_log(INFO, "\nHEAD: No preferred mode, falling back to maximum available\n");
+	assert_logs_empty();
+
+	// same test again
 	expect_value(__wrap_mode_user_mode, modes, head.modes);
 	expect_value(__wrap_mode_user_mode, modes_failed, head.modes_failed);
 	expect_value(__wrap_mode_user_mode, user_mode, user_mode);
 	will_return(__wrap_mode_user_mode, NULL);
 
-	// no notices this time
+	// marked failures avoided
 	assert_ptr_equal(head_find_mode(&head), &mode);
+
+	// no notices this time
+	assert_logs_empty();
 
 	slist_free(&head.modes);
 	free(head.name);
@@ -242,9 +247,8 @@ void head_find_mode__max(void **state) {
 	slist_append(&head.modes, &mode);
 
 	// one and only notice
-	expect_log_info("\n%s: No preferred mode, falling back to maximum available", "name", NULL, NULL, NULL);
-
 	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
 
 	// no notice
 	assert_ptr_equal(head_find_mode(&head), &mode);

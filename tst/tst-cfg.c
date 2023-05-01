@@ -1,6 +1,5 @@
 #include "tst.h"
 #include "asserts.h"
-#include "expects.h"
 #include "util.h"
 
 #include <cmocka.h>
@@ -13,6 +12,7 @@
 
 #include "global.h"
 #include "list.h"
+#include "log.h"
 
 #include "cfg.h"
 
@@ -72,6 +72,8 @@ int after_each(void **state) {
 	remove("/tmp/cfg.yaml");
 
 	cfg_destroy();
+
+	assert_logs_empty();
 
 	cfg_free(s->from);
 	cfg_free(s->to);
@@ -293,12 +295,13 @@ void validate_fix__col(void **state) {
 
 	s->from->arrange = COL;
 	s->from->align = TOP;
-	expect_log_warn("\nIgnoring invalid ALIGN %s for %s arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.", "TOP", "COLUMN", NULL, NULL);
 
 	s->expected->arrange = COL;
 	s->expected->align = LEFT;
 
 	validate_fix(s->from);
+
+	assert_log(WARNING, "\nIgnoring invalid ALIGN TOP for COLUMN arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.\n");
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -308,12 +311,13 @@ void validate_fix__row(void **state) {
 
 	s->from->arrange = ROW;
 	s->from->align = RIGHT;
-	expect_log_warn("\nIgnoring invalid ALIGN %s for %s arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.", "RIGHT", "ROW", NULL, NULL);
 
 	s->expected->arrange = ROW;
 	s->expected->align = TOP;
 
 	validate_fix(s->from);
+
+	assert_log(WARNING, "\nIgnoring invalid ALIGN RIGHT for ROW arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.\n");
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -321,17 +325,15 @@ void validate_fix__row(void **state) {
 void validate_fix__scale(void **state) {
 	struct State *s = *state;
 
-	char *fmt = "\nIgnoring non-positive SCALE %s %.3f";
-
 	slist_append(&s->from->user_scales, cfg_user_scale_init("ok", 1));
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("neg", -1));
-	expect_log_warn(fmt, "neg", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("zero", 0));
-	expect_log_warn(fmt, "zero", NULL, NULL, NULL);
 
 	validate_fix(s->from);
+
+	assert_log(WARNING, read_file("tst/cfg/validate-fix-scale.log"));
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
 
@@ -345,21 +347,18 @@ void validate_fix__mode(void **state) {
 	slist_append(&s->from->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("negative width", false, -99, 2, 3, false));
-	expect_log_warn("\nIgnoring non-positive MODE %s WIDTH %d", "negative width", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("negative height", false, 1, -99, 3, false));
-	expect_log_warn("\nIgnoring non-positive MODE %s HEIGHT %d", "negative height", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("negative hz", false, 1, 2, -99, false));
-	expect_log_warn("\nIgnoring non-positive MODE %s HZ %d", "negative hz", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("missing width", false, -1, 2, 3, false));
-	expect_log_warn("\nIgnoring invalid MODE %s missing WIDTH", "missing width", NULL, NULL, NULL);
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("missing height", false, 1, -1, 3, false));
-	expect_log_warn("\nIgnoring invalid MODE %s missing HEIGHT", "missing height", NULL, NULL, NULL);
 
 	validate_fix(s->from);
+
+	assert_log(WARNING, read_file("tst/cfg/validate-fix-mode.log"));
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
@@ -370,33 +369,27 @@ void validate_fix__mode(void **state) {
 void validate_warn__(void **state) {
 	struct State *s = *state;
 
-	char *fmt = "\n%s '%s' is less than 4 characters, which may result in some unwanted matches.";
-
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("sss", 1));
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ssssssss", 2));
-	expect_log_warn(fmt, "SCALE", "sss", NULL, NULL);
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmm", false, 1, 1, 1, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
-	expect_log_warn(fmt, "MODE", "mmm", NULL, NULL);
 
 	slist_append(&s->expected->order_name_desc, strdup("ooo"));
 	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
-	expect_log_warn(fmt, "ORDER", "ooo", NULL, NULL);
 
 	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvv"));
 	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvvvvvvvvv"));
-	expect_log_warn(fmt, "VRR_OFF", "vvv", NULL, NULL);
 
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
-	expect_log_warn(fmt, "MAX_PREFERRED_REFRESH", "ppp", NULL, NULL);
 
 	slist_append(&s->expected->disabled_name_desc, strdup("ddd"));
 	slist_append(&s->expected->disabled_name_desc, strdup("dddddddddd"));
-	expect_log_warn(fmt, "DISABLED", "ddd", NULL, NULL);
 
 	validate_warn(s->expected);
+
+	assert_log(WARNING, read_file("tst/cfg/validate-warn.log"));
 }
 
 void mkdir_p__no_perm(void **state) {
@@ -404,9 +397,9 @@ void mkdir_p__no_perm(void **state) {
 	mode |=       S_IRGRP | S_IXGRP;
 	mode |=       S_IROTH | S_IXOTH;
 
-	expect_log_error_errno("\nCannot create directory %s", "/foo", NULL, NULL, NULL);
-
 	assert_false(mkdir_p("/foo/bar/baz", mode));
+
+	assert_log(ERROR, "\nCannot create directory /foo\n");
 
 	struct stat sb;
 	assert_int_equal(stat("/foo/bar/baz", &sb), -1);
@@ -445,9 +438,9 @@ void cfg_file_write__cannot_write(void **state) {
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
-	expect_log_error_errno("\nUnable to write to %s", cfg->file_path, NULL, NULL, NULL);
-
 	cfg_file_write();
+
+	assert_log(ERROR, "\nUnable to write to /foo/bar/baz/cfg.yaml\n");
 
 	FILE *f = fopen(cfg->file_path, "r");
 	assert_null(f);
@@ -467,9 +460,9 @@ void cfg_file_write__existing(void **state) {
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
-	expect_log_info("\nWrote configuration file: %s", cfg->file_path, NULL, NULL, NULL);
-
 	cfg_file_write();
+
+	assert_log(INFO, "\nWrote configuration file: /tmp/cfg.yaml\n");
 
 	char *actual = read_file("/tmp/cfg.yaml");
 

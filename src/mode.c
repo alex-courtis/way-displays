@@ -120,6 +120,16 @@ double mode_dpi(struct Mode *mode) {
 	return (dpi_horiz + dpi_vert) / 2;
 }
 
+double mode_scale(struct Mode *mode) {
+	double dpi = mode_dpi(mode);
+
+	if (dpi == 0) {
+		return 1;
+	}
+
+	return dpi / 96;
+}
+
 struct SList *modes_res_refresh(struct SList *modes) {
 	struct SList *mrrs = NULL;
 

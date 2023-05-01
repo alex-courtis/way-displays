@@ -13,7 +13,7 @@
 void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const file, const int line) {
 
 	if (a != wl_fixed_from_double(b)) {
-		cmocka_print_error("%g != %g\n", wl_fixed_to_double(a), b);
+		cm_print_error("%g != %g\n", wl_fixed_to_double(a), b);
 		_fail(file, line);
 	}
 }
@@ -37,7 +37,7 @@ void _assert_heads_equal(struct SList *a, struct SList *b, const char * const fi
 			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 
-		cmocka_print_error("assert_heads_equal\nactual:%s\nexpected:%s\n\n", actual, expected);
+		cm_print_error("assert_heads_equal\nactual:%s\nexpected:%s\n\n", actual, expected);
 		_fail(file, line);
 	}
 }
@@ -45,7 +45,7 @@ void _assert_heads_equal(struct SList *a, struct SList *b, const char * const fi
 
 void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char * const file, const int line) {
 	if (head->desired.x != x || head->desired.y != y) {
-		cmocka_print_error("assert_head_position %s (%d, %d) != (%d, %d)\n", head->name, head->desired.x, head->desired.y, x, y);
+		cm_print_error("assert_head_position %s (%d, %d) != (%d, %d)\n", head->name, head->desired.x, head->desired.y, x, y);
 		_fail(file, line);
 	}
 }
@@ -54,12 +54,18 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 
 void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
 	if (!cfg_equal(a, b)) {
-		cmocka_print_error("assert_cfg_equal\nactual:\n\n%s\nexpected:\n\n%s\n\n", marshal_cfg(a), marshal_cfg(b));
+		cm_print_error("assert_cfg_equal\nactual:\n\n%s\nexpected:\n\n%s\n\n", marshal_cfg(a), marshal_cfg(b));
 		_fail(file, line);
 	}
 }
 
 #define assert_cfg_equal(a, b) _assert_equal_cfg(a, b, __FILE__, __LINE__)
+
+void _assert_log(enum LogThreshold t, const char* s, const char * const file, const int line);
+#define assert_log(t, s) _assert_log(t, s, __FILE__, __LINE__)
+
+void _assert_logs_empty(const char * const file, const int line);
+#define assert_logs_empty() _assert_logs_empty(__FILE__, __LINE__)
 
 #endif // ASSERTS_H
 

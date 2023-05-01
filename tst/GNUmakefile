@@ -32,13 +32,16 @@ tst-cfg: tst/tst-cfg.o $(OBJS)
 tst-marshalling: tst/tst-marshalling.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
 
+tst-info: tst/tst-info.o $(OBJS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
+
 tst-all: $(TST_E)
 	@for e in $(^); do \
 		echo ;\
 		echo $$e ;\
 		./$$e ;\
 		if [ $$? -ne 0 ]; then \
-			exit 1 ;\
+		exit 1 ;\
 		fi ;\
-	done
+		done
 
