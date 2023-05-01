@@ -182,6 +182,7 @@ Usage: way-displays [OPTIONS...] [COMMAND]
 OPTIONS
   -L, --l[og-threshold] <debug|info|warning|error>
   -c, --c[onfig]        <path>
+  -y, --y[aml]          YAML client output
 COMMANDS
   -h, --h[elp]    show this message
   -v, --v[ersion] display version information
@@ -203,7 +204,7 @@ COMMANDS
 
 ### Examples
 
-Show current configuration and display state
+Show the active configuration, commands and current display state
 ```sh
 way-displays -g
 ```

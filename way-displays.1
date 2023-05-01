@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "WAY-DISPLAYS" "1" "2023/02/28" "way-displays" "User Manuals"
+.TH "WAY-DISPLAYS" "1" "2023/05/01" "way-displays" "User Manuals"
 .hy
 .SH NAME
 .PP
@@ -91,6 +91,9 @@ Overrides cfg.yaml.
 .TP
 \f[V]-c\f[R] | \f[V]--c[onfig]\f[R] <\f[I]path\f[R]>
 Configuration file, falls back to defaults if not found.
+.TP
+\f[V]-y\f[R] | \f[V]--y[aml]\f[R]
+Print client output as raw YAML
 .SH COMMANDS
 .TP
 \f[V]-h\f[R] | \f[V]--h[elp]\f[R]
@@ -100,7 +103,7 @@ Print usage and exit.
 Display version information and exit.
 .TP
 \f[V]-g\f[R] | \f[V]--g[et]\f[R]
-Show the active configuration and current display state.
+Show the active configuration, commands and current display state.
 .TP
 \f[V]-s\f[R] | \f[V]--s[et]\f[R]
 Add a new setting or modify an existing.
@@ -126,6 +129,9 @@ Highest available resolution / refresh.
 Specified resolution at its highest refresh.
 Optional refresh will choose a mode +-0.5Hz.
 .TP
+\f[V]VRR_OFF\f[R] <\f[I]name\f[R]>
+Disable VRR for a display.
+.TP
 \f[V]DISABLED\f[R] <\f[I]name\f[R]>
 Disable a display.
 .RE
@@ -139,6 +145,9 @@ Use auto scaling for the display, if enabled.
 .TP
 \f[V]MODE\f[R] <\f[I]name\f[R]>
 Use preferred or highest availble if no preferred.
+.TP
+\f[V]VRR_OFF\f[R] <\f[I]name\f[R]>
+Enable VRR for a display.
 .TP
 \f[V]DISABLED\f[R] <\f[I]name\f[R]>
 Enable a display.
