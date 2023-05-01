@@ -126,6 +126,7 @@ void handle_ipc_request(int server_socket) {
 				// complete
 				log_info("\nActive configuration:");
 				print_cfg(INFO, cfg, false);
+				print_cfg_commands(INFO, cfg);
 				print_heads(INFO, NONE, heads);
 				break;
 			}

@@ -1,3 +1,4 @@
+
 way-displays -s ARRANGE_ALIGN COLUMN RIGHT
 way-displays -s ORDER 'one' 'two' 'three' 
 way-displays -s AUTO_SCALE OFF

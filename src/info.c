@@ -195,7 +195,7 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 	struct SList *i = NULL;
 
 	if (cfg->align && cfg->arrange) {
-		log_(t, "way-displays -s ARRANGE_ALIGN %s %s", arrange_name(cfg->arrange), align_name(cfg->align));
+		log_(t, "\nway-displays -s ARRANGE_ALIGN %s %s", arrange_name(cfg->arrange), align_name(cfg->align));
 	}
 
 	if (cfg->order_name_desc) {
