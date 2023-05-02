@@ -184,6 +184,12 @@ void desire_scale(struct Head *head) {
 		return;
 	}
 
+	// all scaling disabled
+	if (cfg->scaling == OFF) {
+		head->desired.scale = wl_fixed_from_int(1);
+		return;
+	}
+
 	// user scale first
 	struct UserScale *user_scale;
 	for (struct SList *i = cfg->user_scales; i; i = i->nex) {

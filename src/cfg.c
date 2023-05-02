@@ -475,6 +475,11 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
+	// SCALING
+	if (from->scaling) {
+		merged->scaling = from->scaling;
+	}
+
 	// AUTO_SCALE
 	if (from->auto_scale) {
 		merged->auto_scale = from->auto_scale;

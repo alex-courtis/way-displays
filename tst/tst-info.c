@@ -48,6 +48,8 @@ void print_cfg_commands__ok(void **state) {
 	slist_append(&cfg->order_name_desc, strdup("two"));
 	slist_append(&cfg->order_name_desc, strdup("three"));
 
+	cfg->scaling = OFF;
+
 	cfg->auto_scale = OFF;
 
 	slist_append(&cfg->user_scales, cfg_user_scale_init("one", 1));

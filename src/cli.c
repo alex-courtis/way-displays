@@ -59,6 +59,9 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			parsed = (cfg->arrange = arrange_val_start(argv[optind]));
 			parsed = parsed && (cfg->align = align_val_start(argv[optind + 1]));
 			break;
+		case SCALING:
+			parsed = (cfg->scaling = on_off_val(argv[optind]));
+			break;
 		case AUTO_SCALE:
 			parsed = (cfg->auto_scale = on_off_val(argv[optind]));
 			break;
@@ -198,6 +201,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 				return NULL;
 			}
 			break;
+		case SCALING:
 		case AUTO_SCALE:
 		case DISABLED:
 		case VRR_OFF:

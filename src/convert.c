@@ -19,6 +19,7 @@ static struct NameVal cfg_elements[] = {
 	{ .val = ALIGN,                 .name = "ALIGN",                 },
 	{ .val = ORDER,                 .name = "ORDER",                 },
 	{ .val = SCALE,                 .name = "SCALE",                 },
+	{ .val = SCALING,               .name = "SCALING",               },
 	{ .val = AUTO_SCALE,            .name = "AUTO_SCALE",            },
 	{ .val = SCALE,                 .name = "SCALE",                 },
 	{ .val = MODE,                  .name = "MODE",                  },

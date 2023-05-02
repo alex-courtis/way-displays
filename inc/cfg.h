@@ -66,6 +66,7 @@ enum CfgElement {
 	ARRANGE = 1,
 	ALIGN,
 	ORDER,
+	SCALING,
 	AUTO_SCALE,
 	SCALE,
 	MODE,
