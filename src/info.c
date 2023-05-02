@@ -142,8 +142,12 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 		}
 	}
 
+	if (cfg->scaling) {
+		log_(t, "  Scaling: %s", on_off_name(cfg->scaling));
+	}
+
 	if (cfg->auto_scale) {
-		log_(t, "  Auto scale: %s", auto_scale_name(cfg->auto_scale));
+		log_(t, "  Auto scale: %s", on_off_name(cfg->auto_scale));
 	}
 
 	if (cfg->user_scales) {
@@ -217,8 +221,12 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 		log_(t, "\nway-displays -s ORDER %s", buf);
 	}
 
+	if (cfg->scaling) {
+		log_(t, "\nway-displays -s SCALING %s", on_off_name(cfg->scaling));
+	}
+
 	if (cfg->auto_scale) {
-		log_(t, "\nway-displays -s AUTO_SCALE %s", auto_scale_name(cfg->auto_scale));
+		log_(t, "\nway-displays -s AUTO_SCALE %s", on_off_name(cfg->auto_scale));
 	}
 
 	newline = true;

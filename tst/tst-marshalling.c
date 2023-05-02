@@ -57,6 +57,7 @@ struct Cfg *cfg_all(void) {
 
 	cfg->arrange = COL;
 	cfg->align = BOTTOM;
+	cfg->scaling = OFF;
 	cfg->auto_scale = OFF;
 	cfg->log_threshold = ERROR;
 

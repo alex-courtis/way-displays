@@ -176,6 +176,11 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 		slist_append(&to->order_name_desc, strdup((char*)i->val));
 	}
 
+	// SCALING
+	if (from->scaling) {
+		to->scaling = from->scaling;
+	}
+
 	// AUTO_SCALE
 	if (from->auto_scale) {
 		to->auto_scale = from->auto_scale;
@@ -251,6 +256,11 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 		return false;
 	}
 
+	// SCALING
+	if (a->scaling != b->scaling) {
+		return false;
+	}
+
 	// AUTO_SCALE
 	if (a->auto_scale != b->auto_scale) {
 		return false;
@@ -301,6 +311,7 @@ struct Cfg *cfg_default(void) {
 
 	def->arrange = ARRANGE_DEFAULT;
 	def->align = ALIGN_DEFAULT;
+	def->scaling = SCALING_DEFAULT;
 	def->auto_scale = AUTO_SCALE_DEFAULT;
 
 	return def;
@@ -462,6 +473,11 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		for (i = from->order_name_desc; i; i = i->nex) {
 			slist_append(&merged->order_name_desc, strdup((char*)i->val));
 		}
+	}
+
+	// SCALING
+	if (from->scaling) {
+		merged->scaling = from->scaling;
 	}
 
 	// AUTO_SCALE

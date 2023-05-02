@@ -132,6 +132,10 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::EndSeq;												// ORDER
 	}
 
+	if (cfg.scaling) {
+		e << YAML::Key << "SCALING" << YAML::Value << (cfg.scaling == ON);
+	}
+
 	if (cfg.auto_scale) {
 		e << YAML::Key << "AUTO_SCALE" << YAML::Value << (cfg.auto_scale == ON);
 	}
@@ -316,6 +320,13 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 		} else {
 			cfg->align = ALIGN_DEFAULT;
 			log_warn("Ignoring invalid ALIGN %s, using default %s", align_str.c_str(), align_name(cfg->align));
+		}
+	}
+
+	if (node["SCALING"]) {
+		bool scaling;
+		if (parse_node_val_bool(node, "SCALING", &scaling, "", "")) {
+			cfg->scaling = scaling ? ON : OFF;
 		}
 	}
 

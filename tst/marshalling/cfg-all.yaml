@@ -4,6 +4,7 @@ ORDER:
   - one
   - ONE
   - "!two"
+SCALING: FALSE
 AUTO_SCALE: FALSE
 SCALE:
   - NAME_DESC: three
