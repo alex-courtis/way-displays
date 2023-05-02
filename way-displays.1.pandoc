@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2023/02/28
+% 2023/05/02
 
 # NAME
 
@@ -65,6 +65,9 @@ The user must be a member of the `input` group.
 `-c` | `--c[onfig]` <*path*>
 : Configuration file, falls back to defaults if not found.
 
+`-y` | `--y[aml]`
+: Print client output as raw YAML
+
 # COMMANDS
 
 `-h` | `--h[elp]`
@@ -74,7 +77,7 @@ The user must be a member of the `input` group.
 : Display version information and exit.
 
 `-g` | `--g[et]`
-: Show the active configuration and current display state.
+: Show the active configuration, commands and current display state.
 
 `-s` | `--s[et]`
 : Add a new setting or modify an existing.
@@ -84,6 +87,9 @@ The user must be a member of the `input` group.
 
 	`ORDER` <*name*|!*regex*> ...
 	: Set the order of arrangement. Replaces previous order.
+
+	`SCALING` <*on*|*off*>
+	: Enable scaling, overrides AUTO_SCALE and SCALE
 
 	`AUTO_SCALE` <*on*|*off*>
 	: Enable auto scaling.

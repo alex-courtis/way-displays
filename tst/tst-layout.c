@@ -443,10 +443,23 @@ void desire_scale__disabled(void **state) {
 	desire_scale(&head0);
 }
 
+void desire_scale__no_scaling(void **state) {
+	struct Head head0 = {
+		.desired.enabled = true,
+	};
+	cfg->scaling = OFF;
+	cfg->auto_scale = ON;
+
+	desire_scale(&head0);
+
+	assert_wl_fixed_t_equal_double(head0.desired.scale, 1);
+}
+
 void desire_scale__no_auto(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 	};
+	cfg->scaling = ON;
 	cfg->auto_scale = OFF;
 
 	desire_scale(&head0);
@@ -458,6 +471,7 @@ void desire_scale__auto(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 	};
+	cfg->scaling = ON;
 	cfg->auto_scale = ON;
 
 	expect_value(__wrap_head_auto_scale, head, &head0);
@@ -473,6 +487,8 @@ void desire_scale__user(void **state) {
 		.name = "head0",
 		.desired.enabled = true,
 	};
+	cfg->scaling = ON;
+	cfg->auto_scale = ON;
 
 	slist_append(&cfg->user_scales, cfg_user_scale_init("![Hh]ea.*", 3.5));
 	slist_append(&cfg->user_scales, cfg_user_scale_init("head1", 7.5));
@@ -656,6 +672,7 @@ int main(void) {
 		TEST(desire_mode__ok),
 
 		TEST(desire_scale__disabled),
+		TEST(desire_scale__no_scaling),
 		TEST(desire_scale__no_auto),
 		TEST(desire_scale__auto),
 		TEST(desire_scale__user),

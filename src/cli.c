@@ -31,15 +31,18 @@ void usage(FILE *stream) {
 		"  -s, --s[et]     add or change\n"
 		"     ARRANGE_ALIGN <row|column> <top|middle|bottom|left|right>\n"
 		"     ORDER <name> ...\n"
+		"     SCALING <on|off>\n"
 		"     AUTO_SCALE <on|off>\n"
 		"     SCALE <name> <scale>\n"
 		"     MODE <name> MAX\n"
 		"     MODE <name> <width> <height> [<Hz>]\n"
 		"     DISABLED <name>\n"
+		"     VRR_OFF <name>\n"
 		"  -d, --d[elete]  remove\n"
 		"     SCALE <name>\n"
 		"     MODE <name>\n"
 		"     DISABLED <name>\n"
+		"     VRR_OFF <name>\n"
 		;
 	fprintf(stream, "%s", mesg);
 }
@@ -56,8 +59,11 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			parsed = (cfg->arrange = arrange_val_start(argv[optind]));
 			parsed = parsed && (cfg->align = align_val_start(argv[optind + 1]));
 			break;
+		case SCALING:
+			parsed = (cfg->scaling = on_off_val(argv[optind]));
+			break;
 		case AUTO_SCALE:
-			parsed = (cfg->auto_scale = auto_scale_val(argv[optind]));
+			parsed = (cfg->auto_scale = on_off_val(argv[optind]));
 			break;
 		case SCALE:
 			switch (op) {
@@ -195,6 +201,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 				return NULL;
 			}
 			break;
+		case SCALING:
 		case AUTO_SCALE:
 		case DISABLED:
 		case VRR_OFF:
@@ -230,6 +237,7 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 		case MODE:
 		case SCALE:
 		case DISABLED:
+		case VRR_OFF:
 			if (optind + 1 != argc) {
 				log_error("%s requires one argument", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);

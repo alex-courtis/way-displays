@@ -491,6 +491,17 @@ void parse_del__disabled_nargs(void **state) {
 	assert_log(ERROR, "DISABLED requires one argument\n");
 }
 
+void parse_del__adaptive_sync_off_nargs(void **state) {
+	optind = 0;
+	optarg = "VRR_OFF";
+
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_del(0, NULL));
+
+	assert_log(ERROR, "VRR_OFF requires one argument\n");
+}
+
 void parse_del__invalid(void **state) {
 	optind = 0;
 	optarg = "INVALID";
@@ -572,6 +583,7 @@ int main(void) {
 		TEST(parse_del__mode_nargs),
 		TEST(parse_del__scale_nargs),
 		TEST(parse_del__disabled_nargs),
+		TEST(parse_del__adaptive_sync_off_nargs),
 		TEST(parse_del__invalid),
 		TEST(parse_del__ok),
 

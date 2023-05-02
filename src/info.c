@@ -142,8 +142,12 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 		}
 	}
 
+	if (cfg->scaling) {
+		log_(t, "  Scaling: %s", on_off_name(cfg->scaling));
+	}
+
 	if (cfg->auto_scale) {
-		log_(t, "  Auto scale: %s", auto_scale_name(cfg->auto_scale));
+		log_(t, "  Auto scale: %s", on_off_name(cfg->auto_scale));
 	}
 
 	if (cfg->user_scales) {
@@ -185,6 +189,13 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 	}
 }
 
+void print_newline(enum LogThreshold t, bool *print) {
+	if (print && *print) {
+		log_(t, "");
+		*print = false;
+	}
+}
+
 void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 	if (!cfg)
 		return;
@@ -193,6 +204,7 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 	char *bp;
 
 	struct SList *i = NULL;
+	bool newline;
 
 	if (cfg->align && cfg->arrange) {
 		log_(t, "\nway-displays -s ARRANGE_ALIGN %s %s", arrange_name(cfg->arrange), align_name(cfg->align));
@@ -206,19 +218,26 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 			bp += snprintf(bp, sizeof(buf) - (bp - buf), "'%s' ", (char*)i->val);
 		}
 
-		log_(t, "way-displays -s ORDER %s", buf);
+		log_(t, "\nway-displays -s ORDER %s", buf);
+	}
+
+	if (cfg->scaling) {
+		log_(t, "\nway-displays -s SCALING %s", on_off_name(cfg->scaling));
 	}
 
 	if (cfg->auto_scale) {
-		log_(t, "way-displays -s AUTO_SCALE %s", auto_scale_name(cfg->auto_scale));
+		log_(t, "\nway-displays -s AUTO_SCALE %s", on_off_name(cfg->auto_scale));
 	}
 
+	newline = true;
 	for (i = cfg->user_scales; i; i = i->nex) {
 		struct UserScale *user_scale = (struct UserScale*)i->val;
 		snprintf(buf, sizeof(buf), "%.3f", user_scale->scale);
+		print_newline(t, &newline);
 		log_(t, "way-displays -s SCALE '%s' %s", user_scale->name_desc, buf);
 	}
 
+	newline = true;
 	for (i = cfg->user_modes; i; i = i->nex) {
 		struct UserMode *user_mode = (struct UserMode*)i->val;
 
@@ -230,11 +249,20 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 			snprintf(buf, sizeof(buf), "%d %d", user_mode->width, user_mode->height);
 		}
 
+		print_newline(t, &newline);
 		log_(t, "way-displays -s MODE '%s' %s", user_mode->name_desc, buf);
 	}
 
+	newline = true;
 	for (i = cfg->disabled_name_desc; i; i = i->nex) {
+		print_newline(t, &newline);
 		log_(t, "way-displays -s DISABLED '%s'", (char*)i->val);
+	}
+
+	newline = true;
+	for (i = cfg->adaptive_sync_off_name_desc; i; i = i->nex) {
+		print_newline(t, &newline);
+		log_(t, "way-displays -s VRR_OFF '%s'", (char*)i->val);
 	}
 }
 

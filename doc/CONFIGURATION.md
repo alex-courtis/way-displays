@@ -86,6 +86,14 @@ ORDER:
 ```
 Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
 
+### SCALING
+
+Enable scaling, overrides AUTO_SCALE and SCALE
+
+```yaml
+SCALING: false
+```
+
 ### AUTO_SCALE
 
 The default is to scale each display by DPI.
@@ -182,6 +190,7 @@ Usage: way-displays [OPTIONS...] [COMMAND]
 OPTIONS
   -L, --l[og-threshold] <debug|info|warning|error>
   -c, --c[onfig]        <path>
+  -y, --y[aml]          YAML client output
 COMMANDS
   -h, --h[elp]    show this message
   -v, --v[ersion] display version information
@@ -190,20 +199,23 @@ COMMANDS
   -s, --s[et]     add or change
      ARRANGE_ALIGN <row|column> <top|middle|bottom|left|right>
      ORDER <name> ...
+     SCALING <on|off>
      AUTO_SCALE <on|off>
      SCALE <name> <scale>
      MODE <name> MAX
      MODE <name> <width> <height> [<Hz>]
      DISABLED <name>
+     VRR_OFF <name>
   -d, --d[elete]  remove
      SCALE <name>
      MODE <name>
      DISABLED <name>
+     VRR_OFF <name>
 ```
 
 ### Examples
 
-Show current configuration and display state
+Show the active configuration, commands and current display state
 ```sh
 way-displays -g
 ```

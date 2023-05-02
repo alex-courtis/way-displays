@@ -73,7 +73,7 @@ IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --
 cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) --enable=warning,unusedFunction,performance,portability --suppressions-list=.cppcheck.supp $(CPPFLAGS)
 
-test:
+test: all
 	$(MAKE) -f tst/GNUmakefile tst-all
 
 .PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-cppcheck tst-all tst-clean
