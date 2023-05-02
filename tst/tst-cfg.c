@@ -4,7 +4,9 @@
 
 #include <cmocka.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -20,12 +22,26 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
 struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
 void validate_warn(struct Cfg *cfg);
 void validate_fix(struct Cfg *cfg);
+bool resolve_cfg_file(struct Cfg *cfg);
 bool mkdir_p(char *path, mode_t mode);
+
+char *xdg_config_home = NULL;
 
 
 char *__wrap_marshal_cfg(struct Cfg *cfg) {
 	check_expected(cfg);
 	return mock_type(char*);
+}
+
+
+void clean_files(void) {
+	rmdir("mkdir_p/foo/bar");
+	rmdir("mkdir_p/foo");
+	rmdir("mkdir_p");
+	remove("write-existing-cfg.yaml");
+	remove("resolved.yaml");
+	remove("resolve/link.yaml");
+	rmdir("resolve");
 }
 
 
@@ -36,6 +52,7 @@ struct State {
 };
 
 int before_all(void **state) {
+	xdg_config_home = getenv("XDG_CONFIG_HOME");
 
 	return 0;
 }
@@ -48,10 +65,9 @@ int after_all(void **state) {
 int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 
-	rmdir("foo/bar/baz");
-	rmdir("foo/bar");
-	rmdir("foo");
-	remove("/tmp/cfg.yaml");
+	slist_free_vals(&cfg_file_paths, NULL);
+
+	clean_files();
 
 	cfg = cfg_default();
 
@@ -66,10 +82,10 @@ int before_each(void **state) {
 int after_each(void **state) {
 	struct State *s = *state;
 
-	rmdir("foo/bar/baz");
-	rmdir("foo/bar");
-	rmdir("foo");
-	remove("/tmp/cfg.yaml");
+	setenv("XDG_CONFIG_HOME", xdg_config_home, 1);
+	slist_free_vals(&cfg_file_paths, NULL);
+
+	clean_files();
 
 	cfg_destroy();
 
@@ -397,12 +413,12 @@ void mkdir_p__no_perm(void **state) {
 	mode |=       S_IRGRP | S_IXGRP;
 	mode |=       S_IROTH | S_IXOTH;
 
-	assert_false(mkdir_p("/foo/bar/baz", mode));
+	assert_false(mkdir_p("/foo/bar", mode));
 
 	assert_log(ERROR, "\nCannot create directory /foo\n");
 
 	struct stat sb;
-	assert_int_equal(stat("/foo/bar/baz", &sb), -1);
+	assert_int_equal(stat("/foo/bar", &sb), -1);
 	assert_int_equal(errno, ENOENT);
 }
 
@@ -411,10 +427,10 @@ void mkdir_p__ok(void **state) {
 	mode |=       S_IRGRP | S_IXGRP;
 	mode |=       S_IROTH | S_IXOTH;
 
-	assert_true(mkdir_p("foo/bar/baz", mode));
+	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
 
 	struct stat sb;
-	assert_int_equal(stat("foo/bar/baz", &sb), 0);
+	assert_int_equal(stat("mkdir_p/foo/bar", &sb), 0);
 }
 
 void mkdir_p__exists(void **state) {
@@ -422,16 +438,16 @@ void mkdir_p__exists(void **state) {
 	mode |=       S_IRGRP | S_IXGRP;
 	mode |=       S_IROTH | S_IXOTH;
 
-	assert_true(mkdir_p("foo/bar/baz", mode));
+	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
 
-	assert_true(mkdir_p("foo/bar/baz", mode));
+	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
 
 	struct stat sb;
-	assert_int_equal(stat("foo/bar/baz", &sb), 0);
+	assert_int_equal(stat("mkdir_p/foo/bar", &sb), 0);
 }
 
 void cfg_file_write__cannot_write(void **state) {
-	cfg->file_path = strdup("/foo/bar/baz/cfg.yaml");
+	cfg->file_path = strdup("/root.cfg.yaml");
 
 	char *expected = strdup("XXXX");
 
@@ -440,7 +456,7 @@ void cfg_file_write__cannot_write(void **state) {
 
 	cfg_file_write();
 
-	assert_log(ERROR, "\nUnable to write to /foo/bar/baz/cfg.yaml\n");
+	assert_log(ERROR, "\nUnable to write to /root.cfg.yaml\n");
 
 	FILE *f = fopen(cfg->file_path, "r");
 	assert_null(f);
@@ -449,7 +465,7 @@ void cfg_file_write__cannot_write(void **state) {
 }
 
 void cfg_file_write__existing(void **state) {
-	cfg->file_path = strdup("/tmp/cfg.yaml");
+	cfg->file_path = strdup("write-existing-cfg.yaml");
 
 	FILE *f = fopen(cfg->file_path, "w");
 	assert_non_null(f);
@@ -462,14 +478,114 @@ void cfg_file_write__existing(void **state) {
 
 	cfg_file_write();
 
-	assert_log(INFO, "\nWrote configuration file: /tmp/cfg.yaml\n");
+	assert_log(INFO, "\nWrote configuration file: write-existing-cfg.yaml\n");
 
-	char *actual = read_file("/tmp/cfg.yaml");
+	char *actual = read_file("write-existing-cfg.yaml");
 
 	assert_string_equal(actual, expected);
 
 	free(expected);
 	free(actual);
+}
+
+void cfg_file_paths_init__min(void **state) {
+	char path[PATH_MAX];
+
+	unsetenv("XDG_CONFIG_HOME");
+
+	cfg_file_paths_init("inexistent");
+
+	snprintf(path, PATH_MAX, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
+	assert_string_equal(slist_at(cfg_file_paths, 0), path);
+
+	assert_string_equal(slist_at(cfg_file_paths, 1), "/usr/local/etc/way-displays/cfg.yaml");
+
+	assert_string_equal(slist_at(cfg_file_paths, 2), ROOT_ETC"/way-displays/cfg.yaml");
+
+	assert_int_equal(slist_length(cfg_file_paths), 3);
+}
+
+void cfg_file_paths_init__xch(void **state) {
+	setenv("XDG_CONFIG_HOME", "xch", 1);
+
+	cfg_file_paths_init(NULL);
+
+	assert_string_equal(slist_at(cfg_file_paths, 0), "xch/way-displays/cfg.yaml");
+
+	assert_int_equal(slist_length(cfg_file_paths), 4);
+}
+
+void cfg_file_paths_init__user(void **state) {
+	unsetenv("XDG_CONFIG_HOME");
+
+	cfg_file_paths_init(".");
+
+	assert_string_equal(slist_at(cfg_file_paths, 0), ".");
+
+	assert_int_equal(slist_length(cfg_file_paths), 4);
+}
+
+void resolve_cfg_file__not_found(void **state) {
+	char cwd[PATH_MAX];
+	char file_path[PATH_MAX + 64];
+
+	getcwd(cwd, PATH_MAX);
+
+	snprintf(file_path, PATH_MAX + 64, "%s/inexistent.yaml", cwd);
+
+	slist_append(&cfg_file_paths, strdup(file_path));
+
+	assert_false(resolve_cfg_file(cfg));
+
+	assert_null(cfg->file_path);
+	assert_null(cfg->dir_path);
+	assert_null(cfg->file_name);
+}
+
+void resolve_cfg_file__direct(void **state) {
+	char cwd[PATH_MAX];
+	char file_path[PATH_MAX * 2];
+
+	getcwd(cwd, PATH_MAX);
+
+	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", cwd);
+	slist_append(&cfg_file_paths, strdup(file_path));
+
+	FILE *f = fopen(file_path, "w");
+	fclose(f);
+
+	assert_true(resolve_cfg_file(cfg));
+
+	assert_string_equal(cfg->file_path, file_path);
+	assert_string_equal(cfg->dir_path, cwd);
+	assert_string_equal(cfg->file_name, "resolved.yaml");
+}
+
+void resolve_cfg_file__linked(void **state) {
+	char cwd[PATH_MAX];
+	char file_path[PATH_MAX * 2];
+	char linked_path[PATH_MAX * 2];
+
+	getcwd(cwd, PATH_MAX);
+
+	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
+	mode |=       S_IRGRP | S_IXGRP;
+	mode |=       S_IROTH | S_IXOTH;
+	assert_true(mkdir_p("resolve", mode));
+
+	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", cwd);
+	snprintf(linked_path, sizeof(file_path), "%s/resolve/link.yaml", cwd);
+	slist_append(&cfg_file_paths, strdup(linked_path));
+
+	FILE *f = fopen(file_path, "w");
+	fclose(f);
+	symlink(file_path, linked_path);
+
+	assert_true(resolve_cfg_file(cfg));
+
+	assert_string_equal(cfg->file_path, file_path);
+	assert_string_equal(cfg->dir_path, cwd);
+	assert_string_equal(cfg->file_name, "resolved.yaml");
 }
 
 int main(void) {
@@ -501,6 +617,14 @@ int main(void) {
 
 		TEST(cfg_file_write__cannot_write),
 		TEST(cfg_file_write__existing),
+
+		TEST(cfg_file_paths_init__min),
+		TEST(cfg_file_paths_init__xch),
+		TEST(cfg_file_paths_init__user),
+
+		TEST(resolve_cfg_file__not_found),
+		TEST(resolve_cfg_file__direct),
+		TEST(resolve_cfg_file__linked),
 	};
 
 	return RUN(tests);

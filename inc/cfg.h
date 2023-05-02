@@ -78,6 +78,8 @@ enum CfgElement {
 	ARRANGE_ALIGN,
 };
 
+void cfg_file_paths_init(const char *user_path);
+
 void cfg_init(const char *cfg_path);
 
 bool cfg_equal(struct Cfg *a, struct Cfg *b);

@@ -378,6 +378,40 @@ end:
 	return rc;
 }
 
+bool resolve_cfg_file(struct Cfg *cfg) {
+	if (!cfg)
+		return false;
+
+	static char path[PATH_MAX];
+
+	for (struct SList *i = cfg_file_paths; i; i = i->nex) {
+		if (access(i->val, R_OK) == 0) {
+
+			char *file_path = realpath(i->val, NULL);
+
+			if (!file_path) {
+				continue;
+			}
+			if (access(file_path, R_OK) != 0) {
+				free(file_path);
+				continue;
+			}
+
+			cfg->file_path = file_path;
+
+			strcpy(path, file_path);
+			cfg->dir_path = strdup(dirname(path));
+
+			strcpy(path, file_path);
+			cfg->file_name = strdup(basename(path));
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool resolve_paths(struct Cfg *cfg, const char *cfg_path, const char *prefix, const char *suffix) {
 	if (!cfg)
 		return false;
@@ -623,15 +657,39 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
 	return merged;
 }
 
-void cfg_init(const char *cfg_path) {
+void cfg_file_paths_init(const char *user_path) { char path[PATH_MAX];
+
+	// maybe user
+	if (access(user_path, R_OK) == 0) {
+		slist_append(&cfg_file_paths, strdup(user_path));
+	}
+
+	// maybe XDG_CONFIG_HOME
+	if (getenv("XDG_CONFIG_HOME") != NULL) {
+		snprintf(path, PATH_MAX, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
+		slist_append(&cfg_file_paths, strdup(path));
+	}
+
+	// ~/.config
+	snprintf(path, PATH_MAX, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
+	slist_append(&cfg_file_paths, strdup(path));
+
+	// etc
+	slist_append(&cfg_file_paths, strdup("/usr/local/etc/way-displays/cfg.yaml"));
+	slist_append(&cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
+}
+
+void cfg_init(const char *user_path) {
+	cfg_file_paths_init(user_path);
+
 	bool found = false;
 
 	cfg = cfg_default();
 
-	if (cfg_path) {
-		found = resolve_paths(cfg, cfg_path, NULL, NULL);
+	if (user_path) {
+		found = resolve_paths(cfg, user_path, NULL, NULL);
 		if (!found) {
-			log_warn("\n%s not found", cfg_path);
+			log_warn("\n%s not found", user_path);
 		}
 	}
 	if (!found && getenv("XDG_CONFIG_HOME"))
