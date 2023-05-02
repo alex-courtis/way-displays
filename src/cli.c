@@ -36,10 +36,12 @@ void usage(FILE *stream) {
 		"     MODE <name> MAX\n"
 		"     MODE <name> <width> <height> [<Hz>]\n"
 		"     DISABLED <name>\n"
+		"     VRR_OFF <name>\n"
 		"  -d, --d[elete]  remove\n"
 		"     SCALE <name>\n"
 		"     MODE <name>\n"
 		"     DISABLED <name>\n"
+		"     VRR_OFF <name>\n"
 		;
 	fprintf(stream, "%s", mesg);
 }
