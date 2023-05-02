@@ -18,6 +18,7 @@ static struct NameVal cfg_elements[] = {
 	{ .val = ARRANGE,               .name = "ARRANGE",               },
 	{ .val = ALIGN,                 .name = "ALIGN",                 },
 	{ .val = ORDER,                 .name = "ORDER",                 },
+	{ .val = SCALE,                 .name = "SCALE",                 },
 	{ .val = AUTO_SCALE,            .name = "AUTO_SCALE",            },
 	{ .val = SCALE,                 .name = "SCALE",                 },
 	{ .val = MODE,                  .name = "MODE",                  },
@@ -45,7 +46,7 @@ static struct NameVal aligns[] = {
 	{ .val = 0,      .name = NULL,     },
 };
 
-static struct NameVal auto_scales[] = {
+static struct NameVal on_offs[] = {
 	{ .val = ON,  .name = "ON",    },
 	{ .val = OFF, .name = "OFF",   },
 	{ .val = ON,  .name = "TRUE",  },
@@ -147,12 +148,12 @@ const char *align_name(enum Align align) {
 	return name(aligns, align);
 }
 
-enum AutoScale auto_scale_val(const char *name) {
-	return val(auto_scales, name);
+enum OnOff on_off_val(const char *name) {
+	return val(on_offs, name);
 }
 
-const char *auto_scale_name(enum AutoScale auto_scale) {
-	return name(auto_scales, auto_scale);
+const char *on_off_name(enum OnOff on_off) {
+	return name(on_offs, on_off);
 }
 
 enum IpcRequestOperation ipc_request_op_val(const char *name) {

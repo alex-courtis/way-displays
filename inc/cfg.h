@@ -25,9 +25,10 @@ enum Align {
 	ALIGN_DEFAULT = TOP,
 };
 
-enum AutoScale {
+enum OnOff {
 	ON = 1,
 	OFF,
+	SCALING_DEFAULT = ON,
 	AUTO_SCALE_DEFAULT = ON,
 };
 
@@ -51,7 +52,8 @@ struct Cfg {
 	struct SList *order_name_desc;
 	enum Arrange arrange;
 	enum Align align;
-	enum AutoScale auto_scale;
+	enum OnOff scaling;
+	enum OnOff auto_scale;
 	struct SList *user_scales;
 	struct SList *user_modes;
 	struct SList *adaptive_sync_off_name_desc;

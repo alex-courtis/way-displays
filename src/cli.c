@@ -59,7 +59,7 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			parsed = parsed && (cfg->align = align_val_start(argv[optind + 1]));
 			break;
 		case AUTO_SCALE:
-			parsed = (cfg->auto_scale = auto_scale_val(argv[optind]));
+			parsed = (cfg->auto_scale = on_off_val(argv[optind]));
 			break;
 		case SCALE:
 			switch (op) {

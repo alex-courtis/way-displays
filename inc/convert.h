@@ -14,8 +14,8 @@ const char *arrange_name(enum Arrange arrange);
 enum Align align_val_start(const char *name);
 const char *align_name(enum Align align);
 
-enum AutoScale auto_scale_val(const char *name);
-const char *auto_scale_name(enum AutoScale auto_scale);
+enum OnOff on_off_val(const char *name);
+const char *on_off_name(enum OnOff on_off);
 
 enum IpcRequestOperation ipc_request_op_val(const char *name);
 const char *ipc_request_op_name(enum IpcRequestOperation ipc_request_op);
