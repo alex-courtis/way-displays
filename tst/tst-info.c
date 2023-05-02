@@ -57,8 +57,11 @@ void print_cfg_commands__ok(void **state) {
 	slist_append(&cfg->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
 
-	slist_append(&cfg->disabled_name_desc, strdup("one"));
-	slist_append(&cfg->disabled_name_desc, strdup("two"));
+	slist_append(&cfg->disabled_name_desc, strdup("three"));
+	slist_append(&cfg->disabled_name_desc, strdup("four"));
+
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("five"));
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("six"));
 
 	print_cfg_commands(INFO, cfg);
 

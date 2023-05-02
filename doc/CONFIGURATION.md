@@ -196,10 +196,12 @@ COMMANDS
      MODE <name> MAX
      MODE <name> <width> <height> [<Hz>]
      DISABLED <name>
+     VRR_OFF <name>
   -d, --d[elete]  remove
      SCALE <name>
      MODE <name>
      DISABLED <name>
+     VRR_OFF <name>
 ```
 
 ### Examples

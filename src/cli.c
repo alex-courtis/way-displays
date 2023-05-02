@@ -36,10 +36,12 @@ void usage(FILE *stream) {
 		"     MODE <name> MAX\n"
 		"     MODE <name> <width> <height> [<Hz>]\n"
 		"     DISABLED <name>\n"
+		"     VRR_OFF <name>\n"
 		"  -d, --d[elete]  remove\n"
 		"     SCALE <name>\n"
 		"     MODE <name>\n"
 		"     DISABLED <name>\n"
+		"     VRR_OFF <name>\n"
 		;
 	fprintf(stream, "%s", mesg);
 }
@@ -230,6 +232,7 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 		case MODE:
 		case SCALE:
 		case DISABLED:
+		case VRR_OFF:
 			if (optind + 1 != argc) {
 				log_error("%s requires one argument", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
