@@ -86,6 +86,14 @@ ORDER:
 ```
 Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
 
+### SCALING
+
+Enable scaling, overrides AUTO_SCALE and SCALE
+
+```yaml
+SCALING: false
+```
+
 ### AUTO_SCALE
 
 The default is to scale each display by DPI.
@@ -191,6 +199,7 @@ COMMANDS
   -s, --s[et]     add or change
      ARRANGE_ALIGN <row|column> <top|middle|bottom|left|right>
      ORDER <name> ...
+     SCALING <on|off>
      AUTO_SCALE <on|off>
      SCALE <name> <scale>
      MODE <name> MAX

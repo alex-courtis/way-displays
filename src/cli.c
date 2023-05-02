@@ -31,6 +31,7 @@ void usage(FILE *stream) {
 		"  -s, --s[et]     add or change\n"
 		"     ARRANGE_ALIGN <row|column> <top|middle|bottom|left|right>\n"
 		"     ORDER <name> ...\n"
+		"     SCALING <on|off>\n"
 		"     AUTO_SCALE <on|off>\n"
 		"     SCALE <name> <scale>\n"
 		"     MODE <name> MAX\n"

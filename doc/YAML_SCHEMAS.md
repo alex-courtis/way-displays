@@ -45,6 +45,7 @@ ARRANGE: !!arrange
 ALIGN: !!align
 ORDER: !!seq
   - !!str
+SCALING: !!bool
 AUTO_SCALE: !!bool
 SCALE: !!seq
   - !!map
