@@ -1,3 +1,12 @@
+way-displays 1.8.0 2023-05-06
+-----------------------------
+- ORDER, DISABLED, SCALE, MODE may use a regex
+- Explicit ORDER: exact match, regex match, partial match
+- Add VRR_OFF
+- Add SCALING
+- CLI --get prints commands
+- CLI --yaml output
+
 way-displays 1.7.1 2023-01-24
 -----------------------------
 - Add VRR / adaptive sync support for river
