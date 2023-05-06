@@ -139,9 +139,7 @@ export WLR_DRM_NO_MODIFIERS=1
 
 When a display is scaled (X11) linux games will render at the display's scaled resolution, rather than the monitor's native resolution. There is [work underway](https://gitlab.freedesktop.org/wlroots/wlroots/-/issues/2125) to fix this.
 
-In the meantime, auto scale may be temporarily disabled via `way-displays -s AUTO_SCALE off`.
-
-Any explicily specified `SCALE` values will override `AUTO_SCALE: false`, so you would need to temporarily remove those via `way-displays -d SCALE "my monitor"`
+In the meantime, you may temporarily disable scaling via `way-displays -s SCALING off`
 
 ## What Is Preferred Mode?
 
