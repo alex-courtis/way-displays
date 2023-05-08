@@ -82,7 +82,11 @@ int before_each(void **state) {
 int after_each(void **state) {
 	struct State *s = *state;
 
-	setenv("XDG_CONFIG_HOME", xdg_config_home, 1);
+	if (xdg_config_home) {
+		setenv("XDG_CONFIG_HOME", xdg_config_home, 1);
+	} else {
+		unsetenv("XDG_CONFIG_HOME");
+	}
 	slist_free_vals(&cfg_file_paths, NULL);
 
 	clean_files();
