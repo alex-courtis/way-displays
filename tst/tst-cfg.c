@@ -3,7 +3,6 @@
 #include "util.h"
 
 #include <cmocka.h>
-#include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -35,9 +34,6 @@ char *__wrap_marshal_cfg(struct Cfg *cfg) {
 
 
 void clean_files(void) {
-	rmdir("mkdir_p/foo/bar");
-	rmdir("mkdir_p/foo");
-	rmdir("mkdir_p");
 	remove("write-existing-cfg.yaml");
 	remove("resolved.yaml");
 	remove("resolve/link.yaml");
@@ -417,44 +413,6 @@ void validate_warn__(void **state) {
 	assert_log(WARNING, read_file("tst/cfg/validate-warn.log"));
 }
 
-void mkdir_p__no_perm(void **state) {
-	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
-	mode |=       S_IRGRP | S_IXGRP;
-	mode |=       S_IROTH | S_IXOTH;
-
-	assert_false(mkdir_p("/foo/bar", mode));
-
-	assert_log(ERROR, "\nCannot create directory /foo\n");
-
-	struct stat sb;
-	assert_int_equal(stat("/foo/bar", &sb), -1);
-	assert_int_equal(errno, ENOENT);
-}
-
-void mkdir_p__ok(void **state) {
-	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
-	mode |=       S_IRGRP | S_IXGRP;
-	mode |=       S_IROTH | S_IXOTH;
-
-	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
-
-	struct stat sb;
-	assert_int_equal(stat("mkdir_p/foo/bar", &sb), 0);
-}
-
-void mkdir_p__exists(void **state) {
-	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
-	mode |=       S_IRGRP | S_IXGRP;
-	mode |=       S_IROTH | S_IXOTH;
-
-	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
-
-	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
-
-	struct stat sb;
-	assert_int_equal(stat("mkdir_p/foo/bar", &sb), 0);
-}
-
 void cfg_file_write__cannot_write(void **state) {
 	cfg->file_path = strdup("/root.cfg.yaml");
 
@@ -619,10 +577,6 @@ int main(void) {
 		TEST(validate_fix__mode),
 
 		TEST(validate_warn__),
-
-		TEST(mkdir_p__no_perm),
-		TEST(mkdir_p__ok),
-		TEST(mkdir_p__exists),
 
 		TEST(cfg_file_write__cannot_write),
 		TEST(cfg_file_write__existing),

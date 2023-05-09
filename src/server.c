@@ -232,6 +232,9 @@ server(char *cfg_path) {
 
 	log_info("way-displays version %s", VERSION);
 
+	// all cfg paths
+	cfg_file_paths_init(cfg_path);
+
 	// maybe default, never exits
 	cfg_init(cfg_path);
 	free(cfg_path);
@@ -253,9 +256,10 @@ server(char *cfg_path) {
 	// only stops when signalled or display goes away
 	int sig = loop();
 
-	// release what remote resources we can
+	// release what resources we can
 	heads_destroy();
 	lid_destroy();
+	cfg_file_paths_destroy();
 	cfg_destroy();
 	displ_destroy();
 

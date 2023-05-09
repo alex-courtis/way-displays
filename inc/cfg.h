@@ -114,5 +114,7 @@ void cfg_destroy(void);
 
 void cfg_free(struct Cfg *cfg);
 
+void cfg_file_paths_destroy(void);
+
 #endif // CFG_H
 

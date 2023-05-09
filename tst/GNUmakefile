@@ -35,6 +35,9 @@ tst-marshalling: tst/tst-marshalling.o $(OBJS)
 tst-info: tst/tst-info.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
 
+tst-fs: tst/tst-fs.o $(OBJS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
+
 tst-all: $(TST_E)
 	@for e in $(^); do \
 		echo ;\

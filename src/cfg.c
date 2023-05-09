@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #include "cfg.h"
@@ -346,38 +345,6 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) 
 	return us;
 }
 
-bool mkdir_p(char *path, mode_t mode) {
-	bool rc = false;
-	char *dir_path = NULL;
-
-	if (!path) {
-		goto end;
-	}
-
-	struct stat sb;
-	if (stat(path, &sb) == 0) {
-		rc = true;
-		goto end;
-	}
-
-	dir_path = strdup(path);
-	if (!mkdir_p(dirname(dir_path), mode)) {
-		goto end;
-	}
-
-	if (mkdir(path, mode) != 0) {
-		log_error_errno("\nCannot create directory %s", path);
-		goto end;
-	}
-
-	rc = true;
-
-end:
-	free(dir_path);
-
-	return rc;
-}
-
 bool resolve_cfg_file(struct Cfg *cfg) {
 	if (!cfg)
 		return false;
@@ -657,10 +624,11 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
 	return merged;
 }
 
-void cfg_file_paths_init(const char *user_path) { char path[PATH_MAX];
+void cfg_file_paths_init(const char *user_path) {
+	char path[PATH_MAX];
 
 	// maybe user
-	if (access(user_path, R_OK) == 0) {
+	if (user_path && access(user_path, R_OK) == 0) {
 		slist_append(&cfg_file_paths, strdup(user_path));
 	}
 
@@ -680,26 +648,9 @@ void cfg_file_paths_init(const char *user_path) { char path[PATH_MAX];
 }
 
 void cfg_init(const char *user_path) {
-	cfg_file_paths_init(user_path);
-
-	bool found = false;
-
 	cfg = cfg_default();
 
-	if (user_path) {
-		found = resolve_paths(cfg, user_path, NULL, NULL);
-		if (!found) {
-			log_warn("\n%s not found", user_path);
-		}
-	}
-	if (!found && getenv("XDG_CONFIG_HOME"))
-		found = resolve_paths(cfg, NULL, getenv("XDG_CONFIG_HOME"), "");
-	if (!found && getenv("HOME"))
-		found = resolve_paths(cfg, NULL, getenv("HOME"), "/.config");
-	if (!found)
-		found = resolve_paths(cfg, NULL, "/usr/local/etc", "");
-	if (!found)
-		found = resolve_paths(cfg, NULL, ROOT_ETC, "");
+	bool found = resolve_cfg_file(cfg);
 
 	if (found) {
 		log_info("\nFound configuration file: %s", cfg->file_path);
@@ -826,5 +777,9 @@ void cfg_user_mode_free(void *data) {
 	free(user_mode->name_desc);
 
 	free(user_mode);
+}
+
+void cfg_file_paths_destroy(void) {
+	slist_free_vals(&cfg_file_paths, NULL);
 }
 
