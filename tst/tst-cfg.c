@@ -32,9 +32,14 @@ char *__wrap_marshal_cfg(struct Cfg *cfg) {
 	return mock_type(char*);
 }
 
+bool __wrap_file_write(const char *path, const char *contents) {
+	check_expected(path);
+	check_expected(contents);
+	return mock_type(bool);
+}
+
 
 void clean_files(void) {
-	remove("write-existing-cfg.yaml");
 	remove("resolved.yaml");
 	remove("resolve/link.yaml");
 	rmdir("resolve");
@@ -414,19 +419,18 @@ void validate_warn__(void **state) {
 }
 
 void cfg_file_write__cannot_write(void **state) {
-	cfg->file_path = strdup("/root.cfg.yaml");
+	cfg->file_path = strdup("unwriteable");
 
 	char *expected = strdup("XXXX");
 
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
+	expect_string(__wrap_file_write, path, cfg->file_path);
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, false);
+
 	cfg_file_write();
-
-	assert_log(ERROR, "\nUnable to write to /root.cfg.yaml\n");
-
-	FILE *f = fopen(cfg->file_path, "r");
-	assert_null(f);
 
 	free(expected);
 }
@@ -443,16 +447,15 @@ void cfg_file_write__existing(void **state) {
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
+	expect_string(__wrap_file_write, path, cfg->file_path);
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, true);
+
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: write-existing-cfg.yaml\n");
 
-	char *actual = read_file("write-existing-cfg.yaml");
-
-	assert_string_equal(actual, expected);
-
 	free(expected);
-	free(actual);
 }
 
 void cfg_file_paths_init__min(void **state) {

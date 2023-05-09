@@ -1,9 +1,12 @@
 #include "tst.h" // IWYU pragma: keep
 
 #include <cmocka.h>
+#include <errno.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "convert.h"
 #include "log.h"
@@ -95,9 +98,13 @@ void __wrap_log_error_nocap(const char *__restrict __format, ...) {
 }
 
 void __wrap_log_error_errno(const char *__restrict __format, ...) {
+	static char fmt[262144];
+
+	snprintf(fmt, sizeof(fmt), "%s: %d %s", __format, errno, strerror(errno));
+
 	va_list args;
 	va_start(args, __format);
-	_log(ERROR, __format, args);
+	_log(ERROR, fmt, args);
 	va_end(args);
 }
 

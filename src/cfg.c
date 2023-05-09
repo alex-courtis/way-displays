@@ -9,6 +9,7 @@
 
 #include "cfg.h"
 
+#include "fs.h"
 #include "convert.h"
 #include "global.h"
 #include "info.h"
@@ -379,42 +380,6 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 	return false;
 }
 
-bool resolve_paths(struct Cfg *cfg, const char *cfg_path, const char *prefix, const char *suffix) {
-	if (!cfg)
-		return false;
-
-	char path[PATH_MAX];
-
-	if (cfg_path) {
-		snprintf(path, PATH_MAX, "%s", cfg_path);
-	} else {
-		snprintf(path, PATH_MAX, "%s%s/way-displays/cfg.yaml", prefix, suffix);
-	}
-
-	if (access(path, R_OK) != 0) {
-		return false;
-	}
-
-	char *file_path = realpath(path, NULL);
-	if (!file_path) {
-		return false;
-	}
-	if (access(file_path, R_OK) != 0) {
-		free(file_path);
-		return false;
-	}
-
-	cfg->file_path = file_path;
-
-	strcpy(path, file_path);
-	cfg->dir_path = strdup(dirname(path));
-
-	strcpy(path, file_path);
-	cfg->file_name = strdup(basename(path));
-
-	return true;
-}
-
 void validate_fix(struct Cfg *cfg) {
 	if (!cfg) {
 		return;
@@ -710,19 +675,11 @@ void cfg_file_write(void) {
 		goto end;
 	}
 
-	FILE *f = fopen(cfg->file_path, "w");
-	if (!f) {
-		log_error_errno("\nUnable to write to %s", cfg->file_path);
-		goto end;
+	cfg->written = file_write(cfg->file_path, yaml);
+
+	if (cfg->written) {
+		log_info("\nWrote configuration file: %s", cfg->file_path);
 	}
-
-	fprintf(f, "%s\n", yaml);
-
-	fclose(f);
-
-	cfg->written = true;
-
-	log_info("\nWrote configuration file: %s", cfg->file_path);
 
 end:
 	free(yaml);

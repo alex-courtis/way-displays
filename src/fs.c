@@ -38,3 +38,28 @@ end:
 
 	return rc;
 }
+
+bool file_write(const char *path, const char *contents) {
+	if (!path || !contents) {
+		return false;
+	}
+
+	FILE *f = fopen(path, "w");
+
+	if (!f) {
+		log_error_errno("\nUnable to write to %s", path);
+		return false;
+	}
+
+	fprintf(f, "%s\n", contents);
+
+	fflush(f);
+
+	if (fclose(f) != 0) {
+		log_error_errno("\nUnable to write to %s", path);
+		return false;
+	}
+
+	return true;
+}
+

@@ -53,7 +53,7 @@ void mkdir_p__no_perm(void **state) {
 
 	assert_false(mkdir_p("/foo/bar", mode));
 
-	assert_log(ERROR, "\nCannot create directory /foo\n");
+	assert_log(ERROR, "\nCannot create directory /foo: 13 Permission denied\n");
 
 	struct stat sb;
 	assert_int_equal(stat("/foo/bar", &sb), -1);

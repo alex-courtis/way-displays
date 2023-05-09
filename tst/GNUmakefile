@@ -27,7 +27,7 @@ tst-layout: tst/tst-layout.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=lid_is_closed,--wrap=head_find_mode,--wrap=head_auto_scale
 
 tst-cfg: tst/tst-cfg.o $(OBJS)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=marshal_cfg
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS),--wrap=marshal_cfg,--wrap=file_write
 
 tst-marshalling: tst/tst-marshalling.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
