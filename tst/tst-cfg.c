@@ -53,11 +53,15 @@ struct State {
 
 int before_all(void **state) {
 	xdg_config_home = getenv("XDG_CONFIG_HOME");
+	if (xdg_config_home) {
+		xdg_config_home = strdup(xdg_config_home);
+	}
 
 	return 0;
 }
 
 int after_all(void **state) {
+	free(xdg_config_home);
 
 	return 0;
 }
@@ -87,6 +91,7 @@ int after_each(void **state) {
 	} else {
 		unsetenv("XDG_CONFIG_HOME");
 	}
+
 	slist_free_vals(&cfg_file_paths, NULL);
 
 	clean_files();
