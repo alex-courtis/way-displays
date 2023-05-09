@@ -363,12 +363,13 @@ void desire_mode__disabled(void **state) {
 	struct Mode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
+		.desired.enabled = false,
 		.desired.mode = &mode0,
 	};
 
 	desire_mode(&head0);
 
-	assert_null(head0.desired.mode);
+	assert_ptr_equal(head0.desired.mode, &mode0);
 	assert_false(head0.desired.enabled);
 	assert_false(head0.warned_no_mode);
 }
@@ -392,7 +393,7 @@ void desire_mode__no_mode(void **state) {
 
 	assert_log(WARNING, "\nNo mode for head0, disabling.\n");
 
-	assert_null(head0.desired.mode);
+	assert_ptr_equal(head0.desired.mode, &mode0);
 	assert_false(head0.desired.enabled);
 	assert_true(head0.warned_no_mode);
 }
@@ -411,7 +412,7 @@ void desire_mode__no_mode_warned(void **state) {
 
 	desire_mode(&head0);
 
-	assert_null(head0.desired.mode);
+	assert_ptr_equal(head0.desired.mode, &mode0);
 	assert_false(head0.desired.enabled);
 	assert_true(head0.warned_no_mode);
 }
@@ -501,18 +502,18 @@ void desire_scale__user(void **state) {
 void desire_adaptive_sync__head_disabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = false,
-		.desired.adaptive_sync = true,
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 	};
 
 	desire_adaptive_sync(&head0);
 
-	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
 }
 
 void desire_adaptive_sync__failed(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
-		.desired.adaptive_sync = true,
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 		.adaptive_sync_failed = true,
 	};
 
@@ -525,20 +526,20 @@ void desire_adaptive_sync__adaptive_sync_off(void **state) {
 	struct Head head0 = {
 		.name = "some head",
 		.desired.enabled = true,
-		.desired.adaptive_sync = true,
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 	};
 
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("!.*hea"));
 
 	desire_adaptive_sync(&head0);
 
-	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
 }
 
 void desire_adaptive_sync__ok(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
-		.desired.adaptive_sync = true,
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 	};
 
 	desire_adaptive_sync(&head0);
