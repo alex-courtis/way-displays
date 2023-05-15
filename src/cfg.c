@@ -346,11 +346,21 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) 
 	return us;
 }
 
+void set_file_dir(struct Cfg *cfg) {
+	static char path[PATH_MAX];
+
+	strcpy(path, cfg->file_path);
+	free(cfg->dir_path);
+	cfg->dir_path = strdup(dirname(path));
+
+	strcpy(path, cfg->file_path);
+	free(cfg->file_name);
+	cfg->file_name = strdup(basename(path));
+}
+
 bool resolve_cfg_file(struct Cfg *cfg) {
 	if (!cfg)
 		return false;
-
-	static char path[PATH_MAX];
 
 	for (struct SList *i = cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
@@ -365,13 +375,10 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 				continue;
 			}
 
+			free(cfg->file_path);
 			cfg->file_path = file_path;
 
-			strcpy(path, file_path);
-			cfg->dir_path = strdup(dirname(path));
-
-			strcpy(path, file_path);
-			cfg->file_name = strdup(basename(path));
+			set_file_dir(cfg);
 
 			return true;
 		}
@@ -665,6 +672,7 @@ void cfg_file_reload(void) {
 void cfg_file_write(void) {
 	char *yaml = NULL;
 
+	// TODO write new
 	if (!cfg->file_path) {
 		log_error("\nMissing file path");
 		goto end;
@@ -676,6 +684,33 @@ void cfg_file_write(void) {
 	}
 
 	cfg->written = file_write(cfg->file_path, yaml);
+
+	if (!cfg->written) {
+		// TODO destroy inotify
+
+		// write preferred alternatives
+		for (struct SList *i = cfg_file_paths; i; i = i->nex) {
+			if (strcmp(i->val, cfg->file_path) == 0) {
+				continue;
+			}
+			if ((cfg->written = file_write(i->val, yaml))) {
+				cfg->file_path = strdup(i->val);
+				set_file_dir(cfg);
+				break;
+			}
+		}
+
+		if (cfg->written) {
+			// TODO create inotify
+		} else {
+			free(cfg->file_path);
+			cfg->file_path = NULL;
+			free(cfg->dir_path);
+			cfg->dir_path = NULL;
+			free(cfg->file_name);
+			cfg->file_name = NULL;
+		}
+	}
 
 	if (cfg->written) {
 		log_info("\nWrote configuration file: %s", cfg->file_path);

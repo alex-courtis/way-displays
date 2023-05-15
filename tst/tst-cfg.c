@@ -40,6 +40,7 @@ bool __wrap_file_write(const char *path, const char *contents) {
 
 
 void clean_files(void) {
+	remove("write-existing-cfg.yaml");
 	remove("resolved.yaml");
 	remove("resolve/link.yaml");
 	rmdir("resolve");
@@ -418,8 +419,16 @@ void validate_warn__(void **state) {
 	assert_log(WARNING, read_file("tst/cfg/validate-warn.log"));
 }
 
-void cfg_file_write__cannot_write(void **state) {
-	cfg->file_path = strdup("unwriteable");
+void cfg_file_write__cannot_write_use_alternative(void **state) {
+	slist_append(&cfg_file_paths, strdup("/path/to/one"));
+	slist_append(&cfg_file_paths, strdup("/path/to/two"));
+	slist_append(&cfg_file_paths, strdup("/path/to/three"));
+	slist_append(&cfg_file_paths, strdup("/path/to/four"));
+	slist_append(&cfg_file_paths, strdup("/path/to/five"));
+
+	cfg->file_path = strdup("/path/to/three");
+	cfg->dir_path = strdup("nothing");
+	cfg->file_name = strdup("missing");
 
 	char *expected = strdup("XXXX");
 
@@ -430,7 +439,55 @@ void cfg_file_write__cannot_write(void **state) {
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
 
+	expect_string(__wrap_file_write, path, "/path/to/one");
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, false);
+
+	expect_string(__wrap_file_write, path, "/path/to/two");
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, false);
+
+	expect_string(__wrap_file_write, path, "/path/to/four");
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, true);
+
 	cfg_file_write();
+
+	assert_log(INFO, "\nWrote configuration file: /path/to/four\n");
+
+	assert_string_equal(cfg->file_path, "/path/to/four");
+	assert_string_equal(cfg->dir_path, "/path/to");
+	assert_string_equal(cfg->file_name, "four");
+
+	free(expected);
+}
+
+void cfg_file_write__cannot_write_no_alternative(void **state) {
+	slist_append(&cfg_file_paths, strdup("/path/to/one"));
+	slist_append(&cfg_file_paths, strdup("/path/to/two"));
+
+	cfg->file_path = strdup("/path/to/one");
+	cfg->dir_path = strdup("/path/to");
+	cfg->file_name = strdup("one");
+
+	char *expected = strdup("XXXX");
+
+	expect_string(__wrap_marshal_cfg, cfg, cfg);
+	will_return(__wrap_marshal_cfg, strdup(expected));
+
+	expect_string(__wrap_file_write, path, cfg->file_path);
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, false);
+
+	expect_string(__wrap_file_write, path, "/path/to/two");
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, false);
+
+	cfg_file_write();
+
+	assert_null(cfg->file_path);
+	assert_null(cfg->dir_path);
+	assert_null(cfg->file_name);
 
 	free(expected);
 }
@@ -581,7 +638,8 @@ int main(void) {
 
 		TEST(validate_warn__),
 
-		TEST(cfg_file_write__cannot_write),
+		TEST(cfg_file_write__cannot_write_use_alternative),
+		TEST(cfg_file_write__cannot_write_no_alternative),
 		TEST(cfg_file_write__existing),
 
 		TEST(cfg_file_paths_init__min),
