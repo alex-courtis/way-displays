@@ -35,7 +35,7 @@ Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdis
 
 ## Requirements
 
-way-displays is known to work on the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river) compositors. It may work on any wlroots compositor that supports the WLR Output Management protocol.
+way-displays is known to work on the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on any wlroots compositor that supports the WLR Output Management protocol.
 
 The user must be a member of the `input` group.
 
@@ -60,6 +60,27 @@ exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 Add the following to your `init`:
 ```
 way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
+```
+
+### Hyprland
+
+Create a launcher: `${HOME}/.config/hypr/start-way-displays.sh`
+```sh
+#!/bin/sh
+
+sleep 1 # give Hyprland a moment to set its defaults
+
+way-displays > "/tmp/way-displays.${XDG_VTNR}.${USER}.log" 2>&1
+```
+
+Make it executable:
+```sh
+chmod 755 ${HOME}/.config/hypr/start-way-displays.sh
+```
+
+Add the following to your `hyprland.conf`:
+```
+exec-once = ${HOME}/.config/hypr/start-way-displays.sh
 ```
 
 ### Configure
