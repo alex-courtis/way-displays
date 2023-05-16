@@ -47,11 +47,7 @@ int after_each(void **state) {
 
 
 void mkdir_p__no_perm(void **state) {
-	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
-	mode |=       S_IRGRP | S_IXGRP;
-	mode |=       S_IROTH | S_IXOTH;
-
-	assert_false(mkdir_p("/foo/bar", mode));
+	assert_false(mkdir_p("/foo/bar", 0755));
 
 	assert_log(ERROR, "\nCannot create directory /foo: 13 Permission denied\n");
 
@@ -61,11 +57,7 @@ void mkdir_p__no_perm(void **state) {
 }
 
 void mkdir_p__ok(void **state) {
-	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
-	mode |=       S_IRGRP | S_IXGRP;
-	mode |=       S_IROTH | S_IXOTH;
-
-	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
+	assert_true(mkdir_p("mkdir_p/foo/bar", 0755));
 
 	struct stat sb;
 	assert_int_equal(stat("mkdir_p/foo/bar", &sb), 0);

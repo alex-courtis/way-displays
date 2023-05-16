@@ -22,7 +22,6 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
 void validate_warn(struct Cfg *cfg);
 void validate_fix(struct Cfg *cfg);
 bool resolve_cfg_file(struct Cfg *cfg);
-bool mkdir_p(char *path, mode_t mode);
 
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
@@ -36,6 +35,12 @@ char *__wrap_marshal_cfg(struct Cfg *cfg) {
 bool __wrap_file_write(const char *path, const char *contents) {
 	check_expected(path);
 	check_expected(contents);
+	return mock_type(bool);
+}
+
+bool __wrap_mkdir_p(char *path, mode_t mode) {
+	check_expected(path);
+	check_expected(mode);
 	return mock_type(bool);
 }
 
@@ -449,6 +454,10 @@ void cfg_file_write__none(void **state) {
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
+	expect_string(__wrap_mkdir_p, path, "/path/to");
+	expect_value(__wrap_mkdir_p, mode, 0755);
+	will_return(__wrap_mkdir_p, true);
+
 	expect_string(__wrap_file_write, path, "/path/to/zero");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, true);
@@ -485,13 +494,21 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
 
+	expect_string(__wrap_mkdir_p, path, "/path/to");
+	expect_value(__wrap_mkdir_p, mode, 0755);
+	will_return(__wrap_mkdir_p, true);
+
 	expect_string(__wrap_file_write, path, "/path/to/zero");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
 
-	expect_string(__wrap_file_write, path, "/path/to/one");
-	expect_string(__wrap_file_write, contents, expected);
-	will_return(__wrap_file_write, false);
+	expect_string(__wrap_mkdir_p, path, "/path/to");
+	expect_value(__wrap_mkdir_p, mode, 0755);
+	will_return(__wrap_mkdir_p, false);
+
+	expect_string(__wrap_mkdir_p, path, "/path/to");
+	expect_value(__wrap_mkdir_p, mode, 0755);
+	will_return(__wrap_mkdir_p, true);
 
 	expect_string(__wrap_file_write, path, "/path/to/three");
 	expect_string(__wrap_file_write, contents, expected);
@@ -527,6 +544,10 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 	expect_string(__wrap_file_write, path, "/path/to/zero");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
+
+	expect_string(__wrap_mkdir_p, path, "/path/to");
+	expect_value(__wrap_mkdir_p, mode, 0755);
+	will_return(__wrap_mkdir_p, true);
 
 	expect_string(__wrap_file_write, path, "/path/to/one");
 	expect_string(__wrap_file_write, contents, expected);
@@ -671,10 +692,7 @@ void resolve_cfg_file__linked(void **state) {
 
 	getcwd(cwd, PATH_MAX);
 
-	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
-	mode |=       S_IRGRP | S_IXGRP;
-	mode |=       S_IROTH | S_IXOTH;
-	assert_true(mkdir_p("resolve", mode));
+	assert_int_equal(mkdir("resolve", 0755), 0);
 
 	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", cwd);
 	snprintf(linked_path, sizeof(file_path), "%s/resolve/link.yaml", cwd);

@@ -691,8 +691,8 @@ void cfg_file_write(void) {
 	}
 
 	if (!cfg->written) {
-		cfg_free_paths(cfg);
 		// TODO destroy inotify
+		cfg_free_paths(cfg);
 
 		// write preferred alternatives
 		for (struct SList *i = cfg_file_paths; i; i = i->nex) {
@@ -702,12 +702,15 @@ void cfg_file_write(void) {
 				continue;
 			}
 
+			set_paths(cfg, i->val, i->val);
+
 			// attempt to write
-			if ((cfg->written = file_write(i->val, yaml))) {
-				set_paths(cfg, i->val, i->val);
+			if (mkdir_p(cfg->dir_path, 0755) && (cfg->written = file_write(i->val, yaml))) {
 				// TODO create inotify
-				break;
+				goto end;
 			}
+
+			cfg_free_paths(cfg);
 		}
 	}
 
