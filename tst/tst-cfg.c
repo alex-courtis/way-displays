@@ -442,91 +442,93 @@ void cfg_file_write__bad_yaml(void **state) {
 }
 
 void cfg_file_write__none(void **state) {
-	slist_append(&cfg_file_paths, strdup("/path/to/one"));
+	slist_append(&cfg_file_paths, strdup("/path/to/zero"));
 
 	char *expected = strdup("XXXX");
 
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
-	expect_string(__wrap_file_write, path, "/path/to/one");
+	expect_string(__wrap_file_write, path, "/path/to/zero");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, true);
 
 	cfg_file_write();
 
-	assert_log(INFO, "\nWrote configuration file: /path/to/one\n");
+	assert_log(INFO, "\nWrote configuration file: /path/to/zero\n");
 
-	assert_string_equal(cfg->file_path, "/path/to/one");
+	assert_string_equal(cfg->file_path, "/path/to/zero");
 	assert_string_equal(cfg->dir_path, "/path/to");
-	assert_string_equal(cfg->file_name, "one");
-	assert_string_equal(cfg->resolved_from, "/path/to/one");
+	assert_string_equal(cfg->file_name, "zero");
+	assert_string_equal(cfg->resolved_from, "/path/to/zero");
+	assert_ptr_equal(cfg->resolved_from, slist_at(cfg_file_paths, 0));
 }
 
 void cfg_file_write__cannot_write_use_alternative(void **state) {
+	slist_append(&cfg_file_paths, strdup("/path/to/zero"));
 	slist_append(&cfg_file_paths, strdup("/path/to/one"));
 	slist_append(&cfg_file_paths, strdup("/path/to/two"));
 	slist_append(&cfg_file_paths, strdup("/path/to/three"));
 	slist_append(&cfg_file_paths, strdup("/path/to/four"));
-	slist_append(&cfg_file_paths, strdup("/path/to/five"));
 
-	cfg->file_path = strdup("/path/to/three");
+	cfg->file_path = strdup("/path/to/two");
 	cfg->dir_path = strdup("nothing");
 	cfg->file_name = strdup("missing");
-	cfg->resolved_from = strdup("/path/to/three");
+	cfg->resolved_from = slist_at(cfg_file_paths, 2);
 
 	char *expected = strdup("XXXX");
 
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
-
-	expect_string(__wrap_file_write, path, "/path/to/three");
-	expect_string(__wrap_file_write, contents, expected);
-	will_return(__wrap_file_write, false);
-
-	expect_string(__wrap_file_write, path, "/path/to/one");
-	expect_string(__wrap_file_write, contents, expected);
-	will_return(__wrap_file_write, false);
 
 	expect_string(__wrap_file_write, path, "/path/to/two");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
 
-	expect_string(__wrap_file_write, path, "/path/to/four");
+	expect_string(__wrap_file_write, path, "/path/to/zero");
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, false);
+
+	expect_string(__wrap_file_write, path, "/path/to/one");
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, false);
+
+	expect_string(__wrap_file_write, path, "/path/to/three");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, true);
 
 	cfg_file_write();
 
-	assert_log(INFO, "\nWrote configuration file: /path/to/four\n");
+	assert_log(INFO, "\nWrote configuration file: /path/to/three\n");
 
-	assert_string_equal(cfg->file_path, "/path/to/four");
+	assert_string_equal(cfg->file_path, "/path/to/three");
 	assert_string_equal(cfg->dir_path, "/path/to");
-	assert_string_equal(cfg->file_name, "four");
-	assert_string_equal(cfg->resolved_from, "/path/to/four");
+	assert_string_equal(cfg->file_name, "three");
+	assert_string_equal(cfg->resolved_from, "/path/to/three");
+	assert_ptr_equal(cfg->resolved_from, slist_at(cfg_file_paths, 3));
 
 	free(expected);
 }
 
 void cfg_file_write__cannot_write_no_alternative(void **state) {
+	slist_append(&cfg_file_paths, strdup("/path/to/zero"));
 	slist_append(&cfg_file_paths, strdup("/path/to/one"));
-	slist_append(&cfg_file_paths, strdup("/path/to/two"));
 
-	cfg->file_path = strdup("/path/to/one");
+	cfg->file_path = strdup("/path/to/zero");
 	cfg->dir_path = strdup("/path/to");
 	cfg->file_name = strdup("one");
-	cfg->resolved_from = strdup("/path/to/one");
+	cfg->resolved_from = slist_at(cfg_file_paths, 0);
 
 	char *expected = strdup("XXXX");
 
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
-	expect_string(__wrap_file_write, path, "/path/to/one");
+	expect_string(__wrap_file_write, path, "/path/to/zero");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
 
-	expect_string(__wrap_file_write, path, "/path/to/two");
+	expect_string(__wrap_file_write, path, "/path/to/one");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
 
@@ -659,6 +661,7 @@ void resolve_cfg_file__direct(void **state) {
 	assert_string_equal(cfg->dir_path, cwd);
 	assert_string_equal(cfg->file_name, "resolved.yaml");
 	assert_string_equal(cfg->resolved_from, file_path);
+	assert_ptr_equal(cfg->resolved_from, slist_at(cfg_file_paths, 0));
 }
 
 void resolve_cfg_file__linked(void **state) {
@@ -687,6 +690,7 @@ void resolve_cfg_file__linked(void **state) {
 	assert_string_equal(cfg->dir_path, cwd);
 	assert_string_equal(cfg->file_name, "resolved.yaml");
 	assert_string_equal(cfg->resolved_from, linked_path);
+	assert_ptr_equal(cfg->resolved_from, slist_at(cfg_file_paths, 0));
 }
 
 int main(void) {

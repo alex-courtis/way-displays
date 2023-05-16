@@ -346,10 +346,10 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) 
 	return us;
 }
 
-void set_paths(struct Cfg *cfg, const char *resolved_from, const char *file_path) {
+void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
 	static char path[PATH_MAX];
 
-	cfg->resolved_from = strdup(resolved_from);
+	cfg->resolved_from = resolved_from;
 
 	cfg->file_path = strdup(file_path);
 
@@ -678,12 +678,9 @@ void cfg_file_reload(void) {
 
 void cfg_file_write(void) {
 	char *yaml = NULL;
-	char *resolved_from = NULL;
+	char *resolved_from = cfg->resolved_from;
 
 	cfg->written = false;
-	if (cfg->resolved_from) {
-		resolved_from = strdup(cfg->resolved_from);
-	}
 
 	if (!(yaml = marshal_cfg(cfg))) {
 		goto end;
@@ -701,7 +698,7 @@ void cfg_file_write(void) {
 		for (struct SList *i = cfg_file_paths; i; i = i->nex) {
 
 			// skip previously resolved
-			if (resolved_from && strcmp(resolved_from, i->val) == 0) {
+			if (resolved_from == i->val) {
 				continue;
 			}
 
@@ -716,7 +713,6 @@ void cfg_file_write(void) {
 
 end:
 	free(yaml);
-	free(resolved_from);
 
 	if (cfg->written) {
 		log_info("\nWrote configuration file: %s", cfg->file_path);
@@ -764,7 +760,6 @@ void cfg_free_paths(struct Cfg *cfg) {
 	free(cfg->file_name);
 	cfg->file_name = NULL;
 
-	free(cfg->resolved_from);
 	cfg->resolved_from = NULL;
 }
 
