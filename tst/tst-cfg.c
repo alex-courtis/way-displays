@@ -24,7 +24,8 @@ void validate_fix(struct Cfg *cfg);
 bool resolve_cfg_file(struct Cfg *cfg);
 bool mkdir_p(char *path, mode_t mode);
 
-char *xdg_config_home = NULL;
+char *env_xdg_config_home = NULL;
+char *env_home = NULL;
 
 
 char *__wrap_marshal_cfg(struct Cfg *cfg) {
@@ -54,16 +55,22 @@ struct State {
 };
 
 int before_all(void **state) {
-	xdg_config_home = getenv("XDG_CONFIG_HOME");
-	if (xdg_config_home) {
-		xdg_config_home = strdup(xdg_config_home);
+	env_xdg_config_home = getenv("XDG_CONFIG_HOME");
+	if (env_xdg_config_home) {
+		env_xdg_config_home = strdup(env_xdg_config_home);
+	}
+
+	env_home = getenv("HOME");
+	if (env_home) {
+		env_home = strdup(env_home);
 	}
 
 	return 0;
 }
 
 int after_all(void **state) {
-	free(xdg_config_home);
+	free(env_xdg_config_home);
+	free(env_home);
 
 	return 0;
 }
@@ -88,10 +95,16 @@ int before_each(void **state) {
 int after_each(void **state) {
 	struct State *s = *state;
 
-	if (xdg_config_home) {
-		setenv("XDG_CONFIG_HOME", xdg_config_home, 1);
+	if (env_xdg_config_home) {
+		setenv("XDG_CONFIG_HOME", env_xdg_config_home, 1);
 	} else {
 		unsetenv("XDG_CONFIG_HOME");
+	}
+
+	if (env_home) {
+		setenv("HOME", env_home, 1);
+	} else {
+		unsetenv("HOME");
 	}
 
 	slist_free_vals(&cfg_file_paths, NULL);
@@ -516,14 +529,25 @@ void cfg_file_write__existing(void **state) {
 }
 
 void cfg_file_paths_init__min(void **state) {
-	char path[PATH_MAX];
-
 	unsetenv("XDG_CONFIG_HOME");
+	unsetenv("HOME");
 
 	cfg_file_paths_init("inexistent");
 
-	snprintf(path, PATH_MAX, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
-	assert_string_equal(slist_at(cfg_file_paths, 0), path);
+	assert_string_equal(slist_at(cfg_file_paths, 0), "/usr/local/etc/way-displays/cfg.yaml");
+
+	assert_string_equal(slist_at(cfg_file_paths, 1), ROOT_ETC"/way-displays/cfg.yaml");
+
+	assert_int_equal(slist_length(cfg_file_paths), 2);
+}
+
+void cfg_file_paths_init__xch(void **state) {
+	setenv("XDG_CONFIG_HOME", "xch", 1);
+	setenv("HOME", "hom", 1);
+
+	cfg_file_paths_init(NULL);
+
+	assert_string_equal(slist_at(cfg_file_paths, 0), "xch/way-displays/cfg.yaml");
 
 	assert_string_equal(slist_at(cfg_file_paths, 1), "/usr/local/etc/way-displays/cfg.yaml");
 
@@ -532,22 +556,34 @@ void cfg_file_paths_init__min(void **state) {
 	assert_int_equal(slist_length(cfg_file_paths), 3);
 }
 
-void cfg_file_paths_init__xch(void **state) {
-	setenv("XDG_CONFIG_HOME", "xch", 1);
+void cfg_file_paths_init__home(void **state) {
+	unsetenv("XDG_CONFIG_HOME");
+	setenv("HOME", "hom", 1);
 
 	cfg_file_paths_init(NULL);
 
-	assert_string_equal(slist_at(cfg_file_paths, 0), "xch/way-displays/cfg.yaml");
+	assert_string_equal(slist_at(cfg_file_paths, 0), "hom/.config/way-displays/cfg.yaml");
 
-	assert_int_equal(slist_length(cfg_file_paths), 4);
+	assert_string_equal(slist_at(cfg_file_paths, 1), "/usr/local/etc/way-displays/cfg.yaml");
+
+	assert_string_equal(slist_at(cfg_file_paths, 2), ROOT_ETC"/way-displays/cfg.yaml");
+
+	assert_int_equal(slist_length(cfg_file_paths), 3);
 }
 
 void cfg_file_paths_init__user(void **state) {
-	unsetenv("XDG_CONFIG_HOME");
+	setenv("XDG_CONFIG_HOME", "xch", 1);
+	setenv("HOME", "hom", 1);
 
 	cfg_file_paths_init(".");
 
 	assert_string_equal(slist_at(cfg_file_paths, 0), ".");
+
+	assert_string_equal(slist_at(cfg_file_paths, 1), "xch/way-displays/cfg.yaml");
+
+	assert_string_equal(slist_at(cfg_file_paths, 2), "/usr/local/etc/way-displays/cfg.yaml");
+
+	assert_string_equal(slist_at(cfg_file_paths, 3), ROOT_ETC"/way-displays/cfg.yaml");
 
 	assert_int_equal(slist_length(cfg_file_paths), 4);
 }
@@ -643,6 +679,7 @@ int main(void) {
 		TEST(cfg_file_write__existing),
 
 		TEST(cfg_file_paths_init__min),
+		TEST(cfg_file_paths_init__home),
 		TEST(cfg_file_paths_init__xch),
 		TEST(cfg_file_paths_init__user),
 

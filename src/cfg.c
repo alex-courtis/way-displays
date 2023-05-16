@@ -604,15 +604,15 @@ void cfg_file_paths_init(const char *user_path) {
 		slist_append(&cfg_file_paths, strdup(user_path));
 	}
 
-	// maybe XDG_CONFIG_HOME
 	if (getenv("XDG_CONFIG_HOME") != NULL) {
+		// maybe XDG_CONFIG_HOME
 		snprintf(path, PATH_MAX, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
 		slist_append(&cfg_file_paths, strdup(path));
+	} else if (getenv("HOME") != NULL) {
+		// ~/.config
+		snprintf(path, PATH_MAX, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
+		slist_append(&cfg_file_paths, strdup(path));
 	}
-
-	// ~/.config
-	snprintf(path, PATH_MAX, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
-	slist_append(&cfg_file_paths, strdup(path));
 
 	// etc
 	slist_append(&cfg_file_paths, strdup("/usr/local/etc/way-displays/cfg.yaml"));
