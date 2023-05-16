@@ -432,6 +432,37 @@ void validate_warn__(void **state) {
 	assert_log(WARNING, read_file("tst/cfg/validate-warn.log"));
 }
 
+void cfg_file_write__bad_yaml(void **state) {
+	cfg->file_path = strdup("something");
+
+	expect_string(__wrap_marshal_cfg, cfg, cfg);
+	will_return(__wrap_marshal_cfg, NULL);
+
+	cfg_file_write();
+}
+
+void cfg_file_write__none(void **state) {
+	slist_append(&cfg_file_paths, strdup("/path/to/one"));
+
+	char *expected = strdup("XXXX");
+
+	expect_string(__wrap_marshal_cfg, cfg, cfg);
+	will_return(__wrap_marshal_cfg, strdup(expected));
+
+	expect_string(__wrap_file_write, path, "/path/to/one");
+	expect_string(__wrap_file_write, contents, expected);
+	will_return(__wrap_file_write, true);
+
+	cfg_file_write();
+
+	assert_log(INFO, "\nWrote configuration file: /path/to/one\n");
+
+	assert_string_equal(cfg->file_path, "/path/to/one");
+	assert_string_equal(cfg->dir_path, "/path/to");
+	assert_string_equal(cfg->file_name, "one");
+	assert_string_equal(cfg->resolved_from, "/path/to/one");
+}
+
 void cfg_file_write__cannot_write_use_alternative(void **state) {
 	slist_append(&cfg_file_paths, strdup("/path/to/one"));
 	slist_append(&cfg_file_paths, strdup("/path/to/two"));
@@ -442,13 +473,14 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	cfg->file_path = strdup("/path/to/three");
 	cfg->dir_path = strdup("nothing");
 	cfg->file_name = strdup("missing");
+	cfg->resolved_from = strdup("/path/to/three");
 
 	char *expected = strdup("XXXX");
 
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
-	expect_string(__wrap_file_write, path, cfg->file_path);
+	expect_string(__wrap_file_write, path, "/path/to/three");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
 
@@ -471,6 +503,7 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	assert_string_equal(cfg->file_path, "/path/to/four");
 	assert_string_equal(cfg->dir_path, "/path/to");
 	assert_string_equal(cfg->file_name, "four");
+	assert_string_equal(cfg->resolved_from, "/path/to/four");
 
 	free(expected);
 }
@@ -482,13 +515,14 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 	cfg->file_path = strdup("/path/to/one");
 	cfg->dir_path = strdup("/path/to");
 	cfg->file_name = strdup("one");
+	cfg->resolved_from = strdup("/path/to/one");
 
 	char *expected = strdup("XXXX");
 
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
-	expect_string(__wrap_file_write, path, cfg->file_path);
+	expect_string(__wrap_file_write, path, "/path/to/one");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, false);
 
@@ -501,6 +535,7 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 	assert_null(cfg->file_path);
 	assert_null(cfg->dir_path);
 	assert_null(cfg->file_name);
+	assert_null(cfg->resolved_from);
 
 	free(expected);
 }
@@ -603,7 +638,7 @@ void resolve_cfg_file__not_found(void **state) {
 	assert_null(cfg->file_path);
 	assert_null(cfg->dir_path);
 	assert_null(cfg->file_name);
-	assert_null(cfg->from_cfg_file_paths);
+	assert_null(cfg->resolved_from);
 }
 
 void resolve_cfg_file__direct(void **state) {
@@ -623,7 +658,7 @@ void resolve_cfg_file__direct(void **state) {
 	assert_string_equal(cfg->file_path, file_path);
 	assert_string_equal(cfg->dir_path, cwd);
 	assert_string_equal(cfg->file_name, "resolved.yaml");
-	assert_string_equal(cfg->from_cfg_file_paths, file_path);
+	assert_string_equal(cfg->resolved_from, file_path);
 }
 
 void resolve_cfg_file__linked(void **state) {
@@ -651,7 +686,7 @@ void resolve_cfg_file__linked(void **state) {
 	assert_string_equal(cfg->file_path, file_path);
 	assert_string_equal(cfg->dir_path, cwd);
 	assert_string_equal(cfg->file_name, "resolved.yaml");
-	assert_string_equal(cfg->from_cfg_file_paths, linked_path);
+	assert_string_equal(cfg->resolved_from, linked_path);
 }
 
 int main(void) {
@@ -677,6 +712,8 @@ int main(void) {
 
 		TEST(validate_warn__),
 
+		TEST(cfg_file_write__bad_yaml),
+		TEST(cfg_file_write__none),
 		TEST(cfg_file_write__cannot_write_use_alternative),
 		TEST(cfg_file_write__cannot_write_no_alternative),
 		TEST(cfg_file_write__existing),

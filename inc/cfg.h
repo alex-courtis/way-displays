@@ -45,7 +45,7 @@ struct Cfg {
 	char *dir_path;
 	char *file_path;
 	char *file_name;
-	char *from_cfg_file_paths;
+	char *resolved_from;
 
 	bool written;
 
@@ -114,6 +114,8 @@ void cfg_user_mode_free(void *user_mode);
 void cfg_destroy(void);
 
 void cfg_free(struct Cfg *cfg);
+
+void cfg_free_paths(struct Cfg *cfg);
 
 void cfg_file_paths_destroy(void);
 

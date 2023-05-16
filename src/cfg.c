@@ -346,8 +346,12 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) 
 	return us;
 }
 
-void set_file_dir(struct Cfg *cfg) {
+void set_paths(struct Cfg *cfg, const char *resolved_from, const char *file_path) {
 	static char path[PATH_MAX];
+
+	cfg->resolved_from = strdup(resolved_from);
+
+	cfg->file_path = strdup(file_path);
 
 	// dirname modifies path
 	strcpy(path, cfg->file_path);
@@ -364,6 +368,8 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 	if (!cfg)
 		return false;
 
+	cfg_free_paths(cfg);
+
 	for (struct SList *i = cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
 
@@ -377,12 +383,9 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 				continue;
 			}
 
-			free(cfg->file_path);
-			cfg->file_path = file_path;
+			set_paths(cfg, i->val, file_path);
 
-			set_file_dir(cfg);
-
-			cfg->from_cfg_file_paths = i->val;
+			free(file_path);
 
 			return true;
 		}
@@ -675,53 +678,49 @@ void cfg_file_reload(void) {
 
 void cfg_file_write(void) {
 	char *yaml = NULL;
+	char *resolved_from = NULL;
 
-	// TODO write new
-	if (!cfg->file_path) {
-		log_error("\nMissing file path");
+	cfg->written = false;
+	if (cfg->resolved_from) {
+		resolved_from = strdup(cfg->resolved_from);
+	}
+
+	if (!(yaml = marshal_cfg(cfg))) {
 		goto end;
 	}
 
-	yaml = marshal_cfg(cfg);
-	if (!yaml) {
+	if (cfg->file_path && (cfg->written = file_write(cfg->file_path, yaml))) {
 		goto end;
 	}
-
-	cfg->written = file_write(cfg->file_path, yaml);
 
 	if (!cfg->written) {
+		cfg_free_paths(cfg);
 		// TODO destroy inotify
 
 		// write preferred alternatives
 		for (struct SList *i = cfg_file_paths; i; i = i->nex) {
-			if (strcmp(i->val, cfg->file_path) == 0) {
+
+			// skip previously resolved
+			if (resolved_from && strcmp(resolved_from, i->val) == 0) {
 				continue;
 			}
+
+			// attempt to write
 			if ((cfg->written = file_write(i->val, yaml))) {
-				cfg->file_path = strdup(i->val);
-				set_file_dir(cfg);
+				set_paths(cfg, i->val, i->val);
+				// TODO create inotify
 				break;
 			}
 		}
-
-		if (cfg->written) {
-			// TODO create inotify
-		} else {
-			free(cfg->file_path);
-			cfg->file_path = NULL;
-			free(cfg->dir_path);
-			cfg->dir_path = NULL;
-			free(cfg->file_name);
-			cfg->file_name = NULL;
-		}
-	}
-
-	if (cfg->written) {
-		log_info("\nWrote configuration file: %s", cfg->file_path);
 	}
 
 end:
 	free(yaml);
+	free(resolved_from);
+
+	if (cfg->written) {
+		log_info("\nWrote configuration file: %s", cfg->file_path);
+	}
 }
 
 void cfg_destroy(void) {
@@ -733,9 +732,8 @@ void cfg_free(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
-	free(cfg->dir_path);
-	free(cfg->file_path);
-	free(cfg->file_name);
+	cfg_free_paths(cfg);
+
 	free(cfg->laptop_display_prefix);
 
 	slist_free_vals(&cfg->order_name_desc, NULL);
@@ -751,6 +749,23 @@ void cfg_free(struct Cfg *cfg) {
 	slist_free_vals(&cfg->disabled_name_desc, NULL);
 
 	free(cfg);
+}
+
+void cfg_free_paths(struct Cfg *cfg) {
+	if (!cfg)
+		return;
+
+	free(cfg->dir_path);
+	cfg->dir_path = NULL;
+
+	free(cfg->file_path);
+	cfg->file_path = NULL;
+
+	free(cfg->file_name);
+	cfg->file_name = NULL;
+
+	free(cfg->resolved_from);
+	cfg->resolved_from = NULL;
 }
 
 void cfg_user_scale_free(void *data) {
