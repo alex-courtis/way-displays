@@ -48,3 +48,4 @@ tst-all: $(TST_E)
 		fi ;\
 		done
 
+.PHONY: tst-all
