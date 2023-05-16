@@ -349,10 +349,12 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) 
 void set_file_dir(struct Cfg *cfg) {
 	static char path[PATH_MAX];
 
+	// dirname modifies path
 	strcpy(path, cfg->file_path);
 	free(cfg->dir_path);
 	cfg->dir_path = strdup(dirname(path));
 
+	// basename modifies path
 	strcpy(path, cfg->file_path);
 	free(cfg->file_name);
 	cfg->file_name = strdup(basename(path));
@@ -379,6 +381,8 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 			cfg->file_path = file_path;
 
 			set_file_dir(cfg);
+
+			cfg->from_cfg_file_paths = i->val;
 
 			return true;
 		}

@@ -603,6 +603,7 @@ void resolve_cfg_file__not_found(void **state) {
 	assert_null(cfg->file_path);
 	assert_null(cfg->dir_path);
 	assert_null(cfg->file_name);
+	assert_null(cfg->from_cfg_file_paths);
 }
 
 void resolve_cfg_file__direct(void **state) {
@@ -622,6 +623,7 @@ void resolve_cfg_file__direct(void **state) {
 	assert_string_equal(cfg->file_path, file_path);
 	assert_string_equal(cfg->dir_path, cwd);
 	assert_string_equal(cfg->file_name, "resolved.yaml");
+	assert_string_equal(cfg->from_cfg_file_paths, file_path);
 }
 
 void resolve_cfg_file__linked(void **state) {
@@ -649,6 +651,7 @@ void resolve_cfg_file__linked(void **state) {
 	assert_string_equal(cfg->file_path, file_path);
 	assert_string_equal(cfg->dir_path, cwd);
 	assert_string_equal(cfg->file_name, "resolved.yaml");
+	assert_string_equal(cfg->from_cfg_file_paths, linked_path);
 }
 
 int main(void) {

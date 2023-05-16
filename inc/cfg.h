@@ -45,6 +45,7 @@ struct Cfg {
 	char *dir_path;
 	char *file_path;
 	char *file_name;
+	char *from_cfg_file_paths;
 
 	bool written;
 
