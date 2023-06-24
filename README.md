@@ -182,11 +182,13 @@ Please create a [github issue](https://github.com/alex-courtis/way-displays/issu
 
 [Contributions](CONTRIBUTING.md) are always welcome.
 
+[Milestone 1.9](https://github.com/alex-courtis/way-displays/milestone/1) contains a prioritised list of issue I would be eternally grateful for you to work on.
+
 ## Help Wanted - GUI Configurator
 
 way-displays can currently be configured via the configuration file and CLI.
 
-A GUI client would greatly enhance usability.
+A GUI client would greatly enhance usability. See [wdisplays collaboration](https://github.com/alex-courtis/way-displays/issues/55) for a great candidate.
 
 The client could use the same [IPC socket and YAML streaming protocol](doc/IPC.md) as the CLI.
 
