@@ -7,7 +7,7 @@
 
 #include "cfg.h"
 #include "head.h"
-#include "list.h"
+#include "slist.h"
 #include "marshalling.h"
 
 void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const file, const int line) {

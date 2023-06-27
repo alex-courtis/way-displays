@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "cfg.h"
-#include "list.h"
+#include "slist.h"
 
 struct Mode {
 	struct Head *head;

@@ -12,7 +12,7 @@
 #include "convert.h"
 #include "global.h"
 #include "info.h"
-#include "list.h"
+#include "slist.h"
 #include "log.h"
 #include "marshalling.h"
 
@@ -252,7 +252,7 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 	}
 
 	// ORDER
-	if (!slist_equal(a->order_name_desc, b->order_name_desc, slist_equal_strcmp)) {
+	if (!slist_equal(a->order_name_desc, b->order_name_desc, slist_predicate_strcmp)) {
 		return false;
 	}
 
@@ -277,7 +277,7 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 	}
 
 	// VRR_OFF
-	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, slist_equal_strcmp)) {
+	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, slist_predicate_strcmp)) {
 		return false;
 	}
 
@@ -289,12 +289,12 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 	}
 
 	// MAX_PREFERRED_REFRESH
-	if (!slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, slist_equal_strcmp)) {
+	if (!slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, slist_predicate_strcmp)) {
 		return false;
 	}
 
 	// DISABLED
-	if (!slist_equal(a->disabled_name_desc, b->disabled_name_desc, slist_equal_strcmp)) {
+	if (!slist_equal(a->disabled_name_desc, b->disabled_name_desc, slist_predicate_strcmp)) {
 		return false;
 	}
 
@@ -517,14 +517,14 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 
 	// VRR_OFF
 	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
-		if (!slist_find_equal(merged->adaptive_sync_off_name_desc, slist_equal_strcmp, i->val)) {
+		if (!slist_find_equal(merged->adaptive_sync_off_name_desc, slist_predicate_strcmp, i->val)) {
 			slist_append(&merged->adaptive_sync_off_name_desc, strdup((char*)i->val));
 		}
 	}
 
 	// DISABLED
 	for (i = from->disabled_name_desc; i; i = i->nex) {
-		if (!slist_find_equal(merged->disabled_name_desc, slist_equal_strcmp, i->val)) {
+		if (!slist_find_equal(merged->disabled_name_desc, slist_predicate_strcmp, i->val)) {
 			slist_append(&merged->disabled_name_desc, strdup((char*)i->val));
 		}
 	}
@@ -553,12 +553,12 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 
 	// VRR_OFF
 	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
-		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, slist_equal_strcmp, i->val, NULL);
+		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, slist_predicate_strcmp, i->val, NULL);
 	}
 
 	// DISABLED
 	for (i = from->disabled_name_desc; i; i = i->nex) {
-		slist_remove_all_free(&merged->disabled_name_desc, slist_equal_strcmp, i->val, NULL);
+		slist_remove_all_free(&merged->disabled_name_desc, slist_predicate_strcmp, i->val, NULL);
 	}
 
 	return merged;

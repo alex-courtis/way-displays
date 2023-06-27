@@ -9,7 +9,7 @@
 
 #include "cfg.h"
 #include "ipc.h"
-#include "list.h"
+#include "slist.h"
 #include "log.h"
 
 struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv);

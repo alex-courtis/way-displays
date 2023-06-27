@@ -6,7 +6,7 @@
 
 #include "cfg.h"
 #include "head.h"
-#include "list.h"
+#include "slist.h"
 
 struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed) {
 	struct Mode *mode = NULL;
