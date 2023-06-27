@@ -6,8 +6,8 @@ SRC_C = $(wildcard src/*.c)
 SRC_CXX = $(wildcard src/*.cpp)
 SRC_O = $(SRC_C:.c=.o) $(SRC_CXX:.cpp=.o)
 
-LIB_H = $(wildcard lib/*/inc/*.h)
-LIB_C = $(wildcard lib/*/src/*.c)
+LIB_H = $(wildcard lib/alex-c-collections/inc/*.h)
+LIB_C = $(wildcard lib/alex-c-collections/src/*.c)
 LIB_O = $(LIB_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
