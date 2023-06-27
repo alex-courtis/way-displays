@@ -9,7 +9,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "ipc.h"
-#include "list.h"
+#include "slist.h"
 #include "log.h"
 #include "process.h"
 

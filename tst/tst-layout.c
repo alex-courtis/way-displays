@@ -11,7 +11,7 @@
 #include "global.h"
 #include "head.h"
 #include "info.h"
-#include "list.h"
+#include "slist.h"
 #include "log.h"
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"

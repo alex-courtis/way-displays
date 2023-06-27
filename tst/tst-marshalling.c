@@ -13,7 +13,7 @@
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
-#include "list.h"
+#include "slist.h"
 #include "log.h"
 #include "mode.h"
 

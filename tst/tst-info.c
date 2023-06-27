@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "cfg.h"
-#include "list.h"
+#include "slist.h"
 #include "log.h"
 
 #include "info.h"

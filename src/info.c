@@ -8,7 +8,7 @@
 #include "convert.h"
 #include "head.h"
 #include "lid.h"
-#include "list.h"
+#include "slist.h"
 #include "log.h"
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"

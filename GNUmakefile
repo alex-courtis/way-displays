@@ -6,6 +6,10 @@ SRC_C = $(wildcard src/*.c)
 SRC_CXX = $(wildcard src/*.cpp)
 SRC_O = $(SRC_C:.c=.o) $(SRC_CXX:.cpp=.o)
 
+LIB_H = $(wildcard lib/*/inc/*.h)
+LIB_C = $(wildcard lib/*/src/*.c)
+LIB_O = $(LIB_C:.c=.o)
+
 EXAMPLE_C = $(wildcard examples/*.c)
 EXAMPLE_O = $(EXAMPLE_C:.c=.o)
 
@@ -23,13 +27,14 @@ TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 all: way-displays /tmp/vg.supp
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
+$(LIB_O): $(LIB_H) $(LIB_C) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
-way-displays: $(SRC_O) $(PRO_O)
+way-displays: $(SRC_O) $(PRO_O) $(LIB_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-example-client: $(EXAMPLE_O) $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
+example-client: $(EXAMPLE_O) $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 $(PRO_H): $(PRO_X)
@@ -39,7 +44,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
-	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E)
+	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C) $(LIB_O) $(TST_O) $(TST_E)
 
 /tmp/vg.supp: .vg.supp
 	cp .vg.supp /tmp/vg.supp

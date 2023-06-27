@@ -12,7 +12,7 @@
 #include "head.h"
 #include "info.h"
 #include "lid.h"
-#include "list.h"
+#include "slist.h"
 #include "listeners.h"
 #include "log.h"
 #include "mode.h"
