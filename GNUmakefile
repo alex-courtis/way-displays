@@ -69,7 +69,7 @@ man: way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc=)
 
-# make -k iwyu
+# make -k iwyu > /dev/null
 iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
 iwyu: clean $(SRC_O) $(TST_O)

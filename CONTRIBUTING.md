@@ -20,6 +20,12 @@ Most will be available if you are running a wlroots based compositor like sway.
 
 yaml-cpp will need to be installed via your distribution's package manager.
 
+## Library Submodules
+
+Following clone the libraries must be fetched.
+
+`git submodule update --init`
+
 ## Development
 
 gcc is the default for packaging reasons, however clang is preferred.
@@ -48,7 +54,7 @@ Please resolve all issues before committing.
 
 [include-what-you-use](https://include-what-you-use.org/) is configured to run for `src` and `tst`.
 
-`make -k iwyu`
+`make -k iwyu > /dev/null`
 
 Necessary changes will be indicated in the output with "should".
 
