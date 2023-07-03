@@ -1,18 +1,18 @@
-name: "CI"
+name: CI
 on:
   pull_request:
+    branches:
+      - '*'
   push:
     branches:
       - master
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: true
-    - uses: cachix/install-nix-action@v19
-      with:
-        github_access_token: ${{ secrets.GITHUB_TOKEN }}
-    - run: nix build
-    - run: nix flake check
+    - name: make test
+      run: make test
+
