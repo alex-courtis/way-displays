@@ -16,7 +16,7 @@ jobs:
     - name: deps
       run: |
         sudo add-apt-repository universe
-        sudo apt install docker -y
+        sudo apt install docker.io -y
     - name: docker image
       run: make docker-image
     - name: build gcc
