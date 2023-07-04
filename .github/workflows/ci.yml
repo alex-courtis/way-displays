@@ -13,8 +13,10 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: true
-    - name: prepare
-      run: sudo apt-get install -y clang wayland-protocols libwlroots-dev libyaml-cpp-0.7 cppcheck
+    - name: deps
+      run: |
+        sudo add-apt-repository universe
+        sudo apt-get install -y clang wayland-protocols libwlroots-dev libyaml-cpp0.7 cppcheck
     - name: test
       run: make test
     - name: cppcheck
