@@ -27,7 +27,7 @@ int handle_raw(int socket_client) {
 int handle_human(int socket_client) {
 	int rc = EXIT_SUCCESS;
 
-	struct IpcResponse *response;
+	struct IpcResponse *response = NULL;
 	bool done = false;
 
 	while (!done) {
