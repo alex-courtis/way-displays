@@ -337,7 +337,7 @@ void unmarshal_ipc_response__empty(void **state) {
 }
 
 void unmarshal_ipc_response__no_done(void **state) {
-	char *yaml = "RC: 0";
+	char *yaml = "- RC: 0";
 
 	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
 
@@ -347,7 +347,7 @@ void unmarshal_ipc_response__no_done(void **state) {
 }
 
 void unmarshal_ipc_response__no_rc(void **state) {
-	char *yaml = "DONE: TRUE";
+	char *yaml = "- DONE: TRUE";
 
 	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
 

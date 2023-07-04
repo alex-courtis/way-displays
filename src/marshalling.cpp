@@ -534,6 +534,8 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
+		e << YAML::BeginSeq;
+
 		e << YAML::BeginMap;								// root
 
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
@@ -591,6 +593,8 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 
 		e << YAML::EndMap;									// root
 
+		e << YAML::EndSeq;
+
 		if (!e.good()) {
 			log_error("marshalling ipc response: %s", e.GetLastError().c_str());
 			return NULL;
@@ -617,8 +621,13 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 	struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
 
 	try {
-		const YAML::Node node = YAML::Load(yaml);
+		const YAML::Node node_root = YAML::Load(yaml);
 
+		if (!node_root.IsSequence() || node_root.size() != 1) {
+			throw std::runtime_error("invalid response");
+		}
+
+		const YAML::Node node = node_root[0];
 		if (!node.IsMap()) {
 			throw std::runtime_error("invalid response");
 		}
