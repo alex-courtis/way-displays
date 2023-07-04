@@ -10,8 +10,6 @@
 #include "slist.h"
 #include "marshalling.h"
 
-void cm_print_error(const char* const format, ...) CMOCKA_PRINTF_ATTRIBUTE(1, 2);
-
 void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const file, const int line) {
 
 	if (a != wl_fixed_from_double(b)) {
