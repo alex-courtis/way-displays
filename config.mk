@@ -30,3 +30,7 @@ LDLIBS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --libs $(p)))
 
 CC = gcc
 CXX = g++
+
+DOCKER_IMG = way-displays-tst
+DOCKER_RUN = docker run --rm -it --volume "$(PWD):/mnt/way-displays" --workdir /mnt/way-displays $(DOCKER_IMG)
+

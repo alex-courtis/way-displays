@@ -81,5 +81,23 @@ cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 test: all
 	$(MAKE) -f tst/GNUmakefile tst-all
 
-.PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-cppcheck tst-all tst-clean
+docker-image: Dockerfile
+	docker build --tag $(DOCKER_IMG) .
+
+docker-shell:
+	$(DOCKER_RUN)
+
+docker-build-gcc:
+	$(DOCKER_RUN) make CC=gcc clean example-client way-displays
+
+docker-build-clang:
+	$(DOCKER_RUN) make CC=clang clean example-client way-displays
+
+docker-test:
+	$(DOCKER_RUN) make CC=clang clean test
+
+docker-cppcheck:
+	$(DOCKER_RUN) make cppcheck
+
+.PHONY: all clean install uninstall man cppcheck iwyu test docker-image docker-build-gcc docker-build-clang docker-test docker-cppcheck
 
