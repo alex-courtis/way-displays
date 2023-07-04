@@ -78,9 +78,9 @@ STATE:
           PREFERRED: FALSE
           CURRENT: FALSE
 MESSAGES:
-  DEBUG: dbg
-  INFO: inf
-  WARNING: war
-  ERROR: err
+  - DEBUG: dbg
+  - INFO: inf
+  - WARNING: war
+  - ERROR: err
 RC: 2
 

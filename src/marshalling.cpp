@@ -568,12 +568,14 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		}
 
 		if (response->messages) {
-			e << YAML::Key << "MESSAGES" << YAML::BeginMap;		// MESSAGES
+			e << YAML::Key << "MESSAGES" << YAML::BeginSeq;		// MESSAGES
 			for (struct SList *i = log_cap_lines; i; i = i->nex) {
 				struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 				if (cap_line && cap_line->line) {
+					e << YAML::BeginMap;
 					e << YAML::Key << log_threshold_name(cap_line->threshold);
 					e << YAML::Value << cap_line->line;
+					e << YAML::EndMap;
 					if (cap_line->threshold == WARNING && response->rc < IPC_RC_WARN) {
 						response->rc = IPC_RC_WARN;
 					}
@@ -582,7 +584,7 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 					}
 				}
 			}
-			e << YAML::EndMap;									// MESSAGES
+			e << YAML::EndSeq;									// MESSAGES
 		}
 
 		e << YAML::Key << "RC" << YAML::Value << response->rc;
@@ -639,11 +641,15 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 				response->rc = i->second.as<int>();
 			}
 
-			if (i->first.as<std::string>() == "MESSAGES" && i->second.IsMap()) {
+			if (i->first.as<std::string>() == "MESSAGES" && i->second.IsSequence()) {
 				for (YAML::const_iterator j = i->second.begin(); j != i->second.end(); ++j) {
-					enum LogThreshold threshold = log_threshold_val(j->first.as<std::string>().c_str());
-					if (threshold) {
-						log_(threshold, "%s", j->second.as<std::string>().c_str());
+					if (j->IsMap()) {
+						for (YAML::const_iterator k = j->begin(); k != j->end(); ++k) {
+							enum LogThreshold threshold = log_threshold_val(k->first.as<std::string>().c_str());
+							if (threshold) {
+								log_(threshold, "%s", k->second.as<std::string>().c_str());
+							}
+						}
 					}
 				}
 			}
