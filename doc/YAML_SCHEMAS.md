@@ -88,6 +88,8 @@ SCALE: !!float
 ENABLED: !!bool
 X: !!int
 Y: !!int
+VRR: !!bool
+MODE: !!mode
 ```
 
 ## !!mode

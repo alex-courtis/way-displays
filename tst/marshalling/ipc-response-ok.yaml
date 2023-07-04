@@ -49,7 +49,7 @@ STATE:
         ENABLED: TRUE
         X: 5
         Y: 6
-        VRR: 1
+        VRR: TRUE
         MODE:
           WIDTH: 10
           HEIGHT: 11
@@ -60,7 +60,7 @@ STATE:
         ENABLED: TRUE
         X: 8
         Y: 9
-        VRR: 0
+        VRR: FALSE
         MODE:
           WIDTH: 13
           HEIGHT: 14

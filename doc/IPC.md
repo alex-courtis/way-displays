@@ -93,11 +93,23 @@ STATE:
         ENABLED: FALSE
         X: 0
         Y: 0
+        VRR: FALSE
+        MODE:
+          WIDTH: 13
+          HEIGHT: 14
+          REFRESH_MHZ: 15
+          PREFERRED: FALSE
       DESIRED:
         SCALE: 2
         ENABLED: FALSE
         X: 0
         Y: 0
+        VRR: TRUE
+        MODE:
+          WIDTH: 13
+          HEIGHT: 14
+          REFRESH_MHZ: 15
+          PREFERRED: TRUE
       MODES:
         - WIDTH: 2560
           HEIGHT: 1440
