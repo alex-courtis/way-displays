@@ -13,15 +13,13 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: true
-    - name: deps
-      run: |
-        sudo add-apt-repository universe
-        sudo apt install docker.io -y
-    - name: docker image
+    - name: arch
+      run: curl -L https://github.com/zaoqi/github-actions-archlinux/raw/master/install.sh | sh
+    - name: image
       run: make docker-image
-    - name: build gcc
+    - name: gcc
       run: make docker-build-gcc
-    - name: build clang
+    - name: clang
       run: make docker-build-clang
     - name: test
       run: make docker-test
