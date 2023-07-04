@@ -1,4 +1,4 @@
 [submodule "lib/alex-c-collections"]
 	path = lib/alex-c-collections
 	url = https://github.com/alex-courtis/alex-c-collections.git
-	branch = 1.0.0
+	branch = 1.1.0
