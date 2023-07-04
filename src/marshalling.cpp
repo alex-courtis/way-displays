@@ -223,6 +223,13 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct HeadState& head_state) {
 	e << YAML::Key << "ENABLED" << YAML::Value << head_state.enabled;
 	e << YAML::Key << "X" << YAML::Value << head_state.x;
 	e << YAML::Key << "Y" << YAML::Value << head_state.y;
+	e << YAML::Key << "VRR" << YAML::Value << head_state.adaptive_sync;
+
+	if (head_state.mode) {
+		e << YAML::Key << "MODE" << YAML::BeginMap;
+		e << *head_state.mode;
+		e << YAML::EndMap;
+	}
 
 	return e;
 }

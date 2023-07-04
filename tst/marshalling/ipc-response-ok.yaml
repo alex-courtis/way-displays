@@ -49,11 +49,23 @@ STATE:
         ENABLED: TRUE
         X: 5
         Y: 6
+        VRR: 1
+        MODE:
+          WIDTH: 10
+          HEIGHT: 11
+          REFRESH_MHZ: 12
+          PREFERRED: TRUE
       DESIRED:
         SCALE: 7
         ENABLED: TRUE
         X: 8
         Y: 9
+        VRR: 0
+        MODE:
+          WIDTH: 13
+          HEIGHT: 14
+          REFRESH_MHZ: 15
+          PREFERRED: FALSE
       MODES:
         - WIDTH: 10
           HEIGHT: 11

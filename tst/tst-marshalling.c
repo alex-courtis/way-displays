@@ -233,6 +233,7 @@ void marshal_ipc_response__ok(void **state) {
 			.enabled = true,
 			.x = 5,
 			.y = 6,
+			.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 			.mode = &mode1,
 		},
 		.desired = {
@@ -240,6 +241,8 @@ void marshal_ipc_response__ok(void **state) {
 			.enabled = true,
 			.x = 8,
 			.y = 9,
+			.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
+			.mode = &mode2,
 		},
 	};
 
