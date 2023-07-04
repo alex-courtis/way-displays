@@ -16,7 +16,7 @@ jobs:
     - name: deps
       run: |
         sudo add-apt-repository universe
-        sudo apt-get install -y clang wayland-protocols libwlroots-dev libyaml-cpp0.7 cppcheck
+        sudo apt install clang wayland-protocols libwlroots-dev libyaml-cpp0.7 cppcheck -y
     - name: test
       run: make test
     - name: cppcheck
