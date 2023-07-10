@@ -292,6 +292,7 @@ void parse_element__adaptive_sync_off_ok(void **state) {
 	cfg_free(actual);
 
 	slist_free(&expected.disabled_name_desc);
+	slist_free(&expected.adaptive_sync_off_name_desc);
 }
 
 void parse_element__disabled_ok(void **state) {

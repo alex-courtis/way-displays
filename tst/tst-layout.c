@@ -623,6 +623,8 @@ void handle_failure__mode(void **state) {
 	assert_ptr_equal(head.desired.mode, &mode_des);
 
 	assert_ptr_equal(slist_find_equal_val(head.modes_failed, NULL, &mode_des), &mode_des);
+
+	slist_free(&head.modes_failed);
 }
 
 void handle_failure__adaptive_sync(void **state) {

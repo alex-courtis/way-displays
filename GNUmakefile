@@ -81,5 +81,8 @@ cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 test: all
 	$(MAKE) -f tst/GNUmakefile tst-all
 
+test-valgrind: all /tmp/vg.supp
+	$(MAKE) -f tst/GNUmakefile tst-all-valgrind
+
 .PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-cppcheck tst-all tst-clean
 

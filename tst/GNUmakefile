@@ -41,9 +41,12 @@ tst-all: $(TST_E)
 	@for e in $(^); do \
 		echo ;\
 		echo $$e ;\
-		./$$e ;\
+		$(TST_WITH) ./$$e ;\
 		if [ $$? -ne 0 ]; then \
 		exit 1 ;\
 		fi ;\
 		done
+
+tst-all-valgrind: TST_WITH = valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all --suppressions=/tmp/vg.supp
+tst-all-valgrind: tst-all
 

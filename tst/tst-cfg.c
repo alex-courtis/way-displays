@@ -305,11 +305,14 @@ void validate_fix__scale(void **state) {
 
 	validate_fix(s->from);
 
-	assert_log(WARNING, read_file("tst/cfg/validate-fix-scale.log"));
+	char *expected_log = read_file("tst/cfg/validate-fix-scale.log");
+	assert_log(WARNING, expected_log);
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
 
 	assert_cfg_equal(s->from, s->expected);
+
+	free(expected_log);
 }
 
 void validate_fix__mode(void **state) {
@@ -330,12 +333,15 @@ void validate_fix__mode(void **state) {
 
 	validate_fix(s->from);
 
-	assert_log(WARNING, read_file("tst/cfg/validate-fix-mode.log"));
+	char *expected_log = read_file("tst/cfg/validate-fix-mode.log");
+	assert_log(WARNING, expected_log);
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
 
 	assert_cfg_equal(s->from, s->expected);
+
+	free(expected_log);
 }
 
 void validate_warn__(void **state) {
@@ -361,7 +367,10 @@ void validate_warn__(void **state) {
 
 	validate_warn(s->expected);
 
-	assert_log(WARNING, read_file("tst/cfg/validate-warn.log"));
+	char *expected_log = read_file("tst/cfg/validate-warn.log");
+	assert_log(WARNING, expected_log);
+
+	free(expected_log);
 }
 
 int main(void) {
