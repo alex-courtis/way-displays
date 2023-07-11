@@ -22,8 +22,10 @@
 #include "log.h"
 #include "process.h"
 
-struct IpcResponse *ipc_response = NULL;
+// operation in progress
+struct IpcOperation *ipc_operation = NULL;
 
+// received a request whilst another is in progress
 void handle_ipc_in_progress(int server_socket) {
 	struct IpcRequest *request = ipc_receive_request_server(server_socket);
 	if (!request) {
@@ -31,38 +33,39 @@ void handle_ipc_in_progress(int server_socket) {
 		return;
 	}
 
-	struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	response->socket_client = request->socket_client;
-	response->done = true;
-	response->rc = IPC_RC_REQUEST_IN_PROGRESS;
+	struct IpcOperation *operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	operation->socket_client = request->socket_client;
+	operation->done = true;
+	operation->rc = IPC_RC_REQUEST_IN_PROGRESS;
 
-	ipc_send_response(response);
+	ipc_send_response(operation);
 
-	close(response->socket_client);
+	close(operation->socket_client);
 
-	ipc_response_free(response);
+	ipc_request_free(request);
+	ipc_operation_free(operation);
 }
 
-void handle_ipc_response(void) {
-	if (!ipc_response) {
+void send_ipc_response(void) {
+	if (!ipc_operation) {
 		return;
 	}
 
-	ipc_send_response(ipc_response);
+	ipc_send_response(ipc_operation);
 
-	if (ipc_response->done) {
+	if (ipc_operation->done) {
 		log_capture_stop();
 		log_capture_clear();
 
-		close(ipc_response->socket_client);
+		close(ipc_operation->socket_client);
 
-		ipc_response_free(ipc_response);
-		ipc_response = NULL;
+		ipc_operation_free(ipc_operation);
+		ipc_operation = NULL;
 	}
 }
 
-void handle_ipc_request(int server_socket) {
-	if (ipc_response) {
+void receive_ipc_request(int server_socket) {
+	if (ipc_operation) {
 		handle_ipc_in_progress(server_socket);
 		return;
 	}
@@ -78,15 +81,15 @@ void handle_ipc_request(int server_socket) {
 		return;
 	}
 
-	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	ipc_response->socket_client = ipc_request->socket_client;
-	ipc_response->done = true;
-	ipc_response->messages = true;
-	ipc_response->state = true;
+	ipc_operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	ipc_operation->socket_client = ipc_request->socket_client;
+	ipc_operation->done = true;
+	ipc_operation->send_logs = true;
+	ipc_operation->send_state = true;
 
 	if (ipc_request->bad) {
-		ipc_response->rc = IPC_RC_BAD_REQUEST;
-		ipc_response->state = false;
+		ipc_operation->rc = IPC_RC_BAD_REQUEST;
+		ipc_operation->send_state = false;
 		goto send;
 	}
 
@@ -102,7 +105,7 @@ void handle_ipc_request(int server_socket) {
 				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->op == CFG_DEL);
 				if (cfg_merged) {
 					// ongoing
-					ipc_response->done = false;
+					ipc_operation->done = false;
 					cfg_free(cfg);
 					cfg = cfg_merged;
 					log_info("\nNew configuration:");
@@ -135,7 +138,7 @@ void handle_ipc_request(int server_socket) {
 send:
 	ipc_request_free(ipc_request);
 
-	handle_ipc_response();
+	send_ipc_response();
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
@@ -201,7 +204,7 @@ int loop(void) {
 
 		// ipc client message
 		if (pfd_ipc && (pfd_ipc->revents & pfd_ipc->events)) {
-			handle_ipc_request(fd_socket_server);
+			receive_ipc_request(fd_socket_server);
 		}
 
 
@@ -210,9 +213,9 @@ int loop(void) {
 
 
 		// inform the client
-		if (ipc_response) {
-			ipc_response->done = displ->config_state == IDLE;
-			handle_ipc_response();
+		if (ipc_operation) {
+			ipc_operation->done = displ->config_state == IDLE;
+			send_ipc_response();
 		};
 
 

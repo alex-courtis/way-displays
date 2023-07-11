@@ -37,18 +37,18 @@ end:
 	}
 }
 
-void ipc_send_response(struct IpcResponse *response) {
-	char *yaml = marshal_ipc_response(response);
+void ipc_send_response(struct IpcOperation *operation) {
+	char *yaml = marshal_ipc_response(operation);
 
 	if (!yaml) {
-		response->done = true;
+		operation->done = true;
 		return;
 	}
 
 	log_debug_nocap("========sending client response==========\n%s----------------------------------------", yaml);
 
-	if (socket_write(response->socket_client, yaml, strlen(yaml)) == -1) {
-		response->done = true;
+	if (socket_write(operation->socket_client, yaml, strlen(yaml)) == -1) {
+		operation->done = true;
 	}
 
 	free(yaml);
@@ -131,5 +131,9 @@ void ipc_response_free(struct IpcResponse *response) {
 	slist_free_vals(&response->heads, head_free);
 
 	free(response);
+}
+
+void ipc_operation_free(struct IpcOperation *operation) {
+	free(operation);
 }
 

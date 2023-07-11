@@ -17,6 +17,14 @@ enum IpcRequestOperation {
 	CFG_WRITE,
 };
 
+struct IpcOperation {
+	int socket_client;
+	bool done;
+	int rc;
+	bool send_logs;
+	bool send_state;
+};
+
 struct IpcRequest {
 	enum IpcRequestOperation op;
 	struct Cfg *cfg;
@@ -28,20 +36,15 @@ struct IpcRequest {
 struct IpcResponse {
 	bool done;
 	int rc;
-	int socket_client;
-	// TODO test captured logs instead
-	bool messages;
-	// TODO send_state or remove
-	bool state;
 	struct Cfg *cfg;
 	struct SList *heads;
 	struct Lid *lid;
-	// TODO capture log lines
+	// TODO actually capture log lines
 };
 
 void ipc_send_request(struct IpcRequest *request);
 
-void ipc_send_response(struct IpcResponse *response);
+void ipc_send_response(struct IpcOperation *operation);
 
 char *ipc_receive_raw_client(int socket_client);
 
@@ -52,6 +55,8 @@ struct IpcResponse *ipc_receive_response_client(int socket_client);
 void ipc_request_free(struct IpcRequest *request);
 
 void ipc_response_free(struct IpcResponse *response);
+
+void ipc_operation_free(struct IpcOperation *operation);
 
 #endif // IPC_H
 

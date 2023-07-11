@@ -193,11 +193,11 @@ void marshal_ipc_request__cfg_set(void **state) {
 }
 
 void marshal_ipc_response__ok(void **state) {
-	struct IpcResponse *ipc_response = calloc(1, sizeof(struct IpcResponse));
-	ipc_response->done = true;
-	ipc_response->rc = 1;
-	ipc_response->messages = true;
-	ipc_response->state = true;
+	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
+	ipc_operation->done = true;
+	ipc_operation->rc = 1;
+	ipc_operation->send_logs = true;
+	ipc_operation->send_state = true;
 
 	cfg = cfg_all();
 
@@ -254,7 +254,7 @@ void marshal_ipc_response__ok(void **state) {
 
 	slist_append(&heads, &head);
 
-	char *actual = marshal_ipc_response(ipc_response);
+	char *actual = marshal_ipc_response(ipc_operation);
 
 	assert_non_null(actual);
 
@@ -262,7 +262,7 @@ void marshal_ipc_response__ok(void **state) {
 
 	assert_string_equal(actual, expected);
 
-	ipc_response_free(ipc_response);
+	ipc_operation_free(ipc_operation);
 	free(actual);
 	free(expected);
 	slist_free(&head.modes);

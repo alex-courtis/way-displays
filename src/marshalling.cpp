@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
 #include <wayland-util.h>
 #include <yaml-cpp/yaml.h> // IWYU pragma: keep
 #include <yaml-cpp/emitter.h>
@@ -26,10 +27,10 @@ extern "C" {
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
-#include "slist.h"
-#include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "slist.h"
+#include "wlr-output-management-unstable-v1.h"
 }
 
 // try and ignore exception
@@ -610,7 +611,7 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 	}
 }
 
-char *marshal_ipc_response(struct IpcResponse *response) {
+char *marshal_ipc_response(struct IpcOperation *operation) {
 	char *yaml = NULL;
 
 	try {
@@ -623,9 +624,9 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 
 		e << YAML::BeginMap;								// list
 
-		e << YAML::Key << "DONE" << YAML::Value << response->done;
+		e << YAML::Key << "DONE" << YAML::Value << operation->done;
 
-		if (response->state) {
+		if (operation->send_state) {
 			if (cfg) {
 				e << YAML::Key << "CFG" << YAML::BeginMap;		// CFG
 				e << *cfg;
@@ -654,7 +655,7 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 			}
 		}
 
-		if (response->messages) {
+		if (operation->send_logs) {
 			e << YAML::Key << "MESSAGES" << YAML::BeginSeq;		// MESSAGES
 			for (struct SList *i = log_cap_lines; i; i = i->nex) {
 				struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
@@ -663,18 +664,18 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 					e << YAML::Key << log_threshold_name(cap_line->threshold);
 					e << YAML::Value << cap_line->line;
 					e << YAML::EndMap;
-					if (cap_line->threshold == WARNING && response->rc < IPC_RC_WARN) {
-						response->rc = IPC_RC_WARN;
+					if (cap_line->threshold == WARNING && operation->rc < IPC_RC_WARN) {
+						operation->rc = IPC_RC_WARN;
 					}
-					if (cap_line->threshold == ERROR && response->rc < IPC_RC_ERROR) {
-						response->rc = IPC_RC_ERROR;
+					if (cap_line->threshold == ERROR && operation->rc < IPC_RC_ERROR) {
+						operation->rc = IPC_RC_ERROR;
 					}
 				}
 			}
 			e << YAML::EndSeq;									// MESSAGES
 		}
 
-		e << YAML::Key << "RC" << YAML::Value << response->rc;
+		e << YAML::Key << "RC" << YAML::Value << operation->rc;
 
 		e << YAML::EndMap;									// root
 
@@ -691,7 +692,7 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		log_error("marshalling ipc response: %s\n%s", e.what());
 	}
 
-	if (response->messages) {
+	if (operation->send_logs) {
 		log_capture_clear();
 	}
 
