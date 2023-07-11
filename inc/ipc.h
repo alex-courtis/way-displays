@@ -29,8 +29,14 @@ struct IpcResponse {
 	bool done;
 	int rc;
 	int socket_client;
+	// TODO test captured logs instead
 	bool messages;
+	// TODO send_state or remove
 	bool state;
+	struct Cfg *cfg;
+	struct SList *heads;
+	struct Lid *lid;
+	// TODO capture log lines
 };
 
 void ipc_send_request(struct IpcRequest *request);

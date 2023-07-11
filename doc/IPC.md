@@ -115,7 +115,6 @@ OP: GET
             HEIGHT: 1440
             REFRESH_MHZ: 59998
             PREFERRED: TRUE
-            CURRENT: TRUE
   MESSAGES:
     - INFO: ""
     - INFO: "Server received request: get"
@@ -223,17 +222,28 @@ OP: CFG_WRITE
           ENABLED: FALSE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         DESIRED:
           SCALE: 2
           ENABLED: FALSE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         MODES:
           - WIDTH: 2560
             HEIGHT: 1440
             REFRESH_MHZ: 59998
             PREFERRED: TRUE
-            CURRENT: TRUE
   MESSAGES:
     - INFO: ""
     - INFO: "Server received request: write"
@@ -345,17 +355,28 @@ CFG:
           ENABLED: TRUE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         DESIRED:
           SCALE: 2
           ENABLED: TRUE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         MODES:
           - WIDTH: 2560
             HEIGHT: 1440
             REFRESH_MHZ: 59998
             PREFERRED: TRUE
-            CURRENT: TRUE
   MESSAGES:
     - INFO: ""
     - INFO: "Server received request: set"
@@ -456,17 +477,28 @@ CFG:
           ENABLED: TRUE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         DESIRED:
           SCALE: 2
           ENABLED: FALSE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         MODES:
           - WIDTH: 2560
             HEIGHT: 1440
             REFRESH_MHZ: 59998
             PREFERRED: TRUE
-            CURRENT: TRUE
   MESSAGES:
     - INFO: ""
     - INFO: "eDP-1 Changing:"
@@ -534,17 +566,28 @@ CFG:
           ENABLED: FALSE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         DESIRED:
           SCALE: 2
           ENABLED: FALSE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         MODES:
           - WIDTH: 2560
             HEIGHT: 1440
             REFRESH_MHZ: 59998
             PREFERRED: TRUE
-            CURRENT: TRUE
   MESSAGES:
     - INFO: ""
     - INFO: Changes successful
@@ -623,17 +666,28 @@ CFG:
           ENABLED: FALSE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         DESIRED:
           SCALE: 2
           ENABLED: FALSE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         MODES:
           - WIDTH: 2560
             HEIGHT: 1440
             REFRESH_MHZ: 59998
             PREFERRED: TRUE
-            CURRENT: TRUE
   MESSAGES:
     - INFO: ""
     - INFO: "Server received request: delete"
@@ -709,17 +763,28 @@ CFG:
           ENABLED: FALSE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         DESIRED:
           SCALE: 2
           ENABLED: TRUE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         MODES:
           - WIDTH: 2560
             HEIGHT: 1440
             REFRESH_MHZ: 59998
             PREFERRED: TRUE
-            CURRENT: TRUE
   MESSAGES:
     - INFO: ""
     - INFO: "eDP-1 Changing:"
@@ -778,17 +843,28 @@ CFG:
           ENABLED: TRUE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         DESIRED:
           SCALE: 2
           ENABLED: TRUE
           X: 0
           Y: 0
+          VRR: FALSE
+          MODE:
+            WIDTH: 2560
+            HEIGHT: 1440
+            REFRESH_MHZ: 59998
+            PREFERRED: TRUE
         MODES:
           - WIDTH: 2560
             HEIGHT: 1440
             REFRESH_MHZ: 59998
             PREFERRED: TRUE
-            CURRENT: TRUE
   MESSAGES:
     - INFO: ""
     - INFO: Changes successful

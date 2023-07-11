@@ -1,2 +1,2 @@
-incorrectStringBooleanError:tst/tst-*.c
-unusedFunction:tst/wrap-*.c
+unusedFunction:tst/wrap-log.c
+unusedFunction:tst/tst.c

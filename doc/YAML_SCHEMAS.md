@@ -100,7 +100,6 @@ WIDTH: !!int
 HEIGHT: !!int
 REFRESH_MHZ: !!int
 PREFERRED: !!bool
-CURRENT: !!bool
 ```
 
 ## !!head

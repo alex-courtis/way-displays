@@ -71,12 +71,10 @@
             HEIGHT: 11
             REFRESH_MHZ: 12
             PREFERRED: TRUE
-            CURRENT: TRUE
           - WIDTH: 13
             HEIGHT: 14
             REFRESH_MHZ: 15
             PREFERRED: FALSE
-            CURRENT: FALSE
   MESSAGES:
     - DEBUG: dbg
     - INFO: inf

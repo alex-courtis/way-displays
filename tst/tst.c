@@ -24,3 +24,16 @@ char *read_file(const char *path) {
 
 	return out;
 }
+
+void write_file(const char *path, const char *content) {
+	FILE *f = fopen(path, "w");
+	if (!f) {
+		fprintf(stderr, "could not write to %s\n", path);
+		exit(1);
+	}
+
+	fprintf(f, "%s", content);
+
+	fclose(f);
+}
+

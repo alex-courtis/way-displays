@@ -27,9 +27,14 @@ extern "C" {
 #include "ipc.h"
 #include "lid.h"
 #include "slist.h"
+#include "lid.h"
 #include "log.h"
 #include "mode.h"
 }
+
+// try and ignore exception
+// this is not ideal however yaml-cpp lacks a means to check the type of a scalar
+#define TI(STATEMENT) try { STATEMENT; } catch (...) { }
 
 // If this is a regex pattern, attempt to compile it before including it in configuration.
 bool validate_regex(const char *pattern, enum CfgElement element) {
@@ -264,7 +269,6 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 		for (struct SList *i = head.modes; i; i = i->nex) {
 			e << YAML::BeginMap;							// mode
 			e << *(Mode*)(i->val);
-			e << "CURRENT" << (head.current.mode == i->val);
 			e << YAML::EndMap;								// mode
 		}
 
@@ -274,6 +278,7 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	return e;
 }
 
+// TODO refactor this as an operator and extract the NULL and empty checks
 void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 	if (!cfg || !node || !node.IsMap()) {
 		throw std::runtime_error("empty CFG");
@@ -443,6 +448,86 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 	}
 }
 
+struct Lid*& operator << (struct Lid*& lid, const YAML::Node& node) {
+	if (!node || !node.IsMap())
+		return lid;
+
+	if (!lid)
+		lid = (struct Lid*)calloc(1, sizeof(struct Lid));
+
+	if (node["CLOSED"])
+		lid->closed = node["CLOSED"].as<bool>();
+
+	if (node["DEVICE_PATH"])
+		lid->device_path = strdup(node["DEVICE_PATH"].as<std::string>().c_str());
+
+	return lid;
+}
+
+struct Mode*& operator << (struct Mode*& mode, const YAML::Node& node) {
+	if (!node || !node.IsMap())
+		return mode;
+
+	if (!mode)
+		mode = (struct Mode*)calloc(1, sizeof(struct Mode));
+
+	TI(mode->width = node["WIDTH"].as<int>());
+	TI(mode->height = node["HEIGHT"].as<int>());
+	TI(mode->refresh_mhz = node["REFRESH_MHZ"].as<int>());
+	TI(mode->preferred = node["PREFERRED"].as<bool>());
+
+	return mode;
+}
+
+struct HeadState& operator << (struct HeadState& head_state, const YAML::Node& node) {
+	if (!node || !node.IsMap())
+		return head_state;
+
+	TI(head_state.enabled = node["ENABLED"].as<bool>());
+	TI(head_state.scale = wl_fixed_from_double(node["SCALE"].as<float>()));
+	TI(head_state.x = node["X"].as<int>());
+	TI(head_state.y = node["Y"].as<int>());
+
+	bool vrr = false;
+	TI(vrr = node["VRR"].as<bool>());
+	head_state.adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+
+	head_state.mode << node["MODE"];
+
+	return head_state;
+}
+
+struct Head*& operator << (struct Head*& head, const YAML::Node& node) {
+	if (!node || !node.IsMap())
+		return head;
+
+	if (!head)
+		head = (struct Head*)calloc(1, sizeof(struct Head));
+
+	TI(head->name = strdup(node["NAME"].as<std::string>().c_str()));
+	TI(head->description = strdup(node["DESCRIPTION"].as<std::string>().c_str()));
+	TI(head->make = strdup(node["MAKE"].as<std::string>().c_str()));
+	TI(head->model = strdup(node["MODEL"].as<std::string>().c_str()));
+	TI(head->serial_number = strdup(node["SERIAL_NUMBER"].as<std::string>().c_str()));
+	TI(head->width_mm = node["WIDTH_MM"].as<int>());
+	TI(head->height_mm = node["HEIGHT_MM"].as<long>());
+	TI(head->transform = (enum wl_output_transform)node["TRANSFORM"].as<int>());
+
+	head->current << node["CURRENT"];
+	head->desired << node["DESIRED"];
+
+	if (node["MODES"] && node["MODES"].IsSequence()) {
+		for (const auto &node_mode : node["MODES"]) {
+			struct Mode *mode = NULL;
+			if (mode << node_mode) {
+				slist_append(&head->modes, mode);
+			}
+		}
+	}
+
+	return head;
+}
+
 char *marshal_ipc_request(struct IpcRequest *request) {
 	if (!request) {
 		return NULL;
@@ -534,9 +619,9 @@ char *marshal_ipc_response(struct IpcResponse *response) {
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
-		e << YAML::BeginSeq;
+		e << YAML::BeginSeq;							// root
 
-		e << YAML::BeginMap;								// root
+		e << YAML::BeginMap;								// list
 
 		e << YAML::Key << "DONE" << YAML::Value << response->done;
 
@@ -638,6 +723,22 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 
 		if (!node["RC"]) {
 			throw std::runtime_error("RC missing");
+		}
+
+		if (node["CFG"] && node["CFG"].IsMap()) {
+			response->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+			cfg_parse_node(response->cfg, node["CFG"]);
+		}
+
+		if (node["STATE"]) {
+			response->lid << node["STATE"]["LID"];
+
+			if (node["STATE"]["HEADS"] && node["STATE"]["HEADS"].IsSequence()) {
+				for (const auto &node_head : node["STATE"]["HEADS"]) {
+					struct Head *head = NULL;
+					slist_append(&response->heads, head << node_head);
+				}
+			}
 		}
 
 		for (YAML::const_iterator i = node.begin(); i != node.end(); ++i) {

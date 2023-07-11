@@ -16,6 +16,7 @@
 #include "slist.h"
 #include "log.h"
 #include "mode.h"
+#include "wlr-output-management-unstable-v1.h"
 
 #include "marshalling.h"
 
@@ -385,12 +386,74 @@ void unmarshal_ipc_response__ok(void **state) {
 	assert_true(actual->done);
 	assert_int_equal(actual->rc, 2);
 
+	assert_non_null(actual->lid);
+	assert_true(actual->lid->closed);
+	assert_string_equal(actual->lid->device_path, "/path/to/lid");
+
+	assert_non_null(actual->cfg);
+	struct Cfg *expected_cfg = cfg_all();
+	assert_cfg_equal(actual->cfg, expected_cfg);
+
+	assert_int_equal(slist_length(actual->heads), 1);
+	struct Head *head = slist_at(actual->heads, 0);
+
+	assert_string_equal_nn(head->name, "name");
+	assert_string_equal_nn(head->description, "desc");
+	assert_int_equal(head->width_mm, 1);
+	assert_int_equal(head->height_mm, 2);
+	assert_int_equal(head->transform, WL_OUTPUT_TRANSFORM_270); // 3
+	assert_string_equal_nn(head->make, "make");
+	assert_string_equal_nn(head->model, "model");
+	assert_string_equal_nn(head->serial_number, "serial");
+
+	assert_int_equal(head->current.scale, wl_fixed_from_double(4));
+	assert_true(head->current.enabled);
+	assert_int_equal(head->current.x, 5);
+	assert_int_equal(head->current.y, 6);
+	assert_int_equal(head->current.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+
+	assert_int_equal(head->desired.scale, wl_fixed_from_double(7.0));
+	assert_true(head->desired.enabled);
+	assert_int_equal(head->desired.x, 8);
+	assert_int_equal(head->desired.y, 9);
+	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+
+	struct Mode *mode_current = head->current.mode;
+	assert_non_null(mode_current);
+	assert_int_equal(mode_current->width, 10);
+	assert_int_equal(mode_current->height, 11);
+	assert_int_equal(mode_current->refresh_mhz, 12);
+	assert_true(mode_current->preferred);
+
+	struct Mode *mode_desired = head->desired.mode;
+	assert_non_null(mode_desired);
+	assert_int_equal(mode_desired->width, 13);
+	assert_int_equal(mode_desired->height, 14);
+	assert_int_equal(mode_desired->refresh_mhz, 15);
+	assert_false(mode_desired->preferred);
+
+	assert_int_equal(slist_length(head->modes), 2);
+	struct Mode *mode1 = slist_at(head->modes, 0);
+	assert_non_null(mode1);
+	assert_int_equal(mode1->width, 10);
+	assert_int_equal(mode1->height, 11);
+	assert_int_equal(mode1->refresh_mhz, 12);
+	assert_true(mode1->preferred);
+
+	struct Mode *mode2 = slist_at(head->modes, 1);
+	assert_non_null(mode2);
+	assert_int_equal(mode2->width, 13);
+	assert_int_equal(mode2->height, 14);
+	assert_int_equal(mode2->refresh_mhz, 15);
+	assert_false(mode2->preferred);
+
 	assert_log(DEBUG, "dbg\n");
 	assert_log(INFO, "inf\n");
 	assert_log(WARNING, "war\n");
 	assert_log(ERROR, "err\n");
 
 	ipc_response_free(actual);
+	cfg_free(expected_cfg);
 	free(yaml);
 }
 

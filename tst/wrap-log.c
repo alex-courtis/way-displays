@@ -26,7 +26,7 @@ void _assert_logs_empty(const char * const file, const int line) {
 	for (enum LogThreshold t = DEBUG; t <= ERROR; t++) {
 		if (bp[t]) {
 			bp[t] = NULL;
-			cm_print_error("unexpected log %s:\n\"%s\"\n", log_threshold_name(t), b[t]);
+			cm_print_error("\nunexpected log %s:\n\"%s\"\n", log_threshold_name(t), b[t]);
 			empty = false;
 		}
 	}

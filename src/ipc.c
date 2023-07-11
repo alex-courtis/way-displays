@@ -6,8 +6,11 @@
 #include "ipc.h"
 
 #include "cfg.h"
+#include "head.h"
+#include "lid.h"
 #include "log.h"
 #include "marshalling.h"
+#include "slist.h"
 #include "sockets.h"
 
 void ipc_send_request(struct IpcRequest *request) {
@@ -122,6 +125,10 @@ void ipc_response_free(struct IpcResponse *response) {
 	if (!response) {
 		return;
 	}
+
+	cfg_free(response->cfg);
+	lid_free(response->lid);
+	slist_free_vals(&response->heads, head_free);
 
 	free(response);
 }
