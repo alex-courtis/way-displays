@@ -195,6 +195,7 @@ void marshal_ipc_response__ok(void **state) {
 	struct IpcResponse *ipc_response = calloc(1, sizeof(struct IpcResponse));
 	ipc_response->done = true;
 	ipc_response->rc = 1;
+	ipc_response->messages = true;
 	ipc_response->state = true;
 
 	cfg = cfg_all();
