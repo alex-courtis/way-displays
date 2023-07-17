@@ -35,6 +35,8 @@ int handle_human(int socket_client) {
 		if (response) {
 			rc = response->rc;
 			done = response->done;
+			ipc_response_free(response);
+			response = NULL;
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;
