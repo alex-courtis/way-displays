@@ -47,6 +47,6 @@ tst-all: $(TST_E)
 		fi ;\
 		done
 
-tst-all-valgrind: TST_WITH = valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all --suppressions=/tmp/vg.supp
+tst-all-valgrind: TST_WITH = valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --gen-suppressions=all --suppressions=/tmp/vg.supp
 tst-all-valgrind: tst-all
 
