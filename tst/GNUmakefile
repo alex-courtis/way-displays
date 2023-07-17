@@ -38,7 +38,6 @@ tst-info: tst/tst-info.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
 
 tst-all: $(TST_E)
-	ls -la /tmp
 	@for e in $(^); do \
 		echo ;\
 		echo $$e ;\
