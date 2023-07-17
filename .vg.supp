@@ -28,7 +28,7 @@
    glib-g_malloc
    Memcheck:Leak
    match-leak-kinds: reachable
-   fun:malloc
+   fun:*alloc
    fun:g_malloc
    ...
 }
@@ -37,7 +37,7 @@
    glib-g_malloc0
    Memcheck:Leak
    match-leak-kinds: reachable
-   fun:calloc
+   fun:*alloc
    fun:g_malloc0
    ...
 }
@@ -46,7 +46,7 @@
    glib-g_realloc
    Memcheck:Leak
    match-leak-kinds: reachable
-   fun:realloc
+   fun:*alloc
    fun:g_realloc
    ...
 }
@@ -58,5 +58,15 @@
    ...
    fun:gobject_init
    fun:call_init
+   ...
+}
+
+{
+   glib-g_slice_alloc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   ...
+   fun:g_slice_alloc
    ...
 }
