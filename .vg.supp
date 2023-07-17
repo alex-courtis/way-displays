@@ -58,7 +58,8 @@
    ...
    fun:gobject_init
    fun:call_init
-   ...
+   fun:call_init
+   fun:_dl_init
 }
 
 {
