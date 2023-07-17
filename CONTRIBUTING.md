@@ -44,13 +44,17 @@ gcc is the default for packaging reasons, however clang is preferred.
 
 Please add tests when defining new functionality.
 
+### Test Valgrind
+
+`make CC=gcc CXX=g++ test-valgrind`
+
 ### Lint
 
 `make cppcheck`
 
 Please resolve all issues before committing.
 
-### Includes (Bonus Points)
+### Check Includes
 
 [include-what-you-use](https://include-what-you-use.org/) is configured to run for `src` and `tst`.
 
