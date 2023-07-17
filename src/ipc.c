@@ -20,8 +20,6 @@ void ipc_send_request(struct IpcRequest *request) {
 		goto end;
 	}
 
-	log_debug_nocap("========sending server request==========\n%s\n----------------------------------------", yaml);
-
 	if ((request->socket_client = create_socket_client()) == -1) {
 		goto end;
 	}
@@ -44,8 +42,6 @@ void ipc_send_operation(struct IpcOperation *operation) {
 		operation->done = true;
 		return;
 	}
-
-	log_debug_nocap("========sending client response==========\n%s----------------------------------------", yaml);
 
 	if (socket_write(operation->socket_client, yaml, strlen(yaml)) == -1) {
 		operation->done = true;
@@ -78,8 +74,6 @@ struct IpcRequest *ipc_receive_request_server(int socket_server) {
 		return NULL;
 	}
 
-	log_debug_nocap("========received client request=========\n%s\n----------------------------------------", yaml);
-
 	request = unmarshal_ipc_request(yaml);
 	free(yaml);
 
@@ -102,8 +96,6 @@ struct IpcResponse *ipc_receive_response_client(int socket_client) {
 	if (!(yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
-
-	log_debug_nocap("========received server response========\n%s\n----------------------------------------", yaml);
 
 	response = unmarshal_ipc_response(yaml);
 	free(yaml);

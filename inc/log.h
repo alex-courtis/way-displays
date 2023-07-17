@@ -25,8 +25,6 @@ void log_(enum LogThreshold threshold, const char *__restrict __format, ...);
 
 void log_debug(const char *__restrict __format, ...);
 
-void log_debug_nocap(const char *__restrict __format, ...);
-
 void log_info(const char *__restrict __format, ...);
 
 void log_warn(const char *__restrict __format, ...);
