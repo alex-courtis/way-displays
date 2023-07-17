@@ -37,7 +37,7 @@ end:
 	}
 }
 
-void ipc_send_response(struct IpcOperation *operation) {
+void ipc_send_operation(struct IpcOperation *operation) {
 	char *yaml = marshal_ipc_response(operation);
 
 	if (!yaml) {
@@ -54,7 +54,7 @@ void ipc_send_response(struct IpcOperation *operation) {
 	free(yaml);
 }
 
-char *ipc_receive_raw_client(int socket_client) {
+char *ipc_receive_raw(int socket_client) {
 	char *yaml = NULL;
 
 	if (!(yaml = socket_read(socket_client))) {
@@ -74,7 +74,7 @@ struct IpcRequest *ipc_receive_request_server(int socket_server) {
 		return NULL;
 	}
 
-	if (!(yaml = ipc_receive_raw_client(socket_client))) {
+	if (!(yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
 
@@ -99,7 +99,7 @@ struct IpcResponse *ipc_receive_response_client(int socket_client) {
 	struct IpcResponse *response = NULL;
 	char *yaml = NULL;
 
-	if (!(yaml = ipc_receive_raw_client(socket_client))) {
+	if (!(yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
 

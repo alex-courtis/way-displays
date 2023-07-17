@@ -44,9 +44,9 @@ struct IpcResponse {
 
 void ipc_send_request(struct IpcRequest *request);
 
-void ipc_send_response(struct IpcOperation *operation);
+void ipc_send_operation(struct IpcOperation *operation);
 
-char *ipc_receive_raw_client(int socket_client);
+char *ipc_receive_raw(int socket_client);
 
 struct IpcRequest *ipc_receive_request_server(int socket_server);
 

@@ -14,11 +14,11 @@
 int handle_raw(int socket_client) {
 	int rc = EXIT_SUCCESS;
 
-	char *yaml = ipc_receive_raw_client(socket_client);
+	char *yaml = ipc_receive_raw(socket_client);
 	while (yaml) {
 		fprintf(stdout, "%s", yaml);
 		free(yaml);
-		yaml = ipc_receive_raw_client(socket_client);
+		yaml = ipc_receive_raw(socket_client);
 	}
 
 	return rc;

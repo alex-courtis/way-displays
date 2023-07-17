@@ -38,7 +38,7 @@ void handle_ipc_in_progress(int server_socket) {
 	operation->done = true;
 	operation->rc = IPC_RC_REQUEST_IN_PROGRESS;
 
-	ipc_send_response(operation);
+	ipc_send_operation(operation);
 
 	close(operation->socket_client);
 
@@ -46,12 +46,12 @@ void handle_ipc_in_progress(int server_socket) {
 	ipc_operation_free(operation);
 }
 
-void send_ipc_response(void) {
+void notify_ipc_operation(void) {
 	if (!ipc_operation) {
 		return;
 	}
 
-	ipc_send_response(ipc_operation);
+	ipc_send_operation(ipc_operation);
 
 	if (ipc_operation->done) {
 		log_capture_stop();
@@ -138,7 +138,7 @@ void receive_ipc_request(int server_socket) {
 send:
 	ipc_request_free(ipc_request);
 
-	send_ipc_response();
+	notify_ipc_operation();
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
@@ -215,7 +215,7 @@ int loop(void) {
 		// inform the client
 		if (ipc_operation) {
 			ipc_operation->done = displ->config_state == IDLE;
-			send_ipc_response();
+			notify_ipc_operation();
 		};
 
 
