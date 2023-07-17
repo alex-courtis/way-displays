@@ -16,13 +16,15 @@ jobs:
     - name: deps
       run: |
         sudo add-apt-repository universe
-        sudo apt install clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck -y
+        sudo apt install clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind -y
     - name: gcc
       run: make CC=gcc clean way-displays
     - name: clang
       run: make CC=clang clean way-displays
-    - name: test
-      run: make CC=clang test
     - name: cppcheck
       run: make CC=clang cppcheck
+    - name: test
+      run: make CC=clang test
+    - name: test-valgrind
+      run: make CC=clang test-valgrind
 
