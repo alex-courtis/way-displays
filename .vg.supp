@@ -25,55 +25,38 @@
 }
 
 {
-   glib-g_*alloc*
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:*alloc
-   fun:g_*alloc*
-   ...
-   obj:/usr/lib/libglib-2.0*
-   ...
-}
-{
-   glib-g_slice_alloc
+   glib-g_malloc
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
-   obj:/usr/lib/libglib-2.0*
-   ...
-   fun:g_slice_alloc
-   ...
-}
-{
-   glib-g_*_new_valist
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:*alloc
-   ...
-   obj:/usr/lib/libglib-2.0*
-   ...
-   fun:g_*_new_valist
+   fun:g_malloc
    ...
 }
 
 {
-   gobject-anything
+   glib-g_malloc0
    Memcheck:Leak
    match-leak-kinds: reachable
-   ...
-   obj:/usr/lib/libgobject-2.0*
+   fun:calloc
+   fun:g_malloc0
    ...
 }
 
 {
-   ld-_dl_init-g*-2.0
+   glib-g_realloc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:g_realloc
+   ...
+}
+
+{
+   glib-gobject_init
    Memcheck:Leak
    match-leak-kinds: reachable
    ...
-   obj:/usr/lib/libg*-2.0*
-   ...
+   fun:gobject_init
    fun:call_init
-   fun:_dl_init
-   obj:/usr/lib/ld-2.33*
+   ...
 }
-
