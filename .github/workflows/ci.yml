@@ -26,5 +26,5 @@ jobs:
     - name: test
       run: make CC=clang test
     - name: test-valgrind
-      run: make CC=gcc test-valgrind
+      run: make CC=gcc clean test-valgrind
 
