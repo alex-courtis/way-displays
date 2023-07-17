@@ -62,11 +62,11 @@
 }
 
 {
-   glib-g_slice_alloc
+   glib-call_init.part.0
    Memcheck:Leak
    match-leak-kinds: reachable
-   fun:*alloc
    ...
-   fun:g_slice_alloc
-   ...
+   fun:call_init.part.0
+   fun:call_init
+   fun:_dl_init
 }
