@@ -86,7 +86,7 @@ struct Cfg *cfg_all(void) {
 // ipc-request-get.yaml
 struct IpcRequest *ipc_request_get(void) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->op = GET;
+	ipc_request->command = GET;
 
 	return ipc_request;
 }
@@ -177,7 +177,7 @@ void marshal_ipc_request__get(void **state) {
 
 void marshal_ipc_request__cfg_set(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->op = CFG_SET;
+	ipc_request->command = CFG_SET;
 
 	ipc_request->cfg = cfg_all();
 
@@ -314,7 +314,7 @@ void unmarshal_ipc_request__get(void **state) {
 	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
 
 	assert_non_null(actual);
-	assert_int_equal(actual->op, GET);
+	assert_int_equal(actual->command, GET);
 	assert_null(actual->cfg);
 
 	ipc_request_free(actual);
@@ -327,7 +327,7 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
 
 	assert_non_null(actual);
-	assert_int_equal(actual->op, CFG_SET);
+	assert_int_equal(actual->command, CFG_SET);
 
 	struct Cfg *expected_cfg = cfg_all();
 
@@ -383,8 +383,8 @@ void unmarshal_ipc_response__ok(void **state) {
 	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
 
 	assert_non_null(actual);
-	assert_true(actual->done);
-	assert_int_equal(actual->rc, 2);
+	assert_true(actual->status.done);
+	assert_int_equal(actual->status.rc, 2);
 
 	assert_non_null(actual->lid);
 	assert_true(actual->lid->closed);
@@ -457,6 +457,72 @@ void unmarshal_ipc_response__ok(void **state) {
 	free(yaml);
 }
 
+void unmarshal_ipc_responses_print__empty(void **state) {
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("");
+
+	assert_null(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: empty response, expected sequence\n"
+			"========================================\n"
+			"\n"
+			"----------------------------------------\n");
+}
+
+void unmarshal_ipc_responses_print__no_content(void **state) {
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("-");
+
+	assert_null(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: empty entry, expected map\n"
+			"========================================\n"
+			"-\n"
+			"----------------------------------------\n");
+}
+
+void unmarshal_ipc_responses_print__no_done(void **state) {
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("- FOO: BAR");
+
+	assert_null(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: DONE missing\n"
+			"========================================\n"
+			"- FOO: BAR\n"
+			"----------------------------------------\n");
+}
+
+void unmarshal_ipc_responses_print__no_rc(void **state) {
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("- DONE: TRUE");
+
+	assert_null(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: RC missing\n"
+			"========================================\n"
+			"- DONE: TRUE\n"
+			"----------------------------------------\n");
+}
+
+void unmarshal_ipc_responses_print__many(void **state) {
+	char *yaml = read_file("tst/marshalling/ipc-responses-print.yaml");
+
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print(yaml);
+
+	assert_non_null(actual);
+	assert_false(actual->done);
+	assert_int_equal(actual->rc, 2);
+
+	assert_log(DEBUG, "dbg1\ndbg2\n");
+	assert_log(INFO, "inf1\ninf2\n");
+	assert_log(WARNING, "war1\nwar2\n");
+	assert_log(ERROR, "err1\nerr2\n");
+
+	ipc_response_status_free(actual);
+	free(yaml);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
@@ -483,6 +549,12 @@ int main(void) {
 		TEST(unmarshal_ipc_response__no_done),
 		TEST(unmarshal_ipc_response__no_rc),
 		TEST(unmarshal_ipc_response__ok),
+
+		TEST(unmarshal_ipc_responses_print__empty),
+		TEST(unmarshal_ipc_responses_print__no_content),
+		TEST(unmarshal_ipc_responses_print__no_done),
+		TEST(unmarshal_ipc_responses_print__no_rc),
+		TEST(unmarshal_ipc_responses_print__many),
 	};
 
 	return RUN(tests);

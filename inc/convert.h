@@ -17,9 +17,9 @@ const char *align_name(enum Align align);
 enum OnOff on_off_val(const char *name);
 const char *on_off_name(enum OnOff on_off);
 
-enum IpcRequestOperation ipc_request_op_val(const char *name);
-const char *ipc_request_op_name(enum IpcRequestOperation ipc_request_op);
-const char *ipc_request_op_friendly(enum IpcRequestOperation ipc_request_op);
+enum IpcCommand ipc_command_val(const char *name);
+const char *ipc_command_name(enum IpcCommand ipc_command);
+const char *ipc_command_friendly(enum IpcCommand ipc_command);
 
 enum LogThreshold log_threshold_val(const char *name);
 const char *log_threshold_name(enum LogThreshold log_threshold);

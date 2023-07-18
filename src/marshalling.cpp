@@ -542,7 +542,7 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 
 		e << YAML::BeginMap;						// root
 
-		const char *op_name = ipc_request_op_name(request->op);
+		const char *op_name = ipc_command_name(request->command);
 		if (op_name) {
 			e << YAML::Key << "OP" << YAML::Value << op_name;
 		} else {
@@ -587,8 +587,8 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 		const YAML::Node node_op = node["OP"];
 		if (node_op) {
 			const std::string &op_str = node_op.as<std::string>();
-			request->op = ipc_request_op_val(op_str.c_str());
-			if (!request->op) {
+			request->command = ipc_command_val(op_str.c_str());
+			if (!request->command) {
 				throw std::runtime_error("invalid OP '" + op_str + "'");
 			}
 		} else {
@@ -699,6 +699,75 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 	return yaml;
 }
 
+void log_messages(YAML::Node node) {
+	if (!node || !node.IsSequence()) {
+		return;
+	}
+
+	// iterate the sequence in MESSAGES
+	for (size_t i = 0; i < node.size(); i++) {
+
+		// each message is a map
+		const YAML::Node node_msg = node[i];
+		if (!node_msg.IsMap()) {
+			continue;
+		}
+
+		// iterate the one line in the map
+		for (YAML::const_iterator iter_msg = node_msg.begin(); iter_msg != node_msg.end(); ++iter_msg) {
+			enum LogThreshold threshold = log_threshold_val(iter_msg->first.as<std::string>().c_str());
+			if (threshold) {
+				log_(threshold, "%s", iter_msg->second.as<std::string>().c_str());
+			}
+		}
+	}
+}
+
+struct IpcResponseStatus *unmarshal_ipc_responses_print(char *yaml) {
+	if (!yaml) {
+		return NULL;
+	}
+
+	struct IpcResponseStatus *response_status = (struct IpcResponseStatus*)calloc(1, sizeof(struct IpcResponseStatus));
+	response_status->rc = IPC_RC_BAD_RESPONSE;
+
+	try {
+		const YAML::Node node_root = YAML::Load(yaml);
+
+		if (!node_root.IsSequence()) {
+			throw std::runtime_error("empty response, expected sequence");
+		}
+
+		// iterate the unnamed list of all responses
+		for (size_t i = 0; i < node_root.size(); i++) {
+			const YAML::Node node_response = node_root[i];
+			if (!node_response.IsMap()) {
+				throw std::runtime_error("empty entry, expected map");
+			}
+
+			// overwrite status with each response
+			if (!node_response["DONE"])
+				throw std::runtime_error("DONE missing");
+			response_status->done = node_response["DONE"].as<bool>();
+
+			if (!node_response["RC"])
+				throw std::runtime_error("RC missing");
+			response_status->rc = node_response["RC"].as<int>();
+
+			// maybe print messages
+			log_messages(node_response["MESSAGES"]);
+		}
+
+	} catch (const std::exception &e) {
+		log_error("\nunmarshalling ipc response: %s", e.what());
+		log_error("========================================\n%s\n----------------------------------------", yaml);
+		ipc_response_status_free(response_status);
+		response_status = NULL;
+	}
+
+	return response_status;
+}
+
 struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 	if (!yaml) {
 		return NULL;
@@ -745,11 +814,11 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 		for (YAML::const_iterator i = node.begin(); i != node.end(); ++i) {
 
 			if (i->first.as<std::string>() == "DONE") {
-				response->done = i->second.as<bool>();
+				response->status.done = i->second.as<bool>();
 			}
 
 			if (i->first.as<std::string>() == "RC") {
-				response->rc = i->second.as<int>();
+				response->status.rc = i->second.as<int>();
 			}
 
 			if (i->first.as<std::string>() == "MESSAGES" && i->second.IsSequence()) {

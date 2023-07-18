@@ -61,7 +61,7 @@ char *ipc_receive_raw(int socket_client) {
 	return yaml;
 }
 
-struct IpcRequest *ipc_receive_request_server(int socket_server) {
+struct IpcRequest *ipc_receive_request(int socket_server) {
 	struct IpcRequest *request = NULL;
 	int socket_client = -1;
 	char *yaml = NULL;
@@ -89,7 +89,7 @@ struct IpcRequest *ipc_receive_request_server(int socket_server) {
 	return request;
 }
 
-struct IpcResponse *ipc_receive_response_client(int socket_client) {
+struct IpcResponse *ipc_receive_response(int socket_client) {
 	struct IpcResponse *response = NULL;
 	char *yaml = NULL;
 
@@ -101,6 +101,20 @@ struct IpcResponse *ipc_receive_response_client(int socket_client) {
 	free(yaml);
 
 	return response;
+}
+
+struct IpcResponseStatus *ipc_receive_responses_log(int socket_client) {
+	struct IpcResponseStatus *response_status = NULL;
+	char *yaml = NULL;
+
+	if (!(yaml = ipc_receive_raw(socket_client))) {
+		return NULL;
+	}
+
+	response_status = unmarshal_ipc_responses_print(yaml);
+	free(yaml);
+
+	return response_status;
 }
 
 void ipc_request_free(struct IpcRequest *request) {
@@ -123,6 +137,10 @@ void ipc_response_free(struct IpcResponse *response) {
 	slist_free_vals(&response->heads, head_free);
 
 	free(response);
+}
+
+void ipc_response_status_free(struct IpcResponseStatus *response_status) {
+	free(response_status);
 }
 
 void ipc_operation_free(struct IpcOperation *operation) {

@@ -56,7 +56,7 @@ static struct NameVal on_offs[] = {
 	{ .val = 0,   .name = NULL,    },
 };
 
-static struct NameVal ipc_request_ops[] = {
+static struct NameVal ipc_commands[] = {
 	{ .val = GET,       .name = "GET",       .friendly = "get",    },
 	{ .val = CFG_SET,   .name = "CFG_SET",   .friendly = "set",    },
 	{ .val = CFG_DEL,   .name = "CFG_DEL",   .friendly = "delete", },
@@ -156,16 +156,16 @@ const char *on_off_name(enum OnOff on_off) {
 	return name(on_offs, on_off);
 }
 
-enum IpcRequestOperation ipc_request_op_val(const char *name) {
-	return val(ipc_request_ops, name);
+enum IpcCommand ipc_command_val(const char *name) {
+	return val(ipc_commands, name);
 }
 
-const char *ipc_request_op_name(enum IpcRequestOperation ipc_request_op) {
-	return name(ipc_request_ops, ipc_request_op);
+const char *ipc_command_name(enum IpcCommand ipc_command) {
+	return name(ipc_commands, ipc_command);
 }
 
-const char *ipc_request_op_friendly(enum IpcRequestOperation ipc_request_op) {
-	return friendly(ipc_request_ops, ipc_request_op);
+const char *ipc_command_friendly(enum IpcCommand ipc_command) {
+	return friendly(ipc_commands, ipc_command);
 }
 
 enum LogThreshold log_threshold_val(const char *name) {

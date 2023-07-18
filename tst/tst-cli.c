@@ -12,7 +12,7 @@
 #include "slist.h"
 #include "log.h"
 
-struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv);
+struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
 struct IpcRequest *parse_write(int argc, char **argv);
 struct IpcRequest *parse_set(int argc, char **argv);
 struct IpcRequest *parse_del(int argc, char **argv);
@@ -346,7 +346,7 @@ void parse_write__ok(void **state) {
 	struct IpcRequest *request = parse_write(0, NULL);
 
 	assert_non_null(request);
-	assert_int_equal(request->op, CFG_WRITE);
+	assert_int_equal(request->command, CFG_WRITE);
 
 	ipc_request_free(request);
 }
@@ -454,7 +454,7 @@ void parse_set__ok(void **state) {
 	struct IpcRequest *request = parse_set(1, argv);
 
 	assert_non_null(request);
-	assert_int_equal(request->op, CFG_SET);
+	assert_int_equal(request->command, CFG_SET);
 
 	ipc_request_free(request);
 }
@@ -523,7 +523,7 @@ void parse_del__ok(void **state) {
 	struct IpcRequest *request = parse_del(1, argv);
 
 	assert_non_null(request);
-	assert_int_equal(request->op, CFG_DEL);
+	assert_int_equal(request->command, CFG_DEL);
 
 	ipc_request_free(request);
 }

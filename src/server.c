@@ -27,7 +27,7 @@ struct IpcOperation *ipc_operation = NULL;
 
 // received a request whilst another is in progress
 void handle_ipc_in_progress(int server_socket) {
-	struct IpcRequest *request = ipc_receive_request_server(server_socket);
+	struct IpcRequest *request = ipc_receive_request(server_socket);
 	if (!request) {
 		log_error("\nFailed to read IPC request");
 		return;
@@ -73,7 +73,7 @@ void receive_ipc_request(int server_socket) {
 	log_capture_clear();
 	log_capture_start();
 
-	struct IpcRequest *ipc_request = ipc_receive_request_server(server_socket);
+	struct IpcRequest *ipc_request = ipc_receive_request(server_socket);
 	if (!ipc_request) {
 		log_error("\nFailed to read IPC request");
 		log_capture_stop();
@@ -93,16 +93,16 @@ void receive_ipc_request(int server_socket) {
 		goto send;
 	}
 
-	log_info("\nServer received request: %s", ipc_request_op_friendly(ipc_request->op));
+	log_info("\nServer received request: %s", ipc_command_friendly(ipc_request->command));
 	if (ipc_request->cfg) {
-		print_cfg(INFO, ipc_request->cfg, ipc_request->op == CFG_DEL);
+		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
-	switch (ipc_request->op) {
+	switch (ipc_request->command) {
 		case CFG_DEL:
 		case CFG_SET:
 			{
-				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->op == CFG_DEL);
+				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->command == CFG_DEL);
 				if (cfg_merged) {
 					// ongoing
 					ipc_operation->done = false;

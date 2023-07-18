@@ -47,7 +47,7 @@ void usage(FILE *stream) {
 	fprintf(stream, "%s", mesg);
 }
 
-struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv) {
+struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
 	struct UserScale *user_scale = NULL;
 	struct UserMode *user_mode = NULL;
 
@@ -66,7 +66,7 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			parsed = (cfg->auto_scale = on_off_val(argv[optind]));
 			break;
 		case SCALE:
-			switch (op) {
+			switch (command) {
 				case CFG_SET:
 					// parse input value
 					user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
@@ -87,7 +87,7 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			}
 			break;
 		case MODE:
-			switch (op) {
+			switch (command) {
 				case CFG_SET:
 					// parse input value
 					user_mode = cfg_user_mode_default();
@@ -165,7 +165,7 @@ struct IpcRequest *parse_get(int argc, char **argv) {
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->op = GET;
+	request->command = GET;
 
 	return request;
 }
@@ -178,7 +178,7 @@ struct IpcRequest *parse_write(int argc, char **argv) {
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->op = CFG_WRITE;
+	request->command = CFG_WRITE;
 
 	return request;
 }
@@ -219,13 +219,13 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 			}
 			break;
 		default:
-			log_error("invalid %s: %s", ipc_request_op_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
+			log_error("invalid %s: %s", ipc_command_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->op = CFG_SET;
+	request->command = CFG_SET;
 	request->cfg = parse_element(CFG_SET, element, argc, argv);
 
 	return request;
@@ -245,13 +245,13 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 			}
 			break;
 		default:
-			log_error("invalid %s: %s", ipc_request_op_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
+			log_error("invalid %s: %s", ipc_command_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->op = CFG_DEL;
+	request->command = CFG_DEL;
 	request->cfg = parse_element(CFG_DEL, element, argc, argv);
 
 	return request;

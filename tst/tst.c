@@ -16,6 +16,10 @@ char *read_file(const char *path) {
 
 	int len = lseek(fd, 0, SEEK_END);
 
+	if (len == 0) {
+		return NULL;
+	}
+
 	char *out = calloc(len, sizeof(char));
 
 	memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len - 1);

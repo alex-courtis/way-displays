@@ -27,24 +27,24 @@ int handle_raw(int socket_client) {
 int handle_human(int socket_client) {
 	int rc = EXIT_SUCCESS;
 
-	struct IpcResponse *response = NULL;
+	struct IpcResponseStatus *response_status = NULL;
 	bool done = false;
 
 	while (!done) {
-		response = ipc_receive_response_client(socket_client);
-		if (response) {
-			rc = response->rc;
-			done = response->done;
-			ipc_response_free(response);
-			response = NULL;
+		response_status = ipc_receive_responses_log(socket_client);
+		if (response_status) {
+			rc = response_status->rc;
+			done = response_status->done;
+			ipc_response_status_free(response_status);
+			response_status = NULL;
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;
 		}
 	}
 
-	if (response) {
-		ipc_response_free(response);
+	if (response_status) {
+		ipc_response_status_free(response_status);
 	}
 
 	return rc;
@@ -69,8 +69,8 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	log_info("\nClient sending request: %s", ipc_request_op_friendly(ipc_request->op));
-	print_cfg(INFO, ipc_request->cfg, ipc_request->op == CFG_DEL);
+	log_info("\nClient sending request: %s", ipc_command_friendly(ipc_request->command));
+	print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 
 	ipc_send_request(ipc_request);
 
