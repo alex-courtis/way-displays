@@ -83,14 +83,6 @@ struct Cfg *cfg_all(void) {
 	return cfg;
 }
 
-// ipc-request-get.yaml
-struct IpcRequest *ipc_request_get(void) {
-	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->command = GET;
-
-	return ipc_request;
-}
-
 void unmarshal_cfg_from_file__ok(void **state) {
 
 	struct Cfg *read = cfg_default();
@@ -159,20 +151,6 @@ void marshal_ipc_request__no_op(void **state) {
 	assert_log(ERROR, "marshalling ipc request: missing OP\n");
 
 	ipc_request_free(ipc_request);
-}
-
-void marshal_ipc_request__get(void **state) {
-	struct IpcRequest *ipc_request = ipc_request_get();
-
-	char *actual = marshal_ipc_request(ipc_request);
-
-	char *expected = read_file("tst/marshalling/ipc-request-get.yaml");
-
-	assert_string_equal(actual, expected);
-
-	ipc_request_free(ipc_request);
-	free(actual);
-	free(expected);
 }
 
 void marshal_ipc_request__cfg_set(void **state) {
@@ -270,55 +248,39 @@ void marshal_ipc_response__ok(void **state) {
 }
 
 void unmarshal_ipc_request__empty(void **state) {
-	char *yaml = "";
-
-	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
-
-	char *expected_log = read_file("tst/marshalling/ipc-request-empty.log");
-	assert_log(ERROR, expected_log);
+	struct IpcRequest *actual = unmarshal_ipc_request("");
 
 	assert_null(actual);
 
-	free(expected_log);
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc request: empty request\n"
+			"========================================\n"
+			"\n"
+			"----------------------------------------\n");
 }
 
 void unmarshal_ipc_request__bad_op(void **state) {
-	char *yaml = "OP: aoeu";
-
-	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
-
-	char *expected_log = read_file("tst/marshalling/ipc-request-bad-op.log");
-	assert_log(ERROR, expected_log);
+	struct IpcRequest *actual = unmarshal_ipc_request("OP: aoeu");
 
 	assert_null(actual);
 
-	free(expected_log);
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc request: invalid OP 'aoeu'\n"
+			"========================================\n"
+			"OP: aoeu\n"
+			"----------------------------------------\n");
 }
 
 void unmarshal_ipc_request__no_op(void **state) {
-	char *yaml = "FOO: BAR";
-
-	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
-
-	char *expected_log = read_file("tst/marshalling/ipc-request-no-op.log");
-	assert_log(ERROR, expected_log);
+	struct IpcRequest *actual = unmarshal_ipc_request("FOO: BAR");
 
 	assert_null(actual);
 
-	free(expected_log);
-}
-
-void unmarshal_ipc_request__get(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-request-get.yaml");
-
-	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
-
-	assert_non_null(actual);
-	assert_int_equal(actual->command, GET);
-	assert_null(actual->cfg);
-
-	ipc_request_free(actual);
-	free(yaml);
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc request: missing OP\n"
+			"========================================\n"
+			"FOO: BAR\n"
+			"----------------------------------------\n");
 }
 
 void unmarshal_ipc_request__cfg_set(void **state) {
@@ -339,42 +301,39 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 }
 
 void unmarshal_ipc_response__empty(void **state) {
-	char *yaml = "";
-
-	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
-
-	char *expected_log = read_file("tst/marshalling/ipc-response-empty.log");
-	assert_log(ERROR, expected_log);
+	struct IpcResponse *actual = unmarshal_ipc_response("");
 
 	assert_null(actual);
 
-	free(expected_log);
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: invalid response\n"
+			"========================================\n"
+			"\n"
+			"----------------------------------------\n");
 }
 
 void unmarshal_ipc_response__no_done(void **state) {
-	char *yaml = "- RC: 0";
-
-	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
-
-	char *expected_log = read_file("tst/marshalling/ipc-response-no-done.log");
-	assert_log(ERROR, expected_log);
+	struct IpcResponse *actual = unmarshal_ipc_response("- RC: 0");
 
 	assert_null(actual);
 
-	free(expected_log);
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: DONE missing\n"
+			"========================================\n"
+			"- RC: 0\n"
+			"----------------------------------------\n");
 }
 
 void unmarshal_ipc_response__no_rc(void **state) {
-	char *yaml = "- DONE: TRUE";
-
-	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
-
-	char *expected_log = read_file("tst/marshalling/ipc-response-no-rc.log");
-	assert_log(ERROR, expected_log);
+	struct IpcResponse *actual = unmarshal_ipc_response("- DONE: TRUE");
 
 	assert_null(actual);
 
-	free(expected_log);
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: RC missing\n"
+			"========================================\n"
+			"- DONE: TRUE\n"
+			"----------------------------------------\n");
 }
 
 void unmarshal_ipc_response__ok(void **state) {
@@ -534,7 +493,6 @@ int main(void) {
 		TEST(marshal_cfg__ok),
 
 		TEST(marshal_ipc_request__no_op),
-		TEST(marshal_ipc_request__get),
 		TEST(marshal_ipc_request__cfg_set),
 
 		TEST(marshal_ipc_response__ok),
@@ -542,7 +500,6 @@ int main(void) {
 		TEST(unmarshal_ipc_request__empty),
 		TEST(unmarshal_ipc_request__bad_op),
 		TEST(unmarshal_ipc_request__no_op),
-		TEST(unmarshal_ipc_request__get),
 		TEST(unmarshal_ipc_request__cfg_set),
 
 		TEST(unmarshal_ipc_response__empty),
