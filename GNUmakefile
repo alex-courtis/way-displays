@@ -69,11 +69,10 @@ man: way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc=)
 
-# make -k iwyu > /dev/null
 iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
 iwyu: clean $(SRC_O) $(TST_O)
-IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
+IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --verbose=3 -Xiwyu --error=1
 
 cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) --enable=warning,unusedFunction,performance,portability --suppressions-list=.cppcheck.supp --error-exitcode=1 $(CPPFLAGS)

@@ -58,6 +58,10 @@ Please resolve all issues before committing.
 
 [include-what-you-use](https://include-what-you-use.org/) is configured to run for `src` and `tst`.
 
+`make iwyu`
+
+See all violations:
+
 `make -k iwyu > /dev/null`
 
 Necessary changes will be indicated in the output with "should".
