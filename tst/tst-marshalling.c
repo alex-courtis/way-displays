@@ -62,6 +62,8 @@ struct Cfg *cfg_all(void) {
 	cfg->auto_scale = OFF;
 	cfg->log_threshold = ERROR;
 
+	cfg->laptop_display_prefix = strdup("ldp");
+
 	slist_append(&cfg->order_name_desc, strdup("one"));
 	slist_append(&cfg->order_name_desc, strdup("ONE"));
 	slist_append(&cfg->order_name_desc, strdup("!two"));

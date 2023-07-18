@@ -8,7 +8,6 @@
 #include "cfg.h"
 #include "head.h"
 #include "lid.h"
-#include "log.h"
 #include "marshalling.h"
 #include "slist.h"
 #include "sockets.h"
@@ -89,19 +88,19 @@ struct IpcRequest *ipc_receive_request(int socket_server) {
 	return request;
 }
 
-struct IpcResponse *ipc_receive_response(int socket_client) {
-	struct IpcResponse *response = NULL;
-	char *yaml = NULL;
+// struct IpcResponse *ipc_receive_response(int socket_client) {
+// 	struct IpcResponse *response = NULL;
+// 	char *yaml = NULL;
 
-	if (!(yaml = ipc_receive_raw(socket_client))) {
-		return NULL;
-	}
+// 	if (!(yaml = ipc_receive_raw(socket_client))) {
+// 		return NULL;
+// 	}
 
-	response = unmarshal_ipc_response(yaml);
-	free(yaml);
+// 	response = unmarshal_ipc_response(yaml);
+// 	free(yaml);
 
-	return response;
-}
+// 	return response;
+// }
 
 struct IpcResponseStatus *ipc_receive_responses_log(int socket_client) {
 	struct IpcResponseStatus *response_status = NULL;

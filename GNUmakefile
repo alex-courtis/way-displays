@@ -85,3 +85,4 @@ test-valgrind: all /tmp/vg.supp
 
 .PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-cppcheck tst-all tst-clean
 
+.NOTPARALLEL: iwyu

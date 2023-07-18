@@ -33,10 +33,6 @@ extern "C" {
 #include "wlr-output-management-unstable-v1.h"
 }
 
-// try and ignore exception
-// this is not ideal however yaml-cpp lacks a means to check the type of a scalar
-#define TI(STATEMENT) try { STATEMENT; } catch (...) { }
-
 // If this is a regex pattern, attempt to compile it before including it in configuration.
 bool validate_regex(const char *pattern, enum CfgElement element) {
 	bool rc = true;
@@ -120,6 +116,9 @@ char *yaml_with_newline(const YAML::Emitter &e) {
 	return yaml;
 }
 
+/*
+ * Marshal operators
+ */
 YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 
 	if (cfg.arrange) {
@@ -133,7 +132,9 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	if (cfg.order_name_desc) {
 		e << YAML::Key << "ORDER" << YAML::BeginSeq;					// ORDER
 		for (struct SList *i = cfg.order_name_desc; i; i = i->nex) {
-			e << (char*)i->val;
+			if (i->val) {
+				e << (char*)i->val;
+			}
 		}
 		e << YAML::EndSeq;												// ORDER
 	}
@@ -150,10 +151,12 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::Key << "SCALE" << YAML::BeginSeq;					// SCALE
 		for (struct SList *i = cfg.user_scales; i; i = i->nex) {
 			struct UserScale *user_scale = (struct UserScale*)i->val;
-			e << YAML::BeginMap;											// scale
-			e << YAML::Key << "NAME_DESC" << YAML::Value << user_scale->name_desc;
-			e << YAML::Key << "SCALE" << YAML::Value << user_scale->scale;
-			e << YAML::EndMap;												// scale
+			if (user_scale) {
+				e << YAML::BeginMap;											// scale
+				e << YAML::Key << "NAME_DESC" << YAML::Value << user_scale->name_desc;
+				e << YAML::Key << "SCALE" << YAML::Value << user_scale->scale;
+				e << YAML::EndMap;												// scale
+			}
 		}
 		e << YAML::EndSeq;												// SCALE
 	}
@@ -162,18 +165,20 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::Key << "MODE" << YAML::BeginSeq;						// MODE
 		for (struct SList *i = cfg.user_modes; i; i = i->nex) {
 			struct UserMode *user_mode = (struct UserMode*)i->val;
-			e << YAML::BeginMap;											// mode
-			e << YAML::Key << "NAME_DESC" << YAML::Value << user_mode->name_desc;
-			if (user_mode->max) {
-				e << YAML::Key << "MAX" << YAML::Value << true;
-			} else {
-				e << YAML::Key << "WIDTH" << YAML::Value << user_mode->width;
-				e << YAML::Key << "HEIGHT" << YAML::Value << user_mode->height;
-				if (user_mode->refresh_hz != -1) {
-					e << YAML::Key << "HZ" << YAML::Value << user_mode->refresh_hz;
+			if (user_mode) {
+				e << YAML::BeginMap;											// mode
+				e << YAML::Key << "NAME_DESC" << YAML::Value << user_mode->name_desc;
+				if (user_mode->max) {
+					e << YAML::Key << "MAX" << YAML::Value << true;
+				} else {
+					e << YAML::Key << "WIDTH" << YAML::Value << user_mode->width;
+					e << YAML::Key << "HEIGHT" << YAML::Value << user_mode->height;
+					if (user_mode->refresh_hz != -1) {
+						e << YAML::Key << "HZ" << YAML::Value << user_mode->refresh_hz;
+					}
 				}
+				e << YAML::EndMap;												// mode
 			}
-			e << YAML::EndMap;												// mode
 		}
 		e << YAML::EndSeq;												// MODE
 	}
@@ -181,33 +186,39 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	if (cfg.adaptive_sync_off_name_desc) {
 		e << YAML::Key << "VRR_OFF" << YAML::BeginSeq;					// VRR_OFF
 		for (struct SList *i = cfg.adaptive_sync_off_name_desc; i; i = i->nex) {
-			e << (char*)i->val;
+			if (i->val) {
+				e << (char*)i->val;
+			}
 		}
 		e << YAML::EndSeq;												// VRR_OFF
+	}
+
+	if (cfg.max_preferred_refresh_name_desc) {
+		e << YAML::Key << "MAX_PREFERRED_REFRESH" << YAML::BeginSeq;	// MAX_PREFERRED_REFRESH
+		for (struct SList *i = cfg.max_preferred_refresh_name_desc; i; i = i->nex) {
+			if (i->val) {
+				e << (char*)i->val;
+			}
+		}
+		e << YAML::EndSeq;												// MAX_PREFERRED_REFRESH
 	}
 
 	if (cfg.laptop_display_prefix) {
 		e << YAML::Key << "LAPTOP_DISPLAY_PREFIX" << YAML::Value << cfg.laptop_display_prefix;
 	}
 
-	if (cfg.max_preferred_refresh_name_desc) {
-		e << YAML::Key << "MAX_PREFERRED_REFRESH" << YAML::BeginSeq;	// MAX_PREFERRED_REFRESH
-		for (struct SList *i = cfg.max_preferred_refresh_name_desc; i; i = i->nex) {
-			e << (char*)i->val;
-		}
-		e << YAML::EndSeq;												// MAX_PREFERRED_REFRESH
+	if (cfg.log_threshold) {
+		e << YAML::Key << "LOG_THRESHOLD" << YAML::Value << log_threshold_name(cfg.log_threshold);
 	}
 
 	if (cfg.disabled_name_desc) {
 		e << YAML::Key << "DISABLED" << YAML::BeginSeq;					// DISABLED
 		for (struct SList *i = cfg.disabled_name_desc; i; i = i->nex) {
-			e << (char*)i->val;
+			if (i->val) {
+				e << (char*)i->val;
+			}
 		}
 		e << YAML::EndSeq;												// DISABLED
-	}
-
-	if (cfg.log_threshold) {
-		e << YAML::Key << "LOG_THRESHOLD" << YAML::Value << log_threshold_name(cfg.log_threshold);
 	}
 
 	return e;
@@ -268,9 +279,11 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 		e << YAML::Key << "MODES" << YAML::BeginSeq;	// MODES
 
 		for (struct SList *i = head.modes; i; i = i->nex) {
-			e << YAML::BeginMap;							// mode
-			e << *(Mode*)(i->val);
-			e << YAML::EndMap;								// mode
+			if (i->val) {
+				e << YAML::BeginMap;							// mode
+				e << *(Mode*)(i->val);
+				e << YAML::EndMap;								// mode
+			}
 		}
 
 		e << YAML::EndSeq;								// MODES
@@ -279,8 +292,8 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	return e;
 }
 
-// TODO refactor this as an operator and extract the NULL and empty checks
-void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
+// marshal cfg, validating user input
+void cfg_from_node_user(struct Cfg *cfg, const YAML::Node &node) {
 	if (!cfg || !node || !node.IsMap()) {
 		throw std::runtime_error("empty CFG");
 	}
@@ -449,6 +462,98 @@ void cfg_parse_node(struct Cfg *cfg, const YAML::Node &node) {
 	}
 }
 
+/*
+ * unmarshalling operators, ignoring failures for individual values
+ */
+#define TI(STATEMENT) try { STATEMENT; } catch (...) { }
+
+struct UserScale*& operator << (struct UserScale*& user_scale, const YAML::Node& node) {
+	if (!node || !node.IsMap())
+		return user_scale;
+
+	if (!user_scale)
+		user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+
+	TI(user_scale->name_desc = strdup(node["NAME_DESC"].as<std::string>().c_str()));
+	TI(user_scale->scale = node["SCALE"].as<float>());
+
+	return user_scale;
+}
+
+struct UserMode*& operator << (struct UserMode*& user_mode, const YAML::Node& node) {
+	if (!node || !node.IsMap())
+		return user_mode;
+
+	if (!user_mode)
+		user_mode = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+
+	TI(user_mode->name_desc = strdup(node["NAME_DESC"].as<std::string>().c_str()));
+	TI(user_mode->width = node["WIDTH"].as<int>());
+	TI(user_mode->height = node["HEIGHT"].as<int>());
+	TI(user_mode->refresh_hz = node["HZ"].as<int>());
+	TI(user_mode->max = node["MAX"].as<bool>());
+
+	return user_mode;
+}
+
+struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
+	if (!node || !node.IsMap())
+		return cfg;
+
+	if (!cfg)
+		cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+
+	TI(cfg->arrange = arrange_val_start(node["ARRANGE"].as<std::string>().c_str()));
+
+	TI(cfg->align = align_val_start(node["ALIGN"].as<std::string>().c_str()));
+
+	if (node["ORDER"] && node["ORDER"].IsSequence()) {
+		for (const auto &node_order : node["ORDER"]) {
+			TI(slist_append(&cfg->order_name_desc, strdup(node_order.as<std::string>().c_str())));
+		}
+	}
+
+	TI(cfg->scaling = node["SCALING"].as<bool>() ? ON : OFF);
+
+	TI(cfg->auto_scale = node["AUTO_SCALE"].as<bool>() ? ON : OFF);
+
+	if (node["SCALE"] && node["SCALE"].IsSequence()) {
+		for (const auto &node_scale : node["SCALE"]) {
+			struct UserScale *scale = NULL;
+			if (scale << node_scale) {
+				slist_append(&cfg->user_scales, scale);
+			}
+		}
+	}
+
+	if (node["MODE"] && node["MODE"].IsSequence()) {
+		for (const auto &node_mode : node["MODE"]) {
+			struct UserMode *mode = cfg_user_mode_default();
+			if (mode << node_mode) {
+				slist_append(&cfg->user_modes, mode);
+			}
+		}
+	}
+
+	if (node["VRR_OFF"] && node["VRR_OFF"].IsSequence()) {
+		for (const auto &node_vrr_off : node["VRR_OFF"]) {
+			TI(slist_append(&cfg->adaptive_sync_off_name_desc, strdup(node_vrr_off.as<std::string>().c_str())));
+		}
+	}
+
+	TI(cfg->laptop_display_prefix = strdup(node["LAPTOP_DISPLAY_PREFIX"].as<std::string>().c_str()));
+
+	TI(cfg->log_threshold = log_threshold_val(node["LOG_THRESHOLD"].as<std::string>().c_str()));
+
+	if (node["DISABLED"] && node["DISABLED"].IsSequence()) {
+		for (const auto &node_disabled : node["DISABLED"]) {
+			TI(slist_append(&cfg->disabled_name_desc, strdup(node_disabled.as<std::string>().c_str())));
+		}
+	}
+
+	return cfg;
+}
+
 struct Lid*& operator << (struct Lid*& lid, const YAML::Node& node) {
 	if (!node || !node.IsMap())
 		return lid;
@@ -598,7 +703,7 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 		const YAML::Node node_cfg = node["CFG"];
 		if (node_cfg && node_cfg.IsMap()) {
 			request->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-			cfg_parse_node(request->cfg, node_cfg);
+			cfg_from_node_user(request->cfg, node_cfg);
 		}
 
 		return request;
@@ -646,7 +751,9 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 				if (heads) {
 					e << YAML::Key << "HEADS" << YAML::BeginSeq;	// HEADS
 					for (struct SList *i = heads; i; i = i->nex) {
-						e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
+						if (i->val) {
+							e << YAML::BeginMap << *(Head*)(i->val) << YAML::EndMap;
+						}
 					}
 					e << YAML::EndSeq;								// HEADS
 				}
@@ -705,10 +812,9 @@ void log_messages(YAML::Node node) {
 	}
 
 	// iterate the sequence in MESSAGES
-	for (size_t i = 0; i < node.size(); i++) {
+	for (const auto &node_msg : node) {
 
 		// each message is a map
-		const YAML::Node node_msg = node[i];
 		if (!node_msg.IsMap()) {
 			continue;
 		}
@@ -739,8 +845,7 @@ struct IpcResponseStatus *unmarshal_ipc_responses_print(char *yaml) {
 		}
 
 		// iterate the unnamed list of all responses
-		for (size_t i = 0; i < node_root.size(); i++) {
-			const YAML::Node node_response = node_root[i];
+		for (const auto &node_response : node_root) {
 			if (!node_response.IsMap()) {
 				throw std::runtime_error("empty entry, expected map");
 			}
@@ -795,10 +900,7 @@ struct IpcResponse *unmarshal_ipc_response(char *yaml) {
 			throw std::runtime_error("RC missing");
 		}
 
-		if (node["CFG"] && node["CFG"].IsMap()) {
-			response->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-			cfg_parse_node(response->cfg, node["CFG"]);
-		}
+		response->cfg << node["CFG"];
 
 		if (node["STATE"]) {
 			response->lid << node["STATE"]["LID"];
@@ -880,7 +982,7 @@ bool unmarshal_cfg_from_file(struct Cfg *cfg) {
 
 	try {
 		YAML::Node node = YAML::LoadFile(cfg->file_path);
-		cfg_parse_node(cfg, node);
+		cfg_from_node_user(cfg, node);
 	} catch (const std::exception &e) {
 		log_error("\nparsing file %s %s", cfg->file_path, e.what());
 		return false;

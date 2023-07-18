@@ -26,9 +26,10 @@ CFG:
   VRR_OFF:
     - ten
     - ELEVEN
+  LAPTOP_DISPLAY_PREFIX: ldp
+  LOG_THRESHOLD: ERROR
   DISABLED:
     - eight
     - EIGHT
     - nine
-  LOG_THRESHOLD: ERROR
 
