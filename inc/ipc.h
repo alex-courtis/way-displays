@@ -21,16 +21,17 @@ struct IpcOperation {
 	int socket_client;
 	bool done;
 	int rc;
-	bool send_logs;
-	bool send_state;
+	bool send_logs;		// not for bad or colliding requests
+	bool send_state;	// not for bad requests
+	bool human;			// only send WARNING+ when unset, --yaml
 };
 
 struct IpcRequest {
 	enum IpcCommand command;
 	struct Cfg *cfg;
+	bool human;			// --yaml not specified, only send WARNING+
 	int socket_client;
 	bool bad;
-	bool raw;
 };
 
 struct IpcResponseStatus {
@@ -43,7 +44,6 @@ struct IpcResponse {
 	struct Cfg *cfg;
 	struct SList *heads;
 	struct Lid *lid;
-	// TODO actually capture log lines
 };
 
 void ipc_send_request(struct IpcRequest *request);

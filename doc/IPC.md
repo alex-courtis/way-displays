@@ -33,6 +33,7 @@ Retrieves `CFG` and `STATE`.
 example request:
 ```yaml
 OP: GET
+HUMAN: TRUE
 ```
 
 <details><summary>Example Response</summary><br>

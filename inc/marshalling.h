@@ -17,6 +17,8 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml);
 // marshal globals
 char *marshal_ipc_response(struct IpcOperation *operation);
 
+// TODO just merge the following
+
 // unmarshal the entire response
 struct IpcResponse *unmarshal_ipc_response(char *yaml);
 

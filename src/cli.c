@@ -285,7 +285,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 	};
 	static char *short_options = "c:d:ghL:s:vwy";
 
-	bool raw = false;
+	bool human = true;
 
 	int c;
 	while (1) {
@@ -312,7 +312,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				wd_exit(EXIT_SUCCESS);
 				break;
 			case 'y':
-				raw = true;
+				human = false;
 				break;
 			case 'g':
 				*ipc_request = parse_get(argc, argv);
@@ -335,7 +335,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 	}
 
 	if (*ipc_request) {
-		(*ipc_request)->raw = raw;
+		(*ipc_request)->human = human;
 	}
 }
 

@@ -14,6 +14,7 @@
 int handle_raw(int socket_client) {
 	int rc = EXIT_SUCCESS;
 
+	// TODO somehow extract RC
 	char *yaml = ipc_receive_raw(socket_client);
 	while (yaml) {
 		fprintf(stdout, "%s", yaml);
@@ -55,12 +56,6 @@ int client(struct IpcRequest *ipc_request) {
 		return EXIT_FAILURE;
 	}
 
-	if (ipc_request->raw) {
-		log_set_threshold(ERROR, true);
-	}
-
-	log_set_times(false);
-
 	int rc = EXIT_SUCCESS;
 
 	if (pid_active_server() == 0) {
@@ -69,8 +64,10 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	log_info("\nClient sending request: %s", ipc_command_friendly(ipc_request->command));
-	print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+	if (ipc_request->human) {
+		log_info("\nClient sending request: %s", ipc_command_friendly(ipc_request->command));
+		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+	}
 
 	ipc_send_request(ipc_request);
 
@@ -79,10 +76,10 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	if (ipc_request->raw) {
-		rc = handle_raw(ipc_request->socket_client);
-	} else {
+	if (ipc_request->human) {
 		rc = handle_human(ipc_request->socket_client);
+	} else {
+		rc = handle_raw(ipc_request->socket_client);
 	}
 
 	close(ipc_request->socket_client);

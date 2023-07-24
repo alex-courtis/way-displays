@@ -561,11 +561,8 @@ struct Lid*& operator << (struct Lid*& lid, const YAML::Node& node) {
 	if (!lid)
 		lid = (struct Lid*)calloc(1, sizeof(struct Lid));
 
-	if (node["CLOSED"])
-		lid->closed = node["CLOSED"].as<bool>();
-
-	if (node["DEVICE_PATH"])
-		lid->device_path = strdup(node["DEVICE_PATH"].as<std::string>().c_str());
+	TI(lid->closed = node["CLOSED"].as<bool>());
+	TI(lid->device_path = strdup(node["DEVICE_PATH"].as<std::string>().c_str()));
 
 	return lid;
 }
@@ -655,6 +652,8 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 			return NULL;
 		}
 
+		e << YAML::Key << "HUMAN" << YAML::Value << request->human;
+
 		if (request->cfg) {
 			e << YAML::Key << "CFG" << YAML::BeginMap;	// CFG
 			e << *request->cfg;
@@ -700,6 +699,8 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 			throw std::runtime_error("missing OP");
 		}
 
+		TI(request->human = node["HUMAN"].as<bool>());
+
 		const YAML::Node node_cfg = node["CFG"];
 		if (node_cfg && node_cfg.IsMap()) {
 			request->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
@@ -713,6 +714,42 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 		log_error("========================================\n%s\n----------------------------------------", yaml);
 		ipc_request_free(request);
 		return NULL;
+	}
+}
+
+void marshal_messages(YAML::Emitter &e, struct IpcOperation *operation) {
+	bool began = false;
+
+	for (struct SList *i = log_cap_lines; i; i = i->nex) {
+		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+
+		if (!cap_line || !cap_line->line) {
+			continue;
+		}
+
+		if (!operation->human && cap_line->threshold < WARNING) {
+			continue;
+		}
+
+		if (!began) {
+			e << YAML::Key << "MESSAGES" << YAML::BeginSeq;
+			began = true;
+		}
+
+		e << YAML::BeginMap;
+		e << YAML::Key << log_threshold_name(cap_line->threshold);
+		e << YAML::Value << cap_line->line;
+		e << YAML::EndMap;
+		if (cap_line->threshold == WARNING && operation->rc < IPC_RC_WARN) {
+			operation->rc = IPC_RC_WARN;
+		}
+		if (cap_line->threshold == ERROR && operation->rc < IPC_RC_ERROR) {
+			operation->rc = IPC_RC_ERROR;
+		}
+	}
+
+	if (began) {
+		e << YAML::EndSeq;
 	}
 }
 
@@ -763,23 +800,7 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 		}
 
 		if (operation->send_logs) {
-			e << YAML::Key << "MESSAGES" << YAML::BeginSeq;		// MESSAGES
-			for (struct SList *i = log_cap_lines; i; i = i->nex) {
-				struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
-				if (cap_line && cap_line->line) {
-					e << YAML::BeginMap;
-					e << YAML::Key << log_threshold_name(cap_line->threshold);
-					e << YAML::Value << cap_line->line;
-					e << YAML::EndMap;
-					if (cap_line->threshold == WARNING && operation->rc < IPC_RC_WARN) {
-						operation->rc = IPC_RC_WARN;
-					}
-					if (cap_line->threshold == ERROR && operation->rc < IPC_RC_ERROR) {
-						operation->rc = IPC_RC_ERROR;
-					}
-				}
-			}
-			e << YAML::EndSeq;									// MESSAGES
+			marshal_messages(e, operation);
 		}
 
 		e << YAML::Key << "RC" << YAML::Value << operation->rc;

@@ -25,6 +25,6 @@ jobs:
       run: make CC=clang CXX=clang++ test
     - name: cppcheck
       run: make CC=clang CXX=clang++ cppcheck
-    - name: test-valgrind
+    - name: test valgrind
       run: make CC=gcc CXX=g++ clean test-vg
 

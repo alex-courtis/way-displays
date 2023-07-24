@@ -125,6 +125,7 @@ MODES: !!seq
 ```yaml
 !!map
 OP: !!ipc_op
+HUMAN: !!bool
 CFG: !!cfg
 ```
 

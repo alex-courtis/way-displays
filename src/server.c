@@ -86,6 +86,7 @@ void receive_ipc_request(int server_socket) {
 	ipc_operation->done = true;
 	ipc_operation->send_logs = true;
 	ipc_operation->send_state = true;
+	ipc_operation->human = ipc_request->human;
 
 	if (ipc_request->bad) {
 		ipc_operation->rc = IPC_RC_BAD_REQUEST;

@@ -158,6 +158,7 @@ void marshal_ipc_request__no_op(void **state) {
 void marshal_ipc_request__cfg_set(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 	ipc_request->command = CFG_SET;
+	ipc_request->human = true;
 
 	ipc_request->cfg = cfg_all();
 
@@ -178,6 +179,7 @@ void marshal_ipc_response__ok(void **state) {
 	ipc_operation->rc = 1;
 	ipc_operation->send_logs = true;
 	ipc_operation->send_state = true;
+	ipc_operation->human = false;
 
 	cfg = cfg_all();
 
@@ -185,8 +187,6 @@ void marshal_ipc_response__ok(void **state) {
 	lid->closed = true;
 	lid->device_path = "/path/to/lid";
 
-	lcl(DEBUG, "dbg");
-	lcl(INFO, "inf");
 	lcl(WARNING, "war");
 	lcl(ERROR, "err");
 
@@ -296,6 +296,8 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 	struct Cfg *expected_cfg = cfg_all();
 
 	assert_cfg_equal(actual->cfg, expected_cfg);
+
+	assert_true(actual->human);
 
 	ipc_request_free(actual);
 	cfg_free(expected_cfg);
@@ -408,8 +410,6 @@ void unmarshal_ipc_response__ok(void **state) {
 	assert_int_equal(mode2->refresh_mhz, 15);
 	assert_false(mode2->preferred);
 
-	assert_log(DEBUG, "dbg\n");
-	assert_log(INFO, "inf\n");
 	assert_log(WARNING, "war\n");
 	assert_log(ERROR, "err\n");
 
