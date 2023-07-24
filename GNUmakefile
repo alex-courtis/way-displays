@@ -78,12 +78,13 @@ cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 %-vg: % ;
 
 test: $(TST_T)
+test-vg: $(TST_T)
 
 $(TST_T): EXE = $(patsubst test%,tst%,$(@))
 $(TST_T):
 	$(MAKE) -f tst/GNUmakefile $(EXE)
 	$(VALGRIND) ./$(EXE)
 
-.PHONY: all clean install uninstall man cppcheck iwyu test test-vg
+.PHONY: all clean install uninstall man cppcheck iwyu test test-vg $(TST_T)
 
 .NOTPARALLEL: iwyu test test-vg
