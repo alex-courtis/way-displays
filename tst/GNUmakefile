@@ -37,16 +37,3 @@ tst-marshalling: tst/tst-marshalling.o $(OBJS)
 tst-info: tst/tst-info.o $(OBJS)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS) $(WRAPS)
 
-tst-all: $(TST_E)
-	@for e in $(^); do \
-		echo ;\
-		echo $$e ;\
-		$(TST_WITH) ./$$e ;\
-		if [ $$? -ne 0 ]; then \
-		exit 1 ;\
-		fi ;\
-		done
-
-tst-all-valgrind: TST_WITH = valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --gen-suppressions=all --suppressions=/tmp/vg.supp
-tst-all-valgrind: tst-all
-
