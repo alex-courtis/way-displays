@@ -321,32 +321,8 @@ void unmarshal_ipc_responses__empty(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses_print__empty(void **state) {
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("");
-
-	assert_null(actual);
-
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: empty response, expected sequence\n"
-			"========================================\n"
-			"\n"
-			"----------------------------------------\n");
-}
-
 void unmarshal_ipc_responses__no_content(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("-");
-
-	assert_null(actual);
-
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: empty entry, expected map\n"
-			"========================================\n"
-			"-\n"
-			"----------------------------------------\n");
-}
-
-void unmarshal_ipc_responses_print__no_content(void **state) {
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("-");
 
 	assert_null(actual);
 
@@ -369,32 +345,8 @@ void unmarshal_ipc_responses__no_done(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses_print__no_done(void **state) {
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("- FOO: BAR");
-
-	assert_null(actual);
-
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: DONE missing\n"
-			"========================================\n"
-			"- FOO: BAR\n"
-			"----------------------------------------\n");
-}
-
 void unmarshal_ipc_responses__no_rc(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("- DONE: TRUE");
-
-	assert_null(actual);
-
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: RC missing\n"
-			"========================================\n"
-			"- DONE: TRUE\n"
-			"----------------------------------------\n");
-}
-
-void unmarshal_ipc_responses_print__no_rc(void **state) {
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("- DONE: TRUE");
 
 	assert_null(actual);
 
@@ -556,24 +508,6 @@ void unmarshal_ipc_responses__many(void **state) {
 	free(yaml);
 }
 
-void unmarshal_ipc_responses_print__many(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-responses-print.yaml");
-
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print(yaml);
-
-	assert_non_null(actual);
-	assert_false(actual->done);
-	assert_int_equal(actual->rc, 2);
-
-	assert_log(DEBUG, "dbg1\ndbg2\n");
-	assert_log(INFO, "inf1\ninf2\n");
-	assert_log(WARNING, "war1\nwar2\n");
-	assert_log(ERROR, "err1\nerr2\n");
-
-	ipc_response_status_free(actual);
-	free(yaml);
-}
-
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
@@ -600,12 +534,6 @@ int main(void) {
 		TEST(unmarshal_ipc_responses__no_rc),
 		TEST(unmarshal_ipc_responses__complete),
 		TEST(unmarshal_ipc_responses__many),
-
-		TEST(unmarshal_ipc_responses_print__empty),
-		TEST(unmarshal_ipc_responses_print__no_content),
-		TEST(unmarshal_ipc_responses_print__no_done),
-		TEST(unmarshal_ipc_responses_print__no_rc),
-		TEST(unmarshal_ipc_responses_print__many),
 	};
 
 	return RUN(tests);

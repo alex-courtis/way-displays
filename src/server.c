@@ -243,7 +243,7 @@ server(char *cfg_path) {
 	log_set_threshold(cfg->log_threshold, false);
 	log_suppress_stop();
 	log_capture_stop();
-	log_capture_playback();
+	log_capture_playback(NULL);
 	log_capture_clear();
 
 	// discover the lid state immediately

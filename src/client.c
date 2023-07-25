@@ -10,11 +10,12 @@
 #include "ipc.h"
 #include "log.h"
 #include "process.h"
+#include "slist.h"
 
 int handle_yaml(int socket_client) {
 	int rc = EXIT_SUCCESS;
 
-	// TODO somehow extract RC
+	// TODO move this to the other handler and put yaml in the response
 	char *yaml = ipc_receive_raw(socket_client);
 	while (yaml) {
 		fprintf(stdout, "%s", yaml);
@@ -28,24 +29,27 @@ int handle_yaml(int socket_client) {
 int handle_human(int socket_client) {
 	int rc = EXIT_SUCCESS;
 
-	struct IpcResponseStatus *response_status = NULL;
+	struct SList *responses = NULL;
+	struct IpcResponse *response = NULL;
 	bool done = false;
 
 	while (!done) {
-		response_status = ipc_receive_responses_log(socket_client);
-		if (response_status) {
-			rc = response_status->rc;
-			done = response_status->done;
-			ipc_response_status_free(response_status);
-			response_status = NULL;
+		responses = ipc_receive_responses(socket_client);
+
+		if (responses) {
+			for (struct SList *i = responses; i; i = i->nex) {
+				if (!(response = i->val)) {
+					continue;
+				}
+				rc = response->status.rc;
+				done = response->status.done;
+				log_capture_playback(response->log_cap_lines);
+			}
+			slist_free_vals(&responses, ipc_response_free);
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;
 		}
-	}
-
-	if (response_status) {
-		ipc_response_status_free(response_status);
 	}
 
 	return rc;

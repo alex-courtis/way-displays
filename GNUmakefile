@@ -81,7 +81,7 @@ test: $(TST_T)
 test-vg: $(TST_T)
 
 $(TST_T): EXE = $(patsubst test%,tst%,$(@))
-$(TST_T):
+$(TST_T): all
 	$(MAKE) -f tst/GNUmakefile $(EXE)
 	$(VALGRIND) ./$(EXE)
 

@@ -180,20 +180,6 @@ void log_error_errno(const char *__restrict __format, ...) {
 	va_end(args);
 }
 
-void log_cap_line_free(void *data) {
-	struct LogCapLine *cap_line = data;
-
-	if (!cap_line) {
-		return;
-	}
-
-	if (cap_line->line) {
-		free(cap_line->line);
-	}
-
-	free(cap_line);
-}
-
 void log_suppress_start(void) {
 	active.suppressing = true;
 }
@@ -214,18 +200,30 @@ void log_capture_clear(void) {
 	slist_free_vals(&log_cap_lines, log_cap_line_free);
 }
 
-void log_capture_playback(void) {
-	bool was_capturing = active.capturing;
-	active.capturing = false;
+void log_capture_playback(struct SList *lines) {
+	if (!lines)
+		lines = log_cap_lines;
 
-	for (struct SList *i = log_cap_lines; i; i = i->nex) {
+	for (struct SList *i = lines; i; i = i->nex) {
 		struct LogCapLine *cap_line = i->val;
 		if (!cap_line)
 			continue;
 
 		print_raw(cap_line->threshold, true, cap_line->line);
 	}
+}
 
-	active.capturing = was_capturing;
+void log_cap_line_free(void *data) {
+	struct LogCapLine *cap_line = data;
+
+	if (!cap_line) {
+		return;
+	}
+
+	if (cap_line->line) {
+		free(cap_line->line);
+	}
+
+	free(cap_line);
 }
 

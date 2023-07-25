@@ -59,14 +59,12 @@ char *ipc_receive_raw(int socket_client);
 // receive the entire request sent to the server socket
 struct IpcRequest *ipc_receive_request(int socket_server);
 
-// recieve and aggregate all responses status, logging messages
-struct IpcResponseStatus *ipc_receive_responses_log(int socket_client);
+// receive all responses
+struct SList *ipc_receive_responses(int socket_client);
 
 void ipc_request_free(struct IpcRequest *request);
 
 void ipc_response_free(void *response);
-
-void ipc_response_status_free(struct IpcResponseStatus *response_status);
 
 void ipc_operation_free(struct IpcOperation *operation);
 

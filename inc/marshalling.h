@@ -20,10 +20,6 @@ char *marshal_ipc_response(struct IpcOperation *operation);
 // unmarshal all responses
 struct SList *unmarshal_ipc_responses(const char *yaml);
 
-// TODO use unmarshal_ipc_responses
-// unmarshal and aggregate all responses status, logging messages
-struct IpcResponseStatus *unmarshal_ipc_responses_print(const char *yaml);
-
 char *marshal_cfg(struct Cfg *cfg);
 
 bool unmarshal_cfg_from_file(struct Cfg *cfg);
