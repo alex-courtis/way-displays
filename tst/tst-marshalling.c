@@ -238,7 +238,7 @@ void marshal_ipc_response__ok(void **state) {
 
 	assert_non_null(actual);
 
-	char *expected = read_file("tst/marshalling/ipc-response-ok.yaml");
+	char *expected = read_file("tst/marshalling/ipc-responses-complete.yaml");
 
 	assert_string_equal(actual, expected);
 
@@ -304,32 +304,80 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 	free(yaml);
 }
 
-void unmarshal_ipc_response__empty(void **state) {
-	struct IpcResponse *actual = unmarshal_ipc_response("");
+void unmarshal_ipc_responses__empty(void **state) {
+	struct SList *actual = unmarshal_ipc_responses("");
 
 	assert_null(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: invalid response\n"
+			"unmarshalling ipc response: empty response, expected sequence\n"
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_response__no_done(void **state) {
-	struct IpcResponse *actual = unmarshal_ipc_response("- RC: 0");
+void unmarshal_ipc_responses_print__empty(void **state) {
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("");
+
+	assert_null(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: empty response, expected sequence\n"
+			"========================================\n"
+			"\n"
+			"----------------------------------------\n");
+}
+
+void unmarshal_ipc_responses__no_content(void **state) {
+	struct SList *actual = unmarshal_ipc_responses("-");
+
+	assert_null(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: empty entry, expected map\n"
+			"========================================\n"
+			"-\n"
+			"----------------------------------------\n");
+}
+
+void unmarshal_ipc_responses_print__no_content(void **state) {
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("-");
+
+	assert_null(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: empty entry, expected map\n"
+			"========================================\n"
+			"-\n"
+			"----------------------------------------\n");
+}
+
+void unmarshal_ipc_responses__no_done(void **state) {
+	struct SList *actual = unmarshal_ipc_responses("- FOO: BAR");
 
 	assert_null(actual);
 
 	assert_log(ERROR, "\n"
 			"unmarshalling ipc response: DONE missing\n"
 			"========================================\n"
-			"- RC: 0\n"
+			"- FOO: BAR\n"
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_response__no_rc(void **state) {
-	struct IpcResponse *actual = unmarshal_ipc_response("- DONE: TRUE");
+void unmarshal_ipc_responses_print__no_done(void **state) {
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("- FOO: BAR");
+
+	assert_null(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: DONE missing\n"
+			"========================================\n"
+			"- FOO: BAR\n"
+			"----------------------------------------\n");
+}
+
+void unmarshal_ipc_responses__no_rc(void **state) {
+	struct SList *actual = unmarshal_ipc_responses("- DONE: TRUE");
 
 	assert_null(actual);
 
@@ -340,25 +388,41 @@ void unmarshal_ipc_response__no_rc(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_response__ok(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-response-ok.yaml");
+void unmarshal_ipc_responses_print__no_rc(void **state) {
+	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("- DONE: TRUE");
 
-	struct IpcResponse *actual = unmarshal_ipc_response(yaml);
+	assert_null(actual);
 
-	assert_non_null(actual);
-	assert_true(actual->status.done);
-	assert_int_equal(actual->status.rc, 2);
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: RC missing\n"
+			"========================================\n"
+			"- DONE: TRUE\n"
+			"----------------------------------------\n");
+}
 
-	assert_non_null(actual->lid);
-	assert_true(actual->lid->closed);
-	assert_string_equal(actual->lid->device_path, "/path/to/lid");
+void unmarshal_ipc_responses__complete(void **state) {
+	char *yaml = read_file("tst/marshalling/ipc-responses-complete.yaml");
 
-	assert_non_null(actual->cfg);
+	struct SList *responses = unmarshal_ipc_responses(yaml);
+
+	assert_non_null(responses);
+	assert_int_equal(slist_length(responses), 1);
+
+	struct IpcResponse *response = slist_at(responses, 0);
+
+	assert_true(response->status.done);
+	assert_int_equal(response->status.rc, 2);
+
+	assert_non_null(response->lid);
+	assert_true(response->lid->closed);
+	assert_string_equal(response->lid->device_path, "/path/to/lid");
+
+	assert_non_null(response->cfg);
 	struct Cfg *expected_cfg = cfg_all();
-	assert_cfg_equal(actual->cfg, expected_cfg);
+	assert_cfg_equal(response->cfg, expected_cfg);
 
-	assert_int_equal(slist_length(actual->heads), 1);
-	struct Head *head = slist_at(actual->heads, 0);
+	assert_int_equal(slist_length(response->heads), 1);
+	struct Head *head = slist_at(response->heads, 0);
 
 	assert_string_equal_nn(head->name, "name");
 	assert_string_equal_nn(head->description, "desc");
@@ -410,60 +474,81 @@ void unmarshal_ipc_response__ok(void **state) {
 	assert_int_equal(mode2->refresh_mhz, 15);
 	assert_false(mode2->preferred);
 
-	assert_log(WARNING, "war\n");
-	assert_log(ERROR, "err\n");
+	assert_int_equal(slist_length(response->log_cap_lines), 2);
 
-	ipc_response_free(actual);
+	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
+	assert_non_null(line);
+	assert_int_equal(line->threshold, WARNING);
+	assert_string_equal_nn(line->line, "war");
+
+	line = slist_at(response->log_cap_lines, 1);
+	assert_non_null(line);
+	assert_int_equal(line->threshold, ERROR);
+	assert_string_equal_nn(line->line, "err");
+
+	slist_free_vals(&responses, ipc_response_free);
 	cfg_free(expected_cfg);
 	free(yaml);
 }
 
-void unmarshal_ipc_responses_print__empty(void **state) {
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("");
+void unmarshal_ipc_responses__many(void **state) {
+	char *yaml = read_file("tst/marshalling/ipc-responses-many.yaml");
 
-	assert_null(actual);
+	struct SList *responses = unmarshal_ipc_responses(yaml);
 
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: empty response, expected sequence\n"
-			"========================================\n"
-			"\n"
-			"----------------------------------------\n");
-}
+	struct Cfg cfg_expected = {
+		.arrange = COL
+	};
 
-void unmarshal_ipc_responses_print__no_content(void **state) {
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("-");
+	assert_non_null(responses);
+	assert_int_equal(slist_length(responses), 3);
 
-	assert_null(actual);
+	// 0
+	struct IpcResponse *response = slist_at(responses, 0);
+	assert_non_null(response);
+	assert_true(response->status.done);
+	assert_int_equal(response->status.rc, 0);
 
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: empty entry, expected map\n"
-			"========================================\n"
-			"-\n"
-			"----------------------------------------\n");
-}
+	struct Cfg *cfg_actual = response->cfg;
+	assert_non_null(cfg_actual);
+	assert_cfg_equal(cfg_actual, &cfg_expected);
 
-void unmarshal_ipc_responses_print__no_done(void **state) {
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("- FOO: BAR");
+	struct Lid *lid = response->lid;
+	assert_non_null(lid);
+	assert_string_equal_nn(lid->device_path, "/path/to/lid");
 
-	assert_null(actual);
+	struct SList *heads = response->heads;
+	assert_non_null(heads);
+	assert_int_equal(slist_length(heads), 2);
 
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: DONE missing\n"
-			"========================================\n"
-			"- FOO: BAR\n"
-			"----------------------------------------\n");
-}
+	struct Head *head0 = slist_at(heads, 0);
+	assert_non_null(head0);
+	assert_string_equal_nn(head0->name, "name0");
 
-void unmarshal_ipc_responses_print__no_rc(void **state) {
-	struct IpcResponseStatus *actual = unmarshal_ipc_responses_print("- DONE: TRUE");
+	struct Head *head1 = slist_at(heads, 1);
+	assert_non_null(head1);
+	assert_string_equal_nn(head1->name, "name1");
 
-	assert_null(actual);
+	// 1
+	response = slist_at(responses, 1);
+	assert_non_null(response);
+	assert_false(response->status.done);
+	assert_int_equal(response->status.rc, 1);
+	assert_null(response->cfg);
+	assert_null(response->lid);
+	assert_null(response->heads);
 
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: RC missing\n"
-			"========================================\n"
-			"- DONE: TRUE\n"
-			"----------------------------------------\n");
+	// 2
+	response = slist_at(responses, 2);
+	assert_non_null(response);
+	assert_true(response->status.done);
+	assert_int_equal(response->status.rc, 2);
+	assert_null(response->cfg);
+	assert_null(response->lid);
+	assert_null(response->heads);
+
+	slist_free_vals(&responses, ipc_response_free);
+	free(yaml);
 }
 
 void unmarshal_ipc_responses_print__many(void **state) {
@@ -504,10 +589,12 @@ int main(void) {
 		TEST(unmarshal_ipc_request__no_op),
 		TEST(unmarshal_ipc_request__cfg_set),
 
-		TEST(unmarshal_ipc_response__empty),
-		TEST(unmarshal_ipc_response__no_done),
-		TEST(unmarshal_ipc_response__no_rc),
-		TEST(unmarshal_ipc_response__ok),
+		TEST(unmarshal_ipc_responses__empty),
+		TEST(unmarshal_ipc_responses__no_content),
+		TEST(unmarshal_ipc_responses__no_done),
+		TEST(unmarshal_ipc_responses__no_rc),
+		TEST(unmarshal_ipc_responses__complete),
+		TEST(unmarshal_ipc_responses__many),
 
 		TEST(unmarshal_ipc_responses_print__empty),
 		TEST(unmarshal_ipc_responses_print__no_content),

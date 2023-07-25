@@ -8,6 +8,7 @@
 #include "cfg.h"
 #include "head.h"
 #include "lid.h"
+#include "log.h"
 #include "marshalling.h"
 #include "slist.h"
 #include "sockets.h"
@@ -88,20 +89,6 @@ struct IpcRequest *ipc_receive_request(int socket_server) {
 	return request;
 }
 
-// struct IpcResponse *ipc_receive_response(int socket_client) {
-// 	struct IpcResponse *response = NULL;
-// 	char *yaml = NULL;
-
-// 	if (!(yaml = ipc_receive_raw(socket_client))) {
-// 		return NULL;
-// 	}
-
-// 	response = unmarshal_ipc_response(yaml);
-// 	free(yaml);
-
-// 	return response;
-// }
-
 struct IpcResponseStatus *ipc_receive_responses_log(int socket_client) {
 	struct IpcResponseStatus *response_status = NULL;
 	char *yaml = NULL;
@@ -126,14 +113,17 @@ void ipc_request_free(struct IpcRequest *request) {
 	free(request);
 }
 
-void ipc_response_free(struct IpcResponse *response) {
-	if (!response) {
+void ipc_response_free(void *vresponse) {
+	if (!vresponse) {
 		return;
 	}
+
+	struct IpcResponse *response = vresponse;
 
 	cfg_free(response->cfg);
 	lid_free(response->lid);
 	slist_free_vals(&response->heads, head_free);
+	slist_free_vals(&response->log_cap_lines, log_cap_line_free);
 
 	free(response);
 }

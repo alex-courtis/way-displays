@@ -17,13 +17,12 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml);
 // marshal globals
 char *marshal_ipc_response(struct IpcOperation *operation);
 
-// TODO just merge the following
+// unmarshal all responses
+struct SList *unmarshal_ipc_responses(const char *yaml);
 
-// unmarshal the entire response
-struct IpcResponse *unmarshal_ipc_response(char *yaml);
-
+// TODO use unmarshal_ipc_responses
 // unmarshal and aggregate all responses status, logging messages
-struct IpcResponseStatus *unmarshal_ipc_responses_print(char *yaml);
+struct IpcResponseStatus *unmarshal_ipc_responses_print(const char *yaml);
 
 char *marshal_cfg(struct Cfg *cfg);
 

@@ -180,7 +180,7 @@ void log_error_errno(const char *__restrict __format, ...) {
 	va_end(args);
 }
 
-void free_log_cap_line(void *data) {
+void log_cap_line_free(void *data) {
 	struct LogCapLine *cap_line = data;
 
 	if (!cap_line) {
@@ -211,7 +211,7 @@ void log_capture_stop(void) {
 }
 
 void log_capture_clear(void) {
-	slist_free_vals(&log_cap_lines, free_log_cap_line);
+	slist_free_vals(&log_cap_lines, log_cap_line_free);
 }
 
 void log_capture_playback(void) {

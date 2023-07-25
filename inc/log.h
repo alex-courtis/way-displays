@@ -47,5 +47,7 @@ void log_capture_clear(void);
 
 void log_capture_playback(void);
 
+void log_cap_line_free(void *log_cap_line);
+
 #endif // LOG_H
 
