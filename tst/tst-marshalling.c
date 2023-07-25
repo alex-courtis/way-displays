@@ -107,7 +107,7 @@ void unmarshal_cfg_from_file__empty(void **state) {
 
 	assert_false(unmarshal_cfg_from_file(read));
 
-	assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml empty CFG\n");
+	assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml empty cfg, expected map\n");
 
 	cfg_free(read);
 }

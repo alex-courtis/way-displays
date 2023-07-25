@@ -36,6 +36,7 @@ extern "C" {
 // dummy structs to coerce SLists
 struct HeadList {};
 struct LogCapLineList {};
+struct CfgValidated {};
 
 // If this is a regex pattern, attempt to compile it before including it in configuration.
 bool validate_regex(const char *pattern, enum CfgElement element) {
@@ -296,11 +297,19 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	return e;
 }
 
-// unmarshal cfg, validating user input
-void cfg_from_node_user(struct Cfg *cfg, const YAML::Node &node) {
-	if (!cfg || !node || !node.IsMap()) {
-		throw std::runtime_error("empty CFG");
+/*
+ * unmarshalling operators, validating
+ */
+struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YAML::Node& node) {
+	if (!node || !node.IsMap()) {
+		throw std::runtime_error("empty cfg, expected map");
 	}
+
+	if (!cfg_validated) {
+		cfg_validated = (struct CfgValidated*)calloc(1, sizeof(struct Cfg));
+	}
+
+	struct Cfg *cfg = (struct Cfg*)cfg_validated;
 
 	if (node["LOG_THRESHOLD"]) {
 		const std::string &threshold_str = node["LOG_THRESHOLD"].as<std::string>();
@@ -464,6 +473,8 @@ void cfg_from_node_user(struct Cfg *cfg, const YAML::Node &node) {
 			}
 		}
 	}
+
+	return cfg_validated;
 }
 
 /*
@@ -752,8 +763,8 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 
 		const YAML::Node node_cfg = node["CFG"];
 		if (node_cfg && node_cfg.IsMap()) {
-			request->cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-			cfg_from_node_user(request->cfg, node_cfg);
+			struct CfgValidated *cfg_validated = NULL;
+			request->cfg = (struct Cfg*)(cfg_validated << node_cfg);
 		}
 
 		return request;
@@ -971,8 +982,8 @@ bool unmarshal_cfg_from_file(struct Cfg *cfg) {
 	}
 
 	try {
-		YAML::Node node = YAML::LoadFile(cfg->file_path);
-		cfg_from_node_user(cfg, node);
+		struct CfgValidated *cfg_validated = (struct CfgValidated*)cfg;
+		cfg_validated << YAML::LoadFile(cfg->file_path);;
 	} catch (const std::exception &e) {
 		log_error("\nparsing file %s %s", cfg->file_path, e.what());
 		return false;
