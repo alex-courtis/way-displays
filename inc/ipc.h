@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "log.h"
+
 #define IPC_RC_SUCCESS 0
 #define IPC_RC_WARN 1
 #define IPC_RC_ERROR 2
@@ -18,18 +20,19 @@ enum IpcCommand {
 };
 
 struct IpcOperation {
+	struct IpcRequest *request;
 	int socket_client;
 	bool done;
 	int rc;
 	bool send_logs;		// not for bad or colliding requests
 	bool send_state;	// not for bad requests
-	bool human;			// only send WARNING+ when unset, --yaml
 };
 
 struct IpcRequest {
 	enum IpcCommand command;
+	enum LogThreshold log_threshold;
 	struct Cfg *cfg;
-	bool human;			// --yaml not specified, only send WARNING+
+	bool yaml;
 	int socket_client;
 	bool bad;
 };

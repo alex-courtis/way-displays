@@ -34,6 +34,7 @@ void handle_ipc_in_progress(int server_socket) {
 	}
 
 	struct IpcOperation *operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	operation->request = request;
 	operation->socket_client = request->socket_client;
 	operation->done = true;
 	operation->rc = IPC_RC_REQUEST_IN_PROGRESS;
@@ -42,7 +43,6 @@ void handle_ipc_in_progress(int server_socket) {
 
 	close(operation->socket_client);
 
-	ipc_request_free(request);
 	ipc_operation_free(operation);
 }
 
@@ -82,11 +82,11 @@ void receive_ipc_request(int server_socket) {
 	}
 
 	ipc_operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	ipc_operation->request = ipc_request;
 	ipc_operation->socket_client = ipc_request->socket_client;
 	ipc_operation->done = true;
 	ipc_operation->send_logs = true;
 	ipc_operation->send_state = true;
-	ipc_operation->human = ipc_request->human;
 
 	if (ipc_request->bad) {
 		ipc_operation->rc = IPC_RC_BAD_REQUEST;
@@ -137,8 +137,6 @@ void receive_ipc_request(int server_socket) {
 	}
 
 send:
-	ipc_request_free(ipc_request);
-
 	notify_ipc_operation();
 }
 

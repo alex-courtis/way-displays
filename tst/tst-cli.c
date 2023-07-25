@@ -529,16 +529,13 @@ void parse_del__ok(void **state) {
 }
 
 void parse_log_threshold__invalid(void **state) {
-	assert_false(parse_log_threshold("INVALID"));
+	assert_int_equal(parse_log_threshold("INVALID"), 0);
 
 	assert_log(ERROR, "invalid --log-threshold INVALID\n");
 }
 
 void parse_log_threshold__ok(void **state) {
-	expect_value(__wrap_log_set_threshold, threshold, WARNING);
-	expect_value(__wrap_log_set_threshold, cli, true);
-
-	assert_true(parse_log_threshold("WARNING"));
+	assert_int_equal(parse_log_threshold("WARNING"), WARNING);
 }
 
 int main(void) {

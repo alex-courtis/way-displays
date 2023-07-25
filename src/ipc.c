@@ -133,6 +133,11 @@ void ipc_response_status_free(struct IpcResponseStatus *response_status) {
 }
 
 void ipc_operation_free(struct IpcOperation *operation) {
+	if (!operation)
+		return;
+
+	ipc_request_free(operation->request);
+
 	free(operation);
 }
 

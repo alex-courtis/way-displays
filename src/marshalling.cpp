@@ -33,6 +33,10 @@ extern "C" {
 #include "wlr-output-management-unstable-v1.h"
 }
 
+// dummy structs to coerce SLists
+struct HeadList {};
+struct LogCapLineList {};
+
 // If this is a regex pattern, attempt to compile it before including it in configuration.
 bool validate_regex(const char *pattern, enum CfgElement element) {
 	bool rc = true;
@@ -631,7 +635,6 @@ struct Head*& operator << (struct Head*& head, const YAML::Node& node) {
 	return head;
 }
 
-struct HeadList {};
 struct HeadList**& operator << (struct HeadList**& heads, const YAML::Node& node) {
 	if (!node || !node.IsSequence())
 		return heads;
@@ -644,7 +647,6 @@ struct HeadList**& operator << (struct HeadList**& heads, const YAML::Node& node
 	return heads;
 }
 
-struct LogCapLineList {};
 struct LogCapLineList**& operator << (struct LogCapLineList**& log_cap_lines, const YAML::Node& node) {
 	if (!node || !node.IsSequence())
 		return log_cap_lines;
@@ -702,7 +704,12 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 			return NULL;
 		}
 
-		e << YAML::Key << "HUMAN" << YAML::Value << request->human;
+		if (request->log_threshold) {
+			const char *name = log_threshold_name(request->log_threshold);
+			if (name) {
+				e << YAML::Key << "LOG_THRESHOLD" << YAML::Value << name;
+			}
+		}
 
 		if (request->cfg) {
 			e << YAML::Key << "CFG" << YAML::BeginMap;	// CFG
@@ -749,7 +756,10 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 			throw std::runtime_error("missing OP");
 		}
 
-		TI(request->human = node["HUMAN"].as<bool>());
+		const YAML::Node node_log_threshold = node["LOG_THRESHOLD"];
+		if (node_log_threshold) {
+			request->log_threshold = log_threshold_val(node_log_threshold.as<std::string>().c_str());
+		}
 
 		const YAML::Node node_cfg = node["CFG"];
 		if (node_cfg && node_cfg.IsMap()) {
@@ -768,7 +778,12 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 }
 
 void marshal_messages(YAML::Emitter &e, struct IpcOperation *operation) {
+	if (!operation || !operation->request) {
+		return;
+	}
+
 	bool began = false;
+	LogThreshold threshold = operation->request->log_threshold;
 
 	for (struct SList *i = log_cap_lines; i; i = i->nex) {
 		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
@@ -777,7 +792,7 @@ void marshal_messages(YAML::Emitter &e, struct IpcOperation *operation) {
 			continue;
 		}
 
-		if (!operation->human && cap_line->threshold < WARNING) {
+		if (cap_line->threshold < threshold) {
 			continue;
 		}
 
@@ -804,6 +819,9 @@ void marshal_messages(YAML::Emitter &e, struct IpcOperation *operation) {
 }
 
 char *marshal_ipc_response(struct IpcOperation *operation) {
+	if (!operation)
+		return NULL;
+
 	char *yaml = NULL;
 
 	try {

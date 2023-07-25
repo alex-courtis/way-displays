@@ -11,7 +11,7 @@
 #include "log.h"
 #include "process.h"
 
-int handle_raw(int socket_client) {
+int handle_yaml(int socket_client) {
 	int rc = EXIT_SUCCESS;
 
 	// TODO somehow extract RC
@@ -64,7 +64,7 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	if (ipc_request->human) {
+	if (!ipc_request->yaml) {
 		log_info("\nClient sending request: %s", ipc_command_friendly(ipc_request->command));
 		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
@@ -76,10 +76,10 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	if (ipc_request->human) {
-		rc = handle_human(ipc_request->socket_client);
+	if (ipc_request->yaml) {
+		rc = handle_yaml(ipc_request->socket_client);
 	} else {
-		rc = handle_raw(ipc_request->socket_client);
+		rc = handle_human(ipc_request->socket_client);
 	}
 
 	close(ipc_request->socket_client);

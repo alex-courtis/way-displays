@@ -22,7 +22,7 @@ void usage(FILE *stream) {
 		"OPTIONS\n"
 		"  -L, --l[og-threshold] <debug|info|warning|error>\n"
 		"  -c, --c[onfig]        <path>\n"
-		"  -y, --y[aml]          YAML client output\n"
+		"  -y, --y[aml]          YAML client output, implies -L warning\n"
 		"COMMANDS\n"
 		"  -h, --h[elp]    show this message\n"
 		"  -v, --v[ersion] display version information\n"
@@ -257,17 +257,15 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 	return request;
 }
 
-bool parse_log_threshold(char *optarg) {
+enum LogThreshold parse_log_threshold(char *optarg) {
 	enum LogThreshold threshold = log_threshold_val(optarg);
 
 	if (!threshold) {
 		log_error("invalid --log-threshold %s", optarg);
-		return false;
+		return 0;
 	}
 
-	log_set_threshold(threshold, true);
-
-	return true;
+	return threshold;
 }
 
 void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
@@ -285,7 +283,8 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 	};
 	static char *short_options = "c:d:ghL:s:vwy";
 
-	bool human = true;
+	bool yaml = false;
+	enum LogThreshold threshold = 0;
 
 	int c;
 	while (1) {
@@ -295,7 +294,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 			break;
 		switch (c) {
 			case 'L':
-				if (!parse_log_threshold(optarg)) {
+				if (!(threshold = parse_log_threshold(optarg))) {
 					wd_exit(EXIT_FAILURE);
 					return;
 				}
@@ -312,7 +311,8 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				wd_exit(EXIT_SUCCESS);
 				break;
 			case 'y':
-				human = false;
+				threshold = WARNING;
+				yaml = true;
 				break;
 			case 'g':
 				*ipc_request = parse_get(argc, argv);
@@ -334,8 +334,15 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		}
 	}
 
+	log_set_threshold(threshold, true);
+
 	if (*ipc_request) {
-		(*ipc_request)->human = human;
+		(*ipc_request)->yaml = yaml;
+		if (yaml) {
+			(*ipc_request)->log_threshold = WARNING;
+		} else {
+			(*ipc_request)->log_threshold = threshold;
+		}
 	}
 }
 
