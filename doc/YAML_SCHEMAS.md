@@ -125,7 +125,7 @@ MODES: !!seq
 ```yaml
 !!map
 OP: !!ipc_op
-HUMAN: !!bool
+LOG_THRESHOLD: !!log_threshold
 CFG: !!cfg
 ```
 

@@ -9,6 +9,7 @@
 #include "process.h"
 #include "sockets.h"
 
+// TODO rewrite
 void execute(enum IpcCommand command, char *request) {
 	int fd;
 
