@@ -89,16 +89,12 @@ struct IpcRequest *ipc_receive_request(int socket_server) {
 	return request;
 }
 
-struct SList *ipc_receive_responses(int socket_client) {
-	char *yaml = NULL;
-
-	if (!(yaml = ipc_receive_raw(socket_client))) {
+struct SList *ipc_receive_responses(int socket_client, char **yaml) {
+	if (!(*yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
 
-	struct SList *responses = unmarshal_ipc_responses(yaml);
-
-	free(yaml);
+	struct SList *responses = unmarshal_ipc_responses(*yaml);
 
 	return responses;
 }

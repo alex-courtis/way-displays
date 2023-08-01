@@ -30,11 +30,11 @@ struct IpcOperation {
 
 struct IpcRequest {
 	enum IpcCommand command;
-	enum LogThreshold log_threshold;
-	struct Cfg *cfg;
-	bool yaml;
-	int socket_client;
-	bool bad;
+	enum LogThreshold log_threshold;	// server marshals >=
+	struct Cfg *cfg;				// for CFG_SET, CFG_DEL
+	bool yaml;				// client print yaml only bar errors
+	int socket_client;		// client and server, set to -1 on failure
+	bool bad;				// used by server on receipt of bad message
 };
 
 struct IpcResponseStatus {
@@ -59,8 +59,8 @@ char *ipc_receive_raw(int socket_client);
 // receive the entire request sent to the server socket
 struct IpcRequest *ipc_receive_request(int socket_server);
 
-// receive all responses
-struct SList *ipc_receive_responses(int socket_client);
+// receive all responses, user frees complete yaml
+struct SList *ipc_receive_responses(int socket_client, char **yaml);
 
 void ipc_request_free(struct IpcRequest *request);
 

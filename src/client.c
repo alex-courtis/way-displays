@@ -12,21 +12,7 @@
 #include "process.h"
 #include "slist.h"
 
-int handle_yaml(int socket_client) {
-	int rc = EXIT_SUCCESS;
-
-	// TODO move this to the other handler and put yaml in the response
-	char *yaml = ipc_receive_raw(socket_client);
-	while (yaml) {
-		fprintf(stdout, "%s", yaml);
-		free(yaml);
-		yaml = ipc_receive_raw(socket_client);
-	}
-
-	return rc;
-}
-
-int handle_human(int socket_client) {
+int handle_responses(const struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
 	struct SList *responses = NULL;
@@ -34,7 +20,8 @@ int handle_human(int socket_client) {
 	bool done = false;
 
 	while (!done) {
-		responses = ipc_receive_responses(socket_client);
+		char *yaml;
+		responses = ipc_receive_responses(ipc_request->socket_client, &yaml);
 
 		if (responses) {
 			for (struct SList *i = responses; i; i = i->nex) {
@@ -43,13 +30,27 @@ int handle_human(int socket_client) {
 				}
 				rc = response->status.rc;
 				done = response->status.done;
-				log_capture_playback(response->log_cap_lines);
+
+				if (ipc_request->yaml) {
+					if (yaml && (rc == IPC_RC_SUCCESS || rc == IPC_RC_WARN)) {
+						// yaml
+						fprintf(stdout, "%s\n", yaml);
+					} else {
+						// human errors
+						log_capture_playback(response->log_cap_lines);
+					}
+				} else {
+					// human
+					log_capture_playback(response->log_cap_lines);
+				}
 			}
 			slist_free_vals(&responses, ipc_response_free);
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;
 		}
+
+		free(yaml);
 	}
 
 	return rc;
@@ -80,11 +81,7 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	if (ipc_request->yaml) {
-		rc = handle_yaml(ipc_request->socket_client);
-	} else {
-		rc = handle_human(ipc_request->socket_client);
-	}
+	rc = handle_responses(ipc_request);
 
 	close(ipc_request->socket_client);
 
