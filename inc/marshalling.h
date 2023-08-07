@@ -14,9 +14,11 @@ char *marshal_ipc_request(struct IpcRequest *request);
 
 struct IpcRequest *unmarshal_ipc_request(char *yaml);
 
-char *marshal_ipc_response(struct IpcResponse *response);
+// marshal globals
+char *marshal_ipc_response(struct IpcOperation *operation);
 
-struct IpcResponse *unmarshal_ipc_response(char *yaml);
+// unmarshal all responses
+struct SList *unmarshal_ipc_responses(const char *yaml);
 
 char *marshal_cfg(struct Cfg *cfg);
 

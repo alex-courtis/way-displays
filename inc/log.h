@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "slist.h"
+
 enum LogThreshold {
 	DEBUG = 1,
 	INFO,
@@ -25,8 +27,6 @@ void log_(enum LogThreshold threshold, const char *__restrict __format, ...);
 
 void log_debug(const char *__restrict __format, ...);
 
-void log_debug_nocap(const char *__restrict __format, ...);
-
 void log_info(const char *__restrict __format, ...);
 
 void log_warn(const char *__restrict __format, ...);
@@ -34,8 +34,6 @@ void log_warn(const char *__restrict __format, ...);
 void log_warn_errno(const char *__restrict __format, ...);
 
 void log_error(const char *__restrict __format, ...);
-
-void log_error_nocap(const char *__restrict __format, ...);
 
 void log_error_errno(const char *__restrict __format, ...);
 
@@ -49,7 +47,10 @@ void log_capture_stop(void);
 
 void log_capture_clear(void);
 
-void log_capture_playback(void);
+// NULL plays back log_cap_lines
+void log_capture_playback(struct SList *lines);
+
+void log_cap_line_free(void *log_cap_line);
 
 #endif // LOG_H
 

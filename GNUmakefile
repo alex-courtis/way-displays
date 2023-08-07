@@ -12,6 +12,7 @@ LIB_O = $(LIB_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
 EXAMPLE_O = $(EXAMPLE_C:.c=.o)
+EXAMPLE_E = $(EXAMPLE_C:.c=)
 
 PRO_X = $(wildcard pro/*.xml)
 PRO_H = $(PRO_X:.xml=.h)
@@ -20,11 +21,11 @@ PRO_O = $(PRO_X:.xml=.o)
 
 TST_H = $(wildcard tst/*.h)
 TST_C = $(wildcard tst/*.c)
-TST_CXX = $(wildcard tst/*.cpp)
-TST_O = $(TST_C:.c=.o) $(TST_CXX:.cpp=.o)
+TST_O = $(TST_C:.c=.o)
 TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
+TST_T = $(patsubst tst%,test%,$(TST_E))
 
-all: way-displays /tmp/vg.supp
+all: way-displays
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(LIB_O): $(LIB_H) $(LIB_C) config.mk GNUmakefile
@@ -34,9 +35,6 @@ $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 way-displays: $(SRC_O) $(PRO_O) $(LIB_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-example-client: $(EXAMPLE_O) $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
-
 $(PRO_H): $(PRO_X)
 	wayland-scanner client-header $(@:.h=.xml) $@
 
@@ -44,10 +42,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
-	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C) $(LIB_O) $(TST_O) $(TST_E)
-
-/tmp/vg.supp: .vg.supp
-	cp .vg.supp /tmp/vg.supp
+	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(LIB_O) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O) 
 
 install: way-displays way-displays.1 cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -69,17 +64,29 @@ man: way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc=)
 
-# make -k iwyu > /dev/null
-iwyu: CC = $(IWYU) -Xiwyu --check_also="inc/*h"
-iwyu: CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
-iwyu: clean $(SRC_O) $(TST_O)
-IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --no_comments -Xiwyu --verbose=2
+iwyu: override CC = $(IWYU) -Xiwyu --check_also="inc/*h"
+iwyu: override CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
+iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
+IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --error=1 -Xiwyu --verbose=3
 
 cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) --enable=warning,unusedFunction,performance,portability --suppressions-list=.cppcheck.supp --error-exitcode=1 $(CPPFLAGS)
 
-test: all
-	$(MAKE) -f tst/GNUmakefile tst-all
+%-vg: VALGRIND = valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --gen-suppressions=all --suppressions=.vg.supp
+%-vg: % ;
 
-.PHONY: all clean install uninstall man cppcheck iwyu test clean-test tst-iwyu tst-cppcheck tst-all tst-clean
+test: $(TST_T)
+test-vg: $(TST_T)
 
+$(TST_T): EXE = $(patsubst test%,tst%,$(@))
+$(TST_T): all
+	$(MAKE) -f tst/GNUmakefile $(EXE)
+	$(VALGRIND) ./$(EXE)
+
+examples: $(EXAMPLE_E)
+examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+
+.PHONY: all clean install uninstall man cppcheck iwyu test test-vg $(TST_T)
+
+.NOTPARALLEL: iwyu test test-vg

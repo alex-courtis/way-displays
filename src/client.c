@@ -10,39 +10,59 @@
 #include "ipc.h"
 #include "log.h"
 #include "process.h"
+#include "slist.h"
 
-int handle_raw(int socket_client) {
-	int rc = EXIT_SUCCESS;
+// handle one response and end
+int handle_response(const struct IpcRequest *ipc_request) {
+	char *yaml =ipc_receive_raw(ipc_request->socket_client);
 
-	char *yaml = ipc_receive_raw_client(socket_client);
-	while (yaml) {
-		fprintf(stdout, "%s", yaml);
-		free(yaml);
-		yaml = ipc_receive_raw_client(socket_client);
-	}
+	fprintf(stdout, "%s\n", yaml);
 
-	return rc;
+	free(yaml);
+
+	return EXIT_SUCCESS;
 }
 
-int handle_human(int socket_client) {
+// handle many responses over many socket operations
+int handle_responses(const struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
+	struct SList *responses = NULL;
 	struct IpcResponse *response = NULL;
 	bool done = false;
 
 	while (!done) {
-		response = ipc_receive_response_client(socket_client);
-		if (response) {
-			rc = response->rc;
-			done = response->done;
+		char *yaml;
+		responses = ipc_receive_responses(ipc_request->socket_client, &yaml);
+
+		if (responses) {
+			for (struct SList *i = responses; i; i = i->nex) {
+				if (!(response = i->val)) {
+					continue;
+				}
+				rc = response->status.rc;
+				done = response->status.done;
+
+				if (ipc_request->yaml) {
+					if (yaml && (rc == IPC_RC_SUCCESS || rc == IPC_RC_WARN)) {
+						// yaml
+						fprintf(stdout, "%s\n", yaml);
+					} else {
+						// human errors
+						log_capture_playback(response->log_cap_lines);
+					}
+				} else {
+					// human
+					log_capture_playback(response->log_cap_lines);
+				}
+			}
+			slist_free_vals(&responses, ipc_response_free);
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;
 		}
-	}
 
-	if (response) {
-		ipc_response_free(response);
+		free(yaml);
 	}
 
 	return rc;
@@ -53,12 +73,6 @@ int client(struct IpcRequest *ipc_request) {
 		return EXIT_FAILURE;
 	}
 
-	if (ipc_request->raw) {
-		log_set_threshold(ERROR, true);
-	}
-
-	log_set_times(false);
-
 	int rc = EXIT_SUCCESS;
 
 	if (pid_active_server() == 0) {
@@ -67,8 +81,10 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	log_info("\nClient sending request: %s", ipc_request_op_friendly(ipc_request->op));
-	print_cfg(INFO, ipc_request->cfg, ipc_request->op == CFG_DEL);
+	if (!ipc_request->yaml) {
+		log_info("\nClient sending request: %s", ipc_command_friendly(ipc_request->command));
+		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+	}
 
 	ipc_send_request(ipc_request);
 
@@ -77,10 +93,10 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	if (ipc_request->raw) {
-		rc = handle_raw(ipc_request->socket_client);
+	if (ipc_request->command == GET) {
+		rc = handle_response(ipc_request);
 	} else {
-		rc = handle_human(ipc_request->socket_client);
+		rc = handle_responses(ipc_request);
 	}
 
 	close(ipc_request->socket_client);

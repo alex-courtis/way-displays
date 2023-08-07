@@ -12,7 +12,7 @@
 #include "slist.h"
 #include "log.h"
 
-struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv);
+struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
 struct IpcRequest *parse_write(int argc, char **argv);
 struct IpcRequest *parse_set(int argc, char **argv);
 struct IpcRequest *parse_del(int argc, char **argv);
@@ -292,6 +292,7 @@ void parse_element__adaptive_sync_off_ok(void **state) {
 	cfg_free(actual);
 
 	slist_free(&expected.disabled_name_desc);
+	slist_free(&expected.adaptive_sync_off_name_desc);
 }
 
 void parse_element__disabled_ok(void **state) {
@@ -345,7 +346,7 @@ void parse_write__ok(void **state) {
 	struct IpcRequest *request = parse_write(0, NULL);
 
 	assert_non_null(request);
-	assert_int_equal(request->op, CFG_WRITE);
+	assert_int_equal(request->command, CFG_WRITE);
 
 	ipc_request_free(request);
 }
@@ -453,7 +454,7 @@ void parse_set__ok(void **state) {
 	struct IpcRequest *request = parse_set(1, argv);
 
 	assert_non_null(request);
-	assert_int_equal(request->op, CFG_SET);
+	assert_int_equal(request->command, CFG_SET);
 
 	ipc_request_free(request);
 }
@@ -522,22 +523,19 @@ void parse_del__ok(void **state) {
 	struct IpcRequest *request = parse_del(1, argv);
 
 	assert_non_null(request);
-	assert_int_equal(request->op, CFG_DEL);
+	assert_int_equal(request->command, CFG_DEL);
 
 	ipc_request_free(request);
 }
 
 void parse_log_threshold__invalid(void **state) {
-	assert_false(parse_log_threshold("INVALID"));
+	assert_int_equal(parse_log_threshold("INVALID"), 0);
 
 	assert_log(ERROR, "invalid --log-threshold INVALID\n");
 }
 
 void parse_log_threshold__ok(void **state) {
-	expect_value(__wrap_log_set_threshold, threshold, WARNING);
-	expect_value(__wrap_log_set_threshold, cli, true);
-
-	assert_true(parse_log_threshold("WARNING"));
+	assert_int_equal(parse_log_threshold("WARNING"), WARNING);
 }
 
 int main(void) {

@@ -22,47 +22,50 @@
 #include "log.h"
 #include "process.h"
 
-struct IpcResponse *ipc_response = NULL;
+// operation in progress
+struct IpcOperation *ipc_operation = NULL;
 
+// received a request whilst another is in progress
 void handle_ipc_in_progress(int server_socket) {
-	struct IpcRequest *request = ipc_receive_request_server(server_socket);
+	struct IpcRequest *request = ipc_receive_request(server_socket);
 	if (!request) {
 		log_error("\nFailed to read IPC request");
 		return;
 	}
 
-	struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	response->socket_client = request->socket_client;
-	response->done = true;
-	response->rc = IPC_RC_REQUEST_IN_PROGRESS;
+	struct IpcOperation *operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	operation->request = request;
+	operation->socket_client = request->socket_client;
+	operation->done = true;
+	operation->rc = IPC_RC_REQUEST_IN_PROGRESS;
 
-	ipc_send_response(response);
+	ipc_send_operation(operation);
 
-	close(response->socket_client);
+	close(operation->socket_client);
 
-	ipc_response_free(response);
+	ipc_operation_free(operation);
 }
 
-void handle_ipc_response(void) {
-	if (!ipc_response) {
+void notify_ipc_operation(void) {
+	if (!ipc_operation) {
 		return;
 	}
 
-	ipc_send_response(ipc_response);
+	ipc_send_operation(ipc_operation);
 
-	if (ipc_response->done) {
+	if (ipc_operation->done) {
 		log_capture_stop();
 		log_capture_clear();
 
-		close(ipc_response->socket_client);
+		close(ipc_operation->socket_client);
 
-		ipc_response_free(ipc_response);
-		ipc_response = NULL;
+		ipc_operation_free(ipc_operation);
+		ipc_operation = NULL;
 	}
 }
 
-void handle_ipc_request(int server_socket) {
-	if (ipc_response) {
+void receive_ipc_request(int server_socket) {
+	if (ipc_operation) {
 		handle_ipc_in_progress(server_socket);
 		return;
 	}
@@ -70,7 +73,7 @@ void handle_ipc_request(int server_socket) {
 	log_capture_clear();
 	log_capture_start();
 
-	struct IpcRequest *ipc_request = ipc_receive_request_server(server_socket);
+	struct IpcRequest *ipc_request = ipc_receive_request(server_socket);
 	if (!ipc_request) {
 		log_error("\nFailed to read IPC request");
 		log_capture_stop();
@@ -78,31 +81,32 @@ void handle_ipc_request(int server_socket) {
 		return;
 	}
 
-	ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-	ipc_response->socket_client = ipc_request->socket_client;
-	ipc_response->done = true;
-	ipc_response->messages = true;
-	ipc_response->state = true;
+	ipc_operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	ipc_operation->request = ipc_request;
+	ipc_operation->socket_client = ipc_request->socket_client;
+	ipc_operation->done = true;
+	ipc_operation->send_logs = true;
+	ipc_operation->send_state = true;
 
 	if (ipc_request->bad) {
-		ipc_response->rc = IPC_RC_BAD_REQUEST;
-		ipc_response->state = false;
+		ipc_operation->rc = IPC_RC_BAD_REQUEST;
+		ipc_operation->send_state = false;
 		goto send;
 	}
 
-	log_info("\nServer received request: %s", ipc_request_op_friendly(ipc_request->op));
+	log_info("\nServer received request: %s", ipc_command_friendly(ipc_request->command));
 	if (ipc_request->cfg) {
-		print_cfg(INFO, ipc_request->cfg, ipc_request->op == CFG_DEL);
+		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
-	switch (ipc_request->op) {
+	switch (ipc_request->command) {
 		case CFG_DEL:
 		case CFG_SET:
 			{
-				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->op == CFG_DEL);
+				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->command == CFG_DEL);
 				if (cfg_merged) {
 					// ongoing
-					ipc_response->done = false;
+					ipc_operation->done = false;
 					cfg_free(cfg);
 					cfg = cfg_merged;
 					log_info("\nNew configuration:");
@@ -133,9 +137,7 @@ void handle_ipc_request(int server_socket) {
 	}
 
 send:
-	ipc_request_free(ipc_request);
-
-	handle_ipc_response();
+	notify_ipc_operation();
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
@@ -201,7 +203,7 @@ int loop(void) {
 
 		// ipc client message
 		if (pfd_ipc && (pfd_ipc->revents & pfd_ipc->events)) {
-			handle_ipc_request(fd_socket_server);
+			receive_ipc_request(fd_socket_server);
 		}
 
 
@@ -210,9 +212,9 @@ int loop(void) {
 
 
 		// inform the client
-		if (ipc_response) {
-			ipc_response->done = displ->config_state == IDLE;
-			handle_ipc_response();
+		if (ipc_operation) {
+			ipc_operation->done = displ->config_state == IDLE;
+			notify_ipc_operation();
 		};
 
 
@@ -241,7 +243,7 @@ server(char *cfg_path) {
 	log_set_threshold(cfg->log_threshold, false);
 	log_suppress_stop();
 	log_capture_stop();
-	log_capture_playback();
+	log_capture_playback(NULL);
 	log_capture_clear();
 
 	// discover the lid state immediately

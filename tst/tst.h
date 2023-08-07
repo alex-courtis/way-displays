@@ -19,6 +19,8 @@ void cm_print_error(const char* const format, ...) CMOCKA_PRINTF_ATTRIBUTE(1, 2)
 //
 char *read_file(const char *path);
 
+void write_file(const char *path, const char *content);
+
 //
 // test definition
 //

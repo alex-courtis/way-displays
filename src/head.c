@@ -249,6 +249,13 @@ void head_free(void *data) {
 	if (!head)
 		return;
 
+	if (!(slist_find_equal_val(head->modes, NULL, head->current.mode))) {
+		mode_free(head->current.mode);
+	}
+	if (!(slist_find_equal_val(head->modes, NULL, head->desired.mode))) {
+		mode_free(head->desired.mode);
+	}
+
 	slist_free(&head->modes_failed);
 	slist_free_vals(&head->modes, mode_free);
 

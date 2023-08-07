@@ -88,6 +88,8 @@ SCALE: !!float
 ENABLED: !!bool
 X: !!int
 Y: !!int
+VRR: !!bool
+MODE: !!mode
 ```
 
 ## !!mode
@@ -98,7 +100,6 @@ WIDTH: !!int
 HEIGHT: !!int
 REFRESH_MHZ: !!int
 PREFERRED: !!bool
-CURRENT: !!bool
 ```
 
 ## !!head
@@ -124,6 +125,7 @@ MODES: !!seq
 ```yaml
 !!map
 OP: !!ipc_op
+LOG_THRESHOLD: !!log_threshold
 CFG: !!cfg
 ```
 

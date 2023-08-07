@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "log.h"
+
 #define IPC_RC_SUCCESS 0
 #define IPC_RC_WARN 1
 #define IPC_RC_ERROR 2
@@ -10,42 +12,61 @@
 #define IPC_RC_BAD_RESPONSE 12
 #define IPC_RC_REQUEST_IN_PROGRESS 13
 
-enum IpcRequestOperation {
+enum IpcCommand {
 	GET = 1,
 	CFG_SET,
 	CFG_DEL,
 	CFG_WRITE,
 };
 
-struct IpcRequest {
-	enum IpcRequestOperation op;
-	struct Cfg *cfg;
+struct IpcOperation {
+	struct IpcRequest *request;
 	int socket_client;
-	bool bad;
-	bool raw;
+	bool done;
+	int rc;
+	bool send_logs;		// not for bad or colliding requests
+	bool send_state;	// not for bad requests
+};
+
+struct IpcRequest {
+	enum IpcCommand command;
+	enum LogThreshold log_threshold;	// server marshals >=
+	struct Cfg *cfg;				// for CFG_SET, CFG_DEL
+	bool yaml;				// client print yaml only bar errors
+	int socket_client;		// client and server, set to -1 on failure
+	bool bad;				// used by server on receipt of bad message
+};
+
+struct IpcResponseStatus {
+	bool done;
+	int rc;
 };
 
 struct IpcResponse {
-	bool done;
-	int rc;
-	int socket_client;
-	bool messages;
-	bool state;
+	struct IpcResponseStatus status;
+	struct Cfg *cfg;
+	struct SList *heads;
+	struct Lid *lid;
+	struct SList *log_cap_lines;
 };
 
 void ipc_send_request(struct IpcRequest *request);
 
-void ipc_send_response(struct IpcResponse *response);
+void ipc_send_operation(struct IpcOperation *operation);
 
-char *ipc_receive_raw_client(int socket_client);
+char *ipc_receive_raw(int socket_client);
 
-struct IpcRequest *ipc_receive_request_server(int socket_server);
+// receive the entire request sent to the server socket
+struct IpcRequest *ipc_receive_request(int socket_server);
 
-struct IpcResponse *ipc_receive_response_client(int socket_client);
+// receive all responses, user frees complete yaml
+struct SList *ipc_receive_responses(int socket_client, char **yaml);
 
 void ipc_request_free(struct IpcRequest *request);
 
-void ipc_response_free(struct IpcResponse *response);
+void ipc_response_free(void *response);
+
+void ipc_operation_free(struct IpcOperation *operation);
 
 #endif // IPC_H
 

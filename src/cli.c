@@ -22,7 +22,7 @@ void usage(FILE *stream) {
 		"OPTIONS\n"
 		"  -L, --l[og-threshold] <debug|info|warning|error>\n"
 		"  -c, --c[onfig]        <path>\n"
-		"  -y, --y[aml]          YAML client output\n"
+		"  -y, --y[aml]          YAML client output, implies -L warning\n"
 		"COMMANDS\n"
 		"  -h, --h[elp]    show this message\n"
 		"  -v, --v[ersion] display version information\n"
@@ -47,7 +47,7 @@ void usage(FILE *stream) {
 	fprintf(stream, "%s", mesg);
 }
 
-struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, int argc, char **argv) {
+struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
 	struct UserScale *user_scale = NULL;
 	struct UserMode *user_mode = NULL;
 
@@ -66,7 +66,7 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			parsed = (cfg->auto_scale = on_off_val(argv[optind]));
 			break;
 		case SCALE:
-			switch (op) {
+			switch (command) {
 				case CFG_SET:
 					// parse input value
 					user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
@@ -87,7 +87,7 @@ struct Cfg *parse_element(enum IpcRequestOperation op, enum CfgElement element, 
 			}
 			break;
 		case MODE:
-			switch (op) {
+			switch (command) {
 				case CFG_SET:
 					// parse input value
 					user_mode = cfg_user_mode_default();
@@ -165,7 +165,7 @@ struct IpcRequest *parse_get(int argc, char **argv) {
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->op = GET;
+	request->command = GET;
 
 	return request;
 }
@@ -178,7 +178,7 @@ struct IpcRequest *parse_write(int argc, char **argv) {
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->op = CFG_WRITE;
+	request->command = CFG_WRITE;
 
 	return request;
 }
@@ -219,13 +219,13 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 			}
 			break;
 		default:
-			log_error("invalid %s: %s", ipc_request_op_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
+			log_error("invalid %s: %s", ipc_command_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->op = CFG_SET;
+	request->command = CFG_SET;
 	request->cfg = parse_element(CFG_SET, element, argc, argv);
 
 	return request;
@@ -245,29 +245,27 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 			}
 			break;
 		default:
-			log_error("invalid %s: %s", ipc_request_op_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
+			log_error("invalid %s: %s", ipc_command_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->op = CFG_DEL;
+	request->command = CFG_DEL;
 	request->cfg = parse_element(CFG_DEL, element, argc, argv);
 
 	return request;
 }
 
-bool parse_log_threshold(char *optarg) {
+enum LogThreshold parse_log_threshold(char *optarg) {
 	enum LogThreshold threshold = log_threshold_val(optarg);
 
 	if (!threshold) {
 		log_error("invalid --log-threshold %s", optarg);
-		return false;
+		return 0;
 	}
 
-	log_set_threshold(threshold, true);
-
-	return true;
+	return threshold;
 }
 
 void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
@@ -285,7 +283,8 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 	};
 	static char *short_options = "c:d:ghL:s:vwy";
 
-	bool raw = false;
+	bool yaml = false;
+	enum LogThreshold threshold = 0;
 
 	int c;
 	while (1) {
@@ -295,7 +294,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 			break;
 		switch (c) {
 			case 'L':
-				if (!parse_log_threshold(optarg)) {
+				if (!(threshold = parse_log_threshold(optarg))) {
 					wd_exit(EXIT_FAILURE);
 					return;
 				}
@@ -312,7 +311,8 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				wd_exit(EXIT_SUCCESS);
 				break;
 			case 'y':
-				raw = true;
+				threshold = WARNING;
+				yaml = true;
 				break;
 			case 'g':
 				*ipc_request = parse_get(argc, argv);
@@ -334,8 +334,15 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		}
 	}
 
+	log_set_threshold(threshold, true);
+
 	if (*ipc_request) {
-		(*ipc_request)->raw = raw;
+		(*ipc_request)->yaml = yaml;
+		if (yaml) {
+			(*ipc_request)->log_threshold = WARNING;
+		} else {
+			(*ipc_request)->log_threshold = threshold;
+		}
 	}
 }
 
