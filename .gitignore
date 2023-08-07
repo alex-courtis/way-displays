@@ -4,7 +4,9 @@ pro/*.h
 pro/*.c
 
 /way-displays
-/example-client
+/examples/client-raw
+/examples/client-unpacked
+
 /tst-*
 
 /.ccls-cache

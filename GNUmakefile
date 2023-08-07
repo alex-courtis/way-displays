@@ -12,6 +12,7 @@ LIB_O = $(LIB_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
 EXAMPLE_O = $(EXAMPLE_C:.c=.o)
+EXAMPLE_E = $(EXAMPLE_C:.c=)
 
 PRO_X = $(wildcard pro/*.xml)
 PRO_H = $(PRO_X:.xml=.h)
@@ -34,9 +35,6 @@ $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 way-displays: $(SRC_O) $(PRO_O) $(LIB_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-example-client: $(EXAMPLE_O) $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
-
 $(PRO_H): $(PRO_X)
 	wayland-scanner client-header $(@:.h=.xml) $@
 
@@ -44,7 +42,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
-	rm -f way-displays example_client $(SRC_O) $(EXAMPLE_O) $(PRO_O) $(PRO_H) $(PRO_C) $(LIB_O) $(TST_O) $(TST_E)
+	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(LIB_O) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O) 
 
 install: way-displays way-displays.1 cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -84,6 +82,11 @@ $(TST_T): EXE = $(patsubst test%,tst%,$(@))
 $(TST_T): all
 	$(MAKE) -f tst/GNUmakefile $(EXE)
 	$(VALGRIND) ./$(EXE)
+
+examples: $(EXAMPLE_O) $(EXAMPLE_E)
+
+$(EXAMPLE_E): $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
+	$(CXX) -o $(@) $(@).o $(^) $(LDFLAGS) $(LDLIBS)
 
 .PHONY: all clean install uninstall man cppcheck iwyu test test-vg $(TST_T)
 
