@@ -12,7 +12,7 @@ LIB_O = $(LIB_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
 EXAMPLE_O = $(EXAMPLE_C:.c=.o)
-EXAMPLE_E = $(EXAMPLE_C:.c=)
+EXAMPLE_E = $(patsubst examples/%.c,example-%,$(EXAMPLE_C))
 
 PRO_X = $(wildcard pro/*.xml)
 PRO_H = $(PRO_X:.xml=.h)
@@ -66,7 +66,7 @@ man: way-displays.1.pandoc
 
 iwyu: override CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: override CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
-iwyu: clean $(SRC_O) $(TST_O)
+iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
 IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --error=1 -Xiwyu --verbose=3
 
 cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
@@ -83,10 +83,14 @@ $(TST_T): all
 	$(MAKE) -f tst/GNUmakefile $(EXE)
 	$(VALGRIND) ./$(EXE)
 
-examples: $(EXAMPLE_O) $(EXAMPLE_E)
+examples: $(EXAMPLE_E)
+
+example-client-get-raw: examples/client-get-raw.o
+example-client-set: examples/client-set.o
+example-poke-server: examples/poke-server.o
 
 $(EXAMPLE_E): $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
-	$(CXX) -o $(@) $(@).o $(^) $(LDFLAGS) $(LDLIBS)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 .PHONY: all clean install uninstall man cppcheck iwyu test test-vg $(TST_T)
 

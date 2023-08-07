@@ -4,8 +4,7 @@ pro/*.h
 pro/*.c
 
 /way-displays
-/examples/client-raw
-/examples/client-unpacked
+/example-*
 
 /tst-*
 
