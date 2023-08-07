@@ -26,9 +26,9 @@ main(int argc, char **argv) {
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
 	request->command = CFG_SET;
 
-	// turn scaling ON
+	// turn scaling OFF
 	request->cfg = calloc(1, sizeof(struct Cfg));
-	request->cfg->scaling = ON;
+	request->cfg->scaling = OFF;
 
 	// send the request
 	ipc_send_request(request);
