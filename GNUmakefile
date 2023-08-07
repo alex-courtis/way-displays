@@ -12,7 +12,7 @@ LIB_O = $(LIB_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
 EXAMPLE_O = $(EXAMPLE_C:.c=.o)
-EXAMPLE_E = $(patsubst examples/%.c,example-%,$(EXAMPLE_C))
+EXAMPLE_E = $(EXAMPLE_C:.c=)
 
 PRO_X = $(wildcard pro/*.xml)
 PRO_H = $(PRO_X:.xml=.h)
@@ -84,12 +84,7 @@ $(TST_T): all
 	$(VALGRIND) ./$(EXE)
 
 examples: $(EXAMPLE_E)
-
-example-client-get-raw: examples/client-get-raw.o
-example-client-set: examples/client-set.o
-example-poke-server: examples/poke-server.o
-
-$(EXAMPLE_E): $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
+examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 .PHONY: all clean install uninstall man cppcheck iwyu test test-vg $(TST_T)

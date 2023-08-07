@@ -4,7 +4,6 @@ pro/*.h
 pro/*.c
 
 /way-displays
-/example-*
 
 /tst-*
 
