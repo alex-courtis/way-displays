@@ -1,16 +1,14 @@
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <wayland-util.h>
 
 #include "cfg.h"
 #include "convert.h"
 #include "head.h"
 #include "ipc.h"
 #include "log.h"
-#include "sockets.h"
+#include "slist.h"
 
 /*
  * Execute a CFG_SET scaling off and unpack the responses

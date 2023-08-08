@@ -14,7 +14,7 @@ char *marshal_ipc_request(struct IpcRequest *request);
 
 struct IpcRequest *unmarshal_ipc_request(char *yaml);
 
-// marshal globals
+// marshal globals; map for GET, sequence of maps otherwise
 char *marshal_ipc_response(struct IpcOperation *operation);
 
 // unmarshal all responses

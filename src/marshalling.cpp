@@ -33,10 +33,32 @@ extern "C" {
 #include "wlr-output-management-unstable-v1.h"
 }
 
-// dummy structs to coerce SLists
-struct HeadList {};
-struct LogCapLineList {};
+// Marshal operators
+YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg);
+YAML::Emitter& operator << (YAML::Emitter& e, struct Mode& mode);
+YAML::Emitter& operator << (YAML::Emitter& e, struct HeadState& head_state);
+YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head);
+
+// Unmarshal operators, validating
 struct CfgValidated {};
+struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YAML::Node& node);
+struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Node& node_response);
+
+// Unmarshal operators, ignoring failures for individual values
+#define TI(STATEMENT) try { STATEMENT; } catch (...) { }
+struct UserScale*& operator << (struct UserScale*& user_scale, const YAML::Node& node);
+struct UserMode*& operator << (struct UserMode*& user_mode, const YAML::Node& node);
+struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node);
+struct Lid*& operator << (struct Lid*& lid, const YAML::Node& node);
+struct Mode*& operator << (struct Mode*& mode, const YAML::Node& node);
+struct HeadState& operator << (struct HeadState& head_state, const YAML::Node& node);
+struct Head*& operator << (struct Head*& head, const YAML::Node& node);
+
+// List unmarshal operators
+struct HeadList {};
+struct HeadList**& operator << (struct HeadList**& heads, const YAML::Node& node);
+struct LogCapLineList {};
+struct LogCapLineList**& operator << (struct LogCapLineList**& log_cap_lines, const YAML::Node& node);
 
 // If this is a regex pattern, attempt to compile it before including it in configuration.
 bool validate_regex(const char *pattern, enum CfgElement element) {
@@ -55,6 +77,9 @@ bool validate_regex(const char *pattern, enum CfgElement element) {
 	return rc;
 }
 
+//
+// Strict node map entry parsers
+//
 bool parse_node_val_bool(const YAML::Node &node, const char *key, bool *val, const char *desc1, const char *desc2) {
 	if (node[key]) {
 		try {
@@ -121,9 +146,9 @@ char *yaml_with_newline(const YAML::Emitter &e) {
 	return yaml;
 }
 
-/*
- * Marshal operators
- */
+//
+// Marshal operators
+//
 YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 
 	if (cfg.arrange) {
@@ -297,9 +322,9 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	return e;
 }
 
-/*
- * unmarshalling operators, validating
- */
+//
+// Unmarshal operators, validating
+//
 struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YAML::Node& node) {
 	if (!node || !node.IsMap()) {
 		throw std::runtime_error("empty cfg, expected map");
@@ -477,11 +502,39 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 	return cfg_validated;
 }
 
-/*
- * unmarshalling operators, ignoring failures for individual values
- */
-#define TI(STATEMENT) try { STATEMENT; } catch (...) { }
+struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Node& node_response) {
+	if (!node_response || !node_response.IsMap())
+		return response;
 
+	if (!node_response["DONE"])
+		throw std::runtime_error("DONE missing");
+
+	if (!node_response["RC"])
+		throw std::runtime_error("RC missing");
+
+	if (!response)
+		response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+
+	response->status.done = node_response["DONE"].as<bool>();
+	response->status.rc = node_response["RC"].as<int>();
+	response->cfg << node_response["CFG"];
+
+	if (node_response["STATE"]) {
+		response->lid << node_response["STATE"]["LID"];
+
+		struct HeadList **hlp = (struct HeadList**)&response->heads;
+		hlp << node_response["STATE"]["HEADS"];
+	}
+
+	struct LogCapLineList **lclp = (struct LogCapLineList**)&response->log_cap_lines;
+	lclp << node_response["MESSAGES"];
+
+	return response;
+}
+
+//
+// Unmarshal operators, ignoring failures for individual values
+//
 struct UserScale*& operator << (struct UserScale*& user_scale, const YAML::Node& node) {
 	if (!node || !node.IsMap())
 		return user_scale;
@@ -646,6 +699,9 @@ struct Head*& operator << (struct Head*& head, const YAML::Node& node) {
 	return head;
 }
 
+//
+// List unmarshal operators
+//
 struct HeadList**& operator << (struct HeadList**& heads, const YAML::Node& node) {
 	if (!node || !node.IsSequence())
 		return heads;
@@ -824,16 +880,17 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 
 	char *yaml = NULL;
 
+	// GET sends only one response as a map
+	bool seq = operation->request->command != GET;
+
 	try {
 		YAML::Emitter e;
 
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
-		// GET is one response, not a list
-		if (operation->request->command != GET) {
+		if (seq)
 			e << YAML::BeginSeq;
-		}
 
 		e << YAML::BeginMap;
 
@@ -878,9 +935,8 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 
 		e << YAML::EndMap;
 
-		if (operation->request->command != GET) {
+		if (seq)
 			e << YAML::EndSeq;
-		}
 
 		if (!e.good()) {
 			log_error("marshalling ipc response: %s", e.GetLastError().c_str());
@@ -908,40 +964,26 @@ struct SList *unmarshal_ipc_responses(const char *yaml) {
 	struct SList *responses = NULL;
 
 	try {
-		const YAML::Node node_root = YAML::Load(yaml);
+		const YAML::Node node = YAML::Load(yaml);
 
-		if (!node_root.IsSequence()) {
-			throw std::runtime_error("empty response, expected sequence");
-		}
+		if (node.IsSequence()) {
 
-		// iterate the unnamed list of all responses
-		for (const auto &node_response : node_root) {
-			if (!node_response.IsMap()) {
-				throw std::runtime_error("empty entry, expected map");
+			// iterate the unnamed list of all responses
+			for (const auto &node_response : node) {
+				if (!node_response.IsMap()) {
+					throw std::runtime_error("expected map");
+				}
+
+				struct IpcResponse *response = NULL;
+				slist_append(&responses, response << node_response);
 			}
+		} else if (node.IsMap()) {
 
-			struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-			slist_append(&responses, response);
-
-			if (!node_response["DONE"])
-				throw std::runtime_error("DONE missing");
-			response->status.done = node_response["DONE"].as<bool>();
-
-			if (!node_response["RC"])
-				throw std::runtime_error("RC missing");
-			response->status.rc = node_response["RC"].as<int>();
-
-			response->cfg << node_response["CFG"];
-
-			if (node_response["STATE"]) {
-				response->lid << node_response["STATE"]["LID"];
-
-				struct HeadList **hlp = (struct HeadList**)&response->heads;
-				hlp << node_response["STATE"]["HEADS"];
-			}
-
-			struct LogCapLineList **lclp = (struct LogCapLineList**)&response->log_cap_lines;
-			lclp << node_response["MESSAGES"];
+			// single response
+			struct IpcResponse *response = NULL;
+			slist_append(&responses, response << node);
+		} else {
+			throw std::runtime_error("expected sequence or map");
 		}
 
 	} catch (const std::exception &e) {

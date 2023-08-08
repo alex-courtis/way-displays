@@ -173,9 +173,10 @@ void marshal_ipc_request__cfg_set(void **state) {
 	free(expected);
 }
 
-void marshal_ipc_response__ok(void **state) {
+void marshal_ipc_response__map(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 	ipc_request->log_threshold = WARNING;
+	ipc_request->command = GET; // get is a map, others sequence
 
 	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
 	ipc_operation->request = ipc_request;
@@ -243,7 +244,7 @@ void marshal_ipc_response__ok(void **state) {
 
 	assert_non_null(actual);
 
-	char *expected = read_file("tst/marshalling/ipc-responses-complete.yaml");
+	char *expected = read_file("tst/marshalling/ipc-responses-map.yaml");
 
 	assert_string_equal(actual, expected);
 
@@ -252,6 +253,26 @@ void marshal_ipc_response__ok(void **state) {
 	free(expected);
 	slist_free(&head.modes);
 	slist_free(&heads);
+}
+
+void marshal_ipc_response__seq(void **state) {
+	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
+	ipc_request->log_threshold = WARNING;
+	ipc_request->command = CFG_SET; // get is a map, others sequence
+
+	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
+	ipc_operation->request = ipc_request;
+	ipc_operation->done = true;
+	ipc_operation->rc = 1;
+
+	char *actual = marshal_ipc_response(ipc_operation);
+
+	assert_non_null(actual);
+
+	assert_string_equal(actual, "- DONE: TRUE\n  RC: 1\n");
+
+	ipc_operation_free(ipc_operation);
+	free(actual);
 }
 
 void unmarshal_ipc_request__empty(void **state) {
@@ -315,25 +336,25 @@ void unmarshal_ipc_responses__empty(void **state) {
 	assert_null(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: empty response, expected sequence\n"
+			"unmarshalling ipc response: expected sequence or map\n"
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses__no_content(void **state) {
+void unmarshal_ipc_responses__seq_no_map(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("-");
 
 	assert_null(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: empty entry, expected map\n"
+			"unmarshalling ipc response: expected map\n"
 			"========================================\n"
 			"-\n"
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses__no_done(void **state) {
+void unmarshal_ipc_responses__seq_no_done(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("- FOO: BAR");
 
 	assert_null(actual);
@@ -345,7 +366,7 @@ void unmarshal_ipc_responses__no_done(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses__no_rc(void **state) {
+void unmarshal_ipc_responses__seq_no_rc(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("- DONE: TRUE");
 
 	assert_null(actual);
@@ -357,8 +378,8 @@ void unmarshal_ipc_responses__no_rc(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses__complete(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-responses-complete.yaml");
+void unmarshal_ipc_responses__map(void **state) {
+	char *yaml = read_file("tst/marshalling/ipc-responses-map.yaml");
 
 	struct SList *responses = unmarshal_ipc_responses(yaml);
 
@@ -448,8 +469,8 @@ void unmarshal_ipc_responses__complete(void **state) {
 	free(yaml);
 }
 
-void unmarshal_ipc_responses__many(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-responses-many.yaml");
+void unmarshal_ipc_responses__seq(void **state) {
+	char *yaml = read_file("tst/marshalling/ipc-responses-seq.yaml");
 
 	struct SList *responses = unmarshal_ipc_responses(yaml);
 
@@ -521,7 +542,8 @@ int main(void) {
 		TEST(marshal_ipc_request__no_op),
 		TEST(marshal_ipc_request__cfg_set),
 
-		TEST(marshal_ipc_response__ok),
+		TEST(marshal_ipc_response__map),
+		TEST(marshal_ipc_response__seq),
 
 		TEST(unmarshal_ipc_request__empty),
 		TEST(unmarshal_ipc_request__bad_op),
@@ -529,11 +551,11 @@ int main(void) {
 		TEST(unmarshal_ipc_request__cfg_set),
 
 		TEST(unmarshal_ipc_responses__empty),
-		TEST(unmarshal_ipc_responses__no_content),
-		TEST(unmarshal_ipc_responses__no_done),
-		TEST(unmarshal_ipc_responses__no_rc),
-		TEST(unmarshal_ipc_responses__complete),
-		TEST(unmarshal_ipc_responses__many),
+		TEST(unmarshal_ipc_responses__seq_no_map),
+		TEST(unmarshal_ipc_responses__seq_no_done),
+		TEST(unmarshal_ipc_responses__seq_no_rc),
+		TEST(unmarshal_ipc_responses__map),
+		TEST(unmarshal_ipc_responses__seq),
 	};
 
 	return RUN(tests);
