@@ -32,7 +32,7 @@ int handle_responses(const struct IpcRequest *ipc_request) {
 				done = response->status.done;
 
 				if (ipc_request->yaml) {
-					if (yaml && (rc == IPC_RC_SUCCESS || rc == IPC_RC_WARN)) {
+					if (yaml && (rc < IPC_RC_ERROR)) {
 						// yaml
 						fprintf(stdout, "%s\n", yaml);
 					} else {
