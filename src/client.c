@@ -12,18 +12,6 @@
 #include "process.h"
 #include "slist.h"
 
-// handle one response and end
-int handle_response(const struct IpcRequest *ipc_request) {
-	char *yaml =ipc_receive_raw(ipc_request->socket_client);
-
-	fprintf(stdout, "%s\n", yaml);
-
-	free(yaml);
-
-	return EXIT_SUCCESS;
-}
-
-// handle many responses over many socket operations
 int handle_responses(const struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
@@ -93,11 +81,7 @@ int client(struct IpcRequest *ipc_request) {
 		goto end;
 	}
 
-	if (ipc_request->command == GET) {
-		rc = handle_response(ipc_request);
-	} else {
-		rc = handle_responses(ipc_request);
-	}
+	rc = handle_responses(ipc_request);
 
 	close(ipc_request->socket_client);
 
