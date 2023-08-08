@@ -683,6 +683,36 @@ struct LogCapLineList**& operator << (struct LogCapLineList**& log_cap_lines, co
 	return log_cap_lines;
 }
 
+struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Node& node_response) {
+	if (!node_response || !node_response.IsMap())
+		return response;
+
+	if (!response)
+		response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+
+	if (!node_response["DONE"])
+		throw std::runtime_error("DONE missing");
+	response->status.done = node_response["DONE"].as<bool>();
+
+	if (!node_response["RC"])
+		throw std::runtime_error("RC missing");
+	response->status.rc = node_response["RC"].as<int>();
+
+	response->cfg << node_response["CFG"];
+
+	if (node_response["STATE"]) {
+		response->lid << node_response["STATE"]["LID"];
+
+		struct HeadList **hlp = (struct HeadList**)&response->heads;
+		hlp << node_response["STATE"]["HEADS"];
+	}
+
+	struct LogCapLineList **lclp = (struct LogCapLineList**)&response->log_cap_lines;
+	lclp << node_response["MESSAGES"];
+
+	return response;
+}
+
 char *marshal_ipc_request(struct IpcRequest *request) {
 	if (!request) {
 		return NULL;
@@ -824,15 +854,19 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 
 	char *yaml = NULL;
 
+	// GET sends only one response as a map
+	bool seq = operation->request->command != GET;
+
 	try {
 		YAML::Emitter e;
 
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
-		e << YAML::BeginSeq;							// root
+		if (seq)
+			e << YAML::BeginSeq;
 
-		e << YAML::BeginMap;								// list
+		e << YAML::BeginMap;
 
 		e << YAML::Key << "DONE" << YAML::Value << operation->done;
 
@@ -873,9 +907,10 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 
 		e << YAML::Key << "RC" << YAML::Value << operation->rc;
 
-		e << YAML::EndMap;									// root
+		e << YAML::EndMap;
 
-		e << YAML::EndSeq;
+		if (seq)
+			e << YAML::EndSeq;
 
 		if (!e.good()) {
 			log_error("marshalling ipc response: %s", e.GetLastError().c_str());
@@ -903,40 +938,26 @@ struct SList *unmarshal_ipc_responses(const char *yaml) {
 	struct SList *responses = NULL;
 
 	try {
-		const YAML::Node node_root = YAML::Load(yaml);
+		const YAML::Node node = YAML::Load(yaml);
 
-		if (!node_root.IsSequence()) {
-			throw std::runtime_error("empty response, expected sequence");
-		}
+		if (node.IsSequence()) {
 
-		// iterate the unnamed list of all responses
-		for (const auto &node_response : node_root) {
-			if (!node_response.IsMap()) {
-				throw std::runtime_error("empty entry, expected map");
+			// iterate the unnamed list of all responses
+			for (const auto &node_response : node) {
+				if (!node_response.IsMap()) {
+					throw std::runtime_error("expected map");
+				}
+
+				struct IpcResponse *response = NULL;
+				slist_append(&responses, response << node_response);
 			}
+		} else if (node.IsMap()) {
 
-			struct IpcResponse *response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-			slist_append(&responses, response);
-
-			if (!node_response["DONE"])
-				throw std::runtime_error("DONE missing");
-			response->status.done = node_response["DONE"].as<bool>();
-
-			if (!node_response["RC"])
-				throw std::runtime_error("RC missing");
-			response->status.rc = node_response["RC"].as<int>();
-
-			response->cfg << node_response["CFG"];
-
-			if (node_response["STATE"]) {
-				response->lid << node_response["STATE"]["LID"];
-
-				struct HeadList **hlp = (struct HeadList**)&response->heads;
-				hlp << node_response["STATE"]["HEADS"];
-			}
-
-			struct LogCapLineList **lclp = (struct LogCapLineList**)&response->log_cap_lines;
-			lclp << node_response["MESSAGES"];
+			// single response
+			struct IpcResponse *response = NULL;
+			slist_append(&responses, response << node);
+		} else {
+			throw std::runtime_error("expected sequence or map");
 		}
 
 	} catch (const std::exception &e) {
