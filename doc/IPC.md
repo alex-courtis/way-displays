@@ -1,8 +1,6 @@
 # way-displays IPC
 
-// TODO rewrite removing examples
-
-`$WAYLAND_DISPLAY` must be set.
+`$WAYLAND_DISPLAY` must be set and `$XDG_VTNR` set to match the server's.
 
 way-displays server creates a socket `${XDG_RUNTIME_DIR}/way-displays.${XDG_VTNR}.sock`.
 

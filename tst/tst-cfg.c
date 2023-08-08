@@ -461,7 +461,7 @@ void cfg_file_write__none(void **state) {
 	char *expected = strdup("XXXX");
 
 	expect_string(__wrap_marshal_cfg, cfg, cfg);
-	will_return(__wrap_marshal_cfg, strdup(expected));
+	will_return(__wrap_marshal_cfg, expected);
 
 	expect_string(__wrap_mkdir_p, path, "/path/to");
 	expect_value(__wrap_mkdir_p, mode, 0755);

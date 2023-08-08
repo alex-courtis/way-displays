@@ -1,11 +1,9 @@
 #include "tst.h" // IWYU pragma: keep
 
 #include <cmocka.h>
-#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "convert.h"
 #include "log.h"

@@ -1,2 +1,2 @@
 unusedFunction:tst/wrap-log.c
-unusedFunction:tst/tst.c
+unusedFunction:tst/util.c
