@@ -139,10 +139,20 @@ void lid_destroy(void) {
 
 	destroy_libinput_monitor(lid->libinput_monitor);
 
+	lid_free(lid);
+
+	lid = NULL;
+}
+
+void lid_free(void *data) {
+	if (!data)
+		return;
+
+	struct Lid *lid = data;
+
 	free(lid->device_path);
 
 	free(lid);
-	lid = NULL;
 }
 
 void lid_update(void) {

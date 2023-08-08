@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "cfg.h"
-#include "list.h"
+#include "slist.h"
 #include "log.h"
 
 #include "info.h"
@@ -68,9 +68,11 @@ void print_cfg_commands__ok(void **state) {
 
 	print_cfg_commands(INFO, cfg);
 
-	assert_log(INFO, read_file("tst/info/print-cfg-commands-ok.log"));
+	char *expected_log = read_file("tst/info/print-cfg-commands-ok.log");
+	assert_log(INFO, expected_log);
 
 	cfg_free(cfg);
+	free(expected_log);
 }
 
 int main(void) {

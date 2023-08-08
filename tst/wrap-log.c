@@ -28,7 +28,7 @@ void _assert_logs_empty(const char * const file, const int line) {
 	for (enum LogThreshold t = DEBUG; t <= ERROR; t++) {
 		if (bp[t]) {
 			bp[t] = NULL;
-			cm_print_error("unexpected log %s:\n\"%s\"\n", log_threshold_name(t), b[t]);
+			cm_print_error("\nunexpected log %s:\n\"%s\"\n", log_threshold_name(t), b[t]);
 			empty = false;
 		}
 	}
@@ -97,13 +97,9 @@ void __wrap_log_error_nocap(const char *__restrict __format, ...) {
 }
 
 void __wrap_log_error_errno(const char *__restrict __format, ...) {
-	static char fmt[262144];
-
-	snprintf(fmt, sizeof(fmt), "%s: %d %s", __format, errno, strerror(errno));
-
 	va_list args;
 	va_start(args, __format);
-	_log(ERROR, fmt, args);
+	_log(ERROR, __format, args);
 	va_end(args);
 }
 

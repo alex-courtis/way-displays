@@ -26,11 +26,12 @@ CFG:
   VRR_OFF:
     - ten
     - ELEVEN
+  LAPTOP_DISPLAY_PREFIX: ldp
+  LOG_THRESHOLD: ERROR
   DISABLED:
     - eight
     - EIGHT
     - nine
-  LOG_THRESHOLD: ERROR
 STATE:
   LID:
     CLOSED: TRUE
@@ -49,26 +50,34 @@ STATE:
         ENABLED: TRUE
         X: 5
         Y: 6
+        VRR: TRUE
+        MODE:
+          WIDTH: 10
+          HEIGHT: 11
+          REFRESH_MHZ: 12
+          PREFERRED: TRUE
       DESIRED:
         SCALE: 7
         ENABLED: TRUE
         X: 8
         Y: 9
+        VRR: FALSE
+        MODE:
+          WIDTH: 13
+          HEIGHT: 14
+          REFRESH_MHZ: 15
+          PREFERRED: FALSE
       MODES:
         - WIDTH: 10
           HEIGHT: 11
           REFRESH_MHZ: 12
           PREFERRED: TRUE
-          CURRENT: TRUE
         - WIDTH: 13
           HEIGHT: 14
           REFRESH_MHZ: 15
           PREFERRED: FALSE
-          CURRENT: FALSE
 MESSAGES:
-  DEBUG: dbg
-  INFO: inf
-  WARNING: war
-  ERROR: err
+  - WARNING: war
+  - ERROR: err
 RC: 2
 

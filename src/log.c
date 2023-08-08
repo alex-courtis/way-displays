@@ -8,7 +8,7 @@
 
 #include "log.h"
 
-#include "list.h"
+#include "slist.h"
 
 #define LS 16384
 
@@ -145,18 +145,6 @@ void log_debug(const char *__restrict __format, ...) {
 	va_end(args);
 }
 
-void log_debug_nocap(const char *__restrict __format, ...) {
-	bool was_capturing = active.capturing;
-	active.capturing = false;
-
-	va_list args;
-	va_start(args, __format);
-	print_log(DEBUG, 0, __format, args);
-	va_end(args);
-
-	active.capturing = was_capturing;
-}
-
 void log_info(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
@@ -185,37 +173,11 @@ void log_error(const char *__restrict __format, ...) {
 	va_end(args);
 }
 
-void log_error_nocap(const char *__restrict __format, ...) {
-	bool was_capturing = active.capturing;
-	active.capturing = false;
-
-	va_list args;
-	va_start(args, __format);
-	print_log(ERROR, 0, __format, args);
-	va_end(args);
-
-	active.capturing = was_capturing;
-}
-
 void log_error_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
 	print_log(ERROR, errno, __format, args);
 	va_end(args);
-}
-
-void free_log_cap_line(void *data) {
-	struct LogCapLine *cap_line = data;
-
-	if (!cap_line) {
-		return;
-	}
-
-	if (cap_line->line) {
-		free(cap_line->line);
-	}
-
-	free(cap_line);
 }
 
 void log_suppress_start(void) {
@@ -235,21 +197,33 @@ void log_capture_stop(void) {
 }
 
 void log_capture_clear(void) {
-	slist_free_vals(&log_cap_lines, free_log_cap_line);
+	slist_free_vals(&log_cap_lines, log_cap_line_free);
 }
 
-void log_capture_playback(void) {
-	bool was_capturing = active.capturing;
-	active.capturing = false;
+void log_capture_playback(struct SList *lines) {
+	if (!lines)
+		lines = log_cap_lines;
 
-	for (struct SList *i = log_cap_lines; i; i = i->nex) {
+	for (struct SList *i = lines; i; i = i->nex) {
 		struct LogCapLine *cap_line = i->val;
 		if (!cap_line)
 			continue;
 
 		print_raw(cap_line->threshold, true, cap_line->line);
 	}
+}
 
-	active.capturing = was_capturing;
+void log_cap_line_free(void *data) {
+	struct LogCapLine *cap_line = data;
+
+	if (!cap_line) {
+		return;
+	}
+
+	if (cap_line->line) {
+		free(cap_line->line);
+	}
+
+	free(cap_line);
 }
 

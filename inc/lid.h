@@ -19,5 +19,7 @@ bool lid_is_closed(char *name);
 
 void lid_destroy(void);
 
+void lid_free(void *lid);
+
 #endif // LID_H
 

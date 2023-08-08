@@ -35,7 +35,7 @@ Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdis
 
 ## Requirements
 
-way-displays is known to work on the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river) compositors. It may work on any wlroots compositor that supports the WLR Output Management protocol.
+way-displays is known to work on the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on any wlroots compositor that supports the WLR Output Management protocol.
 
 The user must be a member of the `input` group.
 
@@ -60,6 +60,27 @@ exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 Add the following to your `init`:
 ```
 way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
+```
+
+### Hyprland
+
+Create a launcher: `${HOME}/.config/hypr/start-way-displays.sh`
+```sh
+#!/bin/sh
+
+sleep 1 # give Hyprland a moment to set its defaults
+
+way-displays > "/tmp/way-displays.${XDG_VTNR}.${USER}.log" 2>&1
+```
+
+Make it executable:
+```sh
+chmod 755 ${HOME}/.config/hypr/start-way-displays.sh
+```
+
+Add the following to your `hyprland.conf`:
+```
+exec-once = ${HOME}/.config/hypr/start-way-displays.sh
 ```
 
 ### Configure
@@ -161,11 +182,13 @@ Please create a [github issue](https://github.com/alex-courtis/way-displays/issu
 
 [Contributions](CONTRIBUTING.md) are always welcome.
 
+[Milestone 1.9](https://github.com/alex-courtis/way-displays/milestone/1) contains a prioritised list of issue I would be eternally grateful for you to work on.
+
 ## Help Wanted - GUI Configurator
 
 way-displays can currently be configured via the configuration file and CLI.
 
-A GUI client would greatly enhance usability.
+A GUI client would greatly enhance usability. See [wdisplays collaboration](https://github.com/alex-courtis/way-displays/issues/55) for a great candidate.
 
 The client could use the same [IPC socket and YAML streaming protocol](doc/IPC.md) as the CLI.
 

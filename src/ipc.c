@@ -6,8 +6,11 @@
 #include "ipc.h"
 
 #include "cfg.h"
+#include "head.h"
+#include "lid.h"
 #include "log.h"
 #include "marshalling.h"
+#include "slist.h"
 #include "sockets.h"
 
 void ipc_send_request(struct IpcRequest *request) {
@@ -16,8 +19,6 @@ void ipc_send_request(struct IpcRequest *request) {
 	if (!yaml) {
 		goto end;
 	}
-
-	log_debug_nocap("========sending server request==========\n%s\n----------------------------------------", yaml);
 
 	if ((request->socket_client = create_socket_client()) == -1) {
 		goto end;
@@ -34,24 +35,22 @@ end:
 	}
 }
 
-void ipc_send_response(struct IpcResponse *response) {
-	char *yaml = marshal_ipc_response(response);
+void ipc_send_operation(struct IpcOperation *operation) {
+	char *yaml = marshal_ipc_response(operation);
 
 	if (!yaml) {
-		response->done = true;
+		operation->done = true;
 		return;
 	}
 
-	log_debug_nocap("========sending client response==========\n%s----------------------------------------", yaml);
-
-	if (socket_write(response->socket_client, yaml, strlen(yaml)) == -1) {
-		response->done = true;
+	if (socket_write(operation->socket_client, yaml, strlen(yaml)) == -1) {
+		operation->done = true;
 	}
 
 	free(yaml);
 }
 
-char *ipc_receive_raw_client(int socket_client) {
+char *ipc_receive_raw(int socket_client) {
 	char *yaml = NULL;
 
 	if (!(yaml = socket_read(socket_client))) {
@@ -62,7 +61,7 @@ char *ipc_receive_raw_client(int socket_client) {
 	return yaml;
 }
 
-struct IpcRequest *ipc_receive_request_server(int socket_server) {
+struct IpcRequest *ipc_receive_request(int socket_server) {
 	struct IpcRequest *request = NULL;
 	int socket_client = -1;
 	char *yaml = NULL;
@@ -71,11 +70,9 @@ struct IpcRequest *ipc_receive_request_server(int socket_server) {
 		return NULL;
 	}
 
-	if (!(yaml = ipc_receive_raw_client(socket_client))) {
+	if (!(yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
-
-	log_debug_nocap("========received client request=========\n%s\n----------------------------------------", yaml);
 
 	request = unmarshal_ipc_request(yaml);
 	free(yaml);
@@ -92,20 +89,14 @@ struct IpcRequest *ipc_receive_request_server(int socket_server) {
 	return request;
 }
 
-struct IpcResponse *ipc_receive_response_client(int socket_client) {
-	struct IpcResponse *response = NULL;
-	char *yaml = NULL;
-
-	if (!(yaml = ipc_receive_raw_client(socket_client))) {
+struct SList *ipc_receive_responses(int socket_client, char **yaml) {
+	if (!(*yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
 
-	log_debug_nocap("========received server response========\n%s\n----------------------------------------", yaml);
+	struct SList *responses = unmarshal_ipc_responses(*yaml);
 
-	response = unmarshal_ipc_response(yaml);
-	free(yaml);
-
-	return response;
+	return responses;
 }
 
 void ipc_request_free(struct IpcRequest *request) {
@@ -118,11 +109,27 @@ void ipc_request_free(struct IpcRequest *request) {
 	free(request);
 }
 
-void ipc_response_free(struct IpcResponse *response) {
-	if (!response) {
+void ipc_response_free(void *vresponse) {
+	if (!vresponse) {
 		return;
 	}
 
+	struct IpcResponse *response = vresponse;
+
+	cfg_free(response->cfg);
+	lid_free(response->lid);
+	slist_free_vals(&response->heads, head_free);
+	slist_free_vals(&response->log_cap_lines, log_cap_line_free);
+
 	free(response);
+}
+
+void ipc_operation_free(struct IpcOperation *operation) {
+	if (!operation)
+		return;
+
+	ipc_request_free(operation->request);
+
+	free(operation);
 }
 

@@ -7,8 +7,13 @@
 
 #include "cfg.h"
 #include "head.h"
-#include "list.h"
+#include "slist.h"
 #include "marshalling.h"
+
+#define assert_string_equal_nn(a, b) \
+	assert_non_null(a); \
+	assert_non_null(b); \
+    _assert_string_equal((a), (b), __FILE__, __LINE__)
 
 void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const file, const int line) {
 
@@ -19,7 +24,7 @@ void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const 
 }
 #define assert_wl_fixed_t_equal_double(a, b) _assert_wl_fixed_t_equal_double(a, b, __FILE__, __LINE__)
 
-void _assert_heads_equal(struct SList *a, struct SList *b, const char * const file, const int line) {
+void _assert_heads_order(struct SList *a, struct SList *b, const char * const file, const int line) {
 	if (!slist_equal(a, b, NULL)) {
 		char actual[2048];
 		char *ap = actual;
@@ -37,11 +42,11 @@ void _assert_heads_equal(struct SList *a, struct SList *b, const char * const fi
 			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 
-		cm_print_error("assert_heads_equal\nactual:%s\nexpected:%s\n\n", actual, expected);
+		cm_print_error("assert_heads_order\nactual:%s\nexpected:%s\n\n", actual, expected);
 		_fail(file, line);
 	}
 }
-#define assert_heads_equal(a, b) _assert_heads_equal(a, b, __FILE__, __LINE__)
+#define assert_heads_order(a, b) _assert_heads_order(a, b, __FILE__, __LINE__)
 
 void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char * const file, const int line) {
 	if (head->desired.x != x || head->desired.y != y) {

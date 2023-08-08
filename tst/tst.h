@@ -8,8 +8,18 @@
 
 #include <cmocka.h>
 
+// TODO: use cmocka_print_error and remove this proto once cmocka 1.1.7+ is widely available
+void cm_print_error(const char* const format, ...) CMOCKA_PRINTF_ATTRIBUTE(1, 2);
+
 // print log messages, useful when debugging tests
 #define LOG_PRINT false
+
+//
+// utility
+//
+char *read_file(const char *path);
+
+void write_file(const char *path, const char *content);
 
 //
 // test definition
