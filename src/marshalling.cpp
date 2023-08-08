@@ -506,17 +506,17 @@ struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Nod
 	if (!node_response || !node_response.IsMap())
 		return response;
 
-	if (!response)
-		response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-
 	if (!node_response["DONE"])
 		throw std::runtime_error("DONE missing");
-	response->status.done = node_response["DONE"].as<bool>();
 
 	if (!node_response["RC"])
 		throw std::runtime_error("RC missing");
-	response->status.rc = node_response["RC"].as<int>();
 
+	if (!response)
+		response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+
+	response->status.done = node_response["DONE"].as<bool>();
+	response->status.rc = node_response["RC"].as<int>();
 	response->cfg << node_response["CFG"];
 
 	if (node_response["STATE"]) {
