@@ -830,12 +830,9 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 		e << YAML::TrueFalseBool;
 		e << YAML::UpperCase;
 
-		// GET is one response, not a list
-		if (operation->request->command != GET) {
-			e << YAML::BeginSeq;
-		}
+		e << YAML::BeginSeq;							// root
 
-		e << YAML::BeginMap;
+		e << YAML::BeginMap;								// list
 
 		e << YAML::Key << "DONE" << YAML::Value << operation->done;
 
@@ -876,11 +873,9 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 
 		e << YAML::Key << "RC" << YAML::Value << operation->rc;
 
-		e << YAML::EndMap;
+		e << YAML::EndMap;									// root
 
-		if (operation->request->command != GET) {
-			e << YAML::EndSeq;
-		}
+		e << YAML::EndSeq;
 
 		if (!e.good()) {
 			log_error("marshalling ipc response: %s", e.GetLastError().c_str());
