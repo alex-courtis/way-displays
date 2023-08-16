@@ -10,6 +10,7 @@
 #include "cfg.h"
 
 #include "fs.h"
+#include "fds.h"
 #include "convert.h"
 #include "global.h"
 #include "info.h"
@@ -691,8 +692,10 @@ void cfg_file_write(void) {
 	}
 
 	if (!cfg->written) {
-		// TODO destroy inotify
+
+		// kill that cfg file
 		cfg_free_paths(cfg);
+		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
 		for (struct SList *i = cfg_file_paths; i; i = i->nex) {

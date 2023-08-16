@@ -2,14 +2,15 @@
 #include "asserts.h"
 
 #include <cmocka.h>
-#include <errno.h>
 #include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "cfg.h"
 #include "log.h"
 #include "global.h"
 

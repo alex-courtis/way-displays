@@ -184,7 +184,7 @@ int loop(void) {
 
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (cfg_file_modified(cfg->file_name)) {
+			if (fd_cfg_dir_modified(cfg->file_name)) {
 				if (cfg->written) {
 					cfg->written = false;
 				} else {
