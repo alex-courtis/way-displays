@@ -143,7 +143,7 @@ send:
 int loop(void) {
 
 	for (;;) {
-		init_pfds();
+		pfds_init();
 
 
 		// prepare for reading wayland events
