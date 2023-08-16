@@ -13,7 +13,7 @@ OBJS =  tst/util.o \
 
 WRAPS_COMMON = -Wl,$\
 	--wrap=log_set_threshold,$\
-	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_errno,--wrap=log_error_nocap,$\
+	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_errno,$\
 	--wrap=print_head,--wrap=print_mode,$\
 	--wrap=wd_exit,--wrap=wd_exit_message
 
@@ -31,6 +31,7 @@ tst-cfg: WRAPS=,$\
 	--wrap=marshal_cfg,$\
 	--wrap=file_write,$\
 	--wrap=mkdir_p
+
 
 $(TST_O): $(TST_H) $(SRC_O) $(LIB_O) config.mk GNUmakefile tst/GNUmakefile
 

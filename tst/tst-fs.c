@@ -12,9 +12,9 @@
 
 
 void clean_files(void) {
-	rmdir("mkdir_p/foo/bar");
-	rmdir("mkdir_p/foo");
-	rmdir("mkdir_p");
+	rmdir("tst/tmp/mkdir_p/foo/bar");
+	rmdir("tst/tmp/mkdir_p/foo");
+	rmdir("tst/tmp/mkdir_p");
 }
 
 
@@ -25,11 +25,12 @@ struct State {
 };
 
 int before_all(void **state) {
+	mkdir("tst/tmp", 0755);
 	return 0;
 }
 
 int after_all(void **state) {
-
+	rmdir("tst/tmp");
 	return 0;
 }
 
@@ -57,10 +58,10 @@ void mkdir_p__no_perm(void **state) {
 }
 
 void mkdir_p__ok(void **state) {
-	assert_true(mkdir_p("mkdir_p/foo/bar", 0755));
+	assert_true(mkdir_p("tst/tmp/mkdir_p/foo/bar", 0755));
 
 	struct stat sb;
-	assert_int_equal(stat("mkdir_p/foo/bar", &sb), 0);
+	assert_int_equal(stat("tst/tmp/mkdir_p/foo/bar", &sb), 0);
 }
 
 void mkdir_p__exists(void **state) {
@@ -68,12 +69,12 @@ void mkdir_p__exists(void **state) {
 	mode |=       S_IRGRP | S_IXGRP;
 	mode |=       S_IROTH | S_IXOTH;
 
-	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
+	assert_true(mkdir_p("tst/tmp/mkdir_p/foo/bar", mode));
 
-	assert_true(mkdir_p("mkdir_p/foo/bar", mode));
+	assert_true(mkdir_p("tst/tmp/mkdir_p/foo/bar", mode));
 
 	struct stat sb;
-	assert_int_equal(stat("mkdir_p/foo/bar", &sb), 0);
+	assert_int_equal(stat("tst/tmp/mkdir_p/foo/bar", &sb), 0);
 }
 
 

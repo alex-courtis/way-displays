@@ -46,10 +46,10 @@ bool __wrap_mkdir_p(char *path, mode_t mode) {
 
 
 void clean_files(void) {
-	remove("write-existing-cfg.yaml");
-	remove("resolved.yaml");
-	remove("resolve/link.yaml");
-	rmdir("resolve");
+	remove("tst/tmp/write-existing-cfg.yaml");
+	remove("tst/tmp/resolved.yaml");
+	remove("tst/tmp/resolve/link.yaml");
+	rmdir("tst/tmp/resolve");
 }
 
 
@@ -65,6 +65,8 @@ int before_all(void **state) {
 		env_xdg_config_home = strdup(env_xdg_config_home);
 	}
 
+	mkdir("tst/tmp", 0755);
+
 	env_home = getenv("HOME");
 	if (env_home) {
 		env_home = strdup(env_home);
@@ -76,6 +78,8 @@ int before_all(void **state) {
 int after_all(void **state) {
 	free(env_xdg_config_home);
 	free(env_home);
+
+	rmdir("tst/tmp");
 
 	return 0;
 }
@@ -573,7 +577,7 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 }
 
 void cfg_file_write__existing(void **state) {
-	cfg->file_path = strdup("write-existing-cfg.yaml");
+	cfg->file_path = strdup("tst/tmp/write-existing-cfg.yaml");
 
 	FILE *f = fopen(cfg->file_path, "w");
 	assert_non_null(f);
@@ -590,7 +594,7 @@ void cfg_file_write__existing(void **state) {
 
 	cfg_file_write();
 
-	assert_log(INFO, "\nWrote configuration file: write-existing-cfg.yaml\n");
+	assert_log(INFO, "\nWrote configuration file: tst/tmp/write-existing-cfg.yaml\n");
 
 	free(expected);
 }
@@ -676,10 +680,12 @@ void resolve_cfg_file__not_found(void **state) {
 void resolve_cfg_file__direct(void **state) {
 	char cwd[PATH_MAX];
 	char file_path[PATH_MAX * 2];
+	char dir_path[PATH_MAX * 2];
 
 	getcwd(cwd, PATH_MAX);
 
-	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", cwd);
+	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
+	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
 	slist_append(&cfg_file_paths, strdup(file_path));
 
 	FILE *f = fopen(file_path, "w");
@@ -688,7 +694,7 @@ void resolve_cfg_file__direct(void **state) {
 	assert_true(resolve_cfg_file(cfg));
 
 	assert_string_equal(cfg->file_path, file_path);
-	assert_string_equal(cfg->dir_path, cwd);
+	assert_string_equal(cfg->dir_path, dir_path);
 	assert_string_equal(cfg->file_name, "resolved.yaml");
 	assert_string_equal(cfg->resolved_from, file_path);
 	assert_ptr_equal(cfg->resolved_from, slist_at(cfg_file_paths, 0));
@@ -697,14 +703,16 @@ void resolve_cfg_file__direct(void **state) {
 void resolve_cfg_file__linked(void **state) {
 	char cwd[PATH_MAX];
 	char file_path[PATH_MAX * 2];
+	char dir_path[PATH_MAX * 2];
 	char linked_path[PATH_MAX * 2];
 
 	getcwd(cwd, PATH_MAX);
 
-	assert_int_equal(mkdir("resolve", 0755), 0);
+	assert_int_equal(mkdir("tst/tmp/resolve", 0755), 0);
 
-	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", cwd);
-	snprintf(linked_path, sizeof(file_path), "%s/resolve/link.yaml", cwd);
+	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
+	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
+	snprintf(linked_path, sizeof(file_path), "%s/tst/tmp/resolve/link.yaml", cwd);
 	slist_append(&cfg_file_paths, strdup(linked_path));
 
 	FILE *f = fopen(file_path, "w");
@@ -714,7 +722,7 @@ void resolve_cfg_file__linked(void **state) {
 	assert_true(resolve_cfg_file(cfg));
 
 	assert_string_equal(cfg->file_path, file_path);
-	assert_string_equal(cfg->dir_path, cwd);
+	assert_string_equal(cfg->dir_path, dir_path);
 	assert_string_equal(cfg->file_name, "resolved.yaml");
 	assert_string_equal(cfg->resolved_from, linked_path);
 	assert_ptr_equal(cfg->resolved_from, slist_at(cfg_file_paths, 0));
