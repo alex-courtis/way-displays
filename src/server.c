@@ -217,7 +217,7 @@ int loop(void) {
 		};
 
 
-		destroy_pfds();
+		pfds_destroy();
 	}
 }
 
