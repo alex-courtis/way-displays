@@ -16,12 +16,12 @@
 
 #include "fds.h"
 
-char DIR_TMP[PATH_MAX];
+char DIR_TMP[PATH_MAX + 20];
 
 int before_all(void **state) {
 	char cwd[PATH_MAX];
 	getcwd(cwd, PATH_MAX);
-	sprintf(DIR_TMP, "%s/tst/tmp", cwd);
+	snprintf(DIR_TMP, sizeof(DIR_TMP), "%s/tst/tmp", cwd);
 	mkdir(DIR_TMP, 0755);
 
 	return 0;
