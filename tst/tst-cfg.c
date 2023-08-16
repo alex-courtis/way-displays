@@ -683,11 +683,11 @@ void cfg_file_paths_init__user(void **state) {
 
 void resolve_cfg_file__not_found(void **state) {
 	char cwd[PATH_MAX];
-	char file_path[PATH_MAX];
+	char file_path[PATH_MAX + 20];
 
 	getcwd(cwd, PATH_MAX);
 
-	sprintf(file_path, "%s/inexistent.yaml", cwd);
+	snprintf(file_path, sizeof(file_path), "%s/inexistent.yaml", cwd);
 
 	slist_append(&cfg_file_paths, strdup(file_path));
 
@@ -701,13 +701,13 @@ void resolve_cfg_file__not_found(void **state) {
 
 void resolve_cfg_file__direct(void **state) {
 	char cwd[PATH_MAX];
-	char file_path[PATH_MAX];
-	char dir_path[PATH_MAX];
+	char dir_path[PATH_MAX + 20];
+	char file_path[PATH_MAX + 40];
 
 	getcwd(cwd, PATH_MAX);
 
-	sprintf(dir_path, "%s/tst/tmp", cwd);
-	sprintf(file_path, "%s/resolved.yaml", dir_path);
+	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
+	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
 	slist_append(&cfg_file_paths, strdup(file_path));
 
 	FILE *f = fopen(file_path, "w");
@@ -724,17 +724,17 @@ void resolve_cfg_file__direct(void **state) {
 
 void resolve_cfg_file__linked(void **state) {
 	char cwd[PATH_MAX];
-	char file_path[PATH_MAX];
-	char dir_path[PATH_MAX];
-	char linked_path[PATH_MAX];
+	char dir_path[PATH_MAX + 20];
+	char file_path[PATH_MAX + 40];
+	char linked_path[PATH_MAX + 50];
 
 	getcwd(cwd, PATH_MAX);
 
 	assert_int_equal(mkdir("tst/tmp/resolve", 0755), 0);
 
-	sprintf(dir_path, "%s/tst/tmp", cwd);
-	sprintf(file_path, "%s/resolved.yaml", dir_path);
-	sprintf(linked_path, "%s/tst/tmp/resolve/link.yaml", cwd);
+	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
+	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
+	snprintf(linked_path, sizeof(linked_path), "%s/tst/tmp/resolve/link.yaml", cwd);
 	slist_append(&cfg_file_paths, strdup(linked_path));
 
 	FILE *f = fopen(file_path, "w");
