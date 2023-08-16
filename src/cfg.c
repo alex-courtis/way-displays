@@ -680,18 +680,20 @@ void cfg_file_reload(void) {
 void cfg_file_write(void) {
 	char *yaml = NULL;
 	char *resolved_from = cfg->resolved_from;
+	bool written = false;
 
-	cfg->written = false;
+	cfg->updated = false;
 
 	if (!(yaml = marshal_cfg(cfg))) {
 		goto end;
 	}
 
-	if (cfg->file_path && (cfg->written = file_write(cfg->file_path, yaml))) {
+	if (cfg->file_path && (written = file_write(cfg->file_path, yaml))) {
+		cfg->updated = true;
 		goto end;
 	}
 
-	if (!cfg->written) {
+	if (!written) {
 
 		// kill that cfg file
 		cfg_free_paths(cfg);
@@ -708,7 +710,7 @@ void cfg_file_write(void) {
 			set_paths(cfg, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(cfg->dir_path, 0755) && (cfg->written = file_write(i->val, yaml))) {
+			if (mkdir_p(cfg->dir_path, 0755) && (written = file_write(i->val, yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
@@ -722,7 +724,7 @@ void cfg_file_write(void) {
 end:
 	free(yaml);
 
-	if (cfg->written) {
+	if (written) {
 		log_info("\nWrote configuration file: %s", cfg->file_path);
 	}
 }

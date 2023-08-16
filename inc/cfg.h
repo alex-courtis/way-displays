@@ -47,7 +47,7 @@ struct Cfg {
 	char *file_name;
 	char *resolved_from;
 
-	bool written;
+	bool updated;
 
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;

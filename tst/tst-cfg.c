@@ -495,6 +495,7 @@ void cfg_file_write__none(void **state) {
 	assert_string_equal(cfg->file_name, "zero");
 	assert_string_equal(cfg->resolved_from, "/path/to/zero");
 	assert_ptr_equal(cfg->resolved_from, slist_at(cfg_file_paths, 0));
+	assert_int_equal(cfg->updated, false);
 }
 
 void cfg_file_write__cannot_write_use_alternative(void **state) {
@@ -551,6 +552,7 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	assert_string_equal(cfg->file_name, "three");
 	assert_string_equal(cfg->resolved_from, "/path/to/three");
 	assert_ptr_equal(cfg->resolved_from, slist_at(cfg_file_paths, 3));
+	assert_int_equal(cfg->updated, false);
 
 	free(expected);
 }
@@ -589,6 +591,7 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 	assert_null(cfg->dir_path);
 	assert_null(cfg->file_name);
 	assert_null(cfg->resolved_from);
+	assert_int_equal(cfg->updated, false);
 
 	free(expected);
 }
@@ -612,6 +615,8 @@ void cfg_file_write__existing(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: tst/tmp/write-existing-cfg.yaml\n");
+
+	assert_int_equal(cfg->updated, true);
 
 	free(expected);
 }
