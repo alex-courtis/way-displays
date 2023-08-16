@@ -31,7 +31,8 @@ tst-cfg: WRAPS=,$\
 	--wrap=marshal_cfg,$\
 	--wrap=file_write,$\
 	--wrap=mkdir_p,$\
-	--wrap=fd_wd_cfg_dir_destroy
+	--wrap=fd_wd_cfg_dir_destroy,$\
+	--wrap=fd_wd_cfg_dir_create
 
 
 $(TST_O): $(TST_H) $(SRC_O) $(LIB_O) config.mk GNUmakefile tst/GNUmakefile

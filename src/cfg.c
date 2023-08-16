@@ -709,7 +709,9 @@ void cfg_file_write(void) {
 
 			// attempt to write
 			if (mkdir_p(cfg->dir_path, 0755) && (cfg->written = file_write(i->val, yaml))) {
-				// TODO create inotify
+
+				// watch the new
+				fd_wd_cfg_dir_create();
 				goto end;
 			}
 

@@ -44,6 +44,10 @@ bool __wrap_mkdir_p(char *path, mode_t mode) {
 	return mock_type(bool);
 }
 
+void __wrap_fd_wd_cfg_dir_create(void) {
+	mock();
+}
+
 void __wrap_fd_wd_cfg_dir_destroy(void) {
 	mock();
 }
@@ -480,6 +484,8 @@ void cfg_file_write__none(void **state) {
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, true);
 
+	will_return(__wrap_fd_wd_cfg_dir_create, NULL);
+
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/zero\n");
@@ -533,6 +539,8 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	expect_string(__wrap_file_write, path, "/path/to/three");
 	expect_string(__wrap_file_write, contents, expected);
 	will_return(__wrap_file_write, true);
+
+	will_return(__wrap_fd_wd_cfg_dir_create, NULL);
 
 	cfg_file_write();
 
