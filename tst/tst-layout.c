@@ -502,12 +502,12 @@ void desire_scale__user(void **state) {
 void desire_adaptive_sync__head_disabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = false,
-		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
+		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 	};
 
 	desire_adaptive_sync(&head0);
 
-	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 }
 
 void desire_adaptive_sync__failed(void **state) {
@@ -522,7 +522,7 @@ void desire_adaptive_sync__failed(void **state) {
 	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 }
 
-void desire_adaptive_sync__adaptive_sync_off(void **state) {
+void desire_adaptive_sync__disabled(void **state) {
 	struct Head head0 = {
 		.name = "some head",
 		.desired.enabled = true,
@@ -533,10 +533,10 @@ void desire_adaptive_sync__adaptive_sync_off(void **state) {
 
 	desire_adaptive_sync(&head0);
 
-	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 }
 
-void desire_adaptive_sync__ok(void **state) {
+void desire_adaptive_sync__enabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
@@ -682,8 +682,8 @@ int main(void) {
 
 		TEST(desire_adaptive_sync__head_disabled),
 		TEST(desire_adaptive_sync__failed),
-		TEST(desire_adaptive_sync__adaptive_sync_off),
-		TEST(desire_adaptive_sync__ok),
+		TEST(desire_adaptive_sync__disabled),
+		TEST(desire_adaptive_sync__enabled),
 
 		TEST(handle_success__head_changing_adaptive_sync),
 		TEST(handle_success__head_changing_adaptive_sync_fail),
