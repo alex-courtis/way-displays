@@ -212,7 +212,9 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (!slist_find_equal(cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
+	if (slist_find_equal(cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
+		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	}
 }
