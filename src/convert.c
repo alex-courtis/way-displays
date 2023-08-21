@@ -64,6 +64,18 @@ static struct NameVal ipc_commands[] = {
 	{ .val = 0,         .name = NULL,        .friendly = NULL,     },
 };
 
+static struct NameVal output_transforms[] = {
+	{ .val = WL_OUTPUT_TRANSFORM_NORMAL,      .name = "normal",      },
+	{ .val = WL_OUTPUT_TRANSFORM_90,          .name = "90",          },
+	{ .val = WL_OUTPUT_TRANSFORM_180,         .name = "180",         },
+	{ .val = WL_OUTPUT_TRANSFORM_270,         .name = "270",         },
+	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED,     .name = "flipped",     },
+	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_90,  .name = "flipped-90",  },
+	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_180, .name = "flipped-180", },
+	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_270, .name = "flipped-270", },
+	{ .val = 0,                               .name = NULL,          },
+};
+
 static struct NameVal log_thresholds[] = {
 	{ .val = DEBUG,   .name = "DEBUG",   },
 	{ .val = INFO,    .name = "INFO",    },
@@ -166,6 +178,14 @@ const char *ipc_command_name(enum IpcCommand ipc_command) {
 
 const char *ipc_command_friendly(enum IpcCommand ipc_command) {
 	return friendly(ipc_commands, ipc_command);
+}
+
+enum wl_output_transform output_transform_val(const char *name) {
+	return val(output_transforms, name);
+}
+
+const char *output_transform_name(enum wl_output_transform output_transform) {
+	return name(output_transforms, output_transform);
 }
 
 enum LogThreshold log_threshold_val(const char *name) {
