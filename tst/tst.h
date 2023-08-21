@@ -15,13 +15,6 @@ void cm_print_error(const char* const format, ...) CMOCKA_PRINTF_ATTRIBUTE(1, 2)
 #define LOG_PRINT false
 
 //
-// utility
-//
-char *read_file(const char *path);
-
-void write_file(const char *path, const char *content);
-
-//
 // test definition
 //
 #define TEST(t) cmocka_unit_test_setup_teardown(t, before_each, after_each)

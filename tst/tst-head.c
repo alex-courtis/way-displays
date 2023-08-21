@@ -18,20 +18,20 @@
 
 double __wrap_mode_dpi(struct Mode *mode) {
 	check_expected(mode);
-	return mock();
+	return mock_type(double);
 }
 
 struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode) {
 	check_expected(modes);
 	check_expected(modes_failed);
 	check_expected(user_mode);
-	return (struct Mode *)mock();
+	return mock_type(struct Mode*);
 }
 
 struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
 	check_expected(modes);
 	check_expected(modes_failed);
-	return (struct Mode *)mock();
+	return mock_type(struct Mode *);
 }
 
 

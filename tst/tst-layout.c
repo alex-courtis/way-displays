@@ -27,17 +27,17 @@ void handle_failure(void);
 
 bool __wrap_lid_is_closed(char *name) {
 	check_expected(name);
-	return mock();
+	return mock_type(bool);
 }
 
 struct Mode *__wrap_head_find_mode(struct Head *head) {
 	check_expected(head);
-	return (struct Mode *)mock();
+	return mock_type(struct Mode*);
 }
 
 wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
 	check_expected(head);
-	return mock();
+	return mock_type(wl_fixed_t);
 }
 
 

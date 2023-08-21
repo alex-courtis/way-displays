@@ -45,8 +45,9 @@ struct Cfg {
 	char *dir_path;
 	char *file_path;
 	char *file_name;
+	char *resolved_from;
 
-	bool written;
+	bool updated;
 
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
@@ -77,6 +78,8 @@ enum CfgElement {
 	DISABLED,
 	ARRANGE_ALIGN,
 };
+
+void cfg_file_paths_init(const char *user_path);
 
 void cfg_init(const char *cfg_path);
 
@@ -111,6 +114,10 @@ void cfg_user_mode_free(void *user_mode);
 void cfg_destroy(void);
 
 void cfg_free(struct Cfg *cfg);
+
+void cfg_free_paths(struct Cfg *cfg);
+
+void cfg_file_paths_destroy(void);
 
 #endif // CFG_H
 

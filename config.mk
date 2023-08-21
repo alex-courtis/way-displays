@@ -9,7 +9,7 @@ INCS = -Iinc -Ipro -Ilib/alex-c-collections/inc
 CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" -DROOT_ETC=\"$(ROOT_ETC)\"
 
 OFLAGS = -O3
-WFLAGS = -pedantic -Wall -Wextra -Werror -Wno-unused-parameter
+WFLAGS = -pedantic -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-result
 DFLAGS = -g
 COMPFLAGS = $(WFLAGS) $(OFLAGS) $(DFLAGS)
 

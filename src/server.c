@@ -121,7 +121,6 @@ void receive_ipc_request(int server_socket) {
 			{
 				// complete
 				cfg_file_write();
-				log_info("\nWrote configuration file: %s", cfg->file_path);
 				break;
 			}
 		case GET:
@@ -144,7 +143,7 @@ send:
 int loop(void) {
 
 	for (;;) {
-		init_pfds();
+		pfds_init();
 
 
 		// prepare for reading wayland events
@@ -185,9 +184,9 @@ int loop(void) {
 
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (cfg_file_modified(cfg->file_name)) {
-				if (cfg->written) {
-					cfg->written = false;
+			if (fd_cfg_dir_modified(cfg->file_name)) {
+				if (cfg->updated) {
+					cfg->updated = false;
 				} else {
 					cfg_file_reload();
 				}
@@ -218,7 +217,7 @@ int loop(void) {
 		};
 
 
-		destroy_pfds();
+		pfds_destroy();
 	}
 }
 
@@ -234,6 +233,9 @@ server(char *cfg_path) {
 	log_suppress_start();
 
 	log_info("way-displays version %s", VERSION);
+
+	// all cfg paths
+	cfg_file_paths_init(cfg_path);
 
 	// maybe default, never exits
 	cfg_init(cfg_path);
@@ -256,9 +258,10 @@ server(char *cfg_path) {
 	// only stops when signalled or display goes away
 	int sig = loop();
 
-	// release what remote resources we can
+	// release what resources we can
 	heads_destroy();
 	lid_destroy();
+	cfg_file_paths_destroy();
 	cfg_destroy();
 	displ_destroy();
 

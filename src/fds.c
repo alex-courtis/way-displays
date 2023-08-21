@@ -23,6 +23,7 @@
 int fd_signal = -1;
 int fd_socket_server = -1;
 int fd_cfg_dir = -1;
+int wd_cfg_dir = -1;
 bool fds_created = false;
 
 nfds_t npfds = 0;
@@ -45,29 +46,48 @@ int create_fd_signal(void) {
 	return signalfd(-1, &mask, 0);
 }
 
-int create_fd_cfg_dir(void) {
+void fd_wd_cfg_dir_create(void) {
 	if (!cfg->dir_path)
-		return -1;
+		return;
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
-	if (inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE) == -1) {
-		log_error_errno("\nunable to create config file watch for %s, exiting", cfg->dir_path);
+	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE)) == -1) {
+		close(fd_cfg_dir);
+		fd_cfg_dir = -1;
+		log_error_errno("\nunable to create config directory watch for %s, exiting", cfg->dir_path);
 		wd_exit_message(EXIT_FAILURE);
-		return -1;
+		return;
+	}
+}
+
+void fd_wd_cfg_dir_destroy(void) {
+	if (fd_cfg_dir == -1 || wd_cfg_dir == -1) {
+		fd_cfg_dir = -1;
+		wd_cfg_dir = -1;
+		return;
 	}
 
-	return fd_cfg_dir;
+	if (inotify_rm_watch(fd_cfg_dir, wd_cfg_dir) == -1) {
+		log_error_errno("\nunable to remove config directory watch");
+	}
+
+	if (close(fd_cfg_dir) == -1) {
+		log_error_errno("\nunable to close config directory watch");
+	}
+
+	fd_cfg_dir = -1;
+	wd_cfg_dir = -1;
 }
 
 void create_fds(void) {
 	fd_signal = create_fd_signal();
 	fd_socket_server = create_socket_server();
-	fd_cfg_dir = create_fd_cfg_dir();
+	fd_wd_cfg_dir_create();
 
 	fds_created = true;
 }
 
-void init_pfds(void) {
+void pfds_init(void) {
 	if (!fds_created)
 		create_fds();
 
@@ -109,7 +129,7 @@ void init_pfds(void) {
 	}
 }
 
-void destroy_pfds(void) {
+void pfds_destroy(void) {
 	npfds = 0;
 
 	pfd_signal = NULL;
@@ -126,7 +146,7 @@ void destroy_pfds(void) {
 }
 
 // see man 7 inotify
-bool cfg_file_modified(char *file_name) {
+bool fd_cfg_dir_modified(char *file_name) {
 	if (!file_name) {
 		return false;
 	}

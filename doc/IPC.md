@@ -1,32 +1,12 @@
 # way-displays IPC
 
-// TODO rewrite removing examples
-
-`$WAYLAND_DISPLAY` must be set.
+`$WAYLAND_DISPLAY` must be set and `$XDG_VTNR` set to match the server's.
 
 way-displays server creates a socket `${XDG_RUNTIME_DIR}/way-displays.${XDG_VTNR}.sock`.
 
 If `$XDG_RUNTIME_DIR` is unset the socket will be `/tmp/way-displays.${XDG_VTNR}.sock`.
 
 Clients send an [!!ipc_request](YAML_SCHEMAS.md#ipc_request) and will receive a sequence of [!!ipc_response](YAML_SCHEMAS.md#ipc_response) until the operation is complete and the socket closed.
-
-## Example
-
-```sh
-make examples
-```
-
-### client-get-raw
-
-Sends a `GET` and prints the raw response.
-
-### client-set-scaling
-
-Sends a `CFG_SET` to reset `SCALING`. Unpacks all responses and prints some config and head states as the operation progresses.
-
-### poke-server
-
-Validates and prints client and server readiness for IPC.
 
 ## Response
 
@@ -66,7 +46,7 @@ OP: CFG_WRITE
 
 Mutate multiple configuration values.
 
-Compose a [CFG](YAML_SCHEMAS.md#cfg) containing only the desired elements to change e.g.:
+[CFG](YAML_SCHEMAS.md#cfg) containing only the desired elements to change e.g.:
 
 ```yaml
 OP: CFG_SET
@@ -87,7 +67,7 @@ Only these [CFG](YAML_SCHEMAS.md#cfg) elements that may be deleted:
 - `DISABLED`
 - `VRR_OFF`
 
-Compose a [CFG](YAML_SCHEMAS.md#cfg) containing only the desired elements to delete e.g.:
+[CFG](YAML_SCHEMAS.md#cfg) containing only the desired elements to delete e.g.:
 
 ```yaml
 OP: CFG_DEL
@@ -102,4 +82,22 @@ CFG:
     - STU 901
     - eDP-1
 ```
+
+## Examples
+
+```sh
+make examples
+```
+
+### client-get-raw
+
+Sends a `GET` and prints the raw response.
+
+### client-set-scaling
+
+Sends a `CFG_SET` to reset `SCALING`. Unpacks all responses and prints some config and head states as the operation progresses.
+
+### poke-server
+
+Validates and prints client and server readiness for IPC.
 

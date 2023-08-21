@@ -9,6 +9,8 @@
 
 #include "cfg.h"
 
+#include "fs.h"
+#include "fds.h"
 #include "convert.h"
 #include "global.h"
 #include "info.h"
@@ -345,40 +347,52 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) 
 	return us;
 }
 
-bool resolve_paths(struct Cfg *cfg, const char *cfg_path, const char *prefix, const char *suffix) {
+void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
+	static char path[PATH_MAX];
+
+	cfg->resolved_from = resolved_from;
+
+	cfg->file_path = strdup(file_path);
+
+	// dirname modifies path
+	strcpy(path, cfg->file_path);
+	free(cfg->dir_path);
+	cfg->dir_path = strdup(dirname(path));
+
+	// basename modifies path
+	strcpy(path, cfg->file_path);
+	free(cfg->file_name);
+	cfg->file_name = strdup(basename(path));
+}
+
+bool resolve_cfg_file(struct Cfg *cfg) {
 	if (!cfg)
 		return false;
 
-	char path[PATH_MAX];
+	cfg_free_paths(cfg);
 
-	if (cfg_path) {
-		snprintf(path, PATH_MAX, "%s", cfg_path);
-	} else {
-		snprintf(path, PATH_MAX, "%s%s/way-displays/cfg.yaml", prefix, suffix);
+	for (struct SList *i = cfg_file_paths; i; i = i->nex) {
+		if (access(i->val, R_OK) == 0) {
+
+			char *file_path = realpath(i->val, NULL);
+
+			if (!file_path) {
+				continue;
+			}
+			if (access(file_path, R_OK) != 0) {
+				free(file_path);
+				continue;
+			}
+
+			set_paths(cfg, i->val, file_path);
+
+			free(file_path);
+
+			return true;
+		}
 	}
 
-	if (access(path, R_OK) != 0) {
-		return false;
-	}
-
-	char *file_path = realpath(path, NULL);
-	if (!file_path) {
-		return false;
-	}
-	if (access(file_path, R_OK) != 0) {
-		free(file_path);
-		return false;
-	}
-
-	cfg->file_path = file_path;
-
-	strcpy(path, file_path);
-	cfg->dir_path = strdup(dirname(path));
-
-	strcpy(path, file_path);
-	cfg->file_name = strdup(basename(path));
-
-	return true;
+	return false;
 }
 
 void validate_fix(struct Cfg *cfg) {
@@ -590,25 +604,33 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
 	return merged;
 }
 
-void cfg_init(const char *cfg_path) {
-	bool found = false;
+void cfg_file_paths_init(const char *user_path) {
+	char path[PATH_MAX];
 
+	// maybe user
+	if (user_path && access(user_path, R_OK) == 0) {
+		slist_append(&cfg_file_paths, strdup(user_path));
+	}
+
+	if (getenv("XDG_CONFIG_HOME") != NULL) {
+		// maybe XDG_CONFIG_HOME
+		snprintf(path, PATH_MAX, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
+		slist_append(&cfg_file_paths, strdup(path));
+	} else if (getenv("HOME") != NULL) {
+		// ~/.config
+		snprintf(path, PATH_MAX, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
+		slist_append(&cfg_file_paths, strdup(path));
+	}
+
+	// etc
+	slist_append(&cfg_file_paths, strdup("/usr/local/etc/way-displays/cfg.yaml"));
+	slist_append(&cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
+}
+
+void cfg_init(const char *user_path) {
 	cfg = cfg_default();
 
-	if (cfg_path) {
-		found = resolve_paths(cfg, cfg_path, NULL, NULL);
-		if (!found) {
-			log_warn("\n%s not found", cfg_path);
-		}
-	}
-	if (!found && getenv("XDG_CONFIG_HOME"))
-		found = resolve_paths(cfg, NULL, getenv("XDG_CONFIG_HOME"), "");
-	if (!found && getenv("HOME"))
-		found = resolve_paths(cfg, NULL, getenv("HOME"), "/.config");
-	if (!found)
-		found = resolve_paths(cfg, NULL, "/usr/local/etc", "");
-	if (!found)
-		found = resolve_paths(cfg, NULL, ROOT_ETC, "");
+	bool found = resolve_cfg_file(cfg);
 
 	if (found) {
 		log_info("\nFound configuration file: %s", cfg->file_path);
@@ -656,29 +678,55 @@ void cfg_file_reload(void) {
 }
 
 void cfg_file_write(void) {
-	if (!cfg->file_path) {
-		log_error("\nMissing file path");
-		return;
+	char *yaml = NULL;
+	char *resolved_from = cfg->resolved_from;
+	bool written = false;
+
+	cfg->updated = false;
+
+	if (!(yaml = marshal_cfg(cfg))) {
+		goto end;
 	}
 
-	char *yaml = marshal_cfg(cfg);
-	if (!yaml) {
-		return;
+	if (cfg->file_path && (written = file_write(cfg->file_path, yaml))) {
+		cfg->updated = true;
+		goto end;
 	}
 
-	FILE *f = fopen(cfg->file_path, "w");
-	if (!f) {
-		log_error_errno("\nUnable to write to %s", cfg->file_path);
-		return;
+	if (!written) {
+
+		// kill that cfg file
+		cfg_free_paths(cfg);
+		fd_wd_cfg_dir_destroy();
+
+		// write preferred alternatives
+		for (struct SList *i = cfg_file_paths; i; i = i->nex) {
+
+			// skip previously resolved
+			if (resolved_from == i->val) {
+				continue;
+			}
+
+			set_paths(cfg, i->val, i->val);
+
+			// attempt to write
+			if (mkdir_p(cfg->dir_path, 0755) && (written = file_write(i->val, yaml))) {
+
+				// watch the new
+				fd_wd_cfg_dir_create();
+				goto end;
+			}
+
+			cfg_free_paths(cfg);
+		}
 	}
 
-	fprintf(f, "%s\n", yaml);
-
-	fclose(f);
-
+end:
 	free(yaml);
 
-	cfg->written = true;
+	if (written) {
+		log_info("\nWrote configuration file: %s", cfg->file_path);
+	}
 }
 
 void cfg_destroy(void) {
@@ -690,9 +738,8 @@ void cfg_free(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
-	free(cfg->dir_path);
-	free(cfg->file_path);
-	free(cfg->file_name);
+	cfg_free_paths(cfg);
+
 	free(cfg->laptop_display_prefix);
 
 	slist_free_vals(&cfg->order_name_desc, NULL);
@@ -708,6 +755,22 @@ void cfg_free(struct Cfg *cfg) {
 	slist_free_vals(&cfg->disabled_name_desc, NULL);
 
 	free(cfg);
+}
+
+void cfg_free_paths(struct Cfg *cfg) {
+	if (!cfg)
+		return;
+
+	free(cfg->dir_path);
+	cfg->dir_path = NULL;
+
+	free(cfg->file_path);
+	cfg->file_path = NULL;
+
+	free(cfg->file_name);
+	cfg->file_name = NULL;
+
+	cfg->resolved_from = NULL;
 }
 
 void cfg_user_scale_free(void *data) {
@@ -730,5 +793,9 @@ void cfg_user_mode_free(void *data) {
 	free(user_mode->name_desc);
 
 	free(user_mode);
+}
+
+void cfg_file_paths_destroy(void) {
+	slist_free_vals(&cfg_file_paths, NULL);
 }
 
