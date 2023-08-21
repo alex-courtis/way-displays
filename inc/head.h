@@ -35,7 +35,6 @@ struct Head {
 	char *description;
 	int32_t width_mm;
 	int32_t height_mm;
-	struct Mode *preferred_mode;
 	enum wl_output_transform transform;
 	char *make;
 	char *model;
@@ -73,6 +72,8 @@ wl_fixed_t head_auto_scale(struct Head *head);
 void head_scaled_dimensions(struct Head *head);
 
 struct Mode *head_find_mode(struct Head *head);
+
+struct Mode *head_preferred_mode(struct Head *head);
 
 bool head_current_not_desired(const void *head);
 
