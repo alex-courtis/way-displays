@@ -52,6 +52,10 @@ MODE:
     #- NAME_DESC: DP-2
     #  MAX: TRUE
 
+TRANSFORM:
+  - NAME_DESC: 'monitor description'
+    TRANSFORM: FLIPPED-270
+
 # VRR / adaptive sync is enabled by default. Disable it per display.
 VRR_OFF:
   # - DP-2

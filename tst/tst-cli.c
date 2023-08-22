@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <wayland-client-protocol.h>
 
 #include "cfg.h"
 #include "ipc.h"
@@ -100,6 +101,32 @@ void parse_element__auto_scale_ok(void **state) {
 	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
+}
+
+void parse_element__transform_invalid(void **state) {
+	optind = 0;
+	char *argv[] = { "displ", "INVALID", };
+
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_element(CFG_SET, TRANSFORM, 2, argv));
+
+	assert_log(ERROR, "invalid TRANSFORM displ INVALID\n");
+}
+
+void parse_element__transform_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "displ", "flipped-270", };
+
+	struct Cfg *actual = parse_element(CFG_SET, TRANSFORM, 2, argv);
+
+	struct Cfg *expected = cfg_init();
+	slist_append(&expected->user_transforms, cfg_user_transform_init("displ", WL_OUTPUT_TRANSFORM_FLIPPED_270));
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
 }
 
 void parse_element__scale_set_invalid(void **state) {
@@ -390,6 +417,17 @@ void parse_set__scale_nargs(void **state) {
 	assert_log(ERROR, "SCALE requires two arguments\n");
 }
 
+void parse_set__transform_nargs(void **state) {
+	optind = 0;
+	optarg = "TRANSFORM";
+
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_null(parse_set(0, NULL));
+
+	assert_log(ERROR, "TRANSFORM requires two arguments\n");
+}
+
 void parse_set__auto_scale_nargs(void **state) {
 	optind = 0;
 	optarg = "AUTO_SCALE";
@@ -547,6 +585,9 @@ int main(void) {
 		TEST(parse_element__auto_scale_invalid),
 		TEST(parse_element__auto_scale_ok),
 
+		TEST(parse_element__transform_invalid),
+		TEST(parse_element__transform_ok),
+
 		TEST(parse_element__scale_set_invalid),
 		TEST(parse_element__scale_set_ok),
 		TEST(parse_element__scale_del_ok),
@@ -571,6 +612,7 @@ int main(void) {
 		TEST(parse_set__mode_nargs),
 		TEST(parse_set__arrange_align_nargs),
 		TEST(parse_set__scale_nargs),
+		TEST(parse_set__transform_nargs),
 		TEST(parse_set__auto_scale_nargs),
 		TEST(parse_set__disabled_nargs),
 		TEST(parse_set__adaptive_sync_off_nargs),

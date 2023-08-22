@@ -273,6 +273,9 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 	if (head->current.enabled) {
 		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.mode));
 		log_(t, "    position:  %d,%d", head->current.x, head->current.y);
+		if (transform_name(head->current.transform)) {
+			log_(t, "    transform: %s", transform_name(head->current.transform));
+		}
 	}
 
 	print_mode(t, head->current.mode);
@@ -351,7 +354,6 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 				log_(t, "    width:     (not specified)");
 				log_(t, "    height:    (not specified)");
 			}
-			log_(t, "    transform: %s", output_transform_name(head->transform));
 			print_modes_res_refresh(t, head);
 			print_modes_failed(t, head);
 			log_(t, "  current:");

@@ -36,6 +36,7 @@ void usage(FILE *stream) {
 		"     SCALE <name> <scale>\n"
 		"     MODE <name> MAX\n"
 		"     MODE <name> <width> <height> [<Hz>]\n"
+		"     TRANSFORM <name> <normal|90|180|270|flipped|flipped-90|flipped-180|flipped-270>"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
 		"  -d, --d[elete]  remove\n"
@@ -51,7 +52,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	struct UserScale *user_scale = NULL;
 	struct UserMode *user_mode = NULL;
 
-	struct Cfg *cfg = calloc(1, sizeof(struct Cfg));
+	struct Cfg *cfg = cfg_init();
 
 	bool parsed = false;
 	switch (element) {
@@ -124,6 +125,11 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			}
 			parsed = true;
 			break;
+		case TRANSFORM:
+			if ((parsed = transform_val(argv[optind + 1]) <= WL_OUTPUT_TRANSFORM_MAX)) {
+				slist_append(&cfg->user_transforms, cfg_user_transform_init(argv[optind], transform_val(argv[optind + 1])));
+			}
+			break;
 		case DISABLED:
 			for (int i = optind; i < argc; i++) {
 				slist_append(&cfg->disabled_name_desc, strdup(argv[i]));
@@ -195,6 +201,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 			break;
 		case ARRANGE_ALIGN:
 		case SCALE:
+		case TRANSFORM:
 			if (optind + 2 != argc) {
 				log_error("%s requires two arguments", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);

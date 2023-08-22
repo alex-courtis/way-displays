@@ -32,11 +32,11 @@ int after_each(void **state) {
 }
 
 void print_cfg_commands__empty(void **state) {
-	struct Cfg *cfg = calloc(1, sizeof(struct Cfg));
+	struct Cfg *cfg = cfg_init();
 
 	print_cfg_commands(INFO, cfg);
 
-	free(cfg);
+	cfg_free(cfg);
 }
 
 void print_cfg_commands__ok(void **state) {

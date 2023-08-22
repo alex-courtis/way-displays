@@ -163,7 +163,7 @@ void head_scaled_dimensions(struct Head *head) {
 		return;
 	}
 
-	if (head->transform % 2 == 0) {
+	if (head->desired.transform % 2 == 0) {
 		head->scaled.width = head->desired.mode->width;
 		head->scaled.height = head->desired.mode->height;
 	} else {

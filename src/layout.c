@@ -229,6 +229,7 @@ void desire(void) {
 		desire_enabled(head);
 		desire_mode(head);
 		desire_scale(head);
+		// TODO #41 TRANSFORM
 		desire_adaptive_sync(head);
 
 		head_scaled_dimensions(head);
@@ -287,6 +288,7 @@ void apply(void) {
 				head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 				zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
 				zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
+				// TODO #41 TRANSFORM
 			} else {
 				zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 			}

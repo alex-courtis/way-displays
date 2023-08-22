@@ -23,8 +23,8 @@ enum IpcCommand ipc_command_val(const char *name);
 const char *ipc_command_name(enum IpcCommand ipc_command);
 const char *ipc_command_friendly(enum IpcCommand ipc_command);
 
-enum wl_output_transform output_transform_val(const char *name);
-const char *output_transform_name(enum wl_output_transform output_transform);
+enum wl_output_transform transform_val(const char *name);
+const char *transform_name(enum wl_output_transform transform);
 
 enum LogThreshold log_threshold_val(const char *name);
 const char *log_threshold_name(enum LogThreshold log_threshold);

@@ -20,6 +20,7 @@ struct HeadState {
 	// layout coords
 	int32_t x;
 	int32_t y;
+	enum wl_output_transform transform;
 	enum zwlr_output_head_v1_adaptive_sync_state adaptive_sync;
 };
 
@@ -36,7 +37,6 @@ struct Head {
 	int32_t width_mm;
 	int32_t height_mm;
 	struct Mode *preferred_mode;
-	enum wl_output_transform transform;
 	char *make;
 	char *model;
 	char *serial_number;

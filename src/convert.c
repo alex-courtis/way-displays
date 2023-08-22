@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
+#include <wayland-client-protocol.h>
 
 #include "convert.h"
 
@@ -25,6 +26,7 @@ static struct NameVal cfg_elements[] = {
 	{ .val = VRR_OFF,               .name = "VRR_OFF",               },
 	{ .val = LAPTOP_DISPLAY_PREFIX, .name = "LAPTOP_DISPLAY_PREFIX", },
 	{ .val = MAX_PREFERRED_REFRESH, .name = "MAX_PREFERRED_REFRESH", },
+	{ .val = TRANSFORM,             .name = "TRANSFORM",             },
 	{ .val = LOG_THRESHOLD,         .name = "LOG_THRESHOLD",         },
 	{ .val = DISABLED,              .name = "DISABLED",              },
 	{ .val = ARRANGE_ALIGN,         .name = "ARRANGE_ALIGN",         },
@@ -64,16 +66,16 @@ static struct NameVal ipc_commands[] = {
 	{ .val = 0,         .name = NULL,        .friendly = NULL,     },
 };
 
-static struct NameVal output_transforms[] = {
-	{ .val = WL_OUTPUT_TRANSFORM_NORMAL,      .name = "normal",      },
+static struct NameVal transforms[] = {
+	{ .val = WL_OUTPUT_TRANSFORM_NORMAL,      .name = "NORMAL",      },
 	{ .val = WL_OUTPUT_TRANSFORM_90,          .name = "90",          },
 	{ .val = WL_OUTPUT_TRANSFORM_180,         .name = "180",         },
 	{ .val = WL_OUTPUT_TRANSFORM_270,         .name = "270",         },
-	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED,     .name = "flipped",     },
-	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_90,  .name = "flipped-90",  },
-	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_180, .name = "flipped-180", },
-	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_270, .name = "flipped-270", },
-	{ .val = 0,                               .name = NULL,          },
+	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED,     .name = "FLIPPED",     },
+	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_90,  .name = "FLIPPED-90",  },
+	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_180, .name = "FLIPPED-180", },
+	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_270, .name = "FLIPPED-270", },
+	{ .val = WL_OUTPUT_TRANSFORM_MAX + 1,     .name = NULL,          },
 };
 
 static struct NameVal log_thresholds[] = {
@@ -88,24 +90,26 @@ unsigned int val(struct NameVal *name_vals, const char *name) {
 	if (!name_vals || !name) {
 		return 0;
 	}
-	for (int i = 0; name_vals[i].name; i++) {
+	int i;
+	for (i = 0; name_vals[i].name; i++) {
 		if (strcasecmp(name_vals[i].name, name) == 0) {
 			return name_vals[i].val;
 		}
 	}
-	return 0;
+	return name_vals[i].val;
 }
 
 unsigned int val_start(struct NameVal *name_vals, const char *name) {
 	if (!name_vals || !name) {
 		return 0;
 	}
-	for (int i = 0; name_vals[i].name; i++) {
+	int i;
+	for (i = 0; name_vals[i].name; i++) {
 		if (strcasestr(name_vals[i].name, name) == name_vals[i].name) {
 			return name_vals[i].val;
 		}
 	}
-	return 0;
+	return name_vals[i].val;
 }
 
 const char *name(struct NameVal *name_vals, unsigned int val) {
@@ -180,12 +184,12 @@ const char *ipc_command_friendly(enum IpcCommand ipc_command) {
 	return friendly(ipc_commands, ipc_command);
 }
 
-enum wl_output_transform output_transform_val(const char *name) {
-	return val(output_transforms, name);
+enum wl_output_transform transform_val(const char *name) {
+	return val(transforms, name);
 }
 
-const char *output_transform_name(enum wl_output_transform output_transform) {
-	return name(output_transforms, output_transform);
+const char *transform_name(enum wl_output_transform transform) {
+	return name(transforms, transform);
 }
 
 enum LogThreshold log_threshold_val(const char *name) {
