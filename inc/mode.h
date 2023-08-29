@@ -5,7 +5,9 @@
 #include <stdint.h>
 
 #include "cfg.h"
+#include "global.h"
 #include "slist.h"
+#include "wlr-output-management-unstable-v1.h"
 
 struct Mode {
 	struct Head *head;

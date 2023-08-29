@@ -14,6 +14,7 @@
 #include "convert.h"
 #include "global.h"
 #include "info.h"
+#include "mode.h"
 #include "slist.h"
 #include "log.h"
 #include "marshalling.h"

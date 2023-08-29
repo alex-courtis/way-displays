@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -8,6 +9,7 @@
 #include "cfg.h"
 #include "head.h"
 #include "slist.h"
+#include "wlr-output-management-unstable-v1.h"
 
 struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed) {
 	struct Mode *mode = NULL;
