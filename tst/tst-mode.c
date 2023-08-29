@@ -135,11 +135,11 @@ void mode_user_mode__exact_hz_match(void **state) {
 void mode_user_mode__exact_hz_failed(void **state) {
 	user_mode = cfg_user_mode_init("um", false, 200, 100, 60499, false);
 
-	slist_append(&modes_failed, slist_at(modes, 2));
+	slist_append(&modes_failed, slist_at(modes, 1));
 
 	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
-	assert_ptr_equal(actual, slist_at(modes, 1));
+	assert_ptr_equal(actual, slist_at(modes, 0));
 }
 
 int main(void) {
