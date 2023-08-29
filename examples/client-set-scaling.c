@@ -25,7 +25,7 @@ main(int argc, char **argv) {
 	request->command = CFG_SET;
 
 	// turn scaling OFF
-	request->cfg = calloc(1, sizeof(struct Cfg));
+	request->cfg = cfg_init();
 	request->cfg->scaling = OFF;
 
 	// send the request

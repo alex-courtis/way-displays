@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <wayland-client-protocol.h>
 
 #include "cfg.h"
 
@@ -94,6 +95,44 @@ bool cfg_equal_user_mode(const void *value, const void *data) {
 	return true;
 }
 
+bool cfg_equal_user_transform_name(const void *value, const void *data) {
+	if (!value || !data) {
+		return false;
+	}
+
+	struct UserTransform *lhs = (struct UserTransform*)value;
+	struct UserTransform *rhs = (struct UserTransform*)data;
+
+	if (!lhs->name_desc || !rhs->name_desc) {
+		return false;
+	}
+
+	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
+}
+
+bool cfg_equal_user_transform(const void *value, const void *data) {
+	if (!value || !data) {
+		return false;
+	}
+
+	struct UserTransform *lhs = (struct UserTransform*)value;
+	struct UserTransform *rhs = (struct UserTransform*)data;
+
+	if (!lhs->name_desc || !rhs->name_desc) {
+		return false;
+	}
+
+	if (strcmp(lhs->name_desc, rhs->name_desc) != 0) {
+		return false;
+	}
+
+	if (lhs->transform != rhs->transform) {
+		return false;
+	}
+
+	return true;
+}
+
 bool invalid_user_scale(const void *value, const void *data) {
 	if (!value) {
 		return true;
@@ -157,7 +196,7 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 	}
 
 	struct SList *i;
-	struct Cfg *to = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+	struct Cfg *to = cfg_init();
 
 	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
 	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
@@ -195,6 +234,15 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 		to_scale->name_desc = strdup(from_scale->name_desc);
 		to_scale->scale = from_scale->scale;
 		slist_append(&to->user_scales, to_scale);
+	}
+
+	// TRANSFORM
+	for (i = from->user_transforms; i; i = i->nex) {
+		struct UserTransform *from_transform = (struct UserTransform*)i->val;
+		struct UserTransform *to_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+		to_transform->name_desc = strdup(from_transform->name_desc);
+		to_transform->transform = from_transform->transform;
+		slist_append(&to->user_transforms, to_transform);
 	}
 
 	// MODE
@@ -278,6 +326,11 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 		return false;
 	}
 
+	// TRANSFORM
+	if (!slist_equal(a->user_transforms, b->user_transforms, cfg_equal_user_transform)) {
+		return false;
+	}
+
 	// VRR_OFF
 	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, slist_predicate_strcmp)) {
 		return false;
@@ -308,8 +361,14 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 	return true;
 }
 
+struct Cfg *cfg_init(void) {
+	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+
+	return cfg;
+}
+
 struct Cfg *cfg_default(void) {
-	struct Cfg *def = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+	struct Cfg *def = cfg_init();
 
 	def->arrange = ARRANGE_DEFAULT;
 	def->align = ALIGN_DEFAULT;
@@ -345,6 +404,15 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) 
 	us->scale = scale;
 
 	return us;
+}
+
+struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum wl_output_transform transform) {
+	struct UserTransform *ut = calloc(1, sizeof(struct UserTransform));
+
+	ut->name_desc = strdup(name_desc);
+	ut->transform = transform;
+
+	return ut;
 }
 
 void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
@@ -440,6 +508,12 @@ void validate_warn(struct Cfg *cfg) {
 		struct UserMode *user_mode = (struct UserMode*)i->val;
 		warn_short_name_desc(user_mode->name_desc, "MODE");
 	}
+	for (i = cfg->user_transforms; i; i = i->nex) {
+		if (!i->val)
+			continue;
+		struct UserTransform *user_transform = (struct UserTransform*)i->val;
+		warn_short_name_desc(user_transform->name_desc, "TRANSFORM");
+	}
 	for (i = cfg->order_name_desc; i; i = i->nex) {
 		if (!i->val)
 			continue;
@@ -529,6 +603,19 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		merged_user_mode->warned_no_mode = set_user_mode->warned_no_mode;
 	}
 
+	// TRANSFORM
+	struct UserTransform *set_user_transform = NULL;
+	struct UserTransform *merged_user_transform = NULL;
+	for (i = from->user_transforms; i; i = i->nex) {
+		set_user_transform = (struct UserTransform*)i->val;
+		if (!(merged_user_transform = (struct UserTransform*)slist_find_equal_val(merged->user_transforms, cfg_equal_user_transform_name, set_user_transform))) {
+			merged_user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+			merged_user_transform->name_desc = strdup(set_user_transform->name_desc);
+			slist_append(&merged->user_transforms, merged_user_transform);
+		}
+		merged_user_transform->transform = set_user_transform->transform;
+	}
+
 	// VRR_OFF
 	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
 		if (!slist_find_equal(merged->adaptive_sync_off_name_desc, slist_predicate_strcmp, i->val)) {
@@ -563,6 +650,11 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	// MODE
 	for (i = from->user_modes; i; i = i->nex) {
 		slist_remove_all_free(&merged->user_modes, cfg_equal_user_mode_name, i->val, cfg_user_mode_free);
+	}
+
+	// TRANSFORM
+	for (i = from->user_transforms; i; i = i->nex) {
+		slist_remove_all_free(&merged->user_transforms, cfg_equal_user_transform_name, i->val, cfg_user_transform_free);
 	}
 
 	// VRR_OFF
@@ -627,7 +719,7 @@ void cfg_file_paths_init(const char *user_path) {
 	slist_append(&cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
 }
 
-void cfg_init(const char *user_path) {
+void cfg_init_path(const char *user_path) {
 	cfg = cfg_default();
 
 	bool found = resolve_cfg_file(cfg);
@@ -754,6 +846,8 @@ void cfg_free(struct Cfg *cfg) {
 
 	slist_free_vals(&cfg->disabled_name_desc, NULL);
 
+	slist_free_vals(&cfg->user_transforms, cfg_user_transform_free);
+
 	free(cfg);
 }
 
@@ -793,6 +887,17 @@ void cfg_user_mode_free(void *data) {
 	free(user_mode->name_desc);
 
 	free(user_mode);
+}
+
+void cfg_user_transform_free(void *data) {
+	struct UserTransform *user_transform = (struct UserTransform*)data;
+
+	if (!user_transform)
+		return;
+
+	free(user_transform->name_desc);
+
+	free(user_transform);
 }
 
 void cfg_file_paths_destroy(void) {

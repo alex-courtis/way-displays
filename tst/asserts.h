@@ -7,8 +7,9 @@
 
 #include "cfg.h"
 #include "head.h"
-#include "slist.h"
 #include "marshalling.h"
+#include "slist.h"
+#include "util.h"
 
 #define assert_string_equal_nn(a, b) \
 	assert_non_null(a); \
@@ -59,7 +60,9 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 
 void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
 	if (!cfg_equal(a, b)) {
-		cm_print_error("assert_cfg_equal\nactual:\n\n%s\nexpected:\n\n%s\n\n", marshal_cfg(a), marshal_cfg(b));
+		cm_print_error("assert_cfg_equal\ncfg.actual:\n%s\ncfg.expected:\n%s\n", marshal_cfg(a), marshal_cfg(b));
+		write_file("cfg.actual", marshal_cfg(a));
+		write_file("cfg.expected", marshal_cfg(b));
 		_fail(file, line);
 	}
 }

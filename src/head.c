@@ -163,7 +163,7 @@ void head_scaled_dimensions(struct Head *head) {
 		return;
 	}
 
-	if (head->transform % 2 == 0) {
+	if (head->desired.transform % 2 == 0) {
 		head->scaled.width = head->desired.mode->width;
 		head->scaled.height = head->desired.mode->height;
 	} else {
@@ -228,6 +228,7 @@ bool head_current_not_desired(const void *data) {
 			 head->desired.enabled != head->current.enabled ||
 			 head->desired.x != head->current.x ||
 			 head->desired.y != head->current.y ||
+			 head->desired.transform != head->current.transform ||
 			 head->desired.adaptive_sync != head->current.adaptive_sync));
 }
 

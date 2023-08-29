@@ -4,9 +4,11 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "convert.h"
 #include "log.h"
+#include "util.h"
 
 // 0 unused, 1 DEBUG, 4 ERROR
 static char b[5][262144] = { 0 };
@@ -15,9 +17,14 @@ static char *bp[5] = { 0 };
 void _assert_log(enum LogThreshold t, const char *s, const char * const file, const int line) {
 	if (bp[t]) {
 		bp[t] = NULL;
-		_assert_string_equal(s, b[t], file, line);
+		if (strcmp(b[t], s) != 0) {
+			cm_print_error("assert_log\nlog.actual:\n\"%s\"\nlog.expected:\n\"%s\"\n", b[t], s);
+			write_file("log.actual", b[t]);
+			write_file("log.expected", s);
+			_fail(file, line);
+		}
 	} else {
-		_assert_string_equal(s, "", file, line);
+		_assert_string_equal("", s, file, line);
 	}
 }
 

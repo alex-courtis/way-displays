@@ -3,6 +3,8 @@ SCALE 'sss' is less than 4 characters, which may result in some unwanted matches
 
 MODE 'mmm' is less than 4 characters, which may result in some unwanted matches.
 
+TRANSFORM 'ttt' is less than 4 characters, which may result in some unwanted matches.
+
 ORDER 'ooo' is less than 4 characters, which may result in some unwanted matches.
 
 VRR_OFF 'vvv' is less than 4 characters, which may result in some unwanted matches.
