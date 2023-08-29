@@ -175,7 +175,11 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 		struct UserTransform *user_transform;
 		for (i = cfg->user_transforms; i; i = i->nex) {
 			user_transform = (struct UserTransform*)i->val;
-			log_(t, "    %s: %s", user_transform->name_desc, transform_name(user_transform->transform));
+			if (del) {
+				log_(t, "    %s", user_transform->name_desc);
+			} else {
+				log_(t, "    %s: %s", user_transform->name_desc, transform_name(user_transform->transform));
+			}
 		}
 	}
 
@@ -290,7 +294,7 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 	if (head->current.enabled) {
 		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.mode));
 		log_(t, "    position:  %d,%d", head->current.x, head->current.y);
-		if (transform_name(head->current.transform)) {
+		if (head->current.transform) {
 			log_(t, "    transform: %s", transform_name(head->current.transform));
 		}
 	}
@@ -334,7 +338,11 @@ void print_head_desired(enum LogThreshold t, struct Head *head) {
 					);
 			}
 			if (!head->current.enabled || head->current.transform != head->desired.transform) {
-				log_(t, "    transform: %s", transform_name(head->desired.transform));
+				if (head->desired.transform) {
+					log_(t, "    transform: %s", transform_name(head->desired.transform));
+				} else {
+					log_(t, "    transform: none");
+				}
 			}
 		}
 		if (!head->current.enabled) {

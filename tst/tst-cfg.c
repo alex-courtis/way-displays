@@ -257,6 +257,24 @@ void merge_del__mode(void **state) {
 	cfg_free(merged);
 }
 
+void merge_del__transform(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->to->user_transforms, cfg_user_transform_init("to", 1));
+	slist_append(&s->to->user_transforms, cfg_user_transform_init("both", 2));
+
+	slist_append(&s->from->user_transforms, cfg_user_transform_init("from", 3));
+	slist_append(&s->from->user_transforms, cfg_user_transform_init("both", 4));
+
+	slist_append(&s->expected->user_transforms, cfg_user_transform_init("to", 1));
+
+	struct Cfg *merged = merge_del(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
 void merge_del__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
@@ -421,6 +439,7 @@ int main(void) {
 
 		TEST(merge_del__scale),
 		TEST(merge_del__mode),
+		TEST(merge_del__transform),
 		TEST(merge_del__adaptive_sync_off),
 		TEST(merge_del__disabled),
 

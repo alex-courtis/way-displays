@@ -129,6 +129,26 @@ void parse_element__transform_ok(void **state) {
 	cfg_free(expected);
 }
 
+void parse_element__transform_del_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "DISPL", };
+
+	struct Cfg *actual = parse_element(CFG_DEL, TRANSFORM, 1, argv);
+
+	struct UserTransform expectedUserTransform = {
+		.name_desc = "DISPL",
+		.transform = WL_OUTPUT_TRANSFORM_90,
+	};
+	struct Cfg expected = { 0 };
+	slist_append(&expected.user_transforms, &expectedUserTransform);
+
+	assert_cfg_equal(actual, &expected);
+
+	cfg_free(actual);
+
+	slist_free(&expected.user_transforms);
+}
+
 void parse_element__scale_set_invalid(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "NOTANUMBER", };
@@ -587,6 +607,7 @@ int main(void) {
 
 		TEST(parse_element__transform_invalid),
 		TEST(parse_element__transform_ok),
+		TEST(parse_element__transform_del_ok),
 
 		TEST(parse_element__scale_set_invalid),
 		TEST(parse_element__scale_set_ok),

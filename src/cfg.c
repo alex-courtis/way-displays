@@ -652,6 +652,11 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 		slist_remove_all_free(&merged->user_modes, cfg_equal_user_mode_name, i->val, cfg_user_mode_free);
 	}
 
+	// TRANSFORM
+	for (i = from->user_transforms; i; i = i->nex) {
+		slist_remove_all_free(&merged->user_transforms, cfg_equal_user_transform_name, i->val, cfg_user_transform_free);
+	}
+
 	// VRR_OFF
 	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
 		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, slist_predicate_strcmp, i->val, NULL);

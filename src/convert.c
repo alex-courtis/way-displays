@@ -67,7 +67,6 @@ static struct NameVal ipc_commands[] = {
 };
 
 static struct NameVal transforms[] = {
-	{ .val = WL_OUTPUT_TRANSFORM_NORMAL,      .name = "NORMAL",      },
 	{ .val = WL_OUTPUT_TRANSFORM_90,          .name = "90",          },
 	{ .val = WL_OUTPUT_TRANSFORM_180,         .name = "180",         },
 	{ .val = WL_OUTPUT_TRANSFORM_270,         .name = "270",         },
@@ -75,7 +74,7 @@ static struct NameVal transforms[] = {
 	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_90,  .name = "FLIPPED-90",  },
 	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_180, .name = "FLIPPED-180", },
 	{ .val = WL_OUTPUT_TRANSFORM_FLIPPED_270, .name = "FLIPPED-270", },
-	{ .val = WL_OUTPUT_TRANSFORM_MAX + 1,     .name = NULL,          },
+	{ .val = 0,                               .name = NULL,          },
 };
 
 static struct NameVal log_thresholds[] = {

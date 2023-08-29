@@ -143,7 +143,7 @@ bool parse_node_val_output_transform(const YAML::Node &node, const char *key, en
 		log_warn("Ignoring missing %s %s %s", desc1, desc2, key);
 		return false;
 	}
-	if (*val > WL_OUTPUT_TRANSFORM_MAX) {
+	if (!*val) {
 		log_warn("Ignoring invalid %s %s %s %s", desc1, desc2, key, node[key].as<std::string>().c_str());
 		return false;
 	}
@@ -619,7 +619,7 @@ struct UserTransform*& operator << (struct UserTransform*& user_transform, const
 
 	enum wl_output_transform ot_val = transform_val(ot_name);
 	free(ot_name);
-	if (ot_val > WL_OUTPUT_TRANSFORM_MAX) {
+	if (!ot_val) {
 		return user_transform;
 	}
 

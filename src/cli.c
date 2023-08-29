@@ -36,12 +36,13 @@ void usage(FILE *stream) {
 		"     SCALE <name> <scale>\n"
 		"     MODE <name> MAX\n"
 		"     MODE <name> <width> <height> [<Hz>]\n"
-		"     TRANSFORM <name> <normal|90|180|270|flipped|flipped-90|flipped-180|flipped-270>\n"
+		"     TRANSFORM <name> <90|180|270|flipped|flipped-90|flipped-180|flipped-270>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
 		"  -d, --d[elete]  remove\n"
 		"     SCALE <name>\n"
 		"     MODE <name>\n"
+		"     TRANSFORM <name>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
 		;
@@ -51,6 +52,7 @@ void usage(FILE *stream) {
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
 	struct UserScale *user_scale = NULL;
 	struct UserMode *user_mode = NULL;
+	struct UserTransform *user_transform = NULL;
 
 	struct Cfg *cfg = cfg_init();
 
@@ -77,10 +79,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 					break;
 				case CFG_DEL:
 					// dummy value
-					user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-					user_scale->name_desc = strdup(argv[optind]);
-					user_scale->scale = 1;
-					slist_append(&cfg->user_scales, user_scale);
+					slist_append(&cfg->user_scales, cfg_user_scale_init(argv[optind], 1));
 					parsed = true;
 					break;
 				default:
@@ -126,8 +125,21 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			parsed = true;
 			break;
 		case TRANSFORM:
-			if ((parsed = transform_val(argv[optind + 1]) <= WL_OUTPUT_TRANSFORM_MAX)) {
-				slist_append(&cfg->user_transforms, cfg_user_transform_init(argv[optind], transform_val(argv[optind + 1])));
+			switch (command) {
+				case CFG_SET:
+					// parse input value
+					user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+					user_transform->name_desc = strdup(argv[optind]);
+					parsed = (user_transform->transform = transform_val(argv[optind + 1]));
+					slist_append(&cfg->user_transforms, user_transform);
+					break;
+				case CFG_DEL:
+					// dummy value
+					slist_append(&cfg->user_transforms, cfg_user_transform_init(argv[optind], WL_OUTPUT_TRANSFORM_90));
+					parsed = true;
+					break;
+				default:
+					break;
 			}
 			break;
 		case DISABLED:
@@ -242,6 +254,7 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case MODE:
+		case TRANSFORM:
 		case SCALE:
 		case DISABLED:
 		case VRR_OFF:
