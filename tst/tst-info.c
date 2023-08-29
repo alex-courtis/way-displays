@@ -60,6 +60,8 @@ void print_cfg_commands__ok(void **state) {
 	slist_append(&cfg->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
 
+	slist_append(&cfg->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
+
 	slist_append(&cfg->disabled_name_desc, strdup("three"));
 	slist_append(&cfg->disabled_name_desc, strdup("four"));
 

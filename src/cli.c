@@ -36,7 +36,7 @@ void usage(FILE *stream) {
 		"     SCALE <name> <scale>\n"
 		"     MODE <name> MAX\n"
 		"     MODE <name> <width> <height> [<Hz>]\n"
-		"     TRANSFORM <name> <normal|90|180|270|flipped|flipped-90|flipped-180|flipped-270>"
+		"     TRANSFORM <name> <normal|90|180|270|flipped|flipped-90|flipped-180|flipped-270>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
 		"  -d, --d[elete]  remove\n"

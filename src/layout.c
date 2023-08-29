@@ -203,6 +203,25 @@ void desire_scale(struct Head *head) {
 	}
 }
 
+void desire_transform(struct Head *head) {
+	if (!head->desired.enabled) {
+		return;
+	}
+
+	// maybe user transform
+	struct UserTransform *user_transform;
+	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
+		user_transform = (struct UserTransform*)i->val;
+		if (head_matches_name_desc(head, user_transform->name_desc)) {
+			head->desired.transform = user_transform->transform;
+			return;
+		}
+	}
+
+	// normal if not specified
+	head->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+}
+
 void desire_adaptive_sync(struct Head *head) {
 	if (!head->desired.enabled) {
 		return;
@@ -229,7 +248,7 @@ void desire(void) {
 		desire_enabled(head);
 		desire_mode(head);
 		desire_scale(head);
-		// TODO #41 TRANSFORM
+		desire_transform(head);
 		desire_adaptive_sync(head);
 
 		head_scaled_dimensions(head);
@@ -288,7 +307,7 @@ void apply(void) {
 				head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 				zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
 				zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
-				// TODO #41 TRANSFORM
+				zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
 			} else {
 				zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 			}

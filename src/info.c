@@ -123,8 +123,6 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 	if (!cfg)
 		return;
 
-	struct UserScale *user_scale;
-	struct UserMode *user_mode;
 	struct SList *i;
 
 	if (cfg->arrange && cfg->align) {
@@ -152,6 +150,7 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 
 	if (cfg->user_scales) {
 		log_(t, "  Scale:");
+		struct UserScale *user_scale;
 		for (i = cfg->user_scales; i; i = i->nex) {
 			user_scale = (struct UserScale*)i->val;
 			if (del) {
@@ -164,9 +163,19 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 
 	if (cfg->user_modes) {
 		log_(t, "  Mode:");
+		struct UserMode *user_mode;
 		for (i = cfg->user_modes; i; i = i->nex) {
 			user_mode = (struct UserMode*)i->val;
 			print_user_mode(t, user_mode, del);
+		}
+	}
+
+	if (cfg->user_transforms) {
+		log_(t, "  Transform:");
+		struct UserTransform *user_transform;
+		for (i = cfg->user_transforms; i; i = i->nex) {
+			user_transform = (struct UserTransform*)i->val;
+			log_(t, "    %s: %s", user_transform->name_desc, transform_name(user_transform->transform));
 		}
 	}
 
@@ -254,6 +263,14 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 	}
 
 	newline = true;
+	for (i = cfg->user_transforms; i; i = i->nex) {
+		struct UserTransform *user_transform = (struct UserTransform*)i->val;
+
+		print_newline(t, &newline);
+		log_(t, "way-displays -s TRANSFORM '%s' %s", user_transform->name_desc, transform_name(user_transform->transform));
+	}
+
+	newline = true;
 	for (i = cfg->disabled_name_desc; i; i = i->nex) {
 		print_newline(t, &newline);
 		log_(t, "way-displays -s DISABLED '%s'", (char*)i->val);
@@ -315,6 +332,9 @@ void print_head_desired(enum LogThreshold t, struct Head *head) {
 						head->desired.x,
 						head->desired.y
 					);
+			}
+			if (!head->current.enabled || head->current.transform != head->desired.transform) {
+				log_(t, "    transform: %s", transform_name(head->desired.transform));
 			}
 		}
 		if (!head->current.enabled) {
