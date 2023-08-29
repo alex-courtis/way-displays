@@ -21,7 +21,7 @@ struct Mode {
 struct ModesResRefresh {
 	int32_t width;
 	int32_t height;
-	int32_t refresh_hz;
+	int32_t refresh_mhz;
 	struct SList *modes;
 };
 
@@ -43,8 +43,6 @@ double mode_dpi(struct Mode *mode);
 double mode_scale(struct Mode *mode);
 
 struct SList *modes_res_refresh(struct SList *modes);
-
-bool mrr_satisfies_user_mode(struct ModesResRefresh *mrr, struct UserMode *user_mode);
 
 struct Mode *mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode, int32_t width, int32_t height, int32_t refresh_mhz, bool preferred);
 

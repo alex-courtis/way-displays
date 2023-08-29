@@ -86,6 +86,17 @@ bool equal_mode_res_hz(const void *a, const void *b) {
 		mhz_to_hz_rounded(lhs->refresh_mhz) == mhz_to_hz_rounded(rhs->refresh_mhz);
 }
 
+bool equal_mode_user_mode_res_refresh(const void *a, const void *b) {
+	if (!a || !b) {
+		return false;
+	}
+
+	struct Mode *lhs = (struct Mode*)a;
+	struct UserMode *rhs = (struct UserMode*)b;
+
+	return lhs->width == rhs->width && lhs->height == rhs->height && lhs->refresh_mhz == rhs->refresh_mhz;
+}
+
 bool greater_than_res_refresh(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
@@ -121,7 +132,7 @@ bool mrr_satisfies_user_mode(struct ModesResRefresh *mrr, struct UserMode *user_
 	return user_mode->max ||
 		(mrr->width == user_mode->width &&
 		 mrr->height == user_mode->height &&
-		 (user_mode->refresh_mhz == -1 || mrr->refresh_hz == user_mode->refresh_mhz));
+		 (user_mode->refresh_mhz == -1 || mhz_to_hz_rounded(mrr->refresh_mhz) == mhz_to_hz_rounded(user_mode->refresh_mhz)));
 }
 
 double mode_dpi(struct Mode *mode) {
@@ -158,7 +169,7 @@ struct SList *modes_res_refresh(struct SList *modes) {
 			mrr = calloc(1, sizeof(struct ModesResRefresh));
 			mrr->width = mode->width;
 			mrr->height = mode->height;
-			mrr->refresh_hz = mhz_to_hz_rounded(mode->refresh_mhz);
+			mrr->refresh_mhz = mode->refresh_mhz;
 			slist_append(&mrrs, mrr);
 		}
 
@@ -175,6 +186,12 @@ struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, str
 		return NULL;
 
 	struct SList *i, *j;
+
+	// exact res and refresh
+	struct Mode *mode_exact = slist_find_equal_val(modes, equal_mode_user_mode_res_refresh, user_mode);
+	if (mode_exact && !slist_find_equal_val(modes_failed, NULL, mode_exact)) {
+		return mode_exact;
+	}
 
 	// highest mode matching the user mode
 	struct SList *mrrs = modes_res_refresh(modes);

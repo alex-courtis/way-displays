@@ -323,7 +323,7 @@ struct UserMode *cfg_user_mode_default(void) {
 	return cfg_user_mode_init(NULL, false, -1, -1, -1, false);
 }
 
-struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode) {
+struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_mhz, const bool warned_no_mode) {
 	struct UserMode *um = (struct UserMode*)calloc(1, sizeof(struct UserMode));
 
 	if (name_desc) {
@@ -332,7 +332,7 @@ struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const
 	um->max = max;
 	um->width = width;
 	um->height = height;
-	um->refresh_mhz = refresh_hz;
+	um->refresh_mhz = refresh_mhz;
 	um->warned_no_mode = warned_no_mode;
 
 	return um;

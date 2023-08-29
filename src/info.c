@@ -104,7 +104,7 @@ void print_modes_res_refresh(enum LogThreshold t, struct Head *head) {
 		mrr = i->val;
 
 		bp = buf;
-		bp += snprintf(bp, sizeof(buf) - (bp - buf), "    mode:    %5d x%5d @%4d Hz ", mrr->width, mrr->height, mrr->refresh_hz);
+		bp += snprintf(bp, sizeof(buf) - (bp - buf), "    mode:    %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
 		for (struct SList *j = mrr->modes; j; j = j->nex) {
 			mode = j->val;
