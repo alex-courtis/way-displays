@@ -5,6 +5,7 @@
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
+#include <wayland-client-protocol.h>
 
 #include "cfg.h"
 #include "convert.h"
