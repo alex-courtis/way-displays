@@ -234,7 +234,7 @@ void parse_element__mode_set_res(void **state) {
 
 void parse_element__mode_set_res_refresh(void **state) {
 	optind = 0;
-	char *argv[] = { "DISPL", "1", "2", "3", };
+	char *argv[] = { "DISPL", "1", "2", "12.3456", };
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 4, argv);
 
@@ -243,7 +243,7 @@ void parse_element__mode_set_res_refresh(void **state) {
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
 	expectedUserMode->height = 2;
-	expectedUserMode->refresh_hz = 3;
+	expectedUserMode->refresh_mhz = 12346;
 
 	struct Cfg expected = { 0 };
 	slist_append(&expected.user_modes, expectedUserMode);

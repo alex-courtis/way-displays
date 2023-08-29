@@ -72,7 +72,7 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->user_scales, cfg_user_scale_init("three", 3));
 	slist_append(&cfg->user_scales, cfg_user_scale_init("four", 4));
 
-	slist_append(&cfg->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 60, false));
+	slist_append(&cfg->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
 

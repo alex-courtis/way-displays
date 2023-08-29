@@ -87,7 +87,7 @@ bool cfg_equal_user_mode(const void *value, const void *data) {
 		return false;
 	}
 
-	if ((lhs->refresh_hz != -1 || rhs->refresh_hz != -1) && lhs->refresh_hz != rhs->refresh_hz) {
+	if ((lhs->refresh_mhz != -1 || rhs->refresh_mhz != -1) && lhs->refresh_mhz != rhs->refresh_mhz) {
 		return false;
 	}
 
@@ -123,8 +123,8 @@ bool invalid_user_mode(const void *value, const void *data) {
 		log_warn("\nIgnoring non-positive MODE %s HEIGHT %d", user_mode->name_desc, user_mode->height);
 		return true;
 	}
-	if (user_mode->refresh_hz != -1 && user_mode->refresh_hz <= 0) {
-		log_warn("\nIgnoring non-positive MODE %s HZ %d", user_mode->name_desc, user_mode->refresh_hz);
+	if (user_mode->refresh_mhz != -1 && user_mode->refresh_mhz <= 0) {
+		log_warn("\nIgnoring non-positive MODE %s HZ %s", user_mode->name_desc, mhz_to_hz_str(user_mode->refresh_mhz));
 		return true;
 	}
 
@@ -205,7 +205,7 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 		to_user_mode->max = from_user_mode->max;
 		to_user_mode->width = from_user_mode->width;
 		to_user_mode->height = from_user_mode->height;
-		to_user_mode->refresh_hz = from_user_mode->refresh_hz;
+		to_user_mode->refresh_mhz = from_user_mode->refresh_mhz;
 		to_user_mode->warned_no_mode = from_user_mode->warned_no_mode;
 		slist_append(&to->user_modes, to_user_mode);
 	}
@@ -332,7 +332,7 @@ struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const
 	um->max = max;
 	um->width = width;
 	um->height = height;
-	um->refresh_hz = refresh_hz;
+	um->refresh_mhz = refresh_hz;
 	um->warned_no_mode = warned_no_mode;
 
 	return um;
@@ -525,7 +525,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		merged_user_mode->max = set_user_mode->max;
 		merged_user_mode->width = set_user_mode->width;
 		merged_user_mode->height = set_user_mode->height;
-		merged_user_mode->refresh_hz = set_user_mode->refresh_hz;
+		merged_user_mode->refresh_mhz = set_user_mode->refresh_mhz;
 		merged_user_mode->warned_no_mode = set_user_mode->warned_no_mode;
 	}
 

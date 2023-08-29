@@ -56,7 +56,7 @@ void print_cfg_commands__ok(void **state) {
 	slist_append(&cfg->user_scales, cfg_user_scale_init("one", 1));
 	slist_append(&cfg->user_scales, cfg_user_scale_init("two", 2.3456));
 
-	slist_append(&cfg->user_modes, cfg_user_mode_init("all", false, 1, 2, 3, false));
+	slist_append(&cfg->user_modes, cfg_user_mode_init("all", false, 1, 2, 12340, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
 

@@ -29,7 +29,14 @@ struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed);
 
 struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed);
 
-int32_t mhz_to_hz(int32_t mhz);
+// up to 3 d.p.
+const char *mhz_to_hz_str(int32_t mhz);
+
+// hz float string to milliHz, 0 on failure
+int32_t hz_str_to_mhz(const char *hz_str);
+
+// rounded integer
+int32_t mhz_to_hz_rounded(int32_t mhz);
 
 double mode_dpi(struct Mode *mode);
 

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "mode.h"
@@ -55,7 +56,20 @@ struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed)
 	return max;
 }
 
-int32_t mhz_to_hz(int32_t mhz) {
+const char *mhz_to_hz_str(int32_t mhz) {
+	static char buf[64];
+	snprintf(buf, 64, "%g", ((float)mhz) / 1000);
+	return buf;
+}
+
+int32_t hz_str_to_mhz(const char *hz_str) {
+	if (!hz_str)
+		return 0;
+
+	return lround(atof(hz_str) * 1000);
+}
+
+int32_t mhz_to_hz_rounded(int32_t mhz) {
 	return (mhz + 500) / 1000;
 }
 
@@ -69,7 +83,7 @@ bool equal_mode_res_hz(const void *a, const void *b) {
 
 	return lhs->width == rhs->width &&
 		lhs->height == rhs->height &&
-		mhz_to_hz(lhs->refresh_mhz) == mhz_to_hz(rhs->refresh_mhz);
+		mhz_to_hz_rounded(lhs->refresh_mhz) == mhz_to_hz_rounded(rhs->refresh_mhz);
 }
 
 bool greater_than_res_refresh(const void *a, const void *b) {
@@ -107,7 +121,7 @@ bool mrr_satisfies_user_mode(struct ModesResRefresh *mrr, struct UserMode *user_
 	return user_mode->max ||
 		(mrr->width == user_mode->width &&
 		 mrr->height == user_mode->height &&
-		 (user_mode->refresh_hz == -1 || mrr->refresh_hz == user_mode->refresh_hz));
+		 (user_mode->refresh_mhz == -1 || mrr->refresh_hz == user_mode->refresh_mhz));
 }
 
 double mode_dpi(struct Mode *mode) {
@@ -144,7 +158,7 @@ struct SList *modes_res_refresh(struct SList *modes) {
 			mrr = calloc(1, sizeof(struct ModesResRefresh));
 			mrr->width = mode->width;
 			mrr->height = mode->height;
-			mrr->refresh_hz = mhz_to_hz(mode->refresh_mhz);
+			mrr->refresh_hz = mhz_to_hz_rounded(mode->refresh_mhz);
 			slist_append(&mrrs, mrr);
 		}
 
