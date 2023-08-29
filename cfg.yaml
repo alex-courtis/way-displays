@@ -52,9 +52,11 @@ MODE:
     #- NAME_DESC: DP-2
     #  MAX: TRUE
 
+# Rotate or translate the display.
+# 90, 180, 270, FLIPPED, FLIPPED-90, FLIPPED-180, FLIPPED-270
 TRANSFORM:
-  - NAME_DESC: 'monitor description'
-    TRANSFORM: FLIPPED-270
+  # - NAME_DESC: 'monitor description'
+  #   TRANSFORM: 270
 
 # VRR / adaptive sync is enabled by default. Disable it per display.
 VRR_OFF:

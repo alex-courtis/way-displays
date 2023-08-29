@@ -145,6 +145,18 @@ MODE:
       MAX: TRUE
 ```
 
+### TRANSFORM
+
+Rotate or translate the display.
+`90, `180`, `270`, `FLIPPED`, `FLIPPED-90`, `FLIPPED-180`, `FLIPPED-270`
+
+e.g.
+```yaml
+TRANSFORM:
+    - NAME_DESC: 'Monitor Maker ABC123'
+      TRANSFORM: FLIPPED-90
+```
+
 ### VRR_OFF
 
 Adaptive sync is enabled by default. Disable it per display.
@@ -190,7 +202,7 @@ Usage: way-displays [OPTIONS...] [COMMAND]
 OPTIONS
   -L, --l[og-threshold] <debug|info|warning|error>
   -c, --c[onfig]        <path>
-  -y, --y[aml]          YAML client output
+  -y, --y[aml]          YAML client output, implies -L warning
 COMMANDS
   -h, --h[elp]    show this message
   -v, --v[ersion] display version information
@@ -204,11 +216,13 @@ COMMANDS
      SCALE <name> <scale>
      MODE <name> MAX
      MODE <name> <width> <height> [<Hz>]
+     TRANSFORM <name> <90|180|270|flipped|flipped-90|flipped-180|flipped-270>
      DISABLED <name>
      VRR_OFF <name>
   -d, --d[elete]  remove
      SCALE <name>
      MODE <name>
+     TRANSFORM <name>
      DISABLED <name>
      VRR_OFF <name>
 ```
