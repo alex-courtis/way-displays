@@ -1,6 +1,8 @@
 #ifndef CFG_H
 #define CFG_H
 
+#include <wayland-client-protocol.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 #include "log.h"
@@ -41,6 +43,13 @@ struct UserMode {
 	bool warned_no_mode;
 };
 
+struct UserTransform {
+	char *name_desc;
+	enum wl_output_transform transform;
+};
+
+#define WL_OUTPUT_TRANSFORM_MAX WL_OUTPUT_TRANSFORM_FLIPPED_270
+
 struct Cfg {
 	char *dir_path;
 	char *file_path;
@@ -60,6 +69,7 @@ struct Cfg {
 	struct SList *adaptive_sync_off_name_desc;
 	struct SList *max_preferred_refresh_name_desc;
 	struct SList *disabled_name_desc;
+	struct SList *user_transforms;
 	enum LogThreshold log_threshold;
 };
 
@@ -71,6 +81,7 @@ enum CfgElement {
 	AUTO_SCALE,
 	SCALE,
 	MODE,
+	TRANSFORM,
 	VRR_OFF,
 	LAPTOP_DISPLAY_PREFIX,
 	MAX_PREFERRED_REFRESH,
@@ -81,7 +92,7 @@ enum CfgElement {
 
 void cfg_file_paths_init(const char *user_path);
 
-void cfg_init(const char *cfg_path);
+void cfg_init_path(const char *cfg_path);
 
 bool cfg_equal(struct Cfg *a, struct Cfg *b);
 
@@ -91,6 +102,8 @@ void cfg_file_reload(void);
 
 void cfg_file_write(void);
 
+struct Cfg *cfg_init(void);
+
 struct Cfg *cfg_default(void);
 
 struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
@@ -98,6 +111,8 @@ struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const
 struct UserMode *cfg_user_mode_default(void);
 
 struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale);
+
+struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum wl_output_transform transform);
 
 bool cfg_equal_user_scale_name(const void *value, const void *data);
 
@@ -107,9 +122,15 @@ bool cfg_equal_user_mode_name(const void *value, const void *data);
 
 bool cfg_equal_user_mode(const void *value, const void *data);
 
+bool cfg_equal_user_transform_name(const void *value, const void *data);
+
+bool cfg_equal_user_transform(const void *value, const void *data);
+
 void cfg_user_scale_free(void *user_scale);
 
 void cfg_user_mode_free(void *user_mode);
+
+void cfg_user_transform_free(void *user_transform);
 
 void cfg_destroy(void);
 

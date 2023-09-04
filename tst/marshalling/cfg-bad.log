@@ -13,6 +13,10 @@ Ignoring invalid MODE BAD_MODE_WIDTH WIDTH BAD_WIDTH
 Ignoring invalid MODE BAD_MODE_HEIGHT HEIGHT BAD_HEIGHT
 Ignoring invalid MODE BAD_MODE_HZ HZ BAD_HZ
 Ignoring bad MODE regex '(mode':  Unmatched ( or \(
+Ignoring missing TRANSFORM  NAME_DESC
+Ignoring invalid TRANSFORM BAD_TRANSFORM_NAME TRANSFORM BAD_TRANSFORM_VAL
+Ignoring missing TRANSFORM MISSING_TRANSFORM_VALUE TRANSFORM
+Ignoring bad TRANSFORM regex '(transform':  Unmatched ( or \(
 Ignoring bad VRR_OFF regex '(vrroff':  Unmatched ( or \(
 Ignoring bad MAX_PREFERRED_REFRESH regex '(max':  Unmatched ( or \(
 Ignoring bad DISABLED regex '(disabled':  Unmatched ( or \(

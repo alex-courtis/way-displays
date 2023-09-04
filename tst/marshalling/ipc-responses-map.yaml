@@ -23,6 +23,9 @@ CFG:
       HEIGHT: 1440
     - NAME_DESC: seven
       MAX: TRUE
+  TRANSFORM:
+    - NAME_DESC: twelve
+      TRANSFORM: FLIPPED
   VRR_OFF:
     - ten
     - ELEVEN
@@ -44,13 +47,13 @@ STATE:
       SERIAL_NUMBER: serial
       WIDTH_MM: 1
       HEIGHT_MM: 2
-      TRANSFORM: 3
       CURRENT:
         SCALE: 4
         ENABLED: TRUE
         X: 5
         Y: 6
         VRR: TRUE
+        TRANSFORM: 270
         MODE:
           WIDTH: 10
           HEIGHT: 11
@@ -62,6 +65,7 @@ STATE:
         X: 8
         Y: 9
         VRR: FALSE
+        TRANSFORM: FLIPPED
         MODE:
           WIDTH: 13
           HEIGHT: 14

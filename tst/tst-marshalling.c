@@ -83,6 +83,8 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->disabled_name_desc, strdup("EIGHT"));
 	slist_append(&cfg->disabled_name_desc, strdup("nine"));
 
+	slist_append(&cfg->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+
 	return cfg;
 }
 
@@ -139,7 +141,7 @@ void marshal_cfg__ok(void **state) {
 
 	char *expected = read_file("tst/marshalling/cfg-all.yaml");
 
-	assert_string_equal(actual, expected);
+	assert_string_equal_nn(actual, expected);
 
 	cfg_free(cfg_actual);
 	free(actual);
@@ -167,7 +169,7 @@ void marshal_ipc_request__cfg_set(void **state) {
 
 	char *expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
 
-	assert_string_equal(actual, expected);
+	assert_string_equal_nn(actual, expected);
 
 	ipc_request_free(ipc_request);
 	free(actual);
@@ -214,7 +216,6 @@ void marshal_ipc_response__map(void **state) {
 		.description = "desc",
 		.width_mm = 1,
 		.height_mm = 2,
-		.transform = WL_OUTPUT_TRANSFORM_270, // 3
 		.make = "make",
 		.model = "model",
 		.serial_number = "serial",
@@ -225,6 +226,7 @@ void marshal_ipc_response__map(void **state) {
 			.y = 6,
 			.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 			.mode = &mode1,
+			.transform = WL_OUTPUT_TRANSFORM_270, // 3
 		},
 		.desired = {
 			.scale = wl_fixed_from_double(7.0),
@@ -233,6 +235,7 @@ void marshal_ipc_response__map(void **state) {
 			.y = 9,
 			.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 			.mode = &mode2,
+			.transform = WL_OUTPUT_TRANSFORM_FLIPPED, // 4
 		},
 	};
 
@@ -247,7 +250,7 @@ void marshal_ipc_response__map(void **state) {
 
 	char *expected = read_file("tst/marshalling/ipc-responses-map.yaml");
 
-	assert_string_equal(actual, expected);
+	assert_string_equal_nn(actual, expected);
 
 	ipc_operation_free(ipc_operation);
 	free(actual);
@@ -270,7 +273,7 @@ void marshal_ipc_response__seq(void **state) {
 
 	assert_non_null(actual);
 
-	assert_string_equal(actual, "- DONE: TRUE\n  RC: 1\n");
+	assert_string_equal_nn(actual, "- DONE: TRUE\n  RC: 1\n");
 
 	ipc_operation_free(ipc_operation);
 	free(actual);
@@ -394,7 +397,7 @@ void unmarshal_ipc_responses__map(void **state) {
 
 	assert_non_null(response->lid);
 	assert_true(response->lid->closed);
-	assert_string_equal(response->lid->device_path, "/path/to/lid");
+	assert_string_equal_nn(response->lid->device_path, "/path/to/lid");
 
 	assert_non_null(response->cfg);
 	struct Cfg *expected_cfg = cfg_all();
@@ -407,7 +410,6 @@ void unmarshal_ipc_responses__map(void **state) {
 	assert_string_equal_nn(head->description, "desc");
 	assert_int_equal(head->width_mm, 1);
 	assert_int_equal(head->height_mm, 2);
-	assert_int_equal(head->transform, WL_OUTPUT_TRANSFORM_270); // 3
 	assert_string_equal_nn(head->make, "make");
 	assert_string_equal_nn(head->model, "model");
 	assert_string_equal_nn(head->serial_number, "serial");
@@ -452,6 +454,9 @@ void unmarshal_ipc_responses__map(void **state) {
 	assert_int_equal(mode2->height, 14);
 	assert_int_equal(mode2->refresh_mhz, 15);
 	assert_false(mode2->preferred);
+
+	assert_int_equal(head->current.transform, 3);
+	assert_int_equal(head->desired.transform, 4);
 
 	assert_int_equal(slist_length(response->log_cap_lines), 2);
 

@@ -20,6 +20,7 @@ struct HeadState {
 	// layout coords
 	int32_t x;
 	int32_t y;
+	enum wl_output_transform transform;
 	enum zwlr_output_head_v1_adaptive_sync_state adaptive_sync;
 };
 

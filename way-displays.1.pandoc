@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2023/05/02
+% 2023/08/29
 
 # NAME
 
@@ -103,6 +103,9 @@ The user must be a member of the `input` group.
 	`MODE` <*name*> <*width*> <*height*> [<*Hz*>]
 	: Specified resolution at its highest refresh. Optional refresh will choose a mode +-0.5Hz.
 
+	`TRANSFORM` <*name*> <*90*|*180*|*270*|*flipped*|*flipped-90*|*flipped-180*|*flipped-270*>
+	: Transform a specific display.
+
 	`VRR_OFF` <*name*>
 	: Disable VRR for a display.
 
@@ -118,6 +121,9 @@ The user must be a member of the `input` group.
 	`MODE` <*name*>
 	: Use preferred or highest availble if no preferred.
 
+	`TRANSFORM` <*name*>
+	: Remove transformation for a display.
+
 	`VRR_OFF` <*name*>
 	: Enable VRR for a display.
 
@@ -132,8 +138,11 @@ The user must be a member of the `input` group.
 You can configure displays by name or description. You can find these by looking at the logs e.g.
 
 	DP-3 Arrived:
+      info:
 		name:     'DP-3'
-		desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
+        make:     'Monitor Maker'
+        model:    'ABC123'
+		desc:     'Monitor Maker ABC123 (DP-3 via HDMI)'
 
 It is recommended to use the description rather than the name, as the name may change over time and will most likely be different on different PCs.
 
