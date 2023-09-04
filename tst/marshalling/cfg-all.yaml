@@ -21,6 +21,9 @@ MODE:
     HEIGHT: 1440
   - NAME_DESC: seven
     MAX: TRUE
+TRANSFORM:
+  - NAME_DESC: twelve
+    TRANSFORM: FLIPPED
 VRR_OFF:
   - ten
   - ELEVEN

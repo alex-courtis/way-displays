@@ -48,6 +48,7 @@ struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Nod
 #define TI(STATEMENT) try { STATEMENT; } catch (...) { }
 struct UserScale*& operator << (struct UserScale*& user_scale, const YAML::Node& node);
 struct UserMode*& operator << (struct UserMode*& user_mode, const YAML::Node& node);
+struct UserTransform*& operator << (struct UserTransform*& user_transform, const YAML::Node& node);
 struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node);
 struct Lid*& operator << (struct Lid*& lid, const YAML::Node& node);
 struct Mode*& operator << (struct Mode*& mode, const YAML::Node& node);
@@ -97,12 +98,7 @@ bool parse_node_val_bool(const YAML::Node &node, const char *key, bool *val, con
 
 bool parse_node_val_string(const YAML::Node &node, const char *key, char **val, const char *desc1, const char *desc2) {
 	if (node[key]) {
-		try {
-			*val = strdup(node[key].as<std::string>().c_str());
-		} catch (YAML::BadConversion &e) {
-			log_warn("Ignoring invalid %s %s %s %s", desc1, desc2, key, node[key].as<std::string>().c_str());
-			return false;
-		}
+		*val = strdup(node[key].as<std::string>().c_str());
 	} else {
 		log_warn("Ignoring missing %s %s %s", desc1, desc2, key);
 		return false;
@@ -140,6 +136,20 @@ bool parse_node_val_float(const YAML::Node &node, const char *key, float *val, c
 	return true;
 }
 
+bool parse_node_val_output_transform(const YAML::Node &node, const char *key, enum wl_output_transform *val, const char *desc1, const char *desc2) {
+	if (node[key]) {
+		*val = transform_val(node[key].as<std::string>().c_str());
+	} else {
+		log_warn("Ignoring missing %s %s %s", desc1, desc2, key);
+		return false;
+	}
+	if (!*val) {
+		log_warn("Ignoring invalid %s %s %s %s", desc1, desc2, key, node[key].as<std::string>().c_str());
+		return false;
+	}
+	return true;
+}
+
 char *yaml_with_newline(const YAML::Emitter &e) {
 	char *yaml = (char*)calloc(e.size() + 2, sizeof(char));
 	snprintf(yaml, e.size() + 2, "%s\n", e.c_str());
@@ -162,9 +172,7 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	if (cfg.order_name_desc) {
 		e << YAML::Key << "ORDER" << YAML::BeginSeq;					// ORDER
 		for (struct SList *i = cfg.order_name_desc; i; i = i->nex) {
-			if (i->val) {
-				e << (char*)i->val;
-			}
+			e << (char*)i->val;
 		}
 		e << YAML::EndSeq;												// ORDER
 	}
@@ -181,12 +189,10 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::Key << "SCALE" << YAML::BeginSeq;					// SCALE
 		for (struct SList *i = cfg.user_scales; i; i = i->nex) {
 			struct UserScale *user_scale = (struct UserScale*)i->val;
-			if (user_scale) {
-				e << YAML::BeginMap;											// scale
-				e << YAML::Key << "NAME_DESC" << YAML::Value << user_scale->name_desc;
-				e << YAML::Key << "SCALE" << YAML::Value << user_scale->scale;
-				e << YAML::EndMap;												// scale
-			}
+			e << YAML::BeginMap;											// scale
+			e << YAML::Key << "NAME_DESC" << YAML::Value << user_scale->name_desc;
+			e << YAML::Key << "SCALE" << YAML::Value << user_scale->scale;
+			e << YAML::EndMap;												// scale
 		}
 		e << YAML::EndSeq;												// SCALE
 	}
@@ -207,18 +213,37 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 						e << YAML::Key << "HZ" << YAML::Value << mhz_to_hz_str(user_mode->refresh_mhz);
 					}
 				}
-				e << YAML::EndMap;												// mode
 			}
+			e << YAML::EndMap;												// mode
 		}
 		e << YAML::EndSeq;												// MODE
+	}
+
+	if (cfg.user_transforms) {
+		bool sequence_started = false;
+		for (struct SList *i = cfg.user_transforms; i; i = i->nex) {
+			struct UserTransform *user_transform = (struct UserTransform*)i->val;
+			if (!transform_name(user_transform->transform)) {
+				continue;
+			}
+			if (!sequence_started) {
+				e << YAML::Key << "TRANSFORM" << YAML::BeginSeq;		// TRANSFORM
+				sequence_started = true;
+			}
+			e << YAML::BeginMap;											// transform
+			e << YAML::Key << "NAME_DESC" << YAML::Value << user_transform->name_desc;
+			e << YAML::Key << "TRANSFORM" << YAML::Value << transform_name(user_transform->transform);
+			e << YAML::EndMap;												// transform
+		}
+		if (sequence_started) {
+			e << YAML::EndSeq;											// TRANSFORM
+		}
 	}
 
 	if (cfg.adaptive_sync_off_name_desc) {
 		e << YAML::Key << "VRR_OFF" << YAML::BeginSeq;					// VRR_OFF
 		for (struct SList *i = cfg.adaptive_sync_off_name_desc; i; i = i->nex) {
-			if (i->val) {
-				e << (char*)i->val;
-			}
+			e << (char*)i->val;
 		}
 		e << YAML::EndSeq;												// VRR_OFF
 	}
@@ -226,9 +251,7 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	if (cfg.max_preferred_refresh_name_desc) {
 		e << YAML::Key << "MAX_PREFERRED_REFRESH" << YAML::BeginSeq;	// MAX_PREFERRED_REFRESH
 		for (struct SList *i = cfg.max_preferred_refresh_name_desc; i; i = i->nex) {
-			if (i->val) {
-				e << (char*)i->val;
-			}
+			e << (char*)i->val;
 		}
 		e << YAML::EndSeq;												// MAX_PREFERRED_REFRESH
 	}
@@ -244,9 +267,7 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	if (cfg.disabled_name_desc) {
 		e << YAML::Key << "DISABLED" << YAML::BeginSeq;					// DISABLED
 		for (struct SList *i = cfg.disabled_name_desc; i; i = i->nex) {
-			if (i->val) {
-				e << (char*)i->val;
-			}
+			e << (char*)i->val;
 		}
 		e << YAML::EndSeq;												// DISABLED
 	}
@@ -271,6 +292,9 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct HeadState& head_state) {
 	e << YAML::Key << "X" << YAML::Value << head_state.x;
 	e << YAML::Key << "Y" << YAML::Value << head_state.y;
 	e << YAML::Key << "VRR" << YAML::Value << (head_state.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+	if (transform_name(head_state.transform)) {
+		e << YAML::Key << "TRANSFORM" << YAML::Value << transform_name(head_state.transform);
+	}
 
 	if (head_state.mode) {
 		e << YAML::Key << "MODE" << YAML::BeginMap;
@@ -295,7 +319,6 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 		e << YAML::Key << "SERIAL_NUMBER" << YAML::Value << head.serial_number;
 	e << YAML::Key << "WIDTH_MM" << YAML::Value << head.width_mm;
 	e << YAML::Key << "HEIGHT_MM" << YAML::Value << head.height_mm;
-	e << YAML::Key << "TRANSFORM" << YAML::Value << head.transform;
 
 	e << YAML::Key << "CURRENT" << YAML::BeginMap;		// CURRENT
 	e << head.current;
@@ -331,7 +354,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 	}
 
 	if (!cfg_validated) {
-		cfg_validated = (struct CfgValidated*)calloc(1, sizeof(struct Cfg));
+		cfg_validated = (struct CfgValidated*)cfg_init();
 	}
 
 	struct Cfg *cfg = (struct Cfg*)cfg_validated;
@@ -410,7 +433,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 				continue;
 			}
 			if (!validate_regex(user_scale->name_desc, SCALE)) {
-				cfg_user_mode_free(user_scale);
+				cfg_user_scale_free(user_scale);
 				continue;
 			}
 			if (!parse_node_val_float(scale, "SCALE", &user_scale->scale, "SCALE", user_scale->name_desc)) {
@@ -458,6 +481,28 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 
 			slist_remove_all_free(&cfg->user_modes, cfg_equal_user_mode_name, user_mode, cfg_user_mode_free);
 			slist_append(&cfg->user_modes, user_mode);
+		}
+	}
+
+	if (node["TRANSFORM"]) {
+		for (const auto &transformation : node["TRANSFORM"]) {
+			struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+
+			if (!parse_node_val_string(transformation, "NAME_DESC", &user_transform->name_desc, "TRANSFORM", "")) {
+				cfg_user_transform_free(user_transform);
+				continue;
+			}
+			if (!validate_regex(user_transform->name_desc, TRANSFORM)) {
+				cfg_user_transform_free(user_transform);
+				continue;
+			}
+			if (!parse_node_val_output_transform(transformation, "TRANSFORM", &user_transform->transform, "TRANSFORM", user_transform->name_desc)) {
+				cfg_user_transform_free(user_transform);
+				continue;
+			}
+
+			slist_remove_all_free(&cfg->user_transforms, cfg_equal_user_transform_name, user_transform, cfg_user_transform_free);
+			slist_append(&cfg->user_transforms, user_transform);
 		}
 	}
 
@@ -568,12 +613,37 @@ struct UserMode*& operator << (struct UserMode*& user_mode, const YAML::Node& no
 	return user_mode;
 }
 
+struct UserTransform*& operator << (struct UserTransform*& user_transform, const YAML::Node& node) {
+	if (!node || !node.IsMap())
+		return user_transform;
+
+	char *ot_name = NULL;
+	TI(ot_name = strdup(node["TRANSFORM"].as<std::string>().c_str()));
+	if (!ot_name) {
+		return user_transform;
+	}
+
+	enum wl_output_transform ot_val = transform_val(ot_name);
+	free(ot_name);
+	if (!ot_val) {
+		return user_transform;
+	}
+
+	if (!user_transform)
+		user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+
+	TI(user_transform->name_desc = strdup(node["NAME_DESC"].as<std::string>().c_str()));
+	user_transform->transform = ot_val;
+
+	return user_transform;
+}
+
 struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 	if (!node || !node.IsMap())
 		return cfg;
 
 	if (!cfg)
-		cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+		cfg = cfg_init();
 
 	TI(cfg->arrange = arrange_val_start(node["ARRANGE"].as<std::string>().c_str()));
 
@@ -603,6 +673,15 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 			struct UserMode *mode = cfg_user_mode_default();
 			if (mode << node_mode) {
 				slist_append(&cfg->user_modes, mode);
+			}
+		}
+	}
+
+	if (node["TRANSFORM"] && node["TRANSFORM"].IsSequence()) {
+		for (const auto &node_transformation : node["TRANSFORM"]) {
+			struct UserTransform *user_transform = NULL;
+			if (user_transform << node_transformation) {
+				slist_append(&cfg->user_transforms, user_transform);
 			}
 		}
 	}
@@ -663,6 +742,14 @@ struct HeadState& operator << (struct HeadState& head_state, const YAML::Node& n
 	TI(head_state.x = node["X"].as<int>());
 	TI(head_state.y = node["Y"].as<int>());
 
+	char *ot_name = NULL;
+	TI(ot_name = strdup(node["TRANSFORM"].as<std::string>().c_str()));
+	if (ot_name) {
+		enum wl_output_transform ot_val = transform_val(ot_name);
+		free(ot_name);
+		TI(head_state.transform = ot_val);
+	}
+
 	bool vrr = false;
 	TI(vrr = node["VRR"].as<bool>());
 	head_state.adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
@@ -686,7 +773,6 @@ struct Head*& operator << (struct Head*& head, const YAML::Node& node) {
 	TI(head->serial_number = strdup(node["SERIAL_NUMBER"].as<std::string>().c_str()));
 	TI(head->width_mm = node["WIDTH_MM"].as<int>());
 	TI(head->height_mm = node["HEIGHT_MM"].as<long>());
-	TI(head->transform = (enum wl_output_transform)node["TRANSFORM"].as<int>());
 
 	head->current << node["CURRENT"];
 	head->desired << node["DESIRED"];
@@ -787,7 +873,7 @@ char *marshal_ipc_request(struct IpcRequest *request) {
 		return yaml_with_newline(e);
 
 	} catch (const std::exception &e) {
-		log_error("\nmarshalling ipc request: %s\n%s", e.what());
+		log_error("\nmarshalling ipc request: %s", e.what());
 		return NULL;
 	}
 }
@@ -950,7 +1036,7 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 		yaml = yaml_with_newline(e);
 
 	} catch (const std::exception &e) {
-		log_error("marshalling ipc response: %s\n%s", e.what());
+		log_error("marshalling ipc response: %s", e.what());
 	}
 
 	if (operation->send_logs) {
@@ -1022,7 +1108,7 @@ char *marshal_cfg(struct Cfg *cfg) {
 		return yaml_with_newline(e);
 
 	} catch (const std::exception &e) {
-		log_error("marshalling cfg request: %s\n%s", e.what());
+		log_error("marshalling cfg request: %s", e.what());
 		return NULL;
 	}
 }

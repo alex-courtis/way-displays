@@ -27,7 +27,7 @@ tst-layout: WRAPS=,$\
 	--wrap=head_find_mode,$\
 	--wrap=head_auto_scale
 
-tst-cfg: WRAPS=,$\
+tst-cfg-file: WRAPS=,$\
 	--wrap=marshal_cfg,$\
 	--wrap=file_write,$\
 	--wrap=mkdir_p,$\

@@ -116,7 +116,7 @@ void head_scaled_dimensions__calculated(void **state) {
 
 	// double, not rotated
 	head.desired.scale = wl_fixed_from_double(0.5);
-	head.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	head.desired.transform = WL_OUTPUT_TRANSFORM_180;
 
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 400);
@@ -124,7 +124,7 @@ void head_scaled_dimensions__calculated(void **state) {
 
 	// one third, rotated
 	head.desired.scale = wl_fixed_from_double(3);
-	head.transform = WL_OUTPUT_TRANSFORM_90;
+	head.desired.transform = WL_OUTPUT_TRANSFORM_90;
 
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 33);

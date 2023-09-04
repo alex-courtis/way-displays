@@ -238,7 +238,7 @@ server(char *cfg_path) {
 	cfg_file_paths_init(cfg_path);
 
 	// maybe default, never exits
-	cfg_init(cfg_path);
+	cfg_init_path(cfg_path);
 	free(cfg_path);
 
 	// play back captured logs from cfg parse

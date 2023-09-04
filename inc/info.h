@@ -33,5 +33,7 @@ void print_user_mode(enum LogThreshold t, struct UserMode *user_mode, bool del);
 
 void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf);
 
+void info_mode_string(struct Mode *mode, char *buf, size_t nbuf);
+
 #endif // INFO_H
 

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
 
 #include "cfg.h"
 #include "slist.h"
@@ -32,11 +33,11 @@ int after_each(void **state) {
 }
 
 void print_cfg_commands__empty(void **state) {
-	struct Cfg *cfg = calloc(1, sizeof(struct Cfg));
+	struct Cfg *cfg = cfg_init();
 
 	print_cfg_commands(INFO, cfg);
 
-	free(cfg);
+	cfg_free(cfg);
 }
 
 void print_cfg_commands__ok(void **state) {
@@ -59,6 +60,8 @@ void print_cfg_commands__ok(void **state) {
 	slist_append(&cfg->user_modes, cfg_user_mode_init("all", false, 1, 2, 12340, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
 	slist_append(&cfg->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
+
+	slist_append(&cfg->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
 
 	slist_append(&cfg->disabled_name_desc, strdup("three"));
 	slist_append(&cfg->disabled_name_desc, strdup("four"));

@@ -64,6 +64,10 @@ MODE: !!seq
   - !!map
     NAME_DESC: !!str
     MAX: !!bool
+TRANSFORM: !!seq
+  - !!map
+    NAME_DESC: !!str
+    TRANSFORM: !!transform
 VRR_OFF: !!seq
   - !!str
 DISABLED: !!seq

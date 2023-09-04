@@ -14,6 +14,8 @@ way-displays -s MODE 'all' 1 2 12.34
 way-displays -s MODE 'res' 4 5
 way-displays -s MODE 'max' MAX
 
+way-displays -s TRANSFORM 'seven' FLIPPED-90
+
 way-displays -s DISABLED 'three'
 way-displays -s DISABLED 'four'
 

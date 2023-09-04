@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
 #include "cfg.h"
@@ -21,6 +22,7 @@ void position_heads(struct SList *heads);
 void desire_enabled(struct Head *head);
 void desire_mode(struct Head *head);
 void desire_scale(struct Head *head);
+void desire_transform(struct Head *head);
 void desire_adaptive_sync(struct Head *head);
 void handle_success(void);
 void handle_failure(void);
@@ -499,6 +501,45 @@ void desire_scale__user(void **state) {
 	assert_wl_fixed_t_equal_double(head0.desired.scale, 3.5);
 }
 
+void desire_transform__disabled(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = false,
+		.desired.transform = WL_OUTPUT_TRANSFORM_90,
+	};
+	slist_append(&cfg->user_transforms, cfg_user_transform_init("head0", WL_OUTPUT_TRANSFORM_180));
+
+	desire_transform(&head0);
+
+	assert_int_equal(head0.desired.transform, WL_OUTPUT_TRANSFORM_90);
+}
+
+void desire_transform__no_transform(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+		.desired.transform = WL_OUTPUT_TRANSFORM_90,
+	};
+
+	desire_transform(&head0);
+
+	assert_int_equal(head0.desired.transform, WL_OUTPUT_TRANSFORM_NORMAL);
+}
+
+void desire_transform__user(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+		.desired.transform = WL_OUTPUT_TRANSFORM_90,
+	};
+	slist_append(&cfg->user_transforms, cfg_user_transform_init("head9", WL_OUTPUT_TRANSFORM_270));
+	slist_append(&cfg->user_transforms, cfg_user_transform_init("head0", WL_OUTPUT_TRANSFORM_180));
+
+	desire_transform(&head0);
+
+	assert_int_equal(head0.desired.transform, WL_OUTPUT_TRANSFORM_180);
+}
+
 void desire_adaptive_sync__head_disabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = false,
@@ -679,6 +720,10 @@ int main(void) {
 		TEST(desire_scale__no_auto),
 		TEST(desire_scale__auto),
 		TEST(desire_scale__user),
+
+		TEST(desire_transform__disabled),
+		TEST(desire_transform__no_transform),
+		TEST(desire_transform__user),
 
 		TEST(desire_adaptive_sync__head_disabled),
 		TEST(desire_adaptive_sync__failed),
