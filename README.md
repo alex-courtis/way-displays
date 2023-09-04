@@ -176,19 +176,10 @@ When using a display scale that is not a whole number, the result will not be a 
 
 To ameliorate this, we always round our scale to a multiple of one eighth. This results in a nice round binary number, which minimises some of the rounding and results in a smoother image. If you're interested, our rounded scale is a [wl_fixed_t](https://wayland.freedesktop.org/docs/html/apb.html).
 
-## Questions, Suggestions And Ideas
+## Questions, Suggestions And Contributions
 
 Please create a [github issue](https://github.com/alex-courtis/way-displays/issues) and attach the log `/tmp/way-displays.1.me.log`
 
 [Contributions](CONTRIBUTING.md) are always welcome.
 
-[Milestone 1.9](https://github.com/alex-courtis/way-displays/milestone/1) contains a prioritised list of issue I would be eternally grateful for you to work on.
-
-## Help Wanted - GUI Configurator
-
-way-displays can currently be configured via the configuration file and CLI.
-
-A GUI client would greatly enhance usability. See [wdisplays collaboration](https://github.com/alex-courtis/way-displays/issues/55) for a great candidate.
-
-The client could use the same [IPC socket and YAML streaming protocol](doc/IPC.md) as the CLI.
-
+[Milestone 1.10](https://github.com/alex-courtis/way-displays/milestone/2) contains a list of issue I would be eternally grateful for you to work on.
