@@ -219,6 +219,19 @@ struct Mode *head_find_mode(struct Head *head) {
 	return mode;
 }
 
+struct Mode *head_preferred_mode(struct Head *head) {
+	if (!head)
+		return NULL;
+
+	for (struct SList *i = head->modes; i; i = i->nex) {
+		if (((struct Mode*)i->val)->preferred) {
+			return i->val;
+		}
+	}
+
+	return NULL;
+}
+
 bool head_current_not_desired(const void *data) {
 	const struct Head *head = data;
 

@@ -35,7 +35,7 @@ void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf) {
 	}
 }
 
-void mode_string(struct Mode *mode, char *buf, size_t nbuf) {
+void info_mode_string(struct Mode *mode, char *buf, size_t nbuf) {
 	if (!mode) {
 		*buf = '\0';
 		return;
@@ -69,7 +69,7 @@ void print_mode(enum LogThreshold t, struct Mode *mode) {
 	static char buf[2048];
 
 	if (mode) {
-		mode_string(mode, buf, sizeof(buf));
+		info_mode_string(mode, buf, sizeof(buf));
 		log_(t, "    mode:      %s", buf);
 	} else {
 		log_(t, "    (no mode)");
@@ -96,6 +96,7 @@ void print_modes_res_refresh(enum LogThreshold t, struct Head *head) {
 	char *bp;
 
 	struct SList *mrrs = modes_res_refresh(head->modes);
+	struct Mode *preferred_mode = head_preferred_mode(head);
 
 	struct ModesResRefresh *mrr = NULL;
 	struct Mode *mode = NULL;
@@ -109,7 +110,7 @@ void print_modes_res_refresh(enum LogThreshold t, struct Head *head) {
 		for (struct SList *j = mrr->modes; j; j = j->nex) {
 			mode = j->val;
 			bp += snprintf(bp, sizeof(buf) - (bp - buf), "%4d,%03d mHz", mode->refresh_mhz / 1000, mode->refresh_mhz % 1000);
-			if (mode == head->preferred_mode) {
+			if (mode == preferred_mode) {
 				bp += snprintf(bp, sizeof(buf) - (bp - buf), " (preferred)");
 			}
 		}
@@ -357,6 +358,8 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 	if (!head)
 		return;
 
+	struct Mode *preferred_mode = head_preferred_mode(head);
+
 	switch (event) {
 		case ARRIVED:
 		case NONE:
@@ -375,8 +378,8 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 			if (head->width_mm && head->height_mm) {
 				log_(t, "    width:     %dmm", head->width_mm);
 				log_(t, "    height:    %dmm", head->height_mm);
-				if (head->preferred_mode) {
-					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(head->preferred_mode), head->preferred_mode->width, head->preferred_mode->height);
+				if (preferred_mode) {
+					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(preferred_mode), preferred_mode->width, preferred_mode->height);
 				}
 			} else {
 				log_(t, "    width:     (not specified)");
