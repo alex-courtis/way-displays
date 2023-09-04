@@ -8,8 +8,7 @@ LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
 OBJS =  tst/util.o \
 		$(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
 		$(filter-out src/main.o,$(SRC_O)) \
-		$(PRO_O) \
-		$(LIB_O)
+		$(PRO_O)
 
 WRAPS_COMMON = -Wl,$\
 	--wrap=log_set_threshold,$\
@@ -35,7 +34,7 @@ tst-cfg-file: WRAPS=,$\
 	--wrap=fd_wd_cfg_dir_create
 
 
-$(TST_O): $(TST_H) $(SRC_O) $(LIB_O) config.mk GNUmakefile tst/GNUmakefile
+$(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
 $(TST_E): $(TST_O) $(OBJS)
 	$(CXX) -o $(@) tst/$(@).o $(OBJS) $(LDFLAGS) $(LDLIBS) $(WRAPS_COMMON)$(WRAPS)

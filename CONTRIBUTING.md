@@ -20,12 +20,6 @@ Most will be available if you are running a wlroots based compositor like sway.
 
 yaml-cpp will need to be installed via your distribution's package manager.
 
-## Library Submodules
-
-Following clone the libraries must be fetched.
-
-`git submodule update --init`
-
 ## Development
 
 gcc is the default for packaging reasons, however clang is preferred.
