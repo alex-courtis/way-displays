@@ -1,14 +1,10 @@
 include config.mk
 
-INC_H = $(wildcard inc/*.h)
+INC_H = $(wildcard inc/*.h) $(wildcard lib/col/inc/*.h)
 
-SRC_C = $(wildcard src/*.c)
+SRC_C = $(wildcard src/*.c) $(wildcard lib/col/src/*.c)
 SRC_CXX = $(wildcard src/*.cpp)
 SRC_O = $(SRC_C:.c=.o) $(SRC_CXX:.cpp=.o)
-
-LIB_H = $(wildcard lib/alex-c-collections/inc/*.h)
-LIB_C = $(wildcard lib/alex-c-collections/src/*.c)
-LIB_O = $(LIB_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
 EXAMPLE_O = $(EXAMPLE_C:.c=.o)
@@ -28,11 +24,10 @@ TST_T = $(patsubst tst%,test%,$(TST_E))
 all: way-displays
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
-$(LIB_O): $(LIB_H) $(LIB_C) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
-way-displays: $(SRC_O) $(PRO_O) $(LIB_O)
+way-displays: $(SRC_O) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 $(PRO_H): $(PRO_X)
@@ -42,7 +37,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
-	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(LIB_O) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O) 
+	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
 
 install: way-displays way-displays.1 cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -84,7 +79,7 @@ $(TST_T): all
 	$(VALGRIND) ./$(EXE)
 
 examples: $(EXAMPLE_E)
-examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
+examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 .PHONY: all clean install uninstall man cppcheck iwyu test test-vg $(TST_T)
