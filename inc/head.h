@@ -36,7 +36,6 @@ struct Head {
 	char *description;
 	int32_t width_mm;
 	int32_t height_mm;
-	enum wl_output_transform transform;
 	char *make;
 	char *model;
 	char *serial_number;
