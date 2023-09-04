@@ -3,7 +3,7 @@ clang
 -Iinc
 -Ipro
 -Itst
--Ilib/alex-c-collections/inc
+-Ilib/col/inc
 
 -D_GNU_SOURCE
 -DVERSION="DUMMY"

@@ -1,3 +1,10 @@
+way-displays 1.9.0 2023-09-04
+-----------------------------
+#128 allow exact refresh HZ up to 3d.p.
+#113 ignore multiple preferred modes
+#41 add TRANSFORM
+#125 apply VRR_OFF via CLI and cfg.yaml
+
 way-displays 1.8.2 2023-08-21
 -----------------------------
 #78 Fall Back To Writable Location For cfg.yaml
