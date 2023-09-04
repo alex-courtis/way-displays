@@ -15,7 +15,7 @@ MODE:
   - NAME_DESC: five
     WIDTH: 1920
     HEIGHT: 1080
-    HZ: 60
+    HZ: 12.34
   - NAME_DESC: six
     WIDTH: 2560
     HEIGHT: 1440

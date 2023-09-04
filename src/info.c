@@ -21,11 +21,11 @@ void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf) {
 
 	if (user_mode->max) {
 		snprintf(buf, nbuf, "MAX");
-	} else if (user_mode->refresh_hz != -1) {
-		snprintf(buf, nbuf, "%dx%d@%dHz",
+	} else if (user_mode->refresh_mhz != -1) {
+		snprintf(buf, nbuf, "%dx%d@%sHz",
 				user_mode->width,
 				user_mode->height,
-				user_mode->refresh_hz
+				mhz_to_hz_str(user_mode->refresh_mhz)
 				);
 	} else {
 		snprintf(buf, nbuf, "%dx%d",
@@ -44,7 +44,7 @@ void info_mode_string(struct Mode *mode, char *buf, size_t nbuf) {
 	snprintf(buf, nbuf, "%dx%d@%dHz (%d,%03dmHz) %s",
 			mode->width,
 			mode->height,
-			mhz_to_hz(mode->refresh_mhz),
+			mhz_to_hz_rounded(mode->refresh_mhz),
 			mode->refresh_mhz / 1000,
 			mode->refresh_mhz % 1000,
 			mode->preferred ? "(preferred)" : ""
@@ -105,7 +105,7 @@ void print_modes_res_refresh(enum LogThreshold t, struct Head *head) {
 		mrr = i->val;
 
 		bp = buf;
-		bp += snprintf(bp, sizeof(buf) - (bp - buf), "    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mrr->refresh_hz);
+		bp += snprintf(bp, sizeof(buf) - (bp - buf), "    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
 		for (struct SList *j = mrr->modes; j; j = j->nex) {
 			mode = j->val;
@@ -257,8 +257,8 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 
 		if (user_mode->max) {
 			snprintf(buf, sizeof(buf), "MAX");
-		} else if (user_mode->refresh_hz != -1) {
-			snprintf(buf, sizeof(buf), "%d %d %d", user_mode->width, user_mode->height, user_mode->refresh_hz);
+		} else if (user_mode->refresh_mhz != -1) {
+			snprintf(buf, sizeof(buf), "%d %d %s", user_mode->width, user_mode->height, mhz_to_hz_str(user_mode->refresh_mhz));
 		} else {
 			snprintf(buf, sizeof(buf), "%d %d", user_mode->width, user_mode->height);
 		}

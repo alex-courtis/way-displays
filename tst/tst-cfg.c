@@ -374,7 +374,7 @@ void validate_fix__mode(void **state) {
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("negative height", false, 1, -99, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("negative hz", false, 1, 2, -99, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("negative hz", false, 1, 2, -12340, false));
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("missing width", false, -1, 2, 3, false));
 

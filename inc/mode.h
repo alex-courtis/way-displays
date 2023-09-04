@@ -5,7 +5,9 @@
 #include <stdint.h>
 
 #include "cfg.h"
+#include "global.h"
 #include "slist.h"
+#include "wlr-output-management-unstable-v1.h"
 
 struct Mode {
 	struct Head *head;
@@ -21,7 +23,7 @@ struct Mode {
 struct ModesResRefresh {
 	int32_t width;
 	int32_t height;
-	int32_t refresh_hz;
+	int32_t refresh_mhz;
 	struct SList *modes;
 };
 
@@ -29,7 +31,14 @@ struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed);
 
 struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed);
 
-int32_t mhz_to_hz(int32_t mhz);
+// up to 3 d.p.
+const char *mhz_to_hz_str(int32_t mhz);
+
+// hz float string to milliHz, 0 on failure
+int32_t hz_str_to_mhz(const char *hz_str);
+
+// rounded integer
+int32_t mhz_to_hz_rounded(int32_t mhz);
 
 double mode_dpi(struct Mode *mode);
 
@@ -37,7 +46,7 @@ double mode_scale(struct Mode *mode);
 
 struct SList *modes_res_refresh(struct SList *modes);
 
-bool mrr_satisfies_user_mode(struct ModesResRefresh *mrr, struct UserMode *user_mode);
+struct Mode *mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode, int32_t width, int32_t height, int32_t refresh_mhz, bool preferred);
 
 void mode_free(void *mode);
 

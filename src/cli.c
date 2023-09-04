@@ -12,6 +12,7 @@
 #include "ipc.h"
 #include "slist.h"
 #include "log.h"
+#include "mode.h"
 #include "process.h"
 
 #include "cli.h"
@@ -102,7 +103,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 							parsed = parsed && ((user_mode->height = atoi(argv[optind + 2])) > 0);
 						}
 						if (optind + 3 < argc) {
-							parsed = parsed && ((user_mode->refresh_hz = atoi(argv[optind + 3])) > 0);
+							parsed = parsed && ((user_mode->refresh_mhz = hz_str_to_mhz(argv[optind + 3])) > 0);
 						}
 					}
 					slist_append(&cfg->user_modes, user_mode);

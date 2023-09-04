@@ -201,15 +201,17 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::Key << "MODE" << YAML::BeginSeq;						// MODE
 		for (struct SList *i = cfg.user_modes; i; i = i->nex) {
 			struct UserMode *user_mode = (struct UserMode*)i->val;
-			e << YAML::BeginMap;											// mode
-			e << YAML::Key << "NAME_DESC" << YAML::Value << user_mode->name_desc;
-			if (user_mode->max) {
-				e << YAML::Key << "MAX" << YAML::Value << true;
-			} else {
-				e << YAML::Key << "WIDTH" << YAML::Value << user_mode->width;
-				e << YAML::Key << "HEIGHT" << YAML::Value << user_mode->height;
-				if (user_mode->refresh_hz != -1) {
-					e << YAML::Key << "HZ" << YAML::Value << user_mode->refresh_hz;
+			if (user_mode) {
+				e << YAML::BeginMap;											// mode
+				e << YAML::Key << "NAME_DESC" << YAML::Value << user_mode->name_desc;
+				if (user_mode->max) {
+					e << YAML::Key << "MAX" << YAML::Value << true;
+				} else {
+					e << YAML::Key << "WIDTH" << YAML::Value << user_mode->width;
+					e << YAML::Key << "HEIGHT" << YAML::Value << user_mode->height;
+					if (user_mode->refresh_mhz != -1) {
+						e << YAML::Key << "HZ" << YAML::Value << mhz_to_hz_str(user_mode->refresh_mhz);
+					}
 				}
 			}
 			e << YAML::EndMap;												// mode
@@ -468,9 +470,13 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 				cfg_user_mode_free(user_mode);
 				continue;
 			}
-			if (mode["HZ"] && !parse_node_val_int(mode, "HZ", &user_mode->refresh_hz, "MODE", user_mode->name_desc)) {
-				cfg_user_mode_free(user_mode);
-				continue;
+			if (mode["HZ"]) {
+				float hz = 0;
+				if (!parse_node_val_float(mode, "HZ", &hz, "MODE", user_mode->name_desc)) {
+					cfg_user_mode_free(user_mode);
+					continue;
+				}
+				user_mode->refresh_mhz = hz_str_to_mhz(mode["HZ"].as<std::string>().c_str());
 			}
 
 			slist_remove_all_free(&cfg->user_modes, cfg_equal_user_mode_name, user_mode, cfg_user_mode_free);
@@ -601,7 +607,7 @@ struct UserMode*& operator << (struct UserMode*& user_mode, const YAML::Node& no
 	TI(user_mode->name_desc = strdup(node["NAME_DESC"].as<std::string>().c_str()));
 	TI(user_mode->width = node["WIDTH"].as<int>());
 	TI(user_mode->height = node["HEIGHT"].as<int>());
-	TI(user_mode->refresh_hz = node["HZ"].as<int>());
+	TI(user_mode->refresh_mhz = hz_str_to_mhz(node["HZ"].as<std::string>().c_str()));
 	TI(user_mode->max = node["MAX"].as<bool>());
 
 	return user_mode;

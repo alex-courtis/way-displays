@@ -39,7 +39,7 @@ struct UserMode {
 	bool max;
 	int32_t width;
 	int32_t height;
-	int32_t refresh_hz;
+	int32_t refresh_mhz;
 	bool warned_no_mode;
 };
 
