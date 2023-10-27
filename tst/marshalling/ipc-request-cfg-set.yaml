@@ -9,6 +9,8 @@ CFG:
     - "!two"
   SCALING: FALSE
   AUTO_SCALE: FALSE
+  AUTO_SCALE_MIN: 0.5
+  AUTO_SCALE_MAX: 2.5
   SCALE:
     - NAME_DESC: three
       SCALE: 3

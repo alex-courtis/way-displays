@@ -198,7 +198,8 @@ void desire_scale(struct Head *head) {
 
 	// auto or 1
 	if (cfg->auto_scale == ON) {
-		head->desired.scale = head_auto_scale(head);
+		head->desired.scale =
+			head_auto_scale(head, cfg->auto_scale_min, cfg->auto_scale_max);
 	} else {
 		head->desired.scale = wl_fixed_from_int(1);
 	}

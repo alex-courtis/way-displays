@@ -140,7 +140,7 @@ bool head_matches_name_desc_exact(const void *h, const void *n) {
 		(head->description && strcmp(head->description, name_desc) == 0);
 }
 
-wl_fixed_t head_auto_scale(struct Head *head) {
+wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
 	if (!head || !head->desired.mode) {
 		return wl_fixed_from_int(1);
 	}
@@ -154,8 +154,22 @@ wl_fixed_t head_auto_scale(struct Head *head) {
 	// round the dpi to the nearest 12, so that we get a nice even wl_fixed_t
 	long dpi_quantized = (long)(dpi / 12 + 0.5) * 12;
 
+	// convert min and max to quantized dpi
+	long dpi_min = 12 * (long)(min * 8 + 0.9999f);
+	long dpi_max = 12 * (long)(max * 8);
+	if (dpi_min < 12) {
+		dpi_min = 12;
+	}
+
+	// clamp dpi between min and max (if set)
+	if (dpi_quantized < dpi_min) {
+		dpi_quantized = dpi_min;
+	} else if (dpi_max >= 96 && dpi_quantized > dpi_max) {
+		dpi_quantized = dpi_max;
+	}
+
 	// 96dpi approximately correct for older monitors and became the convention for 1:1 scaling
-	return wl_fixed_from_double((double)dpi_quantized / 96);
+	return wl_fixed_from_double((double) dpi_quantized / 96);
 }
 
 void head_scaled_dimensions(struct Head *head) {

@@ -226,6 +226,8 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 	// AUTO_SCALE
 	if (from->auto_scale) {
 		to->auto_scale = from->auto_scale;
+		to->auto_scale_min = from->auto_scale_min;
+		to->auto_scale_max = from->auto_scale_max;
 	}
 
 	// SCALE
@@ -316,6 +318,12 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 	if (a->auto_scale != b->auto_scale) {
 		return false;
 	}
+	if (a->auto_scale_min != b->auto_scale_min) {
+		return false;
+	}
+	if (a->auto_scale_max != b->auto_scale_max) {
+		return false;
+	}
 
 	// SCALE
 	if (!slist_equal(a->user_scales, b->user_scales, cfg_equal_user_scale)) {
@@ -375,6 +383,8 @@ struct Cfg *cfg_default(void) {
 	def->align = ALIGN_DEFAULT;
 	def->scaling = SCALING_DEFAULT;
 	def->auto_scale = AUTO_SCALE_DEFAULT;
+	def->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
+	def->auto_scale_max = AUTO_SCALE_MIN_DEFAULT;
 
 	return def;
 }
@@ -572,6 +582,8 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	// AUTO_SCALE
 	if (from->auto_scale) {
 		merged->auto_scale = from->auto_scale;
+		merged->auto_scale_min = from->auto_scale_min;
+		merged->auto_scale_max = from->auto_scale_max;
 	}
 
 	// SCALE
