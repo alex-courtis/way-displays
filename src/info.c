@@ -146,7 +146,13 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 	}
 
 	if (cfg->auto_scale) {
-		log_(t, "  Auto scale: %s", on_off_name(cfg->auto_scale));
+		if (cfg->auto_scale_max > 0) {
+			log_(t, "  Auto scale: %s (min: %0.3f, max: %0.3f)",
+					on_off_name(cfg->auto_scale), cfg->auto_scale_min, cfg->auto_scale_max);
+		} else {
+			log_(t, "  Auto scale: %s (min: %0.3f)",
+					on_off_name(cfg->auto_scale), cfg->auto_scale_min);
+		}
 	}
 
 	if (cfg->user_scales) {
