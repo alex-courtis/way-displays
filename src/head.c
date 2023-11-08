@@ -1,3 +1,4 @@
+#include <math.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -155,7 +156,7 @@ wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
 	long dpi_quantized = (long)(dpi / 12 + 0.5) * 12;
 
 	// convert min and max to quantized dpi
-	long dpi_min = 12 * (long)(min * 8 + 0.9999f);
+	long dpi_min = 12 * (long)ceil(min * 8);
 	long dpi_max = 12 * (long)(max * 8);
 	if (dpi_min < 12) {
 		dpi_min = 12;
