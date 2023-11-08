@@ -114,7 +114,7 @@ AUTO_SCALE_MIN: 1.0
 
 ### AUTO_SCALE_MAX
 
-Set maximum value for auto scaling. Values below 1.0 are ignored.
+Set maximum value for auto scaling. Ignored if below AUTO_SCALE_MIN.
 
 ```yaml
 AUTO_SCALE_MAX: 2.5

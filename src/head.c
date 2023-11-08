@@ -165,7 +165,7 @@ wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
 	// clamp dpi between min and max (if set)
 	if (dpi_quantized < dpi_min) {
 		dpi_quantized = dpi_min;
-	} else if (dpi_max >= 96 && dpi_quantized > dpi_max) {
+	} else if (dpi_min <= dpi_max && dpi_quantized > dpi_max) {
 		dpi_quantized = dpi_max;
 	}
 
