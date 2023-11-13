@@ -104,6 +104,22 @@ This may be disabled and scale 1 will be used, unless a `SCALE` has been specifi
 AUTO_SCALE: false
 ```
 
+### AUTO_SCALE_MIN
+
+Set minimum value for auto scaling. The default is 1.0.
+
+```yaml
+AUTO_SCALE_MIN: 1.0
+```
+
+### AUTO_SCALE_MAX
+
+Set maximum value for auto scaling. Ignored if below AUTO_SCALE_MIN.
+
+```yaml
+AUTO_SCALE_MAX: 2.5
+```
+
 ### SCALE
 
 Auto scale may be overridden with custom scales for each display e.g.

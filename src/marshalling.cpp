@@ -184,6 +184,12 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	if (cfg.auto_scale) {
 		e << YAML::Key << "AUTO_SCALE" << YAML::Value << (cfg.auto_scale == ON);
 	}
+	if (cfg.auto_scale_min) {
+		e << YAML::Key << "AUTO_SCALE_MIN" << YAML::Value << cfg.auto_scale_min;
+	}
+	if (cfg.auto_scale_max) {
+		e << YAML::Key << "AUTO_SCALE_MAX" << YAML::Value << cfg.auto_scale_max;
+	}
 
 	if (cfg.user_scales) {
 		e << YAML::Key << "SCALE" << YAML::BeginSeq;					// SCALE
@@ -424,6 +430,14 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		}
 	}
 
+	if (node["AUTO_SCALE_MIN"]) {
+		parse_node_val_float(node, "AUTO_SCALE_MIN", &cfg->auto_scale_min, "AUTO_SCALE_MIN", "");
+	}
+
+	if (node["AUTO_SCALE_MAX"]) {
+		parse_node_val_float(node, "AUTO_SCALE_MAX", &cfg->auto_scale_max, "AUTO_SCALE_MAX", "");
+	}
+
 	if (node["SCALE"]) {
 		for (const auto &scale : node["SCALE"]) {
 			struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
@@ -658,6 +672,9 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 	TI(cfg->scaling = node["SCALING"].as<bool>() ? ON : OFF);
 
 	TI(cfg->auto_scale = node["AUTO_SCALE"].as<bool>() ? ON : OFF);
+
+	TI(cfg->auto_scale_min = node["AUTO_SCALE_MIN"].as<float>());
+	TI(cfg->auto_scale_max = node["AUTO_SCALE_MAX"].as<float>());
 
 	if (node["SCALE"] && node["SCALE"].IsSequence()) {
 		for (const auto &node_scale : node["SCALE"]) {

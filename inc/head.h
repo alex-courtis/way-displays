@@ -67,7 +67,7 @@ bool head_matches_name_desc(const void *head, const void *name_desc);
 
 bool head_name_desc_matches_head(const void *name_desc, const void *head);
 
-wl_fixed_t head_auto_scale(struct Head *head);
+wl_fixed_t head_auto_scale(struct Head *head, double min, double max);
 
 void head_scaled_dimensions(struct Head *head);
 

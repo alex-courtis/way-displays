@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include "log.h"
 
+#define AUTO_SCALE_MIN_DEFAULT 1.0f
+#define AUTO_SCALE_MAX_DEFAULT -1.0f
+
 struct UserScale {
 	char *name_desc;
 	float scale;
@@ -71,6 +74,9 @@ struct Cfg {
 	struct SList *disabled_name_desc;
 	struct SList *user_transforms;
 	enum LogThreshold log_threshold;
+
+	float auto_scale_min;
+	float auto_scale_max;
 };
 
 enum CfgElement {
@@ -88,6 +94,8 @@ enum CfgElement {
 	LOG_THRESHOLD,
 	DISABLED,
 	ARRANGE_ALIGN,
+	AUTO_SCALE_MIN,
+	AUTO_SCALE_MAX
 };
 
 void cfg_file_paths_init(const char *user_path);

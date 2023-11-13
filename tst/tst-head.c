@@ -59,10 +59,10 @@ void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
 
 	// no head
-	assert_wl_fixed_t_equal_double(head_auto_scale(NULL), 1);
+	assert_wl_fixed_t_equal_double(head_auto_scale(NULL, 1.0f, -1.0f), 1);
 
 	// no desired mode
-	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 1);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 1);
 }
 
 void head_auto_scale__mode(void **state) {
@@ -72,22 +72,63 @@ void head_auto_scale__mode(void **state) {
 	// dpi 0 defaults to 96
 	expect_value(__wrap_mode_dpi, mode, &mode);
 	will_return(__wrap_mode_dpi, 0);
-	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 1);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 1);
 
 	// even 144
 	expect_value(__wrap_mode_dpi, mode, &mode);
 	will_return(__wrap_mode_dpi, 144);
-	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 144.0 / 96);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 144.0 / 96);
 
 	// rounded down to 156
 	expect_value(__wrap_mode_dpi, mode, &mode);
 	will_return(__wrap_mode_dpi, 161);
-	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 156.0 / 96);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 156.0 / 96);
 
 	// rounded up to 168
 	expect_value(__wrap_mode_dpi, mode, &mode);
 	will_return(__wrap_mode_dpi, 162);
-	assert_wl_fixed_t_equal_double(head_auto_scale(&head), 168.0 / 96);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 168.0 / 96);
+}
+
+void head_auto_scale__range(void **state) {
+	struct Mode mode = { 0 };
+	struct Head head = { .desired.mode = &mode };
+
+	// scale under 1.0 is clamped to 1.0 with default settings
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 72);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 1);
+
+	// clamping to some other minimum value works too
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 12);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 0.125f, -1.0f), 0.125f);
+
+	// the minimum value is always positive (quantized to 1/8)
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 1);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, -1.0f, -1.0f), 0.125f);
+
+	// clamping to maximum value works
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 384);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, 2.5f), 2.5f);
+
+	// maximum values under 1.0 are ignored
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 384);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, 0.9f), 4.0f);
+
+	// the configured maximum is respected even with quantization
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 384);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 0.63f, 1.49f), 1.375f);
+
+	// the configured minimum is respected even with quantization
+	expect_value(__wrap_mode_dpi, mode, &mode);
+	will_return(__wrap_mode_dpi, 12);
+	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 0.63f, -1.0f), 0.75f);
+
 }
 
 void head_scaled_dimensions__default(void **state) {
@@ -260,6 +301,7 @@ int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(head_auto_scale__default),
 		TEST(head_auto_scale__mode),
+		TEST(head_auto_scale__range),
 
 		TEST(head_scaled_dimensions__default),
 		TEST(head_scaled_dimensions__calculated),
