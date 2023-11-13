@@ -180,6 +180,4 @@ To ameliorate this, we always round our scale to a multiple of one eighth. This 
 
 Please create a [github issue](https://github.com/alex-courtis/way-displays/issues) and attach the log `/tmp/way-displays.1.me.log`
 
-[Contributions](CONTRIBUTING.md) are always welcome.
-
-[Milestone 1.10](https://github.com/alex-courtis/way-displays/milestone/2) contains a list of issue I would be eternally grateful for you to work on.
+[Contributions](CONTRIBUTING.md) are most gratefully received, see [Milestones](https://github.com/alex-courtis/way-displays/milestones) for prioritised issues.
