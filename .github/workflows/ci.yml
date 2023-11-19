@@ -10,7 +10,8 @@ jobs:
   all:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: prepare
+      uses: actions/checkout@v3
     - name: deps
       run: |
         sudo add-apt-repository universe
