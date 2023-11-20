@@ -1,6 +1,6 @@
 # Contributing to https://github.com/alex-courtis/way-displays
 
-Thank you for contributing.
+Thank you for contribution!
 
 Ideas, bug fixes and enhancements are always welcome.
 

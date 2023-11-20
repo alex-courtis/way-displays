@@ -108,7 +108,7 @@ The server responds to [IPC](https://github.com/alex-courtis/way-displays/wiki/I
 
 [![CI](https://github.com/alex-courtis/way-displays/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/alex-courtis/way-displays/actions/workflows/ci.yml?query=branch%3Amaster)
 
-See [CONTRIBUTING](CONTRIBUTING.md)
+See [CONTRIBUTING](doc/CONTRIBUTING.md)
 
 #### Install / Uninstall
 
@@ -121,4 +121,4 @@ sudo make uninstall
 
 Please create a [github issue](https://github.com/alex-courtis/way-displays/issues) and attach the log `/tmp/way-displays.1.me.log`
 
-[Contributions](CONTRIBUTING.md) are most gratefully received, see [Milestones](https://github.com/alex-courtis/way-displays/milestones) for prioritised issues.
+[Contributions](doc/CONTRIBUTING.md) are most gratefully received, see [Milestones](https://github.com/alex-courtis/way-displays/milestones) for prioritised issues.
