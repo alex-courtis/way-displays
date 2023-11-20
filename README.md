@@ -22,18 +22,22 @@ See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/C
 
 ## Requirements
 
-way-displays is known to work on the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on any wlroots compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol.
 
-The user must be a member of the `input` group.
+way-displays is works with the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on others.
 
 ## Quick Start
 
-```
+Start with the default config file:
+```sh
 mkdir -p ~/.config/way-displays
 cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
 ```
 
-See [Configuration](https://github.com/alex-courtis/way-displays/wiki/Configuration)
+Add yourself to the `input` group to monitor events: 
+```sh
+sudo usermod -a -G input "${USER}"
+```
 
 ### Sway
 
@@ -45,7 +49,7 @@ exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 ### River
 
 Add the following to your `init`:
-```
+```sh
 way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
 ```
 
@@ -66,7 +70,7 @@ chmod 755 ${HOME}/.config/hypr/start-way-displays.sh
 ```
 
 Add the following to your `hyprland.conf`:
-```
+```sh
 exec-once = ${HOME}/.config/hypr/start-way-displays.sh
 ```
 
