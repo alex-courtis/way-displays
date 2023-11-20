@@ -24,7 +24,7 @@ See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/C
 
 A wlroots based compositor that supports the WLR Output Management protocol.
 
-way-displays is works with the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on others.
+way-displays is blessed for the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on others.
 
 ## Quick Start
 
