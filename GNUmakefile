@@ -39,12 +39,12 @@ $(PRO_C): $(PRO_X)
 clean:
 	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
 
-install: way-displays way-displays.1 cfg.yaml
+install: way-displays doc/way-displays.1 cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f way-displays $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/way-displays
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
-	cp -f way-displays.1 $(DESTDIR)$(PREFIX)/share/man/man1
+	cp -f doc/way-displays.1 $(DESTDIR)$(PREFIX)/share/man/man1
 	chmod 644 $(DESTDIR)$(PREFIX)/share/man/man1/way-displays.1
 	mkdir -p $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 	cp -f cfg.yaml $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
@@ -55,7 +55,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/share/man/man1/way-displays.1
 	rm -rf $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 
-man: way-displays.1.pandoc
+man: doc/way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc=)
 
