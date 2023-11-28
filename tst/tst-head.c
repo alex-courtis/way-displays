@@ -169,7 +169,7 @@ void head_scaled_dimensions__calculated(void **state) {
 
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 33);
-	assert_int_equal(head.scaled.height, 67);
+	assert_int_equal(head.scaled.height, 66); // wayland truncates when calculating size
 }
 
 void head_find_mode__none(void **state) {

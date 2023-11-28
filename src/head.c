@@ -186,8 +186,9 @@ void head_scaled_dimensions(struct Head *head) {
 		head->scaled.height = head->desired.mode->width;
 	}
 
-	head->scaled.height = (int32_t)((double)head->scaled.height * 256 / head->desired.scale + 0.5);
-	head->scaled.width = (int32_t)((double)head->scaled.width * 256 / head->desired.scale + 0.5);
+	// wayland truncates when calculating size so we do the same
+	head->scaled.height = (int32_t)((double)head->scaled.height * 256 / head->desired.scale);
+	head->scaled.width = (int32_t)((double)head->scaled.width * 256 / head->desired.scale);
 }
 
 struct Mode *head_find_mode(struct Head *head) {
