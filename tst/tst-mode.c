@@ -151,7 +151,7 @@ void mode_dpi__(void **state) {
 
 	double actual = mode_dpi(&mode);
 
-	assert_double_equal(actual, expected, 0);
+	assert_float_equal(actual, expected, 0);
 }
 
 int main(void) {
