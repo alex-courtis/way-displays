@@ -17,6 +17,7 @@ static void head(void *data,
 	struct Displ *displ = data;
 
 	struct Head *head = calloc(1, sizeof(struct Head));
+	head->displ = displ;
 	head->zwlr_head = zwlr_output_head_v1;
 
 	slist_append(&heads, head);

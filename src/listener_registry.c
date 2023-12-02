@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
@@ -9,6 +9,7 @@
 #include "displ.h"
 #include "log.h"
 #include "process.h"
+#include "fractional-scale-v1.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Displ data
@@ -18,28 +19,29 @@ static void global(void *data,
 		uint32_t name,
 		const char *interface,
 		uint32_t version) {
-
-	// only register for WLR output manager events
-	if (strcmp(interface, zwlr_output_manager_v1_interface.name) != 0)
-		return;
-
 	struct Displ *displ = data;
-	displ->name = name;
-	displ->interface = strdup(interface);
 
-	if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
-		log_error("\nwlr-output-management version %d found, minimum %d required, exiting. Consider upgrading your compositor.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN);
-		wd_exit(EXIT_FAILURE);
-	} else if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION) {
-		log_warn("\nwlr-output-management version %d found; %d required for full functionality. Consider upgrading your compositor.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION);
-		displ->output_manager_version = ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN;
-	} else {
-		displ->output_manager_version = ZWLR_OUTPUT_MANAGER_V1_VERSION;
+	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
+		displ->name = name;
+		displ->interface = strdup(interface);
+
+		if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
+			log_error("\nwlr-output-management version %d found, minimum %d required, exiting. Consider upgrading your compositor.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN);
+			wd_exit(EXIT_FAILURE);
+		} else if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION) {
+			log_warn("\nwlr-output-management version %d found; %d required for full functionality. Consider upgrading your compositor.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION);
+			displ->output_manager_version = ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN;
+		} else {
+			displ->output_manager_version = ZWLR_OUTPUT_MANAGER_V1_VERSION;
+		}
+
+		displ->output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->output_manager_version);
+
+		zwlr_output_manager_v1_add_listener(displ->output_manager, output_manager_listener(), displ);
+	} else if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
+		displ->have_fractional_scale_v1 = true;
+		log_debug("compositor supports the fractional-scale protocol, version %d", wp_fractional_scale_manager_v1_interface.version);
 	}
-
-	displ->output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->output_manager_version);
-
-	zwlr_output_manager_v1_add_listener(displ->output_manager, output_manager_listener(), displ);
 }
 
 static void global_remove(void *data,

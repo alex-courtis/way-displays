@@ -141,15 +141,52 @@ bool head_matches_name_desc_exact(const void *h, const void *n) {
 		(head->description && strcmp(head->description, name_desc) == 0);
 }
 
+wl_fixed_t head_get_fixed_scale(const struct Head *head, double scale) {
+	// computes a scale value that is appropriate for putting into `zwlr_output_configuration_head_v1_set_scale`
+
+	wl_fixed_t fixed_scale = wl_fixed_from_double(scale);
+
+	if (head && head->displ && head->displ->have_fractional_scale_v1) {
+		/*
+		 * The following ensures that the scale which the compositor reports *after* we applied the layout is the same
+		 * that was put in. This prevents repeat "flickering" of the scale value, causing way-displays to continuously
+		 * change the scale.
+		 *
+		 * Note that this is currently only *observed* behavior in a Sway revision with fractional-scale-v1, which is
+		 * where the factor 120 comes from. It does not occur on Sway 1.8.1 (which doesn't yet have support for the
+		 * fractional scaling protocol).
+		 *
+		 * TODO: Can we "prove" that this is the right thing to do by looking at protocol specifications?
+		 */
+		fixed_scale = floor((double)fixed_scale / 256 * 120) * ((double)256 / 120) + 0.5;
+	}
+
+	return fixed_scale;
+}
+
+int32_t head_get_scaled_length(const struct Head *head, int32_t length, wl_fixed_t fixed_scale) {
+	// scales a (pixel) length by fixed_scale
+
+	double base = 256.0;
+
+	if (head && head->displ && head->displ->have_fractional_scale_v1) {
+		// see comment in `head_get_fixed_scale()`
+		base = 120.0;
+		fixed_scale = (double)fixed_scale / 256 * 120 + 0.5;
+	}
+
+	return floor(length * base / fixed_scale);
+}
+
 wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
 	if (!head || !head->desired.mode) {
-		return wl_fixed_from_int(1);
+		return head_get_fixed_scale(head, 1.0);
 	}
 
 	// average dpi
 	double dpi = mode_dpi(head->desired.mode);
 	if (dpi == 0) {
-		return wl_fixed_from_int(1);
+		return head_get_fixed_scale(head, 1.0);
 	}
 
 	// round the dpi to the nearest 12, so that we get a nice even wl_fixed_t
@@ -170,7 +207,7 @@ wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
 	}
 
 	// 96dpi approximately correct for older monitors and became the convention for 1:1 scaling
-	return wl_fixed_from_double((double) dpi_quantized / 96);
+	return head_get_fixed_scale(head, (double) dpi_quantized / 96);
 }
 
 void head_scaled_dimensions(struct Head *head) {
@@ -186,9 +223,8 @@ void head_scaled_dimensions(struct Head *head) {
 		head->scaled.height = head->desired.mode->width;
 	}
 
-	// wayland truncates when calculating size so we do the same
-	head->scaled.height = (int32_t)((double)head->scaled.height * 256 / head->desired.scale);
-	head->scaled.width = (int32_t)((double)head->scaled.width * 256 / head->desired.scale);
+	head->scaled.height = head_get_scaled_length(head, head->scaled.height, head->desired.scale);
+	head->scaled.width = head_get_scaled_length(head, head->scaled.width, head->desired.scale);
 }
 
 struct Mode *head_find_mode(struct Head *head) {

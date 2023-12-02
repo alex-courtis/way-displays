@@ -2,6 +2,7 @@
 #define DISPL_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 enum ConfigState {
 	IDLE = 0,
@@ -22,6 +23,8 @@ struct Displ {
 	uint32_t serial;
 	char *interface;
 	uint32_t output_manager_version;
+
+	bool have_fractional_scale_v1;
 
 	enum ConfigState config_state;
 };

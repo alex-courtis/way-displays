@@ -6,6 +6,7 @@
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
+#include "displ.h"
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -25,6 +26,8 @@ struct HeadState {
 };
 
 struct Head {
+
+	struct Displ *displ;
 
 	struct zwlr_output_head_v1 *zwlr_head;
 
@@ -66,6 +69,10 @@ bool head_matches_name_desc_partial(const void *head, const void *name_desc);
 bool head_matches_name_desc(const void *head, const void *name_desc);
 
 bool head_name_desc_matches_head(const void *name_desc, const void *head);
+
+wl_fixed_t head_get_fixed_scale(const struct Head *head, double scale);
+
+int32_t head_get_scaled_length(const struct Head *head, int32_t length, wl_fixed_t fixed_scale);
 
 wl_fixed_t head_auto_scale(struct Head *head, double min, double max);
 
