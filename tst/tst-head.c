@@ -181,6 +181,16 @@ void head_scaled_dimensions__fractional_scaling(void **state) {
 	// values as observed from a pre-fractional-scaling Sway
 	displ.have_fractional_scale_v1 = false;
 
+	head.desired.scale = head_get_fixed_scale(&head, 1.0);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 3840);
+	assert_int_equal(head.scaled.height, 2160);
+
+	head.desired.scale = head_get_fixed_scale(&head, 2.0);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 1920);
+	assert_int_equal(head.scaled.height, 1080);
+
 	head.desired.scale = head_get_fixed_scale(&head, 1.8);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2132);
@@ -198,6 +208,16 @@ void head_scaled_dimensions__fractional_scaling(void **state) {
 
 	// values as observed from Sway with fractional scaling support
 	displ.have_fractional_scale_v1 = true;
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.0);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 3840);
+	assert_int_equal(head.scaled.height, 2160);
+
+	head.desired.scale = head_get_fixed_scale(&head, 2.0);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 1920);
+	assert_int_equal(head.scaled.height, 1080);
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.8);
 	head_scaled_dimensions(&head);
