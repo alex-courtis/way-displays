@@ -12,6 +12,7 @@
 #include "global.h"
 #include "slist.h"
 #include "log.h"
+#include "displ.h"
 #include "mode.h"
 
 #include "head.h"
@@ -172,6 +173,48 @@ void head_scaled_dimensions__calculated(void **state) {
 	assert_int_equal(head.scaled.height, 66); // wayland truncates when calculating size
 }
 
+void head_scaled_dimensions__fractional_scaling(void **state) {
+	struct Displ displ;
+	struct Mode mode = { .width = 3840, .height = 2160, };
+	struct Head head = { .displ = &displ, .desired.mode = &mode, };
+
+	// values as observed from a pre-fractional-scaling Sway
+	displ.have_fractional_scale_v1 = false;
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.8);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 2132);
+	assert_int_equal(head.scaled.height, 1199);
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.9);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 2022);
+	assert_int_equal(head.scaled.height, 1137);
+
+	head.desired.scale = head_get_fixed_scale(&head, 2.01);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 1908);
+	assert_int_equal(head.scaled.height, 1073);
+
+	// values as observed from Sway with fractional scaling support
+	displ.have_fractional_scale_v1 = true;
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.8);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 2133);
+	assert_int_equal(head.scaled.height, 1200);
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.9);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 2029);
+	assert_int_equal(head.scaled.height, 1141);
+
+	head.desired.scale = head_get_fixed_scale(&head, 2.01);
+	head_scaled_dimensions(&head);
+	assert_int_equal(head.scaled.width, 1912);
+	assert_int_equal(head.scaled.height, 1075);
+}
+
 void head_find_mode__none(void **state) {
 	struct Head head = { 0 };
 	struct Mode mode = { 0 };
@@ -305,6 +348,7 @@ int main(void) {
 
 		TEST(head_scaled_dimensions__default),
 		TEST(head_scaled_dimensions__calculated),
+		TEST(head_scaled_dimensions__fractional_scaling),
 
 		TEST(head_find_mode__none),
 		TEST(head_find_mode__user_available),
