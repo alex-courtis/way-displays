@@ -24,6 +24,11 @@ struct Displ {
 	char *interface;
 	uint32_t output_manager_version;
 
+	// output
+	struct zxdg_output_manager_v1 *zxdg_output_manager;
+	uint32_t zxdg_output_manager_name;
+	uint32_t zxdg_output_manager_version;
+
 	bool have_fractional_scale_v1;
 
 	enum ConfigState config_state;

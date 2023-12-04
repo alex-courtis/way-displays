@@ -8,6 +8,8 @@
 #include "listeners.h"
 #include "log.h"
 #include "process.h"
+#include "wlr-output-management-unstable-v1.h"
+#include "xdg-output-unstable-v1.h"
 
 void displ_init(void) {
 
@@ -38,8 +40,14 @@ void displ_init(void) {
 
 void displ_destroy(void) {
 
+	// TODO destroy outputs
+
 	if (displ->output_manager) {
-		wl_proxy_destroy((struct wl_proxy*) displ->output_manager);
+		zwlr_output_manager_v1_destroy(displ->output_manager);
+	}
+
+	if (displ->zxdg_output_manager) {
+		zxdg_output_manager_v1_destroy(displ->zxdg_output_manager);
 	}
 
 	wl_registry_destroy(displ->registry);

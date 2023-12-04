@@ -10,6 +10,7 @@ const struct zwlr_output_manager_v1_listener *output_manager_listener(void);
 const struct zwlr_output_head_v1_listener *head_listener(void);
 const struct zwlr_output_head_v1_listener *head_listener_min(void);
 const struct zwlr_output_mode_v1_listener *mode_listener(void);
+const struct zxdg_output_v1_listener *zxdg_output_listener(void);
 
 // config
 const struct zwlr_output_configuration_v1_listener *output_configuration_listener(void);

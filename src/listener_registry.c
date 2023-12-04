@@ -8,8 +8,10 @@
 
 #include "displ.h"
 #include "log.h"
+#include "output.h"
 #include "process.h"
 #include "fractional-scale-v1.h"
+#include "xdg-output-unstable-v1.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Displ data
@@ -20,6 +22,7 @@ static void global(void *data,
 		const char *interface,
 		uint32_t version) {
 	struct Displ *displ = data;
+	log_debug("global: %s", interface);
 
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
 		displ->name = name;
@@ -36,11 +39,33 @@ static void global(void *data,
 		}
 
 		displ->output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->output_manager_version);
+		log_debug("          bound");
 
 		zwlr_output_manager_v1_add_listener(displ->output_manager, output_manager_listener(), displ);
+		log_debug("          listening to zwlr_output_manager_v1_listener");
+
 	} else if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
 		displ->have_fractional_scale_v1 = true;
 		log_debug("compositor supports the fractional-scale protocol, version %d", wp_fractional_scale_manager_v1_interface.version);
+
+	} else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
+		displ->zxdg_output_manager_name = name;
+		displ->zxdg_output_manager_version = version;
+		displ->zxdg_output_manager = wl_registry_bind(wl_registry, name, &zxdg_output_manager_v1_interface, displ->zxdg_output_manager_version);
+		log_debug("          bound");
+
+	} else if (strcmp(interface, wl_output_interface.name) == 0) {
+		struct wl_output *wl_output = wl_registry_bind(wl_registry, name, &wl_output_interface, version);
+		log_debug("          bound");
+
+		if (wl_output && displ->zxdg_output_manager) {
+			struct zxdg_output_v1 *zxdg_output = zxdg_output_manager_v1_get_xdg_output(displ->zxdg_output_manager, wl_output);
+			if (zxdg_output) {
+				struct Output *output = output_init(wl_output, zxdg_output);
+				zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
+				log_debug("          listening to zxdg_output_v1_listener");
+			}
+		}
 	}
 }
 
@@ -48,6 +73,8 @@ static void global_remove(void *data,
 		struct wl_registry *wl_registry,
 		uint32_t name) {
 	struct Displ *displ = data;
+
+	// TODO remove outputs
 
 	// only interested in the WLR interface
 	if (!displ || displ->name != name)
