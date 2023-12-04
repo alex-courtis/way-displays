@@ -25,6 +25,24 @@
 }
 
 {
+   g_object_new_valist - from evdev
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_object_new_valist
+   fun:g_object_new
+   ...
+}
+{
+   evdev_device_create
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:evdev_device_create
+   fun:device_added
+}
+
+{
    glib-g_malloc
    Memcheck:Leak
    match-leak-kinds: reachable
