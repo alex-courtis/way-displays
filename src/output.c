@@ -4,7 +4,6 @@
 
 #include "output.h"
 
-#include "displ.h"
 #include "listeners.h"
 #include "itable.h"
 #include "xdg-output-unstable-v1.h"
