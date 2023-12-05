@@ -17,8 +17,8 @@ static void head(void *data,
 	struct Displ *displ = data;
 
 	struct Head *head = calloc(1, sizeof(struct Head));
-	head->displ = displ;
 	head->zwlr_head = zwlr_output_head_v1;
+	head->scaling_base = displ->have_fractional_scale_v1 ? HEAD_FRACTIONAL_SCALING_BASE : HEAD_DEFAULT_SCALING_BASE;
 
 	slist_append(&heads, head);
 	slist_append(&heads_arrived, head);

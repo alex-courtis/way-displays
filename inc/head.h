@@ -10,6 +10,9 @@
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
 
+#define HEAD_DEFAULT_SCALING_BASE 256
+#define HEAD_FRACTIONAL_SCALING_BASE 120
+
 extern struct SList *heads;
 extern struct SList *heads_arrived;
 extern struct SList *heads_departed;
@@ -26,8 +29,6 @@ struct HeadState {
 };
 
 struct Head {
-
-	struct Displ *displ;
 
 	struct zwlr_output_head_v1 *zwlr_head;
 
@@ -54,6 +55,8 @@ struct Head {
 		int32_t height;
 	} scaled;
 
+	int32_t scaling_base; // either 256 (default) or 120 (if fractional-scale-v1 is used)
+
 	bool warned_no_preferred;
 	bool warned_no_mode;
 };
@@ -70,9 +73,9 @@ bool head_matches_name_desc(const void *head, const void *name_desc);
 
 bool head_name_desc_matches_head(const void *name_desc, const void *head);
 
-wl_fixed_t head_get_fixed_scale(const struct Head *head, double scale);
+wl_fixed_t head_get_fixed_scale(double scale, int32_t base);
 
-int32_t head_get_scaled_length(const struct Head *head, int32_t length, wl_fixed_t fixed_scale);
+int32_t head_get_scaled_length(int32_t length, wl_fixed_t fixed_scale, int32_t base);
 
 wl_fixed_t head_auto_scale(struct Head *head, double min, double max);
 

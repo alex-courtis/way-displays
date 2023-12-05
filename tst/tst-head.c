@@ -174,62 +174,61 @@ void head_scaled_dimensions__calculated(void **state) {
 }
 
 void head_scaled_dimensions__fractional_scaling(void **state) {
-	struct Displ displ;
 	struct Mode mode = { .width = 3840, .height = 2160, };
-	struct Head head = { .displ = &displ, .desired.mode = &mode, };
+	struct Head head = { .desired.mode = &mode, };
 
 	// values as observed from a pre-fractional-scaling Sway
-	displ.have_fractional_scale_v1 = false;
+	head.scaling_base = HEAD_DEFAULT_SCALING_BASE;
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.0);
+	head.desired.scale = head_get_fixed_scale(1.0, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 3840);
 	assert_int_equal(head.scaled.height, 2160);
 
-	head.desired.scale = head_get_fixed_scale(&head, 2.0);
+	head.desired.scale = head_get_fixed_scale(2.0, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.8);
+	head.desired.scale = head_get_fixed_scale(1.8, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2132);
 	assert_int_equal(head.scaled.height, 1199);
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.9);
+	head.desired.scale = head_get_fixed_scale(1.9, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2022);
 	assert_int_equal(head.scaled.height, 1137);
 
-	head.desired.scale = head_get_fixed_scale(&head, 2.01);
+	head.desired.scale = head_get_fixed_scale(2.01, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1908);
 	assert_int_equal(head.scaled.height, 1073);
 
 	// values as observed from Sway with fractional scaling support
-	displ.have_fractional_scale_v1 = true;
+	head.scaling_base = HEAD_FRACTIONAL_SCALING_BASE;
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.0);
+	head.desired.scale = head_get_fixed_scale(1.0, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 3840);
 	assert_int_equal(head.scaled.height, 2160);
 
-	head.desired.scale = head_get_fixed_scale(&head, 2.0);
+	head.desired.scale = head_get_fixed_scale(2.0, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.8);
+	head.desired.scale = head_get_fixed_scale(1.8, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2133);
 	assert_int_equal(head.scaled.height, 1200);
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.9);
+	head.desired.scale = head_get_fixed_scale(1.9, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2029);
 	assert_int_equal(head.scaled.height, 1141);
 
-	head.desired.scale = head_get_fixed_scale(&head, 2.01);
+	head.desired.scale = head_get_fixed_scale(2.01, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1912);
 	assert_int_equal(head.scaled.height, 1075);
