@@ -12,12 +12,24 @@
 #include "head.h"
 #include "info.h"
 #include "lid.h"
+#include "output.h"
 #include "slist.h"
 #include "listeners.h"
 #include "log.h"
 #include "mode.h"
 #include "process.h"
 #include "wlr-output-management-unstable-v1.h"
+
+void validate_scaled_dimensions(struct Head *head) {
+	const struct Output *output = output_for_name(head->name);
+	if (output) {
+		if (output->logical_width != head->scaled.width || output->logical_height != head->scaled.height) {
+			log_warn("\n%s: Logical size %dx%d does not match scaled size %dx%d", head->name, output->logical_width, output->logical_height, head->scaled.width, head->scaled.height);
+		}
+	} else {
+		log_warn("\n%s: Logical size unavailable", head->name);
+	}
+}
 
 void position_heads(struct SList *heads) {
 	struct Head *head;
@@ -253,6 +265,8 @@ void desire(void) {
 		desire_adaptive_sync(head);
 
 		head_scaled_dimensions(head);
+
+		validate_scaled_dimensions(head);
 	}
 
 	struct SList *heads_ordered = order_heads(cfg->order_name_desc, heads);
