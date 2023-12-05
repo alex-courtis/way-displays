@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+// IWYU pragma: begin_keep
+#include "wlr-output-management-unstable-v1.h"
+#include "xdg-output-unstable-v1.h"
+// IWYU pragma: end_keep
+
 enum ConfigState {
 	IDLE = 0,
 	SUCCEEDED,

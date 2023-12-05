@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 
-#include "displ.h"
+#include "xdg-output-unstable-v1.h"
 
 struct Output {
 	struct wl_output *wl_output;
