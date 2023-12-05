@@ -1,14 +1,10 @@
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "listeners.h"
 
-#include "displ.h"
-#include "head.h"
+#include "log.h"
 #include "output.h"
-#include "slist.h"
-#include "wlr-output-management-unstable-v1.h"
 #include "xdg-output-unstable-v1.h"
 
 // Output data

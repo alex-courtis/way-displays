@@ -7,6 +7,7 @@
 #include "global.h"
 #include "listeners.h"
 #include "log.h"
+#include "output.h"
 #include "process.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "xdg-output-unstable-v1.h"
@@ -40,7 +41,7 @@ void displ_init(void) {
 
 void displ_destroy(void) {
 
-	// TODO destroy outputs
+	output_destroy_all();
 
 	if (displ->output_manager) {
 		zwlr_output_manager_v1_destroy(displ->output_manager);
