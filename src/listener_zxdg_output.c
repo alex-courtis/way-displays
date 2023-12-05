@@ -17,7 +17,7 @@ void zxdg_output_logical_position(void *data,
 
 	struct Output *output = data;
 
-	output->logical_x = y;
+	output->logical_x = x;
 	output->logical_y = y;
 }
 

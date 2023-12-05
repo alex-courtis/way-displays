@@ -26,6 +26,9 @@ struct Output {
 // NULL on failure to retrieve xdg output
 struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output_name, struct zxdg_output_manager_v1 *zxdg_output_manager);
 
+// output matching (head) name
+const struct Output *output_for_name(const char *name);
+
 // destroy all outputs, clearing outputs
 void output_destroy_all(void);
 

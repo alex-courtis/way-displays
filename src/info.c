@@ -8,9 +8,10 @@
 #include "convert.h"
 #include "head.h"
 #include "lid.h"
-#include "slist.h"
 #include "log.h"
 #include "mode.h"
+#include "output.h"
+#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf) {
@@ -295,12 +296,20 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 }
 
 void print_head_current(enum LogThreshold t, struct Head *head) {
+	static const struct Output *output = NULL;
+
 	if (!head)
 		return;
 
 	if (head->current.enabled) {
 		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.mode));
-		log_(t, "    position:  %d,%d", head->current.x, head->current.y);
+
+		if ((output = output_for_name(head->name))) {
+			log_(t, "    size:      %dx%d", output->logical_width, output->logical_height);
+			log_(t, "    position:  %d,%d", output->logical_x, output->logical_y);
+		} else {
+			log_(t, "    position:  %d,%d", head->current.x, head->current.y);
+		}
 		if (head->current.transform) {
 			log_(t, "    transform: %s", transform_name(head->current.transform));
 		}
