@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
@@ -22,7 +23,7 @@ static void global(void *data,
 		const char *interface,
 		uint32_t version) {
 	struct Displ *displ = data;
-	log_debug("global: %s", interface);
+	log_debug("global: %s:%u", interface, name);
 
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
 		displ->name = name;
@@ -58,13 +59,8 @@ static void global(void *data,
 		struct wl_output *wl_output = wl_registry_bind(wl_registry, name, &wl_output_interface, version);
 		log_debug("          bound");
 
-		if (wl_output && displ->zxdg_output_manager) {
-			struct zxdg_output_v1 *zxdg_output = zxdg_output_manager_v1_get_xdg_output(displ->zxdg_output_manager, wl_output);
-			if (zxdg_output) {
-				struct Output *output = output_init(wl_output, zxdg_output);
-				zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
-				log_debug("          listening to zxdg_output_v1_listener");
-			}
+		if (!output_init(wl_output, name, displ->zxdg_output_manager)) {
+			wl_output_destroy(wl_output);
 		}
 	}
 }
@@ -72,17 +68,17 @@ static void global(void *data,
 static void global_remove(void *data,
 		struct wl_registry *wl_registry,
 		uint32_t name) {
+	log_debug("global_remove: :%u", name);
+
 	struct Displ *displ = data;
 
-	// TODO remove outputs
-
-	// only interested in the WLR interface
-	if (!displ || displ->name != name)
-		return;
+	output_destroy_by_wl_output_name(name);
 
 	// a "who cares?" situation in the WLR examples
-	log_info("\nDisplay's output manager has been removed, exiting");
-	wd_exit(EXIT_SUCCESS);
+	if (displ && displ->name == name) {
+		log_info("\nDisplay's output manager has been removed, exiting");
+		wd_exit(EXIT_SUCCESS);
+	}
 }
 
 static const struct wl_registry_listener listener = {

@@ -7,6 +7,7 @@
 
 #include "cfg.h"
 #include "slist.h"
+#include "head.h"
 
 #include "mode.h"
 

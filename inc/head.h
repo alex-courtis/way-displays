@@ -6,7 +6,6 @@
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
-#include "displ.h"
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
 
