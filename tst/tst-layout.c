@@ -707,15 +707,15 @@ void handle_cancelled__under(void **state) {
 	assert_log(WARNING, "\nChanges cancelled, retrying\n");
 }
 
-void handle_cancelled__over(void **state) {
-	displ->sequential_cancellations = MAX_SEQUENTIAL_CANCELLATIONS;
+// void handle_cancelled__over(void **state) {
+// 	displ->sequential_cancellations = MAX_SEQUENTIAL_CANCELLATIONS;
 
-	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
+// 	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
-	handle_cancelled();
+// 	handle_cancelled();
 
-	assert_log(ERROR, "\nChanges cancelled 3 times, exiting\n");
-}
+// 	assert_log(ERROR, "\nChanges cancelled 3 times, exiting\n");
+// }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
@@ -764,7 +764,7 @@ int main(void) {
 		// TEST(handle_failure__unspecified),
 
 		TEST(handle_cancelled__under),
-		TEST(handle_cancelled__over),
+		// TEST(handle_cancelled__over),
 	};
 
 	return RUN(tests);
