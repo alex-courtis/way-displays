@@ -1,8 +1,10 @@
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "listeners.h"
 
 #include "displ.h"
+#include "process.h"
 #include "slist.h"
 #include "head.h"
 #include "wlr-output-management-unstable-v1.h"
