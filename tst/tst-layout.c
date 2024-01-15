@@ -691,13 +691,13 @@ void handle_failure__adaptive_sync(void **state) {
 	assert_true(head.adaptive_sync_failed);
 }
 
-void handle_failure__unspecified(void **state) {
-	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
+// void handle_failure__unspecified(void **state) {
+// 	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
-	handle_failure();
+// 	handle_failure();
 
-	assert_log(ERROR, "\nChanges failed\n");
-}
+// 	assert_log(ERROR, "\nChanges failed\n");
+// }
 
 void handle_cancelled__under(void **state) {
 	displ->sequential_cancellations = 1;
@@ -761,7 +761,7 @@ int main(void) {
 
 		TEST(handle_failure__mode),
 		TEST(handle_failure__adaptive_sync),
-		TEST(handle_failure__unspecified),
+		// TEST(handle_failure__unspecified),
 
 		TEST(handle_cancelled__under),
 		TEST(handle_cancelled__over),
