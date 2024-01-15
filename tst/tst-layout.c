@@ -60,7 +60,7 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
-	displ_init();
+	displ = calloc(1, sizeof(struct Displ));
 
 	cfg = cfg_default();
 
@@ -86,7 +86,7 @@ int after_each(void **state) {
 	head_changing_mode = NULL;
 	head_changing_adaptive_sync = NULL;
 
-	displ_destroy();
+	free(displ);
 
 	cfg_destroy();
 
