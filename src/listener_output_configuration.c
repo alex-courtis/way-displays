@@ -1,8 +1,10 @@
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "listeners.h"
 
 #include "displ.h"
+#include "process.h"
 #include "slist.h"
 #include "head.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -23,12 +25,18 @@ void cleanup(struct Displ *displ,
 
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 
+	if (config_state == CANCELLED) {
+		displ->sequential_cancellations++;
+	}  else {
+		displ->sequential_cancellations = 0;
+	}
+
 	displ->config_state = config_state;
 }
 
 static void succeeded(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
-	cleanup(data, zwlr_output_configuration_v1, SUCCEEDED);
+	cleanup(data, zwlr_output_configuration_v1, CANCELLED);
 }
 
 static void failed(void *data,
