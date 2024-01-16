@@ -378,6 +378,15 @@ void handle_failure(void) {
 	}
 }
 
+void handle_cancelled(void) {
+	if (displ->sequential_cancellations >= MAX_SEQUENTIAL_CANCELLATIONS) {
+		log_error("\nChanges cancelled %d times, exiting", MAX_SEQUENTIAL_CANCELLATIONS);
+		wd_exit_message(EXIT_FAILURE);
+	} else {
+		log_warn("\nChanges cancelled, retrying");
+	}
+}
+
 void layout(void) {
 
 	print_heads(INFO, ARRIVED, heads_arrived);
@@ -402,9 +411,9 @@ void layout(void) {
 			break;
 
 		case CANCELLED:
-			log_warn("\nChanges cancelled, retrying");
+			handle_cancelled();
 			displ->config_state = IDLE;
-			return;
+			break;
 
 		case IDLE:
 		default:

@@ -9,6 +9,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "displ.h"
 #include "global.h"
 #include "head.h"
 #include "info.h"
@@ -26,6 +27,7 @@ void desire_transform(struct Head *head);
 void desire_adaptive_sync(struct Head *head);
 void handle_success(void);
 void handle_failure(void);
+void handle_cancelled(void);
 
 bool __wrap_lid_is_closed(char *name) {
 	check_expected(name);
@@ -58,6 +60,8 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	displ = calloc(1, sizeof(struct Displ));
+
 	cfg = cfg_default();
 
 	struct State *s = calloc(1, sizeof(struct State));
@@ -81,6 +85,8 @@ int after_each(void **state) {
 
 	head_changing_mode = NULL;
 	head_changing_adaptive_sync = NULL;
+
+	free(displ);
 
 	cfg_destroy();
 
@@ -693,6 +699,24 @@ void handle_failure__unspecified(void **state) {
 	assert_log(ERROR, "\nChanges failed\n");
 }
 
+void handle_cancelled__under(void **state) {
+	displ->sequential_cancellations = 1;
+
+	handle_cancelled();
+
+	assert_log(WARNING, "\nChanges cancelled, retrying\n");
+}
+
+void handle_cancelled__over(void **state) {
+	displ->sequential_cancellations = MAX_SEQUENTIAL_CANCELLATIONS;
+
+	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
+
+	handle_cancelled();
+
+	assert_log(ERROR, "\nChanges cancelled 3 times, exiting\n");
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(order_heads__exact_partial_regex),
@@ -738,6 +762,9 @@ int main(void) {
 		TEST(handle_failure__mode),
 		TEST(handle_failure__adaptive_sync),
 		TEST(handle_failure__unspecified),
+
+		TEST(handle_cancelled__under),
+		TEST(handle_cancelled__over),
 	};
 
 	return RUN(tests);
