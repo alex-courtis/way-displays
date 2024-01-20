@@ -724,7 +724,7 @@ void handle_cancelled__over(void **state) {
 
 	handle_cancelled();
 
-	assert_log(ERROR, "\nChanges cancelled 25 times, exiting\n");
+	assert_log(ERROR, "\nChanges cancelled 3 times, exiting\n");
 }
 
 int main(void) {

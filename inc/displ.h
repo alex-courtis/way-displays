@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define MAX_SEQUENTIAL_CANCELLATIONS 25
+#define MAX_SEQUENTIAL_CANCELLATIONS 3
 
 enum ConfigState {
 	IDLE = 0,
