@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#define MAX_SEQUENTIAL_CANCELLATIONS 25
-
 enum ConfigState {
 	IDLE = 0,
 	SUCCEEDED,
@@ -26,8 +24,6 @@ struct Displ {
 	uint32_t output_manager_version;
 
 	enum ConfigState config_state;
-
-	uint32_t sequential_cancellations;
 };
 
 void displ_init(void);

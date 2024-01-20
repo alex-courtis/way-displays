@@ -23,18 +23,12 @@ void cleanup(struct Displ *displ,
 
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 
-	if (config_state == CANCELLED) {
-		displ->sequential_cancellations++;
-	}  else {
-		displ->sequential_cancellations = 0;
-	}
-
 	displ->config_state = config_state;
 }
 
 static void succeeded(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
-	cleanup(data, zwlr_output_configuration_v1, CANCELLED);
+	cleanup(data, zwlr_output_configuration_v1, SUCCEEDED);
 }
 
 static void failed(void *data,
