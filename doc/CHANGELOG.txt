@@ -1,3 +1,7 @@
+way-displays 1.10.0 2024-01-20
+------------------------------
+#147 retry up to 25 cancellations, complete resolution incoming
+
 way-displays 1.10.0 2024-01-16
 ------------------------------
 #151 add VRR_OFF hint on adaptive sync failure
