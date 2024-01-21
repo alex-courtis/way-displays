@@ -1,8 +1,8 @@
-way-displays 1.10.0 2024-01-20
+way-displays 1.10.2 2024-01-21
 ------------------------------
 #147 revert cancellation behaviour to 1.9.0, awaiting comprehensive fix
 
-way-displays 1.10.0 2024-01-20
+way-displays 1.10.1 2024-01-20
 ------------------------------
 #147 retry up to 25 cancellations, complete resolution incoming
 
