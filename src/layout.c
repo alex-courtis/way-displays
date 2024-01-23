@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
+#include <wayland-util.h>
 
 #include "layout.h"
 
@@ -26,8 +27,6 @@ void validate_scaled_dimensions(struct Head *head) {
 		if (output->logical_width != head->scaled.width || output->logical_height != head->scaled.height) {
 			log_warn("\n%s: Logical size %dx%d does not match scaled size %dx%d", head->name, output->logical_width, output->logical_height, head->scaled.width, head->scaled.height);
 		}
-	} else {
-		log_warn("\n%s: Logical size unavailable", head->name);
 	}
 }
 
@@ -291,7 +290,7 @@ void apply(void) {
 		return;
 
 	// passed into our configuration listener
-	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->output_manager, displ->serial);
+	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), displ);
 
 	if ((head_changing_mode = slist_find_val(heads, head_current_mode_not_desired))) {

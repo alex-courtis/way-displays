@@ -9,7 +9,6 @@
 #include "head.h"
 
 #include "cfg.h"
-#include "displ.h"
 #include "global.h"
 #include "info.h"
 #include "slist.h"

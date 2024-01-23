@@ -32,7 +32,7 @@ void displ_init(void) {
 		return;
 	}
 
-	if (!displ->output_manager) {
+	if (!displ->zwlr_output_manager) {
 		log_error("\ncompositor does not support WLR output manager protocol, exiting");
 		wd_exit(EXIT_FAILURE);
 		return;
@@ -43,8 +43,8 @@ void displ_destroy(void) {
 
 	output_destroy_all();
 
-	if (displ->output_manager) {
-		zwlr_output_manager_v1_destroy(displ->output_manager);
+	if (displ->zwlr_output_manager) {
+		zwlr_output_manager_v1_destroy(displ->zwlr_output_manager);
 	}
 
 	if (displ->zxdg_output_manager) {

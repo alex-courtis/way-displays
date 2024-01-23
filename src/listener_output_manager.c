@@ -42,8 +42,8 @@ static void finished(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1) {
 	struct Displ *displ = data;
 
-	if (displ->output_manager) {
-		zwlr_output_manager_v1_destroy(displ->output_manager);
+	if (displ->zwlr_output_manager) {
+		zwlr_output_manager_v1_destroy(displ->zwlr_output_manager);
 	}
 }
 

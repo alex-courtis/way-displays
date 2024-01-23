@@ -164,7 +164,7 @@ int loop(void) {
 		// always read and dispatch wayland events; stop the file descriptor from getting stale
 		_wl_display_read_events(displ->display, FL);
 		_wl_display_dispatch_pending(displ->display, FL);
-		if (!displ->output_manager) {
+		if (!displ->zwlr_output_manager) {
 			log_info("\nDisplay's output manager has departed, exiting");
 			wd_exit(EXIT_SUCCESS);
 			return EXIT_SUCCESS;
