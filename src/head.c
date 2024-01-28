@@ -150,7 +150,7 @@ wl_fixed_t head_get_fixed_scale(double scale, int32_t base) {
 
 	if (base != HEAD_DEFAULT_SCALING_BASE) {
 		// See !138
-		log_debug("rounding scale %f to to nearest multiple of 1/8", scale);
+		log_debug("rounding scale %f to nearest multiple of 1/8", scale);
 		fixed_scale = round((double)fixed_scale / HEAD_DEFAULT_SCALING_BASE * base) \
 			* ((double)HEAD_DEFAULT_SCALING_BASE / base);
 	}
