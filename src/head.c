@@ -148,19 +148,12 @@ wl_fixed_t head_get_fixed_scale(double scale, int32_t base) {
 
 	wl_fixed_t fixed_scale = wl_fixed_from_double(scale);
 
-	/*
-	 * The following ensures that the scale which the compositor reports *after* we applied the layout is the same
-	 * that was put in. This prevents repeat "flickering" of the scale value, causing way-displays to continuously
-	 * change the scale.
-	 *
-	 * Note that this is currently only *observed* behavior in a Sway revision with fractional-scale-v1, which is
-	 * where the factor 120 comes from. It does not occur on Sway 1.8.1 (which doesn't yet have support for the
-	 * fractional scaling protocol).
-	 *
-	 * TODO: Can we "prove" that this is the right thing to do by looking at protocol specifications?
-	 */
-	fixed_scale = floor((double)fixed_scale / HEAD_DEFAULT_SCALING_BASE * base) \
-		* ((double)HEAD_DEFAULT_SCALING_BASE / base) + 0.5;
+	if (base != HEAD_DEFAULT_SCALING_BASE) {
+		// See !138
+		log_debug("rounding scale %f to to nearest multiple of 1/8", scale);
+		fixed_scale = round((double)fixed_scale / HEAD_DEFAULT_SCALING_BASE * base) \
+			* ((double)HEAD_DEFAULT_SCALING_BASE / base);
+	}
 
 	return fixed_scale;
 }

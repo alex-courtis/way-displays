@@ -11,7 +11,10 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #define HEAD_DEFAULT_SCALING_BASE 256
-#define HEAD_FRACTIONAL_SCALING_BASE 120
+// While the fractional-scale-v1 protocol deals with scales in multiples of 1/120,
+// there are differences in behavior between compositors, see !138.
+// We force scales to be multiples of 1/8 in this case, because gcd(256, 120) = 8.
+#define HEAD_FRACTIONAL_SCALING_BASE 8
 
 extern struct SList *heads;
 extern struct SList *heads_arrived;
@@ -55,7 +58,7 @@ struct Head {
 		int32_t height;
 	} scaled;
 
-	int32_t scaling_base; // either 256 (default) or 120 (if fractional-scale-v1 is used)
+	int32_t scaling_base;
 
 	bool warned_no_preferred;
 	bool warned_no_mode;

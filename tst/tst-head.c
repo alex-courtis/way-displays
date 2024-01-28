@@ -205,7 +205,6 @@ void head_scaled_dimensions__fractional_scaling(void **state) {
 	assert_int_equal(head.scaled.width, 1908);
 	assert_int_equal(head.scaled.height, 1073);
 
-	// values as observed from Sway with fractional scaling support
 	head.scaling_base = HEAD_FRACTIONAL_SCALING_BASE;
 
 	head.desired.scale = head_get_fixed_scale(1.0, head.scaling_base);
@@ -218,20 +217,23 @@ void head_scaled_dimensions__fractional_scaling(void **state) {
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
 
-	head.desired.scale = head_get_fixed_scale(1.8, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(1.7, head.scaling_base);
+	// actual scale will be 1.75
 	head_scaled_dimensions(&head);
-	assert_int_equal(head.scaled.width, 2133);
-	assert_int_equal(head.scaled.height, 1200);
+	assert_int_equal(head.scaled.width, 2194);
+	assert_int_equal(head.scaled.height, 1234);
 
 	head.desired.scale = head_get_fixed_scale(1.9, head.scaling_base);
+	// actual scale will be 1.875
 	head_scaled_dimensions(&head);
-	assert_int_equal(head.scaled.width, 2029);
-	assert_int_equal(head.scaled.height, 1141);
+	assert_int_equal(head.scaled.width, 2048);
+	assert_int_equal(head.scaled.height, 1152);
 
 	head.desired.scale = head_get_fixed_scale(2.01, head.scaling_base);
+	// actual scale will be 2.0
 	head_scaled_dimensions(&head);
-	assert_int_equal(head.scaled.width, 1912);
-	assert_int_equal(head.scaled.height, 1075);
+	assert_int_equal(head.scaled.width, 1920);
+	assert_int_equal(head.scaled.height, 1080);
 }
 
 void head_find_mode__none(void **state) {
