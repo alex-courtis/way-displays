@@ -23,7 +23,7 @@ static void head(void *data,
 	slist_append(&heads, head);
 	slist_append(&heads_arrived, head);
 
-	if (displ->output_manager_version == ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
+	if (displ->zwlr_output_manager_version == ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
 		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener_min(), head);
 	} else {
 		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener(), head);
@@ -35,7 +35,7 @@ static void done(void *data,
 		uint32_t serial) {
 	struct Displ *displ = data;
 
-	displ->serial = serial;
+	displ->zwlr_output_manager_serial = serial;
 }
 
 static void finished(void *data,

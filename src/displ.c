@@ -55,7 +55,7 @@ void displ_destroy(void) {
 
 	wl_display_disconnect(displ->display);
 
-	free(displ->interface);
+	free(displ->zwlr_output_manager_interface);
 
 	free(displ);
 	displ = NULL;

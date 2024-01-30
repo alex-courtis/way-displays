@@ -21,10 +21,9 @@ static void bind_zwlr_output_manager(struct Displ *displ,
 		const char *interface,
 		uint32_t version) {
 
-	displ->name = name;
-	displ->interface = strdup(interface);
-
-	displ->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->output_manager_version);
+	displ->display_name = name;
+	displ->zwlr_output_manager_interface = strdup(interface);
+	displ->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->zwlr_output_manager_version);
 
 	zwlr_output_manager_v1_add_listener(displ->zwlr_output_manager, output_manager_listener(), displ);
 }
@@ -82,7 +81,7 @@ static void global_remove(void *data,
 	output_destroy_by_wl_output_name(name);
 
 	// a "who cares?" situation in the WLR examples
-	if (displ && displ->name == name) {
+	if (displ && displ->display_name == name) {
 		log_info("\nDisplay's output manager has been removed, exiting");
 		wd_exit(EXIT_SUCCESS);
 	}

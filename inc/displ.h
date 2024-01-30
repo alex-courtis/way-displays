@@ -19,24 +19,24 @@ enum ConfigState {
 
 struct Displ {
 	// global
-	struct wl_display *display;
 	struct wl_registry *registry;
-	uint32_t name;
+	struct wl_display *display;
+	uint32_t display_name;
 
-	// output manager
+	// wlroots output manager
 	struct zwlr_output_manager_v1 *zwlr_output_manager;
-	uint32_t serial;
-	char *interface;
-	uint32_t output_manager_version;
+	uint32_t zwlr_output_manager_serial;
+	char *zwlr_output_manager_interface;
+	uint32_t zwlr_output_manager_version;
 
-	bool have_fractional_scale_v1;
-
-	// output
+	// wayland output manager
 	struct zxdg_output_manager_v1 *zxdg_output_manager;
 	uint32_t zxdg_output_manager_name;
 	uint32_t zxdg_output_manager_version;
 
 	enum ConfigState config_state;
+
+	bool have_fractional_scale_v1;
 };
 
 void displ_init(void);
