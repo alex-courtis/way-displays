@@ -264,8 +264,6 @@ void desire(void) {
 		desire_adaptive_sync(head);
 
 		head_scaled_dimensions(head);
-
-		validate_scaled_dimensions(head);
 	}
 
 	struct SList *heads_ordered = order_heads(cfg->order_name_desc, heads);
@@ -361,6 +359,12 @@ void handle_success(void) {
 			report_adaptive_sync_fail(head);
 			head->adaptive_sync_failed = true;
 			return;
+		}
+	} else {
+
+		for (struct SList *i = heads; i; i = i->nex) {
+			struct Head *head = (struct Head*)i->val;
+			validate_scaled_dimensions(head);
 		}
 	}
 

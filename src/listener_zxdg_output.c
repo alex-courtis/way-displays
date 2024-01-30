@@ -33,11 +33,10 @@ void zxdg_output_logical_size(void *data,
 	output->logical_height = height;
 }
 
+// deprecated
 void zxdg_output_done(void *data,
 		struct zxdg_output_v1 *zxdg_output_v1) {
 	log_debug("zxdg_output_done");
-
-	// TODO destroy and remove
 }
 
 void zxdg_output_name(void *data,
