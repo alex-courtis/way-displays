@@ -66,7 +66,7 @@ static const struct zwlr_output_mode_v1_listener listener = {
 	.finished = finished,
 };
 
-const struct zwlr_output_mode_v1_listener *mode_listener(void) {
+const struct zwlr_output_mode_v1_listener *zwlr_output_mode_listener(void) {
 	return &listener;
 }
 

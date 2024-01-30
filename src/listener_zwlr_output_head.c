@@ -49,7 +49,7 @@ static void mode(void *data,
 
 	slist_append(&head->modes, mode);
 
-	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, mode_listener(), mode);
+	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), mode);
 }
 
 static void enabled(void *data,
@@ -183,11 +183,11 @@ static const struct zwlr_output_head_v1_listener listener = {
 	.adaptive_sync = adaptive_sync,
 };
 
-const struct zwlr_output_head_v1_listener *head_listener_min(void) {
+const struct zwlr_output_head_v1_listener *zwlr_output_head_listener_min(void) {
 	return &listener_min;
 }
 
-const struct zwlr_output_head_v1_listener *head_listener(void) {
+const struct zwlr_output_head_v1_listener *zwlr_output_head_listener(void) {
 	return &listener;
 }
 

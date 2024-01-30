@@ -25,7 +25,7 @@ static void bind_zwlr_output_manager(struct Displ *displ,
 	displ->zwlr_output_manager_interface = strdup(interface);
 	displ->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->zwlr_output_manager_version);
 
-	zwlr_output_manager_v1_add_listener(displ->zwlr_output_manager, output_manager_listener(), displ);
+	zwlr_output_manager_v1_add_listener(displ->zwlr_output_manager, zwlr_output_manager_listener(), displ);
 }
 
 static void bind_zxdg_output_manager(struct Displ *displ,

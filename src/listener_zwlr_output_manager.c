@@ -24,9 +24,9 @@ static void head(void *data,
 	slist_append(&heads_arrived, head);
 
 	if (displ->zwlr_output_manager_version == ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
-		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener_min(), head);
+		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, zwlr_output_head_listener_min(), head);
 	} else {
-		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, head_listener(), head);
+		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, zwlr_output_head_listener(), head);
 	}
 }
 
@@ -53,7 +53,7 @@ static const struct zwlr_output_manager_v1_listener listener = {
 	.finished = finished,
 };
 
-const struct zwlr_output_manager_v1_listener *output_manager_listener(void) {
+const struct zwlr_output_manager_v1_listener *zwlr_output_manager_listener(void) {
 	return &listener;
 }
 

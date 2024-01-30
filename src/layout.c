@@ -289,7 +289,7 @@ void apply(void) {
 
 	// passed into our configuration listener
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, output_configuration_listener(), displ);
+	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
 
 	if ((head_changing_mode = slist_find_val(heads, head_current_mode_not_desired))) {
 
