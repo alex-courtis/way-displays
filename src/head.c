@@ -144,15 +144,15 @@ bool head_matches_name_desc_exact(const void *h, const void *n) {
 wl_fixed_t head_get_fixed_scale(double scale, int32_t base) {
 	// computes a scale value that is appropriate for putting into `zwlr_output_configuration_head_v1_set_scale`
 
-	base = base ? base : HEAD_DEFAULT_SCALING_BASE;
-
 	wl_fixed_t fixed_scale = wl_fixed_from_double(scale);
+	wl_fixed_t fixed_scale_before = fixed_scale;
 
-	if (base != HEAD_DEFAULT_SCALING_BASE) {
-		// See !138
-		log_debug("rounding scale %f to nearest multiple of 1/8", scale);
-		fixed_scale = round((double)fixed_scale / HEAD_DEFAULT_SCALING_BASE * base) \
-			* ((double)HEAD_DEFAULT_SCALING_BASE / base);
+	// See !138
+	base = base ? base : HEAD_DEFAULT_SCALING_BASE;
+	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * base) \
+		* ((double)HEAD_WLFIXED_SCALING_BASE / base);
+	if (fixed_scale != fixed_scale_before) {
+		log_debug("rounded scale %f to nearest multiple of 1/%d", scale, base);
 	}
 
 	return fixed_scale;
@@ -164,7 +164,7 @@ int32_t head_get_scaled_length(int32_t length, wl_fixed_t fixed_scale, int32_t b
 	// in case `base` comes from a not fully initialized Head (like in tests)
 	base = base ? base : HEAD_DEFAULT_SCALING_BASE;
 
-	fixed_scale = (double)fixed_scale / HEAD_DEFAULT_SCALING_BASE * base + 0.5;
+	fixed_scale = (double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * base + 0.5;
 
 	return floor((double)length * base / fixed_scale);
 }

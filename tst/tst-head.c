@@ -175,37 +175,7 @@ void head_scaled_dimensions__calculated(void **state) {
 
 void head_scaled_dimensions__fractional_scaling(void **state) {
 	struct Mode mode = { .width = 3840, .height = 2160, };
-	struct Head head = { .desired.mode = &mode, };
-
-	// values as observed from a pre-fractional-scaling Sway
-	head.scaling_base = HEAD_DEFAULT_SCALING_BASE;
-
-	head.desired.scale = head_get_fixed_scale(1.0, head.scaling_base);
-	head_scaled_dimensions(&head);
-	assert_int_equal(head.scaled.width, 3840);
-	assert_int_equal(head.scaled.height, 2160);
-
-	head.desired.scale = head_get_fixed_scale(2.0, head.scaling_base);
-	head_scaled_dimensions(&head);
-	assert_int_equal(head.scaled.width, 1920);
-	assert_int_equal(head.scaled.height, 1080);
-
-	head.desired.scale = head_get_fixed_scale(1.8, head.scaling_base);
-	head_scaled_dimensions(&head);
-	assert_int_equal(head.scaled.width, 2132);
-	assert_int_equal(head.scaled.height, 1199);
-
-	head.desired.scale = head_get_fixed_scale(1.9, head.scaling_base);
-	head_scaled_dimensions(&head);
-	assert_int_equal(head.scaled.width, 2022);
-	assert_int_equal(head.scaled.height, 1137);
-
-	head.desired.scale = head_get_fixed_scale(2.01, head.scaling_base);
-	head_scaled_dimensions(&head);
-	assert_int_equal(head.scaled.width, 1908);
-	assert_int_equal(head.scaled.height, 1073);
-
-	head.scaling_base = HEAD_FRACTIONAL_SCALING_BASE;
+	struct Head head = { .desired.mode = &mode, .scaling_base = HEAD_DEFAULT_SCALING_BASE, };
 
 	head.desired.scale = head_get_fixed_scale(1.0, head.scaling_base);
 	head_scaled_dimensions(&head);

@@ -10,11 +10,12 @@
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
 
-#define HEAD_DEFAULT_SCALING_BASE 256
-// While the fractional-scale-v1 protocol deals with scales in multiples of 1/120,
-// there are differences in behavior between compositors, see !138.
-// We force scales to be multiples of 1/8 in this case, because gcd(256, 120) = 8.
-#define HEAD_FRACTIONAL_SCALING_BASE 8
+// wl_fixed_t, used by the wlr-output-management protocol, uses scales in multiples of 1/256.
+// Meanwhile, the fractional-scale-v1 protocol deals with scales in multiples of 1/120,
+// and there are observed differences in behavior between compositors, see !138.
+// We force scales to be multiples of 1/8, because gcd(256, 120) = 8.
+#define HEAD_DEFAULT_SCALING_BASE 8
+#define HEAD_WLFIXED_SCALING_BASE 256
 
 extern struct SList *heads;
 extern struct SList *heads_arrived;
