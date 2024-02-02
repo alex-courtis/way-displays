@@ -1,3 +1,17 @@
+way-displays 1.10.2 2024-01-21
+------------------------------
+#147 revert cancellation behaviour to 1.9.0, awaiting comprehensive fix
+
+way-displays 1.10.1 2024-01-20
+------------------------------
+#147 retry up to 25 cancellations, complete resolution incoming
+
+way-displays 1.10.0 2024-01-16
+------------------------------
+#151 add VRR_OFF hint on adaptive sync failure
+#147 retry after cancellations up to 3 times
+#135 add AUTO_SCALE_MIN/MAX
+
 way-displays 1.9.0 2023-09-04
 -----------------------------
 #128 allow exact refresh HZ up to 3d.p.

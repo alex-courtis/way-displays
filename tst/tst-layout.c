@@ -607,6 +607,7 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	struct Head head = {
 		.name = "head",
+		.model = NULL, // fall back to placeholder
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 	};
@@ -614,7 +615,11 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 
 	handle_success();
 
-	assert_log(INFO, "\nhead: Cannot enable VRR, display or compositor may not support it.\n");
+	assert_log(INFO, "\nhead:\n"
+			"  Cannot enable VRR: this display or compositor may not support it.\n"
+			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
+			"  VRR_OFF:\n"
+			"    - 'monitor description'\n");
 
 	assert_null(head_changing_adaptive_sync);
 	assert_true(head.adaptive_sync_failed);
@@ -671,6 +676,7 @@ void handle_failure__mode(void **state) {
 void handle_failure__adaptive_sync(void **state) {
 	struct Head head = {
 		.name = "nam",
+		.model = "mod",
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 	};
@@ -678,7 +684,11 @@ void handle_failure__adaptive_sync(void **state) {
 
 	handle_failure();
 
-	assert_log(INFO, "\nnam: Cannot enable VRR, display or compositor may not support it.\n");
+	assert_log(INFO, "\nnam:\n"
+			"  Cannot enable VRR: this display or compositor may not support it.\n"
+			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
+			"  VRR_OFF:\n"
+			"    - 'mod'\n");
 
 	assert_null(head_changing_adaptive_sync);
 

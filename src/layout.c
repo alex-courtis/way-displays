@@ -323,6 +323,14 @@ void apply(void) {
 	slist_free(&heads_changing);
 }
 
+void report_adaptive_sync_fail(struct Head *head) {
+	log_info("\n%s:", head->name);
+	log_info("  Cannot enable VRR: this display or compositor may not support it.");
+	log_info("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
+	log_info("  VRR_OFF:");
+	log_info("    - '%s'", head->model ? head->model : "monitor description");
+}
+
 void handle_success(void) {
 	if (head_changing_mode) {
 
@@ -338,7 +346,7 @@ void handle_success(void) {
 
 		// sway reports adaptive sync failure as success
 		if (head_current_adaptive_sync_not_desired(head)) {
-			log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head->name);
+			report_adaptive_sync_fail(head);
 			head->adaptive_sync_failed = true;
 			return;
 		}
@@ -365,7 +373,7 @@ void handle_failure(void) {
 	} else if (head_changing_adaptive_sync && head_current_adaptive_sync_not_desired(head_changing_adaptive_sync)) {
 
 		// river reports adaptive sync failure as failure
-		log_info("\n%s: Cannot enable VRR, display or compositor may not support it.", head_changing_adaptive_sync->name);
+		report_adaptive_sync_fail(head_changing_adaptive_sync);
 		head_changing_adaptive_sync->adaptive_sync_failed = true;
 
 		head_changing_adaptive_sync = NULL;
