@@ -12,7 +12,6 @@
 #include "global.h"
 #include "slist.h"
 #include "log.h"
-#include "displ.h"
 #include "mode.h"
 
 #include "head.h"

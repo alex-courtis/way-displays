@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "cfg.h"
+#include "head.h"
 #include "slist.h"
 
 #include "mode.h"

@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
-#include <wayland-util.h>
 
 #include "layout.h"
 
