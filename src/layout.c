@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
-#include <wayland-util.h>
 
 #include "layout.h"
 
@@ -182,7 +181,7 @@ void desire_scale(struct Head *head) {
 
 	// all scaling disabled
 	if (cfg->scaling == OFF) {
-		head->desired.scale = wl_fixed_from_int(1);
+		head->desired.scale = head_get_fixed_scale(head, 1.0, head->scaling_base);
 		return;
 	}
 
@@ -191,7 +190,7 @@ void desire_scale(struct Head *head) {
 	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
 		user_scale = (struct UserScale*)i->val;
 		if (head_matches_name_desc(head, user_scale->name_desc)) {
-			head->desired.scale = wl_fixed_from_double(user_scale->scale);
+			head->desired.scale = head_get_fixed_scale(head, user_scale->scale, head->scaling_base);
 			return;
 		}
 	}
@@ -201,7 +200,7 @@ void desire_scale(struct Head *head) {
 		head->desired.scale =
 			head_auto_scale(head, cfg->auto_scale_min, cfg->auto_scale_max);
 	} else {
-		head->desired.scale = wl_fixed_from_int(1);
+		head->desired.scale = head_get_fixed_scale(head, 1.0, head->scaling_base);
 	}
 }
 

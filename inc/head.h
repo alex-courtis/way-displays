@@ -9,6 +9,13 @@
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
 
+// wl_fixed_t, used by the wlr-output-management protocol, uses scales in multiples of 1/256.
+// Meanwhile, the fractional-scale-v1 protocol deals with scales in multiples of 1/120,
+// and there are observed differences in behavior between compositors, see !138.
+// We force scales to be multiples of 1/8, because gcd(256, 120) = 8.
+#define HEAD_DEFAULT_SCALING_BASE 8
+#define HEAD_WLFIXED_SCALING_BASE 256
+
 extern struct SList *heads;
 extern struct SList *heads_arrived;
 extern struct SList *heads_departed;
@@ -51,6 +58,8 @@ struct Head {
 		int32_t height;
 	} scaled;
 
+	int32_t scaling_base;
+
 	bool warned_no_preferred;
 	bool warned_no_mode;
 };
@@ -66,6 +75,10 @@ bool head_matches_name_desc_partial(const void *head, const void *name_desc);
 bool head_matches_name_desc(const void *head, const void *name_desc);
 
 bool head_name_desc_matches_head(const void *name_desc, const void *head);
+
+wl_fixed_t head_get_fixed_scale(const struct Head *head, double scale, int32_t base);
+
+int32_t head_get_scaled_length(int32_t length, wl_fixed_t fixed_scale, int32_t base);
 
 wl_fixed_t head_auto_scale(struct Head *head, double min, double max);
 

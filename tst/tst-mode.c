@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "cfg.h"
+#include "head.h"
 #include "slist.h"
 
 #include "mode.h"
@@ -142,6 +143,18 @@ void mode_user_mode__exact_hz_failed(void **state) {
 	assert_ptr_equal(actual, slist_at(modes, 0));
 }
 
+void mode_dpi__(void **state) {
+	struct Head head = { .width_mm = 1000, .height_mm = 500, };
+	struct Mode mode = { .width    = 2000, .height    = 1000, .head = &head };
+
+	// nice roundish number to prevent odd test fails
+	double expected = 50.8;
+
+	double actual = mode_dpi(&mode);
+
+	assert_float_equal(actual, expected, 0);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(mode_mhz_to_hz_str__),
@@ -157,6 +170,8 @@ int main(void) {
 		TEST(mode_user_mode__failed),
 		TEST(mode_user_mode__exact_hz_match),
 		TEST(mode_user_mode__exact_hz_failed),
+
+		TEST(mode_dpi__),
 	};
 
 	return RUN(tests);
