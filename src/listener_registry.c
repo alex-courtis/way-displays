@@ -41,7 +41,7 @@ static void global(void *data,
 		zwlr_output_manager_v1_add_listener(displ->output_manager, output_manager_listener(), displ);
 	} else if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
 		displ->have_fractional_scale_v1 = true;
-		log_debug("compositor supports the fractional-scale protocol, version %d", wp_fractional_scale_manager_v1_interface.version);
+		log_debug("\nCompositor supports %s version %d", interface, version);
 	}
 }
 
