@@ -117,8 +117,12 @@ sudo make install
 sudo make uninstall
 ```
 
-## Questions, Suggestions And Contributions
+## Issues
 
-Please create a [github issue](https://github.com/alex-courtis/way-displays/issues) and attach the log `/tmp/way-displays.1.me.log`
+Please [collect debug logs](https://github.com/alex-courtis/way-displays/wiki/Troubleshooting#logs-tell-you-everything), create a [github issue](https://github.com/alex-courtis/way-displays/issues) and attach your log.
+
+## Questions, Ideas And Contributions
+
+Please raise a [github issue](https://github.com/alex-courtis/way-displays/issues)
 
 [Contributions](doc/CONTRIBUTING.md) are most gratefully received, see [Milestones](https://github.com/alex-courtis/way-displays/milestones) for prioritised issues.
