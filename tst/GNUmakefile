@@ -12,7 +12,7 @@ OBJS =  tst/util.o \
 
 WRAPS_COMMON = -Wl,$\
 	--wrap=log_set_threshold,$\
-	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_error_errno,$\
+	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_errno,$\
 	--wrap=print_head,--wrap=print_mode,$\
 	--wrap=wd_exit,--wrap=wd_exit_message
 

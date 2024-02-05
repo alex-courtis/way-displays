@@ -141,7 +141,7 @@ bool head_matches_name_desc_exact(const void *h, const void *n) {
 		(head->description && strcmp(head->description, name_desc) == 0);
 }
 
-wl_fixed_t head_get_fixed_scale(double scale, int32_t base) {
+wl_fixed_t head_get_fixed_scale(const struct Head *head, double scale, int32_t base) {
 	// computes a scale value that is appropriate for putting into `zwlr_output_configuration_head_v1_set_scale`
 
 	wl_fixed_t fixed_scale = wl_fixed_from_double(scale);
@@ -152,7 +152,7 @@ wl_fixed_t head_get_fixed_scale(double scale, int32_t base) {
 	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * base) \
 		* ((double)HEAD_WLFIXED_SCALING_BASE / base);
 	if (fixed_scale != fixed_scale_before) {
-		log_debug("rounded scale %f to nearest multiple of 1/%d", scale, base);
+		log_debug("\n%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head && head->name ? head->name : "???", scale, base, wl_fixed_to_double(fixed_scale));
 	}
 
 	return fixed_scale;
@@ -166,22 +166,23 @@ int32_t head_get_scaled_length(int32_t length, wl_fixed_t fixed_scale, int32_t b
 
 	fixed_scale = (double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * base + 0.5;
 
+	// wayland truncates when calculating size
 	return floor((double)length * base / fixed_scale);
 }
 
 wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
 	if (!head) {
-		return head_get_fixed_scale(1.0, HEAD_DEFAULT_SCALING_BASE);
+		return head_get_fixed_scale(head, 1.0, HEAD_DEFAULT_SCALING_BASE);
 	}
 
 	if (!head->desired.mode) {
-		return head_get_fixed_scale(1.0, head->scaling_base);
+		return head_get_fixed_scale(head, 1.0, head->scaling_base);
 	}
 
 	// average dpi
 	double dpi = mode_dpi(head->desired.mode);
 	if (dpi == 0) {
-		return head_get_fixed_scale(1.0, head->scaling_base);
+		return head_get_fixed_scale(head, 1.0, head->scaling_base);
 	}
 
 	// round the dpi to the nearest 12, so that we get a nice even wl_fixed_t
@@ -202,7 +203,7 @@ wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
 	}
 
 	// 96dpi approximately correct for older monitors and became the convention for 1:1 scaling
-	return head_get_fixed_scale((double) dpi_quantized / 96, head->scaling_base);
+	return head_get_fixed_scale(head, (double) dpi_quantized / 96, head->scaling_base);
 }
 
 void head_scaled_dimensions(struct Head *head) {

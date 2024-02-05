@@ -73,6 +73,13 @@ void __wrap_log_(enum LogThreshold t, const char *__restrict __format, ...) {
 	va_end(args);
 }
 
+void __wrap_log_debug(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	_log(DEBUG, __format, args);
+	va_end(args);
+}
+
 void __wrap_log_info(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);

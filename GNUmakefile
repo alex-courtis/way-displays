@@ -22,6 +22,8 @@ TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 TST_T = $(patsubst tst%,test%,$(TST_E))
 
 all: way-displays
+	ssh duked -C "rm /home/alex/bin/way-displays" || true
+	scp way-displays duked:/home/alex/bin
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile

@@ -152,7 +152,7 @@ void head_scaled_dimensions__default(void **state) {
 	assert_int_equal(head.scaled.height, 1);
 }
 
-void head_scaled_dimensions__calculated(void **state) {
+void head_scaled_dimensions__transform(void **state) {
 	struct Mode mode = { .width = 200, .height = 100, };
 	struct Head head = { .desired.mode = &mode, };
 
@@ -173,37 +173,44 @@ void head_scaled_dimensions__calculated(void **state) {
 	assert_int_equal(head.scaled.height, 66); // wayland truncates when calculating size
 }
 
-void head_scaled_dimensions__fractional_scaling(void **state) {
+void head_scaled_dimensions__dimensions(void **state) {
 	struct Mode mode = { .width = 3840, .height = 2160, };
 	struct Head head = { .desired.mode = &mode, .scaling_base = HEAD_DEFAULT_SCALING_BASE, };
 
-	head.desired.scale = head_get_fixed_scale(1.0, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(&head, 1.0, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 3840);
 	assert_int_equal(head.scaled.height, 2160);
+	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(2.0, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(&head, 2.0, head.scaling_base);
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
+	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(1.7, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(&head, 1.7, head.scaling_base);
 	// actual scale will be 1.75
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2194);
 	assert_int_equal(head.scaled.height, 1234);
+	assert_log(DEBUG, "\n???: Rounded scale 1.7 to nearest multiple of 1/8: 1.750\n");
 
-	head.desired.scale = head_get_fixed_scale(1.9, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(&head, 1.9, head.scaling_base);
 	// actual scale will be 1.875
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2048);
 	assert_int_equal(head.scaled.height, 1152);
+	assert_log(DEBUG, "\n???: Rounded scale 1.9 to nearest multiple of 1/8: 1.875\n");
 
-	head.desired.scale = head_get_fixed_scale(2.01, head.scaling_base);
+	head.name = "name";
+
+	head.desired.scale = head_get_fixed_scale(&head, 2.01, head.scaling_base);
 	// actual scale will be 2.0
 	head_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
+	assert_log(DEBUG, "\nname: Rounded scale 2.01 to nearest multiple of 1/8: 2.000\n");
 }
 
 void head_find_mode__none(void **state) {
@@ -338,8 +345,8 @@ int main(void) {
 		TEST(head_auto_scale__range),
 
 		TEST(head_scaled_dimensions__default),
-		TEST(head_scaled_dimensions__calculated),
-		TEST(head_scaled_dimensions__fractional_scaling),
+		TEST(head_scaled_dimensions__transform),
+		TEST(head_scaled_dimensions__dimensions),
 
 		TEST(head_find_mode__none),
 		TEST(head_find_mode__user_available),
