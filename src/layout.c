@@ -12,22 +12,12 @@
 #include "head.h"
 #include "info.h"
 #include "lid.h"
-#include "output.h"
 #include "slist.h"
 #include "listeners.h"
 #include "log.h"
 #include "mode.h"
 #include "process.h"
 #include "wlr-output-management-unstable-v1.h"
-
-void validate_scaled_dimensions(struct Head *head) {
-	const struct Output *output = output_for_name(head->name);
-	if (output) {
-		if (output->logical_width != head->scaled.width || output->logical_height != head->scaled.height) {
-			log_warn("\n%s: Logical size %dx%d does not match scaled size %dx%d", head->name, output->logical_width, output->logical_height, head->scaled.width, head->scaled.height);
-		}
-	}
-}
 
 void position_heads(struct SList *heads) {
 	struct Head *head;
@@ -358,12 +348,6 @@ void handle_success(void) {
 			report_adaptive_sync_fail(head);
 			head->adaptive_sync_failed = true;
 			return;
-		}
-	} else {
-
-		for (struct SList *i = heads; i; i = i->nex) {
-			struct Head *head = (struct Head*)i->val;
-			validate_scaled_dimensions(head);
 		}
 	}
 

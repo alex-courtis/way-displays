@@ -2,7 +2,6 @@
 #define DISPL_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
 // IWYU pragma: begin_keep
 #include "wlr-output-management-unstable-v1.h"
