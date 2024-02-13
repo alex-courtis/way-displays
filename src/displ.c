@@ -7,7 +7,10 @@
 #include "global.h"
 #include "listeners.h"
 #include "log.h"
+#include "output.h"
 #include "process.h"
+#include "wlr-output-management-unstable-v1.h"
+#include "xdg-output-unstable-v1.h"
 
 void displ_init(void) {
 
@@ -29,7 +32,7 @@ void displ_init(void) {
 		return;
 	}
 
-	if (!displ->output_manager) {
+	if (!displ->zwlr_output_manager) {
 		log_error("\ncompositor does not support WLR output manager protocol, exiting");
 		wd_exit(EXIT_FAILURE);
 		return;
@@ -38,15 +41,23 @@ void displ_init(void) {
 
 void displ_destroy(void) {
 
-	if (displ->output_manager) {
-		wl_proxy_destroy((struct wl_proxy*) displ->output_manager);
+	output_destroy_all();
+
+	if (displ->zwlr_output_manager) {
+		zwlr_output_manager_v1_destroy(displ->zwlr_output_manager);
+	}
+
+	if (displ->zxdg_output_manager) {
+		zxdg_output_manager_v1_destroy(displ->zxdg_output_manager);
 	}
 
 	wl_registry_destroy(displ->registry);
 
 	wl_display_disconnect(displ->display);
 
-	free(displ->interface);
+	free(displ->zwlr_output_manager_interface);
+
+	free(displ->zxdg_output_manager_interface);
 
 	free(displ);
 	displ = NULL;

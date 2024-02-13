@@ -47,7 +47,7 @@ static const struct zwlr_output_configuration_v1_listener listener = {
 	.cancelled = cancelled,
 };
 
-const struct zwlr_output_configuration_v1_listener *output_configuration_listener(void) {
+const struct zwlr_output_configuration_v1_listener *zwlr_output_configuration_listener(void) {
 	return &listener;
 }
 
