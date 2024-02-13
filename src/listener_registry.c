@@ -21,7 +21,8 @@ static void bind_zwlr_output_manager(struct Displ *displ,
 		const char *interface,
 		uint32_t version) {
 
-	displ->display_name = name;
+	displ->zwlr_output_manager_name = name;
+	displ->zwlr_output_manager_version = version;
 	displ->zwlr_output_manager_interface = strdup(interface);
 	displ->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->zwlr_output_manager_version);
 
@@ -36,6 +37,7 @@ static void bind_zxdg_output_manager(struct Displ *displ,
 
 	displ->zxdg_output_manager_name = name;
 	displ->zxdg_output_manager_version = version;
+	displ->zxdg_output_manager_interface = strdup(interface);
 	displ->zxdg_output_manager = wl_registry_bind(wl_registry, name, &zxdg_output_manager_v1_interface, displ->zxdg_output_manager_version);
 }
 
@@ -59,7 +61,6 @@ static void global(void *data,
 		uint32_t name,
 		const char *interface,
 		uint32_t version) {
-	struct Displ *displ = data;
 
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
 		bind_zwlr_output_manager(data, wl_registry, name, interface, version);
@@ -68,7 +69,6 @@ static void global(void *data,
 	} else if (strcmp(interface, wl_output_interface.name) == 0) {
 		bind_wl_output(data, wl_registry, name, interface, version);
 	} else if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
-		displ->have_fractional_scale_v1 = true;
 		log_debug("\nCompositor supports %s version %d", interface, version);
 	}
 }
@@ -81,7 +81,7 @@ static void global_remove(void *data,
 	output_destroy_by_wl_output_name(name);
 
 	// a "who cares?" situation in the WLR examples
-	if (displ && displ->display_name == name) {
+	if (displ && displ->zwlr_output_manager_name == name) {
 		log_info("\nDisplay's output manager has been removed, exiting");
 		wd_exit(EXIT_SUCCESS);
 	}

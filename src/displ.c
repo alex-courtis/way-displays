@@ -57,6 +57,8 @@ void displ_destroy(void) {
 
 	free(displ->zwlr_output_manager_interface);
 
+	free(displ->zxdg_output_manager_interface);
+
 	free(displ);
 	displ = NULL;
 }
