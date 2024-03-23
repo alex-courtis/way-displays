@@ -1,7 +1,7 @@
 # Default cfg.yaml for way-displays.
 # Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
 #
-# See https://github.com/alex-courtis/way-displays/blob/master/doc/CONFIGURATION.md
+# See https://github.com/alex-courtis/way-displays/wiki/Configuration
 
 
 # Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom)
