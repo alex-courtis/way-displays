@@ -266,6 +266,11 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 		slist_append(&to->adaptive_sync_off_name_desc, strdup((char*)i->val));
 	}
 
+	// ON_CHANGE_CMD
+	if (from->on_change_cmd) {
+		to->on_change_cmd = strdup(from->on_change_cmd);
+	}
+
 	// LAPTOP_DISPLAY_PREFIX
 	if (from->laptop_display_prefix) {
 		to->laptop_display_prefix = strdup(from->laptop_display_prefix);
@@ -342,6 +347,13 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 
 	// VRR_OFF
 	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, slist_predicate_strcmp)) {
+		return false;
+	}
+
+	// ON_CHANGE_CMD
+	char *ao = a->on_change_cmd;
+	char *bo = b->on_change_cmd;
+	if ((ao && !bo) || (!ao && bo) || (ao && bo && strcmp(ao, bo) != 0)) {
 		return false;
 	}
 
@@ -844,6 +856,8 @@ void cfg_free(struct Cfg *cfg) {
 		return;
 
 	cfg_free_paths(cfg);
+
+	free(cfg->on_change_cmd);
 
 	free(cfg->laptop_display_prefix);
 
