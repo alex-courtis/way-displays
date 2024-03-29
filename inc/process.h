@@ -9,6 +9,8 @@ pid_t pid_active_server(void);
 
 void pid_file_create(void);
 
+void spawn_async(const char * const command);
+
 // exit; caller should return afterwards
 void wd_exit(int __status);
 

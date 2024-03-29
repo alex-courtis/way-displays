@@ -103,6 +103,23 @@ void pid_file_create(void) {
 	free(path);
 }
 
+void spawn_async(const char * const command) {
+	pid_t pid = fork();
+
+	if (pid == -1) {
+		log_error_errno("\nunable to fork");
+		return;
+	}
+
+	if (pid == 0) {
+		// execute command in the child process
+		if (execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL) == -1) {
+			log_error_errno("\nfailed to execute /bin/sh");
+			return;
+		}
+	}
+}
+
 void wd_exit(int __status) {
 	exit(__status);
 }
