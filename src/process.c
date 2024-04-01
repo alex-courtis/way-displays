@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "process.h"
@@ -105,19 +106,38 @@ void pid_file_create(void) {
 
 void spawn_async(const char * const command) {
 	pid_t pid = fork();
-
-	if (pid == -1) {
+	if (pid < 0) {
 		log_error_errno("\nunable to fork");
 		return;
 	}
 
 	if (pid == 0) {
-		// execute command in the child process
-		if (execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL) == -1) {
-			log_error_errno("\nfailed to execute /bin/sh");
-			return;
+		// fork again to "disown"
+		setsid();
+		sigset_t mask;
+		sigemptyset(&mask);
+		sigprocmask(SIG_SETMASK, &mask, NULL);
+
+		pid_t pid2 = fork();
+		if (pid2 < 0) {
+			log_error_errno("\nunable to fork");
+			exit(-1);
 		}
+
+		if (pid2 == 0) {
+			// execute command in the child's child process
+			execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL);
+			log_error_errno("\nfailed to execute /bin/sh");
+			exit(-1);
+		}
+		// primary child exits here
+		exit(0);
 	}
+
+	// wait for the primary child to exit
+	if (waitpid(pid, NULL, 0) != pid) {
+		log_error("\nfailed to wait for child process");
+	};
 }
 
 void wd_exit(int __status) {
