@@ -333,7 +333,7 @@ void report_adaptive_sync_fail(struct Head *head) {
 void handle_success(void) {
 	if (head_changing_mode) {
 
-		// succesful mode change is not always reported
+		// successful mode change is not always reported
 		head_changing_mode->current.mode = head_changing_mode->desired.mode;
 
 		head_changing_mode = NULL;
