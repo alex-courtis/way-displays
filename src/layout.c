@@ -351,7 +351,7 @@ void handle_success(void) {
 		}
 	}
 
-	if (cfg->on_change_cmd) {
+	if (!head_changing_adaptive_sync && cfg->on_change_cmd) {
 		log_info("\nExecuting ON_CHANGE_CMD:");
 		log_info("  %s", cfg->on_change_cmd);
 
