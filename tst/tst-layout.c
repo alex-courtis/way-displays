@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
@@ -12,9 +13,10 @@
 #include "global.h"
 #include "head.h"
 #include "info.h"
-#include "slist.h"
 #include "log.h"
 #include "mode.h"
+#include "slist.h"
+#include "util.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
@@ -640,6 +642,25 @@ void handle_success__head_changing_mode(void **state) {
 	assert_null(head_changing_mode);
 }
 
+void handle_success__on_change_cmd(void **state) {
+	cfg = cfg_default();
+	cfg->on_change_cmd = strdup("echo \"hi from way-displays\" > /tmp/way-display-test");
+
+	char *expected = "hi from way-displays";
+
+	handle_success();
+
+	char *actual = read_file("/tmp/way-display-test");
+
+	assert_string_equal(actual, expected);
+	assert_log(INFO, "\nExecuting ON_CHANGE_CMD:\n"
+			"  echo \"hi from way-displays\" > /tmp/way-display-test\n"
+			"\nChanges successful\n");
+
+	unlink("/tmp/way-display-test");
+	free(actual);
+}
+
 void handle_success__ok(void **state) {
 	handle_success();
 
@@ -743,6 +764,7 @@ int main(void) {
 		TEST(handle_success__head_changing_adaptive_sync),
 		TEST(handle_success__head_changing_adaptive_sync_fail),
 		TEST(handle_success__head_changing_mode),
+		TEST(handle_success__on_change_cmd),
 		TEST(handle_success__ok),
 
 		TEST(handle_failure__mode),
