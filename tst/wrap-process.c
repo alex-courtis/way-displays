@@ -2,6 +2,10 @@
 
 #include <cmocka.h>
 
+void __wrap_spawn_async(const char * const command) {
+	check_expected(command);
+}
+
 void __wrap_wd_exit(int __status) {
 	check_expected(__status);
 }
@@ -9,4 +13,3 @@ void __wrap_wd_exit(int __status) {
 void __wrap_wd_exit_message(int __status) {
 	check_expected(__status);
 }
-
