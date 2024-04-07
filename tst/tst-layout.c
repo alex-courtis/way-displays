@@ -643,7 +643,6 @@ void handle_success__head_changing_mode(void **state) {
 }
 
 void handle_success__on_change_cmd(void **state) {
-	cfg = cfg_default();
 	cfg->on_change_cmd = strdup("echo \"hi from way-displays\"");
 
 	expect_value(__wrap_spawn_async, command, cfg->on_change_cmd);

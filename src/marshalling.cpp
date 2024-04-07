@@ -381,7 +381,6 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		if (cfg->on_change_cmd) {
 			free(cfg->on_change_cmd);
 		}
-
 		cfg->on_change_cmd = strdup(node["ON_CHANGE_CMD"].as<std::string>().c_str());
 	}
 
