@@ -71,7 +71,7 @@ VRR_OFF:
 # successfully changed.
 # NOTE: Depending on your compositor this could get executed multiple times when
 # a change happens. Especially likely on a (dis-)connect.
-#ON_CHANGE_CMD: 'notify-send "Monitor changed"'
+#CHANGE_SUCCESS_CMD: 'notify-send "Monitor changed"'
 
 # Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
 # your laptop is different.

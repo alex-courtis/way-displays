@@ -262,8 +262,8 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::EndSeq;												// MAX_PREFERRED_REFRESH
 	}
 
-	if (cfg.on_change_cmd) {
-		e << YAML::Key << "ON_CHANGE_CMD" << YAML::Value << cfg.on_change_cmd;
+	if (cfg.change_success_cmd) {
+		e << YAML::Key << "CHANGE_SUCCESS_CMD" << YAML::Value << cfg.change_success_cmd;
 	}
 
 	if (cfg.laptop_display_prefix) {
@@ -377,11 +377,12 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		}
 	}
 
-	if (node["ON_CHANGE_CMD"]) {
-		if (cfg->on_change_cmd) {
-			free(cfg->on_change_cmd);
+	if (node["CHANGE_SUCCESS_CMD"]) {
+		if (cfg->change_success_cmd) {
+			free(cfg->change_success_cmd);
 		}
-		cfg->on_change_cmd = strdup(node["ON_CHANGE_CMD"].as<std::string>().c_str());
+
+		cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str());
 	}
 
 	if (node["LAPTOP_DISPLAY_PREFIX"]) {
@@ -720,7 +721,7 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 		}
 	}
 
-	TI(cfg->on_change_cmd = strdup(node["ON_CHANGE_CMD"].as<std::string>().c_str()));
+	TI(cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str()));
 
 	TI(cfg->laptop_display_prefix = strdup(node["LAPTOP_DISPLAY_PREFIX"].as<std::string>().c_str()));
 

@@ -642,14 +642,14 @@ void handle_success__head_changing_mode(void **state) {
 	assert_null(head_changing_mode);
 }
 
-void handle_success__on_change_cmd(void **state) {
-	cfg->on_change_cmd = strdup("echo \"hi from way-displays\"");
+void handle_success__change_success_cmd(void **state) {
+	cfg->change_success_cmd = strdup("echo \"hi from way-displays\"");
 
-	expect_value(__wrap_spawn_async, command, cfg->on_change_cmd);
+	expect_value(__wrap_spawn_async, command, cfg->change_success_cmd);
 
 	handle_success();
 
-	assert_log(INFO, "\nExecuting ON_CHANGE_CMD:\n"
+	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
 			"  echo \"hi from way-displays\"\n"
 			"\nChanges successful\n");
 }
@@ -757,7 +757,7 @@ int main(void) {
 		TEST(handle_success__head_changing_adaptive_sync),
 		TEST(handle_success__head_changing_adaptive_sync_fail),
 		TEST(handle_success__head_changing_mode),
-		TEST(handle_success__on_change_cmd),
+		TEST(handle_success__change_success_cmd),
 		TEST(handle_success__ok),
 
 		TEST(handle_failure__mode),
