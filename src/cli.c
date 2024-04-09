@@ -156,6 +156,19 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			}
 			parsed = true;
 			break;
+		case CHANGE_SUCCESS_CMD:
+			switch (command) {
+				case CFG_SET:
+					cfg->change_success_cmd = strdup(argv[optind]);
+					parsed = true;
+					break;
+				case CFG_DEL:
+					cfg->change_success_cmd = strdup("");
+					parsed = true;
+					break;
+				default:
+					break;
+			}
 		default:
 			break;
 	}
@@ -226,6 +239,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 		case AUTO_SCALE:
 		case DISABLED:
 		case VRR_OFF:
+		case CHANGE_SUCCESS_CMD:
 			if (optind + 1 != argc) {
 				log_error("%s requires one argument", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
@@ -262,6 +276,13 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 		case VRR_OFF:
 			if (optind + 1 != argc) {
 				log_error("%s requires one argument", cfg_element_name(element));
+				wd_exit(EXIT_FAILURE);
+				return NULL;
+			}
+			break;
+		case CHANGE_SUCCESS_CMD:
+			if (optind != argc) {
+				log_error("%s takes no arguments", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}

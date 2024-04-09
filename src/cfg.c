@@ -655,6 +655,14 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
+	// CHANGE_SUCCESS_CMD
+	if (from->change_success_cmd) {
+		if (merged->change_success_cmd) {
+			free(merged->change_success_cmd);
+		}
+		merged->change_success_cmd = strdup(from->change_success_cmd);
+	}
+
 	return merged;
 }
 
@@ -690,6 +698,12 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	// DISABLED
 	for (i = from->disabled_name_desc; i; i = i->nex) {
 		slist_remove_all_free(&merged->disabled_name_desc, slist_predicate_strcmp, i->val, NULL);
+	}
+
+	// CHANGE_SUCCESS_CMD
+	if (from->change_success_cmd && strlen(from->change_success_cmd) == 0) {
+		free(merged->change_success_cmd);
+		merged->change_success_cmd = NULL;
 	}
 
 	return merged;
