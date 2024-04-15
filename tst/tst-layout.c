@@ -645,7 +645,7 @@ void handle_success__head_changing_mode(void **state) {
 void handle_success__change_success_cmd(void **state) {
 	cfg->change_success_cmd = strdup("echo \"hi from way-displays\"");
 
-	expect_value(__wrap_spawn_async, command, cfg->change_success_cmd);
+	expect_value(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 
 	handle_success();
 

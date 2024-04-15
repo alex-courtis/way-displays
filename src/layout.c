@@ -355,7 +355,7 @@ void handle_success(void) {
 		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
 		log_info("  %s", cfg->change_success_cmd);
 
-		spawn_async(cfg->change_success_cmd);
+		spawn_sh_cmd(cfg->change_success_cmd);
 	}
 
 	log_info("\nChanges successful");

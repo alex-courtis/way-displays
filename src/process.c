@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <sys/file.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
 #include "process.h"
@@ -104,40 +103,29 @@ void pid_file_create(void) {
 	free(path);
 }
 
-void spawn_async(const char * const command) {
+void spawn_sh_cmd(const char * const command) {
 	pid_t pid = fork();
 	if (pid < 0) {
-		log_error_errno("\nunable to fork");
+		log_error_errno("\nfailed to fork");
 		return;
 	}
 
 	if (pid == 0) {
-		// fork again to "disown"
+		struct sigaction sa;
+
 		setsid();
-		sigset_t mask;
-		sigemptyset(&mask);
-		sigprocmask(SIG_SETMASK, &mask, NULL);
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = 0;
+		sa.sa_handler = SIG_DFL;
+		// don't send SIGCHLD to the parent
+		sigaction(SIGCHLD, &sa, NULL);
 
-		pid_t pid2 = fork();
-		if (pid2 < 0) {
-			log_error_errno("\nunable to fork");
-			exit(-1);
-		}
-
-		if (pid2 == 0) {
-			// execute command in the child's child process
-			execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL);
-			log_error_errno("\nfailed to execute /bin/sh");
-			exit(-1);
-		}
-		// primary child exits here
-		exit(0);
+		// execute command in the child process
+		execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL);
+		log_error_errno("\nfailed to execute /bin/sh");
+		// exit the child process in case the exec fails
+		exit(-1);
 	}
-
-	// wait for the primary child to exit
-	if (waitpid(pid, NULL, 0) != pid) {
-		log_error("\nfailed to wait for child process");
-	};
 }
 
 void wd_exit(int __status) {

@@ -2,7 +2,7 @@
 
 #include <cmocka.h>
 
-void __wrap_spawn_async(const char * const command) {
+void __wrap_spawn_sh_cmd(const char * const command) {
 	check_expected(command);
 }
 
