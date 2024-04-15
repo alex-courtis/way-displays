@@ -41,12 +41,14 @@ void usage(FILE *stream) {
 		"     TRANSFORM <name> <90|180|270|flipped|flipped-90|flipped-180|flipped-270>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
+		"     CHANGE_SUCCESS_CMD <shell command>\n"
 		"  -d, --d[elete]  remove\n"
 		"     SCALE <name>\n"
 		"     MODE <name>\n"
 		"     TRANSFORM <name>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
+		"     CHANGE_SUCCESS_CMD <shell command>\n"
 		;
 	fprintf(stream, "%s", mesg);
 }
