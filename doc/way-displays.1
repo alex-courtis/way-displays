@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "WAY-DISPLAYS" "1" "2023/08/29" "way-displays" "User Manuals"
+.TH "WAY-DISPLAYS" "1" "2024/04/16" "way-displays" "User Manuals"
 .hy
 .SH NAME
 .PP
@@ -140,6 +140,10 @@ Disable VRR for a display.
 .TP
 \f[V]DISABLED\f[R] <\f[I]name\f[R]>
 Disable a display.
+.TP
+\f[V]CHANGE_SUCCESS_CMD\f[R] <\f[I]shell command\f[R]>
+Sets a command to be executed when display configurations are successfully changed.
+This could be a notification e.g.\ \f[V]\[aq]notify-send way-displays \[dq]change success!\[dq]\[aq]\f[R]
 .RE
 .TP
 \f[V]-d\f[R], \f[V]--d[elete]\f[R]
@@ -160,6 +164,9 @@ Enable VRR for a display.
 .TP
 \f[V]DISABLED\f[R] <\f[I]name\f[R]>
 Enable a display.
+.TP
+\f[V]CHANGE_SUCCESS_CMD\f[R] <\f[I]shell command\f[R]>
+Remove command to be executed when display configurations are successfully changed.
 .RE
 .TP
 \f[V]-w\f[R] | \f[V]--w[rite]\f[R]
