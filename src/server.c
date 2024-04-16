@@ -221,12 +221,25 @@ int loop(void) {
 	}
 }
 
+void setup_signal_handlers(void) {
+	struct sigaction sa;
+
+	// don't transform child processes into zombies and don't handle SIGCHLD.
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
+	sa.sa_handler = SIG_DFL;
+	sigaction(SIGCHLD, &sa, NULL);
+}
+
+
 int
 server(char *cfg_path) {
 	log_set_times(true);
 
 	// only one instance
 	pid_file_create();
+
+	setup_signal_handlers();
 
 	// don't log anything until cfg log level is known
 	log_capture_start();

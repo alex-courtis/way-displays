@@ -115,9 +115,9 @@ void spawn_sh_cmd(const char * const command) {
 
 		setsid();
 		sigemptyset(&sa.sa_mask);
+		// reset signals to the default
 		sa.sa_flags = 0;
 		sa.sa_handler = SIG_DFL;
-		// don't send SIGCHLD to the parent
 		sigaction(SIGCHLD, &sa, NULL);
 
 		// execute command in the child process
