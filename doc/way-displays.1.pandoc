@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2024/04/16
+% 2024/04/20
 
 # NAME
 
@@ -113,7 +113,7 @@ The user must be a member of the `input` group.
 	: Disable a display.
 
 	`CHANGE_SUCCESS_CMD` <*shell command*>
-    : Sets a command to be executed when display configurations are successfully changed. This could be a notification e.g. `'notify-send way-displays "change success!"'`
+    : Sets a `/bin/sh` command to be executed when display configurations are successfully changed e.g. `bell ; notify-send way-displays "Monitor changed"`
 
 `-d`, `--d[elete]`
 : Remove an existing setting.
@@ -134,7 +134,7 @@ The user must be a member of the `input` group.
 	: Enable a display.
 
     `CHANGE_SUCCESS_CMD` <*shell command*>
-    : Remove command to be executed when display configurations are successfully changed.
+    : Remove command on display configuration success.
 
 `-w` | `--w[rite]`
 : Write active configuration to cfg.yaml; removes any whitespace or comments.
