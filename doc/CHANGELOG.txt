@@ -1,3 +1,10 @@
+way-displays 1.11.0 2024-04-20
+------------------------------
+#138 always round scales to nearest 1/8 to support fractional scaling and other recent compositor changes; use --log-threshold debug to see details
+#146 capture and log xdg logical box
+docs: path to docs in examples/cfg.yaml
+#65 add ON_CHANGE_CMD to run a shell command in handle_success
+
 way-displays 1.10.2 2024-01-21
 ------------------------------
 #147 revert cancellation behaviour to 1.9.0, awaiting comprehensive fix
