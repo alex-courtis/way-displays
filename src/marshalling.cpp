@@ -262,6 +262,10 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::EndSeq;												// MAX_PREFERRED_REFRESH
 	}
 
+	if (cfg.change_success_cmd) {
+		e << YAML::Key << "CHANGE_SUCCESS_CMD" << YAML::Value << cfg.change_success_cmd;
+	}
+
 	if (cfg.laptop_display_prefix) {
 		e << YAML::Key << "LAPTOP_DISPLAY_PREFIX" << YAML::Value << cfg.laptop_display_prefix;
 	}
@@ -371,6 +375,14 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		if (!cfg->log_threshold) {
 			log_warn("Ignoring invalid LOG_THRESHOLD %s, using default %s", threshold_str.c_str(), log_threshold_name(LOG_THRESHOLD_DEFAULT));
 		}
+	}
+
+	if (node["CHANGE_SUCCESS_CMD"]) {
+		if (cfg->change_success_cmd) {
+			free(cfg->change_success_cmd);
+		}
+
+		cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str());
 	}
 
 	if (node["LAPTOP_DISPLAY_PREFIX"]) {
@@ -708,6 +720,8 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 			TI(slist_append(&cfg->adaptive_sync_off_name_desc, strdup(node_vrr_off.as<std::string>().c_str())));
 		}
 	}
+
+	TI(cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str()));
 
 	TI(cfg->laptop_display_prefix = strdup(node["LAPTOP_DISPLAY_PREFIX"].as<std::string>().c_str()));
 

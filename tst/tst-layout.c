@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
@@ -12,9 +13,10 @@
 #include "global.h"
 #include "head.h"
 #include "info.h"
-#include "slist.h"
 #include "log.h"
 #include "mode.h"
+#include "slist.h"
+#include "util.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
@@ -640,6 +642,18 @@ void handle_success__head_changing_mode(void **state) {
 	assert_null(head_changing_mode);
 }
 
+void handle_success__change_success_cmd(void **state) {
+	cfg->change_success_cmd = strdup("echo \"hi from way-displays\"");
+
+	expect_value(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
+
+	handle_success();
+
+	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
+			"  echo \"hi from way-displays\"\n"
+			"\nChanges successful\n");
+}
+
 void handle_success__ok(void **state) {
 	handle_success();
 
@@ -743,6 +757,7 @@ int main(void) {
 		TEST(handle_success__head_changing_adaptive_sync),
 		TEST(handle_success__head_changing_adaptive_sync_fail),
 		TEST(handle_success__head_changing_mode),
+		TEST(handle_success__change_success_cmd),
 		TEST(handle_success__ok),
 
 		TEST(handle_failure__mode),

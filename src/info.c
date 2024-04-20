@@ -205,6 +205,11 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 		}
 	}
 
+	if (cfg->change_success_cmd) {
+		log_(t, "  Change success command:");
+		log_(t, "    %s", cfg->change_success_cmd);
+	}
+
 	if (cfg->laptop_display_prefix) {
 		log_(t, "  Laptop display prefix: %s", cfg->laptop_display_prefix);
 	}
@@ -292,6 +297,12 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 	for (i = cfg->adaptive_sync_off_name_desc; i; i = i->nex) {
 		print_newline(t, &newline);
 		log_(t, "way-displays -s VRR_OFF '%s'", (char*)i->val);
+	}
+
+	newline = true;
+	if (cfg->change_success_cmd) {
+		print_newline(t, &newline);
+		log_(t, "way-displays -s CHANGE_SUCCESS_CMD '%s'", cfg->change_success_cmd);
 	}
 }
 

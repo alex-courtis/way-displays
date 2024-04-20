@@ -103,6 +103,31 @@ void pid_file_create(void) {
 	free(path);
 }
 
+void spawn_sh_cmd(const char * const command) {
+	pid_t pid = fork();
+	if (pid < 0) {
+		log_error_errno("\nfailed to fork");
+		return;
+	}
+
+	if (pid == 0) {
+		struct sigaction sa;
+
+		setsid();
+		sigemptyset(&sa.sa_mask);
+		// reset signals to the default
+		sa.sa_flags = 0;
+		sa.sa_handler = SIG_DFL;
+		sigaction(SIGCHLD, &sa, NULL);
+
+		// execute command in the child process
+		execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL);
+		log_error_errno("\nfailed to execute /bin/sh");
+		// exit the child process in case the exec fails
+		exit(-1);
+	}
+}
+
 void wd_exit(int __status) {
 	exit(__status);
 }

@@ -266,6 +266,11 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 		slist_append(&to->adaptive_sync_off_name_desc, strdup((char*)i->val));
 	}
 
+	// CHANGE_SUCCESS_CMD
+	if (from->change_success_cmd) {
+		to->change_success_cmd = strdup(from->change_success_cmd);
+	}
+
 	// LAPTOP_DISPLAY_PREFIX
 	if (from->laptop_display_prefix) {
 		to->laptop_display_prefix = strdup(from->laptop_display_prefix);
@@ -342,6 +347,13 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 
 	// VRR_OFF
 	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, slist_predicate_strcmp)) {
+		return false;
+	}
+
+	// CHANGE_SUCCESS_CMD
+	char *ao = a->change_success_cmd;
+	char *bo = b->change_success_cmd;
+	if ((ao && !bo) || (!ao && bo) || (ao && bo && strcmp(ao, bo) != 0)) {
 		return false;
 	}
 
@@ -643,6 +655,14 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
+	// CHANGE_SUCCESS_CMD
+	if (from->change_success_cmd) {
+		if (merged->change_success_cmd) {
+			free(merged->change_success_cmd);
+		}
+		merged->change_success_cmd = strdup(from->change_success_cmd);
+	}
+
 	return merged;
 }
 
@@ -678,6 +698,12 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	// DISABLED
 	for (i = from->disabled_name_desc; i; i = i->nex) {
 		slist_remove_all_free(&merged->disabled_name_desc, slist_predicate_strcmp, i->val, NULL);
+	}
+
+	// CHANGE_SUCCESS_CMD
+	if (from->change_success_cmd && strlen(from->change_success_cmd) == 0) {
+		free(merged->change_success_cmd);
+		merged->change_success_cmd = NULL;
 	}
 
 	return merged;
@@ -844,6 +870,8 @@ void cfg_free(struct Cfg *cfg) {
 		return;
 
 	cfg_free_paths(cfg);
+
+	free(cfg->change_success_cmd);
 
 	free(cfg->laptop_display_prefix);
 

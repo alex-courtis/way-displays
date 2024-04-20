@@ -69,7 +69,7 @@ See all violations:
 
 ## Documentation
 
-Please update `README.md` and `doc/configuration.md`.
+Please update `README.md`.
 
 Please update the man page:
 * update `way-displays.1.pandoc`
@@ -83,7 +83,7 @@ Please match the style of the surrounding code and obey `.editorconfig`. Default
 
 ## Adding Options
 
-Please add the option to `config.yaml` with a descriptive comment.
+Please add the option to `cfg.yaml` with a descriptive comment.
 
 Please add a command line option and update the usage message.
 

@@ -61,6 +61,7 @@ struct Cfg {
 
 	bool updated;
 
+	char *change_success_cmd;
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
 	enum Arrange arrange;
@@ -89,6 +90,7 @@ enum CfgElement {
 	MODE,
 	TRANSFORM,
 	VRR_OFF,
+	CHANGE_SUCCESS_CMD,
 	LAPTOP_DISPLAY_PREFIX,
 	MAX_PREFERRED_REFRESH,
 	LOG_THRESHOLD,

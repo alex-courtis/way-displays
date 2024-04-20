@@ -333,7 +333,7 @@ void report_adaptive_sync_fail(struct Head *head) {
 void handle_success(void) {
 	if (head_changing_mode) {
 
-		// succesful mode change is not always reported
+		// successful mode change is not always reported
 		head_changing_mode->current.mode = head_changing_mode->desired.mode;
 
 		head_changing_mode = NULL;
@@ -349,6 +349,13 @@ void handle_success(void) {
 			head->adaptive_sync_failed = true;
 			return;
 		}
+	}
+
+	if (!head_changing_adaptive_sync && cfg->change_success_cmd) {
+		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
+		log_info("  %s", cfg->change_success_cmd);
+
+		spawn_sh_cmd(cfg->change_success_cmd);
 	}
 
 	log_info("\nChanges successful");
