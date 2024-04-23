@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2024/04/20
+% 2024/04/23
 
 # NAME
 
@@ -53,9 +53,13 @@ The active configuration can be written to disk, however any comments and format
 
 # REQUIREMENTS
 
-way-displays is known to work on the sway and river compositors. It may work on any wlroots compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol.
 
-The user must be a member of the `input` group.
+way-displays is blessed for the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on others.
+
+way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
+
+User should be a member of the `input` group for querying laptop lid state.
 
 # OPTIONS
 

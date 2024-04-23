@@ -20,11 +20,17 @@ Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdis
 
 See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/Configuration), [Recipes](https://github.com/alex-courtis/way-displays/wiki/Recipes), [Troubleshooting](https://github.com/alex-courtis/way-displays/wiki/Troubleshooting) and more.
 
+See `man way-displays` for further details.
+
 ## Requirements
 
 A wlroots based compositor that supports the WLR Output Management protocol.
 
 way-displays is blessed for the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on others.
+
+way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
+
+User should be a member of the `operation ` group for querying laptop lid state.
 
 ## Quick Start
 
@@ -38,6 +44,8 @@ Add yourself to the `input` group to monitor events:
 ```sh
 sudo usermod -a -G input "${USER}"
 ```
+
+Start the way-displays server:
 
 ### Sway
 

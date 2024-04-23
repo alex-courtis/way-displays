@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "WAY-DISPLAYS" "1" "2024/04/20" "way-displays" "User Manuals"
+.TH "WAY-DISPLAYS" "1" "2024/04/23" "way-displays" "User Manuals"
 .hy
 .SH NAME
 .PP
@@ -79,10 +79,15 @@ The active configuration and display state may be inspected, and the configurati
 The active configuration can be written to disk, however any comments and formatting will be lost.
 .SH REQUIREMENTS
 .PP
-way-displays is known to work on the sway and river compositors.
-It may work on any wlroots compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol.
 .PP
-The user must be a member of the \f[V]input\f[R] group.
+way-displays is blessed for the sway (https://swaywm.org/), river (https://github.com/riverwm/river) and Hpyrland (https://hyprland.org/) compositors.
+It may work on others.
+.PP
+way-displays must be run as a daemon, a background server process.
+It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
+.PP
+User should be a member of the \f[V]input\f[R] group for querying laptop lid state.
 .SH OPTIONS
 .TP
 \f[V]-L\f[R] | \f[V]--l[og-threshold]\f[R] <\f[I]debug\f[R]|\f[I]info\f[R]|\f[I]warning\f[R]|\f[I]error\f[R]>
@@ -142,7 +147,7 @@ Disable VRR for a display.
 Disable a display.
 .TP
 \f[V]CHANGE_SUCCESS_CMD\f[R] <\f[I]shell command\f[R]>
-Sets a \f[V]/bin/sh\f[R] command to be executed when display configurations are successfully changed e.g.\ \f[V]bell ; notify-send way-displays \[dq]change success!\[dq]\f[R]
+Sets a \f[V]/bin/sh\f[R] command to be executed when display configurations are successfully changed e.g.\ \f[V]bell ; notify-send way-displays \[dq]Monitor changed\[dq]\f[R]
 .RE
 .TP
 \f[V]-d\f[R], \f[V]--d[elete]\f[R]
