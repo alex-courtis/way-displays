@@ -28,7 +28,7 @@ way-displays is blessed for the [sway](https://swaywm.org/), [river](https://git
 
 way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 
-User should be a member of the `operation ` group for querying laptop lid state.
+User should be a member of the `input` group for querying laptop lid state.
 
 ## Quick Start
 
