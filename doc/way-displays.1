@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "WAY-DISPLAYS" "1" "2024/04/20" "way-displays" "User Manuals"
+.TH "WAY-DISPLAYS" "1" "2024/04/23" "way-displays" "User Manuals"
 .hy
 .SH NAME
 .PP
@@ -24,30 +24,24 @@ way-displays - Auto Manage Your Wayland Displays
 way-displays [\f[I]OPTIONS\f[R]\&...]
 [\f[I]COMMAND\f[R]]
 .SH DESCRIPTION
-.PP
-way-displays manages your wayland displays:
 .IP "1." 3
-Sets mode:
-.RS 4
-.IP \[bu] 2
-user specified resolution/refresh OR
-.IP \[bu] 2
-monitor preferred OR
-.IP \[bu] 2
-highest resolution/refresh
-.RE
+Set resolution/refresh: preferred, highest or custom
 .IP "2." 3
-Enables VRR / adaptive sync
+Enable VRR / adaptive sync
 .IP "3." 3
-Arranges in a row or a column
+Arrange in a row or a column
 .IP "4." 3
-Auto scales based on DPI: 96 is a scale of 1
+Auto scale based on DPI: 96 is a scale of 1
 .IP "5." 3
-Reacts when displays are plugged/unplugged
+Update when displays plugged/unplugged
 .IP "6." 3
-Reacts when laptop lid is closed/opened and no other displays connected
+Update when laptop lid closed/opened
 .PP
 Works out of the box: no configuration required.
+.PP
+Wayland successor to xlayoutdisplay (https://github.com/alex-courtis/xlayoutdisplay), inspired by kanshi (https://sr.ht/~emersion/kanshi/).
+.PP
+See wiki for Configuration (https://github.com/alex-courtis/way-displays/wiki/Configuration), Recipes (https://github.com/alex-courtis/way-displays/wiki/Recipes), Troubleshooting (https://github.com/alex-courtis/way-displays/wiki/Troubleshooting) and more.
 .SS Server
 .PP
 Background process that performs the management.
@@ -79,10 +73,15 @@ The active configuration and display state may be inspected, and the configurati
 The active configuration can be written to disk, however any comments and formatting will be lost.
 .SH REQUIREMENTS
 .PP
-way-displays is known to work on the sway and river compositors.
-It may work on any wlroots compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol.
 .PP
-The user must be a member of the \f[V]input\f[R] group.
+way-displays is blessed for the sway (https://swaywm.org/), river (https://github.com/riverwm/river) and Hpyrland (https://hyprland.org/) compositors.
+It may work on others.
+.PP
+way-displays must be run as a daemon, a background server process.
+It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
+.PP
+User should be a member of the \f[V]input\f[R] group for querying laptop lid state.
 .SH OPTIONS
 .TP
 \f[V]-L\f[R] | \f[V]--l[og-threshold]\f[R] <\f[I]debug\f[R]|\f[I]info\f[R]|\f[I]warning\f[R]|\f[I]error\f[R]>
@@ -142,7 +141,7 @@ Disable VRR for a display.
 Disable a display.
 .TP
 \f[V]CHANGE_SUCCESS_CMD\f[R] <\f[I]shell command\f[R]>
-Sets a \f[V]/bin/sh\f[R] command to be executed when display configurations are successfully changed e.g.\ \f[V]bell ; notify-send way-displays \[dq]change success!\[dq]\f[R]
+Sets a \f[V]/bin/sh\f[R] command to be executed when display configurations are successfully changed e.g.\ \f[V]bell ; notify-send way-displays \[dq]Monitor changed\[dq]\f[R]
 .RE
 .TP
 \f[V]-d\f[R], \f[V]--d[elete]\f[R]

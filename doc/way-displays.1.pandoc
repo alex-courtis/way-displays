@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2024/04/20
+% 2024/04/23
 
 # NAME
 
@@ -12,19 +12,23 @@ way-displays [*OPTIONS*...] [*COMMAND*]
 
 # DESCRIPTION
 
-way-displays manages your wayland displays:
+1. Set resolution/refresh: preferred, highest or custom
 
-1. Sets mode:
-    * user specified resolution/refresh OR
-    * monitor preferred OR
-    * highest resolution/refresh
-1. Enables VRR / adaptive sync
-1. Arranges in a row or a column
-1. Auto scales based on DPI: 96 is a scale of 1
-1. Reacts when displays are plugged/unplugged
-1. Reacts when laptop lid is closed/opened and no other displays connected
+1. Enable VRR / adaptive sync
+
+1. Arrange in a row or a column
+
+1. Auto scale based on DPI: 96 is a scale of 1
+
+1. Update when displays plugged/unplugged
+
+1. Update when laptop lid closed/opened
 
 Works out of the box: no configuration required.
+
+Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
+
+See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/Configuration), [Recipes](https://github.com/alex-courtis/way-displays/wiki/Recipes), [Troubleshooting](https://github.com/alex-courtis/way-displays/wiki/Troubleshooting) and more.
 
 ## Server
 
@@ -53,9 +57,13 @@ The active configuration can be written to disk, however any comments and format
 
 # REQUIREMENTS
 
-way-displays is known to work on the sway and river compositors. It may work on any wlroots compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol.
 
-The user must be a member of the `input` group.
+way-displays is blessed for the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on others.
+
+way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
+
+User should be a member of the `input` group for querying laptop lid state.
 
 # OPTIONS
 

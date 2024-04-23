@@ -26,6 +26,10 @@ A wlroots based compositor that supports the WLR Output Management protocol.
 
 way-displays is blessed for the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on others.
 
+way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
+
+User should be a member of the `operation ` group for querying laptop lid state.
+
 ## Quick Start
 
 Start with the default config file:
@@ -38,6 +42,8 @@ Add yourself to the `input` group to monitor events:
 ```sh
 sudo usermod -a -G input "${USER}"
 ```
+
+Start the way-displays server:
 
 ### Sway
 
@@ -80,7 +86,7 @@ Restart the compositor and run `way-displays -g` or look at `/tmp/way-displays.1
 
 Tweak [cfg.yaml](https://github.com/alex-courtis/way-displays/wiki/Configuration#cfgyaml) to your liking and save it. Changes will be immediately applied.
 
-Alternatively, use the [command line](https://github.com/alex-courtis/way-displays/wiki/Configuration#command-line) to make your changes then persist them with `way-displays -w`.
+Alternatively, use the [command line](https://github.com/alex-courtis/way-displays/wiki/Configuration#command-line) to make your changes then persist them with `way-displays -w`. See `man way-displays`
 
 You might want to `tail -f /tmp/way-displays.1.me.log` whilst you are tweaking.
 
