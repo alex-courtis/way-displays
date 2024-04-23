@@ -20,8 +20,6 @@ Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdis
 
 See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/Configuration), [Recipes](https://github.com/alex-courtis/way-displays/wiki/Recipes), [Troubleshooting](https://github.com/alex-courtis/way-displays/wiki/Troubleshooting) and more.
 
-See `man way-displays` for further details.
-
 ## Requirements
 
 A wlroots based compositor that supports the WLR Output Management protocol.
@@ -88,7 +86,7 @@ Restart the compositor and run `way-displays -g` or look at `/tmp/way-displays.1
 
 Tweak [cfg.yaml](https://github.com/alex-courtis/way-displays/wiki/Configuration#cfgyaml) to your liking and save it. Changes will be immediately applied.
 
-Alternatively, use the [command line](https://github.com/alex-courtis/way-displays/wiki/Configuration#command-line) to make your changes then persist them with `way-displays -w`.
+Alternatively, use the [command line](https://github.com/alex-courtis/way-displays/wiki/Configuration#command-line) to make your changes then persist them with `way-displays -w`. See `man way-displays`
 
 You might want to `tail -f /tmp/way-displays.1.me.log` whilst you are tweaking.
 
