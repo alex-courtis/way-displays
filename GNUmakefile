@@ -22,6 +22,7 @@ TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 TST_T = $(patsubst tst%,test%,$(TST_E))
 
 all: way-displays
+	../duke.sh
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
