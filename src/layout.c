@@ -8,6 +8,7 @@
 
 #include "cfg.h"
 #include "displ.h"
+#include "fs.h"
 #include "global.h"
 #include "head.h"
 #include "info.h"
@@ -298,7 +299,25 @@ void apply(void) {
 
 	} else {
 
+		// TODO provide a means to capture into a provided list or buffer or file, as other captures are going on
+		log_capture_clear();
+		log_capture_start();
+
 		print_heads(INFO, DELTA, heads);
+
+		log_capture_stop();
+
+		// TODO unique file name, pass it to the callback
+		if (file_write("/tmp/wd.delta", "", "w")) {
+			for (struct SList *i = log_cap_lines; i; i = i->nex) {
+				struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+				if (strlen(cap_line->line) > 0) {
+					file_write("/tmp/wd.delta", cap_line->line, "a");
+				}
+			}
+		}
+
+		log_capture_clear();
 
 		// all changes except mode
 		for (i = heads_changing; i; i = i->nex) {
