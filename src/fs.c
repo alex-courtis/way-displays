@@ -41,7 +41,7 @@ end:
 }
 
 bool file_write(const char *path, const char *contents, const char *mode) {
-	if (!path || !contents) {
+	if (!path) {
 		return false;
 	}
 
@@ -52,7 +52,9 @@ bool file_write(const char *path, const char *contents, const char *mode) {
 		return false;
 	}
 
-	fprintf(f, "%s\n", contents);
+	if (contents) {
+		fprintf(f, "%s\n", contents);
+	}
 
 	fflush(f);
 

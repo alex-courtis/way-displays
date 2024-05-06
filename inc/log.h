@@ -19,11 +19,14 @@ struct LogCapLine {
 };
 extern struct SList *log_cap_lines;
 
+
 void log_set_threshold(enum LogThreshold threshold, bool cli);
 
 void log_set_times(bool times);
 
+
 void log_(enum LogThreshold threshold, const char *__restrict __format, ...);
+
 
 void log_debug(const char *__restrict __format, ...);
 
@@ -37,9 +40,11 @@ void log_error(const char *__restrict __format, ...);
 
 void log_error_errno(const char *__restrict __format, ...);
 
+
 void log_suppress_start(void);
 
 void log_suppress_stop(void);
+
 
 void log_capture_start(void);
 
@@ -50,7 +55,16 @@ void log_capture_clear(void);
 // NULL plays back log_cap_lines
 void log_capture_playback(struct SList *lines);
 
-void log_cap_line_free(void *log_cap_line);
+
+// caller must call stop and free lines
+void log_cap_lines_start(struct SList **lines);
+
+void log_cap_lines_stop(struct SList **lines);
+
+void log_cap_lines_write(struct SList **lines, const char *path);
+
+
+void log_cap_line_free(void *line);
 
 #endif // LOG_H
 

@@ -299,25 +299,17 @@ void apply(void) {
 
 	} else {
 
-		// TODO provide a means to capture into a provided list or buffer or file, as other captures are going on
-		log_capture_clear();
-		log_capture_start();
+		struct SList *cap_lines = NULL;
+
+		log_cap_lines_start(&cap_lines);
 
 		print_heads(INFO, DELTA, heads);
 
-		log_capture_stop();
+		// TODO unique file passed to the user
+		log_cap_lines_stop(&cap_lines);
+		log_cap_lines_write(&cap_lines, "/tmp/wd.delta");
 
-		// TODO unique file name, pass it to the callback
-		if (file_write("/tmp/wd.delta", "", "w")) {
-			for (struct SList *i = log_cap_lines; i; i = i->nex) {
-				struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
-				if (strlen(cap_line->line) > 0) {
-					file_write("/tmp/wd.delta", cap_line->line, "a");
-				}
-			}
-		}
-
-		log_capture_clear();
+		slist_free_vals(&cap_lines, log_cap_line_free);
 
 		// all changes except mode
 		for (i = heads_changing; i; i = i->nex) {
