@@ -54,11 +54,9 @@ void notify_ipc_operation(void) {
 	ipc_send_operation(ipc_operation);
 
 	if (ipc_operation->done) {
-		log_capture_stop();
-		log_capture_clear();
-
 		close(ipc_operation->socket_client);
 
+		log_cap_lines_stop(&ipc_operation->log_cap_lines);
 		ipc_operation_free(ipc_operation);
 		ipc_operation = NULL;
 	}
@@ -70,22 +68,21 @@ void receive_ipc_request(int server_socket) {
 		return;
 	}
 
-	log_capture_clear();
-	log_capture_start();
+	ipc_operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	log_cap_lines_start(&ipc_operation->log_cap_lines);
 
 	struct IpcRequest *ipc_request = ipc_receive_request(server_socket);
 	if (!ipc_request) {
 		log_error("\nFailed to read IPC request");
-		log_capture_stop();
-		log_capture_clear();
+		log_cap_lines_stop(&ipc_operation->log_cap_lines);
+		ipc_operation_free(ipc_operation);
+		ipc_operation = NULL;
 		return;
 	}
 
-	ipc_operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
 	ipc_operation->request = ipc_request;
 	ipc_operation->socket_client = ipc_request->socket_client;
 	ipc_operation->done = true;
-	ipc_operation->send_logs = true;
 	ipc_operation->send_state = true;
 
 	if (ipc_request->bad) {

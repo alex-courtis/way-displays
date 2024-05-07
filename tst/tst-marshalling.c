@@ -21,13 +21,13 @@
 
 #include "marshalling.h"
 
-void lcl(enum LogThreshold threshold, char *line) {
+void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
 	lcl->threshold = threshold;
 	lcl->line = strdup(line);
 
-	slist_append(&log_cap_lines, lcl);
+	slist_append(log_cap_lines, lcl);
 }
 
 int before_all(void **state) {
@@ -189,7 +189,6 @@ void marshal_ipc_response__map(void **state) {
 	ipc_operation->request = ipc_request;
 	ipc_operation->done = true;
 	ipc_operation->rc = 1;
-	ipc_operation->send_logs = true;
 	ipc_operation->send_state = true;
 
 	cfg = cfg_all();
@@ -198,10 +197,10 @@ void marshal_ipc_response__map(void **state) {
 	lid->closed = true;
 	lid->device_path = "/path/to/lid";
 
-	lcl(DEBUG, "dbg");
-	lcl(INFO, "inf");
-	lcl(WARNING, "war");
-	lcl(ERROR, "err");
+	lcl(DEBUG, "dbg", &ipc_operation->log_cap_lines);
+	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
+	lcl(WARNING, "war", &ipc_operation->log_cap_lines);
+	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
 
 	struct Mode mode1 = {
 		.width = 10,
