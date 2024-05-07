@@ -43,7 +43,6 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
-	log_capture_clear();
 	assert_logs_empty();
 	cfg_free(cfg);
 	cfg = NULL;

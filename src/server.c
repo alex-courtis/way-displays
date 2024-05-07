@@ -239,7 +239,8 @@ server(char *cfg_path) {
 	setup_signal_handlers();
 
 	// don't log anything until cfg log level is known
-	log_capture_start();
+	struct SList *log_cap_lines = NULL;
+	log_cap_lines_start(&log_cap_lines);
 	log_suppress_start();
 
 	log_info("way-displays version %s", VERSION);
@@ -254,9 +255,9 @@ server(char *cfg_path) {
 	// play back captured logs from cfg parse
 	log_set_threshold(cfg->log_threshold, false);
 	log_suppress_stop();
-	log_capture_stop();
-	log_capture_playback(NULL);
-	log_capture_clear();
+	log_cap_lines_stop(&log_cap_lines);
+	log_cap_lines_playback(log_cap_lines);
+	slist_free_vals(&log_cap_lines, log_cap_line_free);
 
 	// discover the lid state immediately
 	lid_init();
