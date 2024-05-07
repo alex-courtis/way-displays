@@ -299,17 +299,17 @@ void apply(void) {
 
 	} else {
 
-		struct SList *cap_lines = NULL;
+		struct SList *log_cap_lines = NULL;
 
-		log_cap_lines_start(&cap_lines);
+		log_cap_lines_start(&log_cap_lines);
 
 		print_heads(INFO, DELTA, heads);
 
 		// TODO unique file passed to the user
-		log_cap_lines_stop(&cap_lines);
-		log_cap_lines_write(&cap_lines, "/tmp/wd.delta");
+		log_cap_lines_stop(&log_cap_lines);
+		log_cap_lines_write(&log_cap_lines, "/tmp/wd.delta");
 
-		slist_free_vals(&cap_lines, log_cap_line_free);
+		slist_free_vals(&log_cap_lines, log_cap_line_free);
 
 		// all changes except mode
 		for (i = heads_changing; i; i = i->nex) {

@@ -37,11 +37,11 @@ int handle_responses(const struct IpcRequest *ipc_request) {
 						fprintf(stdout, "%s\n", yaml);
 					} else {
 						// human errors
-						log_capture_playback(response->log_cap_lines);
+						log_cap_lines_playback(response->log_cap_lines);
 					}
 				} else {
 					// human
-					log_capture_playback(response->log_cap_lines);
+					log_cap_lines_playback(response->log_cap_lines);
 				}
 			}
 			slist_free_vals(&responses, ipc_response_free);
