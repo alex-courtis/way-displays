@@ -2,7 +2,7 @@
 #define FS_H
 
 #include <stdbool.h>
-#include <sys/stat.h>
+#include <sys/types.h>
 
 bool mkdir_p(char *path, mode_t mode);
 
