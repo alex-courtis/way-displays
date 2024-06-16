@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
@@ -16,7 +15,6 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
-#include "util.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);

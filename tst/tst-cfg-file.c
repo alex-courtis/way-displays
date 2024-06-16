@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "global.h"
@@ -259,7 +260,7 @@ void cfg_file_write__existing(void **state) {
 
 	FILE *f = fopen(cfg->file_path, "w");
 	assert_non_null(f);
-	assert_int_equal(fclose(f), 0);
+	fclose(f);
 
 	char *expected = strdup("XXXX");
 
