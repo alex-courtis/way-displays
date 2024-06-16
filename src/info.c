@@ -42,13 +42,13 @@ void info_mode_string(struct Mode *mode, char *buf, size_t nbuf) {
 		return;
 	}
 
-	snprintf(buf, nbuf, "%dx%d@%dHz (%d,%03dmHz) %s",
+	snprintf(buf, nbuf, "%dx%d@%dHz (%d,%03dmHz)%s",
 			mode->width,
 			mode->height,
 			mhz_to_hz_rounded(mode->refresh_mhz),
 			mode->refresh_mhz / 1000,
 			mode->refresh_mhz % 1000,
-			mode->preferred ? "(preferred)" : ""
+			mode->preferred ? " (preferred)" : ""
 			);
 }
 
