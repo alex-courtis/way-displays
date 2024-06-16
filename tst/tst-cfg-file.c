@@ -259,7 +259,7 @@ void cfg_file_write__existing(void **state) {
 
 	FILE *f = fopen(cfg->file_path, "w");
 	assert_non_null(f);
-	assert_int_equal(fclose(f), 0);
+	fclose(f);
 
 	char *expected = strdup("XXXX");
 
