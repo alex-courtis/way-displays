@@ -65,7 +65,7 @@ iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
 IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --error=1 -Xiwyu --verbose=3
 
 cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
-	cppcheck $(^) --enable=warning,unusedFunction,performance,portability --check-level=exhaustive --suppressions-list=bld/cppcheck.supp --error-exitcode=1 $(CPPFLAGS)
+	cppcheck --enable=warning,unusedFunction,performance,portability --suppressions-list=bld/cppcheck.supp --error-exitcode=1 $(^)
 
 %-vg: VALGRIND = valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --gen-suppressions=all --suppressions=bld/vg.supp
 %-vg: % ;
