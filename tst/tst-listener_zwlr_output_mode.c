@@ -45,6 +45,8 @@ void preferred__first(void **state) {
 
 	assert_false(mode_existing.preferred);
 	assert_true(mode_preferred.preferred);
+
+	slist_free(&head.modes);
 }
 
 void preferred__subsequent(void **state) {
@@ -61,6 +63,8 @@ void preferred__subsequent(void **state) {
 
 	assert_true(mode_existing.preferred);
 	assert_false(mode_subsequent.preferred);
+
+	slist_free(&head.modes);
 }
 
 int main(void) {
