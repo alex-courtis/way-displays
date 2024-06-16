@@ -74,7 +74,7 @@
    Memcheck:Leak
    match-leak-kinds: reachable
    ...
-   fun:gobject_init
+   obj:*libgobject*
    fun:call_init
    fun:call_init
    fun:_dl_init
