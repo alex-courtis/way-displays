@@ -962,7 +962,7 @@ void marshal_messages(YAML::Emitter &e, struct IpcOperation *operation) {
 	bool began = false;
 	LogThreshold threshold = operation->request->log_threshold;
 
-	for (struct SList *i = log_cap_lines; i; i = i->nex) {
+	for (struct SList *i = operation->log_cap_lines; i; i = i->nex) {
 		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 
 		if (!cap_line || !cap_line->line) {
@@ -1048,9 +1048,7 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 			}
 		}
 
-		if (operation->send_logs) {
-			marshal_messages(e, operation);
-		}
+		marshal_messages(e, operation);
 
 		e << YAML::Key << "RC" << YAML::Value << operation->rc;
 
@@ -1070,9 +1068,8 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 		log_error("marshalling ipc response: %s", e.what());
 	}
 
-	if (operation->send_logs) {
-		log_capture_clear();
-	}
+	// clear marshalled messages
+	slist_free_vals(&operation->log_cap_lines, log_cap_line_free);
 
 	return yaml;
 }

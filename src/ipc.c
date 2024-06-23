@@ -130,6 +130,10 @@ void ipc_operation_free(struct IpcOperation *operation) {
 
 	ipc_request_free(operation->request);
 
+	log_cap_lines_stop(&operation->log_cap_lines);
+
+	slist_free_vals(&operation->log_cap_lines, log_cap_line_free);
+
 	free(operation);
 }
 

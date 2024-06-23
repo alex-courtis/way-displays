@@ -8,6 +8,7 @@
 
 #include "log.h"
 
+#include "fs.h"
 #include "slist.h"
 
 #define LS 16384
@@ -16,18 +17,16 @@ struct LogActive {
 	enum LogThreshold threshold;
 	bool threshold_cli;
 	bool times;
-	bool capturing;
 	bool suppressing;
 };
 struct LogActive active = {
 	.threshold = LOG_THRESHOLD_DEFAULT,
 	.threshold_cli = false,
 	.times = false,
-	.capturing = false,
 	.suppressing = false,
 };
 
-struct SList *log_cap_lines = NULL;
+struct SList *log_cap_lines_active = NULL;
 
 char threshold_char[] = {
 	'?',
@@ -56,11 +55,11 @@ void print_time(enum LogThreshold threshold, FILE *__restrict __stream) {
 	fprintf(__stream, "%c [%s] ", threshold_char[threshold], buf);
 }
 
-void capture_line(enum LogThreshold threshold, char *l) {
-	struct LogCapLine *cap_line = calloc(1, sizeof(struct LogCapLine));
-	cap_line->line = strdup(l);
-	cap_line->threshold = threshold;
-	slist_append(&log_cap_lines, cap_line);
+void capture_line(struct SList **lines, enum LogThreshold threshold, char *l) {
+	struct LogCapLine *line = calloc(1, sizeof(struct LogCapLine));
+	line->line = strdup(l);
+	line->threshold = threshold;
+	slist_append(lines, line);
 }
 
 void print_raw(enum LogThreshold threshold, bool prefix, const char *l) {
@@ -98,8 +97,8 @@ void print_line(enum LogThreshold threshold, bool prefix, int eno, const char *_
 		sprintf(l + LS - 4, "...");
 	}
 
-	if (active.capturing) {
-		capture_line(threshold, l);
+	for (struct SList *i = log_cap_lines_active; i; i = i->nex) {
+		capture_line(i->val, threshold, l);
 	}
 
 	print_raw(threshold, prefix, l);
@@ -188,42 +187,51 @@ void log_suppress_stop(void) {
 	active.suppressing = false;
 }
 
-void log_capture_start(void) {
-	active.capturing = true;
-}
-
-void log_capture_stop(void) {
-	active.capturing = false;
-}
-
-void log_capture_clear(void) {
-	slist_free_vals(&log_cap_lines, log_cap_line_free);
-}
-
-void log_capture_playback(struct SList *lines) {
+void log_cap_lines_playback(struct SList *lines) {
 	if (!lines)
-		lines = log_cap_lines;
+		return;
 
 	for (struct SList *i = lines; i; i = i->nex) {
-		struct LogCapLine *cap_line = i->val;
-		if (!cap_line)
+		struct LogCapLine *line = i->val;
+		if (!line)
 			continue;
 
-		print_raw(cap_line->threshold, true, cap_line->line);
+		print_raw(line->threshold, true, line->line);
+	}
+}
+
+void log_cap_lines_start(struct SList **lines) {
+	slist_append(&log_cap_lines_active, lines);
+}
+
+void log_cap_lines_stop(struct SList **lines) {
+	slist_remove_all(&log_cap_lines_active, NULL, lines);
+}
+
+void log_cap_lines_write(struct SList **lines, const char *path) {
+
+	// write empty to clear and validate
+	if (path && file_write(path, NULL, "w")) {
+		for (struct SList *i = *lines; i; i = i->nex) {
+			struct LogCapLine *line = (struct LogCapLine*)i->val;
+			if (strlen(line->line) > 0) {
+				file_write(path, line->line, "a");
+			}
+		}
 	}
 }
 
 void log_cap_line_free(void *data) {
-	struct LogCapLine *cap_line = data;
+	struct LogCapLine *line = data;
 
-	if (!cap_line) {
+	if (!line) {
 		return;
 	}
 
-	if (cap_line->line) {
-		free(cap_line->line);
+	if (line->line) {
+		free(line->line);
 	}
 
-	free(cap_line);
+	free(line);
 }
 

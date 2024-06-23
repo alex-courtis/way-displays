@@ -819,7 +819,7 @@ void cfg_file_write(void) {
 		goto end;
 	}
 
-	if (cfg->file_path && (written = file_write(cfg->file_path, yaml))) {
+	if (cfg->file_path && (written = file_write(cfg->file_path, yaml, "w"))) {
 		cfg->updated = true;
 		goto end;
 	}
@@ -841,7 +841,7 @@ void cfg_file_write(void) {
 			set_paths(cfg, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(cfg->dir_path, 0755) && (written = file_write(i->val, yaml))) {
+			if (mkdir_p(cfg->dir_path, 0755) && (written = file_write(i->val, yaml, "w"))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
