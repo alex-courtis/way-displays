@@ -39,7 +39,7 @@
    match-leak-kinds: reachable
    ...
    fun:evdev_device_create
-   fun:device_added
+   fun:device_added*
 }
 
 {
