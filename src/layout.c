@@ -308,8 +308,7 @@ void apply(void) {
 		// TODO unique file passed to the user
 		log_cap_lines_stop(&log_cap_lines);
 		log_cap_lines_write(&log_cap_lines, "/tmp/wd.delta");
-
-		slist_free_vals(&log_cap_lines, log_cap_line_free);
+		log_cap_lines_free(&log_cap_lines);
 
 		// all changes except mode
 		for (i = heads_changing; i; i = i->nex) {

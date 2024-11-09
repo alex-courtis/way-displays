@@ -119,7 +119,8 @@ void ipc_response_free(void *vresponse) {
 	cfg_free(response->cfg);
 	lid_free(response->lid);
 	slist_free_vals(&response->heads, head_free);
-	slist_free_vals(&response->log_cap_lines, log_cap_line_free);
+
+	log_cap_lines_free(&response->log_cap_lines);
 
 	free(response);
 }
@@ -132,7 +133,7 @@ void ipc_operation_free(struct IpcOperation *operation) {
 
 	log_cap_lines_stop(&operation->log_cap_lines);
 
-	slist_free_vals(&operation->log_cap_lines, log_cap_line_free);
+	log_cap_lines_free(&operation->log_cap_lines);
 
 	free(operation);
 }

@@ -257,7 +257,7 @@ server(char *cfg_path) {
 	log_suppress_stop();
 	log_cap_lines_stop(&log_cap_lines);
 	log_cap_lines_playback(log_cap_lines);
-	slist_free_vals(&log_cap_lines, log_cap_line_free);
+	log_cap_lines_free(&log_cap_lines);
 
 	// discover the lid state immediately
 	lid_init();

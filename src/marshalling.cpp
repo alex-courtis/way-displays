@@ -1069,7 +1069,7 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 	}
 
 	// clear marshalled messages
-	slist_free_vals(&operation->log_cap_lines, log_cap_line_free);
+	log_cap_lines_free(&operation->log_cap_lines);
 
 	return yaml;
 }

@@ -187,6 +187,20 @@ void log_suppress_stop(void) {
 	active.suppressing = false;
 }
 
+void log_cap_line_free(void *data) {
+	struct LogCapLine *line = data;
+
+	if (!line) {
+		return;
+	}
+
+	if (line->line) {
+		free(line->line);
+	}
+
+	free(line);
+}
+
 void log_cap_lines_playback(struct SList *lines) {
 	if (!lines)
 		return;
@@ -208,6 +222,10 @@ void log_cap_lines_stop(struct SList **lines) {
 	slist_remove_all(&log_cap_lines_active, NULL, lines);
 }
 
+void log_cap_lines_free(struct SList **lines) {
+	slist_free_vals(lines, log_cap_line_free);
+}
+
 void log_cap_lines_write(struct SList **lines, const char *path) {
 
 	// write empty to clear and validate
@@ -219,19 +237,5 @@ void log_cap_lines_write(struct SList **lines, const char *path) {
 			}
 		}
 	}
-}
-
-void log_cap_line_free(void *data) {
-	struct LogCapLine *line = data;
-
-	if (!line) {
-		return;
-	}
-
-	if (line->line) {
-		free(line->line);
-	}
-
-	free(line);
 }
 
