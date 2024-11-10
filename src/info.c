@@ -306,7 +306,7 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 	}
 }
 
-void print_head_current(enum LogThreshold t, struct Head *head) {
+void print_head_current(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 	static const struct Output *output = NULL;
 
 	if (!head)
@@ -339,45 +339,61 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 	}
 }
 
-void print_head_desired(enum LogThreshold t, struct Head *head) {
+void print_head_deltas(enum LogThreshold t, struct Head *head) {
 	if (!head)
 		return;
 
-	if (head->desired.enabled) {
-		if (head_current_mode_not_desired(head)) {
-			// mode changes happen in their own operation
-			if (!head->current.enabled || head->current.mode != head->desired.mode) {
-				print_mode(t, head->desired.mode);
-			}
-		} else if (head_current_adaptive_sync_not_desired(head)) {
-			// adaptive sync changes happen in their own operation
-			log_(t, "    VRR:       %s", head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
-		} else {
-			if (!head->current.enabled || head->current.scale != head->desired.scale) {
-				log_(t, "    scale:     %.3f%s",
-						wl_fixed_to_double(head->desired.scale),
-						(!head->width_mm || !head->height_mm) ? " (default, size not specified)" : ""
-					);
-			}
-			if (!head->current.enabled || head->current.x != head->desired.x || head->current.y != head->desired.y) {
-				log_(t, "    position:  %d,%d",
-						head->desired.x,
-						head->desired.y
-					);
-			}
-			if (!head->current.enabled || head->current.transform != head->desired.transform) {
-				if (head->desired.transform) {
-					log_(t, "    transform: %s", transform_name(head->desired.transform));
-				} else {
-					log_(t, "    transform: none");
-				}
-			}
+	if (head->current.enabled && !head->desired.enabled) {
+		log_(t, "  (enabled) -> (disabled)");
+		return;
+	}
+
+	if (!head->current.enabled == head->desired.enabled) {
+		log_(t, "  (disabled) -> (enabled)");
+	}
+
+	// mode changes happen in their own operation
+	if (head_current_mode_not_desired(head)) {
+		if (!head->current.enabled || head->current.mode != head->desired.mode) {
+			static char buf_current[2048];
+			static char buf_desired[2048];
+
+			info_mode_string(head->current.mode, buf_current, sizeof(buf_current));
+			info_mode_string(head->desired.mode, buf_desired, sizeof(buf_desired));
+
+			log_(t, "  mode: %s -> %s", buf_current, buf_desired);
 		}
-		if (!head->current.enabled) {
-			log_(t, "    (enabled)");
-		}
-	} else {
-		log_(t, "    (disabled)");
+		return;
+	}
+
+	// adaptive sync changes happen in their own operation
+	if (head_current_adaptive_sync_not_desired(head)) {
+		log_(t, "  VRR: %s -> %s",
+				head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off",
+				head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
+			);
+		return;
+	}
+
+	if (!head->current.enabled || head->current.scale != head->desired.scale) {
+		log_(t, "  scale:     %.3f -> %.3f",
+				wl_fixed_to_double(head->current.scale),
+				wl_fixed_to_double(head->desired.scale)
+			);
+	}
+
+	if (!head->current.enabled || head->current.x != head->desired.x || head->current.y != head->desired.y) {
+		log_(t, "  position:  %d,%d -> %d,%d",
+				head->current.x, head->current.y,
+				head->desired.x, head->desired.y
+			);
+	}
+
+	if (!head->current.enabled || head->current.transform != head->desired.transform) {
+		log_(t, "  transform: %s -> %s",
+				head->current.transform ? transform_name(head->current.transform) : "none",
+				head->desired.transform ? transform_name(head->desired.transform) : "none"
+			);
 	}
 }
 
@@ -415,7 +431,7 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 			print_modes_res_refresh(t, head);
 			print_modes_failed(t, head);
 			log_(t, "  current:");
-			print_head_current(t, head);
+			print_head_current(t, event, head);
 			break;
 		case DEPARTED:
 			log_(t, "\n%s Departed:", head->name);
@@ -426,11 +442,8 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 			break;
 		case DELTA:
 			if (head_current_not_desired(head)) {
-				log_(t, "\n%s Changing:", head->name);
-				log_(t, "  from:");
-				print_head_current(t, head);
-				log_(t, "  to:");
-				print_head_desired(t, head);
+				log_(t, "\n%s:", head->name);
+				print_head_deltas(t, head);
 			}
 			break;
 		default:

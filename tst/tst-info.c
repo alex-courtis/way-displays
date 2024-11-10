@@ -54,11 +54,11 @@ int before_each(void **state) {
 
 	head->desired.mode = mode_des;
 	head->desired.scale = 1024;
-	head->desired.enabled = false;
+	head->desired.enabled = true;
 	head->desired.x = 900;
 	head->desired.y = 1000;
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
-	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	return 0;
 }
@@ -146,6 +146,53 @@ void print_head_departed(void **state) {
 	free(expected_log);
 }
 
+void print_head_deltas__mode(void **state) {
+	head->current.enabled = true;
+	head->desired.enabled = true;
+
+	print_head(INFO, DELTA, head);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-mode.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
+void print_head_deltas__vrr(void **state) {
+	head->current.enabled = true;
+	head->desired.enabled = true;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head->desired.mode = head->current.mode;
+
+	print_head(INFO, DELTA, head);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-vrr.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
+void print_head_deltas__other(void **state) {
+	head->current.enabled = false;
+	head->desired.enabled = true;
+	head->desired.mode = head->current.mode;
+
+	print_head(INFO, DELTA, head);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-other.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
+void print_head_deltas__disable(void **state) {
+	head->current.enabled = true;
+	head->desired.enabled = false;
+
+	print_head(INFO, DELTA, head);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-disable.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(print_cfg_commands__empty),
@@ -154,6 +201,10 @@ int main(void) {
 		TEST(print_head_arrived__all),
 		TEST(print_head_arrived__min),
 		TEST(print_head_departed),
+		TEST(print_head_deltas__mode),
+		TEST(print_head_deltas__vrr),
+		TEST(print_head_deltas__other),
+		TEST(print_head_deltas__disable),
 	};
 
 	return RUN(tests);
