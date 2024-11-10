@@ -281,6 +281,10 @@ void apply(void) {
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
 
+	struct SList *log_cap_lines = NULL;
+
+	log_cap_lines_start(&log_cap_lines);
+
 	if ((head_changing_mode = slist_find_val(heads, head_current_mode_not_desired))) {
 
 		print_head(INFO, DELTA, head_changing_mode);
@@ -299,16 +303,7 @@ void apply(void) {
 
 	} else {
 
-		struct SList *log_cap_lines = NULL;
-
-		log_cap_lines_start(&log_cap_lines);
-
 		print_heads(INFO, DELTA, heads);
-
-		// TODO unique file passed to the user
-		log_cap_lines_stop(&log_cap_lines);
-		log_cap_lines_write(&log_cap_lines, "/tmp/wd.delta");
-		log_cap_lines_free(&log_cap_lines);
 
 		// all changes except mode
 		for (i = heads_changing; i; i = i->nex) {
@@ -324,6 +319,11 @@ void apply(void) {
 			}
 		}
 	}
+
+	// TODO unique file passed to the user
+	log_cap_lines_stop(&log_cap_lines);
+	log_cap_lines_write(&log_cap_lines, "/tmp/wd.delta");
+	log_cap_lines_free(&log_cap_lines);
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
 
