@@ -138,10 +138,10 @@ void print_head_arrived__min(void **state) {
 	free(expected_log);
 }
 
-void print_head_departed(void **state) {
+void print_head_departed__ok(void **state) {
 	print_head(INFO, DEPARTED, head);
 
-	char *expected_log = read_file("tst/info/print-head-departed.log");
+	char *expected_log = read_file("tst/info/print-head-departed-ok.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
 }
@@ -171,7 +171,7 @@ void print_head_deltas__vrr(void **state) {
 }
 
 void print_head_deltas__other(void **state) {
-	head->current.enabled = false;
+	head->current.enabled = true;
 	head->desired.enabled = true;
 	head->desired.mode = head->current.mode;
 
@@ -193,6 +193,17 @@ void print_head_deltas__disable(void **state) {
 	free(expected_log);
 }
 
+void print_head_deltas__enable(void **state) {
+	head->current.enabled = false;
+	head->desired.enabled = true;
+
+	print_head(INFO, DELTA, head);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-enable.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(print_cfg_commands__empty),
@@ -200,11 +211,13 @@ int main(void) {
 
 		TEST(print_head_arrived__all),
 		TEST(print_head_arrived__min),
-		TEST(print_head_departed),
+		TEST(print_head_departed__ok),
+
 		TEST(print_head_deltas__mode),
 		TEST(print_head_deltas__vrr),
 		TEST(print_head_deltas__other),
 		TEST(print_head_deltas__disable),
+		TEST(print_head_deltas__enable),
 	};
 
 	return RUN(tests);

@@ -1,4 +1,11 @@
 
 name Changing:
-  VRR: off -> on
+  from:
+    scale:     2.000 (26.458)
+    position:  700,800
+    transform: 180
+    mode:      100x200@30Hz (30,000mHz) (preferred)
+    VRR:       off
+  to:
+    VRR:       on
 

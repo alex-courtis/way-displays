@@ -1,7 +1,13 @@
 
 name Changing:
-  (disabled) -> (enabled)
-  scale:     2.000 -> 4.000
-  position:  700,800 -> 900,1000
-  transform: 180 -> 90
+  from:
+    scale:     2.000 (26.458)
+    position:  700,800
+    transform: 180
+    mode:      100x200@30Hz (30,000mHz) (preferred)
+    VRR:       off
+  to:
+    scale:     4.000
+    position:  900,1000
+    transform: 90
 

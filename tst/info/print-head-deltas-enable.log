@@ -1,0 +1,8 @@
+
+name Changing:
+  from:
+    (disabled)
+  to:
+    mode:      400x500@60Hz (60,000mHz)
+    (enabled)
+
