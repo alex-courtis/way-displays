@@ -1,6 +1,8 @@
 
 name Changing:
   from:
+    mode:      100x200@30Hz (30,000mHz) (preferred)
+    VRR:       off
     (disabled)
   to:
     mode:      400x500@60Hz (60,000mHz)

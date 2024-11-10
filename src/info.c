@@ -324,11 +324,12 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 		if (head->current.transform) {
 			log_(t, "    transform: %s", transform_name(head->current.transform));
 		}
+	}
 
-		print_mode(t, head->current.mode);
+	print_mode(t, head->current.mode);
+	log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 
-		log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
-	} else {
+	if (!head->current.enabled) {
 		log_(t, "    (disabled)");
 	}
 

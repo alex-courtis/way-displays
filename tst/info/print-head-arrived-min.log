@@ -4,5 +4,7 @@
     width:     (not specified)
     height:    (not specified)
   current:
+    (no mode)
+    VRR:       off
     (disabled)
 
