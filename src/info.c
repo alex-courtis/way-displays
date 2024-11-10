@@ -442,7 +442,7 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 			break;
 		case DELTA:
 			if (head_current_not_desired(head)) {
-				log_(t, "\n%s:", head->name);
+				log_(t, "\n%s Changing:", head->name);
 				print_head_deltas(t, head);
 			}
 			break;
