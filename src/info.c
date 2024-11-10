@@ -327,14 +327,15 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 	}
 
 	print_mode(t, head->current.mode);
-	log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 
-	if (!head->current.enabled) {
-		log_(t, "     (disabled)");
+	if (head->current.enabled) {
+		log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
+	} else {
+		log_(t, "    (disabled)");
 	}
 
 	if (lid_is_closed(head->name)) {
-		log_(t, "     (lid closed)");
+		log_(t, "    (lid closed)");
 	}
 }
 
@@ -373,10 +374,10 @@ void print_head_desired(enum LogThreshold t, struct Head *head) {
 			}
 		}
 		if (!head->current.enabled) {
-			log_(t, "     (enabled)");
+			log_(t, "    (enabled)");
 		}
 	} else {
-		log_(t, "     (disabled)");
+		log_(t, "    (disabled)");
 	}
 }
 
@@ -389,7 +390,7 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 	switch (event) {
 		case ARRIVED:
 		case NONE:
-			log_(t, "\n%s%s:", head->name, event == ARRIVED ? " Arrived" : "");
+			log_(t, "\n%s%s:", head->name ? head->name : "???", event == ARRIVED ? " Arrived" : "");
 			log_(t, "  info:");
 			if (head->name)
 				log_(t, "    name:      '%s'", head->name);

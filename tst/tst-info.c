@@ -14,6 +14,8 @@
 
 #include "info.h"
 
+struct Head *head = NULL;
+
 int before_all(void **state) {
 	return 0;
 }
@@ -23,10 +25,49 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	head = calloc(1, sizeof(struct Head));
+
+	struct Mode *mode_cur = mode_init(head, NULL, 100, 200, 30000, true);
+	struct Mode *mode_des = mode_init(head, NULL, 400, 500, 60000, false);
+	struct Mode *mode_failed = mode_init(head, NULL, 700, 800, 90000, false);
+
+	slist_append(&head->modes, mode_cur);
+	slist_append(&head->modes, mode_des);
+	slist_append(&head->modes, mode_failed);
+	slist_append(&head->modes_failed, mode_failed);
+
+	head->name = strdup("name");
+	head->description = strdup("description");
+	head->width_mm = 1;
+	head->height_mm = 2;
+	head->make = strdup("make");
+	head->model = strdup("model");
+	head->serial_number = strdup("serial_number");
+
+	head->current.mode = mode_cur;
+	head->current.scale = 512;
+	head->current.enabled = true;
+	head->current.x = 700;
+	head->current.y = 800;
+	head->current.transform = WL_OUTPUT_TRANSFORM_180;
+	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+
+	head->desired.mode = mode_des;
+	head->desired.scale = 1024;
+	head->desired.enabled = false;
+	head->desired.x = 900;
+	head->desired.y = 1000;
+	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+
 	return 0;
 }
 
 int after_each(void **state) {
+	head_free(head);
+
+	head = NULL;
+
 	assert_logs_empty();
 
 	return 0;
@@ -78,10 +119,41 @@ void print_cfg_commands__ok(void **state) {
 	free(expected_log);
 }
 
+void print_head_arrived__all(void **state) {
+	print_head(INFO, ARRIVED, head);
+
+	char *expected_log = read_file("tst/info/print-head-arrived-all.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
+void print_head_arrived__min(void **state) {
+	head_free(head);
+	head = calloc(1, sizeof(struct Head));
+
+	print_head(INFO, ARRIVED, head);
+
+	char *expected_log = read_file("tst/info/print-head-arrived-min.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
+void print_head_departed(void **state) {
+	print_head(INFO, DEPARTED, head);
+
+	char *expected_log = read_file("tst/info/print-head-departed.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(print_cfg_commands__empty),
 		TEST(print_cfg_commands__ok),
+
+		TEST(print_head_arrived__all),
+		TEST(print_head_arrived__min),
+		TEST(print_head_departed),
 	};
 
 	return RUN(tests);

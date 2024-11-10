@@ -1,0 +1,23 @@
+
+name Arrived:
+  info:
+    name:      'name'
+    make:      'make'
+    model:     'model'
+    serial:    'serial_number'
+    desc:      'description'
+    width:     1mm
+    height:    2mm
+    dpi:       2540.00 @ 100x200
+    mode:       700 x  800 @  90 Hz   90,000 mHz
+    mode:       400 x  500 @  60 Hz   60,000 mHz
+    mode:       100 x  200 @  30 Hz   30,000 mHz (preferred)
+  failed:
+    mode:      700x800@90Hz (90,000mHz)
+  current:
+    scale:     2.000 (26.458)
+    position:  700,800
+    transform: 180
+    mode:      100x200@30Hz (30,000mHz) (preferred)
+    VRR:       off
+

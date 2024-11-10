@@ -13,7 +13,6 @@ OBJS =  tst/util.o \
 WRAPS_COMMON = -Wl,$\
 	--wrap=log_set_threshold,$\
 	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_errno,$\
-	--wrap=print_head,--wrap=print_mode,$\
 	--wrap=spawn_sh_cmd,--wrap=wd_exit,--wrap=wd_exit_message
 
 tst-head: WRAPS=,$\
@@ -24,6 +23,7 @@ tst-head: WRAPS=,$\
 tst-layout: WRAPS=,$\
 	--wrap=lid_is_closed,$\
 	--wrap=head_find_mode,$\
+	--wrap=print_head,--wrap=print_mode,$\
 	--wrap=head_auto_scale
 
 tst-cfg-file: WRAPS=,$\
