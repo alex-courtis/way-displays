@@ -354,7 +354,7 @@ void print_head_deltas(enum LogThreshold t, struct Head *head) {
 
 	// mode changes happen in their own operation
 	if (head_current_mode_not_desired(head)) {
-		if (!head->current.enabled || head->current.mode != head->desired.mode) {
+		if (head->current.mode != head->desired.mode) {
 			static char buf_current[2048];
 			static char buf_desired[2048];
 
@@ -375,21 +375,21 @@ void print_head_deltas(enum LogThreshold t, struct Head *head) {
 		return;
 	}
 
-	if (!head->current.enabled || head->current.scale != head->desired.scale) {
+	if (head->current.scale != head->desired.scale) {
 		log_(t, "  scale:     %.3f -> %.3f",
 				wl_fixed_to_double(head->current.scale),
 				wl_fixed_to_double(head->desired.scale)
 			);
 	}
 
-	if (!head->current.enabled || head->current.x != head->desired.x || head->current.y != head->desired.y) {
+	if (head->current.x != head->desired.x || head->current.y != head->desired.y) {
 		log_(t, "  position:  %d,%d -> %d,%d",
 				head->current.x, head->current.y,
 				head->desired.x, head->desired.y
 			);
 	}
 
-	if (!head->current.enabled || head->current.transform != head->desired.transform) {
+	if (head->current.transform != head->desired.transform) {
 		log_(t, "  transform: %s -> %s",
 				head->current.transform ? transform_name(head->current.transform) : "none",
 				head->desired.transform ? transform_name(head->desired.transform) : "none"
