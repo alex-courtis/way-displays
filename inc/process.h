@@ -9,7 +9,7 @@ pid_t pid_active_server(void);
 
 void pid_file_create(void);
 
-void spawn_sh_cmd(const char * const command);
+void spawn_sh_cmd(const char * const command, char * const message);
 
 // exit; caller should return afterwards
 void wd_exit(int __status);

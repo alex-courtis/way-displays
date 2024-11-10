@@ -104,7 +104,11 @@ void pid_file_create(void) {
 	free(path);
 }
 
-void spawn_sh_cmd(const char * const command) {
+void spawn_sh_cmd(const char * const command, char * const message) {
+
+	// experiments show that environment variable length tops out at 128k: variable itself plus contents
+	message[1024 * 120] = '\0';
+
 	pid_t pid = fork();
 	if (pid < 0) {
 		log_error_errno("\nfailed to fork");
@@ -120,6 +124,8 @@ void spawn_sh_cmd(const char * const command) {
 		sa.sa_flags = 0;
 		sa.sa_handler = SIG_DFL;
 		sigaction(SIGCHLD, &sa, NULL);
+
+		setenv("WD_MESSAGE", message, 1);
 
 		// execute command in the child process
 		execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL);
