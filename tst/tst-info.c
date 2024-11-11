@@ -393,6 +393,7 @@ int main(void) {
 		TEST(render_deltas_brief__vrr),
 		TEST(render_deltas_brief__other),
 		TEST(render_deltas_brief__enabled),
+		TEST(render_deltas_brief__disabled),
 	};
 
 	return RUN(tests);
