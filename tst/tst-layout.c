@@ -59,6 +59,7 @@ int after_all(void **state) {
 
 int before_each(void **state) {
 	cfg = cfg_default();
+	displ = calloc(1, sizeof(struct Displ));
 
 	struct State *s = calloc(1, sizeof(struct State));
 
@@ -81,6 +82,8 @@ int after_each(void **state) {
 
 	head_changing_mode = NULL;
 	head_changing_adaptive_sync = NULL;
+
+	free(displ);
 
 	cfg_destroy();
 
@@ -642,10 +645,14 @@ void handle_success__head_changing_mode(void **state) {
 
 void handle_success__change_success_cmd(void **state) {
 	cfg->change_success_cmd = strdup("echo \"hi from way-displays\"");
+	displ->delta_message = strdup("DP-1: enabled\n  mode: xx->yy");
 
-	expect_value(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
+	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
+	expect_string(__wrap_spawn_sh_cmd, message, displ->delta_message);
 
 	handle_success();
+
+	free(displ->delta_message);
 
 	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
 			"  echo \"hi from way-displays\"\n"

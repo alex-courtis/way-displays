@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -105,9 +106,13 @@ void pid_file_create(void) {
 }
 
 void spawn_sh_cmd(const char * const command, char * const message) {
+	if (!command || !message)
+		return;
 
 	// experiments show that environment variable length tops out at 128k: variable itself plus contents
-	// message[1024 * 120] = '\0';
+	if (strlen(message) > 1024 * 120) {
+		message[1024 * 120] = '\0';
+	}
 
 	pid_t pid = fork();
 	if (pid < 0) {

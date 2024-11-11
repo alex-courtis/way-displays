@@ -1,11 +1,11 @@
 
-name Arrived:
+name1 Arrived:
   info:
-    name:      'name'
-    make:      'make'
-    model:     'model'
-    serial:    'serial_number'
-    desc:      'description'
+    name:      'name1'
+    make:      'make1'
+    model:     'model1'
+    serial:    'serial_number1'
+    desc:      'description1'
     width:     1mm
     height:    2mm
     dpi:       2540.00 @ 100x200

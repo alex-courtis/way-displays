@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "cfg.h"
+#include "displ.h"
 #include "head.h"
 #include "slist.h"
 #include "log.h"
@@ -34,6 +35,9 @@ void print_user_mode(enum LogThreshold t, struct UserMode *user_mode, bool del);
 void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf);
 
 void info_mode_string(struct Mode *mode, char *buf, size_t nbuf);
+
+// length 1024 * 64, consumer frees
+char *render_deltas_brief(const enum ConfigState config_state, const struct SList * const heads);
 
 #endif // INFO_H
 

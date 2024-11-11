@@ -2,8 +2,9 @@
 
 #include <cmocka.h>
 
-void __wrap_spawn_sh_cmd(const char * const command) {
+void __wrap_spawn_sh_cmd(const char * const command, const char * const message) {
 	check_expected(command);
+	check_expected(message);
 }
 
 void __wrap_wd_exit(int __status) {

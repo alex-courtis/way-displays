@@ -35,6 +35,8 @@ struct Displ {
 	char *zxdg_output_manager_interface;
 
 	enum ConfigState config_state;
+
+	char *delta_message;
 };
 
 void displ_init(void);

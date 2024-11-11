@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <wayland-util.h>
 
 #include "info.h"
@@ -441,5 +442,86 @@ void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads)
 	for (struct SList *i = heads; i; i = i->nex) {
 		print_head(t, event, i->val);
 	}
+}
+
+char *render_deltas_brief(const enum ConfigState config_state, const struct SList * const heads) {
+	if (!heads) {
+		return NULL;
+	}
+
+	static const int len = 1024 * 64;
+
+	char *buf = (char*)calloc(len, sizeof(char));
+	char *bufp = buf;
+
+	for (const struct SList *i = heads; i; i = i->nex) {
+		const struct Head * head = i->val;
+
+		if (head->current.enabled && !head->desired.enabled) {
+			bufp += snprintf(bufp, len - (bufp - buf), "%s: disabled\n", head->name);
+			continue;
+		}
+
+		// mode changes happen in their own operation
+		if (head_current_mode_not_desired(head)) {
+			bufp += snprintf(bufp, len - (bufp - buf), "%s%s:\n  mode: %dx%d@%dHz -> %dx%d@%dHz\n", // line up with vrr
+					head->name,
+					(!head->current.enabled && head->desired.enabled) ? ": enabled" : "",
+					head->current.mode->width,
+					head->current.mode->height,
+					mhz_to_hz_rounded(head->current.mode->refresh_mhz),
+					head->desired.mode->width,
+					head->desired.mode->height,
+					mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
+					);
+			continue;
+		}
+
+		if (!head->current.enabled && head->desired.enabled) {
+			bufp += snprintf(bufp, len - (bufp - buf), "%s: enabled\n", head->name);
+			continue;
+		}
+
+		// adaptive sync changes happen in their own operation
+		if (head_current_adaptive_sync_not_desired(head)) {
+			bufp += snprintf(bufp, len - (bufp - buf), "%s:\n  VRR:  %s\n", // line up with mode
+					head->name,
+					head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
+					);
+			continue;
+		}
+
+		if (head_current_not_desired(head)) {
+			bufp += snprintf(bufp, len - (bufp - buf), "%s:\n", head->name);
+
+			if (head->current.scale != head->desired.scale) {
+				bufp += snprintf(bufp, len - (bufp - buf), "  scale:     %.3f -> %.3f\n",
+						wl_fixed_to_double(head->current.scale),
+						wl_fixed_to_double(head->desired.scale)
+						);
+			}
+
+			if (head->current.transform != head->desired.transform) {
+				bufp += snprintf(bufp, len - (bufp - buf), "  transform: %s -> %s\n",
+						head->current.transform ? transform_name(head->current.transform) : "none",
+						head->desired.transform ? transform_name(head->desired.transform) : "none"
+						);
+			}
+
+			if (head->current.x != head->desired.x || head->current.y != head->desired.y) {
+				bufp += snprintf(bufp, len - (bufp - buf), "  position:  %d,%d -> %d,%d\n",
+						head->current.x, head->current.y,
+						head->desired.x, head->desired.y
+						);
+			}
+		}
+	}
+
+	// strip trailing newline
+	if (bufp > buf) {
+		*(bufp - 1) = '\0';
+	}
+
+	return buf;
 }
 
