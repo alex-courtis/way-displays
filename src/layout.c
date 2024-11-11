@@ -285,6 +285,8 @@ void apply(void) {
 
 	log_cap_lines_start(&log_cap_lines);
 
+	free(deltas_brief);
+
 	if ((head_changing_mode = slist_find_val(heads, head_current_mode_not_desired))) {
 
 		print_head(INFO, DELTA, head_changing_mode);
@@ -292,6 +294,11 @@ void apply(void) {
 		// mode change in its own operation; mode change desire is always enabled
 		head_changing_mode->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_changing_mode->zwlr_head);
 		zwlr_output_configuration_head_v1_set_mode(head_changing_mode->zwlr_config_head, head_changing_mode->desired.mode->zwlr_mode);
+
+		struct SList *heads = NULL;
+		slist_append(&heads, head_changing_mode);
+		deltas_brief = render_deltas_brief(displ->config_state, heads);
+		slist_free(&heads);
 
 	} else if ((head_changing_adaptive_sync = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
 
@@ -301,6 +308,10 @@ void apply(void) {
 		head_changing_adaptive_sync->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_changing_adaptive_sync->zwlr_head);
 		zwlr_output_configuration_head_v1_set_adaptive_sync(head_changing_adaptive_sync->zwlr_config_head, head_changing_adaptive_sync->desired.adaptive_sync);
 
+		struct SList *heads = NULL;
+		slist_append(&heads, head_changing_adaptive_sync);
+		deltas_brief = render_deltas_brief(displ->config_state, heads);
+		slist_free(&heads);
 	} else {
 
 		print_heads(INFO, DELTA, heads);
@@ -318,6 +329,8 @@ void apply(void) {
 				zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 			}
 		}
+
+		deltas_brief = render_deltas_brief(displ->config_state, heads_changing);
 	}
 
 	// TODO unique file passed to the user
@@ -326,9 +339,6 @@ void apply(void) {
 	log_cap_lines_free(&log_cap_lines);
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
-
-	free(deltas_brief);
-	deltas_brief = render_deltas_brief(displ->config_state, heads_changing);
 
 	displ->config_state = OUTSTANDING;
 
