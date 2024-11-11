@@ -327,8 +327,8 @@ void apply(void) {
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
 
-	free(displ->delta_message);
-	displ->delta_message = render_deltas_brief(displ->config_state, heads_changing);
+	free(deltas_brief);
+	deltas_brief = render_deltas_brief(displ->config_state, heads_changing);
 
 	displ->config_state = OUTSTANDING;
 
@@ -368,7 +368,7 @@ void handle_success(void) {
 		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
 		log_info("  %s", cfg->change_success_cmd);
 
-		spawn_sh_cmd(cfg->change_success_cmd, displ->delta_message);
+		spawn_sh_cmd(cfg->change_success_cmd, deltas_brief);
 	}
 
 	log_info("\nChanges successful");
@@ -438,8 +438,8 @@ void layout(void) {
 			break;
 	}
 
-	free(displ->delta_message);
-	displ->delta_message = NULL;
+	free(deltas_brief);
+	deltas_brief = NULL;
 
 	desire();
 	apply();

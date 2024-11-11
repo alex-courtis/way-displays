@@ -259,19 +259,45 @@ void print_head_deltas__enable(void **state) {
 	free(expected_log);
 }
 
-void render_deltas_brief__mode_vrr(void **state) {
+void render_deltas_brief__mode(void **state) {
 	struct State *s = *state;
 
-	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head2->desired.mode = s->head2->current.mode;
+	s->head1->desired.mode = NULL;
+
+	s->head2->current.mode = NULL;
 
 	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
 			"name1:\n"
-			"  mode: 100x200@30Hz -> 400x500@60Hz\n"
+			"  mode: 100x200@30Hz -> (no mode)\n"
 			"name2:\n"
-			"  VRR:  on"
+			"  mode: (no mode) -> 1400x1500@160Hz"
+			);
+
+	slist_free(&heads);
+
+	free(deltas);
+}
+
+void render_deltas_brief__vrr(void **state) {
+	struct State *s = *state;
+
+	s->head1->desired.mode = s->head1->current.mode;
+	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+
+	s->head2->desired.mode = s->head2->current.mode;
+	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+
+	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
+
+	assert_string_equal(deltas, ""
+			"name1:\n"
+			"  VRR:  on\n"
+			"name2:\n"
+			"  VRR:  off"
 			);
 
 	slist_free(&heads);
@@ -363,7 +389,8 @@ int main(void) {
 		TEST(print_head_deltas__disable),
 		TEST(print_head_deltas__enable),
 
-		TEST(render_deltas_brief__mode_vrr),
+		TEST(render_deltas_brief__mode),
+		TEST(render_deltas_brief__vrr),
 		TEST(render_deltas_brief__other),
 		TEST(render_deltas_brief__enabled),
 	};

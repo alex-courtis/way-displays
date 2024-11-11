@@ -10,4 +10,6 @@ extern struct SList *cfg_file_paths;
 extern struct Head *head_changing_mode;
 extern struct Head *head_changing_adaptive_sync;
 
+extern char *deltas_brief;
+
 #endif // GLOBAL_H

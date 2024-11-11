@@ -462,21 +462,37 @@ char *render_deltas_brief(const enum ConfigState config_state, const struct SLis
 			continue;
 		}
 
-		// mode changes happen in their own operation
+		// mode changes happen in their own operation, with an enable
 		if (head_current_mode_not_desired(head)) {
-			bufp += snprintf(bufp, len - (bufp - buf), "%s%s:\n  mode: %dx%d@%dHz -> %dx%d@%dHz\n", // line up with vrr
+			bufp += snprintf(bufp, len - (bufp - buf), "%s%s:\n  mode: ", // line up with vrr
 					head->name,
-					(!head->current.enabled && head->desired.enabled) ? ": enabled" : "",
-					head->current.mode->width,
-					head->current.mode->height,
-					mhz_to_hz_rounded(head->current.mode->refresh_mhz),
-					head->desired.mode->width,
-					head->desired.mode->height,
-					mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
+					(!head->current.enabled && head->desired.enabled) ? ": enabled" : ""
 					);
+
+			if (head->current.mode) {
+				bufp += snprintf(bufp, len - (bufp - buf), "%dx%d@%dHz -> ",
+						head->current.mode->width,
+						head->current.mode->height,
+						mhz_to_hz_rounded(head->current.mode->refresh_mhz)
+						);
+			} else {
+				bufp += snprintf(bufp, len - (bufp - buf), "(no mode) -> ");
+			}
+
+			if (head->desired.mode) {
+				bufp += snprintf(bufp, len - (bufp - buf), "%dx%d@%dHz\n",
+						head->desired.mode->width,
+						head->desired.mode->height,
+						mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
+						);
+			} else {
+				bufp += snprintf(bufp, len - (bufp - buf), "(no mode)\n");
+			}
+
 			continue;
 		}
 
+		// enable with no change in mode
 		if (!head->current.enabled && head->desired.enabled) {
 			bufp += snprintf(bufp, len - (bufp - buf), "%s: enabled\n", head->name);
 			continue;
