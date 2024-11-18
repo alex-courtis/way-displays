@@ -3,13 +3,15 @@
 
 #include <sys/types.h>
 
+#include "stable.h"
+
 char *pid_path(void);
 
 pid_t pid_active_server(void);
 
 void pid_file_create(void);
 
-void spawn_sh_cmd(const char * const command, char * const message);
+void spawn_sh_cmd(const char * const command, const struct STable * const env);
 
 // exit; caller should return afterwards
 void wd_exit(int __status);

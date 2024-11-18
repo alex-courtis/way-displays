@@ -378,7 +378,10 @@ void handle_success(void) {
 		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
 		log_info("  %s", cfg->change_success_cmd);
 
-		spawn_sh_cmd(cfg->change_success_cmd, deltas_brief);
+		const struct STable *env = stable_init(5, 5);
+		stable_put(env, "WD_MESSAGE", deltas_brief);
+		spawn_sh_cmd(cfg->change_success_cmd, env);
+		stable_free(env);
 	}
 
 	log_info("\nChanges successful");
