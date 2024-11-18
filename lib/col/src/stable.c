@@ -1,7 +1,15 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
+
+#include "fn.h"
+
+#include "slist.h"
 
 #include "stable.h"
+
+typedef int (*comparator)(const char *s1, const char *s2);
 
 struct STable {
 	const char **keys;
@@ -9,6 +17,7 @@ struct STable {
 	size_t capacity;
 	size_t grow;
 	size_t size;
+	comparator cmp;
 };
 
 struct STableIterP {
@@ -47,13 +56,18 @@ void grow_stable(struct STable *tab) {
 	tab->capacity += tab->grow;
 }
 
-const struct STable *stable_init(const size_t initial, const size_t grow) {
+const struct STable *stable_init(const size_t initial, const size_t grow, const bool case_insensitive) {
 	if (initial == 0 || grow == 0)
 		return NULL;
 
 	struct STable *tab = calloc(1, sizeof(struct STable));
 	tab->capacity = initial;
 	tab->grow = grow;
+	if (case_insensitive) {
+		tab->cmp = strcasecmp;
+	} else {
+		tab->cmp = strcmp;
+	}
 	tab->keys = calloc(tab->capacity, sizeof(char*));
 	tab->vals = calloc(tab->capacity, sizeof(void*));
 
@@ -75,7 +89,7 @@ void stable_free(const void* const cvtab) {
 	free(tab);
 }
 
-void stable_free_vals(const struct STable* const tab, void (*free_val)(const void* const val)) {
+void stable_free_vals(const struct STable* const tab, fn_free_val free_val) {
 	if (!tab)
 		return;
 
@@ -109,7 +123,7 @@ const void *stable_get(const struct STable* const tab, const char* const key) {
 	for (k = tab->keys, v = tab->vals;
 			k < tab->keys + tab->size;
 			k++, v++) {
-		if (strcmp(*k, key) == 0) {
+		if (tab->cmp(*k, key) == 0) {
 			return *v;
 		}
 	}
@@ -168,13 +182,6 @@ const struct STableIter *stable_next(const struct STableIter* const iter) {
 	return NULL;
 }
 
-size_t stable_size(const struct STable* const tab) {
-	if (!tab)
-		return 0;
-
-	return tab->size;
-}
-
 const void *stable_put(const struct STable* const ctab, const char* const key, const void* const val) {
 	if (!ctab || !key)
 		return NULL;
@@ -187,7 +194,7 @@ const void *stable_put(const struct STable* const ctab, const char* const key, c
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
 
 		// overwrite existing values
-		if (strcmp(*k, key) == 0) {
+		if (tab->cmp(*k, key) == 0) {
 			const void *prev = *v;
 			*v = val;
 			return prev;
@@ -220,7 +227,7 @@ const void *stable_remove(const struct STable* const ctab, const char* const key
 	const void **v;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
 
-		if (strcmp(*k, key) == 0) {
+		if (tab->cmp(*k, key) == 0) {
 			free((void*)*k);
 			*k = NULL;
 			const void* prev = *v;
@@ -242,5 +249,77 @@ const void *stable_remove(const struct STable* const ctab, const char* const key
 	}
 
 	return NULL;
+}
+
+bool stable_equal(const struct STable* const a, const struct STable* const b, fn_equals equals) {
+	if (!a || !b || a->size != b->size)
+		return false;
+
+	const char **ak, **bk;
+	const void **av, **bv;
+
+	for (ak = a->keys, bk = b->keys, av = a->vals, bv = b->vals;
+			ak < a->keys + a->size;
+			ak++, bk++, av++, bv++) {
+
+		// key
+		if (a->cmp == strcasecmp || b->cmp == strcasecmp) {
+			if (strcasecmp(*ak, *bk) != 0) {
+				return false;
+			}
+		} else {
+			if (strcmp(*ak, *bk) != 0) {
+				return false;
+			}
+		}
+
+		// value
+		if (equals) {
+			if (!equals(*av, *bv)) {
+				return false;
+			}
+		} else if (*av != *bv) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+struct SList *stable_keys_slist(const struct STable* const tab) {
+	if (!tab)
+		return NULL;
+
+	struct SList *list = NULL;
+
+	const char **k;
+	for (k = tab->keys; k < tab->keys + tab->size; k++) {
+		slist_append(&list, (void*)*k);
+	}
+
+	return list;
+}
+
+struct SList *stable_vals_slist(const struct STable* const tab) {
+	if (!tab)
+		return NULL;
+
+	struct SList *list = NULL;
+
+	const char **k;
+	const void **v;
+	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+		slist_append(&list, (void*)*v);
+	}
+
+	return list;
+}
+
+size_t stable_size(const struct STable* const tab) {
+	return tab ? tab->size : 0;
+}
+
+size_t stable_capacity(const struct STable* const tab) {
+	return tab ? tab->capacity : 0;
 }
 
