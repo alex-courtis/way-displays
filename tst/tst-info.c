@@ -81,7 +81,6 @@ int before_each(void **state) {
 	slist_append(&s->head2->modes_failed, mode_failed);
 
 	s->head2->name = strdup("name2");
-	s->head2->description = strdup("description2");
 	s->head2->width_mm = 3;
 	s->head2->height_mm = 4;
 	s->head2->make = strdup("make2");
@@ -269,9 +268,9 @@ void render_deltas_brief__mode(void **state) {
 	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
-			"name1:\n"
+			"description1\n"
 			"  mode: 100x200@30Hz -> (no mode)\n"
-			"name2:\n"
+			"name2\n"
 			"  mode: (no mode) -> 1400x1500@160Hz"
 			);
 
@@ -294,9 +293,9 @@ void render_deltas_brief__vrr(void **state) {
 	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
-			"name1:\n"
+			"description1\n"
 			"  VRR:  on\n"
-			"name2:\n"
+			"name2\n"
 			"  VRR:  off"
 			);
 
@@ -314,11 +313,11 @@ void render_deltas_brief__other(void **state) {
 	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
-			"name1:\n"
+			"description1\n"
 			"  scale:     2.000 -> 4.000\n"
 			"  transform: 180 -> 90\n"
 			"  position:  700,800 -> 900,1000\n"
-			"name2:\n"
+			"name2\n"
 			"  scale:     8.000 -> 16.000\n"
 			"  transform: 270 -> none\n"
 			"  position:  1700,1800 -> 1900,11000"
@@ -342,8 +341,8 @@ void render_deltas_brief__enabled(void **state) {
 	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
-			"name1: enabled\n"
-			"name2: enabled:\n"
+			"description1  enabled\n"
+			"name2  enabled:\n"
 			"  mode: 1100x1200@130Hz -> 1400x1500@160Hz"
 			);
 
@@ -365,8 +364,8 @@ void render_deltas_brief__disabled(void **state) {
 	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
-			"name1: disabled\n"
-			"name2: disabled"
+			"description1  disabled\n"
+			"name2  disabled"
 			);
 
 	slist_free(&heads);
