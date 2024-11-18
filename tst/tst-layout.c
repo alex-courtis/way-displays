@@ -15,6 +15,7 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
+#include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
@@ -644,8 +645,11 @@ void handle_success__change_success_cmd(void **state) {
 	cfg->change_success_cmd = strdup("echo \"hi from way-displays\"");
 	deltas_brief = strdup("DP-1: enabled\n  mode: xx->yy");
 
+	const struct STable *env = stable_init(1, 1, false);
+	stable_put(env, "WD_CHANGE_SUCCESS_MSG", deltas_brief);
+
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
-	expect_string(__wrap_spawn_sh_cmd, message, deltas_brief);
+	expect_check(__wrap_spawn_sh_cmd, message, expect_stable_equal, env);
 
 	handle_success();
 
@@ -654,6 +658,8 @@ void handle_success__change_success_cmd(void **state) {
 	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
 			"  echo \"hi from way-displays\"\n"
 			"\nChanges successful\n");
+
+	stable_free(env);
 }
 
 void handle_success__ok(void **state) {

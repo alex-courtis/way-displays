@@ -9,6 +9,7 @@
 #include "head.h"
 #include "marshalling.h"
 #include "slist.h"
+#include "stable.h"
 #include "util.h"
 
 #define assert_string_equal_nn(a, b) \
@@ -74,6 +75,11 @@ void _assert_log(enum LogThreshold t, const char* s, const char * const file, co
 
 void _assert_logs_empty(const char * const file, const int line);
 #define assert_logs_empty() _assert_logs_empty(__FILE__, __LINE__)
+
+int expect_stable_equal(const LargestIntegralType value,
+		const LargestIntegralType check_value_data) {
+	return stable_equal((struct STable*)value, (struct STable*)check_value_data, NULL);
+}
 
 #endif // ASSERTS_H
 
