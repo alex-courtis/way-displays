@@ -136,11 +136,11 @@ bool cfg_equal_user_transform_name(const void *value, const void *data);
 
 bool cfg_equal_user_transform(const void *value, const void *data);
 
-void cfg_user_scale_free(void *user_scale);
+void cfg_user_scale_free(const void *user_scale);
 
-void cfg_user_mode_free(void *user_mode);
+void cfg_user_mode_free(const void *user_mode);
 
-void cfg_user_transform_free(void *user_transform);
+void cfg_user_transform_free(const void *user_transform);
 
 void cfg_destroy(void);
 

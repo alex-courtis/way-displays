@@ -109,12 +109,12 @@ void ipc_request_free(struct IpcRequest *request) {
 	free(request);
 }
 
-void ipc_response_free(void *vresponse) {
+void ipc_response_free(const void *vresponse) {
 	if (!vresponse) {
 		return;
 	}
 
-	struct IpcResponse *response = vresponse;
+	struct IpcResponse *response = (struct IpcResponse*)vresponse;
 
 	cfg_free(response->cfg);
 	lid_free(response->lid);

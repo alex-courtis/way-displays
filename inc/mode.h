@@ -48,9 +48,9 @@ struct SList *modes_res_refresh(struct SList *modes);
 
 struct Mode *mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode, int32_t width, int32_t height, int32_t refresh_mhz, bool preferred);
 
-void mode_free(void *mode);
+void mode_free(const void *mode);
 
-void mode_res_refresh_free(void *mode);
+void mode_res_refresh_free(const void *mode);
 
 struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode);
 

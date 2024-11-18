@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
+
+#include "fn.h"
 
 #include "slist.h"
 
@@ -28,7 +29,7 @@ void slist_free(struct SList **head) {
 	*head = NULL;
 }
 
-void slist_free_vals(struct SList **head, void (*free_val)(void *val)) {
+void slist_free_vals(struct SList **head, fn_free_val free_val) {
 	struct SList *i;
 
 	for (i = *head; i; i = i->nex) {
@@ -88,11 +89,11 @@ void *slist_remove(struct SList **head, struct SList **item) {
 	return removed;
 }
 
-size_t slist_remove_all(struct SList **head, bool (*predicate)(const void *val, const void *data), const void *data) {
+size_t slist_remove_all(struct SList **head, fn_equals equals, const void *b) {
 	struct SList *i;
 	size_t removed = 0;
 
-	while ((i = slist_find_equal(*head, predicate, data))) {
+	while ((i = slist_find_equal(*head, equals, b))) {
 		slist_remove(head, &i);
 		removed++;
 	}
@@ -100,11 +101,11 @@ size_t slist_remove_all(struct SList **head, bool (*predicate)(const void *val, 
 	return removed;
 }
 
-size_t slist_remove_all_free(struct SList **head, bool (*predicate)(const void *val, const void *data), const void *data, void (*free_val)(void *val)) {
+size_t slist_remove_all_free(struct SList **head, fn_equals equals, const void *b, fn_free_val free_val) {
 	struct SList *i;
 	size_t removed = 0;
 
-	while ((i = slist_find_equal(*head, predicate, data))) {
+	while ((i = slist_find_equal(*head, equals, b))) {
 		if (free_val) {
 			free_val(i->val);
 		} else {
@@ -128,7 +129,7 @@ void *slist_at(struct SList *head, size_t index) {
 	return NULL;
 }
 
-struct SList *slist_find(struct SList *head, bool (*test)(const void *val)) {
+struct SList *slist_find(struct SList *head, fn_test test) {
 	struct SList *i;
 
 	if (!test)
@@ -143,7 +144,7 @@ struct SList *slist_find(struct SList *head, bool (*test)(const void *val)) {
 	return NULL;
 }
 
-void *slist_find_val(struct SList *head, bool (*test)(const void *val)) {
+void *slist_find_val(struct SList *head, fn_test test) {
 	struct SList *f = slist_find(head, test);
 	if (f)
 		return f->val;
@@ -151,15 +152,15 @@ void *slist_find_val(struct SList *head, bool (*test)(const void *val)) {
 		return NULL;
 }
 
-struct SList *slist_find_equal(struct SList *head, bool (*predicate)(const void *val, const void *data), const void *data) {
+struct SList *slist_find_equal(struct SList *head, fn_equals equals, const void *b) {
 	struct SList *i;
 
 	for (i = head; i; i = i->nex) {
-		if (predicate) {
-			if (predicate(i->val, data)) {
+		if (equals) {
+			if (equals(i->val, b)) {
 				return i;
 			}
-		} else if (i->val == data) {
+		} else if (i->val == b) {
 			return i;
 		}
 	}
@@ -167,20 +168,20 @@ struct SList *slist_find_equal(struct SList *head, bool (*predicate)(const void 
 	return NULL;
 }
 
-void *slist_find_equal_val(struct SList *head, bool (*predicate)(const void *val, const void *data), const void *data) {
-	struct SList *f = slist_find_equal(head, predicate, data);
+void *slist_find_equal_val(struct SList *head, fn_equals equals, const void *b) {
+	struct SList *f = slist_find_equal(head, equals, b);
 	if (f)
 		return f->val;
 	else
 		return NULL;
 }
 
-bool slist_equal(struct SList *a, struct SList *b, bool (*equal)(const void *a, const void *b)) {
+bool slist_equal(struct SList *a, struct SList *b, fn_equals equals) {
 	struct SList *ai, *bi;
 
 	for (ai = a, bi = b; ai && bi; ai = ai->nex, bi = bi->nex) {
-		if (equal) {
-			if (!equal(ai->val, bi->val)) {
+		if (equals) {
+			if (!equals(ai->val, bi->val)) {
 				return false;
 			}
 		} else if (ai->val != bi->val) {
@@ -205,10 +206,10 @@ size_t slist_length(struct SList *head) {
 	return length;
 }
 
-struct SList *slist_sort(struct SList *head, bool (*before)(const void *a, const void *b)) {
+struct SList *slist_sort(struct SList *head, fn_less_than less_than) {
 	struct SList *sorted = NULL;
 
-	if (!head || !before) {
+	if (!head || !less_than) {
 		return sorted;
 	}
 
@@ -228,7 +229,7 @@ struct SList *slist_sort(struct SList *head, bool (*before)(const void *a, const
 
 		sorting = sorting->nex;
 
-		while (!(*sorted_trail == NULL || before(sorting_head->val, (*sorted_trail)->val))) {
+		while (!(*sorted_trail == NULL || less_than(sorting_head->val, (*sorted_trail)->val))) {
 			sorted_trail = &(*sorted_trail)->nex;
 		}
 
@@ -240,8 +241,8 @@ struct SList *slist_sort(struct SList *head, bool (*before)(const void *a, const
 	return sorted;
 }
 
-void slist_move(struct SList **to, struct SList **from, bool (*predicate)(const void *val, const void *data), const void *data) {
-	if (!to || !from || !predicate)
+void slist_move(struct SList **to, struct SList **from, fn_equals equals, const void *b) {
+	if (!to || !from || !equals)
 		return;
 
 	struct SList *f = *from;
@@ -249,17 +250,10 @@ void slist_move(struct SList **to, struct SList **from, bool (*predicate)(const 
 		struct SList *r = f;
 		void *val = f->val;
 		f = f->nex;
-		if (predicate(val, data)) {
+		if (equals(val, b)) {
 			slist_append(to, val);
 			slist_remove(from, &r);
 		}
 	}
-}
-
-bool slist_predicate_strcmp(const void *val, const void *data) {
-	if (!val || !data) {
-		return false;
-	}
-	return strcmp(val, data) == 0;
 }
 

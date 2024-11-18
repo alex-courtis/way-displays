@@ -64,7 +64,7 @@ struct SList *ipc_receive_responses(int socket_client, char **yaml);
 
 void ipc_request_free(struct IpcRequest *request);
 
-void ipc_response_free(void *response);
+void ipc_response_free(const void *response);
 
 void ipc_operation_free(struct IpcOperation *operation);
 

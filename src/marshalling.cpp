@@ -397,7 +397,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		for (const auto &order : orders) {
 			const std::string &order_str = order.as<std::string>();
 			const char *order_cstr = order_str.c_str();
-			if (!slist_find_equal(cfg->order_name_desc, slist_predicate_strcmp, order_cstr)) {
+			if (!slist_find_equal(cfg->order_name_desc, fn_comp_equals_strcmp, order_cstr)) {
 				if (!validate_regex(order_cstr, ORDER)) {
 					continue;
 				}
@@ -537,7 +537,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		for (const auto &off : offs) {
 			const std::string &off_str = off.as<std::string>();
 			const char *off_cstr = off_str.c_str();
-			if (!slist_find_equal(cfg->adaptive_sync_off_name_desc, slist_predicate_strcmp, off_cstr)) {
+			if (!slist_find_equal(cfg->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, off_cstr)) {
 				if (!validate_regex(off_cstr, VRR_OFF)) {
 					continue;
 				}
@@ -551,7 +551,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		for (const auto &max : maxes) {
 			const std::string &max_str = max.as<std::string>();
 			const char *max_cstr = max_str.c_str();
-			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, slist_predicate_strcmp, max_cstr)) {
+			if (!slist_find_equal(cfg->max_preferred_refresh_name_desc, fn_comp_equals_strcmp, max_cstr)) {
 				if (!validate_regex(max_cstr, MAX_PREFERRED_REFRESH)) {
 					continue;
 				}
@@ -565,7 +565,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		for (const auto &disabled : disableds) {
 			const std::string &disabled_str = disabled.as<std::string>();
 			const char *disabled_cstr = disabled_str.c_str();
-			if (!slist_find_equal(cfg->disabled_name_desc, slist_predicate_strcmp, disabled_cstr)) {
+			if (!slist_find_equal(cfg->disabled_name_desc, fn_comp_equals_strcmp, disabled_cstr)) {
 				if (!validate_regex(disabled_cstr, DISABLED)) {
 					continue;
 				}

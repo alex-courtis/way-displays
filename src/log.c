@@ -187,8 +187,8 @@ void log_suppress_stop(void) {
 	active.suppressing = false;
 }
 
-void log_cap_line_free(void *data) {
-	struct LogCapLine *line = data;
+void log_cap_line_free(const void *data) {
+	const struct LogCapLine *line = data;
 
 	if (!line) {
 		return;
@@ -198,7 +198,7 @@ void log_cap_line_free(void *data) {
 		free(line->line);
 	}
 
-	free(line);
+	free((struct LogCapLine*)line);
 }
 
 void log_cap_lines_playback(struct SList *lines) {
