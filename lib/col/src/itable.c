@@ -129,17 +129,15 @@ const struct ITableIter *itable_iter(const struct ITable* const tab) {
 	for (k = tab->keys, v = tab->vals;
 			v < tab->vals + tab->size && k < tab->keys + tab->size;
 			k++, v++) {
-		if (*v) {
-			struct ITableIterP *iterp = calloc(1, sizeof(struct ITableIterP));
+		struct ITableIterP *iterp = calloc(1, sizeof(struct ITableIterP));
 
-			iterp->tab = tab;
-			iterp->key = *k;
-			iterp->val = *v;
-			iterp->k = k;
-			iterp->v = v;
+		iterp->tab = tab;
+		iterp->key = *k;
+		iterp->val = *v;
+		iterp->k = k;
+		iterp->v = v;
 
-			return (struct ITableIter*)iterp;
-		}
+		return (struct ITableIter*)iterp;
 	}
 
 	return NULL;
@@ -159,11 +157,9 @@ const struct ITableIter *itable_next(const struct ITableIter* const iter) {
 	// loop over keys and vals
 	while (++iterp->v < iterp->tab->vals + iterp->tab->size &&
 			++iterp->k < iterp->tab->keys + iterp->tab->size) {
-		if (*iterp->v) {
-			iterp->key = *(iterp->k);
-			iterp->val = *(iterp->v);
-			return iter;
-		}
+		iterp->key = *(iterp->k);
+		iterp->val = *(iterp->v);
+		return iter;
 	}
 
 	itable_iter_free(iter);
