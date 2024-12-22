@@ -141,17 +141,15 @@ const struct STableIter *stable_iter(const struct STable* const tab) {
 	for (k = tab->keys, v = tab->vals;
 			v < tab->vals + tab->size && k < tab->keys + tab->size;
 			k++, v++) {
-		if (*v) {
-			struct STableIterP *iterp = calloc(1, sizeof(struct STableIterP));
+		struct STableIterP *iterp = calloc(1, sizeof(struct STableIterP));
 
-			iterp->tab = tab;
-			iterp->key = *k;
-			iterp->val = *v;
-			iterp->k = k;
-			iterp->v = v;
+		iterp->tab = tab;
+		iterp->key = *k;
+		iterp->val = *v;
+		iterp->k = k;
+		iterp->v = v;
 
-			return (struct STableIter*)iterp;
-		}
+		return (struct STableIter*)iterp;
 	}
 
 	return NULL;
@@ -171,11 +169,9 @@ const struct STableIter *stable_next(const struct STableIter* const iter) {
 	// loop over keys and vals
 	while (++iterp->v < iterp->tab->vals + iterp->tab->size &&
 			++iterp->k < iterp->tab->keys + iterp->tab->size) {
-		if (*iterp->v) {
-			iterp->key = *(iterp->k);
-			iterp->val = *(iterp->v);
-			return iter;
-		}
+		iterp->key = *(iterp->k);
+		iterp->val = *(iterp->v);
+		return iter;
 	}
 
 	stable_iter_free(iter);
