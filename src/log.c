@@ -225,17 +225,3 @@ void log_cap_lines_stop(struct SList **lines) {
 void log_cap_lines_free(struct SList **lines) {
 	slist_free_vals(lines, log_cap_line_free);
 }
-
-void log_cap_lines_write(struct SList **lines, const char *path) {
-
-	// write empty to clear and validate
-	if (path && file_write(path, NULL, "w")) {
-		for (struct SList *i = *lines; i; i = i->nex) {
-			struct LogCapLine *line = (struct LogCapLine*)i->val;
-			if (strlen(line->line) > 0) {
-				file_write(path, line->line, "a");
-			}
-		}
-	}
-}
-

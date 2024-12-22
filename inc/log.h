@@ -54,7 +54,5 @@ void log_cap_lines_free(struct SList **log_cap_lines);
 
 void log_cap_lines_playback(struct SList *log_cap_lines);
 
-void log_cap_lines_write(struct SList **log_cap_lines, const char *path);
-
 #endif // LOG_H
 
