@@ -258,12 +258,12 @@ void print_head_deltas__enable(void **state) {
 	free(expected_log);
 }
 
-void brief_delta_mode__to_no(void **state) {
+void delta_brief_mode__to_no(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.mode = NULL;
 
-	char *deltas = brief_delta_mode(SUCCEEDED, s->head1);
+	char *deltas = delta_brief_mode(SUCCEEDED, s->head1);
 
 	assert_string_equal(deltas, ""
 			"description1\n"
@@ -275,12 +275,12 @@ void brief_delta_mode__to_no(void **state) {
 	free(deltas);
 }
 
-void brief_delta_mode__from_no(void **state) {
+void delta_brief_mode__from_no(void **state) {
 	struct State *s = *state;
 
 	s->head2->current.mode = NULL;
 
-	char *deltas = brief_delta_mode(SUCCEEDED, s->head2);
+	char *deltas = delta_brief_mode(SUCCEEDED, s->head2);
 
 	assert_string_equal(deltas, ""
 			"name2\n"
@@ -292,13 +292,13 @@ void brief_delta_mode__from_no(void **state) {
 	free(deltas);
 }
 
-void brief_delta_adaptive_sync__on(void **state) {
+void delta_brief_adaptive_sync__on(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
-	char *deltas = brief_delta_adaptive_sync(SUCCEEDED, s->head1);
+	char *deltas = delta_brief_adaptive_sync(SUCCEEDED, s->head1);
 
 	assert_string_equal(deltas, ""
 			"description1\n"
@@ -310,13 +310,13 @@ void brief_delta_adaptive_sync__on(void **state) {
 	free(deltas);
 }
 
-void brief_delta_adaptive_sync__off(void **state) {
+void delta_brief_adaptive_sync__off(void **state) {
 	struct State *s = *state;
 
 	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	char *deltas = brief_delta_adaptive_sync(SUCCEEDED, s->head2);
+	char *deltas = delta_brief_adaptive_sync(SUCCEEDED, s->head2);
 
 	assert_string_equal(deltas, ""
 			"name2\n"
@@ -328,10 +328,10 @@ void brief_delta_adaptive_sync__off(void **state) {
 	free(deltas);
 }
 
-void brief_deltas__all(void **state) {
+void delta_brief__all(void **state) {
 	struct State *s = *state;
 
-	char *deltas = brief_deltas(SUCCEEDED, s->heads);
+	char *deltas = delta_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
 			"description1\n"
@@ -349,7 +349,7 @@ void brief_deltas__all(void **state) {
 	free(deltas);
 }
 
-void brief_deltas__enabled(void **state) {
+void delta_brief__enabled(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
@@ -358,7 +358,7 @@ void brief_deltas__enabled(void **state) {
 	s->head2->current.enabled = false;
 	s->head2->desired.enabled = true;
 
-	char *deltas = brief_deltas(SUCCEEDED, s->heads);
+	char *deltas = delta_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
 			"description1  enabled\n"
@@ -370,7 +370,7 @@ void brief_deltas__enabled(void **state) {
 	free(deltas);
 }
 
-void brief_deltas__disabled(void **state) {
+void delta_brief__disabled(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = true;
@@ -379,7 +379,7 @@ void brief_deltas__disabled(void **state) {
 	s->head2->current.enabled = true;
 	s->head2->desired.enabled = false;
 
-	char *deltas = brief_deltas(SUCCEEDED, s->heads);
+	char *deltas = delta_brief(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
 			"description1  disabled\n"
@@ -406,15 +406,15 @@ int main(void) {
 		TEST(print_head_deltas__disable),
 		TEST(print_head_deltas__enable),
 
-		TEST(brief_delta_mode__to_no),
-		TEST(brief_delta_mode__from_no),
+		TEST(delta_brief_mode__to_no),
+		TEST(delta_brief_mode__from_no),
 
-		TEST(brief_delta_adaptive_sync__on),
-		TEST(brief_delta_adaptive_sync__off),
+		TEST(delta_brief_adaptive_sync__on),
+		TEST(delta_brief_adaptive_sync__off),
 
-		TEST(brief_deltas__all),
-		TEST(brief_deltas__enabled),
-		TEST(brief_deltas__disabled),
+		TEST(delta_brief__all),
+		TEST(delta_brief__enabled),
+		TEST(delta_brief__disabled),
 	};
 
 	return RUN(tests);

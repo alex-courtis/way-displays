@@ -265,8 +265,8 @@ void desire(void) {
 
 void apply(void) {
 	struct SList *heads_changing = NULL;
-	head_changing_mode = NULL;
-	head_changing_adaptive_sync = NULL;
+	layout_delta.head_mode = NULL;
+	layout_delta.head_adaptive_sync = NULL;
 
 	// determine whether changes are needed before initiating output configuration
 	struct SList *i = heads;
@@ -281,25 +281,25 @@ void apply(void) {
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
 
-	if ((head_changing_mode = slist_find_val(heads, head_current_mode_not_desired))) {
+	if ((layout_delta.head_mode = slist_find_val(heads, head_current_mode_not_desired))) {
 
-		print_head(INFO, DELTA, head_changing_mode);
+		print_head(INFO, DELTA, layout_delta.head_mode);
 
 		// mode change in its own operation; mode change desire is always enabled
-		head_changing_mode->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_changing_mode->zwlr_head);
-		zwlr_output_configuration_head_v1_set_mode(head_changing_mode->zwlr_config_head, head_changing_mode->desired.mode->zwlr_mode);
+		layout_delta.head_mode->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, layout_delta.head_mode->zwlr_head);
+		zwlr_output_configuration_head_v1_set_mode(layout_delta.head_mode->zwlr_config_head, layout_delta.head_mode->desired.mode->zwlr_mode);
 
-		deltas_brief = brief_delta_mode(displ->config_state, head_changing_mode);
+		layout_delta.brief = delta_brief_mode(displ->config_state, layout_delta.head_mode);
 
-	} else if ((head_changing_adaptive_sync = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
+	} else if ((layout_delta.head_adaptive_sync = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
 
-		print_head(INFO, DELTA, head_changing_adaptive_sync);
+		print_head(INFO, DELTA, layout_delta.head_adaptive_sync);
 
 		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
-		head_changing_adaptive_sync->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_changing_adaptive_sync->zwlr_head);
-		zwlr_output_configuration_head_v1_set_adaptive_sync(head_changing_adaptive_sync->zwlr_config_head, head_changing_adaptive_sync->desired.adaptive_sync);
+		layout_delta.head_adaptive_sync->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, layout_delta.head_adaptive_sync->zwlr_head);
+		zwlr_output_configuration_head_v1_set_adaptive_sync(layout_delta.head_adaptive_sync->zwlr_config_head, layout_delta.head_adaptive_sync->desired.adaptive_sync);
 
-		deltas_brief = brief_delta_adaptive_sync(displ->config_state, head_changing_adaptive_sync);
+		layout_delta.brief = delta_brief_adaptive_sync(displ->config_state, layout_delta.head_adaptive_sync);
 
 	} else {
 
@@ -319,7 +319,7 @@ void apply(void) {
 			}
 		}
 
-		deltas_brief = brief_deltas(displ->config_state, heads_changing);
+		layout_delta.brief = delta_brief(displ->config_state, heads_changing);
 	}
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
@@ -338,17 +338,17 @@ void report_adaptive_sync_fail(struct Head *head) {
 }
 
 void handle_success(void) {
-	if (head_changing_mode) {
+	if (layout_delta.head_mode) {
 
 		// successful mode change is not always reported
-		head_changing_mode->current.mode = head_changing_mode->desired.mode;
+		layout_delta.head_mode->current.mode = layout_delta.head_mode->desired.mode;
 
-		head_changing_mode = NULL;
+		layout_delta.head_mode = NULL;
 
-	} else if (head_changing_adaptive_sync) {
+	} else if (layout_delta.head_adaptive_sync) {
 
-		struct Head *head = head_changing_adaptive_sync;
-		head_changing_adaptive_sync = NULL;
+		struct Head *head = layout_delta.head_adaptive_sync;
+		layout_delta.head_adaptive_sync = NULL;
 
 		// sway reports adaptive sync failure as success
 		if (head_current_adaptive_sync_not_desired(head)) {
@@ -358,12 +358,12 @@ void handle_success(void) {
 		}
 	}
 
-	if (!head_changing_adaptive_sync && cfg->change_success_cmd) {
+	if (cfg->change_success_cmd) {
 		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
 		log_info("  %s", cfg->change_success_cmd);
 
 		const struct STable *env = stable_init(1, 1, false);
-		stable_put(env, "WD_CHANGE_SUCCESS_MSG", deltas_brief);
+		stable_put(env, "WD_CHANGE_SUCCESS_MSG", layout_delta.brief);
 		spawn_sh_cmd(cfg->change_success_cmd, env);
 		stable_free(env);
 	}
@@ -373,26 +373,26 @@ void handle_success(void) {
 
 void handle_failure(void) {
 
-	if (head_changing_mode) {
+	if (layout_delta.head_mode) {
 		log_error("\nChanges failed");
 
 		// mode setting failure, try again
-		log_error("  %s:", head_changing_mode->name);
-		print_mode(ERROR, head_changing_mode->desired.mode);
-		slist_append(&head_changing_mode->modes_failed, head_changing_mode->desired.mode);
+		log_error("  %s:", layout_delta.head_mode->name);
+		print_mode(ERROR, layout_delta.head_mode->desired.mode);
+		slist_append(&layout_delta.head_mode->modes_failed, layout_delta.head_mode->desired.mode);
 
 		// current mode may be misreported
-		head_changing_mode->current.mode = NULL;
+		layout_delta.head_mode->current.mode = NULL;
 
-		head_changing_mode = NULL;
+		layout_delta.head_mode = NULL;
 
-	} else if (head_changing_adaptive_sync && head_current_adaptive_sync_not_desired(head_changing_adaptive_sync)) {
+	} else if (layout_delta.head_adaptive_sync && head_current_adaptive_sync_not_desired(layout_delta.head_adaptive_sync)) {
 
 		// river reports adaptive sync failure as failure
-		report_adaptive_sync_fail(head_changing_adaptive_sync);
-		head_changing_adaptive_sync->adaptive_sync_failed = true;
+		report_adaptive_sync_fail(layout_delta.head_adaptive_sync);
+		layout_delta.head_adaptive_sync->adaptive_sync_failed = true;
 
-		head_changing_adaptive_sync = NULL;
+		layout_delta.head_adaptive_sync = NULL;
 
 	} else {
 		log_error("\nChanges failed");
@@ -435,8 +435,8 @@ void layout(void) {
 			break;
 	}
 
-	free(deltas_brief);
-	deltas_brief = NULL;
+	free(layout_delta.brief);
+	layout_delta.brief = NULL;
 
 	desire();
 	apply();
