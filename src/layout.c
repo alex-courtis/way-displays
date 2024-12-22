@@ -281,12 +281,6 @@ void apply(void) {
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
 
-	struct SList *log_cap_lines = NULL;
-
-	log_cap_lines_start(&log_cap_lines);
-
-	free(deltas_brief);
-
 	if ((head_changing_mode = slist_find_val(heads, head_current_mode_not_desired))) {
 
 		print_head(INFO, DELTA, head_changing_mode);
@@ -332,11 +326,6 @@ void apply(void) {
 
 		deltas_brief = render_deltas_brief(displ->config_state, heads_changing);
 	}
-
-	// TODO unique file passed to the user
-	log_cap_lines_stop(&log_cap_lines);
-	log_cap_lines_write(&log_cap_lines, "/tmp/wd.delta");
-	log_cap_lines_free(&log_cap_lines);
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
 
