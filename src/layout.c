@@ -289,10 +289,7 @@ void apply(void) {
 		head_changing_mode->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_changing_mode->zwlr_head);
 		zwlr_output_configuration_head_v1_set_mode(head_changing_mode->zwlr_config_head, head_changing_mode->desired.mode->zwlr_mode);
 
-		struct SList *heads = NULL;
-		slist_append(&heads, head_changing_mode);
-		deltas_brief = render_deltas_brief(displ->config_state, heads);
-		slist_free(&heads);
+		deltas_brief = brief_delta_mode(displ->config_state, head_changing_mode);
 
 	} else if ((head_changing_adaptive_sync = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
 
@@ -302,15 +299,13 @@ void apply(void) {
 		head_changing_adaptive_sync->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_changing_adaptive_sync->zwlr_head);
 		zwlr_output_configuration_head_v1_set_adaptive_sync(head_changing_adaptive_sync->zwlr_config_head, head_changing_adaptive_sync->desired.adaptive_sync);
 
-		struct SList *heads = NULL;
-		slist_append(&heads, head_changing_adaptive_sync);
-		deltas_brief = render_deltas_brief(displ->config_state, heads);
-		slist_free(&heads);
+		deltas_brief = brief_delta_adaptive_sync(displ->config_state, head_changing_adaptive_sync);
+
 	} else {
 
 		print_heads(INFO, DELTA, heads);
 
-		// all changes except mode
+		// all other changes
 		for (i = heads_changing; i; i = i->nex) {
 			struct Head *head = (struct Head*)i->val;
 
@@ -324,7 +319,7 @@ void apply(void) {
 			}
 		}
 
-		deltas_brief = render_deltas_brief(displ->config_state, heads_changing);
+		deltas_brief = brief_deltas(displ->config_state, heads_changing);
 	}
 
 	zwlr_output_configuration_v1_apply(zwlr_config);

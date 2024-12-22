@@ -258,20 +258,16 @@ void print_head_deltas__enable(void **state) {
 	free(expected_log);
 }
 
-void render_deltas_brief__mode(void **state) {
+void brief_delta_mode__to_no(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.mode = NULL;
 
-	s->head2->current.mode = NULL;
-
-	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
+	char *deltas = brief_delta_mode(SUCCEEDED, s->head1);
 
 	assert_string_equal(deltas, ""
-			"description1\n"
-			"  mode: 100x200@30Hz -> (no mode)\n"
-			"name2\n"
-			"  mode: (no mode) -> 1400x1500@160Hz"
+			"description1:\n"
+			"  100x200@30Hz -> (no mode)"
 			);
 
 	slist_free(&heads);
@@ -279,24 +275,34 @@ void render_deltas_brief__mode(void **state) {
 	free(deltas);
 }
 
-void render_deltas_brief__vrr(void **state) {
+void brief_delta_mode__from_no(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.mode = s->head1->current.mode;
+	s->head2->current.mode = NULL;
+
+	char *deltas = brief_delta_mode(SUCCEEDED, s->head2);
+
+	assert_string_equal(deltas, ""
+			"name2:\n"
+			"  (no mode) -> 1400x1500@160Hz"
+			);
+
+	slist_free(&heads);
+
+	free(deltas);
+}
+
+void brief_delta_adaptive_sync__on(void **state) {
+	struct State *s = *state;
+
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
-	s->head2->desired.mode = s->head2->current.mode;
-	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-
-	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
+	char *deltas = brief_delta_adaptive_sync(SUCCEEDED, s->head1);
 
 	assert_string_equal(deltas, ""
-			"description1\n"
-			"  VRR:  on\n"
-			"name2\n"
-			"  VRR:  off"
+			"description1:\n"
+			"  VRR on"
 			);
 
 	slist_free(&heads);
@@ -304,13 +310,28 @@ void render_deltas_brief__vrr(void **state) {
 	free(deltas);
 }
 
-void render_deltas_brief__other(void **state) {
+void brief_delta_adaptive_sync__off(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.mode = s->head1->current.mode;
-	s->head2->desired.mode = s->head2->current.mode;
+	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
+	char *deltas = brief_delta_adaptive_sync(SUCCEEDED, s->head2);
+
+	assert_string_equal(deltas, ""
+			"name2:\n"
+			"  VRR off"
+			);
+
+	slist_free(&heads);
+
+	free(deltas);
+}
+
+void brief_deltas__all(void **state) {
+	struct State *s = *state;
+
+	char *deltas = brief_deltas(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
 			"description1\n"
@@ -328,22 +349,20 @@ void render_deltas_brief__other(void **state) {
 	free(deltas);
 }
 
-void render_deltas_brief__enabled(void **state) {
+void brief_deltas__enabled(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
 	s->head1->desired.enabled = true;
-	s->head1->desired.mode = s->head1->current.mode;
 
 	s->head2->current.enabled = false;
 	s->head2->desired.enabled = true;
 
-	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
+	char *deltas = brief_deltas(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
 			"description1  enabled\n"
-			"name2  enabled:\n"
-			"  mode: 1100x1200@130Hz -> 1400x1500@160Hz"
+			"name2  enabled"
 			);
 
 	slist_free(&heads);
@@ -351,17 +370,16 @@ void render_deltas_brief__enabled(void **state) {
 	free(deltas);
 }
 
-void render_deltas_brief__disabled(void **state) {
+void brief_deltas__disabled(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = true;
 	s->head1->desired.enabled = false;
-	s->head1->desired.mode = s->head1->current.mode;
 
 	s->head2->current.enabled = true;
 	s->head2->desired.enabled = false;
 
-	char *deltas = render_deltas_brief(SUCCEEDED, s->heads);
+	char *deltas = brief_deltas(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
 			"description1  disabled\n"
@@ -388,11 +406,15 @@ int main(void) {
 		TEST(print_head_deltas__disable),
 		TEST(print_head_deltas__enable),
 
-		TEST(render_deltas_brief__mode),
-		TEST(render_deltas_brief__vrr),
-		TEST(render_deltas_brief__other),
-		TEST(render_deltas_brief__enabled),
-		TEST(render_deltas_brief__disabled),
+		TEST(brief_delta_mode__to_no),
+		TEST(brief_delta_mode__from_no),
+
+		TEST(brief_delta_adaptive_sync__on),
+		TEST(brief_delta_adaptive_sync__off),
+
+		TEST(brief_deltas__all),
+		TEST(brief_deltas__enabled),
+		TEST(brief_deltas__disabled),
 	};
 
 	return RUN(tests);

@@ -444,14 +444,12 @@ void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads)
 	}
 }
 
-char *render_deltas_brief(const enum ConfigState config_state, const struct SList * const heads) {
+char *brief_deltas(const enum ConfigState config_state, const struct SList * const heads) {
 	if (!heads) {
 		return NULL;
 	}
 
-	static const int len = 1024 * 64;
-
-	char *buf = (char*)calloc(len, sizeof(char));
+	char *buf = (char*)calloc(LEN_BRIEF, sizeof(char));
 	char *bufp = buf;
 
 	for (const struct SList *i = heads; i; i = i->nex) {
@@ -459,75 +457,37 @@ char *render_deltas_brief(const enum ConfigState config_state, const struct SLis
 
 		char *desc_or_name = head->description ? head->description : head->name;
 
+		// disable in own operation
 		if (head->current.enabled && !head->desired.enabled) {
-			bufp += snprintf(bufp, len - (bufp - buf), "%s  disabled\n", desc_or_name);
+			bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s  disabled\n", desc_or_name);
 			continue;
 		}
 
-		// mode changes happen in their own operation, with an enable
-		if (head_current_mode_not_desired(head)) {
-			bufp += snprintf(bufp, len - (bufp - buf), "%s%s\n  mode: ", // line up with vrr
-					desc_or_name,
-					(!head->current.enabled && head->desired.enabled) ? "  enabled:" : ""
-					);
-
-			if (head->current.mode) {
-				bufp += snprintf(bufp, len - (bufp - buf), "%dx%d@%dHz -> ",
-						head->current.mode->width,
-						head->current.mode->height,
-						mhz_to_hz_rounded(head->current.mode->refresh_mhz)
-						);
-			} else {
-				bufp += snprintf(bufp, len - (bufp - buf), "(no mode) -> ");
-			}
-
-			if (head->desired.mode) {
-				bufp += snprintf(bufp, len - (bufp - buf), "%dx%d@%dHz\n",
-						head->desired.mode->width,
-						head->desired.mode->height,
-						mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
-						);
-			} else {
-				bufp += snprintf(bufp, len - (bufp - buf), "(no mode)\n");
-			}
-
-			continue;
-		}
-
-		// enable with no change in mode
+		// enable in own operation
 		if (!head->current.enabled && head->desired.enabled) {
-			bufp += snprintf(bufp, len - (bufp - buf), "%s  enabled\n", desc_or_name);
-			continue;
-		}
-
-		// adaptive sync changes happen in their own operation
-		if (head_current_adaptive_sync_not_desired(head)) {
-			bufp += snprintf(bufp, len - (bufp - buf), "%s\n  VRR:  %s\n", // line up with mode
-					desc_or_name,
-					head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
-					);
+			bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s  enabled\n", desc_or_name);
 			continue;
 		}
 
 		if (head_current_not_desired(head)) {
-			bufp += snprintf(bufp, len - (bufp - buf), "%s\n", desc_or_name);
+			bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s\n", desc_or_name);
 
 			if (head->current.scale != head->desired.scale) {
-				bufp += snprintf(bufp, len - (bufp - buf), "  scale:     %.3f -> %.3f\n",
+				bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "  scale:     %.3f -> %.3f\n",
 						wl_fixed_to_double(head->current.scale),
 						wl_fixed_to_double(head->desired.scale)
 						);
 			}
 
 			if (head->current.transform != head->desired.transform) {
-				bufp += snprintf(bufp, len - (bufp - buf), "  transform: %s -> %s\n",
+				bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "  transform: %s -> %s\n",
 						head->current.transform ? transform_name(head->current.transform) : "none",
 						head->desired.transform ? transform_name(head->desired.transform) : "none"
 						);
 			}
 
 			if (head->current.x != head->desired.x || head->current.y != head->desired.y) {
-				bufp += snprintf(bufp, len - (bufp - buf), "  position:  %d,%d -> %d,%d\n",
+				bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "  position:  %d,%d -> %d,%d\n",
 						head->current.x, head->current.y,
 						head->desired.x, head->desired.y
 						);
@@ -543,3 +503,54 @@ char *render_deltas_brief(const enum ConfigState config_state, const struct SLis
 	return buf;
 }
 
+char *brief_delta_mode(const enum ConfigState config_state, const struct Head * const head) {
+	if (!head) {
+		return NULL;
+	}
+
+	char *buf = (char*)calloc(LEN_BRIEF, sizeof(char));
+	char *bufp = buf;
+
+	bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s:\n  ",
+			head->description ? head->description : head->name
+			);
+
+	if (head->current.mode) {
+		bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%dx%d@%dHz -> ",
+				head->current.mode->width,
+				head->current.mode->height,
+				mhz_to_hz_rounded(head->current.mode->refresh_mhz)
+				);
+	} else {
+		bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "(no mode) -> ");
+	}
+
+	if (head->desired.mode) {
+		bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%dx%d@%dHz",
+				head->desired.mode->width,
+				head->desired.mode->height,
+				mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
+				);
+	} else {
+		bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "(no mode)");
+	}
+
+	return buf;
+}
+
+
+char *brief_delta_adaptive_sync(const enum ConfigState config_state, const struct Head * const head) {
+	if (!head) {
+		return NULL;
+	}
+
+	char *buf = (char*)calloc(LEN_BRIEF, sizeof(char));
+	char *bufp = buf;
+
+	bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s:\n  VRR %s",
+			head->description ? head->description : head->name,
+			head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
+			);
+
+	return buf;
+}
