@@ -511,7 +511,7 @@ char *brief_delta_mode(const enum ConfigState config_state, const struct Head * 
 	char *buf = (char*)calloc(LEN_BRIEF, sizeof(char));
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s:\n  ",
+	bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s\n  ",
 			head->description ? head->description : head->name
 			);
 
@@ -547,7 +547,7 @@ char *brief_delta_adaptive_sync(const enum ConfigState config_state, const struc
 	char *buf = (char*)calloc(LEN_BRIEF, sizeof(char));
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s:\n  VRR %s",
+	bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s\n  VRR %s",
 			head->description ? head->description : head->name,
 			head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
 			);

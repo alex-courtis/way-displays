@@ -266,7 +266,7 @@ void brief_delta_mode__to_no(void **state) {
 	char *deltas = brief_delta_mode(SUCCEEDED, s->head1);
 
 	assert_string_equal(deltas, ""
-			"description1:\n"
+			"description1\n"
 			"  100x200@30Hz -> (no mode)"
 			);
 
@@ -283,7 +283,7 @@ void brief_delta_mode__from_no(void **state) {
 	char *deltas = brief_delta_mode(SUCCEEDED, s->head2);
 
 	assert_string_equal(deltas, ""
-			"name2:\n"
+			"name2\n"
 			"  (no mode) -> 1400x1500@160Hz"
 			);
 
@@ -301,7 +301,7 @@ void brief_delta_adaptive_sync__on(void **state) {
 	char *deltas = brief_delta_adaptive_sync(SUCCEEDED, s->head1);
 
 	assert_string_equal(deltas, ""
-			"description1:\n"
+			"description1\n"
 			"  VRR on"
 			);
 
@@ -319,7 +319,7 @@ void brief_delta_adaptive_sync__off(void **state) {
 	char *deltas = brief_delta_adaptive_sync(SUCCEEDED, s->head2);
 
 	assert_string_equal(deltas, ""
-			"name2:\n"
+			"name2\n"
 			"  VRR off"
 			);
 

@@ -41,7 +41,7 @@ end:
 }
 
 bool file_write(const char *path, const char *contents, const char *mode) {
-	if (!path) {
+	if (!path || !mode) {
 		return false;
 	}
 
