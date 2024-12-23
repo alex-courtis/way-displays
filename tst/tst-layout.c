@@ -83,9 +83,9 @@ int after_each(void **state) {
 
 	slist_free(&heads);
 
-	assert_null(displ->delta.head);
+	assert_nul(displ->delta.head);
 	assert_int_equal(displ->delta.element, 0);
-	assert_null(displ->delta.human);
+	assert_nul(displ->delta.human);
 
 	free(displ);
 
@@ -690,7 +690,7 @@ void handle_failure__mode(void **state) {
 
 	assert_log(ERROR, "\nChanges failed\n  nam:\n");
 
-	assert_null(head.current.mode);
+	assert_nul(head.current.mode);
 	assert_ptr_equal(head.desired.mode, &mode_des);
 
 	assert_ptr_equal(slist_find_equal_val(head.modes_failed, NULL, &mode_des), &mode_des);

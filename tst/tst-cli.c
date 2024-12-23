@@ -45,7 +45,7 @@ void parse_element__arrange_align_invalid_arrange(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
+	assert_nul(parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
 
 	assert_log(ERROR, "invalid ARRANGE_ALIGN ROW INVALID\n");
 }
@@ -56,7 +56,7 @@ void parse_element__arrange_align_invalid_align(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
+	assert_nul(parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
 
 	assert_log(ERROR, "invalid ARRANGE_ALIGN INVALID LEFT\n");
 }
@@ -83,7 +83,7 @@ void parse_element__auto_scale_invalid(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_element(CFG_SET, AUTO_SCALE, 1, argv));
+	assert_nul(parse_element(CFG_SET, AUTO_SCALE, 1, argv));
 
 	assert_log(ERROR, "invalid AUTO_SCALE INVALID\n");
 }
@@ -109,7 +109,7 @@ void parse_element__transform_invalid(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_element(CFG_SET, TRANSFORM, 2, argv));
+	assert_nul(parse_element(CFG_SET, TRANSFORM, 2, argv));
 
 	assert_log(ERROR, "invalid TRANSFORM displ INVALID\n");
 }
@@ -155,7 +155,7 @@ void parse_element__scale_set_invalid(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_element(CFG_SET, SCALE, 2, argv));
+	assert_nul(parse_element(CFG_SET, SCALE, 2, argv));
 
 	assert_log(ERROR, "invalid SCALE DISPL NOTANUMBER\n");
 }
@@ -208,7 +208,7 @@ void parse_element__mode_set_invalid_width(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_element(CFG_SET, MODE, 4, argv));
+	assert_nul(parse_element(CFG_SET, MODE, 4, argv));
 
 	assert_log(ERROR, "invalid MODE DISPL NAN 2 3\n");
 }
@@ -219,7 +219,7 @@ void parse_element__mode_set_invalid_height(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_element(CFG_SET, MODE, 4, argv));
+	assert_nul(parse_element(CFG_SET, MODE, 4, argv));
 
 	assert_log(ERROR, "invalid MODE DISPL 1 NAN 3\n");
 }
@@ -230,7 +230,7 @@ void parse_element__mode_set_invalid_refresh(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_element(CFG_SET, MODE, 4, argv));
+	assert_nul(parse_element(CFG_SET, MODE, 4, argv));
 
 	assert_log(ERROR, "invalid MODE DISPL 1 2 NAN\n");
 }
@@ -382,7 +382,7 @@ void parse_write__nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_write(1, NULL));
+	assert_nul(parse_write(1, NULL));
 
 	assert_log(ERROR, "--write takes no arguments\n");
 }
@@ -392,7 +392,7 @@ void parse_write__ok(void **state) {
 
 	struct IpcRequest *request = parse_write(0, NULL);
 
-	assert_non_null(request);
+	assert_non_nul(request);
 	assert_int_equal(request->command, CFG_WRITE);
 
 	ipc_request_free(request);
@@ -404,13 +404,13 @@ void parse_set__mode_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(1, NULL));
+	assert_nul(parse_set(1, NULL));
 
 	assert_log(ERROR, "MODE requires two to four arguments\n");
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(5, NULL));
+	assert_nul(parse_set(5, NULL));
 
 	assert_log(ERROR, "MODE requires two to four arguments\n");
 }
@@ -421,7 +421,7 @@ void parse_set__arrange_align_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(0, NULL));
+	assert_nul(parse_set(0, NULL));
 
 	assert_log(ERROR, "ARRANGE_ALIGN requires two arguments\n");
 }
@@ -432,7 +432,7 @@ void parse_set__scale_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(0, NULL));
+	assert_nul(parse_set(0, NULL));
 
 	assert_log(ERROR, "SCALE requires two arguments\n");
 }
@@ -443,7 +443,7 @@ void parse_set__transform_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(0, NULL));
+	assert_nul(parse_set(0, NULL));
 
 	assert_log(ERROR, "TRANSFORM requires two arguments\n");
 }
@@ -454,7 +454,7 @@ void parse_set__auto_scale_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(0, NULL));
+	assert_nul(parse_set(0, NULL));
 
 	assert_log(ERROR, "AUTO_SCALE requires one argument\n");
 }
@@ -465,7 +465,7 @@ void parse_set__disabled_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(0, NULL));
+	assert_nul(parse_set(0, NULL));
 
 	assert_log(ERROR, "DISABLED requires one argument\n");
 }
@@ -476,7 +476,7 @@ void parse_set__adaptive_sync_off_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(0, NULL));
+	assert_nul(parse_set(0, NULL));
 
 	assert_log(ERROR, "VRR_OFF requires one argument\n");
 }
@@ -487,7 +487,7 @@ void parse_set__order_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(0, NULL));
+	assert_nul(parse_set(0, NULL));
 
 	assert_log(ERROR, "ORDER requires at least one argument\n");
 }
@@ -498,7 +498,7 @@ void parse_set__invalid(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_set(0, NULL));
+	assert_nul(parse_set(0, NULL));
 
 	assert_log(ERROR, "invalid set: INVALID\n");
 }
@@ -511,7 +511,7 @@ void parse_set__ok(void **state) {
 
 	struct IpcRequest *request = parse_set(1, argv);
 
-	assert_non_null(request);
+	assert_non_nul(request);
 	assert_int_equal(request->command, CFG_SET);
 
 	ipc_request_free(request);
@@ -523,7 +523,7 @@ void parse_del__mode_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_del(0, NULL));
+	assert_nul(parse_del(0, NULL));
 
 	assert_log(ERROR, "MODE requires one argument\n");
 }
@@ -534,7 +534,7 @@ void parse_del__scale_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_del(0, NULL));
+	assert_nul(parse_del(0, NULL));
 
 	assert_log(ERROR, "SCALE requires one argument\n");
 }
@@ -545,7 +545,7 @@ void parse_del__disabled_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_del(0, NULL));
+	assert_nul(parse_del(0, NULL));
 
 	assert_log(ERROR, "DISABLED requires one argument\n");
 }
@@ -556,7 +556,7 @@ void parse_del__adaptive_sync_off_nargs(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_del(0, NULL));
+	assert_nul(parse_del(0, NULL));
 
 	assert_log(ERROR, "VRR_OFF requires one argument\n");
 }
@@ -567,7 +567,7 @@ void parse_del__invalid(void **state) {
 
 	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_null(parse_del(0, NULL));
+	assert_nul(parse_del(0, NULL));
 
 	assert_log(ERROR, "invalid delete: INVALID\n");
 }
@@ -580,7 +580,7 @@ void parse_del__ok(void **state) {
 
 	struct IpcRequest *request = parse_del(1, argv);
 
-	assert_non_null(request);
+	assert_non_nul(request);
 	assert_int_equal(request->command, CFG_DEL);
 
 	ipc_request_free(request);

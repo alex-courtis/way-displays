@@ -217,12 +217,12 @@ void head_find_mode__none(void **state) {
 	struct Mode mode = { 0 };
 
 	// no head
-	assert_null(head_find_mode(NULL));
+	assert_nul(head_find_mode(NULL));
 
 	// all modes failed
 	slist_append(&head.modes, &mode);
 	slist_append(&head.modes_failed, &mode);
-	assert_null(head_find_mode(&head));
+	assert_nul(head_find_mode(&head));
 
 	slist_free(&head.modes);
 	slist_free(&head.modes_failed);

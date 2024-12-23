@@ -341,6 +341,41 @@ void report_adaptive_sync_fail(struct Head *head) {
 	log_info("    - '%s'", head->model ? head->model : "monitor description");
 }
 
+void handle_failure(void) {
+	switch(displ->delta.element) {
+		case MODE:
+			log_error("\nChanges failed");
+
+			// mode setting failure, try again
+			log_error("  %s:", displ->delta.head->name);
+			print_mode(ERROR, displ->delta.head->desired.mode);
+			slist_append(&displ->delta.head->modes_failed, displ->delta.head->desired.mode);
+
+			// current mode may be misreported
+			displ->delta.head->current.mode = NULL;
+
+			break;
+
+		case VRR_OFF:
+			// river reports adaptive sync failure as failure
+			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
+
+				report_adaptive_sync_fail(displ->delta.head);
+				displ->delta.head->adaptive_sync_failed = true;
+			}
+
+			break;
+		default:
+			log_error("\nChanges failed");
+
+			// any other failures are fatal
+			wd_exit_message(EXIT_FAILURE);
+			break;
+	}
+
+	displ_delta_destroy();
+}
+
 void handle_success(void) {
 	switch(displ->delta.element) {
 		case MODE:
@@ -351,10 +386,7 @@ void handle_success(void) {
 		case VRR_OFF:
 			// sway reports adaptive sync failure as success
 			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
-				report_adaptive_sync_fail(displ->delta.head);
-				displ->delta.head->adaptive_sync_failed = true;
-
-				displ_delta_destroy();
+				handle_failure();
 				return;
 			}
 			break;
@@ -376,42 +408,6 @@ void handle_success(void) {
 	displ_delta_destroy();
 
 	log_info("\nChanges successful");
-}
-
-void handle_failure(void) {
-	switch(displ->delta.element) {
-		case MODE:
-			log_error("\nChanges failed");
-
-			// mode setting failure, try again
-			log_error("  %s:", displ->delta.head->name);
-			print_mode(ERROR, displ->delta.head->desired.mode);
-			slist_append(&displ->delta.head->modes_failed, displ->delta.head->desired.mode);
-
-			// current mode may be misreported
-			displ->delta.head->current.mode = NULL;
-
-			displ->delta.head = NULL;
-			break;
-
-		case VRR_OFF:
-			// river reports adaptive sync failure as failure
-			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
-
-				report_adaptive_sync_fail(displ->delta.head);
-				displ->delta.head->adaptive_sync_failed = true;
-			}
-
-			break;
-		default:
-			log_error("\nChanges failed");
-
-			// any other failures are fatal
-			wd_exit_message(EXIT_FAILURE);
-			break;
-	}
-
-	displ_delta_destroy();
 }
 
 void layout(void) {

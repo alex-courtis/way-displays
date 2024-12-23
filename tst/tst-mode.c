@@ -47,10 +47,10 @@ int after_each(void **state) {
 }
 
 void mode_mhz_to_hz_str__(void **state) {
-	assert_string_equal_nn(mhz_to_hz_str(0), "0");
-	assert_string_equal_nn(mhz_to_hz_str(99000), "99");
-	assert_string_equal_nn(mhz_to_hz_str(12300), "12.3");
-	assert_string_equal_nn(mhz_to_hz_str(12345), "12.345");
+	assert_str_equal(mhz_to_hz_str(0), "0");
+	assert_str_equal(mhz_to_hz_str(99000), "99");
+	assert_str_equal(mhz_to_hz_str(12300), "12.3");
+	assert_str_equal(mhz_to_hz_str(12345), "12.345");
 }
 
 void mode_hz_str_to_mhz__(void **state) {
@@ -80,7 +80,7 @@ void mode_user_mode__no_hz_no_match(void **state) {
 
 	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
-	assert_null(actual);
+	assert_nul(actual);
 }
 
 void mode_user_mode__no_hz_match(void **state) {
@@ -96,7 +96,7 @@ void mode_user_mode__even_hz_no_match(void **state) {
 
 	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
-	assert_null(actual);
+	assert_nul(actual);
 }
 
 void mode_user_mode__even_hz_match(void **state) {
