@@ -209,7 +209,7 @@ int loop(void) {
 
 		// inform the client
 		if (ipc_operation) {
-			ipc_operation->done = displ->config_state == IDLE;
+			ipc_operation->done = displ->state == IDLE;
 			notify_ipc_operation();
 		};
 

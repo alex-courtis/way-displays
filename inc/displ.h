@@ -8,6 +8,8 @@
 #include "xdg-output-unstable-v1.h"
 // IWYU pragma: end_keep
 
+#include "cfg.h"
+
 enum ConfigState {
 	IDLE = 0,
 	SUCCEEDED,
@@ -15,6 +17,17 @@ enum ConfigState {
 	CANCELLED,
 	FAILED,
 };
+
+struct DisplDelta {
+	enum CfgElement element; // VRR_OFF indicates toggle
+
+	// only when element set
+	struct Head *head;
+
+	char *human;
+};
+
+extern struct LayoutDelta layout_delta;
 
 struct Displ {
 	// global
@@ -34,10 +47,15 @@ struct Displ {
 	uint32_t zxdg_output_manager_version;
 	char *zxdg_output_manager_interface;
 
-	enum ConfigState config_state;
+	enum ConfigState state;
+	struct DisplDelta delta;
 };
 
 void displ_init(void);
+
+void displ_delta_init(enum CfgElement element, struct Head *head);
+
+void displ_delta_destroy(void);
 
 void displ_destroy(void);
 

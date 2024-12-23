@@ -39,6 +39,24 @@ void displ_init(void) {
 	}
 }
 
+void displ_delta_init(enum CfgElement element, struct Head *head) {
+	displ_delta_destroy();
+
+	displ->delta.element = element;
+
+	displ->delta.head = head;
+}
+
+void displ_delta_destroy(void) {
+
+	displ->delta.element = 0;
+
+	displ->delta.head = NULL;
+
+	free(displ->delta.human);
+	displ->delta.human = NULL;
+}
+
 void displ_destroy(void) {
 
 	output_destroy_all();

@@ -25,6 +25,17 @@
 }
 
 {
+   wacom DB new
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   ...
+   fun:libwacom_database_new
+   ...
+   obj:/usr/lib/libinput.so.10.13.0
+}
+
+{
    g_object_new_valist - from evdev
    Memcheck:Leak
    match-leak-kinds: reachable

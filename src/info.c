@@ -444,12 +444,12 @@ void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads)
 	}
 }
 
-char *delta_brief(const enum ConfigState config_state, const struct SList * const heads) {
+char *delta_human(const enum ConfigState state, const struct SList * const heads) {
 	if (!heads) {
 		return NULL;
 	}
 
-	char *buf = (char*)calloc(LEN_BRIEF, sizeof(char));
+	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
 	char *bufp = buf;
 
 	for (const struct SList *i = heads; i; i = i->nex) {
@@ -459,35 +459,35 @@ char *delta_brief(const enum ConfigState config_state, const struct SList * cons
 
 		// disable in own operation
 		if (head->current.enabled && !head->desired.enabled) {
-			bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s  disabled\n", desc_or_name);
+			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s  disabled\n", desc_or_name);
 			continue;
 		}
 
 		// enable in own operation
 		if (!head->current.enabled && head->desired.enabled) {
-			bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s  enabled\n", desc_or_name);
+			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s  enabled\n", desc_or_name);
 			continue;
 		}
 
 		if (head_current_not_desired(head)) {
-			bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s\n", desc_or_name);
+			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n", desc_or_name);
 
 			if (head->current.scale != head->desired.scale) {
-				bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "  scale:     %.3f -> %.3f\n",
+				bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "  scale:     %.3f -> %.3f\n",
 						wl_fixed_to_double(head->current.scale),
 						wl_fixed_to_double(head->desired.scale)
 						);
 			}
 
 			if (head->current.transform != head->desired.transform) {
-				bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "  transform: %s -> %s\n",
+				bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "  transform: %s -> %s\n",
 						head->current.transform ? transform_name(head->current.transform) : "none",
 						head->desired.transform ? transform_name(head->desired.transform) : "none"
 						);
 			}
 
 			if (head->current.x != head->desired.x || head->current.y != head->desired.y) {
-				bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "  position:  %d,%d -> %d,%d\n",
+				bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "  position:  %d,%d -> %d,%d\n",
 						head->current.x, head->current.y,
 						head->desired.x, head->desired.y
 						);
@@ -503,51 +503,51 @@ char *delta_brief(const enum ConfigState config_state, const struct SList * cons
 	return buf;
 }
 
-char *delta_brief_mode(const enum ConfigState config_state, const struct Head * const head) {
+char *delta_human_mode(const enum ConfigState state, const struct Head * const head) {
 	if (!head) {
 		return NULL;
 	}
 
-	char *buf = (char*)calloc(LEN_BRIEF, sizeof(char));
+	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s\n  ",
+	bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n  ",
 			head->description ? head->description : head->name
 			);
 
 	if (head->current.mode) {
-		bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%dx%d@%dHz -> ",
+		bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%dx%d@%dHz -> ",
 				head->current.mode->width,
 				head->current.mode->height,
 				mhz_to_hz_rounded(head->current.mode->refresh_mhz)
 				);
 	} else {
-		bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "(no mode) -> ");
+		bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "(no mode) -> ");
 	}
 
 	if (head->desired.mode) {
-		bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%dx%d@%dHz",
+		bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%dx%d@%dHz",
 				head->desired.mode->width,
 				head->desired.mode->height,
 				mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
 				);
 	} else {
-		bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "(no mode)");
+		bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "(no mode)");
 	}
 
 	return buf;
 }
 
 
-char *delta_brief_adaptive_sync(const enum ConfigState config_state, const struct Head * const head) {
+char *delta_human_adaptive_sync(const enum ConfigState state, const struct Head * const head) {
 	if (!head) {
 		return NULL;
 	}
 
-	char *buf = (char*)calloc(LEN_BRIEF, sizeof(char));
+	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, LEN_BRIEF - (bufp - buf), "%s\n  VRR %s",
+	bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n  VRR %s",
 			head->description ? head->description : head->name,
 			head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
 			);

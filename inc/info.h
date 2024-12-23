@@ -11,7 +11,7 @@
 #include "log.h"
 #include "mode.h"
 
-#define LEN_BRIEF 1024 * 64
+#define LEN_HUMAN 1024 * 64
 
 enum InfoEvent {
 	ARRIVED,
@@ -38,14 +38,14 @@ void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf);
 
 void info_mode_string(struct Mode *mode, char *buf, size_t nbuf);
 
-// LEN_BRIEF, consumer frees
-char *delta_brief(const enum ConfigState config_state, const struct SList * const heads);
+// LEN_HUMAN, consumer frees
+char *delta_human(const enum ConfigState state, const struct SList * const heads);
 
-// LEN_BRIEF, consumer frees
-char *delta_brief_mode(const enum ConfigState config_state, const struct Head * const head);
+// LEN_HUMAN, consumer frees
+char *delta_human_mode(const enum ConfigState state, const struct Head * const head);
 
-// LEN_BRIEF, consumer frees
-char *delta_brief_adaptive_sync(const enum ConfigState config_state, const struct Head * const head);
+// LEN_HUMAN, consumer frees
+char *delta_human_adaptive_sync(const enum ConfigState state, const struct Head * const head);
 
 #endif // INFO_H
 
