@@ -11,7 +11,7 @@
 #include "cfg.h"
 #include "head.h"
 
-enum ConfigState {
+enum DisplState {
 	IDLE = 0,
 	SUCCEEDED,
 	OUTSTANDING,
@@ -20,15 +20,13 @@ enum ConfigState {
 };
 
 struct DisplDelta {
-	enum CfgElement element; // VRR_OFF indicates toggle
+	enum CfgElement element; // 0 for many changes, VRR_OFF indicates toggle
 
 	// only when element set
 	struct Head *head;
 
 	char *human;
 };
-
-extern struct LayoutDelta layout_delta;
 
 struct Displ {
 	// global
@@ -48,7 +46,7 @@ struct Displ {
 	uint32_t zxdg_output_manager_version;
 	char *zxdg_output_manager_interface;
 
-	enum ConfigState state;
+	enum DisplState state;
 	struct DisplDelta delta;
 };
 

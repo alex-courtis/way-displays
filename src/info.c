@@ -445,7 +445,7 @@ void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads)
 	}
 }
 
-char *delta_human(const enum ConfigState state, const struct SList * const heads) {
+char *delta_human(const enum DisplState state, const struct SList * const heads) {
 	if (!heads) {
 		return NULL;
 	}
@@ -504,7 +504,7 @@ char *delta_human(const enum ConfigState state, const struct SList * const heads
 	return buf;
 }
 
-char *delta_human_mode(const enum ConfigState state, const struct Head * const head) {
+char *delta_human_mode(const enum DisplState state, const struct Head * const head) {
 	if (!head) {
 		return NULL;
 	}
@@ -540,7 +540,7 @@ char *delta_human_mode(const enum ConfigState state, const struct Head * const h
 }
 
 
-char *delta_human_adaptive_sync(const enum ConfigState state, const struct Head * const head) {
+char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head) {
 	if (!head) {
 		return NULL;
 	}
