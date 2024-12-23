@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/inotify.h>
 #include <sys/signalfd.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <wayland-client-core.h>
 

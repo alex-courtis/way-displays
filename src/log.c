@@ -8,7 +8,6 @@
 
 #include "log.h"
 
-#include "fs.h"
 #include "slist.h"
 
 #define LS 16384

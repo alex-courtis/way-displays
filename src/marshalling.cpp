@@ -8,6 +8,7 @@
 #include <yaml-cpp/emitter.h>
 #include <yaml-cpp/emittermanip.h>
 #include <yaml-cpp/exceptions.h>
+#include <yaml-cpp/node/detail/impl.h>
 #include <yaml-cpp/node/detail/iterator.h>
 #include <yaml-cpp/node/detail/iterator_fwd.h>
 #include <yaml-cpp/node/impl.h>
@@ -23,6 +24,7 @@
 extern "C" {
 #include "cfg.h"
 #include "convert.h"
+#include "fn.h"
 #include "global.h"
 #include "head.h"
 #include "ipc.h"

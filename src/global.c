@@ -1,7 +1,5 @@
 #include <stddef.h>
 
-#include "global.h"
-
 struct Displ *displ = NULL;
 struct Lid *lid = NULL;
 struct Cfg *cfg = NULL;

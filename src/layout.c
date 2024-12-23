@@ -8,7 +8,6 @@
 
 #include "cfg.h"
 #include "displ.h"
-#include "fs.h"
 #include "global.h"
 #include "head.h"
 #include "info.h"
@@ -18,6 +17,7 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
+#include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
 
 void position_heads(struct SList *heads) {

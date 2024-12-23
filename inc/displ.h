@@ -9,6 +9,7 @@
 // IWYU pragma: end_keep
 
 #include "cfg.h"
+#include "head.h"
 
 enum ConfigState {
 	IDLE = 0,

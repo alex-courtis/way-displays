@@ -7,6 +7,7 @@
 
 #include "cfg.h"
 #include "convert.h"
+#include "displ.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"

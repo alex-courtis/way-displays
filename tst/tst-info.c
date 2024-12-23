@@ -9,8 +9,12 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
-#include "slist.h"
+#include "displ.h"
+#include "head.h"
 #include "log.h"
+#include "mode.h"
+#include "slist.h"
+#include "wlr-output-management-unstable-v1.h"
 
 #include "info.h"
 
