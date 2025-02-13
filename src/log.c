@@ -213,8 +213,8 @@ void log_capture_playback(struct SList *lines) {
 	}
 }
 
-void log_cap_line_free(void *data) {
-	struct LogCapLine *cap_line = data;
+void log_cap_line_free(const void *data) {
+	const struct LogCapLine *cap_line = data;
 
 	if (!cap_line) {
 		return;
@@ -224,6 +224,6 @@ void log_cap_line_free(void *data) {
 		free(cap_line->line);
 	}
 
-	free(cap_line);
+	free((struct LogCapLine*)cap_line);
 }
 

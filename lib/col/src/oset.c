@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fn.h"
+#include "slist.h"
+
 #include "oset.h"
 
 struct OSet {
@@ -64,7 +67,7 @@ void oset_free(const void* const cvset) {
 	free(set);
 }
 
-void oset_free_vals(const struct OSet* const set, void (*free_val)(const void* const val)) {
+void oset_free_vals(const struct OSet* const set, fn_free_val free_val) {
 	if (!set)
 		return;
 
@@ -101,13 +104,6 @@ bool oset_contains(const struct OSet* const set, const void* const val) {
 	}
 
 	return false;
-}
-
-size_t oset_size(const struct OSet* const set) {
-	if (!set)
-		return 0;
-
-	return set->size;
 }
 
 const struct OSetIter *oset_iter(const struct OSet* const set) {
@@ -207,4 +203,44 @@ bool oset_remove(const struct OSet* const cset, const void* const val) {
 	}
 
 	return false;
+}
+
+bool oset_equal(const struct OSet* const a, const struct OSet* const b, fn_equals equals) {
+	if (!a || !b || a->size != b->size)
+		return false;
+
+	for (const void **av = a->vals, **bv = b->vals; av < (a->vals + a->size); av++, bv++) {
+
+		// value
+		if (equals) {
+			if (!equals(*av, *bv)) {
+				return false;
+			}
+		} else if (*av != *bv) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+struct SList *oset_vals_slist(const struct OSet* const set) {
+	if (!set)
+		return NULL;
+
+	struct SList *list = NULL;
+
+	for (const void **v = set->vals; v < set->vals + set->size; v++) {
+		slist_append(&list, (void*)*v);
+	}
+
+	return list;
+}
+
+size_t oset_size(const struct OSet* const set) {
+	return set ? set->size : 0;
+}
+
+size_t oset_capacity(const struct OSet* const set) {
+	return set ? set->capacity : 0;
 }

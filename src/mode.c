@@ -227,8 +227,8 @@ struct Mode *mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode,
 	return mode;
 }
 
-void mode_free(void *data) {
-	struct Mode *mode = data;
+void mode_free(const void *data) {
+	struct Mode *mode = (struct Mode*)data;
 
 	if (!mode)
 		return;
@@ -236,8 +236,8 @@ void mode_free(void *data) {
 	free(mode);
 }
 
-void mode_res_refresh_free(void *data) {
-	struct ModesResRefresh *modes_res_refresh = data;
+void mode_res_refresh_free(const void *data) {
+	struct ModesResRefresh *modes_res_refresh = (struct ModesResRefresh*)data;
 
 	if (!modes_res_refresh)
 		return;

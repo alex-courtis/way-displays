@@ -50,7 +50,7 @@ void log_capture_clear(void);
 // NULL plays back log_cap_lines
 void log_capture_playback(struct SList *lines);
 
-void log_cap_line_free(void *log_cap_line);
+void log_cap_line_free(const void *data);
 
 #endif // LOG_H
 

@@ -305,8 +305,8 @@ bool head_current_adaptive_sync_not_desired(const void *data) {
 	return (head && head->desired.adaptive_sync != head->current.adaptive_sync);
 }
 
-void head_free(void *data) {
-	struct Head *head = data;
+void head_free(const void *data) {
+	struct Head *head = (struct Head*)data;
 
 	if (!head)
 		return;
