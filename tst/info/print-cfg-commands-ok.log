@@ -22,3 +22,5 @@ way-displays -s DISABLED 'four'
 way-displays -s VRR_OFF 'five'
 way-displays -s VRR_OFF 'six'
 
+way-displays -s CHANGE_SUCCESS_CMD 'notify-send way-displays "${WD_CHANGE_SUCCESS_MSG}"'
+
