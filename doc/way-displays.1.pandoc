@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2024/04/23
+% 2025/02/14
 
 # NAME
 
@@ -121,7 +121,7 @@ User should be a member of the `input` group for querying laptop lid state.
 	: Disable a display.
 
 	`CHANGE_SUCCESS_CMD` <*shell command*>
-    : Sets a `/bin/sh` command to be executed when display configurations are successfully changed e.g. `bell ; notify-send way-displays "Monitor changed"`
+    : Sets a `/bin/sh` command to be executed when display configurations are successfully changed. Default: `bell ; notify-send way-displays "${WD_CHANGE_SUCCESS_MSG}"`
 
 `-d`, `--d[elete]`
 : Remove an existing setting.

@@ -398,6 +398,7 @@ struct Cfg *cfg_default(void) {
 	def->auto_scale = AUTO_SCALE_DEFAULT;
 	def->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
 	def->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
+	def->change_success_cmd = strdup(CHANGE_SUCCESS_CMD_DEFAULT);
 
 	return def;
 }

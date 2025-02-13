@@ -53,6 +53,8 @@ struct UserTransform {
 
 #define WL_OUTPUT_TRANSFORM_MAX WL_OUTPUT_TRANSFORM_FLIPPED_270
 
+#define CHANGE_SUCCESS_CMD_DEFAULT "notify-send way-displays \"${WD_CHANGE_SUCCESS_MSG}\""
+
 struct Cfg {
 	char *dir_path;
 	char *file_path;
