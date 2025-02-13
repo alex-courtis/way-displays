@@ -21,7 +21,7 @@ TST_O = $(TST_C:.c=.o)
 TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 TST_T = $(patsubst tst%,test%,$(TST_E))
 
-all: way-displays
+all: way-displays deploy
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
@@ -54,6 +54,9 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/way-displays
 	rm -f $(DESTDIR)$(PREFIX)/share/man/man1/way-displays.1
 	rm -rf $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
+
+deploy:
+	@test -x ../deploy.sh && ../deploy.sh || true
 
 man: doc/way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
