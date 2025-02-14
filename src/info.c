@@ -559,6 +559,40 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 	return buf;
 }
 
+void report_success(const char * const human) {
+	if (cfg->change_success_cmd && human) {
+		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
+		log_info("  %s", cfg->change_success_cmd);
+
+		const struct STable *env = stable_init(1, 1, false);
+		stable_put(env, "WD_CHANGE_SUCCESS_MSG", human);
+		spawn_sh_cmd(cfg->change_success_cmd, env);
+		stable_free(env);
+	}
+
+	log_info("\nChanges successful");
+}
+
+void report_failure(const char * const human) {
+	if (cfg->change_success_cmd) {
+		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
+		log_info("  %s", cfg->change_success_cmd);
+
+		const struct STable *env = stable_init(1, 1, false);
+
+		if (human) {
+			stable_put(env, "WD_CHANGE_SUCCESS_MSG", human);
+		} else {
+			stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes failed");
+		}
+
+		spawn_sh_cmd(cfg->change_success_cmd, env);
+		stable_free(env);
+	}
+
+	log_error("\nChanges failed");
+}
+
 void report_adaptive_sync_fail(struct Head *head) {
 	if (!head) {
 		return;

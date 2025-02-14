@@ -387,19 +387,9 @@ void handle_success(void) {
 			break;
 	}
 
-	if (cfg->change_success_cmd) {
-		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
-		log_info("  %s", cfg->change_success_cmd);
-
-		const struct STable *env = stable_init(1, 1, false);
-		stable_put(env, "WD_CHANGE_SUCCESS_MSG", displ->delta.human);
-		spawn_sh_cmd(cfg->change_success_cmd, env);
-		stable_free(env);
-	}
+	report_success(displ->delta.human);
 
 	displ_delta_destroy();
-
-	log_info("\nChanges successful");
 }
 
 void layout(void) {

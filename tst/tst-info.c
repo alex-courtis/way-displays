@@ -400,6 +400,32 @@ void delta_human__disabled(void **state) {
 	free(deltas);
 }
 
+void report_success__human(void **state) {
+	const struct STable *env = stable_init(1, 1, false);
+	stable_put(env, "WD_CHANGE_SUCCESS_MSG", "all good");
+
+	free(cfg->change_success_cmd);
+	cfg->change_success_cmd = strdup("command");
+
+	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
+	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
+
+	report_success("all good");
+
+	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
+			"  command\n"
+			"\n"
+			"Changes successful\n");
+
+	stable_free(env);
+}
+
+void report_success__no_human(void **state) {
+	report_success(NULL);
+
+	assert_log(INFO, "\nChanges successful\n");
+}
+
 void report_adaptive_sync_fail__no_head(void **state) {
 	report_adaptive_sync_fail(NULL);
 }
@@ -481,6 +507,9 @@ int main(void) {
 		TEST(delta_human__all),
 		TEST(delta_human__enabled),
 		TEST(delta_human__disabled),
+
+		TEST(report_success__human),
+		TEST(report_success__no_human),
 
 		TEST(report_adaptive_sync_fail__no_head),
 		TEST(report_adaptive_sync_fail__model),

@@ -607,10 +607,11 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 	};
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
+	displ->delta.human = strdup("vrr changed");
+
+	expect_string(__wrap_report_success, human, "vrr changed");
 
 	handle_success();
-
-	assert_log(INFO, "\nChanges successful\n");
 
 	assert_false(head.adaptive_sync_failed);
 }
@@ -639,37 +640,21 @@ void handle_success__head_changing_mode(void **state) {
 	};
 	displ->delta.element = MODE;
 	displ->delta.head = &head;
+	displ->delta.human = strdup("mode changed");
+
+	expect_string(__wrap_report_success, human, "mode changed");
 
 	handle_success();
-
-	assert_log(INFO, "\nChanges successful\n");
 
 	assert_ptr_equal(head.current.mode, &mode);
 }
 
-void handle_success__change_success_cmd(void **state) {
-	cfg->change_success_cmd = strdup("echo \"hi from way-displays\"");
-	displ->delta.human = strdup("DP-1: enabled\n  mode: xx->yy");
-
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "WD_CHANGE_SUCCESS_MSG", displ->delta.human);
-
-	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
-	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
-
-	handle_success();
-
-	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
-			"  echo \"hi from way-displays\"\n"
-			"\nChanges successful\n");
-
-	stable_free(env);
-}
-
 void handle_success__ok(void **state) {
-	handle_success();
+	displ->delta.human = strdup("all good");
 
-	assert_log(INFO, "\nChanges successful\n");
+	expect_string(__wrap_report_success, human, "all good");
+
+	handle_success();
 }
 
 void handle_failure__mode(void **state) {
@@ -763,7 +748,6 @@ int main(void) {
 		TEST(handle_success__head_changing_adaptive_sync),
 		TEST(handle_success__head_changing_adaptive_sync_fail),
 		TEST(handle_success__head_changing_mode),
-		TEST(handle_success__change_success_cmd),
 		TEST(handle_success__ok),
 
 		TEST(handle_failure__mode),

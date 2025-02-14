@@ -19,6 +19,10 @@ void __wrap_print_mode(enum LogThreshold t, struct Mode *mode) {
 	check_expected(mode);
 }
 
+void __wrap_report_success(const char * const human) {
+	check_expected(human);
+}
+
 void __wrap_report_adaptive_sync_fail(struct Head *head) {
 	check_expected(head);
 }
