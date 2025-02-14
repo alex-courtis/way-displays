@@ -51,7 +51,7 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 void report_success(const char * const human);
 
 // log error and send on-change-command
-void report_failure(const char * const human);
+// void report_failure(const char * const human);
 
 // log info and send on-change-command
 void report_adaptive_sync_fail(struct Head *head);
