@@ -115,5 +115,10 @@ int expect_stable_equal(const LargestIntegralType value,
 	return stable_equal((struct STable*)value, (struct STable*)check_value_data, NULL);
 }
 
+int expect_stable_equal_strcmp(const LargestIntegralType value,
+		const LargestIntegralType check_value_data) {
+	return stable_equal((struct STable*)value, (struct STable*)check_value_data, fn_comp_equals_strcmp);
+}
+
 #endif // ASSERTS_H
 

@@ -10,6 +10,7 @@
 
 #include "cfg.h"
 #include "displ.h"
+#include "global.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"
@@ -34,6 +35,8 @@ int after_all(void **state) {
 
 int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
+
+	cfg = cfg_default();
 
 	s->head1 = calloc(1, sizeof(struct Head));
 
@@ -121,6 +124,8 @@ int after_each(void **state) {
 	slist_free_vals(&s->heads, head_free);
 
 	free(s);
+
+	cfg_destroy();
 
 	return 0;
 }
@@ -395,6 +400,63 @@ void delta_human__disabled(void **state) {
 	free(deltas);
 }
 
+void report_adaptive_sync_fail__no_head(void **state) {
+	report_adaptive_sync_fail(NULL);
+}
+
+void report_adaptive_sync_fail__model(void **state) {
+	struct State *s = *state;
+
+	const struct STable *env = stable_init(1, 1, false);
+	stable_put(env, "WD_CHANGE_SUCCESS_MSG",
+			"description1\n"
+			"  Cannot enable VRR.\n"
+			"  Disable VRR for this display in cfg.yaml\n"
+			"VRR_OFF:\n"
+			"  - 'model1'");
+
+	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
+	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
+
+	report_adaptive_sync_fail(s->head1);
+
+	assert_log(INFO, "\nname1:\n"
+			"  Cannot enable VRR: this display or compositor may not support it.\n"
+			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
+			"  VRR_OFF:\n"
+			"    - 'model1'\n");
+
+	stable_free(env);
+}
+
+void report_adaptive_sync_fail__name(void **state) {
+	struct State *s = *state;
+
+	free(s->head1->model);
+	s->head1->model = NULL;
+
+	const struct STable *env = stable_init(1, 1, false);
+	stable_put(env, "WD_CHANGE_SUCCESS_MSG",
+			"description1\n"
+			"  Cannot enable VRR.\n"
+			"  Disable VRR for this display in cfg.yaml\n"
+			"VRR_OFF:\n"
+			"  - 'monitor description'");
+
+	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
+	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
+
+	report_adaptive_sync_fail(s->head1);
+
+	assert_log(INFO, "\nname1:\n"
+			"  Cannot enable VRR: this display or compositor may not support it.\n"
+			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
+			"  VRR_OFF:\n"
+			"    - 'monitor description'\n");
+
+	stable_free(env);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(print_cfg_commands__empty),
@@ -419,6 +481,10 @@ int main(void) {
 		TEST(delta_human__all),
 		TEST(delta_human__enabled),
 		TEST(delta_human__disabled),
+
+		TEST(report_adaptive_sync_fail__no_head),
+		TEST(report_adaptive_sync_fail__model),
+		TEST(report_adaptive_sync_fail__name),
 	};
 
 	return RUN(tests);

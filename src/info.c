@@ -579,7 +579,7 @@ void report_adaptive_sync_fail(struct Head *head) {
 			"VRR_OFF:\n"
 			"  - '%s'",
 			head->description ? head->description : head->name,
-			head->name
+			head->model ? head->model : "monitor description"
 			);
 
 	const struct STable *env = stable_init(1, 1, false);
