@@ -224,9 +224,13 @@ void merge_set__disabled(void **state) {
 void merge_set__change_success_cmd(void **state) {
 	struct State *s = *state;
 
+	free(s->to->change_success_cmd);
 	s->to->change_success_cmd = strdup("to");
+
+	free(s->from->change_success_cmd);
 	s->from->change_success_cmd = strdup("from");
 
+	free(s->expected->change_success_cmd);
 	s->expected->change_success_cmd = strdup("from");
 
 	struct Cfg *merged = merge_set(s->to, s->from);
@@ -329,9 +333,13 @@ void merge_del__disabled(void **state) {
 void merge_del__change_success_cmd(void **state) {
 	struct State *s = *state;
 
+	free(s->to->change_success_cmd);
 	s->to->change_success_cmd = strdup("to");
+
+	free(s->from->change_success_cmd);
 	s->from->change_success_cmd = strdup("");
 
+	free(s->expected->change_success_cmd);
 	s->expected->change_success_cmd = NULL;
 
 	struct Cfg *merged = merge_del(s->to, s->from);
