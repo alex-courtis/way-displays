@@ -625,13 +625,9 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
 
-	handle_success();
+	expect_value(__wrap_report_adaptive_sync_fail, head, &head);
 
-	assert_log(INFO, "\nhead:\n"
-			"  Cannot enable VRR: this display or compositor may not support it.\n"
-			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
-			"  VRR_OFF:\n"
-			"    - 'monitor description'\n");
+	handle_success();
 
 	assert_true(head.adaptive_sync_failed);
 }
@@ -712,13 +708,9 @@ void handle_failure__adaptive_sync(void **state) {
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
 
-	handle_failure();
+	expect_value(__wrap_report_adaptive_sync_fail, head, &head);
 
-	assert_log(INFO, "\nnam:\n"
-			"  Cannot enable VRR: this display or compositor may not support it.\n"
-			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
-			"  VRR_OFF:\n"
-			"    - 'mod'\n");
+	handle_failure();
 
 	assert_true(head.adaptive_sync_failed);
 }

@@ -8,12 +8,15 @@
 #include "cfg.h"
 #include "convert.h"
 #include "displ.h"
+#include "global.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
 #include "output.h"
+#include "process.h"
 #include "slist.h"
+#include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
 
 void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf) {
@@ -555,3 +558,35 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 
 	return buf;
 }
+
+void report_adaptive_sync_fail(struct Head *head) {
+	if (!head) {
+		return;
+	}
+
+	log_info("\n%s:", head->name);
+	log_info("  Cannot enable VRR: this display or compositor may not support it.");
+	log_info("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
+	log_info("  VRR_OFF:");
+	log_info("    - '%s'", head->model ? head->model : "monitor description");
+
+	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
+	char *bufp = buf;
+
+	bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n"
+			"  Cannot enable VRR.\n"
+			"  Disable VRR for this display in cfg.yaml\n"
+			"VRR_OFF:\n"
+			"  - '%s'",
+			head->description ? head->description : head->name,
+			head->name
+			);
+
+	const struct STable *env = stable_init(1, 1, false);
+	stable_put(env, "WD_CHANGE_SUCCESS_MSG", buf);
+	spawn_sh_cmd(cfg->change_success_cmd, env);
+	stable_free(env);
+
+	free(buf);
+}
+

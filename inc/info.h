@@ -47,5 +47,8 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 // LEN_HUMAN, consumer frees
 char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head);
 
+// log info and send on-change-command
+void report_adaptive_sync_fail(struct Head *head);
+
 #endif // INFO_H
 

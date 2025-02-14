@@ -333,14 +333,6 @@ void apply(void) {
 	slist_free(&heads_changing);
 }
 
-void report_adaptive_sync_fail(struct Head *head) {
-	log_info("\n%s:", head->name);
-	log_info("  Cannot enable VRR: this display or compositor may not support it.");
-	log_info("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
-	log_info("  VRR_OFF:");
-	log_info("    - '%s'", head->model ? head->model : "monitor description");
-}
-
 void handle_failure(void) {
 	switch(displ->delta.element) {
 		case MODE:
