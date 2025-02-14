@@ -655,7 +655,7 @@ void handle_success__change_success_cmd(void **state) {
 	stable_put(env, "WD_CHANGE_SUCCESS_MSG", displ->delta.human);
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
-	expect_check(__wrap_spawn_sh_cmd, message, expect_stable_equal, env);
+	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
 
 	handle_success();
 

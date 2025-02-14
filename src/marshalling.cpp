@@ -380,11 +380,13 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 	}
 
 	if (node["CHANGE_SUCCESS_CMD"]) {
-		if (cfg->change_success_cmd) {
-			free(cfg->change_success_cmd);
-		}
+		free(cfg->change_success_cmd);
 
-		cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str());
+		if (node["CHANGE_SUCCESS_CMD"].IsNull()) {
+			cfg->change_success_cmd = NULL;
+		} else {
+			cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str());
+		}
 	}
 
 	if (node["LAPTOP_DISPLAY_PREFIX"]) {
@@ -725,7 +727,12 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 
 	if (node["CHANGE_SUCCESS_CMD"]) {
 		free(cfg->change_success_cmd);
-		TI(cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str()));
+
+		if (node["CHANGE_SUCCESS_CMD"].IsNull()) {
+			cfg->change_success_cmd = NULL;
+		} else {
+			cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str());
+		}
 	}
 
 	TI(cfg->laptop_display_prefix = strdup(node["LAPTOP_DISPLAY_PREFIX"].as<std::string>().c_str()));
