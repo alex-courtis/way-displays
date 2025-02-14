@@ -723,7 +723,10 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 		}
 	}
 
-	TI(cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str()));
+	if (node["CHANGE_SUCCESS_CMD"]) {
+		free(cfg->change_success_cmd);
+		TI(cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str()));
+	}
 
 	TI(cfg->laptop_display_prefix = strdup(node["LAPTOP_DISPLAY_PREFIX"].as<std::string>().c_str()));
 
