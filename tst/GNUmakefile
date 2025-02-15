@@ -23,7 +23,7 @@ tst-head: WRAPS=,$\
 tst-layout: WRAPS=,$\
 	--wrap=lid_is_closed,$\
 	--wrap=head_find_mode,$\
-	--wrap=print_head,--wrap=print_mode,--wrap=report_success,--wrap=report_failure,--wrap=report_failure_adaptive_sync,$\
+	--wrap=print_head,--wrap=print_mode,--wrap=report_success,--wrap=report_failure_exit,--wrap=report_failure_adaptive_sync,$\
 	--wrap=head_auto_scale
 
 tst-cfg-file: WRAPS=,$\

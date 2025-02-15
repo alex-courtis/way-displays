@@ -357,10 +357,7 @@ void handle_failure(void) {
 
 			break;
 		default:
-			report_failure(NULL);
-
-			// any other failures are fatal
-			wd_exit_message(EXIT_FAILURE);
+			report_failure_exit(displ->delta.human);
 			break;
 	}
 
@@ -401,7 +398,7 @@ void layout(void) {
 
 	switch (displ->state) {
 		case SUCCEEDED:
-			handle_success();
+			handle_failure();
 			displ->state = IDLE;
 			break;
 

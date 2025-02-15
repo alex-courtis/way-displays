@@ -580,26 +580,34 @@ void report_success(const char * const human) {
 	log_info("\nChanges successful");
 }
 
-void report_failure(const char * const human) {
+void report_failure_exit(const char * const msg) {
 	if (cfg->change_success_cmd) {
-		log_error("\nExecuting CALLBACK_CMD:");
-		log_error("  %s", cfg->change_success_cmd);
+		log_info("\nExecuting CALLBACK_CMD:");
+		log_info("  %s", cfg->change_success_cmd);
+
+		char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
+		char *bufp = buf;
+
+		if (msg) {
+			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\nChanges failed, exiting", msg);
+		} else {
+			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "Changes failed, exiting");
+		}
 
 		const struct STable *env = stable_init(1, 1, false);
 
-		if (human) {
-			stable_put(env, "CALLBACK_MSG", human);
-		} else {
-			stable_put(env, "CALLBACK_MSG", "Changes failed");
-		}
-		stable_put(env, "CALLBACK_TYPE", "ERROR");
+		stable_put(env, "CALLBACK_MSG", buf);
+		stable_put(env, "CALLBACK_STATUS", "ERROR");
 
 		spawn_sh_cmd(cfg->change_success_cmd, env);
 
 		stable_free(env);
+		free(buf);
 	}
 
-	log_error("\nChanges failed");
+	log_error("\nChanges failed, exiting");
+
+	wd_exit_message(EXIT_FAILURE);
 }
 
 void report_failure_adaptive_sync(struct Head *head) {
@@ -618,16 +626,16 @@ void report_failure_adaptive_sync(struct Head *head) {
 
 	bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n"
 			"  Cannot enable VRR.\n"
-			"  Disable VRR for this display in cfg.yaml\n"
-			"VRR_OFF:\n"
-			"  - '%s'",
+			"  You can disable VRR for this display in cfg.yaml\n"
+			"    VRR_OFF:\n"
+			"      - '%s'",
 			head->description ? head->description : head->name,
 			head->model ? head->model : "name_desc"
 			);
 
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", buf);
-	stable_put(env, "CALLBACK_TYPE", "WARNING");
+	stable_put(env, "CALLBACK_STATUS", "WARNING");
 
 	spawn_sh_cmd(cfg->change_success_cmd, env);
 

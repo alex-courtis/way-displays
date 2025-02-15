@@ -152,11 +152,11 @@ Disable a display.
 .TP
 \f[CR]CALLBACK_CMD\f[R] <\f[I]shell command\f[R]>
 Sets a \f[CR]/bin/sh\f[R] command to be executed following most events.
-Default: \f[CR]notify\-send \[dq]way\-displays ${CALLBACK_TYPE}\[dq] \[dq]${CALLBACK_MSG}\[dq]\f[R]
+Default: \f[CR]notify\-send \[dq]way\-displays ${CALLBACK_STATUS}\[dq] \[dq]${CALLBACK_MSG}\[dq]\f[R]
 .IP \[bu] 2
 \f[CR]${CALLBACK_MSG}\f[R] contains a human readable message
 .IP \[bu] 2
-\f[CR]${CALLBACK_TYPE}\f[R] may be set to \f[CR]ERROR\f[R] or \f[CR]WARNING\f[R]
+\f[CR]${CALLBACK_STATUS}\f[R] may be set to \f[CR]ERROR\f[R] or \f[CR]WARNING\f[R]
 .RE
 .TP
 \f[CR]\-d\f[R], \f[CR]\-\-d[elete]\f[R]

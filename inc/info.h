@@ -47,15 +47,15 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 // LEN_HUMAN, consumer frees
 char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head);
 
-// log info and send on-change-command
-// human defaults to "Changes successful"
-void report_success(const char * const human);
+// log info and callback
+// msg defaults to "Changes successful"
+void report_success(const char * const msg);
 
-// log error and send on-change-command
-// human defaults to "Changes failed"
-void report_failure(const char * const human);
+// log error and callback
+// msg defaults to "Changes failed, exiting"
+void report_failure_exit(const char * const msg);
 
-// log info and send on-change-command
+// log info and callback
 void report_failure_adaptive_sync(struct Head *head);
 
 #endif // INFO_H

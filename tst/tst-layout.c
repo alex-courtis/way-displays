@@ -700,9 +700,7 @@ void handle_failure__adaptive_sync(void **state) {
 }
 
 void handle_failure__unspecified(void **state) {
-	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
-
-	expect_value(__wrap_report_failure, human, NULL);
+	expect_value(__wrap_report_failure_exit, human, NULL);
 
 	handle_failure();
 }

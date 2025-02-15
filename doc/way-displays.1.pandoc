@@ -121,9 +121,9 @@ User should be a member of the `input` group for querying laptop lid state.
 	: Disable a display.
 
 	`CALLBACK_CMD` <*shell command*>
-    : Sets a `/bin/sh` command to be executed following most events. Default: `notify-send "way-displays ${CALLBACK_TYPE}" "${CALLBACK_MSG}"`
+    : Sets a `/bin/sh` command to be executed following most events. Default: `notify-send "way-displays ${CALLBACK_STATUS}" "${CALLBACK_MSG}"`
     : - `${CALLBACK_MSG}` contains a human readable message 
-    : - `${CALLBACK_TYPE}` may be set to `ERROR` or `WARNING`
+    : - `${CALLBACK_STATUS}` may be set to `ERROR` or `WARNING`
 
 `-d`, `--d[elete]`
 : Remove an existing setting.

@@ -401,7 +401,7 @@ void delta_human__disabled(void **state) {
 	free(deltas);
 }
 
-void report_success__no_human(void **state) {
+void report_success__no_msg(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", "Changes successful");
 
@@ -421,10 +421,10 @@ void report_success__no_human(void **state) {
 	stable_free(env);
 }
 
-void report_failure__no_human(void **state) {
+void report_failure__no_msg(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", "Changes failed");
-	stable_put(env, "CALLBACK_TYPE", "ERROR");
+	stable_put(env, "CALLBACK_MSG", "Changes failed, exiting");
+	stable_put(env, "CALLBACK_STATUS", "ERROR");
 
 	free(cfg->change_success_cmd);
 	cfg->change_success_cmd = strdup("command");
@@ -432,11 +432,14 @@ void report_failure__no_human(void **state) {
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
 
-	report_failure(NULL);
+	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
-	assert_log(ERROR, "\nExecuting CALLBACK_CMD:\n"
-			"  command\n"
-			"\nChanges failed\n");
+	report_failure_exit(NULL);
+
+	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n"
+			"  command\n");
+
+	assert_log(ERROR, "\nChanges failed, exiting\n");
 
 	stable_free(env);
 }
@@ -452,10 +455,10 @@ void report_failure_adaptive_sync__model_description(void **state) {
 	stable_put(env, "CALLBACK_MSG",
 			"description1\n"
 			"  Cannot enable VRR.\n"
-			"  Disable VRR for this display in cfg.yaml\n"
-			"VRR_OFF:\n"
-			"  - 'model1'");
-	stable_put(env, "CALLBACK_TYPE", "WARNING");
+			"  You can disable VRR for this display in cfg.yaml\n"
+			"    VRR_OFF:\n"
+			"      - 'model1'");
+	stable_put(env, "CALLBACK_STATUS", "WARNING");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
@@ -478,10 +481,10 @@ void report_failure_adaptive_sync__no_model_no_description(void **state) {
 	stable_put(env, "CALLBACK_MSG",
 			"name1\n"
 			"  Cannot enable VRR.\n"
-			"  Disable VRR for this display in cfg.yaml\n"
-			"VRR_OFF:\n"
-			"  - 'name_desc'");
-	stable_put(env, "CALLBACK_TYPE", "WARNING");
+			"  You can disable VRR for this display in cfg.yaml\n"
+			"    VRR_OFF:\n"
+			"      - 'name_desc'");
+	stable_put(env, "CALLBACK_STATUS", "WARNING");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
@@ -522,9 +525,9 @@ int main(void) {
 		TEST(delta_human__enabled),
 		TEST(delta_human__disabled),
 
-		TEST(report_success__no_human),
+		TEST(report_success__no_msg),
 
-		TEST(report_failure__no_human),
+		TEST(report_failure__no_msg),
 
 		TEST(report_failure_adaptive_sync__no_head),
 		TEST(report_failure_adaptive_sync__model_description),

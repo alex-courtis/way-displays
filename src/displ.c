@@ -6,7 +6,6 @@
 
 #include "cfg.h"
 #include "global.h"
-#include "head.h"
 #include "listeners.h"
 #include "log.h"
 #include "output.h"
