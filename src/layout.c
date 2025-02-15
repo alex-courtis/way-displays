@@ -398,7 +398,7 @@ void layout(void) {
 
 	switch (displ->state) {
 		case SUCCEEDED:
-			handle_failure();
+			handle_success();
 			displ->state = IDLE;
 			break;
 

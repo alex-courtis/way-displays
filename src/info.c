@@ -627,8 +627,8 @@ void report_failure_adaptive_sync(struct Head *head) {
 	bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
-			"    VRR_OFF:\n"
-			"      - '%s'",
+			"VRR_OFF:\n"
+			"  - '%s'",
 			head->description ? head->description : head->name,
 			head->model ? head->model : "name_desc"
 			);

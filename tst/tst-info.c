@@ -456,8 +456,8 @@ void report_failure_adaptive_sync__model_description(void **state) {
 			"description1\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
-			"    VRR_OFF:\n"
-			"      - 'model1'");
+			"VRR_OFF:\n"
+			"  - 'model1'");
 	stable_put(env, "CALLBACK_STATUS", "WARNING");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
@@ -482,8 +482,8 @@ void report_failure_adaptive_sync__no_model_no_description(void **state) {
 			"name1\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
-			"    VRR_OFF:\n"
-			"      - 'name_desc'");
+			"VRR_OFF:\n"
+			"  - 'name_desc'");
 	stable_put(env, "CALLBACK_STATUS", "WARNING");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
