@@ -17,7 +17,6 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
-#include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
 
 void position_heads(struct SList *heads) {
@@ -352,13 +351,13 @@ void handle_failure(void) {
 			// river reports adaptive sync failure as failure
 			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
 
-				report_adaptive_sync_fail(displ->delta.head);
+				report_failure_adaptive_sync(displ->delta.head);
 				displ->delta.head->adaptive_sync_failed = true;
 			}
 
 			break;
 		default:
-			log_error("\nChanges failed");
+			report_failure(NULL);
 
 			// any other failures are fatal
 			wd_exit_message(EXIT_FAILURE);

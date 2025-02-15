@@ -48,13 +48,15 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head);
 
 // log info and send on-change-command
+// human defaults to "Changes successful"
 void report_success(const char * const human);
 
 // log error and send on-change-command
-// void report_failure(const char * const human);
+// human defaults to "Changes failed"
+void report_failure(const char * const human);
 
 // log info and send on-change-command
-void report_adaptive_sync_fail(struct Head *head);
+void report_failure_adaptive_sync(struct Head *head);
 
 #endif // INFO_H
 

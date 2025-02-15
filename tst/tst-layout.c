@@ -16,7 +16,6 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
-#include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
@@ -626,7 +625,7 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
 
-	expect_value(__wrap_report_adaptive_sync_fail, head, &head);
+	expect_value(__wrap_report_failure_adaptive_sync, head, &head);
 
 	handle_success();
 
@@ -693,7 +692,7 @@ void handle_failure__adaptive_sync(void **state) {
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
 
-	expect_value(__wrap_report_adaptive_sync_fail, head, &head);
+	expect_value(__wrap_report_failure_adaptive_sync, head, &head);
 
 	handle_failure();
 
@@ -703,9 +702,9 @@ void handle_failure__adaptive_sync(void **state) {
 void handle_failure__unspecified(void **state) {
 	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
-	handle_failure();
+	expect_value(__wrap_report_failure, human, NULL);
 
-	assert_log(ERROR, "\nChanges failed\n");
+	handle_failure();
 }
 
 int main(void) {

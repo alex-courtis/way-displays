@@ -15,6 +15,7 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
+#include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info.h"
@@ -400,9 +401,9 @@ void delta_human__disabled(void **state) {
 	free(deltas);
 }
 
-void report_success__human(void **state) {
+void report_success__no_human(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "WD_CHANGE_SUCCESS_MSG", "all good");
+	stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes successful");
 
 	free(cfg->change_success_cmd);
 	cfg->change_success_cmd = strdup("command");
@@ -410,7 +411,7 @@ void report_success__human(void **state) {
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
 
-	report_success("all good");
+	report_success(NULL);
 
 	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
 			"  command\n"
@@ -420,18 +421,31 @@ void report_success__human(void **state) {
 	stable_free(env);
 }
 
-void report_success__no_human(void **state) {
-	report_success(NULL);
+void report_failure__no_human(void **state) {
+	const struct STable *env = stable_init(1, 1, false);
+	stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes failed");
 
-	assert_log(INFO, "\nChanges successful\n");
+	free(cfg->change_success_cmd);
+	cfg->change_success_cmd = strdup("command");
+
+	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
+	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
+
+	report_failure(NULL);
+
+	assert_log(ERROR, "\nExecuting CHANGE_SUCCESS_CMD:\n"
+			"  command\n"
+			"\nChanges failed\n");
+
+	stable_free(env);
 }
 
-void report_adaptive_sync_fail__no_head(void **state) {
-	report_adaptive_sync_fail(NULL);
+void report_failure_adaptive_sync__no_head(void **state) {
+	report_failure_adaptive_sync(NULL);
 }
 
-void report_adaptive_sync_fail__model(void **state) {
-	struct State *s = *state;
+void report_failure_adaptive_sync__model_description(void **state) {
+	struct Head head = { .name = "name1", .model = "model1", .description = "description1", };
 
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "WD_CHANGE_SUCCESS_MSG",
@@ -444,7 +458,7 @@ void report_adaptive_sync_fail__model(void **state) {
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
 
-	report_adaptive_sync_fail(s->head1);
+	report_failure_adaptive_sync(&head);
 
 	assert_log(INFO, "\nname1:\n"
 			"  Cannot enable VRR: this display or compositor may not support it.\n"
@@ -455,30 +469,27 @@ void report_adaptive_sync_fail__model(void **state) {
 	stable_free(env);
 }
 
-void report_adaptive_sync_fail__name(void **state) {
-	struct State *s = *state;
-
-	free(s->head1->model);
-	s->head1->model = NULL;
+void report_failure_adaptive_sync__no_model_no_description(void **state) {
+	struct Head head = { .name = "name1", };
 
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "WD_CHANGE_SUCCESS_MSG",
-			"description1\n"
+			"name1\n"
 			"  Cannot enable VRR.\n"
 			"  Disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
-			"  - 'monitor description'");
+			"  - 'name_desc'");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
 
-	report_adaptive_sync_fail(s->head1);
+	report_failure_adaptive_sync(&head);
 
 	assert_log(INFO, "\nname1:\n"
 			"  Cannot enable VRR: this display or compositor may not support it.\n"
 			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
 			"  VRR_OFF:\n"
-			"    - 'monitor description'\n");
+			"    - 'name_desc'\n");
 
 	stable_free(env);
 }
@@ -508,12 +519,13 @@ int main(void) {
 		TEST(delta_human__enabled),
 		TEST(delta_human__disabled),
 
-		TEST(report_success__human),
 		TEST(report_success__no_human),
 
-		TEST(report_adaptive_sync_fail__no_head),
-		TEST(report_adaptive_sync_fail__model),
-		TEST(report_adaptive_sync_fail__name),
+		TEST(report_failure__no_human),
+
+		TEST(report_failure_adaptive_sync__no_head),
+		TEST(report_failure_adaptive_sync__model_description),
+		TEST(report_failure_adaptive_sync__no_model_no_description),
 	};
 
 	return RUN(tests);

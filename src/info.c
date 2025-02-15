@@ -560,40 +560,48 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 }
 
 void report_success(const char * const human) {
-	if (cfg->change_success_cmd && human) {
+	if (cfg->change_success_cmd) {
 		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
 		log_info("  %s", cfg->change_success_cmd);
 
 		const struct STable *env = stable_init(1, 1, false);
-		stable_put(env, "WD_CHANGE_SUCCESS_MSG", human);
+
+		if (human) {
+			stable_put(env, "WD_CHANGE_SUCCESS_MSG", human);
+		} else {
+			stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes successful");
+		}
+
 		spawn_sh_cmd(cfg->change_success_cmd, env);
+
 		stable_free(env);
 	}
 
 	log_info("\nChanges successful");
 }
 
-// void report_failure(const char * const human) {
-// 	if (cfg->change_success_cmd) {
-// 		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
-// 		log_info("  %s", cfg->change_success_cmd);
+void report_failure(const char * const human) {
+	if (cfg->change_success_cmd) {
+		log_error("\nExecuting CHANGE_SUCCESS_CMD:");
+		log_error("  %s", cfg->change_success_cmd);
 
-// 		const struct STable *env = stable_init(1, 1, false);
+		const struct STable *env = stable_init(1, 1, false);
 
-// 		if (human) {
-// 			stable_put(env, "WD_CHANGE_SUCCESS_MSG", human);
-// 		} else {
-// 			stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes failed");
-// 		}
+		if (human) {
+			stable_put(env, "WD_CHANGE_SUCCESS_MSG", human);
+		} else {
+			stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes failed");
+		}
 
-// 		spawn_sh_cmd(cfg->change_success_cmd, env);
-// 		stable_free(env);
-// 	}
+		spawn_sh_cmd(cfg->change_success_cmd, env);
 
-// 	log_error("\nChanges failed");
-// }
+		stable_free(env);
+	}
 
-void report_adaptive_sync_fail(struct Head *head) {
+	log_error("\nChanges failed");
+}
+
+void report_failure_adaptive_sync(struct Head *head) {
 	if (!head) {
 		return;
 	}
@@ -602,7 +610,7 @@ void report_adaptive_sync_fail(struct Head *head) {
 	log_info("  Cannot enable VRR: this display or compositor may not support it.");
 	log_info("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
 	log_info("  VRR_OFF:");
-	log_info("    - '%s'", head->model ? head->model : "monitor description");
+	log_info("    - '%s'", head->model ? head->model : "name_desc");
 
 	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
 	char *bufp = buf;
@@ -613,14 +621,15 @@ void report_adaptive_sync_fail(struct Head *head) {
 			"VRR_OFF:\n"
 			"  - '%s'",
 			head->description ? head->description : head->name,
-			head->model ? head->model : "monitor description"
+			head->model ? head->model : "name_desc"
 			);
 
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "WD_CHANGE_SUCCESS_MSG", buf);
-	spawn_sh_cmd(cfg->change_success_cmd, env);
-	stable_free(env);
 
+	spawn_sh_cmd(cfg->change_success_cmd, env);
+
+	stable_free(env);
 	free(buf);
 }
 
