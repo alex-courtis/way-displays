@@ -265,7 +265,7 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 	}
 
 	if (cfg.change_success_cmd) {
-		e << YAML::Key << "CHANGE_SUCCESS_CMD" << YAML::Value << cfg.change_success_cmd;
+		e << YAML::Key << "CALLBACK_CMD" << YAML::Value << cfg.change_success_cmd;
 	}
 
 	if (cfg.laptop_display_prefix) {
@@ -379,13 +379,13 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		}
 	}
 
-	if (node["CHANGE_SUCCESS_CMD"]) {
+	if (node["CALLBACK_CMD"]) {
 		free(cfg->change_success_cmd);
 
-		if (node["CHANGE_SUCCESS_CMD"].IsNull()) {
+		if (node["CALLBACK_CMD"].IsNull()) {
 			cfg->change_success_cmd = NULL;
 		} else {
-			cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str());
+			cfg->change_success_cmd = strdup(node["CALLBACK_CMD"].as<std::string>().c_str());
 		}
 	}
 
@@ -725,13 +725,13 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 		}
 	}
 
-	if (node["CHANGE_SUCCESS_CMD"]) {
+	if (node["CALLBACK_CMD"]) {
 		free(cfg->change_success_cmd);
 
-		if (node["CHANGE_SUCCESS_CMD"].IsNull()) {
+		if (node["CALLBACK_CMD"].IsNull()) {
 			cfg->change_success_cmd = NULL;
 		} else {
-			cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str());
+			cfg->change_success_cmd = strdup(node["CALLBACK_CMD"].as<std::string>().c_str());
 		}
 	}
 

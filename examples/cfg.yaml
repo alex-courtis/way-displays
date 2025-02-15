@@ -67,10 +67,12 @@ VRR_OFF:
   # - '!.*my monitor.*'
 
 
-# Sets a `/bin/sh` command to be executed when display configurations are successfully changed.
+# Sets a /bin/sh command to be executed following most events
+# ${CALLBACK_MSG} contains a human readable message 
+# ${CALLBACK_TYPE} may be set to `ERROR` or `WARNING`
 # NOTE: Depending on your compositor this could get executed multiple times when
 # a change happens. Especially likely on a (dis-)connect.
-CHANGE_SUCCESS_CMD: notify-send way-displays "${WD_CHANGE_SUCCESS_MSG}"
+CALLBACK_CMD: notify-send "way-displays ${CALLBACK_TYPE}" "${CALLBACK_MSG}"
 
 # Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
 # your laptop is different.

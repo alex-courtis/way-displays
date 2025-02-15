@@ -403,7 +403,7 @@ void delta_human__disabled(void **state) {
 
 void report_success__no_human(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes successful");
+	stable_put(env, "CALLBACK_MSG", "Changes successful");
 
 	free(cfg->change_success_cmd);
 	cfg->change_success_cmd = strdup("command");
@@ -413,7 +413,7 @@ void report_success__no_human(void **state) {
 
 	report_success(NULL);
 
-	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
+	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n"
 			"  command\n"
 			"\n"
 			"Changes successful\n");
@@ -423,7 +423,8 @@ void report_success__no_human(void **state) {
 
 void report_failure__no_human(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes failed");
+	stable_put(env, "CALLBACK_MSG", "Changes failed");
+	stable_put(env, "CALLBACK_TYPE", "ERROR");
 
 	free(cfg->change_success_cmd);
 	cfg->change_success_cmd = strdup("command");
@@ -433,7 +434,7 @@ void report_failure__no_human(void **state) {
 
 	report_failure(NULL);
 
-	assert_log(ERROR, "\nExecuting CHANGE_SUCCESS_CMD:\n"
+	assert_log(ERROR, "\nExecuting CALLBACK_CMD:\n"
 			"  command\n"
 			"\nChanges failed\n");
 
@@ -448,12 +449,13 @@ void report_failure_adaptive_sync__model_description(void **state) {
 	struct Head head = { .name = "name1", .model = "model1", .description = "description1", };
 
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "WD_CHANGE_SUCCESS_MSG",
+	stable_put(env, "CALLBACK_MSG",
 			"description1\n"
 			"  Cannot enable VRR.\n"
 			"  Disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - 'model1'");
+	stable_put(env, "CALLBACK_TYPE", "WARNING");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
@@ -473,12 +475,13 @@ void report_failure_adaptive_sync__no_model_no_description(void **state) {
 	struct Head head = { .name = "name1", };
 
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "WD_CHANGE_SUCCESS_MSG",
+	stable_put(env, "CALLBACK_MSG",
 			"name1\n"
 			"  Cannot enable VRR.\n"
 			"  Disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - 'name_desc'");
+	stable_put(env, "CALLBACK_TYPE", "WARNING");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);

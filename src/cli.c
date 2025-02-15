@@ -41,14 +41,14 @@ void usage(FILE *stream) {
 		"     TRANSFORM <name> <90|180|270|flipped|flipped-90|flipped-180|flipped-270>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
-		"     CHANGE_SUCCESS_CMD <shell command>\n"
+		"     CALLBACK_CMD <shell command>\n"
 		"  -d, --d[elete]  remove\n"
 		"     SCALE <name>\n"
 		"     MODE <name>\n"
 		"     TRANSFORM <name>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
-		"     CHANGE_SUCCESS_CMD <shell command>\n"
+		"     CALLBACK_CMD <shell command>\n"
 		;
 	fprintf(stream, "%s", mesg);
 }
@@ -158,7 +158,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			}
 			parsed = true;
 			break;
-		case CHANGE_SUCCESS_CMD:
+		case CALLBACK_CMD:
 			switch (command) {
 				case CFG_SET:
 					cfg->change_success_cmd = strdup(argv[optind]);
@@ -241,7 +241,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 		case AUTO_SCALE:
 		case DISABLED:
 		case VRR_OFF:
-		case CHANGE_SUCCESS_CMD:
+		case CALLBACK_CMD:
 			if (optind + 1 != argc) {
 				log_error("%s requires one argument", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
@@ -282,7 +282,7 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 				return NULL;
 			}
 			break;
-		case CHANGE_SUCCESS_CMD:
+		case CALLBACK_CMD:
 			if (optind != argc) {
 				log_error("%s takes no arguments", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);

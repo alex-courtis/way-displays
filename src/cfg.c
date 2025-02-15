@@ -267,7 +267,7 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 		slist_append(&to->adaptive_sync_off_name_desc, strdup((char*)i->val));
 	}
 
-	// CHANGE_SUCCESS_CMD
+	// CALLBACK_CMD
 	if (from->change_success_cmd) {
 		to->change_success_cmd = strdup(from->change_success_cmd);
 	}
@@ -351,7 +351,7 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 		return false;
 	}
 
-	// CHANGE_SUCCESS_CMD
+	// CALLBACK_CMD
 	char *ao = a->change_success_cmd;
 	char *bo = b->change_success_cmd;
 	if ((ao && !bo) || (!ao && bo) || (ao && bo && strcmp(ao, bo) != 0)) {
@@ -398,7 +398,7 @@ struct Cfg *cfg_default(void) {
 	def->auto_scale = AUTO_SCALE_DEFAULT;
 	def->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
 	def->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
-	def->change_success_cmd = strdup(CHANGE_SUCCESS_CMD_DEFAULT);
+	def->change_success_cmd = strdup(CALLBACK_CMD_DEFAULT);
 
 	return def;
 }
@@ -657,7 +657,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
-	// CHANGE_SUCCESS_CMD
+	// CALLBACK_CMD
 	if (from->change_success_cmd) {
 		if (merged->change_success_cmd) {
 			free(merged->change_success_cmd);
@@ -702,7 +702,7 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 		slist_remove_all_free(&merged->disabled_name_desc, fn_comp_equals_strcmp, i->val, NULL);
 	}
 
-	// CHANGE_SUCCESS_CMD
+	// CALLBACK_CMD
 	if (from->change_success_cmd && strlen(from->change_success_cmd) == 0) {
 		free(merged->change_success_cmd);
 		merged->change_success_cmd = NULL;

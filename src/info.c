@@ -307,7 +307,7 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 	newline = true;
 	if (cfg->change_success_cmd) {
 		print_newline(t, &newline);
-		log_(t, "way-displays -s CHANGE_SUCCESS_CMD '%s'", cfg->change_success_cmd);
+		log_(t, "way-displays -s CALLBACK_CMD '%s'", cfg->change_success_cmd);
 	}
 }
 
@@ -561,15 +561,15 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 
 void report_success(const char * const human) {
 	if (cfg->change_success_cmd) {
-		log_info("\nExecuting CHANGE_SUCCESS_CMD:");
+		log_info("\nExecuting CALLBACK_CMD:");
 		log_info("  %s", cfg->change_success_cmd);
 
 		const struct STable *env = stable_init(1, 1, false);
 
 		if (human) {
-			stable_put(env, "WD_CHANGE_SUCCESS_MSG", human);
+			stable_put(env, "CALLBACK_MSG", human);
 		} else {
-			stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes successful");
+			stable_put(env, "CALLBACK_MSG", "Changes successful");
 		}
 
 		spawn_sh_cmd(cfg->change_success_cmd, env);
@@ -582,16 +582,17 @@ void report_success(const char * const human) {
 
 void report_failure(const char * const human) {
 	if (cfg->change_success_cmd) {
-		log_error("\nExecuting CHANGE_SUCCESS_CMD:");
+		log_error("\nExecuting CALLBACK_CMD:");
 		log_error("  %s", cfg->change_success_cmd);
 
 		const struct STable *env = stable_init(1, 1, false);
 
 		if (human) {
-			stable_put(env, "WD_CHANGE_SUCCESS_MSG", human);
+			stable_put(env, "CALLBACK_MSG", human);
 		} else {
-			stable_put(env, "WD_CHANGE_SUCCESS_MSG", "Changes failed");
+			stable_put(env, "CALLBACK_MSG", "Changes failed");
 		}
+		stable_put(env, "CALLBACK_TYPE", "ERROR");
 
 		spawn_sh_cmd(cfg->change_success_cmd, env);
 
@@ -625,7 +626,8 @@ void report_failure_adaptive_sync(struct Head *head) {
 			);
 
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "WD_CHANGE_SUCCESS_MSG", buf);
+	stable_put(env, "CALLBACK_MSG", buf);
+	stable_put(env, "CALLBACK_TYPE", "WARNING");
 
 	spawn_sh_cmd(cfg->change_success_cmd, env);
 

@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2025/02/14
+% 2025/02/15
 
 # NAME
 
@@ -120,8 +120,10 @@ User should be a member of the `input` group for querying laptop lid state.
 	`DISABLED` <*name*>
 	: Disable a display.
 
-	`CHANGE_SUCCESS_CMD` <*shell command*>
-    : Sets a `/bin/sh` command to be executed when display configurations are successfully changed. Default: `bell ; notify-send way-displays "${WD_CHANGE_SUCCESS_MSG}"`
+	`CALLBACK_CMD` <*shell command*>
+    : Sets a `/bin/sh` command to be executed following most events. Default: `notify-send "way-displays ${CALLBACK_TYPE}" "${CALLBACK_MSG}"`
+    : - `${CALLBACK_MSG}` contains a human readable message 
+    : - `${CALLBACK_TYPE}` may be set to `ERROR` or `WARNING`
 
 `-d`, `--d[elete]`
 : Remove an existing setting.
@@ -141,7 +143,7 @@ User should be a member of the `input` group for querying laptop lid state.
 	`DISABLED` <*name*>
 	: Enable a display.
 
-    `CHANGE_SUCCESS_CMD` <*shell command*>
+    `CALLBACK_CMD` <*shell command*>
     : Remove command on display configuration success.
 
 `-w` | `--w[rite]`
