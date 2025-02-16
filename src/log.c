@@ -33,6 +33,7 @@ char threshold_char[] = {
 	'I',
 	'W',
 	'E',
+	'F',
 };
 
 char *threshold_prefix[] = {
@@ -41,6 +42,7 @@ char *threshold_prefix[] = {
 	"",
 	"WARNING: ",
 	"ERROR: ",
+	"FATAL: ",
 };
 
 void print_time(enum LogThreshold threshold, FILE *__restrict __stream) {
@@ -175,6 +177,20 @@ void log_error_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
 	print_log(ERROR, errno, __format, args);
+	va_end(args);
+}
+
+void log_fatal(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	print_log(FATAL, 0, __format, args);
+	va_end(args);
+}
+
+void log_fatal_errno(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	print_log(FATAL, errno, __format, args);
 	va_end(args);
 }
 

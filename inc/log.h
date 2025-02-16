@@ -10,6 +10,7 @@ enum LogThreshold {
 	INFO,
 	WARNING,
 	ERROR,
+	FATAL,
 	LOG_THRESHOLD_DEFAULT = INFO,
 };
 
@@ -38,6 +39,10 @@ void log_warn_errno(const char *__restrict __format, ...);
 void log_error(const char *__restrict __format, ...);
 
 void log_error_errno(const char *__restrict __format, ...);
+
+void log_fatal(const char *__restrict __format, ...);
+
+void log_fatal_errno(const char *__restrict __format, ...);
 
 
 void log_suppress_start(void);

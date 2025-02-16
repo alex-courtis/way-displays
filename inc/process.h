@@ -13,10 +13,10 @@ void pid_file_create(void);
 
 void spawn_sh_cmd(const char * const command, const struct STable * const env);
 
-// exit; caller should return afterwards
+// exit no message
 void wd_exit(int __status);
 
-// exit, logging standard message to error; caller should return after
+// exit, logging fatal standard message
 void wd_exit_message(int __status);
 
 #endif // PROCESS_H

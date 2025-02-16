@@ -11,7 +11,7 @@
 #include "log.h"
 #include "mode.h"
 
-#define LEN_HUMAN 1024 * 64
+#define CALLBACK_MSG_LEN 1024 * 64
 
 enum InfoEvent {
 	ARRIVED,
@@ -47,16 +47,11 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 // LEN_HUMAN, consumer frees
 char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head);
 
-// log info and callback
-// msg defaults to "Changes successful"
-void report_success(const char * const msg);
+// maybe execute CALLBACK_CMD, log status and exit on FATAL
+void report_outcome(enum LogThreshold t);
 
-// log error and callback
-// msg defaults to "Changes failed, exiting"
-void report_failure_exit(const char * const msg);
-
-// log info and callback
-void report_failure_adaptive_sync(struct Head *head);
+// custom log / human then call report_outcome(WARNING)
+void report_outcome_adaptive_sync_fail(void);
 
 #endif // INFO_H
 

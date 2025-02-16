@@ -146,8 +146,8 @@ void wd_exit(int __status) {
 }
 
 void wd_exit_message(int __status) {
-	log_error("\nPlease raise an issue: https://github.com/alex-courtis/way-displays/issues");
-	log_error("Attach this log and describe the events that occurred before this failure.");
+	log_fatal("\nPlease raise an issue: https://github.com/alex-courtis/way-displays/issues");
+	log_fatal("Attach this log and describe the events that occurred before this failure.");
 	exit(__status);
 }
 

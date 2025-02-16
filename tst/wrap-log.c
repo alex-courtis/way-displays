@@ -10,9 +10,9 @@
 #include "log.h"
 #include "util.h"
 
-// 0 unused, 1 DEBUG, 4 ERROR
-static char b[5][262144] = { 0 };
-static char *bp[5] = { 0 };
+// 0 unused, 1 DEBUG, 5 ERROR
+static char b[6][262144] = { 0 };
+static char *bp[6] = { 0 };
 
 void _assert_log(enum LogThreshold t, const char *s, const char * const file, const int line) {
 	if (bp[t]) {
@@ -105,6 +105,20 @@ void __wrap_log_error_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
 	_log(ERROR, __format, args);
+	va_end(args);
+}
+
+void __wrap_log_fatal(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	_log(FATAL, __format, args);
+	va_end(args);
+}
+
+void __wrap_log_fatal_errno(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	_log(FATAL, __format, args);
 	va_end(args);
 }
 

@@ -606,9 +606,8 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 	};
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
-	displ->delta.human = strdup("vrr changed");
 
-	expect_string(__wrap_report_success, human, "vrr changed");
+	expect_value(__wrap_report_outcome, t, INFO);
 
 	handle_success();
 
@@ -625,7 +624,7 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
 
-	expect_value(__wrap_report_failure_adaptive_sync, head, &head);
+	expect_function_call(__wrap_report_outcome_adaptive_sync_fail);
 
 	handle_success();
 
@@ -639,9 +638,8 @@ void handle_success__head_changing_mode(void **state) {
 	};
 	displ->delta.element = MODE;
 	displ->delta.head = &head;
-	displ->delta.human = strdup("mode changed");
 
-	expect_string(__wrap_report_success, human, "mode changed");
+	expect_value(__wrap_report_outcome, t, INFO);
 
 	handle_success();
 
@@ -649,9 +647,7 @@ void handle_success__head_changing_mode(void **state) {
 }
 
 void handle_success__ok(void **state) {
-	displ->delta.human = strdup("all good");
-
-	expect_string(__wrap_report_success, human, "all good");
+	expect_value(__wrap_report_outcome, t, INFO);
 
 	handle_success();
 }
@@ -692,7 +688,7 @@ void handle_failure__adaptive_sync(void **state) {
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
 
-	expect_value(__wrap_report_failure_adaptive_sync, head, &head);
+	expect_function_call(__wrap_report_outcome_adaptive_sync_fail);
 
 	handle_failure();
 
@@ -700,7 +696,7 @@ void handle_failure__adaptive_sync(void **state) {
 }
 
 void handle_failure__unspecified(void **state) {
-	expect_value(__wrap_report_failure_exit, human, NULL);
+	expect_value(__wrap_report_outcome, t, FATAL);
 
 	handle_failure();
 }

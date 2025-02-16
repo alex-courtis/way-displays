@@ -351,13 +351,13 @@ void handle_failure(void) {
 			// river reports adaptive sync failure as failure
 			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
 
-				report_failure_adaptive_sync(displ->delta.head);
+				report_outcome_adaptive_sync_fail();
 				displ->delta.head->adaptive_sync_failed = true;
 			}
 
 			break;
 		default:
-			report_failure_exit(displ->delta.human);
+			report_outcome(FATAL);
 			break;
 	}
 
@@ -383,7 +383,7 @@ void handle_success(void) {
 			break;
 	}
 
-	report_success(displ->delta.human);
+	report_outcome(INFO);
 
 	displ_delta_destroy();
 }

@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <wayland-util.h>
 
 #include "info.h"
@@ -453,7 +454,7 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 		return NULL;
 	}
 
-	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
+	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
 	char *bufp = buf;
 
 	for (const struct SList *i = heads; i; i = i->nex) {
@@ -463,35 +464,35 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 
 		// disable in own operation
 		if (head->current.enabled && !head->desired.enabled) {
-			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s  disabled\n", desc_or_name);
+			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s  disabled\n", desc_or_name);
 			continue;
 		}
 
 		// enable in own operation
 		if (!head->current.enabled && head->desired.enabled) {
-			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s  enabled\n", desc_or_name);
+			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s  enabled\n", desc_or_name);
 			continue;
 		}
 
 		if (head_current_not_desired(head)) {
-			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n", desc_or_name);
+			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n", desc_or_name);
 
 			if (head->current.scale != head->desired.scale) {
-				bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "  scale:     %.3f -> %.3f\n",
+				bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "  scale:     %.3f -> %.3f\n",
 						wl_fixed_to_double(head->current.scale),
 						wl_fixed_to_double(head->desired.scale)
 						);
 			}
 
 			if (head->current.transform != head->desired.transform) {
-				bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "  transform: %s -> %s\n",
+				bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "  transform: %s -> %s\n",
 						head->current.transform ? transform_name(head->current.transform) : "none",
 						head->desired.transform ? transform_name(head->desired.transform) : "none"
 						);
 			}
 
 			if (head->current.x != head->desired.x || head->current.y != head->desired.y) {
-				bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "  position:  %d,%d -> %d,%d\n",
+				bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "  position:  %d,%d -> %d,%d\n",
 						head->current.x, head->current.y,
 						head->desired.x, head->desired.y
 						);
@@ -512,31 +513,31 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 		return NULL;
 	}
 
-	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
+	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n  ",
+	bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  ",
 			head->description ? head->description : head->name
 			);
 
 	if (head->current.mode) {
-		bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%dx%d@%dHz -> ",
+		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%dx%d@%dHz -> ",
 				head->current.mode->width,
 				head->current.mode->height,
 				mhz_to_hz_rounded(head->current.mode->refresh_mhz)
 				);
 	} else {
-		bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "(no mode) -> ");
+		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "(no mode) -> ");
 	}
 
 	if (head->desired.mode) {
-		bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%dx%d@%dHz",
+		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%dx%d@%dHz",
 				head->desired.mode->width,
 				head->desired.mode->height,
 				mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
 				);
 	} else {
-		bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "(no mode)");
+		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "(no mode)");
 	}
 
 	return buf;
@@ -548,10 +549,10 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 		return NULL;
 	}
 
-	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
+	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n  VRR %s",
+	bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  VRR %s",
 			head->description ? head->description : head->name,
 			head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
 			);
@@ -559,87 +560,70 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 	return buf;
 }
 
-void report_success(const char * const human) {
+void report_outcome(enum LogThreshold t) {
 	if (cfg->change_success_cmd) {
 		log_info("\nExecuting CALLBACK_CMD:");
 		log_info("  %s", cfg->change_success_cmd);
 
-		const struct STable *env = stable_init(1, 1, false);
-
-		if (human) {
-			stable_put(env, "CALLBACK_MSG", human);
-		} else {
-			stable_put(env, "CALLBACK_MSG", "Changes successful");
+		// decorate human message and optional log
+		char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
+		switch (t) {
+			case FATAL:
+				snprintf(buf, CALLBACK_MSG_LEN, "%s\nChanges failed, exiting", displ->delta.human ? displ->delta.human : "");
+				log_fatal("\nChanges failed, exiting");
+				break;
+			case INFO:
+				snprintf(buf, CALLBACK_MSG_LEN, "%s", displ->delta.human ? displ->delta.human : "Changes successful");
+				log_info("\nChanges successful");
+				break;
+			default:
+				snprintf(buf, CALLBACK_MSG_LEN, "%s", displ->delta.human ? displ->delta.human : "");
+				break;
 		}
 
-		spawn_sh_cmd(cfg->change_success_cmd, env);
-
-		stable_free(env);
-	}
-
-	log_info("\nChanges successful");
-}
-
-void report_failure_exit(const char * const msg) {
-	if (cfg->change_success_cmd) {
-		log_info("\nExecuting CALLBACK_CMD:");
-		log_info("  %s", cfg->change_success_cmd);
-
-		char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
-		char *bufp = buf;
-
-		if (msg) {
-			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\nChanges failed, exiting", msg);
-		} else {
-			bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "Changes failed, exiting");
-		}
-
+		// pack environment variables
 		const struct STable *env = stable_init(1, 1, false);
-
 		stable_put(env, "CALLBACK_MSG", buf);
-		stable_put(env, "CALLBACK_STATUS", "ERROR");
+		if (t > INFO) {
+			stable_put(env, "CALLBACK_STATUS", log_threshold_name(t));
+		}
 
+		// execute callback
 		spawn_sh_cmd(cfg->change_success_cmd, env);
 
 		stable_free(env);
 		free(buf);
 	}
 
-	log_error("\nChanges failed, exiting");
-
-	wd_exit_message(EXIT_FAILURE);
+	// maybe terminate
+	if (t >= FATAL) {
+		wd_exit_message(EXIT_FAILURE);
+	}
 }
 
-void report_failure_adaptive_sync(struct Head *head) {
-	if (!head) {
-		return;
-	}
+void report_outcome_adaptive_sync_fail(void) {
+	// custom log
+	log_warn("\n%s:", displ->delta.head->name);
+	log_warn("  Cannot enable VRR: this display or compositor may not support it.");
+	log_warn("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
+	log_warn("  VRR_OFF:");
+	log_warn("    - '%s'", displ->delta.head->model ? displ->delta.head->model : "name_desc");
 
-	log_info("\n%s:", head->name);
-	log_info("  Cannot enable VRR: this display or compositor may not support it.");
-	log_info("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
-	log_info("  VRR_OFF:");
-	log_info("    - '%s'", head->model ? head->model : "name_desc");
-
-	char *buf = (char*)calloc(LEN_HUMAN, sizeof(char));
-	char *bufp = buf;
-
-	bufp += snprintf(bufp, LEN_HUMAN - (bufp - buf), "%s\n"
-			"  Cannot enable VRR.\n"
-			"  You can disable VRR for this display in cfg.yaml\n"
+	// decorate human message
+	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
+	snprintf(buf, CALLBACK_MSG_LEN,
+			"%s\n"
+			"Cannot enable VRR.\n"
+			"You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - '%s'",
-			head->description ? head->description : head->name,
-			head->model ? head->model : "name_desc"
-			);
+			displ->delta.human ? displ->delta.human : "",
+			displ->delta.head->model ? displ->delta.head->model : "name_desc");
 
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", buf);
-	stable_put(env, "CALLBACK_STATUS", "WARNING");
-
-	spawn_sh_cmd(cfg->change_success_cmd, env);
-
-	stable_free(env);
+	free(displ->delta.human);
+	displ->delta.human = strdup(buf);
 	free(buf);
+
+	report_outcome(WARNING);
 }
 

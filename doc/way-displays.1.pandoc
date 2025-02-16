@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2025/02/15
+% 2025/02/16
 
 # NAME
 
@@ -123,7 +123,7 @@ User should be a member of the `input` group for querying laptop lid state.
 	`CALLBACK_CMD` <*shell command*>
     : Sets a `/bin/sh` command to be executed following most events. Default: `notify-send "way-displays ${CALLBACK_STATUS}" "${CALLBACK_MSG}"`
     : - `${CALLBACK_MSG}` contains a human readable message 
-    : - `${CALLBACK_STATUS}` may be set to `ERROR` or `WARNING`
+    : - `${CALLBACK_STATUS}` may be set to `WARNING`, `ERROR` or `FATAL`
 
 `-d`, `--d[elete]`
 : Remove an existing setting.
