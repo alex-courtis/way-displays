@@ -16,7 +16,6 @@
 #include "listeners.h"
 #include "log.h"
 #include "mode.h"
-#include "process.h"
 #include "wlr-output-management-unstable-v1.h"
 
 void position_heads(struct SList *heads) {
