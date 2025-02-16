@@ -10,7 +10,7 @@
 #include "log.h"
 #include "util.h"
 
-// 0 unused, 1 DEBUG, 5 ERROR
+// 0 unused, 1 DEBUG, 5 FATAL
 static char b[6][262144] = { 0 };
 static char *bp[6] = { 0 };
 
@@ -30,7 +30,7 @@ void _assert_log(enum LogThreshold t, const char *s, const char * const file, co
 
 void _assert_logs_empty(const char * const file, const int line) {
 	bool empty = true;
-	for (enum LogThreshold t = DEBUG; t <= ERROR; t++) {
+	for (enum LogThreshold t = DEBUG; t <= FATAL; t++) {
 		if (bp[t]) {
 			bp[t] = NULL;
 			cm_print_error("\nunexpected log %s:\n\"%s\"\n", log_threshold_name(t), b[t]);

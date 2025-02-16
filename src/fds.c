@@ -55,7 +55,7 @@ void fd_wd_cfg_dir_create(void) {
 	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE)) == -1) {
 		close(fd_cfg_dir);
 		fd_cfg_dir = -1;
-		log_error_errno("\nunable to create config directory watch for %s, exiting", cfg->dir_path);
+		log_fatal_errno("\nunable to create config directory watch for %s, exiting", cfg->dir_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}

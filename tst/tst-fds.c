@@ -67,7 +67,7 @@ void fd_wd_cfg_dir_create__bad_dir(void **state) {
 	assert_int_equal(fd_cfg_dir, -1);
 	assert_int_equal(wd_cfg_dir, -1);
 
-	assert_log(ERROR, "\nunable to create config directory watch for /inexistent, exiting\n");
+	assert_log(FATAL, "\nunable to create config directory watch for /inexistent, exiting\n");
 }
 
 void fd_wd_cfg_dir_create__ok(void **state) {

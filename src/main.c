@@ -11,7 +11,7 @@ main(int argc, char **argv) {
 	setlinebuf(stdout);
 
 	if (!getenv("WAYLAND_DISPLAY")) {
-		log_error("environment variable $WAYLAND_DISPLAY missing");
+		log_fatal("environment variable $WAYLAND_DISPLAY missing");
 		return EXIT_FAILURE;
 	}
 

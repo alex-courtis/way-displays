@@ -66,7 +66,7 @@ void capture_line(struct SList **lines, enum LogThreshold threshold, char *l) {
 void print_raw(enum LogThreshold threshold, bool prefix, const char *l) {
 	static FILE *stream;
 
-	stream = threshold == ERROR ? stderr : stdout;
+	stream = threshold >= ERROR ? stderr : stdout;
 
 	if (threshold >= active.threshold && !active.suppressing) {
 		if (active.times) {

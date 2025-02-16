@@ -64,7 +64,7 @@ int client(struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
 	if (pid_active_server() == 0) {
-		log_error("way-displays not running, check $XDG_VTNR");
+		log_fatal("way-displays not running, check $XDG_VTNR");
 		rc = EXIT_FAILURE;
 		goto end;
 	}

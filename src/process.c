@@ -56,7 +56,7 @@ void pid_file_create(void) {
 
 	pid_t pid = pid_active_server();
 	if (pid_active_server()) {
-		log_error("\nanother instance %d is running, exiting", pid);
+		log_fatal("\nanother instance %d is running, exiting", pid);
 		wd_exit(EXIT_FAILURE);
 		return;
 	}
@@ -64,7 +64,7 @@ void pid_file_create(void) {
 	// attempt to use existing, regardless of owner
 	int fd = open(path, O_RDWR | O_CLOEXEC);
 	if (fd == -1 && errno != ENOENT) {
-		log_error_errno("\nunable to open existing pid file for writing %s, exiting", path);
+		log_fatal_errno("\nunable to open existing pid file for writing %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
@@ -75,7 +75,7 @@ void pid_file_create(void) {
 		fd = open(path, O_RDWR | O_CLOEXEC | O_CREAT, 0666);
 		umask(umask_prev);
 		if (fd == -1) {
-			log_error_errno("\nunable to create pid file %s, exiting", path);
+			log_fatal_errno("\nunable to create pid file %s, exiting", path);
 			wd_exit_message(EXIT_FAILURE);
 			return;
 		}
@@ -83,21 +83,21 @@ void pid_file_create(void) {
 
 	// lock it forever
 	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
-		log_error_errno("\nunable to lock pid file %s, exiting", path);
+		log_fatal_errno("\nunable to lock pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
 
 	// clear it
 	if (ftruncate(fd, 0) == -1) {
-		log_error_errno("\nunable to truncate pid file %s, exiting", path);
+		log_fatal_errno("\nunable to truncate pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
 
 	// write the new pid
 	if (dprintf(fd, "%d", getpid()) <= 0) {
-		log_error_errno("\nunable to write to pid file %s, exiting", path);
+		log_fatal_errno("\nunable to write to pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}

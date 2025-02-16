@@ -152,8 +152,7 @@ int loop(void) {
 
 		// poll for all events
 		if (poll(pfds, npfds, -1) < 0) {
-			// TODO change all these to fatal
-			log_error_errno("\npoll failed, exiting");
+			log_fatal_errno("\npoll failed, exiting");
 			wd_exit_message(EXIT_FAILURE);
 			return EXIT_FAILURE;
 		}

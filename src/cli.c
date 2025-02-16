@@ -181,7 +181,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 		for (int i = optind; i < argc; i++) {
 			bp += snprintf(bp, sizeof(buf) - (bp - buf), " %s", argv[i]);
 		}
-		log_error("invalid %s%s", cfg_element_name(element), buf);
+		log_fatal("invalid %s%s", cfg_element_name(element), buf);
 		if (cfg) {
 			cfg_free(cfg);
 		}
@@ -194,7 +194,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 
 struct IpcRequest *parse_get(int argc, char **argv) {
 	if (optind != argc) {
-		log_error("--get takes no arguments");
+		log_fatal("--get takes no arguments");
 		wd_exit(EXIT_FAILURE);
 		return NULL;
 	}
@@ -207,7 +207,7 @@ struct IpcRequest *parse_get(int argc, char **argv) {
 
 struct IpcRequest *parse_write(int argc, char **argv) {
 	if (optind != argc) {
-		log_error("--write takes no arguments");
+		log_fatal("--write takes no arguments");
 		wd_exit(EXIT_FAILURE);
 		return NULL;
 	}
@@ -223,7 +223,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 	switch (element) {
 		case MODE:
 			if (optind + 2 > argc || optind + 4 < argc) {
-				log_error("%s requires two to four arguments", cfg_element_name(element));
+				log_fatal("%s requires two to four arguments", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
@@ -232,7 +232,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 		case SCALE:
 		case TRANSFORM:
 			if (optind + 2 != argc) {
-				log_error("%s requires two arguments", cfg_element_name(element));
+				log_fatal("%s requires two arguments", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
@@ -243,20 +243,20 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 		case VRR_OFF:
 		case CALLBACK_CMD:
 			if (optind + 1 != argc) {
-				log_error("%s requires one argument", cfg_element_name(element));
+				log_fatal("%s requires one argument", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		case ORDER:
 			if (optind + 1 > argc) {
-				log_error("%s requires at least one argument", cfg_element_name(element));
+				log_fatal("%s requires at least one argument", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		default:
-			log_error("invalid %s: %s", ipc_command_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
+			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
@@ -277,20 +277,20 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 		case DISABLED:
 		case VRR_OFF:
 			if (optind + 1 != argc) {
-				log_error("%s requires one argument", cfg_element_name(element));
+				log_fatal("%s requires one argument", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		case CALLBACK_CMD:
 			if (optind != argc) {
-				log_error("%s takes no arguments", cfg_element_name(element));
+				log_fatal("%s takes no arguments", cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		default:
-			log_error("invalid %s: %s", ipc_command_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
+			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
@@ -306,7 +306,7 @@ enum LogThreshold parse_log_threshold(char *optarg) {
 	enum LogThreshold threshold = log_threshold_val(optarg);
 
 	if (!threshold) {
-		log_error("invalid --log-threshold %s", optarg);
+		log_fatal("invalid --log-threshold %s", optarg);
 		return 0;
 	}
 
