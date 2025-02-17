@@ -331,7 +331,7 @@ char *stable_str(const struct STable* const tab) {
 	}
 
 	// render
-	char *buf = (char*)calloc(len, sizeof(char*));
+	char *buf = (char*)calloc(len, sizeof(char));
 	char *bufp = buf;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
 		bufp += snprintf(bufp, len - (bufp - buf), "%s = %s\n", *k, *v ? (char*)*v : "(null)");
