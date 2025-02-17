@@ -78,7 +78,7 @@ void _assert_heads_order(struct SList *a, struct SList *b, const char * const fi
 			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 
-		cm_print_error("assert_heads_order\nactual:%s\nexpected:%s\n\n", actual, expected);
+		cm_print_error("assert_heads_order\nACTUAL:%s\nEXPECTED:%s\n\n", actual, expected);
 		_fail(file, line);
 	}
 }
@@ -110,14 +110,16 @@ void _assert_log(enum LogThreshold t, const char* s, const char * const file, co
 void _assert_logs_empty(const char * const file, const int line);
 #define assert_logs_empty() _assert_logs_empty(__FILE__, __LINE__)
 
-int expect_stable_equal(const LargestIntegralType value,
-		const LargestIntegralType check_value_data) {
-	return stable_equal((struct STable*)value, (struct STable*)check_value_data, NULL);
-}
-
 int expect_stable_equal_strcmp(const LargestIntegralType value,
 		const LargestIntegralType check_value_data) {
-	return stable_equal((struct STable*)value, (struct STable*)check_value_data, fn_comp_equals_strcmp);
+	const struct STable* const actual = (struct STable*)value;
+	const struct STable* const expected = (struct STable*)check_value_data;
+	if (stable_equal(actual, expected, fn_comp_equals_strcmp)) {
+		return 1;
+	} else {
+		cm_print_error("expect_stable_equal_strcmp\nEXPECTED:\n%s\n!=\nACTUAL:\n%s\n", stable_str(expected), stable_str(actual));
+		return 0;
+	}
 }
 
 #endif // ASSERTS_H

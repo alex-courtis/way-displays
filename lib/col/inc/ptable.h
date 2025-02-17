@@ -52,7 +52,7 @@ const struct PTableIter *ptable_next(const struct PTableIter* const iter);
  * Mutate
  */
 
-// set key/val, return old val if overwritten, NULL val to remove
+// set key/val, return old val if overwritten
 const void *ptable_put(const struct PTable* const tab, const void* const key, const void* const val);
 
 // remove key, return old val if present
