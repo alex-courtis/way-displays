@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -289,6 +290,39 @@ struct SList *itable_vals_slist(const struct ITable* const tab) {
 	}
 
 	return list;
+}
+
+char *itable_str(const struct ITable* const tab) {
+	if (!tab)
+		return NULL;
+
+	size_t len = 1;
+
+	// calculate length
+	// slower but simpler than realloc, which can set off scanners/checkers
+	uint64_t *k;
+	const void **v;
+	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+		len +=
+			20 +                    // longest uint32_t
+			3 +                     // " = "
+			(*v ? strlen(*v) : 6) + // value or "(null)"
+			1;                      // "\n"
+	}
+
+	// render
+	char *buf = (char*)calloc(len, sizeof(char));
+	char *bufp = buf;
+	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+		bufp += snprintf(bufp, len - (bufp - buf), "%lu = %s\n", *k, *v ? (char*)*v : "(null)");
+	}
+
+	// strip trailing newline
+	if (bufp > buf) {
+		*(bufp - 1) = '\0';
+	}
+
+	return buf;
 }
 
 size_t itable_size(const struct ITable* const tab) {
