@@ -609,15 +609,16 @@ void report_outcome_adaptive_sync_fail(void) {
 	log_warn("  VRR_OFF:");
 	log_warn("    - '%s'", displ->delta.head->model ? displ->delta.head->model : "name_desc");
 
-	// decorate human message
+	// custom human message
 	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
+
 	snprintf(buf, CALLBACK_MSG_LEN,
 			"%s\n"
-			"Cannot enable VRR.\n"
-			"You can disable VRR for this display in cfg.yaml\n"
+			"  Cannot enable VRR.\n"
+			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - '%s'",
-			displ->delta.human ? displ->delta.human : "",
+			displ->delta.head->description ? displ->delta.head->description : displ->delta.head->name,
 			displ->delta.head->model ? displ->delta.head->model : "name_desc");
 
 	free(displ->delta.human);

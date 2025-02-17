@@ -459,9 +459,9 @@ void report_outcome_adaptive_sync_fail__(void **state) {
 
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG",
-			"human\n"
-			"Cannot enable VRR.\n"
-			"You can disable VRR for this display in cfg.yaml\n"
+			"description1\n"
+			"  Cannot enable VRR.\n"
+			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - 'model1'");
 	stable_put(env, "CALLBACK_STATUS", "WARNING");
