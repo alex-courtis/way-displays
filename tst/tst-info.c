@@ -406,9 +406,17 @@ void delta_human__disabled(void **state) {
 	free(deltas);
 }
 
-void report_outcome__ok(void **state) {
+void call_back__no_callback(void **state) {
+	free(cfg->change_success_cmd);
+	cfg->change_success_cmd = NULL;
+
+	call_back(INFO, "msg1", NULL);
+}
+
+void call_back__one(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", "Changes successful");
+	stable_put(env, "CALLBACK_MSG", "msg1");
+	stable_put(env, "CALLBACK_STATUS", "INFO");
 
 	free(cfg->change_success_cmd);
 	cfg->change_success_cmd = strdup("command");
@@ -416,17 +424,16 @@ void report_outcome__ok(void **state) {
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
 
-	report_outcome(INFO);
+	call_back(INFO, "msg1", NULL);
 
-	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n"
-			"\nChanges successful\n");
+	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
 	stable_free(env);
 }
 
-void report_outcome__fatal(void **state) {
+void call_back__two(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", "not successful\nChanges failed, exiting");
+	stable_put(env, "CALLBACK_MSG", "msg1msg2");
 	stable_put(env, "CALLBACK_STATUS", "FATAL");
 
 	free(cfg->change_success_cmd);
@@ -437,21 +444,16 @@ void report_outcome__fatal(void **state) {
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
 
-	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
-
-	report_outcome(FATAL);
+	call_back(FATAL, "msg1", "msg2");
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
-
-	assert_log(FATAL, "\nChanges failed, exiting\n");
 
 	stable_free(env);
 }
 
-void report_outcome_adaptive_sync_fail__(void **state) {
+void call_back_adaptive_sync_fail__(void **state) {
 	struct Head head = { .name = "name1", .model = "model1", .description = "description1", };
 
-	displ->delta.human = strdup("human");
 	displ->delta.head = &head;
 
 	free(cfg->change_success_cmd);
@@ -469,15 +471,9 @@ void report_outcome_adaptive_sync_fail__(void **state) {
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
 
-	report_outcome_adaptive_sync_fail();
+	call_back_adaptive_sync_fail(WARNING, displ->delta.head);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
-
-	assert_log(WARNING, "\nname1:\n"
-			"  Cannot enable VRR: this display or compositor may not support it.\n"
-			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
-			"  VRR_OFF:\n"
-			"    - 'model1'\n");
 
 	stable_free(env);
 }
@@ -507,10 +503,11 @@ int main(void) {
 		TEST(delta_human__enabled),
 		TEST(delta_human__disabled),
 
-		TEST(report_outcome__ok),
-		TEST(report_outcome__fatal),
+		TEST(call_back__no_callback),
+		TEST(call_back__one),
+		TEST(call_back__two),
 
-		TEST(report_outcome_adaptive_sync_fail__),
+		TEST(call_back_adaptive_sync_fail__),
 	};
 
 	return RUN(tests);

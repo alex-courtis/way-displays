@@ -16,6 +16,7 @@
 #include "listeners.h"
 #include "log.h"
 #include "mode.h"
+#include "process.h"
 #include "wlr-output-management-unstable-v1.h"
 
 void position_heads(struct SList *heads) {
@@ -350,13 +351,22 @@ void handle_failure(void) {
 			// river reports adaptive sync failure as failure
 			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
 
-				report_outcome_adaptive_sync_fail();
+				log_warn("\n%s:", displ->delta.head->name);
+				log_warn("  Cannot enable VRR: this display or compositor may not support it.");
+				log_warn("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
+		 		log_warn("  VRR_OFF:");
+				log_warn("    - '%s'", displ->delta.head->model ? displ->delta.head->model : "name_desc");
+
+				call_back_adaptive_sync_fail(WARNING, displ->delta.head);
+
 				displ->delta.head->adaptive_sync_failed = true;
 			}
 
 			break;
 		default:
-			report_outcome(FATAL);
+			call_back(FATAL, displ->delta.human, "\nChanges failed, exiting");
+			log_fatal("\nChanges failed, exiting");
+			wd_exit_message(EXIT_FAILURE);
 			break;
 	}
 
@@ -382,7 +392,8 @@ void handle_success(void) {
 			break;
 	}
 
-	report_outcome(INFO);
+	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
+	log_info("\nChanges successful");
 
 	displ_delta_destroy();
 }

@@ -38,20 +38,25 @@ void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf);
 
 void info_mode_string(struct Mode *mode, char *buf, size_t nbuf);
 
-// LEN_HUMAN, consumer frees
+// CALLBACK_MSG_LEN, consumer frees
 char *delta_human(const enum DisplState state, const struct SList * const heads);
 
-// LEN_HUMAN, consumer frees
+// CALLBACK_MSG_LEN, consumer frees
 char *delta_human_mode(const enum DisplState state, const struct Head * const head);
 
-// LEN_HUMAN, consumer frees
+// CALLBACK_MSG_LEN, consumer frees
 char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head);
 
-// maybe execute CALLBACK_CMD, log status and exit on FATAL
-void report_outcome(enum LogThreshold t);
+// CALLBACK_MSG_LEN, consumer frees
+char *delta_human_adaptive_sync_fail(const enum DisplState state, const struct Head * const head);
 
-// custom log / human then call report_outcome(WARNING)
-void report_outcome_adaptive_sync_fail(void);
+// maybe execute CALLBACK_CMD
+// set CALLBACK_MSG to msg1..msg2
+// set CALLBACK_STATUS to log name
+void call_back(enum LogThreshold t, const char * const msg1, const char * const msg2);
+
+// maybe execute CALLBACK_CMD with warning and custom human
+void call_back_adaptive_sync_fail(enum LogThreshold t, const struct Head * const head);
 
 #endif // INFO_H
 

@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <wayland-util.h>
 
 #include "info.h"
@@ -560,71 +559,49 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 	return buf;
 }
 
-void report_outcome(enum LogThreshold t) {
-	if (cfg->change_success_cmd) {
-		log_info("\nExecuting CALLBACK_CMD:");
-		log_info("  %s", cfg->change_success_cmd);
-
-		// decorate human message and optional log
-		char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
-		switch (t) {
-			case FATAL:
-				snprintf(buf, CALLBACK_MSG_LEN, "%s\nChanges failed, exiting", displ->delta.human ? displ->delta.human : "");
-				log_fatal("\nChanges failed, exiting");
-				break;
-			case INFO:
-				snprintf(buf, CALLBACK_MSG_LEN, "%s", displ->delta.human ? displ->delta.human : "Changes successful");
-				log_info("\nChanges successful");
-				break;
-			default:
-				snprintf(buf, CALLBACK_MSG_LEN, "%s", displ->delta.human ? displ->delta.human : "");
-				break;
-		}
-
-		// pack environment variables
-		const struct STable *env = stable_init(1, 1, false);
-		stable_put(env, "CALLBACK_MSG", buf);
-		if (t > INFO) {
-			stable_put(env, "CALLBACK_STATUS", log_threshold_name(t));
-		}
-
-		// execute callback
-		spawn_sh_cmd(cfg->change_success_cmd, env);
-
-		stable_free(env);
-		free(buf);
+void call_back(enum LogThreshold t, const char * const msg1, const char * const msg2) {
+	if (!cfg->change_success_cmd) {
+		return;
 	}
 
-	// maybe terminate
-	if (t >= FATAL) {
-		wd_exit_message(EXIT_FAILURE);
-	}
+	log_info("\nExecuting CALLBACK_CMD:");
+	log_info("  %s", cfg->change_success_cmd);
+
+	// decorate human message and optional log
+	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
+	snprintf(buf, CALLBACK_MSG_LEN, "%s%s", msg1 ? msg1 : "", msg2 ? msg2 : "");
+
+	// pack environment variables
+	const struct STable *env = stable_init(1, 1, false);
+	stable_put(env, "CALLBACK_MSG", buf);
+	stable_put(env, "CALLBACK_STATUS", log_threshold_name(t));
+
+	// execute callback
+	spawn_sh_cmd(cfg->change_success_cmd, env);
+
+	stable_free(env);
+	free(buf);
 }
 
-void report_outcome_adaptive_sync_fail(void) {
-	// custom log
-	log_warn("\n%s:", displ->delta.head->name);
-	log_warn("  Cannot enable VRR: this display or compositor may not support it.");
-	log_warn("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
-	log_warn("  VRR_OFF:");
-	log_warn("    - '%s'", displ->delta.head->model ? displ->delta.head->model : "name_desc");
+void call_back_adaptive_sync_fail(enum LogThreshold t, const struct Head * const head) {
+	if (!cfg->change_success_cmd || !head) {
+		return;
+	}
 
 	// custom human message
-	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
+	char *human = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
 
-	snprintf(buf, CALLBACK_MSG_LEN,
+	snprintf(human, CALLBACK_MSG_LEN,
 			"%s\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - '%s'",
-			displ->delta.head->description ? displ->delta.head->description : displ->delta.head->name,
-			displ->delta.head->model ? displ->delta.head->model : "name_desc");
+			head->description ? head->description : head->name,
+			head->model ? head->model : "name_desc");
 
-	free(displ->delta.human);
-	displ->delta.human = strdup(buf);
-	free(buf);
+	call_back(WARNING, human, NULL);
 
-	report_outcome(WARNING);
+	free(human);
 }
 
