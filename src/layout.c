@@ -351,12 +351,7 @@ void handle_failure(void) {
 			// river reports adaptive sync failure as failure
 			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
 
-				log_warn("\n%s:", displ->delta.head->name);
-				log_warn("  Cannot enable VRR: this display or compositor may not support it.");
-				log_warn("  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
-		 		log_warn("  VRR_OFF:");
-				log_warn("    - '%s'", displ->delta.head->model ? displ->delta.head->model : "name_desc");
-
+				print_adaptive_sync_fail(WARNING, displ->delta.head);
 				call_back_adaptive_sync_fail(WARNING, displ->delta.head);
 
 				displ->delta.head->adaptive_sync_failed = true;
@@ -364,8 +359,9 @@ void handle_failure(void) {
 
 			break;
 		default:
-			call_back(FATAL, displ->delta.human, "\nChanges failed, exiting");
 			log_fatal("\nChanges failed, exiting");
+			call_back(FATAL, displ->delta.human, "\nChanges failed, exiting");
+
 			wd_exit_message(EXIT_FAILURE);
 			break;
 	}
@@ -392,8 +388,8 @@ void handle_success(void) {
 			break;
 	}
 
-	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
 	log_info("\nChanges successful");
+	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
 
 	displ_delta_destroy();
 }

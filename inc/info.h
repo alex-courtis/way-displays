@@ -34,6 +34,8 @@ void print_head_desired_mode_fallback(enum LogThreshold t, struct Head *head);
 
 void print_user_mode(enum LogThreshold t, struct UserMode *user_mode, bool del);
 
+void print_adaptive_sync_fail(enum LogThreshold t, const struct Head * head);
+
 void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf);
 
 void info_mode_string(struct Mode *mode, char *buf, size_t nbuf);
