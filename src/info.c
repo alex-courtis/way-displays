@@ -19,7 +19,7 @@
 #include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
 
-void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf) {
+void info_user_mode_string(const struct UserMode * const user_mode, char * const buf, const size_t nbuf) {
 	if (!user_mode) {
 		*buf = '\0';
 		return;
@@ -41,7 +41,7 @@ void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf) {
 	}
 }
 
-void info_mode_string(struct Mode *mode, char *buf, size_t nbuf) {
+void info_mode_string(const struct Mode * const mode, char *buf, const size_t nbuf) {
 	if (!mode) {
 		*buf = '\0';
 		return;
@@ -57,7 +57,7 @@ void info_mode_string(struct Mode *mode, char *buf, size_t nbuf) {
 			);
 }
 
-void print_user_mode(enum LogThreshold t, struct UserMode *user_mode, bool del) {
+void print_user_mode(const enum LogThreshold t, const struct UserMode * const user_mode, const bool del) {
 	if (!user_mode)
 		return;
 
@@ -71,7 +71,7 @@ void print_user_mode(enum LogThreshold t, struct UserMode *user_mode, bool del) 
 	}
 }
 
-void print_mode(enum LogThreshold t, struct Mode *mode) {
+void print_mode(const enum LogThreshold t, const struct Mode * const mode) {
 	static char buf[2048];
 
 	if (mode) {
@@ -82,7 +82,7 @@ void print_mode(enum LogThreshold t, struct Mode *mode) {
 	}
 }
 
-void print_modes_failed(enum LogThreshold t, struct Head *head) {
+void print_modes_failed(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 
@@ -94,7 +94,7 @@ void print_modes_failed(enum LogThreshold t, struct Head *head) {
 	}
 }
 
-void print_modes_res_refresh(enum LogThreshold t, struct Head *head) {
+void print_modes_res_refresh(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 
@@ -126,7 +126,7 @@ void print_modes_res_refresh(enum LogThreshold t, struct Head *head) {
 	slist_free_vals(&mrrs, mode_res_refresh_free);
 }
 
-void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
+void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del) {
 	if (!cfg)
 		return;
 
@@ -220,14 +220,14 @@ void print_cfg(enum LogThreshold t, struct Cfg *cfg, bool del) {
 	}
 }
 
-void print_newline(enum LogThreshold t, bool *print) {
+void print_newline(const enum LogThreshold t, bool *print) {
 	if (print && *print) {
 		log_(t, "");
 		*print = false;
 	}
 }
 
-void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
+void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg) {
 	if (!cfg)
 		return;
 
@@ -311,7 +311,7 @@ void print_cfg_commands(enum LogThreshold t, struct Cfg *cfg) {
 	}
 }
 
-void print_head_current(enum LogThreshold t, struct Head *head) {
+void print_head_current(const enum LogThreshold t, const struct Head * const head) {
 	static const struct Output *output = NULL;
 
 	if (!head)
@@ -343,7 +343,7 @@ void print_head_current(enum LogThreshold t, struct Head *head) {
 	}
 }
 
-void print_head_desired(enum LogThreshold t, struct Head *head) {
+void print_head_desired(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 
@@ -385,7 +385,7 @@ void print_head_desired(enum LogThreshold t, struct Head *head) {
 	}
 }
 
-void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
+void print_head(const enum LogThreshold t, const enum InfoEvent event, const struct Head * const head) {
 	if (!head)
 		return;
 
@@ -442,13 +442,13 @@ void print_head(enum LogThreshold t, enum InfoEvent event, struct Head *head) {
 	}
 }
 
-void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads) {
-	for (struct SList *i = heads; i; i = i->nex) {
+void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct SList * const heads) {
+	for (const struct SList *i = heads; i; i = i->nex) {
 		print_head(t, event, i->val);
 	}
 }
 
-void print_adaptive_sync_fail(enum LogThreshold t, const struct Head * const head) {
+void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
 	if (!head) {
 		return;
 	}
@@ -460,7 +460,7 @@ void print_adaptive_sync_fail(enum LogThreshold t, const struct Head * const hea
 	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
 }
 
-void print_mode_fail(enum LogThreshold t, const struct Head * head, struct Mode * mode) {
+void print_mode_fail(const enum LogThreshold t, const struct Head * head, const struct Mode * const mode) {
 	log_(t, "\nChanges failed");
 
 	if (!head) {
@@ -582,7 +582,7 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 	return buf;
 }
 
-void call_back(enum LogThreshold t, const char * const msg1, const char * const msg2) {
+void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
 	if (!cfg->change_success_cmd) {
 		return;
 	}
@@ -606,7 +606,7 @@ void call_back(enum LogThreshold t, const char * const msg1, const char * const 
 	free(buf);
 }
 
-void call_back_adaptive_sync_fail(enum LogThreshold t, const struct Head * const head) {
+void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
 	if (!cfg->change_success_cmd || !head) {
 		return;
 	}

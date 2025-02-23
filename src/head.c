@@ -20,7 +20,7 @@ struct SList *heads = NULL;
 struct SList *heads_arrived = NULL;
 struct SList *heads_departed = NULL;
 
-bool head_is_max_preferred_refresh(struct Head *head) {
+bool head_is_max_preferred_refresh(const struct Head * const head) {
 	if (!head)
 		return false;
 
@@ -32,11 +32,11 @@ bool head_is_max_preferred_refresh(struct Head *head) {
 	return false;
 }
 
-bool head_matches_user_mode(const void *user_mode, const void *head) {
+bool head_matches_user_mode(const void * const user_mode, const void * const head) {
 	return user_mode && head && head_matches_name_desc((struct Head*)head, ((struct UserMode*)user_mode)->name_desc);
 }
 
-struct Mode *max_mode(struct Head *head) {
+struct Mode *max_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
@@ -73,7 +73,7 @@ struct Mode *max_mode(struct Head *head) {
 	return max;
 }
 
-bool head_matches_name_desc_regex(const void *h, const void *n) {
+bool head_matches_name_desc_regex(const void * const h, const void * const n) {
 	const struct Head *head = h;
 	const char *name_desc = n;
 
@@ -108,7 +108,7 @@ bool head_matches_name_desc_regex(const void *h, const void *n) {
 	return !result;
 }
 
-bool head_matches_name_desc_fuzzy(const void *h, const void *n) {
+bool head_matches_name_desc_fuzzy(const void * const h, const void * const n) {
 	const struct Head *head = h;
 	const char *name_desc = n;
 
@@ -121,17 +121,17 @@ bool head_matches_name_desc_fuzzy(const void *h, const void *n) {
 		   );
 }
 
-bool head_matches_name_desc(const void *h, const void *n) {
+bool head_matches_name_desc(const void * const h, const void * const n) {
 	return head_matches_name_desc_exact(h, n) ||
 		head_matches_name_desc_regex(h, n) ||
 		head_matches_name_desc_fuzzy(h, n);
 }
 
-bool head_name_desc_matches_head(const void *n, const void *h) {
+bool head_name_desc_matches_head(const void * const n, const void * const h) {
 	return head_matches_name_desc(h, n);
 }
 
-bool head_matches_name_desc_exact(const void *h, const void *n) {
+bool head_matches_name_desc_exact(const void * const h, const void * const n) {
 	const struct Head *head = h;
 	const char *name_desc = n;
 
@@ -142,36 +142,37 @@ bool head_matches_name_desc_exact(const void *h, const void *n) {
 		(head->description && strcmp(head->description, name_desc) == 0);
 }
 
-wl_fixed_t head_get_fixed_scale(const struct Head *head, double scale, int32_t base) {
+wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base) {
 	// computes a scale value that is appropriate for putting into `zwlr_output_configuration_head_v1_set_scale`
 
 	wl_fixed_t fixed_scale = wl_fixed_from_double(scale);
 	wl_fixed_t fixed_scale_before = fixed_scale;
 
+	int32_t b = base ? base : HEAD_DEFAULT_SCALING_BASE;
+
 	// See !138
-	base = base ? base : HEAD_DEFAULT_SCALING_BASE;
-	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * base) \
-				  * ((double)HEAD_WLFIXED_SCALING_BASE / base);
+	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * b) \
+				  * ((double)HEAD_WLFIXED_SCALING_BASE / b);
 	if (fixed_scale != fixed_scale_before) {
-		log_debug("\n%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head && head->name ? head->name : "???", scale, base, wl_fixed_to_double(fixed_scale));
+		log_debug("\n%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head && head->name ? head->name : "???", scale, b, wl_fixed_to_double(fixed_scale));
 	}
 
 	return fixed_scale;
 }
 
-int32_t head_get_scaled_length(int32_t length, wl_fixed_t fixed_scale, int32_t base) {
+int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fixed_scale, const int32_t base) {
 	// scales a (pixel) length by fixed_scale
 
 	// in case `base` comes from a not fully initialized Head (like in tests)
-	base = base ? base : HEAD_DEFAULT_SCALING_BASE;
+	int32_t b = base ? base : HEAD_DEFAULT_SCALING_BASE;
 
-	fixed_scale = (double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * base + 0.5;
+	wl_fixed_t f = (double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * b + 0.5;
 
 	// wayland truncates when calculating size
-	return floor((double)length * base / fixed_scale);
+	return floor((double)length * b / f);
 }
 
-wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
+wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max) {
 	if (!head) {
 		return head_get_fixed_scale(head, 1.0, HEAD_DEFAULT_SCALING_BASE);
 	}
@@ -207,7 +208,7 @@ wl_fixed_t head_auto_scale(struct Head *head, double min, double max) {
 	return head_get_fixed_scale(head, (double) dpi_quantized / 96, head->scaling_base);
 }
 
-void head_scaled_dimensions(struct Head *head) {
+void head_set_scaled_dimensions(struct Head * const head) {
 	if (!head || !head->desired.mode || !head->desired.scale) {
 		return;
 	}
@@ -224,7 +225,7 @@ void head_scaled_dimensions(struct Head *head) {
 	head->scaled.width = head_get_scaled_length(head->scaled.width, head->desired.scale, head->scaling_base);
 }
 
-struct Mode *head_find_mode(struct Head *head) {
+struct Mode *head_find_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
 
@@ -286,7 +287,7 @@ struct Mode *head_find_mode(struct Head *head) {
 	return mode;
 }
 
-struct Mode *head_preferred_mode(struct Head *head) {
+struct Mode *head_preferred_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
@@ -299,7 +300,7 @@ struct Mode *head_preferred_mode(struct Head *head) {
 	return NULL;
 }
 
-bool head_current_not_desired(const void *data) {
+bool head_current_not_desired(const void * const data) {
 	const struct Head *head = data;
 
 	return (head &&
@@ -312,19 +313,19 @@ bool head_current_not_desired(const void *data) {
 			 head->desired.adaptive_sync != head->current.adaptive_sync));
 }
 
-bool head_current_mode_not_desired(const void *data) {
+bool head_current_mode_not_desired(const void * const data) {
 	const struct Head *head = data;
 
 	return (head && head->desired.mode != head->current.mode);
 }
 
-bool head_current_adaptive_sync_not_desired(const void *data) {
+bool head_current_adaptive_sync_not_desired(const void * const data) {
 	const struct Head *head = data;
 
 	return (head && head->desired.adaptive_sync != head->current.adaptive_sync);
 }
 
-void head_free(const void *data) {
+void head_free(const void * const data) {
 	struct Head *head = (struct Head*)data;
 
 	if (!head)
@@ -349,7 +350,7 @@ void head_free(const void *data) {
 	free(head);
 }
 
-void head_release_mode(struct Head *head, struct Mode *mode) {
+void head_release_mode(struct Head * const head, const struct Mode * const mode) {
 	if (!head || !mode)
 		return;
 
@@ -363,7 +364,7 @@ void head_release_mode(struct Head *head, struct Mode *mode) {
 	slist_remove_all(&head->modes, NULL, mode);
 }
 
-void heads_release_head(struct Head *head) {
+void heads_release_head(const struct Head * const head) {
 	slist_remove_all(&heads_arrived, NULL, head);
 	slist_remove_all(&heads_departed, NULL, head);
 	slist_remove_all(&heads, NULL, head);

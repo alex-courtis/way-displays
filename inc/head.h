@@ -64,45 +64,47 @@ struct Head {
 	bool warned_no_mode;
 };
 
-bool head_matches_name_desc_exact(const void *head, const void *name_desc);
+bool head_matches_name_desc_exact(const void * const head, const void * const name_desc);
 
-bool head_matches_name_desc_regex(const void *head, const void *name_desc);
+bool head_matches_name_desc_regex(const void * const head, const void * const name_desc);
 
-bool head_matches_name_desc_fuzzy(const void *h, const void *name_desc);
+bool head_matches_name_desc_fuzzy(const void * const h, const void * const name_desc);
 
-bool head_matches_name_desc_partial(const void *head, const void *name_desc);
+bool head_matches_name_desc_partial(const void * const head, const void * const name_desc);
 
-bool head_matches_name_desc(const void *head, const void *name_desc);
+bool head_matches_name_desc(const void * const head, const void * const name_desc);
 
-bool head_name_desc_matches_head(const void *name_desc, const void *head);
+bool head_name_desc_matches_head(const void * const name_desc, const void * const head);
 
-wl_fixed_t head_get_fixed_scale(const struct Head *head, double scale, int32_t base);
+wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base);
 
-int32_t head_get_scaled_length(int32_t length, wl_fixed_t fixed_scale, int32_t base);
+int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fixed_scale, const int32_t base);
 
-wl_fixed_t head_auto_scale(struct Head *head, double min, double max);
+wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);
 
-void head_scaled_dimensions(struct Head *head);
+// sets scaled.height/width
+void head_set_scaled_dimensions(struct Head * const head);
 
-// finds a mode and logs/calls back:
-// no mode:           error
-// invalid user mode: warning
-// no preferred:      info
-struct Mode *head_find_mode(struct Head *head);
+// finds a mode and logs/calls back on
+//  no mode:           error
+//  invalid user mode: warning
+//  no preferred:      info
+// maybe sets warned_no_preferred
+struct Mode *head_find_mode(struct Head * const head);
 
-struct Mode *head_preferred_mode(struct Head *head);
+struct Mode *head_preferred_mode(const struct Head * const head);
 
-bool head_current_not_desired(const void *head);
+bool head_current_not_desired(const void * const head);
 
-bool head_current_mode_not_desired(const void *head);
+bool head_current_mode_not_desired(const void * const head);
 
-bool head_current_adaptive_sync_not_desired(const void *head);
+bool head_current_adaptive_sync_not_desired(const void * const head);
 
-void head_release_mode(struct Head *head, struct Mode *mode);
+void head_release_mode(struct Head * const head, const struct Mode * const mode);
 
-void head_free(const void *head);
+void head_free(const void * const head);
 
-void heads_release_head(struct Head *head);
+void heads_release_head(const struct Head * const head);
 
 void heads_destroy(void);
 

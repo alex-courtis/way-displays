@@ -250,7 +250,7 @@ void desire(void) {
 		desire_transform(head);
 		desire_adaptive_sync(head);
 
-		head_scaled_dimensions(head);
+		head_set_scaled_dimensions(head);
 	}
 
 	struct SList *heads_ordered = order_heads(cfg->order_name_desc, heads);
