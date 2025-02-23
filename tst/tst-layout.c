@@ -12,7 +12,6 @@
 #include "displ.h"
 #include "global.h"
 #include "head.h"
-#include "info.h"
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
@@ -397,13 +396,7 @@ void desire_mode__no_mode(void **state) {
 	expect_value(__wrap_head_find_mode, head, &head0);
 	will_return(__wrap_head_find_mode, NULL);
 
-	expect_value(__wrap_print_head, t, WARNING);
-	expect_value(__wrap_print_head, event, NONE);
-	expect_value(__wrap_print_head, head, &head0);
-
 	desire_mode(&head0);
-
-	assert_log(WARNING, "\nNo mode for head0, disabling.\n");
 
 	assert_ptr_equal(head0.desired.mode, &mode0);
 	assert_false(head0.desired.enabled);

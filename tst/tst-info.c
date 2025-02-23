@@ -376,8 +376,8 @@ void delta_human__enabled(void **state) {
 	char *deltas = delta_human(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
-			"description1  enabled\n"
-			"name2  enabled"
+			"description1\n  enabled\n"
+			"name2\n  enabled"
 			);
 
 	slist_free(&heads);
@@ -397,8 +397,8 @@ void delta_human__disabled(void **state) {
 	char *deltas = delta_human(SUCCEEDED, s->heads);
 
 	assert_string_equal(deltas, ""
-			"description1  disabled\n"
-			"name2  disabled"
+			"description1\n  disabled\n"
+			"name2\n  disabled"
 			);
 
 	slist_free(&heads);

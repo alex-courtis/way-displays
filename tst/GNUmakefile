@@ -18,12 +18,14 @@ WRAPS_COMMON = -Wl,$\
 tst-head: WRAPS=,$\
 	--wrap=mode_dpi,$\
 	--wrap=mode_user_mode,$\
-	--wrap=mode_max_preferred
+	--wrap=mode_max_preferred,$\
+	--wrap=call_back
 
+# TODO remove print_mode
 tst-layout: WRAPS=,$\
 	--wrap=lid_is_closed,$\
 	--wrap=head_find_mode,$\
-	--wrap=print_head,--wrap=print_mode,--wrap=call_back,--wrap=call_back_adaptive_sync_fail,$\
+	--wrap=print_mode,--wrap=call_back,--wrap=call_back_adaptive_sync_fail,$\
 	--wrap=head_auto_scale
 
 tst-cfg-file: WRAPS=,$\

@@ -212,17 +212,21 @@ void head_scaled_dimensions__dimensions(void **state) {
 	assert_log(DEBUG, "\nname: Rounded scale 2.01 to nearest multiple of 1/8: 2.000\n");
 }
 
-void head_find_mode__none(void **state) {
-	struct Head head = { 0 };
+void head_find_mode__all_failed(void **state) {
+	struct Head head = { .name = "head0" };
 	struct Mode mode = { 0 };
-
-	// no head
-	assert_nul(head_find_mode(NULL));
 
 	// all modes failed
 	slist_append(&head.modes, &mode);
 	slist_append(&head.modes_failed, &mode);
+
+	expect_value(__wrap_call_back, t, ERROR);
+	expect_string(__wrap_call_back, msg1, "head0");
+	expect_value(__wrap_call_back, msg2, "\n  No mode, disabling");
+
 	assert_nul(head_find_mode(&head));
+
+	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
 
 	slist_free(&head.modes);
 	slist_free(&head.modes_failed);
@@ -269,11 +273,19 @@ void head_find_mode__user_failed(void **state) {
 	expect_value(__wrap_mode_user_mode, user_mode, user_mode);
 	will_return(__wrap_mode_user_mode, NULL);
 
+	expect_value(__wrap_call_back, t, WARNING);
+	expect_string(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
+	expect_value(__wrap_call_back, msg2, NULL);
+
+	expect_value(__wrap_call_back, t, WARNING);
+	expect_string(__wrap_call_back, msg1, "HEAD\n  No preferred mode, falling back to maximum available");
+	expect_value(__wrap_call_back, msg2, NULL);
+
 	// user failed, fall back to max
 	assert_ptr_equal(head_find_mode(&head), &mode);
 
 	// one and only notices: falling back to preferred then max
-	assert_log(WARNING, "\nHEAD: No available mode for -1x-1, falling back to preferred\n");
+	assert_log(WARNING, "\nHEAD: No available mode for user MODE -1x-1, falling back to preferred\n");
 	assert_log(INFO, "\nHEAD: No preferred mode, falling back to maximum available\n");
 	assert_logs_empty();
 
@@ -327,6 +339,10 @@ void head_find_mode__max(void **state) {
 
 	slist_append(&head.modes, &mode);
 
+	expect_value(__wrap_call_back, t, WARNING);
+	expect_string(__wrap_call_back, msg1, "name\n  No preferred mode, falling back to maximum available");
+	expect_value(__wrap_call_back, msg2, NULL);
+
 	// one and only notice
 	assert_ptr_equal(head_find_mode(&head), &mode);
 	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
@@ -335,6 +351,25 @@ void head_find_mode__max(void **state) {
 	assert_ptr_equal(head_find_mode(&head), &mode);
 
 	slist_free(&head.modes);
+}
+
+void head_find_mode__none(void **state) {
+	struct Head head = { .name = "head0", };
+	struct Mode mode = { 0 };
+
+	// force to pass the first check and skip preferred messages
+	slist_append(&head.modes_failed, &mode);
+	head.warned_no_preferred = true;
+
+	expect_value(__wrap_call_back, t, ERROR);
+	expect_string(__wrap_call_back, msg1, "head0");
+	expect_value(__wrap_call_back, msg2, "\n  No mode, disabling");
+
+	assert_nul(head_find_mode(&head));
+
+	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
+
+	slist_free(&head.modes_failed);
 }
 
 int main(void) {
@@ -347,12 +382,13 @@ int main(void) {
 		TEST(head_scaled_dimensions__transform),
 		TEST(head_scaled_dimensions__dimensions),
 
-		TEST(head_find_mode__none),
+		TEST(head_find_mode__all_failed),
 		TEST(head_find_mode__user_available),
 		TEST(head_find_mode__user_failed),
 		TEST(head_find_mode__preferred),
 		TEST(head_find_mode__max_preferred_refresh),
 		TEST(head_find_mode__max),
+		TEST(head_find_mode__none),
 	};
 
 	return RUN(tests);

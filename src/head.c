@@ -2,6 +2,7 @@
 #include <regex.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-util.h>
@@ -150,7 +151,7 @@ wl_fixed_t head_get_fixed_scale(const struct Head *head, double scale, int32_t b
 	// See !138
 	base = base ? base : HEAD_DEFAULT_SCALING_BASE;
 	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * base) \
-		* ((double)HEAD_WLFIXED_SCALING_BASE / base);
+				  * ((double)HEAD_WLFIXED_SCALING_BASE / base);
 	if (fixed_scale != fixed_scale_before) {
 		log_debug("\n%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head && head->name ? head->name : "???", scale, base, wl_fixed_to_double(fixed_scale));
 	}
@@ -227,11 +228,14 @@ struct Mode *head_find_mode(struct Head *head) {
 	if (!head)
 		return NULL;
 
+	static char human[CALLBACK_MSG_LEN];
+
 	if (slist_length(head->modes) == slist_length(head->modes_failed)) {
+		log_error("\nNo mode for %s, disabling.", head->name);
+		snprintf(human, CALLBACK_MSG_LEN, "%s\n  No mode, disabling", head->name);
+		call_back(ERROR, head->name, "\n  No mode, disabling");
 		return NULL;
 	}
-
-	static char buf[512];
 
 	struct Mode *mode = NULL;
 
@@ -241,8 +245,14 @@ struct Mode *head_find_mode(struct Head *head) {
 		mode = mode_user_mode(head->modes, head->modes_failed, um);
 		if (!mode && !um->warned_no_mode) {
 			um->warned_no_mode = true;
-			info_user_mode_string(um, buf, sizeof(buf));
-			log_warn("\n%s: No available mode for %s, falling back to preferred", head->name, buf);
+
+			static char um_str[512];
+			info_user_mode_string(um, um_str, sizeof(um_str));
+
+			log_warn("\n%s: No available mode for user MODE %s, falling back to preferred", head->name, um_str);
+
+			snprintf(human, CALLBACK_MSG_LEN, "%s\n  No available mode for user MODE %s, falling back to preferred", head->name, um_str);
+			call_back(WARNING, human, NULL);
 		}
 	}
 
@@ -255,13 +265,22 @@ struct Mode *head_find_mode(struct Head *head) {
 		}
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
+
 			log_info("\n%s: No preferred mode, falling back to maximum available", head->name);
+
+			snprintf(human, CALLBACK_MSG_LEN, "%s\n  No preferred mode, falling back to maximum available", head->name);
+			call_back(WARNING, human, NULL);
 		}
 	}
 
 	// last chance maximum
 	if (!mode) {
 		mode = max_mode(head);
+	}
+
+	if (!mode) {
+		log_error("\nNo mode for %s, disabling.", head->name);
+		call_back(ERROR, head->name, "\n  No mode, disabling");
 	}
 
 	return mode;

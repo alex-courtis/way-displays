@@ -40,6 +40,8 @@ void info_user_mode_string(struct UserMode *user_mode, char *buf, size_t nbuf);
 
 void info_mode_string(struct Mode *mode, char *buf, size_t nbuf);
 
+// TODO filter based on threshold
+
 // CALLBACK_MSG_LEN, consumer frees
 char *delta_human(const enum DisplState state, const struct SList * const heads);
 

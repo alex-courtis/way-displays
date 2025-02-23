@@ -22,7 +22,6 @@ TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 TST_T = $(patsubst tst%,test%,$(TST_E))
 
 all: way-displays
-	@test -x ../deploy.sh && ../deploy.sh || true
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
@@ -30,6 +29,7 @@ $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
 way-displays: $(SRC_O) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+	@test -x ../deploy.sh && ../deploy.sh || true
 
 $(PRO_H): $(PRO_X)
 	wayland-scanner client-header $(@:.h=.xml) $@

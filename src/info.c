@@ -472,13 +472,13 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 
 		// disable in own operation
 		if (head->current.enabled && !head->desired.enabled) {
-			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s  disabled\n", desc_or_name);
+			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  disabled\n", desc_or_name);
 			continue;
 		}
 
 		// enable in own operation
 		if (!head->current.enabled && head->desired.enabled) {
-			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s  enabled\n", desc_or_name);
+			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  enabled\n", desc_or_name);
 			continue;
 		}
 
@@ -600,6 +600,7 @@ void call_back_adaptive_sync_fail(enum LogThreshold t, const struct Head * const
 	// custom human message
 	char *human = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
 
+	// TODO add a nameordesc method to head
 	snprintf(human, CALLBACK_MSG_LEN,
 			"%s\n"
 			"  Cannot enable VRR.\n"
