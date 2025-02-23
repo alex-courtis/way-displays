@@ -84,6 +84,10 @@ wl_fixed_t head_auto_scale(struct Head *head, double min, double max);
 
 void head_scaled_dimensions(struct Head *head);
 
+// finds a mode and logs/calls back:
+// no mode:           error
+// invalid user mode: warning
+// no preferred:      info
 struct Mode *head_find_mode(struct Head *head);
 
 struct Mode *head_preferred_mode(struct Head *head);

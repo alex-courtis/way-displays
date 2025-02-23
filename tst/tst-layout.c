@@ -621,16 +621,13 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
 
+	expect_value(__wrap_print_adaptive_sync_fail, t, WARNING);
+	expect_value(__wrap_print_adaptive_sync_fail, head, &head);
+
 	expect_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
 	expect_string(__wrap_call_back_adaptive_sync_fail, head, &head);
 
 	handle_success();
-
-	assert_log(WARNING, "\nhead:\n"
-			"  Cannot enable VRR: this display or compositor may not support it.\n"
-			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
-			"  VRR_OFF:\n"
-			"    - 'name_desc'\n");
 
 	assert_true(head.adaptive_sync_failed);
 }
@@ -677,12 +674,11 @@ void handle_failure__mode(void **state) {
 	displ->delta.element = MODE;
 	displ->delta.head = &head;
 
-	expect_value(__wrap_print_mode, t, ERROR);
-	expect_value(__wrap_print_mode, mode, &mode_des);
+	expect_value(__wrap_print_mode_fail, t, ERROR);
+	expect_value(__wrap_print_mode_fail, head, &head);
+	expect_value(__wrap_print_mode_fail, mode, &mode_des);
 
 	handle_failure();
-
-	assert_log(ERROR, "\nChanges failed\n  nam:\n");
 
 	assert_nul(head.current.mode);
 	assert_ptr_equal(head.desired.mode, &mode_des);
@@ -702,16 +698,13 @@ void handle_failure__adaptive_sync(void **state) {
 	displ->delta.element = VRR_OFF;
 	displ->delta.head = &head;
 
+	expect_value(__wrap_print_adaptive_sync_fail, t, WARNING);
+	expect_value(__wrap_print_adaptive_sync_fail, head, &head);
+
 	expect_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
 	expect_string(__wrap_call_back_adaptive_sync_fail, head, &head);
 
 	handle_failure();
-
-	assert_log(WARNING, "\nnam:\n"
-			"  Cannot enable VRR: this display or compositor may not support it.\n"
-			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
-			"  VRR_OFF:\n"
-			"    - 'mod'\n");
 
 	assert_true(head.adaptive_sync_failed);
 }

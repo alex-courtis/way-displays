@@ -158,7 +158,7 @@ void desire_mode(struct Head *head) {
 		return;
 	}
 
-	// attempt to find a mode
+	// attempt to find a mode, will log and call back
 	struct Mode *mode = head_find_mode(head);
 
 	if (mode) {
@@ -333,11 +333,10 @@ void apply(void) {
 void handle_failure(void) {
 	switch(displ->delta.element) {
 		case MODE:
-			log_error("\nChanges failed");
+
+			print_mode_fail(ERROR, displ->delta.head, displ->delta.head->desired.mode);
 
 			// mode setting failure, try again
-			log_error("  %s:", displ->delta.head->name);
-			print_mode(ERROR, displ->delta.head->desired.mode);
 			slist_append(&displ->delta.head->modes_failed, displ->delta.head->desired.mode);
 
 			// current mode may be misreported

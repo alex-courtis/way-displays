@@ -448,13 +448,27 @@ void print_heads(enum LogThreshold t, enum InfoEvent event, struct SList *heads)
 	}
 }
 
-void print_adaptive_sync_fail(enum LogThreshold t, const struct Head * head) {
+void print_adaptive_sync_fail(enum LogThreshold t, const struct Head * const head) {
+	if (!head) {
+		return;
+	}
+
 	log_(t, "\n%s:", head->name);
 	log_(t, "  Cannot enable VRR: this display or compositor may not support it.");
 	log_(t, "  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
 	log_(t, "  VRR_OFF:");
 	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
+}
 
+void print_mode_fail(enum LogThreshold t, const struct Head * head, struct Mode * mode) {
+	log_(t, "\nChanges failed");
+
+	if (!head) {
+		return;
+	}
+
+	log_(t, "  %s:", head->name);
+	print_mode(t, mode);
 }
 
 char *delta_human(const enum DisplState state, const struct SList * const heads) {

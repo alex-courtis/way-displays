@@ -273,6 +273,37 @@ void print_head_deltas__enable(void **state) {
 	free(expected_log);
 }
 
+void print_adaptive_sync_fail__nulls(void **state) {
+	print_adaptive_sync_fail(ERROR, NULL);
+}
+
+void print_adaptive_sync_fail__head(void **state) {
+	const struct Head head = { .name = "head0", .model = "model0", };
+
+	print_adaptive_sync_fail(WARNING, &head);
+
+	assert_log(WARNING, "\nhead0:\n"
+			"  Cannot enable VRR: this display or compositor may not support it.\n"
+			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
+			"  VRR_OFF:\n"
+			"    - 'model0'\n");
+}
+
+void print_mode_fail__nulls(void **state) {
+
+	print_mode_fail(WARNING, NULL, NULL);
+
+	assert_log(WARNING, "\nChanges failed\n");
+}
+
+void print_mode_fail__head(void **state) {
+	const struct Head head = { .name = "head0", .model = "model0", };
+
+	print_mode_fail(WARNING, &head, NULL);
+
+	assert_log(WARNING, "\nChanges failed\n  head0:\n    (no mode)\n");
+}
+
 void delta_human_mode__to_no(void **state) {
 	struct State *s = *state;
 
@@ -492,6 +523,12 @@ int main(void) {
 		TEST(print_head_deltas__other),
 		TEST(print_head_deltas__disable),
 		TEST(print_head_deltas__enable),
+
+		TEST(print_adaptive_sync_fail__nulls),
+		TEST(print_adaptive_sync_fail__head),
+
+		TEST(print_mode_fail__nulls),
+		TEST(print_mode_fail__head),
 
 		TEST(delta_human_mode__to_no),
 		TEST(delta_human_mode__from_no),

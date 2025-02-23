@@ -14,9 +14,15 @@ void __wrap_print_head(enum LogThreshold t, enum InfoEvent event, struct Head *h
 	check_expected(head);
 }
 
-void __wrap_print_mode(enum LogThreshold t, struct Mode *mode) {
+void __wrap_print_mode_fail(enum LogThreshold t, const struct Head * const head, struct Mode * const mode) {
 	check_expected(t);
+	check_expected(head);
 	check_expected(mode);
+}
+
+void __wrap_print_adaptive_sync_fail(enum LogThreshold t, const struct Head * const head) {
+	check_expected(t);
+	check_expected(head);
 }
 
 void __wrap_call_back(enum LogThreshold t, const char * const msg1, const char * const msg2) {
