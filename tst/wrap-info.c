@@ -5,7 +5,6 @@
 #include "log.h"
 
 #include "head.h"
-#include "info.h"
 #include "mode.h"
 
 void __wrap_print_mode_fail(const enum LogThreshold t, const struct Head * const head, struct Mode * const mode) {
