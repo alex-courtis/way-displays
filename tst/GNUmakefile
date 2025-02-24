@@ -25,7 +25,7 @@ tst-layout: WRAPS=,$\
 	--wrap=lid_is_closed,$\
 	--wrap=head_find_mode,$\
 	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,$\
-	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,$\
+	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,--wrap=call_back_mode_fail,$\
 	--wrap=head_auto_scale
 
 tst-cfg-file: WRAPS=,$\

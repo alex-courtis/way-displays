@@ -604,6 +604,28 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	free(buf);
 }
 
+void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * mode) {
+	if (!head) {
+		return;
+	}
+
+	// custom human message
+	static char buf[2048];
+	info_mode_string(mode, buf, sizeof(buf));
+
+	char *human = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
+
+	snprintf(human, CALLBACK_MSG_LEN,
+			"%s\n"
+			"  Unable to set mode %s, retrying",
+			head_human(head),
+			buf);
+
+	call_back(t, human, NULL);
+
+	free(human);
+}
+
 void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
 	if (!cfg->change_success_cmd || !head) {
 		return;
@@ -621,7 +643,7 @@ void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head *
 			head_human(head),
 			head->model ? head->model : "name_desc");
 
-	call_back(WARNING, human, NULL);
+	call_back(t, human, NULL);
 
 	free(human);
 }

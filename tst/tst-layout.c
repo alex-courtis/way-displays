@@ -678,6 +678,10 @@ void handle_failure__mode(void **state) {
 	expect_value(__wrap_print_mode_fail, head, &head);
 	expect_value(__wrap_print_mode_fail, mode, &mode_des);
 
+	expect_value(__wrap_call_back_mode_fail, t, ERROR);
+	expect_value(__wrap_call_back_mode_fail, head, &head);
+	expect_value(__wrap_call_back_mode_fail, mode, &mode_des);
+
 	handle_failure();
 
 	assert_nul(head.current.mode);

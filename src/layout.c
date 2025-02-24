@@ -335,6 +335,7 @@ void handle_failure(void) {
 		case MODE:
 
 			print_mode_fail(ERROR, displ->delta.head, displ->delta.head->desired.mode);
+			call_back_mode_fail(ERROR, displ->delta.head, displ->delta.head->desired.mode);
 
 			// mode setting failure, try again
 			slist_append(&displ->delta.head->modes_failed, displ->delta.head->desired.mode);

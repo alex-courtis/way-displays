@@ -482,6 +482,28 @@ void call_back__two(void **state) {
 	stable_free(env);
 }
 
+void call_back_mode_fail__(void **state) {
+	struct State *s = *state;
+
+	free(cfg->change_success_cmd);
+	cfg->change_success_cmd = strdup("command");
+
+	const struct STable *env = stable_init(1, 1, false);
+	stable_put(env, "CALLBACK_MSG",
+			"description1\n"
+			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
+	stable_put(env, "CALLBACK_STATUS", "INFO");
+
+	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
+	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
+
+	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
+
+	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+
+	stable_free(env);
+}
+
 void call_back_adaptive_sync_fail__(void **state) {
 	struct Head head = { .name = "name1", .model = "model1", .description = "description1", };
 
@@ -543,6 +565,8 @@ int main(void) {
 		TEST(call_back__no_callback),
 		TEST(call_back__one),
 		TEST(call_back__two),
+
+		TEST(call_back_mode_fail__),
 
 		TEST(call_back_adaptive_sync_fail__),
 	};

@@ -64,5 +64,8 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 // maybe execute CALLBACK_CMD with warning and custom human
 void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
+// maybe execute CALLBACK_CMD with warning and custom human
+void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * mode);
+
 #endif // INFO_H
 
