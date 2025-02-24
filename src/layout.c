@@ -19,6 +19,8 @@
 #include "process.h"
 #include "wlr-output-management-unstable-v1.h"
 
+void handle_failure(void);
+
 void position_heads(struct SList *heads) {
 	struct Head *head;
 	int32_t tallest = 0, widest = 0, x = 0, y = 0;
@@ -330,6 +332,31 @@ void apply(void) {
 	slist_free(&heads_changing);
 }
 
+void handle_success(void) {
+	switch(displ->delta.element) {
+		case MODE:
+			// successful mode change is not always reported
+			displ->delta.head->current.mode = displ->delta.head->desired.mode;
+			break;
+
+		case VRR_OFF:
+			// sway reports adaptive sync failure as success
+			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
+				handle_failure();
+				return;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	log_info("\nChanges successful");
+	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
+
+	displ_delta_destroy();
+}
+
 void handle_failure(void) {
 	switch(displ->delta.element) {
 		case MODE:
@@ -363,31 +390,6 @@ void handle_failure(void) {
 			wd_exit_message(EXIT_FAILURE);
 			break;
 	}
-
-	displ_delta_destroy();
-}
-
-void handle_success(void) {
-	switch(displ->delta.element) {
-		case MODE:
-			// successful mode change is not always reported
-			displ->delta.head->current.mode = displ->delta.head->desired.mode;
-			break;
-
-		case VRR_OFF:
-			// sway reports adaptive sync failure as success
-			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
-				handle_failure();
-				return;
-			}
-			break;
-
-		default:
-			break;
-	}
-
-	log_info("\nChanges successful");
-	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
 
 	displ_delta_destroy();
 }
