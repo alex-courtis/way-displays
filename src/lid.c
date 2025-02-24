@@ -48,13 +48,13 @@ struct libinput *create_libinput_discovery(void) {
 
 	struct udev *udev = udev_new();
 	if (!udev) {
-		log_error("\nunable to create udev context, abandoning laptop lid detection");
+		log_warn("\nunable to create udev context, abandoning laptop lid detection");
 		return NULL;
 	}
 
 	libinput = libinput_udev_create_context(&libinput_impl, NULL, udev);
 	if (!libinput) {
-		log_error("\nunable to create libinput discovery context, abandoning laptop lid detection");
+		log_warn("\nunable to create libinput discovery context, abandoning laptop lid detection");
 		return NULL;
 	}
 
@@ -66,7 +66,7 @@ struct libinput *create_libinput_discovery(void) {
 	}
 
 	if (libinput_udev_assign_seat(libinput, xdg_seat) != 0) {
-		log_error("\nfailed to assign seat to libinput, abandoning laptop lid detection");
+		log_warn("\nfailed to assign seat to libinput, abandoning laptop lid detection");
 		return NULL;
 	}
 

@@ -11,19 +11,21 @@ OBJS =  tst/util.o \
 		$(PRO_O)
 
 WRAPS_COMMON = -Wl,$\
-	--wrap=log_set_threshold,$\
-	--wrap=log_,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_errno,$\
-	--wrap=print_head,--wrap=print_mode,$\
+	--wrap=log_set_threshold,--wrap=log_get_threshold,$\
+	--wrap=log_,--wrap=log_fatal,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_errno,--wrap=log_error_errno,--wrap=log_fatal_errno,$\
 	--wrap=spawn_sh_cmd,--wrap=wd_exit,--wrap=wd_exit_message
 
 tst-head: WRAPS=,$\
 	--wrap=mode_dpi,$\
 	--wrap=mode_user_mode,$\
-	--wrap=mode_max_preferred
+	--wrap=mode_max_preferred,$\
+	--wrap=call_back
 
 tst-layout: WRAPS=,$\
 	--wrap=lid_is_closed,$\
 	--wrap=head_find_mode,$\
+	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,$\
+	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,--wrap=call_back_mode_fail,$\
 	--wrap=head_auto_scale
 
 tst-cfg-file: WRAPS=,$\

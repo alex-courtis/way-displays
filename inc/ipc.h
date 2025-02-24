@@ -24,8 +24,8 @@ struct IpcOperation {
 	int socket_client;
 	bool done;
 	int rc;
-	bool send_logs;		// not for bad or colliding requests
 	bool send_state;	// not for bad requests
+	struct SList *log_cap_lines;
 };
 
 struct IpcRequest {

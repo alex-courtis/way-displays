@@ -1,17 +1,15 @@
 #include "tst.h"
 #include "asserts.h"
-#include "util.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
-#include <wayland-client-protocol.h>
 
-#include "cfg.h"
-#include "slist.h"
+#include "head.h"
 #include "log.h"
-#include "info.h"
+#include "mode.h"
+#include "slist.h"
+#include "wlr-output-management-unstable-v1.h"
 
 #include "listeners.h"
 

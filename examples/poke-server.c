@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include <sys/un.h>
-#include <unistd.h>
 
 #include "process.h"
 #include "sockets.h"

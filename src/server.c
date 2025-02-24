@@ -54,11 +54,9 @@ void notify_ipc_operation(void) {
 	ipc_send_operation(ipc_operation);
 
 	if (ipc_operation->done) {
-		log_capture_stop();
-		log_capture_clear();
-
 		close(ipc_operation->socket_client);
 
+		log_cap_lines_stop(&ipc_operation->log_cap_lines);
 		ipc_operation_free(ipc_operation);
 		ipc_operation = NULL;
 	}
@@ -70,22 +68,21 @@ void receive_ipc_request(int server_socket) {
 		return;
 	}
 
-	log_capture_clear();
-	log_capture_start();
+	ipc_operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	log_cap_lines_start(&ipc_operation->log_cap_lines);
 
 	struct IpcRequest *ipc_request = ipc_receive_request(server_socket);
 	if (!ipc_request) {
 		log_error("\nFailed to read IPC request");
-		log_capture_stop();
-		log_capture_clear();
+		log_cap_lines_stop(&ipc_operation->log_cap_lines);
+		ipc_operation_free(ipc_operation);
+		ipc_operation = NULL;
 		return;
 	}
 
-	ipc_operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
 	ipc_operation->request = ipc_request;
 	ipc_operation->socket_client = ipc_request->socket_client;
 	ipc_operation->done = true;
-	ipc_operation->send_logs = true;
 	ipc_operation->send_state = true;
 
 	if (ipc_request->bad) {
@@ -155,7 +152,7 @@ int loop(void) {
 
 		// poll for all events
 		if (poll(pfds, npfds, -1) < 0) {
-			log_error_errno("\npoll failed, exiting");
+			log_fatal_errno("\npoll failed, exiting");
 			wd_exit_message(EXIT_FAILURE);
 			return EXIT_FAILURE;
 		}
@@ -212,7 +209,7 @@ int loop(void) {
 
 		// inform the client
 		if (ipc_operation) {
-			ipc_operation->done = displ->config_state == IDLE;
+			ipc_operation->done = displ->state == IDLE;
 			notify_ipc_operation();
 		};
 
@@ -242,7 +239,8 @@ server(char *cfg_path) {
 	setup_signal_handlers();
 
 	// don't log anything until cfg log level is known
-	log_capture_start();
+	struct SList *log_cap_lines = NULL;
+	log_cap_lines_start(&log_cap_lines);
 	log_suppress_start();
 
 	log_info("way-displays version %s", VERSION);
@@ -257,9 +255,9 @@ server(char *cfg_path) {
 	// play back captured logs from cfg parse
 	log_set_threshold(cfg->log_threshold, false);
 	log_suppress_stop();
-	log_capture_stop();
-	log_capture_playback(NULL);
-	log_capture_clear();
+	log_cap_lines_stop(&log_cap_lines);
+	log_cap_lines_playback(log_cap_lines);
+	log_cap_lines_free(&log_cap_lines);
 
 	// discover the lid state immediately
 	lid_init();

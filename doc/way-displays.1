@@ -96,7 +96,7 @@ It will respond to your configuration changes as well as state changes such as p
 User should be a member of the \f[CR]input\f[R] group for querying laptop lid state.
 .SH OPTIONS
 .TP
-\f[CR]\-L\f[R] | \f[CR]\-\-l[og\-threshold]\f[R] <\f[I]debug\f[R]|\f[I]info\f[R]|\f[I]warning\f[R]|\f[I]error\f[R]>
+\f[CR]\-L\f[R] | \f[CR]\-\-l[og\-threshold]\f[R] <\f[I]debug\f[R]|\f[I]info\f[R]|\f[I]warning\f[R]|\f[I]error\f[R]|\f[I]fatal\f[R]>
 Overrides cfg.yaml.
 \f[I]info\f[R] is default.
 .TP
@@ -152,8 +152,15 @@ Disable VRR for a display.
 \f[CR]DISABLED\f[R] <\f[I]name\f[R]>
 Disable a display.
 .TP
-\f[CR]CHANGE_SUCCESS_CMD\f[R] <\f[I]shell command\f[R]>
-Sets a \f[CR]/bin/sh\f[R] command to be executed when display configurations are successfully changed e.g.\ \f[CR]bell ; notify\-send way\-displays \[dq]Monitor changed\[dq]\f[R]
+\f[CR]CALLBACK_CMD\f[R] <\f[I]shell command\f[R]>
+Sets a \f[CR]/bin/sh\f[R] command to be executed following most events.
+Obeys LOG_THRESHOLD
+.IP \[bu] 2
+Default: \f[CR]notify\-send \[dq]way\-displays ${CALLBACK_LEVEL}\[dq] \[dq]${CALLBACK_MSG}\[dq]\f[R]
+.IP \[bu] 2
+\f[CR]${CALLBACK_MSG}\f[R] contains a human readable message
+.IP \[bu] 2
+\f[CR]${CALLBACK_LEVEL}\f[R] \f[CR]LOG_THRESHOLD\f[R]
 .RE
 .TP
 \f[CR]\-d\f[R], \f[CR]\-\-d[elete]\f[R]
@@ -175,7 +182,7 @@ Enable VRR for a display.
 \f[CR]DISABLED\f[R] <\f[I]name\f[R]>
 Enable a display.
 .TP
-\f[CR]CHANGE_SUCCESS_CMD\f[R] <\f[I]shell command\f[R]>
+\f[CR]CALLBACK_CMD\f[R] <\f[I]shell command\f[R]>
 Remove command on display configuration success.
 .RE
 .TP

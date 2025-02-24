@@ -53,6 +53,8 @@ struct UserTransform {
 
 #define WL_OUTPUT_TRANSFORM_MAX WL_OUTPUT_TRANSFORM_FLIPPED_270
 
+#define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_LEVEL}\" \"${CALLBACK_MSG}\""
+
 struct Cfg {
 	char *dir_path;
 	char *file_path;
@@ -90,7 +92,7 @@ enum CfgElement {
 	MODE,
 	TRANSFORM,
 	VRR_OFF,
-	CHANGE_SUCCESS_CMD,
+	CALLBACK_CMD,
 	LAPTOP_DISPLAY_PREFIX,
 	MAX_PREFERRED_REFRESH,
 	LOG_THRESHOLD,

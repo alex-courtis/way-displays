@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "process.h"
+#include "stable.h"
 
 #include "log.h"
 
@@ -55,7 +56,7 @@ void pid_file_create(void) {
 
 	pid_t pid = pid_active_server();
 	if (pid_active_server()) {
-		log_error("\nanother instance %d is running, exiting", pid);
+		log_fatal("\nanother instance %d is running, exiting", pid);
 		wd_exit(EXIT_FAILURE);
 		return;
 	}
@@ -63,7 +64,7 @@ void pid_file_create(void) {
 	// attempt to use existing, regardless of owner
 	int fd = open(path, O_RDWR | O_CLOEXEC);
 	if (fd == -1 && errno != ENOENT) {
-		log_error_errno("\nunable to open existing pid file for writing %s, exiting", path);
+		log_fatal_errno("\nunable to open existing pid file for writing %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
@@ -74,7 +75,7 @@ void pid_file_create(void) {
 		fd = open(path, O_RDWR | O_CLOEXEC | O_CREAT, 0666);
 		umask(umask_prev);
 		if (fd == -1) {
-			log_error_errno("\nunable to create pid file %s, exiting", path);
+			log_fatal_errno("\nunable to create pid file %s, exiting", path);
 			wd_exit_message(EXIT_FAILURE);
 			return;
 		}
@@ -82,21 +83,21 @@ void pid_file_create(void) {
 
 	// lock it forever
 	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
-		log_error_errno("\nunable to lock pid file %s, exiting", path);
+		log_fatal_errno("\nunable to lock pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
 
 	// clear it
 	if (ftruncate(fd, 0) == -1) {
-		log_error_errno("\nunable to truncate pid file %s, exiting", path);
+		log_fatal_errno("\nunable to truncate pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
 
 	// write the new pid
 	if (dprintf(fd, "%d", getpid()) <= 0) {
-		log_error_errno("\nunable to write to pid file %s, exiting", path);
+		log_fatal_errno("\nunable to write to pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
@@ -104,7 +105,13 @@ void pid_file_create(void) {
 	free(path);
 }
 
-void spawn_sh_cmd(const char * const command) {
+void spawn_sh_cmd(const char * const command, const struct STable * const env) {
+	if (!command)
+		return;
+
+	// experiments show that environment variable length tops out at 128k: variable itself plus contents
+	char value[1024 * 120];
+
 	pid_t pid = fork();
 	if (pid < 0) {
 		log_error_errno("\nfailed to fork");
@@ -121,6 +128,11 @@ void spawn_sh_cmd(const char * const command) {
 		sa.sa_handler = SIG_DFL;
 		sigaction(SIGCHLD, &sa, NULL);
 
+		for (const struct STableIter *i = stable_iter(env); i; i = stable_next(i)) {
+			snprintf(value, sizeof(value), "%s", (char*)i->val);
+			setenv(i->key, value, 1);
+		}
+
 		// execute command in the child process
 		execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL);
 		log_error_errno("\nfailed to execute /bin/sh");
@@ -129,13 +141,13 @@ void spawn_sh_cmd(const char * const command) {
 	}
 }
 
-void wd_exit(int __status) {
+void wd_exit(const int __status) {
 	exit(__status);
 }
 
-void wd_exit_message(int __status) {
-	log_error("\nPlease raise an issue: https://github.com/alex-courtis/way-displays/issues");
-	log_error("Attach this log and describe the events that occurred before this failure.");
+void wd_exit_message(const int __status) {
+	log_fatal("\nPlease raise an issue: https://github.com/alex-courtis/way-displays/issues");
+	log_fatal("Attach this log and describe the events that occurred before this failure.");
 	exit(__status);
 }
 

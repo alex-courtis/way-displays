@@ -83,6 +83,10 @@ void slist_move(struct SList **to, struct SList **from, fn_equals, const void *b
  * Info
  */
 
+// to string, user frees
+// values must be char*, printed using %s
+char *slist_str(struct SList *head);
+
 // length
 size_t slist_length(struct SList *head);
 

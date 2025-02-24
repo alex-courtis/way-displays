@@ -69,7 +69,7 @@ User should be a member of the `input` group for querying laptop lid state.
 
 # OPTIONS
 
-`-L` | `--l[og-threshold]` <*debug*|*info*|*warning*|*error*>
+`-L` | `--l[og-threshold]` <*debug*|*info*|*warning*|*error*|*fatal*>
 : Overrides cfg.yaml. *info* is default.
 
 `-c` | `--c[onfig]` <*path*>
@@ -122,8 +122,12 @@ User should be a member of the `input` group for querying laptop lid state.
 	`DISABLED` <*name*>
 	: Disable a display.
 
-	`CHANGE_SUCCESS_CMD` <*shell command*>
-    : Sets a `/bin/sh` command to be executed when display configurations are successfully changed e.g. `bell ; notify-send way-displays "Monitor changed"`
+	`CALLBACK_CMD` <*shell command*>
+    : Sets a `/bin/sh` command to be executed following most events.
+    : Obeys LOG_THRESHOLD
+    : - Default: `notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
+    : - `${CALLBACK_MSG}` contains a human readable message 
+    : - `${CALLBACK_LEVEL}` `LOG_THRESHOLD`
 
 `-d`, `--d[elete]`
 : Remove an existing setting.
@@ -143,7 +147,7 @@ User should be a member of the `input` group for querying laptop lid state.
 	`DISABLED` <*name*>
 	: Enable a display.
 
-    `CHANGE_SUCCESS_CMD` <*shell command*>
+    `CALLBACK_CMD` <*shell command*>
     : Remove command on display configuration success.
 
 `-w` | `--w[rite]`

@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -311,6 +312,39 @@ struct SList *stable_vals_slist(const struct STable* const tab) {
 	return list;
 }
 
+char *stable_str(const struct STable* const tab) {
+	if (!tab)
+		return NULL;
+
+	size_t len = 1;
+
+	// calculate length
+	// slower but simpler than realloc, which can set off scanners/checkers
+	const char **k;
+	const void **v;
+	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+		len +=
+			strlen(*k) +            // key is not null
+			3 +                     // " = "
+			(*v ? strlen(*v) : 6) + // value or "(null)"
+			1;                      // "\n"
+	}
+
+	// render
+	char *buf = (char*)calloc(len, sizeof(char));
+	char *bufp = buf;
+	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+		bufp += snprintf(bufp, len - (bufp - buf), "%s = %s\n", *k, *v ? (char*)*v : "(null)");
+	}
+
+	// strip trailing newline
+	if (bufp > buf) {
+		*(bufp - 1) = '\0';
+	}
+
+	return buf;
+}
+
 size_t stable_size(const struct STable* const tab) {
 	return tab ? tab->size : 0;
 }
@@ -318,4 +352,3 @@ size_t stable_size(const struct STable* const tab) {
 size_t stable_capacity(const struct STable* const tab) {
 	return tab ? tab->capacity : 0;
 }
-
