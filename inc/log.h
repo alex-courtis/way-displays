@@ -22,6 +22,8 @@ struct LogCapLine {
 
 void log_set_threshold(enum LogThreshold threshold, bool cli);
 
+enum LogThreshold log_get_threshold(void);
+
 void log_set_times(bool times);
 
 

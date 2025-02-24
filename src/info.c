@@ -41,7 +41,7 @@ void info_user_mode_string(const struct UserMode * const user_mode, char * const
 	}
 }
 
-void info_mode_string(const struct Mode * const mode, char *buf, const size_t nbuf) {
+void info_mode_string(const struct Mode * const mode, char * const buf, const size_t nbuf) {
 	if (!mode) {
 		*buf = '\0';
 		return;
@@ -460,7 +460,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
 }
 
-void print_mode_fail(const enum LogThreshold t, const struct Head * head, const struct Mode * const mode) {
+void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
 	log_(t, "\nChanges failed");
 
 	if (!head) {
@@ -581,7 +581,7 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 }
 
 void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
-	if (!cfg->change_success_cmd) {
+	if (!cfg->change_success_cmd || t < log_get_threshold()) {
 		return;
 	}
 
@@ -604,7 +604,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	free(buf);
 }
 
-void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * mode) {
+void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
 	if (!head) {
 		return;
 	}

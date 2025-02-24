@@ -66,6 +66,10 @@ void __wrap_log_set_threshold(enum LogThreshold threshold, bool cli) {
 	check_expected(cli);
 }
 
+enum LogThreshold __wrap_log_get_threshold(void) {
+	return mock_type(enum LogThreshold);
+}
+
 void __wrap_log_(enum LogThreshold t, const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);

@@ -7,7 +7,7 @@
 #include "head.h"
 #include "mode.h"
 
-void __wrap_print_mode_fail(const enum LogThreshold t, const struct Head * const head, struct Mode * const mode) {
+void __wrap_print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
 	check_expected(t);
 	check_expected(head);
 	check_expected(mode);

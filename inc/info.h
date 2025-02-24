@@ -30,8 +30,6 @@ void print_heads(const enum LogThreshold t, const enum InfoEvent event, const st
 
 void print_mode(const enum LogThreshold t, const struct Mode * const mode);
 
-void print_head_desired_mode_fallback(const enum LogThreshold t, const struct Head * const head);
-
 void print_user_mode(const enum LogThreshold t, const struct UserMode * const user_mode, const bool del);
 
 void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
@@ -42,30 +40,25 @@ void info_user_mode_string(const struct UserMode * const user_mode, char * const
 
 void info_mode_string(const struct Mode * const mode, char * const buf, const size_t nbuf);
 
-// TODO filter based on threshold
-
-// CALLBACK_MSG_LEN, consumer frees
+// consumer frees
 char *delta_human(const enum DisplState state, const struct SList * const heads);
 
-// CALLBACK_MSG_LEN, consumer frees
+// consumer frees
 char *delta_human_mode(const enum DisplState state, const struct Head * const head);
 
-// CALLBACK_MSG_LEN, consumer frees
+// consumer frees
 char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head);
-
-// CALLBACK_MSG_LEN, consumer frees
-char *delta_human_adaptive_sync_fail(const enum DisplState state, const struct Head * const head);
 
 // maybe execute CALLBACK_CMD
 // set CALLBACK_MSG to msg1..msg2
 // set CALLBACK_LEVEL to log name
 void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2);
 
-// maybe execute CALLBACK_CMD with warning and custom human
+// maybe execute CALLBACK_CMD
 void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
-// maybe execute CALLBACK_CMD with warning and custom human
-void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * mode);
+// maybe execute CALLBACK_CMD
+void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
 
 #endif // INFO_H
 

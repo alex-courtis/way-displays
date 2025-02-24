@@ -141,11 +141,11 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 	}
 }
 
-void wd_exit(int __status) {
+void wd_exit(const int __status) {
 	exit(__status);
 }
 
-void wd_exit_message(int __status) {
+void wd_exit_message(const int __status) {
 	log_fatal("\nPlease raise an issue: https://github.com/alex-courtis/way-displays/issues");
 	log_fatal("Attach this log and describe the events that occurred before this failure.");
 	exit(__status);

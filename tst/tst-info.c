@@ -444,6 +444,11 @@ void call_back__no_callback(void **state) {
 	call_back(INFO, "msg1", NULL);
 }
 
+void call_back__below_threshold(void **state) {
+	will_return(__wrap_log_get_threshold, WARNING);
+	call_back(INFO, "msg1", NULL);
+}
+
 void call_back__one(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", "msg1");
@@ -451,6 +456,8 @@ void call_back__one(void **state) {
 
 	free(cfg->change_success_cmd);
 	cfg->change_success_cmd = strdup("command");
+
+	will_return(__wrap_log_get_threshold, INFO);
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
@@ -471,6 +478,8 @@ void call_back__two(void **state) {
 	cfg->change_success_cmd = strdup("command");
 
 	displ->delta.human = strdup("not successful");
+
+	will_return(__wrap_log_get_threshold, INFO);
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
@@ -493,6 +502,8 @@ void call_back_mode_fail__(void **state) {
 			"description1\n"
 			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
 	stable_put(env, "CALLBACK_LEVEL", "INFO");
+
+	will_return(__wrap_log_get_threshold, INFO);
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
@@ -520,6 +531,8 @@ void call_back_adaptive_sync_fail__(void **state) {
 			"VRR_OFF:\n"
 			"  - 'model1'");
 	stable_put(env, "CALLBACK_LEVEL", "WARNING");
+
+	will_return(__wrap_log_get_threshold, INFO);
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
@@ -563,6 +576,7 @@ int main(void) {
 		TEST(delta_human__disabled),
 
 		TEST(call_back__no_callback),
+		TEST(call_back__below_threshold),
 		TEST(call_back__one),
 		TEST(call_back__two),
 
