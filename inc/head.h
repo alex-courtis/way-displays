@@ -64,6 +64,9 @@ struct Head {
 	bool warned_no_mode;
 };
 
+// description, name, "???"
+const char *head_human(const struct Head * const head);
+
 bool head_matches_name_desc_exact(const void * const head, const void * const name_desc);
 
 bool head_matches_name_desc_regex(const void * const head, const void * const name_desc);

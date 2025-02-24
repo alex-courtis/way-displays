@@ -453,7 +453,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 		return;
 	}
 
-	log_(t, "\n%s:", head->name);
+	log_(t, "\n%s:", head_human(head));
 	log_(t, "  Cannot enable VRR: this display or compositor may not support it.");
 	log_(t, "  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
 	log_(t, "  VRR_OFF:");
@@ -467,7 +467,7 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * head, const 
 		return;
 	}
 
-	log_(t, "  %s:", head->name);
+	log_(t, "  %s:", head_human(head));
 	print_mode(t, mode);
 }
 
@@ -482,22 +482,20 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 	for (const struct SList *i = heads; i; i = i->nex) {
 		const struct Head * head = i->val;
 
-		char *desc_or_name = head->description ? head->description : head->name;
-
 		// disable in own operation
 		if (head->current.enabled && !head->desired.enabled) {
-			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  disabled\n", desc_or_name);
+			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  disabled\n", head_human(head));
 			continue;
 		}
 
 		// enable in own operation
 		if (!head->current.enabled && head->desired.enabled) {
-			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  enabled\n", desc_or_name);
+			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  enabled\n", head_human(head));
 			continue;
 		}
 
 		if (head_current_not_desired(head)) {
-			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n", desc_or_name);
+			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n", head_human(head));
 
 			if (head->current.scale != head->desired.scale) {
 				bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "  scale:     %.3f -> %.3f\n",
@@ -539,7 +537,7 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 	char *bufp = buf;
 
 	bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  ",
-			head->description ? head->description : head->name
+			head_human(head)
 			);
 
 	if (head->current.mode) {
@@ -575,7 +573,7 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 	char *bufp = buf;
 
 	bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  VRR %s",
-			head->description ? head->description : head->name,
+			head_human(head),
 			head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
 			);
 
@@ -614,14 +612,13 @@ void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head *
 	// custom human message
 	char *human = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
 
-	// TODO add a nameordesc method to head
 	snprintf(human, CALLBACK_MSG_LEN,
 			"%s\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - '%s'",
-			head->description ? head->description : head->name,
+			head_human(head),
 			head->model ? head->model : "name_desc");
 
 	call_back(WARNING, human, NULL);

@@ -20,6 +20,20 @@ struct SList *heads = NULL;
 struct SList *heads_arrived = NULL;
 struct SList *heads_departed = NULL;
 
+const char *head_human(const struct Head * const head) {
+	static const char *unknown = "???";
+
+	if (!head) {
+		return unknown;
+	} else if (head->description) {
+		return head->description;
+	} else if (head->name) {
+		return head->name;
+	}
+
+	return unknown;
+}
+
 bool head_is_max_preferred_refresh(const struct Head * const head) {
 	if (!head)
 		return false;
@@ -154,7 +168,7 @@ wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double sca
 	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * b) \
 				  * ((double)HEAD_WLFIXED_SCALING_BASE / b);
 	if (fixed_scale != fixed_scale_before) {
-		log_debug("\n%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head && head->name ? head->name : "???", scale, b, wl_fixed_to_double(fixed_scale));
+		log_debug("\n%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head_human(head), scale, b, wl_fixed_to_double(fixed_scale));
 	}
 
 	return fixed_scale;
@@ -233,8 +247,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 	if (slist_length(head->modes) == slist_length(head->modes_failed)) {
 		log_error("\nNo mode for %s, disabling.", head->name);
-		snprintf(human, CALLBACK_MSG_LEN, "%s\n  No mode, disabling", head->name);
-		call_back(ERROR, head->name, "\n  No mode, disabling");
+		snprintf(human, CALLBACK_MSG_LEN, "%s\n  No mode, disabling", head_human(head));
+		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 		return NULL;
 	}
 
@@ -252,7 +266,7 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 			log_warn("\n%s: No available mode for user MODE %s, falling back to preferred", head->name, um_str);
 
-			snprintf(human, CALLBACK_MSG_LEN, "%s\n  No available mode for user MODE %s, falling back to preferred", head->name, um_str);
+			snprintf(human, CALLBACK_MSG_LEN, "%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), um_str);
 			call_back(WARNING, human, NULL);
 		}
 	}
@@ -267,9 +281,9 @@ struct Mode *head_find_mode(struct Head * const head) {
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
 
-			log_info("\n%s: No preferred mode, falling back to maximum available", head->name);
+			log_info("\n%s: No preferred mode, falling back to maximum available", head_human(head));
 
-			snprintf(human, CALLBACK_MSG_LEN, "%s\n  No preferred mode, falling back to maximum available", head->name);
+			snprintf(human, CALLBACK_MSG_LEN, "%s\n  No preferred mode, falling back to maximum available", head_human(head));
 			call_back(WARNING, human, NULL);
 		}
 	}
@@ -280,8 +294,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 	}
 
 	if (!mode) {
-		log_error("\nNo mode for %s, disabling.", head->name);
-		call_back(ERROR, head->name, "\n  No mode, disabling");
+		log_error("\nNo mode for %s, disabling.", head_human(head));
+		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 	}
 
 	return mode;
