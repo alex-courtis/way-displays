@@ -80,9 +80,10 @@ Add the following to your `hyprland.conf`:
 exec-once = ${HOME}/.config/hypr/start-way-displays.sh
 ```
 
-### mako (Notification Service, optional)
+### Mako Notification Daemon, Optional
 
-`way-displays` will send notifications by default using default:
+`way-displays` will send notifications by default:
+
 `CALLBACK_CMD: notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
 
 Add the following the above config/init:
