@@ -80,6 +80,16 @@ Add the following to your `hyprland.conf`:
 exec-once = ${HOME}/.config/hypr/start-way-displays.sh
 ```
 
+### mako (Notification Service, optional)
+
+`way-displays` will send notifications by default using default:
+`CALLBACK_CMD: notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
+
+Add the following the above config/init:
+```sh
+mako > "/tmp/mako.${XDG_VTNR}.${USER}.log" 2>&1 &
+```
+
 ### Configure
 
 Restart the compositor and run `way-displays -g` or look at `/tmp/way-displays.1.me.log`.

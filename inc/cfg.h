@@ -53,7 +53,7 @@ struct UserTransform {
 
 #define WL_OUTPUT_TRANSFORM_MAX WL_OUTPUT_TRANSFORM_FLIPPED_270
 
-#define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_STATUS}\" \"${CALLBACK_MSG}\""
+#define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_LEVEL}\" \"${CALLBACK_MSG}\""
 
 struct Cfg {
 	char *dir_path;

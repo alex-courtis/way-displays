@@ -58,7 +58,7 @@ char *delta_human_adaptive_sync_fail(const enum DisplState state, const struct H
 
 // maybe execute CALLBACK_CMD
 // set CALLBACK_MSG to msg1..msg2
-// set CALLBACK_STATUS to log name
+// set CALLBACK_LEVEL to log name
 void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2);
 
 // maybe execute CALLBACK_CMD with warning and custom human

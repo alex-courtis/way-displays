@@ -67,19 +67,21 @@ VRR_OFF:
   # - '!.*my monitor.*'
 
 
-# Sets a /bin/sh command to be executed following most events
+# Sets a /bin/sh command to be executed following most events.
+# Obeys LOG_THRESHOLD
 # ${CALLBACK_MSG} contains a human readable message 
-# ${CALLBACK_STATUS} may be set to `WARNING`, `ERROR` or `FATAL`
+# ${CALLBACK_LEVEL} LOG_THRESHOLD
 # NOTE: Depending on your compositor this could get executed multiple times when
 # a change happens. Especially likely on a (dis-)connect.
-CALLBACK_CMD: notify-send "way-displays ${CALLBACK_STATUS}" "${CALLBACK_MSG}"
+CALLBACK_CMD: notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 
 # Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
 # your laptop is different.
 #LAPTOP_DISPLAY_PREFIX: 'eDP'
 
 
-# One of: ERROR, WARNING, INFO (default), DEBUG
+# One of: FATAL, ERROR, WARNING, INFO (default), DEBUG
+# Applies to logs and callbacks
 LOG_THRESHOLD: INFO
 
 

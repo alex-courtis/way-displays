@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2025/02/16
+% 2025/02/24
 
 # NAME
 
@@ -67,7 +67,7 @@ User should be a member of the `input` group for querying laptop lid state.
 
 # OPTIONS
 
-`-L` | `--l[og-threshold]` <*debug*|*info*|*warning*|*error*>
+`-L` | `--l[og-threshold]` <*debug*|*info*|*warning*|*error*|*fatal*>
 : Overrides cfg.yaml. *info* is default.
 
 `-c` | `--c[onfig]` <*path*>
@@ -121,9 +121,11 @@ User should be a member of the `input` group for querying laptop lid state.
 	: Disable a display.
 
 	`CALLBACK_CMD` <*shell command*>
-    : Sets a `/bin/sh` command to be executed following most events. Default: `notify-send "way-displays ${CALLBACK_STATUS}" "${CALLBACK_MSG}"`
+    : Sets a `/bin/sh` command to be executed following most events.
+    : Obeys LOG_THRESHOLD
+    : - Default: `notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
     : - `${CALLBACK_MSG}` contains a human readable message 
-    : - `${CALLBACK_STATUS}` may be set to `WARNING`, `ERROR` or `FATAL`
+    : - `${CALLBACK_LEVEL}` `LOG_THRESHOLD`
 
 `-d`, `--d[elete]`
 : Remove an existing setting.

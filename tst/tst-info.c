@@ -447,7 +447,7 @@ void call_back__no_callback(void **state) {
 void call_back__one(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", "msg1");
-	stable_put(env, "CALLBACK_STATUS", "INFO");
+	stable_put(env, "CALLBACK_LEVEL", "INFO");
 
 	free(cfg->change_success_cmd);
 	cfg->change_success_cmd = strdup("command");
@@ -465,7 +465,7 @@ void call_back__one(void **state) {
 void call_back__two(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", "msg1msg2");
-	stable_put(env, "CALLBACK_STATUS", "FATAL");
+	stable_put(env, "CALLBACK_LEVEL", "FATAL");
 
 	free(cfg->change_success_cmd);
 	cfg->change_success_cmd = strdup("command");
@@ -492,7 +492,7 @@ void call_back_mode_fail__(void **state) {
 	stable_put(env, "CALLBACK_MSG",
 			"description1\n"
 			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
-	stable_put(env, "CALLBACK_STATUS", "INFO");
+	stable_put(env, "CALLBACK_LEVEL", "INFO");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);
@@ -519,7 +519,7 @@ void call_back_adaptive_sync_fail__(void **state) {
 			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - 'model1'");
-	stable_put(env, "CALLBACK_STATUS", "WARNING");
+	stable_put(env, "CALLBACK_LEVEL", "WARNING");
 
 	expect_string(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
 	expect_check(__wrap_spawn_sh_cmd, env, expect_stable_equal_strcmp, env);

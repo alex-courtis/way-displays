@@ -595,7 +595,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	// pack environment variables
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", buf);
-	stable_put(env, "CALLBACK_STATUS", log_threshold_name(t));
+	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
 	// execute callback
 	spawn_sh_cmd(cfg->change_success_cmd, env);

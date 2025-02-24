@@ -22,5 +22,5 @@ way-displays -s DISABLED 'four'
 way-displays -s VRR_OFF 'five'
 way-displays -s VRR_OFF 'six'
 
-way-displays -s CALLBACK_CMD 'notify-send "way-displays ${CALLBACK_STATUS}" "${CALLBACK_MSG}"'
+way-displays -s CALLBACK_CMD 'notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"'
 
