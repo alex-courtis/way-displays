@@ -24,7 +24,9 @@ See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/C
 
 A wlroots based compositor that supports the WLR Output Management protocol.
 
-way-displays is blessed for the [sway](https://swaywm.org/), [river](https://github.com/riverwm/river) and [Hpyrland](https://hyprland.org/) compositors. It may work on others.
+way-displays is blessed for the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river). It may work on others.
+
+[Hpyrland](https://hyprland.org/) provides all way-displays functionality and you may experience issues.
 
 way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 
@@ -57,27 +59,6 @@ exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 Add the following to your `init`:
 ```sh
 way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
-```
-
-### Hyprland
-
-Create a launcher: `${HOME}/.config/hypr/start-way-displays.sh`
-```sh
-#!/bin/sh
-
-sleep 1 # give Hyprland a moment to set its defaults
-
-way-displays > "/tmp/way-displays.${XDG_VTNR}.${USER}.log" 2>&1
-```
-
-Make it executable:
-```sh
-chmod 755 ${HOME}/.config/hypr/start-way-displays.sh
-```
-
-Add the following to your `hyprland.conf`:
-```sh
-exec-once = ${HOME}/.config/hypr/start-way-displays.sh
 ```
 
 ### Configure
