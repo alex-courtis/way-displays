@@ -210,9 +210,9 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (cfg->change_success_cmd) {
+	if (cfg->callback_cmd) {
 		log_(t, "  Change success command:");
-		log_(t, "    %s", cfg->change_success_cmd);
+		log_(t, "    %s", cfg->callback_cmd);
 	}
 
 	if (cfg->laptop_display_prefix) {
@@ -305,9 +305,9 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	if (cfg->change_success_cmd) {
+	if (cfg->callback_cmd) {
 		print_newline(t, &newline);
-		log_(t, "way-displays -s CALLBACK_CMD '%s'", cfg->change_success_cmd);
+		log_(t, "way-displays -s CALLBACK_CMD '%s'", cfg->callback_cmd);
 	}
 }
 
@@ -581,12 +581,12 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 }
 
 void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
-	if (!cfg->change_success_cmd || t < log_get_threshold()) {
+	if (!cfg->callback_cmd || t < log_get_threshold()) {
 		return;
 	}
 
 	log_info("\nExecuting CALLBACK_CMD:");
-	log_info("  %s", cfg->change_success_cmd);
+	log_info("  %s", cfg->callback_cmd);
 
 	// decorate human message and optional log
 	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
@@ -598,7 +598,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
 	// execute callback
-	spawn_sh_cmd(cfg->change_success_cmd, env);
+	spawn_sh_cmd(cfg->callback_cmd, env);
 
 	stable_free(env);
 	free(buf);
@@ -627,7 +627,7 @@ void call_back_mode_fail(const enum LogThreshold t, const struct Head * const he
 }
 
 void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
-	if (!cfg->change_success_cmd || !head) {
+	if (!cfg->callback_cmd || !head) {
 		return;
 	}
 

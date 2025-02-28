@@ -63,7 +63,7 @@ struct Cfg {
 
 	bool updated;
 
-	char *change_success_cmd;
+	char *callback_cmd;
 	char *laptop_display_prefix;
 	struct SList *order_name_desc;
 	enum Arrange arrange;

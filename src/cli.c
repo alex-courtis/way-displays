@@ -161,11 +161,11 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 		case CALLBACK_CMD:
 			switch (command) {
 				case CFG_SET:
-					cfg->change_success_cmd = strdup(argv[optind]);
+					cfg->callback_cmd = strdup(argv[optind]);
 					parsed = true;
 					break;
 				case CFG_DEL:
-					cfg->change_success_cmd = strdup("");
+					cfg->callback_cmd = strdup("");
 					parsed = true;
 					break;
 				default:

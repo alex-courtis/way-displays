@@ -61,8 +61,8 @@ int before_each(void **state) {
 	cfg = cfg_default();
 
 	// only set this when we specifically want to test it
-	free(cfg->change_success_cmd);
-	cfg->change_success_cmd = NULL;
+	free(cfg->callback_cmd);
+	cfg->callback_cmd = NULL;
 
 	displ = calloc(1, sizeof(struct Displ));
 
