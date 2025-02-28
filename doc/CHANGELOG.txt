@@ -1,3 +1,8 @@
+way-displays 1.12.0 2025-02-28
+------------------------------
+#164 add CALLBACK_CMD with ${CALLBACK_LEVEL} ${CALLBACK_MSG}, defaults to notify-send
+#113 fix multiple preferred modes warning
+
 way-displays 1.11.0 2024-04-20
 ------------------------------
 #138 always round scales to nearest 1/8 to support fractional scaling and other recent compositor changes; use --log-threshold debug to see details
