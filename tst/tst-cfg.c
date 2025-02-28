@@ -221,13 +221,17 @@ void merge_set__disabled(void **state) {
 	cfg_free(merged);
 }
 
-void merge_set__change_success_cmd(void **state) {
+void merge_set__callback_cmd(void **state) {
 	struct State *s = *state;
 
-	s->to->change_success_cmd = strdup("to");
-	s->from->change_success_cmd = strdup("from");
+	free(s->to->callback_cmd);
+	s->to->callback_cmd = strdup("to");
 
-	s->expected->change_success_cmd = strdup("from");
+	free(s->from->callback_cmd);
+	s->from->callback_cmd = strdup("from");
+
+	free(s->expected->callback_cmd);
+	s->expected->callback_cmd = strdup("from");
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -326,13 +330,17 @@ void merge_del__disabled(void **state) {
 	cfg_free(merged);
 }
 
-void merge_del__change_success_cmd(void **state) {
+void merge_del__callback_cmd(void **state) {
 	struct State *s = *state;
 
-	s->to->change_success_cmd = strdup("to");
-	s->from->change_success_cmd = strdup("");
+	free(s->to->callback_cmd);
+	s->to->callback_cmd = strdup("to");
 
-	s->expected->change_success_cmd = NULL;
+	free(s->from->callback_cmd);
+	s->from->callback_cmd = strdup("");
+
+	free(s->expected->callback_cmd);
+	s->expected->callback_cmd = NULL;
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -466,14 +474,14 @@ int main(void) {
 		TEST(merge_set__mode),
 		TEST(merge_set__adaptive_sync_off),
 		TEST(merge_set__disabled),
-		TEST(merge_set__change_success_cmd),
+		TEST(merge_set__callback_cmd),
 
 		TEST(merge_del__scale),
 		TEST(merge_del__mode),
 		TEST(merge_del__transform),
 		TEST(merge_del__adaptive_sync_off),
 		TEST(merge_del__disabled),
-		TEST(merge_del__change_success_cmd),
+		TEST(merge_del__callback_cmd),
 
 		TEST(validate_fix__col),
 		TEST(validate_fix__row),

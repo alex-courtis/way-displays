@@ -267,9 +267,9 @@ struct Cfg *clone_cfg(struct Cfg *from) {
 		slist_append(&to->adaptive_sync_off_name_desc, strdup((char*)i->val));
 	}
 
-	// CHANGE_SUCCESS_CMD
-	if (from->change_success_cmd) {
-		to->change_success_cmd = strdup(from->change_success_cmd);
+	// CALLBACK_CMD
+	if (from->callback_cmd) {
+		to->callback_cmd = strdup(from->callback_cmd);
 	}
 
 	// LAPTOP_DISPLAY_PREFIX
@@ -351,9 +351,9 @@ bool cfg_equal(struct Cfg *a, struct Cfg *b) {
 		return false;
 	}
 
-	// CHANGE_SUCCESS_CMD
-	char *ao = a->change_success_cmd;
-	char *bo = b->change_success_cmd;
+	// CALLBACK_CMD
+	char *ao = a->callback_cmd;
+	char *bo = b->callback_cmd;
 	if ((ao && !bo) || (!ao && bo) || (ao && bo && strcmp(ao, bo) != 0)) {
 		return false;
 	}
@@ -398,6 +398,7 @@ struct Cfg *cfg_default(void) {
 	def->auto_scale = AUTO_SCALE_DEFAULT;
 	def->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
 	def->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
+	def->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
 
 	return def;
 }
@@ -656,12 +657,12 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
-	// CHANGE_SUCCESS_CMD
-	if (from->change_success_cmd) {
-		if (merged->change_success_cmd) {
-			free(merged->change_success_cmd);
+	// CALLBACK_CMD
+	if (from->callback_cmd) {
+		if (merged->callback_cmd) {
+			free(merged->callback_cmd);
 		}
-		merged->change_success_cmd = strdup(from->change_success_cmd);
+		merged->callback_cmd = strdup(from->callback_cmd);
 	}
 
 	return merged;
@@ -701,10 +702,10 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 		slist_remove_all_free(&merged->disabled_name_desc, fn_comp_equals_strcmp, i->val, NULL);
 	}
 
-	// CHANGE_SUCCESS_CMD
-	if (from->change_success_cmd && strlen(from->change_success_cmd) == 0) {
-		free(merged->change_success_cmd);
-		merged->change_success_cmd = NULL;
+	// CALLBACK_CMD
+	if (from->callback_cmd && strlen(from->callback_cmd) == 0) {
+		free(merged->callback_cmd);
+		merged->callback_cmd = NULL;
 	}
 
 	return merged;
@@ -820,7 +821,7 @@ void cfg_file_write(void) {
 		goto end;
 	}
 
-	if (cfg->file_path && (written = file_write(cfg->file_path, yaml))) {
+	if (cfg->file_path && (written = file_write(cfg->file_path, yaml, "w"))) {
 		cfg->updated = true;
 		goto end;
 	}
@@ -842,7 +843,7 @@ void cfg_file_write(void) {
 			set_paths(cfg, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(cfg->dir_path, 0755) && (written = file_write(i->val, yaml))) {
+			if (mkdir_p(cfg->dir_path, 0755) && (written = file_write(i->val, yaml, "w"))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
@@ -872,7 +873,7 @@ void cfg_free(struct Cfg *cfg) {
 
 	cfg_free_paths(cfg);
 
-	free(cfg->change_success_cmd);
+	free(cfg->callback_cmd);
 
 	free(cfg->laptop_display_prefix);
 

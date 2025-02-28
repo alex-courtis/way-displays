@@ -84,6 +84,10 @@ struct SList *itable_vals_slist(const struct ITable* const tab);
  * Info
  */
 
+// to string, user frees
+// values must be char*, printed using %s, NULL printed as "(null)"
+char *itable_str(const struct ITable* const tab);
+
 // number of entries with val
 size_t itable_size(const struct ITable* const tab);
 

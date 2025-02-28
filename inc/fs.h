@@ -6,7 +6,7 @@
 
 bool mkdir_p(char *path, mode_t mode);
 
-bool file_write(const char *path, const char *contents);
+bool file_write(const char *path, const char *contents, const char *mode);
 
 #endif // FS_H
 

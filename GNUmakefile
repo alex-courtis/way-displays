@@ -29,6 +29,7 @@ $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
 way-displays: $(SRC_O) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+	@test -x ../deploy.sh && ../deploy.sh || true
 
 $(PRO_H): $(PRO_X)
 	wayland-scanner client-header $(@:.h=.xml) $@
@@ -62,11 +63,9 @@ man: doc/way-displays.1.pandoc
 iwyu: override CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: override CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
 iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
-IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --error=1 -Xiwyu --verbose=3
+IWYU = include-what-you-use -Xiwyu --no_fwd_decls -Xiwyu --error=1 -Xiwyu --verbose=3 -Xiwyu --mapping_file=.iwyu.mappings
 
 cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
-	# TODO: add --check-level=exhaustive when cppcheck ~2.14 is availble for CI
-	# cppcheck --enable=warning,unusedFunction,performance,portability --check-level=exhaustive --suppressions-list=bld/cppcheck.supp --error-exitcode=1 $(^)
 	cppcheck --enable=warning,unusedFunction,performance,portability --suppressions-list=bld/cppcheck.supp --error-exitcode=1 $(^)
 
 %-vg: VALGRIND = valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --gen-suppressions=all --suppressions=bld/vg.supp

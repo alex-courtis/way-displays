@@ -11,7 +11,7 @@
 
 void cleanup(struct Displ *displ,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1,
-		enum ConfigState config_state) {
+		enum DisplState state) {
 
 	for (struct SList *i = heads; i; i = i->nex) {
 		struct Head *head = i->val;
@@ -23,7 +23,7 @@ void cleanup(struct Displ *displ,
 
 	zwlr_output_configuration_v1_destroy(zwlr_output_configuration_v1);
 
-	displ->config_state = config_state;
+	displ->state = state;
 }
 
 static void succeeded(void *data,

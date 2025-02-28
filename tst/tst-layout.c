@@ -9,9 +9,9 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "displ.h"
 #include "global.h"
 #include "head.h"
-#include "info.h"
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
@@ -60,6 +60,12 @@ int after_all(void **state) {
 int before_each(void **state) {
 	cfg = cfg_default();
 
+	// only set this when we specifically want to test it
+	free(cfg->callback_cmd);
+	cfg->callback_cmd = NULL;
+
+	displ = calloc(1, sizeof(struct Displ));
+
 	struct State *s = calloc(1, sizeof(struct State));
 
 	s->mode = calloc(1, sizeof(struct Mode));
@@ -79,8 +85,11 @@ int after_each(void **state) {
 
 	slist_free(&heads);
 
-	head_changing_mode = NULL;
-	head_changing_adaptive_sync = NULL;
+	assert_nul(displ->delta.head);
+	assert_int_equal(displ->delta.element, 0);
+	assert_nul(displ->delta.human);
+
+	free(displ);
 
 	cfg_destroy();
 
@@ -387,13 +396,7 @@ void desire_mode__no_mode(void **state) {
 	expect_value(__wrap_head_find_mode, head, &head0);
 	will_return(__wrap_head_find_mode, NULL);
 
-	expect_value(__wrap_print_head, t, WARNING);
-	expect_value(__wrap_print_head, event, NONE);
-	expect_value(__wrap_print_head, head, &head0);
-
 	desire_mode(&head0);
-
-	assert_log(WARNING, "\nNo mode for head0, disabling.\n");
 
 	assert_ptr_equal(head0.desired.mode, &mode0);
 	assert_false(head0.desired.enabled);
@@ -594,13 +597,17 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 		.adaptive_sync_failed = false,
 	};
-	head_changing_adaptive_sync = &head;
+	displ->delta.element = VRR_OFF;
+	displ->delta.head = &head;
+
+	expect_value(__wrap_call_back, t, INFO);
+	expect_string(__wrap_call_back, msg1, "Changes successful");
+	expect_value(__wrap_call_back, msg2, NULL);
 
 	handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
 
-	assert_null(head_changing_adaptive_sync);
 	assert_false(head.adaptive_sync_failed);
 }
 
@@ -611,17 +618,17 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 	};
-	head_changing_adaptive_sync = &head;
+	displ->delta.element = VRR_OFF;
+	displ->delta.head = &head;
+
+	expect_value(__wrap_print_adaptive_sync_fail, t, WARNING);
+	expect_value(__wrap_print_adaptive_sync_fail, head, &head);
+
+	expect_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
+	expect_string(__wrap_call_back_adaptive_sync_fail, head, &head);
 
 	handle_success();
 
-	assert_log(INFO, "\nhead:\n"
-			"  Cannot enable VRR: this display or compositor may not support it.\n"
-			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
-			"  VRR_OFF:\n"
-			"    - 'monitor description'\n");
-
-	assert_null(head_changing_adaptive_sync);
 	assert_true(head.adaptive_sync_failed);
 }
 
@@ -630,29 +637,27 @@ void handle_success__head_changing_mode(void **state) {
 	struct Head head = {
 		.desired.mode = &mode,
 	};
-	head_changing_mode = &head;
+	displ->delta.element = MODE;
+	displ->delta.head = &head;
+
+	expect_value(__wrap_call_back, t, INFO);
+	expect_string(__wrap_call_back, msg1, "Changes successful");
+	expect_value(__wrap_call_back, msg2, NULL);
 
 	handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
 
 	assert_ptr_equal(head.current.mode, &mode);
-	assert_null(head_changing_mode);
-}
-
-void handle_success__change_success_cmd(void **state) {
-	cfg->change_success_cmd = strdup("echo \"hi from way-displays\"");
-
-	expect_value(__wrap_spawn_sh_cmd, command, cfg->change_success_cmd);
-
-	handle_success();
-
-	assert_log(INFO, "\nExecuting CHANGE_SUCCESS_CMD:\n"
-			"  echo \"hi from way-displays\"\n"
-			"\nChanges successful\n");
 }
 
 void handle_success__ok(void **state) {
+	displ->delta.human = strdup("human");
+
+	expect_value(__wrap_call_back, t, INFO);
+	expect_string(__wrap_call_back, msg1, "human");
+	expect_value(__wrap_call_back, msg2, NULL);
+
 	handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
@@ -666,18 +671,20 @@ void handle_failure__mode(void **state) {
 		.current.mode = &mode_cur,
 		.desired.mode = &mode_des,
 	};
-	head_changing_mode = &head;
+	displ->delta.element = MODE;
+	displ->delta.head = &head;
 
-	expect_value(__wrap_print_mode, t, ERROR);
-	expect_value(__wrap_print_mode, mode, &mode_des);
+	expect_value(__wrap_print_mode_fail, t, ERROR);
+	expect_value(__wrap_print_mode_fail, head, &head);
+	expect_value(__wrap_print_mode_fail, mode, &mode_des);
+
+	expect_value(__wrap_call_back_mode_fail, t, ERROR);
+	expect_value(__wrap_call_back_mode_fail, head, &head);
+	expect_value(__wrap_call_back_mode_fail, mode, &mode_des);
 
 	handle_failure();
 
-	assert_log(ERROR, "\nChanges failed\n  nam:\n");
-
-	assert_null(head_changing_mode);
-
-	assert_null(head.current.mode);
+	assert_nul(head.current.mode);
 	assert_ptr_equal(head.desired.mode, &mode_des);
 
 	assert_ptr_equal(slist_find_equal_val(head.modes_failed, NULL, &mode_des), &mode_des);
@@ -692,27 +699,32 @@ void handle_failure__adaptive_sync(void **state) {
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 	};
-	head_changing_adaptive_sync = &head;
+	displ->delta.element = VRR_OFF;
+	displ->delta.head = &head;
+
+	expect_value(__wrap_print_adaptive_sync_fail, t, WARNING);
+	expect_value(__wrap_print_adaptive_sync_fail, head, &head);
+
+	expect_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
+	expect_string(__wrap_call_back_adaptive_sync_fail, head, &head);
 
 	handle_failure();
-
-	assert_log(INFO, "\nnam:\n"
-			"  Cannot enable VRR: this display or compositor may not support it.\n"
-			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
-			"  VRR_OFF:\n"
-			"    - 'mod'\n");
-
-	assert_null(head_changing_adaptive_sync);
 
 	assert_true(head.adaptive_sync_failed);
 }
 
 void handle_failure__unspecified(void **state) {
+	displ->delta.human = strdup("human");
+
+	expect_value(__wrap_call_back, t, FATAL);
+	expect_string(__wrap_call_back, msg1, "human");
+	expect_string(__wrap_call_back, msg2, "\nChanges failed, exiting");
+
 	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
 	handle_failure();
 
-	assert_log(ERROR, "\nChanges failed\n");
+	assert_log(FATAL, "\nChanges failed, exiting\n");
 }
 
 int main(void) {
@@ -755,7 +767,6 @@ int main(void) {
 		TEST(handle_success__head_changing_adaptive_sync),
 		TEST(handle_success__head_changing_adaptive_sync_fail),
 		TEST(handle_success__head_changing_mode),
-		TEST(handle_success__change_success_cmd),
 		TEST(handle_success__ok),
 
 		TEST(handle_failure__mode),

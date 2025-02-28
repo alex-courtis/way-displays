@@ -21,13 +21,13 @@
 
 #include "marshalling.h"
 
-void lcl(enum LogThreshold threshold, char *line) {
+void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
 	lcl->threshold = threshold;
 	lcl->line = strdup(line);
 
-	slist_append(&log_cap_lines, lcl);
+	slist_append(log_cap_lines, lcl);
 }
 
 int before_all(void **state) {
@@ -43,7 +43,6 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
-	log_capture_clear();
 	assert_logs_empty();
 	cfg_free(cfg);
 	cfg = NULL;
@@ -66,7 +65,8 @@ struct Cfg *cfg_all(void) {
 	cfg->auto_scale_min = 0.5f;
 	cfg->auto_scale_max = 2.5f;
 
-	cfg->change_success_cmd = strdup("cmd");
+	free(cfg->callback_cmd);
+	cfg->callback_cmd = strdup("cmd");
 	cfg->laptop_display_prefix = strdup("ldp");
 
 	slist_append(&cfg->order_name_desc, strdup("one"));
@@ -138,6 +138,24 @@ void unmarshal_cfg_from_file__bad(void **state) {
 	free(expected_log);
 }
 
+void unmarshal_cfg_from_file__legacy(void **state) {
+	struct Cfg *read = cfg_default();
+	read->file_path = strdup("tst/marshalling/cfg-legacy.yaml");
+
+	assert_true(unmarshal_cfg_from_file(read));
+
+	struct Cfg *expected = cfg_default();
+
+	// CHANGE_SUCCESS_CMD -> CALLBACK_CMD
+	free(expected->callback_cmd);
+	expected->callback_cmd = strdup("foo");
+
+	assert_cfg_equal(read, expected);
+
+	cfg_free(read);
+	cfg_free(expected);
+}
+
 void marshal_cfg__ok(void **state) {
 	struct Cfg *cfg_actual = cfg_all();
 
@@ -145,7 +163,7 @@ void marshal_cfg__ok(void **state) {
 
 	char *expected = read_file("tst/marshalling/cfg-all.yaml");
 
-	assert_string_equal_nn(actual, expected);
+	assert_str_equal(actual, expected);
 
 	cfg_free(cfg_actual);
 	free(actual);
@@ -155,7 +173,7 @@ void marshal_cfg__ok(void **state) {
 void marshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
-	assert_null(marshal_ipc_request(ipc_request));
+	assert_nul(marshal_ipc_request(ipc_request));
 
 	assert_log(ERROR, "marshalling ipc request: missing OP\n");
 
@@ -173,7 +191,7 @@ void marshal_ipc_request__cfg_set(void **state) {
 
 	char *expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
 
-	assert_string_equal_nn(actual, expected);
+	assert_str_equal(actual, expected);
 
 	ipc_request_free(ipc_request);
 	free(actual);
@@ -189,7 +207,6 @@ void marshal_ipc_response__map(void **state) {
 	ipc_operation->request = ipc_request;
 	ipc_operation->done = true;
 	ipc_operation->rc = 1;
-	ipc_operation->send_logs = true;
 	ipc_operation->send_state = true;
 
 	cfg = cfg_all();
@@ -198,10 +215,10 @@ void marshal_ipc_response__map(void **state) {
 	lid->closed = true;
 	lid->device_path = "/path/to/lid";
 
-	lcl(DEBUG, "dbg");
-	lcl(INFO, "inf");
-	lcl(WARNING, "war");
-	lcl(ERROR, "err");
+	lcl(DEBUG, "dbg", &ipc_operation->log_cap_lines);
+	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
+	lcl(WARNING, "war", &ipc_operation->log_cap_lines);
+	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
 
 	struct Mode mode1 = {
 		.width = 10,
@@ -250,11 +267,11 @@ void marshal_ipc_response__map(void **state) {
 
 	char *actual = marshal_ipc_response(ipc_operation);
 
-	assert_non_null(actual);
+	assert_non_nul(actual);
 
 	char *expected = read_file("tst/marshalling/ipc-responses-map.yaml");
 
-	assert_string_equal_nn(actual, expected);
+	assert_str_equal(actual, expected);
 
 	ipc_operation_free(ipc_operation);
 	free(actual);
@@ -275,9 +292,9 @@ void marshal_ipc_response__seq(void **state) {
 
 	char *actual = marshal_ipc_response(ipc_operation);
 
-	assert_non_null(actual);
+	assert_non_nul(actual);
 
-	assert_string_equal_nn(actual, "- DONE: TRUE\n  RC: 1\n");
+	assert_str_equal(actual, "- DONE: TRUE\n  RC: 1\n");
 
 	ipc_operation_free(ipc_operation);
 	free(actual);
@@ -286,7 +303,7 @@ void marshal_ipc_response__seq(void **state) {
 void unmarshal_ipc_request__empty(void **state) {
 	struct IpcRequest *actual = unmarshal_ipc_request("");
 
-	assert_null(actual);
+	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
 			"unmarshalling ipc request: empty request\n"
@@ -298,7 +315,7 @@ void unmarshal_ipc_request__empty(void **state) {
 void unmarshal_ipc_request__bad_op(void **state) {
 	struct IpcRequest *actual = unmarshal_ipc_request("OP: aoeu");
 
-	assert_null(actual);
+	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
 			"unmarshalling ipc request: invalid OP 'aoeu'\n"
@@ -310,7 +327,7 @@ void unmarshal_ipc_request__bad_op(void **state) {
 void unmarshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *actual = unmarshal_ipc_request("FOO: BAR");
 
-	assert_null(actual);
+	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
 			"unmarshalling ipc request: missing OP\n"
@@ -324,7 +341,7 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 
 	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
 
-	assert_non_null(actual);
+	assert_non_nul(actual);
 	assert_int_equal(actual->command, CFG_SET);
 
 	struct Cfg *expected_cfg = cfg_all();
@@ -341,7 +358,7 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 void unmarshal_ipc_responses__empty(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("");
 
-	assert_null(actual);
+	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
 			"unmarshalling ipc response: expected sequence or map\n"
@@ -353,7 +370,7 @@ void unmarshal_ipc_responses__empty(void **state) {
 void unmarshal_ipc_responses__seq_no_map(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("-");
 
-	assert_null(actual);
+	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
 			"unmarshalling ipc response: expected map\n"
@@ -365,7 +382,7 @@ void unmarshal_ipc_responses__seq_no_map(void **state) {
 void unmarshal_ipc_responses__seq_no_done(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("- FOO: BAR");
 
-	assert_null(actual);
+	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
 			"unmarshalling ipc response: DONE missing\n"
@@ -377,7 +394,7 @@ void unmarshal_ipc_responses__seq_no_done(void **state) {
 void unmarshal_ipc_responses__seq_no_rc(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("- DONE: TRUE");
 
-	assert_null(actual);
+	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
 			"unmarshalling ipc response: RC missing\n"
@@ -391,7 +408,7 @@ void unmarshal_ipc_responses__map(void **state) {
 
 	struct SList *responses = unmarshal_ipc_responses(yaml);
 
-	assert_non_null(responses);
+	assert_non_nul(responses);
 	assert_int_equal(slist_length(responses), 1);
 
 	struct IpcResponse *response = slist_at(responses, 0);
@@ -399,24 +416,24 @@ void unmarshal_ipc_responses__map(void **state) {
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
 
-	assert_non_null(response->lid);
+	assert_non_nul(response->lid);
 	assert_true(response->lid->closed);
-	assert_string_equal_nn(response->lid->device_path, "/path/to/lid");
+	assert_str_equal(response->lid->device_path, "/path/to/lid");
 
-	assert_non_null(response->cfg);
+	assert_non_nul(response->cfg);
 	struct Cfg *expected_cfg = cfg_all();
 	assert_cfg_equal(response->cfg, expected_cfg);
 
 	assert_int_equal(slist_length(response->heads), 1);
 	struct Head *head = slist_at(response->heads, 0);
 
-	assert_string_equal_nn(head->name, "name");
-	assert_string_equal_nn(head->description, "desc");
+	assert_str_equal(head->name, "name");
+	assert_str_equal(head->description, "desc");
 	assert_int_equal(head->width_mm, 1);
 	assert_int_equal(head->height_mm, 2);
-	assert_string_equal_nn(head->make, "make");
-	assert_string_equal_nn(head->model, "model");
-	assert_string_equal_nn(head->serial_number, "serial");
+	assert_str_equal(head->make, "make");
+	assert_str_equal(head->model, "model");
+	assert_str_equal(head->serial_number, "serial");
 
 	assert_int_equal(head->current.scale, wl_fixed_from_double(4));
 	assert_true(head->current.enabled);
@@ -431,14 +448,14 @@ void unmarshal_ipc_responses__map(void **state) {
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
 	struct Mode *mode_current = head->current.mode;
-	assert_non_null(mode_current);
+	assert_non_nul(mode_current);
 	assert_int_equal(mode_current->width, 10);
 	assert_int_equal(mode_current->height, 11);
 	assert_int_equal(mode_current->refresh_mhz, 12);
 	assert_true(mode_current->preferred);
 
 	struct Mode *mode_desired = head->desired.mode;
-	assert_non_null(mode_desired);
+	assert_non_nul(mode_desired);
 	assert_int_equal(mode_desired->width, 13);
 	assert_int_equal(mode_desired->height, 14);
 	assert_int_equal(mode_desired->refresh_mhz, 15);
@@ -446,14 +463,14 @@ void unmarshal_ipc_responses__map(void **state) {
 
 	assert_int_equal(slist_length(head->modes), 2);
 	struct Mode *mode1 = slist_at(head->modes, 0);
-	assert_non_null(mode1);
+	assert_non_nul(mode1);
 	assert_int_equal(mode1->width, 10);
 	assert_int_equal(mode1->height, 11);
 	assert_int_equal(mode1->refresh_mhz, 12);
 	assert_true(mode1->preferred);
 
 	struct Mode *mode2 = slist_at(head->modes, 1);
-	assert_non_null(mode2);
+	assert_non_nul(mode2);
 	assert_int_equal(mode2->width, 13);
 	assert_int_equal(mode2->height, 14);
 	assert_int_equal(mode2->refresh_mhz, 15);
@@ -465,14 +482,14 @@ void unmarshal_ipc_responses__map(void **state) {
 	assert_int_equal(slist_length(response->log_cap_lines), 2);
 
 	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
-	assert_non_null(line);
+	assert_non_nul(line);
 	assert_int_equal(line->threshold, WARNING);
-	assert_string_equal_nn(line->line, "war");
+	assert_str_equal(line->line, "war");
 
 	line = slist_at(response->log_cap_lines, 1);
-	assert_non_null(line);
+	assert_non_nul(line);
 	assert_int_equal(line->threshold, ERROR);
-	assert_string_equal_nn(line->line, "err");
+	assert_str_equal(line->line, "err");
 
 	slist_free_vals(&responses, ipc_response_free);
 	cfg_free(expected_cfg);
@@ -488,52 +505,52 @@ void unmarshal_ipc_responses__seq(void **state) {
 		.arrange = COL
 	};
 
-	assert_non_null(responses);
+	assert_non_nul(responses);
 	assert_int_equal(slist_length(responses), 3);
 
 	// 0
 	struct IpcResponse *response = slist_at(responses, 0);
-	assert_non_null(response);
+	assert_non_nul(response);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 0);
 
 	struct Cfg *cfg_actual = response->cfg;
-	assert_non_null(cfg_actual);
+	assert_non_nul(cfg_actual);
 	assert_cfg_equal(cfg_actual, &cfg_expected);
 
 	struct Lid *lid = response->lid;
-	assert_non_null(lid);
-	assert_string_equal_nn(lid->device_path, "/path/to/lid");
+	assert_non_nul(lid);
+	assert_str_equal(lid->device_path, "/path/to/lid");
 
 	struct SList *heads = response->heads;
-	assert_non_null(heads);
+	assert_non_nul(heads);
 	assert_int_equal(slist_length(heads), 2);
 
 	struct Head *head0 = slist_at(heads, 0);
-	assert_non_null(head0);
-	assert_string_equal_nn(head0->name, "name0");
+	assert_non_nul(head0);
+	assert_str_equal(head0->name, "name0");
 
 	struct Head *head1 = slist_at(heads, 1);
-	assert_non_null(head1);
-	assert_string_equal_nn(head1->name, "name1");
+	assert_non_nul(head1);
+	assert_str_equal(head1->name, "name1");
 
 	// 1
 	response = slist_at(responses, 1);
-	assert_non_null(response);
+	assert_non_nul(response);
 	assert_false(response->status.done);
 	assert_int_equal(response->status.rc, 1);
-	assert_null(response->cfg);
-	assert_null(response->lid);
-	assert_null(response->heads);
+	assert_nul(response->cfg);
+	assert_nul(response->lid);
+	assert_nul(response->heads);
 
 	// 2
 	response = slist_at(responses, 2);
-	assert_non_null(response);
+	assert_non_nul(response);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
-	assert_null(response->cfg);
-	assert_null(response->lid);
-	assert_null(response->heads);
+	assert_nul(response->cfg);
+	assert_nul(response->lid);
+	assert_nul(response->heads);
 
 	slist_free_vals(&responses, ipc_response_free);
 	free(yaml);
@@ -544,6 +561,7 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__ok),
 		TEST(unmarshal_cfg_from_file__empty),
 		TEST(unmarshal_cfg_from_file__bad),
+		TEST(unmarshal_cfg_from_file__legacy),
 
 		// YAML::Node equality operator is deprecated and not functional.
 		// All we can do is read files with the same format that will be emitted.

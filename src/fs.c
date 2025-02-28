@@ -40,19 +40,21 @@ end:
 	return rc;
 }
 
-bool file_write(const char *path, const char *contents) {
-	if (!path || !contents) {
+bool file_write(const char *path, const char *contents, const char *mode) {
+	if (!path || !mode) {
 		return false;
 	}
 
-	FILE *f = fopen(path, "w");
+	FILE *f = fopen(path, mode);
 
 	if (!f) {
 		log_error_errno("\nUnable to write to %s", path);
 		return false;
 	}
 
-	fprintf(f, "%s\n", contents);
+	if (contents) {
+		fprintf(f, "%s\n", contents);
+	}
 
 	fflush(f);
 

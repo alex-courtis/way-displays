@@ -131,14 +131,14 @@ void head_auto_scale__range(void **state) {
 
 }
 
-void head_scaled_dimensions__default(void **state) {
+void head_set_scaled_dimensions__default(void **state) {
 	struct Head head = { .scaled.width = 1, .scaled.height = 1, };
 
 	// no head
-	head_scaled_dimensions(NULL);
+	head_set_scaled_dimensions(NULL);
 
 	// no mode
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1);
 	assert_int_equal(head.scaled.height, 1);
 
@@ -146,12 +146,12 @@ void head_scaled_dimensions__default(void **state) {
 	struct Mode mode = { .width = 200, .height = 100, };
 	head.desired.mode = &mode;
 
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1);
 	assert_int_equal(head.scaled.height, 1);
 }
 
-void head_scaled_dimensions__transform(void **state) {
+void head_set_scaled_dimensions__transform(void **state) {
 	struct Mode mode = { .width = 200, .height = 100, };
 	struct Head head = { .desired.mode = &mode, };
 
@@ -159,7 +159,7 @@ void head_scaled_dimensions__transform(void **state) {
 	head.desired.scale = wl_fixed_from_double(0.5);
 	head.desired.transform = WL_OUTPUT_TRANSFORM_180;
 
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 400);
 	assert_int_equal(head.scaled.height, 200);
 
@@ -167,37 +167,37 @@ void head_scaled_dimensions__transform(void **state) {
 	head.desired.scale = wl_fixed_from_double(3);
 	head.desired.transform = WL_OUTPUT_TRANSFORM_90;
 
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 33);
 	assert_int_equal(head.scaled.height, 66); // wayland truncates when calculating size
 }
 
-void head_scaled_dimensions__dimensions(void **state) {
+void head_set_scaled_dimensions__dimensions(void **state) {
 	struct Mode mode = { .width = 3840, .height = 2160, };
 	struct Head head = { .desired.mode = &mode, .scaling_base = HEAD_DEFAULT_SCALING_BASE, };
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.0, head.scaling_base);
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 3840);
 	assert_int_equal(head.scaled.height, 2160);
 	assert_logs_empty();
 
 	head.desired.scale = head_get_fixed_scale(&head, 2.0, head.scaling_base);
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
 	assert_logs_empty();
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.7, head.scaling_base);
 	// actual scale will be 1.75
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2194);
 	assert_int_equal(head.scaled.height, 1234);
 	assert_log(DEBUG, "\n???: Rounded scale 1.7 to nearest multiple of 1/8: 1.750\n");
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.9, head.scaling_base);
 	// actual scale will be 1.875
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2048);
 	assert_int_equal(head.scaled.height, 1152);
 	assert_log(DEBUG, "\n???: Rounded scale 1.9 to nearest multiple of 1/8: 1.875\n");
@@ -206,23 +206,27 @@ void head_scaled_dimensions__dimensions(void **state) {
 
 	head.desired.scale = head_get_fixed_scale(&head, 2.01, head.scaling_base);
 	// actual scale will be 2.0
-	head_scaled_dimensions(&head);
+	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
 	assert_log(DEBUG, "\nname: Rounded scale 2.01 to nearest multiple of 1/8: 2.000\n");
 }
 
-void head_find_mode__none(void **state) {
-	struct Head head = { 0 };
+void head_find_mode__all_failed(void **state) {
+	struct Head head = { .name = "head0" };
 	struct Mode mode = { 0 };
-
-	// no head
-	assert_null(head_find_mode(NULL));
 
 	// all modes failed
 	slist_append(&head.modes, &mode);
 	slist_append(&head.modes_failed, &mode);
-	assert_null(head_find_mode(&head));
+
+	expect_value(__wrap_call_back, t, ERROR);
+	expect_string(__wrap_call_back, msg1, "head0");
+	expect_value(__wrap_call_back, msg2, "\n  No mode, disabling");
+
+	assert_nul(head_find_mode(&head));
+
+	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
 
 	slist_free(&head.modes);
 	slist_free(&head.modes_failed);
@@ -269,11 +273,19 @@ void head_find_mode__user_failed(void **state) {
 	expect_value(__wrap_mode_user_mode, user_mode, user_mode);
 	will_return(__wrap_mode_user_mode, NULL);
 
+	expect_value(__wrap_call_back, t, WARNING);
+	expect_string(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
+	expect_value(__wrap_call_back, msg2, NULL);
+
+	expect_value(__wrap_call_back, t, WARNING);
+	expect_string(__wrap_call_back, msg1, "HEAD\n  No preferred mode, falling back to maximum available");
+	expect_value(__wrap_call_back, msg2, NULL);
+
 	// user failed, fall back to max
 	assert_ptr_equal(head_find_mode(&head), &mode);
 
 	// one and only notices: falling back to preferred then max
-	assert_log(WARNING, "\nHEAD: No available mode for -1x-1, falling back to preferred\n");
+	assert_log(WARNING, "\nHEAD: No available mode for user MODE -1x-1, falling back to preferred\n");
 	assert_log(INFO, "\nHEAD: No preferred mode, falling back to maximum available\n");
 	assert_logs_empty();
 
@@ -327,6 +339,10 @@ void head_find_mode__max(void **state) {
 
 	slist_append(&head.modes, &mode);
 
+	expect_value(__wrap_call_back, t, WARNING);
+	expect_string(__wrap_call_back, msg1, "name\n  No preferred mode, falling back to maximum available");
+	expect_value(__wrap_call_back, msg2, NULL);
+
 	// one and only notice
 	assert_ptr_equal(head_find_mode(&head), &mode);
 	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
@@ -337,22 +353,42 @@ void head_find_mode__max(void **state) {
 	slist_free(&head.modes);
 }
 
+void head_find_mode__none(void **state) {
+	struct Head head = { .name = "head0", };
+	struct Mode mode = { 0 };
+
+	// force to pass the first check and skip preferred messages
+	slist_append(&head.modes_failed, &mode);
+	head.warned_no_preferred = true;
+
+	expect_value(__wrap_call_back, t, ERROR);
+	expect_string(__wrap_call_back, msg1, "head0");
+	expect_value(__wrap_call_back, msg2, "\n  No mode, disabling");
+
+	assert_nul(head_find_mode(&head));
+
+	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
+
+	slist_free(&head.modes_failed);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(head_auto_scale__default),
 		TEST(head_auto_scale__mode),
 		TEST(head_auto_scale__range),
 
-		TEST(head_scaled_dimensions__default),
-		TEST(head_scaled_dimensions__transform),
-		TEST(head_scaled_dimensions__dimensions),
+		TEST(head_set_scaled_dimensions__default),
+		TEST(head_set_scaled_dimensions__transform),
+		TEST(head_set_scaled_dimensions__dimensions),
 
-		TEST(head_find_mode__none),
+		TEST(head_find_mode__all_failed),
 		TEST(head_find_mode__user_available),
 		TEST(head_find_mode__user_failed),
 		TEST(head_find_mode__preferred),
 		TEST(head_find_mode__max_preferred_refresh),
 		TEST(head_find_mode__max),
+		TEST(head_find_mode__none),
 	};
 
 	return RUN(tests);

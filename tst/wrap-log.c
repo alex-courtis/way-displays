@@ -10,9 +10,9 @@
 #include "log.h"
 #include "util.h"
 
-// 0 unused, 1 DEBUG, 4 ERROR
-static char b[5][262144] = { 0 };
-static char *bp[5] = { 0 };
+// 0 unused, 1 DEBUG, 5 FATAL
+static char b[6][262144] = { 0 };
+static char *bp[6] = { 0 };
 
 void _assert_log(enum LogThreshold t, const char *s, const char * const file, const int line) {
 	if (bp[t]) {
@@ -30,7 +30,7 @@ void _assert_log(enum LogThreshold t, const char *s, const char * const file, co
 
 void _assert_logs_empty(const char * const file, const int line) {
 	bool empty = true;
-	for (enum LogThreshold t = DEBUG; t <= ERROR; t++) {
+	for (enum LogThreshold t = DEBUG; t <= FATAL; t++) {
 		if (bp[t]) {
 			bp[t] = NULL;
 			cm_print_error("\nunexpected log %s:\n\"%s\"\n", log_threshold_name(t), b[t]);
@@ -64,6 +64,10 @@ void _log(enum LogThreshold t, const char *__restrict __format, va_list __args) 
 void __wrap_log_set_threshold(enum LogThreshold threshold, bool cli) {
 	check_expected(threshold);
 	check_expected(cli);
+}
+
+enum LogThreshold __wrap_log_get_threshold(void) {
+	return mock_type(enum LogThreshold);
 }
 
 void __wrap_log_(enum LogThreshold t, const char *__restrict __format, ...) {
@@ -105,6 +109,20 @@ void __wrap_log_error_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
 	_log(ERROR, __format, args);
+	va_end(args);
+}
+
+void __wrap_log_fatal(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	_log(FATAL, __format, args);
+	va_end(args);
+}
+
+void __wrap_log_fatal_errno(const char *__restrict __format, ...) {
+	va_list args;
+	va_start(args, __format);
+	_log(FATAL, __format, args);
 	va_end(args);
 }
 

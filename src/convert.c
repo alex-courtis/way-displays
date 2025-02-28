@@ -24,7 +24,7 @@ static struct NameVal cfg_elements[] = {
 	{ .val = SCALE,                 .name = "SCALE",                 },
 	{ .val = MODE,                  .name = "MODE",                  },
 	{ .val = VRR_OFF,               .name = "VRR_OFF",               },
-	{ .val = CHANGE_SUCCESS_CMD,    .name = "CHANGE_SUCCESS_CMD"     },
+	{ .val = CALLBACK_CMD,          .name = "CALLBACK_CMD"           },
 	{ .val = LAPTOP_DISPLAY_PREFIX, .name = "LAPTOP_DISPLAY_PREFIX", },
 	{ .val = MAX_PREFERRED_REFRESH, .name = "MAX_PREFERRED_REFRESH", },
 	{ .val = TRANSFORM,             .name = "TRANSFORM",             },
@@ -83,6 +83,7 @@ static struct NameVal log_thresholds[] = {
 	{ .val = INFO,    .name = "INFO",    },
 	{ .val = WARNING, .name = "WARNING", },
 	{ .val = ERROR,   .name = "ERROR",   },
+	{ .val = FATAL,   .name = "FATAL",   },
 	{ .val = 0,       .name = NULL,      },
 };
 

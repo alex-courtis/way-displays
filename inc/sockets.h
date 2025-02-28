@@ -1,6 +1,7 @@
 #ifndef SOCKETS_H
 #define SOCKETS_H
 
+#include <stddef.h>
 #include <sys/types.h>
 #include <sys/un.h>
 

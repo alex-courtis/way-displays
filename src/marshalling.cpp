@@ -8,6 +8,7 @@
 #include <yaml-cpp/emitter.h>
 #include <yaml-cpp/emittermanip.h>
 #include <yaml-cpp/exceptions.h>
+#include <yaml-cpp/node/detail/impl.h>
 #include <yaml-cpp/node/detail/iterator.h>
 #include <yaml-cpp/node/detail/iterator_fwd.h>
 #include <yaml-cpp/node/impl.h>
@@ -23,6 +24,7 @@
 extern "C" {
 #include "cfg.h"
 #include "convert.h"
+#include "fn.h"
 #include "global.h"
 #include "head.h"
 #include "ipc.h"
@@ -262,8 +264,8 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::EndSeq;												// MAX_PREFERRED_REFRESH
 	}
 
-	if (cfg.change_success_cmd) {
-		e << YAML::Key << "CHANGE_SUCCESS_CMD" << YAML::Value << cfg.change_success_cmd;
+	if (cfg.callback_cmd) {
+		e << YAML::Key << "CALLBACK_CMD" << YAML::Value << cfg.callback_cmd;
 	}
 
 	if (cfg.laptop_display_prefix) {
@@ -377,12 +379,21 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		}
 	}
 
-	if (node["CHANGE_SUCCESS_CMD"]) {
-		if (cfg->change_success_cmd) {
-			free(cfg->change_success_cmd);
+	if (node["CALLBACK_CMD"] || node["CHANGE_SUCCESS_CMD"]) {
+		YAML::Node cmd;
+		if (node["CALLBACK_CMD"]) {
+			cmd = node["CALLBACK_CMD"];
+		} else {
+			cmd = node["CHANGE_SUCCESS_CMD"];
 		}
 
-		cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str());
+		free(cfg->callback_cmd);
+
+		if (cmd.IsNull()) {
+			cfg->callback_cmd = NULL;
+		} else {
+			cfg->callback_cmd = strdup(cmd.as<std::string>().c_str());
+		}
 	}
 
 	if (node["LAPTOP_DISPLAY_PREFIX"]) {
@@ -721,7 +732,15 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 		}
 	}
 
-	TI(cfg->change_success_cmd = strdup(node["CHANGE_SUCCESS_CMD"].as<std::string>().c_str()));
+	if (node["CALLBACK_CMD"]) {
+		free(cfg->callback_cmd);
+
+		if (node["CALLBACK_CMD"].IsNull()) {
+			cfg->callback_cmd = NULL;
+		} else {
+			cfg->callback_cmd = strdup(node["CALLBACK_CMD"].as<std::string>().c_str());
+		}
+	}
 
 	TI(cfg->laptop_display_prefix = strdup(node["LAPTOP_DISPLAY_PREFIX"].as<std::string>().c_str()));
 
@@ -962,7 +981,7 @@ void marshal_messages(YAML::Emitter &e, struct IpcOperation *operation) {
 	bool began = false;
 	LogThreshold threshold = operation->request->log_threshold;
 
-	for (struct SList *i = log_cap_lines; i; i = i->nex) {
+	for (struct SList *i = operation->log_cap_lines; i; i = i->nex) {
 		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 
 		if (!cap_line || !cap_line->line) {
@@ -1048,9 +1067,7 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 			}
 		}
 
-		if (operation->send_logs) {
-			marshal_messages(e, operation);
-		}
+		marshal_messages(e, operation);
 
 		e << YAML::Key << "RC" << YAML::Value << operation->rc;
 
@@ -1070,9 +1087,8 @@ char *marshal_ipc_response(struct IpcOperation *operation) {
 		log_error("marshalling ipc response: %s", e.what());
 	}
 
-	if (operation->send_logs) {
-		log_capture_clear();
-	}
+	// clear marshalled messages
+	log_cap_lines_free(&operation->log_cap_lines);
 
 	return yaml;
 }
