@@ -379,13 +379,20 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		}
 	}
 
-	if (node["CALLBACK_CMD"]) {
+	if (node["CALLBACK_CMD"] || node["CHANGE_SUCCESS_CMD"]) {
+		YAML::Node cmd;
+		if (node["CALLBACK_CMD"]) {
+			cmd = node["CALLBACK_CMD"];
+		} else {
+			cmd = node["CHANGE_SUCCESS_CMD"];
+		}
+
 		free(cfg->callback_cmd);
 
-		if (node["CALLBACK_CMD"].IsNull()) {
+		if (cmd.IsNull()) {
 			cfg->callback_cmd = NULL;
 		} else {
-			cfg->callback_cmd = strdup(node["CALLBACK_CMD"].as<std::string>().c_str());
+			cfg->callback_cmd = strdup(cmd.as<std::string>().c_str());
 		}
 	}
 
