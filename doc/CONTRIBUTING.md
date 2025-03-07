@@ -86,7 +86,7 @@ docker exec --interactive --tty wd_ubuntu /bin/bash
 ```sh
 export DEBIAN_FRONTEND="noninteractive"
 apt update -y
-apt install -y make gcc g++ clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind
+apt install -y make gcc gcc-multilib g++ g++-multilib clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind
 exit
 ```
 

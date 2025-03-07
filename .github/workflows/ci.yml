@@ -15,7 +15,7 @@ jobs:
       run: |
         env
         sudo add-apt-repository universe
-        sudo apt install gcc-multilib clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind -y
+        sudo apt install gcc-multilib g++-multilib clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind -y
     - name: gcc
       run: |
        env
