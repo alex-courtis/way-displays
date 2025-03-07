@@ -30,7 +30,7 @@ jobs:
     - name: clang 32-bit
       run: make CC=clang CXX=clang++ MFLAGS=-m32 clean compile
     - name: gcc test valgrind
-      run: make CC=gcc CXX=g++ clean clean test-vg
+      run: make CC=gcc CXX=g++ clean test-vg
     - name: clang test valgrind
-      run: make CC=clang CXX=clang++ clean clean test-vg
+      run: make CC=clang CXX=clang++ clean test-vg
 
