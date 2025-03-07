@@ -67,6 +67,35 @@ See all violations:
 
 `make -k iwyu > /dev/null`
 
+### Compiling On Ubuntu Docker Image
+
+This may be necessary to keep compatibily with the github CI docker container.
+
+```sh
+docker stop wd_ubuntu
+docker rm wd_ubuntu
+docker run \
+    --detach \
+    --interactive \
+    --name wd_ubuntu \
+    --volume "$(pwd):/way-displays" \
+    ubuntu:latest 
+docker exec --interactive --tty wd_ubuntu /bin/bash
+```
+
+```sh
+export DEBIAN_FRONTEND="noninteractive"
+apt update -y
+apt install -y make gcc gcc-multilib g++ g++-multilib clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind
+exit
+```
+
+```sh
+docker exec --interactive --tty --user "$(id -u):$(id -g)" wd_ubuntu /bin/bash
+cd /way-displays
+make
+```
+
 ## Documentation
 
 Please update `README.md`.

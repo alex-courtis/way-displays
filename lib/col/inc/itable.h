@@ -74,9 +74,6 @@ bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn
  * Conversion
  */
 
-// ordered uint64_t* key pointers to table, caller frees list only
-struct SList *itable_keys_slist(const struct ITable* const tab);
-
 // ordered val pointers to table, caller frees list only
 struct SList *itable_vals_slist(const struct ITable* const tab);
 

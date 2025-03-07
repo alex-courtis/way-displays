@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -263,20 +264,6 @@ bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn
 	return true;
 }
 
-struct SList *itable_keys_slist(const struct ITable* const tab) {
-	if (!tab)
-		return NULL;
-
-	struct SList *list = NULL;
-
-	uint64_t *k;
-	for (k = tab->keys; k < tab->keys + tab->size; k++) {
-		slist_append(&list, (void*)*k);
-	}
-
-	return list;
-}
-
 struct SList *itable_vals_slist(const struct ITable* const tab) {
 	if (!tab)
 		return NULL;
@@ -314,7 +301,8 @@ char *itable_str(const struct ITable* const tab) {
 	char *buf = (char*)calloc(len, sizeof(char));
 	char *bufp = buf;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-		bufp += snprintf(bufp, len - (bufp - buf), "%lu = %s\n", *k, *v ? (char*)*v : "(null)");
+		// TODO fix upstream
+		bufp += snprintf(bufp, len - (bufp - buf), "%"PRIu64" = %s\n", *k, *v ? (char*)*v : "(null)");
 	}
 
 	// strip trailing newline
