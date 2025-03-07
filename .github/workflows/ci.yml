@@ -17,8 +17,12 @@ jobs:
         sudo apt install clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind -y
     - name: gcc
       run: make CC=gcc CXX=g++ clean way-displays
+    - name: gcc 32-bit
+      run: make CC=gcc CXX=g++ MFLAGS=-m32 clean compile
     - name: clang
       run: make CC=clang CXX=clang++ clean way-displays
+    - name: clang 32-bit
+      run: make CC=clang CXX=clang++ MFLAGS=-m32 clean compile
     - name: test
       run: make CC=clang CXX=clang++ test
     - name: cppcheck

@@ -27,9 +27,11 @@ $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
-way-displays: $(SRC_O) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+way-displays: compile
+	$(CXX) -o $(@) $(SRC_O) $(PRO_O) $(LDFLAGS) $(LDLIBS)
 	@test -x ../deploy.sh && ../deploy.sh || true
+
+compile: $(SRC_O) $(PRO_O) $(EXAMPLE_O)
 
 $(PRO_H): $(PRO_X)
 	wayland-scanner client-header $(@:.h=.xml) $@

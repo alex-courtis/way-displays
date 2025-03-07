@@ -11,7 +11,8 @@ CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" -DROOT_ETC=\"$(ROOT_E
 OFLAGS = -O3
 WFLAGS = -pedantic -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-result
 DFLAGS = -g
-COMPFLAGS = $(WFLAGS) $(OFLAGS) $(DFLAGS)
+MFLAGS = -m32
+COMPFLAGS = $(WFLAGS) $(OFLAGS) $(DFLAGS) $(MFLAGS)
 
 CFLAGS += $(COMPFLAGS) -std=gnu17 -Wold-style-definition -Wstrict-prototypes
 CXXFLAGS += $(COMPFLAGS) -std=gnu++17
