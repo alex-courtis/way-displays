@@ -10,13 +10,16 @@ jobs:
   all:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: deps
       run: |
+        env
         sudo add-apt-repository universe
         sudo apt install gcc-multilib clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind -y
     - name: gcc
-      run: make CC=gcc CXX=g++ clean way-displays
+      run: |
+       env
+       make CC=gcc CXX=g++ clean way-displays
     - name: gcc 32-bit
       run: make CC=gcc CXX=g++ MFLAGS=-m32 clean compile
     - name: clang
