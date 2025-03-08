@@ -67,6 +67,22 @@ See all violations:
 
 `make -k iwyu > /dev/null`
 
+### 32-bit
+
+Compilation can be done without 32-bit libs:
+```sh
+make CC=gcc   CXX=g++     MFLAGS=-m32 clean compile
+make CC=clang CXX=clang++ MFLAGS=-m32 clean compile
+```
+
+Testing requires 32-bit libs, libinput is excluded:
+```sh
+make CC=gcc   CXX=g++     MFLAGS=-m32 clean test
+make CC=gcc   CXX=g++     MFLAGS=-m32 clean test-vg
+make CC=clang CXX=clang++ MFLAGS=-m32 clean test
+make CC=clang CXX=clang++ MFLAGS=-m32 clean test-vg
+```
+
 ### Compiling On Ubuntu Docker Image
 
 This may be necessary to keep compatibily with the github CI docker container.

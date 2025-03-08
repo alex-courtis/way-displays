@@ -112,8 +112,13 @@ void _assert_logs_empty(const char * const file, const int line);
 
 int expect_stable_equal_strcmp(const LargestIntegralType value,
 		const LargestIntegralType check_value_data) {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
 	const struct STable* const actual = (struct STable*)value;
 	const struct STable* const expected = (struct STable*)check_value_data;
+#pragma GCC diagnostic pop
+
 	if (stable_equal(actual, expected, fn_comp_equals_strcmp)) {
 		return 1;
 	} else {
@@ -121,6 +126,7 @@ int expect_stable_equal_strcmp(const LargestIntegralType value,
 		return 0;
 	}
 }
+
 
 #endif // ASSERTS_H
 
