@@ -15,22 +15,18 @@ jobs:
       run: |
         sudo add-apt-repository universe
         sudo apt install gcc-multilib g++-multilib clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind -y
-    - name: gcc
-      run: make CC=gcc CXX=g++ clean way-displays
     - name: gcc test
-      run: make CC=gcc CXX=g++ clean test
-    - name: clang
-      run: make CC=clang CXX=clang++ clean way-displays
+      run: make CC=gcc CXX=g++ clean way-displays test
     - name: clang test
-      run: make CC=clang CXX=clang++ clean test
+      run: make CC=clang CXX=clang++ clean way-displays test
     - name: cppcheck
       run: make CC=clang CXX=clang++ clean cppcheck
-    - name: gcc 32-bit
-      run: make CC=gcc CXX=g++ MFLAGS=-m32 clean compile
-    - name: clang 32-bit
-      run: make CC=clang CXX=clang++ MFLAGS=-m32 clean compile
     - name: gcc test valgrind
       run: make CC=gcc CXX=g++ clean test-vg
+    - name: gcc 32-bit test valgrind
+      run: make CC=gcc CXX=g++ MFLAGS=-m32 test-vg
     - name: clang test valgrind
       run: make CC=clang CXX=clang++ clean test-vg
+    - name: clang 32-bit test valgrind
+      run: make CC=clang CXX=clang++ MFLAGS=-m32 clean test-vg
 

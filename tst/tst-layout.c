@@ -27,11 +27,6 @@ void desire_adaptive_sync(struct Head *head);
 void handle_success(void);
 void handle_failure(void);
 
-bool __wrap_lid_is_closed(char *name) {
-	check_expected(name);
-	return mock_type(bool);
-}
-
 struct Mode *__wrap_head_find_mode(struct Head *head) {
 	check_expected(head);
 	return mock_type(struct Mode*);

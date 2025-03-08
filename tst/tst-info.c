@@ -185,6 +185,9 @@ void print_cfg_commands__ok(void **state) {
 void print_head_arrived__all(void **state) {
 	struct State *s = *state;
 
+	expect_string(__wrap_lid_is_closed, name, "name1");
+	will_return(__wrap_lid_is_closed, false);
+
 	print_head(INFO, ARRIVED, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-arrived-all.log");
@@ -194,6 +197,9 @@ void print_head_arrived__all(void **state) {
 
 void print_head_arrived__min(void **state) {
 	struct Head *head = calloc(1, sizeof(struct Head));
+
+	expect_value(__wrap_lid_is_closed, name, NULL);
+	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, ARRIVED, head);
 
@@ -217,6 +223,9 @@ void print_head_departed__ok(void **state) {
 void print_head_deltas__mode(void **state) {
 	struct State *s = *state;
 
+	expect_string(__wrap_lid_is_closed, name, "name1");
+	will_return(__wrap_lid_is_closed, false);
+
 	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-mode.log");
@@ -230,6 +239,9 @@ void print_head_deltas__vrr(void **state) {
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	s->head1->desired.mode = s->head1->current.mode;
 
+	expect_string(__wrap_lid_is_closed, name, "name1");
+	will_return(__wrap_lid_is_closed, false);
+
 	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-vrr.log");
@@ -241,6 +253,9 @@ void print_head_deltas__other(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.mode = s->head1->current.mode;
+
+	expect_string(__wrap_lid_is_closed, name, "name1");
+	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -254,6 +269,9 @@ void print_head_deltas__disable(void **state) {
 
 	s->head1->desired.enabled = false;
 
+	expect_string(__wrap_lid_is_closed, name, "name1");
+	will_return(__wrap_lid_is_closed, false);
+
 	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-disable.log");
@@ -265,6 +283,9 @@ void print_head_deltas__enable(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
+
+	expect_string(__wrap_lid_is_closed, name, "name1");
+	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
