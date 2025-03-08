@@ -17,7 +17,7 @@
 
 #include "cli.h"
 
-void usage(FILE *stream) {
+static void usage(FILE *stream) {
 	static char mesg[] =
 		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
 		"  Runs the server when no COMMAND specified.\n"
@@ -171,6 +171,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 				default:
 					break;
 			}
+			break;
 		default:
 			break;
 	}
@@ -192,7 +193,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	return cfg;
 }
 
-struct IpcRequest *parse_get(int argc, char **argv) {
+static struct IpcRequest *parse_get(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--get takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -205,7 +206,7 @@ struct IpcRequest *parse_get(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *parse_write(int argc, char **argv) {
+static struct IpcRequest *parse_write(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--write takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -218,7 +219,7 @@ struct IpcRequest *parse_write(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *parse_set(int argc, char **argv) {
+static struct IpcRequest *parse_set(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case MODE:
@@ -268,7 +269,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *parse_del(int argc, char **argv) {
+static struct IpcRequest *parse_del(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case MODE:
@@ -302,7 +303,7 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 	return request;
 }
 
-enum LogThreshold parse_log_threshold(char *optarg) {
+static enum LogThreshold parse_log_threshold(char *optarg) {
 	enum LogThreshold threshold = log_threshold_val(optarg);
 
 	if (!threshold) {

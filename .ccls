@@ -12,6 +12,7 @@ clang
 -pedantic
 -Wall
 -Wextra
+-Wimplicit-fallthrough
 -Wno-unused-parameter
 
 %c -Wold-style-definition

@@ -43,7 +43,7 @@ static const struct libinput_interface libinput_impl = {
 	.close_restricted = libinput_close_restricted
 };
 
-struct libinput *create_libinput_discovery(void) {
+static struct libinput *create_libinput_discovery(void) {
 	struct libinput *libinput = NULL;
 
 	struct udev *udev = udev_new();
@@ -73,7 +73,7 @@ struct libinput *create_libinput_discovery(void) {
 	return libinput;
 }
 
-void destroy_libinput_discovery(struct libinput *libinput) {
+static void destroy_libinput_discovery(struct libinput *libinput) {
 	if (!libinput)
 		return;
 
@@ -84,7 +84,7 @@ void destroy_libinput_discovery(struct libinput *libinput) {
 	libinput_unref(libinput);
 }
 
-char *discover_lid_device(struct libinput *libinput) {
+static char *discover_lid_device(struct libinput *libinput) {
 	char *device_path = NULL;
 
 	struct libinput_event *event;
@@ -107,7 +107,7 @@ char *discover_lid_device(struct libinput *libinput) {
 	return device_path;
 }
 
-struct libinput *create_libinput_monitor(char *device_path) {
+static struct libinput *create_libinput_monitor(char *device_path) {
 
 	struct libinput *libinput_context = libinput_path_create_context(&libinput_impl, NULL);
 	if (!libinput_context) {
@@ -124,7 +124,7 @@ struct libinput *create_libinput_monitor(char *device_path) {
 	return libinput_context;
 }
 
-void destroy_libinput_monitor(struct libinput* libinput) {
+static void destroy_libinput_monitor(struct libinput* libinput) {
 	if (!libinput)
 		return;
 

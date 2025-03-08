@@ -192,7 +192,7 @@ void warn_short_name_desc(const char *name_desc, const char *element) {
 	}
 }
 
-struct Cfg *clone_cfg(struct Cfg *from) {
+static struct Cfg *clone_cfg(struct Cfg *from) {
 	if (!from) {
 		return NULL;
 	}
@@ -440,7 +440,7 @@ struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum 
 	return ut;
 }
 
-void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
+static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
 	static char path[PATH_MAX];
 
 	cfg->resolved_from = resolved_from;

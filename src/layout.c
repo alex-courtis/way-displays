@@ -239,7 +239,7 @@ void desire_adaptive_sync(struct Head *head) {
 	}
 }
 
-void desire(void) {
+static void desire(void) {
 
 	for (struct SList *i = heads; i; i = i->nex) {
 		struct Head *head = (struct Head*)i->val;
@@ -262,7 +262,7 @@ void desire(void) {
 	slist_free(&heads_ordered);
 }
 
-void apply(void) {
+static void apply(void) {
 	struct SList *heads_changing = NULL;
 
 	displ_delta_destroy();

@@ -87,7 +87,7 @@ static struct NameVal log_thresholds[] = {
 	{ .val = 0,       .name = NULL,      },
 };
 
-unsigned int val(struct NameVal *name_vals, const char *name) {
+static unsigned int val(struct NameVal *name_vals, const char *name) {
 	if (!name_vals || !name) {
 		return 0;
 	}
@@ -100,7 +100,7 @@ unsigned int val(struct NameVal *name_vals, const char *name) {
 	return name_vals[i].val;
 }
 
-unsigned int val_start(struct NameVal *name_vals, const char *name) {
+static unsigned int val_start(struct NameVal *name_vals, const char *name) {
 	if (!name_vals || !name) {
 		return 0;
 	}
@@ -113,7 +113,7 @@ unsigned int val_start(struct NameVal *name_vals, const char *name) {
 	return name_vals[i].val;
 }
 
-const char *name(struct NameVal *name_vals, unsigned int val) {
+static const char *name(struct NameVal *name_vals, unsigned int val) {
 	if (!name_vals) {
 		return NULL;
 	}
@@ -125,7 +125,7 @@ const char *name(struct NameVal *name_vals, unsigned int val) {
 	return NULL;
 }
 
-const char *friendly(struct NameVal *name_vals, unsigned int val) {
+static const char *friendly(struct NameVal *name_vals, unsigned int val) {
 	if (!name_vals) {
 		return NULL;
 	}

@@ -75,7 +75,7 @@ int32_t mhz_to_hz_rounded(int32_t mhz) {
 	return (mhz + 500) / 1000;
 }
 
-bool equal_mode_res_hz(const void *a, const void *b) {
+static bool equal_mode_res_hz(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -88,7 +88,7 @@ bool equal_mode_res_hz(const void *a, const void *b) {
 		mhz_to_hz_rounded(lhs->refresh_mhz) == mhz_to_hz_rounded(rhs->refresh_mhz);
 }
 
-bool equal_mode_user_mode_res_refresh(const void *a, const void *b) {
+static bool equal_mode_user_mode_res_refresh(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -99,7 +99,7 @@ bool equal_mode_user_mode_res_refresh(const void *a, const void *b) {
 	return lhs->width == rhs->width && lhs->height == rhs->height && lhs->refresh_mhz == rhs->refresh_mhz;
 }
 
-bool greater_than_res_refresh(const void *a, const void *b) {
+static bool greater_than_res_refresh(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -126,7 +126,7 @@ bool greater_than_res_refresh(const void *a, const void *b) {
 	return false;
 }
 
-bool mrr_satisfies_user_mode(struct ModesResRefresh *mrr, struct UserMode *user_mode) {
+static bool mrr_satisfies_user_mode(struct ModesResRefresh *mrr, struct UserMode *user_mode) {
 	if (!mrr || !user_mode) {
 		return false;
 	}
