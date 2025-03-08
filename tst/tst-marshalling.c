@@ -406,6 +406,8 @@ void unmarshal_ipc_responses__seq_no_rc(void **state) {
 void unmarshal_ipc_responses__map(void **state) {
 	char *yaml = read_file("tst/marshalling/ipc-responses-map.yaml");
 
+	expect_function_call(__wrap_lid_free);
+
 	struct SList *responses = unmarshal_ipc_responses(yaml);
 
 	assert_non_nul(responses);
@@ -498,6 +500,8 @@ void unmarshal_ipc_responses__map(void **state) {
 
 void unmarshal_ipc_responses__seq(void **state) {
 	char *yaml = read_file("tst/marshalling/ipc-responses-seq.yaml");
+
+	expect_function_calls(__wrap_lid_free, 3);
 
 	struct SList *responses = unmarshal_ipc_responses(yaml);
 
