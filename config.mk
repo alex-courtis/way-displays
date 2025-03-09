@@ -20,13 +20,19 @@ DFLAGS = -g
 MFLAGS = 
 COMPFLAGS = $(WFLAGS) $(OFLAGS) $(DFLAGS) $(MFLAGS)
 
-CFLAGS += $(COMPFLAGS) -std=gnu17 -Wold-style-definition -Wstrict-prototypes
-CXXFLAGS += $(COMPFLAGS) -std=gnu++17
+CFLAGS += $(COMPFLAGS) \
+		  -std=gnu17 \
+		  -Wold-style-definition \
+		  -Wstrict-prototypes
+
+CXXFLAGS += $(COMPFLAGS) \
+			-std=gnu++17 \
+			-Wno-c99-extensions
 
 LDFLAGS += $(MFLAGS)
 
 ifeq (,$(filter-out DragonFly FreeBSD NetBSD OpenBSD,$(shell uname -s)))
-PKGS += epoll-shim libinotify
+	PKGS += epoll-shim libinotify
 endif
 
 PKGS += wayland-client yaml-cpp libinput libudev
