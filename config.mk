@@ -14,13 +14,14 @@ WFLAGS = -pedantic \
 		 -Wextra \
 		 -Werror \
 		 -Wimplicit-fallthrough \
+		 -Wstrict-prototypes \
 		 -Wno-unused-parameter \
 		 -Wno-format-zero-length
 DFLAGS = -g
 MFLAGS = 
 COMPFLAGS = $(WFLAGS) $(OFLAGS) $(DFLAGS) $(MFLAGS)
 
-CFLAGS += $(COMPFLAGS) -std=gnu17 -Wold-style-definition -Wstrict-prototypes
+CFLAGS += $(COMPFLAGS) -std=gnu17
 CXXFLAGS += $(COMPFLAGS) -std=gnu++17
 
 LDFLAGS += $(MFLAGS)

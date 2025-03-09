@@ -13,11 +13,9 @@ clang
 -Wall
 -Wextra
 -Wimplicit-fallthrough
+-Wstrict-prototypes
 -Wno-unused-parameter
 -Wno-format-zero-length
-
-%c -Wold-style-definition
-%c -Wstrict-prototypes
 
 %cpp -Wno-c99-extensions
 
