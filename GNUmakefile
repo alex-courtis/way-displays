@@ -60,7 +60,7 @@ uninstall:
 
 man: doc/way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
-	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc=)
+	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc= )
 
 iwyu: override CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: override CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
