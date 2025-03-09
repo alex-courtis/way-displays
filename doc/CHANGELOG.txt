@@ -1,3 +1,7 @@
+way-displays 1.12.1 2025-03-09
+------------------------------
+#185 ensure 32 bit compatibility, add stricter checks
+
 way-displays 1.12.0 2025-02-28
 ------------------------------
 #164 add CALLBACK_CMD with ${CALLBACK_LEVEL} ${CALLBACK_MSG}, defaults to notify-send
