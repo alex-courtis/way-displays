@@ -27,8 +27,8 @@ $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
-way-displays: compile
-	$(CXX) -o $(@) $(SRC_O) $(PRO_O) $(LDFLAGS) $(LDLIBS)
+way-displays: $(SRC_O) $(PRO_O)
+	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 	@test -x ../deploy.sh && ../deploy.sh || true
 
 compile: $(SRC_O) $(PRO_O) $(EXAMPLE_O)
@@ -100,6 +100,6 @@ examples: $(EXAMPLE_E)
 examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-.PHONY: all clean install uninstall man cppcheck iwyu test test-vg $(TST_T)
+.PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg $(TST_T)
 
 .NOTPARALLEL: iwyu test test-vg
