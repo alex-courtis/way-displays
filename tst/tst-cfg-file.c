@@ -258,7 +258,9 @@ void cfg_file_write__existing(void **state) {
 
 	FILE *f = fopen(cfg->file_path, "w");
 	assert_non_nul(f);
-	fclose(f);
+	if (f) {
+		fclose(f);
+	}
 
 	char *expected = strdup("XXXX");
 
@@ -368,7 +370,10 @@ void resolve_cfg_file__direct(void **state) {
 	slist_append(&cfg_file_paths, strdup(file_path));
 
 	FILE *f = fopen(file_path, "w");
-	fclose(f);
+	assert_non_nul(f);
+	if (f) {
+		fclose(f);
+	}
 
 	assert_true(resolve_cfg_file(cfg));
 
@@ -395,7 +400,10 @@ void resolve_cfg_file__linked(void **state) {
 	slist_append(&cfg_file_paths, strdup(linked_path));
 
 	FILE *f = fopen(file_path, "w");
-	fclose(f);
+	assert_non_nul(f);
+	if (f) {
+		fclose(f);
+	}
 	symlink(file_path, linked_path);
 
 	assert_true(resolve_cfg_file(cfg));

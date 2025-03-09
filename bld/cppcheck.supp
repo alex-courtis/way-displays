@@ -1,9 +1,10 @@
-unusedFunction:lib/col/*c
 unusedFunction:pro/*h
+
+unusedFunction:lib/col/*c
+staticFunction:lib/col/*c
 
 unusedFunction:tst/asserts.h
 unusedFunction:tst/wrap-*.c
-
 staticFunction:tst/*c
 
 # this is just not practical

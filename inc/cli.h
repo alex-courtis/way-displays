@@ -3,6 +3,7 @@
 
 #include "cfg.h"
 #include "ipc.h"
+#include "log.h"
 
 void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path);
 

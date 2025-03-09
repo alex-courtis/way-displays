@@ -2,6 +2,7 @@
 #define LAYOUT_H
 
 #include "head.h"
+#include "slist.h"
 
 void layout(void);
 
