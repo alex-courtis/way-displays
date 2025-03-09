@@ -17,8 +17,6 @@
 
 #include "cfg.h"
 
-bool resolve_cfg_file(struct Cfg *cfg);
-
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 

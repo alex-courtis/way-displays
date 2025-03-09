@@ -206,7 +206,7 @@ static struct IpcRequest *parse_get(int argc, char **argv) {
 	return request;
 }
 
-static struct IpcRequest *parse_write(int argc, char **argv) {
+struct IpcRequest *parse_write(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--write takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -219,7 +219,7 @@ static struct IpcRequest *parse_write(int argc, char **argv) {
 	return request;
 }
 
-static struct IpcRequest *parse_set(int argc, char **argv) {
+struct IpcRequest *parse_set(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case MODE:
@@ -269,7 +269,7 @@ static struct IpcRequest *parse_set(int argc, char **argv) {
 	return request;
 }
 
-static struct IpcRequest *parse_del(int argc, char **argv) {
+struct IpcRequest *parse_del(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case MODE:
@@ -303,7 +303,7 @@ static struct IpcRequest *parse_del(int argc, char **argv) {
 	return request;
 }
 
-static enum LogThreshold parse_log_threshold(char *optarg) {
+enum LogThreshold parse_log_threshold(char *optarg) {
 	enum LogThreshold threshold = log_threshold_val(optarg);
 
 	if (!threshold) {

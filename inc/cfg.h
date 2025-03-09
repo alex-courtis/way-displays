@@ -128,15 +128,9 @@ struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum 
 
 bool cfg_equal_user_scale_name(const void *value, const void *data);
 
-bool cfg_equal_user_scale(const void *value, const void *data);
-
 bool cfg_equal_user_mode_name(const void *value, const void *data);
 
-bool cfg_equal_user_mode(const void *value, const void *data);
-
 bool cfg_equal_user_transform_name(const void *value, const void *data);
-
-bool cfg_equal_user_transform(const void *value, const void *data);
 
 void cfg_user_scale_free(const void *user_scale);
 
@@ -148,9 +142,16 @@ void cfg_destroy(void);
 
 void cfg_free(struct Cfg *cfg);
 
-void cfg_free_paths(struct Cfg *cfg);
-
 void cfg_file_paths_destroy(void);
+
+//
+// visible for testing
+//
+struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
+struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
+void validate_warn(struct Cfg *cfg);
+void validate_fix(struct Cfg *cfg);
+bool resolve_cfg_file(struct Cfg *cfg);
 
 #endif // CFG_H
 

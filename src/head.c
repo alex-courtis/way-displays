@@ -174,7 +174,7 @@ wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double sca
 	return fixed_scale;
 }
 
-int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fixed_scale, const int32_t base) {
+static int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fixed_scale, const int32_t base) {
 	// scales a (pixel) length by fixed_scale
 
 	// in case `base` comes from a not fully initialized Head (like in tests)

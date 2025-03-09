@@ -50,7 +50,7 @@ void ipc_send_operation(struct IpcOperation *operation) {
 	free(yaml);
 }
 
-char *ipc_receive_raw(int socket_client) {
+static char *ipc_receive_raw(int socket_client) {
 	char *yaml = NULL;
 
 	if (!(yaml = socket_read(socket_client))) {

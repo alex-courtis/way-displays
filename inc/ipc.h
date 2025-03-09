@@ -54,8 +54,6 @@ void ipc_send_request(struct IpcRequest *request);
 
 void ipc_send_operation(struct IpcOperation *operation);
 
-char *ipc_receive_raw(int socket_client);
-
 // receive the entire request sent to the server socket
 struct IpcRequest *ipc_receive_request(int socket_server);
 

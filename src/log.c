@@ -45,7 +45,7 @@ char *threshold_prefix[] = {
 	"FATAL: ",
 };
 
-void print_time(enum LogThreshold threshold, FILE *__restrict __stream) {
+static void print_time(enum LogThreshold threshold, FILE *__restrict __stream) {
 	static char buf[16];
 	static time_t t;
 
@@ -56,14 +56,14 @@ void print_time(enum LogThreshold threshold, FILE *__restrict __stream) {
 	fprintf(__stream, "%c [%s] ", threshold_char[threshold], buf);
 }
 
-void capture_line(struct SList **lines, enum LogThreshold threshold, char *l) {
+static void capture_line(struct SList **lines, enum LogThreshold threshold, char *l) {
 	struct LogCapLine *line = calloc(1, sizeof(struct LogCapLine));
 	line->line = strdup(l);
 	line->threshold = threshold;
 	slist_append(lines, line);
 }
 
-void print_raw(enum LogThreshold threshold, bool prefix, const char *l) {
+static void print_raw(enum LogThreshold threshold, bool prefix, const char *l) {
 	static FILE *stream;
 
 	stream = threshold >= ERROR ? stderr : stdout;
@@ -80,7 +80,7 @@ void print_raw(enum LogThreshold threshold, bool prefix, const char *l) {
 	}
 }
 
-void print_line(enum LogThreshold threshold, bool prefix, int eno, const char *__restrict __format, va_list __args) {
+static void print_line(enum LogThreshold threshold, bool prefix, int eno, const char *__restrict __format, va_list __args) {
 	static char l[LS];
 	static size_t n;
 
@@ -105,7 +105,7 @@ void print_line(enum LogThreshold threshold, bool prefix, int eno, const char *_
 	print_raw(threshold, prefix, l);
 }
 
-void print_log(enum LogThreshold threshold, int eno, const char *__restrict __format, va_list __args) {
+static void print_log(enum LogThreshold threshold, int eno, const char *__restrict __format, va_list __args) {
 	static const char *format;
 
 	format = __format;
@@ -206,7 +206,7 @@ void log_suppress_stop(void) {
 	active.suppressing = false;
 }
 
-void log_cap_line_free(const void *data) {
+static void log_cap_line_free(const void *data) {
 	const struct LogCapLine *line = data;
 
 	if (!line) {
