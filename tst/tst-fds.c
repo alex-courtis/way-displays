@@ -20,7 +20,7 @@ char DIR_TMP[PATH_MAX + 20];
 
 int before_all(void **state) {
 	char cwd[PATH_MAX];
-	getcwd(cwd, PATH_MAX);
+	assert_non_nul(getcwd(cwd, PATH_MAX));
 	snprintf(DIR_TMP, sizeof(DIR_TMP), "%s/tst/tmp", cwd);
 	mkdir(DIR_TMP, 0755);
 
