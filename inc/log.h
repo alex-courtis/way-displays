@@ -27,24 +27,24 @@ enum LogThreshold log_get_threshold(void);
 void log_set_times(bool times);
 
 
-void log_(enum LogThreshold threshold, const char *__restrict __format, ...);
+void log_(enum LogThreshold threshold, const char *__restrict __format, ...) __attribute__ ((__format__ (__printf__, 2, 3)));
 
 
-void log_debug(const char *__restrict __format, ...);
+void log_debug(const char *__restrict __format, ...)                         __attribute__ ((__format__ (__printf__, 1, 2)));
 
-void log_info(const char *__restrict __format, ...);
+void log_info(const char *__restrict __format, ...)                          __attribute__ ((__format__ (__printf__, 1, 2)));
 
-void log_warn(const char *__restrict __format, ...);
+void log_warn(const char *__restrict __format, ...)                          __attribute__ ((__format__ (__printf__, 1, 2)));
 
-void log_warn_errno(const char *__restrict __format, ...);
+void log_warn_errno(const char *__restrict __format, ...)                    __attribute__ ((__format__ (__printf__, 1, 2)));
 
-void log_error(const char *__restrict __format, ...);
+void log_error(const char *__restrict __format, ...)                         __attribute__ ((__format__ (__printf__, 1, 2)));
 
-void log_error_errno(const char *__restrict __format, ...);
+void log_error_errno(const char *__restrict __format, ...)                   __attribute__ ((__format__ (__printf__, 1, 2)));
 
-void log_fatal(const char *__restrict __format, ...);
+void log_fatal(const char *__restrict __format, ...)                         __attribute__ ((__format__ (__printf__, 1, 2)));
 
-void log_fatal_errno(const char *__restrict __format, ...);
+void log_fatal_errno(const char *__restrict __format, ...)                   __attribute__ ((__format__ (__printf__, 1, 2)));
 
 
 void log_suppress_start(void);
