@@ -8,7 +8,7 @@
 
 // Output data
 
-void zxdg_output_logical_position(void *data,
+static void zxdg_output_logical_position(void *data,
 		struct zxdg_output_v1 *zxdg_output_v1,
 		int32_t x,
 		int32_t y) {
@@ -18,7 +18,7 @@ void zxdg_output_logical_position(void *data,
 	output->logical_y = y;
 }
 
-void zxdg_output_logical_size(void *data,
+static void zxdg_output_logical_size(void *data,
 		struct zxdg_output_v1 *zxdg_output_v1,
 		int32_t width,
 		int32_t height) {
@@ -29,11 +29,11 @@ void zxdg_output_logical_size(void *data,
 }
 
 // deprecated
-void zxdg_output_done(void *data,
+static void zxdg_output_done(void *data,
 		struct zxdg_output_v1 *zxdg_output_v1) {
 }
 
-void zxdg_output_name(void *data,
+static void zxdg_output_name(void *data,
 		struct zxdg_output_v1 *zxdg_output_v1,
 		const char *name) {
 	struct Output *output = data;
@@ -41,7 +41,7 @@ void zxdg_output_name(void *data,
 	output->name = strdup(name);
 }
 
-void zxdg_output_description(void *data,
+static void zxdg_output_description(void *data,
 		struct zxdg_output_v1 *zxdg_output_v1,
 		const char *description) {
 

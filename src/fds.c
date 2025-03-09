@@ -36,7 +36,7 @@ struct pollfd *pfd_wayland = NULL;
 struct pollfd *pfd_lid = NULL;
 struct pollfd *pfd_cfg_dir = NULL;
 
-int create_fd_signal(void) {
+static int create_fd_signal(void) {
 	sigset_t mask;
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGINT);
@@ -80,7 +80,7 @@ void fd_wd_cfg_dir_destroy(void) {
 	wd_cfg_dir = -1;
 }
 
-void create_fds(void) {
+static void create_fds(void) {
 	fd_signal = create_fd_signal();
 	fd_socket_server = create_socket_server();
 	fd_wd_cfg_dir_create();

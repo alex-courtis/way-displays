@@ -34,7 +34,7 @@ const char *head_human(const struct Head * const head) {
 	return unknown;
 }
 
-bool head_is_max_preferred_refresh(const struct Head * const head) {
+static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	if (!head)
 		return false;
 
@@ -46,11 +46,11 @@ bool head_is_max_preferred_refresh(const struct Head * const head) {
 	return false;
 }
 
-bool head_matches_user_mode(const void * const user_mode, const void * const head) {
+static bool head_matches_user_mode(const void * const user_mode, const void * const head) {
 	return user_mode && head && head_matches_name_desc((struct Head*)head, ((struct UserMode*)user_mode)->name_desc);
 }
 
-struct Mode *max_mode(const struct Head * const head) {
+static struct Mode *max_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
@@ -174,7 +174,7 @@ wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double sca
 	return fixed_scale;
 }
 
-int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fixed_scale, const int32_t base) {
+static int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fixed_scale, const int32_t base) {
 	// scales a (pixel) length by fixed_scale
 
 	// in case `base` comes from a not fully initialized Head (like in tests)

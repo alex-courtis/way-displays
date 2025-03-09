@@ -11,7 +11,6 @@
 
 #include "fs.h"
 
-
 void clean_files(void) {
 	rmdir("tst/tmp/mkdir_p/foo/bar");
 	rmdir("tst/tmp/mkdir_p/foo");

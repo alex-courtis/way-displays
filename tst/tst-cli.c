@@ -8,17 +8,11 @@
 #include <unistd.h>
 #include <wayland-client-protocol.h>
 
+#include "cli.h"
 #include "cfg.h"
 #include "ipc.h"
 #include "slist.h"
 #include "log.h"
-
-struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
-struct IpcRequest *parse_write(int argc, char **argv);
-struct IpcRequest *parse_set(int argc, char **argv);
-struct IpcRequest *parse_del(int argc, char **argv);
-bool parse_log_threshold(char *optarg);
-
 
 int before_all(void **state) {
 	return 0;

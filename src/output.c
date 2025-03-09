@@ -50,7 +50,7 @@ const struct Output *output_for_name(const char *name) {
 	return output;
 }
 
-void destroy(const void *o) {
+static void destroy(const void *o) {
 	if (!o)
 		return;
 

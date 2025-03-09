@@ -15,7 +15,7 @@
 #define SERVER_TIMEOUT_SEC 2
 #define CLIENT_TIMEOUT_SEC 10
 
-bool set_socket_timeout(int socket, struct timeval timeout) {
+static bool set_socket_timeout(int socket, struct timeval timeout) {
 
 	if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
 		log_error_errno("\nSocket set timeout failed");

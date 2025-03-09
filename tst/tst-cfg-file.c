@@ -17,8 +17,6 @@
 
 #include "cfg.h"
 
-bool resolve_cfg_file(struct Cfg *cfg);
-
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 
@@ -260,7 +258,9 @@ void cfg_file_write__existing(void **state) {
 
 	FILE *f = fopen(cfg->file_path, "w");
 	assert_non_nul(f);
-	fclose(f);
+	if (f) {
+		fclose(f);
+	}
 
 	char *expected = strdup("XXXX");
 
@@ -344,7 +344,7 @@ void resolve_cfg_file__not_found(void **state) {
 	char cwd[PATH_MAX];
 	char file_path[PATH_MAX + 20];
 
-	getcwd(cwd, PATH_MAX);
+	assert_non_nul(getcwd(cwd, PATH_MAX));
 
 	snprintf(file_path, sizeof(file_path), "%s/inexistent.yaml", cwd);
 
@@ -363,14 +363,17 @@ void resolve_cfg_file__direct(void **state) {
 	char dir_path[PATH_MAX + 20];
 	char file_path[PATH_MAX + 40];
 
-	getcwd(cwd, PATH_MAX);
+	assert_non_nul(getcwd(cwd, PATH_MAX));
 
 	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
 	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
 	slist_append(&cfg_file_paths, strdup(file_path));
 
 	FILE *f = fopen(file_path, "w");
-	fclose(f);
+	assert_non_nul(f);
+	if (f) {
+		fclose(f);
+	}
 
 	assert_true(resolve_cfg_file(cfg));
 
@@ -387,7 +390,7 @@ void resolve_cfg_file__linked(void **state) {
 	char file_path[PATH_MAX + 40];
 	char linked_path[PATH_MAX + 50];
 
-	getcwd(cwd, PATH_MAX);
+	assert_non_nul(getcwd(cwd, PATH_MAX));
 
 	assert_int_equal(mkdir("tst/tmp/resolve", 0755), 0);
 
@@ -397,8 +400,11 @@ void resolve_cfg_file__linked(void **state) {
 	slist_append(&cfg_file_paths, strdup(linked_path));
 
 	FILE *f = fopen(file_path, "w");
-	fclose(f);
-	symlink(file_path, linked_path);
+	assert_non_nul(f);
+	if (f) {
+		fclose(f);
+	}
+	assert_int_equal(symlink(file_path, linked_path), 0);
 
 	assert_true(resolve_cfg_file(cfg));
 

@@ -9,7 +9,7 @@
 
 // Displ data
 
-void cleanup(struct Displ *displ,
+static void cleanup(struct Displ *displ,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1,
 		enum DisplState state) {
 

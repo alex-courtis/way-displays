@@ -57,7 +57,7 @@ void info_mode_string(const struct Mode * const mode, char * const buf, const si
 			);
 }
 
-void print_user_mode(const enum LogThreshold t, const struct UserMode * const user_mode, const bool del) {
+static void print_user_mode(const enum LogThreshold t, const struct UserMode * const user_mode, const bool del) {
 	if (!user_mode)
 		return;
 
@@ -71,7 +71,7 @@ void print_user_mode(const enum LogThreshold t, const struct UserMode * const us
 	}
 }
 
-void print_mode(const enum LogThreshold t, const struct Mode * const mode) {
+static void print_mode(const enum LogThreshold t, const struct Mode * const mode) {
 	static char buf[2048];
 
 	if (mode) {
@@ -82,7 +82,7 @@ void print_mode(const enum LogThreshold t, const struct Mode * const mode) {
 	}
 }
 
-void print_modes_failed(const enum LogThreshold t, const struct Head * const head) {
+static void print_modes_failed(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 
@@ -94,7 +94,7 @@ void print_modes_failed(const enum LogThreshold t, const struct Head * const hea
 	}
 }
 
-void print_modes_res_refresh(const enum LogThreshold t, const struct Head * const head) {
+static void print_modes_res_refresh(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 
@@ -220,7 +220,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 	}
 }
 
-void print_newline(const enum LogThreshold t, bool *print) {
+static void print_newline(const enum LogThreshold t, bool *print) {
 	if (print && *print) {
 		log_(t, "");
 		*print = false;
@@ -311,7 +311,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 }
 
-void print_head_current(const enum LogThreshold t, const struct Head * const head) {
+static void print_head_current(const enum LogThreshold t, const struct Head * const head) {
 	static const struct Output *output = NULL;
 
 	if (!head)
@@ -343,7 +343,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	}
 }
 
-void print_head_desired(const enum LogThreshold t, const struct Head * const head) {
+static void print_head_desired(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 

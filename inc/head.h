@@ -81,8 +81,6 @@ bool head_name_desc_matches_head(const void * const name_desc, const void * cons
 
 wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base);
 
-int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fixed_scale, const int32_t base);
-
 wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);
 
 // sets scaled.height/width

@@ -17,7 +17,7 @@
 
 #include "cli.h"
 
-void usage(FILE *stream) {
+static void usage(FILE *stream) {
 	static char mesg[] =
 		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
 		"  Runs the server when no COMMAND specified.\n"
@@ -171,6 +171,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 				default:
 					break;
 			}
+			break;
 		default:
 			break;
 	}
@@ -192,7 +193,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	return cfg;
 }
 
-struct IpcRequest *parse_get(int argc, char **argv) {
+static struct IpcRequest *parse_get(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--get takes no arguments");
 		wd_exit(EXIT_FAILURE);

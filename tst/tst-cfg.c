@@ -14,12 +14,6 @@
 #include "log.h"
 #include "slist.h"
 
-struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
-struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
-void validate_warn(struct Cfg *cfg);
-void validate_fix(struct Cfg *cfg);
-bool resolve_cfg_file(struct Cfg *cfg);
-
 struct State {
 	struct Cfg *from;
 	struct Cfg *to;

@@ -21,6 +21,22 @@
 #include "log.h"
 #include "marshalling.h"
 
+static void cfg_free_paths(struct Cfg *cfg) {
+	if (!cfg)
+		return;
+
+	free(cfg->dir_path);
+	cfg->dir_path = NULL;
+
+	free(cfg->file_path);
+	cfg->file_path = NULL;
+
+	free(cfg->file_name);
+	cfg->file_name = NULL;
+
+	cfg->resolved_from = NULL;
+}
+
 bool cfg_equal_user_mode_name(const void *value, const void *data) {
 	if (!value || !data) {
 		return false;
@@ -51,7 +67,7 @@ bool cfg_equal_user_scale_name(const void *value, const void *data) {
 	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
-bool cfg_equal_user_scale(const void *value, const void *data) {
+static bool cfg_equal_user_scale(const void *value, const void *data) {
 	if (!value || !data) {
 		return false;
 	}
@@ -66,7 +82,7 @@ bool cfg_equal_user_scale(const void *value, const void *data) {
 	return strcmp(lhs->name_desc, rhs->name_desc) == 0 && lhs->scale == rhs->scale;
 }
 
-bool cfg_equal_user_mode(const void *value, const void *data) {
+static bool cfg_equal_user_mode(const void *value, const void *data) {
 	if (!value || !data) {
 		return false;
 	}
@@ -112,7 +128,7 @@ bool cfg_equal_user_transform_name(const void *value, const void *data) {
 	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
-bool cfg_equal_user_transform(const void *value, const void *data) {
+static bool cfg_equal_user_transform(const void *value, const void *data) {
 	if (!value || !data) {
 		return false;
 	}
@@ -135,7 +151,7 @@ bool cfg_equal_user_transform(const void *value, const void *data) {
 	return true;
 }
 
-bool invalid_user_scale(const void *value, const void *data) {
+static bool invalid_user_scale(const void *value, const void *data) {
 	if (!value) {
 		return true;
 	}
@@ -150,7 +166,7 @@ bool invalid_user_scale(const void *value, const void *data) {
 	return false;
 }
 
-bool invalid_user_mode(const void *value, const void *data) {
+static bool invalid_user_mode(const void *value, const void *data) {
 	if (!value) {
 		return true;
 	}
@@ -183,7 +199,7 @@ bool invalid_user_mode(const void *value, const void *data) {
 	return false;
 }
 
-void warn_short_name_desc(const char *name_desc, const char *element) {
+static void warn_short_name_desc(const char *name_desc, const char *element) {
 	if (!name_desc)
 		return;
 
@@ -192,7 +208,7 @@ void warn_short_name_desc(const char *name_desc, const char *element) {
 	}
 }
 
-struct Cfg *clone_cfg(struct Cfg *from) {
+static struct Cfg *clone_cfg(struct Cfg *from) {
 	if (!from) {
 		return NULL;
 	}
@@ -440,7 +456,7 @@ struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum 
 	return ut;
 }
 
-void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
+static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
 	static char path[PATH_MAX];
 
 	cfg->resolved_from = resolved_from;
@@ -892,22 +908,6 @@ void cfg_free(struct Cfg *cfg) {
 	slist_free_vals(&cfg->user_transforms, cfg_user_transform_free);
 
 	free(cfg);
-}
-
-void cfg_free_paths(struct Cfg *cfg) {
-	if (!cfg)
-		return;
-
-	free(cfg->dir_path);
-	cfg->dir_path = NULL;
-
-	free(cfg->file_path);
-	cfg->file_path = NULL;
-
-	free(cfg->file_name);
-	cfg->file_name = NULL;
-
-	cfg->resolved_from = NULL;
 }
 
 void cfg_user_scale_free(const void *data) {

@@ -26,7 +26,7 @@
 struct IpcOperation *ipc_operation = NULL;
 
 // received a request whilst another is in progress
-void handle_ipc_in_progress(int server_socket) {
+static void handle_ipc_in_progress(int server_socket) {
 	struct IpcRequest *request = ipc_receive_request(server_socket);
 	if (!request) {
 		log_error("\nFailed to read IPC request");
@@ -46,7 +46,7 @@ void handle_ipc_in_progress(int server_socket) {
 	ipc_operation_free(operation);
 }
 
-void notify_ipc_operation(void) {
+static void notify_ipc_operation(void) {
 	if (!ipc_operation) {
 		return;
 	}
@@ -62,7 +62,7 @@ void notify_ipc_operation(void) {
 	}
 }
 
-void receive_ipc_request(int server_socket) {
+static void receive_ipc_request(int server_socket) {
 	if (ipc_operation) {
 		handle_ipc_in_progress(server_socket);
 		return;
@@ -137,7 +137,7 @@ send:
 }
 
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
-int loop(void) {
+static int loop(void) {
 
 	for (;;) {
 		pfds_init();
@@ -218,7 +218,7 @@ int loop(void) {
 	}
 }
 
-void setup_signal_handlers(void) {
+static void setup_signal_handlers(void) {
 	struct sigaction sa;
 
 	// don't transform child processes into zombies and don't handle SIGCHLD.

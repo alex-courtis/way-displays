@@ -12,7 +12,7 @@
 #include "process.h"
 #include "slist.h"
 
-int handle_responses(const struct IpcRequest *ipc_request) {
+static int handle_responses(const struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
 	struct SList *responses = NULL;
