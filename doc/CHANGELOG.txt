@@ -1,3 +1,7 @@
+way-displays 1.12.2 2025-03-10
+------------------------------
+#189 remove unnecessary make way-displays on install target
+
 way-displays 1.12.1 2025-03-09
 ------------------------------
 #185 ensure 32 bit compatibility, add stricter checks
