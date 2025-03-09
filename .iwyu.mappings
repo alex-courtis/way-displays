@@ -1,4 +1,0 @@
-[
-{ symbol: [ va_start, private, <stdarg.h>, public] },
-{ symbol: [ va_end,   private, <stdarg.h>, public] }
-]
