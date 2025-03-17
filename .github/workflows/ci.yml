@@ -75,16 +75,24 @@ jobs:
         run: make CC=clang CXX=clang++ MFLAGS=-m32 clean test
 
       - name: valgrind gcc
-        run: make CC=gcc   CXX=g++                 clean test-vg
+        run: |
+          . /etc/profile.d/debuginfod.sh
+          make CC=gcc   CXX=g++                 clean test-vg
 
       - name: valgrind clang
-        run: make CC=clang CXX=clang++             clean test-vg
+        run: |
+          . /etc/profile.d/debuginfod.sh
+          make CC=clang CXX=clang++             clean test-vg
 
       - name: valgrind gcc 32-bit
-        run: make CC=gcc   CXX=g++     MFLAGS=-m32 clean test-vg
+        run: |
+          . /etc/profile.d/debuginfod.sh
+          make CC=gcc   CXX=g++     MFLAGS=-m32 clean test-vg
 
       - name: valgrind clang 32-bit
-        run: make CC=clang CXX=clang++ MFLAGS=-m32 clean test-vg
+        run: |
+          . /etc/profile.d/debuginfod.sh
+          make CC=clang CXX=clang++ MFLAGS=-m32 clean test-vg
 
       - name: build/install iwyu
         run: |
