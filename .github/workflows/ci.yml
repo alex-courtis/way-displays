@@ -21,16 +21,15 @@ jobs:
           pacman --noconfirm -S \
           clang \
           cmake \
-          cmocka \
+          cmocka lib32-cmocka \
+          cppcheck \
+          git \
           libinput \
           llvm \
           llvm-libs \
-          lib32-cmocka \
-          cppcheck \
-          git \
+          lib32-systemd \
           valgrind \
-          wayland \
-          lib32-wayland \
+          wayland lib32-wayland \
           wayland-protocols \
           yaml-cpp
 
