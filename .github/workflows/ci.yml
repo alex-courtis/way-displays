@@ -22,6 +22,7 @@ jobs:
           clang \
           cmake \
           cmocka \
+          libinput \
           llvm \
           llvm-libs \
           lib32-cmocka \
