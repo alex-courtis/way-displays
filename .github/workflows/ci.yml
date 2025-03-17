@@ -28,6 +28,7 @@ jobs:
           llvm \
           llvm-libs \
           lib32-systemd \
+          ninja \
           valgrind \
           wayland lib32-wayland \
           wayland-protocols \
