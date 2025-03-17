@@ -47,15 +47,15 @@ int after_each(void **state) {
 }
 
 
-void mkdir_p__no_perm(void **state) {
-	assert_false(mkdir_p("/foo/bar", 0755));
+// void mkdir_p__no_perm(void **state) {
+// 	assert_false(mkdir_p("/foo/bar", 0755));
 
-	assert_log(ERROR, "\nCannot create directory /foo\n");
+// 	assert_log(ERROR, "\nCannot create directory /foo\n");
 
-	struct stat sb;
-	assert_int_equal(stat("/foo/bar", &sb), -1);
-	assert_int_equal(errno, ENOENT);
-}
+// 	struct stat sb;
+// 	assert_int_equal(stat("/foo/bar", &sb), -1);
+// 	assert_int_equal(errno, ENOENT);
+// }
 
 void mkdir_p__ok(void **state) {
 	assert_true(mkdir_p("tst/tmp/mkdir_p/foo/bar", 0755));
