@@ -47,11 +47,25 @@ jobs:
       - name: test clang
         run: make CC=clang CXX=clang++             clean test
 
-      - name: compile gcc 32-bit
-        run: make CC=gcc   CXX=g++     MFLAGS=-m32 clean compile
+      - name: build/install lib32-yaml-cpp
+        run: |
+          export CFLAGS="-m32 ${CFLAGS}"
+          export CXXFLAGS="-m32 ${CXXFLAGS}"
+          export LDFLAGS="-m32 ${LDFLAGS}"
+          export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
 
-      - name: compile clang 32-bit
-        run: make CC=clang CXX=clang++ MFLAGS=-m32 clean compile
+          git clone https://github.com/jbeder/yaml-cpp.git
+          cd yaml-cpp
+          git checkout 0.8.0
+          cmake -GNinja \
+                -Bbuild \
+                -DYAML_CPP_BUILD_TESTS=ON \
+                -DCMAKE_INSTALL_PREFIX=/usr \
+                -DCMAKE_INSTALL_LIBDIR=lib32 \
+                -DBUILD_SHARED_LIBS=ON \
+                -DYAML_BUILD_SHARED_LIBS=ON \
+                -DCMAKE_BUILD_TYPE=Release
+          ninja -C build install
 
       - name: test gcc 32-bit
         run: make CC=gcc   CXX=g++     MFLAGS=-m32 clean test
