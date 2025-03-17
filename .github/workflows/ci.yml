@@ -31,8 +31,7 @@ jobs:
           wayland \
           lib32-wayland \
           wayland-protocols \
-          yaml-cpp \
-          lib32-yaml-cpp
+          yaml-cpp
 
       - uses: actions/checkout@v4
 
