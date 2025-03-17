@@ -60,7 +60,7 @@ jobs:
           git checkout 0.8.0
           cmake -GNinja \
                 -Bbuild \
-                -DYAML_CPP_BUILD_TESTS=ON \
+                -DYAML_CPP_BUILD_TESTS=OFF \
                 -DCMAKE_INSTALL_PREFIX=/usr \
                 -DCMAKE_INSTALL_LIBDIR=lib32 \
                 -DBUILD_SHARED_LIBS=ON \
