@@ -14,6 +14,7 @@ jobs:
       image: archlinux:multilib-devel
       # options: --user="1001:118"
     env:
+      # /etc/profile.d/debuginfod.sh is not run when entering the container
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
       #   RUNNER_USER: runner
       #   RUNNER_UID: 1001
@@ -69,8 +70,9 @@ jobs:
           pacman --noconfirm -Sy cmake ninja
           useradd makepkg || true
           su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
+          sed -i -E 's/-DYAML_CPP_BUILD_TESTS=ON/-DYAML_CPP_BUILD_TESTS=OFF/g' /tmp/lib32-yaml-cpp/PKGBUILD
           su makepkg -c "makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp"
-          pacman -U --noconfirm "/tmp/lib32-yaml-cpp/*.pkg.tar"
+          pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
 
       - name: test gcc 32-bit
         run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
@@ -90,7 +92,7 @@ jobs:
           useradd makepkg || true
           su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
           su makepkg -c "makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use"
-          pacman -U --noconfirm "/tmp/include-what-you-use/*.pkg.tar"
+          pacman -U --noconfirm /tmp/include-what-you-use/*.pkg.tar
 
       - name: include-what-you-use
         run: make clean iwyu
