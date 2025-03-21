@@ -18,6 +18,10 @@ jobs:
         # assume the runner user except where overridden by root
         shell: sh -ec "runuser runner {0}"
 
+    env:
+      # profile thus debuginfod.sh is not executed
+      DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
+
     steps:
       - name: container deps
         shell: sh -e {0}
@@ -47,74 +51,42 @@ jobs:
           useradd -m -s /bin/sh --uid 1001 --gid docker runner
           chown -R runner:docker .
 
-      - name: discover user
-        run: |
-          echo "--------"
-          id
-          echo "--------"
-          pwd
-          echo "--------"
-          find .
-          echo "--------"
-          whoami
-          echo "--------"
-          ls -lahn
-          echo "--------"
-          env
+      - run: make CC=gcc   CXX=g++     clean all
 
-      - name: build gcc
-        run: make CC=gcc   CXX=g++     clean all
+      - run: make CC=gcc   CXX=g++     clean test
 
-      - name: test gcc
-        run: make CC=gcc   CXX=g++     clean test
+      - run: make CC=clang CXX=clang++ clean all
 
-      - name: build clang
-        run: make CC=clang CXX=clang++ clean all
+      - run: make CC=clang CXX=clang++ clean test
 
-      - name: test clang
-        run: make CC=clang CXX=clang++ clean test
+      - run: make                      clean cppcheck
 
-      - name: cppcheck
-        run: make                      clean cppcheck
+      - run: make CC=gcc   CXX=g++     clean test-vg
 
-      - name: test valgrind gcc
-        run: make CC=gcc   CXX=g++     clean test-vg
+      - run: make CC=clang CXX=clang++ clean test-vg
 
-      - name: test valgrind clang
-        run: make CC=clang CXX=clang++ clean test-vg
-
-      - name: package lib32-yaml-cpp
-        run: |
+      - run: |
           git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp
           sed -i -E 's/-DYAML_CPP_BUILD_TESTS=ON/-DYAML_CPP_BUILD_TESTS=OFF/g' /tmp/lib32-yaml-cpp/PKGBUILD
           makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp
 
-      - name: install lib32-yaml-cpp
+      - run: pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
         shell: sh -e {0}
-        run: pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
 
-      - name: test gcc 32-bit
-        run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
+      - run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
 
-      - name: test clang 32-bit
-        run: make CC=clang CXX=clang++    MFLAGS=-m32 clean test
+      - run: make CC=clang CXX=clang++    MFLAGS=-m32 clean test
 
-      - name: test valgrind gcc 32-bit
-        run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
+      - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
 
-      - name: test valgrind clang 32-bit
-        run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
+      - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
 
-      - name: package include-what-you-use
-        run: |
+      - run: |
           git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use
           makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use
 
-      - name: install include-what-you-use
+      - run: pacman -U --noconfirm /tmp/include-what-you-use/*.pkg.tar
         shell: sh -e {0}
-        run: |
-          pacman -U --noconfirm /tmp/include-what-you-use/*.pkg.tar
 
-      - name: include-what-you-use
-        run: make clean iwyu
+      - run: make clean iwyu
 
