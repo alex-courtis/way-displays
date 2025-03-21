@@ -37,25 +37,25 @@ jobs:
 
     steps:
       # TODO: clean after using pre-built packages
-      - name: deps
-        run: |
-          # pacman --noconfirm -Sy
+      # - name: deps
+      #   run: |
+      #     # pacman --noconfirm -Sy
 
-          pacman --noconfirm -Sy \
-          clang \
-          cmake \
-          cmocka lib32-cmocka \
-          cppcheck \
-          git \
-          libinput \
-          llvm \
-          llvm-libs \
-          lib32-systemd \
-          ninja \
-          valgrind \
-          wayland lib32-wayland \
-          wayland-protocols \
-          yaml-cpp
+      #     pacman --noconfirm -Sy \
+      #     clang \
+      #     cmake \
+      #     cmocka lib32-cmocka \
+      #     cppcheck \
+      #     git \
+      #     libinput \
+      #     llvm \
+      #     llvm-libs \
+      #     lib32-systemd \
+      #     ninja \
+      #     valgrind \
+      #     wayland lib32-wayland \
+      #     wayland-protocols \
+      #     yaml-cpp
 
       # # TODO: commit and use a pre-build package
       # - name: build/install lib32-yaml-cpp
