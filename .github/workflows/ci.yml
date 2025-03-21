@@ -21,23 +21,6 @@ jobs:
       #   RUNNER_GID: 118
 
     steps:
-      - name: discover_archlinux
-        run: |
-          env
-          echo "--------"
-          whoami
-          echo "--------"
-          id
-          echo "--------"
-          ls -lah
-          echo "--------"
-          ls -lahn
-          echo "--------"
-          pwd
-          echo "--------"
-          find .
-          echo "--------"
-
       - name: container deps
         run: |
           pacman --noconfirm -Sy \
@@ -51,71 +34,7 @@ jobs:
           wayland-protocols \
           yaml-cpp
 
-          # su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
-          # su makepkg -c "makepkg --dir /tmp/lib32-yaml-cpp"
-
-          # pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
-
-          # # TODO: commit and use a pre-build package
-          # - name: build/install lib32-yaml-cpp
-          #   run: |
-          #     export CFLAGS="-m32 ${CFLAGS}"
-          #     export CXXFLAGS="-m32 ${CXXFLAGS}"
-          #     export LDFLAGS="-m32 ${LDFLAGS}"
-          #     export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
-
-          #     git clone https://github.com/jbeder/yaml-cpp.git
-          #     cd yaml-cpp
-          #     git checkout 0.8.0
-          #     cmake -GNinja \
-          #           -Bbuild \
-          #           -DYAML_CPP_BUILD_TESTS=OFF \
-          #           -DCMAKE_INSTALL_PREFIX=/usr \
-          #           -DCMAKE_INSTALL_LIBDIR=lib32 \
-          #           -DBUILD_SHARED_LIBS=ON \
-          #           -DYAML_BUILD_SHARED_LIBS=ON \
-          #           -DCMAKE_BUILD_TYPE=Release
-          #     ninja -C build install
-
-          # # TODO: commit and use a pre-build package
-          # - name: build/install iwyu
-          #   run: |
-          #     git clone https://github.com/include-what-you-use/include-what-you-use.git
-          #     cd include-what-you-use
-          #     git checkout 0.23
-          #     mkdir build
-          #     cd build
-          #     cmake ..
-          #     make install
-
       - uses: actions/checkout@v4
-
-      - name: container deps 32-bit
-        run: |
-          pacman --noconfirm -Sy \
-          lib32-cmocka \
-          lib32-systemd \
-          lib32-wayland
-
-      - name: build/install lib32-yaml-cpp
-        run: |
-          pacman --noconfirm -Sy \
-          cmake \
-          ninja
-          useradd makepkg || true
-          su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
-          su makepkg -c "makepkg --dir /tmp/lib32-yaml-cpp"
-          pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
-
-      - name: build/install include-what-you-use
-        run: |
-          useradd makepkg || true
-          su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
-          su makepkg -c "makepkg --dir /tmp/include-what-you-use"
-          pacman -U --noconfirm "/tmp/include-what-you-use/include-what-you-use-0.23-1-x86_64.pkg.tar.zst"
-
-      - name: include-what-you-use
-        run: make clean iwyu
 
       - name: build gcc
         run: make CC=gcc   CXX=g++     clean way-displays
@@ -138,6 +57,21 @@ jobs:
       - name: test valgrind clang
         run: make CC=clang CXX=clang++ clean test-vg
 
+      - name: container deps 32-bit
+        run: |
+          pacman --noconfirm -Sy \
+          lib32-cmocka \
+          lib32-systemd \
+          lib32-wayland
+
+      - name: build/install lib32-yaml-cpp
+        run: |
+          pacman --noconfirm -Sy cmake ninja
+          useradd makepkg || true
+          su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
+          su makepkg -c "makepkg --nocheck --dir /tmp/lib32-yaml-cpp"
+          pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
+
       - name: test gcc 32-bit
         run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
 
@@ -149,4 +83,15 @@ jobs:
 
       - name: test valgrind clang 32-bit
         run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
+
+      - name: build/install include-what-you-use
+        run: |
+          pacman --noconfirm -Sy llvm
+          useradd makepkg || true
+          su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
+          su makepkg -c "makepkg --dir /tmp/include-what-you-use"
+          pacman -U --noconfirm "/tmp/include-what-you-use/include-what-you-use-0.23-1-x86_64.pkg.tar.zst"
+
+      - name: include-what-you-use
+        run: make clean iwyu
 
