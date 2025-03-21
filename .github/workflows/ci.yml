@@ -84,7 +84,6 @@ jobs:
         run: make                      clean cppcheck
 
       - name: test valgrind gcc
-        shell: sh -e {0}
         run: make CC=gcc   CXX=g++     clean test-vg
 
       - name: test valgrind clang
