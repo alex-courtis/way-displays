@@ -33,7 +33,7 @@ jobs:
 
     container:
       image: archlinux:multilib-devel
-      options: --user="1001:118"
+      # options: --user="1001:118"
       env:
         RUNNER_USER: runner
         RUNNER_UID: 1001
@@ -41,6 +41,23 @@ jobs:
         RUNNER_GID: 118
 
     steps:
+      - name: discover_archlinux
+        run: |
+          env
+          echo "--------"
+          whoami
+          echo "--------"
+          id
+          echo "--------"
+          ls -lah
+          echo "--------"
+          ls -lahn
+          echo "--------"
+          pwd
+          echo "--------"
+          find .
+          echo "--------"
+
       # TODO: clean after using pre-built packages
       - name: deps
         run: |
@@ -101,24 +118,6 @@ jobs:
       #     make install
 
       - uses: actions/checkout@v4
-
-      - name: discover_archlinux
-        run: |
-          env
-          echo "--------"
-          # whoami
-          # echo "--------"
-          id
-          echo "--------"
-          ls -lah
-          echo "--------"
-          ls -lahn
-          echo "--------"
-          pwd
-          echo "--------"
-          find .
-          echo "--------"
-
 
       - name: build gcc
         run: make CC=gcc   CXX=g++                 clean way-displays
