@@ -42,23 +42,15 @@ jobs:
         run: |
           pacman --noconfirm -Sy \
           clang \
-          cmake \
           cmocka lib32-cmocka \
           cppcheck \
           git \
           libinput \
-          llvm \
-          llvm-libs \
           lib32-systemd \
-          ninja \
           valgrind \
           wayland lib32-wayland \
           wayland-protocols \
           yaml-cpp
-
-      - name: container setup
-        run: |
-          useradd makepkg
 
           # su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
           # su makepkg -c "makepkg --dir /tmp/lib32-yaml-cpp"
@@ -99,12 +91,19 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - name: build/install lib32-yaml-cpp
+        run: |
+          useradd makepkg || true
+          su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
+          su makepkg -c "makepkg --dir /tmp/lib32-yaml-cpp"
+          pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
+
       - name: build/install include-what-you-use
         run: |
+          useradd makepkg || true
           su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
           su makepkg -c "makepkg --dir /tmp/include-what-you-use"
-          find /tmp
-          pacman -U --noconfirm "/tmp/include-what-you-use/include-what-you-use-0.23.pkg.tar.zst"
+          pacman -U --noconfirm "/tmp/include-what-you-use/include-what-you-use-0.23-1-x86_64.pkg.tar.zst"
 
       - name: include-what-you-use
         run: make clean iwyu
@@ -129,12 +128,6 @@ jobs:
 
       - name: test valgrind clang
         run: make CC=clang CXX=clang++ clean test-vg
-
-      - name: build/install lib32-yaml-cpp
-        run: |
-          su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
-          su makepkg -c "makepkg --dir /tmp/lib32-yaml-cpp"
-          pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
 
       - name: test gcc 32-bit
         run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
