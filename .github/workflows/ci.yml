@@ -12,17 +12,13 @@ jobs:
 
     container:
       image: archlinux:multilib-devel
-      # options: --user="1001:118"
 
     env:
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
-      RUNNER_USER: runner
-      RUNNER_UID: 1001
-      RUNNER_GROUP: docker
-      RUNNER_GID: 118
 
     defaults:
       run:
+        # assume the runner user except where overridden by root
         shell: sh -ec "runuser runner {0}"
 
     steps:
@@ -46,11 +42,12 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      # magic numbers and names not available in environment
       - name: set permissions
         shell: sh -e {0}
         run: |
           groupadd --gid 118 docker
-          useradd -s /bin/sh --uid 1001 --gid docker runner
+          useradd -m -s /bin/sh --uid 1001 --gid docker runner
           chown -R runner:docker .
 
       - name: discover user
