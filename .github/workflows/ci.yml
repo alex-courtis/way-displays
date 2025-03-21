@@ -9,24 +9,78 @@ on:
 jobs:
   all:
     runs-on: ubuntu-latest
+
+    container:
+      image: archlinux:multilib-devel
+
+    defaults:
+      run:
+        shell: sh -ec "runuser runner {0}" # assume the runner user except where overridden by root
+
+    env:
+      DEBUGINFOD_URLS: "https://debuginfod.archlinux.org" # profile thus debuginfod.sh is not executed
+
     steps:
-    - uses: actions/checkout@v4
-    - name: deps
-      run: |
-        sudo add-apt-repository universe
-        sudo apt install gcc-multilib g++-multilib clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind -y
-    - name: gcc test
-      run: make CC=gcc   CXX=g++                 clean way-displays test
-    - name: clang test
-      run: make CC=clang CXX=clang++             clean way-displays test
-    - name: cppcheck
-      run: make CC=clang CXX=clang++             clean cppcheck
-    - name: gcc 32-bit compile
-      run: make CC=gcc   CXX=g++     MFLAGS=-m32 clean compile
-    - name: clang 32-bit compile
-      run: make CC=clang CXX=clang++ MFLAGS=-m32 clean compile
-    - name: gcc test valgrind
-      run: make CC=gcc   CXX=g++                 clean test-vg
-    - name: clang test valgrind
-      run: make CC=clang CXX=clang++             clean test-vg
+      - name: create user
+        shell: sh -e {0}
+        # magic numbers and names not available in environment
+        run: |
+          groupadd --gid 118 docker
+          useradd -m -s /bin/sh --uid 1001 --gid docker runner
+
+      - name: install packages
+        shell: sh -e {0}
+        run: |
+          pacman --noconfirm -Sy \
+          clang \
+          cmake \
+          cmocka lib32-cmocka \
+          cppcheck \
+          git \
+          lib32-systemd \
+          libinput \
+          llvm \
+          ninja \
+          valgrind \
+          wayland lib32-wayland \
+          wayland-protocols \
+          yaml-cpp
+
+      - uses: actions/checkout@v4
+
+      - name: set source permissions
+        run: chown -R runner:docker .
+        shell: sh -e {0}
+
+      - run: make CC=gcc   CXX=g++     clean all
+      - run: make CC=gcc   CXX=g++     clean test
+      - run: make CC=clang CXX=clang++ clean all
+      - run: make CC=clang CXX=clang++ clean test
+      - run: make                      clean cppcheck
+      - run: make CC=gcc   CXX=g++     clean test-vg
+      - run: make CC=clang CXX=clang++ clean test-vg
+
+      - name: build lib32-yaml-cpp package
+        run: |
+          git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp
+          sed -i -E 's/-DYAML_CPP_BUILD_TESTS=ON/-DYAML_CPP_BUILD_TESTS=OFF/g' /tmp/lib32-yaml-cpp/PKGBUILD
+          makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp
+      - name: install lib32-yaml-cpp package
+        run: pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
+        shell: sh -e {0}
+
+      - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test
+      - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test
+      - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
+      - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
+
+      - name: build include-what-you-use package
+        run: |
+          git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use
+          makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use
+      - name: install include-what-you-use package
+        run: pacman -U --noconfirm /tmp/include-what-you-use/*.pkg.tar
+        shell: sh -e {0}
+
+      - run: make clean iwyu
 
