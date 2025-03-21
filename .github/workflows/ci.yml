@@ -14,11 +14,12 @@ jobs:
       image: archlinux:multilib-devel
 
     steps:
+      # TODO: clean after using pre-built packages
       - name: deps
         run: |
-          pacman --noconfirm -Sy
+          # pacman --noconfirm -Sy
 
-          pacman --noconfirm -S \
+          pacman --noconfirm -Sy \
           clang \
           cmake \
           cmocka lib32-cmocka \
@@ -34,6 +35,7 @@ jobs:
           wayland-protocols \
           yaml-cpp
 
+      # TODO: commit and use a pre-build package
       - name: build/install lib32-yaml-cpp
         run: |
           export CFLAGS="-m32 ${CFLAGS}"
@@ -54,6 +56,7 @@ jobs:
                 -DCMAKE_BUILD_TYPE=Release
           ninja -C build install
 
+      # TODO: commit and use a pre-build package
       - name: build/install iwyu
         run: |
           git clone https://github.com/include-what-you-use/include-what-you-use.git

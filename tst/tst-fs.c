@@ -46,6 +46,7 @@ int after_each(void **state) {
 	return 0;
 }
 
+// TODO this fails on CI as the test runs as root
 
 // void mkdir_p__no_perm(void **state) {
 // 	assert_false(mkdir_p("/foo/bar", 0755));
