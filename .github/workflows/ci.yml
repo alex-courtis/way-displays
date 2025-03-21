@@ -81,10 +81,8 @@ jobs:
           useradd -m -g "${RUNNER_GROUP}" -s /bin/bash "${RUNNER_USER}"
 
           cd /tmp
-          su "${RUNNER_USER}" -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git"
-          cd lib32-yaml-cpp.git
-          su "${RUNNER_USER}" -c "makepkg"
-          pacman -U --noconfirm lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst 
+          su "${RUNNER_USER}" -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git && cd lib32-yaml-cpp && makepkg"
+          pacman -U --noconfirm lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst 
 
       # # TODO: commit and use a pre-build package
       # - name: build/install lib32-yaml-cpp
