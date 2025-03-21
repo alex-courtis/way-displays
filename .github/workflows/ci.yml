@@ -62,6 +62,7 @@ jobs:
           echo "--------"
           whoami
           echo "--------"
+          ls -lahn
 
       - name: build gcc
         run: make CC=gcc   CXX=g++     clean all
