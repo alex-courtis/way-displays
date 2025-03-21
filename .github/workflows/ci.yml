@@ -103,6 +103,7 @@ jobs:
         run: |
           su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
           su makepkg -c "makepkg --dir /tmp/include-what-you-use"
+          find /tmp
           pacman -U --noconfirm "/tmp/include-what-you-use/include-what-you-use-0.23.pkg.tar.zst"
 
       - name: include-what-you-use
@@ -146,13 +147,4 @@ jobs:
 
       - name: test valgrind clang 32-bit
         run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
-
-      - name: build/install include-what-you-use
-        run: |
-          su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
-          su makepkg -c "makepkg --dir /tmp/include-what-you-use"
-          pacman -U --noconfirm "/tmp/include-what-you-use-0.23.pkg.tar.zst"
-
-      - name: include-what-you-use
-        run: make clean iwyu
 
