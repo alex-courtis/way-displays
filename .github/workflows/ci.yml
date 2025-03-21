@@ -46,10 +46,15 @@ jobs:
           wayland-protocols \
           yaml-cpp
 
+      - uses: actions/checkout@v4
+
+      - name: set permissions
+        # run as root
+        shell: sh -e {0}
+        run: |
           groupadd --gid 118 docker
           useradd -s /bin/sh --uid 1001 --gid docker runner
-
-      - uses: actions/checkout@v4
+          chown -R runner:docker .
 
       - name: discover user
         run: |
