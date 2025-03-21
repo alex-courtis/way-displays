@@ -12,9 +12,18 @@ jobs:
 
     container:
       image: archlinux:multilib-devel
+      options: --user="1001:118"
     env:
+      RUNNER_USER: runner
+      RUNNER_UID: 1001
+      RUNNER_GROUP: docker
+      RUNNER_GID: 118
       # /etc/profile.d/debuginfod.sh is not run when entering the container
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
+
+    defaults:
+      run:
+        shell: sh -e su runner -c "{0}"
 
     steps:
       - name: container deps
