@@ -34,11 +34,11 @@ jobs:
     container:
       image: archlinux:multilib-devel
       # options: --user="1001:118"
-      env:
-        RUNNER_USER: runner
-        RUNNER_UID: 1001
-        RUNNER_GROUP: docker
-        RUNNER_GID: 118
+      # env:
+      #   RUNNER_USER: runner
+      #   RUNNER_UID: 1001
+      #   RUNNER_GROUP: docker
+      #   RUNNER_GID: 118
 
     steps:
       - name: discover_archlinux
@@ -77,12 +77,12 @@ jobs:
           wayland-protocols \
           yaml-cpp
 
-          groupadd -g "${RUNNER_GID}" "${RUNNER_GROUP}"
-          useradd -m -g "${RUNNER_GROUP}" -s /bin/bash "${RUNNER_USER}"
+          # useradd makepkg
 
-          cd /tmp
-          su "${RUNNER_USER}" -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git && cd lib32-yaml-cpp && makepkg"
-          pacman -U --noconfirm lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst 
+          # su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
+          # su makepkg -c "makepkg --dir /tmp/lib32-yaml-cpp"
+
+          # pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
 
       # # TODO: commit and use a pre-build package
       # - name: build/install lib32-yaml-cpp
@@ -121,44 +121,50 @@ jobs:
       - name: build gcc
         run: make CC=gcc   CXX=g++                 clean way-displays
 
-#       - name: test gcc
-#         run: make CC=gcc   CXX=g++                 clean test
+      - name: test gcc
+        run: make CC=gcc   CXX=g++                 clean test
 
-#       - name: build clang
-#         run: make CC=clang CXX=clang++             clean way-displays
+      - name: build clang
+        run: make CC=clang CXX=clang++             clean way-displays
 
-#       - name: test clang
-#         run: make CC=clang CXX=clang++             clean test
+      - name: test clang
+        run: make CC=clang CXX=clang++             clean test
 
-#       - name: cppcheck
-#         run: make clean cppcheck
+      - name: cppcheck
+        run: make clean cppcheck
 
-#       - name: test gcc 32-bit
-#         run: make CC=gcc   CXX=g++     MFLAGS=-m32 clean test
+      - name: valgrind gcc
+        run: |
+          . /etc/profile.d/debuginfod.sh
+          make CC=gcc   CXX=g++                    clean test-vg
 
-#       - name: test clang 32-bit
-#         run: make CC=clang CXX=clang++ MFLAGS=-m32 clean test
+      - name: valgrind clang
+        run: |
+          . /etc/profile.d/debuginfod.sh
+          make CC=clang CXX=clang++                clean test-vg
 
-#       - name: valgrind gcc
-#         run: |
-#           . /etc/profile.d/debuginfod.sh
-#           make CC=gcc   CXX=g++                    clean test-vg
+      - name: build/install lib32-yaml-cpp
+        run: |
+          su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
+          su makepkg -c "makepkg --dir /tmp/lib32-yaml-cpp"
+          pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
 
-#       - name: valgrind clang
-#         run: |
-#           . /etc/profile.d/debuginfod.sh
-#           make CC=clang CXX=clang++                clean test-vg
+      - name: test gcc 32-bit
+        run: make CC=gcc   CXX=g++     MFLAGS=-m32 clean test
 
-#       - name: valgrind gcc 32-bit
-#         run: |
-#           . /etc/profile.d/debuginfod.sh
-#           make CC=gcc   CXX=g++     MFLAGS=-m32    clean test-vg
+      - name: test clang 32-bit
+        run: make CC=clang CXX=clang++ MFLAGS=-m32 clean test
 
-#       - name: valgrind clang 32-bit
-#         run: |
-#           . /etc/profile.d/debuginfod.sh
-#           make CC=clang CXX=clang++ MFLAGS=-m32    clean test-vg
+      - name: valgrind gcc 32-bit
+        run: |
+          . /etc/profile.d/debuginfod.sh
+          make CC=gcc   CXX=g++     MFLAGS=-m32    clean test-vg
 
-#       - name: iwyu
-#         run: make clean iwyu
+      - name: valgrind clang 32-bit
+        run: |
+          . /etc/profile.d/debuginfod.sh
+          make CC=clang CXX=clang++ MFLAGS=-m32    clean test-vg
+
+      - name: iwyu
+        run: make clean iwyu
 
