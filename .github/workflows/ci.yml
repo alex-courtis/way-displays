@@ -65,15 +65,6 @@ jobs:
 
           # pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
 
-      - name: build/install include-what-you-use
-        run: |
-          su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
-          su makepkg -c "makepkg --dir /tmp/include-what-you-use"
-          pacman -U --noconfirm "/tmp/include-what-you-use-0.23.pkg.tar.zst"
-
-      - name: include-what-you-use
-        run: make clean iwyu
-
       # # TODO: commit and use a pre-build package
       # - name: build/install lib32-yaml-cpp
       #   run: |
@@ -107,6 +98,15 @@ jobs:
       #     make install
 
       - uses: actions/checkout@v4
+
+      - name: build/install include-what-you-use
+        run: |
+          su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
+          su makepkg -c "makepkg --dir /tmp/include-what-you-use"
+          pacman -U --noconfirm "/tmp/include-what-you-use/include-what-you-use-0.23.pkg.tar.zst"
+
+      - name: include-what-you-use
+        run: make clean iwyu
 
       - name: build gcc
         run: make CC=gcc   CXX=g++     clean way-displays
