@@ -7,6 +7,27 @@ on:
     branches:
       - master
 jobs:
+  discover:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: discover_ubuntu
+        run: |
+          env
+          echo "--------"
+          whoami
+          echo "--------"
+          id
+          echo "--------"
+          ls -lah
+          echo "--------"
+          ls -lahn
+          echo "--------"
+          pwd
+          echo "--------"
+          find .
+          echo "--------"
+
   all:
     runs-on: ubuntu-latest
 
@@ -14,6 +35,23 @@ jobs:
       image: archlinux:multilib-devel
 
     steps:
+      - name: discover_archlinux
+        run: |
+          env
+          echo "--------"
+          whoami
+          echo "--------"
+          id
+          echo "--------"
+          ls -lah
+          echo "--------"
+          ls -lahn
+          echo "--------"
+          pwd
+          echo "--------"
+          find .
+          echo "--------"
+
       # TODO: clean after using pre-built packages
       - name: deps
         run: |
