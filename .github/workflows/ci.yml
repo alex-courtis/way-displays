@@ -23,7 +23,14 @@ jobs:
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
 
     steps:
-      - name: container deps
+      - name: create user
+        shell: sh -e {0}
+        # magic numbers and names not available in environment
+        run: |
+          groupadd --gid 118 docker
+          useradd -m -s /bin/sh --uid 1001 --gid docker runner
+
+      - name: install packages
         shell: sh -e {0}
         run: |
           pacman --noconfirm -Sy \
@@ -43,49 +50,38 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      # magic numbers and names not available in environment
-      - name: set permissions
+      - name: set source permissions
+        run: chown -R runner:docker .
         shell: sh -e {0}
-        run: |
-          groupadd --gid 118 docker
-          useradd -m -s /bin/sh --uid 1001 --gid docker runner
-          chown -R runner:docker .
 
       - run: make CC=gcc   CXX=g++     clean all
-
       - run: make CC=gcc   CXX=g++     clean test
-
       - run: make CC=clang CXX=clang++ clean all
-
       - run: make CC=clang CXX=clang++ clean test
-
       - run: make                      clean cppcheck
-
       - run: make CC=gcc   CXX=g++     clean test-vg
-
       - run: make CC=clang CXX=clang++ clean test-vg
 
-      - run: |
+      - name: build lib32-yaml-cpp package
+        run: |
           git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp
           sed -i -E 's/-DYAML_CPP_BUILD_TESTS=ON/-DYAML_CPP_BUILD_TESTS=OFF/g' /tmp/lib32-yaml-cpp/PKGBUILD
           makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp
-
-      - run: pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
+      - name: install lib32-yaml-cpp package
+        run: pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
         shell: sh -e {0}
 
-      - run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
-
-      - run: make CC=clang CXX=clang++    MFLAGS=-m32 clean test
-
+      - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test
+      - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test
       - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
-
       - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
 
-      - run: |
+      - name: build include-what-you-use package
+        run: |
           git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use
           makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use
-
-      - run: pacman -U --noconfirm /tmp/include-what-you-use/*.pkg.tar
+      - name: install include-what-you-use package
+        run: pacman -U --noconfirm /tmp/include-what-you-use/*.pkg.tar
         shell: sh -e {0}
 
       - run: make clean iwyu
