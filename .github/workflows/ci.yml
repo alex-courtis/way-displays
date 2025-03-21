@@ -13,9 +13,6 @@ jobs:
     container:
       image: archlinux:multilib-devel
 
-    env:
-      DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
-
     defaults:
       run:
         # assume the runner user except where overridden by root
@@ -102,11 +99,11 @@ jobs:
       - name: test clang 32-bit
         run: make CC=clang CXX=clang++    MFLAGS=-m32 clean test
 
-      # - name: test valgrind gcc 32-bit
-      #   run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
+      - name: test valgrind gcc 32-bit
+        run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
 
-      # - name: test valgrind clang 32-bit
-      #   run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
+      - name: test valgrind clang 32-bit
+        run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
 
       - name: package include-what-you-use
         run: |
