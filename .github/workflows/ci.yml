@@ -95,17 +95,17 @@ jobs:
         run: |
           env
           echo "--------"
-          whoami | true
+          # whoami
+          # echo "--------"
+          id
           echo "--------"
-          id | true
+          ls -lah
           echo "--------"
-          ls -lah | true
+          ls -lahn
           echo "--------"
-          ls -lahn | true
+          pwd
           echo "--------"
-          pwd | true
-          echo "--------"
-          find . | true
+          find .
           echo "--------"
 
 
