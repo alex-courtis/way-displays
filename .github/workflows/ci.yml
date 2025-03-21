@@ -15,7 +15,7 @@ jobs:
       # options: --user="1001:118"
 
     env:
-      DEBUGINFOD_URLS: "https://debuginfod.archlinux.org" # /etc/profile.d/debuginfod.sh is not run when entering the container
+      DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
       RUNNER_USER: runner
       RUNNER_UID: 1001
       RUNNER_GROUP: docker
@@ -23,12 +23,10 @@ jobs:
 
     defaults:
       run:
-        # run as user by default
         shell: sh -ec "runuser runner {0}"
 
     steps:
       - name: container deps
-        # run as root
         shell: sh -e {0}
         run: |
           pacman --noconfirm -Sy \
@@ -49,7 +47,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: set permissions
-        # run as root
         shell: sh -e {0}
         run: |
           groupadd --gid 118 docker
@@ -90,13 +87,15 @@ jobs:
       - name: test valgrind clang
         run: make CC=clang CXX=clang++ clean test-vg
 
-      - name: install lib32-yaml-cpp
+      - name: package lib32-yaml-cpp
         run: |
-          useradd makepkg || true
-          su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
+          git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp
           sed -i -E 's/-DYAML_CPP_BUILD_TESTS=ON/-DYAML_CPP_BUILD_TESTS=OFF/g' /tmp/lib32-yaml-cpp/PKGBUILD
-          su makepkg -c "makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp"
-          pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
+          makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp
+
+      - name: install lib32-yaml-cpp
+        shell: sh -e {0}
+        run: pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
 
       - name: test gcc 32-bit
         run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
@@ -110,11 +109,14 @@ jobs:
       - name: test valgrind clang 32-bit
         run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
 
-      - name: install include-what-you-use
+      - name: package include-what-you-use
         run: |
-          useradd makepkg || true
-          su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
-          su makepkg -c "makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use"
+          git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use
+          makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use
+
+      - name: install include-what-you-use
+        shell: sh -e {0}
+        run: |
           pacman -U --noconfirm /tmp/include-what-you-use/*.pkg.tar
 
       - name: include-what-you-use
