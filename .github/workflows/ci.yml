@@ -33,6 +33,7 @@ jobs:
 
     container:
       image: archlinux:multilib-devel
+      options: --user="1001:118"
 
     steps:
       - name: discover_archlinux
