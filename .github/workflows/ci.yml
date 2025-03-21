@@ -80,6 +80,7 @@ jobs:
           groupadd -g "${RUNNER_GID}" "${RUNNER_GROUP}"
           useradd -m -g "${RUNNER_GROUP}" -s /bin/bash "${RUNNER_USER}"
 
+          cd /tmp
           su "${RUNNER_USER}" -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git"
           cd lib32-yaml-cpp.git
           su "${RUNNER_USER}" -c "makepkg"
