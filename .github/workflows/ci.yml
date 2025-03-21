@@ -12,39 +12,38 @@ jobs:
 
     container:
       image: archlinux:multilib-devel
-      # options: --user="1001:118"
     env:
       # /etc/profile.d/debuginfod.sh is not run when entering the container
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
-      #   RUNNER_USER: runner
-      #   RUNNER_UID: 1001
-      #   RUNNER_GROUP: docker
-      #   RUNNER_GID: 118
 
     steps:
       - name: container deps
         run: |
           pacman --noconfirm -Sy \
           clang \
-          cmocka \
+          cmake \
+          cmocka lib32-cmocka \
           cppcheck \
           git \
+          lib32-systemd \
           libinput \
+          llvm \
+          ninja \
           valgrind \
-          wayland \
+          wayland lib32-wayland \
           wayland-protocols \
           yaml-cpp
 
       - uses: actions/checkout@v4
 
       - name: build gcc
-        run: make CC=gcc   CXX=g++     clean way-displays
+        run: make CC=gcc   CXX=g++     clean all
 
       - name: test gcc
         run: make CC=gcc   CXX=g++     clean test
 
       - name: build clang
-        run: make CC=clang CXX=clang++ clean way-displays
+        run: make CC=clang CXX=clang++ clean all
 
       - name: test clang
         run: make CC=clang CXX=clang++ clean test
@@ -58,16 +57,8 @@ jobs:
       - name: test valgrind clang
         run: make CC=clang CXX=clang++ clean test-vg
 
-      - name: container deps 32-bit
+      - name: install lib32-yaml-cpp
         run: |
-          pacman --noconfirm -Sy \
-          lib32-cmocka \
-          lib32-systemd \
-          lib32-wayland
-
-      - name: build/install lib32-yaml-cpp
-        run: |
-          pacman --noconfirm -Sy cmake ninja
           useradd makepkg || true
           su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
           sed -i -E 's/-DYAML_CPP_BUILD_TESTS=ON/-DYAML_CPP_BUILD_TESTS=OFF/g' /tmp/lib32-yaml-cpp/PKGBUILD
@@ -86,9 +77,8 @@ jobs:
       - name: test valgrind clang 32-bit
         run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
 
-      - name: build/install include-what-you-use
+      - name: install include-what-you-use
         run: |
-          pacman --noconfirm -Sy llvm
           useradd makepkg || true
           su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
           su makepkg -c "makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use"
