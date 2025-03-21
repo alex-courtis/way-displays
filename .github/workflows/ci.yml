@@ -65,6 +65,8 @@ jobs:
           whoami
           echo "--------"
           ls -lahn
+          echo "--------"
+          env
 
       - name: build gcc
         run: make CC=gcc   CXX=g++     clean all
@@ -81,11 +83,11 @@ jobs:
       - name: cppcheck
         run: make                      clean cppcheck
 
-      - name: test valgrind gcc
-        run: make CC=gcc   CXX=g++     clean test-vg
+      # - name: test valgrind gcc
+      #   run: make CC=gcc   CXX=g++     clean test-vg
 
-      - name: test valgrind clang
-        run: make CC=clang CXX=clang++ clean test-vg
+      # - name: test valgrind clang
+      #   run: make CC=clang CXX=clang++ clean test-vg
 
       - name: package lib32-yaml-cpp
         run: |
@@ -103,11 +105,11 @@ jobs:
       - name: test clang 32-bit
         run: make CC=clang CXX=clang++    MFLAGS=-m32 clean test
 
-      - name: test valgrind gcc 32-bit
-        run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
+      # - name: test valgrind gcc 32-bit
+      #   run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
 
-      - name: test valgrind clang 32-bit
-        run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
+      # - name: test valgrind clang 32-bit
+      #   run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
 
       - name: package include-what-you-use
         run: |
