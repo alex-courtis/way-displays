@@ -12,7 +12,7 @@ jobs:
 
     container:
       image: archlinux:multilib-devel
-      options: --user="1001:118"
+      # options: --user="1001:118"
 
     env:
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org" # /etc/profile.d/debuginfod.sh is not run when entering the container
@@ -23,10 +23,12 @@ jobs:
 
     defaults:
       run:
-        shell: sh -ec "su runner {0}"
+        # run as user by default
+        shell: sh -ec "runuser runner {0}"
 
     steps:
       - name: container deps
+        # run as root
         shell: sh -e {0}
         run: |
           pacman --noconfirm -Sy \
@@ -43,6 +45,9 @@ jobs:
           wayland lib32-wayland \
           wayland-protocols \
           yaml-cpp
+
+          groupadd --gid 118 docker
+          useradd -s /bin/sh --uid 1001 --gid docker runner
 
       - uses: actions/checkout@v4
 
