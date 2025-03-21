@@ -15,12 +15,10 @@ jobs:
 
     defaults:
       run:
-        # assume the runner user except where overridden by root
-        shell: sh -ec "runuser runner {0}"
+        shell: sh -ec "runuser runner {0}" # assume the runner user except where overridden by root
 
     env:
-      # profile thus debuginfod.sh is not executed
-      DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
+      DEBUGINFOD_URLS: "https://debuginfod.archlinux.org" # profile thus debuginfod.sh is not executed
 
     steps:
       - name: create user
