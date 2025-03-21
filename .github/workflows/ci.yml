@@ -69,8 +69,8 @@ jobs:
           pacman --noconfirm -Sy cmake ninja
           useradd makepkg || true
           su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
-          su makepkg -c "makepkg --nocheck --dir /tmp/lib32-yaml-cpp"
-          pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
+          su makepkg -c "makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp"
+          pacman -U --noconfirm "/tmp/lib32-yaml-cpp/*.pkg.tar"
 
       - name: test gcc 32-bit
         run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
@@ -89,8 +89,8 @@ jobs:
           pacman --noconfirm -Sy llvm
           useradd makepkg || true
           su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
-          su makepkg -c "makepkg --dir /tmp/include-what-you-use"
-          pacman -U --noconfirm "/tmp/include-what-you-use/include-what-you-use-0.23-1-x86_64.pkg.tar.zst"
+          su makepkg -c "makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use"
+          pacman -U --noconfirm "/tmp/include-what-you-use/*.pkg.tar"
 
       - name: include-what-you-use
         run: make clean iwyu
