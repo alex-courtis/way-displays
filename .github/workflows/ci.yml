@@ -51,6 +51,18 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - name: discover user
+        run: |
+          echo "--------"
+          id
+          echo "--------"
+          pwd
+          echo "--------"
+          find .
+          echo "--------"
+          whoami
+          echo "--------"
+
       - name: build gcc
         run: make CC=gcc   CXX=g++     clean all
 
