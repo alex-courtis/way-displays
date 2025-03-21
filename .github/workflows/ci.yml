@@ -27,6 +27,7 @@ jobs:
 
     steps:
       - name: container deps
+        shell: sh -e {0}
         run: |
           pacman --noconfirm -Sy \
           clang \
