@@ -34,28 +34,39 @@ jobs:
     container:
       image: archlinux:multilib-devel
       options: --user="1001:118"
+      env:
+        RUNNER_USER: runner
+        RUNNER_UID: 1001
+        RUNNER_GROUP: docker
+        RUNNER_GID: 118
 
     steps:
       # TODO: clean after using pre-built packages
-      # - name: deps
-      #   run: |
-      #     # pacman --noconfirm -Sy
+      - name: deps
+        run: |
+          pacman --noconfirm -Sy \
+          clang \
+          cmake \
+          cmocka lib32-cmocka \
+          cppcheck \
+          git \
+          libinput \
+          llvm \
+          llvm-libs \
+          lib32-systemd \
+          ninja \
+          valgrind \
+          wayland lib32-wayland \
+          wayland-protocols \
+          yaml-cpp
 
-      #     pacman --noconfirm -Sy \
-      #     clang \
-      #     cmake \
-      #     cmocka lib32-cmocka \
-      #     cppcheck \
-      #     git \
-      #     libinput \
-      #     llvm \
-      #     llvm-libs \
-      #     lib32-systemd \
-      #     ninja \
-      #     valgrind \
-      #     wayland lib32-wayland \
-      #     wayland-protocols \
-      #     yaml-cpp
+          groupadd -g "${RUNNER_GID}" "${RUNNER_GROUP}"
+          useradd -m -g "${RUNNER_GROUP}" -s /bin/bash "${RUNNER_USER}"
+
+          su "${RUNNER_USER}" -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git"
+          cd lib32-yaml-cpp.git
+          su "${RUNNER_USER}" -c "makepkg"
+          pacman -U --noconfirm lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst 
 
       # # TODO: commit and use a pre-build package
       # - name: build/install lib32-yaml-cpp
