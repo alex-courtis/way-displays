@@ -7,34 +7,14 @@ on:
     branches:
       - master
 jobs:
-  discover:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: discover_ubuntu
-        run: |
-          env
-          echo "--------"
-          whoami
-          echo "--------"
-          id
-          echo "--------"
-          ls -lah
-          echo "--------"
-          ls -lahn
-          echo "--------"
-          pwd
-          echo "--------"
-          find .
-          echo "--------"
-
   all:
     runs-on: ubuntu-latest
 
     container:
       image: archlinux:multilib-devel
       # options: --user="1001:118"
-      # env:
+      env:
+        DEBUGINFOD_URLS: "https://debuginfod.archlinux.org"
       #   RUNNER_USER: runner
       #   RUNNER_UID: 1001
       #   RUNNER_GROUP: docker
@@ -58,8 +38,7 @@ jobs:
           find .
           echo "--------"
 
-      # TODO: clean after using pre-built packages
-      - name: deps
+      - name: container deps
         run: |
           pacman --noconfirm -Sy \
           clang \
@@ -77,7 +56,9 @@ jobs:
           wayland-protocols \
           yaml-cpp
 
-          # useradd makepkg
+      - name: container setup
+        run: |
+          useradd makepkg
 
           # su makepkg -c "git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp"
           # su makepkg -c "makepkg --dir /tmp/lib32-yaml-cpp"
@@ -119,29 +100,25 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: build gcc
-        run: make CC=gcc   CXX=g++                 clean way-displays
+        run: make CC=gcc   CXX=g++     clean way-displays
 
       - name: test gcc
-        run: make CC=gcc   CXX=g++                 clean test
+        run: make CC=gcc   CXX=g++     clean test
 
       - name: build clang
-        run: make CC=clang CXX=clang++             clean way-displays
+        run: make CC=clang CXX=clang++ clean way-displays
 
       - name: test clang
-        run: make CC=clang CXX=clang++             clean test
+        run: make CC=clang CXX=clang++ clean test
 
       - name: cppcheck
-        run: make clean cppcheck
+        run: make                      clean cppcheck
 
       - name: valgrind gcc
-        run: |
-          . /etc/profile.d/debuginfod.sh
-          make CC=gcc   CXX=g++                    clean test-vg
+        run: make CC=gcc   CXX=g++     clean test-vg
 
       - name: valgrind clang
-        run: |
-          . /etc/profile.d/debuginfod.sh
-          make CC=clang CXX=clang++                clean test-vg
+        run: make CC=clang CXX=clang++ clean test-vg
 
       - name: build/install lib32-yaml-cpp
         run: |
@@ -150,20 +127,22 @@ jobs:
           pacman -U --noconfirm "/tmp/lib32-yaml-cpp/lib32-yaml-cpp-0.8.0-1-x86_64.pkg.tar.zst"
 
       - name: test gcc 32-bit
-        run: make CC=gcc   CXX=g++     MFLAGS=-m32 clean test
+        run: make CC=gcc   CXX=g++        MFLAGS=-m32 clean test
 
       - name: test clang 32-bit
-        run: make CC=clang CXX=clang++ MFLAGS=-m32 clean test
+        run: make CC=clang CXX=clang++    MFLAGS=-m32 clean test
 
       - name: valgrind gcc 32-bit
-        run: |
-          . /etc/profile.d/debuginfod.sh
-          make CC=gcc   CXX=g++     MFLAGS=-m32    clean test-vg
+        run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
 
       - name: valgrind clang 32-bit
+        run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
+
+      - name: build/install iwyu
         run: |
-          . /etc/profile.d/debuginfod.sh
-          make CC=clang CXX=clang++ MFLAGS=-m32    clean test-vg
+          su makepkg -c "git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use"
+          su makepkg -c "makepkg --dir /tmp/include-what-you-use"
+          pacman -U --noconfirm "/tmp/include-what-you-use-0.23.pkg.tar.zst"
 
       - name: iwyu
         run: make clean iwyu
