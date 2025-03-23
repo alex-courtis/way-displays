@@ -1,0 +1,176 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/doc/way-displays.cfg.schema.yaml
+type: object
+title: way-displays cfg
+description: |-
+  Schema for https://github.com/alex-courtis/way-displays cfg.yaml
+
+properties:
+  ARRANGE:
+    enum:
+      - ROW
+      - COLUMN
+    default: ROW
+    description: |-
+      Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom).
+
+  ALIGN:
+    enum:
+      - MIDDLE
+      - LEFT
+      - RIGHT
+      - TOP
+      - BOTTOM
+    default: TOP
+    description: |-
+      Align ROWs at the TOP (default), MIDDLE or BOTTOM.
+      Align COLUMNs at the LEFT (default), MIDDLE or RIGHT.
+
+  ORDER:
+    "type:": list
+    description: |-
+      ROW is arranged in order left to right.
+      COLUMN is top to bottom.
+      ORDER defaults to the order in which displays are discovered.
+    items:
+      type: string
+      description: |-
+        Name or description
+
+  SCALING:
+    type: boolean
+    description: |-
+      Enable scaling, overrides AUTO_SCALE and SCALE.
+
+  AUTO_SCALE:
+    type: boolean
+    description: |-
+      The default is to scale each display by DPI.
+      This may be disabled and scale 1 will be used, unless a SCALE has been specified.
+    default: true
+
+  AUTO_SCALE_MIN:
+    type: number
+    description: |-
+      Set minimum value for auto scaling, default 1.0
+    default: 1.0
+
+  AUTO_SCALE_MAX:
+    type: number
+    description: |-
+      Set maximum value for auto scaling.
+      Ignored if below AUTO_SCALE_MIN.
+
+  SCALE:
+    "type:": list
+    description: |-
+      Auto scale may be overridden for each display.
+    items:
+      properties:
+        NAME_DESC:
+          type: string
+          description: |-
+            Name or description
+        SCALE:
+          type: number
+          description: |-
+            Overridden scale.
+      additionalProperties: false
+
+  MODE:
+    "type:": list
+    description: |-
+      Override the preferred mode.
+      WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
+    items:
+      properties:
+        NAME_DESC:
+          type: string
+          description: |-
+            Name or description
+        WIDTH:
+          type: integer
+          description: |-
+            Pixels wide.
+        HEIGHT:
+          type: integer
+          description: |-
+            Pixels high.
+        HZ:
+          type: integer
+          description: |-
+            Refresh rate.
+        MAX:
+          type: boolean
+          description: |-
+            Use the highest available mode.
+      additionalProperties: false
+
+  TRANSFORM:
+    "type:": list
+    description: |-
+      Rotate or translate the display.
+    items:
+      properties:
+        NAME_DESC:
+          type: string
+          description: |-
+            Name or description
+        TRANSFORM:
+          enum:
+            - 90
+            - 180
+            - 270
+            - FLIPPED
+            - FLIPPED-90
+            - FLIPPED-180
+            - FLIPPED-270
+          description: |-
+            Overridden scale.
+      additionalProperties: false
+
+  VRR_OFF:
+    "type:": list
+    description: |-
+      VRR / adaptive sync is enabled by default. Disable it per display.
+    items:
+      type: string
+      description: |-
+        Name or description
+
+  CALLBACK_CMD:
+    type: string
+    description: |-
+      Sets a /bin/sh command to be executed following most events.
+      Obeys LOG_THRESHOLD
+      ${CALLBACK_MSG} contains a human readable message 
+      ${CALLBACK_LEVEL} LOG_THRESHOLD
+      NOTE: Depending on your compositor this could get executed multiple times when a change happens. Especially likely on a (dis-)connect.
+
+  LAPTOP_DISPLAY_PREFIX:
+    type: string
+    description: |-
+      Laptop displays usually start with eDP e.g. eDP-1.
+      This may be overridden if your laptop is different.
+
+  LOG_THRESHOLD:
+    enum:
+      - FATAL
+      - ERROR
+      - WARNING
+      - INFO
+      - DEBUG
+    default: INFO
+    description: |-
+      Applies to logs and callbacks.
+
+  DISABLED:
+    "type:": list
+    description: |-
+      Disable the specified displays.
+    items:
+      type: string
+      description: |-
+        Name or description
+
+additionalProperties: false

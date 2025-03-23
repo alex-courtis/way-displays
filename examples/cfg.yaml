@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=../doc/way-displays.cfg.schema.yaml
+
 # Default cfg.yaml for way-displays.
 # Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
 #
