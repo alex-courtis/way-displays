@@ -52,7 +52,7 @@ properties:
   AUTO_SCALE_MIN:
     type: number
     description: |-
-      Set minimum value for auto scaling, default 1.0
+      Set minimum value for auto scaling.
     default: 1.0
 
   AUTO_SCALE_MAX:
