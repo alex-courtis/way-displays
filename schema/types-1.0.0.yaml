@@ -1,5 +1,6 @@
+TODO: reset to https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.0.0.yaml
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.0.0.yaml
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/doc-yaml-schemas/schema/types-1.0.0.yaml
 type: object
 title: way-displays types
 description: |-
@@ -9,7 +10,6 @@ definitions:
   fuzzy_display_match:
     type: string
     description: |-
-      TYPES
       Fuzzy match for a display. In order of precedence:
       - Exact match of name or description e.g. 'DP-1'
       - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 

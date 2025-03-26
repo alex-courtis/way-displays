@@ -1,5 +1,6 @@
+TODO: reset to https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.0.0.yaml
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.0.0.yaml
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/doc-yaml-schemas/schema/cfg-1.0.0.yaml
 type: object
 title: way-displays cfg
 description: |-
@@ -7,13 +8,7 @@ description: |-
 
 definitions:
   fuzzy_display_match:
-    type: string
-    description: |-
-      CFG
-      Fuzzy match for a display. In order of precedence:
-      - Exact match of name or description e.g. 'DP-1'
-      - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 
-      - Case insensitive mach of name or description e.g. 'ROG PG27AQ'
+    $ref: types-1.0.0.yaml#/definitions/fuzzy_display_match
 
 properties:
   ARRANGE:
@@ -43,7 +38,7 @@ properties:
       COLUMN is top to bottom.
       ORDER defaults to the order in which displays are discovered.
     items:
-      $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
+      $ref: '#/definitions/fuzzy_display_match'
 
   SCALING:
     type: boolean
@@ -77,7 +72,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
+          $ref: '#/definitions/fuzzy_display_match'
         SCALE:
           type: number
           description: |-
@@ -118,7 +113,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
+          $ref: '#/definitions/fuzzy_display_match'
         TRANSFORM:
           enum:
             - 90
@@ -137,7 +132,7 @@ properties:
     description: |-
       VRR / adaptive sync is enabled by default. Disable it per display.
     items:
-      $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
+      $ref: '#/definitions/fuzzy_display_match'
 
   CALLBACK_CMD:
     type: string
@@ -170,6 +165,6 @@ properties:
     description: |-
       Disable the specified displays.
     items:
-      $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
+      $ref: '#/definitions/fuzzy_display_match'
 
 additionalProperties: false
