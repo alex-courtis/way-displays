@@ -9,6 +9,7 @@ definitions:
   fuzzy_display_match:
     type: string
     description: |-
+      CFG
       Fuzzy match for a display. In order of precedence:
       - Exact match of name or description e.g. 'DP-1'
       - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 
@@ -42,7 +43,7 @@ properties:
       COLUMN is top to bottom.
       ORDER defaults to the order in which displays are discovered.
     items:
-      $ref: '#/definitions/fuzzy_display_match'
+      $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
 
   SCALING:
     type: boolean
@@ -76,7 +77,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          $ref: '#/definitions/fuzzy_display_match'
+          $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
         SCALE:
           type: number
           description: |-
@@ -117,7 +118,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          $ref: '#/definitions/fuzzy_display_match'
+          $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
         TRANSFORM:
           enum:
             - 90
@@ -136,7 +137,7 @@ properties:
     description: |-
       VRR / adaptive sync is enabled by default. Disable it per display.
     items:
-      $ref: '#/definitions/fuzzy_display_match'
+      $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
 
   CALLBACK_CMD:
     type: string
@@ -169,6 +170,6 @@ properties:
     description: |-
       Disable the specified displays.
     items:
-      $ref: '#/definitions/fuzzy_display_match'
+      $ref: 'types-1.0.0.yaml#definitions/fuzzy_display_match'
 
 additionalProperties: false
