@@ -8,7 +8,7 @@ description: |-
 
 definitions:
   fuzzy_display_match:
-    $ref: types-1.0.0.yaml#/definitions/fuzzy_display_match
+    $ref: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/doc-yaml-schemas/schema/types-1.0.0.yaml#/definitions/fuzzy_display_match
 
 properties:
   ARRANGE:
