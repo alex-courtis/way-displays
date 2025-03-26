@@ -5,6 +5,15 @@ title: way-displays cfg
 description: |-
   Schema for https://github.com/alex-courtis/way-displays cfg.yaml
 
+definitions:
+  fuzzy_display_match:
+    type: string
+    description: |-
+      Fuzzy match for a display. In order of precedence:
+      - Exact match of name or description e.g. 'DP-1'
+      - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 
+      - Case insensitive mach of name or description e.g. 'ROG PG27AQ'
+
 properties:
   ARRANGE:
     enum:
@@ -33,14 +42,13 @@ properties:
       COLUMN is top to bottom.
       ORDER defaults to the order in which displays are discovered.
     items:
-      type: string
-      description: |-
-        Name or description
+      $ref: '#/definitions/fuzzy_display_match'
 
   SCALING:
     type: boolean
     description: |-
       Enable scaling, overrides AUTO_SCALE and SCALE.
+    default: true
 
   AUTO_SCALE:
     type: boolean
@@ -68,9 +76,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          type: string
-          description: |-
-            Name or description
+          $ref: '#/definitions/fuzzy_display_match'
         SCALE:
           type: number
           description: |-
@@ -85,9 +91,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          type: string
-          description: |-
-            Name or description
+          $ref: '#/definitions/fuzzy_display_match'
         WIDTH:
           type: integer
           description: |-
@@ -113,9 +117,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          type: string
-          description: |-
-            Name or description
+          $ref: '#/definitions/fuzzy_display_match'
         TRANSFORM:
           enum:
             - 90
@@ -134,9 +136,7 @@ properties:
     description: |-
       VRR / adaptive sync is enabled by default. Disable it per display.
     items:
-      type: string
-      description: |-
-        Name or description
+      $ref: '#/definitions/fuzzy_display_match'
 
   CALLBACK_CMD:
     type: string
@@ -169,8 +169,6 @@ properties:
     description: |-
       Disable the specified displays.
     items:
-      type: string
-      description: |-
-        Name or description
+      $ref: '#/definitions/fuzzy_display_match'
 
 additionalProperties: false
