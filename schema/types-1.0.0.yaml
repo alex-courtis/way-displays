@@ -1,0 +1,16 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.0.0.yaml
+type: object
+title: way-displays types
+description: |-
+  Types for https://github.com/alex-courtis/way-displays
+
+definitions:
+  fuzzy_display_match:
+    type: string
+    description: |-
+      Fuzzy match for a display. In order of precedence:
+      - Exact match of name or description e.g. 'DP-1'
+      - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 
+      - Case insensitive mach of name or description e.g. 'ROG PG27AQ'
+
