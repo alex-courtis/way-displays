@@ -1,14 +1,17 @@
+# yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
+
 TODO: reset to https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.0.0.yaml
 $schema: https://json-schema.org/draft/2020-12/schema
 $id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/doc-yaml-schemas/schema/cfg-1.0.0.yaml
 type: object
+
 title: way-displays cfg
 description: |-
   Schema for https://github.com/alex-courtis/way-displays cfg.yaml
 
-definitions:
+$defs:
   fuzzy_display_match:
-    $ref: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/doc-yaml-schemas/schema/types-1.0.0.yaml#/definitions/fuzzy_display_match
+    $ref: types-1.0.0.yaml#/$defs/fuzzy_display_match
 
 properties:
   ARRANGE:
@@ -38,7 +41,7 @@ properties:
       COLUMN is top to bottom.
       ORDER defaults to the order in which displays are discovered.
     items:
-      $ref: '#/definitions/fuzzy_display_match'
+      $ref: '#/$defs/fuzzy_display_match'
 
   SCALING:
     type: boolean
@@ -72,7 +75,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          $ref: '#/definitions/fuzzy_display_match'
+          $ref: '#/$defs/fuzzy_display_match'
         SCALE:
           type: number
           description: |-
@@ -87,7 +90,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          $ref: '#/definitions/fuzzy_display_match'
+          $ref: '#/$defs/fuzzy_display_match'
         WIDTH:
           type: integer
           description: |-
@@ -113,7 +116,7 @@ properties:
     items:
       properties:
         NAME_DESC:
-          $ref: '#/definitions/fuzzy_display_match'
+          $ref: '#/$defs/fuzzy_display_match'
         TRANSFORM:
           enum:
             - 90
@@ -132,7 +135,7 @@ properties:
     description: |-
       VRR / adaptive sync is enabled by default. Disable it per display.
     items:
-      $ref: '#/definitions/fuzzy_display_match'
+      $ref: '#/$defs/fuzzy_display_match'
 
   CALLBACK_CMD:
     type: string
@@ -165,6 +168,6 @@ properties:
     description: |-
       Disable the specified displays.
     items:
-      $ref: '#/definitions/fuzzy_display_match'
+      $ref: '#/$defs/fuzzy_display_match'
 
 additionalProperties: false
