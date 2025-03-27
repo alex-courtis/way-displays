@@ -9,30 +9,16 @@ title: way-displays cfg
 description: |-
   Schema for https://github.com/alex-courtis/way-displays cfg.yaml
 
-$defs:
-  fuzzy_display_match:
-    $ref: types-1.0.0.yaml#/$defs/fuzzy_display_match
-
 properties:
   ARRANGE:
     enum:
       - ROW
       - COLUMN
     default: ROW
-    description: |-
-      Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom).
 
   ALIGN:
-    enum:
-      - MIDDLE
-      - LEFT
-      - RIGHT
-      - TOP
-      - BOTTOM
+    $ref: 'types-1.0.0.yaml#/$defs/align'
     default: TOP
-    description: |-
-      Align ROWs at the TOP (default), MIDDLE or BOTTOM.
-      Align COLUMNs at the LEFT (default), MIDDLE or RIGHT.
 
   ORDER:
     "type:": list
@@ -41,7 +27,7 @@ properties:
       COLUMN is top to bottom.
       ORDER defaults to the order in which displays are discovered.
     items:
-      $ref: '#/$defs/fuzzy_display_match'
+      $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
 
   SCALING:
     type: boolean
@@ -73,14 +59,7 @@ properties:
     description: |-
       Auto scale may be overridden for each display.
     items:
-      properties:
-        NAME_DESC:
-          $ref: '#/$defs/fuzzy_display_match'
-        SCALE:
-          type: number
-          description: |-
-            Overridden scale.
-      additionalProperties: false
+      $ref: 'types-1.0.0.yaml#/$defs/scale'
 
   MODE:
     "type:": list
@@ -88,54 +67,21 @@ properties:
       Override the preferred mode.
       WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
     items:
-      properties:
-        NAME_DESC:
-          $ref: '#/$defs/fuzzy_display_match'
-        WIDTH:
-          type: integer
-          description: |-
-            Pixels wide.
-        HEIGHT:
-          type: integer
-          description: |-
-            Pixels high.
-        HZ:
-          type: integer
-          description: |-
-            Refresh rate.
-        MAX:
-          type: boolean
-          description: |-
-            Use the highest available mode.
-      additionalProperties: false
+      $ref: 'types-1.0.0.yaml#/$defs/mode'
 
   TRANSFORM:
     "type:": list
     description: |-
       Rotate or translate the display.
     items:
-      properties:
-        NAME_DESC:
-          $ref: '#/$defs/fuzzy_display_match'
-        TRANSFORM:
-          enum:
-            - 90
-            - 180
-            - 270
-            - FLIPPED
-            - FLIPPED-90
-            - FLIPPED-180
-            - FLIPPED-270
-          description: |-
-            Overridden scale.
-      additionalProperties: false
+      $ref: 'types-1.0.0.yaml#/$defs/transform'
 
   VRR_OFF:
     "type:": list
     description: |-
       VRR / adaptive sync is enabled by default. Disable it per display.
     items:
-      $ref: '#/$defs/fuzzy_display_match'
+      $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
 
   CALLBACK_CMD:
     type: string
@@ -153,12 +99,7 @@ properties:
       This may be overridden if your laptop is different.
 
   LOG_THRESHOLD:
-    enum:
-      - FATAL
-      - ERROR
-      - WARNING
-      - INFO
-      - DEBUG
+    $ref: 'types-1.0.0.yaml#/$defs/log_threshold'
     default: INFO
     description: |-
       Applies to logs and callbacks.
@@ -168,6 +109,6 @@ properties:
     description: |-
       Disable the specified displays.
     items:
-      $ref: '#/$defs/fuzzy_display_match'
+      $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
 
 additionalProperties: false
