@@ -18,3 +18,75 @@ $defs:
       - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 
       - Case insensitive mach of name or description e.g. 'ROG PG27AQ'
 
+  arrange:
+    enum:
+      - ROW
+      - COLUMN
+    description: |-
+      Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom).
+
+  align:
+    enum:
+      - MIDDLE
+      - LEFT
+      - RIGHT
+      - TOP
+      - BOTTOM
+    description: |-
+      Align ROWs at the TOP (default), MIDDLE or BOTTOM.
+      Align COLUMNs at the LEFT (default), MIDDLE or RIGHT.
+
+  mode:
+    properties:
+      NAME_DESC:
+        $ref: '#/$defs/fuzzy_display_match'
+      WIDTH:
+        type: integer
+        description: |-
+          Pixels wide.
+      HEIGHT:
+        type: integer
+        description: |-
+          Pixels high.
+      HZ:
+        type: integer
+        description: |-
+          Refresh rate.
+      MAX:
+        type: boolean
+        description: |-
+          Use the highest available mode.
+    additionalProperties: false
+
+  scale:
+    properties:
+      NAME_DESC:
+        $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+      SCALE:
+        type: number
+        description: |-
+          Scale: float.
+    additionalProperties: false
+
+  transform:
+    properties:
+      NAME_DESC:
+        $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+      TRANSFORM:
+        enum:
+          - 90
+          - 180
+          - 270
+          - FLIPPED
+          - FLIPPED-90
+          - FLIPPED-180
+          - FLIPPED-270
+    additionalProperties: false
+
+  log_threshold:
+    enum:
+      - FATAL
+      - ERROR
+      - WARNING
+      - INFO
+      - DEBUG
