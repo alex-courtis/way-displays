@@ -1,12 +1,15 @@
+# yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
+
 TODO: reset to https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.0.0.yaml
 $schema: https://json-schema.org/draft/2020-12/schema
 $id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/doc-yaml-schemas/schema/types-1.0.0.yaml
 type: object
+
 title: way-displays types
 description: |-
-  Types for https://github.com/alex-courtis/way-displays
+  Types for https://github.com/alex-courtis/way-displays schemas.
 
-definitions:
+$defs:
   fuzzy_display_match:
     type: string
     description: |-
