@@ -343,6 +343,84 @@ void merge_del__callback_cmd(void **state) {
 	cfg_free(merged);
 }
 
+void merge_toggle__scaling(void **state) {
+	struct State *s = *state;
+
+	s->to->scaling = true;
+
+	s->from->scaling = true;
+	s->from->auto_scale = false;
+
+	s->expected->scaling = false;
+
+	struct Cfg *merged = merge_toggle(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_toggle__auto_scale(void **state) {
+	struct State *s = *state;
+
+	s->to->auto_scale = false;
+
+	s->from->scaling = false;
+	s->from->auto_scale = true;
+
+	s->expected->auto_scale = true;
+
+	struct Cfg *merged = merge_toggle(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_toggle__disabled(void **state) {
+	struct State *s = *state;
+
+	s->from->auto_scale = false;
+	s->from->scaling = false;
+
+	slist_append(&s->to->disabled_name_desc, strdup("display1"));
+	slist_append(&s->to->disabled_name_desc, strdup("display2"));
+
+	slist_append(&s->from->disabled_name_desc, strdup("display2"));
+	slist_append(&s->from->disabled_name_desc, strdup("display3"));
+
+	slist_append(&s->expected->disabled_name_desc, strdup("display1"));
+	slist_append(&s->expected->disabled_name_desc, strdup("display3"));
+
+	struct Cfg *merged = merge_toggle(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
+void merge_toggle__adaptive_sync_off(void **state) {
+	struct State *s = *state;
+
+	s->from->auto_scale = false;
+	s->from->scaling = false;
+
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("display1"));
+	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("display2"));
+
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("display2"));
+	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("display3"));
+
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("display1"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("display3"));
+
+	struct Cfg *merged = merge_toggle(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
 void validate_fix__col(void **state) {
 	struct State *s = *state;
 
@@ -476,6 +554,11 @@ int main(void) {
 		TEST(merge_del__adaptive_sync_off),
 		TEST(merge_del__disabled),
 		TEST(merge_del__callback_cmd),
+
+		TEST(merge_toggle__scaling),
+		TEST(merge_toggle__auto_scale),
+		TEST(merge_toggle__disabled),
+		TEST(merge_toggle__adaptive_sync_off),
 
 		TEST(validate_fix__col),
 		TEST(validate_fix__row),
