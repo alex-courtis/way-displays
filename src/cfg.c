@@ -241,11 +241,9 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	}
 
 	// AUTO_SCALE
-	if (from->auto_scale) {
-		to->auto_scale = from->auto_scale;
-		to->auto_scale_min = from->auto_scale_min;
-		to->auto_scale_max = from->auto_scale_max;
-	}
+	to->auto_scale = from->auto_scale;
+	to->auto_scale_min = from->auto_scale_min;
+	to->auto_scale_max = from->auto_scale_max;
 
 	// SCALE
 	for (i = from->user_scales; i; i = i->nex) {
