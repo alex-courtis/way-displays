@@ -17,6 +17,7 @@ enum IpcCommand {
 	CFG_SET,
 	CFG_DEL,
 	CFG_WRITE,
+	CFG_TOGGLE,
 };
 
 struct IpcOperation {
@@ -31,7 +32,7 @@ struct IpcOperation {
 struct IpcRequest {
 	enum IpcCommand command;
 	enum LogThreshold log_threshold;	// server marshals >=
-	struct Cfg *cfg;				// for CFG_SET, CFG_DEL
+	struct Cfg *cfg;				// for CFG_SET, CFG_DEL, CFG_TOGGLE
 	bool yaml;				// client print yaml only bar errors
 	int socket_client;		// client and server, set to -1 on failure
 	bool bad;				// used by server on receipt of bad message
