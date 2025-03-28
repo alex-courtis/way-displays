@@ -120,6 +120,27 @@ size_t slist_remove_all_free(struct SList **head, fn_equals equals, const void *
 	return removed;
 }
 
+size_t slist_xor_free(struct SList **head1, struct SList *head2, fn_equals equals, fn_free_val free_val, fn_copy_val copy_val) {
+	struct SList *i = head2;
+	size_t removed = 0;
+
+	while (i) {
+		size_t removed = slist_remove_all_free(head1, equals, i->val, free_val);
+
+		if (!removed) {
+			if (copy_val) {
+				slist_append(head1, copy_val(i->val));
+			} else {
+				slist_append(head1, i->val);
+			}
+		}
+
+		i = i->nex;
+	}
+
+	return removed;
+}
+
 void *slist_at(struct SList *head, size_t index) {
 	size_t c = 0;
 	for (struct SList *i = head; i; i = i->nex, c++) {
