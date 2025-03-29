@@ -60,11 +60,12 @@ static struct NameVal on_offs[] = {
 };
 
 static struct NameVal ipc_commands[] = {
-	{ .val = GET,       .name = "GET",       .friendly = "get",    },
-	{ .val = CFG_SET,   .name = "CFG_SET",   .friendly = "set",    },
-	{ .val = CFG_DEL,   .name = "CFG_DEL",   .friendly = "delete", },
-	{ .val = CFG_WRITE, .name = "CFG_WRITE", .friendly = "write",  },
-	{ .val = 0,         .name = NULL,        .friendly = NULL,     },
+	{ .val = GET,        .name = "GET",        .friendly = "get",    },
+	{ .val = CFG_SET,    .name = "CFG_SET",    .friendly = "set",    },
+	{ .val = CFG_DEL,    .name = "CFG_DEL",    .friendly = "delete", },
+	{ .val = CFG_WRITE,  .name = "CFG_WRITE",  .friendly = "write",  },
+	{ .val = CFG_TOGGLE, .name = "CFG_TOGGLE", .friendly = "toggle", },
+	{ .val = 0,          .name = NULL,         .friendly = NULL,     },
 };
 
 static struct NameVal transforms[] = {

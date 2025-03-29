@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2025/02/24
+% 2025/03/28
 
 # NAME
 
@@ -149,6 +149,21 @@ User should be a member of the `input` group for querying laptop lid state.
 
     `CALLBACK_CMD` <*shell command*>
     : Remove command on display configuration success.
+
+`-t`, `--t[oggle]`
+: Toggle a setting.
+
+	`SCALING`
+	: Toggle scaling.
+
+	`AUTO_SCALE`
+	: Toggle auto scaling.
+
+	`VRR_OFF` <*name*>
+	: Toggle VRR for a display.
+
+	`DISABLED` <*name*>
+	: Toggle a display.
 
 `-w` | `--w[rite]`
 : Write active configuration to cfg.yaml; removes any whitespace or comments.
