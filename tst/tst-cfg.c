@@ -346,12 +346,12 @@ void merge_del__callback_cmd(void **state) {
 void merge_toggle__scaling(void **state) {
 	struct State *s = *state;
 
-	s->to->scaling = true;
+	s->to->scaling = ON;
 
-	s->from->scaling = true;
-	s->from->auto_scale = false;
+	s->from->scaling = ON;
+	s->from->auto_scale = OFF;
 
-	s->expected->scaling = false;
+	s->expected->scaling = OFF;
 
 	struct Cfg *merged = merge_toggle(s->to, s->from);
 
@@ -363,12 +363,12 @@ void merge_toggle__scaling(void **state) {
 void merge_toggle__auto_scale(void **state) {
 	struct State *s = *state;
 
-	s->to->auto_scale = false;
+	s->to->auto_scale = OFF;
 
-	s->from->scaling = false;
-	s->from->auto_scale = true;
+	s->from->scaling = OFF;
+	s->from->auto_scale = ON;
 
-	s->expected->auto_scale = true;
+	s->expected->auto_scale = ON;
 
 	struct Cfg *merged = merge_toggle(s->to, s->from);
 

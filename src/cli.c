@@ -73,7 +73,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			break;
 		case SCALING:
 			if (command == CFG_TOGGLE) {
-				cfg->scaling = true;
+				cfg->scaling = ON;
 				parsed = true;
 				break;
 			}
@@ -81,7 +81,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			break;
 		case AUTO_SCALE:
 			if (command == CFG_TOGGLE) {
-				cfg->auto_scale = true;
+				cfg->auto_scale = ON;
 				parsed = true;
 				break;
 			}

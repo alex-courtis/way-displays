@@ -22,6 +22,10 @@
 #include "log.h"
 #include "marshalling.h"
 
+static enum OnOff on_off_invert(enum OnOff val) {
+	return (val == ON) ? OFF : ON;
+}
+
 static void cfg_free_paths(struct Cfg *cfg) {
 	if (!cfg)
 		return;
@@ -734,10 +738,14 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 	struct Cfg *merged = clone_cfg(to);
 
 	// SCALE
-	merged->scaling ^= from->scaling;
+	if (from->scaling == ON) {
+		merged->scaling = on_off_invert(merged->scaling);
+	}
 
 	// AUTO_SCALE
-	merged->auto_scale ^= from->auto_scale;
+	if (from->auto_scale == ON) {
+		merged->auto_scale = on_off_invert(merged->auto_scale);
+	}
 
 	// DISABLED
 	slist_xor_free(&merged->disabled_name_desc, from->disabled_name_desc, fn_comp_equals_strcmp, NULL, fn_copy_strdup);
