@@ -16,6 +16,7 @@
 #include "convert.h"
 #include "global.h"
 #include "info.h"
+#include "ipc.h"
 #include "mode.h"
 #include "slist.h"
 #include "log.h"
