@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "log.h"
+#include "ipc.h"
 
 #define AUTO_SCALE_MIN_DEFAULT 1.0f
 #define AUTO_SCALE_MAX_DEFAULT -1.0f
@@ -108,7 +109,7 @@ void cfg_init_path(const char *cfg_path);
 
 bool cfg_equal(struct Cfg *a, struct Cfg *b);
 
-struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del);
+struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command);
 
 void cfg_file_reload(void);
 
@@ -148,6 +149,7 @@ void cfg_file_paths_destroy(void);
 // visible for testing
 //
 struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
+struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from);
 struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
 void validate_warn(struct Cfg *cfg);
 void validate_fix(struct Cfg *cfg);

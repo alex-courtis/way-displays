@@ -99,8 +99,9 @@ static void receive_ipc_request(int server_socket) {
 	switch (ipc_request->command) {
 		case CFG_DEL:
 		case CFG_SET:
+		case CFG_TOGGLE:
 			{
-				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->command == CFG_DEL);
+				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->command);
 				if (cfg_merged) {
 					// ongoing
 					ipc_operation->done = false;

@@ -42,6 +42,11 @@ static void usage(FILE *stream) {
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
 		"     CALLBACK_CMD <shell command>\n"
+		"  -t, --t[toggle] toggle parameter\n"
+		"     SCALING\n"
+		"     AUTO_SCALE\n"
+		"     DISABLED <name>\n"
+		"     VRR_OFF <name>\n"
 		"  -d, --d[elete]  remove\n"
 		"     SCALE <name>\n"
 		"     MODE <name>\n"
@@ -67,9 +72,19 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			parsed = parsed && (cfg->align = align_val_start(argv[optind + 1]));
 			break;
 		case SCALING:
+			if (command == CFG_TOGGLE) {
+				cfg->scaling = ON;
+				parsed = true;
+				break;
+			}
 			parsed = (cfg->scaling = on_off_val(argv[optind]));
 			break;
 		case AUTO_SCALE:
+			if (command == CFG_TOGGLE) {
+				cfg->auto_scale = ON;
+				parsed = true;
+				break;
+			}
 			parsed = (cfg->auto_scale = on_off_val(argv[optind]));
 			break;
 		case SCALE:
@@ -303,6 +318,38 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 	return request;
 }
 
+struct IpcRequest *parse_toggle(int argc, char **argv) {
+	enum CfgElement element = cfg_element_val(optarg);
+	switch (element) {
+		case SCALING:
+		case AUTO_SCALE:
+			if (optind != argc) {
+				log_fatal("%s takes no arguments", cfg_element_name(element));
+				wd_exit(EXIT_FAILURE);
+				return NULL;
+			}
+			break;
+		case VRR_OFF:
+		case DISABLED:
+			if (optind + 1 != argc) {
+				log_fatal("%s requires one argument", cfg_element_name(element));
+				wd_exit(EXIT_FAILURE);
+				return NULL;
+			}
+			break;
+		default:
+			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_TOGGLE), element ? cfg_element_name(element) : optarg);
+			wd_exit(EXIT_FAILURE);
+			return NULL;
+	}
+
+	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
+	request->command = CFG_TOGGLE;
+	request->cfg = parse_element(CFG_TOGGLE, element, argc, argv);
+
+	return request;
+}
+
 enum LogThreshold parse_log_threshold(char *optarg) {
 	enum LogThreshold threshold = log_threshold_val(optarg);
 
@@ -322,12 +369,13 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		{ "help",          no_argument,       0, 'h' },
 		{ "log-threshold", required_argument, 0, 'L' },
 		{ "set",           required_argument, 0, 's' },
+		{ "toggle",        required_argument, 0, 't' },
 		{ "version",       no_argument,       0, 'v' },
 		{ "write",         no_argument,       0, 'w' },
 		{ "yaml",          no_argument,       0, 'y' },
 		{ 0,               0,                 0,  0  }
 	};
-	static char *short_options = "c:d:ghL:s:vwy";
+	static char *short_options = "c:d:ghL:s:t:vwy";
 
 	bool yaml = false;
 	enum LogThreshold threshold = 0;
@@ -368,6 +416,9 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				break;
 			case 'd':
 				*ipc_request = parse_del(argc, argv);
+				break;
+			case 't':
+				*ipc_request = parse_toggle(argc, argv);
 				break;
 			case 'w':
 				*ipc_request = parse_write(argc, argv);

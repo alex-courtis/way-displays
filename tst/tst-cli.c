@@ -580,6 +580,74 @@ void parse_del__ok(void **state) {
 	ipc_request_free(request);
 }
 
+void parse_toggle__scaling_nargs(void **state) {
+	optind = 0;
+	optarg = "SCALING";
+
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_toggle(1, NULL));
+
+	assert_log(FATAL, "SCALING takes no arguments\n");
+}
+
+void parse_toggle__auto_scale_nargs(void **state) {
+	optind = 0;
+	optarg = "AUTO_SCALE";
+
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_toggle(1, NULL));
+
+	assert_log(FATAL, "AUTO_SCALE takes no arguments\n");
+}
+
+void parse_toggle__vrr_off_nargs(void **state) {
+	optind = 0;
+	optarg = "VRR_OFF";
+
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_toggle(0, NULL));
+
+	assert_log(FATAL, "VRR_OFF requires one argument\n");
+}
+
+void parse_toggle__disabled_nargs(void **state) {
+	optind = 0;
+	optarg = "DISABLED";
+
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_toggle(0, NULL));
+
+	assert_log(FATAL, "DISABLED requires one argument\n");
+}
+
+void parse_toggle__invalid(void **state) {
+	optind = 0;
+	optarg = "INVALID";
+
+	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_toggle(0, NULL));
+
+	assert_log(FATAL, "invalid toggle: INVALID\n");
+}
+
+void parse_toggle__ok(void **state) {
+	optind = 0;
+
+	optarg = "SCALING";
+
+	struct IpcRequest *request = parse_toggle(0, NULL);
+
+	assert_non_nul(request);
+	assert_int_equal(request->command, CFG_TOGGLE);
+
+	ipc_request_free(request);
+}
+
 void parse_log_threshold__invalid(void **state) {
 	assert_int_equal(parse_log_threshold("INVALID"), 0);
 
@@ -641,6 +709,13 @@ int main(void) {
 		TEST(parse_del__adaptive_sync_off_nargs),
 		TEST(parse_del__invalid),
 		TEST(parse_del__ok),
+
+		TEST(parse_toggle__scaling_nargs),
+		TEST(parse_toggle__auto_scale_nargs),
+		TEST(parse_toggle__vrr_off_nargs),
+		TEST(parse_toggle__disabled_nargs),
+		TEST(parse_toggle__invalid),
+		TEST(parse_toggle__ok),
 
 		TEST(parse_log_threshold__invalid),
 		TEST(parse_log_threshold__ok),

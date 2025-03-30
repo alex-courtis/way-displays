@@ -14,6 +14,9 @@ bool fn_comp_equals_strcmp(const void* const a, const void* const b);
 // true if both NULL or strstr(a, b)
 bool fn_comp_equals_strstr(const void* const a, const void* const b);
 
+// copies a string using strdup, if val is NULL, returns NULL
+void *fn_copy_strdup(const void* const val);
+
 //
 // a < b
 //
@@ -28,6 +31,11 @@ typedef bool (*fn_test)(const void* const val);
 // free
 //
 typedef void (*fn_free_val)(const void* const val);
+
+//
+// copy
+//
+typedef void* (*fn_copy_val)(const void* const val);
 
 #endif // FN_H
 

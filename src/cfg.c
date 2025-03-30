@@ -16,10 +16,15 @@
 #include "convert.h"
 #include "global.h"
 #include "info.h"
+#include "ipc.h"
 #include "mode.h"
 #include "slist.h"
 #include "log.h"
 #include "marshalling.h"
+
+static enum OnOff on_off_invert(enum OnOff val) {
+	return (val == ON) ? OFF : ON;
+}
 
 static void cfg_free_paths(struct Cfg *cfg) {
 	if (!cfg)
@@ -241,11 +246,9 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	}
 
 	// AUTO_SCALE
-	if (from->auto_scale) {
-		to->auto_scale = from->auto_scale;
-		to->auto_scale_min = from->auto_scale_min;
-		to->auto_scale_max = from->auto_scale_max;
-	}
+	to->auto_scale = from->auto_scale;
+	to->auto_scale_min = from->auto_scale_min;
+	to->auto_scale_max = from->auto_scale_max;
 
 	// SCALE
 	for (i = from->user_scales; i; i = i->nex) {
@@ -727,15 +730,43 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, bool del) {
+struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
+	if (!to || !from) {
+		return NULL;
+	}
+
+	struct Cfg *merged = clone_cfg(to);
+
+	// SCALE
+	if (from->scaling == ON) {
+		merged->scaling = on_off_invert(merged->scaling);
+	}
+
+	// AUTO_SCALE
+	if (from->auto_scale == ON) {
+		merged->auto_scale = on_off_invert(merged->auto_scale);
+	}
+
+	// DISABLED
+	slist_xor_free(&merged->disabled_name_desc, from->disabled_name_desc, fn_comp_equals_strcmp, NULL, fn_copy_strdup);
+
+	// VRR_OFF
+	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, NULL, fn_copy_strdup);
+
+	return merged;
+}
+
+struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command) {
 	if (!to || !from) {
 		return NULL;
 	}
 
 	struct Cfg *merged = NULL;
 
-	if (del) {
+	if (command == CFG_DEL) {
 		merged = merge_del(to, from);
+	} else if (command == CFG_TOGGLE) {
+		merged = merge_toggle(to, from);
 	} else {
 		merged = merge_set(to, from);
 	}

@@ -14,6 +14,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 struct IpcRequest *parse_write(int argc, char **argv);
 struct IpcRequest *parse_set(int argc, char **argv);
 struct IpcRequest *parse_del(int argc, char **argv);
+struct IpcRequest *parse_toggle(int argc, char **argv);
 enum LogThreshold parse_log_threshold(char *optarg);
 
 #endif // CLI_H
