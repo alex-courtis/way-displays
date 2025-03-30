@@ -7,4 +7,9 @@ pro/*.c
 
 /tst-*
 
+cfg.actual
+cfg.expected
+
 /.ccls-cache
+/.cache
+compile_commands.json
