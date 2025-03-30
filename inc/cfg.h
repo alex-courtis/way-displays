@@ -107,14 +107,19 @@ void cfg_file_paths_init(const char *user_path);
 
 void cfg_init_path(const char *cfg_path);
 
-bool cfg_equal(struct Cfg *a, struct Cfg *b);
-
-struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command);
-
 void cfg_file_reload(void);
 
 void cfg_file_write(void);
 
+void cfg_destroy(void);
+
+void cfg_file_paths_destroy(void);
+
+struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command);
+
+//
+// init functions
+//
 struct Cfg *cfg_init(void);
 
 struct Cfg *cfg_default(void);
@@ -127,23 +132,36 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale);
 
 struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum wl_output_transform transform);
 
-bool cfg_equal_user_scale_name(const void *value, const void *data);
+//
+// equality functions
+//
+bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 
-bool cfg_equal_user_mode_name(const void *value, const void *data);
+bool cfg_user_scale_name_equal(const void *a, const void *b);
 
-bool cfg_equal_user_transform_name(const void *value, const void *data);
+bool cfg_user_mode_name_equal(const void *a, const void *b);
 
-void cfg_user_scale_free(const void *user_scale);
+bool cfg_user_transform_name_equal(const void *a, const void *b);
 
-void cfg_user_mode_free(const void *user_mode);
+//
+// cloning functions
+//
+void* cfg_user_mode_clone(const void* const val);
 
-void cfg_user_transform_free(const void *user_transform);
+void* cfg_user_transform_clone(const void* const val);
 
-void cfg_destroy(void);
+void* cfg_user_scale_clone(const void* const val);
 
+//
+// freeing functions
+//
 void cfg_free(struct Cfg *cfg);
 
-void cfg_file_paths_destroy(void);
+void cfg_user_scale_free(const void *val);
+
+void cfg_user_mode_free(const void *val);
+
+void cfg_user_transform_free(const void *val);
 
 //
 // visible for testing
@@ -156,4 +174,3 @@ void validate_fix(struct Cfg *cfg);
 bool resolve_cfg_file(struct Cfg *cfg);
 
 #endif // CFG_H
-
