@@ -144,15 +144,6 @@ bool cfg_user_mode_name_equal(const void *a, const void *b);
 bool cfg_user_transform_name_equal(const void *a, const void *b);
 
 //
-// cloning functions
-//
-void* cfg_user_mode_clone(const void* const val);
-
-void* cfg_user_transform_clone(const void* const val);
-
-void* cfg_user_scale_clone(const void* const val);
-
-//
 // freeing functions
 //
 void cfg_free(struct Cfg *cfg);

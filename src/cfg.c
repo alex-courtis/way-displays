@@ -42,6 +42,38 @@ static void cfg_paths_free(struct Cfg *cfg) {
 	cfg->resolved_from = NULL;
 }
 
+//
+// cloning functions
+//
+static void* cfg_user_mode_clone(const void* const val) {
+	struct UserMode *original = (struct UserMode*)val;
+	struct UserMode *clone = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+
+	*clone = *original;
+	clone->name_desc = strdup(original->name_desc);
+
+	return clone;
+}
+
+static void* cfg_user_transform_clone(const void* const val) {
+	struct UserTransform *original = (struct UserTransform*)val;
+	struct UserTransform *clone = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+
+	*clone = *original;
+	clone->name_desc = strdup(original->name_desc);
+
+	return clone;
+}
+
+static void* cfg_user_scale_clone(const void* const val) {
+	struct UserScale *original = (struct UserScale*)val;
+	struct UserScale *clone = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+
+	*clone = *original;
+	clone->name_desc = strdup(original->name_desc);
+
+	return clone;
+}
 
 //
 // equality functions
@@ -890,39 +922,6 @@ void cfg_destroy(void) {
 
 void cfg_file_paths_destroy(void) {
 	slist_free_vals(&cfg_file_paths, NULL);
-}
-
-//
-// cloning functions
-//
-void* cfg_user_mode_clone(const void* const val) {
-	struct UserMode *original = (struct UserMode*)val;
-	struct UserMode *clone = (struct UserMode*)calloc(1, sizeof(struct UserMode));
-
-	*clone = *original;
-	clone->name_desc = strdup(original->name_desc);
-
-	return clone;
-}
-
-void* cfg_user_transform_clone(const void* const val) {
-	struct UserTransform *original = (struct UserTransform*)val;
-	struct UserTransform *clone = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
-
-	*clone = *original;
-	clone->name_desc = strdup(original->name_desc);
-
-	return clone;
-}
-
-void* cfg_user_scale_clone(const void* const val) {
-	struct UserScale *original = (struct UserScale*)val;
-	struct UserScale *clone = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-
-	*clone = *original;
-	clone->name_desc = strdup(original->name_desc);
-
-	return clone;
 }
 
 //
