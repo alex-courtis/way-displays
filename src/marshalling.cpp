@@ -478,7 +478,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 				continue;
 			}
 
-			slist_remove_all_free(&cfg->user_scales, cfg_equal_user_scale_name, user_scale, cfg_user_scale_free);
+			slist_remove_all_free(&cfg->user_scales, cfg_user_scale_name_equal, user_scale, cfg_user_scale_free);
 			slist_append(&cfg->user_scales, user_scale);
 		}
 	}
@@ -516,7 +516,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 				user_mode->refresh_mhz = hz_str_to_mhz(mode["HZ"].as<std::string>().c_str());
 			}
 
-			slist_remove_all_free(&cfg->user_modes, cfg_equal_user_mode_name, user_mode, cfg_user_mode_free);
+			slist_remove_all_free(&cfg->user_modes, cfg_user_mode_name_equal, user_mode, cfg_user_mode_free);
 			slist_append(&cfg->user_modes, user_mode);
 		}
 	}
@@ -538,7 +538,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 				continue;
 			}
 
-			slist_remove_all_free(&cfg->user_transforms, cfg_equal_user_transform_name, user_transform, cfg_user_transform_free);
+			slist_remove_all_free(&cfg->user_transforms, cfg_user_transform_name_equal, user_transform, cfg_user_transform_free);
 			slist_append(&cfg->user_transforms, user_transform);
 		}
 	}
