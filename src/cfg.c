@@ -623,7 +623,7 @@ void validate_warn(struct Cfg *cfg) {
 	for (i = cfg->disabled; i; i = i->nex) {
 		if (!i->val)
 			continue;
-		struct Disabled *disabled = (struct Disabled*)i;
+		struct Disabled *disabled = (struct Disabled*)i->val;
 		warn_short_name_desc((const char*)disabled->name_desc, "DISABLED");
 	}
 }
