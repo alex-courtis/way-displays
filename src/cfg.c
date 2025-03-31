@@ -748,10 +748,10 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// DISABLED
-	slist_xor_free(&merged->disabled_name_desc, from->disabled_name_desc, fn_comp_equals_strcmp, NULL, fn_copy_strdup);
+	slist_xor_free(&merged->disabled_name_desc, from->disabled_name_desc, fn_comp_equals_strcmp, NULL, fn_clone_strdup);
 
 	// VRR_OFF
-	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, NULL, fn_copy_strdup);
+	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, NULL, fn_clone_strdup);
 
 	return merged;
 }

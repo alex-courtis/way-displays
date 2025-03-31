@@ -1,13 +1,19 @@
-#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "fn.h"
 #include "slist.h"
 
 #include "itable.h"
+
+/*
+   diff -u \
+   <(sed -e ' s/itable/xtable/g ; s/ITable/XTable/g ' src/itable.c) \
+   <(sed -e 's/ptable/xtable/g ; s/PTable/XTable/g' src/ptable.c)
+   */
 
 struct ITable {
 	uint64_t *keys;
@@ -29,11 +35,11 @@ struct ITableIterP {
 	 */
 	const struct ITable *tab;
 	const uint64_t *k;
-	const void **v;
+	const void* const *v;
 };
 
 // grow to capacity + grow
-void grow_itable(struct ITable *tab) {
+static void grow_itable(struct ITable *tab) {
 
 	// grow new arrays
 	uint64_t *new_keys = calloc(tab->capacity + tab->grow, sizeof(uint64_t));
@@ -263,6 +269,20 @@ bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn
 	return true;
 }
 
+struct SList *itable_keys_slist(const struct ITable* const tab) {
+	if (!tab)
+		return NULL;
+
+	struct SList *list = NULL;
+
+	uint64_t *k;
+	for (k = tab->keys; k < tab->keys + tab->size; k++) {
+		slist_append(&list, (uint64_t*)k);
+	}
+
+	return list;
+}
+
 struct SList *itable_vals_slist(const struct ITable* const tab) {
 	if (!tab)
 		return NULL;
@@ -290,7 +310,7 @@ char *itable_str(const struct ITable* const tab) {
 	const void **v;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
 		len +=
-			20 +                    // longest uint32_t
+			20 +                    // longest uint64_t printed with PRIu64
 			3 +                     // " = "
 			(*v ? strlen(*v) : 6) + // value or "(null)"
 			1;                      // "\n"
@@ -300,7 +320,6 @@ char *itable_str(const struct ITable* const tab) {
 	char *buf = (char*)calloc(len, sizeof(char));
 	char *bufp = buf;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-		// TODO fix upstream
 		bufp += snprintf(bufp, len - (bufp - buf), "%"PRIu64" = %s\n", *k, *v ? (char*)*v : "(null)");
 	}
 

@@ -15,6 +15,9 @@ struct SList {
  * Lifecycle
  */
 
+// deep clone the list, cloning values with fn_clone_val, NULL means shallow copy
+struct SList *slist_clone(struct SList *head, fn_clone_val);
+
 // clone the list, setting val pointers
 struct SList *slist_shallow_clone(struct SList *head);
 
@@ -41,7 +44,7 @@ size_t slist_remove_all(struct SList **head, fn_equals, const void *b);
 size_t slist_remove_all_free(struct SList **head, fn_equals, const void *b, fn_free_val);
 
 // merges list2 into list1, such that the resulting list contains only elements that appeared exclusively in list1 or list2.
-size_t slist_xor_free(struct SList **head1, struct SList *head2, fn_equals, fn_free_val, fn_copy_val);
+size_t slist_xor_free(struct SList **head1, struct SList *head2, fn_equals, fn_free_val, fn_clone_val);
 
 /*
  * Access

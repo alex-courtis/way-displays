@@ -23,7 +23,7 @@ bool fn_comp_equals_strstr(const void* const a, const void* const b) {
 	return strstr(a, b);
 }
 
-void *fn_copy_strdup(const void* const val) {
+void *fn_clone_strdup(const void* const val) {
 	if (val == NULL)
 		return NULL;
 

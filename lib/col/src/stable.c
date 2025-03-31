@@ -32,12 +32,12 @@ struct STableIterP {
 	 * Private
 	 */
 	const struct STable *tab;
-	const char **k;
-	const void **v;
+	const char* const *k;
+	const void* const *v;
 };
 
 // grow to capacity + grow
-void grow_stable(struct STable *tab) {
+static void grow_stable(struct STable *tab) {
 
 	// grow new arrays
 	const char **new_keys = calloc(tab->capacity + tab->grow, sizeof(char*));

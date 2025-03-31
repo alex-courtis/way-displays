@@ -74,6 +74,9 @@ bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn
  * Conversion
  */
 
+// ordered uint64_t* key pointers to table, caller frees list only
+struct SList *itable_keys_slist(const struct ITable* const tab);
+
 // ordered val pointers to table, caller frees list only
 struct SList *itable_vals_slist(const struct ITable* const tab);
 
@@ -82,10 +85,11 @@ struct SList *itable_vals_slist(const struct ITable* const tab);
  */
 
 // to string, user frees
-// values must be char*, printed using %s, NULL printed as "(null)"
+// lines with format "%PRIu64 = %s"
+// values must be char*, NULL printed as "(null)"
 char *itable_str(const struct ITable* const tab);
 
-// number of entries with val
+// number of entries
 size_t itable_size(const struct ITable* const tab);
 
 // current capacity: initial + n * grow
