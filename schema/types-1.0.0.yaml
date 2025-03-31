@@ -17,6 +17,32 @@ $defs:
       - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 
       - Case insensitive mach of name or description e.g. 'ROG PG27AQ'
 
+  condition:
+    properties:
+      PLUGGED:
+        "type:": list
+        items:
+          $ref: '#/$defs/fuzzy_display_match'
+        description: |-
+          Subcondition. Evaluates to true if all specified displays are currently plugged.
+      UNPLUGGED:
+        "type:": list
+        items:
+          $ref: '#/$defs/fuzzy_display_match'
+        description: |-
+          Subcondition. Evaluates to true if all specified displays are currently unplugged.
+    description: |-
+      Dynamically evaluated condition.
+      Evaluates to true if all its subconditions are also true.
+    additionalProperties: false
+
+  condition_list:
+    "type:": list
+    items:
+      $ref: '#/$defs/condition'
+    description: |-
+      A list of conditions. Evaluates to be true if at least one of conditions is true.
+
   arrange:
     enum:
       - ROW
@@ -34,6 +60,17 @@ $defs:
     description: |-
       Align ROWs at the TOP (default), MIDDLE or BOTTOM.
       Align COLUMNs at the LEFT (default), MIDDLE or RIGHT.
+
+  disabled:
+    anyOf:
+      - $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+      - type: object
+        properties:
+          NAME_DESC:
+            $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+          IF:
+            $ref: '#/$defs/condition_list'
+        additionalProperties: false
 
   mode:
     properties:
