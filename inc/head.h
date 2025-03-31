@@ -79,6 +79,8 @@ bool head_matches_name_desc(const void * const head, const void * const name_des
 
 bool head_name_desc_matches_head(const void * const name_desc, const void * const head);
 
+bool head_disabled_matches_head(const void * const d, const void * const h);
+
 wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base);
 
 wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);

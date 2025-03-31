@@ -156,6 +156,15 @@ bool head_matches_name_desc_exact(const void * const h, const void * const n) {
 		(head->description && strcmp(head->description, name_desc) == 0);
 }
 
+bool head_disabled_matches_head(const void * const d, const void * const h) {
+	struct Disabled *disabled_if = (struct Disabled*)d;
+
+	if (!d)
+		return false;
+
+	return head_matches_name_desc(h, disabled_if->name_desc);
+}
+
 wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base) {
 	// computes a scale value that is appropriate for putting into `zwlr_output_configuration_head_v1_set_scale`
 

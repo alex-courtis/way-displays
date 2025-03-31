@@ -7,6 +7,7 @@
 #include "layout.h"
 
 #include "cfg.h"
+#include "conditions.h"
 #include "displ.h"
 #include "global.h"
 #include "head.h"
@@ -143,6 +144,8 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	return sorted;
 }
 
+#include <stdio.h>
+
 void desire_enabled(struct Head *head) {
 
 	// lid closed
@@ -151,8 +154,16 @@ void desire_enabled(struct Head *head) {
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
 	head->desired.enabled |= slist_length(heads) == 1;
 
-	// explicitly disabled
-	head->desired.enabled &= slist_find_equal(cfg->disabled_name_desc, head_name_desc_matches_head, head) == NULL;
+	// iterate over all matching NAME_DESC's and evaluate their conditions
+	struct SList *d = cfg->disabled;
+	while ((d = slist_find_equal(d, head_disabled_matches_head, head)) != NULL) {
+		struct Disabled *disabled_if = (struct Disabled*)d->val;
+		head->desired.enabled &= !condition_list_evaluate(disabled_if->conditions);
+
+		if (!head->desired.enabled) break;
+
+		d = d->nex;
+	}
 }
 
 void desire_mode(struct Head *head) {
@@ -420,7 +431,7 @@ void layout(void) {
 		case CANCELLED:
 			log_warn("\nChanges cancelled, retrying");
 			displ->state = IDLE;
-			return;
+			break;  // TODO: temporary fix, remove later!!!
 
 		case IDLE:
 		default:

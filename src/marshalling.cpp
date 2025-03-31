@@ -24,6 +24,7 @@
 extern "C" {
 #include "cfg.h"
 #include "convert.h"
+#include "conditions.h"
 #include "fn.h"
 #include "global.h"
 #include "head.h"
@@ -152,6 +153,37 @@ bool parse_node_val_output_transform(const YAML::Node &node, const char *key, en
 	return true;
 }
 
+struct Condition* parse_node_val_condition(const YAML::Node &node) {
+	struct Condition *cond = (struct Condition*)calloc(1, sizeof(struct Condition));
+
+	if (node["PLUGGED"]) {
+		for (const auto &plugged : node["PLUGGED"]) {
+			const std::string &plugged_str = plugged.as<std::string>();
+			const char *plugged_cstr = plugged_str.c_str();
+			if (!validate_regex(plugged_cstr, DISABLED)) {
+				goto err;
+			}
+			slist_append(&cond->plugged, strdup(plugged_cstr));
+		}
+	}
+
+	if (node["UNPLUGGED"]) {
+		for (const auto &unplugged : node["UNPLUGGED"]) {
+			const std::string &unplugged_str = unplugged.as<std::string>();
+			const char *unplugged_cstr = unplugged_str.c_str();
+			if (!validate_regex(unplugged_cstr, DISABLED)) {
+				goto err;
+			}
+			slist_append(&cond->unplugged, strdup(unplugged_cstr));
+		}
+	}
+
+	return cond;
+err:
+	condition_free(cond);
+	return NULL;
+}
+
 char *yaml_with_newline(const YAML::Emitter &e) {
 	char *yaml = (char*)calloc(e.size() + 2, sizeof(char));
 	snprintf(yaml, e.size() + 2, "%s\n", e.c_str());
@@ -276,13 +308,13 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::Key << "LOG_THRESHOLD" << YAML::Value << log_threshold_name(cfg.log_threshold);
 	}
 
-	if (cfg.disabled_name_desc) {
-		e << YAML::Key << "DISABLED" << YAML::BeginSeq;					// DISABLED
-		for (struct SList *i = cfg.disabled_name_desc; i; i = i->nex) {
-			e << (char*)i->val;
-		}
-		e << YAML::EndSeq;												// DISABLED
-	}
+	// if (cfg.disabled_name_desc) {
+	// 	e << YAML::Key << "DISABLED" << YAML::BeginSeq;					// DISABLED
+	// 	for (struct SList *i = cfg.disabled_name_desc; i; i = i->nex) {
+	// 		e << (char*)i->val;
+	// 	}
+	// 	e << YAML::EndSeq;												// DISABLED
+	// }
 
 	return e;
 }
@@ -574,14 +606,35 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 	if (node["DISABLED"]) {
 		const auto &disableds = node["DISABLED"];
 		for (const auto &disabled : disableds) {
-			const std::string &disabled_str = disabled.as<std::string>();
-			const char *disabled_cstr = disabled_str.c_str();
-			if (!slist_find_equal(cfg->disabled_name_desc, fn_comp_equals_strcmp, disabled_cstr)) {
-				if (!validate_regex(disabled_cstr, DISABLED)) {
+			struct Disabled *d = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+
+			// string is considered to be a scalar
+			if (disabled.IsScalar()) {
+				const std::string &disabled_str = disabled.as<std::string>();
+				d->name_desc = strdup(disabled_str.c_str());
+
+				if (!d->name_desc) continue;
+			} else {
+				// d->name_desc = strdup(disabled["NAME_DESC"].as<std::string>().c_str());
+				if (!parse_node_val_string(disabled, "NAME_DESC", &d->name_desc, "DISABLED", "NAME_DESC")) {
 					continue;
 				}
-				slist_append(&cfg->disabled_name_desc, strdup(disabled_cstr));
+
+				for (const auto& cond : disabled["IF"]) {
+					struct Condition *c = parse_node_val_condition(cond);
+
+					if (c) {
+						slist_append(&d->conditions, c);
+					}
+				}
 			}
+
+			if (!validate_regex(d->name_desc, DISABLED)) {
+				cfg_disabled_free(d);
+				continue;
+			}
+
+			slist_append(&cfg->disabled, cfg_disabled_clone(d));
 		}
 	}
 
@@ -746,11 +799,11 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 
 	TI(cfg->log_threshold = log_threshold_val(node["LOG_THRESHOLD"].as<std::string>().c_str()));
 
-	if (node["DISABLED"] && node["DISABLED"].IsSequence()) {
-		for (const auto &node_disabled : node["DISABLED"]) {
-			TI(slist_append(&cfg->disabled_name_desc, strdup(node_disabled.as<std::string>().c_str())));
-		}
-	}
+	// if (node["DISABLED"] && node["DISABLED"].IsSequence()) {
+	// 	for (const auto &node_disabled : node["DISABLED"]) {
+	// 		TI(slist_append(&cfg->disabled_name_desc, strdup(node_disabled.as<std::string>().c_str())));
+	// 	}
+	// }
 
 	return cfg;
 }

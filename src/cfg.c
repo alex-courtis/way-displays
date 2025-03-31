@@ -13,6 +13,7 @@
 #include "fs.h"
 #include "fds.h"
 #include "fn.h"
+#include "conditions.h"
 #include "convert.h"
 #include "global.h"
 #include "info.h"
@@ -71,6 +72,16 @@ static void* cfg_user_scale_clone(const void* const val) {
 
 	*clone = *original;
 	clone->name_desc = strdup(original->name_desc);
+
+	return clone;
+}
+
+void* cfg_disabled_clone(const void *val) {
+	struct Disabled *original = (struct Disabled*)val;
+	struct Disabled *clone = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+
+	clone->name_desc = strdup(original->name_desc);
+	clone->conditions = slist_clone(original->conditions, condition_clone);
 
 	return clone;
 }
@@ -192,6 +203,25 @@ static bool cfg_user_transform_equal(const void *a, const void *b) {
 	return true;
 }
 
+bool cfg_disabled_equal(const void *a, const void *b) {
+	if (!a || !b) {
+		return false;
+	}
+
+	struct Disabled *lhs = (struct Disabled*)a;
+	struct Disabled *rhs = (struct Disabled*)b;
+
+	if (!lhs->name_desc || !rhs->name_desc) {
+		return false;
+	}
+
+	if (strcmp(lhs->name_desc, rhs->name_desc) != 0) {
+		return false;
+	}
+
+	return slist_equal(lhs->conditions, rhs->conditions, condition_equal);
+}
+
 static bool invalid_user_scale(const void *a, const void *b) {
 	if (!a) {
 		return true;
@@ -309,7 +339,7 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
 
 	// DISABLED
-	to->disabled_name_desc = slist_clone(from->disabled_name_desc, fn_clone_strdup);
+	to->disabled = slist_clone(from->disabled, cfg_disabled_clone);
 
 	// LOG_THRESHOLD
 	if (from->log_threshold) {
@@ -395,7 +425,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// DISABLED
-	if (!slist_equal(a->disabled_name_desc, b->disabled_name_desc, fn_comp_equals_strcmp)) {
+	if (!slist_equal(a->disabled, b->disabled, cfg_disabled_equal)) {
 		return false;
 	}
 
@@ -465,6 +495,15 @@ struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum 
 	ut->transform = transform;
 
 	return ut;
+}
+
+struct Disabled *cfg_disabled_always(const char *name_desc) {
+	struct Disabled *d = calloc(1, sizeof(struct Disabled));
+
+	d->name_desc = strdup(name_desc);
+	d->conditions = NULL;
+
+	return d;
 }
 
 static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
@@ -581,10 +620,11 @@ void validate_warn(struct Cfg *cfg) {
 			continue;
 		warn_short_name_desc((const char*)i->val, "MAX_PREFERRED_REFRESH");
 	}
-	for (i = cfg->disabled_name_desc; i; i = i->nex) {
+	for (i = cfg->disabled; i; i = i->nex) {
 		if (!i->val)
 			continue;
-		warn_short_name_desc((const char*)i->val, "DISABLED");
+		struct Disabled *disabled = (struct Disabled*)i;
+		warn_short_name_desc((const char*)disabled->name_desc, "DISABLED");
 	}
 }
 
@@ -676,9 +716,9 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// DISABLED
-	for (i = from->disabled_name_desc; i; i = i->nex) {
-		if (!slist_find_equal(merged->disabled_name_desc, fn_comp_equals_strcmp, i->val)) {
-			slist_append(&merged->disabled_name_desc, strdup((char*)i->val));
+	for (i = from->disabled; i; i = i->nex) {
+		if (!slist_find_equal(merged->disabled, cfg_disabled_equal, i->val)) {
+			slist_append(&merged->disabled, cfg_disabled_clone(i->val));
 		}
 	}
 
@@ -723,8 +763,8 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// DISABLED
-	for (i = from->disabled_name_desc; i; i = i->nex) {
-		slist_remove_all_free(&merged->disabled_name_desc, fn_comp_equals_strcmp, i->val, NULL);
+	for (i = from->disabled; i; i = i->nex) {
+		slist_remove_all_free(&merged->disabled, cfg_disabled_equal, i->val, cfg_disabled_free);
 	}
 
 	// CALLBACK_CMD
@@ -754,7 +794,7 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// DISABLED
-	slist_xor_free(&merged->disabled_name_desc, from->disabled_name_desc, fn_comp_equals_strcmp, NULL, fn_clone_strdup);
+	slist_xor_free(&merged->disabled, from->disabled, cfg_disabled_equal, NULL, cfg_disabled_clone);
 
 	// VRR_OFF
 	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, NULL, fn_clone_strdup);
@@ -947,7 +987,7 @@ void cfg_free(struct Cfg *cfg) {
 
 	slist_free_vals(&cfg->max_preferred_refresh_name_desc, NULL);
 
-	slist_free_vals(&cfg->disabled_name_desc, NULL);
+	slist_free_vals(&cfg->disabled, cfg_disabled_free);
 
 	slist_free_vals(&cfg->user_transforms, cfg_user_transform_free);
 
@@ -987,3 +1027,13 @@ void cfg_user_transform_free(const void *val) {
 	free(user_transform);
 }
 
+void cfg_disabled_free(const void *val) {
+	struct Disabled *disabled = (struct Disabled*)val;
+
+	if (!disabled)
+		 return;
+
+	free(disabled->name_desc);
+
+	slist_free_vals(&disabled->conditions, condition_free);
+}
