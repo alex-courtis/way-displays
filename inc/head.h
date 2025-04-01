@@ -6,6 +6,7 @@
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
+#include "cfg.h"
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -19,6 +20,12 @@
 extern struct SList *heads;
 extern struct SList *heads_arrived;
 extern struct SList *heads_departed;
+
+enum ManualOverride {
+	NoOverride = 0,
+	OverrideTrue,
+	OverrideFalse,
+};
 
 struct HeadState {
 	struct Mode *mode;
@@ -46,6 +53,8 @@ struct Head {
 	char *make;
 	char *model;
 	char *serial_number;
+
+	enum ManualOverride overrided_enabled;
 
 	struct HeadState current;
 	struct HeadState desired;
@@ -87,6 +96,9 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 
 // sets scaled.height/width
 void head_set_scaled_dimensions(struct Head * const head);
+
+// applies extra toggles that should change head state directly
+void head_apply_toggles(struct Head * const head, struct Cfg *cfg);
 
 // finds a mode and logs/calls back on
 //  no mode:           error

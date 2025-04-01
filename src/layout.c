@@ -147,22 +147,43 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 #include <stdio.h>
 
 void desire_enabled(struct Head *head) {
+	bool enabled = false;
 
 	// lid closed
-	head->desired.enabled = !lid_is_closed(head->name);
+	enabled = !lid_is_closed(head->name);
 
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
-	head->desired.enabled |= slist_length(heads) == 1;
+	enabled |= slist_length(heads) == 1;
 
 	// iterate over all matching NAME_DESC's and evaluate their conditions
 	struct SList *d = cfg->disabled;
 	while ((d = slist_find_equal(d, head_disabled_matches_head, head)) != NULL) {
 		struct Disabled *disabled_if = (struct Disabled*)d->val;
-		head->desired.enabled &= !condition_list_evaluate(disabled_if->conditions);
+		enabled &= !condition_list_evaluate(disabled_if->conditions);
 
-		if (!head->desired.enabled) break;
+		if (!enabled) break;
 
 		d = d->nex;
+	}
+
+	// reset manual override when it matches the auto-state
+	if (head->overrided_enabled != NoOverride) {
+		bool manually_enabled = head->overrided_enabled == OverrideTrue;
+		if (enabled == manually_enabled) {
+			head->overrided_enabled = NoOverride;
+		}
+	}
+
+	switch (head->overrided_enabled) {
+	case NoOverride:
+		head->desired.enabled = enabled;
+		break;
+	case OverrideTrue:
+		head->desired.enabled = true;
+		break;
+	case OverrideFalse:
+		head->desired.enabled = false;
+		break;
 	}
 }
 

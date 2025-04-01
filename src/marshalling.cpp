@@ -461,6 +461,14 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	e << head.desired;
 	e << YAML::EndMap;									// DESIRED
 
+	e << YAML::Key << "OVERRIDES" << YAML::BeginMap;
+
+	if (head.overrided_enabled != NoOverride) {
+		bool enabled = head.overrided_enabled == OverrideTrue;
+		e << YAML::Key << "DISABLED" << YAML::Value << enabled;
+	}
+	e << YAML::EndMap;
+
 	if (head.modes) {
 		e << YAML::Key << "MODES" << YAML::BeginSeq;	// MODES
 
@@ -949,6 +957,8 @@ struct Head*& operator << (struct Head*& head, const YAML::Node& node) {
 
 	head->current << node["CURRENT"];
 	head->desired << node["DESIRED"];
+
+	TI(head->overrided_enabled = node["OVERRIDES"]["DISABLED"].as<bool>() ? OverrideFalse : OverrideTrue)
 
 	if (node["MODES"] && node["MODES"].IsSequence()) {
 		for (const auto &node_mode : node["MODES"]) {

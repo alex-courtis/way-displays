@@ -793,9 +793,6 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 		merged->auto_scale = on_off_invert(merged->auto_scale);
 	}
 
-	// DISABLED
-	slist_xor_free(&merged->disabled, from->disabled, cfg_disabled_equal, NULL, cfg_disabled_clone);
-
 	// VRR_OFF
 	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, NULL, fn_clone_strdup);
 

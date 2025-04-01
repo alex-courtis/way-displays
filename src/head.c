@@ -248,6 +248,22 @@ void head_set_scaled_dimensions(struct Head * const head) {
 	head->scaled.width = head_get_scaled_length(head->scaled.width, head->desired.scale, head->scaling_base);
 }
 
+void head_apply_toggles(struct Head * const head, struct Cfg* cfg) {
+	if (slist_find_equal(cfg->disabled, head_disabled_matches_head, head) != NULL) {
+		if (head->overrided_enabled == NoOverride) {
+			log_info("\nEnabling \"DISABLED\" override for %s", head->name);
+			if (head->current.enabled) {
+				head->overrided_enabled = OverrideFalse;
+			} else {
+				head->overrided_enabled = OverrideTrue;
+			}
+		} else {
+			log_info("\nDisabling \"DISABLED\" override for %s", head->name);
+			head->overrided_enabled = NoOverride;
+		}
+	}
+}
+
 struct Mode *head_find_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
