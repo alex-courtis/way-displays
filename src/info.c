@@ -94,6 +94,16 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	}
 }
 
+static void print_disabled(const enum LogThreshold t, const struct Disabled * const disabled) {
+	if (!disabled) return;
+
+	if (disabled->conditions) {
+		log_(t, "    %s (conditionally)", disabled->name_desc);
+	} else {
+		log_(t, "    %s", disabled->name_desc);
+	}
+}
+
 static void print_modes_res_refresh(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
@@ -203,12 +213,12 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	// if (cfg->disabled_name_desc) {
-	// 	log_(t, "  Disabled:");
-	// 	for (i = cfg->disabled_name_desc; i; i = i->nex) {
-	// 		log_(t, "    %s", (char*)i->val);
-	// 	}
-	// }
+	if (cfg->disabled) {
+		log_(t, "  Disabled:");
+		for (i = cfg->disabled; i; i = i->nex) {
+			print_disabled(t, i->val);
+		}
+	}
 
 	if (cfg->callback_cmd) {
 		log_(t, "  Change success command:");
@@ -292,11 +302,14 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 		log_(t, "way-displays -s TRANSFORM '%s' %s", user_transform->name_desc, transform_name(user_transform->transform));
 	}
 
-	// newline = true;
-	// for (i = cfg->disabled_name_desc; i; i = i->nex) {
-	// 	print_newline(t, &newline);
-	// 	log_(t, "way-displays -s DISABLED '%s'", (char*)i->val);
-	// }
+	newline = true;
+	for (i = cfg->disabled; i; i = i->nex) {
+		struct Disabled* d = i->val;
+		if (!d->conditions) {
+			print_newline(t, &newline);
+			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);
+		}
+	}
 
 	newline = true;
 	for (i = cfg->adaptive_sync_off_name_desc; i; i = i->nex) {
