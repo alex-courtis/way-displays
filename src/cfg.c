@@ -1033,4 +1033,6 @@ void cfg_disabled_free(const void *val) {
 	free(disabled->name_desc);
 
 	slist_free_vals(&disabled->conditions, condition_free);
+	
+	free(disabled);
 }
