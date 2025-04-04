@@ -1,10 +1,8 @@
 #include "tst.h"
 
 #include <cmocka.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wayland-client-protocol.h>
 
 #include "conditions.h"
 #include "head.h"
