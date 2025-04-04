@@ -150,8 +150,6 @@ bool cfg_user_mode_name_equal(const void *a, const void *b);
 
 bool cfg_user_transform_name_equal(const void *a, const void *b);
 
-bool cfg_disabled_equal(const void *a, const void *b);
-
 //
 // freeing functions
 //

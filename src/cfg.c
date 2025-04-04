@@ -203,7 +203,7 @@ static bool cfg_user_transform_equal(const void *a, const void *b) {
 	return true;
 }
 
-bool cfg_disabled_equal(const void *a, const void *b) {
+static bool cfg_disabled_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -1033,6 +1033,6 @@ void cfg_disabled_free(const void *val) {
 	free(disabled->name_desc);
 
 	slist_free_vals(&disabled->conditions, condition_free);
-	
+
 	free(disabled);
 }
