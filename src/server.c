@@ -21,6 +21,7 @@
 #include "lid.h"
 #include "log.h"
 #include "process.h"
+#include "slist.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;
