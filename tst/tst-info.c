@@ -167,8 +167,8 @@ void print_cfg_commands__ok(void **state) {
 
 	slist_append(&cfg->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
 
-	slist_append(&cfg->disabled_name_desc, strdup("three"));
-	slist_append(&cfg->disabled_name_desc, strdup("four"));
+	slist_append(&cfg->disabled, cfg_disabled_always("three"));
+	slist_append(&cfg->disabled, cfg_disabled_always("four"));
 
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("five"));
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("six"));

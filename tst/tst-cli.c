@@ -332,7 +332,6 @@ void parse_element__adaptive_sync_off_ok(void **state) {
 
 	cfg_free(actual);
 
-	slist_free(&expected.disabled_name_desc);
 	slist_free(&expected.adaptive_sync_off_name_desc);
 }
 
@@ -343,14 +342,14 @@ void parse_element__disabled_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, DISABLED, 2, argv);
 
 	struct Cfg expected = { 0 };
-	slist_append(&expected.disabled_name_desc, "ONE");
-	slist_append(&expected.disabled_name_desc, "TWO");
+	slist_append(&expected.disabled, cfg_disabled_always("ONE"));
+	slist_append(&expected.disabled, cfg_disabled_always("TWO"));
 
 	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
 
-	slist_free(&expected.disabled_name_desc);
+	slist_free_vals(&expected.disabled, cfg_disabled_free);
 }
 
 void parse_element__order_ok(void **state) {

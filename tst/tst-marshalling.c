@@ -10,6 +10,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "conditions.h"
 #include "global.h"
 #include "head.h"
 #include "ipc.h"
@@ -83,9 +84,17 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));
 
-	slist_append(&cfg->disabled_name_desc, strdup("eight"));
-	slist_append(&cfg->disabled_name_desc, strdup("EIGHT"));
-	slist_append(&cfg->disabled_name_desc, strdup("nine"));
+	slist_append(&cfg->disabled, cfg_disabled_always("eight"));
+	slist_append(&cfg->disabled, cfg_disabled_always("EIGHT"));
+	slist_append(&cfg->disabled, cfg_disabled_always("nine"));
+
+	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	disabled->name_desc = strdup("twelve");
+	struct Condition *cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->plugged, strdup("ONE"));
+	slist_append(&disabled->conditions, cond);
+
+	slist_append(&cfg->disabled, disabled);
 
 	slist_append(&cfg->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
 

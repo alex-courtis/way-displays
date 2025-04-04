@@ -347,7 +347,7 @@ void desire_enabled__lid_closed_one_disabled(void **state) {
 	};
 	slist_append(&heads, &head0);
 
-	slist_append(&cfg->disabled_name_desc, strdup("![hH]ead[0-9]"));
+	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
 	expect_string(__wrap_lid_is_closed, name, "head0");
 	will_return(__wrap_lid_is_closed, true);
