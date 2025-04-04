@@ -357,6 +357,44 @@ void desire_enabled__lid_closed_one_disabled(void **state) {
 	assert_false(head0.desired.enabled);
 }
 
+void desire_enabled__override(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = false,
+		.overrided_enabled = OverrideTrue,
+	};
+	slist_append(&heads, &head0);
+
+	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
+
+	expect_string(__wrap_lid_is_closed, name, "head0");
+	will_return(__wrap_lid_is_closed, false);
+
+	desire_enabled(&head0);
+
+	assert_true(head0.desired.enabled);
+	assert_true(head0.overrided_enabled == OverrideTrue);
+}
+
+void desire_enabled__override_reset(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = true,
+		.overrided_enabled = OverrideFalse,
+	};
+	slist_append(&heads, &head0);
+
+	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
+
+	expect_string(__wrap_lid_is_closed, name, "head0");
+	will_return(__wrap_lid_is_closed, false);
+
+	desire_enabled(&head0);
+
+	assert_false(head0.desired.enabled);
+	assert_true(head0.overrided_enabled == NoOverride);
+}
+
 void desire_mode__disabled(void **state) {
 	struct Mode mode0 = { 0 };
 	struct Head head0 = {
@@ -730,6 +768,8 @@ int main(void) {
 		TEST(desire_enabled__lid_closed_many),
 		TEST(desire_enabled__lid_closed_one_disabled),
 		TEST(desire_enabled__lid_closed_one),
+		TEST(desire_enabled__override),
+		TEST(desire_enabled__override_reset),
 
 		TEST(desire_mode__disabled),
 		TEST(desire_mode__no_mode),

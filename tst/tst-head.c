@@ -372,6 +372,53 @@ void head_find_mode__none(void **state) {
 	slist_free(&head.modes_failed);
 }
 
+void head_apply_toggles__none(void **state) {
+	struct Head head = { .name = "head0", };
+	struct Cfg *cfg = cfg_init();
+
+	head_apply_toggles(&head, cfg);
+
+	assert_true(head.overrided_enabled == NoOverride);
+
+	cfg_free(cfg);
+}
+
+void head_apply_toggles__disabled__enable(void **state) {
+	struct Head head = { .name = "head0", .current.enabled = false };
+	struct Cfg *cfg = cfg_init();
+	slist_append(&cfg->disabled, cfg_disabled_always("head0"));
+
+	head_apply_toggles(&head, cfg);
+
+	assert_true(head.overrided_enabled == OverrideTrue);
+	assert_log(INFO, "\nEnabling \"DISABLED\" override for head0\n");
+
+	head_apply_toggles(&head, cfg);
+
+	assert_true(head.overrided_enabled == NoOverride);
+	assert_log(INFO, "\nDisabling \"DISABLED\" override for head0\n");
+
+	cfg_free(cfg);
+}
+
+void head_apply_toggles__disabled__disable(void **state) {
+	struct Head head = { .name = "head0", .current.enabled = true };
+	struct Cfg *cfg = cfg_init();
+	slist_append(&cfg->disabled, cfg_disabled_always("head0"));
+
+	head_apply_toggles(&head, cfg);
+
+	assert_true(head.overrided_enabled == OverrideFalse);
+	assert_log(INFO, "\nEnabling \"DISABLED\" override for head0\n");
+
+	head_apply_toggles(&head, cfg);
+
+	assert_true(head.overrided_enabled == NoOverride);
+	assert_log(INFO, "\nDisabling \"DISABLED\" override for head0\n");
+
+	cfg_free(cfg);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(head_auto_scale__default),
@@ -389,6 +436,10 @@ int main(void) {
 		TEST(head_find_mode__max_preferred_refresh),
 		TEST(head_find_mode__max),
 		TEST(head_find_mode__none),
+
+		TEST(head_apply_toggles__none),
+		TEST(head_apply_toggles__disabled__enable),
+		TEST(head_apply_toggles__disabled__disable),
 	};
 
 	return RUN(tests);
