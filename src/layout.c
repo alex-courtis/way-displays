@@ -20,9 +20,6 @@
 #include "process.h"
 #include "wlr-output-management-unstable-v1.h"
 
-#define MAX_CANCEL_RETRIES 5
-
-
 void handle_failure(void);
 
 void position_heads(struct SList *heads) {
@@ -430,7 +427,6 @@ void handle_failure(void) {
 }
 
 void layout(void) {
-	static int retries = 0;
 
 	print_heads(INFO, ARRIVED, heads_arrived);
 	slist_free(&heads_arrived);
@@ -440,7 +436,6 @@ void layout(void) {
 
 	switch (displ->state) {
 		case SUCCEEDED:
-			retries = 0;
 			handle_success();
 			displ->state = IDLE;
 			break;
@@ -455,16 +450,9 @@ void layout(void) {
 			break;
 
 		case CANCELLED:
+			log_warn("\nChanges cancelled, retrying");
 			displ->state = IDLE;
-
-			retries++;
-			if (retries <= MAX_CANCEL_RETRIES) {
-				log_warn("\nChanges cancelled, retrying (attempt %i)", retries);
-				break;
-			} else {
-				log_warn("\nChanges cancelled, max number of retry attempts exceeded");
-				return;
-			}
+			break;  // TODO: temporary fix, remove later!!!
 
 		case IDLE:
 		default:
