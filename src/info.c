@@ -347,8 +347,16 @@ static void print_head_current(const enum LogThreshold t, const struct Head * co
 	print_mode(t, head->current.mode);
 	log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 
-	if (!head->current.enabled) {
-		log_(t, "    (disabled)");
+	if (head->current.enabled) {
+		if (head->overrided_enabled == OverrideTrue) {
+			log_(t, "    (manually enabled)");
+		}
+	} else {
+		if (head->overrided_enabled == OverrideFalse) {
+			log_(t, "    (manually disabled)");
+		} else {
+			log_(t, "    (disabled)");
+		}
 	}
 
 	if (lid_is_closed(head->name)) {
@@ -391,10 +399,18 @@ static void print_head_desired(const enum LogThreshold t, const struct Head * co
 			}
 		}
 		if (!head->current.enabled) {
-			log_(t, "    (enabled)");
+			if (head->overrided_enabled == OverrideTrue) {
+				log_(t, "    (manually enabled)");
+			} else {
+				log_(t, "    (enabled)");
+			}
 		}
 	} else {
-		log_(t, "    (disabled)");
+		if (head->overrided_enabled == OverrideFalse) {
+			log_(t, "    (manually disabled)");
+		} else {
+			log_(t, "    (disabled)");
+		}
 	}
 }
 
