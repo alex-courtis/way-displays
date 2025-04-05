@@ -94,6 +94,16 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	}
 }
 
+static void print_disabled(const enum LogThreshold t, const struct Disabled * const disabled) {
+	if (!disabled) return;
+
+	if (disabled->conditions) {
+		log_(t, "    %s (conditionally)", disabled->name_desc);
+	} else {
+		log_(t, "    %s", disabled->name_desc);
+	}
+}
+
 static void print_modes_res_refresh(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
@@ -203,10 +213,10 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (cfg->disabled_name_desc) {
+	if (cfg->disabled) {
 		log_(t, "  Disabled:");
-		for (i = cfg->disabled_name_desc; i; i = i->nex) {
-			log_(t, "    %s", (char*)i->val);
+		for (i = cfg->disabled; i; i = i->nex) {
+			print_disabled(t, i->val);
 		}
 	}
 
@@ -293,9 +303,12 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (i = cfg->disabled_name_desc; i; i = i->nex) {
-		print_newline(t, &newline);
-		log_(t, "way-displays -s DISABLED '%s'", (char*)i->val);
+	for (i = cfg->disabled; i; i = i->nex) {
+		struct Disabled* d = i->val;
+		if (!d->conditions) {
+			print_newline(t, &newline);
+			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);
+		}
 	}
 
 	newline = true;
@@ -334,8 +347,16 @@ static void print_head_current(const enum LogThreshold t, const struct Head * co
 	print_mode(t, head->current.mode);
 	log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 
-	if (!head->current.enabled) {
-		log_(t, "    (disabled)");
+	if (head->current.enabled) {
+		if (head->overrided_enabled == OverrideTrue) {
+			log_(t, "    (manually enabled)");
+		}
+	} else {
+		if (head->overrided_enabled == OverrideFalse) {
+			log_(t, "    (manually disabled)");
+		} else {
+			log_(t, "    (disabled)");
+		}
 	}
 
 	if (lid_is_closed(head->name)) {
@@ -378,10 +399,18 @@ static void print_head_desired(const enum LogThreshold t, const struct Head * co
 			}
 		}
 		if (!head->current.enabled) {
-			log_(t, "    (enabled)");
+			if (head->overrided_enabled == OverrideTrue) {
+				log_(t, "    (manually enabled)");
+			} else {
+				log_(t, "    (enabled)");
+			}
 		}
 	} else {
-		log_(t, "    (disabled)");
+		if (head->overrided_enabled == OverrideFalse) {
+			log_(t, "    (manually disabled)");
+		} else {
+			log_(t, "    (disabled)");
+		}
 	}
 }
 

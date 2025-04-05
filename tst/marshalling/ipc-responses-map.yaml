@@ -38,6 +38,10 @@ CFG:
     - eight
     - EIGHT
     - nine
+    - NAME_DESC: twelve
+      IF:
+        - PLUGGED:
+            - ONE
 STATE:
   LID:
     CLOSED: TRUE
@@ -74,6 +78,8 @@ STATE:
           HEIGHT: 14
           REFRESH_MHZ: 15
           PREFERRED: FALSE
+      OVERRIDES:
+        {}
       MODES:
         - WIDTH: 10
           HEIGHT: 11
