@@ -108,6 +108,6 @@ properties:
     description: |-
       Disable the specified displays.
     items:
-      $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+      $ref: 'types-1.0.0.yaml#/$defs/disabled'
 
 additionalProperties: false

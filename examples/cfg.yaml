@@ -88,7 +88,14 @@ LOG_THRESHOLD: INFO
 
 
 ## Disable the specified displays.
+## Resulting state of a display is equal to OR of all matching conditions, so
+## explicit disabled without `IF` will override any conditions for the display.
+## In this example, HDMI-1 will always be disabled, and eDP-1 will be disabled
+## only if both DP-1 and DP-2 are plugged.
 # DISABLED:
-#   - 'eDP-1'
-#   - 'monitor description'
-
+#   - 'HDMI-1'
+#   - NAME_DESC: "eDP-1"
+#     IF:
+#       - PLUGGED:
+#           - "DP-1"
+#           - "DP-2"
