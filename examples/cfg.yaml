@@ -1,93 +1,94 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.0.0.yaml
 
-# Default cfg.yaml for way-displays.
-# Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
-#
-# See https://github.com/alex-courtis/way-displays/wiki/Configuration
+## Default cfg.yaml for way-displays.
+## Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
+
+## See https://github.com/alex-courtis/way-displays/wiki/Configuration
 
 
-# Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom)
+## Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom)
 ARRANGE: ROW
 
-# Align ROWs at the TOP (default), MIDDLE or BOTTOM
-# Align COLUMNs at the LEFT (default), MIDDLE or RIGHT
+## Align ROWs at the TOP (default), MIDDLE or BOTTOM
+## Align COLUMNs at the LEFT (default), MIDDLE or RIGHT
 ALIGN: TOP
 
 
-# The default ORDER is simply the order in which the displays are discovered.
-# Define your own.
-ORDER:
-  # - 'DP-2'
-  # - 'monitor description'
-  # - 'HDMI-1'
+## The default ORDER is simply the order in which the displays are discovered.
+## Define your own.
+# ORDER:
+#   - 'DP-2'
+#   - 'monitor description'
+#   - 'HDMI-1'
 
 
-# Enable scaling, overrides AUTO_SCALE and SCALE
+## Enable scaling, overrides AUTO_SCALE and SCALE
 SCALING: TRUE
 
-# The default is to scale each display by DPI.
-# This may be disabled and scale 1 will be used, unless a SCALE has been specified.
+## The default is to scale each display by DPI.
+## This may be disabled and scale 1 will be used, unless a SCALE has been specified.
 AUTO_SCALE: TRUE
 
-# Set an allowed range for auto scale.
+## Set an allowed range for auto scale.
 AUTO_SCALE_MIN: 1.0
 # AUTO_SCALE_MAX: 2.0
 
-# Auto scale may be overridden for each display.
-SCALE:
-  # - NAME_DESC: 'monitor description'
-  #   SCALE: 1.75
+## Auto scale may be overridden for each display.
+# SCALE:
+#   - NAME_DESC: 'monitor description'
+#     SCALE: 1.75
 
-# Override the preferred mode.
-# WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
-# for a possible workaround.
-MODE:
-    ## Resolution and refresh
-    # - NAME_DESC: HDMI-A-1
-    #   WIDTH: 1920
-    #   HEIGHT: 1080
-    #   HZ: 60
+## Override the preferred mode.
+## WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
+## for a possible workaround.
+# MODE:
+#   # Resolution and refresh
+#   - NAME_DESC: HDMI-A-1
+#     WIDTH: 1920
+#     HEIGHT: 1080
+#     HZ: 60
+#
+#   # Resolution with highest refresh
+#   - NAME_DESC: 'monitor description'
+#     WIDTH: 2560
+#     HEIGHT: 1440
+#
+#   # Highest available
+#   - NAME_DESC: DP-2
+#     MAX: TRUE
 
-    ## Resolution with highest refresh
-    # - NAME_DESC: 'monitor description'
-    #   WIDTH: 2560
-    #   HEIGHT: 1440
+## Rotate or translate the display.
+## 90, 180, 270, FLIPPED, FLIPPED-90, FLIPPED-180, FLIPPED-270
+# TRANSFORM:
+#   - NAME_DESC: 'monitor description'
+#     TRANSFORM: 270
 
-    ## Highest available
-    # - NAME_DESC: DP-2
-    #   MAX: TRUE
-
-# Rotate or translate the display.
-# 90, 180, 270, FLIPPED, FLIPPED-90, FLIPPED-180, FLIPPED-270
-TRANSFORM:
-  # - NAME_DESC: 'monitor description'
-  #   TRANSFORM: 270
-
-# VRR / adaptive sync is enabled by default. Disable it per display.
-VRR_OFF:
-  # - DP-2
-  # - '!.*my monitor.*'
+## VRR / adaptive sync is enabled by default. Disable it per display.
+# VRR_OFF:
+#   - DP-2
+#   - '!.*my monitor.*'
 
 
-# Sets a /bin/sh command to be executed following most events.
-# Obeys LOG_THRESHOLD
-# ${CALLBACK_MSG} contains a human readable message 
-# ${CALLBACK_LEVEL} LOG_THRESHOLD
-# NOTE: Depending on your compositor this could get executed multiple times when
-# a change happens. Especially likely on a (dis-)connect.
+## Sets a /bin/sh command to be executed following most events.
+## Obeys LOG_THRESHOLD
+## ${CALLBACK_MSG} contains a human readable message 
+## ${CALLBACK_LEVEL} LOG_THRESHOLD
+## NOTE: Depending on your compositor this could get executed multiple times when
+## a change happens. Especially likely on a (dis-)connect.
 CALLBACK_CMD: notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 
-# Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
-# your laptop is different.
+## Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
+## your laptop is different.
 # LAPTOP_DISPLAY_PREFIX: 'eDP'
 
 
-# One of: FATAL, ERROR, WARNING, INFO (default), DEBUG
-# Applies to logs and callbacks
+## One of: FATAL, ERROR, WARNING, INFO (default), DEBUG
+## Applies to logs and callbacks
 LOG_THRESHOLD: INFO
 
 
-# Disable the specified displays.
-DISABLED:
-  # - "eDP-1"
+## Disable the specified displays.
+# DISABLED:
+#   - 'eDP-1'
+#   - 'monitor description'
 
