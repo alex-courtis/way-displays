@@ -19,6 +19,11 @@
 #include "process.h"
 #include "wlr-output-management-unstable-v1.h"
 
+#define MAX_CANCELLATION_RETRIES 5
+
+static int cancellation_retries = 0;
+
+
 void handle_failure(void);
 
 void position_heads(struct SList *heads) {
@@ -333,6 +338,8 @@ static void apply(void) {
 }
 
 void handle_success(void) {
+	cancellation_retries = 0;
+
 	switch(displ->delta.element) {
 		case MODE:
 			// successful mode change is not always reported
@@ -355,6 +362,17 @@ void handle_success(void) {
 	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
 
 	displ_delta_destroy();
+}
+
+static bool handle_cancelled(void) {
+	cancellation_retries++;
+	if (cancellation_retries <= MAX_CANCELLATION_RETRIES) {
+		log_warn("\nChanges cancelled, retrying (attempt %i)", cancellation_retries);
+		return true;
+	} else {
+		log_warn("\nChanges cancelled, max number of retry attempts exceeded");
+		return false;
+	}
 }
 
 void handle_failure(void) {
@@ -395,7 +413,6 @@ void handle_failure(void) {
 }
 
 void layout(void) {
-
 	print_heads(INFO, ARRIVED, heads_arrived);
 	slist_free(&heads_arrived);
 
@@ -418,9 +435,13 @@ void layout(void) {
 			break;
 
 		case CANCELLED:
-			log_warn("\nChanges cancelled, retrying");
 			displ->state = IDLE;
-			return;
+			// whether to keep retrying
+			if (handle_cancelled()) {
+				break;
+			} else {
+				return;
+			}
 
 		case IDLE:
 		default:
