@@ -20,7 +20,7 @@ properties:
     default: TOP
 
   ORDER:
-    "type:": list
+    type: array
     description: |-
       ROW is arranged in order left to right.
       COLUMN is top to bottom.
@@ -54,14 +54,14 @@ properties:
       Ignored if below AUTO_SCALE_MIN.
 
   SCALE:
-    "type:": list
+    type: array
     description: |-
       Auto scale may be overridden for each display.
     items:
       $ref: 'types-1.0.0.yaml#/$defs/scale'
 
   MODE:
-    "type:": list
+    type: array
     description: |-
       Override the preferred mode.
       WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
@@ -69,14 +69,14 @@ properties:
       $ref: 'types-1.0.0.yaml#/$defs/mode'
 
   TRANSFORM:
-    "type:": list
+    type: array
     description: |-
       Rotate or translate the display.
     items:
       $ref: 'types-1.0.0.yaml#/$defs/transform'
 
   VRR_OFF:
-    "type:": list
+    type: array
     description: |-
       VRR / adaptive sync is enabled by default. Disable it per display.
     items:
@@ -104,7 +104,7 @@ properties:
       Applies to logs and callbacks.
 
   DISABLED:
-    "type:": list
+    type: array
     description: |-
       Disable the specified displays.
     items:
