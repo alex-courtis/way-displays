@@ -21,6 +21,7 @@
 #include "lid.h"
 #include "log.h"
 #include "process.h"
+#include "slist.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;
@@ -96,6 +97,13 @@ static void receive_ipc_request(int server_socket) {
 		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
+	// handle extra toggles
+	if (ipc_request->command == CFG_TOGGLE) {
+		for (struct SList *i = heads; i; i = i->nex) {
+			head_apply_toggles(i->val, ipc_request->cfg);
+		}
+	}
+
 	switch (ipc_request->command) {
 		case CFG_DEL:
 		case CFG_SET:
@@ -111,7 +119,7 @@ static void receive_ipc_request(int server_socket) {
 					print_cfg(INFO, cfg, false);
 				} else {
 					// complete
-					log_info("\nNo changes to make.");
+					log_info("\nNo config changes to make.");
 				}
 				break;
 			}

@@ -36,4 +36,8 @@ DISABLED:
   - eight
   - EIGHT
   - nine
+  - NAME_DESC: twelve
+    IF:
+      - PLUGGED:
+          - ONE
 

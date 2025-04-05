@@ -156,6 +156,15 @@ bool head_matches_name_desc_exact(const void * const h, const void * const n) {
 		(head->description && strcmp(head->description, name_desc) == 0);
 }
 
+bool head_disabled_matches_head(const void * const d, const void * const h) {
+	struct Disabled *disabled_if = (struct Disabled*)d;
+
+	if (!d)
+		return false;
+
+	return head_matches_name_desc(h, disabled_if->name_desc);
+}
+
 wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base) {
 	// computes a scale value that is appropriate for putting into `zwlr_output_configuration_head_v1_set_scale`
 
@@ -237,6 +246,22 @@ void head_set_scaled_dimensions(struct Head * const head) {
 
 	head->scaled.height = head_get_scaled_length(head->scaled.height, head->desired.scale, head->scaling_base);
 	head->scaled.width = head_get_scaled_length(head->scaled.width, head->desired.scale, head->scaling_base);
+}
+
+void head_apply_toggles(struct Head * const head, struct Cfg* cfg) {
+	if (slist_find_equal(cfg->disabled, head_disabled_matches_head, head) != NULL) {
+		if (head->overrided_enabled == NoOverride) {
+			log_info("\nApplying \"DISABLED\" override for %s", head->name);
+			if (head->current.enabled) {
+				head->overrided_enabled = OverrideFalse;
+			} else {
+				head->overrided_enabled = OverrideTrue;
+			}
+		} else {
+			log_info("\nResetting \"DISABLED\" override for %s", head->name);
+			head->overrided_enabled = NoOverride;
+		}
+	}
 }
 
 struct Mode *head_find_mode(struct Head * const head) {

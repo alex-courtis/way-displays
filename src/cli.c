@@ -163,7 +163,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			break;
 		case DISABLED:
 			for (int i = optind; i < argc; i++) {
-				slist_append(&cfg->disabled_name_desc, strdup(argv[i]));
+				slist_append(&cfg->disabled, cfg_disabled_always(argv[i]));
 			}
 			parsed = true;
 			break;

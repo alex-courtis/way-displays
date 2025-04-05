@@ -24,6 +24,7 @@
 extern "C" {
 #include "cfg.h"
 #include "convert.h"
+#include "conditions.h"
 #include "fn.h"
 #include "global.h"
 #include "head.h"
@@ -51,6 +52,7 @@ struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Nod
 struct UserScale*& operator << (struct UserScale*& user_scale, const YAML::Node& node);
 struct UserMode*& operator << (struct UserMode*& user_mode, const YAML::Node& node);
 struct UserTransform*& operator << (struct UserTransform*& user_transform, const YAML::Node& node);
+struct Condition*& operator << (struct Condition*& condition, const YAML::Node& node);
 struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node);
 struct Lid*& operator << (struct Lid*& lid, const YAML::Node& node);
 struct Mode*& operator << (struct Mode*& mode, const YAML::Node& node);
@@ -152,6 +154,85 @@ bool parse_node_val_output_transform(const YAML::Node &node, const char *key, en
 	return true;
 }
 
+struct Condition* parse_node_val_condition(const YAML::Node &node, enum CfgElement element, const char *desc1, const char *desc2) {
+	struct Condition *cond = (struct Condition*)calloc(1, sizeof(struct Condition));
+
+	if (node["PLUGGED"]) {
+		for (const auto &plugged : node["PLUGGED"]) {
+			const std::string &plugged_str = plugged.as<std::string>();
+			const char *plugged_cstr = plugged_str.c_str();
+			if (!validate_regex(plugged_cstr, element)) {
+				goto err;
+			}
+			slist_append(&cond->plugged, strdup(plugged_cstr));
+		}
+	}
+
+	if (node["UNPLUGGED"]) {
+		for (const auto &unplugged : node["UNPLUGGED"]) {
+			const std::string &unplugged_str = unplugged.as<std::string>();
+			const char *unplugged_cstr = unplugged_str.c_str();
+			if (!validate_regex(unplugged_cstr, element)) {
+				goto err;
+			}
+			slist_append(&cond->unplugged, strdup(unplugged_cstr));
+		}
+	}
+
+	return cond;
+err:
+	log_warn("Ignoring invalid condition at %s %s", desc1, desc2);
+	condition_free(cond);
+	return NULL;
+}
+
+struct SList* parse_node_val_if(const YAML::Node &node, enum CfgElement element, const char *desc1) {
+	struct SList *conditions = NULL;
+
+	if (!node["IF"])
+		return conditions;
+
+	for (const auto &condition_node : node["IF"]) {
+		struct Condition *condition = parse_node_val_condition(condition_node, element, desc1, "IF");
+
+		if (condition) {
+			slist_append(&conditions, condition);
+		}
+	}
+
+	return conditions;
+}
+
+struct Disabled* parse_node_val_disabled(const YAML::Node &node) {
+	struct Disabled *d = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+
+	// string is considered to be a scalar
+	if (node.IsScalar()) {
+		const std::string &disabled_str = node.as<std::string>();
+		d->name_desc = strdup(disabled_str.c_str());
+
+		if (!d->name_desc) {
+			goto err;
+		}
+	} else {
+		if (!parse_node_val_string(node, "NAME_DESC", &d->name_desc, "DISABLED", "NAME_DESC")) {
+			goto err;
+		}
+
+		d->conditions = parse_node_val_if(node, DISABLED, "DISABLED");
+	}
+
+	if (!validate_regex(d->name_desc, DISABLED)) {
+		goto err;
+	}
+
+	return d;
+err:
+	log_warn("Ignoring invalid DISABLED");
+	cfg_disabled_free(d);
+	return NULL;
+}
+
 char *yaml_with_newline(const YAML::Emitter &e) {
 	char *yaml = (char*)calloc(e.size() + 2, sizeof(char));
 	snprintf(yaml, e.size() + 2, "%s\n", e.c_str());
@@ -161,6 +242,30 @@ char *yaml_with_newline(const YAML::Emitter &e) {
 //
 // Marshal operators
 //
+YAML::Emitter& operator << (YAML::Emitter& e, struct Condition& condition) {
+	e << YAML::BeginMap;
+
+	if (condition.plugged) {
+		e << YAML::Key << "PLUGGED" << YAML::BeginSeq;
+		for (struct SList *i = condition.plugged; i; i = i->nex) {
+			e << (char*)i->val;
+		}
+		e << YAML::EndSeq;
+	}
+
+	if (condition.unplugged) {
+		e << YAML::Key << "UNPLUGGED" << YAML::BeginSeq;
+		for (struct SList *i = condition.unplugged; i; i = i->nex) {
+			e << (char*)i->val;
+		}
+		e << YAML::EndSeq;
+	}
+
+	e << YAML::EndMap;
+
+	return e;
+}
+
 YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 
 	if (cfg.arrange) {
@@ -276,10 +381,26 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Cfg& cfg) {
 		e << YAML::Key << "LOG_THRESHOLD" << YAML::Value << log_threshold_name(cfg.log_threshold);
 	}
 
-	if (cfg.disabled_name_desc) {
+	if (cfg.disabled) {
 		e << YAML::Key << "DISABLED" << YAML::BeginSeq;					// DISABLED
-		for (struct SList *i = cfg.disabled_name_desc; i; i = i->nex) {
-			e << (char*)i->val;
+		for (struct SList *i = cfg.disabled; i; i = i->nex) {
+			struct Disabled* d = (struct Disabled*)i->val;
+
+			if (d->conditions) {
+				e << YAML::BeginMap;
+
+				e << YAML::Key << "NAME_DESC" << YAML::Value << d->name_desc;
+
+				e << YAML::Key << "IF" << YAML::BeginSeq;
+				for (struct SList *i = d->conditions; i; i = i->nex) {
+					e << *(struct Condition*)i->val;
+				}
+				e << YAML::EndSeq;
+
+				e << YAML::EndMap;
+			} else {
+				e << d->name_desc;
+			}
 		}
 		e << YAML::EndSeq;												// DISABLED
 	}
@@ -339,6 +460,14 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	e << YAML::Key << "DESIRED" << YAML::BeginMap;		// DESIRED
 	e << head.desired;
 	e << YAML::EndMap;									// DESIRED
+
+	e << YAML::Key << "OVERRIDES" << YAML::BeginMap;
+
+	if (head.overrided_enabled != NoOverride) {
+		bool enabled = head.overrided_enabled == OverrideTrue;
+		e << YAML::Key << "DISABLED" << YAML::Value << enabled;
+	}
+	e << YAML::EndMap;
 
 	if (head.modes) {
 		e << YAML::Key << "MODES" << YAML::BeginSeq;	// MODES
@@ -574,13 +703,10 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 	if (node["DISABLED"]) {
 		const auto &disableds = node["DISABLED"];
 		for (const auto &disabled : disableds) {
-			const std::string &disabled_str = disabled.as<std::string>();
-			const char *disabled_cstr = disabled_str.c_str();
-			if (!slist_find_equal(cfg->disabled_name_desc, fn_comp_equals_strcmp, disabled_cstr)) {
-				if (!validate_regex(disabled_cstr, DISABLED)) {
-					continue;
-				}
-				slist_append(&cfg->disabled_name_desc, strdup(disabled_cstr));
+			struct Disabled* d = parse_node_val_disabled(disabled);
+
+			if (d) {
+				slist_append(&cfg->disabled, d);
 			}
 		}
 	}
@@ -747,8 +873,13 @@ struct Cfg*& operator << (struct Cfg*& cfg, const YAML::Node& node) {
 	TI(cfg->log_threshold = log_threshold_val(node["LOG_THRESHOLD"].as<std::string>().c_str()));
 
 	if (node["DISABLED"] && node["DISABLED"].IsSequence()) {
-		for (const auto &node_disabled : node["DISABLED"]) {
-			TI(slist_append(&cfg->disabled_name_desc, strdup(node_disabled.as<std::string>().c_str())));
+		const auto &disableds = node["DISABLED"];
+		for (const auto &disabled : disableds) {
+			struct Disabled* d = parse_node_val_disabled(disabled);
+
+			if (d) {
+				slist_append(&cfg->disabled, d);
+			}
 		}
 	}
 
@@ -826,6 +957,8 @@ struct Head*& operator << (struct Head*& head, const YAML::Node& node) {
 
 	head->current << node["CURRENT"];
 	head->desired << node["DESIRED"];
+
+	TI(head->overrided_enabled = node["OVERRIDES"]["DISABLED"].as<bool>() ? OverrideFalse : OverrideTrue)
 
 	if (node["MODES"] && node["MODES"].IsSequence()) {
 		for (const auto &node_mode : node["MODES"]) {
