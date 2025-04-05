@@ -391,12 +391,12 @@ void head_apply_toggles__disabled__enable(void **state) {
 	head_apply_toggles(&head, cfg);
 
 	assert_true(head.overrided_enabled == OverrideTrue);
-	assert_log(INFO, "\nEnabling \"DISABLED\" override for head0\n");
+	assert_log(INFO, "\nApplying \"DISABLED\" override for head0\n");
 
 	head_apply_toggles(&head, cfg);
 
 	assert_true(head.overrided_enabled == NoOverride);
-	assert_log(INFO, "\nDisabling \"DISABLED\" override for head0\n");
+	assert_log(INFO, "\nResetting \"DISABLED\" override for head0\n");
 
 	cfg_free(cfg);
 }
@@ -409,12 +409,12 @@ void head_apply_toggles__disabled__disable(void **state) {
 	head_apply_toggles(&head, cfg);
 
 	assert_true(head.overrided_enabled == OverrideFalse);
-	assert_log(INFO, "\nEnabling \"DISABLED\" override for head0\n");
+	assert_log(INFO, "\nApplying \"DISABLED\" override for head0\n");
 
 	head_apply_toggles(&head, cfg);
 
 	assert_true(head.overrided_enabled == NoOverride);
-	assert_log(INFO, "\nDisabling \"DISABLED\" override for head0\n");
+	assert_log(INFO, "\nResetting \"DISABLED\" override for head0\n");
 
 	cfg_free(cfg);
 }
