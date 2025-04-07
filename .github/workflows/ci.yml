@@ -65,10 +65,6 @@ jobs:
       - name: build lib32-yaml-cpp package
         run: |
           git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp
-          # skip tests
-          sed -i -E 's/-DYAML_CPP_BUILD_TESTS=ON/-DYAML_CPP_BUILD_TESTS=OFF/g' /tmp/lib32-yaml-cpp/PKGBUILD
-          # bump minimum following cmake 4.0.0 release
-          sed -i -E 's/-DYAML_CPP_BUILD_TESTS=OFF/-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=4.0/g' /tmp/lib32-yaml-cpp/PKGBUILD
           makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp
       - name: install lib32-yaml-cpp package
         run: pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
