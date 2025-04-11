@@ -1,6 +1,8 @@
 way-displays 1.14.0 2025-04-12
 ------------------------------
+feat: retry on changes cancellation, up to 5 times by @mrsobakin in #200
 #196 implement DISABLED conditions: PLUGGED and UNPLUGGED (#199)
+chore: cfg write prepends schema comment by @alex-courtis in #203
 
 way-displays 1.13.0 2025-03-30
 ------------------------------
