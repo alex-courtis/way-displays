@@ -900,7 +900,7 @@ void cfg_file_reload(void) {
 	}
 }
 
-bool cfg_file_write_content(const char * const yaml) {
+static bool cfg_file_write_content(const char * const yaml) {
 	return
 		file_write(cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
 		file_write(cfg->file_path, yaml, "a");
