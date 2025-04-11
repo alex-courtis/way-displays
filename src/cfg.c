@@ -900,6 +900,12 @@ void cfg_file_reload(void) {
 	}
 }
 
+static bool cfg_file_write_content(const char * const yaml) {
+	return
+		file_write(cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
+		file_write(cfg->file_path, yaml, "a");
+}
+
 void cfg_file_write(void) {
 	char *yaml = NULL;
 	char *resolved_from = cfg->resolved_from;
@@ -911,7 +917,7 @@ void cfg_file_write(void) {
 		goto end;
 	}
 
-	if (cfg->file_path && (written = file_write(cfg->file_path, yaml, "w"))) {
+	if (cfg->file_path && (written = cfg_file_write_content(yaml))) {
 		cfg->updated = true;
 		goto end;
 	}
@@ -933,7 +939,7 @@ void cfg_file_write(void) {
 			set_paths(cfg, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(cfg->dir_path, 0755) && (written = file_write(i->val, yaml, "w"))) {
+			if (mkdir_p(cfg->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
