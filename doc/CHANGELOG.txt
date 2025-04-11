@@ -1,3 +1,7 @@
+way-displays 1.14.0 2025-04-12
+------------------------------
+#196 implement DISABLED conditions: PLUGGED and UNPLUGGED (#199)
+
 way-displays 1.13.0 2025-03-30
 ------------------------------
 #121 add --toggle for SCALING, AUTO_SCALE, VRR_OFF, DISABLED (#193)
