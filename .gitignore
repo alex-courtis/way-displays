@@ -7,8 +7,13 @@ pro/*.c
 
 /tst-*
 
+/tst/tmp/
+
 cfg.actual
 cfg.expected
+
+log.actual
+log.expected
 
 /.ccls-cache
 /.cache

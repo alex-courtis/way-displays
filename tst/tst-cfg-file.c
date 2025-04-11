@@ -26,9 +26,10 @@ char *__wrap_marshal_cfg(struct Cfg *cfg) {
 	return mock_type(char*);
 }
 
-bool __wrap_file_write(const char *path, const char *contents) {
+bool __wrap_file_write(const char *path, const char *contents, const char *mode) {
 	check_expected(path);
 	check_expected(contents);
+	check_expected(mode);
 	return mock_type(bool);
 }
 
@@ -138,7 +139,13 @@ void cfg_file_write__none(void **state) {
 	will_return(__wrap_mkdir_p, true);
 
 	expect_string(__wrap_file_write, path, "/path/to/zero");
+	expect_string(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
+	expect_string(__wrap_file_write, mode, "w");
+	will_return(__wrap_file_write, true);
+
+	expect_string(__wrap_file_write, path, "/path/to/zero");
 	expect_string(__wrap_file_write, contents, expected);
+	expect_string(__wrap_file_write, mode, "a");
 	will_return(__wrap_file_write, true);
 
 	will_return(__wrap_fd_wd_cfg_dir_create, NULL);
@@ -175,7 +182,8 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	will_return(__wrap_fd_wd_cfg_dir_destroy, NULL);
 
 	expect_string(__wrap_file_write, path, "/path/to/two");
-	expect_string(__wrap_file_write, contents, expected);
+	expect_string(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
+	expect_string(__wrap_file_write, mode, "w");
 	will_return(__wrap_file_write, false);
 
 	expect_string(__wrap_mkdir_p, path, "/path/to");
@@ -183,7 +191,8 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	will_return(__wrap_mkdir_p, true);
 
 	expect_string(__wrap_file_write, path, "/path/to/zero");
-	expect_string(__wrap_file_write, contents, expected);
+	expect_string(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
+	expect_string(__wrap_file_write, mode, "w");
 	will_return(__wrap_file_write, false);
 
 	expect_string(__wrap_mkdir_p, path, "/path/to");
@@ -195,7 +204,13 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	will_return(__wrap_mkdir_p, true);
 
 	expect_string(__wrap_file_write, path, "/path/to/three");
+	expect_string(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
+	expect_string(__wrap_file_write, mode, "w");
+	will_return(__wrap_file_write, true);
+
+	expect_string(__wrap_file_write, path, "/path/to/three");
 	expect_string(__wrap_file_write, contents, expected);
+	expect_string(__wrap_file_write, mode, "a");
 	will_return(__wrap_file_write, true);
 
 	will_return(__wrap_fd_wd_cfg_dir_create, NULL);
@@ -231,7 +246,8 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 	will_return(__wrap_fd_wd_cfg_dir_destroy, NULL);
 
 	expect_string(__wrap_file_write, path, "/path/to/zero");
-	expect_string(__wrap_file_write, contents, expected);
+	expect_string(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
+	expect_string(__wrap_file_write, mode, "w");
 	will_return(__wrap_file_write, false);
 
 	expect_string(__wrap_mkdir_p, path, "/path/to");
@@ -239,7 +255,8 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 	will_return(__wrap_mkdir_p, true);
 
 	expect_string(__wrap_file_write, path, "/path/to/one");
-	expect_string(__wrap_file_write, contents, expected);
+	expect_string(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
+	expect_string(__wrap_file_write, mode, "w");
 	will_return(__wrap_file_write, false);
 
 	cfg_file_write();
@@ -268,7 +285,13 @@ void cfg_file_write__existing(void **state) {
 	will_return(__wrap_marshal_cfg, strdup(expected));
 
 	expect_string(__wrap_file_write, path, cfg->file_path);
+	expect_string(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
+	expect_string(__wrap_file_write, mode, "w");
+	will_return(__wrap_file_write, true);
+
+	expect_string(__wrap_file_write, path, cfg->file_path);
 	expect_string(__wrap_file_write, contents, expected);
+	expect_string(__wrap_file_write, mode, "a");
 	will_return(__wrap_file_write, true);
 
 	cfg_file_write();
