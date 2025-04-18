@@ -36,25 +36,9 @@ jobs:
         run: chown -R runner:docker .
         shell: sh -e {0}
 
-      - run: ./foo.sh
-
       - name: install packages
         shell: sh -e {0}
-        run: |
-          pacman --noconfirm -Sy \
-          clang \
-          cmake \
-          cmocka lib32-cmocka \
-          cppcheck \
-          git \
-          lib32-systemd \
-          libinput \
-          llvm \
-          ninja \
-          valgrind \
-          wayland lib32-wayland \
-          wayland-protocols \
-          yaml-cpp
+        run: bin/arch-packages.sh
 
       - run: make CC=gcc   CXX=g++     clean all
       - run: make CC=gcc   CXX=g++     clean test
