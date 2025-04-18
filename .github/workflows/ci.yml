@@ -23,6 +23,12 @@ jobs:
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org" # profile thus debuginfod.sh is not executed
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: set source permissions
+        run: chown -R runner:docker .
+        shell: sh -e {0}
+
       - name: create user
         shell: sh -e {0}
         # magic numbers and names not available in environment
@@ -47,12 +53,6 @@ jobs:
           wayland lib32-wayland \
           wayland-protocols \
           yaml-cpp
-
-      - uses: actions/checkout@v4
-
-      - name: set source permissions
-        run: chown -R runner:docker .
-        shell: sh -e {0}
 
       - run: make CC=gcc   CXX=g++     clean all
       - run: make CC=gcc   CXX=g++     clean test
