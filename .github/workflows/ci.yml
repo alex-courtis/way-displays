@@ -25,16 +25,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: set source permissions
-        run: chown -R runner:docker .
-        shell: sh -e {0}
-
       - name: create user
         shell: sh -e {0}
         # magic numbers and names not available in environment
         run: |
           groupadd --gid 118 docker
           useradd -m -s /bin/sh --uid 1001 --gid docker runner
+
+      - name: set source permissions
+        run: chown -R runner:docker .
+        shell: sh -e {0}
+
+      - run: ./foo.sh
 
       - name: install packages
         shell: sh -e {0}
