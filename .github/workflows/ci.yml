@@ -38,7 +38,7 @@ jobs:
 
       - name: install packages
         shell: sh -e {0}
-        run: bin/arch-packages.sh
+        run: .github/workflows/arch-packages.sh
 
       - run: make CC=gcc   CXX=g++     clean all
       - run: make CC=gcc   CXX=g++     clean test
