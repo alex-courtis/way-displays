@@ -21,6 +21,7 @@ jobs:
 
     env:
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org" # profile thus debuginfod.sh is not executed
+      DEBUGINFOD_CACHE_PATH: "/tmp/debuginfod_client"
 
     steps:
       - uses: actions/checkout@v4

@@ -83,33 +83,35 @@ make CC=clang CXX=clang++ MFLAGS=-m32 clean test
 make CC=clang CXX=clang++ MFLAGS=-m32 clean test-vg
 ```
 
-### Compiling On Ubuntu Docker Image
+### Developing On The (CI) Arch Image
 
-This may be necessary to keep compatibily with the github CI docker container.
+`Dockerfile` defines an image similar to that used by the docker container in `ci.yml`
 
+It is intended to run in detached mode, thus the `"sleep infinity"` `ENTRYPOINT`
+
+Build the image:
 ```sh
-docker stop wd_ubuntu
-docker rm wd_ubuntu
-docker run \
-    --detach \
-    --interactive \
-    --name wd_ubuntu \
-    --volume "$(pwd):/way-displays" \
-    ubuntu:latest 
-docker exec --interactive --tty wd_ubuntu /bin/bash
+make docker-build
 ```
 
+Run a detached container:
 ```sh
-export DEBIAN_FRONTEND="noninteractive"
-apt update -y
-apt install -y make gcc gcc-multilib g++ g++-multilib clang wayland-protocols libwlroots-dev libyaml-cpp-dev libcmocka-dev cppcheck valgrind
-exit
+make docker-run
 ```
 
+Execute a command in the container e.g.:
 ```sh
-docker exec --interactive --tty --user "$(id -u):$(id -g)" wd_ubuntu /bin/bash
-cd /way-displays
-make
+docker exec way-displays make test-vg
+```
+
+Run a shell in the container:
+```sh
+docker exec -it way-displays /bin/bash
+```
+
+Stop and remove the container:
+```sh
+make docker-stop
 ```
 
 ## Documentation

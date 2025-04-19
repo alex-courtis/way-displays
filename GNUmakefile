@@ -100,6 +100,21 @@ examples: $(EXAMPLE_E)
 examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-.PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg $(TST_T)
+docker-build:
+	docker build --tag "way-displays:latest" .
+
+docker-stop:
+	docker rm -f way-displays || true
+
+docker-run: docker-stop
+	docker run \
+		--name="way-displays" \
+		--volume "${PWD}:/way-displays" \
+		--workdir="/way-displays" \
+		--user "`id -u`:`id -g`" \
+		--detach \
+		"way-displays:latest"
+
+.PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg docker-build docker-stop docker-run $(TST_T)
 
 .NOTPARALLEL: iwyu test test-vg
