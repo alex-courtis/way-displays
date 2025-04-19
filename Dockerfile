@@ -1,3 +1,6 @@
+# docker image for local dev
+# keep this in sync with ci.yml
+
 FROM archlinux:multilib-devel
 
 COPY .github/workflows/arch-packages.sh /usr/local/bin

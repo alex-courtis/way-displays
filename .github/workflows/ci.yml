@@ -12,6 +12,7 @@ jobs:
   all:
     runs-on: ubuntu-latest
 
+    # keep this in sync with Dockerfile
     container:
       image: archlinux:multilib-devel
 
