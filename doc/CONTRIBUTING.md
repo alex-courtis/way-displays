@@ -87,7 +87,7 @@ make CC=clang CXX=clang++ MFLAGS=-m32 clean test-vg
 
 `Dockerfile` defines an image similar to that used by the docker container in `ci.yml`
 
-It is intended to run in detached mode, thus the `"sleep infinity"` `ENTRYPOINT`
+It is intended to run in detached mode, thus the `ENTRYPOINT [ "sleep", "infinity" ]`
 
 Build the image:
 ```sh
@@ -104,7 +104,7 @@ Execute a command in the container e.g.:
 docker exec way-displays make test-vg
 ```
 
-Run a shell in the container:
+OR run a shell in the container:
 ```sh
 docker exec -it way-displays /bin/bash
 ```
