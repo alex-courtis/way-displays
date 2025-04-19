@@ -12,6 +12,7 @@ jobs:
   all:
     runs-on: ubuntu-latest
 
+    # keep this in sync with Dockerfile
     container:
       image: archlinux:multilib-devel
 
@@ -21,8 +22,11 @@ jobs:
 
     env:
       DEBUGINFOD_URLS: "https://debuginfod.archlinux.org" # profile thus debuginfod.sh is not executed
+      DEBUGINFOD_CACHE_PATH: "/tmp/debuginfod_client"
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: create user
         shell: sh -e {0}
         # magic numbers and names not available in environment
@@ -30,29 +34,13 @@ jobs:
           groupadd --gid 118 docker
           useradd -m -s /bin/sh --uid 1001 --gid docker runner
 
-      - name: install packages
-        shell: sh -e {0}
-        run: |
-          pacman --noconfirm -Sy \
-          clang \
-          cmake \
-          cmocka lib32-cmocka \
-          cppcheck \
-          git \
-          lib32-systemd \
-          libinput \
-          llvm \
-          ninja \
-          valgrind \
-          wayland lib32-wayland \
-          wayland-protocols \
-          yaml-cpp
-
-      - uses: actions/checkout@v4
-
       - name: set source permissions
         run: chown -R runner:docker .
         shell: sh -e {0}
+
+      - name: install packages
+        shell: sh -e {0}
+        run: .github/workflows/arch-packages.sh
 
       - run: make CC=gcc   CXX=g++     clean all
       - run: make CC=gcc   CXX=g++     clean test
