@@ -47,8 +47,8 @@ jobs:
       - run: make CC=clang CXX=clang++ clean all
       - run: make CC=clang CXX=clang++ clean test
       - run: make                      clean cppcheck
-      # - run: make CC=gcc   CXX=g++     clean test-vg
-      # - run: make CC=clang CXX=clang++ clean test-vg
+      - run: make CC=gcc   CXX=g++     clean test-vg
+      - run: make CC=clang CXX=clang++ clean test-vg
 
       - name: build lib32-yaml-cpp package
         run: .github/workflows/packages/lib32-yaml-cpp/build.sh
@@ -58,8 +58,8 @@ jobs:
 
       - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test
       - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test
-      # - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
-      # - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
+      - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
+      - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
 
       - name: build include-what-you-use package
         run: .github/workflows/packages/include-what-you-use/build.sh
