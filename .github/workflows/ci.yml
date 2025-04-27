@@ -12,7 +12,6 @@ jobs:
   all:
     runs-on: ubuntu-latest
 
-    # keep this in sync with Dockerfile
     container:
       image: archlinux:multilib-devel
 
@@ -42,13 +41,17 @@ jobs:
         shell: sh -e {0}
         run: .github/workflows/packages/base/install.sh
 
-      - run: make CC=gcc   CXX=g++     clean all
-      - run: make CC=gcc   CXX=g++     clean test
-      - run: make CC=clang CXX=clang++ clean all
-      - run: make CC=clang CXX=clang++ clean test
-      - run: make                      clean cppcheck
-      - run: make CC=gcc   CXX=g++     clean test-vg
-      - run: make CC=clang CXX=clang++ clean test-vg
+      - run: make                      clean
+      - run: make CC=gcc   CXX=g++     all
+      - run: make CC=gcc   CXX=g++     test
+      - run: make CC=gcc   CXX=g++     test-vg
+
+      - run: make clean cppcheck
+
+      - run: make                      clean
+      - run: make CC=clang CXX=clang++ all
+      - run: make CC=clang CXX=clang++ test
+      - run: make CC=clang CXX=clang++ test-vg
 
       - name: build lib32-yaml-cpp package
         run: .github/workflows/packages/lib32-yaml-cpp/build.sh
@@ -56,10 +59,13 @@ jobs:
         run: .github/workflows/packages/lib32-yaml-cpp/install.sh
         shell: sh -e {0}
 
-      - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test
-      - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test
-      - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test-vg
-      - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
+      - run: make                                  clean
+      - run: make CC=gcc   CXX=g++     MFLAGS=-m32 test
+      - run: make CC=gcc   CXX=g++     MFLAGS=-m32 test-vg
+
+      - run: make                                  clean
+      - run: make CC=clang CXX=clang++ MFLAGS=-m32 test
+      - run: make CC=clang CXX=clang++ MFLAGS=-m32 test-vg
 
       - name: build include-what-you-use package
         run: .github/workflows/packages/include-what-you-use/build.sh
