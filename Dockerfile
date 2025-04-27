@@ -1,5 +1,6 @@
 # docker image for local dev
-# keep this in sync with ci.yml
+# Keep this in sync with ci.yml
+# GH CI doesn't allow use of a Dockerfile, hence we maintain this separately
 
 FROM archlinux:multilib-devel
 

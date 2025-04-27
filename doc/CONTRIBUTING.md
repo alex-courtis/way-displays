@@ -99,9 +99,14 @@ Run a detached container:
 make docker-run
 ```
 
+Build and install the AUR lib32-yaml-cpp and include-what-you-use packages:
+```sh
+make docker-packages
+```
+
 Execute a command in the container e.g.:
 ```sh
-docker exec way-displays make test-vg
+docker exec way-displays make MFLAGS=-m32 clean test-vg
 ```
 
 OR run a shell in the container:
