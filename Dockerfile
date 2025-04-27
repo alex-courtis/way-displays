@@ -1,11 +1,12 @@
 # docker image for local dev
-# keep this in sync with ci.yml
+# Keep this in sync with ci.yml
+# GH CI doesn't allow use of a Dockerfile, hence we maintain this separately
 
 FROM archlinux:multilib-devel
 
-COPY .github/workflows/arch-packages.sh /usr/local/bin
+COPY .github/workflows/packages/base/install.sh /usr/local/bin/packages-base-install.sh
 
-RUN arch-packages.sh
+RUN packages-base-install.sh
 
 ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 ENV DEBUGINFOD_CACHE_PATH="/tmp/debuginfod_client"
