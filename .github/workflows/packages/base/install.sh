@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pacman --noconfirm -Sy \
+pacman --noconfirm -Syu \
 	clang \
 	cmake \
 	cmocka lib32-cmocka \
