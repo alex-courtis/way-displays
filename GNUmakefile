@@ -115,6 +115,12 @@ docker-run: docker-stop
 		--detach \
 		"way-displays:latest"
 
+docker-packages:
+	docker exec                    way-displays .github/workflows/packages/lib32-yaml-cpp/build.sh
+	docker exec --user "root:root" way-displays .github/workflows/packages/lib32-yaml-cpp/install.sh
+	docker exec                    way-displays .github/workflows/packages/include-what-you-use/build.sh
+	docker exec --user "root:root" way-displays .github/workflows/packages/include-what-you-use/install.sh
+
 .PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg docker-build docker-stop docker-run $(TST_T)
 
 .NOTPARALLEL: iwyu test test-vg

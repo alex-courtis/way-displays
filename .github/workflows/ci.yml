@@ -40,7 +40,7 @@ jobs:
 
       - name: install packages
         shell: sh -e {0}
-        run: .github/workflows/arch-packages.sh
+        run: .github/workflows/packages/base/install.sh
 
       - run: make CC=gcc   CXX=g++     clean all
       - run: make CC=gcc   CXX=g++     clean test
@@ -51,11 +51,9 @@ jobs:
       - run: make CC=clang CXX=clang++ clean test-vg
 
       - name: build lib32-yaml-cpp package
-        run: |
-          git clone https://aur.archlinux.org/lib32-yaml-cpp.git /tmp/lib32-yaml-cpp
-          makepkg --nocheck OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/lib32-yaml-cpp
+        run: .github/workflows/packages/lib32-yaml-cpp/build.sh
       - name: install lib32-yaml-cpp package
-        run: pacman -U --noconfirm /tmp/lib32-yaml-cpp/*.pkg.tar
+        run: .github/workflows/packages/lib32-yaml-cpp/install.sh
         shell: sh -e {0}
 
       - run: make CC=gcc      CXX=g++     MFLAGS=-m32 clean test
@@ -64,11 +62,9 @@ jobs:
       - run: make CC=clang    CXX=clang++ MFLAGS=-m32 clean test-vg
 
       - name: build include-what-you-use package
-        run: |
-          git clone https://aur.archlinux.org/include-what-you-use.git /tmp/include-what-you-use
-          makepkg OPTIONS=-debug PKGEXT='.pkg.tar' --dir /tmp/include-what-you-use
+        run: .github/workflows/packages/include-what-you-use/build.sh
       - name: install include-what-you-use package
-        run: pacman -U --noconfirm /tmp/include-what-you-use/*.pkg.tar
+        run: .github/workflows/packages/include-what-you-use/install.sh
         shell: sh -e {0}
 
       - run: make clean iwyu
