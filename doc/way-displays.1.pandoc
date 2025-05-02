@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2025/03/28
+% 2025/05/02
 
 # NAME
 
@@ -170,20 +170,21 @@ User should be a member of the `input` group for querying laptop lid state.
 
 # NAMING
 
-You can configure displays by name or description. You can find these by looking at the logs e.g.
+Displays are matched by name or description with precedence: exact, regex, fuzzy
 
-	DP-3 Arrived:
-      info:
-		name:     'DP-3'
-        make:     'Monitor Maker'
-        model:    'ABC123'
-		desc:     'Monitor Maker ABC123 (DP-3 via HDMI)'
+You can identify them via logs e.g.
 
-It is recommended to use the description rather than the name, as the name may change over time and will most likely be different on different PCs.
+    DP-3 Arrived:
+        name:     'DP-3'
+        desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
 
-The description does contain information about how it is connected, so strip that out. In the above example, you would use the description 'Monitor Maker ABC123'.
+It is recommended to use the description rather than the nondeterministic name.
 
-The name should be at least 3 characters long, to avoid any unwanted extra matches.
+Avoid using 'DP-1' as that will also match 'eDP-1'
+
+Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. '!^DP-1'. Regex strings must be single quoted.
+
+Using a regex is preferred, however fuzzy case insensitive string matches of at least 3 characters may be used.
 
 # EXAMPLES
 

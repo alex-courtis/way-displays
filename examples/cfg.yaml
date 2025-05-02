@@ -14,11 +14,27 @@ ARRANGE: ROW
 ALIGN: TOP
 
 
-## The default ORDER is simply the order in which the displays are discovered.
-## Define your own.
+## Displays are matched by name or description with precedence: exact, regex, fuzzy
+##
+## You can identify them via logs e.g.
+## DP-3 Arrived:
+##     name:     'DP-3'
+##     desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
+##
+## It is recommended to use the description rather than the nondeterministic name.
+##
+## Avoid using 'DP-1' as that will also match 'eDP-1'
+## 
+## Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. '!^DP-1'. Regex strings must be single quoted.
+## 
+## Using a regex is preferred, however fuzzy case insensitive string matches of at least 3 characters may be used.
+
+
+## The default ORDER is simply the order in which the displays are discovered. This is nondeterministic.
+## You are encouraged to explicitly define your order.
 # ORDER:
-#   - 'DP-2'
-#   - 'monitor description'
+#   - '!^DP-1'
+#   - 'Monitor Maker ABC123'
 #   - 'HDMI-1'
 
 
