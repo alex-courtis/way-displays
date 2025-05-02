@@ -101,12 +101,15 @@ examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 docker-build:
-	docker build --tag "way-displays:latest" .
+	docker build --no-cache --tag "way-displays:latest" .
 
-docker-stop:
+docker-rm:
 	docker rm -f way-displays || true
 
-docker-run: docker-stop
+docker-image-rm: docker-rm
+	docker image rm way-displays:latest
+
+docker-run: docker-rm
 	docker run \
 		--name="way-displays" \
 		--volume "${PWD}:/way-displays" \

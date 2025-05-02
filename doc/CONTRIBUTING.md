@@ -116,7 +116,12 @@ docker exec -it way-displays /bin/bash
 
 Stop and remove the container:
 ```sh
-make docker-stop
+make docker-rm
+```
+
+Remove the image:
+```sh
+make docker-image-rm
 ```
 
 ## Documentation
