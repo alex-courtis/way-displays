@@ -8,6 +8,7 @@
 
 #include "cfg.h"
 #include "conditions.h"
+#include "convert.h"
 #include "displ.h"
 #include "global.h"
 #include "head.h"
@@ -149,8 +150,6 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 	return sorted;
 }
 
-#include <stdio.h>
-
 void desire_enabled(struct Head *head) {
 	bool enabled = false;
 
@@ -180,15 +179,15 @@ void desire_enabled(struct Head *head) {
 	}
 
 	switch (head->overrided_enabled) {
-	case NoOverride:
-		head->desired.enabled = enabled;
-		break;
-	case OverrideTrue:
-		head->desired.enabled = true;
-		break;
-	case OverrideFalse:
-		head->desired.enabled = false;
-		break;
+		case NoOverride:
+			head->desired.enabled = enabled;
+			break;
+		case OverrideTrue:
+			head->desired.enabled = true;
+			break;
+		case OverrideFalse:
+			head->desired.enabled = false;
+			break;
 	}
 }
 
@@ -319,6 +318,8 @@ static void apply(void) {
 
 	struct Head *head;
 	if ((head = slist_find_val(heads, head_current_mode_not_desired))) {
+		log_debug("APPLY mode");
+
 		displ_delta_init(MODE, head);
 
 		print_head(INFO, DELTA, head);
@@ -330,6 +331,8 @@ static void apply(void) {
 		displ->delta.human = delta_human_mode(displ->state, head);
 
 	} else if ((head = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
+		log_debug("APPLY vrr");
+
 		displ_delta_init(VRR_OFF, head);
 
 		print_head(INFO, DELTA, head);
@@ -341,6 +344,8 @@ static void apply(void) {
 		displ->delta.human = delta_human_adaptive_sync(displ->state, head);
 
 	} else {
+		log_debug("APPLY remainder");
+
 		displ_delta_init(0, NULL);
 
 		print_heads(INFO, DELTA, heads);
@@ -451,6 +456,8 @@ void layout(void) {
 	print_heads(INFO, DEPARTED, heads_departed);
 	slist_free_vals(&heads_departed, head_free);
 
+	log_debug("LAYOUT %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
+
 	switch (displ->state) {
 		case SUCCEEDED:
 			handle_success();
@@ -481,6 +488,9 @@ void layout(void) {
 	}
 
 	desire();
+	log_debug("LAYOUT desired %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
+
 	apply();
+	log_debug("LAYOUT applied %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
 }
 

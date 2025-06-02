@@ -2,12 +2,14 @@
 #define HEAD_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
 #include "cfg.h"
 #include "mode.h"
+#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // wl_fixed_t, used by the wlr-output-management protocol, uses scales in multiples of 1/256.
@@ -110,6 +112,8 @@ struct Mode *head_find_mode(struct Head * const head);
 struct Mode *head_preferred_mode(const struct Head * const head);
 
 bool head_current_not_desired(const void * const head);
+
+size_t head_num_current_not_desired(struct SList * const heads);
 
 bool head_current_mode_not_desired(const void * const head);
 

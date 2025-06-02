@@ -5,7 +5,9 @@
 
 #define FL __FILE__, __LINE__
 
-int _wl_display_dispatch_pending(struct wl_display *display, char *file, int line);
+// use multiple wrappers to disambiguate stacks
+int _wl_display_dispatch_pending__read_events(struct wl_display *display, char *file, int line);
+int _wl_display_dispatch_pending__prepare_read(struct wl_display *display, char *file, int line);
 
 int _wl_display_prepare_read(struct wl_display *display, char *file, int line);
 
