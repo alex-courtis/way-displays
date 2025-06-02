@@ -2,12 +2,14 @@
 #define HEAD_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
 #include "cfg.h"
 #include "mode.h"
+#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // wl_fixed_t, used by the wlr-output-management protocol, uses scales in multiples of 1/256.
