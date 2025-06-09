@@ -19,10 +19,7 @@ struct ITable;
 /*
  * Entry iterator.
  */
-struct ITableIter {
-	const uint64_t key;
-	const void* const val;
-};
+struct ITableIter;
 
 /*
  * Lifecycle
@@ -50,8 +47,14 @@ const void *itable_get(const struct ITable* const tab, const uint64_t key);
 // create an iterator, caller must itable_iter_free or invoke itable_next until NULL
 const struct ITableIter *itable_iter(const struct ITable* const tab);
 
-// next iterator value, NULL at end of list
-const struct ITableIter *itable_next(const struct ITableIter* const iter);
+// next iterator value, NULL at end of table
+const struct ITableIter *itable_iter_next(const struct ITableIter* const iter);
+
+// iterator key, 0 on NULL iter
+uint64_t itable_iter_key(const struct ITableIter* const iter);
+
+// iterator value, NULL on NULL iter
+const void *itable_iter_val(const struct ITableIter* const iter);
 
 /*
  * Mutate
