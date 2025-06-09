@@ -18,10 +18,7 @@ struct STable;
 /*
  * Entry iterator.
  */
-struct STableIter {
-	const char* const key;
-	const void* const val;
-};
+struct STableIter;
 
 /*
  * Lifecycle
@@ -49,8 +46,14 @@ const void *stable_get(const struct STable* const tab, const char* const key);
 // create an iterator, caller must stable_iter_free or invoke stable_next until NULL
 const struct STableIter *stable_iter(const struct STable* const tab);
 
-// next iterator value, NULL at end of list
-const struct STableIter *stable_next(const struct STableIter* const iter);
+// next iterator entry, NULL at end of table
+const struct STableIter *stable_iter_next(const struct STableIter* const iter);
+
+// iterator key, NULL on NULL iter
+const char *stable_iter_key(const struct STableIter* const iter);
+
+// iterator value, NULL on NULL iter
+const void *stable_iter_val(const struct STableIter* const iter);
 
 /*
  * Mutate

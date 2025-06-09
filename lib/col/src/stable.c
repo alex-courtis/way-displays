@@ -21,19 +21,11 @@ struct STable {
 	comparator cmp;
 };
 
-struct STableIterP {
-	/*
-	 * Public, removed const
-	 */
+struct STableIter {
 	const char *key;
 	const void *val;
-
-	/*
-	 * Private
-	 */
 	const struct STable *tab;
-	const char* const *k;
-	const void* const *v;
+	size_t position;
 };
 
 // grow to capacity + grow
@@ -133,50 +125,46 @@ const void *stable_get(const struct STable* const tab, const char* const key) {
 }
 
 const struct STableIter *stable_iter(const struct STable* const tab) {
-	if (!tab)
+	if (!tab || tab->size == 0)
 		return NULL;
 
-	// loop over keys and vals
-	const char **k;
-	const void **v;
-	for (k = tab->keys, v = tab->vals;
-			v < tab->vals + tab->size && k < tab->keys + tab->size;
-			k++, v++) {
-		struct STableIterP *iterp = calloc(1, sizeof(struct STableIterP));
+	// first key/val
+	struct STableIter *i = calloc(1, sizeof(struct STableIter));
+	i->tab = tab;
+	i->key = *(tab->keys);
+	i->val = *(tab->vals);
+	i->position = 0;
 
-		iterp->tab = tab;
-		iterp->key = *k;
-		iterp->val = *v;
-		iterp->k = k;
-		iterp->v = v;
-
-		return (struct STableIter*)iterp;
-	}
-
-	return NULL;
+	return i;
 }
 
-const struct STableIter *stable_next(const struct STableIter* const iter) {
+const struct STableIter *stable_iter_next(const struct STableIter* const iter) {
 	if (!iter)
 		return NULL;
 
-	struct STableIterP *iterp = (struct STableIterP*)iter;
+	struct STableIter *i = (struct STableIter*)iter;
 
-	if (!iterp || !iterp->tab) {
-		stable_iter_free(iter);
+	if (!i->tab) {
+		stable_iter_free(i);
 		return NULL;
 	}
 
-	// loop over keys and vals
-	while (++iterp->v < iterp->tab->vals + iterp->tab->size &&
-			++iterp->k < iterp->tab->keys + iterp->tab->size) {
-		iterp->key = *(iterp->k);
-		iterp->val = *(iterp->v);
-		return iter;
+	if (++i->position < i->tab->size) {
+		i->key = *(i->tab->keys + i->position);
+		i->val = *(i->tab->vals + i->position);
+		return i;
+	} else {
+		stable_iter_free(i);
+		return NULL;
 	}
+}
 
-	stable_iter_free(iter);
-	return NULL;
+const char *stable_iter_key(const struct STableIter* const iter) {
+	return iter ? iter->key : NULL;
+}
+
+const void *stable_iter_val(const struct STableIter* const iter) {
+	return iter ? iter->val : NULL;
 }
 
 const void *stable_put(const struct STable* const ctab, const char* const key, const void* const val) {
