@@ -1,3 +1,7 @@
+way-displays 1.14.1 2025-06-09
+------------------------------
+#214 fix missing $CALLBACK_MSG
+
 way-displays 1.14.0 2025-04-12
 ------------------------------
 feat: retry on changes cancellation, up to 5 times by @mrsobakin in #200

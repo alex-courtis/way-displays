@@ -37,8 +37,8 @@ const struct Output *output_for_name(const char *name) {
 	const struct Output *output = NULL;
 
 	const struct ITableIter *i = NULL;
-	for (i = itable_iter(outputs); i; i = itable_next(i)) {
-		output = i->val;
+	for (i = itable_iter(outputs); i; i = itable_iter_next(i)) {
+		output = itable_iter_val(i);
 		if (output && output->name && strcmp(output->name, name) == 0) {
 			break;
 		} else {

@@ -23,19 +23,11 @@ struct ITable {
 	size_t size;
 };
 
-struct ITableIterP {
-	/*
-	 * Public, removed const
-	 */
+struct ITableIter {
 	uint64_t key;
 	const void *val;
-
-	/*
-	 * Private
-	 */
 	const struct ITable *tab;
-	const uint64_t *k;
-	const void* const *v;
+	size_t position;
 };
 
 // grow to capacity + grow
@@ -127,50 +119,46 @@ const void *itable_get(const struct ITable* const tab, const uint64_t key) {
 }
 
 const struct ITableIter *itable_iter(const struct ITable* const tab) {
-	if (!tab)
+	if (!tab || tab->size == 0)
 		return NULL;
 
-	// loop over keys and vals
-	uint64_t *k;
-	const void **v;
-	for (k = tab->keys, v = tab->vals;
-			v < tab->vals + tab->size && k < tab->keys + tab->size;
-			k++, v++) {
-		struct ITableIterP *iterp = calloc(1, sizeof(struct ITableIterP));
+	// first key/val
+	struct ITableIter *i = calloc(1, sizeof(struct ITableIter));
+	i->tab = tab;
+	i->key = *(tab->keys);
+	i->val = *(tab->vals);
+	i->position = 0;
 
-		iterp->tab = tab;
-		iterp->key = *k;
-		iterp->val = *v;
-		iterp->k = k;
-		iterp->v = v;
-
-		return (struct ITableIter*)iterp;
-	}
-
-	return NULL;
+	return i;
 }
 
-const struct ITableIter *itable_next(const struct ITableIter* const iter) {
+const struct ITableIter *itable_iter_next(const struct ITableIter* const iter) {
 	if (!iter)
 		return NULL;
 
-	struct ITableIterP *iterp = (struct ITableIterP*)iter;
+	struct ITableIter *i = (struct ITableIter*)iter;
 
-	if (!iterp || !iterp->tab) {
-		itable_iter_free(iter);
+	if (!i->tab) {
+		itable_iter_free(i);
 		return NULL;
 	}
 
-	// loop over keys and vals
-	while (++iterp->v < iterp->tab->vals + iterp->tab->size &&
-			++iterp->k < iterp->tab->keys + iterp->tab->size) {
-		iterp->key = *(iterp->k);
-		iterp->val = *(iterp->v);
-		return iter;
+	if (++i->position < i->tab->size) {
+		i->key = *(i->tab->keys + i->position);
+		i->val = *(i->tab->vals + i->position);
+		return i;
+	} else {
+		itable_iter_free(i);
+		return NULL;
 	}
+}
 
-	itable_iter_free(iter);
-	return NULL;
+uint64_t itable_iter_key(const struct ITableIter* const iter) {
+	return iter ? iter->key : 0;
+}
+
+const void *itable_iter_val(const struct ITableIter* const iter) {
+	return iter ? iter->val : NULL;
 }
 
 const void *itable_put(const struct ITable* const ctab, const uint64_t key, const void* const val) {

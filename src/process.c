@@ -128,9 +128,9 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 		sa.sa_handler = SIG_DFL;
 		sigaction(SIGCHLD, &sa, NULL);
 
-		for (const struct STableIter *i = stable_iter(env); i; i = stable_next(i)) {
-			snprintf(value, sizeof(value), "%s", (char*)i->val);
-			setenv(i->key, value, 1);
+		for (const struct STableIter *i = stable_iter(env); i; i = stable_iter_next(i)) {
+			snprintf(value, sizeof(value), "%s", (char*)stable_iter_val(i));
+			setenv(stable_iter_key(i), value, 1);
 		}
 
 		// execute command in the child process

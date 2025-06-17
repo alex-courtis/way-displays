@@ -84,8 +84,7 @@ cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	--leak-check=full \
 	--show-leak-kinds=all \
 	--errors-for-leak-kinds=all \
-	--gen-suppressions=all \
-	--suppressions=bld/vg.supp
+	--gen-suppressions=all
 %-vg: % ;
 
 test: $(TST_T)
