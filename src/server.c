@@ -149,17 +149,24 @@ send:
 static int loop(void) {
 
 	for (;;) {
+		log_debug("LOOP START");
+
+		log_debug("LOOP pfds_init");
 		pfds_init();
 
-
 		// prepare for reading wayland events
+		log_debug("LOOP _wl_display_prepare_read");
 		while (_wl_display_prepare_read(displ->display, FL) != 0) {
-			_wl_display_dispatch_pending(displ->display, FL);
+			log_debug("LOOP _wl_display_dispatch_pending__prepare_read");
+			_wl_display_dispatch_pending__prepare_read(displ->display, FL);
 		}
+
+		log_debug("LOOP _wl_display_flush");
 		_wl_display_flush(displ->display, FL);
 
 
 		// poll for all events
+		log_debug("LOOP poll");
 		if (poll(pfds, npfds, -1) < 0) {
 			log_fatal_errno("\npoll failed, exiting");
 			wd_exit_message(EXIT_FAILURE);
@@ -168,8 +175,12 @@ static int loop(void) {
 
 
 		// always read and dispatch wayland events; stop the file descriptor from getting stale
+		log_debug("LOOP _wl_display_read_events");
 		_wl_display_read_events(displ->display, FL);
-		_wl_display_dispatch_pending(displ->display, FL);
+
+		log_debug("LOOP _wl_display_dispatch_pending__read_events");
+		_wl_display_dispatch_pending__read_events(displ->display, FL);
+
 		if (!displ->zwlr_output_manager) {
 			log_info("\nDisplay's output manager has departed, exiting");
 			wd_exit(EXIT_SUCCESS);
@@ -182,6 +193,7 @@ static int loop(void) {
 			struct signalfd_siginfo fdsi;
 			if (read(fd_signal, &fdsi, sizeof(fdsi)) == sizeof(fdsi)) {
 				if (fdsi.ssi_signo != SIGPIPE) {
+					log_debug("LOOP clean exit");
 					return fdsi.ssi_signo;
 				}
 			}
@@ -194,6 +206,7 @@ static int loop(void) {
 				if (cfg->updated) {
 					cfg->updated = false;
 				} else {
+					log_debug("LOOP cfg_file_reload");
 					cfg_file_reload();
 				}
 			}
@@ -202,28 +215,35 @@ static int loop(void) {
 
 		// libinput lid event
 		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
+			log_debug("LOOP lid_update");
 			lid_update();
 		}
 
 
 		// ipc client message
 		if (pfd_ipc && (pfd_ipc->revents & pfd_ipc->events)) {
+			log_debug("LOOP receive_ipc_request");
 			receive_ipc_request(fd_socket_server);
 		}
 
 
 		// maybe make some changes
+		log_debug("LOOP layout");
 		layout();
 
 
 		// inform the client
 		if (ipc_operation) {
 			ipc_operation->done = displ->state == IDLE;
+			log_debug("LOOP notify_ipc_operation");
 			notify_ipc_operation();
 		};
 
 
+		log_debug("LOOP pfds_destroy");
 		pfds_destroy();
+
+		log_debug("LOOP END");
 	}
 }
 

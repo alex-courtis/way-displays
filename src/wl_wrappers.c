@@ -20,11 +20,22 @@ int _wl_display_prepare_read(struct wl_display *display, char *file, int line) {
 	return ret;
 }
 
-int _wl_display_dispatch_pending(struct wl_display *display, char *file, int line) {
+int _wl_display_dispatch_pending__read_events(struct wl_display *display, char *file, int line) {
 	static int ret;
 
 	if ((ret = wl_display_dispatch_pending(display)) == -1) {
-		log_fatal_errno("\nwl_display_dispatch_pending failed at %s:%d, exiting", file, line);
+		log_fatal_errno("\nwl_display_dispatch_pending for read_events failed at %s:%d, exiting", file, line);
+		wd_exit_message(EXIT_FAILURE);
+	}
+
+	return ret;
+}
+
+int _wl_display_dispatch_pending__prepare_read(struct wl_display *display, char *file, int line) {
+	static int ret;
+
+	if ((ret = wl_display_dispatch_pending(display)) == -1) {
+		log_fatal_errno("\nwl_display_dispatch_pending for prepare_read failed at %s:%d, exiting", file, line);
 		wd_exit_message(EXIT_FAILURE);
 	}
 

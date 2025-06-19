@@ -352,6 +352,18 @@ bool head_current_not_desired(const void * const data) {
 			 head->desired.adaptive_sync != head->current.adaptive_sync));
 }
 
+size_t head_num_current_not_desired(struct SList * const heads) {
+	size_t n = 0;
+
+	struct SList *i = heads;
+	while ((i = slist_find(i, head_current_not_desired))) {
+		i = i->nex;
+		n++;
+	}
+
+	return n;
+}
+
 bool head_current_mode_not_desired(const void * const data) {
 	const struct Head *head = data;
 

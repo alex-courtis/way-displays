@@ -6,6 +6,7 @@
 #include "convert.h"
 
 #include "cfg.h"
+#include "displ.h"
 #include "ipc.h"
 #include "log.h"
 
@@ -86,6 +87,15 @@ static struct NameVal log_thresholds[] = {
 	{ .val = ERROR,   .name = "ERROR",   },
 	{ .val = FATAL,   .name = "FATAL",   },
 	{ .val = 0,       .name = NULL,      },
+};
+
+static struct NameVal displ_states[] = {
+	{ .val = IDLE,        .name = "IDLE",        },
+	{ .val = SUCCEEDED,   .name = "SUCCEEDED",   },
+	{ .val = OUTSTANDING, .name = "OUTSTANDING", },
+	{ .val = CANCELLED,   .name = "CANCELLED",   },
+	{ .val = FAILED,      .name = "FAILED",      },
+	{ .val = 0,           .name = NULL,          },
 };
 
 static unsigned int val(struct NameVal *name_vals, const char *name) {
@@ -202,3 +212,10 @@ const char *log_threshold_name(enum LogThreshold log_threshold) {
 	return friendly(log_thresholds, log_threshold);
 }
 
+enum DisplState displ_state_val(const char *name) {
+	return val(displ_states, name);
+}
+
+const char *displ_state_name(enum DisplState displ_state) {
+	return friendly(displ_states, displ_state);
+}
