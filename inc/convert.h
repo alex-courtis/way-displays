@@ -4,6 +4,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "displ.h"
 #include "ipc.h"
 #include "log.h"
 
@@ -28,6 +29,9 @@ const char *transform_name(enum wl_output_transform transform);
 
 enum LogThreshold log_threshold_val(const char *name);
 const char *log_threshold_name(enum LogThreshold log_threshold);
+
+enum DisplState displ_state_val(const char *name);
+const char *displ_state_name(enum DisplState displ_state);
 
 #endif // CONVERT_H
 

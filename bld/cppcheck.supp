@@ -1,5 +1,7 @@
 unusedFunction:pro/*h
 
+unusedFunction:src/convert.c
+
 unusedFunction:lib/col/*c
 staticFunction:lib/col/*c
 
