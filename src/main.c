@@ -15,6 +15,10 @@ main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
+	if (getenv("HYPRLAND_INSTANCE_SIGNATURE")) {
+		log_warn("Hpyrland already provides all the features of `way-displays`. It may function, however it is explicitly not supported and you will likely experience problems. Please do not raise issues.");
+	}
+
 	// consumer frees
 	struct IpcRequest *ipc_request = NULL;
 	char *cfg_path = NULL;

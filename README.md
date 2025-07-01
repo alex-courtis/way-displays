@@ -24,9 +24,9 @@ See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/C
 
 A wlroots based compositor that supports the WLR Output Management protocol.
 
-way-displays is blessed for the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river). It may work on others.
+way-displays is blessed for the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river). It may work on others; please tell me of your experiences!
 
-[Hpyrland](https://hyprland.org/) provides all way-displays functionality and you may experience issues.
+[Hpyrland](https://hyprland.org/) already provides all the features of `way-displays`. It may function, however it is explicitly not supported and you will likely experience problems. Please do not raise issues.
 
 way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 
