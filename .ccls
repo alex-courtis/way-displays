@@ -4,6 +4,8 @@ clang
 -Ipro
 -Itst
 -Ilib/col/inc
+-Ilib/imgui
+-Ilib/imgui/backends
 
 -D_GNU_SOURCE
 -DVERSION="DUMMY"

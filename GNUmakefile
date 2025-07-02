@@ -3,12 +3,13 @@ include config.mk
 INC_H = $(wildcard inc/*.h) $(wildcard lib/col/inc/*.h)
 
 SRC_C = $(wildcard src/*.c) $(wildcard lib/col/src/*.c)
-SRC_CXX = $(wildcard src/*.cpp)
+SRC_CXX = $(wildcard src/*.cpp) $(wildcard lib/imgui/*.cpp) $(wildcard lib/imgui/backends/*.cpp)
 SRC_O = $(SRC_C:.c=.o) $(SRC_CXX:.cpp=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
-EXAMPLE_O = $(EXAMPLE_C:.c=.o)
-EXAMPLE_E = $(EXAMPLE_C:.c=)
+EXAMPLE_CXX = $(wildcard examples/*.cpp)
+EXAMPLE_O = $(EXAMPLE_C:.c=.o) $(EXAMPLE_CXX:.cpp=.o)
+EXAMPLE_E = $(EXAMPLE_C:.c=) $(EXAMPLE_CXX:.cpp=)
 
 PRO_X = $(wildcard pro/*.xml)
 PRO_H = $(PRO_X:.xml=.h)
