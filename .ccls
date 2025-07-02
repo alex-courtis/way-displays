@@ -23,3 +23,5 @@ clang
 
 %c -std=gnu17
 %cpp -std=gnu++17
+
+# vim:ft=sh
