@@ -101,7 +101,7 @@ examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 docker-build:
-	docker build --no-cache --tag "way-displays:latest" .
+	docker buildx build --no-cache --tag "way-displays:latest" .
 
 docker-rm:
 	docker rm -f way-displays || true

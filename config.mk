@@ -35,7 +35,7 @@ ifeq (,$(filter-out DragonFly FreeBSD NetBSD OpenBSD,$(shell uname -s)))
 	PKGS += epoll-shim libinotify
 endif
 
-PKGS += wayland-client yaml-cpp libinput libudev sdl3 gl
+PKGS += wayland-client yaml-cpp libinput libudev sdl3
 PKG_CONFIG ?= pkg-config
 CFLAGS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --cflags $(p)))
 CXXFLAGS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --cflags $(p)))
