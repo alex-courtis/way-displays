@@ -12,7 +12,8 @@ LDLIBS := $(filter-out -linput,$(LDLIBS))
 OBJS =  tst/util.o \
 		$(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
 		$(filter-out src/main.o src/lid.o,$(SRC_O)) \
-		$(PRO_O)
+		$(PRO_O) \
+		$(LIB_O)
 
 # 
 COMPFLAGS += -Wno-int-to-pointer-cast
