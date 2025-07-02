@@ -70,7 +70,7 @@ man: doc/way-displays.1.pandoc
 
 iwyu: override CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: override CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
-iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
+iwyu: clean $(SRC_O) $(TST_O)
 
 IWYU = include-what-you-use \
 	   -Xiwyu --no_fwd_decls \
