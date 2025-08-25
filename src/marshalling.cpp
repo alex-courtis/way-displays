@@ -495,10 +495,10 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 	}
 
 	if (!cfg_validated) {
-		cfg_validated = (struct CfgValidated*)cfg_init();
+		cfg_validated = reinterpret_cast<struct CfgValidated*>(cfg_init());
 	}
 
-	struct Cfg *cfg = (struct Cfg*)cfg_validated;
+	struct Cfg *cfg = reinterpret_cast<struct Cfg*>(cfg_validated);
 
 	if (node["LOG_THRESHOLD"]) {
 		const std::string &threshold_str = node["LOG_THRESHOLD"].as<std::string>();
@@ -734,11 +734,11 @@ struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Nod
 	if (node_response["STATE"]) {
 		response->lid << node_response["STATE"]["LID"];
 
-		struct HeadList **hlp = (struct HeadList**)&response->heads;
+		struct HeadList **hlp = reinterpret_cast<struct HeadList**>(&response->heads);
 		hlp << node_response["STATE"]["HEADS"];
 	}
 
-	struct LogCapLineList **lclp = (struct LogCapLineList**)&response->log_cap_lines;
+	struct LogCapLineList **lclp = reinterpret_cast<struct LogCapLineList**>(&response->log_cap_lines);
 	lclp << node_response["MESSAGES"];
 
 	return response;
@@ -981,7 +981,7 @@ struct HeadList**& operator << (struct HeadList**& heads, const YAML::Node& node
 
 	for (const auto &node_head : node) {
 		struct Head *head = NULL;
-		slist_append((struct SList**)heads, head << node_head);
+		slist_append(reinterpret_cast<struct SList**>(heads), head << node_head);
 	}
 
 	return heads;
@@ -1002,7 +1002,7 @@ struct LogCapLineList**& operator << (struct LogCapLineList**& log_cap_lines, co
 		// iterate the one line in the map
 		for (YAML::const_iterator iter_msg = node_msg.begin(); iter_msg != node_msg.end(); ++iter_msg) {
 			struct LogCapLine *log_cap_line = (struct LogCapLine*)calloc(1, sizeof(struct LogCapLine));
-			slist_append((struct SList**)log_cap_lines, log_cap_line);
+			slist_append(reinterpret_cast<struct SList**>(log_cap_lines), log_cap_line);
 
 			log_cap_line->threshold = log_threshold_val(iter_msg->first.as<std::string>().c_str());
 			log_cap_line->line = strdup(iter_msg->second.as<std::string>().c_str());
@@ -1299,7 +1299,7 @@ bool unmarshal_cfg_from_file(struct Cfg *cfg) {
 	}
 
 	try {
-		struct CfgValidated *cfg_validated = (struct CfgValidated*)cfg;
+		struct CfgValidated *cfg_validated = reinterpret_cast<struct CfgValidated*>(cfg);
 		cfg_validated << YAML::LoadFile(cfg->file_path);;
 	} catch (const std::exception &e) {
 		log_error("\nparsing file %s %s", cfg->file_path, e.what());

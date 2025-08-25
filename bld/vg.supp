@@ -1,3 +1,5 @@
+# suppressions for valgrinding way-displays itself
+
 {
    wl_display_read_events - always
    Memcheck:Leak

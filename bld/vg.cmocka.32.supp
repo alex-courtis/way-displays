@@ -1,0 +1,58 @@
+# cmocka framework 32-bit specific suppressions
+
+{
+   - list_free
+   Memcheck:Cond
+   fun:list_free
+   fun:teardown_testing.isra.0
+   ...
+}
+
+{
+   - list_find
+   Memcheck:Cond
+   fun:list_find
+   fun:add_symbol_value
+   ...
+}
+
+{
+   - list_remove
+   Memcheck:Value4
+   fun:list_remove
+   fun:list_remove_free
+   ...
+}
+
+{
+   - list_add
+   Memcheck:Value4
+   fun:list_add
+   fun:list_add_value
+   ...
+}
+
+{
+   - fail_if_leftover_values
+   Memcheck:Cond
+   fun:*_list
+   fun:fail_if_leftover_values.isra.0
+   ...
+}
+
+{
+   - fail_if_leftover_values
+   Memcheck:Value4
+   fun:*_list
+   fun:fail_if_leftover_values.isra.0
+   ...
+}
+
+{
+   - fail_if_leftover_values
+   Memcheck:Cond
+   fun:*_values
+   fun:fail_if_leftover_values.isra.0
+   ...
+}
+
