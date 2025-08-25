@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2025/05/02
+% 2025/08/23
 
 # NAME
 
@@ -43,11 +43,11 @@ The file may be specified via the `--config` option.
 
 cfg.yaml will be monitored for changes, which will be immediately applied.
 
-See the default /etc/way-displays/cfg.yaml and https://github.com/alex-courtis/way-displays/blob/master/doc/CONFIGURATION.md for details on individual configurable settings.
+See the default /etc/way-displays/cfg.yaml and https://github.com/alex-courtis/way-displays/wiki/Configuration for details on individual configurable settings.
 
 Server is run when no commands are specified.
 
-Server responds to IPC requests to fetch and mutate state: https://github.com/alex-courtis/way-displays/blob/master/doc/IPC.md
+Server responds to IPC requests to fetch and mutate state: https://github.com/alex-courtis/way-displays/wiki/IPC
 
 ## Client
 
