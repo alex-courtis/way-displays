@@ -41,5 +41,9 @@ CFLAGS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --cflags $(p)))
 CXXFLAGS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --libs $(p)))
 
+ifneq (,$(findstring -m32,$(MFLAGS)))
+	VG_SUPP = --suppressions=bld/vg.cmocka.32.supp
+endif
+
 CC = gcc
 CXX = g++

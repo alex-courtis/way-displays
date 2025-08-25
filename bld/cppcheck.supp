@@ -1,4 +1,5 @@
-unusedFunction:pro/*h
+# do not check generated code
+*:pro/*
 
 unusedFunction:src/convert.c
 
