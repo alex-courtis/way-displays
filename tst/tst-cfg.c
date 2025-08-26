@@ -21,6 +21,16 @@ struct State {
 	struct Cfg *expected;
 };
 
+struct Disabled *cfg_disabled_conditionally(char *name_desc, char *plugged) {
+	struct Disabled *disabled1 = calloc(1, sizeof(struct Disabled));
+	disabled1->name_desc = strdup(name_desc);
+	struct Condition *cond1 = calloc(1, sizeof(struct Condition));
+	slist_append(&cond1->plugged, strdup(plugged));
+	slist_append(&disabled1->conditions, cond1);
+
+	return disabled1;
+}
+
 int before_all(void **state) {
 	return 0;
 }
@@ -199,23 +209,21 @@ void merge_set__adaptive_sync_off(void **state) {
 void merge_set__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
-	disabled->name_desc = strdup("cond");
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("display"));
-	slist_append(&disabled->conditions, cond);
-
 	slist_append(&s->to->disabled, cfg_disabled_always("to"));
 	slist_append(&s->to->disabled, cfg_disabled_always("both"));
+	slist_append(&s->to->disabled, cfg_disabled_always("cond2"));
+	slist_append(&s->to->disabled, cfg_disabled_conditionally("cond1", "disp1"));
 
 	slist_append(&s->from->disabled, cfg_disabled_always("from"));
 	slist_append(&s->from->disabled, cfg_disabled_always("both"));
-	slist_append(&s->from->disabled, cfg_disabled_clone(disabled));
+	slist_append(&s->from->disabled, cfg_disabled_always("cond1"));
+	slist_append(&s->from->disabled, cfg_disabled_conditionally("cond2", "disp2"));
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("both"));
 	slist_append(&s->expected->disabled, cfg_disabled_always("from"));
-	slist_append(&s->expected->disabled, disabled);
+	slist_append(&s->expected->disabled, cfg_disabled_always("both"));
+	slist_append(&s->expected->disabled, cfg_disabled_conditionally("cond1", "disp1"));
+	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
+	slist_append(&s->expected->disabled, cfg_disabled_conditionally("cond2", "disp2"));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -318,13 +326,18 @@ void merge_del__adaptive_sync_off(void **state) {
 void merge_del__disabled(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->disabled, cfg_disabled_always("1"));
-	slist_append(&s->to->disabled, cfg_disabled_always("2"));
+	slist_append(&s->to->disabled, cfg_disabled_always("to"));
+	slist_append(&s->to->disabled, cfg_disabled_always("both"));
+	slist_append(&s->to->disabled, cfg_disabled_conditionally("cond1", "disp1"));
+	slist_append(&s->to->disabled, cfg_disabled_conditionally("cond2", "disp2"));
 
-	slist_append(&s->from->disabled, cfg_disabled_always("2"));
-	slist_append(&s->from->disabled, cfg_disabled_always("3"));
+	slist_append(&s->from->disabled, cfg_disabled_always("from"));
+	slist_append(&s->from->disabled, cfg_disabled_always("both"));
+	slist_append(&s->from->disabled, cfg_disabled_always("cond1"));
+	slist_append(&s->from->disabled, cfg_disabled_conditionally("cond2", "disp2"));
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("1"));
+	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
+	slist_append(&s->expected->disabled, cfg_disabled_conditionally("cond1", "disp1"));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 

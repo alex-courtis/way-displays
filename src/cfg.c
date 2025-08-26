@@ -20,6 +20,7 @@
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
+#include "stable.h"
 #include "log.h"
 #include "marshalling.h"
 
@@ -76,7 +77,7 @@ static void* cfg_user_scale_clone(const void* const val) {
 	return clone;
 }
 
-void* cfg_disabled_clone(const void *val) {
+static void* cfg_disabled_clone(const void *val) {
 	struct Disabled *original = (struct Disabled*)val;
 	struct Disabled *clone = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
@@ -734,13 +735,6 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
-	// DISABLED only when no condition exists
-	for (i = from->disabled; i; i = i->nex) {
-		if (!slist_find_equal(merged->disabled, cfg_disabled_name_desc_with_condition_equal, i->val)) {
-			slist_append(&merged->disabled, cfg_disabled_clone(i->val));
-		}
-	}
-
 	// CALLBACK_CMD
 	if (from->callback_cmd) {
 		if (merged->callback_cmd) {
@@ -748,6 +742,46 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 		merged->callback_cmd = strdup(from->callback_cmd);
 	}
+
+	// DISABLED: manually build
+	slist_free_vals(&merged->disabled, cfg_disabled_free);
+
+	const struct STable *disabled = stable_init(5, 5, false);
+
+	// always disabled first
+	for (i = from->disabled; i; i = i->nex) {
+		struct Disabled *d = i->val;
+		if (!d->conditions) {
+			stable_put(disabled, d->name_desc, d);
+		}
+	}
+	for (i = to->disabled; i; i = i->nex) {
+		struct Disabled *d = i->val;
+		if (!d->conditions) {
+			stable_put(disabled, d->name_desc, d);
+		}
+	}
+
+	// overwrite with conditionals
+	for (i = from->disabled; i; i = i->nex) {
+		struct Disabled *d = i->val;
+		if (d->conditions) {
+			stable_put(disabled, d->name_desc, d);
+		}
+	}
+	for (i = to->disabled; i; i = i->nex) {
+		struct Disabled *d = i->val;
+		if (d->conditions) {
+			stable_put(disabled, d->name_desc, d);
+		}
+	}
+
+	// write merged
+	for (const struct STableIter *i = stable_iter(disabled); i; i = stable_iter_next(i)) {
+		slist_append(&merged->disabled, cfg_disabled_clone(stable_iter_val(i)));
+	}
+
+	stable_free(disabled);
 
 	return merged;
 }
