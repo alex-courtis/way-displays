@@ -222,6 +222,25 @@ static bool cfg_disabled_equal(const void *a, const void *b) {
 	return slist_equal(lhs->conditions, rhs->conditions, condition_equal);
 }
 
+static bool cfg_disabled_name_desc_with_condition_equal(const void *a, const void *b) {
+	if (!a || !b) {
+		return false;
+	}
+
+	struct Disabled *lhs = (struct Disabled*)a;
+	struct Disabled *rhs = (struct Disabled*)b;
+
+	if (!lhs->name_desc || !rhs->name_desc) {
+		return false;
+	}
+
+	if (strcmp(lhs->name_desc, rhs->name_desc) != 0) {
+		return false;
+	}
+
+	return lhs->conditions;
+}
+
 static bool invalid_user_scale(const void *a, const void *b) {
 	if (!a) {
 		return true;
@@ -715,9 +734,9 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
-	// DISABLED
+	// DISABLED only when no condition exists
 	for (i = from->disabled; i; i = i->nex) {
-		if (!slist_find_equal(merged->disabled, cfg_disabled_equal, i->val)) {
+		if (!slist_find_equal(merged->disabled, cfg_disabled_name_desc_with_condition_equal, i->val)) {
 			slist_append(&merged->disabled, cfg_disabled_clone(i->val));
 		}
 	}
@@ -762,7 +781,7 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, i->val, NULL);
 	}
 
-	// DISABLED
+	// DISABLED only when no condition exists
 	for (i = from->disabled; i; i = i->nex) {
 		slist_remove_all_free(&merged->disabled, cfg_disabled_equal, i->val, cfg_disabled_free);
 	}
@@ -783,6 +802,8 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 
 	struct Cfg *merged = clone_cfg(to);
 
+	struct SList *i;
+
 	// SCALE
 	if (from->scaling == ON) {
 		merged->scaling = on_off_invert(merged->scaling);
@@ -792,6 +813,16 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 	if (from->auto_scale == ON) {
 		merged->auto_scale = on_off_invert(merged->auto_scale);
 	}
+
+	// DISABLED only when no condition exists
+	struct SList *disabled = NULL;
+	for (i = from->disabled; i; i = i->nex) {
+		if (!slist_find_equal(merged->disabled, cfg_disabled_name_desc_with_condition_equal, i->val)) {
+			slist_append(&disabled, i->val);
+		}
+	}
+	slist_xor_free(&merged->disabled, disabled, cfg_disabled_equal, cfg_disabled_free, cfg_disabled_clone);
+	slist_free(&disabled);
 
 	// VRR_OFF
 	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, NULL, fn_clone_strdup);
@@ -1034,7 +1065,7 @@ void cfg_disabled_free(const void *val) {
 	struct Disabled *disabled = (struct Disabled*)val;
 
 	if (!disabled)
-		 return;
+		return;
 
 	free(disabled->name_desc);
 
