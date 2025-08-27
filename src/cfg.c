@@ -242,6 +242,30 @@ static bool cfg_disabled_name_desc_with_condition_equal(const void *a, const voi
 	return lhs->conditions;
 }
 
+// remove and return any duplicate name_desc disabled, earliest take precedence
+static struct SList *remove_duplicate_disabled_name_desc(struct SList **disabled) {
+
+	struct SList *duplicates = NULL;
+	const struct STable *uniques_by_name_desc = stable_init(5, 5, false);
+
+	// map the uniques in order
+	for (struct SList *i = *disabled; i; i = i->nex) {
+		struct Disabled *d = i->val;
+		if (stable_get(uniques_by_name_desc, d->name_desc)) {
+			slist_append(&duplicates, i->val);
+		} else {
+			stable_put(uniques_by_name_desc, d->name_desc, d);
+		}
+	}
+
+	// set unique disabled
+	slist_free(disabled);
+	*disabled = stable_vals_slist(uniques_by_name_desc);
+	stable_free(uniques_by_name_desc);
+
+	return duplicates;
+}
+
 static bool invalid_user_scale(const void *a, const void *b) {
 	if (!a) {
 		return true;
@@ -599,6 +623,13 @@ void validate_fix(struct Cfg *cfg) {
 	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, cfg_user_scale_free);
 
 	slist_remove_all_free(&cfg->user_modes, invalid_user_mode, NULL, cfg_user_mode_free);
+
+	struct SList *disabled_duplicates = remove_duplicate_disabled_name_desc(&cfg->disabled);
+	for (struct SList *i = disabled_duplicates; i; i = i->nex) {
+		struct Disabled *d = i->val;
+		log_warn("\nIgnoring duplicate DISABLED %s", d->name_desc);
+	}
+	slist_free_vals(&disabled_duplicates, cfg_disabled_free);
 }
 
 void validate_warn(struct Cfg *cfg) {
@@ -743,45 +774,12 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		merged->callback_cmd = strdup(from->callback_cmd);
 	}
 
-	// DISABLED: manually build
-	slist_free_vals(&merged->disabled, cfg_disabled_free);
-
-	const struct STable *disabled = stable_init(5, 5, false);
-
-	// always disabled first
+	// DISABLED, silently removing duplicates
 	for (i = from->disabled; i; i = i->nex) {
-		struct Disabled *d = i->val;
-		if (!d->conditions) {
-			stable_put(disabled, d->name_desc, d);
-		}
+		slist_append(&merged->disabled, cfg_disabled_clone(i->val));
 	}
-	for (i = to->disabled; i; i = i->nex) {
-		struct Disabled *d = i->val;
-		if (!d->conditions) {
-			stable_put(disabled, d->name_desc, d);
-		}
-	}
-
-	// overwrite with conditionals
-	for (i = from->disabled; i; i = i->nex) {
-		struct Disabled *d = i->val;
-		if (d->conditions) {
-			stable_put(disabled, d->name_desc, d);
-		}
-	}
-	for (i = to->disabled; i; i = i->nex) {
-		struct Disabled *d = i->val;
-		if (d->conditions) {
-			stable_put(disabled, d->name_desc, d);
-		}
-	}
-
-	// write merged
-	for (const struct STableIter *i = stable_iter(disabled); i; i = stable_iter_next(i)) {
-		slist_append(&merged->disabled, cfg_disabled_clone(stable_iter_val(i)));
-	}
-
-	stable_free(disabled);
+	struct SList *duplicates = remove_duplicate_disabled_name_desc(&merged->disabled);
+	slist_free_vals(&duplicates, cfg_disabled_free);
 
 	return merged;
 }
@@ -815,7 +813,7 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, i->val, NULL);
 	}
 
-	// DISABLED only when no condition exists
+	// DISABLED
 	for (i = from->disabled; i; i = i->nex) {
 		slist_remove_all_free(&merged->disabled, cfg_disabled_equal, i->val, cfg_disabled_free);
 	}
@@ -848,7 +846,7 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 		merged->auto_scale = on_off_invert(merged->auto_scale);
 	}
 
-	// DISABLED only when no condition exists
+	// DISABLED, conditionals always excluded
 	struct SList *disabled = NULL;
 	for (i = from->disabled; i; i = i->nex) {
 		if (!slist_find_equal(merged->disabled, cfg_disabled_name_desc_with_condition_equal, i->val)) {

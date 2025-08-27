@@ -211,19 +211,20 @@ void merge_set__disabled(void **state) {
 
 	slist_append(&s->to->disabled, cfg_disabled_always("to"));
 	slist_append(&s->to->disabled, cfg_disabled_always("both"));
-	slist_append(&s->to->disabled, cfg_disabled_always("cond2"));
-	slist_append(&s->to->disabled, cfg_disabled_conditionally("cond1", "disp1"));
+	slist_append(&s->to->disabled, cfg_disabled_conditionally("to_cond", "keep"));
+	slist_append(&s->to->disabled, cfg_disabled_conditionally("both_cond", "keep"));
 
 	slist_append(&s->from->disabled, cfg_disabled_always("from"));
 	slist_append(&s->from->disabled, cfg_disabled_always("both"));
-	slist_append(&s->from->disabled, cfg_disabled_always("cond1"));
-	slist_append(&s->from->disabled, cfg_disabled_conditionally("cond2", "disp2"));
+	slist_append(&s->from->disabled, cfg_disabled_conditionally("from_cond", "keep"));
+	slist_append(&s->from->disabled, cfg_disabled_conditionally("both_cond", "discard")); // merge_set will free this
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("from"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("both"));
-	slist_append(&s->expected->disabled, cfg_disabled_conditionally("cond1", "disp1"));
 	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
-	slist_append(&s->expected->disabled, cfg_disabled_conditionally("cond2", "disp2"));
+	slist_append(&s->expected->disabled, cfg_disabled_always("both"));
+	slist_append(&s->expected->disabled, cfg_disabled_conditionally("to_cond", "keep"));
+	slist_append(&s->expected->disabled, cfg_disabled_conditionally("both_cond", "keep"));
+	slist_append(&s->expected->disabled, cfg_disabled_always("from"));
+	slist_append(&s->expected->disabled, cfg_disabled_conditionally("from_cond", "keep"));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -421,6 +422,34 @@ void merge_toggle__adaptive_sync_off(void **state) {
 	cfg_free(merged);
 }
 
+void merge_toggle__disabled(void **state) {
+	struct State *s = *state;
+
+	s->from->auto_scale = false;
+	s->from->scaling = false;
+
+	slist_append(&s->to->disabled, cfg_disabled_always("to"));
+	slist_append(&s->to->disabled, cfg_disabled_always("both"));
+	slist_append(&s->to->disabled, cfg_disabled_conditionally("cond_no_clobber", ""));
+	slist_append(&s->to->disabled, cfg_disabled_conditionally("cond_no_toggle", ""));
+
+	slist_append(&s->from->disabled, cfg_disabled_always("both"));
+	slist_append(&s->from->disabled, cfg_disabled_always("from"));
+	slist_append(&s->from->disabled, cfg_disabled_always("cond_no_clobber"));
+	slist_append(&s->from->disabled, cfg_disabled_conditionally("cond_no_toggle", ""));
+
+	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
+	slist_append(&s->expected->disabled, cfg_disabled_conditionally("cond_no_clobber", ""));
+	slist_append(&s->expected->disabled, cfg_disabled_conditionally("cond_no_toggle", ""));
+	slist_append(&s->expected->disabled, cfg_disabled_always("from"));
+
+	struct Cfg *merged = merge_toggle(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+}
+
 void validate_fix__col(void **state) {
 	struct State *s = *state;
 
@@ -503,6 +532,23 @@ void validate_fix__mode(void **state) {
 	free(expected_log);
 }
 
+void validate_fix__disabled(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->from->disabled, cfg_disabled_always("1"));
+	slist_append(&s->from->disabled, cfg_disabled_always("2"));
+	slist_append(&s->from->disabled, cfg_disabled_always("1"));
+
+	slist_append(&s->expected->disabled, cfg_disabled_always("1"));
+	slist_append(&s->expected->disabled, cfg_disabled_always("2"));
+
+	validate_fix(s->from);
+
+	assert_log(WARNING, "\nIgnoring duplicate DISABLED 1\n");
+
+	assert_cfg_equal(s->from, s->expected);
+}
+
 void validate_warn__(void **state) {
 	struct State *s = *state;
 
@@ -558,11 +604,13 @@ int main(void) {
 		TEST(merge_toggle__scaling),
 		TEST(merge_toggle__auto_scale),
 		TEST(merge_toggle__adaptive_sync_off),
+		TEST(merge_toggle__disabled),
 
 		TEST(validate_fix__col),
 		TEST(validate_fix__row),
 		TEST(validate_fix__scale),
 		TEST(validate_fix__mode),
+		TEST(validate_fix__disabled),
 
 		TEST(validate_warn__),
 	};
