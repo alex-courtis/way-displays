@@ -270,12 +270,16 @@ static bool invalid_user_mode(const void *a, const void *b) {
 	return false;
 }
 
-static void warn_short_name_desc(const char *name_desc, const char *element) {
+static void warn_ambiguous_name_desc(const char *name_desc, const char *element) {
 	if (!name_desc)
 		return;
 
 	if (strlen(name_desc) < 4) {
 		log_warn("\n%s '%s' is less than 4 characters, which may result in some unwanted matches.", element, name_desc);
+	}
+
+	if (strcmp(name_desc, "DP-1") == 0) {
+		log_warn("\n%s '%s' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.", element, name_desc);
 	}
 }
 
@@ -581,50 +585,55 @@ void validate_fix(struct Cfg *cfg) {
 	slist_remove_all_free(&cfg->user_modes, invalid_user_mode, NULL, cfg_user_mode_free);
 }
 
+static void warn_ambiguous_name_desc_list(struct SList *name_desc, const char * const element) {
+	for (struct SList *i = name_desc; i; i = i->nex) {
+		warn_ambiguous_name_desc((const char*)i->val, element);
+	}
+}
+
 void validate_warn(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
 	struct SList *i = NULL;
+	struct SList *j = NULL;
 
 	for (i = cfg->user_scales; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		struct UserScale *user_scale = (struct UserScale*)i->val;
-		warn_short_name_desc(user_scale->name_desc, "SCALE");
+		warn_ambiguous_name_desc(user_scale->name_desc, "SCALE");
 	}
 	for (i = cfg->user_modes; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		struct UserMode *user_mode = (struct UserMode*)i->val;
-		warn_short_name_desc(user_mode->name_desc, "MODE");
+		warn_ambiguous_name_desc(user_mode->name_desc, "MODE");
 	}
 	for (i = cfg->user_transforms; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		struct UserTransform *user_transform = (struct UserTransform*)i->val;
-		warn_short_name_desc(user_transform->name_desc, "TRANSFORM");
+		warn_ambiguous_name_desc(user_transform->name_desc, "TRANSFORM");
 	}
-	for (i = cfg->order_name_desc; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		warn_short_name_desc((const char*)i->val, "ORDER");
-	}
-	for (i = cfg->adaptive_sync_off_name_desc; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		warn_short_name_desc((const char*)i->val, "VRR_OFF");
-	}
-	for (i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		warn_short_name_desc((const char*)i->val, "MAX_PREFERRED_REFRESH");
-	}
+
+	warn_ambiguous_name_desc_list(cfg->order_name_desc, "ORDER");
+	warn_ambiguous_name_desc_list(cfg->adaptive_sync_off_name_desc, "VRR_OFF");
+	warn_ambiguous_name_desc_list(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
+
 	for (i = cfg->disabled; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		struct Disabled *disabled = (struct Disabled*)i->val;
-		warn_short_name_desc((const char*)disabled->name_desc, "DISABLED");
+		warn_ambiguous_name_desc((const char*)disabled->name_desc, "DISABLED");
+
+		for (j = disabled->conditions; j; j = j->nex) {
+			if (!j->val)
+				continue;
+			struct Condition *condition = (struct Condition*)j->val;
+			warn_ambiguous_name_desc_list(condition->plugged, "PLUGGED");
+			warn_ambiguous_name_desc_list(condition->unplugged, "UNPLUGGED");
+		}
 	}
 }
 
@@ -1034,7 +1043,7 @@ void cfg_disabled_free(const void *val) {
 	struct Disabled *disabled = (struct Disabled*)val;
 
 	if (!disabled)
-		 return;
+		return;
 
 	free(disabled->name_desc);
 

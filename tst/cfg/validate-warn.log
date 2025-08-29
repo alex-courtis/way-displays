@@ -1,15 +1,37 @@
 
 SCALE 'sss' is less than 4 characters, which may result in some unwanted matches.
 
+SCALE 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
+
 MODE 'mmm' is less than 4 characters, which may result in some unwanted matches.
+
+MODE 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
 
 TRANSFORM 'ttt' is less than 4 characters, which may result in some unwanted matches.
 
+TRANSFORM 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
+
 ORDER 'ooo' is less than 4 characters, which may result in some unwanted matches.
+
+ORDER 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
 
 VRR_OFF 'vvv' is less than 4 characters, which may result in some unwanted matches.
 
+VRR_OFF 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
+
 MAX_PREFERRED_REFRESH 'ppp' is less than 4 characters, which may result in some unwanted matches.
 
+MAX_PREFERRED_REFRESH 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
+
 DISABLED 'ddd' is less than 4 characters, which may result in some unwanted matches.
+
+DISABLED 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
+
+PLUGGED 'ppp' is less than 4 characters, which may result in some unwanted matches.
+
+PLUGGED 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
+
+UNPLUGGED 'uuu' is less than 4 characters, which may result in some unwanted matches.
+
+UNPLUGGED 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
 
