@@ -166,11 +166,6 @@ void cfg_user_transform_free(const void *val);
 void cfg_disabled_free(const void *val);
 
 //
-// cloning functions
-//
-void* cfg_disabled_clone(const void *data);
-
-//
 // visible for testing
 //
 struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
