@@ -13,7 +13,7 @@ $defs:
     type: string
     description: |-
       Fuzzy match for a display. In order of precedence:
-      - Exact match of name or description e.g. 'DP-1'
+      - Exact match of name or description e.g. 'HDMI-1'
       - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 
       - Case insensitive mach of name or description e.g. 'ROG PG27AQ'
 

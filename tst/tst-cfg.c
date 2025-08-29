@@ -554,24 +554,42 @@ void validate_warn__(void **state) {
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("sss", 1));
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ssssssss", 2));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("DP-1", 3));
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmm", false, 1, 1, 1, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("DP-1", false, 1, 1, 1, false));
 
 	slist_append(&s->expected->user_transforms, cfg_user_transform_init("ttt", WL_OUTPUT_TRANSFORM_180));
 	slist_append(&s->expected->user_transforms, cfg_user_transform_init("tttttttttt", WL_OUTPUT_TRANSFORM_270));
+	slist_append(&s->expected->user_transforms, cfg_user_transform_init("DP-1", WL_OUTPUT_TRANSFORM_270));
 
 	slist_append(&s->expected->order_name_desc, strdup("ooo"));
 	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
+	slist_append(&s->expected->order_name_desc, strdup("DP-1"));
 
 	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvv"));
 	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvvvvvvvvv"));
+	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("DP-1"));
 
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
+	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("DP-1"));
 
 	slist_append(&s->expected->disabled, cfg_disabled_always("ddd"));
 	slist_append(&s->expected->disabled, cfg_disabled_always("dddddddddd"));
+	slist_append(&s->expected->disabled, cfg_disabled_always("DP-1"));
+
+	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	disabled->name_desc = strdup("cond");
+	struct Condition *cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->plugged, strdup("ppp"));
+	slist_append(&cond->plugged, strdup("DP-1"));
+	slist_append(&cond->unplugged, strdup("uuu"));
+	slist_append(&cond->unplugged, strdup("DP-1"));
+	slist_append(&disabled->conditions, cond);
+
+	slist_append(&s->expected->disabled, disabled);
 
 	validate_warn(s->expected);
 

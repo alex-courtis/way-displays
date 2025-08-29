@@ -28,6 +28,8 @@ ALIGN: TOP
 ## Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. '!^DP-1'. Regex strings must be single quoted.
 ## 
 ## Using a regex is preferred, however fuzzy case insensitive string matches of at least 3 characters may be used.
+##
+## 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
 
 
 ## The default ORDER is simply the order in which the displays are discovered. This is nondeterministic.
@@ -110,8 +112,8 @@ LOG_THRESHOLD: INFO
 ## only if both DP-1 and DP-2 are plugged.
 # DISABLED:
 #   - 'HDMI-1'
-#   - NAME_DESC: "eDP-1"
+#   - NAME_DESC: 'eDP-1'
 #     IF:
 #       - PLUGGED:
-#           - "DP-1"
-#           - "DP-2"
+#           - '!^DP-1$'
+#           - '!^DP-2$'
