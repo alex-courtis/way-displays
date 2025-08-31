@@ -1,8 +1,7 @@
 # yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
 
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.0.0.yaml
-type: object
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.1.0.yaml
 
 title: way-displays types
 description: |-
@@ -85,7 +84,7 @@ $defs:
         description: |-
           Pixels high.
       HZ:
-        type: integer
+        type: number
         description: |-
           Refresh rate.
       MAX:
@@ -97,7 +96,7 @@ $defs:
   scale:
     properties:
       NAME_DESC:
-        $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+        $ref: 'types-1.1.0.yaml#/$defs/fuzzy_display_match'
       SCALE:
         type: number
         description: |-
@@ -107,7 +106,7 @@ $defs:
   transform:
     properties:
       NAME_DESC:
-        $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+        $ref: 'types-1.1.0.yaml#/$defs/fuzzy_display_match'
       TRANSFORM:
         enum:
           - 90
@@ -126,3 +125,109 @@ $defs:
       - WARNING
       - INFO
       - DEBUG
+
+  ipc_op:
+    enum:
+      - GET
+      - CFG_SET
+      - CFG_DEL
+      - CFG_TOGGLE
+      - CFG_WRITE
+    description: |-
+      IPC operation
+
+  ipc_message:
+    type: object
+    properties:
+      FATAL:
+        type: string
+      ERROR:
+        type: string
+      WARNING:
+        type: string
+      INFO:
+        type: string
+      DEBUG:
+        type: string
+    minProperties: 1
+    maxProperties: 1
+    additionalProperties: false
+
+  lid:
+    type: object
+    properties:
+      CLOSED:
+        type: boolean
+      DEVICE_PATH:
+        type: string
+    additionalProperties: false
+
+  head:
+    type: object
+    properties:
+      NAME:
+        type: string
+      DESCRIPTION:
+        type: string
+      MAKE:
+        type: string
+      MODEL:
+        type: string
+      SERIAL_NUMBER:
+        type: string
+      WIDTH_MM:
+        type: integer
+      HEIGHT_MM:
+        type: integer
+      TRANSFORM:
+        $ref: '#/$defs/transform'
+      CURRENT:
+        $ref: '#/$defs/head/state'
+      DESIRED:
+        $ref: '#/$defs/head/state'
+      OVERRIDES:
+        $ref: '#/$defs/head/overrides'
+      MODES:
+        type: array
+        items:
+          $ref: '#/$defs/head/mode'
+    additionalProperties: false
+
+    state:
+      type: object
+      properties:
+        SCALE:
+          type: number
+        ENABLED:
+          type: boolean
+        X:
+          type: integer
+        Y:
+          type: integer
+        VRR:
+          type: boolean
+        TRANSFORM:
+          $ref: '#/$defs/transform'
+        MODE:
+          $ref: '#/$defs/head/mode'
+      additionalProperties: false
+
+    mode:
+      type: object
+      properties:
+        WIDTH:
+          type: integer
+        HEIGHT:
+          type: integer
+        REFRESH_MHZ:
+          type: integer
+        PREFERRED:
+          type: boolean
+      additionalProperties: false
+
+    overrides:
+      type: object
+      properties:
+        DISABLED:
+          type: boolean
+      additionalProperties: false
