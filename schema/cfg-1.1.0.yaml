@@ -1,14 +1,15 @@
 # yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
 
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.0.0.yaml
-type: object
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.1.0.yaml
 
 title: way-displays cfg
 description: |-
   Schema for https://github.com/alex-courtis/way-displays cfg.yaml
 
+type: object
 properties:
+
   ARRANGE:
     enum:
       - ROW
@@ -16,7 +17,7 @@ properties:
     default: ROW
 
   ALIGN:
-    $ref: 'types-1.0.0.yaml#/$defs/align'
+    $ref: 'types-1.1.0.yaml#/$defs/align'
     default: TOP
 
   ORDER:
@@ -26,7 +27,7 @@ properties:
       COLUMN is top to bottom.
       ORDER defaults to the order in which displays are discovered.
     items:
-      $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+      $ref: 'types-1.1.0.yaml#/$defs/fuzzy_display_match'
 
   SCALING:
     type: boolean
@@ -58,7 +59,7 @@ properties:
     description: |-
       Auto scale may be overridden for each display.
     items:
-      $ref: 'types-1.0.0.yaml#/$defs/scale'
+      $ref: 'types-1.1.0.yaml#/$defs/scale'
 
   MODE:
     type: array
@@ -66,21 +67,21 @@ properties:
       Override the preferred mode.
       WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
     items:
-      $ref: 'types-1.0.0.yaml#/$defs/mode'
+      $ref: 'types-1.1.0.yaml#/$defs/mode'
 
   TRANSFORM:
     type: array
     description: |-
       Rotate or translate the display.
     items:
-      $ref: 'types-1.0.0.yaml#/$defs/transform'
+      $ref: 'types-1.1.0.yaml#/$defs/transform'
 
   VRR_OFF:
     type: array
     description: |-
       VRR / adaptive sync is enabled by default. Disable it per display.
     items:
-      $ref: 'types-1.0.0.yaml#/$defs/fuzzy_display_match'
+      $ref: 'types-1.1.0.yaml#/$defs/fuzzy_display_match'
 
   CALLBACK_CMD:
     type: string
@@ -98,7 +99,7 @@ properties:
       This may be overridden if your laptop is different.
 
   LOG_THRESHOLD:
-    $ref: 'types-1.0.0.yaml#/$defs/log_threshold'
+    $ref: 'types-1.1.0.yaml#/$defs/log_threshold'
     default: INFO
     description: |-
       Applies to logs and callbacks.
@@ -108,6 +109,6 @@ properties:
     description: |-
       Disable the specified displays.
     items:
-      $ref: 'types-1.0.0.yaml#/$defs/disabled'
+      $ref: 'types-1.1.0.yaml#/$defs/disabled'
 
 additionalProperties: false

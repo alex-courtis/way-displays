@@ -228,6 +228,7 @@ void marshal_ipc_response__map(void **state) {
 	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
 	lcl(WARNING, "war", &ipc_operation->log_cap_lines);
 	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
+	lcl(FATAL, "fat", &ipc_operation->log_cap_lines);
 
 	struct Mode mode1 = {
 		.width = 10,
@@ -267,6 +268,7 @@ void marshal_ipc_response__map(void **state) {
 			.mode = &mode2,
 			.transform = WL_OUTPUT_TRANSFORM_FLIPPED, // 4
 		},
+		.overrided_enabled = true,
 	};
 
 	slist_append(&head.modes, &mode1);
@@ -490,7 +492,7 @@ void unmarshal_ipc_responses__map(void **state) {
 	assert_int_equal(head->current.transform, 3);
 	assert_int_equal(head->desired.transform, 4);
 
-	assert_int_equal(slist_length(response->log_cap_lines), 2);
+	assert_int_equal(slist_length(response->log_cap_lines), 3);
 
 	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
 	assert_non_nul(line);

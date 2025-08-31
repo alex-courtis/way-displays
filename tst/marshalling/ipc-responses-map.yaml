@@ -79,7 +79,7 @@ STATE:
           REFRESH_MHZ: 15
           PREFERRED: FALSE
       OVERRIDES:
-        {}
+        DISABLED: TRUE
       MODES:
         - WIDTH: 10
           HEIGHT: 11
@@ -92,5 +92,6 @@ STATE:
 MESSAGES:
   - WARNING: war
   - ERROR: err
+  - FATAL: fat
 RC: 2
 
