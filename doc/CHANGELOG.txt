@@ -1,3 +1,10 @@
+way-displays 1.15.0 2025-09-30
+------------------------------
+#225 add warning: 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match
+#227 restore 1.0.0 schemas
+#216 explicitly state that Hyprland is not supported
+#209 add more debug logging and callsite specific wl_ wrappers for better diagnostics
+
 way-displays 1.14.1 2025-06-09
 ------------------------------
 #214 fix missing $CALLBACK_MSG
