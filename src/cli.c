@@ -28,7 +28,8 @@ static void usage(FILE *stream) {
 		"COMMANDS\n"
 		"  -h, --h[elp]    show this message\n"
 		"  -v, --v[ersion] display version information\n"
-		"  -g, --g[et]     show the active settings\n"
+		"  -a, --a[ctive]  show connected\n"
+		"  -g, --g[et]     show config and state\n"
 		"  -w, --w[rite]   write active to cfg.yaml\n"
 		"  -s, --s[et]     add or change\n"
 		"     ARRANGE_ALIGN <row|column> <top|middle|bottom|left|right>\n"
@@ -208,6 +209,19 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	return cfg;
 }
 
+static struct IpcRequest *parse_active(int argc, char **argv) {
+	if (optind != argc) {
+		log_fatal("--brief takes no arguments");
+		wd_exit(EXIT_FAILURE);
+		return NULL;
+	}
+
+	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
+	request->command = ACTIVE;
+
+	return request;
+}
+
 static struct IpcRequest *parse_get(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--get takes no arguments");
@@ -363,6 +377,7 @@ enum LogThreshold parse_log_threshold(char *optarg) {
 
 void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
 	static struct option long_options[] = {
+		{ "active",        no_argument,       0, 'a' },
 		{ "config",        required_argument, 0, 'c' },
 		{ "delete",        required_argument, 0, 'd' },
 		{ "get",           no_argument,       0, 'g' },
@@ -375,7 +390,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		{ "yaml",          no_argument,       0, 'y' },
 		{ 0,               0,                 0,  0  }
 	};
-	static char *short_options = "c:d:ghL:s:t:vwy";
+	static char *short_options = "ac:d:ghL:s:t:vwy";
 
 	bool yaml = false;
 	enum LogThreshold threshold = 0;
@@ -408,6 +423,9 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				threshold = WARNING;
 				yaml = true;
 				break;
+			case 'a':
+				*ipc_request = parse_active(argc, argv);
+				break;
 			case 'g':
 				*ipc_request = parse_get(argc, argv);
 				break;
@@ -434,8 +452,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 	log_set_threshold(threshold, true);
 
 	if (*ipc_request) {
-		(*ipc_request)->yaml = yaml;
-		if (yaml) {
+		if (((*ipc_request)->yaml |= yaml)) {
 			(*ipc_request)->log_threshold = WARNING;
 		} else {
 			(*ipc_request)->log_threshold = threshold;

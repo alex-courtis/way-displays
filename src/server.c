@@ -92,9 +92,9 @@ static void receive_ipc_request(int server_socket) {
 		goto send;
 	}
 
-	log_info("\nServer received request: %s", ipc_command_friendly(ipc_request->command));
+	log_debug("\nServer received request: %s", ipc_command_friendly(ipc_request->command));
 	if (ipc_request->cfg) {
-		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
 	// handle extra toggles
@@ -127,6 +127,11 @@ static void receive_ipc_request(int server_socket) {
 			{
 				// complete
 				cfg_file_write();
+				break;
+			}
+		case ACTIVE:
+			{
+				print_active(INFO, heads);
 				break;
 			}
 		case GET:

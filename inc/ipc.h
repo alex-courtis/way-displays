@@ -14,6 +14,7 @@
 
 enum IpcCommand {
 	GET = 1,
+	ACTIVE,
 	CFG_SET,
 	CFG_DEL,
 	CFG_WRITE,

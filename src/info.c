@@ -477,6 +477,42 @@ void print_heads(const enum LogThreshold t, const enum InfoEvent event, const st
 	}
 }
 
+void print_active(const enum LogThreshold t, const struct SList * const heads) {
+	static char line[16384];
+	static char *lp;
+
+	for (const struct SList *i = heads; i; i = i->nex) {
+		struct Head *head = i->val;
+
+		lp = line;
+		*lp = '\0';
+
+		lp += snprintf(lp, sizeof(line) - (lp - line), "%s",
+				head->description ? head->description :
+				head->name ? head->name :
+				"???");
+
+		if (head->current.enabled && head->current.mode) {
+			lp += snprintf(lp, sizeof(line) - (lp - line), "\t%.3f", wl_fixed_to_double(head->current.scale));
+
+			lp += snprintf(lp, sizeof(line) - (lp - line), "\t%dx%d@%dHz",
+					head->current.mode->width,
+					head->current.mode->height,
+					mhz_to_hz_rounded(head->current.mode->refresh_mhz)
+					);
+
+			if (head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) {
+				lp += snprintf(lp, sizeof(line) - (lp - line), "\t%s", "VRR");
+			}
+
+		} else {
+			lp += snprintf(lp, sizeof(line) - (lp - line), "\tdisabled");
+		}
+
+		log_(t, "%s", line);
+	}
+}
+
 void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
 	if (!head) {
 		return;

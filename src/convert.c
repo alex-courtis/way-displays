@@ -62,6 +62,7 @@ static struct NameVal on_offs[] = {
 
 static struct NameVal ipc_commands[] = {
 	{ .val = GET,        .name = "GET",        .friendly = "get",    },
+	{ .val = ACTIVE,     .name = "ACTIVE",     .friendly = "active", },
 	{ .val = CFG_SET,    .name = "CFG_SET",    .friendly = "set",    },
 	{ .val = CFG_DEL,    .name = "CFG_DEL",    .friendly = "delete", },
 	{ .val = CFG_WRITE,  .name = "CFG_WRITE",  .friendly = "write",  },

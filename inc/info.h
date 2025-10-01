@@ -28,6 +28,8 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 
 void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct SList * const heads);
 
+void print_active(const enum LogThreshold t, const struct SList * const heads);
+
 void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
