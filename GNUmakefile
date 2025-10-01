@@ -1,19 +1,24 @@
 include config.mk
 
-INC_H = $(wildcard inc/*.h) $(wildcard lib/col/inc/*.h)
+INC_H = $(wildcard inc/*.h)
 
-SRC_C = $(wildcard src/*.c) $(wildcard lib/col/src/*.c)
+SRC_C = $(wildcard src/*.c)
 SRC_CXX = $(wildcard src/*.cpp)
 SRC_O = $(SRC_C:.c=.o) $(SRC_CXX:.cpp=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
-EXAMPLE_O = $(EXAMPLE_C:.c=.o)
-EXAMPLE_E = $(EXAMPLE_C:.c=)
+EXAMPLE_CXX = $(wildcard examples/*.cpp)
+EXAMPLE_O = $(EXAMPLE_C:.c=.o) $(EXAMPLE_CXX:.cpp=.o)
+EXAMPLE_E = $(EXAMPLE_C:.c=) $(EXAMPLE_CXX:.cpp=)
 
 PRO_X = $(wildcard pro/*.xml)
 PRO_H = $(PRO_X:.xml=.h)
 PRO_C = $(PRO_X:.xml=.c)
 PRO_O = $(PRO_X:.xml=.o)
+
+LIB_C = $(wildcard lib/col/src/*.c)
+LIB_CXX = $(wildcard lib/imgui/*.cpp) $(wildcard lib/imgui/backends/*.cpp)
+LIB_O = $(LIB_C:.c=.o) $(LIB_CXX:.cpp=.o)
 
 TST_H = $(wildcard tst/*.h)
 TST_C = $(wildcard tst/*.c)
@@ -25,9 +30,10 @@ all: way-displays
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
+$(LIB_O): config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
-way-displays: $(SRC_O) $(PRO_O)
+way-displays: $(SRC_O) $(PRO_O) $(LIB_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 	@test -x ../deploy.sh && ../deploy.sh || true
 
@@ -40,7 +46,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
-	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
+	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(LIB_O) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
 
 install: way-displays doc/way-displays.1 examples/cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -64,7 +70,7 @@ man: doc/way-displays.1.pandoc
 
 iwyu: override CC = $(IWYU) -Xiwyu --check_also="inc/*h"
 iwyu: override CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
-iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
+iwyu: clean $(SRC_O) $(TST_O)
 
 IWYU = include-what-you-use \
 	   -Xiwyu --no_fwd_decls \
@@ -97,11 +103,11 @@ $(TST_T): compile
 	$(VALGRIND) ./$(EXE)
 
 examples: $(EXAMPLE_E)
-examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
+examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
 	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 docker-build:
-	docker build --no-cache --tag "way-displays:latest" .
+	docker buildx build --no-cache --tag "way-displays:latest" .
 
 docker-rm:
 	docker rm -f way-displays || true

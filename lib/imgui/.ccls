@@ -1,0 +1,4 @@
+%h -std=c++11
+%cpp -std=c++11
+
+# vim:ft=sh
