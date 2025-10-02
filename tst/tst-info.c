@@ -103,7 +103,7 @@ int before_each(void **state) {
 	s->head2->current.x = 1700;
 	s->head2->current.y = 1800;
 	s->head2->current.transform = WL_OUTPUT_TRANSFORM_270;
-	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
 	s->head2->desired.mode = mode_des;
 	s->head2->desired.scale = 4096;
@@ -290,6 +290,21 @@ void print_head_deltas__enable(void **state) {
 	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-enable.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+}
+
+void print_active__empty(void **state) {
+	print_active(INFO, NULL);
+}
+
+void print_active__many(void **state) {
+	struct State *s = *state;
+
+	s->head1->current.enabled = false;
+	print_active(INFO, s->heads);
+
+	char *expected_log = read_file("tst/info/print-active.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
 }
@@ -579,6 +594,9 @@ int main(void) {
 		TEST(print_head_deltas__other),
 		TEST(print_head_deltas__disable),
 		TEST(print_head_deltas__enable),
+
+		TEST(print_active__empty),
+		TEST(print_active__many),
 
 		TEST(print_adaptive_sync_fail__nulls),
 		TEST(print_adaptive_sync_fail__head),

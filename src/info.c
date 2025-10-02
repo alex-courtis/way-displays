@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/param.h>
 #include <wayland-util.h>
 
 #include "info.h"
@@ -478,38 +480,33 @@ void print_heads(const enum LogThreshold t, const enum InfoEvent event, const st
 }
 
 void print_active(const enum LogThreshold t, const struct SList * const heads) {
-	static char line[16384];
-	static char *lp;
+	if (!heads)
+		return;
+
+	size_t max_len_human = 0;
+	for (const struct SList *i = heads; i; i = i->nex) {
+		max_len_human = MAX(strlen(head_human(i->val)), max_len_human);
+	}
 
 	for (const struct SList *i = heads; i; i = i->nex) {
 		struct Head *head = i->val;
 
-		lp = line;
-		*lp = '\0';
-
-		lp += snprintf(lp, sizeof(line) - (lp - line), "%s",
-				head->description ? head->description :
-				head->name ? head->name :
-				"???");
-
 		if (head->current.enabled && head->current.mode) {
-			lp += snprintf(lp, sizeof(line) - (lp - line), "\t%.3f", wl_fixed_to_double(head->current.scale));
-
-			lp += snprintf(lp, sizeof(line) - (lp - line), "\t%dx%d@%dHz",
+			// full info
+			log_(t, "%-*.*s %.3f %dx%d@%dHz %s",
+					(int)max_len_human, (int)max_len_human, head_human(head),
+					wl_fixed_to_double(head->current.scale),
 					head->current.mode->width,
 					head->current.mode->height,
-					mhz_to_hz_rounded(head->current.mode->refresh_mhz)
-					);
-
-			if (head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) {
-				lp += snprintf(lp, sizeof(line) - (lp - line), "\t%s", "VRR");
-			}
-
+					mhz_to_hz_rounded(head->current.mode->refresh_mhz),
+					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : ""
+				);
 		} else {
-			lp += snprintf(lp, sizeof(line) - (lp - line), "\tdisabled");
+			// no mode is considered disabled
+			log_(t, "%-*.*s disabled",
+					(int)max_len_human, (int)max_len_human, head_human(head)
+				);
 		}
-
-		log_(t, "%s", line);
 	}
 }
 
