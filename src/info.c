@@ -493,13 +493,13 @@ void print_active(const enum LogThreshold t, const struct SList * const heads) {
 
 		if (head->current.enabled && head->current.mode) {
 			// full info
-			log_(t, "%-*.*s %.3f %dx%d@%dHz %s",
+			log_(t, "%-*.*s %.3f %s %5d x%5d @%4d Hz",
 					(int)max_len_human, (int)max_len_human, head_human(head),
 					wl_fixed_to_double(head->current.scale),
+					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : "",
 					head->current.mode->width,
 					head->current.mode->height,
-					mhz_to_hz_rounded(head->current.mode->refresh_mhz),
-					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : ""
+					mhz_to_hz_rounded(head->current.mode->refresh_mhz)
 				);
 		} else {
 			// no mode is considered disabled
