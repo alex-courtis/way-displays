@@ -70,8 +70,8 @@ int client(struct IpcRequest *ipc_request) {
 	}
 
 	if (!ipc_request->yaml) {
-		log_info("\nClient sending request: %s", ipc_command_friendly(ipc_request->command));
-		print_cfg(INFO, ipc_request->cfg, ipc_request->command == CFG_DEL);
+		log_debug("\nClient sending request: %s", ipc_command_friendly(ipc_request->command));
+		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
 	ipc_send_request(ipc_request);

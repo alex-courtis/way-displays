@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/param.h>
 #include <wayland-util.h>
 
 #include "info.h"
@@ -474,6 +476,37 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct SList * const heads) {
 	for (const struct SList *i = heads; i; i = i->nex) {
 		print_head(t, event, i->val);
+	}
+}
+
+void print_list(const enum LogThreshold t, const struct SList * const heads) {
+	if (!heads)
+		return;
+
+	size_t max_len_human = 0;
+	for (const struct SList *i = heads; i; i = i->nex) {
+		max_len_human = MAX(strlen(head_human(i->val)), max_len_human);
+	}
+
+	for (const struct SList *i = heads; i; i = i->nex) {
+		struct Head *head = i->val;
+
+		if (head->current.enabled && head->current.mode) {
+			// full info
+			log_(t, "%-*.*s %.3f %s %5d x%5d @%4d Hz",
+					(int)max_len_human, (int)max_len_human, head_human(head),
+					wl_fixed_to_double(head->current.scale),
+					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : "",
+					head->current.mode->width,
+					head->current.mode->height,
+					mhz_to_hz_rounded(head->current.mode->refresh_mhz)
+				);
+		} else {
+			// no mode is considered disabled
+			log_(t, "%-*.*s disabled",
+					(int)max_len_human, (int)max_len_human, head_human(head)
+				);
+		}
 	}
 }
 

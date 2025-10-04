@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2025/08/29
+% 2025/10/04
 
 # NAME
 
@@ -85,6 +85,9 @@ User should be a member of the `input` group for querying laptop lid state.
 
 `-v` | `--v[ersion]`
 : Display version information and exit.
+
+`-l` | `--li[st]`
+: Show the state of the connected displays: description, enabled, scale, VRR and mode.
 
 `-g` | `--g[et]`
 : Show the active configuration, commands and current display state.
@@ -193,6 +196,9 @@ exec `way-displays` > /tmp/way-displays.\${XDG_VTNR}.\${USER}.log 2>&1
 
 `way-displays` -g
 : Show current configuration and display state.
+
+`way-displays` -l
+: List the connected displays.
 
 `way-displays` -s `ARRANGE_ALIGN` *row* *bottom*
 : Arrange left to right, aligned at the bottom.
