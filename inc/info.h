@@ -28,8 +28,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 
 void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct SList * const heads);
 
-// connected heads, human readable column delimited: human name, scale, mode, vrr
-void print_active(const enum LogThreshold t, const struct SList * const heads);
+void print_list(const enum LogThreshold t, const struct SList * const heads);
 
 void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 

@@ -22,13 +22,13 @@ static void usage(FILE *stream) {
 		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
 		"  Runs the server when no COMMAND specified.\n"
 		"OPTIONS\n"
-		"  -L, --l[og-threshold] <debug|info|warning|error>\n"
+		"  -L, --lo[g-threshold] <debug|info|warning|error>\n"
 		"  -c, --c[onfig]        <path>\n"
 		"  -y, --y[aml]          YAML client output, implies -L warning\n"
 		"COMMANDS\n"
 		"  -h, --h[elp]    show this message\n"
 		"  -v, --v[ersion] display version information\n"
-		"  -a, --a[ctive]  show connected\n"
+		"  -l, --li[st]    list connected\n"
 		"  -g, --g[et]     show config and state\n"
 		"  -w, --w[rite]   write active to cfg.yaml\n"
 		"  -s, --s[et]     add or change\n"
@@ -209,15 +209,15 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	return cfg;
 }
 
-static struct IpcRequest *parse_active(int argc, char **argv) {
+static struct IpcRequest *parse_list(int argc, char **argv) {
 	if (optind != argc) {
-		log_fatal("--brief takes no arguments");
+		log_fatal("--list takes no arguments");
 		wd_exit(EXIT_FAILURE);
 		return NULL;
 	}
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = ACTIVE;
+	request->command = LIST;
 
 	return request;
 }
@@ -377,11 +377,11 @@ enum LogThreshold parse_log_threshold(char *optarg) {
 
 void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
 	static struct option long_options[] = {
-		{ "active",        no_argument,       0, 'a' },
 		{ "config",        required_argument, 0, 'c' },
 		{ "delete",        required_argument, 0, 'd' },
 		{ "get",           no_argument,       0, 'g' },
 		{ "help",          no_argument,       0, 'h' },
+		{ "list",          no_argument,       0, 'l' },
 		{ "log-threshold", required_argument, 0, 'L' },
 		{ "set",           required_argument, 0, 's' },
 		{ "toggle",        required_argument, 0, 't' },
@@ -390,7 +390,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		{ "yaml",          no_argument,       0, 'y' },
 		{ 0,               0,                 0,  0  }
 	};
-	static char *short_options = "ac:d:ghL:s:t:vwy";
+	static char *short_options = "c:d:ghlL:s:t:vwy";
 
 	bool yaml = false;
 	enum LogThreshold threshold = 0;
@@ -423,8 +423,8 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				threshold = WARNING;
 				yaml = true;
 				break;
-			case 'a':
-				*ipc_request = parse_active(argc, argv);
+			case 'l':
+				*ipc_request = parse_list(argc, argv);
 				break;
 			case 'g':
 				*ipc_request = parse_get(argc, argv);

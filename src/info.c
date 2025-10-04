@@ -479,7 +479,7 @@ void print_heads(const enum LogThreshold t, const enum InfoEvent event, const st
 	}
 }
 
-void print_active(const enum LogThreshold t, const struct SList * const heads) {
+void print_list(const enum LogThreshold t, const struct SList * const heads) {
 	if (!heads)
 		return;
 

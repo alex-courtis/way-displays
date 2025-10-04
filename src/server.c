@@ -129,9 +129,10 @@ static void receive_ipc_request(int server_socket) {
 				cfg_file_write();
 				break;
 			}
-		case ACTIVE:
+		case LIST:
 			{
-				print_active(INFO, heads);
+				// complete
+				print_list(INFO, heads);
 				break;
 			}
 		case GET:

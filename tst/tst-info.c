@@ -295,16 +295,16 @@ void print_head_deltas__enable(void **state) {
 }
 
 void print_active__empty(void **state) {
-	print_active(INFO, NULL);
+	print_list(INFO, NULL);
 }
 
 void print_active__many(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
-	print_active(INFO, s->heads);
+	print_list(INFO, s->heads);
 
-	char *expected_log = read_file("tst/info/print-active.log");
+	char *expected_log = read_file("tst/info/print-list.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
 }
