@@ -453,6 +453,40 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	e << YAML::Key << "WIDTH_MM" << YAML::Value << head.width_mm;
 	e << YAML::Key << "HEIGHT_MM" << YAML::Value << head.height_mm;
 
+	e << YAML::Key << "FUZZY_MATCH" << YAML::BeginMap;	// FUZZY_MATCH
+
+	const struct Disabled *disabled = head_disabled_fuzzy_match(&head);
+	if (disabled) {
+		e << YAML::Key << "DISABLED" << YAML::Value << disabled->name_desc;
+	}
+
+	const struct UserMode *user_mode = head_user_mode_fuzzy_match(&head);
+	if (user_mode) {
+		e << YAML::Key << "MODE" << YAML::Value << user_mode->name_desc;
+	}
+
+	const char *order = head_order_fuzzy_match(&head);
+	if (order) {
+		e << YAML::Key << "ORDER" << YAML::Value << order;
+	}
+
+	const struct UserScale *user_scale = head_user_scale_fuzzy_match(&head);
+	if (user_scale) {
+		e << YAML::Key << "SCALE" << YAML::Value << user_scale->name_desc;
+	}
+
+	const struct UserTransform *user_transform = head_user_transform_fuzzy_match(&head);
+	if (user_transform) {
+		e << YAML::Key << "TRANSFORM" << YAML::Value << user_transform->name_desc;
+	}
+
+	const char *adaptive_sync_off = head_adaptive_sync_off_fuzzy_match(&head);
+	if (adaptive_sync_off) {
+		e << YAML::Key << "VRR_OFF" << YAML::Value << adaptive_sync_off;
+	}
+
+	e << YAML::EndMap;									// FUZZY_MATCH
+
 	e << YAML::Key << "CURRENT" << YAML::BeginMap;		// CURRENT
 	e << head.current;
 	e << YAML::EndMap;									// CURRENT
@@ -461,13 +495,13 @@ YAML::Emitter& operator << (YAML::Emitter& e, struct Head& head) {
 	e << head.desired;
 	e << YAML::EndMap;									// DESIRED
 
-	e << YAML::Key << "OVERRIDES" << YAML::BeginMap;
+	e << YAML::Key << "OVERRIDES" << YAML::BeginMap;	// OVERRIDES
 
 	if (head.overrided_enabled != NoOverride) {
 		bool enabled = head.overrided_enabled == OverrideTrue;
 		e << YAML::Key << "DISABLED" << YAML::Value << enabled;
 	}
-	e << YAML::EndMap;
+	e << YAML::EndMap;									// OVERRIDES
 
 	if (head.modes) {
 		e << YAML::Key << "MODES" << YAML::BeginSeq;	// MODES
