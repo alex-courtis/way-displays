@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
+
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/ipc-request-1.2.0.yaml
+
+title: way-displays IPC
+description: |-
+  Schema for https://github.com/alex-courtis/way-displays IPC
+
+type: object
+properties:
+
+  OP:
+    $ref: 'types-1.2.0.yaml#/$defs/ipc_op'
+
+  LOG_THRESHOLD:
+    $ref: 'types-1.2.0.yaml#/$defs/log_threshold'
+    default: INFO
+    description: |-
+      Applies to response messages
+
+  CFG:
+    $ref: 'cfg-1.2.0.yaml'
+    description: |-
+      Configuration deltas
+
+additionalProperties: false

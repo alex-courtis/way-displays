@@ -179,8 +179,6 @@ void marshal_cfg__ok(void **state) {
 	struct Cfg *cfg_actual = cfg_all();
 
 	char *actual = marshal_cfg(cfg_actual);
-	assert_non_nul(actual);
-	write_file("actual.yaml", actual);
 
 	char *expected = read_file("tst/marshalling/cfg-all.yaml");
 
@@ -209,8 +207,6 @@ void marshal_ipc_request__cfg_set(void **state) {
 	ipc_request->cfg = cfg_all();
 
 	char *actual = marshal_ipc_request(ipc_request);
-	assert_non_nul(actual);
-	write_file("actual.yaml", actual);
 
 	char *expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
 
@@ -293,7 +289,6 @@ void marshal_ipc_response__map(void **state) {
 
 	char *actual = marshal_ipc_response(ipc_operation);
 	assert_non_nul(actual);
-	write_file("actual.yaml", actual);
 
 	char *expected = read_file("tst/marshalling/ipc-responses-map.yaml");
 
