@@ -78,20 +78,33 @@ struct Head {
 // description, name, "???"
 const char *head_human(const struct Head * const head);
 
+// collection equality functions
 bool head_matches_name_desc_exact(const void * const head, const void * const name_desc);
 
 bool head_matches_name_desc_regex(const void * const head, const void * const name_desc);
 
-bool head_matches_name_desc_fuzzy(const void * const h, const void * const name_desc);
+bool head_matches_name_desc_partial(const void * const h, const void * const name_desc);
 
-bool head_matches_name_desc_partial(const void * const head, const void * const name_desc);
-
-bool head_matches_name_desc(const void * const head, const void * const name_desc);
+bool head_matches_name_desc_fuzzy(const void * const head, const void * const name_desc);
 
 bool head_name_desc_matches_head(const void * const name_desc, const void * const head);
 
 bool head_disabled_matches_head(const void * const d, const void * const h);
 
+// fuzzy matching
+struct Disabled *head_disabled_fuzzy_match(const struct Head * const head);
+
+struct UserMode *head_user_mode_fuzzy_match(const struct Head * const head);
+
+const char *head_order_fuzzy_match(const struct Head * const head);
+
+struct UserScale *head_user_scale_fuzzy_match(const struct Head * const head);
+
+struct UserTransform *head_user_transform_fuzzy_match(const struct Head * const head);
+
+const char *head_adaptive_sync_off_fuzzy_match(const struct Head * const head);
+
+// scale calculations
 wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base);
 
 wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);

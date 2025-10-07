@@ -6,6 +6,7 @@ CFG:
     - one
     - ONE
     - "!two"
+    - "!tion$"
   SCALING: FALSE
   AUTO_SCALE: FALSE
   AUTO_SCALE_MIN: 0.5
@@ -15,6 +16,8 @@ CFG:
       SCALE: 3
     - NAME_DESC: four
       SCALE: 4
+    - NAME_DESC: desc
+      SCALE: 99
   MODE:
     - NAME_DESC: five
       WIDTH: 1920
@@ -25,12 +28,17 @@ CFG:
       HEIGHT: 1440
     - NAME_DESC: seven
       MAX: TRUE
+    - NAME_DESC: "!^name$"
+      MAX: TRUE
   TRANSFORM:
     - NAME_DESC: twelve
+      TRANSFORM: FLIPPED
+    - NAME_DESC: ription
       TRANSFORM: FLIPPED
   VRR_OFF:
     - ten
     - ELEVEN
+    - description
   CALLBACK_CMD: cmd
   LAPTOP_DISPLAY_PREFIX: ldp
   LOG_THRESHOLD: ERROR
@@ -42,18 +50,26 @@ CFG:
       IF:
         - PLUGGED:
             - ONE
+    - name
 STATE:
   LID:
     CLOSED: TRUE
     DEVICE_PATH: /path/to/lid
   HEADS:
     - NAME: name
-      DESCRIPTION: desc
+      DESCRIPTION: description
       MAKE: make
       MODEL: model
       SERIAL_NUMBER: serial
       WIDTH_MM: 1
       HEIGHT_MM: 2
+      FUZZY_MATCH:
+        DISABLED: name
+        MODE: "!^name$"
+        ORDER: "!tion$"
+        SCALE: desc
+        TRANSFORM: ription
+        VRR_OFF: description
       CURRENT:
         SCALE: 4
         ENABLED: TRUE

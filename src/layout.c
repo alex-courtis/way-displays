@@ -122,10 +122,10 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 		i++;
 	}
 
-	// fuzzy
+	// partial
 	i = 0;
 	for (struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, head_matches_name_desc_fuzzy, o->val);
+		slist_move(&order_heads[i], &sorting, head_matches_name_desc_partial, o->val);
 		i++;
 	}
 
@@ -225,7 +225,7 @@ void desire_scale(struct Head *head) {
 	struct UserScale *user_scale;
 	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
 		user_scale = (struct UserScale*)i->val;
-		if (head_matches_name_desc(head, user_scale->name_desc)) {
+		if (head_matches_name_desc_fuzzy(head, user_scale->name_desc)) {
 			head->desired.scale = head_get_fixed_scale(head, user_scale->scale, head->scaling_base);
 			return;
 		}
@@ -249,7 +249,7 @@ void desire_transform(struct Head *head) {
 	struct UserTransform *user_transform;
 	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		user_transform = (struct UserTransform*)i->val;
-		if (head_matches_name_desc(head, user_transform->name_desc)) {
+		if (head_matches_name_desc_fuzzy(head, user_transform->name_desc)) {
 			head->desired.transform = user_transform->transform;
 			return;
 		}

@@ -39,7 +39,7 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 		return false;
 
 	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
-		if (head_matches_name_desc(head, i->val)) {
+		if (head_matches_name_desc_fuzzy(head, i->val)) {
 			return true;
 		}
 	}
@@ -47,7 +47,7 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 }
 
 static bool head_matches_user_mode(const void * const user_mode, const void * const head) {
-	return user_mode && head && head_matches_name_desc((struct Head*)head, ((struct UserMode*)user_mode)->name_desc);
+	return user_mode && head && head_matches_name_desc_fuzzy((struct Head*)head, ((struct UserMode*)user_mode)->name_desc);
 }
 
 static struct Mode *max_mode(const struct Head * const head) {
@@ -122,7 +122,7 @@ bool head_matches_name_desc_regex(const void * const h, const void * const n) {
 	return !result;
 }
 
-bool head_matches_name_desc_fuzzy(const void * const h, const void * const n) {
+bool head_matches_name_desc_partial(const void * const h, const void * const n) {
 	const struct Head *head = h;
 	const char *name_desc = n;
 
@@ -135,14 +135,14 @@ bool head_matches_name_desc_fuzzy(const void * const h, const void * const n) {
 		   );
 }
 
-bool head_matches_name_desc(const void * const h, const void * const n) {
+bool head_matches_name_desc_fuzzy(const void * const h, const void * const n) {
 	return head_matches_name_desc_exact(h, n) ||
 		head_matches_name_desc_regex(h, n) ||
-		head_matches_name_desc_fuzzy(h, n);
+		head_matches_name_desc_partial(h, n);
 }
 
 bool head_name_desc_matches_head(const void * const n, const void * const h) {
-	return head_matches_name_desc(h, n);
+	return head_matches_name_desc_fuzzy(h, n);
 }
 
 bool head_matches_name_desc_exact(const void * const h, const void * const n) {
@@ -162,7 +162,65 @@ bool head_disabled_matches_head(const void * const d, const void * const h) {
 	if (!d)
 		return false;
 
-	return head_matches_name_desc(h, disabled_if->name_desc);
+	return head_matches_name_desc_fuzzy(h, disabled_if->name_desc);
+}
+
+struct Disabled *head_disabled_fuzzy_match(const struct Head * const head) {
+	for (struct SList *i = cfg->disabled; i; i = i->nex) {
+		struct Disabled *disabled = i->val;
+		if (head_matches_name_desc_fuzzy(head, disabled->name_desc)) {
+			return disabled;
+		}
+	}
+	return NULL;
+}
+
+struct UserMode *head_user_mode_fuzzy_match(const struct Head * const head) {
+	for (struct SList *i = cfg->user_modes; i; i = i->nex) {
+		struct UserMode *user_mode = i->val;
+		if (head_matches_name_desc_fuzzy(head, user_mode->name_desc)) {
+			return user_mode;
+		}
+	}
+	return NULL;
+}
+
+const char *head_order_fuzzy_match(const struct Head * const head) {
+	for (struct SList *i = cfg->order_name_desc; i; i = i->nex) {
+		if (head_matches_name_desc_fuzzy(head, i->val)) {
+			return i->val;
+		}
+	}
+	return NULL;
+}
+
+struct UserScale *head_user_scale_fuzzy_match(const struct Head * const head) {
+	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
+		struct UserScale *user_scale = i->val;
+		if (head_matches_name_desc_fuzzy(head, user_scale->name_desc)) {
+			return user_scale;
+		}
+	}
+	return NULL;
+}
+
+struct UserTransform *head_user_transform_fuzzy_match(const struct Head * const head) {
+	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
+		struct UserTransform *user_transform = i->val;
+		if (head_matches_name_desc_fuzzy(head, user_transform->name_desc)) {
+			return user_transform;
+		}
+	}
+	return NULL;
+}
+
+const char *head_adaptive_sync_off_fuzzy_match(const struct Head * const head) {
+	for (struct SList *i = cfg->adaptive_sync_off_name_desc; i; i = i->nex) {
+		if (head_matches_name_desc_fuzzy(head, i->val)) {
+			return i->val;
+		}
+	}
+	return NULL;
 }
 
 wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base) {

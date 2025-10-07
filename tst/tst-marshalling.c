@@ -101,6 +101,16 @@ struct Cfg *cfg_all(void) {
 	return cfg;
 }
 
+// add fields for ipc-responses-map
+void cfg_add_responses(struct Cfg *cfg) {
+	slist_append(&cfg->disabled, cfg_disabled_always("name"));
+	slist_append(&cfg->user_modes, cfg_user_mode_init("!^name$", true, -1, -1, -1, false));
+	slist_append(&cfg->order_name_desc, strdup("!tion$"));
+	slist_append(&cfg->user_scales, cfg_user_scale_init("desc", 99));
+	slist_append(&cfg->user_transforms, cfg_user_transform_init("ription", WL_OUTPUT_TRANSFORM_FLIPPED));
+	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("description"));
+}
+
 void unmarshal_cfg_from_file__ok(void **state) {
 
 	struct Cfg *read = cfg_default();
@@ -219,6 +229,7 @@ void marshal_ipc_response__map(void **state) {
 	ipc_operation->send_state = true;
 
 	cfg = cfg_all();
+	cfg_add_responses(cfg);
 
 	lid = calloc(1, sizeof(struct Lid));
 	lid->closed = true;
@@ -244,7 +255,7 @@ void marshal_ipc_response__map(void **state) {
 	};
 	struct Head head = {
 		.name = "name",
-		.description = "desc",
+		.description = "description",
 		.width_mm = 1,
 		.height_mm = 2,
 		.make = "make",
@@ -277,7 +288,6 @@ void marshal_ipc_response__map(void **state) {
 	slist_append(&heads, &head);
 
 	char *actual = marshal_ipc_response(ipc_operation);
-
 	assert_non_nul(actual);
 
 	char *expected = read_file("tst/marshalling/ipc-responses-map.yaml");
@@ -435,13 +445,15 @@ void unmarshal_ipc_responses__map(void **state) {
 
 	assert_non_nul(response->cfg);
 	struct Cfg *expected_cfg = cfg_all();
+	cfg_add_responses(expected_cfg);
+
 	assert_cfg_equal(response->cfg, expected_cfg);
 
 	assert_int_equal(slist_length(response->heads), 1);
 	struct Head *head = slist_at(response->heads, 0);
 
 	assert_str_equal(head->name, "name");
-	assert_str_equal(head->description, "desc");
+	assert_str_equal(head->description, "description");
 	assert_int_equal(head->width_mm, 1);
 	assert_int_equal(head->height_mm, 2);
 	assert_str_equal(head->make, "make");
