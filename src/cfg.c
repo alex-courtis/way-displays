@@ -20,6 +20,7 @@
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
+#include "stable.h"
 #include "log.h"
 #include "marshalling.h"
 
@@ -76,7 +77,7 @@ static void* cfg_user_scale_clone(const void* const val) {
 	return clone;
 }
 
-void* cfg_disabled_clone(const void *val) {
+static void* cfg_disabled_clone(const void *val) {
 	struct Disabled *original = (struct Disabled*)val;
 	struct Disabled *clone = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
@@ -220,6 +221,49 @@ static bool cfg_disabled_equal(const void *a, const void *b) {
 	}
 
 	return slist_equal(lhs->conditions, rhs->conditions, condition_equal);
+}
+
+static bool cfg_disabled_name_desc_with_condition_equal(const void *a, const void *b) {
+	if (!a || !b) {
+		return false;
+	}
+
+	struct Disabled *lhs = (struct Disabled*)a;
+	struct Disabled *rhs = (struct Disabled*)b;
+
+	if (!lhs->name_desc || !rhs->name_desc) {
+		return false;
+	}
+
+	if (strcmp(lhs->name_desc, rhs->name_desc) != 0) {
+		return false;
+	}
+
+	return lhs->conditions;
+}
+
+// remove and return any duplicate name_desc disabled, earliest take precedence
+static struct SList *remove_duplicate_disabled_name_desc(struct SList **disabled) {
+
+	struct SList *duplicates = NULL;
+	const struct STable *uniques_by_name_desc = stable_init(5, 5, false);
+
+	// map the uniques in order
+	for (struct SList *i = *disabled; i; i = i->nex) {
+		struct Disabled *d = i->val;
+		if (stable_get(uniques_by_name_desc, d->name_desc)) {
+			slist_append(&duplicates, i->val);
+		} else {
+			stable_put(uniques_by_name_desc, d->name_desc, d);
+		}
+	}
+
+	// set unique disabled
+	slist_free(disabled);
+	*disabled = stable_vals_slist(uniques_by_name_desc);
+	stable_free(uniques_by_name_desc);
+
+	return duplicates;
 }
 
 static bool invalid_user_scale(const void *a, const void *b) {
@@ -583,6 +627,13 @@ void validate_fix(struct Cfg *cfg) {
 	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, cfg_user_scale_free);
 
 	slist_remove_all_free(&cfg->user_modes, invalid_user_mode, NULL, cfg_user_mode_free);
+
+	struct SList *disabled_duplicates = remove_duplicate_disabled_name_desc(&cfg->disabled);
+	for (struct SList *i = disabled_duplicates; i; i = i->nex) {
+		struct Disabled *d = i->val;
+		log_warn("\nIgnoring duplicate DISABLED %s", d->name_desc);
+	}
+	slist_free_vals(&disabled_duplicates, cfg_disabled_free);
 }
 
 static void warn_ambiguous_name_desc_list(struct SList *name_desc, const char * const element) {
@@ -724,13 +775,6 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 	}
 
-	// DISABLED
-	for (i = from->disabled; i; i = i->nex) {
-		if (!slist_find_equal(merged->disabled, cfg_disabled_equal, i->val)) {
-			slist_append(&merged->disabled, cfg_disabled_clone(i->val));
-		}
-	}
-
 	// CALLBACK_CMD
 	if (from->callback_cmd) {
 		if (merged->callback_cmd) {
@@ -738,6 +782,13 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		}
 		merged->callback_cmd = strdup(from->callback_cmd);
 	}
+
+	// DISABLED, silently removing duplicates
+	for (i = from->disabled; i; i = i->nex) {
+		slist_append(&merged->disabled, cfg_disabled_clone(i->val));
+	}
+	struct SList *duplicates = remove_duplicate_disabled_name_desc(&merged->disabled);
+	slist_free_vals(&duplicates, cfg_disabled_free);
 
 	return merged;
 }
@@ -792,6 +843,8 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 
 	struct Cfg *merged = clone_cfg(to);
 
+	struct SList *i;
+
 	// SCALE
 	if (from->scaling == ON) {
 		merged->scaling = on_off_invert(merged->scaling);
@@ -801,6 +854,16 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 	if (from->auto_scale == ON) {
 		merged->auto_scale = on_off_invert(merged->auto_scale);
 	}
+
+	// DISABLED, conditionals always excluded
+	struct SList *disabled = NULL;
+	for (i = from->disabled; i; i = i->nex) {
+		if (!slist_find_equal(merged->disabled, cfg_disabled_name_desc_with_condition_equal, i->val)) {
+			slist_append(&disabled, i->val);
+		}
+	}
+	slist_xor_free(&merged->disabled, disabled, cfg_disabled_equal, cfg_disabled_free, cfg_disabled_clone);
+	slist_free(&disabled);
 
 	// VRR_OFF
 	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, NULL, fn_clone_strdup);
