@@ -34,14 +34,14 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	logs_clear();
+
 	cfg = cfg_default();
 
 	return 0;
 }
 
 int after_each(void **state) {
-	assert_logs_empty();
-
 	cfg_destroy();
 
 	fd_cfg_dir = -1;
@@ -55,12 +55,14 @@ void fd_wd_cfg_dir_create__no_dir(void **state) {
 
 	assert_int_equal(fd_cfg_dir, -1);
 	assert_int_equal(wd_cfg_dir, -1);
+
+	assert_logs_empty();
 }
 
 void fd_wd_cfg_dir_create__bad_dir(void **state) {
 	cfg->dir_path = strdup("/inexistent");
 
-	expect_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
 	fd_wd_cfg_dir_create();
 
@@ -81,6 +83,8 @@ void fd_wd_cfg_dir_create__ok(void **state) {
 	assert_int_not_equal(inotify_rm_watch(fd_cfg_dir, wd_cfg_dir), -1);
 
 	assert_int_equal(close(fd_cfg_dir), 0);
+
+	assert_logs_empty();
 }
 
 void fd_wd_cfg_dir_destroy__bad(void **state) {
@@ -106,6 +110,8 @@ void fd_wd_cfg_dir_destroy__ok(void **state) {
 
 	assert_int_equal(fd_cfg_dir, -1);
 	assert_int_equal(wd_cfg_dir, -1);
+
+	assert_logs_empty();
 }
 
 int main(void) {

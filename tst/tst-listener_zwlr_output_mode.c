@@ -22,12 +22,12 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	logs_clear();
+
 	return 0;
 }
 
 int after_each(void **state) {
-	assert_logs_empty();
-
 	return 0;
 }
 
@@ -45,6 +45,8 @@ void preferred__first(void **state) {
 	assert_true(mode_preferred.preferred);
 
 	slist_free(&head.modes);
+
+	assert_logs_empty();
 }
 
 void preferred__subsequent(void **state) {

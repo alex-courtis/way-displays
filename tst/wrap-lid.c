@@ -15,7 +15,7 @@ void __wrap_lid_update(void) {
 }
 
 bool __wrap_lid_is_closed(char *name) {
-	check_expected(name);
+	check_expected_ptr(name);
 	return mock_type(bool);
 }
 
