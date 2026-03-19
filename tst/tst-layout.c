@@ -1,5 +1,6 @@
 #include "tst.h"
 #include "asserts.h"
+#include "expects.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -730,7 +731,7 @@ void handle_success__head_changing_mode(void **state) {
 
 	expect_int_value(__wrap_call_back, t, INFO);
 	expect_str(__wrap_call_back, msg1, "Changes successful");
-	expect_nul(__wrap_call_back, msg2);
+	expect_str(__wrap_call_back, msg2, NULL);
 
 	handle_success();
 
@@ -744,7 +745,7 @@ void handle_success__ok(void **state) {
 
 	expect_int_value(__wrap_call_back, t, INFO);
 	expect_str(__wrap_call_back, msg1, "human");
-	expect_nul(__wrap_call_back, msg2);
+	expect_str(__wrap_call_back, msg2, NULL);
 
 	handle_success();
 
