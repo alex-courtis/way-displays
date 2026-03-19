@@ -49,11 +49,11 @@ int check_stable_equal_strcmp(CMockaValueData value, CMockaValueData check_data)
 	const struct STable* const actual = (struct STable*)value.ptr;
 	const struct STable* const expected = (struct STable*)check_data.ptr;
 
-	if (!stable_equal(actual, expected, fn_comp_equals_strcmp)) {
-		return false;
+	if (stable_equal(actual, expected, fn_comp_equals_strcmp)) {
+		return true;
 	} else {
 		cmocka_print_error("check_stable_equal_strcmp\nEXPECTED:\n%s\n!=\nACTUAL:\n%s\n", stable_str(expected), stable_str(actual));
-		return true;
+		return false;
 	}
 }
 
