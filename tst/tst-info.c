@@ -187,7 +187,7 @@ void print_cfg_commands__ok(void **state) {
 void print_head_arrived__all(void **state) {
 	struct State *s = *state;
 
-	expect_string(__wrap_lid_is_closed, name, "name1");
+	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, ARRIVED, s->head1);
@@ -200,8 +200,8 @@ void print_head_arrived__all(void **state) {
 void print_head_arrived__min(void **state) {
 	struct Head *head = calloc(1, sizeof(struct Head));
 
-	expect_string(__wrap_lid_is_closed, name, NULL);
-	will_return(__wrap_lid_is_closed, false);
+	expect_str(__wrap_lid_is_closed, name, NULL);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	print_head(INFO, ARRIVED, head);
 
@@ -225,7 +225,7 @@ void print_head_departed__ok(void **state) {
 void print_head_deltas__mode(void **state) {
 	struct State *s = *state;
 
-	expect_string(__wrap_lid_is_closed, name, "name1");
+	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
@@ -241,7 +241,7 @@ void print_head_deltas__vrr(void **state) {
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	s->head1->desired.mode = s->head1->current.mode;
 
-	expect_string(__wrap_lid_is_closed, name, "name1");
+	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
@@ -256,7 +256,7 @@ void print_head_deltas__other(void **state) {
 
 	s->head1->desired.mode = s->head1->current.mode;
 
-	expect_string(__wrap_lid_is_closed, name, "name1");
+	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
@@ -271,7 +271,7 @@ void print_head_deltas__disable(void **state) {
 
 	s->head1->desired.enabled = false;
 
-	expect_string(__wrap_lid_is_closed, name, "name1");
+	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
@@ -286,7 +286,7 @@ void print_head_deltas__enable(void **state) {
 
 	s->head1->current.enabled = false;
 
-	expect_string(__wrap_lid_is_closed, name, "name1");
+	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
@@ -519,7 +519,7 @@ void call_back__one(void **state) {
 
 	will_return(__wrap_log_get_threshold, INFO);
 
-	expect_string(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
+	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
 	call_back(INFO, "msg1", NULL);
@@ -541,7 +541,7 @@ void call_back__two(void **state) {
 
 	will_return(__wrap_log_get_threshold, INFO);
 
-	expect_string(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
+	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
 	call_back(FATAL, "msg1", "msg2");
@@ -565,7 +565,7 @@ void call_back_mode_fail__(void **state) {
 
 	will_return(__wrap_log_get_threshold, INFO);
 
-	expect_string(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
+	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
 	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
@@ -594,7 +594,7 @@ void call_back_adaptive_sync_fail__(void **state) {
 
 	will_return(__wrap_log_get_threshold, INFO);
 
-	expect_string(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
+	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
 	call_back_adaptive_sync_fail(WARNING, displ->delta.head);
@@ -610,14 +610,14 @@ int main(void) {
 		TEST(print_cfg_commands__ok),
 
 		TEST(print_head_arrived__all),
-		// TEST(print_head_arrived__min),
-		// TEST(print_head_departed__ok),
-		//
-		// TEST(print_head_deltas__mode),
-		// TEST(print_head_deltas__vrr),
-		// TEST(print_head_deltas__other),
-		// TEST(print_head_deltas__disable),
-		// TEST(print_head_deltas__enable),
+		TEST(print_head_arrived__min),
+		TEST(print_head_departed__ok),
+
+		TEST(print_head_deltas__mode),
+		TEST(print_head_deltas__vrr),
+		TEST(print_head_deltas__other),
+		TEST(print_head_deltas__disable),
+		TEST(print_head_deltas__enable),
 
 		TEST(print_active__empty),
 		TEST(print_active__many),

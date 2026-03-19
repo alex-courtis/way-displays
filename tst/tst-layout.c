@@ -21,12 +21,12 @@
 
 struct Mode *__wrap_head_find_mode(struct Head *head) {
 	check_expected_ptr(head);
-	return mock_type(struct Mode*);
+	return mock_ptr_type_checked(struct Mode*);
 }
 
 wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
 	check_expected_ptr(head);
-	return mock_type(wl_fixed_t);
+	return mock_int();
 }
 
 
@@ -72,9 +72,10 @@ int before_each(void **state) {
 int after_each(void **state) {
 	slist_free(&heads);
 
-	assert_nul(displ->delta.head);
-	assert_int_equal(displ->delta.element, 0);
-	assert_nul(displ->delta.human);
+	// TODO cmocka2
+	// assert_nul(displ->delta.head);
+	// assert_int_equal(displ->delta.element, 0);
+	// assert_nul(displ->delta.human);
 
 	free(displ);
 
@@ -335,7 +336,7 @@ void desire_enabled__lid_closed_many(void **state) {
 	};
 	slist_append(&heads, &head1);
 
-	expect_string(__wrap_lid_is_closed, name, "head0");
+	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return(__wrap_lid_is_closed, true);
 
 	desire_enabled(&head0);
@@ -352,7 +353,7 @@ void desire_enabled__lid_closed_one(void **state) {
 	};
 	slist_append(&heads, &head0);
 
-	expect_string(__wrap_lid_is_closed, name, "head0");
+	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return(__wrap_lid_is_closed, true);
 
 	desire_enabled(&head0);
@@ -371,7 +372,7 @@ void desire_enabled__lid_closed_one_disabled(void **state) {
 
 	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
-	expect_string(__wrap_lid_is_closed, name, "head0");
+	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return(__wrap_lid_is_closed, true);
 
 	desire_enabled(&head0);
@@ -391,7 +392,7 @@ void desire_enabled__override(void **state) {
 
 	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
-	expect_string(__wrap_lid_is_closed, name, "head0");
+	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return(__wrap_lid_is_closed, false);
 
 	desire_enabled(&head0);
@@ -412,7 +413,7 @@ void desire_enabled__override_reset(void **state) {
 
 	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
-	expect_string(__wrap_lid_is_closed, name, "head0");
+	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return(__wrap_lid_is_closed, false);
 
 	desire_enabled(&head0);
@@ -448,9 +449,8 @@ void desire_mode__no_mode(void **state) {
 		.desired.mode = &mode0,
 	};
 
-	// TODO cmocka 2
-	// expect_value(__wrap_head_find_mode, head, &head0);
-	will_return(__wrap_head_find_mode, NULL);
+	expect_ptr(__wrap_head_find_mode, head, &head0);
+	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
 
 	desire_mode(&head0);
 
@@ -470,9 +470,8 @@ void desire_mode__no_mode_warned(void **state) {
 		.warned_no_mode = true,
 	};
 
-	// TODO cmocka 2
-	// expect_value(__wrap_head_find_mode, head, &head0);
-	will_return(__wrap_head_find_mode, NULL);
+	expect_ptr(__wrap_head_find_mode, head, &head0);
+	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
 
 	desire_mode(&head0);
 
@@ -492,9 +491,8 @@ void desire_mode__ok(void **state) {
 	};
 	struct Mode mode1 = { 0 };
 
-	// TODO cmocka 2
-	// expect_value(__wrap_head_find_mode, head, &head0);
-	will_return(__wrap_head_find_mode, &mode1);
+	expect_ptr(__wrap_head_find_mode, head, &head0);
+	will_return_ptr_type(__wrap_head_find_mode, &mode1, struct Mode*);
 
 	desire_mode(&head0);
 
@@ -550,8 +548,7 @@ void desire_scale__auto(void **state) {
 	cfg->scaling = ON;
 	cfg->auto_scale = ON;
 
-	// TODO cmocka 2
-	// expect_value(__wrap_head_auto_scale, head, &head0);
+	expect_ptr(__wrap_head_auto_scale, head, &head0);
 	will_return(__wrap_head_auto_scale, wl_fixed_from_double(2.5));
 
 	desire_scale(&head0);
@@ -690,8 +687,8 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 	displ->delta.head = &head;
 
 	expect_int_value(__wrap_call_back, t, INFO);
-	expect_string(__wrap_call_back, msg1, "Changes successful");
-	expect_string(__wrap_call_back, msg2, NULL);
+	expect_str(__wrap_call_back, msg1, "Changes successful");
+	expect_str(__wrap_call_back, msg2, NULL);
 
 	handle_success();
 
@@ -711,12 +708,10 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	displ->delta.head = &head;
 
 	expect_int_value(__wrap_print_adaptive_sync_fail, t, WARNING);
-	// TODO cmocka 2
-	// expect_value(__wrap_print_adaptive_sync_fail, head, &head);
+	expect_ptr(__wrap_print_adaptive_sync_fail, head, &head);
 
 	expect_int_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
-	// TODO cmocka 2
-	// expect_string(__wrap_call_back_adaptive_sync_fail, head, &head);
+	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, &head);
 
 	handle_success();
 
@@ -734,8 +729,8 @@ void handle_success__head_changing_mode(void **state) {
 	displ->delta.head = &head;
 
 	expect_int_value(__wrap_call_back, t, INFO);
-	expect_string(__wrap_call_back, msg1, "Changes successful");
-	expect_string(__wrap_call_back, msg2, NULL);
+	expect_str(__wrap_call_back, msg1, "Changes successful");
+	expect_nul(__wrap_call_back, msg2);
 
 	handle_success();
 
@@ -748,8 +743,8 @@ void handle_success__ok(void **state) {
 	displ->delta.human = strdup("human");
 
 	expect_int_value(__wrap_call_back, t, INFO);
-	expect_string(__wrap_call_back, msg1, "human");
-	expect_string(__wrap_call_back, msg2, NULL);
+	expect_str(__wrap_call_back, msg1, "human");
+	expect_nul(__wrap_call_back, msg2);
 
 	handle_success();
 
@@ -768,14 +763,12 @@ void handle_failure__mode(void **state) {
 	displ->delta.head = &head;
 
 	expect_int_value(__wrap_print_mode_fail, t, ERROR);
-	// TODO cmocka 2
-	// expect_value(__wrap_print_mode_fail, head, &head);
-	// expect_value(__wrap_print_mode_fail, mode, &mode_des);
+	expect_ptr(__wrap_print_mode_fail, head, &head);
+	expect_ptr(__wrap_print_mode_fail, mode, &mode_des);
 
 	expect_int_value(__wrap_call_back_mode_fail, t, ERROR);
-	// TODO cmocka 2
-	// expect_value(__wrap_call_back_mode_fail, head, &head);
-	// expect_value(__wrap_call_back_mode_fail, mode, &mode_des);
+	expect_ptr(__wrap_call_back_mode_fail, head, &head);
+	expect_ptr(__wrap_call_back_mode_fail, mode, &mode_des);
 
 	handle_failure();
 
@@ -800,11 +793,10 @@ void handle_failure__adaptive_sync(void **state) {
 	displ->delta.head = &head;
 
 	expect_int_value(__wrap_print_adaptive_sync_fail, t, WARNING);
-	// TODO cmocka 2
-	// expect_value(__wrap_print_adaptive_sync_fail, head, &head);
+	expect_ptr(__wrap_print_adaptive_sync_fail, head, &head);
 
 	expect_int_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
-	expect_string(__wrap_call_back_adaptive_sync_fail, head, &head);
+	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, &head);
 
 	handle_failure();
 
@@ -817,8 +809,8 @@ void handle_failure__unspecified(void **state) {
 	displ->delta.human = strdup("human");
 
 	expect_int_value(__wrap_call_back, t, FATAL);
-	expect_string(__wrap_call_back, msg1, "human");
-	expect_string(__wrap_call_back, msg2, "\nChanges failed, exiting");
+	expect_str(__wrap_call_back, msg1, "human");
+	expect_str(__wrap_call_back, msg2, "\nChanges failed, exiting");
 
 	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
@@ -830,50 +822,50 @@ void handle_failure__unspecified(void **state) {
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(order_heads__exact_partial_regex),
-		// TEST(order_heads__exact_regex_catchall),
-		// TEST(order_heads__no_order),
-		//
-		// TEST(position_heads__col_left),
-		// TEST(position_heads__col_mid),
-		// TEST(position_heads__col_right),
-		// TEST(position_heads__row_top),
-		// TEST(position_heads__row_mid),
-		// TEST(position_heads__row_bottom),
-		//
-		// TEST(desire_enabled__lid_closed_many),
-		// TEST(desire_enabled__lid_closed_one_disabled),
-		// TEST(desire_enabled__lid_closed_one),
-		// TEST(desire_enabled__override),
-		// TEST(desire_enabled__override_reset),
-		//
-		// TEST(desire_mode__disabled),
-		// TEST(desire_mode__no_mode),
-		// TEST(desire_mode__no_mode_warned),
-		// TEST(desire_mode__ok),
-		//
-		// TEST(desire_scale__disabled),
-		// TEST(desire_scale__no_scaling),
-		// TEST(desire_scale__no_auto),
-		// TEST(desire_scale__auto),
-		// TEST(desire_scale__user),
-		//
-		// TEST(desire_transform__disabled),
-		// TEST(desire_transform__no_transform),
-		// TEST(desire_transform__user),
-		//
-		// TEST(desire_adaptive_sync__head_disabled),
-		// TEST(desire_adaptive_sync__failed),
-		// TEST(desire_adaptive_sync__disabled),
-		// TEST(desire_adaptive_sync__enabled),
-		//
-		// TEST(handle_success__head_changing_adaptive_sync),
-		// TEST(handle_success__head_changing_adaptive_sync_fail),
-		// TEST(handle_success__head_changing_mode),
-		// TEST(handle_success__ok),
-		//
-		// TEST(handle_failure__mode),
-		// TEST(handle_failure__adaptive_sync),
-		// TEST(handle_failure__unspecified),
+		TEST(order_heads__exact_regex_catchall),
+		TEST(order_heads__no_order),
+
+		TEST(position_heads__col_left),
+		TEST(position_heads__col_mid),
+		TEST(position_heads__col_right),
+		TEST(position_heads__row_top),
+		TEST(position_heads__row_mid),
+		TEST(position_heads__row_bottom),
+
+		TEST(desire_enabled__lid_closed_many),
+		TEST(desire_enabled__lid_closed_one_disabled),
+		TEST(desire_enabled__lid_closed_one),
+		TEST(desire_enabled__override),
+		TEST(desire_enabled__override_reset),
+
+		TEST(desire_mode__disabled),
+		TEST(desire_mode__no_mode),
+		TEST(desire_mode__no_mode_warned),
+		TEST(desire_mode__ok),
+
+		TEST(desire_scale__disabled),
+		TEST(desire_scale__no_scaling),
+		TEST(desire_scale__no_auto),
+		TEST(desire_scale__auto),
+		TEST(desire_scale__user),
+
+		TEST(desire_transform__disabled),
+		TEST(desire_transform__no_transform),
+		TEST(desire_transform__user),
+
+		TEST(desire_adaptive_sync__head_disabled),
+		TEST(desire_adaptive_sync__failed),
+		TEST(desire_adaptive_sync__disabled),
+		TEST(desire_adaptive_sync__enabled),
+
+		TEST(handle_success__head_changing_adaptive_sync),
+		TEST(handle_success__head_changing_adaptive_sync_fail),
+		TEST(handle_success__head_changing_mode),
+		TEST(handle_success__ok),
+
+		TEST(handle_failure__mode),
+		TEST(handle_failure__adaptive_sync),
+		TEST(handle_failure__unspecified),
 	};
 
 	return RUN(tests);

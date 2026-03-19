@@ -242,8 +242,8 @@ void head_find_mode__all_failed(void **state) {
 	slist_append(&head.modes_failed, &mode);
 
 	expect_int_value(__wrap_call_back, t, ERROR);
-	expect_string(__wrap_call_back, msg1, "head0");
-	expect_string(__wrap_call_back, msg2, "\n  No mode, disabling");
+	expect_str(__wrap_call_back, msg1, "head0");
+	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
 
 	assert_nul(head_find_mode(&head));
 
@@ -299,12 +299,12 @@ void head_find_mode__user_failed(void **state) {
 	will_return(__wrap_mode_user_mode, NULL);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
-	expect_string(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
-	expect_string(__wrap_call_back, msg2, NULL);
+	expect_str(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
+	expect_str(__wrap_call_back, msg2, NULL);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
-	expect_string(__wrap_call_back, msg1, "HEAD\n  No preferred mode, falling back to maximum available");
-	expect_string(__wrap_call_back, msg2, NULL);
+	expect_str(__wrap_call_back, msg1, "HEAD\n  No preferred mode, falling back to maximum available");
+	expect_str(__wrap_call_back, msg2, NULL);
 
 	// user failed, fall back to max
 	assert_ptr_equal(head_find_mode(&head), &mode);
@@ -371,8 +371,8 @@ void head_find_mode__max(void **state) {
 	slist_append(&head.modes, &mode);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
-	expect_string(__wrap_call_back, msg1, "name\n  No preferred mode, falling back to maximum available");
-	expect_string(__wrap_call_back, msg2, NULL);
+	expect_str(__wrap_call_back, msg1, "name\n  No preferred mode, falling back to maximum available");
+	expect_str(__wrap_call_back, msg2, NULL);
 
 	// one and only notice
 	assert_ptr_equal(head_find_mode(&head), &mode);
@@ -393,8 +393,8 @@ void head_find_mode__none(void **state) {
 	head.warned_no_preferred = true;
 
 	expect_int_value(__wrap_call_back, t, ERROR);
-	expect_string(__wrap_call_back, msg1, "head0");
-	expect_string(__wrap_call_back, msg2, "\n  No mode, disabling");
+	expect_str(__wrap_call_back, msg1, "head0");
+	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
 
 	assert_nul(head_find_mode(&head));
 
