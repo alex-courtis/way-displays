@@ -57,7 +57,4 @@ int check_stable_equal_strcmp(CMockaValueData value, CMockaValueData check_data)
 	}
 }
 
-// TODO cmocka 2
-// strongly type all will_return(
-
 #endif // EXPECTS_H
