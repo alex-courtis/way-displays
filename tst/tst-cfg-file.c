@@ -24,7 +24,7 @@ char *env_home = NULL;
 
 char *__wrap_marshal_cfg(struct Cfg *cfg) {
 	check_expected_ptr(cfg);
-	return mock_type(char*);
+	return mock_ptr_type_checked(char*);
 }
 
 bool __wrap_file_write(const char *path, const char *contents, const char *mode) {
@@ -119,8 +119,8 @@ int after_each(void **state) {
 void cfg_file_write__bad_yaml(void **state) {
 	cfg->file_path = strdup("something");
 
-	expect_str(__wrap_marshal_cfg, cfg, cfg);
-	will_return(__wrap_marshal_cfg, NULL);
+	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
+	will_return_ptr_type(__wrap_marshal_cfg, NULL, char*);
 
 	cfg_file_write();
 
@@ -132,8 +132,8 @@ void cfg_file_write__none(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_str(__wrap_marshal_cfg, cfg, cfg);
-	will_return(__wrap_marshal_cfg, expected);
+	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
+	will_return_ptr_type(__wrap_marshal_cfg, expected, char*);
 
 	will_return(__wrap_fd_wd_cfg_dir_destroy, NULL);
 
@@ -177,10 +177,10 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	cfg->file_name = strdup("missing");
 	cfg->resolved_from = slist_at(cfg_file_paths, 2);
 
-	char *expected = strdup("XXXX");
+	char *expected = strdup("XXXXxxxX");
 
-	expect_str(__wrap_marshal_cfg, cfg, cfg);
-	will_return(__wrap_marshal_cfg, strdup(expected));
+	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
+	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
 
 	will_return(__wrap_fd_wd_cfg_dir_destroy, NULL);
 
@@ -243,8 +243,8 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_str(__wrap_marshal_cfg, cfg, cfg);
-	will_return(__wrap_marshal_cfg, strdup(expected));
+	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
+	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
 
 	will_return(__wrap_fd_wd_cfg_dir_destroy, NULL);
 
@@ -286,8 +286,8 @@ void cfg_file_write__existing(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_str(__wrap_marshal_cfg, cfg, cfg);
-	will_return(__wrap_marshal_cfg, strdup(expected));
+	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
+	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
 
 	expect_str(__wrap_file_write, path, cfg->file_path);
 	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);

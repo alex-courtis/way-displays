@@ -26,13 +26,13 @@ struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_fail
 	check_expected_ptr(modes);
 	check_expected_ptr(modes_failed);
 	check_expected_ptr(user_mode);
-	return mock_type(struct Mode*);
+	return mock_ptr_type_checked(struct Mode*);
 }
 
 struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
 	check_expected_ptr(modes);
 	check_expected_ptr(modes_failed);
-	return mock_type(struct Mode *);
+	return mock_ptr_type_checked(struct Mode *);
 }
 
 
@@ -259,7 +259,7 @@ void head_find_mode__user_available(void **state) {
 	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
 	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
 	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return(__wrap_mode_user_mode, &expected);
+	will_return_ptr_type(__wrap_mode_user_mode, &expected, struct Mode*);
 
 	assert_ptr_equal(head_find_mode(&head), &expected);
 
@@ -284,7 +284,7 @@ void head_find_mode__user_failed(void **state) {
 	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
 	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
 	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return(__wrap_mode_user_mode, NULL);
+	will_return_ptr_type(__wrap_mode_user_mode, NULL, struct UserMode*);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
@@ -306,7 +306,7 @@ void head_find_mode__user_failed(void **state) {
 	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
 	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
 	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return(__wrap_mode_user_mode, NULL);
+	will_return_ptr_type(__wrap_mode_user_mode, NULL, struct UserMode*);
 
 	// marked failures avoided
 	assert_ptr_equal(head_find_mode(&head), &mode);
@@ -341,7 +341,7 @@ void head_find_mode__max_preferred_refresh(void **state) {
 
 	expect_ptr(__wrap_mode_max_preferred, modes, head.modes);
 	expect_ptr(__wrap_mode_max_preferred, modes_failed, head.modes_failed);
-	will_return(__wrap_mode_max_preferred, &mode);
+	will_return_ptr_type(__wrap_mode_max_preferred, &mode, struct Mode*);
 
 	assert_ptr_equal(head_find_mode(&head), &mode);
 
