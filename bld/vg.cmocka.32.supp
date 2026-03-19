@@ -3,8 +3,8 @@
 {
    - list_free
    Memcheck:Cond
-   fun:list_free
-   fun:teardown_testing.isra.0
+   fun:list_free*
+   fun:teardown_testing*
    ...
 }
 
@@ -12,7 +12,17 @@
    - list_find
    Memcheck:Cond
    fun:list_find
-   fun:add_symbol_value
+   fun:add_symbol_value*
+   fun:_expect_check*
+   ...
+}
+
+{
+   - list_find
+   Memcheck:Cond
+   fun:list_find
+   fun:add_symbol_value*
+   fun:_will_return*
    ...
 }
 
@@ -33,26 +43,17 @@
 }
 
 {
-   - fail_if_leftover_values
+   - check_for_leftover_values
    Memcheck:Cond
-   fun:*_list
-   fun:fail_if_leftover_values.isra.0
+   fun:check_for_leftover_values*
+   fun:has_leftover_values*
    ...
 }
 
 {
-   - fail_if_leftover_values
-   Memcheck:Value4
-   fun:*_list
-   fun:fail_if_leftover_values.isra.0
-   ...
-}
-
-{
-   - fail_if_leftover_values
+   - remove_always_return_values
    Memcheck:Cond
-   fun:*_values
-   fun:fail_if_leftover_values.isra.0
+   fun:remove_always_return_values*
+   fun:has_leftover_values*
    ...
 }
-
