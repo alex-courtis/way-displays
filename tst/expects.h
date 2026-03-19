@@ -59,7 +59,5 @@ int check_stable_equal_strcmp(CMockaValueData value, CMockaValueData check_data)
 
 // TODO cmocka 2
 // strongly type all will_return(
-// split expects.h
-// remove all asserts from afters
 
 #endif // EXPECTS_H

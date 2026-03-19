@@ -74,27 +74,23 @@ void head_auto_scale__mode(void **state) {
 	struct Head head = { .desired.mode = &mode };
 
 	// dpi 0 defaults to 96
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 0);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 0);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 1);
 
 	// even 144
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 144);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 144);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 144.0 / 96);
 
 	// rounded down to 156
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 161);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 161);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 156.0 / 96);
 
 	// rounded up to 168
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 162);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 162);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 168.0 / 96);
 
 	assert_logs_empty();
@@ -105,45 +101,38 @@ void head_auto_scale__range(void **state) {
 	struct Head head = { .desired.mode = &mode };
 
 	// scale under 1.0 is clamped to 1.0 with default settings
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 72);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 72);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, -1.0f), 1);
 
 	// clamping to some other minimum value works too
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 12);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 12);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 0.125f, -1.0f), 0.125f);
 
 	// the minimum value is always positive (quantized to 1/8)
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 1);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 1);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, -1.0f, -1.0f), 0.125f);
 
 	// clamping to maximum value works
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 384);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, 2.5f), 2.5f);
 
 	// maximum values under 1.0 are ignored
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 384);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 1.0f, 0.9f), 4.0f);
 
 	// the configured maximum is respected even with quantization
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 384);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 0.63f, 1.49f), 1.375f);
 
 	// the configured minimum is respected even with quantization
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_dpi, mode, &mode);
-	will_return(__wrap_mode_dpi, 12);
+	expect_ptr(__wrap_mode_dpi, mode, &mode);
+	will_return_int(__wrap_mode_dpi, 12);
 	assert_wl_fixed_t_equal_double(head_auto_scale(&head, 0.63f, -1.0f), 0.75f);
 
 	assert_logs_empty();
@@ -267,10 +256,9 @@ void head_find_mode__user_available(void **state) {
 
 	// mode matched to user
 	struct Mode expected = { 0 };
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_user_mode, modes, head.modes);
-	// expect_value(__wrap_mode_user_mode, modes_failed, head.modes_failed);
-	// expect_value(__wrap_mode_user_mode, user_mode, user_mode);
+	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
+	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
 	will_return(__wrap_mode_user_mode, &expected);
 
 	assert_ptr_equal(head_find_mode(&head), &expected);
@@ -293,10 +281,9 @@ void head_find_mode__user_failed(void **state) {
 	head.name = strdup("HEAD");
 
 	// mode not matched to user
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_user_mode, modes, head.modes);
-	// expect_value(__wrap_mode_user_mode, modes_failed, head.modes_failed);
-	// expect_value(__wrap_mode_user_mode, user_mode, user_mode);
+	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
+	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
 	will_return(__wrap_mode_user_mode, NULL);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
@@ -316,10 +303,9 @@ void head_find_mode__user_failed(void **state) {
 	assert_logs_empty();
 
 	// same test again
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_user_mode, modes, head.modes);
-	// expect_value(__wrap_mode_user_mode, modes_failed, head.modes_failed);
-	// expect_value(__wrap_mode_user_mode, user_mode, user_mode);
+	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
+	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
 	will_return(__wrap_mode_user_mode, NULL);
 
 	// marked failures avoided
@@ -353,9 +339,8 @@ void head_find_mode__max_preferred_refresh(void **state) {
 
 	slist_append(&head.modes, &mode);
 
-	// TODO cmocka 2
-	// expect_value(__wrap_mode_max_preferred, modes, head.modes);
-	// expect_value(__wrap_mode_max_preferred, modes_failed, head.modes_failed);
+	expect_ptr(__wrap_mode_max_preferred, modes, head.modes);
+	expect_ptr(__wrap_mode_max_preferred, modes_failed, head.modes_failed);
 	will_return(__wrap_mode_max_preferred, &mode);
 
 	assert_ptr_equal(head_find_mode(&head), &mode);
@@ -456,24 +441,24 @@ void head_apply_toggles__disabled__disable(void **state) {
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(head_auto_scale__default),
-		// TEST(head_auto_scale__mode),
-		// TEST(head_auto_scale__range),
-		//
-		// TEST(head_set_scaled_dimensions__default),
-		// TEST(head_set_scaled_dimensions__transform),
-		// TEST(head_set_scaled_dimensions__dimensions),
-		//
-		// TEST(head_find_mode__all_failed),
-		// TEST(head_find_mode__user_available),
-		// TEST(head_find_mode__user_failed),
-		// TEST(head_find_mode__preferred),
-		// TEST(head_find_mode__max_preferred_refresh),
-		// TEST(head_find_mode__max),
-		// TEST(head_find_mode__none),
-		//
-		// TEST(head_apply_toggles__none),
-		// TEST(head_apply_toggles__disabled__enable),
-		// TEST(head_apply_toggles__disabled__disable),
+		TEST(head_auto_scale__mode),
+		TEST(head_auto_scale__range),
+
+		TEST(head_set_scaled_dimensions__default),
+		TEST(head_set_scaled_dimensions__transform),
+		TEST(head_set_scaled_dimensions__dimensions),
+
+		TEST(head_find_mode__all_failed),
+		TEST(head_find_mode__user_available),
+		TEST(head_find_mode__user_failed),
+		TEST(head_find_mode__preferred),
+		TEST(head_find_mode__max_preferred_refresh),
+		TEST(head_find_mode__max),
+		TEST(head_find_mode__none),
+
+		TEST(head_apply_toggles__none),
+		TEST(head_apply_toggles__disabled__enable),
+		TEST(head_apply_toggles__disabled__disable),
 	};
 
 	return RUN(tests);

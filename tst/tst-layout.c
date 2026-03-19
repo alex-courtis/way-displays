@@ -73,11 +73,6 @@ int before_each(void **state) {
 int after_each(void **state) {
 	slist_free(&heads);
 
-	// TODO cmocka2
-	// assert_nul(displ->delta.head);
-	// assert_int_equal(displ->delta.element, 0);
-	// assert_nul(displ->delta.human);
-
 	free(displ);
 
 	cfg_destroy();
@@ -338,7 +333,7 @@ void desire_enabled__lid_closed_many(void **state) {
 	slist_append(&heads, &head1);
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
-	will_return(__wrap_lid_is_closed, true);
+	will_return_int(__wrap_lid_is_closed, true);
 
 	desire_enabled(&head0);
 
@@ -355,7 +350,7 @@ void desire_enabled__lid_closed_one(void **state) {
 	slist_append(&heads, &head0);
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
-	will_return(__wrap_lid_is_closed, true);
+	will_return_int(__wrap_lid_is_closed, true);
 
 	desire_enabled(&head0);
 
@@ -374,7 +369,7 @@ void desire_enabled__lid_closed_one_disabled(void **state) {
 	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
-	will_return(__wrap_lid_is_closed, true);
+	will_return_int(__wrap_lid_is_closed, true);
 
 	desire_enabled(&head0);
 
@@ -394,7 +389,7 @@ void desire_enabled__override(void **state) {
 	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
-	will_return(__wrap_lid_is_closed, false);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	desire_enabled(&head0);
 
@@ -415,7 +410,7 @@ void desire_enabled__override_reset(void **state) {
 	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
-	will_return(__wrap_lid_is_closed, false);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	desire_enabled(&head0);
 
@@ -550,7 +545,7 @@ void desire_scale__auto(void **state) {
 	cfg->auto_scale = ON;
 
 	expect_ptr(__wrap_head_auto_scale, head, &head0);
-	will_return(__wrap_head_auto_scale, wl_fixed_from_double(2.5));
+	will_return_int(__wrap_head_auto_scale, wl_fixed_from_double(2.5));
 
 	desire_scale(&head0);
 

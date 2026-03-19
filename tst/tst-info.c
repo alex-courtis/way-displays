@@ -189,7 +189,7 @@ void print_head_arrived__all(void **state) {
 	struct State *s = *state;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return(__wrap_lid_is_closed, false);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	print_head(INFO, ARRIVED, s->head1);
 
@@ -227,7 +227,7 @@ void print_head_deltas__mode(void **state) {
 	struct State *s = *state;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return(__wrap_lid_is_closed, false);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -243,7 +243,7 @@ void print_head_deltas__vrr(void **state) {
 	s->head1->desired.mode = s->head1->current.mode;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return(__wrap_lid_is_closed, false);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -258,7 +258,7 @@ void print_head_deltas__other(void **state) {
 	s->head1->desired.mode = s->head1->current.mode;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return(__wrap_lid_is_closed, false);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -273,7 +273,7 @@ void print_head_deltas__disable(void **state) {
 	s->head1->desired.enabled = false;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return(__wrap_lid_is_closed, false);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -288,7 +288,7 @@ void print_head_deltas__enable(void **state) {
 	s->head1->current.enabled = false;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return(__wrap_lid_is_closed, false);
+	will_return_int(__wrap_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -504,7 +504,7 @@ void call_back__no_callback(void **state) {
 }
 
 void call_back__below_threshold(void **state) {
-	will_return(__wrap_log_get_threshold, WARNING);
+	will_return_int(__wrap_log_get_threshold, WARNING);
 	call_back(INFO, "msg1", NULL);
 
 	assert_logs_empty();
@@ -518,7 +518,7 @@ void call_back__one(void **state) {
 	free(cfg->callback_cmd);
 	cfg->callback_cmd = strdup("command");
 
-	will_return(__wrap_log_get_threshold, INFO);
+	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
@@ -540,7 +540,7 @@ void call_back__two(void **state) {
 
 	displ->delta.human = strdup("not successful");
 
-	will_return(__wrap_log_get_threshold, INFO);
+	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
@@ -564,7 +564,7 @@ void call_back_mode_fail__(void **state) {
 			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
 	stable_put(env, "CALLBACK_LEVEL", "INFO");
 
-	will_return(__wrap_log_get_threshold, INFO);
+	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
@@ -593,7 +593,7 @@ void call_back_adaptive_sync_fail__(void **state) {
 			"  - 'model1'");
 	stable_put(env, "CALLBACK_LEVEL", "WARNING");
 
-	will_return(__wrap_log_get_threshold, INFO);
+	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
