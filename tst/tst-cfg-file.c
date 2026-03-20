@@ -41,11 +41,11 @@ bool __wrap_mkdir_p(char *path, mode_t mode) {
 }
 
 void __wrap_fd_wd_cfg_dir_create(void) {
-	mock();
+	function_called();
 }
 
 void __wrap_fd_wd_cfg_dir_destroy(void) {
-	mock();
+	function_called();
 }
 
 void clean_files(void) {
@@ -135,7 +135,7 @@ void cfg_file_write__none(void **state) {
 	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
 	will_return_ptr_type(__wrap_marshal_cfg, expected, char*);
 
-	will_return(__wrap_fd_wd_cfg_dir_destroy, NULL);
+	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
 	expect_str(__wrap_mkdir_p, path, "/path/to");
 	expect_int_value(__wrap_mkdir_p, mode, 0755);
@@ -151,7 +151,7 @@ void cfg_file_write__none(void **state) {
 	expect_str(__wrap_file_write, mode, "a");
 	will_return_int(__wrap_file_write, true);
 
-	will_return(__wrap_fd_wd_cfg_dir_create, NULL);
+	expect_function_call(__wrap_fd_wd_cfg_dir_create);
 
 	cfg_file_write();
 
@@ -182,7 +182,7 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
 	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
 
-	will_return(__wrap_fd_wd_cfg_dir_destroy, NULL);
+	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
 	expect_str(__wrap_file_write, path, "/path/to/two");
 	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
@@ -216,7 +216,7 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	expect_str(__wrap_file_write, mode, "a");
 	will_return_int(__wrap_file_write, true);
 
-	will_return(__wrap_fd_wd_cfg_dir_create, NULL);
+	expect_function_call(__wrap_fd_wd_cfg_dir_create);
 
 	cfg_file_write();
 
@@ -246,7 +246,7 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
 	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
 
-	will_return(__wrap_fd_wd_cfg_dir_destroy, NULL);
+	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
 	expect_str(__wrap_file_write, path, "/path/to/zero");
 	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
