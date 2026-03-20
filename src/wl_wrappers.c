@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <wayland-client-core.h>
+#include <wayland-client-protocol.h>
 
 #include "wl_wrappers.h"
 

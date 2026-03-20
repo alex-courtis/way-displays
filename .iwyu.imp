@@ -1,0 +1,28 @@
+[
+# ensure these are sourced from wayland, not the forward declarations in river
+{ "symbol": ["wl_buffer",              "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_callback",            "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_compositor",          "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_data_device",         "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_data_device_manager", "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_data_offer",          "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_data_source",         "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_display",             "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_fixes",               "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_keyboard",            "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_output",              "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_pointer",             "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_region",              "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_registry",            "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_seat",                "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_shell",               "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_shell_surface",       "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_shm",                 "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_shm_pool",            "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_subcompositor",       "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_subsurface",          "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_surface",             "public", "<wayland-client-protocol.h>", "public"] },
+{ "symbol": ["wl_touch",               "public", "<wayland-client-protocol.h>", "public"] },
+]
+
+# vim:ft=yaml

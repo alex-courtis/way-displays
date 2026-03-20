@@ -69,7 +69,8 @@ iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
 IWYU = include-what-you-use \
 	   -Xiwyu --no_fwd_decls \
 	   -Xiwyu --error=1 \
-	   -Xiwyu --verbose=3
+	   -Xiwyu --verbose=3 \
+	   -Xiwyu --mapping_file=.iwyu.imp
 
 cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \

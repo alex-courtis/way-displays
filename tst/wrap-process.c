@@ -1,5 +1,3 @@
-#include "tst.h" // IWYU pragma: keep
-
 #include <cmocka.h>
 
 #include "stable.h"

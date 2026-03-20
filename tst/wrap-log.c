@@ -1,4 +1,4 @@
-#include "tst.h" // IWYU pragma: keep
+#include "tst.h"
 
 #include <cmocka.h>
 #include <stdarg.h>

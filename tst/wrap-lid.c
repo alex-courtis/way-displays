@@ -1,5 +1,3 @@
-#include "tst.h" // IWYU pragma: keep
-
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
