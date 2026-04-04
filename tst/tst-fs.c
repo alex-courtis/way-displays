@@ -32,6 +32,8 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	logs_clear();
+
 	clean_dirs();
 	return 0;
 }
@@ -59,6 +61,8 @@ void mkdir_p__ok(void **state) {
 
 	struct stat sb;
 	assert_int_equal(stat("tst/mkdir_p/foo", &sb), 0);
+
+	assert_logs_empty();
 }
 
 void mkdir_p__exists(void **state) {
@@ -72,6 +76,8 @@ void mkdir_p__exists(void **state) {
 
 	struct stat sb;
 	assert_int_equal(stat("tst/mkdir_p/foo", &sb), 0);
+
+	assert_logs_empty();
 }
 
 

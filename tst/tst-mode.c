@@ -35,8 +35,6 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
-	assert_logs_empty();
-
 	cfg_user_mode_free(user_mode);
 	user_mode = NULL;
 

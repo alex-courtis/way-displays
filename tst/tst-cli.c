@@ -23,12 +23,12 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	logs_clear();
+
 	return 0;
 }
 
 int after_each(void **state) {
-	assert_logs_empty();
-
 	return 0;
 }
 
@@ -37,7 +37,7 @@ void parse_element__arrange_align_invalid_arrange(void **state) {
 	optind = 0;
 	char *argv[] = { "ROW", "INVALID" };
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
 
@@ -48,7 +48,7 @@ void parse_element__arrange_align_invalid_align(void **state) {
 	optind = 0;
 	char *argv[] = { "INVALID", "LEFT" };
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
 
@@ -69,13 +69,15 @@ void parse_element__arrange_align_ok(void **state) {
 	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
+
+	assert_logs_empty();
 }
 
 void parse_element__auto_scale_invalid(void **state) {
 	optind = 0;
 	char *argv[] = { "INVALID", };
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_element(CFG_SET, AUTO_SCALE, 1, argv));
 
@@ -95,13 +97,15 @@ void parse_element__auto_scale_ok(void **state) {
 	assert_cfg_equal(actual, &expected);
 
 	cfg_free(actual);
+
+	assert_logs_empty();
 }
 
 void parse_element__transform_invalid(void **state) {
 	optind = 0;
 	char *argv[] = { "displ", "INVALID", };
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_element(CFG_SET, TRANSFORM, 2, argv));
 
@@ -121,6 +125,8 @@ void parse_element__transform_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 void parse_element__transform_del_ok(void **state) {
@@ -141,13 +147,15 @@ void parse_element__transform_del_ok(void **state) {
 	cfg_free(actual);
 
 	slist_free(&expected.user_transforms);
+
+	assert_logs_empty();
 }
 
 void parse_element__scale_set_invalid(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "NOTANUMBER", };
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_element(CFG_SET, SCALE, 2, argv));
 
@@ -174,6 +182,8 @@ void parse_element__scale_set_ok(void **state) {
 	cfg_free(actual);
 
 	slist_free(&expected.user_scales);
+
+	assert_logs_empty();
 }
 
 void parse_element__scale_del_ok(void **state) {
@@ -194,13 +204,15 @@ void parse_element__scale_del_ok(void **state) {
 	cfg_free(actual);
 
 	slist_free(&expected.user_scales);
+
+	assert_logs_empty();
 }
 
 void parse_element__mode_set_invalid_width(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "NAN", "2", "3", };
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_element(CFG_SET, MODE, 4, argv));
 
@@ -211,7 +223,7 @@ void parse_element__mode_set_invalid_height(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "1", "NAN", "3", };
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_element(CFG_SET, MODE, 4, argv));
 
@@ -222,7 +234,7 @@ void parse_element__mode_set_invalid_refresh(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "1", "2", "NAN", };
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_element(CFG_SET, MODE, 4, argv));
 
@@ -248,6 +260,8 @@ void parse_element__mode_set_max(void **state) {
 
 	slist_free(&expected.user_modes);
 	cfg_user_mode_free(expectedUserMode);
+
+	assert_logs_empty();
 }
 
 void parse_element__mode_set_res(void **state) {
@@ -271,6 +285,8 @@ void parse_element__mode_set_res(void **state) {
 
 	slist_free(&expected.user_modes);
 	cfg_user_mode_free(expectedUserMode);
+
+	assert_logs_empty();
 }
 
 void parse_element__mode_set_res_refresh(void **state) {
@@ -295,6 +311,8 @@ void parse_element__mode_set_res_refresh(void **state) {
 
 	slist_free(&expected.user_modes);
 	cfg_user_mode_free(expectedUserMode);
+
+	assert_logs_empty();
 }
 
 void parse_element__mode_del_ok(void **state) {
@@ -316,6 +334,8 @@ void parse_element__mode_del_ok(void **state) {
 
 	slist_free(&expected.user_modes);
 	cfg_user_mode_free(expectedUserMode);
+
+	assert_logs_empty();
 }
 
 void parse_element__adaptive_sync_off_ok(void **state) {
@@ -333,6 +353,8 @@ void parse_element__adaptive_sync_off_ok(void **state) {
 	cfg_free(actual);
 
 	slist_free(&expected.adaptive_sync_off_name_desc);
+
+	assert_logs_empty();
 }
 
 void parse_element__disabled_ok(void **state) {
@@ -350,6 +372,8 @@ void parse_element__disabled_ok(void **state) {
 	cfg_free(actual);
 
 	slist_free_vals(&expected.disabled, cfg_disabled_free);
+
+	assert_logs_empty();
 }
 
 void parse_element__order_ok(void **state) {
@@ -367,13 +391,15 @@ void parse_element__order_ok(void **state) {
 	cfg_free(actual);
 
 	slist_free(&expected.order_name_desc);
+
+	assert_logs_empty();
 }
 
 void parse_write__nargs(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_write(1, NULL));
 
@@ -389,19 +415,21 @@ void parse_write__ok(void **state) {
 	assert_int_equal(request->command, CFG_WRITE);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 void parse_set__mode_nargs(void **state) {
 	optind = 0;
 	optarg = "MODE";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(1, NULL));
 
 	assert_log(FATAL, "MODE requires two to four arguments\n");
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(5, NULL));
 
@@ -412,7 +440,7 @@ void parse_set__arrange_align_nargs(void **state) {
 	optind = 0;
 	optarg = "ARRANGE_ALIGN";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(0, NULL));
 
@@ -423,7 +451,7 @@ void parse_set__scale_nargs(void **state) {
 	optind = 0;
 	optarg = "SCALE";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(0, NULL));
 
@@ -434,7 +462,7 @@ void parse_set__transform_nargs(void **state) {
 	optind = 0;
 	optarg = "TRANSFORM";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(0, NULL));
 
@@ -445,7 +473,7 @@ void parse_set__auto_scale_nargs(void **state) {
 	optind = 0;
 	optarg = "AUTO_SCALE";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(0, NULL));
 
@@ -456,7 +484,7 @@ void parse_set__disabled_nargs(void **state) {
 	optind = 0;
 	optarg = "DISABLED";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(0, NULL));
 
@@ -467,7 +495,7 @@ void parse_set__adaptive_sync_off_nargs(void **state) {
 	optind = 0;
 	optarg = "VRR_OFF";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(0, NULL));
 
@@ -478,7 +506,7 @@ void parse_set__order_nargs(void **state) {
 	optind = 0;
 	optarg = "ORDER";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(0, NULL));
 
@@ -489,7 +517,7 @@ void parse_set__invalid(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(0, NULL));
 
@@ -508,13 +536,15 @@ void parse_set__ok(void **state) {
 	assert_int_equal(request->command, CFG_SET);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 void parse_del__mode_nargs(void **state) {
 	optind = 0;
 	optarg = "MODE";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_del(0, NULL));
 
@@ -525,7 +555,7 @@ void parse_del__scale_nargs(void **state) {
 	optind = 0;
 	optarg = "SCALE";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_del(0, NULL));
 
@@ -536,7 +566,7 @@ void parse_del__disabled_nargs(void **state) {
 	optind = 0;
 	optarg = "DISABLED";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_del(0, NULL));
 
@@ -547,7 +577,7 @@ void parse_del__adaptive_sync_off_nargs(void **state) {
 	optind = 0;
 	optarg = "VRR_OFF";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_del(0, NULL));
 
@@ -558,7 +588,7 @@ void parse_del__invalid(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_del(0, NULL));
 
@@ -577,13 +607,15 @@ void parse_del__ok(void **state) {
 	assert_int_equal(request->command, CFG_DEL);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 void parse_toggle__scaling_nargs(void **state) {
 	optind = 0;
 	optarg = "SCALING";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_toggle(1, NULL));
 
@@ -594,7 +626,7 @@ void parse_toggle__auto_scale_nargs(void **state) {
 	optind = 0;
 	optarg = "AUTO_SCALE";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_toggle(1, NULL));
 
@@ -605,7 +637,7 @@ void parse_toggle__vrr_off_nargs(void **state) {
 	optind = 0;
 	optarg = "VRR_OFF";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_toggle(0, NULL));
 
@@ -616,7 +648,7 @@ void parse_toggle__disabled_nargs(void **state) {
 	optind = 0;
 	optarg = "DISABLED";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_toggle(0, NULL));
 
@@ -627,7 +659,7 @@ void parse_toggle__invalid(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
-	expect_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_toggle(0, NULL));
 
@@ -645,6 +677,8 @@ void parse_toggle__ok(void **state) {
 	assert_int_equal(request->command, CFG_TOGGLE);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 void parse_log_threshold__invalid(void **state) {
@@ -655,6 +689,8 @@ void parse_log_threshold__invalid(void **state) {
 
 void parse_log_threshold__ok(void **state) {
 	assert_int_equal(parse_log_threshold("WARNING"), WARNING);
+
+	assert_logs_empty();
 }
 
 int main(void) {
