@@ -40,11 +40,12 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	logs_clear();
+
 	return 0;
 }
 
 int after_each(void **state) {
-	assert_logs_empty();
 	cfg_free(cfg);
 	cfg = NULL;
 	free(lid);
@@ -114,6 +115,8 @@ void unmarshal_cfg_from_file__ok(void **state) {
 
 	cfg_free(read);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 void unmarshal_cfg_from_file__empty(void **state) {
@@ -163,6 +166,8 @@ void unmarshal_cfg_from_file__legacy(void **state) {
 
 	cfg_free(read);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 void marshal_cfg__ok(void **state) {
@@ -177,6 +182,8 @@ void marshal_cfg__ok(void **state) {
 	cfg_free(cfg_actual);
 	free(actual);
 	free(expected);
+
+	assert_logs_empty();
 }
 
 void marshal_ipc_request__no_op(void **state) {
@@ -205,6 +212,8 @@ void marshal_ipc_request__cfg_set(void **state) {
 	ipc_request_free(ipc_request);
 	free(actual);
 	free(expected);
+
+	assert_logs_empty();
 }
 
 void marshal_ipc_response__map(void **state) {
@@ -228,6 +237,7 @@ void marshal_ipc_response__map(void **state) {
 	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
 	lcl(WARNING, "war", &ipc_operation->log_cap_lines);
 	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
+	lcl(FATAL, "fat", &ipc_operation->log_cap_lines);
 
 	struct Mode mode1 = {
 		.width = 10,
@@ -267,6 +277,7 @@ void marshal_ipc_response__map(void **state) {
 			.mode = &mode2,
 			.transform = WL_OUTPUT_TRANSFORM_FLIPPED, // 4
 		},
+		.overrided_enabled = true,
 	};
 
 	slist_append(&head.modes, &mode1);
@@ -287,6 +298,8 @@ void marshal_ipc_response__map(void **state) {
 	free(expected);
 	slist_free(&head.modes);
 	slist_free(&heads);
+
+	assert_logs_empty();
 }
 
 void marshal_ipc_response__seq(void **state) {
@@ -307,6 +320,8 @@ void marshal_ipc_response__seq(void **state) {
 
 	ipc_operation_free(ipc_operation);
 	free(actual);
+
+	assert_logs_empty();
 }
 
 void unmarshal_ipc_request__empty(void **state) {
@@ -362,6 +377,8 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 	ipc_request_free(actual);
 	cfg_free(expected_cfg);
 	free(yaml);
+
+	assert_logs_empty();
 }
 
 void unmarshal_ipc_responses__empty(void **state) {
@@ -490,7 +507,7 @@ void unmarshal_ipc_responses__map(void **state) {
 	assert_int_equal(head->current.transform, 3);
 	assert_int_equal(head->desired.transform, 4);
 
-	assert_int_equal(slist_length(response->log_cap_lines), 2);
+	assert_int_equal(slist_length(response->log_cap_lines), 3);
 
 	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
 	assert_non_nul(line);
@@ -505,6 +522,8 @@ void unmarshal_ipc_responses__map(void **state) {
 	slist_free_vals(&responses, ipc_response_free);
 	cfg_free(expected_cfg);
 	free(yaml);
+
+	assert_logs_empty();
 }
 
 void unmarshal_ipc_responses__seq(void **state) {
@@ -567,6 +586,8 @@ void unmarshal_ipc_responses__seq(void **state) {
 
 	slist_free_vals(&responses, ipc_response_free);
 	free(yaml);
+
+	assert_logs_empty();
 }
 
 int main(void) {

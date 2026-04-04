@@ -40,6 +40,8 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
+	logs_clear();
+
 	struct State *s = calloc(1, sizeof(struct State));
 
 	slist_free_vals(&cfg_file_paths, NULL);
@@ -61,8 +63,6 @@ int after_each(void **state) {
 
 	cfg_destroy();
 
-	assert_logs_empty();
-
 	cfg_free(s->from);
 	cfg_free(s->to);
 	cfg_free(s->expected);
@@ -83,6 +83,8 @@ void merge_set__arrange(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__align(void **state) {
@@ -96,6 +98,8 @@ void merge_set__align(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__order(void **state) {
@@ -111,6 +115,8 @@ void merge_set__order(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__auto_scale(void **state) {
@@ -124,6 +130,8 @@ void merge_set__auto_scale(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__user_scale(void **state) {
@@ -144,6 +152,8 @@ void merge_set__user_scale(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__user_transform(void **state) {
@@ -164,6 +174,8 @@ void merge_set__user_transform(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__mode(void **state) {
@@ -184,6 +196,8 @@ void merge_set__mode(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__adaptive_sync_off(void **state) {
@@ -204,6 +218,8 @@ void merge_set__adaptive_sync_off(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__disabled(void **state) {
@@ -231,6 +247,8 @@ void merge_set__disabled(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_set__callback_cmd(void **state) {
@@ -250,6 +268,8 @@ void merge_set__callback_cmd(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_del__scale(void **state) {
@@ -268,6 +288,8 @@ void merge_del__scale(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_del__mode(void **state) {
@@ -286,6 +308,8 @@ void merge_del__mode(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_del__transform(void **state) {
@@ -304,6 +328,8 @@ void merge_del__transform(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_del__adaptive_sync_off(void **state) {
@@ -322,6 +348,8 @@ void merge_del__adaptive_sync_off(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_del__disabled(void **state) {
@@ -345,6 +373,8 @@ void merge_del__disabled(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_del__callback_cmd(void **state) {
@@ -364,6 +394,8 @@ void merge_del__callback_cmd(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_toggle__scaling(void **state) {
@@ -381,6 +413,8 @@ void merge_toggle__scaling(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_toggle__auto_scale(void **state) {
@@ -398,6 +432,8 @@ void merge_toggle__auto_scale(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_toggle__adaptive_sync_off(void **state) {
@@ -420,6 +456,8 @@ void merge_toggle__adaptive_sync_off(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
+
+	assert_logs_empty();
 }
 
 void merge_toggle__disabled(void **state) {

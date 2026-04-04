@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.0.0.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.1.0.yaml
 
 ## Default cfg.yaml for way-displays.
 ## Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.

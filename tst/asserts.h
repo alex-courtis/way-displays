@@ -15,7 +15,7 @@
 
 void _assert_nul(const void *a, const char * const ae, const char * const file, const int line) {
 	if (a) {
-		cm_print_error("%s is not NULL\n", ae);
+		cmocka_print_error("%s is not NULL\n", ae);
 		_fail(file, line);
 	}
 }
@@ -23,7 +23,7 @@ void _assert_nul(const void *a, const char * const ae, const char * const file, 
 
 void _assert_non_nul(const void *a, const char * const ae, const char * const file, const int line) {
 	if (!a) {
-		cm_print_error("%s is NULL\n", ae);
+		cmocka_print_error("%s is NULL\n", ae);
 		_fail(file, line);
 	}
 }
@@ -44,7 +44,7 @@ void _assert_str_equal_n(const char * const a, const char * const ae, const char
 	_assert_non_nul(a, ae, file, line);
 	_assert_non_nul(b, be, file, line);
 	if (strncmp(a, b, n) != 0) {
-		cm_print_error("\"%.*s\" != \"%.*s\"\n", (int)n, a, (int)n, b);
+		cmocka_print_error("\"%.*s\" != \"%.*s\"\n", (int)n, a, (int)n, b);
 		_fail(file, line);
 	}
 }
@@ -54,7 +54,7 @@ void _assert_str_equal_n(const char * const a, const char * const ae, const char
 void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const file, const int line) {
 
 	if (a != wl_fixed_from_double(b)) {
-		cm_print_error("%g != %g\n", wl_fixed_to_double(a), b);
+		cmocka_print_error("%g != %g\n", wl_fixed_to_double(a), b);
 		_fail(file, line);
 	}
 }
@@ -78,7 +78,7 @@ void _assert_heads_order(struct SList *a, struct SList *b, const char * const fi
 			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 
-		cm_print_error("assert_heads_order\nACTUAL:%s\nEXPECTED:%s\n\n", actual, expected);
+		cmocka_print_error("assert_heads_order\nACTUAL:%s\nEXPECTED:%s\n\n", actual, expected);
 		_fail(file, line);
 	}
 }
@@ -86,7 +86,7 @@ void _assert_heads_order(struct SList *a, struct SList *b, const char * const fi
 
 void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char * const file, const int line) {
 	if (head->desired.x != x || head->desired.y != y) {
-		cm_print_error("assert_head_position %s (%d, %d) != (%d, %d)\n", head->name, head->desired.x, head->desired.y, x, y);
+		cmocka_print_error("assert_head_position %s (%d, %d) != (%d, %d)\n", head->name, head->desired.x, head->desired.y, x, y);
 		_fail(file, line);
 	}
 }
@@ -95,7 +95,7 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 
 void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
 	if (!cfg_equal(a, b)) {
-		cm_print_error("assert_cfg_equal\ncfg.actual:\n%s\ncfg.expected:\n%s\n", marshal_cfg(a), marshal_cfg(b));
+		cmocka_print_error("assert_cfg_equal\ncfg.actual:\n%s\ncfg.expected:\n%s\n", marshal_cfg(a), marshal_cfg(b));
 		write_file("cfg.actual", marshal_cfg(a));
 		write_file("cfg.expected", marshal_cfg(b));
 		_fail(file, line);
@@ -110,23 +110,7 @@ void _assert_log(enum LogThreshold t, const char* s, const char * const file, co
 void _assert_logs_empty(const char * const file, const int line);
 #define assert_logs_empty() _assert_logs_empty(__FILE__, __LINE__)
 
-int expect_stable_equal_strcmp(const LargestIntegralType value,
-		const LargestIntegralType check_value_data) {
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-	const struct STable* const actual = (struct STable*)value;
-	const struct STable* const expected = (struct STable*)check_value_data;
-#pragma GCC diagnostic pop
-
-	if (stable_equal(actual, expected, fn_comp_equals_strcmp)) {
-		return 1;
-	} else {
-		cm_print_error("expect_stable_equal_strcmp\nEXPECTED:\n%s\n!=\nACTUAL:\n%s\n", stable_str(expected), stable_str(actual));
-		return 0;
-	}
-}
-
+void logs_clear(void);
 
 #endif // ASSERTS_H
 

@@ -1,7 +1,7 @@
 #ifndef WL_WRAPPERS
 #define WL_WRAPPERS
 
-#include <wayland-client-core.h>
+#include <wayland-client-protocol.h>
 
 #define FL __FILE__, __LINE__
 
