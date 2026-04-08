@@ -4,17 +4,10 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
-#include <yaml-cpp/yaml.h> // IWYU pragma: keep
-#include <yaml-cpp/emitter.h>
+#include <yaml-cpp/yaml.h>
 #include <yaml-cpp/emittermanip.h>
-#include <yaml-cpp/exceptions.h>
-#include <yaml-cpp/node/detail/impl.h>
 #include <yaml-cpp/node/detail/iterator.h>
 #include <yaml-cpp/node/detail/iterator_fwd.h>
-#include <yaml-cpp/node/impl.h>
-#include <yaml-cpp/node/iterator.h>
-#include <yaml-cpp/node/node.h>
-#include <yaml-cpp/node/parse.h>
 #include <exception>
 #include <stdexcept>
 #include <string>
