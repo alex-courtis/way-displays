@@ -9,7 +9,10 @@
 #include "ipc.h"
 
 #define AUTO_SCALE_MIN_DEFAULT 1.0f
+#define AUTO_SCALE_MIN_DEFAULT_STR "1.0f"
+
 #define AUTO_SCALE_MAX_DEFAULT -1.0f
+#define AUTO_SCALE_MAX_DEFAULT_STR "-1.0"
 
 struct UserScale {
 	char *name_desc;
