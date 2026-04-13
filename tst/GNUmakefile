@@ -14,8 +14,7 @@ OBJS =  tst/util.o \
 		$(filter-out src/main.o src/lid.o,$(SRC_O)) \
 		$(PRO_O)
 
-# 
-COMPFLAGS += -Wno-int-to-pointer-cast
+COMPFLAGS += -Wno-unused-function
 
 WRAPS_COMMON = -Wl,$\
 	--wrap=log_set_threshold,--wrap=log_get_threshold,$\

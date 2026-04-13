@@ -1,3 +1,4 @@
+#include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -7,7 +8,25 @@
 #include "cfg.h"
 #include "convert.h"
 
-static char* node_type(yaml_node_type_t type) {
+// If this is a regex pattern, attempt to compile it before including it in configuration.
+bool validate_regex(const char *pattern, enum CfgElement element) {
+	bool rc = true;
+	if (pattern[0] == '!') {
+		regex_t regex;
+		int result = regcomp(&regex, pattern + 1, REG_EXTENDED);
+		if (result) {
+			char err[1024];
+			regerror(result, &regex, err, 1024);
+			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(element), pattern + 1, err);
+			rc = false;
+		}
+		regfree(&regex);
+	}
+	return rc;
+}
+
+// return a static string for the node type
+static char* node_type_str(const yaml_node_type_t type) {
 	switch (type) {
 		case YAML_NO_NODE:
 			return "empty";
@@ -22,83 +41,83 @@ static char* node_type(yaml_node_type_t type) {
 	}
 }
 
+// validate expected is of type actual, returning false and logging a warning if not
 static bool check_node_type(const yaml_node_type_t expected, const yaml_node_type_t actual, const char *key, const char *def) {
 	if (actual == expected)
 		return true;
 
-	log_warn("Ignoring invalid %s: expected %s, got %s, using default %s", key, node_type(expected), node_type(actual), def);
+	if (def)
+		log_warn("Ignoring invalid %s: expected %s, got %s, using default %s", key, node_type_str(expected), node_type_str(actual), def);
+	else
+		log_warn("Ignoring invalid %s: expected %s, got %s", key, node_type_str(expected), node_type_str(actual));
 
 	return false;
 }
 
-static enum Arrange unmarshal_arrange(yaml_node_t *node) {
-	if (!check_node_type(YAML_SCALAR_NODE, node->type, cfg_element_name(ARRANGE), arrange_name(ARRANGE_DEFAULT)))
-		return ARRANGE_DEFAULT;
-
-	enum Arrange arrange = arrange_val_start((char*)node->data.scalar.value);
-	if (arrange)
-		return arrange;
-
-	log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(ARRANGE), node->data.scalar.value, arrange_name(ARRANGE_DEFAULT));
-	return ARRANGE_DEFAULT;
-}
-
-static enum Align unmarshal_align(yaml_node_t *node) {
-	if (!check_node_type(YAML_SCALAR_NODE, node->type, cfg_element_name(ALIGN), align_name(ALIGN_DEFAULT)))
-		return ALIGN_DEFAULT;
-
-	enum Align align = align_val_start((char*)node->data.scalar.value);
-	if (align)
-		return align;
-
-	log_warn("Ignoring invalid ALIGN '%s', using default %s", node->data.scalar.value, align_name(ALIGN_DEFAULT));
-	return ALIGN_DEFAULT;
-}
-
-static enum LogThreshold unmarshal_log_threshold(yaml_node_t *node) {
-	if (!check_node_type(YAML_SCALAR_NODE, node->type, cfg_element_name(LOG_THRESHOLD), log_threshold_name(LOG_THRESHOLD_DEFAULT)))
-		return LOG_THRESHOLD_DEFAULT;
-
-	enum LogThreshold log_threshold = log_threshold_val((char*)node->data.scalar.value);
-	if (log_threshold)
-		return log_threshold;
-
-	log_warn("Ignoring invalid ALIGN '%s', using default %s", node->data.scalar.value, log_threshold_name(LOG_THRESHOLD_DEFAULT));
-	return LOG_THRESHOLD_DEFAULT;
-}
-
-static enum OnOff unmarshal_on_off(yaml_node_t *node, const enum CfgElement element, const enum OnOff def) {
-	if (!check_node_type(YAML_SCALAR_NODE, node->type, cfg_element_name(element), on_off_name(def)))
+// unmarshal an enum and return it otherwise return def
+typedef unsigned int (*unmarshal_enum_fn_val)(const char *name);
+typedef const char* (*unmarshal_enum_fn_name)(unsigned int val);
+static int unmarshal_enum(yaml_node_t *scalar, const enum CfgElement element, const int def, unmarshal_enum_fn_val fn_val, unmarshal_enum_fn_name fn_name) {
+	if (!check_node_type(YAML_SCALAR_NODE, scalar->type, cfg_element_name(element), fn_name(def)))
 		return def;
 
-	enum OnOff value = on_off_val((char*)node->data.scalar.value);
-	if (value)
-		return value;
+	int val = fn_val((char*)scalar->data.scalar.value);
+	if (val)
+		return val;
 
-	log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(element), node->data.scalar.value, on_off_name(def));
+	log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(element), scalar->data.scalar.value, fn_name(def));
 	return def;
 }
 
-static void unmarshal_string(yaml_node_t *node, char **dst, const enum CfgElement element, const char *def) {
-	if (*dst)
-		free(*dst);
-
-	if (!check_node_type(YAML_SCALAR_NODE, node->type, cfg_element_name(element), def))
-		*dst = def ? strdup(def) : NULL;
-	else
-		*dst = strdup((char*)node->data.scalar.value);
-}
-
-static float unmarshal_float(const yaml_node_t *node, const enum CfgElement element, const float def, const char *def_str) {
-	if (!check_node_type(YAML_SCALAR_NODE, node->type, cfg_element_name(element), AUTO_SCALE_MAX_DEFAULT_STR))
+// unmarshal a float and return it otherwise return def
+static float unmarshal_float(const yaml_node_t *scalar, const enum CfgElement element, const float def, const char *def_str) {
+	if (!check_node_type(YAML_SCALAR_NODE, scalar->type, cfg_element_name(element), AUTO_SCALE_MAX_DEFAULT_STR))
 		return def;
 
 	float value;
-	if (sscanf((char*)node->data.scalar.value, "%f", &value) == 1)
+	if (sscanf((char*)scalar->data.scalar.value, "%f", &value) == 1)
 		return value;
 
-	log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(element), node->data.scalar.value, AUTO_SCALE_MAX_DEFAULT_STR);
+	log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(element), scalar->data.scalar.value, AUTO_SCALE_MAX_DEFAULT_STR);
 	return def;
+}
+
+// unmarshal a scalar string to dst, freeing first, caller frees dst
+static void unmarshal_string(char **dst, yaml_node_t *scalar, const enum CfgElement element, const char *def) {
+	if (*dst)
+		free(*dst);
+
+	if (!check_node_type(YAML_SCALAR_NODE, scalar->type, cfg_element_name(element), def))
+		*dst = def ? strdup(def) : NULL;
+	else
+		*dst = strdup((char*)scalar->data.scalar.value);
+}
+
+// unmarshal ORDER into order_name_desc, freeing first
+static void unmarshal_order_name_desc(struct SList **order_name_desc, const yaml_node_t *seq, yaml_document_t *document) {
+	if (*order_name_desc)
+		slist_free_vals(order_name_desc, NULL);
+
+	if (!check_node_type(YAML_SEQUENCE_NODE, seq->type, cfg_element_name(ORDER), NULL))
+		return;
+
+	yaml_node_item_t *item;
+	yaml_node_t *scalar;
+
+	for (item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		if (!(scalar = yaml_document_get_node(document, *item)))
+			continue;
+
+		char *val = NULL;
+		unmarshal_string(&val, scalar, ORDER, NULL);
+		if (!val)
+			continue;
+
+		if (slist_find_equal(*order_name_desc, fn_comp_equals_strcmp, val) || !validate_regex(val, ORDER))
+			free(val);
+		else
+			slist_append(order_name_desc, val);
+	}
 }
 
 bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
@@ -110,58 +129,62 @@ bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
 	}
 
 	yaml_node_pair_t *pair;
-	for (pair = start_doc->data.mapping.pairs.start;
-			pair < start_doc->data.mapping.pairs.top; pair ++) {
+	yaml_node_t *key;
+	yaml_node_t *value;
 
-		yaml_node_t *key = yaml_document_get_node(document, pair->key);
+	for (pair = start_doc->data.mapping.pairs.start; pair < start_doc->data.mapping.pairs.top; pair++) {
+		if (!pair->key || !pair->value)
+			continue;
 
-		if (key->type == YAML_SCALAR_NODE && key->data.scalar.value) {
-			yaml_node_t *val = yaml_document_get_node(document, pair->value);
+		if (!(key = yaml_document_get_node(document, pair->key)) || key->type != YAML_SCALAR_NODE || !key->data.scalar.value)
+			continue;
 
-			enum CfgElement element = cfg_element_val((char*)key->data.scalar.value);
-			switch (element) {
-				case ARRANGE:
-					cfg->arrange = unmarshal_arrange(val);
-					break;
-				case ALIGN:
-					cfg->align = unmarshal_align(val);
-					break;
-				case ORDER:
-					break;
-				case SCALING:
-					cfg->scaling = unmarshal_on_off(val, SCALING, SCALING_DEFAULT);
-					break;
-				case AUTO_SCALE:
-					cfg->auto_scale = unmarshal_on_off(val, AUTO_SCALE, AUTO_SCALE_DEFAULT);
-					break;
-				case SCALE:
-				case MODE:
-				case TRANSFORM:
-				case VRR_OFF:
-					break;
-				case CALLBACK_CMD:
-					unmarshal_string(val, &cfg->callback_cmd, CALLBACK_CMD, CALLBACK_CMD_DEFAULT);
-					break;
-				case LAPTOP_DISPLAY_PREFIX:
-					unmarshal_string(val, &cfg->laptop_display_prefix, LAPTOP_DISPLAY_PREFIX, NULL);
-					break;
-				case MAX_PREFERRED_REFRESH:
-					break;
-				case LOG_THRESHOLD:
-					cfg->log_threshold = unmarshal_log_threshold(val);
-					break;
-				case DISABLED:
-				case ARRANGE_ALIGN:
-					break;
-				case AUTO_SCALE_MIN:
-					cfg->auto_scale_min = unmarshal_float(val, AUTO_SCALE_MIN, AUTO_SCALE_MIN_DEFAULT, AUTO_SCALE_MIN_DEFAULT_STR);
-					break;
-				case AUTO_SCALE_MAX:
-					cfg->auto_scale_max = unmarshal_float(val, AUTO_SCALE_MAX, AUTO_SCALE_MAX_DEFAULT, AUTO_SCALE_MAX_DEFAULT_STR);
-					break;
-				default:
-					break;
-			}
+		if (!(value = yaml_document_get_node(document, pair->value)))
+			continue;
+
+		switch (cfg_element_val((char*)key->data.scalar.value)) {
+			case ARRANGE:
+				cfg->arrange = unmarshal_enum(value, ARRANGE, ARRANGE_DEFAULT, arrange_val_start, arrange_name);
+				break;
+			case ALIGN:
+				cfg->align = unmarshal_enum(value, ALIGN, ALIGN_DEFAULT, align_val_start, align_name);
+				break;
+			case ORDER:
+				unmarshal_order_name_desc(&cfg->order_name_desc, value, document);
+				break;
+			case SCALING:
+				cfg->scaling = unmarshal_enum(value, SCALING, SCALING_DEFAULT, on_off_val, on_off_name);
+				break;
+			case AUTO_SCALE:
+				cfg->auto_scale = unmarshal_enum(value, AUTO_SCALE, AUTO_SCALE_DEFAULT, on_off_val, on_off_name);
+				break;
+			case SCALE:
+			case MODE:
+			case TRANSFORM:
+			case VRR_OFF:
+				break;
+			case CALLBACK_CMD:
+				unmarshal_string(&cfg->callback_cmd, value, CALLBACK_CMD, CALLBACK_CMD_DEFAULT);
+				break;
+			case LAPTOP_DISPLAY_PREFIX:
+				unmarshal_string(&cfg->laptop_display_prefix, value, LAPTOP_DISPLAY_PREFIX, NULL);
+				break;
+			case MAX_PREFERRED_REFRESH:
+				break;
+			case LOG_THRESHOLD:
+				cfg->log_threshold = unmarshal_enum(value, LOG_THRESHOLD, LOG_THRESHOLD_DEFAULT, log_threshold_val, log_threshold_name);
+				break;
+			case DISABLED:
+			case ARRANGE_ALIGN:
+				break;
+			case AUTO_SCALE_MIN:
+				cfg->auto_scale_min = unmarshal_float(value, AUTO_SCALE_MIN, AUTO_SCALE_MIN_DEFAULT, AUTO_SCALE_MIN_DEFAULT_STR);
+				break;
+			case AUTO_SCALE_MAX:
+				cfg->auto_scale_max = unmarshal_float(value, AUTO_SCALE_MAX, AUTO_SCALE_MAX_DEFAULT, AUTO_SCALE_MAX_DEFAULT_STR);
+				break;
+			default:
+				break;
 		}
 	}
 
