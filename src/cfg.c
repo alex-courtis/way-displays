@@ -1,5 +1,6 @@
 #include <libgen.h>
 #include <limits.h>
+#include <regex.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -268,6 +269,24 @@ static bool invalid_user_mode(const void *a, const void *b) {
 	}
 
 	return false;
+}
+
+bool cfg_invalid_order_regex(const void *pattern, const void *unused) {
+	bool rc = false;
+	char *p = (char*)pattern;
+
+	if (p && p[0] == '!') {
+		regex_t regex;
+		int result = regcomp(&regex, p + 1, REG_EXTENDED);
+		if (result) {
+			char err[1024];
+			regerror(result, &regex, err, 1024);
+			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(ORDER), p + 1, err);
+			rc = true;
+		}
+		regfree(&regex);
+	}
+	return rc;
 }
 
 static void warn_ambiguous_name_desc(const char *name_desc, const char *element) {

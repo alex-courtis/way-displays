@@ -7,23 +7,7 @@
 
 #include "cfg.h"
 #include "convert.h"
-
-// If this is a regex pattern, attempt to compile it before including it in configuration.
-bool validate_regex(const char *pattern, enum CfgElement element) {
-	bool rc = true;
-	if (pattern[0] == '!') {
-		regex_t regex;
-		int result = regcomp(&regex, pattern + 1, REG_EXTENDED);
-		if (result) {
-			char err[1024];
-			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(element), pattern + 1, err);
-			rc = false;
-		}
-		regfree(&regex);
-	}
-	return rc;
-}
+#include "stable.h"
 
 // return a static string for the node type
 static char* node_type_str(const yaml_node_type_t type) {
@@ -93,13 +77,15 @@ static void unmarshal_string(char **dst, yaml_node_t *scalar, const enum CfgElem
 		*dst = strdup((char*)scalar->data.scalar.value);
 }
 
-// unmarshal ORDER into order_name_desc, freeing first
-static void unmarshal_order_name_desc(struct SList **order_name_desc, const yaml_node_t *seq, yaml_document_t *document) {
-	if (*order_name_desc)
-		slist_free_vals(order_name_desc, NULL);
+// unmarshal a sequence of strings, freeing first, removing duplicates, caller frees
+static void unmarshal_string_list(struct SList **dst, const yaml_node_t *seq, yaml_document_t *document, const enum CfgElement element) {
+	if (*dst)
+		slist_free_vals(dst, NULL);
 
-	if (!check_node_type(YAML_SEQUENCE_NODE, seq->type, cfg_element_name(ORDER), NULL))
+	if (!check_node_type(YAML_SEQUENCE_NODE, seq->type, cfg_element_name(element), NULL))
 		return;
+
+	const struct STable *map = stable_init(10, 10, false);
 
 	yaml_node_item_t *item;
 	yaml_node_t *scalar;
@@ -113,11 +99,21 @@ static void unmarshal_order_name_desc(struct SList **order_name_desc, const yaml
 		if (!val)
 			continue;
 
-		if (slist_find_equal(*order_name_desc, fn_comp_equals_strcmp, val) || !validate_regex(val, ORDER))
-			free(val);
-		else
-			slist_append(order_name_desc, val);
+		stable_put(map, val, NULL);
+
+		free(val);
 	}
+
+	*dst = stable_keys_slist(map);
+
+	stable_free(map);
+}
+
+// unmarshal ORDER into order_name_desc, freeing first, removing invalid patterns
+static void unmarshal_order_name_desc(struct SList **order_name_desc, const yaml_node_t *seq, yaml_document_t *document) {
+	unmarshal_string_list(order_name_desc, seq, document, ORDER);
+
+	slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL);
 }
 
 bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
@@ -159,9 +155,13 @@ bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				cfg->auto_scale = unmarshal_enum(value, AUTO_SCALE, AUTO_SCALE_DEFAULT, on_off_val, on_off_name);
 				break;
 			case SCALE:
+				break;
 			case MODE:
+				break;
 			case TRANSFORM:
+				break;
 			case VRR_OFF:
+				unmarshal_string_list(&cfg->adaptive_sync_off_name_desc, value, document, VRR_OFF);
 				break;
 			case CALLBACK_CMD:
 				unmarshal_string(&cfg->callback_cmd, value, CALLBACK_CMD, CALLBACK_CMD_DEFAULT);
@@ -175,6 +175,7 @@ bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				cfg->log_threshold = unmarshal_enum(value, LOG_THRESHOLD, LOG_THRESHOLD_DEFAULT, log_threshold_val, log_threshold_name);
 				break;
 			case DISABLED:
+				break;
 			case ARRANGE_ALIGN:
 				break;
 			case AUTO_SCALE_MIN:
@@ -196,6 +197,8 @@ bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 		return false;
 	}
 
+	// TODO deal with the unsigned char
+
 	yaml_parser_t parser;
 	yaml_document_t document;
 
@@ -203,6 +206,8 @@ bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 	FILE *input = fopen(cfg->file_path, "rb");
 
 	if (!yaml_parser_initialize(&parser)) {
+
+		// TODO all error handling and destruction
 		fprintf(stderr, "Could not initialize the parser object\n");
 		return 1;
 	}

@@ -174,6 +174,11 @@ void cfg_disabled_free(const void *val);
 void* cfg_disabled_clone(const void *data);
 
 //
+// validating functions
+//
+bool cfg_invalid_order_regex(const void *pattern, const void *unused);
+
+//
 // visible for testing
 //
 struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
