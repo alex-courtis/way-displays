@@ -84,11 +84,11 @@ struct Cfg *cfg_all(void) {
 
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));
-	//
-	// slist_append(&cfg->disabled, cfg_disabled_always("eight"));
-	// slist_append(&cfg->disabled, cfg_disabled_always("EIGHT"));
-	// slist_append(&cfg->disabled, cfg_disabled_always("nine"));
-	//
+
+	slist_append(&cfg->disabled, cfg_disabled_always("eight"));
+	slist_append(&cfg->disabled, cfg_disabled_always("EIGHT"));
+	slist_append(&cfg->disabled, cfg_disabled_always("nine"));
+
 	// struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
 	// disabled->name_desc = strdup("twelve");
 	// struct Condition *cond = calloc(1, sizeof(struct Condition));

@@ -87,15 +87,13 @@ static void unmarshal_string_list(struct SList **dst, const yaml_node_t *seq, ya
 
 	const struct STable *map = stable_init(10, 10, false);
 
-	yaml_node_item_t *item;
-	yaml_node_t *scalar;
-
-	for (item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		if (!(scalar = yaml_document_get_node(document, *item)))
+	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		yaml_node_t *scalar = yaml_document_get_node(document, *item);
+		if (!scalar)
 			continue;
 
 		char *val = NULL;
-		unmarshal_string(&val, scalar, ORDER, NULL);
+		unmarshal_string(&val, scalar, element, NULL);
 		if (!val)
 			continue;
 
@@ -114,6 +112,40 @@ static void unmarshal_order_name_desc(struct SList **order_name_desc, const yaml
 	unmarshal_string_list(order_name_desc, seq, document, ORDER);
 
 	slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL);
+}
+
+// unmarshal DISABLED into disabled, freeing first
+static void unmarshal_disabled(struct SList **disabled, const yaml_node_t *seq, yaml_document_t *document) {
+	if (*disabled)
+		slist_free_vals(disabled, NULL);
+
+	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		yaml_node_t *node = yaml_document_get_node(document, *item);
+		if (!node)
+			continue;
+
+		struct Disabled *d = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+
+		switch (node->type) {
+			case YAML_SCALAR_NODE:
+				unmarshal_string(&d->name_desc, node, DISABLED, NULL);
+				if (d->name_desc) {
+					slist_append(disabled, d);
+					d = NULL;
+				}
+				break;
+
+			case YAML_MAPPING_NODE:
+				log_error("TODO disabled condition");
+				break;
+
+			default:
+				log_warn("Ignoring invalid DISABLED: expected scalar or map, got %s", node_type_str(node->type));
+				break;
+		}
+
+		cfg_disabled_free(d);
+	}
 }
 
 bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
@@ -175,6 +207,7 @@ bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				cfg->log_threshold = unmarshal_enum(value, LOG_THRESHOLD, LOG_THRESHOLD_DEFAULT, log_threshold_val, log_threshold_name);
 				break;
 			case DISABLED:
+				unmarshal_disabled(&cfg->disabled, value, document);
 				break;
 			case ARRANGE_ALIGN:
 				break;
