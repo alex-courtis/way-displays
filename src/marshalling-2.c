@@ -179,15 +179,15 @@ static const struct STable *map_to_node_table(const yaml_node_t *map, yaml_docum
 
 	const struct STable *dst = stable_init(10, 10, false);
 
-	for (yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
+	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
 			continue;
 
-		yaml_node_t *pair_key = yaml_document_get_node(document, pair->key);
+		const yaml_node_t *pair_key = yaml_document_get_node(document, pair->key);
 		char *key = NULL;
 		scalar_to_string(&key, pair_key);
 
-		yaml_node_t *pair_value = yaml_document_get_node(document, pair->value);
+		const yaml_node_t *pair_value = yaml_document_get_node(document, pair->value);
 
 		if (key && pair_value) {
 			stable_put(dst, key, pair_value);
@@ -211,8 +211,8 @@ static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_
 
 	const struct STable *map = stable_init(10, 10, false);
 
-	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		yaml_node_t *scalar = yaml_document_get_node(document, *item);
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		const yaml_node_t *scalar = yaml_document_get_node(document, *item);
 		if (!scalar)
 			continue;
 
@@ -244,7 +244,7 @@ static void seq_to_disabled(struct SList **disabled, const yaml_node_t *seq, yam
 	if (*disabled)
 		slist_free_vals(disabled, NULL);
 
-	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
@@ -275,12 +275,12 @@ static void seq_to_disabled(struct SList **disabled, const yaml_node_t *seq, yam
 }
 
 // unmarshal SCALE into user_scales, freeing first
-static void seq_to_scale(struct SList **user_scales, const yaml_node_t *seq, yaml_document_t *document) {
+static void seq_to_scales(struct SList **user_scales, const yaml_node_t *seq, yaml_document_t *document) {
 	if (*user_scales)
 		slist_free_vals(user_scales, NULL);
 
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		yaml_node_t *node = yaml_document_get_node(document, *item);
+		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
 
@@ -288,33 +288,33 @@ static void seq_to_scale(struct SList **user_scales, const yaml_node_t *seq, yam
 		if (!map)
 			continue;
 
-		struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+		struct UserScale *scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
 		const yaml_node_t *scalar;
 
 		ctx_key("NAME_DESC");
 		if ((scalar = stable_get(map, ctx.key)))
-			if (!scalar_to_string(&user_scale->name_desc, scalar))
-				goto unmarshal_scale_done;
+			if (!scalar_to_string(&scale->name_desc, scalar))
+				goto seq_to_scales_done;
 
-		ctx_name_desc(user_scale->name_desc);
+		ctx_name_desc(scale->name_desc);
 
 		ctx_key("SCALE");
 		if ((scalar = stable_get(map, ctx.key)))
-			if (!scalar_to_float(&user_scale->scale, scalar))
-				goto unmarshal_scale_done;
+			if (!scalar_to_float(&scale->scale, scalar))
+				goto seq_to_scales_done;
 
 		// OK
-		slist_append(user_scales, user_scale);
-		user_scale = NULL;
+		slist_append(user_scales, scale);
+		scale = NULL;
 
-unmarshal_scale_done:
+seq_to_scales_done:
 
 		stable_free(map);
 
 		// free on validation fail
-		if (user_scale)
-			cfg_user_scale_free(user_scale);
+		if (scale)
+			cfg_user_scale_free(scale);
 	}
 }
 
@@ -323,8 +323,8 @@ static void seq_to_modes(struct SList **user_modes, const yaml_node_t *seq, yaml
 	if (*user_modes)
 		slist_free_vals(user_modes, NULL);
 
-	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		yaml_node_t *node = yaml_document_get_node(document, *item);
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
 
@@ -332,53 +332,97 @@ static void seq_to_modes(struct SList **user_modes, const yaml_node_t *seq, yaml
 		if (!map)
 			continue;
 
-		struct UserMode *user_mode = cfg_user_mode_default();
+		struct UserMode *mode = cfg_user_mode_default();
 
 		const yaml_node_t *scalar;
 
 		ctx_key("NAME_DESC");
 		if ((scalar = stable_get(map, ctx.key)))
-			if (!scalar_to_string(&user_mode->name_desc, scalar))
-				goto unmarshal_mode_done;
+			if (!scalar_to_string(&mode->name_desc, scalar))
+				goto seq_to_modes_done;
 		// TODO missing and regex
 
-		ctx_name_desc(user_mode->name_desc);
+		ctx_name_desc(mode->name_desc);
 
 		ctx_key("WIDTH");
 		if ((scalar = stable_get(map, ctx.key)))
-			if (!scalar_to_int(&user_mode->width, scalar))
-				goto unmarshal_mode_done;
+			if (!scalar_to_int(&mode->width, scalar))
+				goto seq_to_modes_done;
 
 		ctx_key("HEIGHT");
 		if ((scalar = stable_get(map, ctx.key)))
-			if (!scalar_to_int(&user_mode->height, scalar))
-				goto unmarshal_mode_done;
+			if (!scalar_to_int(&mode->height, scalar))
+				goto seq_to_modes_done;
 
 		ctx_key("HZ");
 		if ((scalar = stable_get(map, ctx.key))) {
 			float hz;
 			if (!scalar_to_float(&hz, scalar))
-				goto unmarshal_mode_done;
+				goto seq_to_modes_done;
 
-			user_mode->refresh_mhz = lround(hz * 1000);
+			mode->refresh_mhz = lround(hz * 1000);
 		}
 
 		ctx_key("MAX");
 		if ((scalar = stable_get(map, ctx.key)))
-			if (!scalar_to_boolean(&user_mode->max, scalar))
-				goto unmarshal_mode_done;
+			if (!scalar_to_boolean(&mode->max, scalar))
+				goto seq_to_modes_done;
 
 		// OK
-		slist_append(user_modes, user_mode);
-		user_mode = NULL;
+		slist_append(user_modes, mode);
+		mode = NULL;
 
-unmarshal_mode_done:
+seq_to_modes_done:
 
 		stable_free(map);
 
 		// free on validation fail
-		if (user_mode)
-			cfg_user_mode_free(user_mode);
+		if (mode)
+			cfg_user_mode_free(mode);
+	}
+}
+
+// unmarshal TRANSFORM into user_transforms, freeing first
+static void seq_to_transforms(struct SList **user_transforms, const yaml_node_t *seq, yaml_document_t *document) {
+	if (*user_transforms)
+		slist_free_vals(user_transforms, NULL);
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		const yaml_node_t *node = yaml_document_get_node(document, *item);
+		if (!node)
+			continue;
+
+		const struct STable *map = map_to_node_table(node, document);
+		if (!map)
+			continue;
+
+		struct UserTransform *transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+
+		const yaml_node_t *scalar;
+
+		ctx_key("NAME_DESC");
+		if ((scalar = stable_get(map, ctx.key)))
+			if (!scalar_to_string(&transform->name_desc, scalar))
+				goto seq_to_transforms_done;
+
+		ctx_name_desc(transform->name_desc);
+
+		ctx_key("TRANSFORM");
+		if ((scalar = stable_get(map, ctx.key)))
+			if (!scalar_to_enum_def((int*)&transform->transform, 0, scalar, transform_val, transform_name))
+				goto seq_to_transforms_done;
+
+		// OK
+		slist_append(user_transforms, transform);
+		transform = NULL;
+
+seq_to_transforms_done:
+
+		stable_free(map);
+
+		// free on validation fail
+		if (transform)
+			cfg_user_transform_free(transform);
 	}
 }
 
@@ -390,7 +434,7 @@ static bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
 		return false;
 	}
 
-	for (yaml_node_pair_t *pair = start_doc->data.mapping.pairs.start; pair < start_doc->data.mapping.pairs.top; pair++) {
+	for (const yaml_node_pair_t *pair = start_doc->data.mapping.pairs.start; pair < start_doc->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
 			continue;
 
@@ -421,13 +465,13 @@ static bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_enum_def((int*)&cfg->auto_scale, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name);
 				break;
 			case SCALE:
-				seq_to_scale(&cfg->user_scales, value, document);
+				seq_to_scales(&cfg->user_scales, value, document);
 				break;
 			case MODE:
 				seq_to_modes(&cfg->user_modes, value, document);
 				break;
 			case TRANSFORM:
-				// TODO
+				seq_to_transforms(&cfg->user_transforms, value, document);
 				break;
 			case VRR_OFF:
 				seq_to_string_list(&cfg->adaptive_sync_off_name_desc, value, document);
