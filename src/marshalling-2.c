@@ -125,7 +125,7 @@ static bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
 	return true;
 }
 
-// unmarshal a scalar number to dst, copies def on failure
+// unmarshal a scalar number to dst, sets def on failure
 static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) {
 	if (!scalar_to_float(dst, scalar)) {
 		log_warn("TODO scalar_to_float_def default message");
@@ -136,37 +136,42 @@ static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar
 	return true;
 }
 
-// unmarshal a scalar bool to dst
-static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
+// unmarshal an scalar enum to dst
+typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
+typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
+static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
-	// OnOff handles booleans
-	int val = on_off_val((char*)scalar->data.scalar.value);
+	int val = fn_val((char*)scalar->data.scalar.value);
 	if (!val) {
 		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key, scalar->data.scalar.value);
 		return false;
 	}
 
-	*dst = val == ON;
+	*dst = val;
+
 	return true;
 }
 
-// unmarshal an scalar enum to dst
-typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
-typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
+// unmarshal an scalar enum to dst, sets def on failure
 static bool scalar_to_enum_def(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
-	if (!check_node_type(scalar, YAML_SCALAR_NODE)) {
+	if (!scalar_to_enum(dst, scalar, fn_val)) {
+		log_warn("TODO scalar_to_enum_def default message %s", fn_name(def));
 		*dst = def;
 		return false;
 	}
 
-	*dst = fn_val((char*)scalar->data.scalar.value);
-	if (!*dst) {
-		log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(ctx.element), scalar->data.scalar.value, fn_name(def));
-		*dst = def;
+	return true;
+}
+
+// unmarshal a scalar bool to dst
+static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
+	int val;
+	if (!scalar_to_enum(&val, scalar, on_off_val))
 		return false;
-	}
+
+	*dst = val == ON;
 
 	return true;
 }
@@ -409,7 +414,7 @@ static void seq_to_transforms(struct SList **user_transforms, const yaml_node_t 
 
 		ctx_key("TRANSFORM");
 		if ((scalar = stable_get(map, ctx.key)))
-			if (!scalar_to_enum_def((int*)&transform->transform, 0, scalar, transform_val, transform_name))
+			if (!scalar_to_enum((int*)&transform->transform, scalar, transform_val))
 				goto seq_to_transforms_done;
 
 		// OK
