@@ -74,13 +74,13 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->order_name_desc, strdup("one"));
 	slist_append(&cfg->order_name_desc, strdup("ONE"));
 	slist_append(&cfg->order_name_desc, strdup("!two"));
-	//
-	// slist_append(&cfg->user_scales, cfg_user_scale_init("three", 3));
-	// slist_append(&cfg->user_scales, cfg_user_scale_init("four", 4));
-	//
-	// slist_append(&cfg->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	// slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	// slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+
+	slist_append(&cfg->user_scales, cfg_user_scale_init("three", 3));
+	slist_append(&cfg->user_scales, cfg_user_scale_init("four", 4));
+
+	slist_append(&cfg->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
 
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));
@@ -120,12 +120,12 @@ void unmarshal_cfg_from_file__ok_2(void **state) {
 }
 
 int main(void) {
-	// unmarshal_cfg_from_file__ok_2(NULL);
+	unmarshal_cfg_from_file__ok_2(NULL);
 
-	const struct CMUnitTest tests[] = {
-		TEST(unmarshal_cfg_from_file__ok_2),
-	};
-
-	return RUN(tests);
+	// const struct CMUnitTest tests[] = {
+	// 	TEST(unmarshal_cfg_from_file__ok_2),
+	// };
+	//
+	// return RUN(tests);
 }
 
