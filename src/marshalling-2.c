@@ -265,7 +265,7 @@ static void seq_to_disabled(struct SList **disabled, const yaml_node_t *seq, yam
 				break;
 
 			case YAML_MAPPING_NODE:
-				log_error("TODO disabled condition");
+				// log_error("TODO disabled condition");
 				break;
 
 			default:
@@ -431,11 +431,11 @@ seq_to_transforms_done:
 	}
 }
 
-static bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
+static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 
 	const yaml_node_t *start_doc = document->nodes.start;
 	if (start_doc->type != YAML_MAPPING_NODE) {
-		// TODO error
+		log_error("\nparsing file %s empty cfg, expected map", cfg->file_path);
 		return false;
 	}
 
@@ -542,7 +542,7 @@ bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 
 	yaml_document_get_root_node(&document);
 
-	unmarshal_cfg(cfg, &document);
+	bool ok = doc_to_cfg(cfg, &document);
 
 	yaml_document_delete(&document);
 
@@ -550,6 +550,6 @@ bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 
 	fclose(input);
 
-	return true;
+	return ok;
 }
 
