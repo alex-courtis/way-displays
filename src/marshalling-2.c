@@ -9,6 +9,36 @@
 #include "convert.h"
 #include "stable.h"
 
+struct UnmarshalContext {
+	enum CfgElement element;
+	char *name_desc;
+	char *key;
+} ctx = { 0 };
+
+static void ctx_clear(void) {
+	if (ctx.name_desc)
+		free(ctx.name_desc);
+	if (ctx.key)
+		free(ctx.key);
+	memset(&ctx, 0, sizeof(struct UnmarshalContext));
+}
+
+void ctx_element(const enum CfgElement element) {
+	ctx.element = element;
+}
+
+void ctx_name_desc(const char *name_desc) {
+	if (ctx.name_desc)
+		free(ctx.name_desc);
+	ctx.name_desc = strdup(name_desc);
+}
+
+void ctx_key(const char *key) {
+	if (ctx.key)
+		free(ctx.key);
+	ctx.key = strdup(key);
+}
+
 // return a static string for the node type
 static char* node_type_str(const yaml_node_type_t type) {
 	switch (type) {
@@ -25,65 +55,44 @@ static char* node_type_str(const yaml_node_type_t type) {
 	}
 }
 
-
-// TODO replace with check_node_type_
 // validate expected is of type actual, returning false and logging a warning if not
-static bool check_node_type0(const yaml_node_type_t expected, const yaml_node_type_t actual, const enum CfgElement element, const char *def) {
-	if (actual == expected)
+static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expected) {
+	if (node->type == expected)
 		return true;
 
-	if (def)
-		log_warn("Ignoring invalid %s: expected %s, got %s, using default %s", cfg_element_name(element), node_type_str(expected), node_type_str(actual), def);
-	else
-		log_warn("Ignoring invalid %s: expected %s, got %s", cfg_element_name(element), node_type_str(expected), node_type_str(actual));
+	// TODO add a context string renderer
+
+	log_warn(
+			"Ignoring invalid %s %s %s expected %s, got %s",
+			cfg_element_name(ctx.element),
+			ctx.name_desc ? ctx.name_desc : "",
+			ctx.key ? ctx.key : "",
+			node_type_str(expected),
+			node_type_str(node->type)
+			);
 
 	return false;
 }
 
-// TODO replace
-// unmarshal a scalar string to dst, freeing first, caller frees dst
-static void unmarshal_string(char **dst, yaml_node_t *scalar, const enum CfgElement element, const char *def) {
+// unmarshal a scalar string to dst, freeing first
+static bool scalar_to_string(char **dst, const yaml_node_t *scalar) {
 	if (*dst)
 		free(*dst);
+	*dst = NULL;
 
-	if (!check_node_type0(YAML_SCALAR_NODE, scalar->type, element, def))
-		*dst = def ? strdup(def) : NULL;
-	else
-		*dst = strdup((char*)scalar->data.scalar.value);
-}
-
-
-// validate expected is of type actual, returning false and logging a warning if not
-static bool check_node_type(const yaml_node_type_t expected, const yaml_node_type_t actual, const char *key, enum CfgElement element, const char *name_desc) {
-	if (actual == expected)
-		return true;
-
-	// TODO add yaml node type to message
-	log_warn("Ignoring invalid %s %s %s: expected %s, got %s", cfg_element_name(element), name_desc, key, node_type_str(expected), node_type_str(actual));
-
-	return false;
-}
-
-// unmarshal a scalar string to dst, freeing first, caller frees
-static bool scalar_to_string(char **dst, yaml_node_t *scalar, const char *key, enum CfgElement element, const char *name_desc) {
-	if (!check_node_type(YAML_SCALAR_NODE, scalar->type, key, element, name_desc))
+	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
-
-	if (*dst)
-		free(*dst);
 
 	*dst = strdup((char*)scalar->data.scalar.value);
 
 	return true;
 }
 
-// unmarshal a scalar number to dst
-static bool scalar_to_int(int32_t *dst, yaml_node_t *scalar, const char *key, enum CfgElement element, const char *name_desc) {
-	if (!check_node_type(YAML_SCALAR_NODE, scalar->type, key, element, name_desc))
-		return false;
-
-	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) != 1) {
-		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(element), name_desc, key, scalar->data.scalar.value);
+// unmarshal a scalar string to dst, freeing first, copies def on failure
+static bool scalar_to_string_def(char **dst, const char *def, const yaml_node_t *scalar) {
+	if (!scalar_to_string(dst, scalar)) {
+		log_warn("TODO scalar_to_string_def default message");
+		*dst = strdup(def);
 		return false;
 	}
 
@@ -91,12 +100,36 @@ static bool scalar_to_int(int32_t *dst, yaml_node_t *scalar, const char *key, en
 }
 
 // unmarshal a scalar number to dst
-bool scalar_to_float(float *dst, yaml_node_t *scalar, const char *key, enum CfgElement element, const char *name_desc) {
-	if (!check_node_type(YAML_SCALAR_NODE, scalar->type, key, element, name_desc))
+static bool scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
+	if (!check_node_type(scalar, YAML_SCALAR_NODE))
+		return false;
+
+	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) != 1) {
+		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key, scalar->data.scalar.value);
+		return false;
+	}
+
+	return true;
+}
+
+// unmarshal a scalar number to dst
+static bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
+	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) != 1) {
-		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(element), name_desc, key, scalar->data.scalar.value);
+		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key, scalar->data.scalar.value);
+		return false;
+	}
+
+	return true;
+}
+
+// unmarshal a scalar number to dst, copies def on failure
+static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) {
+	if (!scalar_to_float(dst, scalar)) {
+		log_warn("TODO scalar_to_float_def default message");
+		*dst = def;
 		return false;
 	}
 
@@ -104,14 +137,14 @@ bool scalar_to_float(float *dst, yaml_node_t *scalar, const char *key, enum CfgE
 }
 
 // unmarshal a scalar bool to dst
-bool scalar_to_boolean(bool *dst, yaml_node_t *scalar, const char *key, enum CfgElement element, const char *name_desc) {
-	if (!check_node_type(YAML_SCALAR_NODE, scalar->type, key, element, name_desc))
+static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
+	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
 	// OnOff handles booleans
 	int val = on_off_val((char*)scalar->data.scalar.value);
 	if (!val) {
-		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(element), name_desc, key, scalar->data.scalar.value);
+		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key, scalar->data.scalar.value);
 		return false;
 	}
 
@@ -119,21 +152,40 @@ bool scalar_to_boolean(bool *dst, yaml_node_t *scalar, const char *key, enum Cfg
 	return true;
 }
 
-// unmarshal a map of strings to nodes, caller frees
-static const struct STable *map_to_table(const yaml_node_t *map_node, yaml_document_t *document, const enum CfgElement element) {
+// unmarshal an scalar enum to dst
+typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
+typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
+static bool scalar_to_enum_def(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
+	if (!check_node_type(scalar, YAML_SCALAR_NODE)) {
+		*dst = def;
+		return false;
+	}
 
-	if (!check_node_type0(YAML_MAPPING_NODE, map_node->type, element, NULL))
+	*dst = fn_val((char*)scalar->data.scalar.value);
+	if (!*dst) {
+		log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(ctx.element), scalar->data.scalar.value, fn_name(def));
+		*dst = def;
+		return false;
+	}
+
+	return true;
+}
+
+// unmarshal a map of strings to nodes, caller frees
+static const struct STable *map_to_node_table(const yaml_node_t *map, yaml_document_t *document) {
+
+	if (!check_node_type(map, YAML_MAPPING_NODE))
 		return NULL;
 
 	const struct STable *dst = stable_init(10, 10, false);
 
-	for (yaml_node_pair_t *pair = map_node->data.mapping.pairs.start; pair < map_node->data.mapping.pairs.top; pair++) {
+	for (yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
 			continue;
 
 		yaml_node_t *pair_key = yaml_document_get_node(document, pair->key);
 		char *key = NULL;
-		unmarshal_string(&key, pair_key, element, NULL);
+		scalar_to_string(&key, pair_key);
 
 		yaml_node_t *pair_value = yaml_document_get_node(document, pair->value);
 
@@ -148,41 +200,13 @@ static const struct STable *map_to_table(const yaml_node_t *map_node, yaml_docum
 	return dst;
 }
 
-// unmarshal an enum and return it otherwise return def
-typedef unsigned int (*unmarshal_enum_fn_val)(const char *name);
-typedef const char* (*unmarshal_enum_fn_name)(unsigned int val);
-static int unmarshal_enum(yaml_node_t *scalar, const enum CfgElement element, const int def, unmarshal_enum_fn_val fn_val, unmarshal_enum_fn_name fn_name) {
-	if (!check_node_type0(YAML_SCALAR_NODE, scalar->type, element, fn_name(def)))
-		return def;
-
-	int val = fn_val((char*)scalar->data.scalar.value);
-	if (val)
-		return val;
-
-	log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(element), scalar->data.scalar.value, fn_name(def));
-	return def;
-}
-
-// unmarshal a float and return it otherwise return def
-static float unmarshal_float(const yaml_node_t *scalar, const enum CfgElement element, const float def, const char *def_str) {
-	if (!check_node_type0(YAML_SCALAR_NODE, scalar->type, element, def_str))
-		return def;
-
-	float value;
-	if (sscanf((char*)scalar->data.scalar.value, "%f", &value) == 1)
-		return value;
-
-	log_warn("Ignoring invalid %s '%s', using default %s", cfg_element_name(element), scalar->data.scalar.value, def_str);
-	return def;
-}
-
 // TODO check regex
 // unmarshal a sequence of strings, freeing first, removing duplicates, caller frees
-static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_document_t *document, const enum CfgElement element) {
+static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_document_t *document) {
 	if (*dst)
 		slist_free_vals(dst, NULL);
 
-	if (!check_node_type0(YAML_SEQUENCE_NODE, seq->type, element, NULL))
+	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return;
 
 	const struct STable *map = stable_init(10, 10, false);
@@ -193,7 +217,7 @@ static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_
 			continue;
 
 		char *val = NULL;
-		unmarshal_string(&val, scalar, element, NULL);
+		scalar_to_string(&val, scalar);
 		if (!val)
 			continue;
 
@@ -207,20 +231,21 @@ static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_
 	stable_free(map);
 }
 
+// TODO generify
 // unmarshal ORDER into order_name_desc, freeing first, removing invalid patterns
-static void unmarshal_order_name_desc(struct SList **order_name_desc, const yaml_node_t *seq, yaml_document_t *document) {
-	seq_to_string_list(order_name_desc, seq, document, ORDER);
+static void seq_to_order(struct SList **order_name_desc, const yaml_node_t *seq, yaml_document_t *document) {
+	seq_to_string_list(order_name_desc, seq, document);
 
 	slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL);
 }
 
 // unmarshal DISABLED into disabled, freeing first
-static void unmarshal_disabled(struct SList **disabled, const yaml_node_t *seq, yaml_document_t *document) {
+static void seq_to_disabled(struct SList **disabled, const yaml_node_t *seq, yaml_document_t *document) {
 	if (*disabled)
 		slist_free_vals(disabled, NULL);
 
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		yaml_node_t *node = yaml_document_get_node(document, *item);
+		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
 
@@ -228,7 +253,7 @@ static void unmarshal_disabled(struct SList **disabled, const yaml_node_t *seq, 
 
 		switch (node->type) {
 			case YAML_SCALAR_NODE:
-				if (scalar_to_string(&d->name_desc, node, "NAME_DESC", DISABLED, "")) {
+				if (scalar_to_string(&d->name_desc, node)) {
 					slist_append(disabled, d);
 					continue;
 				}
@@ -250,7 +275,7 @@ static void unmarshal_disabled(struct SList **disabled, const yaml_node_t *seq, 
 }
 
 // unmarshal SCALE into user_scales, freeing first
-static void unmarshal_scale(struct SList **user_scales, const yaml_node_t *seq, yaml_document_t *document) {
+static void seq_to_scale(struct SList **user_scales, const yaml_node_t *seq, yaml_document_t *document) {
 	if (*user_scales)
 		slist_free_vals(user_scales, NULL);
 
@@ -259,18 +284,24 @@ static void unmarshal_scale(struct SList **user_scales, const yaml_node_t *seq, 
 		if (!node)
 			continue;
 
-		const struct STable *map = map_to_table(node, document, SCALE);
+		const struct STable *map = map_to_node_table(node, document);
 		if (!map)
 			continue;
 
 		struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
-		if (stable_get(map, "NAME_DESC"))
-			if (!scalar_to_string(&user_scale->name_desc, (yaml_node_t*)stable_get(map, "NAME_DESC"), "NAME_DESC", SCALE, ""))
+		const yaml_node_t *scalar;
+
+		ctx_key("NAME_DESC");
+		if ((scalar = stable_get(map, ctx.key)))
+			if (!scalar_to_string(&user_scale->name_desc, scalar))
 				goto unmarshal_scale_done;
 
-		if (stable_get(map, "SCALE"))
-			if (!scalar_to_float(&user_scale->scale, (yaml_node_t*)stable_get(map, "SCALE"), "SCALE", SCALE, user_scale->name_desc))
+		ctx_name_desc(user_scale->name_desc);
+
+		ctx_key("SCALE");
+		if ((scalar = stable_get(map, ctx.key)))
+			if (!scalar_to_float(&user_scale->scale, scalar))
 				goto unmarshal_scale_done;
 
 		// OK
@@ -288,7 +319,7 @@ unmarshal_scale_done:
 }
 
 // unmarshal MODE into user_modes, freeing first
-static void unmarshal_modes(struct SList **user_modes, const yaml_node_t *seq, yaml_document_t *document) {
+static void seq_to_modes(struct SList **user_modes, const yaml_node_t *seq, yaml_document_t *document) {
 	if (*user_modes)
 		slist_free_vals(user_modes, NULL);
 
@@ -297,37 +328,45 @@ static void unmarshal_modes(struct SList **user_modes, const yaml_node_t *seq, y
 		if (!node)
 			continue;
 
-		const struct STable *map = map_to_table(node, document, SCALE);
+		const struct STable *map = map_to_node_table(node, document);
 		if (!map)
 			continue;
 
 		struct UserMode *user_mode = cfg_user_mode_default();
 
-		if (stable_get(map, "NAME_DESC"))
-			if (!scalar_to_string(&user_mode->name_desc, (yaml_node_t*)stable_get(map, "NAME_DESC"), "NAME_DESC", MODE, ""))
+		const yaml_node_t *scalar;
+
+		ctx_key("NAME_DESC");
+		if ((scalar = stable_get(map, ctx.key)))
+			if (!scalar_to_string(&user_mode->name_desc, scalar))
 				goto unmarshal_mode_done;
 		// TODO missing and regex
 
-		if (stable_get(map, "WIDTH"))
-			if (!scalar_to_int(&user_mode->width, (yaml_node_t*)stable_get(map, "WIDTH"), "WIDTH", MODE, user_mode->name_desc))
+		ctx_name_desc(user_mode->name_desc);
+
+		ctx_key("WIDTH");
+		if ((scalar = stable_get(map, ctx.key)))
+			if (!scalar_to_int(&user_mode->width, scalar))
 				goto unmarshal_mode_done;
 
-		if (stable_get(map, "HEIGHT"))
-			if (!scalar_to_int(&user_mode->height, (yaml_node_t*)stable_get(map, "HEIGHT"), "HEIGHT", MODE, user_mode->name_desc))
+		ctx_key("HEIGHT");
+		if ((scalar = stable_get(map, ctx.key)))
+			if (!scalar_to_int(&user_mode->height, scalar))
 				goto unmarshal_mode_done;
 
-		if (stable_get(map, "HZ")) {
+		ctx_key("HZ");
+		if ((scalar = stable_get(map, ctx.key))) {
 			float hz;
-			if (!scalar_to_float(&hz, (yaml_node_t*)stable_get(map, "HZ"), "HZ", MODE, user_mode->name_desc))
+			if (!scalar_to_float(&hz, scalar))
 				goto unmarshal_mode_done;
 
 			user_mode->refresh_mhz = lround(hz * 1000);
 		}
 
-		if (stable_get(map, "MAX")) {
-			if (!scalar_to_boolean(&user_mode->max, (yaml_node_t*)stable_get(map, "MAX"), "MAX", MODE, user_mode->name_desc))
+		ctx_key("MAX");
+		if ((scalar = stable_get(map, ctx.key)))
+			if (!scalar_to_boolean(&user_mode->max, scalar))
 				goto unmarshal_mode_done;
-		}
 
 		// OK
 		slist_append(user_modes, user_mode);
@@ -343,9 +382,9 @@ unmarshal_mode_done:
 	}
 }
 
-bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
+static bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
 
-	yaml_node_t *start_doc = document->nodes.start;
+	const yaml_node_t *start_doc = document->nodes.start;
 	if (start_doc->type != YAML_MAPPING_NODE) {
 		// TODO error
 		return false;
@@ -355,67 +394,74 @@ bool unmarshal_cfg(struct Cfg *cfg, yaml_document_t *document) {
 		if (!pair->key || !pair->value)
 			continue;
 
-		yaml_node_t *key = yaml_document_get_node(document, pair->key);
+		const yaml_node_t *key = yaml_document_get_node(document, pair->key);
 		if (!key || key->type != YAML_SCALAR_NODE || !key->data.scalar.value)
 			continue;
 
-		yaml_node_t *value = yaml_document_get_node(document, pair->value);
+		const yaml_node_t *value = yaml_document_get_node(document, pair->value);
 		if (!value)
 			continue;
 
-		switch (cfg_element_val((char*)key->data.scalar.value)) {
+		ctx.element = cfg_element_val((char*)key->data.scalar.value);
+
+		switch (ctx.element) {
 			case ARRANGE:
-				cfg->arrange = unmarshal_enum(value, ARRANGE, ARRANGE_DEFAULT, arrange_val_start, arrange_name);
+				scalar_to_enum_def((int*)&cfg->arrange, ARRANGE_DEFAULT, value, arrange_val_start, arrange_name);
 				break;
 			case ALIGN:
-				cfg->align = unmarshal_enum(value, ALIGN, ALIGN_DEFAULT, align_val_start, align_name);
+				scalar_to_enum_def((int*)&cfg->align, ALIGN_DEFAULT, value, align_val_start, align_name);
 				break;
 			case ORDER:
-				unmarshal_order_name_desc(&cfg->order_name_desc, value, document);
+				seq_to_order(&cfg->order_name_desc, value, document);
 				break;
 			case SCALING:
-				cfg->scaling = unmarshal_enum(value, SCALING, SCALING_DEFAULT, on_off_val, on_off_name);
+				scalar_to_enum_def((int*)&cfg->scaling, SCALING_DEFAULT, value, on_off_val, on_off_name);
 				break;
 			case AUTO_SCALE:
-				cfg->auto_scale = unmarshal_enum(value, AUTO_SCALE, AUTO_SCALE_DEFAULT, on_off_val, on_off_name);
+				scalar_to_enum_def((int*)&cfg->auto_scale, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name);
 				break;
 			case SCALE:
-				unmarshal_scale(&cfg->user_scales, value, document);
+				seq_to_scale(&cfg->user_scales, value, document);
 				break;
 			case MODE:
-				unmarshal_modes(&cfg->user_modes, value, document);
+				seq_to_modes(&cfg->user_modes, value, document);
 				break;
 			case TRANSFORM:
+				// TODO
 				break;
 			case VRR_OFF:
-				seq_to_string_list(&cfg->adaptive_sync_off_name_desc, value, document, VRR_OFF);
+				seq_to_string_list(&cfg->adaptive_sync_off_name_desc, value, document);
 				break;
 			case CALLBACK_CMD:
-				unmarshal_string(&cfg->callback_cmd, value, CALLBACK_CMD, CALLBACK_CMD_DEFAULT);
+				scalar_to_string_def(&cfg->callback_cmd, CALLBACK_CMD_DEFAULT, value);
 				break;
 			case LAPTOP_DISPLAY_PREFIX:
-				unmarshal_string(&cfg->laptop_display_prefix, value, LAPTOP_DISPLAY_PREFIX, NULL);
+				scalar_to_string(&cfg->laptop_display_prefix, value);
 				break;
 			case MAX_PREFERRED_REFRESH:
+				// TODO
 				break;
 			case LOG_THRESHOLD:
-				cfg->log_threshold = unmarshal_enum(value, LOG_THRESHOLD, LOG_THRESHOLD_DEFAULT, log_threshold_val, log_threshold_name);
+				scalar_to_enum_def((int*)&cfg->log_threshold, LOG_THRESHOLD_DEFAULT, value, log_threshold_val, log_threshold_name);
 				break;
 			case DISABLED:
-				unmarshal_disabled(&cfg->disabled, value, document);
+				seq_to_disabled(&cfg->disabled, value, document);
 				break;
 			case ARRANGE_ALIGN:
+				// TODO
 				break;
 			case AUTO_SCALE_MIN:
-				cfg->auto_scale_min = unmarshal_float(value, AUTO_SCALE_MIN, AUTO_SCALE_MIN_DEFAULT, AUTO_SCALE_MIN_DEFAULT_STR);
+				scalar_to_float_def(&cfg->auto_scale_min, AUTO_SCALE_MIN_DEFAULT, value);
 				break;
 			case AUTO_SCALE_MAX:
-				cfg->auto_scale_max = unmarshal_float(value, AUTO_SCALE_MAX, AUTO_SCALE_MAX_DEFAULT, AUTO_SCALE_MAX_DEFAULT_STR);
+				scalar_to_float_def(&cfg->auto_scale_max, AUTO_SCALE_MAX_DEFAULT, value);
 				break;
 			default:
 				// TODO maybe unknown key warning
 				break;
 		}
+
+		ctx_clear();
 	}
 
 	return true;

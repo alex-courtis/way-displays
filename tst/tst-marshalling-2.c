@@ -120,12 +120,12 @@ void unmarshal_cfg_from_file__ok_2(void **state) {
 }
 
 int main(void) {
-	unmarshal_cfg_from_file__ok_2(NULL);
+	// unmarshal_cfg_from_file__ok_2(NULL);
 
-	// const struct CMUnitTest tests[] = {
-	// 	TEST(unmarshal_cfg_from_file__ok_2),
-	// };
-	//
-	// return RUN(tests);
+	const struct CMUnitTest tests[] = {
+		TEST(unmarshal_cfg_from_file__ok_2),
+	};
+
+	return RUN(tests);
 }
 
