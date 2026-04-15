@@ -22,6 +22,10 @@
 
 #include "marshalling.h"
 
+#ifndef UCFF
+	#define UCFF unmarshal_cfg_from_file_2
+#endif
+
 void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
@@ -89,25 +93,31 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->disabled, cfg_disabled_always("EIGHT"));
 	slist_append(&cfg->disabled, cfg_disabled_always("nine"));
 
-	// struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
-	// disabled->name_desc = strdup("twelve");
-	// struct Condition *cond = calloc(1, sizeof(struct Condition));
-	// slist_append(&cond->plugged, strdup("ONE"));
-	// slist_append(&disabled->conditions, cond);
-	//
-	// slist_append(&cfg->disabled, disabled);
+	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	disabled->name_desc = strdup("twelve");
+
+	struct Condition *cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->plugged, strdup("ONE"));
+	slist_append(&cond->plugged, strdup("TWO"));
+	slist_append(&disabled->conditions, cond);
+
+	cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->unplugged, strdup("THREE"));
+	slist_append(&disabled->conditions, cond);
+
+	slist_append(&cfg->disabled, disabled);
 
 	slist_append(&cfg->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
 
 	return cfg;
 }
 
-void unmarshal_cfg_from_file_2__ok(void **state) {
+void unmarshal_cfg_from_file__ok(void **state) {
 
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-all.yaml");
 
-	assert_true(unmarshal_cfg_from_file_2(read));
+	assert_true(UCFF(read));
 
 	struct Cfg *expected = cfg_all();
 
@@ -119,24 +129,24 @@ void unmarshal_cfg_from_file_2__ok(void **state) {
 	// assert_logs_empty();
 }
 
-void unmarshal_cfg_from_file_2__empty(void **state) {
+void unmarshal_cfg_from_file__empty(void **state) {
 
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-empty.yaml");
 
-	assert_false(unmarshal_cfg_from_file_2(read));
+	assert_false(UCFF(read));
 
 	assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml empty cfg, expected map\n");
 
 	cfg_free(read);
 }
 
-void unmarshal_cfg_from_file_2__bad(void **state) {
+void unmarshal_cfg_from_file__bad(void **state) {
 
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-bad.yaml");
 
-	assert_true(unmarshal_cfg_from_file_2(read));
+	assert_true(UCFF(read));
 
 	struct Cfg *expected = cfg_default();
 
@@ -150,11 +160,11 @@ void unmarshal_cfg_from_file_2__bad(void **state) {
 	free(expected_log);
 }
 
-void unmarshal_cfg_from_file_2__legacy(void **state) {
+void unmarshal_cfg_from_file__legacy(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-legacy.yaml");
 
-	assert_true(unmarshal_cfg_from_file_2(read));
+	assert_true(UCFF(read));
 
 	struct Cfg *expected = cfg_default();
 
@@ -592,11 +602,11 @@ void unmarshal_ipc_responses__seq(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(unmarshal_cfg_from_file_2__ok),
-		TEST(unmarshal_cfg_from_file_2__empty),
-		// TEST(unmarshal_cfg_from_file_2__bad),
-		TEST(unmarshal_cfg_from_file_2__legacy),
-
+		TEST(unmarshal_cfg_from_file__ok),
+		TEST(unmarshal_cfg_from_file__empty),
+		// TEST(unmarshal_cfg_from_file__bad),
+		TEST(unmarshal_cfg_from_file__legacy),
+		//
 		// // YAML::Node equality operator is deprecated and not functional.
 		// // All we can do is read files with the same format that will be emitted.
 		// TEST(marshal_cfg__ok),

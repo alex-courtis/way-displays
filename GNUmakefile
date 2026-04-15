@@ -94,6 +94,7 @@ test-vg: $(TST_T)
 
 $(TST_T): EXE = $(patsubst test%,tst%,$(@))
 $(TST_T): compile
+	rm -f tst/tst-marshalling.o tst/tst-marshalling-2.o
 	$(MAKE) -f tst/GNUmakefile $(EXE)
 	$(VALGRIND) ./$(EXE)
 

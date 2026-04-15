@@ -7,7 +7,13 @@
 
 #include "cfg.h"
 #include "convert.h"
+#include "conditions.h"
 #include "stable.h"
+
+// TODO
+// consider removing freeing first
+// deal with unsigned char
+// all generic _to_ should return false and free/null dst on any error
 
 struct UnmarshalContext {
 	enum CfgElement element;
@@ -176,13 +182,16 @@ static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 	return true;
 }
 
-// unmarshal a map of strings to nodes, caller frees
-static const struct STable *map_to_node_table(const yaml_node_t *map, yaml_document_t *document) {
+// unmarshal a map of strings to nodes, freeing first, caller frees
+static bool map_to_node_table(const struct STable **dst, const yaml_node_t *map, yaml_document_t *document) {
+	if (*dst)
+		stable_free(dst);
+	*dst = NULL;
 
 	if (!check_node_type(map, YAML_MAPPING_NODE))
-		return NULL;
+		return false;
 
-	const struct STable *dst = stable_init(10, 10, false);
+	const struct STable *table = stable_init(10, 10, false);
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
@@ -195,14 +204,16 @@ static const struct STable *map_to_node_table(const yaml_node_t *map, yaml_docum
 		const yaml_node_t *pair_value = yaml_document_get_node(document, pair->value);
 
 		if (key && pair_value) {
-			stable_put(dst, key, pair_value);
+			stable_put(table, key, pair_value);
 		}
 
 		if (key)
 			free(key);
 	}
 
-	return dst;
+	*dst = table;
+
+	return true;
 }
 
 // TODO check regex
@@ -214,7 +225,7 @@ static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return;
 
-	const struct STable *map = stable_init(10, 10, false);
+	const struct STable *table = stable_init(10, 10, false);
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *scalar = yaml_document_get_node(document, *item);
@@ -226,14 +237,14 @@ static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_
 		if (!val)
 			continue;
 
-		stable_put(map, val, NULL);
+		stable_put(table, val, NULL);
 
 		free(val);
 	}
 
-	*dst = stable_keys_slist(map);
+	*dst = stable_keys_slist(table);
 
-	stable_free(map);
+	stable_free(table);
 }
 
 // TODO generify
@@ -244,43 +255,127 @@ static void seq_to_order(struct SList **order_name_desc, const yaml_node_t *seq,
 	slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL);
 }
 
-// unmarshal DISABLED into disabled, freeing first
-static void seq_to_disabled(struct SList **disabled, const yaml_node_t *seq, yaml_document_t *document) {
+// unmarshal a map into conditions_list, freeing first
+static void seq_to_conditions_list(struct SList **conditions_list, const yaml_node_t *seq, yaml_document_t *document) {
+	if (*conditions_list)
+		slist_free_vals(conditions_list, condition_free);
+
+	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
+		return;
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		const yaml_node_t *node = yaml_document_get_node(document, *item);
+
+		const struct STable *table = NULL;
+		if (!map_to_node_table(&table, node, document))
+			goto end;
+
+		struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
+
+		ctx_key("PLUGGED");
+		if ((node = stable_get(table, ctx.key)))
+			seq_to_string_list(&condition->plugged, node, document);
+		// TODO above should return bool to indicate fail
+
+		ctx_key("UNPLUGGED");
+		if ((node = stable_get(table, ctx.key)))
+			seq_to_string_list(&condition->unplugged, node, document);
+		// TODO above should return bool to indicate fail
+
+		// OK
+		slist_append(conditions_list, condition);
+		condition = NULL;
+
+end:
+		stable_free(table);
+
+		// free on validation fail
+		if (condition)
+			(condition_free(condition));
+	}
+}
+
+// unmarshal a map into disabled, freeing first
+static void map_to_disabled(struct Disabled **disabled, const yaml_node_t *map, yaml_document_t *document) {
 	if (*disabled)
-		slist_free_vals(disabled, NULL);
+		free(*disabled);
+
+	const struct STable *table = NULL;
+	if (!map_to_node_table(&table, map, document))
+		return;
+
+	const yaml_node_t *node;
+
+	struct Disabled *d = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+
+	ctx_key("NAME_DESC");
+	if ((node = stable_get(table, ctx.key)))
+		if (!scalar_to_string(&d->name_desc, node))
+			goto end;
+	// TODO missing and regex
+
+	ctx_name_desc(d->name_desc);
+
+	ctx_key("IF");
+	if ((node = stable_get(table, ctx.key)))
+		seq_to_conditions_list(&d->conditions, node, document);
+	// TODO missing is OK
+
+	// OK
+	*disabled = d;
+	d = NULL;
+
+end:
+
+	stable_free(table);
+
+	// free on validation fail
+	if (d)
+		free(d);
+}
+
+// unmarshal DISABLED into disabled_list, freeing first
+static void seq_to_disabled_list(struct SList **disabled_list, const yaml_node_t *seq, yaml_document_t *document) {
+	if (*disabled_list)
+		slist_free_vals(disabled_list, NULL);
+
+	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
+		return;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
 
-		struct Disabled *d = (struct Disabled*)calloc(1, sizeof(struct Disabled));
-
 		switch (node->type) {
 			case YAML_SCALAR_NODE:
-				if (scalar_to_string(&d->name_desc, node)) {
-					slist_append(disabled, d);
-					continue;
+				{
+					struct Disabled *disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+					if (scalar_to_string(&disabled->name_desc, node))
+						slist_append(disabled_list, disabled);
+					else
+						cfg_disabled_free(disabled);
+					break;
 				}
-				break;
 
 			case YAML_MAPPING_NODE:
-				// log_error("TODO disabled condition");
-				break;
+				{
+					struct Disabled *disabled = NULL;
+					map_to_disabled(&disabled, node, document);
+					if (disabled)
+						slist_append(disabled_list, disabled);
+					break;
+				}
 
 			default:
-				log_warn("Ignoring invalid DISABLED: expected scalar or map, got %s", node_type_str(node->type));
+				log_warn("TODO test and add context Ignoring invalid DISABLED: expected scalar or map, got %s", node_type_str(node->type));
 				break;
 		}
-
-		// free on validation fail
-		if (d)
-			cfg_disabled_free(d);
 	}
 }
 
 // unmarshal SCALE into user_scales, freeing first
-static void seq_to_scales(struct SList **user_scales, const yaml_node_t *seq, yaml_document_t *document) {
+static void seq_to_scales_list(struct SList **user_scales, const yaml_node_t *seq, yaml_document_t *document) {
 	if (*user_scales)
 		slist_free_vals(user_scales, NULL);
 
@@ -289,8 +384,8 @@ static void seq_to_scales(struct SList **user_scales, const yaml_node_t *seq, ya
 		if (!node)
 			continue;
 
-		const struct STable *map = map_to_node_table(node, document);
-		if (!map)
+		const struct STable *table = NULL;
+		if (!map_to_node_table(&table, node, document))
 			continue;
 
 		struct UserScale *scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
@@ -298,24 +393,24 @@ static void seq_to_scales(struct SList **user_scales, const yaml_node_t *seq, ya
 		const yaml_node_t *scalar;
 
 		ctx_key("NAME_DESC");
-		if ((scalar = stable_get(map, ctx.key)))
+		if ((scalar = stable_get(table, ctx.key)))
 			if (!scalar_to_string(&scale->name_desc, scalar))
-				goto seq_to_scales_done;
+				goto end;
 
 		ctx_name_desc(scale->name_desc);
 
 		ctx_key("SCALE");
-		if ((scalar = stable_get(map, ctx.key)))
+		if ((scalar = stable_get(table, ctx.key)))
 			if (!scalar_to_float(&scale->scale, scalar))
-				goto seq_to_scales_done;
+				goto end;
 
 		// OK
 		slist_append(user_scales, scale);
 		scale = NULL;
 
-seq_to_scales_done:
+end:
 
-		stable_free(map);
+		stable_free(table);
 
 		// free on validation fail
 		if (scale)
@@ -324,7 +419,7 @@ seq_to_scales_done:
 }
 
 // unmarshal MODE into user_modes, freeing first
-static void seq_to_modes(struct SList **user_modes, const yaml_node_t *seq, yaml_document_t *document) {
+static void seq_to_modes_list(struct SList **user_modes, const yaml_node_t *seq, yaml_document_t *document) {
 	if (*user_modes)
 		slist_free_vals(user_modes, NULL);
 
@@ -333,8 +428,8 @@ static void seq_to_modes(struct SList **user_modes, const yaml_node_t *seq, yaml
 		if (!node)
 			continue;
 
-		const struct STable *map = map_to_node_table(node, document);
-		if (!map)
+		const struct STable *table = NULL;
+		if (!map_to_node_table(&table, node, document))
 			continue;
 
 		struct UserMode *mode = cfg_user_mode_default();
@@ -342,44 +437,44 @@ static void seq_to_modes(struct SList **user_modes, const yaml_node_t *seq, yaml
 		const yaml_node_t *scalar;
 
 		ctx_key("NAME_DESC");
-		if ((scalar = stable_get(map, ctx.key)))
+		if ((scalar = stable_get(table, ctx.key)))
 			if (!scalar_to_string(&mode->name_desc, scalar))
-				goto seq_to_modes_done;
+				goto end;
 		// TODO missing and regex
 
 		ctx_name_desc(mode->name_desc);
 
 		ctx_key("WIDTH");
-		if ((scalar = stable_get(map, ctx.key)))
+		if ((scalar = stable_get(table, ctx.key)))
 			if (!scalar_to_int(&mode->width, scalar))
-				goto seq_to_modes_done;
+				goto end;
 
 		ctx_key("HEIGHT");
-		if ((scalar = stable_get(map, ctx.key)))
+		if ((scalar = stable_get(table, ctx.key)))
 			if (!scalar_to_int(&mode->height, scalar))
-				goto seq_to_modes_done;
+				goto end;
 
 		ctx_key("HZ");
-		if ((scalar = stable_get(map, ctx.key))) {
+		if ((scalar = stable_get(table, ctx.key))) {
 			float hz;
 			if (!scalar_to_float(&hz, scalar))
-				goto seq_to_modes_done;
+				goto end;
 
 			mode->refresh_mhz = lround(hz * 1000);
 		}
 
 		ctx_key("MAX");
-		if ((scalar = stable_get(map, ctx.key)))
+		if ((scalar = stable_get(table, ctx.key)))
 			if (!scalar_to_boolean(&mode->max, scalar))
-				goto seq_to_modes_done;
+				goto end;
 
 		// OK
 		slist_append(user_modes, mode);
 		mode = NULL;
 
-seq_to_modes_done:
+end:
 
-		stable_free(map);
+		stable_free(table);
 
 		// free on validation fail
 		if (mode)
@@ -388,7 +483,7 @@ seq_to_modes_done:
 }
 
 // unmarshal TRANSFORM into user_transforms, freeing first
-static void seq_to_transforms(struct SList **user_transforms, const yaml_node_t *seq, yaml_document_t *document) {
+static void seq_to_transforms_list(struct SList **user_transforms, const yaml_node_t *seq, yaml_document_t *document) {
 	if (*user_transforms)
 		slist_free_vals(user_transforms, NULL);
 
@@ -397,8 +492,8 @@ static void seq_to_transforms(struct SList **user_transforms, const yaml_node_t 
 		if (!node)
 			continue;
 
-		const struct STable *map = map_to_node_table(node, document);
-		if (!map)
+		const struct STable *table = NULL;
+		if (!map_to_node_table(&table, node, document))
 			continue;
 
 		struct UserTransform *transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
@@ -406,24 +501,24 @@ static void seq_to_transforms(struct SList **user_transforms, const yaml_node_t 
 		const yaml_node_t *scalar;
 
 		ctx_key("NAME_DESC");
-		if ((scalar = stable_get(map, ctx.key)))
+		if ((scalar = stable_get(table, ctx.key)))
 			if (!scalar_to_string(&transform->name_desc, scalar))
-				goto seq_to_transforms_done;
+				goto end;
 
 		ctx_name_desc(transform->name_desc);
 
 		ctx_key("TRANSFORM");
-		if ((scalar = stable_get(map, ctx.key)))
+		if ((scalar = stable_get(table, ctx.key)))
 			if (!scalar_to_enum((int*)&transform->transform, scalar, transform_val))
-				goto seq_to_transforms_done;
+				goto end;
 
 		// OK
 		slist_append(user_transforms, transform);
 		transform = NULL;
 
-seq_to_transforms_done:
+end:
 
-		stable_free(map);
+		stable_free(table);
 
 		// free on validation fail
 		if (transform)
@@ -434,7 +529,7 @@ seq_to_transforms_done:
 static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 
 	const yaml_node_t *start_doc = document->nodes.start;
-	if (start_doc->type != YAML_MAPPING_NODE) {
+	if (!start_doc || start_doc->type != YAML_MAPPING_NODE) {
 		log_error("\nparsing file %s empty cfg, expected map", cfg->file_path);
 		return false;
 	}
@@ -470,17 +565,18 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_enum_def((int*)&cfg->auto_scale, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name);
 				break;
 			case SCALE:
-				seq_to_scales(&cfg->user_scales, value, document);
+				seq_to_scales_list(&cfg->user_scales, value, document);
 				break;
 			case MODE:
-				seq_to_modes(&cfg->user_modes, value, document);
+				seq_to_modes_list(&cfg->user_modes, value, document);
 				break;
 			case TRANSFORM:
-				seq_to_transforms(&cfg->user_transforms, value, document);
+				seq_to_transforms_list(&cfg->user_transforms, value, document);
 				break;
 			case VRR_OFF:
 				seq_to_string_list(&cfg->adaptive_sync_off_name_desc, value, document);
 				break;
+			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
 				scalar_to_string_def(&cfg->callback_cmd, CALLBACK_CMD_DEFAULT, value);
 				break;
@@ -494,7 +590,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_enum_def((int*)&cfg->log_threshold, LOG_THRESHOLD_DEFAULT, value, log_threshold_val, log_threshold_name);
 				break;
 			case DISABLED:
-				seq_to_disabled(&cfg->disabled, value, document);
+				seq_to_disabled_list(&cfg->disabled, value, document);
 				break;
 			case ARRANGE_ALIGN:
 				// TODO
@@ -506,7 +602,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_float_def(&cfg->auto_scale_max, AUTO_SCALE_MAX_DEFAULT, value);
 				break;
 			default:
-				// TODO maybe unknown key warning
+				log_warn("\nparsing file %s unexpected entry %s", cfg->file_path, (char*)key->data.scalar.value);
 				break;
 		}
 
@@ -521,34 +617,43 @@ bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 		return false;
 	}
 
-	// TODO deal with the unsigned char
+	bool ok = true;
+
+	FILE *input = fopen(cfg->file_path, "rb");
+	if (!input) {
+		log_error("\nparsing file %s missing", cfg->file_path);
+		return false;
+	}
 
 	yaml_parser_t parser;
 	yaml_document_t document;
 
-	// TODO validate
-	FILE *input = fopen(cfg->file_path, "rb");
-
-	if (!yaml_parser_initialize(&parser)) {
-
-		// TODO all error handling and destruction
-		fprintf(stderr, "Could not initialize the parser object\n");
-		return 1;
+	if (!(ok = yaml_parser_initialize(&parser))) {
+		log_error("\nparsing file %s could not initialise parser", cfg->file_path);
+		goto end;
 	}
 
 	yaml_parser_set_input_file(&parser, input);
 
-	yaml_parser_load(&parser, &document);
+	if (!(ok = yaml_parser_load(&parser, &document))) {
+		log_error("\nparsing file %s TODO some sort of stack", cfg->file_path);
+		goto end;
+	}
 
-	yaml_document_get_root_node(&document);
+	if (!(ok = yaml_document_get_root_node(&document))) {
+		log_error("\nparsing file %s empty cfg, expected map", cfg->file_path);
+		goto end;
+	}
 
-	bool ok = doc_to_cfg(cfg, &document);
+	ok = doc_to_cfg(cfg, &document);
 
+end:
 	yaml_document_delete(&document);
 
 	yaml_parser_delete(&parser);
 
-	fclose(input);
+	if (input)
+		fclose(input);
 
 	return ok;
 }

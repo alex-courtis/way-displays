@@ -108,7 +108,9 @@ enum CfgElement {
 	DISABLED,
 	ARRANGE_ALIGN,
 	AUTO_SCALE_MIN,
-	AUTO_SCALE_MAX
+	AUTO_SCALE_MAX,
+	// legacy
+	CHANGE_SUCCESS_CMD,
 };
 
 void cfg_file_paths_init(const char *user_path);
