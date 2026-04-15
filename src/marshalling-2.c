@@ -11,9 +11,10 @@
 #include "stable.h"
 
 // TODO
-// consider removing freeing first
 // deal with unsigned char
 // all generic _to_ should return false and free/null dst on any error
+// clean up test alternates, gitignore etc.
+// consider SSet
 
 struct UnmarshalContext {
 	enum CfgElement element;
@@ -80,7 +81,7 @@ static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expe
 	return false;
 }
 
-// unmarshal a scalar string to dst, freeing first
+// unmarshal a scalar string to empty dst, freeing first
 static bool scalar_to_string(char **dst, const yaml_node_t *scalar) {
 	if (*dst)
 		free(*dst);
@@ -94,7 +95,7 @@ static bool scalar_to_string(char **dst, const yaml_node_t *scalar) {
 	return true;
 }
 
-// unmarshal a scalar string to dst, freeing first, copies def on failure
+// unmarshal a scalar string to empty dst, freeing first, copies def on failure
 static bool scalar_to_string_def(char **dst, const char *def, const yaml_node_t *scalar) {
 	if (!scalar_to_string(dst, scalar)) {
 		log_warn("TODO scalar_to_string_def default message");
@@ -182,48 +183,42 @@ static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 	return true;
 }
 
-// unmarshal a map of strings to nodes, freeing first, caller frees
+// unmarshal a map of nodes into empty dst, caller frees
 static bool map_to_node_table(const struct STable **dst, const yaml_node_t *map, yaml_document_t *document) {
-	if (*dst)
-		stable_free(dst);
-	*dst = NULL;
-
 	if (!check_node_type(map, YAML_MAPPING_NODE))
 		return false;
 
-	const struct STable *table = stable_init(10, 10, false);
+	*dst = stable_init(10, 10, false);
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
 			continue;
 
 		const yaml_node_t *pair_key = yaml_document_get_node(document, pair->key);
+
 		char *key = NULL;
-		scalar_to_string(&key, pair_key);
+		if (!scalar_to_string(&key, pair_key)) {
+			stable_free(*dst);
+			return false;
+		}
 
 		const yaml_node_t *pair_value = yaml_document_get_node(document, pair->value);
 
-		if (key && pair_value) {
-			stable_put(table, key, pair_value);
-		}
+		if (key && pair_value)
+			stable_put(*dst, key, pair_value);
 
 		if (key)
 			free(key);
 	}
 
-	*dst = table;
-
 	return true;
 }
 
 // TODO check regex
-// unmarshal a sequence of strings, freeing first, removing duplicates, caller frees
-static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_document_t *document) {
-	if (*dst)
-		slist_free_vals(dst, NULL);
-
+// unmarshal a sequence of strings into empty dst, removing duplicates, caller frees
+static bool seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_document_t *document) {
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
-		return;
+		return false;
 
 	const struct STable *table = stable_init(10, 10, false);
 
@@ -233,117 +228,103 @@ static void seq_to_string_list(struct SList **dst, const yaml_node_t *seq, yaml_
 			continue;
 
 		char *val = NULL;
-		scalar_to_string(&val, scalar);
-		if (!val)
-			continue;
-
-		stable_put(table, val, NULL);
-
-		free(val);
+		if (scalar_to_string(&val, scalar)) {
+			stable_put(table, val, NULL);
+			free(val);
+		}
 	}
 
 	*dst = stable_keys_slist(table);
 
 	stable_free(table);
+
+	return true;
 }
 
 // TODO generify
-// unmarshal ORDER into order_name_desc, freeing first, removing invalid patterns
-static void seq_to_order(struct SList **order_name_desc, const yaml_node_t *seq, yaml_document_t *document) {
-	seq_to_string_list(order_name_desc, seq, document);
+// unmarshal ORDER into order_name_desc, removing invalid patterns
+static bool seq_to_order(struct SList **order_name_desc, const yaml_node_t *seq, yaml_document_t *document) {
+	if (!seq_to_string_list(order_name_desc, seq, document))
+		return false;
 
-	slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL);
+	return (slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL) == 0);
 }
 
 // unmarshal a map into conditions_list, freeing first
-static void seq_to_conditions_list(struct SList **conditions_list, const yaml_node_t *seq, yaml_document_t *document) {
-	if (*conditions_list)
-		slist_free_vals(conditions_list, condition_free);
-
+static bool seq_to_conditions_list(struct SList **conditions_list, const yaml_node_t *seq, yaml_document_t *document) {
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
-		return;
+		return false;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
 
 		const struct STable *table = NULL;
 		if (!map_to_node_table(&table, node, document))
-			goto end;
+			continue;
 
 		struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
 
 		ctx_key("PLUGGED");
 		if ((node = stable_get(table, ctx.key)))
 			seq_to_string_list(&condition->plugged, node, document);
-		// TODO above should return bool to indicate fail
 
 		ctx_key("UNPLUGGED");
 		if ((node = stable_get(table, ctx.key)))
 			seq_to_string_list(&condition->unplugged, node, document);
-		// TODO above should return bool to indicate fail
 
 		// OK
 		slist_append(conditions_list, condition);
 		condition = NULL;
 
-end:
 		stable_free(table);
-
-		// free on validation fail
-		if (condition)
-			(condition_free(condition));
 	}
+
+	return true;
 }
 
-// unmarshal a map into disabled, freeing first
-static void map_to_disabled(struct Disabled **disabled, const yaml_node_t *map, yaml_document_t *document) {
-	if (*disabled)
-		free(*disabled);
-
+// unmarshal a map into disabled
+static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map, yaml_document_t *document) {
 	const struct STable *table = NULL;
 	if (!map_to_node_table(&table, map, document))
-		return;
+		return false;
+
+	bool ok = true;
 
 	const yaml_node_t *node;
 
-	struct Disabled *d = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+	*disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
 	ctx_key("NAME_DESC");
 	if ((node = stable_get(table, ctx.key)))
-		if (!scalar_to_string(&d->name_desc, node))
+		if (!(ok = scalar_to_string(&(*disabled)->name_desc, node)))
 			goto end;
-	// TODO missing and regex
+	// TODO regex
 
-	ctx_name_desc(d->name_desc);
+	ctx_name_desc((*disabled)->name_desc);
 
 	ctx_key("IF");
 	if ((node = stable_get(table, ctx.key)))
-		seq_to_conditions_list(&d->conditions, node, document);
-	// TODO missing is OK
-
-	// OK
-	*disabled = d;
-	d = NULL;
+		seq_to_conditions_list(&(*disabled)->conditions, node, document);
 
 end:
 
 	stable_free(table);
 
 	// free on validation fail
-	if (d)
-		free(d);
+	if (!ok)
+		cfg_disabled_free(*disabled);
+
+	return ok;
 }
 
-// unmarshal DISABLED into disabled_list, freeing first
+// unmarshal DISABLED into disabled_list
 static void seq_to_disabled_list(struct SList **disabled_list, const yaml_node_t *seq, yaml_document_t *document) {
-	if (*disabled_list)
-		slist_free_vals(disabled_list, NULL);
-
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
+
 		if (!node)
 			continue;
 
@@ -361,8 +342,7 @@ static void seq_to_disabled_list(struct SList **disabled_list, const yaml_node_t
 			case YAML_MAPPING_NODE:
 				{
 					struct Disabled *disabled = NULL;
-					map_to_disabled(&disabled, node, document);
-					if (disabled)
+					if (map_to_disabled(&disabled, node, document))
 						slist_append(disabled_list, disabled);
 					break;
 				}
@@ -372,58 +352,69 @@ static void seq_to_disabled_list(struct SList **disabled_list, const yaml_node_t
 				break;
 		}
 	}
+
+	// return ok;
 }
 
-// unmarshal SCALE into user_scales, freeing first
-static void seq_to_scales_list(struct SList **user_scales, const yaml_node_t *seq, yaml_document_t *document) {
-	if (*user_scales)
-		slist_free_vals(user_scales, NULL);
+// unmarshal a SCALE into user_scales
+static bool map_to_scale(struct UserScale **user_scale, const yaml_node_t *map, yaml_document_t *document) {
+	const struct STable *table = NULL;
+	if (!map_to_node_table(&table, map, document))
+		return false;
 
+	struct UserScale *scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+
+	const yaml_node_t *scalar;
+
+	ctx_key("NAME_DESC");
+	if ((scalar = stable_get(table, ctx.key)))
+		if (!scalar_to_string(&scale->name_desc, scalar))
+			goto end;
+
+	ctx_name_desc(scale->name_desc);
+
+	ctx_key("SCALE");
+	if ((scalar = stable_get(table, ctx.key)))
+		if (!scalar_to_float(&scale->scale, scalar))
+			goto end;
+
+	// OK
+	*user_scale = scale;
+	scale = NULL;
+
+end:
+
+	stable_free(table);
+
+	// free on validation fail
+	if (scale)
+		cfg_user_scale_free(scale);
+
+	return true;
+}
+
+// unmarshal SCALE into user_scales
+static bool seq_to_scales_list(struct SList **user_scales_list, const yaml_node_t *seq, yaml_document_t *document) {
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
 
-		const struct STable *table = NULL;
-		if (!map_to_node_table(&table, node, document))
-			continue;
+		struct UserScale *scale = NULL;
 
-		struct UserScale *scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-
-		const yaml_node_t *scalar;
-
-		ctx_key("NAME_DESC");
-		if ((scalar = stable_get(table, ctx.key)))
-			if (!scalar_to_string(&scale->name_desc, scalar))
-				goto end;
-
-		ctx_name_desc(scale->name_desc);
-
-		ctx_key("SCALE");
-		if ((scalar = stable_get(table, ctx.key)))
-			if (!scalar_to_float(&scale->scale, scalar))
-				goto end;
-
-		// OK
-		slist_append(user_scales, scale);
-		scale = NULL;
-
-end:
-
-		stable_free(table);
-
-		// free on validation fail
-		if (scale)
-			cfg_user_scale_free(scale);
+		if (map_to_scale(&scale, node, document))
+			slist_append(user_scales_list, scale);
 	}
+
+	return true;
 }
 
-// unmarshal MODE into user_modes, freeing first
-static void seq_to_modes_list(struct SList **user_modes, const yaml_node_t *seq, yaml_document_t *document) {
-	if (*user_modes)
-		slist_free_vals(user_modes, NULL);
-
+// unmarshal MODE into user_modes
+static bool seq_to_modes_list(struct SList **user_modes, const yaml_node_t *seq, yaml_document_t *document) {
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		// TODO extract function for proper error handling
+
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
@@ -480,14 +471,16 @@ end:
 		if (mode)
 			cfg_user_mode_free(mode);
 	}
+
+	return true;
 }
 
-// unmarshal TRANSFORM into user_transforms, freeing first
+// unmarshal TRANSFORM into user_transforms
 static void seq_to_transforms_list(struct SList **user_transforms, const yaml_node_t *seq, yaml_document_t *document) {
-	if (*user_transforms)
-		slist_free_vals(user_transforms, NULL);
-
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		// TODO extract function for proper error handling
+
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;

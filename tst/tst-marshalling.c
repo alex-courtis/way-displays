@@ -126,7 +126,7 @@ void unmarshal_cfg_from_file__ok(void **state) {
 	cfg_free(read);
 	cfg_free(expected);
 
-	// assert_logs_empty();
+	assert_logs_empty();
 }
 
 void unmarshal_cfg_from_file__empty(void **state) {
