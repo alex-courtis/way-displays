@@ -250,6 +250,40 @@ static bool seq_to_order(struct SList **order_name_desc, const yaml_node_t *seq,
 	return (slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL) == 0);
 }
 
+// unmarshal DISABLED into a Condition
+static bool map_to_condition(struct Condition **condition, const yaml_node_t *map, yaml_document_t *document) {
+	const struct STable *table = NULL;
+	if (!map_to_node_table(&table, map, document))
+		return false;
+
+	bool ok = true;
+
+	const yaml_node_t *seq;
+
+	*condition = (struct Condition*)calloc(1, sizeof(struct Condition));
+
+	ctx_key("PLUGGED");
+	if ((seq = stable_get(table, ctx.key)))
+		if (!(ok = seq_to_string_list(&(*condition)->plugged, seq, document)))
+			goto end;
+
+	ctx_key("UNPLUGGED");
+	if ((seq = stable_get(table, ctx.key)))
+		if (!(ok = seq_to_string_list(&(*condition)->unplugged, seq, document)))
+			goto end;
+
+end:
+
+	stable_free(table);
+
+	if (!ok) {
+		condition_free(*condition);
+		*condition = NULL;
+	}
+
+	return ok;
+}
+
 // unmarshal a map into conditions_list, freeing first
 static bool seq_to_conditions_list(struct SList **conditions_list, const yaml_node_t *seq, yaml_document_t *document) {
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
@@ -257,32 +291,18 @@ static bool seq_to_conditions_list(struct SList **conditions_list, const yaml_no
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
-
-		const struct STable *table = NULL;
-		if (!map_to_node_table(&table, node, document))
+		if (!node)
 			continue;
 
-		struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
-
-		ctx_key("PLUGGED");
-		if ((node = stable_get(table, ctx.key)))
-			seq_to_string_list(&condition->plugged, node, document);
-
-		ctx_key("UNPLUGGED");
-		if ((node = stable_get(table, ctx.key)))
-			seq_to_string_list(&condition->unplugged, node, document);
-
-		// OK
-		slist_append(conditions_list, condition);
-		condition = NULL;
-
-		stable_free(table);
+		struct Condition *condition = NULL;
+		if (map_to_condition(&condition, node, document))
+			slist_append(conditions_list, condition);
 	}
 
 	return true;
 }
 
-// unmarshal a map into disabled
+// unmarshal DISABLED into a Disabled
 static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map, yaml_document_t *document) {
 	const struct STable *table = NULL;
 	if (!map_to_node_table(&table, map, document))
@@ -311,16 +331,18 @@ end:
 	stable_free(table);
 
 	// free on validation fail
-	if (!ok)
+	if (!ok) {
 		cfg_disabled_free(*disabled);
+		*disabled = NULL;
+	}
 
 	return ok;
 }
 
-// unmarshal DISABLED into disabled_list
-static void seq_to_disabled_list(struct SList **disabled_list, const yaml_node_t *seq, yaml_document_t *document) {
+// unmarshal DISABLED into a Disabled list
+static bool seq_to_disabled_list(struct SList **disableds, const yaml_node_t *seq, yaml_document_t *document) {
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
-		return;
+		return false;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
@@ -333,7 +355,7 @@ static void seq_to_disabled_list(struct SList **disabled_list, const yaml_node_t
 				{
 					struct Disabled *disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 					if (scalar_to_string(&disabled->name_desc, node))
-						slist_append(disabled_list, disabled);
+						slist_append(disableds, disabled);
 					else
 						cfg_disabled_free(disabled);
 					break;
@@ -343,7 +365,7 @@ static void seq_to_disabled_list(struct SList **disabled_list, const yaml_node_t
 				{
 					struct Disabled *disabled = NULL;
 					if (map_to_disabled(&disabled, node, document))
-						slist_append(disabled_list, disabled);
+						slist_append(disableds, disabled);
 					break;
 				}
 
@@ -353,123 +375,134 @@ static void seq_to_disabled_list(struct SList **disabled_list, const yaml_node_t
 		}
 	}
 
-	// return ok;
+	return true;
 }
 
-// unmarshal a SCALE into user_scales
-static bool map_to_scale(struct UserScale **user_scale, const yaml_node_t *map, yaml_document_t *document) {
+// unmarshal a SCALE into a UserScale
+static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *map, yaml_document_t *document) {
 	const struct STable *table = NULL;
 	if (!map_to_node_table(&table, map, document))
 		return false;
 
-	struct UserScale *scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+	bool ok = true;
+
+	*user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
 	const yaml_node_t *scalar;
 
 	ctx_key("NAME_DESC");
 	if ((scalar = stable_get(table, ctx.key)))
-		if (!scalar_to_string(&scale->name_desc, scalar))
+		if (!(ok = scalar_to_string(&(*user_scale)->name_desc, scalar)))
 			goto end;
 
-	ctx_name_desc(scale->name_desc);
+	ctx_name_desc((*user_scale)->name_desc);
 
 	ctx_key("SCALE");
-	if ((scalar = stable_get(table, ctx.key)))
-		if (!scalar_to_float(&scale->scale, scalar))
+	if ((ok = (scalar = stable_get(table, ctx.key))))
+		if (!(ok = scalar_to_float(&(*user_scale)->scale, scalar)))
 			goto end;
-
-	// OK
-	*user_scale = scale;
-	scale = NULL;
 
 end:
 
 	stable_free(table);
 
 	// free on validation fail
-	if (scale)
-		cfg_user_scale_free(scale);
+	if (!ok) {
+		cfg_user_scale_free(*user_scale);
+		*user_scale = NULL;
+	}
 
-	return true;
+	return ok;
 }
 
-// unmarshal SCALE into user_scales
-static bool seq_to_scales_list(struct SList **user_scales_list, const yaml_node_t *seq, yaml_document_t *document) {
+// unmarshal SCALE into a UserScale list
+static bool seq_to_user_scale_list(struct SList **user_scales, const yaml_node_t *seq, yaml_document_t *document) {
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
 
-		struct UserScale *scale = NULL;
+		struct UserScale *user_scale = NULL;
 
-		if (map_to_scale(&scale, node, document))
-			slist_append(user_scales_list, scale);
+		if (map_to_user_scale(&user_scale, node, document))
+			slist_append(user_scales, user_scale);
 	}
 
 	return true;
 }
 
-// unmarshal MODE into user_modes
-static bool seq_to_modes_list(struct SList **user_modes, const yaml_node_t *seq, yaml_document_t *document) {
-	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+// unmarshal a MODE into a UserMode
+static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map, yaml_document_t *document) {
+	const struct STable *table = NULL;
+	if (!map_to_node_table(&table, map, document))
+		return false;
 
-		// TODO extract function for proper error handling
+	bool ok = true;
+
+	*user_mode = cfg_user_mode_default();
+
+	const yaml_node_t *scalar;
+
+	ctx_key("NAME_DESC");
+	if ((scalar = stable_get(table, ctx.key)))
+		if (!(ok = scalar_to_string(&(*user_mode)->name_desc, scalar)))
+			goto end;
+	// TODO missing and regex
+
+	ctx_name_desc((*user_mode)->name_desc);
+
+	ctx_key("WIDTH");
+	if ((scalar = stable_get(table, ctx.key)))
+		if (!(ok = scalar_to_int(&(*user_mode)->width, scalar)))
+			goto end;
+
+	ctx_key("HEIGHT");
+	if ((scalar = stable_get(table, ctx.key)))
+		if (!(ok = scalar_to_int(&(*user_mode)->height, scalar)))
+			goto end;
+
+	ctx_key("HZ");
+	if ((scalar = stable_get(table, ctx.key))) {
+		float hz;
+		if (!(ok = scalar_to_float(&hz, scalar)))
+			goto end;
+
+		(*user_mode)->refresh_mhz = lround(hz * 1000);
+	}
+
+	ctx_key("MAX");
+	if ((scalar = stable_get(table, ctx.key)))
+		if (!(ok = scalar_to_boolean(&(*user_mode)->max, scalar)))
+			goto end;
+
+end:
+
+	stable_free(table);
+
+	// free on validation fail
+	if (!ok) {
+		cfg_user_mode_free(*user_mode);
+		user_mode = NULL;
+	}
+
+	return ok;
+}
+
+// unmarshal MODE into a UserMode list
+static bool seq_to_user_mode_list(struct SList **user_modes, const yaml_node_t *seq, yaml_document_t *document) {
+	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
+		return false;
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
 		const yaml_node_t *node = yaml_document_get_node(document, *item);
 		if (!node)
 			continue;
 
-		const struct STable *table = NULL;
-		if (!map_to_node_table(&table, node, document))
-			continue;
+		struct UserMode *user_mode = NULL;
 
-		struct UserMode *mode = cfg_user_mode_default();
-
-		const yaml_node_t *scalar;
-
-		ctx_key("NAME_DESC");
-		if ((scalar = stable_get(table, ctx.key)))
-			if (!scalar_to_string(&mode->name_desc, scalar))
-				goto end;
-		// TODO missing and regex
-
-		ctx_name_desc(mode->name_desc);
-
-		ctx_key("WIDTH");
-		if ((scalar = stable_get(table, ctx.key)))
-			if (!scalar_to_int(&mode->width, scalar))
-				goto end;
-
-		ctx_key("HEIGHT");
-		if ((scalar = stable_get(table, ctx.key)))
-			if (!scalar_to_int(&mode->height, scalar))
-				goto end;
-
-		ctx_key("HZ");
-		if ((scalar = stable_get(table, ctx.key))) {
-			float hz;
-			if (!scalar_to_float(&hz, scalar))
-				goto end;
-
-			mode->refresh_mhz = lround(hz * 1000);
-		}
-
-		ctx_key("MAX");
-		if ((scalar = stable_get(table, ctx.key)))
-			if (!scalar_to_boolean(&mode->max, scalar))
-				goto end;
-
-		// OK
-		slist_append(user_modes, mode);
-		mode = NULL;
-
-end:
-
-		stable_free(table);
-
-		// free on validation fail
-		if (mode)
-			cfg_user_mode_free(mode);
+		if (map_to_user_mode(&user_mode, node, document))
+			slist_append(user_modes, user_mode);
 	}
 
 	return true;
@@ -514,8 +547,10 @@ end:
 		stable_free(table);
 
 		// free on validation fail
-		if (transform)
+		if (transform) {
 			cfg_user_transform_free(transform);
+			transform = NULL;
+		}
 	}
 }
 
@@ -558,10 +593,10 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_enum_def((int*)&cfg->auto_scale, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name);
 				break;
 			case SCALE:
-				seq_to_scales_list(&cfg->user_scales, value, document);
+				seq_to_user_scale_list(&cfg->user_scales, value, document);
 				break;
 			case MODE:
-				seq_to_modes_list(&cfg->user_modes, value, document);
+				seq_to_user_mode_list(&cfg->user_modes, value, document);
 				break;
 			case TRANSFORM:
 				seq_to_transforms_list(&cfg->user_transforms, value, document);
