@@ -604,7 +604,7 @@ int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
 		TEST(unmarshal_cfg_from_file__empty),
-		// TEST(unmarshal_cfg_from_file__bad),
+		TEST(unmarshal_cfg_from_file__bad),
 		TEST(unmarshal_cfg_from_file__legacy),
 		//
 		// // YAML::Node equality operator is deprecated and not functional.

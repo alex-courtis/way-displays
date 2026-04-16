@@ -93,6 +93,21 @@ bool parse_node_val_bool(const YAML::Node &node, const char *key, bool *val, con
 	return true;
 }
 
+bool parse_node_val_bool_def(const YAML::Node &node, const char *key, bool *val, const char *def) {
+	if (node[key]) {
+		try {
+			*val = node[key].as<bool>();
+		} catch (YAML::BadConversion &e) {
+			log_warn("Ignoring invalid %s %s, using default %s", key, node[key].as<std::string>().c_str(), def);
+			return false;
+		}
+	} else {
+		log_warn("Ignoring missing %s", key);
+		return false;
+	}
+	return true;
+}
+
 bool parse_node_val_string(const YAML::Node &node, const char *key, char **val, const char *desc1, const char *desc2) {
 	if (node[key]) {
 		*val = strdup(node[key].as<std::string>().c_str());
@@ -128,6 +143,21 @@ bool parse_node_val_float(const YAML::Node &node, const char *key, float *val, c
 		}
 	} else {
 		log_warn("Ignoring missing %s %s %s", desc1, desc2, key);
+		return false;
+	}
+	return true;
+}
+
+bool parse_node_val_float_def(const YAML::Node &node, const char *key, float *val, float def) {
+	if (node[key]) {
+		try {
+			*val = node[key].as<float>();
+		} catch (YAML::BadConversion &e) {
+			log_warn("Ignoring invalid %s %s, using default %.1f", key, node[key].as<std::string>().c_str(), def);
+			return false;
+		}
+	} else {
+		log_warn("Ignoring missing %s", key);
 		return false;
 	}
 	return true;
@@ -563,24 +593,24 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 
 	if (node["SCALING"]) {
 		bool scaling;
-		if (parse_node_val_bool(node, "SCALING", &scaling, "", "")) {
+		if (parse_node_val_bool_def(node, "SCALING", &scaling, "ON")) {
 			cfg->scaling = scaling ? ON : OFF;
 		}
 	}
 
 	if (node["AUTO_SCALE"]) {
 		bool auto_scale;
-		if (parse_node_val_bool(node, "AUTO_SCALE", &auto_scale, "", "")) {
+		if (parse_node_val_bool_def(node, "AUTO_SCALE", &auto_scale, "ON")) {
 			cfg->auto_scale = auto_scale ? ON : OFF;
 		}
 	}
 
 	if (node["AUTO_SCALE_MIN"]) {
-		parse_node_val_float(node, "AUTO_SCALE_MIN", &cfg->auto_scale_min, "AUTO_SCALE_MIN", "");
+		parse_node_val_float_def(node, "AUTO_SCALE_MIN", &cfg->auto_scale_min, AUTO_SCALE_MIN_DEFAULT);
 	}
 
 	if (node["AUTO_SCALE_MAX"]) {
-		parse_node_val_float(node, "AUTO_SCALE_MAX", &cfg->auto_scale_max, "AUTO_SCALE_MAX", "");
+		parse_node_val_float_def(node, "AUTO_SCALE_MAX", &cfg->auto_scale_max, AUTO_SCALE_MAX_DEFAULT);
 	}
 
 	if (node["SCALE"]) {
@@ -953,14 +983,14 @@ struct Head*& operator << (struct Head*& head, const YAML::Node& node) {
 
 	TI(head->overrided_enabled = node["OVERRIDES"]["DISABLED"].as<bool>() ? OverrideFalse : OverrideTrue)
 
-	if (node["MODES"] && node["MODES"].IsSequence()) {
-		for (const auto &node_mode : node["MODES"]) {
-			struct Mode *mode = NULL;
-			if (mode << node_mode) {
-				slist_append(&head->modes, mode);
+		if (node["MODES"] && node["MODES"].IsSequence()) {
+			for (const auto &node_mode : node["MODES"]) {
+				struct Mode *mode = NULL;
+				if (mode << node_mode) {
+					slist_append(&head->modes, mode);
+				}
 			}
 		}
-	}
 
 	return head;
 }

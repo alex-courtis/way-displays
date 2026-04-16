@@ -68,7 +68,7 @@ static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expe
 	// TODO add a context string renderer
 
 	log_warn(
-			"Ignoring invalid %s %s %s expected %s, got %s",
+			"TODO type Ignoring invalid %s %s %s expected %s, got %s",
 			cfg_element_name(ctx.element),
 			ctx.name_desc ? ctx.name_desc : "",
 			ctx.key ? ctx.key : "",
@@ -93,6 +93,7 @@ static bool scalar_to_string(char **dst, const yaml_node_t *scalar) {
 static bool scalar_to_string_def(char **dst, const char *def, const yaml_node_t *scalar) {
 	if (!scalar_to_string(dst, scalar)) {
 		log_warn("TODO scalar_to_string_def default message");
+		log_warn("Ignoring invalid %s %s, using default %s", cfg_element_name(ctx.element), "foo", def);
 		*dst = strdup(def);
 		return false;
 	}
@@ -128,13 +129,21 @@ static bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
 
 // unmarshal a scalar float to dst, sets def on failure
 static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) {
-	if (!scalar_to_float(dst, scalar)) {
-		log_warn("TODO scalar_to_float_def default message");
-		*dst = def;
+	if (scalar->type != YAML_SCALAR_NODE) {
+		log_warn("TODO type Ignoring invalid %s expected %s, got %s", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type));
+		goto def;
+	}
+
+	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) != 1) {
+		log_warn("Ignoring invalid %s %s, using default %.1f", cfg_element_name(ctx.element), scalar->data.scalar.value, def);
 		return false;
 	}
 
 	return true;
+
+def:
+	*dst = def;
+	return false;
 }
 
 // unmarshal an scalar enum to dst
@@ -157,13 +166,24 @@ static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_f
 
 // unmarshal an scalar enum to dst, sets def on failure
 static bool scalar_to_enum_def(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
-	if (!scalar_to_enum(dst, scalar, fn_val)) {
-		log_warn("TODO scalar_to_enum_def default message %s", fn_name(def));
-		*dst = def;
-		return false;
+	if (scalar->type != YAML_SCALAR_NODE) {
+		log_warn("TODO type Ignoring invalid %s expected %s, got %s", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type));
+		goto def;
 	}
 
+	int val = fn_val((char*)scalar->data.scalar.value);
+	if (!val) {
+		log_warn("Ignoring invalid %s %s, using default %s", cfg_element_name(ctx.element), scalar->data.scalar.value, fn_name(def));
+		goto def;
+	}
+
+	*dst = val;
+
 	return true;
+
+def:
+	*dst = def;
+	return false;
 }
 
 // unmarshal a scalar bool to dst
