@@ -9,6 +9,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "conditions.h"
+#include "marshalling.h"
 #include "stable.h"
 
 // TODO
@@ -61,6 +62,23 @@ static char* node_type_str(const yaml_node_type_t type) {
 	}
 }
 
+// If this is a regex pattern, attempt to compile it before including it in configuration.
+bool validate_regex(const char *pattern) {
+	bool rc = true;
+	if (pattern[0] == '!') {
+		regex_t regex;
+		int result = regcomp(&regex, pattern + 1, REG_EXTENDED);
+		if (result) {
+			char err[1024];
+			regerror(result, &regex, err, 1024);
+			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(ctx.element), pattern + 1, err);
+			rc = false;
+		}
+		regfree(&regex);
+	}
+	return rc;
+}
+
 // validate expected is of type actual, returning false and logging a warning if not
 static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expected) {
 	if (node->type == expected)
@@ -76,6 +94,21 @@ static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expe
 			node_type_str(expected),
 			node_type_str(node->type)
 			);
+
+	return false;
+}
+
+// check that node is not null, logging a contextual warning
+static bool check_mandatory(const yaml_node_t *node) {
+	if (node)
+		return true;
+
+	if (ctx.key && ctx.name_desc)
+		log_warn("Ignoring missing %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key);
+	else if (ctx.key)
+		log_warn("Ignoring missing %s %s", cfg_element_name(ctx.element), ctx.key);
+	else
+		log_warn("Ignoring missing %s", cfg_element_name(ctx.element));
 
 	return false;
 }
@@ -413,38 +446,39 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 	if (!map_to_node_table(&table, map))
 		return false;
 
-	bool ok = true;
-
 	const yaml_node_t *scalar;
 
 	*user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
 	ctx_key("NAME_DESC");
-	if (!(ok = (scalar = stable_get(table, ctx.key)))) {
-		log_warn("Ignoring missing SCALE NAME_DESC");
-		goto end;
-	} else if (!(ok = scalar_to_string(&(*user_scale)->name_desc, scalar))) {
-		goto end;
-	}
+	scalar = stable_get(table, ctx.key);
+	if (!check_mandatory(scalar))
+		goto err;
+	if (!scalar_to_string(&(*user_scale)->name_desc, scalar))
+		goto err;
+	if (!validate_regex((*user_scale)->name_desc))
+		goto err;
 
 	ctx_name_desc((*user_scale)->name_desc);
 
 	ctx_key("SCALE");
-	if ((ok = (scalar = stable_get(table, ctx.key))))
-		if (!(ok = scalar_to_float(&(*user_scale)->scale, scalar)))
-			goto end;
+	scalar = stable_get(table, ctx.key);
+	if (!check_mandatory(scalar))
+		goto err;
+	if (!scalar_to_float(&(*user_scale)->scale, scalar))
+		goto err;
 
-end:
+	stable_free(table);
+	return true;
 
+err:
 	stable_free(table);
 
 	// free on validation fail
-	if (!ok) {
-		cfg_user_scale_free(*user_scale);
-		*user_scale = NULL;
-	}
+	cfg_user_scale_free(*user_scale);
+	*user_scale = NULL;
 
-	return ok;
+	return false;
 }
 
 // unmarshal SCALE into a UserScale list
@@ -470,58 +504,56 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 	if (!map_to_node_table(&table, map))
 		return false;
 
-	bool ok = true;
-
 	const yaml_node_t *scalar;
 
 	*user_mode = cfg_user_mode_default();
 
 	ctx_key("NAME_DESC");
-	if (!(ok = (scalar = stable_get(table, ctx.key)))) {
-		log_warn("Ignoring missing MODE NAME_DESC");
-		goto end;
-	} else if (!(ok = scalar_to_string(&(*user_mode)->name_desc, scalar))) {
-		goto end;
-	}
-	// TODO regex
+	scalar = stable_get(table, ctx.key);
+	if (!check_mandatory(scalar))
+		goto err;
+	if (!scalar_to_string(&(*user_mode)->name_desc, scalar))
+		goto err;
+	if (!validate_regex((*user_mode)->name_desc))
+		goto err;
 
 	ctx_name_desc((*user_mode)->name_desc);
 
 	ctx_key("WIDTH");
-	if ((scalar = stable_get(table, ctx.key)))
-		if (!(ok = scalar_to_int(&(*user_mode)->width, scalar)))
-			goto end;
+	scalar = stable_get(table, ctx.key);
+	if (scalar && !scalar_to_int(&(*user_mode)->width, scalar))
+		goto err;
 
 	ctx_key("HEIGHT");
-	if ((scalar = stable_get(table, ctx.key)))
-		if (!(ok = scalar_to_int(&(*user_mode)->height, scalar)))
-			goto end;
+	scalar = stable_get(table, ctx.key);
+	if (scalar && !scalar_to_int(&(*user_mode)->height, scalar))
+		goto err;
 
 	ctx_key("HZ");
-	if ((scalar = stable_get(table, ctx.key))) {
-		float hz;
-		if (!(ok = scalar_to_float(&hz, scalar)))
-			goto end;
-
+	scalar = stable_get(table, ctx.key);
+	if (scalar) {
+		float hz = 0;
+		if (!scalar_to_float(&hz, scalar))
+			goto err;
 		(*user_mode)->refresh_mhz = lround(hz * 1000);
 	}
 
 	ctx_key("MAX");
-	if ((scalar = stable_get(table, ctx.key)))
-		if (!(ok = scalar_to_boolean(&(*user_mode)->max, scalar)))
-			goto end;
+	scalar = stable_get(table, ctx.key);
+	if (scalar && !scalar_to_boolean(&(*user_mode)->max, scalar))
+		goto err;
 
-end:
+	stable_free(table);
+	return true;
 
+err:
 	stable_free(table);
 
 	// free on validation fail
-	if (!ok) {
-		cfg_user_mode_free(*user_mode);
-		*user_mode = NULL;
-	}
+	cfg_user_mode_free(*user_mode);
+	*user_mode = NULL;
 
-	return ok;
+	return false;
 }
 
 // unmarshal MODE into a UserMode list
@@ -550,40 +582,39 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 	if (!map_to_node_table(&table, map))
 		return false;
 
-	bool ok = true;
-
 	*user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
 	const yaml_node_t *scalar;
 
 	ctx_key("NAME_DESC");
-	if (!(ok = (scalar = stable_get(table, ctx.key)))) {
-		log_warn("Ignoring missing TRANSFORM NAME_DESC");
-		goto end;
-	} else if (!(ok = scalar_to_string(&(*user_transform)->name_desc, scalar))) {
-		goto end;
-	}
-	// TODO regex
+	scalar = stable_get(table, ctx.key);
+	if (!check_mandatory(scalar))
+		goto err;
+	if (!scalar_to_string(&(*user_transform)->name_desc, scalar))
+		goto err;
+	if (!validate_regex((*user_transform)->name_desc))
+		goto err;
 
 	ctx_name_desc((*user_transform)->name_desc);
 
 	ctx_key("TRANSFORM");
-	if ((scalar = stable_get(table, ctx.key)))
-		if (!(ok = scalar_to_enum((int*)&(*user_transform)->transform, scalar, transform_val)))
-			goto end;
-	// TODO missing
+	scalar = stable_get(table, ctx.key);
+	if (!check_mandatory(scalar))
+		goto err;
+	if (!scalar_to_enum((int*)&(*user_transform)->transform, scalar, transform_val))
+		goto err;
 
-end:
+	stable_free(table);
+	return true;
 
+err:
 	stable_free(table);
 
 	// free on validation fail
-	if (!ok) {
-		cfg_user_transform_free(*user_transform);
-		*user_transform = NULL;
-	}
+	cfg_user_transform_free(*user_transform);
+	*user_transform = NULL;
 
-	return ok;
+	return false;
 }
 
 // unmarshal TRANSFORM into a UserTransform list
