@@ -112,7 +112,10 @@ bool parse_node_val_string(const YAML::Node &node, const char *key, char **val, 
 	if (node[key]) {
 		*val = strdup(node[key].as<std::string>().c_str());
 	} else {
-		log_warn("Ignoring missing %s %s %s", desc1, desc2, key);
+		if (desc2)
+			log_warn("Ignoring missing %s %s %s", desc1, desc2, key);
+		else
+			log_warn("Ignoring missing %s %s", desc1, key);
 		return false;
 	}
 	return true;
@@ -543,6 +546,9 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 
 		if (cmd.IsNull()) {
 			cfg->callback_cmd = NULL;
+		} else if (!cmd.IsScalar()) {
+			log_warn("Ignoring invalid CALLBACK_CMD expected scalar, got sequence, using default %s", CALLBACK_CMD_DEFAULT);
+			cfg->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
 		} else {
 			cfg->callback_cmd = strdup(cmd.as<std::string>().c_str());
 		}
@@ -617,7 +623,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		for (const auto &scale : node["SCALE"]) {
 			struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
-			if (!parse_node_val_string(scale, "NAME_DESC", &user_scale->name_desc, "SCALE", "")) {
+			if (!parse_node_val_string(scale, "NAME_DESC", &user_scale->name_desc, "SCALE", NULL)) {
 				cfg_user_scale_free(user_scale);
 				continue;
 			}
@@ -639,7 +645,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		for (const auto &mode : node["MODE"]) {
 			struct UserMode *user_mode = cfg_user_mode_default();
 
-			if (!parse_node_val_string(mode, "NAME_DESC", &user_mode->name_desc, "MODE", "")) {
+			if (!parse_node_val_string(mode, "NAME_DESC", &user_mode->name_desc, "MODE", NULL)) {
 				cfg_user_mode_free(user_mode);
 				continue;
 			}
@@ -677,7 +683,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		for (const auto &transformation : node["TRANSFORM"]) {
 			struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
-			if (!parse_node_val_string(transformation, "NAME_DESC", &user_transform->name_desc, "TRANSFORM", "")) {
+			if (!parse_node_val_string(transformation, "NAME_DESC", &user_transform->name_desc, "TRANSFORM", NULL)) {
 				cfg_user_transform_free(user_transform);
 				continue;
 			}

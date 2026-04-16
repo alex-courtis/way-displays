@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <sys/param.h>
 #include <yaml.h>
 
@@ -68,7 +69,7 @@ static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expe
 	// TODO add a context string renderer
 
 	log_warn(
-			"TODO type Ignoring invalid %s %s %s expected %s, got %s",
+			"TODO TEST type Ignoring invalid %s %s %s expected %s, got %s",
 			cfg_element_name(ctx.element),
 			ctx.name_desc ? ctx.name_desc : "",
 			ctx.key ? ctx.key : "",
@@ -85,18 +86,6 @@ static bool scalar_to_string(char **dst, const yaml_node_t *scalar) {
 		return false;
 
 	*dst = strdup((char*)scalar->data.scalar.value);
-
-	return true;
-}
-
-// unmarshal a scalar string to dst, copies def on failure
-static bool scalar_to_string_def(char **dst, const char *def, const yaml_node_t *scalar) {
-	if (!scalar_to_string(dst, scalar)) {
-		log_warn("TODO scalar_to_string_def default message");
-		log_warn("Ignoring invalid %s %s, using default %s", cfg_element_name(ctx.element), "foo", def);
-		*dst = strdup(def);
-		return false;
-	}
 
 	return true;
 }
@@ -130,7 +119,7 @@ static bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
 // unmarshal a scalar float to dst, sets def on failure
 static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) {
 	if (scalar->type != YAML_SCALAR_NODE) {
-		log_warn("TODO type Ignoring invalid %s expected %s, got %s", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type));
+		log_warn("TODO TEST type Ignoring invalid %s expected %s, got %s, using default %.1f", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type), def);
 		goto def;
 	}
 
@@ -167,7 +156,7 @@ static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_f
 // unmarshal an scalar enum to dst, sets def on failure
 static bool scalar_to_enum_def(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
 	if (scalar->type != YAML_SCALAR_NODE) {
-		log_warn("TODO type Ignoring invalid %s expected %s, got %s", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type));
+		log_warn("TODO type Ignoring invalid %s expected %s, got %s, using default %s", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type), fn_name(def));
 		goto def;
 	}
 
@@ -263,6 +252,28 @@ static bool seq_to_order(struct SList **order_name_desc, const yaml_node_t *seq)
 		return false;
 
 	return (slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL) == 0);
+}
+
+// unmarshal a CALLBACK_CMD dst, frees first, sets NULL on empty string, otherwise default
+static bool scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
+	if (*dst)
+		free(*dst);
+
+	if (scalar->type != YAML_SCALAR_NODE) {
+		log_warn("TODO TEST Ignoring invalid %s expected %s, got %s, using default %s", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type), CALLBACK_CMD_DEFAULT);
+		*dst = strdup(CALLBACK_CMD_DEFAULT);
+
+		return false;
+	}
+
+	if (strlen((char*)scalar->data.scalar.value) == 0) {
+		// TODO explicit empty string to NULL test
+		*dst = NULL;
+	} else {
+		*dst = strdup((char*)scalar->data.scalar.value);
+	}
+
+	return true;
 }
 
 // unmarshal an IF into a Condition
@@ -409,9 +420,12 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 	*user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
 	ctx_key("NAME_DESC");
-	if ((scalar = stable_get(table, ctx.key)))
-		if (!(ok = scalar_to_string(&(*user_scale)->name_desc, scalar)))
-			goto end;
+	if (!(ok = (scalar = stable_get(table, ctx.key)))) {
+		log_warn("Ignoring missing SCALE NAME_DESC");
+		goto end;
+	} else if (!(ok = scalar_to_string(&(*user_scale)->name_desc, scalar))) {
+		goto end;
+	}
 
 	ctx_name_desc((*user_scale)->name_desc);
 
@@ -463,10 +477,13 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 	*user_mode = cfg_user_mode_default();
 
 	ctx_key("NAME_DESC");
-	if ((scalar = stable_get(table, ctx.key)))
-		if (!(ok = scalar_to_string(&(*user_mode)->name_desc, scalar)))
-			goto end;
-	// TODO missing and regex
+	if (!(ok = (scalar = stable_get(table, ctx.key)))) {
+		log_warn("Ignoring missing MODE NAME_DESC");
+		goto end;
+	} else if (!(ok = scalar_to_string(&(*user_mode)->name_desc, scalar))) {
+		goto end;
+	}
+	// TODO regex
 
 	ctx_name_desc((*user_mode)->name_desc);
 
@@ -540,9 +557,13 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 	const yaml_node_t *scalar;
 
 	ctx_key("NAME_DESC");
-	if ((scalar = stable_get(table, ctx.key)))
-		if (!(ok = scalar_to_string(&(*user_transform)->name_desc, scalar)))
-			goto end;
+	if (!(ok = (scalar = stable_get(table, ctx.key)))) {
+		log_warn("Ignoring missing TRANSFORM NAME_DESC");
+		goto end;
+	} else if (!(ok = scalar_to_string(&(*user_transform)->name_desc, scalar))) {
+		goto end;
+	}
+	// TODO regex
 
 	ctx_name_desc((*user_transform)->name_desc);
 
@@ -639,8 +660,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				break;
 			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
-				free(cfg->callback_cmd);
-				scalar_to_string_def(&cfg->callback_cmd, CALLBACK_CMD_DEFAULT, value);
+				scalar_to_callback_cmd(&cfg->callback_cmd, value);
 				break;
 			case LAPTOP_DISPLAY_PREFIX:
 				scalar_to_string(&cfg->laptop_display_prefix, value);
