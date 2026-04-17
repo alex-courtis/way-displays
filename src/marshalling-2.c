@@ -26,7 +26,6 @@ struct UnmarshalContext {
 	char *name_desc;
 	char *key;
 	char *def;
-	char *value;
 } ctx = { 0 };
 
 static void ctx_clear(void) {
@@ -39,33 +38,45 @@ static void ctx_clear(void) {
 		free(ctx.key);
 	if (ctx.def)
 		free(ctx.def);
-	if (ctx.value)
-		free(ctx.value);
 	memset(&ctx, 0, sizeof(struct UnmarshalContext));
+}
+
+static void ctx_clear_name_desc_key(void) {
+	if (ctx.name_desc) {
+		free(ctx.name_desc);
+		ctx.name_desc = NULL;
+	}
+	if (ctx.key) {
+		free(ctx.key);
+		ctx.key = NULL;
+	}
 }
 
 void ctx_name_desc(const char *name_desc) {
 	if (ctx.name_desc)
 		free(ctx.name_desc);
-	ctx.name_desc = strdup(name_desc);
+	if (name_desc)
+		ctx.name_desc = strdup(name_desc);
+	else
+		ctx.name_desc = NULL;
 }
 
 void ctx_key(const char *key) {
 	if (ctx.key)
 		free(ctx.key);
-	ctx.key = strdup(key);
+	if (key)
+		ctx.key = strdup(key);
+	else
+		ctx.key = NULL;
 }
 
 void ctx_def(const char *def) {
 	if (ctx.def)
 		free(ctx.def);
-	ctx.def = strdup(def);
-}
-
-void ctx_value(const char *value) {
-	if (ctx.value)
-		free(ctx.value);
-	ctx.value = strdup(value);
+	if (def)
+		ctx.def = strdup(def);
+	else
+		ctx.def = NULL;
 }
 
 // return a static string for the node type
@@ -84,7 +95,7 @@ static char* node_type_str(const yaml_node_type_t type) {
 	}
 }
 
-void log_invalid(void) {
+void log_invalid_value(const yaml_char_t *value) {
 	static char buf[1024];
 	char *bufp = buf;
 
@@ -100,12 +111,16 @@ void log_invalid(void) {
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " expected %s", node_type_str(ctx.type_expected));
 	if (ctx.type_expected)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), ", got %s", node_type_str(ctx.type_actual));
-	if (ctx.value)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.value);
+	if (value)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", value);
 	if (ctx.def)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", ctx.def);
 
 	log_warn("%s", buf);
+}
+
+void log_invalid(void) {
+	log_invalid_value(NULL);
 }
 
 void log_misssing(void) {
@@ -183,11 +198,10 @@ static bool scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
-	ctx_value((char*)scalar->data.scalar.value);
-	if (sscanf(ctx.value, "%d", dst) == 1)
+	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) == 1)
 		return true;
 
-	log_invalid();
+	log_invalid_value(scalar->data.scalar.value);
 	return false;
 }
 
@@ -196,11 +210,10 @@ static bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
-	ctx_value((char*)scalar->data.scalar.value);
-	if (sscanf(ctx.value, "%f", dst) == 1)
+	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) == 1)
 		return true;
 
-	log_invalid();
+	log_invalid_value(scalar->data.scalar.value);
 	return false;
 }
 
@@ -225,15 +238,13 @@ static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_f
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
-	ctx_value((char*)scalar->data.scalar.value);
-
-	int val = fn_val(ctx.value);
+	int val = fn_val((char*)scalar->data.scalar.value);
 	if (val) {
 		*dst = val;
 		return true;
 	}
 
-	log_invalid();
+	log_invalid_value(scalar->data.scalar.value);
 	return false;
 }
 
@@ -440,10 +451,13 @@ static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map) 
 		seq_to_conditions_list(&(*disabled)->conditions, node);
 
 	stable_free(table);
+	ctx_clear_name_desc_key();
+
 	return true;
 
 err:
 	stable_free(table);
+	ctx_clear_name_desc_key();
 
 	cfg_disabled_free(*disabled);
 	*disabled = NULL;
@@ -519,10 +533,13 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 		goto err;
 
 	stable_free(table);
+	ctx_clear_name_desc_key();
+
 	return true;
 
 err:
 	stable_free(table);
+	ctx_clear_name_desc_key();
 
 	cfg_user_scale_free(*user_scale);
 	*user_scale = NULL;
@@ -596,10 +613,13 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 		goto err;
 
 	stable_free(table);
+	ctx_clear_name_desc_key();
+
 	return true;
 
 err:
 	stable_free(table);
+	ctx_clear_name_desc_key();
 
 	cfg_user_mode_free(*user_mode);
 	*user_mode = NULL;
@@ -656,10 +676,13 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 		goto err;
 
 	stable_free(table);
+	ctx_clear_name_desc_key();
+
 	return true;
 
 err:
 	stable_free(table);
+	ctx_clear_name_desc_key();
 
 	cfg_user_transform_free(*user_transform);
 	*user_transform = NULL;

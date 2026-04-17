@@ -185,6 +185,28 @@ void unmarshal_cfg_from_file__mistyped(void **state) {
 	free(expected_log);
 }
 
+void unmarshal_cfg_from_file__transform(void **state) {
+	if (!MISTYPED_TEST)
+		return;
+
+	struct Cfg *read = cfg_default();
+	read->file_path = strdup("tst/marshalling/cfg-transform.yaml");
+
+	assert_true(UCFF(read));
+
+	struct Cfg *expected = cfg_default();
+	slist_append(&expected->user_transforms, cfg_user_transform_init("one", WL_OUTPUT_TRANSFORM_FLIPPED));
+
+	assert_cfg_equal(read, expected);
+
+	char *expected_log = read_file("tst/marshalling/cfg-transform.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(read);
+	cfg_free(expected);
+	free(expected_log);
+}
+
 void unmarshal_cfg_from_file__legacy(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-legacy.yaml");
@@ -636,6 +658,7 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__invalid),
 		TEST(unmarshal_cfg_from_file__legacy),
 		TEST(unmarshal_cfg_from_file__mistyped),
+		TEST(unmarshal_cfg_from_file__transform),
 		//
 		// // YAML::Node equality operator is deprecated and not functional.
 		// // All we can do is read files with the same format that will be emitted.

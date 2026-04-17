@@ -1,3 +1,5 @@
+# all fields have an invalid value
+
 LOG_THRESHOLD: BAD_LOG_THRESHOLD
 ORDER:
   - '!(order'

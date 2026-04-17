@@ -1,0 +1,15 @@
+TRANSFORM:
+  - NAME_DESC: one
+    TRANSFORM: FLIPPED
+  - NAME_DESC: invalid
+    TRANSFORM: foobar
+  - NAME_DESC: '!(transform'
+  - NAME_DESC:
+      -
+  - NAME_DESC: mistyped
+    TRANSFORM:
+      -
+  -
+    - foo
+    - bar
+
