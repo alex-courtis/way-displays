@@ -14,26 +14,33 @@
 
 // TODO
 // deal with unsigned char
-// all generic _to_ should return false and free/null dst on any error
 // clean up test alternates, gitignore etc.
 // consider SSet
+// pretty print errors somewhat hierarchically
 
 struct UnmarshalContext {
 	yaml_document_t *document;
 	enum CfgElement element;
+	yaml_node_type_t type_expected;
+	yaml_node_type_t type_actual;
 	char *name_desc;
 	char *key;
 	char *def;
+	char *value;
 } ctx = { 0 };
 
 static void ctx_clear(void) {
 	ctx.document = NULL;
+	ctx.type_expected = YAML_NO_NODE;
+	ctx.type_actual = YAML_NO_NODE;
 	if (ctx.name_desc)
 		free(ctx.name_desc);
 	if (ctx.key)
 		free(ctx.key);
 	if (ctx.def)
 		free(ctx.def);
+	if (ctx.value)
+		free(ctx.value);
 	memset(&ctx, 0, sizeof(struct UnmarshalContext));
 }
 
@@ -55,6 +62,70 @@ void ctx_def(const char *def) {
 	ctx.def = strdup(def);
 }
 
+void ctx_value(const char *value) {
+	if (ctx.value)
+		free(ctx.value);
+	ctx.value = strdup(value);
+}
+
+// return a static string for the node type
+static char* node_type_str(const yaml_node_type_t type) {
+	switch (type) {
+		case YAML_NO_NODE:
+			return "empty";
+		case YAML_MAPPING_NODE:
+			return "map";
+		case YAML_SEQUENCE_NODE:
+			return "sequence";
+		case YAML_SCALAR_NODE:
+			return "scalar";
+		default:
+			return "???";
+	}
+}
+
+void log_invalid(void) {
+	static char buf[1024];
+	char *bufp = buf;
+
+	bufp += snprintf(bufp, 1024 - (bufp - buf), "Ignoring invalid");
+
+	if (ctx.element)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", cfg_element_name(ctx.element));
+	if (ctx.name_desc)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.name_desc);
+	if (ctx.key)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.key);
+	if (ctx.type_expected)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " expected %s", node_type_str(ctx.type_expected));
+	if (ctx.type_expected)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), ", got %s", node_type_str(ctx.type_actual));
+	if (ctx.value)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.value);
+	if (ctx.def)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", ctx.def);
+
+	log_warn("%s", buf);
+}
+
+void log_misssing(void) {
+	static char buf[1024];
+	char *bufp = buf;
+
+	bufp += snprintf(bufp, 1024 - (bufp - buf), "Ignoring missing");
+
+	if (ctx.element)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", cfg_element_name(ctx.element));
+	if (ctx.name_desc)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.name_desc);
+	if (ctx.key)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.key);
+	if (ctx.def)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", ctx.def);
+
+	log_warn("%s", buf);
+}
+
 // fn_equals to valdate a regex pattern by attempting to compile it
 bool invalid_regex(const void *pattern, const void *unused) {
 	bool rc = false;
@@ -74,31 +145,15 @@ bool invalid_regex(const void *pattern, const void *unused) {
 	return rc;
 }
 
-// return a static string for the node type
-static char* node_type_str(const yaml_node_type_t type) {
-	switch (type) {
-		case YAML_NO_NODE:
-			return "empty";
-		case YAML_MAPPING_NODE:
-			return "map";
-		case YAML_SEQUENCE_NODE:
-			return "sequence";
-		case YAML_SCALAR_NODE:
-			return "scalar";
-		default:
-			return "???";
-	}
-}
-
 // validate expected is of type actual, returning false and logging a warning if not
 static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expected) {
 	if (node->type == expected)
 		return true;
 
-	if (ctx.def)
-		log_warn("Ignoring invalid %s expected %s, got %s, using default %s", cfg_element_name(ctx.element), node_type_str(expected), node_type_str(node->type), ctx.def);
-	else
-		log_warn("Ignoring invalid %s expected %s, got %s", cfg_element_name(ctx.element), node_type_str(expected), node_type_str(node->type));
+	ctx.type_expected = expected;
+	ctx.type_actual = node->type;
+
+	log_invalid();
 
 	return false;
 }
@@ -108,12 +163,7 @@ static bool check_mandatory(const yaml_node_t *node) {
 	if (node)
 		return true;
 
-	if (ctx.key && ctx.name_desc)
-		log_warn("Ignoring missing %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key);
-	else if (ctx.key)
-		log_warn("Ignoring missing %s %s", cfg_element_name(ctx.element), ctx.key);
-	else
-		log_warn("Ignoring missing %s", cfg_element_name(ctx.element));
+	log_misssing();
 
 	return false;
 }
@@ -133,12 +183,12 @@ static bool scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
-	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) != 1) {
-		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key, scalar->data.scalar.value);
-		return false;
-	}
+	ctx_value((char*)scalar->data.scalar.value);
+	if (sscanf(ctx.value, "%d", dst) == 1)
+		return true;
 
-	return true;
+	log_invalid();
+	return false;
 }
 
 // unmarshal a scalar float to dst
@@ -146,31 +196,24 @@ static bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
-	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) != 1) {
-		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key, scalar->data.scalar.value);
-		return false;
-	}
+	ctx_value((char*)scalar->data.scalar.value);
+	if (sscanf(ctx.value, "%f", dst) == 1)
+		return true;
 
-	return true;
+	log_invalid();
+	return false;
 }
 
 // unmarshal a scalar float to dst, sets def on failure
 static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) {
 	char def_str[10];
 	snprintf(def_str, 10, "%.1f", def);
+
 	ctx_def(def_str);
 
-	if (!check_node_type(scalar, YAML_SCALAR_NODE))
-		goto def;
+	if (scalar_to_float(dst, scalar))
+		return true;
 
-	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) != 1) {
-		log_warn("Ignoring invalid %s %s, using default %s", cfg_element_name(ctx.element), scalar->data.scalar.value, ctx.def);
-		return false;
-	}
-
-	return true;
-
-def:
 	*dst = def;
 	return false;
 }
@@ -182,48 +225,40 @@ static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_f
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
-	int val = fn_val((char*)scalar->data.scalar.value);
-	if (!val) {
-		log_warn("Ignoring invalid %s %s %s %s", cfg_element_name(ctx.element), ctx.name_desc, ctx.key, scalar->data.scalar.value);
-		return false;
+	ctx_value((char*)scalar->data.scalar.value);
+
+	int val = fn_val(ctx.value);
+	if (val) {
+		*dst = val;
+		return true;
 	}
 
-	*dst = val;
-
-	return true;
+	log_invalid();
+	return false;
 }
 
 // unmarshal an scalar enum to dst, sets def on failure
 static bool scalar_to_enum_def(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
 	ctx_def(fn_name(def));
 
-	if (!check_node_type(scalar, YAML_SCALAR_NODE))
-		goto def;
-
-	int val = fn_val((char*)scalar->data.scalar.value);
-	if (!val) {
-		log_warn("Ignoring invalid %s %s, using default %s", cfg_element_name(ctx.element), scalar->data.scalar.value, fn_name(def));
-		goto def;
+	if (scalar_to_enum(dst, scalar, fn_val)) {
+		return true;
+	} else {
+		*dst = def;
+		return false;
 	}
-
-	*dst = val;
-
-	return true;
-
-def:
-	*dst = def;
-	return false;
 }
 
 // unmarshal a scalar bool to dst
 static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 	int val;
-	if (!scalar_to_enum(&val, scalar, on_off_val))
-		return false;
 
-	*dst = val == ON;
+	if (scalar_to_enum(&val, scalar, on_off_val)) {
+		*dst = val == ON;
+		return true;
+	}
 
-	return true;
+	return false;
 }
 
 // unmarshal a map of nodes into dst
@@ -298,8 +333,9 @@ static bool scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 		free(*dst);
 
 	ctx_def(CALLBACK_CMD_DEFAULT);
+
 	if (!check_node_type(scalar, YAML_SCALAR_NODE)) {
-		*dst = strdup(CALLBACK_CMD_DEFAULT);
+		*dst = strdup(ctx.def);
 		return false;
 	}
 
@@ -726,7 +762,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_float_def(&cfg->auto_scale_max, AUTO_SCALE_MAX_DEFAULT, value);
 				break;
 			default:
-				log_warn("\nparsing file %s unexpected entry %s", cfg->file_path, (char*)key->data.scalar.value);
+				log_warn("\nTODO maybe: parsing file %s unexpected entry %s", cfg->file_path, (char*)key->data.scalar.value);
 				break;
 		}
 	}
