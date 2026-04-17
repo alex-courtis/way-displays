@@ -41,7 +41,7 @@ tst-cfg-file: WRAPS=,$\
 	--wrap=fd_wd_cfg_dir_destroy,$\
 	--wrap=fd_wd_cfg_dir_create
 
-tst-marshalling: CFLAGS += -DUCFF=unmarshal_cfg_from_file
+tst-marshalling: CFLAGS += -DUCFF=unmarshal_cfg_from_file -DMISTYPED_TEST=false
 
 tst-marshalling-2: CFLAGS += -DUCFF=unmarshal_cfg_from_file_2
 

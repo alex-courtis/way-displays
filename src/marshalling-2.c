@@ -23,6 +23,7 @@ struct UnmarshalContext {
 	enum CfgElement element;
 	char *name_desc;
 	char *key;
+	char *def;
 } ctx = { 0 };
 
 static void ctx_clear(void) {
@@ -31,6 +32,8 @@ static void ctx_clear(void) {
 		free(ctx.name_desc);
 	if (ctx.key)
 		free(ctx.key);
+	if (ctx.def)
+		free(ctx.def);
 	memset(&ctx, 0, sizeof(struct UnmarshalContext));
 }
 
@@ -44,6 +47,12 @@ void ctx_key(const char *key) {
 	if (ctx.key)
 		free(ctx.key);
 	ctx.key = strdup(key);
+}
+
+void ctx_def(const char *def) {
+	if (ctx.def)
+		free(ctx.def);
+	ctx.def = strdup(def);
 }
 
 // fn_equals to valdate a regex pattern by attempting to compile it
@@ -86,16 +95,10 @@ static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expe
 	if (node->type == expected)
 		return true;
 
-	// TODO add a context string renderer
-
-	log_warn(
-			"TODO TEST type Ignoring invalid %s %s %s expected %s, got %s",
-			cfg_element_name(ctx.element),
-			ctx.name_desc ? ctx.name_desc : "",
-			ctx.key ? ctx.key : "",
-			node_type_str(expected),
-			node_type_str(node->type)
-			);
+	if (ctx.def)
+		log_warn("Ignoring invalid %s expected %s, got %s, using default %s", cfg_element_name(ctx.element), node_type_str(expected), node_type_str(node->type), ctx.def);
+	else
+		log_warn("Ignoring invalid %s expected %s, got %s", cfg_element_name(ctx.element), node_type_str(expected), node_type_str(node->type));
 
 	return false;
 }
@@ -153,13 +156,15 @@ static bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
 
 // unmarshal a scalar float to dst, sets def on failure
 static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) {
-	if (scalar->type != YAML_SCALAR_NODE) {
-		log_warn("TODO TEST type Ignoring invalid %s expected %s, got %s, using default %.1f", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type), def);
+	char def_str[10];
+	snprintf(def_str, 10, "%.1f", def);
+	ctx_def(def_str);
+
+	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		goto def;
-	}
 
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) != 1) {
-		log_warn("Ignoring invalid %s %s, using default %.1f", cfg_element_name(ctx.element), scalar->data.scalar.value, def);
+		log_warn("Ignoring invalid %s %s, using default %s", cfg_element_name(ctx.element), scalar->data.scalar.value, ctx.def);
 		return false;
 	}
 
@@ -190,10 +195,10 @@ static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_f
 
 // unmarshal an scalar enum to dst, sets def on failure
 static bool scalar_to_enum_def(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
-	if (scalar->type != YAML_SCALAR_NODE) {
-		log_warn("TODO type Ignoring invalid %s expected %s, got %s, using default %s", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type), fn_name(def));
+	ctx_def(fn_name(def));
+
+	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		goto def;
-	}
 
 	int val = fn_val((char*)scalar->data.scalar.value);
 	if (!val) {
@@ -292,10 +297,9 @@ static bool scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 	if (*dst)
 		free(*dst);
 
-	if (scalar->type != YAML_SCALAR_NODE) {
-		log_warn("TODO TEST Ignoring invalid %s expected %s, got %s, using default %s", cfg_element_name(ctx.element), node_type_str(YAML_SCALAR_NODE), node_type_str(scalar->type), CALLBACK_CMD_DEFAULT);
+	ctx_def(CALLBACK_CMD_DEFAULT);
+	if (!check_node_type(scalar, YAML_SCALAR_NODE)) {
 		*dst = strdup(CALLBACK_CMD_DEFAULT);
-
 		return false;
 	}
 
@@ -492,6 +496,9 @@ err:
 
 // unmarshal SCALE into a UserScale list
 static bool seq_to_user_scale_list(struct SList **user_scales, const yaml_node_t *seq) {
+	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
+		return false;
+
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
 		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
