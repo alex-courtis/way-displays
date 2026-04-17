@@ -253,6 +253,24 @@ void unmarshal_cfg_from_file__mode(void **state) {
 	free(expected_log);
 }
 
+void unmarshal_cfg_from_file__callback_cmd_empty(void **state) {
+	struct Cfg *read = cfg_default();
+	read->file_path = strdup("tst/marshalling/cfg-callback-cmd-empty.yaml");
+
+	assert_true(UCFF(read));
+
+	struct Cfg *expected = cfg_default();
+	free(expected->callback_cmd);
+	expected->callback_cmd = NULL;
+
+	assert_cfg_equal(read, expected);
+
+	cfg_free(read);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
 void unmarshal_cfg_from_file__legacy(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-legacy.yaml");
@@ -707,6 +725,7 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__transform),
 		TEST(unmarshal_cfg_from_file__scale),
 		TEST(unmarshal_cfg_from_file__mode),
+		TEST(unmarshal_cfg_from_file__callback_cmd_empty),
 		//
 		// // YAML::Node equality operator is deprecated and not functional.
 		// // All we can do is read files with the same format that will be emitted.

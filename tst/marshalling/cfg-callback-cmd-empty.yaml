@@ -1,0 +1,2 @@
+# ensure that empty callback string sets null
+CALLBACK_CMD:     

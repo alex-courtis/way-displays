@@ -351,7 +351,6 @@ static bool scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 	}
 
 	if (strlen((char*)scalar->data.scalar.value) == 0) {
-		// TODO explicit empty string to NULL test
 		*dst = NULL;
 	} else {
 		*dst = strdup((char*)scalar->data.scalar.value);
