@@ -254,7 +254,6 @@ struct Disabled* parse_node_val_disabled(const YAML::Node &node) {
 
 	return d;
 err:
-	log_warn("Ignoring invalid DISABLED");
 	cfg_disabled_free(d);
 	return NULL;
 }

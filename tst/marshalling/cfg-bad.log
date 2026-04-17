@@ -22,6 +22,6 @@ Ignoring missing TRANSFORM MISSING_TRANSFORM_VALUE TRANSFORM
 Ignoring bad TRANSFORM regex '(transform':  Unmatched ( or \(
 Ignoring bad VRR_OFF regex '(vrroff':  Unmatched ( or \(
 Ignoring bad MAX_PREFERRED_REFRESH regex '(max':  Unmatched ( or \(
-Ignoring bad DISABLED regex '(disabled':  Unmatched ( or \(
-Ignoring invalid DISABLED
+Ignoring bad DISABLED regex '(disabled1':  Unmatched ( or \(
+Ignoring bad DISABLED regex '(disabled2':  Unmatched ( or \(
 

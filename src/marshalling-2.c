@@ -46,6 +46,25 @@ void ctx_key(const char *key) {
 	ctx.key = strdup(key);
 }
 
+// fn_equals to valdate a regex pattern by attempting to compile it
+bool invalid_regex(const void *pattern, const void *unused) {
+	bool rc = false;
+	char *p = (char*)pattern;
+
+	if (p && p[0] == '!') {
+		regex_t regex;
+		int result = regcomp(&regex, p + 1, REG_EXTENDED);
+		if (result) {
+			char err[1024];
+			regerror(result, &regex, err, 1024);
+			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(ctx.element), p + 1, err);
+			rc = true;
+		}
+		regfree(&regex);
+	}
+	return rc;
+}
+
 // return a static string for the node type
 static char* node_type_str(const yaml_node_type_t type) {
 	switch (type) {
@@ -60,23 +79,6 @@ static char* node_type_str(const yaml_node_type_t type) {
 		default:
 			return "???";
 	}
-}
-
-// If this is a regex pattern, attempt to compile it before including it in configuration.
-bool validate_regex(const char *pattern) {
-	bool rc = true;
-	if (pattern[0] == '!') {
-		regex_t regex;
-		int result = regcomp(&regex, pattern + 1, REG_EXTENDED);
-		if (result) {
-			char err[1024];
-			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(ctx.element), pattern + 1, err);
-			rc = false;
-		}
-		regfree(&regex);
-	}
-	return rc;
 }
 
 // validate expected is of type actual, returning false and logging a warning if not
@@ -219,7 +221,7 @@ static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 	return true;
 }
 
-// unmarshal a map of nodes into dst, caller frees
+// unmarshal a map of nodes into dst
 static bool map_to_node_table(const struct STable **dst, const yaml_node_t *map) {
 	if (!check_node_type(map, YAML_MAPPING_NODE))
 		return false;
@@ -251,8 +253,7 @@ static bool map_to_node_table(const struct STable **dst, const yaml_node_t *map)
 	return true;
 }
 
-// TODO check regex
-// unmarshal a sequence of strings into dst that will be overwritten, removing duplicates, caller frees
+// unmarshal a sequence of strings into dst, removing duplicates
 static bool seq_to_string_list(struct SList **dst, const yaml_node_t *seq) {
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return false;
@@ -278,13 +279,12 @@ static bool seq_to_string_list(struct SList **dst, const yaml_node_t *seq) {
 	return true;
 }
 
-// TODO generify
-// unmarshal ORDER into order_name_desc, removing invalid patterns
-static bool seq_to_order(struct SList **order_name_desc, const yaml_node_t *seq) {
-	if (!seq_to_string_list(order_name_desc, seq))
+// unmarshal a sequence of regex validated name_desc into dst, removing duplicates
+static bool seq_to_name_desc(struct SList **dst, const yaml_node_t *seq) {
+	if (!seq_to_string_list(dst, seq))
 		return false;
 
-	return (slist_remove_all_free(order_name_desc, cfg_invalid_order_regex, NULL, NULL) == 0);
+	return (slist_remove_all_free(dst, invalid_regex, NULL, NULL) == 0);
 }
 
 // unmarshal a CALLBACK_CMD dst, frees first, sets NULL on empty string, otherwise default
@@ -323,12 +323,12 @@ static bool map_to_condition(struct Condition **condition, const yaml_node_t *ma
 
 	ctx_key("PLUGGED");
 	if ((seq = stable_get(table, ctx.key)))
-		if (!(ok = seq_to_string_list(&(*condition)->plugged, seq)))
+		if (!(ok = seq_to_name_desc(&(*condition)->plugged, seq)))
 			goto end;
 
 	ctx_key("UNPLUGGED");
 	if ((seq = stable_get(table, ctx.key)))
-		if (!(ok = seq_to_string_list(&(*condition)->unplugged, seq)))
+		if (!(ok = seq_to_name_desc(&(*condition)->unplugged, seq)))
 			goto end;
 
 end:
@@ -370,35 +370,37 @@ static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map) 
 	if (!map_to_node_table(&table, map))
 		return false;
 
-	bool ok = true;
-
 	const yaml_node_t *node;
 
 	*disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
 	ctx_key("NAME_DESC");
-	if ((node = stable_get(table, ctx.key)))
-		if (!(ok = scalar_to_string(&(*disabled)->name_desc, node)))
-			goto end;
-	// TODO regex
+	node = stable_get(table, ctx.key);
+	if (!check_mandatory(node))
+		goto err;
+	if (!scalar_to_string(&(*disabled)->name_desc, node))
+		goto err;
+	if (invalid_regex((*disabled)->name_desc, NULL))
+		goto err;
 
 	ctx_name_desc((*disabled)->name_desc);
 
 	ctx_key("IF");
-	if ((node = stable_get(table, ctx.key)))
+	node = stable_get(table, ctx.key);
+	if (node)
 		seq_to_conditions_list(&(*disabled)->conditions, node);
 
-end:
+	stable_free(table);
+	return true;
 
+err:
 	stable_free(table);
 
 	// free on validation fail
-	if (!ok) {
-		cfg_disabled_free(*disabled);
-		*disabled = NULL;
-	}
+	cfg_disabled_free(*disabled);
+	*disabled = NULL;
 
-	return ok;
+	return false;
 }
 
 // unmarshal DISABLED into a Disabled list
@@ -416,7 +418,7 @@ static bool seq_to_disabled_list(struct SList **disableds, const yaml_node_t *se
 			case YAML_SCALAR_NODE:
 				{
 					struct Disabled *disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
-					if (scalar_to_string(&disabled->name_desc, node))
+					if (scalar_to_string(&disabled->name_desc, node) && !invalid_regex(disabled->name_desc, NULL))
 						slist_append(disableds, disabled);
 					else
 						cfg_disabled_free(disabled);
@@ -456,7 +458,7 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 		goto err;
 	if (!scalar_to_string(&(*user_scale)->name_desc, scalar))
 		goto err;
-	if (!validate_regex((*user_scale)->name_desc))
+	if (invalid_regex((*user_scale)->name_desc, NULL))
 		goto err;
 
 	ctx_name_desc((*user_scale)->name_desc);
@@ -514,7 +516,7 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 		goto err;
 	if (!scalar_to_string(&(*user_mode)->name_desc, scalar))
 		goto err;
-	if (!validate_regex((*user_mode)->name_desc))
+	if (invalid_regex((*user_mode)->name_desc, NULL))
 		goto err;
 
 	ctx_name_desc((*user_mode)->name_desc);
@@ -592,7 +594,7 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 		goto err;
 	if (!scalar_to_string(&(*user_transform)->name_desc, scalar))
 		goto err;
-	if (!validate_regex((*user_transform)->name_desc))
+	if (invalid_regex((*user_transform)->name_desc, NULL))
 		goto err;
 
 	ctx_name_desc((*user_transform)->name_desc);
@@ -669,7 +671,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_enum_def((int*)&cfg->align, ALIGN_DEFAULT, value, align_val_start, align_name);
 				break;
 			case ORDER:
-				seq_to_order(&cfg->order_name_desc, value);
+				seq_to_name_desc(&cfg->order_name_desc, value);
 				break;
 			case SCALING:
 				scalar_to_enum_def((int*)&cfg->scaling, SCALING_DEFAULT, value, on_off_val, on_off_name);
@@ -687,7 +689,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				seq_to_transform_list(&cfg->user_transforms, value);
 				break;
 			case VRR_OFF:
-				seq_to_string_list(&cfg->adaptive_sync_off_name_desc, value);
+				seq_to_name_desc(&cfg->adaptive_sync_off_name_desc, value);
 				break;
 			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
