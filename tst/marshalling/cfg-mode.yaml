@@ -1,0 +1,50 @@
+MODE:
+  - NAME_DESC: max_override
+    WIDTH: 1920
+    HEIGHT: 1080
+    HZ: 12.34
+    MAX: TRUE
+
+  - NAME_DESC: five
+    WIDTH: 1920
+    HEIGHT: 1080
+    HZ: 12.34
+
+  - NAME_DESC: seven
+    MAX: TRUE
+
+  - NAME_DESC: invalid_width
+    WIDTH: wid
+
+  - NAME_DESC: invalid_height
+    HEIGHT: hei
+
+  - NAME_DESC: invalid_hz
+    HZ: hzz
+
+  - NAME_DESC: invalid_max
+    MAX: maxx
+
+  - NAME_DESC: "!(foobar"
+
+  - NAME_DESC:
+      -
+
+  - NAME_DESC: mistyped
+    WIDTH:
+      -
+
+  - NAME_DESC: mistyped
+    HEIGHT:
+      -
+
+  - NAME_DESC: mistyped
+    HZ:
+      -
+
+  - NAME_DESC: mistyped
+    MAX:
+      -
+
+  - - foo
+    - bar

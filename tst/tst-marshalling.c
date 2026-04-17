@@ -229,6 +229,30 @@ void unmarshal_cfg_from_file__scale(void **state) {
 	free(expected_log);
 }
 
+void unmarshal_cfg_from_file__mode(void **state) {
+	if (!MISTYPED_TEST)
+		return;
+
+	struct Cfg *read = cfg_default();
+	read->file_path = strdup("tst/marshalling/cfg-mode.yaml");
+
+	assert_true(UCFF(read));
+
+	struct Cfg *expected = cfg_default();
+	slist_append(&expected->user_modes, cfg_user_mode_init("max_override", true, 1920, 1080, 12340, false));
+	slist_append(&expected->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	slist_append(&expected->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+
+	assert_cfg_equal(read, expected);
+
+	char *expected_log = read_file("tst/marshalling/cfg-mode.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(read);
+	cfg_free(expected);
+	free(expected_log);
+}
+
 void unmarshal_cfg_from_file__legacy(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-legacy.yaml");
@@ -682,6 +706,7 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__mistyped),
 		TEST(unmarshal_cfg_from_file__transform),
 		TEST(unmarshal_cfg_from_file__scale),
+		TEST(unmarshal_cfg_from_file__mode),
 		//
 		// // YAML::Node equality operator is deprecated and not functional.
 		// // All we can do is read files with the same format that will be emitted.
