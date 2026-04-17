@@ -43,4 +43,7 @@ CFG:
       IF:
         - PLUGGED:
             - ONE
+            - TWO
+        - UNPLUGGED:
+            - THREE
 

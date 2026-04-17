@@ -309,6 +309,17 @@ static bool scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 	return true;
 }
 
+// unmarshal a LOG_THRESHOLD to dst, sets empty on failure
+static bool scalar_to_log_threshold(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
+
+	if (scalar_to_enum_def(dst, LOG_THRESHOLD_DEFAULT, scalar, log_threshold_val, log_threshold_name))
+		return true;
+
+	*dst = 0;
+
+	return false;
+}
+
 // unmarshal an IF into a Condition
 static bool map_to_condition(struct Condition **condition, const yaml_node_t *map) {
 	const struct STable *table = NULL;
@@ -699,10 +710,10 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_string(&cfg->laptop_display_prefix, value);
 				break;
 			case MAX_PREFERRED_REFRESH:
-				// TODO
+				seq_to_name_desc(&cfg->max_preferred_refresh_name_desc, value);
 				break;
 			case LOG_THRESHOLD:
-				scalar_to_enum_def((int*)&cfg->log_threshold, LOG_THRESHOLD_DEFAULT, value, log_threshold_val, log_threshold_name);
+				scalar_to_log_threshold((int*)&cfg->log_threshold, LOG_THRESHOLD_DEFAULT, value, log_threshold_val, log_threshold_name);
 				break;
 			case DISABLED:
 				seq_to_disabled_list(&cfg->disabled, value);

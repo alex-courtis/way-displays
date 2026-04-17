@@ -42,6 +42,9 @@ CFG:
       IF:
         - PLUGGED:
             - ONE
+            - TWO
+        - UNPLUGGED:
+            - THREE
 STATE:
   LID:
     CLOSED: TRUE
