@@ -1,0 +1,6 @@
+Ignoring invalid SCALE invalid SCALE foobar
+Ignoring invalid SCALE regex '(foobar':  Unmatched ( or \(
+Ignoring invalid SCALE NAME_DESC expected scalar, got sequence
+Ignoring invalid SCALE mistyped SCALE expected scalar, got sequence
+Ignoring invalid SCALE expected map, got sequence
+
