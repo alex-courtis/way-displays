@@ -127,7 +127,7 @@ void log_misssing(void) {
 	static char buf[1024];
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, 1024 - (bufp - buf), "Ignoring missing");
+	bufp += snprintf(bufp, 1024 - (bufp - buf), "TODO test Ignoring missing");
 
 	if (ctx.element)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", cfg_element_name(ctx.element));
@@ -495,7 +495,7 @@ static bool seq_to_disabled_list(struct SList **disableds, const yaml_node_t *se
 				}
 
 			default:
-				log_warn("TODO test and add context Ignoring invalid DISABLED: expected scalar or map, got %s", node_type_str(node->type));
+				log_warn("Ignoring invalid DISABLED expected scalar or map, got %s", node_type_str(node->type));
 				break;
 		}
 	}

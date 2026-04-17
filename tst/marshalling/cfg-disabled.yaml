@@ -1,0 +1,38 @@
+DISABLED:
+  - eight
+  - EIGHT
+  - nine
+  - NAME_DESC: twelve
+    IF:
+      - PLUGGED:
+          - ONE
+          - TWO
+      - UNPLUGGED:
+          - THREE
+  - "!(disabled1"
+  - NAME_DESC: "!(disabled2"
+  - NAME_DESC: BAD_DISABLED_IFS
+    IF:
+      - PLUGGED:
+          - "!(plugged1"
+      - UNPLUGGED:
+          - "!(unplugged1"
+  - NAME_DESC:
+      -
+  - NAME_DESC: MISTYPED_IF_SCALAR
+    IF: foo
+  - NAME_DESC: MISTYPED_IF_MAP
+    IF:
+      FOO: bar
+  - NAME_DESC: MISTYPED_UN_PLUGGED_SCALAR
+    IF:
+      - PLUGGED: foo
+      - UNPLUGGED: bar
+  - NAME_DESC: MISTYPED_UN_PLUGGED_MAP
+    IF:
+      - PLUGGED:
+          FOO: bar
+      - UNPLUGGED:
+          FOO: bar
+  - -
+    -

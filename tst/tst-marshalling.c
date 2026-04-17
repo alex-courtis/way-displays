@@ -253,6 +253,50 @@ void unmarshal_cfg_from_file__mode(void **state) {
 	free(expected_log);
 }
 
+void unmarshal_cfg_from_file__disabled(void **state) {
+	if (!MISTYPED_TEST)
+		return;
+
+	struct Cfg *read = cfg_default();
+	read->file_path = strdup("tst/marshalling/cfg-disabled.yaml");
+
+	assert_true(UCFF(read));
+
+	struct Cfg *expected = cfg_default();
+	slist_append(&expected->disabled, cfg_disabled_always("eight"));
+	slist_append(&expected->disabled, cfg_disabled_always("EIGHT"));
+	slist_append(&expected->disabled, cfg_disabled_always("nine"));
+
+	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	disabled->name_desc = strdup("twelve");
+
+	struct Condition *cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->plugged, strdup("ONE"));
+	slist_append(&cond->plugged, strdup("TWO"));
+	slist_append(&disabled->conditions, cond);
+
+	cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->unplugged, strdup("THREE"));
+	slist_append(&disabled->conditions, cond);
+
+	slist_append(&expected->disabled, disabled);
+
+	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
+	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_IF_SCALAR"));
+	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_IF_MAP"));
+	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_UN_PLUGGED_SCALAR"));
+	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_UN_PLUGGED_MAP"));
+
+	assert_cfg_equal(read, expected);
+
+	char *expected_log = read_file("tst/marshalling/cfg-disabled.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(read);
+	cfg_free(expected);
+	free(expected_log);
+}
+
 void unmarshal_cfg_from_file__callback_cmd_empty(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-callback-cmd-empty.yaml");
@@ -725,6 +769,7 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__transform),
 		TEST(unmarshal_cfg_from_file__scale),
 		TEST(unmarshal_cfg_from_file__mode),
+		TEST(unmarshal_cfg_from_file__disabled),
 		TEST(unmarshal_cfg_from_file__callback_cmd_empty),
 		//
 		// // YAML::Node equality operator is deprecated and not functional.
