@@ -67,7 +67,7 @@ bool validate_regex(const char *pattern, enum CfgElement element) {
 		if (result) {
 			char err[1024];
 			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(element), pattern + 1, err);
+			log_warn("Ignoring invalid %s regex '%s':  %s", cfg_element_name(element), pattern + 1, err);
 			rc = false;
 		}
 		regfree(&regex);
@@ -207,7 +207,6 @@ struct Condition* parse_node_val_condition(const YAML::Node &node, enum CfgEleme
 
 	return cond;
 err:
-	log_warn("Ignoring invalid condition at %s %s", desc1, desc2);
 	condition_free(cond);
 	return NULL;
 }

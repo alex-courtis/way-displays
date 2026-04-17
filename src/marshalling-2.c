@@ -57,7 +57,7 @@ bool invalid_regex(const void *pattern, const void *unused) {
 		if (result) {
 			char err[1024];
 			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring bad %s regex '%s':  %s", cfg_element_name(ctx.element), p + 1, err);
+			log_warn("Ignoring invalid %s regex '%s':  %s", cfg_element_name(ctx.element), p + 1, err);
 			rc = true;
 		}
 		regfree(&regex);
@@ -326,33 +326,31 @@ static bool map_to_condition(struct Condition **condition, const yaml_node_t *ma
 	if (!map_to_node_table(&table, map))
 		return false;
 
-	bool ok = true;
-
 	const yaml_node_t *seq;
 
 	*condition = (struct Condition*)calloc(1, sizeof(struct Condition));
 
 	ctx_key("PLUGGED");
-	if ((seq = stable_get(table, ctx.key)))
-		if (!(ok = seq_to_name_desc(&(*condition)->plugged, seq)))
-			goto end;
+	seq = stable_get(table, ctx.key);
+	if (seq && !seq_to_name_desc(&(*condition)->plugged, seq))
+		goto err;
 
 	ctx_key("UNPLUGGED");
-	if ((seq = stable_get(table, ctx.key)))
-		if (!(ok = seq_to_name_desc(&(*condition)->unplugged, seq)))
-			goto end;
-
-end:
+	seq = stable_get(table, ctx.key);
+	if (seq && !seq_to_name_desc(&(*condition)->unplugged, seq))
+		goto err;
 
 	stable_free(table);
 
-	// free on validation fail
-	if (!ok) {
-		condition_free(*condition);
-		*condition = NULL;
-	}
+	return true;
 
-	return ok;
+err:
+	stable_free(table);
+
+	condition_free(*condition);
+	*condition = NULL;
+
+	return false;
 }
 
 // unmarshal IF into a Conditions_list
@@ -407,7 +405,6 @@ static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map) 
 err:
 	stable_free(table);
 
-	// free on validation fail
 	cfg_disabled_free(*disabled);
 	*disabled = NULL;
 
@@ -487,7 +484,6 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 err:
 	stable_free(table);
 
-	// free on validation fail
 	cfg_user_scale_free(*user_scale);
 	*user_scale = NULL;
 
@@ -562,7 +558,6 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 err:
 	stable_free(table);
 
-	// free on validation fail
 	cfg_user_mode_free(*user_mode);
 	*user_mode = NULL;
 
@@ -623,7 +618,6 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 err:
 	stable_free(table);
 
-	// free on validation fail
 	cfg_user_transform_free(*user_transform);
 	*user_transform = NULL;
 
@@ -717,9 +711,6 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				break;
 			case DISABLED:
 				seq_to_disabled_list(&cfg->disabled, value);
-				break;
-			case ARRANGE_ALIGN:
-				// TODO
 				break;
 			case AUTO_SCALE_MIN:
 				scalar_to_float_def(&cfg->auto_scale_min, AUTO_SCALE_MIN_DEFAULT, value);

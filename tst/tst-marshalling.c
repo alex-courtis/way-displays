@@ -141,18 +141,19 @@ void unmarshal_cfg_from_file__empty(void **state) {
 	cfg_free(read);
 }
 
-void unmarshal_cfg_from_file__bad(void **state) {
+void unmarshal_cfg_from_file__invalid(void **state) {
 
 	struct Cfg *read = cfg_default();
-	read->file_path = strdup("tst/marshalling/cfg-bad.yaml");
+	read->file_path = strdup("tst/marshalling/cfg-invalid.yaml");
 
 	assert_true(UCFF(read));
 
 	struct Cfg *expected = cfg_default();
+	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
 
 	assert_cfg_equal(read, expected);
 
-	char *expected_log = read_file("tst/marshalling/cfg-bad.log");
+	char *expected_log = read_file("tst/marshalling/cfg-invalid.log");
 	assert_log(WARNING, expected_log);
 
 	cfg_free(read);
@@ -171,6 +172,10 @@ void unmarshal_cfg_from_file__legacy(void **state) {
 	// CHANGE_SUCCESS_CMD -> CALLBACK_CMD
 	free(expected->callback_cmd);
 	expected->callback_cmd = strdup("foo");
+
+	// MAX_PREFERRED_REFRESH
+	slist_append(&expected->max_preferred_refresh_name_desc, strdup("fifteen"));
+	slist_append(&expected->max_preferred_refresh_name_desc, strdup("!sixteen"));
 
 	assert_cfg_equal(read, expected);
 
@@ -604,7 +609,7 @@ int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
 		TEST(unmarshal_cfg_from_file__empty),
-		TEST(unmarshal_cfg_from_file__bad),
+		TEST(unmarshal_cfg_from_file__invalid),
 		TEST(unmarshal_cfg_from_file__legacy),
 		//
 		// // YAML::Node equality operator is deprecated and not functional.
