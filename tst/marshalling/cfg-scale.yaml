@@ -16,3 +16,5 @@ SCALE:
 
   - - foo
     - bar
+  - NAME_DESC: missing_scale
+  - SCALE: 99

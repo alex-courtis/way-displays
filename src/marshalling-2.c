@@ -127,14 +127,12 @@ void log_misssing(void) {
 	static char buf[1024];
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, 1024 - (bufp - buf), "TODO test Ignoring missing");
+	bufp += snprintf(bufp, 1024 - (bufp - buf), "%s: Ignoring missing", cfg_element_name(ctx.element));
 
-	if (ctx.element)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", cfg_element_name(ctx.element));
-	if (ctx.name_desc)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.name_desc);
 	if (ctx.key)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.key);
+	if (ctx.name_desc)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " for '%s'", ctx.name_desc);
 	if (ctx.def)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", ctx.def);
 

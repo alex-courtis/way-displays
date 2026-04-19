@@ -48,3 +48,5 @@ MODE:
 
   - - foo
     - bar
+
+  - MAX: TRUE

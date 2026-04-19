@@ -15,3 +15,7 @@ TRANSFORM:
 
   - - foo
     - bar
+
+  - NAME_DESC: missing_transform
+
+  - TRANSFORM: 90

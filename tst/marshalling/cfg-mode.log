@@ -9,4 +9,5 @@ Ignoring invalid MODE mistyped HEIGHT expected scalar, got sequence
 Ignoring invalid MODE mistyped HZ expected scalar, got sequence
 Ignoring invalid MODE mistyped MAX expected scalar, got sequence
 Ignoring invalid MODE expected map, got sequence
+MODE: Ignoring missing NAME_DESC
 
