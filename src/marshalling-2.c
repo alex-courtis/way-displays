@@ -903,3 +903,87 @@ end:
 	return ok;
 }
 
+bool append_mapping_str(const char *key, const char *val, int mapping) {
+	int k = yaml_document_add_scalar(ctx.document, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)val, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, v)) {
+		log_error("TODO fail: append_mapping_str yaml_document_append_mapping_pair");
+		return false;
+	}
+
+	return true;
+}
+
+bool append_mapping_float(const char *key, const float val, int mapping) {
+	char val_str[100];
+	snprintf(val_str, 100, "%g", val);
+
+	return append_mapping_str(key, val_str, mapping);
+}
+
+bool append_mapping_bool(const char *key, const bool val, int mapping) {
+	return append_mapping_str(key, (val ? "TRUE" : "FALSE"), mapping);
+}
+
+bool append_mapping_str_list(const char *key, const struct SList *vals, int mapping) {
+	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+
+	for (const struct SList *i = vals; i; i = i->nex) {
+		int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)i->val, -1, YAML_PLAIN_SCALAR_STYLE);
+		yaml_document_append_sequence_item(ctx.document, seq, v);
+	}
+
+	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
+		log_error("TODO fail: append_mapping_str_list yaml_document_append_mapping_pair");
+		return false;
+	}
+
+	return true;
+}
+
+bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg) {
+
+	ctx.document = document;
+
+	if (!yaml_document_initialize(document, NULL, NULL, NULL, 0, 0)) {
+		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
+		return false;
+	}
+
+	bool ok = true;
+
+	int root;
+
+	if (!(root = yaml_document_add_mapping(document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
+		ok = false;
+		log_error("TODO cfg_to_yaml_document yaml_document_add_sequence");
+		goto err;
+	}
+
+	append_mapping_str(cfg_element_name(ARRANGE), arrange_name(cfg->arrange), root);
+	append_mapping_str(cfg_element_name(ALIGN), align_name(cfg->align), root);
+	append_mapping_str_list(cfg_element_name(ORDER), cfg->order_name_desc, root);
+	append_mapping_bool(cfg_element_name(SCALING), cfg->scaling == ON, root);
+	append_mapping_bool(cfg_element_name(AUTO_SCALE), cfg->auto_scale == ON, root);
+	// cfg_element_name(SCALE)
+	// cfg_element_name(MODE)
+	// cfg_element_name(TRANSFORM)
+	append_mapping_str_list(cfg_element_name(VRR_OFF), cfg->adaptive_sync_off_name_desc, root);
+	append_mapping_str(cfg_element_name(CALLBACK_CMD), cfg->callback_cmd, root);
+	append_mapping_str(cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix, root);
+	append_mapping_str(cfg_element_name(LOG_THRESHOLD), log_threshold_name(cfg->log_threshold), root);
+	// cfg_element_name(DISABLED)
+	append_mapping_float(cfg_element_name(AUTO_SCALE_MIN), cfg->auto_scale_min, root);
+	append_mapping_float(cfg_element_name(AUTO_SCALE_MAX), cfg->auto_scale_max, root);
+	goto end;
+
+err:
+	yaml_document_delete(document);
+
+end:
+	return ok;
+}
+

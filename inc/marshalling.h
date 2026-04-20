@@ -26,6 +26,8 @@ char *marshal_cfg(struct Cfg *cfg);
 
 char *yaml_document_to_string(yaml_document_t *document);
 
+bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg);
+
 bool yaml_file_to_document(yaml_document_t *document, const char *file_path);
 
 bool unmarshal_cfg_from_file(struct Cfg *cfg);

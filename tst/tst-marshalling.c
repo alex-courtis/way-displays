@@ -343,7 +343,7 @@ void unmarshal_cfg_from_file__legacy(void **state) {
 	assert_logs_empty();
 }
 
-void yaml_document_from_file_then_to_string__ok(void **state) {
+void yaml_document_to_string__ok(void **state) {
 	yaml_document_t document;
 	yaml_file_to_document(&document, "tst/marshalling/cfg-all.yaml");
 
@@ -361,6 +361,26 @@ void yaml_document_from_file_then_to_string__ok(void **state) {
 	yaml_document_delete(&document);
 	free(actual);
 	free(expected);
+
+	assert_logs_empty();
+}
+
+void cfg_to_yaml_document__ok(void **state) {
+	yaml_document_t document;
+
+	struct Cfg *cfg = cfg_all();
+
+	assert_true(cfg_to_yaml_document(&document, cfg));
+
+	char *yaml = (char*)yaml_document_to_string(&document);
+
+	fprintf(stderr, "%s\n", yaml);
+
+	yaml_document_delete(&document);
+
+	cfg_free(cfg);
+
+	free(yaml);
 
 	assert_logs_empty();
 }
@@ -799,12 +819,15 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__disabled),
 		TEST(unmarshal_cfg_from_file__callback_cmd_empty),
 
-		TEST(yaml_document_from_file_then_to_string__ok),
+		TEST(yaml_document_to_string__ok),
+
+		TEST(cfg_to_yaml_document__ok),
+
 		//
 		// // YAML::Node equality operator is deprecated and not functional.
 		// // All we can do is read files with the same format that will be emitted.
 		// TEST(marshal_cfg__ok),
-		//
+
 		// TEST(marshal_ipc_request__no_op),
 		// TEST(marshal_ipc_request__cfg_set),
 		//
