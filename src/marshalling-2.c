@@ -708,6 +708,10 @@ static bool seq_to_transform_list(struct SList **user_transforms, const yaml_nod
 }
 
 static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
+	if (!yaml_document_get_root_node(document)) {
+		log_error("\nparsing file %s no root node", cfg->file_path);
+		return false;
+	}
 
 	const yaml_node_t *start_doc = document->nodes.start;
 	if (!start_doc || start_doc->type != YAML_MAPPING_NODE) {
@@ -792,6 +796,92 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 	return true;
 }
 
+char *yaml_document_to_string(yaml_document_t *document) {
+
+	// TODO reallocate on
+	size_t BUFFER_SIZE = 1024 * 256;
+	char *buffer = calloc(1, BUFFER_SIZE);
+	size_t written = 0;
+
+	yaml_emitter_t emitter;
+
+	if (!yaml_emitter_initialize(&emitter)) {
+		log_error("TODO err yaml_emitter_initialize");
+		goto err;
+	}
+
+	// yaml_emitter_set_canonical(&emitter, 1);
+	yaml_emitter_set_output_string(&emitter, (unsigned char*)buffer, BUFFER_SIZE, &written);
+	yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
+	yaml_emitter_set_indent(&emitter, 2);
+	yaml_emitter_set_width(&emitter, -1);
+	yaml_emitter_set_unicode(&emitter, 1);
+
+	if (!yaml_emitter_open(&emitter)) {
+		log_error("TODO err yaml_emitter_open");
+		goto err;
+	}
+
+	if (!yaml_emitter_dump(&emitter, document)) {
+		log_error("TODO err yaml_emitter_dump");
+		goto err;
+	}
+
+	if (!yaml_emitter_flush(&emitter)) {
+		log_error("TODO err yaml_emitter_flush");
+		goto err;
+	}
+
+	if (!yaml_emitter_close(&emitter)) {
+		log_error("TODO err yaml_emitter_close");
+		goto err;
+	}
+
+	yaml_emitter_delete(&emitter);
+
+	return buffer;
+
+err:
+	if (buffer)
+		free(buffer);
+
+	log_fatal("dump fail");
+
+	return NULL;
+}
+
+bool yaml_file_to_document(yaml_document_t *document, const char *file_path) {
+	FILE *input = fopen(file_path, "rb");
+	if (!input) {
+		log_error("\nparsing file %s missing", file_path);
+		return false;
+	}
+
+	yaml_parser_t parser;
+
+	if (!yaml_parser_initialize(&parser)) {
+		log_error("\nparsing file %s could not initialise parser", file_path);
+		return false;
+	}
+
+	bool ok = true;
+
+	yaml_parser_set_input_file(&parser, input);
+
+	if (!yaml_parser_load(&parser, document)) {
+		log_error("\nparsing file %s TODO some sort of stack", file_path);
+		ok = false;
+		yaml_document_delete(document);
+	}
+
+	yaml_parser_delete(&parser);
+
+	if (input)
+		fclose(input);
+
+	return ok;
+}
+
 bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 	if (!cfg->file_path) {
 		return false;
@@ -799,41 +889,16 @@ bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 
 	bool ok = true;
 
-	FILE *input = fopen(cfg->file_path, "rb");
-	if (!input) {
-		log_error("\nparsing file %s missing", cfg->file_path);
-		return false;
-	}
-
-	yaml_parser_t parser;
 	yaml_document_t document;
 
-	if (!(ok = yaml_parser_initialize(&parser))) {
-		log_error("\nparsing file %s could not initialise parser", cfg->file_path);
+	if (!(ok = yaml_file_to_document(&document, cfg->file_path)))
 		goto end;
-	}
 
-	yaml_parser_set_input_file(&parser, input);
-
-	if (!(ok = yaml_parser_load(&parser, &document))) {
-		log_error("\nparsing file %s TODO some sort of stack", cfg->file_path);
+	if (!(ok = doc_to_cfg(cfg, &document)))
 		goto end;
-	}
-
-	if (!(ok = yaml_document_get_root_node(&document))) {
-		log_error("\nparsing file %s empty cfg, expected map", cfg->file_path);
-		goto end;
-	}
-
-	ok = doc_to_cfg(cfg, &document);
 
 end:
 	yaml_document_delete(&document);
-
-	yaml_parser_delete(&parser);
-
-	if (input)
-		fclose(input);
 
 	return ok;
 }

@@ -35,7 +35,8 @@ void write_file(const char *path, const char *content) {
 		exit(1);
 	}
 
-	fprintf(f, "%s", content);
+	if (content)
+		fprintf(f, "%s", content);
 
 	fclose(f);
 }

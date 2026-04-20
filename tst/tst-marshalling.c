@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <yaml.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
@@ -23,10 +24,10 @@
 #include "marshalling.h"
 
 #ifndef UCFF
-	#define UCFF unmarshal_cfg_from_file_2
+#define UCFF unmarshal_cfg_from_file
 #endif
-#ifndef MISTYPED_TEST
-	#define MISTYPED_TEST true
+#ifndef V2
+#define V2 true
 #endif
 
 void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
@@ -139,7 +140,10 @@ void unmarshal_cfg_from_file__empty(void **state) {
 
 	assert_false(UCFF(read));
 
-	assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml empty cfg, expected map\n");
+	if (V2)
+		assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml no root node\n");
+	else
+		assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml empty cfg, expected map\n");
 
 	cfg_free(read);
 }
@@ -165,7 +169,7 @@ void unmarshal_cfg_from_file__invalid(void **state) {
 }
 
 void unmarshal_cfg_from_file__mistyped(void **state) {
-	if (!MISTYPED_TEST)
+	if (!V2)
 		return;
 
 	struct Cfg *read = cfg_default();
@@ -186,7 +190,7 @@ void unmarshal_cfg_from_file__mistyped(void **state) {
 }
 
 void unmarshal_cfg_from_file__transform(void **state) {
-	if (!MISTYPED_TEST)
+	if (!V2)
 		return;
 
 	struct Cfg *read = cfg_default();
@@ -208,7 +212,7 @@ void unmarshal_cfg_from_file__transform(void **state) {
 }
 
 void unmarshal_cfg_from_file__scale(void **state) {
-	if (!MISTYPED_TEST)
+	if (!V2)
 		return;
 
 	struct Cfg *read = cfg_default();
@@ -230,7 +234,7 @@ void unmarshal_cfg_from_file__scale(void **state) {
 }
 
 void unmarshal_cfg_from_file__mode(void **state) {
-	if (!MISTYPED_TEST)
+	if (!V2)
 		return;
 
 	struct Cfg *read = cfg_default();
@@ -254,7 +258,7 @@ void unmarshal_cfg_from_file__mode(void **state) {
 }
 
 void unmarshal_cfg_from_file__disabled(void **state) {
-	if (!MISTYPED_TEST)
+	if (!V2)
 		return;
 
 	struct Cfg *read = cfg_default();
@@ -335,6 +339,28 @@ void unmarshal_cfg_from_file__legacy(void **state) {
 
 	cfg_free(read);
 	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+void yaml_document_from_file_then_to_string__ok(void **state) {
+	yaml_document_t document;
+	yaml_file_to_document(&document, "tst/marshalling/cfg-all.yaml");
+
+	char *actual = (char*)yaml_document_to_string(&document);
+
+	char *expected = read_file("tst/marshalling/cfg-all.yaml");
+
+	write_file("cfg.actual", actual);
+	write_file("cfg.expected", expected);
+
+	assert_non_nul(actual);
+
+	assert_str_equal(actual, expected);
+
+	yaml_document_delete(&document);
+	free(actual);
+	free(expected);
 
 	assert_logs_empty();
 }
@@ -760,6 +786,7 @@ void unmarshal_ipc_responses__seq(void **state) {
 }
 
 int main(void) {
+	// emit_cfg__ok(NULL);
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
 		TEST(unmarshal_cfg_from_file__empty),
@@ -771,6 +798,8 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__mode),
 		TEST(unmarshal_cfg_from_file__disabled),
 		TEST(unmarshal_cfg_from_file__callback_cmd_empty),
+
+		TEST(yaml_document_from_file_then_to_string__ok),
 		//
 		// // YAML::Node equality operator is deprecated and not functional.
 		// // All we can do is read files with the same format that will be emitted.
