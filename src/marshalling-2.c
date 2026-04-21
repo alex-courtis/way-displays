@@ -796,7 +796,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 	return true;
 }
 
-char *yaml_document_to_string(yaml_document_t *document) {
+static char *yaml_document_to_string(yaml_document_t *document) {
 
 	// TODO reallocate on
 	size_t BUFFER_SIZE = 1024 * 256;
@@ -850,7 +850,7 @@ err:
 	return NULL;
 }
 
-bool yaml_file_to_document(yaml_document_t *document, const char *file_path) {
+static bool yaml_file_to_document(yaml_document_t *document, const char *file_path) {
 	FILE *input = fopen(file_path, "rb");
 	if (!input) {
 		log_error("\nparsing file %s missing", file_path);
@@ -1117,7 +1117,7 @@ static void map_cfg(const struct Cfg *cfg, int mapping) {
 	map_list (cfg_element_name(DISABLED),              cfg->disabled,                    seq_disabled,       mapping);
 }
 
-bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg) {
+static bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg) {
 
 	ctx.document = document;
 
@@ -1137,5 +1137,21 @@ bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cf
 	map_cfg(cfg, map);
 
 	return true;
+}
+
+char *marshal_cfg_2(struct Cfg *cfg) {
+	if (!cfg) {
+		return NULL;
+	}
+
+	yaml_document_t document;
+
+	if (!cfg_to_yaml_document(&document, cfg)) {
+		log_error("TODO marshalling cfg request");
+		return NULL;
+	}
+
+
+	return yaml_document_to_string(&document);
 }
 

@@ -26,11 +26,14 @@
 #ifndef UCFF
 #define UCFF unmarshal_cfg_from_file
 #endif
+#ifndef MC
+#define MC marshal_cfg
+#endif
 #ifndef V2
-#define V2 true
+#define V2 false
 #endif
 
-void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
+static void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
 	lcl->threshold = threshold;
@@ -116,7 +119,7 @@ struct Cfg *cfg_all(void) {
 	return cfg;
 }
 
-void unmarshal_cfg_from_file__ok(void **state) {
+static void unmarshal_cfg_from_file__ok(void **state) {
 
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-all.yaml");
@@ -133,7 +136,7 @@ void unmarshal_cfg_from_file__ok(void **state) {
 	assert_logs_empty();
 }
 
-void unmarshal_cfg_from_file__empty(void **state) {
+static void unmarshal_cfg_from_file__empty(void **state) {
 
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-empty.yaml");
@@ -148,7 +151,7 @@ void unmarshal_cfg_from_file__empty(void **state) {
 	cfg_free(read);
 }
 
-void unmarshal_cfg_from_file__invalid(void **state) {
+static void unmarshal_cfg_from_file__invalid(void **state) {
 
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-invalid.yaml");
@@ -168,7 +171,7 @@ void unmarshal_cfg_from_file__invalid(void **state) {
 	free(expected_log);
 }
 
-void unmarshal_cfg_from_file__mistyped(void **state) {
+static void unmarshal_cfg_from_file__mistyped(void **state) {
 	if (!V2)
 		return;
 
@@ -189,7 +192,7 @@ void unmarshal_cfg_from_file__mistyped(void **state) {
 	free(expected_log);
 }
 
-void unmarshal_cfg_from_file__transform(void **state) {
+static void unmarshal_cfg_from_file__transform(void **state) {
 	if (!V2)
 		return;
 
@@ -211,7 +214,7 @@ void unmarshal_cfg_from_file__transform(void **state) {
 	free(expected_log);
 }
 
-void unmarshal_cfg_from_file__scale(void **state) {
+static void unmarshal_cfg_from_file__scale(void **state) {
 	if (!V2)
 		return;
 
@@ -233,7 +236,7 @@ void unmarshal_cfg_from_file__scale(void **state) {
 	free(expected_log);
 }
 
-void unmarshal_cfg_from_file__mode(void **state) {
+static void unmarshal_cfg_from_file__mode(void **state) {
 	if (!V2)
 		return;
 
@@ -257,7 +260,7 @@ void unmarshal_cfg_from_file__mode(void **state) {
 	free(expected_log);
 }
 
-void unmarshal_cfg_from_file__disabled(void **state) {
+static void unmarshal_cfg_from_file__disabled(void **state) {
 	if (!V2)
 		return;
 
@@ -301,7 +304,7 @@ void unmarshal_cfg_from_file__disabled(void **state) {
 	free(expected_log);
 }
 
-void unmarshal_cfg_from_file__callback_cmd_empty(void **state) {
+static void unmarshal_cfg_from_file__callback_cmd_empty(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-callback-cmd-empty.yaml");
 
@@ -319,7 +322,7 @@ void unmarshal_cfg_from_file__callback_cmd_empty(void **state) {
 	assert_logs_empty();
 }
 
-void unmarshal_cfg_from_file__legacy(void **state) {
+static void unmarshal_cfg_from_file__legacy(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-legacy.yaml");
 
@@ -343,101 +346,49 @@ void unmarshal_cfg_from_file__legacy(void **state) {
 	assert_logs_empty();
 }
 
-void yaml_document_to_string__ok(void **state) {
-	yaml_document_t document;
-	yaml_file_to_document(&document, "tst/marshalling/cfg-all.yaml");
-
-	char *actual = (char*)yaml_document_to_string(&document);
-
-	char *expected = read_file("tst/marshalling/cfg-all.yaml");
-
-	write_file("cfg.actual", actual);
-	write_file("cfg.expected", expected);
-
-	assert_non_nul(actual);
-
-	assert_str_equal(actual, expected);
-
-	yaml_document_delete(&document);
-	free(actual);
-	free(expected);
-
-	assert_logs_empty();
-}
-
-void cfg_to_yaml_document__ok(void **state) {
-	yaml_document_t document;
-
+static void marshal_cfg__ok(void **state) {
 	struct Cfg *cfg = cfg_all();
 
-	assert_true(cfg_to_yaml_document(&document, cfg));
+	char *actual = MC(cfg);
 
-	char *actual = (char*)yaml_document_to_string(&document);
+	char *expected = V2 ? read_file("tst/marshalling/cfg-all.yaml") : read_file("tst/marshalling/cfg-all-v1.yaml");
 
-	char *expected = read_file("tst/marshalling/cfg-all.yaml");
-
-	write_file("cfg.actual", actual);
-	write_file("cfg.expected", expected);
+	write_file("actual.yaml", actual);
+	write_file("expected.yaml", expected);
 
 	assert_non_nul(actual);
 
 	assert_str_equal(actual, expected);
 
-	yaml_document_delete(&document);
-
 	cfg_free(cfg);
-
 	free(actual);
 	free(expected);
 
 	assert_logs_empty();
 }
 
-void cfg_to_yaml_document__empty(void **state) {
-	yaml_document_t document;
-
+static void marshal_cfg__default(void **state) {
 	struct Cfg *cfg = cfg_default();
 
-	assert_true(cfg_to_yaml_document(&document, cfg));
-
-	char *actual = (char*)yaml_document_to_string(&document);
+	char *actual = MC(cfg);
 
 	char *expected = read_file("tst/marshalling/cfg-default.yaml");
 
-	write_file("cfg.actual", actual);
-	write_file("cfg.expected", expected);
+	write_file("actual.yaml", actual);
+	write_file("expected.yaml", expected);
 
 	assert_non_nul(actual);
 
 	assert_str_equal(actual, expected);
 
-	yaml_document_delete(&document);
-
 	cfg_free(cfg);
-
 	free(actual);
 	free(expected);
 
 	assert_logs_empty();
 }
 
-void marshal_cfg__ok(void **state) {
-	struct Cfg *cfg_actual = cfg_all();
-
-	char *actual = marshal_cfg(cfg_actual);
-
-	char *expected = read_file("tst/marshalling/cfg-all.yaml");
-
-	assert_str_equal(actual, expected);
-
-	cfg_free(cfg_actual);
-	free(actual);
-	free(expected);
-
-	assert_logs_empty();
-}
-
-void marshal_ipc_request__no_op(void **state) {
+static void marshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
 	assert_nul(marshal_ipc_request(ipc_request));
@@ -447,7 +398,7 @@ void marshal_ipc_request__no_op(void **state) {
 	ipc_request_free(ipc_request);
 }
 
-void marshal_ipc_request__cfg_set(void **state) {
+static void marshal_ipc_request__cfg_set(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 	ipc_request->command = CFG_SET;
 	ipc_request->log_threshold = ERROR;
@@ -467,7 +418,7 @@ void marshal_ipc_request__cfg_set(void **state) {
 	assert_logs_empty();
 }
 
-void marshal_ipc_response__map(void **state) {
+static void marshal_ipc_response__map(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 	ipc_request->log_threshold = WARNING;
 	ipc_request->command = GET; // get is a map, others sequence
@@ -553,7 +504,7 @@ void marshal_ipc_response__map(void **state) {
 	assert_logs_empty();
 }
 
-void marshal_ipc_response__seq(void **state) {
+static void marshal_ipc_response__seq(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 	ipc_request->log_threshold = WARNING;
 	ipc_request->command = CFG_SET; // get is a map, others sequence
@@ -575,7 +526,7 @@ void marshal_ipc_response__seq(void **state) {
 	assert_logs_empty();
 }
 
-void unmarshal_ipc_request__empty(void **state) {
+static void unmarshal_ipc_request__empty(void **state) {
 	struct IpcRequest *actual = unmarshal_ipc_request("");
 
 	assert_nul(actual);
@@ -587,7 +538,7 @@ void unmarshal_ipc_request__empty(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_request__bad_op(void **state) {
+static void unmarshal_ipc_request__bad_op(void **state) {
 	struct IpcRequest *actual = unmarshal_ipc_request("OP: aoeu");
 
 	assert_nul(actual);
@@ -599,7 +550,7 @@ void unmarshal_ipc_request__bad_op(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_request__no_op(void **state) {
+static void unmarshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *actual = unmarshal_ipc_request("FOO: BAR");
 
 	assert_nul(actual);
@@ -611,7 +562,7 @@ void unmarshal_ipc_request__no_op(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_request__cfg_set(void **state) {
+static void unmarshal_ipc_request__cfg_set(void **state) {
 	char *yaml = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
 
 	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
@@ -632,7 +583,7 @@ void unmarshal_ipc_request__cfg_set(void **state) {
 	assert_logs_empty();
 }
 
-void unmarshal_ipc_responses__empty(void **state) {
+static void unmarshal_ipc_responses__empty(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("");
 
 	assert_nul(actual);
@@ -644,7 +595,7 @@ void unmarshal_ipc_responses__empty(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses__seq_no_map(void **state) {
+static void unmarshal_ipc_responses__seq_no_map(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("-");
 
 	assert_nul(actual);
@@ -656,7 +607,7 @@ void unmarshal_ipc_responses__seq_no_map(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses__seq_no_done(void **state) {
+static void unmarshal_ipc_responses__seq_no_done(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("- FOO: BAR");
 
 	assert_nul(actual);
@@ -668,7 +619,7 @@ void unmarshal_ipc_responses__seq_no_done(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses__seq_no_rc(void **state) {
+static void unmarshal_ipc_responses__seq_no_rc(void **state) {
 	struct SList *actual = unmarshal_ipc_responses("- DONE: TRUE");
 
 	assert_nul(actual);
@@ -680,7 +631,7 @@ void unmarshal_ipc_responses__seq_no_rc(void **state) {
 			"----------------------------------------\n");
 }
 
-void unmarshal_ipc_responses__map(void **state) {
+static void unmarshal_ipc_responses__map(void **state) {
 	char *yaml = read_file("tst/marshalling/ipc-responses-map.yaml");
 
 	expect_function_call(__wrap_lid_free);
@@ -777,7 +728,7 @@ void unmarshal_ipc_responses__map(void **state) {
 	assert_logs_empty();
 }
 
-void unmarshal_ipc_responses__seq(void **state) {
+static void unmarshal_ipc_responses__seq(void **state) {
 	char *yaml = read_file("tst/marshalling/ipc-responses-seq.yaml");
 
 	expect_function_calls(__wrap_lid_free, 3);
@@ -855,15 +806,8 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__disabled),
 		TEST(unmarshal_cfg_from_file__callback_cmd_empty),
 
-		TEST(yaml_document_to_string__ok),
-
-		TEST(cfg_to_yaml_document__ok),
-		// TEST(cfg_to_yaml_document__empty),
-
-		//
-		// // YAML::Node equality operator is deprecated and not functional.
-		// // All we can do is read files with the same format that will be emitted.
-		// TEST(marshal_cfg__ok),
+		TEST(marshal_cfg__ok),
+		TEST(marshal_cfg__default),
 
 		// TEST(marshal_ipc_request__no_op),
 		// TEST(marshal_ipc_request__cfg_set),

@@ -24,11 +24,7 @@ struct SList *unmarshal_ipc_responses(const char *yaml);
 
 char *marshal_cfg(struct Cfg *cfg);
 
-char *yaml_document_to_string(yaml_document_t *document);
-
-bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg);
-
-bool yaml_file_to_document(yaml_document_t *document, const char *file_path);
+char *marshal_cfg_2(struct Cfg *cfg);
 
 bool unmarshal_cfg_from_file(struct Cfg *cfg);
 
