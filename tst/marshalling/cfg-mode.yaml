@@ -25,7 +25,7 @@ MODE:
   - NAME_DESC: invalid_max
     MAX: maxx
 
-  - NAME_DESC: "!(foobar"
+  - NAME_DESC: '!(foobar'
 
   - NAME_DESC:
       -

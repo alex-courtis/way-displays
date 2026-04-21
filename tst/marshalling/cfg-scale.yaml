@@ -5,7 +5,7 @@ SCALE:
   - NAME_DESC: invalid
     SCALE: foobar
 
-  - NAME_DESC: "!(foobar"
+  - NAME_DESC: '!(foobar'
 
   - NAME_DESC:
       -

@@ -3,7 +3,7 @@ ALIGN: BOTTOM
 ORDER:
 - one
 - ONE
-- "!two"
+- '!two'
 SCALING: FALSE
 AUTO_SCALE: FALSE
 AUTO_SCALE_MIN: 0.5

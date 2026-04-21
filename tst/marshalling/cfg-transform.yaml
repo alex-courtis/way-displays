@@ -4,7 +4,7 @@ TRANSFORM:
 
   - NAME_DESC: invalid
     TRANSFORM: foobar
-  - NAME_DESC: "!(transform"
+  - NAME_DESC: '!(transform'
 
   - NAME_DESC:
       -

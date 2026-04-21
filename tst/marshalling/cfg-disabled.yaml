@@ -9,14 +9,14 @@ DISABLED:
           - TWO
       - UNPLUGGED:
           - THREE
-  - "!(disabled1"
-  - NAME_DESC: "!(disabled2"
+  - '!(disabled1'
+  - NAME_DESC: '!(disabled2'
   - NAME_DESC: BAD_DISABLED_IFS
     IF:
       - PLUGGED:
-          - "!(plugged1"
+          - '!(plugged1'
       - UNPLUGGED:
-          - "!(unplugged1"
+          - '!(unplugged1'
   - NAME_DESC:
       -
   - NAME_DESC: MISTYPED_IF_SCALAR

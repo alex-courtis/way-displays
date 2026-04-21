@@ -372,15 +372,24 @@ void cfg_to_yaml_document__ok(void **state) {
 
 	assert_true(cfg_to_yaml_document(&document, cfg));
 
-	char *yaml = (char*)yaml_document_to_string(&document);
+	char *actual = (char*)yaml_document_to_string(&document);
 
-	fprintf(stderr, "%s\n", yaml);
+	char *expected = read_file("tst/marshalling/cfg-all.yaml");
+
+	fprintf(stderr, "%s\n", actual);
+
+	write_file("cfg.actual", actual);
+	write_file("cfg.expected", expected);
+
+	assert_non_nul(actual);
+
+	assert_str_equal(actual, expected);
 
 	yaml_document_delete(&document);
 
 	cfg_free(cfg);
 
-	free(yaml);
+	free(actual);
 
 	assert_logs_empty();
 }
