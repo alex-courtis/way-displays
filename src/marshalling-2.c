@@ -903,6 +903,28 @@ end:
 	return ok;
 }
 
+typedef bool (*map_list_fn)(const void *list, int seq);
+bool map_list(const char *key, map_list_fn fn, const struct SList *list, int mapping) {
+	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq) {
+		log_error("TODO fail: map_user_transform_list add_sequence");
+		return false;
+	}
+
+	for (const struct SList *i = list; i; i = i->nex) {
+		fn(i->val, seq);
+	}
+
+	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
+		log_error("TODO fail map_user_transform_list");
+		return false;
+	}
+
+	return true;
+}
+
 bool map_str(const char *key, const char *val, int mapping) {
 	int k = yaml_document_add_scalar(ctx.document, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
 	int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)val, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -915,8 +937,10 @@ bool map_str(const char *key, const char *val, int mapping) {
 	return true;
 }
 
-bool seq_str(const char *val, int seq) {
-	int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)val, -1, YAML_PLAIN_SCALAR_STYLE);
+bool seq_str(const void *list, int seq) {
+	const char *str = list;
+
+	int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)str, -1, YAML_PLAIN_SCALAR_STYLE);
 
 	if (!yaml_document_append_sequence_item(ctx.document, seq, v)) {
 		log_error("TODO fail: seq_str");
@@ -944,24 +968,9 @@ bool map_bool(const char *key, const bool val, int mapping) {
 	return map_str(key, (val ? "TRUE" : "FALSE"), mapping);
 }
 
-bool map_str_list(const char *key, const struct SList *vals, int mapping) {
-	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+bool seq_user_scale(const void *list, int seq) {
+	const struct UserScale *user_scale = list;
 
-	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-
-	for (const struct SList *i = vals; i; i = i->nex) {
-		seq_str(i->val, seq);
-	}
-
-	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
-		log_error("TODO fail: map_str_list");
-		return false;
-	}
-
-	return true;
-}
-
-bool seq_user_scale(const struct UserScale *user_scale, int seq) {
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	map_str("NAME_DESC", user_scale->name_desc, map);
@@ -975,28 +984,9 @@ bool seq_user_scale(const struct UserScale *user_scale, int seq) {
 	return true;
 }
 
-bool map_user_scale_list(const char *key, const struct SList *user_scales, int mapping) {
-	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+bool seq_user_mode(const void *list, int seq) {
+	const struct UserMode *user_mode = list;
 
-	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-	if (!seq) {
-		log_error("TODO fail: map_user_scale_list add_sequence");
-		return false;
-	}
-
-	for (const struct SList *i = user_scales; i; i = i->nex) {
-		seq_user_scale(i->val, seq);
-	}
-
-	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
-		log_error("TODO fail: map_user_scale_list");
-		return false;
-	}
-
-	return true;
-}
-
-bool seq_user_mode(const struct UserMode *user_mode, int seq) {
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	map_str("NAME_DESC", user_mode->name_desc, map);
@@ -1016,28 +1006,9 @@ bool seq_user_mode(const struct UserMode *user_mode, int seq) {
 	return true;
 }
 
-bool map_user_mode_list(const char *key, const struct SList *user_modes, int mapping) {
-	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+bool seq_user_transform(const void *list, int seq) {
+	const struct UserTransform *user_transform = list;
 
-	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-	if (!seq) {
-		log_error("TODO fail: map_user_mode_list add_sequence");
-		return false;
-	}
-
-	for (const struct SList *i = user_modes; i; i = i->nex) {
-		seq_user_mode(i->val, seq);
-	}
-
-	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
-		log_error("TODO fail: map_user_mode_list");
-		return false;
-	}
-
-	return true;
-}
-
-bool seq_user_transform(const struct UserTransform *user_transform, int seq) {
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	map_str("NAME_DESC", user_transform->name_desc, map);
@@ -1051,35 +1022,14 @@ bool seq_user_transform(const struct UserTransform *user_transform, int seq) {
 	return true;
 }
 
-bool map_user_transform_list(const char *key, const struct SList *user_transforms, int mapping) {
-	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-
-	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-	if (!seq) {
-		log_error("TODO fail: map_user_transform_list add_sequence");
-		return false;
-	}
-
-	for (const struct SList *i = user_transforms; i; i = i->nex) {
-		seq_user_transform(i->val, seq);
-	}
-
-	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
-		log_error("TODO fail map_user_transform_list");
-		return false;
-	}
-
-	return true;
-}
-
 bool seq_condition(struct Condition *condition, int seq) {
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (condition->plugged)
-		map_str_list("PLUGGED", condition->plugged, map);
+		map_list("PLUGGED", seq_str, condition->plugged, map);
 
 	if (condition->unplugged)
-	map_str_list("UNPLUGGED", condition->unplugged, map);
+		map_list("UNPLUGGED", seq_str, condition->unplugged, map);
 
 	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
 		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
@@ -1089,7 +1039,9 @@ bool seq_condition(struct Condition *condition, int seq) {
 	return true;
 }
 
-bool seq_disabled(const struct Disabled *disabled, int seq) {
+bool seq_disabled(const void *list, int seq) {
+	const struct Disabled *disabled = list;
+
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	map_str("NAME_DESC", disabled->name_desc, map);
@@ -1117,27 +1069,6 @@ bool seq_disabled(const struct Disabled *disabled, int seq) {
 	return true;
 }
 
-bool map_disabled_list(const char *key, const struct SList *disableds, int mapping) {
-	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-
-	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-	if (!seq) {
-		log_error("TODO fail: map_user_transform_list add_sequence");
-		return false;
-	}
-
-	for (const struct SList *i = disableds; i; i = i->nex) {
-		seq_disabled(i->val, seq);
-	}
-
-	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
-		log_error("TODO fail map_user_transform_list");
-		return false;
-	}
-
-	return true;
-}
-
 bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg) {
 
 	ctx.document = document;
@@ -1159,17 +1090,17 @@ bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cf
 
 	map_str(cfg_element_name(ARRANGE), arrange_name(cfg->arrange), root);
 	map_str(cfg_element_name(ALIGN), align_name(cfg->align), root);
-	map_str_list(cfg_element_name(ORDER), cfg->order_name_desc, root);
+	map_list(cfg_element_name(ORDER), seq_str, cfg->order_name_desc, root);
 	map_bool(cfg_element_name(SCALING), cfg->scaling == ON, root);
 	map_bool(cfg_element_name(AUTO_SCALE), cfg->auto_scale == ON, root);
-	map_user_scale_list(cfg_element_name(SCALE), cfg->user_scales, root);
-	map_user_mode_list(cfg_element_name(MODE), cfg->user_modes, root);
-	map_user_transform_list(cfg_element_name(TRANSFORM), cfg->user_transforms, root);
-	map_str_list(cfg_element_name(VRR_OFF), cfg->adaptive_sync_off_name_desc, root);
+	map_list(cfg_element_name(SCALE), seq_user_scale, cfg->user_scales, root);
+	map_list(cfg_element_name(MODE), seq_user_mode, cfg->user_modes, root);
+	map_list(cfg_element_name(TRANSFORM), seq_user_transform, cfg->user_transforms, root);
+	map_list(cfg_element_name(VRR_OFF), seq_str, cfg->adaptive_sync_off_name_desc, root);
 	map_str(cfg_element_name(CALLBACK_CMD), cfg->callback_cmd, root);
 	map_str(cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix, root);
 	map_str(cfg_element_name(LOG_THRESHOLD), log_threshold_name(cfg->log_threshold), root);
-	map_disabled_list(cfg_element_name(DISABLED), cfg->disabled, root);
+	map_list(cfg_element_name(DISABLED), seq_disabled, cfg->disabled, root);
 	map_float(cfg_element_name(AUTO_SCALE_MIN), cfg->auto_scale_min, root);
 	map_float(cfg_element_name(AUTO_SCALE_MAX), cfg->auto_scale_max, root);
 	goto end;
