@@ -903,41 +903,235 @@ end:
 	return ok;
 }
 
-bool append_mapping_str(const char *key, const char *val, int mapping) {
+bool map_str(const char *key, const char *val, int mapping) {
 	int k = yaml_document_add_scalar(ctx.document, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
 	int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)val, -1, YAML_PLAIN_SCALAR_STYLE);
 
 	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, v)) {
-		log_error("TODO fail: append_mapping_str yaml_document_append_mapping_pair");
+		log_error("TODO fail: map_str");
 		return false;
 	}
 
 	return true;
 }
 
-bool append_mapping_float(const char *key, const float val, int mapping) {
+bool seq_str(const char *val, int seq) {
+	int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)val, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	if (!yaml_document_append_sequence_item(ctx.document, seq, v)) {
+		log_error("TODO fail: seq_str");
+		return false;
+	}
+
+	return true;
+}
+
+bool map_int(const char *key, const int32_t val, int mapping) {
+	char val_str[100];
+	snprintf(val_str, 100, "%d", val);
+
+	return map_str(key, val_str, mapping);
+}
+
+bool map_float(const char *key, const float val, int mapping) {
 	char val_str[100];
 	snprintf(val_str, 100, "%g", val);
 
-	return append_mapping_str(key, val_str, mapping);
+	return map_str(key, val_str, mapping);
 }
 
-bool append_mapping_bool(const char *key, const bool val, int mapping) {
-	return append_mapping_str(key, (val ? "TRUE" : "FALSE"), mapping);
+bool map_bool(const char *key, const bool val, int mapping) {
+	return map_str(key, (val ? "TRUE" : "FALSE"), mapping);
 }
 
-bool append_mapping_str_list(const char *key, const struct SList *vals, int mapping) {
+bool map_str_list(const char *key, const struct SList *vals, int mapping) {
 	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
 
 	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
 
 	for (const struct SList *i = vals; i; i = i->nex) {
-		int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)i->val, -1, YAML_PLAIN_SCALAR_STYLE);
-		yaml_document_append_sequence_item(ctx.document, seq, v);
+		seq_str(i->val, seq);
 	}
 
 	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
-		log_error("TODO fail: append_mapping_str_list yaml_document_append_mapping_pair");
+		log_error("TODO fail: map_str_list");
+		return false;
+	}
+
+	return true;
+}
+
+bool seq_user_scale(const struct UserScale *user_scale, int seq) {
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	map_str("NAME_DESC", user_scale->name_desc, map);
+	map_float("SCALE", user_scale->scale, map);
+
+	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
+		return false;
+	}
+
+	return true;
+}
+
+bool map_user_scale_list(const char *key, const struct SList *user_scales, int mapping) {
+	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq) {
+		log_error("TODO fail: map_user_scale_list add_sequence");
+		return false;
+	}
+
+	for (const struct SList *i = user_scales; i; i = i->nex) {
+		seq_user_scale(i->val, seq);
+	}
+
+	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
+		log_error("TODO fail: map_user_scale_list");
+		return false;
+	}
+
+	return true;
+}
+
+bool seq_user_mode(const struct UserMode *user_mode, int seq) {
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	map_str("NAME_DESC", user_mode->name_desc, map);
+	if (user_mode->max) {
+		map_bool("MAX", user_mode->max, map);
+	} else {
+		map_int("WIDTH", user_mode->width, map);
+		map_int("HEIGHT", user_mode->height, map);
+		map_str("HEIGHT", mhz_to_hz_str(user_mode->refresh_mhz), map);
+	}
+
+	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
+		return false;
+	}
+
+	return true;
+}
+
+bool map_user_mode_list(const char *key, const struct SList *user_modes, int mapping) {
+	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq) {
+		log_error("TODO fail: map_user_mode_list add_sequence");
+		return false;
+	}
+
+	for (const struct SList *i = user_modes; i; i = i->nex) {
+		seq_user_mode(i->val, seq);
+	}
+
+	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
+		log_error("TODO fail: map_user_mode_list");
+		return false;
+	}
+
+	return true;
+}
+
+bool seq_user_transform(const struct UserTransform *user_transform, int seq) {
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	map_str("NAME_DESC", user_transform->name_desc, map);
+	map_str("TRANSFORM", transform_name(user_transform->transform), map);
+
+	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
+		return false;
+	}
+
+	return true;
+}
+
+bool map_user_transform_list(const char *key, const struct SList *user_transforms, int mapping) {
+	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq) {
+		log_error("TODO fail: map_user_transform_list add_sequence");
+		return false;
+	}
+
+	for (const struct SList *i = user_transforms; i; i = i->nex) {
+		seq_user_transform(i->val, seq);
+	}
+
+	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
+		log_error("TODO fail map_user_transform_list");
+		return false;
+	}
+
+	return true;
+}
+
+bool seq_condition(struct Condition *condition, int seq) {
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	if (condition->plugged)
+		map_str_list("PLUGGED", condition->plugged, map);
+
+	if (condition->unplugged)
+	map_str_list("UNPLUGGED", condition->unplugged, map);
+
+	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
+		return false;
+	}
+
+	return true;
+}
+
+bool seq_disabled(const struct Disabled *disabled, int seq) {
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	map_str("NAME_DESC", disabled->name_desc, map);
+
+	int s = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+
+	if (disabled->conditions) {
+		int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)"IF", -1, YAML_PLAIN_SCALAR_STYLE);
+
+		for (const struct SList *i = disabled->conditions; i; i = i->nex) {
+			seq_condition(i->val, s);
+		}
+
+		if (!yaml_document_append_mapping_pair(ctx.document, map, k, s)) {
+			log_error("TODO fail map_user_transform_list");
+			return false;
+		}
+	}
+
+	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
+		return false;
+	}
+
+	return true;
+}
+
+bool map_disabled_list(const char *key, const struct SList *disableds, int mapping) {
+	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq) {
+		log_error("TODO fail: map_user_transform_list add_sequence");
+		return false;
+	}
+
+	for (const struct SList *i = disableds; i; i = i->nex) {
+		seq_disabled(i->val, seq);
+	}
+
+	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
+		log_error("TODO fail map_user_transform_list");
 		return false;
 	}
 
@@ -963,21 +1157,21 @@ bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cf
 		goto err;
 	}
 
-	append_mapping_str(cfg_element_name(ARRANGE), arrange_name(cfg->arrange), root);
-	append_mapping_str(cfg_element_name(ALIGN), align_name(cfg->align), root);
-	append_mapping_str_list(cfg_element_name(ORDER), cfg->order_name_desc, root);
-	append_mapping_bool(cfg_element_name(SCALING), cfg->scaling == ON, root);
-	append_mapping_bool(cfg_element_name(AUTO_SCALE), cfg->auto_scale == ON, root);
-	// cfg_element_name(SCALE)
-	// cfg_element_name(MODE)
-	// cfg_element_name(TRANSFORM)
-	append_mapping_str_list(cfg_element_name(VRR_OFF), cfg->adaptive_sync_off_name_desc, root);
-	append_mapping_str(cfg_element_name(CALLBACK_CMD), cfg->callback_cmd, root);
-	append_mapping_str(cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix, root);
-	append_mapping_str(cfg_element_name(LOG_THRESHOLD), log_threshold_name(cfg->log_threshold), root);
-	// cfg_element_name(DISABLED)
-	append_mapping_float(cfg_element_name(AUTO_SCALE_MIN), cfg->auto_scale_min, root);
-	append_mapping_float(cfg_element_name(AUTO_SCALE_MAX), cfg->auto_scale_max, root);
+	map_str(cfg_element_name(ARRANGE), arrange_name(cfg->arrange), root);
+	map_str(cfg_element_name(ALIGN), align_name(cfg->align), root);
+	map_str_list(cfg_element_name(ORDER), cfg->order_name_desc, root);
+	map_bool(cfg_element_name(SCALING), cfg->scaling == ON, root);
+	map_bool(cfg_element_name(AUTO_SCALE), cfg->auto_scale == ON, root);
+	map_user_scale_list(cfg_element_name(SCALE), cfg->user_scales, root);
+	map_user_mode_list(cfg_element_name(MODE), cfg->user_modes, root);
+	map_user_transform_list(cfg_element_name(TRANSFORM), cfg->user_transforms, root);
+	map_str_list(cfg_element_name(VRR_OFF), cfg->adaptive_sync_off_name_desc, root);
+	map_str(cfg_element_name(CALLBACK_CMD), cfg->callback_cmd, root);
+	map_str(cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix, root);
+	map_str(cfg_element_name(LOG_THRESHOLD), log_threshold_name(cfg->log_threshold), root);
+	map_disabled_list(cfg_element_name(DISABLED), cfg->disabled, root);
+	map_float(cfg_element_name(AUTO_SCALE_MIN), cfg->auto_scale_min, root);
+	map_float(cfg_element_name(AUTO_SCALE_MAX), cfg->auto_scale_max, root);
 	goto end;
 
 err:
