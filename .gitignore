@@ -10,8 +10,14 @@ pro/*.c
 
 /tst/tmp/
 
-cfg.actual
-cfg.expected
+/tst/tst-marshalling-2.c
+
+actual.cfg
+actual.log
+actual.yaml
+expected.cfg
+expected.log
+expected.yaml
 
 log.actual
 log.expected

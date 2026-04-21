@@ -1,8 +1,6 @@
 #ifndef MARSHALLING_H
 #define MARSHALLING_H
 
-#include <yaml.h>
-
 #ifdef __cplusplus
 extern "C" { //}
 #else

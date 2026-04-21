@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <yaml.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
@@ -409,6 +408,9 @@ static void marshal_ipc_request__cfg_set(void **state) {
 
 	char *expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
 
+	write_file("actual.yaml", actual);
+	write_file("expected.yaml", expected);
+
 	assert_str_equal(actual, expected);
 
 	ipc_request_free(ipc_request);
@@ -492,6 +494,9 @@ static void marshal_ipc_response__map(void **state) {
 	assert_non_nul(actual);
 
 	char *expected = read_file("tst/marshalling/ipc-responses-map.yaml");
+
+	write_file("actual.yaml", actual);
+	write_file("expected.yaml", expected);
 
 	assert_str_equal(actual, expected);
 
@@ -809,23 +814,23 @@ int main(void) {
 		TEST(marshal_cfg__ok),
 		TEST(marshal_cfg__default),
 
-		// TEST(marshal_ipc_request__no_op),
-		// TEST(marshal_ipc_request__cfg_set),
-		//
-		// TEST(marshal_ipc_response__map),
-		// TEST(marshal_ipc_response__seq),
-		//
-		// TEST(unmarshal_ipc_request__empty),
-		// TEST(unmarshal_ipc_request__bad_op),
-		// TEST(unmarshal_ipc_request__no_op),
-		// TEST(unmarshal_ipc_request__cfg_set),
-		//
-		// TEST(unmarshal_ipc_responses__empty),
-		// TEST(unmarshal_ipc_responses__seq_no_map),
-		// TEST(unmarshal_ipc_responses__seq_no_done),
-		// TEST(unmarshal_ipc_responses__seq_no_rc),
-		// TEST(unmarshal_ipc_responses__map),
-		// TEST(unmarshal_ipc_responses__seq),
+		TEST(marshal_ipc_request__no_op),
+		TEST(marshal_ipc_request__cfg_set),
+
+		TEST(marshal_ipc_response__map),
+		TEST(marshal_ipc_response__seq),
+
+		TEST(unmarshal_ipc_request__empty),
+		TEST(unmarshal_ipc_request__bad_op),
+		TEST(unmarshal_ipc_request__no_op),
+		TEST(unmarshal_ipc_request__cfg_set),
+
+		TEST(unmarshal_ipc_responses__empty),
+		TEST(unmarshal_ipc_responses__seq_no_map),
+		TEST(unmarshal_ipc_responses__seq_no_done),
+		TEST(unmarshal_ipc_responses__seq_no_rc),
+		TEST(unmarshal_ipc_responses__map),
+		TEST(unmarshal_ipc_responses__seq),
 	};
 
 	return RUN(tests);
