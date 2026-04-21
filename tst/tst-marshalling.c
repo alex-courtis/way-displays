@@ -376,7 +376,33 @@ void cfg_to_yaml_document__ok(void **state) {
 
 	char *expected = read_file("tst/marshalling/cfg-all.yaml");
 
-	fprintf(stderr, "%s\n", actual);
+	write_file("cfg.actual", actual);
+	write_file("cfg.expected", expected);
+
+	assert_non_nul(actual);
+
+	assert_str_equal(actual, expected);
+
+	yaml_document_delete(&document);
+
+	cfg_free(cfg);
+
+	free(actual);
+	free(expected);
+
+	assert_logs_empty();
+}
+
+void cfg_to_yaml_document__empty(void **state) {
+	yaml_document_t document;
+
+	struct Cfg *cfg = cfg_default();
+
+	assert_true(cfg_to_yaml_document(&document, cfg));
+
+	char *actual = (char*)yaml_document_to_string(&document);
+
+	char *expected = read_file("tst/marshalling/cfg-default.yaml");
 
 	write_file("cfg.actual", actual);
 	write_file("cfg.expected", expected);
@@ -390,6 +416,7 @@ void cfg_to_yaml_document__ok(void **state) {
 	cfg_free(cfg);
 
 	free(actual);
+	free(expected);
 
 	assert_logs_empty();
 }
@@ -831,6 +858,7 @@ int main(void) {
 		TEST(yaml_document_to_string__ok),
 
 		TEST(cfg_to_yaml_document__ok),
+		// TEST(cfg_to_yaml_document__empty),
 
 		//
 		// // YAML::Node equality operator is deprecated and not functional.

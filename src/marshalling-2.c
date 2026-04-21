@@ -140,7 +140,7 @@ void log_misssing(void) {
 }
 
 // fn_equals to valdate a regex pattern by attempting to compile it
-bool invalid_regex(const void *pattern, const void *unused) {
+static bool invalid_regex(const void *pattern, const void *unused) {
 	bool rc = false;
 	char *p = (char*)pattern;
 
@@ -903,21 +903,24 @@ end:
 	return ok;
 }
 
-typedef bool (*map_list_fn)(const void *data, int seq);
-bool map_list(const char *key, const struct SList *list, map_list_fn fn, int mapping) {
+typedef bool (*map_list_fn)(const void *data, int sequence);
+static bool map_list(const char *key, const struct SList *list, map_list_fn fn, int mapping) {
+	if (!list)
+		return true;
+
 	int k = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
 
-	int seq = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-	if (!seq) {
+	int sequence = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!sequence) {
 		log_error("TODO fail: map_user_transform_list add_sequence");
 		return false;
 	}
 
 	for (const struct SList *i = list; i; i = i->nex) {
-		fn(i->val, seq);
+		fn(i->val, sequence);
 	}
 
-	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, seq)) {
+	if (!yaml_document_append_mapping_pair(ctx.document, mapping, k, sequence)) {
 		log_error("TODO fail map_user_transform_list");
 		return false;
 	}
@@ -925,7 +928,10 @@ bool map_list(const char *key, const struct SList *list, map_list_fn fn, int map
 	return true;
 }
 
-bool map_str(const char *key, const char *val, int mapping) {
+static bool map_str(const char *key, const char *val, int mapping) {
+	if (!key || !val)
+		return false;
+
 	int k = yaml_document_add_scalar(ctx.document, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
 	int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)val, -1, YAML_PLAIN_SCALAR_STYLE);
 
@@ -937,12 +943,15 @@ bool map_str(const char *key, const char *val, int mapping) {
 	return true;
 }
 
-bool seq_str(const void *data, int seq) {
+static bool seq_str(const void *data, int sequence) {
 	const char *str = data;
+
+	if (!str)
+		return false;
 
 	int v = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)str, -1, YAML_PLAIN_SCALAR_STYLE);
 
-	if (!yaml_document_append_sequence_item(ctx.document, seq, v)) {
+	if (!yaml_document_append_sequence_item(ctx.document, sequence, v)) {
 		log_error("TODO fail: seq_str");
 		return false;
 	}
@@ -950,25 +959,41 @@ bool seq_str(const void *data, int seq) {
 	return true;
 }
 
-bool map_int(const char *key, const int32_t val, int mapping) {
-	char val_str[100];
-	snprintf(val_str, 100, "%d", val);
+static bool map_int(const char *key, const int32_t val, int mapping) {
+	char val_str[20];
+	snprintf(val_str, 20, "%d", val);
 
 	return map_str(key, val_str, mapping);
 }
 
-bool map_float(const char *key, const float val, int mapping) {
+static bool map_float(const char *key, const float val, int mapping) {
+	if (val == 0)
+		return false;
+
 	char val_str[100];
 	snprintf(val_str, 100, "%g", val);
 
 	return map_str(key, val_str, mapping);
 }
 
-bool map_bool(const char *key, const bool val, int mapping) {
+static bool map_bool(const char *key, const bool val, int mapping) {
 	return map_str(key, (val ? "TRUE" : "FALSE"), mapping);
 }
 
-bool seq_user_scale(const void *data, int seq) {
+typedef const char* (*map_enum_fn_name)(unsigned int val);
+static bool map_enum(const char *key, const int val, map_enum_fn_name fn_name, int mapping) {
+	const char *val_str = fn_name(val);
+	if (!val_str)
+		return false;
+
+	// use T/F to obey schema
+	if (fn_name == on_off_name)
+		val_str = (val == ON) ? "TRUE" : "FALSE";
+
+	return map_str(key, val_str, mapping);
+}
+
+static bool seq_user_scale(const void *data, int sequence) {
 	const struct UserScale *user_scale = data;
 
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
@@ -976,7 +1001,7 @@ bool seq_user_scale(const void *data, int seq) {
 	map_str("NAME_DESC", user_scale->name_desc, map);
 	map_float("SCALE", user_scale->scale, map);
 
-	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+	if (!yaml_document_append_sequence_item(ctx.document, sequence, map)) {
 		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
 		return false;
 	}
@@ -984,7 +1009,7 @@ bool seq_user_scale(const void *data, int seq) {
 	return true;
 }
 
-bool seq_user_mode(const void *data, int seq) {
+static bool seq_user_mode(const void *data, int sequence) {
 	const struct UserMode *user_mode = data;
 
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
@@ -1001,7 +1026,7 @@ bool seq_user_mode(const void *data, int seq) {
 		}
 	}
 
-	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+	if (!yaml_document_append_sequence_item(ctx.document, sequence, map)) {
 		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
 		return false;
 	}
@@ -1009,7 +1034,7 @@ bool seq_user_mode(const void *data, int seq) {
 	return true;
 }
 
-bool seq_user_transform(const void *data, int seq) {
+static bool seq_user_transform(const void *data, int sequence) {
 	const struct UserTransform *user_transform = data;
 
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
@@ -1017,7 +1042,7 @@ bool seq_user_transform(const void *data, int seq) {
 	map_str("NAME_DESC", user_transform->name_desc, map);
 	map_str("TRANSFORM", transform_name(user_transform->transform), map);
 
-	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+	if (!yaml_document_append_sequence_item(ctx.document, sequence, map)) {
 		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
 		return false;
 	}
@@ -1025,7 +1050,7 @@ bool seq_user_transform(const void *data, int seq) {
 	return true;
 }
 
-bool seq_condition(struct Condition *condition, int seq) {
+static bool seq_condition(struct Condition *condition, int sequence) {
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (condition->plugged)
@@ -1034,7 +1059,7 @@ bool seq_condition(struct Condition *condition, int seq) {
 	if (condition->unplugged)
 		map_list("UNPLUGGED", condition->unplugged, seq_str, map);
 
-	if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+	if (!yaml_document_append_sequence_item(ctx.document, sequence, map)) {
 		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
 		return false;
 	}
@@ -1042,10 +1067,8 @@ bool seq_condition(struct Condition *condition, int seq) {
 	return true;
 }
 
-bool seq_disabled(const void *data, int seq) {
+static bool seq_disabled(const void *data, int sequence) {
 	const struct Disabled *disabled = data;
-
-	fprintf(stderr, "seq_disabled\n\n");
 
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
@@ -1065,58 +1088,54 @@ bool seq_disabled(const void *data, int seq) {
 			return false;
 		}
 
-		if (!yaml_document_append_sequence_item(ctx.document, seq, map)) {
+		if (!yaml_document_append_sequence_item(ctx.document, sequence, map)) {
 			log_error("TODO cfg_to_yaml_document yaml_document_initialize");
 			return false;
 		}
 	} else {
-		seq_str(disabled->name_desc, seq);
+		seq_str(disabled->name_desc, sequence);
 	}
 
 	return true;
+}
+
+static void map_cfg(const struct Cfg *cfg, int mapping) {
+	map_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,       mapping);
+	map_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,         mapping);
+	map_list (cfg_element_name(ORDER),                 cfg->order_name_desc,             seq_str,            mapping);
+	map_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,        mapping);
+	map_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,        mapping);
+	map_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                  mapping);
+	map_float(cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                  mapping);
+	map_list (cfg_element_name(SCALE),                 cfg->user_scales,                 seq_user_scale,     mapping);
+	map_list (cfg_element_name(MODE),                  cfg->user_modes,                  seq_user_mode,      mapping);
+	map_list (cfg_element_name(TRANSFORM),             cfg->user_transforms,             seq_user_transform, mapping);
+	map_list (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, seq_str,            mapping);
+	map_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                    mapping);
+	map_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                           mapping);
+	map_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name, mapping);
+	map_list (cfg_element_name(DISABLED),              cfg->disabled,                    seq_disabled,       mapping);
 }
 
 bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg) {
 
 	ctx.document = document;
 
-	if (!yaml_document_initialize(document, NULL, NULL, NULL, 0, 0)) {
+	if (!yaml_document_initialize(document, NULL, NULL, NULL, 1, 1)) {
 		log_error("TODO cfg_to_yaml_document yaml_document_initialize");
 		return false;
 	}
 
-	bool ok = true;
+	int map;
 
-	int root;
-
-	if (!(root = yaml_document_add_mapping(document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
-		ok = false;
-		log_error("TODO cfg_to_yaml_document yaml_document_add_sequence");
-		goto err;
+	if (!(map = yaml_document_add_mapping(document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
+		yaml_document_delete(document);
+		log_error("TODO cfg_to_yaml_document yaml_document_add_mapping");
+		return false;
 	}
 
-	map_str(cfg_element_name(ARRANGE), arrange_name(cfg->arrange), root);
-	map_str(cfg_element_name(ALIGN), align_name(cfg->align), root);
-	map_list(cfg_element_name(ORDER), cfg->order_name_desc, seq_str, root);
-	map_bool(cfg_element_name(SCALING), cfg->scaling == ON, root);
-	map_bool(cfg_element_name(AUTO_SCALE), cfg->auto_scale == ON, root);
-	map_float(cfg_element_name(AUTO_SCALE_MIN), cfg->auto_scale_min, root);
-	map_float(cfg_element_name(AUTO_SCALE_MAX), cfg->auto_scale_max, root);
-	map_list(cfg_element_name(SCALE), cfg->user_scales, seq_user_scale, root);
-	map_list(cfg_element_name(MODE), cfg->user_modes, seq_user_mode, root);
-	map_list(cfg_element_name(TRANSFORM), cfg->user_transforms, seq_user_transform, root);
-	map_list(cfg_element_name(VRR_OFF), cfg->adaptive_sync_off_name_desc, seq_str, root);
-	map_str(cfg_element_name(CALLBACK_CMD), cfg->callback_cmd, root);
-	map_str(cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix, root);
-	map_str(cfg_element_name(LOG_THRESHOLD), log_threshold_name(cfg->log_threshold), root);
-	map_list(cfg_element_name(DISABLED), cfg->disabled, seq_disabled, root);
+	map_cfg(cfg, map);
 
-	goto end;
-
-err:
-	yaml_document_delete(document);
-
-end:
-	return ok;
+	return true;
 }
 
