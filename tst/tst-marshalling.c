@@ -352,8 +352,10 @@ static void marshal_cfg__ok(void **state) {
 
 	char *expected = V2 ? read_file("tst/marshalling/cfg-all.yaml") : read_file("tst/marshalling/cfg-all-v1.yaml");
 
-	write_file("actual.yaml", actual);
-	write_file("expected.yaml", expected);
+	if (strcmp(actual, expected) != 0) {
+		write_file("actual.yaml", actual);
+		write_file("expected.yaml", expected);
+	}
 
 	assert_non_nul(actual);
 
@@ -373,10 +375,12 @@ static void marshal_cfg__default(void **state) {
 
 	char *expected = read_file("tst/marshalling/cfg-default.yaml");
 
-	write_file("actual.yaml", actual);
-	write_file("expected.yaml", expected);
-
 	assert_non_nul(actual);
+
+	if (strcmp(actual, expected) != 0) {
+		write_file("actual.yaml", actual);
+		write_file("expected.yaml", expected);
+	}
 
 	assert_str_equal(actual, expected);
 
@@ -408,8 +412,10 @@ static void marshal_ipc_request__cfg_set(void **state) {
 
 	char *expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
 
-	write_file("actual.yaml", actual);
-	write_file("expected.yaml", expected);
+	if (strcmp(actual, expected) != 0) {
+		write_file("actual.yaml", actual);
+		write_file("expected.yaml", expected);
+	}
 
 	assert_str_equal(actual, expected);
 
@@ -495,8 +501,10 @@ static void marshal_ipc_response__map(void **state) {
 
 	char *expected = read_file("tst/marshalling/ipc-responses-map.yaml");
 
-	write_file("actual.yaml", actual);
-	write_file("expected.yaml", expected);
+	if (strcmp(actual, expected) != 0) {
+		write_file("actual.yaml", actual);
+		write_file("expected.yaml", expected);
+	}
 
 	assert_str_equal(actual, expected);
 

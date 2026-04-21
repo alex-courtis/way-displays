@@ -851,7 +851,6 @@ bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 
 end:
 	yaml_document_delete(&document);
-	yaml_document_delete(&document);
 
 	return ok;
 }

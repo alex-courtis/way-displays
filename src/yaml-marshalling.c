@@ -211,12 +211,21 @@ static bool map_cfg(const struct Cfg *cfg, int mapping) {
 	return true;
 }
 
-static char *yaml_document_to_string(yaml_document_t *document) {
+int write_handler(void *data, unsigned char *buffer, size_t size) {
+	if (!data)
+		return 0;
 
-	// TODO reallocate on
-	size_t BUFFER_SIZE = 1024 * 256;
-	char *buffer = calloc(1, BUFFER_SIZE);
-	size_t written = 0;
+	char **yaml = (char**)(data);
+
+	*yaml = calloc(1, size + 1);
+
+	strncpy(*yaml, (char*)buffer, size);
+
+	return 1;
+}
+
+static char *yaml_document_to_string(yaml_document_t *document) {
+	char *yaml = NULL;
 
 	yaml_emitter_t emitter;
 
@@ -225,11 +234,8 @@ static char *yaml_document_to_string(yaml_document_t *document) {
 		goto err;
 	}
 
-	yaml_emitter_set_output_string(&emitter, (unsigned char*)buffer, BUFFER_SIZE, &written);
 	yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
-	yaml_emitter_set_indent(&emitter, 2);
-	yaml_emitter_set_width(&emitter, -1);
-	yaml_emitter_set_unicode(&emitter, 1);
+	yaml_emitter_set_output(&emitter, write_handler, &yaml);
 
 	if (!yaml_emitter_open(&emitter)) {
 		log_error("TODO err yaml_emitter_open");
@@ -238,12 +244,6 @@ static char *yaml_document_to_string(yaml_document_t *document) {
 
 	if (!yaml_emitter_dump(&emitter, document)) {
 		log_error("TODO err yaml_emitter_dump");
-		goto err;
-	}
-
-	if (!yaml_emitter_flush(&emitter)) {
-		log_error("TODO err yaml_emitter_flush");
-		goto err;
 	}
 
 	if (!yaml_emitter_close(&emitter)) {
@@ -253,10 +253,11 @@ static char *yaml_document_to_string(yaml_document_t *document) {
 
 	yaml_emitter_delete(&emitter);
 
-	return buffer;
+	return yaml;
 
 err:
-	free(buffer);
+	if (yaml)
+		free(yaml);
 
 	log_fatal("TODO yaml_document_to_string fail");
 
@@ -294,7 +295,6 @@ char *marshal_cfg_2(struct Cfg *cfg) {
 		log_error("TODO marshalling cfg request");
 		return NULL;
 	}
-
 
 	return yaml_document_to_string(&document);
 }
