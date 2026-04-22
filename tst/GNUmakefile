@@ -20,7 +20,8 @@ WRAPS_COMMON = -Wl,$\
 	--wrap=log_set_threshold,--wrap=log_get_threshold,$\
 	--wrap=log_,--wrap=log_fatal,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_errno,--wrap=log_error_errno,--wrap=log_fatal_errno,$\
 	--wrap=spawn_sh_cmd,--wrap=wd_exit,--wrap=wd_exit_message,$\
-	--wrap=lid_init,--wrap=lid_is_closed,--wrap=lid_update,--wrap=lid_free,--wrap=lid_destroy
+	--wrap=lid_init,--wrap=lid_is_closed,--wrap=lid_update,--wrap=lid_free,--wrap=lid_destroy,$\
+	--wrap=yaml_emitter_initialize,--wrap=yaml_emitter_open,--wrap=yaml_emitter_dump,--wrap=yaml_emitter_close
 
 tst-head: WRAPS=,$\
 	--wrap=mode_dpi,$\

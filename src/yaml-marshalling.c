@@ -29,8 +29,7 @@ static bool map_list(const char *k, const struct SList *list, map_list_fn fn, in
 		return false;
 
 	for (const struct SList *i = list; i; i = i->nex)
-		if (!fn(i->val, sequence))
-			return false;
+		fn(i->val, sequence);
 
 	return yaml_document_append_mapping_pair(ctx.document, mapping, key, sequence);
 }
@@ -230,38 +229,41 @@ static char *yaml_document_to_string(yaml_document_t *document) {
 	yaml_emitter_t emitter;
 
 	if (!yaml_emitter_initialize(&emitter)) {
-		log_error("TODO err yaml_emitter_initialize");
-		goto err;
+		log_error("unable to marshal cfg: yaml_emitter_initialize failed");
+		return NULL;
 	}
 
 	yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
 	yaml_emitter_set_output(&emitter, write_handler, &yaml);
 
 	if (!yaml_emitter_open(&emitter)) {
-		log_error("TODO err yaml_emitter_open");
+		log_error("unable to marshal cfg: yaml_emitter_open failed");
 		goto err;
 	}
 
 	if (!yaml_emitter_dump(&emitter, document)) {
-		log_error("TODO err yaml_emitter_dump");
-	}
-
-	if (!yaml_emitter_close(&emitter)) {
-		log_error("TODO err yaml_emitter_close");
+		log_error("unable to marshal cfg: yaml_emitter_dump failed");
 		goto err;
 	}
 
+	if (!yaml_emitter_close(&emitter)) {
+		log_warn("unable to marshal cfg: yaml_emitter_close failed");
+		goto err;
+	}
+
+	goto end;
+
+err:
+
+	if (yaml) {
+		free(yaml);
+		yaml = NULL;
+	}
+
+end:
 	yaml_emitter_delete(&emitter);
 
 	return yaml;
-
-err:
-	if (yaml)
-		free(yaml);
-
-	log_fatal("TODO yaml_document_to_string fail");
-
-	return NULL;
 }
 
 static bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg) {
@@ -296,6 +298,10 @@ char *marshal_cfg_2(struct Cfg *cfg) {
 		return NULL;
 	}
 
-	return yaml_document_to_string(&document);
+	char *yaml = yaml_document_to_string(&document);
+	if (!yaml)
+		yaml_document_delete(&document);
+
+	return yaml;
 }
 

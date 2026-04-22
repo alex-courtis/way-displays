@@ -18,6 +18,7 @@
 #include "slist.h"
 #include "log.h"
 #include "mode.h"
+#include "wrap-libyaml.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "marshalling.h"
@@ -51,6 +52,8 @@ int after_all(void **state) {
 
 int before_each(void **state) {
 	logs_clear();
+
+	reset_yaml_emitter__fail();
 
 	return 0;
 }
@@ -387,6 +390,82 @@ static void marshal_cfg__default(void **state) {
 	cfg_free(cfg);
 	free(actual);
 	free(expected);
+
+	assert_logs_empty();
+}
+
+static void marshal_cfg__yaml_emitter_initialize_fail(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_emitter_initialize__fail = true;
+
+	char *actual = MC(cfg);
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_initialize failed\n");
+
+	assert_logs_empty();
+}
+
+static void marshal_cfg__yaml_emitter_open_fail(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_emitter_dump__fail = true;
+
+	char *actual = MC(cfg);
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_dump failed\n");
+
+	assert_logs_empty();
+}
+
+static void marshal_cfg__yaml_emitter_dump_fail(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_emitter_dump__fail = true;
+
+	char *actual = MC(cfg);
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_dump failed\n");
+
+	assert_logs_empty();
+}
+
+static void marshal_cfg__yaml_emitter_close_fail(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_emitter_close__fail = true;
+
+	char *actual = MC(cfg);
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(WARNING, "unable to marshal cfg: yaml_emitter_close failed\n");
 
 	assert_logs_empty();
 }
@@ -806,6 +885,7 @@ static void unmarshal_ipc_responses__seq(void **state) {
 }
 
 int main(void) {
+
 	// emit_cfg__ok(NULL);
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
@@ -821,6 +901,10 @@ int main(void) {
 
 		TEST(marshal_cfg__ok),
 		TEST(marshal_cfg__default),
+		TEST(marshal_cfg__yaml_emitter_initialize_fail),
+		TEST(marshal_cfg__yaml_emitter_open_fail),
+		TEST(marshal_cfg__yaml_emitter_dump_fail),
+		TEST(marshal_cfg__yaml_emitter_close_fail),
 
 		TEST(marshal_ipc_request__no_op),
 		TEST(marshal_ipc_request__cfg_set),
