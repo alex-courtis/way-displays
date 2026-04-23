@@ -266,6 +266,7 @@ end:
 	return yaml;
 }
 
+// TODO sync errors with unmarshalling v1 and v2
 char *marshal_cfg_2(struct Cfg *cfg) {
 	if (!cfg) {
 		return NULL;

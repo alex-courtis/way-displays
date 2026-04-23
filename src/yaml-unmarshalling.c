@@ -789,7 +789,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 				scalar_to_float_def(&cfg->auto_scale_max, AUTO_SCALE_MAX_DEFAULT, value);
 				break;
 			default:
-				log_warn("\nTODO maybe: parsing file %s unexpected entry %s", cfg->file_path, (char*)key->data.scalar.value);
+				// ignore unexpected
 				break;
 		}
 	}
@@ -799,58 +799,41 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 	return true;
 }
 
-static bool yaml_file_to_document(yaml_document_t *document, const char *file_path) {
-	FILE *input = fopen(file_path, "rb");
-	if (!input) {
-		log_error("\nparsing file %s missing", file_path);
-		return false;
-	}
-
-	yaml_parser_t parser;
-
-	bool ok = true;
-
-	if (!yaml_parser_initialize(&parser)) {
-		log_error("\nparsing file %s could not initialise parser", file_path);
-		ok = false;
-		goto end;
-	}
-
-	yaml_parser_set_input_file(&parser, input);
-
-	if (!yaml_parser_load(&parser, document)) {
-		log_error("\nparsing file %s TODO some sort of stack", file_path);
-		yaml_document_delete(document);
-		ok = false;
-		goto end;
-	}
-
-end:
-	yaml_parser_delete(&parser);
-
-	if (input)
-		fclose(input);
-
-	return ok;
-}
-
 bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
 	if (!cfg->file_path) {
 		return false;
 	}
 
-	bool ok = true;
+	FILE *input = fopen(cfg->file_path, "rb");
+	if (!input) {
+		log_error("\nparsing file %s: inexistent", cfg->file_path);
+		return false;
+	}
+
+	yaml_parser_t parser;
+
+	if (!yaml_parser_initialize(&parser)) {
+		log_error("\nparsing file %s: yaml_parser_initialize failed", cfg->file_path);
+		fclose(input);
+		return false;
+	}
+
+	yaml_parser_set_input_file(&parser, input);
 
 	yaml_document_t document;
 
-	if (!(ok = yaml_file_to_document(&document, cfg->file_path)))
-		goto end;
+	if (!yaml_parser_load(&parser, &document)) {
+		log_error("\nparsing file %s: yaml_parser_load failed", cfg->file_path);
+		yaml_parser_delete(&parser);
+		fclose(input);
+		return false;
+	}
 
-	if (!(ok = doc_to_cfg(cfg, &document)))
-		goto end;
+	bool ok = doc_to_cfg(cfg, &document);
 
-end:
 	yaml_document_delete(&document);
+	yaml_parser_delete(&parser);
+	fclose(input);
 
 	return ok;
 }

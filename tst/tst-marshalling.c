@@ -153,6 +153,20 @@ static void unmarshal_cfg_from_file__empty(void **state) {
 	cfg_free(read);
 }
 
+static void unmarshal_cfg_from_file__missing(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *read = cfg_default();
+	read->file_path = strdup("foo/bar/baz.yaml");
+
+	assert_false(UCFF(read));
+
+	assert_log(ERROR, "\nparsing file foo/bar/baz.yaml: inexistent\n");
+
+	cfg_free(read);
+}
+
 static void unmarshal_cfg_from_file__invalid(void **state) {
 
 	struct Cfg *read = cfg_default();
@@ -322,6 +336,40 @@ static void unmarshal_cfg_from_file__callback_cmd_empty(void **state) {
 	cfg_free(expected);
 
 	assert_logs_empty();
+}
+
+static void unmarshal_cfg_from_file__yaml_parser_initialize_fail(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *read = cfg_default();
+
+	read->file_path = strdup("tst/marshalling/cfg-all.yaml");
+
+	yaml_parser_initialize__fail = true;
+
+	assert_false(UCFF(read));
+
+	assert_log(ERROR, "\nparsing file tst/marshalling/cfg-all.yaml: yaml_parser_initialize failed\n");
+
+	cfg_free(read);
+}
+
+static void unmarshal_cfg_from_file__yaml_parser_load_fail(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *read = cfg_default();
+
+	read->file_path = strdup("tst/marshalling/cfg-all.yaml");
+
+	yaml_parser_load__fail = true;
+
+	assert_false(UCFF(read));
+
+	assert_log(ERROR, "\nparsing file tst/marshalling/cfg-all.yaml: yaml_parser_load failed\n");
+
+	cfg_free(read);
 }
 
 static void unmarshal_cfg_from_file__legacy(void **state) {
@@ -925,7 +973,10 @@ static void unmarshal_ipc_responses__seq(void **state) {
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
+
 		TEST(unmarshal_cfg_from_file__empty),
+		TEST(unmarshal_cfg_from_file__missing),
+
 		TEST(unmarshal_cfg_from_file__invalid),
 		TEST(unmarshal_cfg_from_file__legacy),
 		TEST(unmarshal_cfg_from_file__mistyped),
@@ -935,8 +986,12 @@ int main(void) {
 		TEST(unmarshal_cfg_from_file__disabled),
 		TEST(unmarshal_cfg_from_file__callback_cmd_empty),
 
+		TEST(unmarshal_cfg_from_file__yaml_parser_initialize_fail),
+		TEST(unmarshal_cfg_from_file__yaml_parser_load_fail),
+
 		TEST(marshal_cfg__ok),
 		TEST(marshal_cfg__default),
+
 		TEST(marshal_cfg__yaml_document_initialize_fail),
 		TEST(marshal_cfg__yaml_document_add_mapping_fail),
 		TEST(marshal_cfg__yaml_emitter_initialize_fail),
