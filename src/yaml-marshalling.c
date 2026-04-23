@@ -266,41 +266,35 @@ end:
 	return yaml;
 }
 
-static bool cfg_to_yaml_document(yaml_document_t *document, const struct Cfg * const cfg) {
-
-	ctx.document = document;
-
-	if (!yaml_document_initialize(document, NULL, NULL, NULL, 1, 1)) {
-		log_error("TODO err yaml_document_initialize");
-		return false;
-	}
-
-	int map;
-
-	if (!(map = yaml_document_add_mapping(document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
-		yaml_document_delete(document);
-		log_error("TODO cfg_to_yaml_document yaml_document_add_mapping");
-		return false;
-	}
-
-	return map_cfg(cfg, map);
-}
-
 char *marshal_cfg_2(struct Cfg *cfg) {
 	if (!cfg) {
 		return NULL;
 	}
 
-	yaml_document_t document;
+	char *yaml = NULL;
 
-	if (!cfg_to_yaml_document(&document, cfg)) {
-		log_error("TODO marshalling cfg request");
+	yaml_document_t document;
+	ctx.document = &document;
+
+	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
+		log_error("unable to marshal cfg: yaml_document_initialize failed");
 		return NULL;
 	}
 
-	char *yaml = yaml_document_to_string(&document);
-	if (!yaml)
-		yaml_document_delete(&document);
+	int root;
+	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
+		log_error("unable to marshal cfg: yaml_document_add_mapping for root failed");
+		goto end;
+	}
+
+	if (!map_cfg(cfg, root)) {
+		goto end;
+	}
+
+	yaml = yaml_document_to_string(&document);
+
+end:
+	yaml_document_delete(&document);
 
 	return yaml;
 }

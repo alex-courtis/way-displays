@@ -53,7 +53,7 @@ int after_all(void **state) {
 int before_each(void **state) {
 	logs_clear();
 
-	reset_yaml_emitter__fail();
+	reset_yaml_fails();
 
 	return 0;
 }
@@ -390,6 +390,44 @@ static void marshal_cfg__default(void **state) {
 	cfg_free(cfg);
 	free(actual);
 	free(expected);
+
+	assert_logs_empty();
+}
+
+static void marshal_cfg__yaml_document_initialize_fail(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_document_initialize__fail = true;
+
+	char *actual = MC(cfg);
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_document_initialize failed\n");
+
+	assert_logs_empty();
+}
+
+static void marshal_cfg__yaml_document_add_mapping_fail(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_document_add_mapping__fail = true;
+
+	char *actual = MC(cfg);
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_document_add_mapping for root failed\n");
 
 	assert_logs_empty();
 }
@@ -885,8 +923,6 @@ static void unmarshal_ipc_responses__seq(void **state) {
 }
 
 int main(void) {
-
-	// emit_cfg__ok(NULL);
 	const struct CMUnitTest tests[] = {
 		TEST(unmarshal_cfg_from_file__ok),
 		TEST(unmarshal_cfg_from_file__empty),
@@ -901,6 +937,8 @@ int main(void) {
 
 		TEST(marshal_cfg__ok),
 		TEST(marshal_cfg__default),
+		TEST(marshal_cfg__yaml_document_initialize_fail),
+		TEST(marshal_cfg__yaml_document_add_mapping_fail),
 		TEST(marshal_cfg__yaml_emitter_initialize_fail),
 		TEST(marshal_cfg__yaml_emitter_open_fail),
 		TEST(marshal_cfg__yaml_emitter_dump_fail),
