@@ -20,7 +20,7 @@ struct MarshallingContext {
 } ctx = { 0 };
 
 typedef bool (*map_mapping_fn)(const void *data, int mapping);
-static bool map_mapping(const char *k, const void *data, map_mapping_fn fn, int mapping) {
+static bool map_add_map(const char *k, const void *data, map_mapping_fn fn, int mapping) {
 	if (!k || !fn || !mapping)
 		return false;
 
@@ -35,22 +35,8 @@ static bool map_mapping(const char *k, const void *data, map_mapping_fn fn, int 
 	return yaml_document_append_mapping_pair(ctx.document, mapping, key, map);
 }
 
-typedef bool (*seq_mapping_fn)(const void *data, int mapping);
-static bool seq_mapping(const char *k, const void *data, seq_mapping_fn fn, int sequence) {
-	if (!k || !fn || !sequence)
-		return false;
-
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
-	if (!map)
-		return false;
-
-	fn(data, map);
-
-	return yaml_document_append_sequence_item(ctx.document, sequence, map);
-}
-
 typedef bool (*map_list_fn)(const void *list, int sequence);
-static bool map_list(const char *k, const struct SList *list, map_list_fn fn, int mapping) {
+static bool map_add_list(const char *k, const struct SList *list, map_list_fn fn, int mapping) {
 	if (!k || !list || !fn || !mapping)
 		return false;
 
@@ -66,7 +52,7 @@ static bool map_list(const char *k, const struct SList *list, map_list_fn fn, in
 	return yaml_document_append_mapping_pair(ctx.document, mapping, key, sequence);
 }
 
-static bool map_str(const char *k, const char *v, int mapping) {
+static bool map_add_str(const char *k, const char *v, int mapping) {
 	if (!k || !v || !mapping)
 		return false;
 
@@ -76,44 +62,35 @@ static bool map_str(const char *k, const char *v, int mapping) {
 	return key && scalar && yaml_document_append_mapping_pair(ctx.document, mapping, key, scalar);
 }
 
-static bool seq_str(const void *data, int sequence) {
-	if (!data || !sequence)
-		return false;
-
-	int scalar = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)data, -1, YAML_PLAIN_SCALAR_STYLE);
-
-	return scalar && yaml_document_append_sequence_item(ctx.document, sequence, scalar);
-}
-
-static bool map_int(const char *k, const int32_t v, int mapping) {
+static bool map_add_int(const char *k, const int32_t v, int mapping) {
 	if (!k || !mapping)
 		return false;
 
 	char v_str[20];
 	snprintf(v_str, 20, "%d", v);
 
-	return map_str(k, v_str, mapping);
+	return map_add_str(k, v_str, mapping);
 }
 
-static bool map_float(const char *k, const float v, int mapping) {
+static bool map_add_float(const char *k, const float v, int mapping) {
 	if (!k || v == 0 || !mapping)
 		return false;
 
 	char v_str[100];
 	snprintf(v_str, 100, "%g", v);
 
-	return map_str(k, v_str, mapping);
+	return map_add_str(k, v_str, mapping);
 }
 
-static bool map_bool(const char *k, const bool v, int mapping) {
+static bool map_add_bool(const char *k, const bool v, int mapping) {
 	if (!k || !mapping)
 		return false;
 
-	return map_str(k, (v ? "TRUE" : "FALSE"), mapping);
+	return map_add_str(k, (v ? "TRUE" : "FALSE"), mapping);
 }
 
 typedef const char* (*map_enum_fn_name)(unsigned int v);
-static bool map_enum(const char *k, const int v, map_enum_fn_name fn_name, int mapping) {
+static bool map_add_enum(const char *k, const int v, map_enum_fn_name fn_name, int mapping) {
 	if (!k || !fn_name || !mapping)
 		return false;
 
@@ -125,10 +102,33 @@ static bool map_enum(const char *k, const int v, map_enum_fn_name fn_name, int m
 	if (fn_name == on_off_name)
 		v_str = (v == ON) ? "TRUE" : "FALSE";
 
-	return map_str(k, v_str, mapping);
+	return map_add_str(k, v_str, mapping);
 }
 
-static bool seq_user_scale(const void *data, int sequence) {
+typedef bool (*seq_mapping_fn)(const void *data, int mapping);
+static bool seq_append_map(const char *k, const void *data, seq_mapping_fn fn, int sequence) {
+	if (!k || !fn || !sequence)
+		return false;
+
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return false;
+
+	fn(data, map);
+
+	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+}
+
+static bool seq_append_str(const void *data, int sequence) {
+	if (!data || !sequence)
+		return false;
+
+	int scalar = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)data, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	return scalar && yaml_document_append_sequence_item(ctx.document, sequence, scalar);
+}
+
+static bool seq_append_user_scale(const void *data, int sequence) {
 	if (!data || !sequence)
 		return false;
 
@@ -137,12 +137,12 @@ static bool seq_user_scale(const void *data, int sequence) {
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
-		map_str("NAME_DESC", user_scale->name_desc, map) &&
-		map_float("SCALE", user_scale->scale, map) &&
+		map_add_str("NAME_DESC", user_scale->name_desc, map) &&
+		map_add_float("SCALE", user_scale->scale, map) &&
 		yaml_document_append_sequence_item(ctx.document, sequence, map);
 }
 
-static bool seq_user_mode(const void *data, int sequence) {
+static bool seq_append_user_mode(const void *data, int sequence) {
 	if (!data || !sequence)
 		return false;
 
@@ -150,18 +150,18 @@ static bool seq_user_mode(const void *data, int sequence) {
 
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
-	if (!map || !map_str("NAME_DESC", user_mode->name_desc, map))
+	if (!map || !map_add_str("NAME_DESC", user_mode->name_desc, map))
 		return false;
 
 	if (user_mode->max) {
-		if (!map_bool("MAX", user_mode->max, map)) {
+		if (!map_add_bool("MAX", user_mode->max, map)) {
 			return false;
 		}
 	} else {
-		if (!map_int("WIDTH", user_mode->width, map) || !map_int("HEIGHT", user_mode->height, map))
+		if (!map_add_int("WIDTH", user_mode->width, map) || !map_add_int("HEIGHT", user_mode->height, map))
 			return false;
 		if (user_mode->refresh_mhz != -1) {
-			if (!map_str("HZ", mhz_to_hz_str(user_mode->refresh_mhz), map)) {
+			if (!map_add_str("HZ", mhz_to_hz_str(user_mode->refresh_mhz), map)) {
 				return false;
 			}
 		}
@@ -170,7 +170,7 @@ static bool seq_user_mode(const void *data, int sequence) {
 	return yaml_document_append_sequence_item(ctx.document, sequence, map);
 }
 
-static bool seq_user_transform(const void *data, int sequence) {
+static bool seq_append_user_transform(const void *data, int sequence) {
 	if (!data || !sequence)
 		return false;
 
@@ -179,12 +179,12 @@ static bool seq_user_transform(const void *data, int sequence) {
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
-		map_str("NAME_DESC", user_transform->name_desc, map) &&
-		map_str("TRANSFORM", transform_name(user_transform->transform), map) &&
+		map_add_str("NAME_DESC", user_transform->name_desc, map) &&
+		map_add_str("TRANSFORM", transform_name(user_transform->transform), map) &&
 		yaml_document_append_sequence_item(ctx.document, sequence, map);
 }
 
-static bool seq_condition(const void *data, int sequence) {
+static bool seq_append_condition(const void *data, int sequence) {
 	if (!data || !sequence)
 		return false;
 
@@ -193,15 +193,15 @@ static bool seq_condition(const void *data, int sequence) {
 	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (condition->plugged)
-		map_list("PLUGGED", condition->plugged, seq_str, map);
+		map_add_list("PLUGGED", condition->plugged, seq_append_str, map);
 
 	if (condition->unplugged)
-		map_list("UNPLUGGED", condition->unplugged, seq_str, map);
+		map_add_list("UNPLUGGED", condition->unplugged, seq_append_str, map);
 
 	return yaml_document_append_sequence_item(ctx.document, sequence, map);
 }
 
-static bool seq_disabled(const void *data, int sequence) {
+static bool seq_append_disabled(const void *data, int sequence) {
 	if (!data || !sequence)
 		return false;
 
@@ -214,79 +214,61 @@ static bool seq_disabled(const void *data, int sequence) {
 		int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 		return map &&
-			map_str("NAME_DESC", disabled->name_desc, map) &&
-			map_list("IF", disabled->conditions, seq_condition, map) &&
+			map_add_str("NAME_DESC", disabled->name_desc, map) &&
+			map_add_list("IF", disabled->conditions, seq_append_condition, map) &&
 			yaml_document_append_sequence_item(ctx.document, sequence, map);
 	} else {
-		return seq_str(disabled->name_desc, sequence);
+		return seq_append_str(disabled->name_desc, sequence);
 	}
 }
 
-static bool map_cfg(const void *data, int mapping) {
+static bool map_add_cfg(const void *data, int mapping) {
 	if (!data)
 		return false;
 
 	const struct Cfg *cfg = data;
 
-	map_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,       mapping);
-	map_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,         mapping);
-	map_list (cfg_element_name(ORDER),                 cfg->order_name_desc,             seq_str,            mapping);
-	map_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,        mapping);
-	map_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,        mapping);
-	map_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                  mapping);
-	map_float(cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                  mapping);
-	map_list (cfg_element_name(SCALE),                 cfg->user_scales,                 seq_user_scale,     mapping);
-	map_list (cfg_element_name(MODE),                  cfg->user_modes,                  seq_user_mode,      mapping);
-	map_list (cfg_element_name(TRANSFORM),             cfg->user_transforms,             seq_user_transform, mapping);
-	map_list (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, seq_str,            mapping);
-	map_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                    mapping);
-	map_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                           mapping);
-	map_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name, mapping);
-	map_list (cfg_element_name(DISABLED),              cfg->disabled,                    seq_disabled,       mapping);
+	map_add_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,              mapping);
+	map_add_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,                mapping);
+	map_add_list (cfg_element_name(ORDER),                 cfg->order_name_desc,             seq_append_str,            mapping);
+	map_add_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,               mapping);
+	map_add_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,               mapping);
+	map_add_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                         mapping);
+	map_add_float(cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                         mapping);
+	map_add_list (cfg_element_name(SCALE),                 cfg->user_scales,                 seq_append_user_scale,     mapping);
+	map_add_list (cfg_element_name(MODE),                  cfg->user_modes,                  seq_append_user_mode,      mapping);
+	map_add_list (cfg_element_name(TRANSFORM),             cfg->user_transforms,             seq_append_user_transform, mapping);
+	map_add_list (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, seq_append_str,            mapping);
+	map_add_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                           mapping);
+	map_add_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                  mapping);
+	map_add_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name,        mapping);
+	map_add_list (cfg_element_name(DISABLED),              cfg->disabled,                    seq_append_disabled,       mapping);
 
 	return true;
 }
 
-static bool map_lid(const void *data, int mapping) {
-	map_bool("CLOSED",      lid->closed,      mapping);
-	map_str ("DEVICE_PATH", lid->device_path, mapping);
+static bool map_add_lid(const void *data, int mapping) {
+	map_add_bool("CLOSED",      lid->closed,      mapping);
+	map_add_str ("DEVICE_PATH", lid->device_path, mapping);
 
 	return true;
 }
 
-static bool map_mode(const void *data, int mapping) {
+static bool map_add_mode(const void *data, int mapping) {
 	if (!data)
 		return false;
 
 	const struct Mode *mode = data;
 
-	map_int("WIDTH",       mode->width,       mapping);
-	map_int("HEIGHT",      mode->height,      mapping);
-	map_int("REFRESH_MHZ", mode->refresh_mhz, mapping);
-	map_bool("PREFERRED",  mode->preferred,   mapping);
+	map_add_int("WIDTH",       mode->width,       mapping);
+	map_add_int("HEIGHT",      mode->height,      mapping);
+	map_add_int("REFRESH_MHZ", mode->refresh_mhz, mapping);
+	map_add_bool("PREFERRED",  mode->preferred,   mapping);
 
 	return true;
 }
 
-static bool map_head_state(const void *data, int mapping) {
-	if (!data)
-		return false;
-
-	const struct HeadState *head_state = data;
-
-	map_float("SCALE",    wl_fixed_to_double(head_state->scale),                                          mapping);
-	map_bool ("ENABLED",  head_state->enabled,                                                            mapping);
-	map_int  ("X",        head_state->x,                                                                  mapping);
-	map_int  ("Y",        head_state->y,                                                                  mapping);
-	map_bool ("VRR",      (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
-	map_enum("TRANSFORM", head_state->transform,                                          transform_name, mapping);
-
-	map_mapping("MODE", head_state->mode, map_mode, mapping);
-
-	return true;
-}
-
-static bool seq_modes(const void *data, int sequence) {
+static bool seq_append_modes(const void *data, int sequence) {
 	if (!data)
 		return false;
 
@@ -296,21 +278,39 @@ static bool seq_modes(const void *data, int sequence) {
 	if (!map)
 		return false;
 
-	seq_mapping("MODE", mode, map_mode, sequence);
+	seq_append_map("MODE", mode, map_add_mode, sequence);
 
 	return true;
 }
 
-static bool map_overrides(const void *data, int mapping) {
+static bool map_add_head_state(const void *data, int mapping) {
+	if (!data)
+		return false;
+
+	const struct HeadState *head_state = data;
+
+	map_add_float("SCALE",    wl_fixed_to_double(head_state->scale),                                          mapping);
+	map_add_bool ("ENABLED",  head_state->enabled,                                                            mapping);
+	map_add_int  ("X",        head_state->x,                                                                  mapping);
+	map_add_int  ("Y",        head_state->y,                                                                  mapping);
+	map_add_bool ("VRR",      (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
+	map_add_enum("TRANSFORM", head_state->transform,                                          transform_name, mapping);
+
+	map_add_map("MODE", head_state->mode, map_add_mode, mapping);
+
+	return true;
+}
+
+static bool map_add_overrides(const void *data, int mapping) {
 	if (!data)
 		return false;
 
 	const struct Head *head = data;
 
-	return (head->overrided_enabled != NoOverride) && map_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
+	return (head->overrided_enabled != NoOverride) && map_add_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
 }
 
-static bool seq_head(const void *data, int sequence) {
+static bool seq_append_head(const void *data, int sequence) {
 	if (!data || !sequence)
 		return false;
 
@@ -320,32 +320,32 @@ static bool seq_head(const void *data, int sequence) {
 	if (!map)
 		return false;
 
-	if (head->name)          map_str("NAME",          head->name,          map);
-	if (head->description)   map_str("DESCRIPTION",   head->description,   map);
-	if (head->make)          map_str("MAKE",          head->make,          map);
-	if (head->model)         map_str("MODEL",         head->model,         map);
-	if (head->serial_number) map_str("SERIAL_NUMBER", head->serial_number, map);
-	map_int(                         "WIDTH_MM",      head->width_mm,      map);
-	map_int(                         "HEIGHT_MM",     head->height_mm,     map);
+	if (head->name)          map_add_str("NAME",          head->name,          map);
+	if (head->description)   map_add_str("DESCRIPTION",   head->description,   map);
+	if (head->make)          map_add_str("MAKE",          head->make,          map);
+	if (head->model)         map_add_str("MODEL",         head->model,         map);
+	if (head->serial_number) map_add_str("SERIAL_NUMBER", head->serial_number, map);
+	map_add_int(                         "WIDTH_MM",      head->width_mm,      map);
+	map_add_int(                         "HEIGHT_MM",     head->height_mm,     map);
 
-	map_mapping("CURRENT", &head->current, map_head_state, map);
-	map_mapping("DESIRED", &head->desired, map_head_state, map);
+	map_add_map("CURRENT", &head->current, map_add_head_state, map);
+	map_add_map("DESIRED", &head->desired, map_add_head_state, map);
 
-	map_mapping("OVERRIDES", head, map_overrides, map);
+	map_add_map("OVERRIDES", head, map_add_overrides, map);
 
-	map_list("MODES", head->modes, seq_modes, map);
+	map_add_list("MODES", head->modes, seq_append_modes, map);
 
 	return yaml_document_append_sequence_item(ctx.document, sequence, map);
 }
 
-static bool map_state(const void *data, int mapping) {
-	map_mapping("LID", NULL, map_lid, mapping);
-	map_list("HEADS", heads, seq_head, mapping);
+static bool map_add_state(const void *data, int mapping) {
+	map_add_map("LID", NULL, map_add_lid, mapping);
+	map_add_list("HEADS", heads, seq_append_head, mapping);
 
 	return true;
 }
 
-static bool map_ipc_request(const struct IpcRequest *request, int mapping) {
+static bool map_add_ipc_request(const struct IpcRequest *request, int mapping) {
 	if (!request)
 		return false;
 
@@ -355,30 +355,30 @@ static bool map_ipc_request(const struct IpcRequest *request, int mapping) {
 		return false;
 	}
 
-	map_str("OP", ipc_command_name(request->command), mapping);
+	map_add_str("OP", ipc_command_name(request->command), mapping);
 
 	if (request->log_threshold)
-		map_str("LOG_THRESHOLD", log_threshold_name(request->log_threshold), mapping);
+		map_add_str("LOG_THRESHOLD", log_threshold_name(request->log_threshold), mapping);
 
-	map_mapping("CFG", request->cfg, map_cfg, mapping);
+	map_add_map("CFG", request->cfg, map_add_cfg, mapping);
 
 	return true;
 }
 
-static bool map_ipc_response(const struct IpcOperation *operation, int mapping) {
+static bool map_add_ipc_response(const struct IpcOperation *operation, int mapping) {
 	if (!operation)
 		return false;
 
 	// TODO GET sends only one response as a map
 
-	map_bool("DONE", operation->done, mapping);
+	map_add_bool("DONE", operation->done, mapping);
 
 	if (operation->send_state) {
 		if (cfg) {
-			map_mapping("CFG", cfg, map_cfg, mapping);
+			map_add_map("CFG", cfg, map_add_cfg, mapping);
 		}
 		if (lid || heads) {
-			map_mapping("STATE", operation, map_state, mapping);
+			map_add_map("STATE", operation, map_add_state, mapping);
 		}
 	}
 
@@ -461,7 +461,7 @@ char *marshal_cfg_2(const struct Cfg *cfg) {
 		goto end;
 	}
 
-	if (!map_cfg(cfg, root))
+	if (!map_add_cfg(cfg, root))
 		goto end;
 
 	yaml = yaml_document_to_string(&document);
@@ -492,7 +492,7 @@ char *marshal_ipc_request_2(const struct IpcRequest *request) {
 		goto end;
 	}
 
-	if (!map_ipc_request(request, root))
+	if (!map_add_ipc_request(request, root))
 		goto end;
 
 	yaml = yaml_document_to_string(&document);
@@ -523,7 +523,7 @@ char *marshal_ipc_response_2(const struct IpcOperation *operation) {
 		goto end;
 	}
 
-	if (!map_ipc_response(operation, root))
+	if (!map_add_ipc_response(operation, root))
 		goto end;
 
 	yaml = yaml_document_to_string(&document);
