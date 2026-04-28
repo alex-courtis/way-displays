@@ -19,6 +19,7 @@
 // deal with unsigned char
 // clean up test alternates, gitignore etc.
 // consider SSet
+// take another look at non-compact output
 
 static struct UnmarshalContext {
 	yaml_document_t *document;

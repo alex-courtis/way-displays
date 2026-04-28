@@ -23,14 +23,22 @@
 
 #include "marshalling.h"
 
-#ifndef UCFF
-#define UCFF unmarshal_cfg_from_file
-#endif
-#ifndef MC
-#define MC marshal_cfg
-#endif
-#ifndef V2
+#ifdef V2
+#define V2 true
+#define UCFF unmarshal_cfg_from_file_2
+#define MC marshal_cfg_2
+#define MIREQ marshal_ipc_request
+#define MIRES marshal_ipc_response
+#define UIREQ unmarshal_ipc_request
+#define UIRES unmarshal_ipc_responses
+#else
 #define V2 false
+#define UCFF unmarshal_cfg_from_file
+#define MC marshal_cfg
+#define MIREQ marshal_ipc_request
+#define MIRES marshal_ipc_response
+#define UIREQ unmarshal_ipc_request
+#define UIRES unmarshal_ipc_responses
 #endif
 
 static void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
@@ -154,15 +162,15 @@ static void unmarshal_cfg_from_file__empty(void **state) {
 }
 
 static void unmarshal_cfg_from_file__missing(void **state) {
-	if (!V2)
-		return;
-
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("foo/bar/baz.yaml");
 
 	assert_false(UCFF(read));
 
-	assert_log(ERROR, "\nparsing file foo/bar/baz.yaml: inexistent\n");
+	if (V2)
+		assert_log(ERROR, "\nparsing file foo/bar/baz.yaml: inexistent\n");
+	else
+		assert_log(ERROR, "\nparsing file foo/bar/baz.yaml bad file: foo/bar/baz.yaml\n");
 
 	cfg_free(read);
 }
@@ -560,7 +568,7 @@ static void marshal_cfg__yaml_emitter_close_fail(void **state) {
 static void marshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
-	assert_nul(marshal_ipc_request(ipc_request));
+	assert_nul(MIREQ(ipc_request));
 
 	assert_log(ERROR, "marshalling ipc request: missing OP\n");
 
@@ -574,7 +582,7 @@ static void marshal_ipc_request__cfg_set(void **state) {
 
 	ipc_request->cfg = cfg_all();
 
-	char *actual = marshal_ipc_request(ipc_request);
+	char *actual = MIREQ(ipc_request);
 
 	char *expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
 
@@ -661,7 +669,7 @@ static void marshal_ipc_response__map(void **state) {
 
 	slist_append(&heads, &head);
 
-	char *actual = marshal_ipc_response(ipc_operation);
+	char *actual = MIRES(ipc_operation);
 
 	assert_non_nul(actual);
 
@@ -693,7 +701,7 @@ static void marshal_ipc_response__seq(void **state) {
 	ipc_operation->done = true;
 	ipc_operation->rc = 1;
 
-	char *actual = marshal_ipc_response(ipc_operation);
+	char *actual = MIRES(ipc_operation);
 
 	assert_non_nul(actual);
 
@@ -706,7 +714,7 @@ static void marshal_ipc_response__seq(void **state) {
 }
 
 static void unmarshal_ipc_request__empty(void **state) {
-	struct IpcRequest *actual = unmarshal_ipc_request("");
+	struct IpcRequest *actual = UIREQ("");
 
 	assert_nul(actual);
 
@@ -718,7 +726,7 @@ static void unmarshal_ipc_request__empty(void **state) {
 }
 
 static void unmarshal_ipc_request__bad_op(void **state) {
-	struct IpcRequest *actual = unmarshal_ipc_request("OP: aoeu");
+	struct IpcRequest *actual = UIREQ("OP: aoeu");
 
 	assert_nul(actual);
 
@@ -730,7 +738,7 @@ static void unmarshal_ipc_request__bad_op(void **state) {
 }
 
 static void unmarshal_ipc_request__no_op(void **state) {
-	struct IpcRequest *actual = unmarshal_ipc_request("FOO: BAR");
+	struct IpcRequest *actual = UIREQ("FOO: BAR");
 
 	assert_nul(actual);
 
@@ -744,7 +752,7 @@ static void unmarshal_ipc_request__no_op(void **state) {
 static void unmarshal_ipc_request__cfg_set(void **state) {
 	char *yaml = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
 
-	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
+	struct IpcRequest *actual = UIREQ(yaml);
 
 	assert_non_nul(actual);
 	assert_int_equal(actual->command, CFG_SET);
@@ -763,7 +771,7 @@ static void unmarshal_ipc_request__cfg_set(void **state) {
 }
 
 static void unmarshal_ipc_responses__empty(void **state) {
-	struct SList *actual = unmarshal_ipc_responses("");
+	struct SList *actual = UIRES("");
 
 	assert_nul(actual);
 
@@ -775,7 +783,7 @@ static void unmarshal_ipc_responses__empty(void **state) {
 }
 
 static void unmarshal_ipc_responses__seq_no_map(void **state) {
-	struct SList *actual = unmarshal_ipc_responses("-");
+	struct SList *actual = UIRES("-");
 
 	assert_nul(actual);
 
@@ -787,7 +795,7 @@ static void unmarshal_ipc_responses__seq_no_map(void **state) {
 }
 
 static void unmarshal_ipc_responses__seq_no_done(void **state) {
-	struct SList *actual = unmarshal_ipc_responses("- FOO: BAR");
+	struct SList *actual = UIRES("- FOO: BAR");
 
 	assert_nul(actual);
 
@@ -799,7 +807,7 @@ static void unmarshal_ipc_responses__seq_no_done(void **state) {
 }
 
 static void unmarshal_ipc_responses__seq_no_rc(void **state) {
-	struct SList *actual = unmarshal_ipc_responses("- DONE: TRUE");
+	struct SList *actual = UIRES("- DONE: TRUE");
 
 	assert_nul(actual);
 
@@ -815,7 +823,7 @@ static void unmarshal_ipc_responses__map(void **state) {
 
 	expect_function_call(__wrap_lid_free);
 
-	struct SList *responses = unmarshal_ipc_responses(yaml);
+	struct SList *responses = UIRES(yaml);
 
 	assert_non_nul(responses);
 	assert_int_equal(slist_length(responses), 1);
@@ -912,7 +920,7 @@ static void unmarshal_ipc_responses__seq(void **state) {
 
 	expect_function_calls(__wrap_lid_free, 3);
 
-	struct SList *responses = unmarshal_ipc_responses(yaml);
+	struct SList *responses = UIRES(yaml);
 
 	struct Cfg cfg_expected = {
 		.arrange = COL

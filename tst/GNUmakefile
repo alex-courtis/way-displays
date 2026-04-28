@@ -44,7 +44,7 @@ tst-cfg-file: WRAPS=,$\
 
 tst-marshalling:
 
-tst-marshalling-2: CFLAGS += -DUCFF=unmarshal_cfg_from_file_2 -DMC=marshal_cfg_2 -DV2=true
+tst-marshalling-2: CFLAGS += -DV2=true
 
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
