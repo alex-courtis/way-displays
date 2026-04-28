@@ -27,7 +27,7 @@
 #define V2 true
 #define UCFF unmarshal_cfg_from_file_2
 #define MC marshal_cfg_2
-#define MIREQ marshal_ipc_request
+#define MIREQ marshal_ipc_request_2
 #define MIRES marshal_ipc_response
 #define UIREQ unmarshal_ipc_request
 #define UIRES unmarshal_ipc_responses
@@ -570,7 +570,10 @@ static void marshal_ipc_request__no_op(void **state) {
 
 	assert_nul(MIREQ(ipc_request));
 
-	assert_log(ERROR, "marshalling ipc request: missing OP\n");
+	if (V2)
+		assert_log(ERROR, "unable to marshal ipc request: missing OP\n");
+	else
+		assert_log(ERROR, "marshalling ipc request: missing OP\n");
 
 	ipc_request_free(ipc_request);
 }
@@ -584,7 +587,13 @@ static void marshal_ipc_request__cfg_set(void **state) {
 
 	char *actual = MIREQ(ipc_request);
 
-	char *expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
+	assert_non_nul(actual);
+
+	char *expected;
+	if (V2)
+		expected = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
+	else
+		expected = read_file("tst/marshalling/ipc-request-cfg-set-v1.yaml");
 
 	if (strcmp(actual, expected) != 0) {
 		write_file("actual.yaml", actual);

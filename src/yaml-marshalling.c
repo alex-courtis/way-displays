@@ -17,6 +17,22 @@ struct MarshallingContext {
 	yaml_document_t *document;
 } ctx = { 0 };
 
+typedef bool (*map_mapping_fn)(const void *data, int mapping);
+static bool map_mapping(const char *k, void *data, map_mapping_fn fn, int mapping) {
+	if (!k || !data || !fn || !mapping)
+		return false;
+
+	int key = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)k, -1, YAML_PLAIN_SCALAR_STYLE);
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	if (!key || !map)
+		return false;
+
+	fn(data, map);
+
+	return yaml_document_append_mapping_pair(ctx.document, mapping, key, map);
+}
+
 typedef bool (*map_list_fn)(const void *data, int sequence);
 static bool map_list(const char *k, const struct SList *list, map_list_fn fn, int mapping) {
 	if (!k || !list || !fn || !mapping)
@@ -190,7 +206,12 @@ static bool seq_disabled(const void *data, int sequence) {
 	}
 }
 
-static bool map_cfg(const struct Cfg *cfg, int mapping) {
+static bool map_cfg(const void *data, int mapping) {
+	if (!data)
+		return false;
+
+	const struct Cfg *cfg = data;
+
 	map_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,       mapping);
 	map_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,         mapping);
 	map_list (cfg_element_name(ORDER),                 cfg->order_name_desc,             seq_str,            mapping);
@@ -206,6 +227,26 @@ static bool map_cfg(const struct Cfg *cfg, int mapping) {
 	map_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                           mapping);
 	map_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name, mapping);
 	map_list (cfg_element_name(DISABLED),              cfg->disabled,                    seq_disabled,       mapping);
+
+	return true;
+}
+
+static bool map_ipc_request(const struct IpcRequest *request, int mapping) {
+	if (!request)
+		return false;
+
+	const char *op_name = ipc_command_name(request->command);
+	if (!op_name) {
+		log_error("unable to marshal ipc request: missing OP");
+		return false;
+	}
+
+	map_str("OP", ipc_command_name(request->command), mapping);
+
+	if (request->log_threshold)
+		map_str("LOG_THRESHOLD", log_threshold_name(request->log_threshold), mapping);
+
+	map_mapping("CFG", request->cfg, map_cfg, mapping);
 
 	return true;
 }
@@ -286,9 +327,39 @@ char *marshal_cfg_2(struct Cfg *cfg) {
 		goto end;
 	}
 
-	if (!map_cfg(cfg, root)) {
+	if (!map_cfg(cfg, root))
+		goto end;
+
+	yaml = yaml_document_to_string(&document);
+
+end:
+	yaml_document_delete(&document);
+
+	return yaml;
+}
+
+char *marshal_ipc_request_2(struct IpcRequest *request) {
+	if (!request)
+		return NULL;
+
+	char *yaml = NULL;
+
+	yaml_document_t document;
+	ctx.document = &document;
+
+	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
+		log_error("unable to marshal cfg: yaml_document_initialize failed");
+		return NULL;
+	}
+
+	int root;
+	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
+		log_error("unable to marshal cfg: yaml_document_add_mapping for root failed");
 		goto end;
 	}
+
+	if (!map_ipc_request(request, root))
+		goto end;
 
 	yaml = yaml_document_to_string(&document);
 
