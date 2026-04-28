@@ -19,7 +19,6 @@
 // deal with unsigned char
 // clean up test alternates, gitignore etc.
 // consider SSet
-// pretty print errors somewhat hierarchically
 
 static struct UnmarshalContext {
 	yaml_document_t *document;
@@ -377,6 +376,8 @@ static bool map_to_condition(struct Condition **condition, const yaml_node_t *ma
 	if (!map_to_node_table(&table, map))
 		return false;
 
+	bool ok = true;
+
 	const yaml_node_t *seq;
 
 	*condition = (struct Condition*)calloc(1, sizeof(struct Condition));
@@ -391,17 +392,18 @@ static bool map_to_condition(struct Condition **condition, const yaml_node_t *ma
 	if (seq && !seq_to_name_desc(&(*condition)->unplugged, seq))
 		goto err;
 
-	stable_free(table);
-
-	return true;
+	goto end;
 
 err:
-	stable_free(table);
+	ok = false;
 
 	condition_free(*condition);
 	*condition = NULL;
 
-	return false;
+end:
+	stable_free(table);
+
+	return ok;
 }
 
 // unmarshal IF into a Conditions_list
@@ -430,6 +432,8 @@ static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map) 
 	if (!map_to_node_table(&table, map))
 		return false;
 
+	bool ok = true;
+
 	const yaml_node_t *node;
 
 	*disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
@@ -450,19 +454,19 @@ static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map) 
 	if (node)
 		seq_to_conditions_list(&(*disabled)->conditions, node);
 
-	stable_free(table);
-	ctx_clear_name_desc_key();
-
-	return true;
+	goto end;
 
 err:
-	stable_free(table);
-	ctx_clear_name_desc_key();
+	ok = false;
 
 	cfg_disabled_free(*disabled);
 	*disabled = NULL;
 
-	return false;
+end:
+	stable_free(table);
+	ctx_clear_name_desc_key();
+
+	return ok;
 }
 
 // unmarshal DISABLED into a Disabled list
@@ -510,6 +514,8 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 	if (!map_to_node_table(&table, map))
 		return false;
 
+	bool ok = true;
+
 	const yaml_node_t *scalar;
 
 	*user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
@@ -532,19 +538,19 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 	if (!scalar_to_float(&(*user_scale)->scale, scalar))
 		goto err;
 
-	stable_free(table);
-	ctx_clear_name_desc_key();
-
-	return true;
+	goto end;
 
 err:
-	stable_free(table);
-	ctx_clear_name_desc_key();
+	ok = false;
 
 	cfg_user_scale_free(*user_scale);
 	*user_scale = NULL;
 
-	return false;
+end:
+	stable_free(table);
+	ctx_clear_name_desc_key();
+
+	return ok;
 }
 
 // unmarshal SCALE into a UserScale list
@@ -572,6 +578,8 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 	const struct STable *table = NULL;
 	if (!map_to_node_table(&table, map))
 		return false;
+
+	bool ok = true;
 
 	const yaml_node_t *scalar;
 
@@ -612,19 +620,19 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 	if (scalar && !scalar_to_boolean(&(*user_mode)->max, scalar))
 		goto err;
 
-	stable_free(table);
-	ctx_clear_name_desc_key();
-
-	return true;
+	goto end;
 
 err:
-	stable_free(table);
-	ctx_clear_name_desc_key();
+	ok = false;
 
 	cfg_user_mode_free(*user_mode);
 	*user_mode = NULL;
 
-	return false;
+end:
+	stable_free(table);
+	ctx_clear_name_desc_key();
+
+	return ok;
 }
 
 // unmarshal MODE into a UserMode list
@@ -653,6 +661,8 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 	if (!map_to_node_table(&table, map))
 		return false;
 
+	bool ok = true;
+
 	*user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
 	const yaml_node_t *scalar;
@@ -675,19 +685,19 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 	if (!scalar_to_enum((int*)&(*user_transform)->transform, scalar, transform_val))
 		goto err;
 
-	stable_free(table);
-	ctx_clear_name_desc_key();
-
-	return true;
+	goto end;
 
 err:
-	stable_free(table);
-	ctx_clear_name_desc_key();
+	ok = false;
 
 	cfg_user_transform_free(*user_transform);
 	*user_transform = NULL;
 
-	return false;
+end:
+	stable_free(table);
+	ctx_clear_name_desc_key();
+
+	return ok;
 }
 
 // unmarshal TRANSFORM into a UserTransform list

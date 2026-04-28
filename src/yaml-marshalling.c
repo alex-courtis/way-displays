@@ -254,7 +254,6 @@ static char *yaml_document_to_string(yaml_document_t *document) {
 	goto end;
 
 err:
-
 	if (yaml) {
 		free(yaml);
 		yaml = NULL;
@@ -266,7 +265,6 @@ end:
 	return yaml;
 }
 
-// TODO sync errors with unmarshalling v1 and v2
 char *marshal_cfg_2(struct Cfg *cfg) {
 	if (!cfg) {
 		return NULL;

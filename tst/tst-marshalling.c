@@ -518,6 +518,7 @@ static void marshal_cfg__yaml_emitter_open_fail(void **state) {
 	assert_logs_empty();
 }
 
+// also covers case of write_handler fail
 static void marshal_cfg__yaml_emitter_dump_fail(void **state) {
 	if (!V2)
 		return;
