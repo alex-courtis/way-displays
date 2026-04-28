@@ -9,6 +9,8 @@
 #include "cfg.h"
 #include "convert.h"
 #include "conditions.h"
+#include "global.h"
+#include "lid.h"
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
@@ -18,8 +20,8 @@ struct MarshallingContext {
 } ctx = { 0 };
 
 typedef bool (*map_mapping_fn)(const void *data, int mapping);
-static bool map_mapping(const char *k, void *data, map_mapping_fn fn, int mapping) {
-	if (!k || !data || !fn || !mapping)
+static bool map_mapping(const char *k, const void *data, map_mapping_fn fn, int mapping) {
+	if (!k || !fn || !mapping)
 		return false;
 
 	int key = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)k, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -33,7 +35,21 @@ static bool map_mapping(const char *k, void *data, map_mapping_fn fn, int mappin
 	return yaml_document_append_mapping_pair(ctx.document, mapping, key, map);
 }
 
-typedef bool (*map_list_fn)(const void *data, int sequence);
+typedef bool (*seq_mapping_fn)(const void *data, int mapping);
+static bool seq_mapping(const char *k, const void *data, seq_mapping_fn fn, int sequence) {
+	if (!k || !fn || !sequence)
+		return false;
+
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return false;
+
+	fn(data, map);
+
+	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+}
+
+typedef bool (*map_list_fn)(const void *list, int sequence);
 static bool map_list(const char *k, const struct SList *list, map_list_fn fn, int mapping) {
 	if (!k || !list || !fn || !mapping)
 		return false;
@@ -231,6 +247,104 @@ static bool map_cfg(const void *data, int mapping) {
 	return true;
 }
 
+static bool map_lid(const void *data, int mapping) {
+	map_bool("CLOSED",      lid->closed,      mapping);
+	map_str ("DEVICE_PATH", lid->device_path, mapping);
+
+	return true;
+}
+
+static bool map_mode(const void *data, int mapping) {
+	if (!data)
+		return false;
+
+	const struct Mode *mode = data;
+
+	map_int("WIDTH",       mode->width,       mapping);
+	map_int("HEIGHT",      mode->height,      mapping);
+	map_int("REFRESH_MHZ", mode->refresh_mhz, mapping);
+	map_bool("PREFERRED",  mode->preferred,   mapping);
+
+	return true;
+}
+
+static bool map_head_state(const void *data, int mapping) {
+	if (!data)
+		return false;
+
+	const struct HeadState *head_state = data;
+
+	map_float("SCALE",    wl_fixed_to_double(head_state->scale),                                          mapping);
+	map_bool ("ENABLED",  head_state->enabled,                                                            mapping);
+	map_int  ("X",        head_state->x,                                                                  mapping);
+	map_int  ("Y",        head_state->y,                                                                  mapping);
+	map_bool ("VRR",      (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
+	map_enum("TRANSFORM", head_state->transform,                                          transform_name, mapping);
+
+	map_mapping("MODE", head_state->mode, map_mode, mapping);
+
+	return true;
+}
+
+static bool seq_modes(const void *data, int sequence) {
+	if (!data)
+		return false;
+
+	const struct Mode *mode = data;
+
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return false;
+
+	seq_mapping("MODE", mode, map_mode, sequence);
+
+	return true;
+}
+
+static bool map_overrides(const void *data, int mapping) {
+	if (!data)
+		return false;
+
+	const struct Head *head = data;
+
+	return (head->overrided_enabled != NoOverride) && map_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
+}
+
+static bool seq_head(const void *data, int sequence) {
+	if (!data || !sequence)
+		return false;
+
+	const struct Head *head = data;
+
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return false;
+
+	if (head->name)          map_str("NAME",          head->name,          map);
+	if (head->description)   map_str("DESCRIPTION",   head->description,   map);
+	if (head->make)          map_str("MAKE",          head->make,          map);
+	if (head->model)         map_str("MODEL",         head->model,         map);
+	if (head->serial_number) map_str("SERIAL_NUMBER", head->serial_number, map);
+	map_int(                         "WIDTH_MM",      head->width_mm,      map);
+	map_int(                         "HEIGHT_MM",     head->height_mm,     map);
+
+	map_mapping("CURRENT", &head->current, map_head_state, map);
+	map_mapping("DESIRED", &head->desired, map_head_state, map);
+
+	map_mapping("OVERRIDES", head, map_overrides, map);
+
+	map_list("MODES", head->modes, seq_modes, map);
+
+	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+}
+
+static bool map_state(const void *data, int mapping) {
+	map_mapping("LID", NULL, map_lid, mapping);
+	map_list("HEADS", heads, seq_head, mapping);
+
+	return true;
+}
+
 static bool map_ipc_request(const struct IpcRequest *request, int mapping) {
 	if (!request)
 		return false;
@@ -247,6 +361,26 @@ static bool map_ipc_request(const struct IpcRequest *request, int mapping) {
 		map_str("LOG_THRESHOLD", log_threshold_name(request->log_threshold), mapping);
 
 	map_mapping("CFG", request->cfg, map_cfg, mapping);
+
+	return true;
+}
+
+static bool map_ipc_response(const struct IpcOperation *operation, int mapping) {
+	if (!operation)
+		return false;
+
+	// TODO GET sends only one response as a map
+
+	map_bool("DONE", operation->done, mapping);
+
+	if (operation->send_state) {
+		if (cfg) {
+			map_mapping("CFG", cfg, map_cfg, mapping);
+		}
+		if (lid || heads) {
+			map_mapping("STATE", operation, map_state, mapping);
+		}
+	}
 
 	return true;
 }
@@ -306,7 +440,7 @@ end:
 	return yaml;
 }
 
-char *marshal_cfg_2(struct Cfg *cfg) {
+char *marshal_cfg_2(const struct Cfg *cfg) {
 	if (!cfg) {
 		return NULL;
 	}
@@ -338,7 +472,7 @@ end:
 	return yaml;
 }
 
-char *marshal_ipc_request_2(struct IpcRequest *request) {
+char *marshal_ipc_request_2(const struct IpcRequest *request) {
 	if (!request)
 		return NULL;
 
@@ -348,17 +482,48 @@ char *marshal_ipc_request_2(struct IpcRequest *request) {
 	ctx.document = &document;
 
 	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
-		log_error("unable to marshal cfg: yaml_document_initialize failed");
+		log_error("unable to marshal ipc request: yaml_document_initialize failed");
 		return NULL;
 	}
 
 	int root;
 	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
-		log_error("unable to marshal cfg: yaml_document_add_mapping for root failed");
+		log_error("unable to marshal ipc request: yaml_document_add_mapping for root failed");
 		goto end;
 	}
 
 	if (!map_ipc_request(request, root))
+		goto end;
+
+	yaml = yaml_document_to_string(&document);
+
+end:
+	yaml_document_delete(&document);
+
+	return yaml;
+}
+
+char *marshal_ipc_response_2(const struct IpcOperation *operation) {
+	if (!operation)
+		return NULL;
+
+	char *yaml = NULL;
+
+	yaml_document_t document;
+	ctx.document = &document;
+
+	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
+		log_error("unable to marshal ipc response: yaml_document_initialize failed");
+		return NULL;
+	}
+
+	int root;
+	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
+		log_error("unable to marshal ipc response: yaml_document_add_mapping for root failed");
+		goto end;
+	}
+
+	if (!map_ipc_response(operation, root))
 		goto end;
 
 	yaml = yaml_document_to_string(&document);
