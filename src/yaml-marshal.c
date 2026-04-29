@@ -12,22 +12,22 @@
 #include "log.h"
 #include "slist.h"
 
-struct MarshallingContext ctx = { 0 };
+struct MarshalCtx marshal_ctx = { 0 };
 
 typedef bool (*map_fn)(const void *data, int mapping);
 bool map_key_to_map(const char *k, const void *data, map_fn fn, int mapping) {
 	if (!k || !fn || !mapping)
 		return false;
 
-	int key = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)k, -1, YAML_PLAIN_SCALAR_STYLE);
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)k, -1, YAML_PLAIN_SCALAR_STYLE);
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (!key || !map)
 		return false;
 
 	fn(data, map);
 
-	return yaml_document_append_mapping_pair(ctx.document, mapping, key, map);
+	return yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, map);
 }
 
 typedef bool (*seq_fn)(const void *list, int sequence);
@@ -35,8 +35,8 @@ bool map_key_to_list(const char *k, const struct SList *list, seq_fn fn, int map
 	if (!k || !list || !fn || !mapping)
 		return false;
 
-	int key = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)k, -1, YAML_PLAIN_SCALAR_STYLE);
-	int sequence = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)k, -1, YAML_PLAIN_SCALAR_STYLE);
+	int sequence = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE);
 
 	if (!key || !sequence)
 		return false;
@@ -44,17 +44,17 @@ bool map_key_to_list(const char *k, const struct SList *list, seq_fn fn, int map
 	for (const struct SList *i = list; i; i = i->nex)
 		fn(i->val, sequence);
 
-	return yaml_document_append_mapping_pair(ctx.document, mapping, key, sequence);
+	return yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, sequence);
 }
 
 bool map_key_to_str(const char *k, const char *v, int mapping) {
 	if (!k || !v || !mapping)
 		return false;
 
-	int key = yaml_document_add_scalar(ctx.document, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)k, -1, YAML_PLAIN_SCALAR_STYLE);
-	int scalar = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)v, -1, YAML_PLAIN_SCALAR_STYLE);
+	int key = yaml_document_add_scalar(marshal_ctx.doc, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)k, -1, YAML_PLAIN_SCALAR_STYLE);
+	int scalar = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)v, -1, YAML_PLAIN_SCALAR_STYLE);
 
-	return key && scalar && yaml_document_append_mapping_pair(ctx.document, mapping, key, scalar);
+	return key && scalar && yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, scalar);
 }
 
 bool map_key_to_int(const char *k, const int32_t v, int mapping) {
@@ -104,9 +104,9 @@ bool seq_str(const void *data, int sequence) {
 	if (!data || !sequence)
 		return false;
 
-	int scalar = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)data, -1, YAML_PLAIN_SCALAR_STYLE);
+	int scalar = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)data, -1, YAML_PLAIN_SCALAR_STYLE);
 
-	return scalar && yaml_document_append_sequence_item(ctx.document, sequence, scalar);
+	return scalar && yaml_document_append_sequence_item(marshal_ctx.doc, sequence, scalar);
 }
 
 static int write_handler(void *data, unsigned char *buffer, size_t size) {
@@ -122,7 +122,7 @@ static int write_handler(void *data, unsigned char *buffer, size_t size) {
 	return 1;
 }
 
-char *yaml_document_to_string(yaml_document_t *document, const char *name) {
+static char *yaml_document_to_string(yaml_document_t *document, const char *name) {
 	char *yaml = NULL;
 
 	yaml_emitter_t emitter;
@@ -172,7 +172,7 @@ char *marshal_yaml(const void *data, map_fn fn, const char *name) {
 	char *yaml = NULL;
 
 	yaml_document_t document;
-	ctx.document = &document;
+	marshal_ctx.doc = &document;
 
 	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
 		log_error("unable to marshal %s: yaml_document_initialize failed", name);
@@ -192,6 +192,8 @@ char *marshal_yaml(const void *data, map_fn fn, const char *name) {
 
 end:
 	yaml_document_delete(&document);
+
+	marshal_ctx.doc = NULL;
 
 	return yaml;
 }

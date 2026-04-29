@@ -70,11 +70,11 @@ static bool seq_mode(const void *data, int sequence) {
 
 	const struct Mode *mode = data;
 
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
 		map_mode(mode, map) &&
-		yaml_document_append_sequence_item(ctx.document, sequence, map);
+		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 static bool seq_head(const void *data, int sequence) {
@@ -83,7 +83,7 @@ static bool seq_head(const void *data, int sequence) {
 
 	const struct Head *head = data;
 
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return false;
 
@@ -100,7 +100,7 @@ static bool seq_head(const void *data, int sequence) {
 	map_key_to_map ("OVERRIDES", head,           map_head_overrides, map);
 	map_key_to_list("MODES",     head->modes,    seq_mode,           map);
 
-	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 static bool map_state(const void *data, int mapping) {
@@ -111,20 +111,20 @@ static bool map_state(const void *data, int mapping) {
 }
 
 static bool seq_log_cap_line(struct LogCapLine *line, int sequence) {
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return false;
 
 	if (!map_key_to_str(log_threshold_name(line->threshold), line->line, map))
 		return false;
 
-	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 static bool map_messages(struct IpcOperation *ipc_operation, int mapping) {
 	bool lines_added = false;
 
-	int seq_lines = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	int seq_lines = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE);
 	if (!seq_lines)
 		return false;
 
@@ -143,9 +143,9 @@ static bool map_messages(struct IpcOperation *ipc_operation, int mapping) {
 	}
 
 	if (lines_added) {
-		int key = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
+		int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
 		if (key)
-			yaml_document_append_mapping_pair(ctx.document, mapping, key, seq_lines);
+			yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, seq_lines);
 	}
 
 	return true;

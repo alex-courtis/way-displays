@@ -15,12 +15,12 @@ static bool seq_user_scale(const void *data, int sequence) {
 
 	const struct UserScale *user_scale = data;
 
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
 		map_key_to_str("NAME_DESC", user_scale->name_desc, map) &&
 		map_key_to_float("SCALE", user_scale->scale, map) &&
-		yaml_document_append_sequence_item(ctx.document, sequence, map);
+		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 static bool seq_user_mode(const void *data, int sequence) {
@@ -29,7 +29,7 @@ static bool seq_user_mode(const void *data, int sequence) {
 
 	const struct UserMode *user_mode = data;
 
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (!map || !map_key_to_str("NAME_DESC", user_mode->name_desc, map))
 		return false;
@@ -48,7 +48,7 @@ static bool seq_user_mode(const void *data, int sequence) {
 		}
 	}
 
-	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 static bool seq_user_transform(const void *data, int sequence) {
@@ -57,12 +57,12 @@ static bool seq_user_transform(const void *data, int sequence) {
 
 	const struct UserTransform *user_transform = data;
 
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
 		map_key_to_str("NAME_DESC", user_transform->name_desc, map) &&
 		map_key_to_str("TRANSFORM", transform_name(user_transform->transform), map) &&
-		yaml_document_append_sequence_item(ctx.document, sequence, map);
+		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 static bool seq_condition(const void *data, int sequence) {
@@ -71,7 +71,7 @@ static bool seq_condition(const void *data, int sequence) {
 
 	const struct Condition *condition = data;
 
-	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (condition->plugged)
 		map_key_to_list("PLUGGED", condition->plugged, seq_str, map);
@@ -79,7 +79,7 @@ static bool seq_condition(const void *data, int sequence) {
 	if (condition->unplugged)
 		map_key_to_list("UNPLUGGED", condition->unplugged, seq_str, map);
 
-	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 static bool seq_disabled(const void *data, int sequence) {
@@ -92,12 +92,12 @@ static bool seq_disabled(const void *data, int sequence) {
 		return false;
 
 	if (disabled->conditions) {
-		int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+		int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 		return map &&
 			map_key_to_str("NAME_DESC", disabled->name_desc, map) &&
 			map_key_to_list("IF", disabled->conditions, seq_condition, map) &&
-			yaml_document_append_sequence_item(ctx.document, sequence, map);
+			yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 	} else {
 		return seq_str(disabled->name_desc, sequence);
 	}

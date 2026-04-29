@@ -5,6 +5,7 @@
 
 #include "cfg.h"
 
+// TODO replace with a direct call to marshal_yaml when removing v1
 char *marshal_cfg_2(const struct Cfg *cfg);
 
 bool map_cfg(const void *data, int mapping);
