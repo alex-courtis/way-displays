@@ -22,6 +22,9 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #include "marshalling.h"
+#include "yaml-marshal-cfg.h"
+#include "yaml-marshal-ipc-request.h"
+#include "yaml-marshal-ipc-response.h"
 
 #ifdef V2
 #define V2 true
@@ -409,14 +412,14 @@ static void marshal_cfg__ok(void **state) {
 
 	char *actual = MC(cfg);
 
+	assert_non_nul(actual);
+
 	char *expected = V2 ? read_file("tst/marshalling/cfg-all.yaml") : read_file("tst/marshalling/cfg-all-v1.yaml");
 
 	if (strcmp(actual, expected) != 0) {
 		write_file("actual.yaml", actual);
 		write_file("expected.yaml", expected);
 	}
-
-	assert_non_nul(actual);
 
 	assert_str_equal(actual, expected);
 
@@ -432,9 +435,9 @@ static void marshal_cfg__default(void **state) {
 
 	char *actual = MC(cfg);
 
-	char *expected = read_file("tst/marshalling/cfg-default.yaml");
-
 	assert_non_nul(actual);
+
+	char *expected = read_file("tst/marshalling/cfg-default.yaml");
 
 	if (strcmp(actual, expected) != 0) {
 		write_file("actual.yaml", actual);
@@ -1024,8 +1027,8 @@ int main(void) {
 		TEST(marshal_ipc_request__no_op),
 		TEST(marshal_ipc_request__cfg_set),
 
-		// TEST(marshal_ipc_response__map),
-		// TEST(marshal_ipc_response__seq),
+		TEST(marshal_ipc_response__map),
+		TEST(marshal_ipc_response__seq),
 
 		TEST(unmarshal_ipc_request__empty),
 		TEST(unmarshal_ipc_request__bad_op),

@@ -14,8 +14,8 @@
 
 struct MarshallingContext ctx = { 0 };
 
-typedef bool (*map_mapping_fn)(const void *data, int mapping);
-bool map_key_to_map(const char *k, const void *data, map_mapping_fn fn, int mapping) {
+typedef bool (*map_fn)(const void *data, int mapping);
+bool map_key_to_map(const char *k, const void *data, map_fn fn, int mapping) {
 	if (!k || !fn || !mapping)
 		return false;
 
@@ -30,8 +30,8 @@ bool map_key_to_map(const char *k, const void *data, map_mapping_fn fn, int mapp
 	return yaml_document_append_mapping_pair(ctx.document, mapping, key, map);
 }
 
-typedef bool (*map_list_fn)(const void *list, int sequence);
-bool map_key_to_list(const char *k, const struct SList *list, map_list_fn fn, int mapping) {
+typedef bool (*seq_fn)(const void *list, int sequence);
+bool map_key_to_list(const char *k, const struct SList *list, seq_fn fn, int mapping) {
 	if (!k || !list || !fn || !mapping)
 		return false;
 
@@ -84,8 +84,8 @@ bool map_key_to_bool(const char *k, const bool v, int mapping) {
 	return map_key_to_str(k, (v ? "TRUE" : "FALSE"), mapping);
 }
 
-typedef const char* (*map_enum_fn_name)(unsigned int v);
-bool map_key_to_enum(const char *k, const int v, map_enum_fn_name fn_name, int mapping) {
+typedef const char* (*key_fn)(unsigned int v);
+bool map_key_to_enum(const char *k, const int v, key_fn fn_name, int mapping) {
 	if (!k || !fn_name || !mapping)
 		return false;
 
@@ -122,13 +122,13 @@ static int write_handler(void *data, unsigned char *buffer, size_t size) {
 	return 1;
 }
 
-char *yaml_document_to_string(yaml_document_t *document) {
+char *yaml_document_to_string(yaml_document_t *document, const char *name) {
 	char *yaml = NULL;
 
 	yaml_emitter_t emitter;
 
 	if (!yaml_emitter_initialize(&emitter)) {
-		log_error("unable to marshal cfg: yaml_emitter_initialize failed");
+		log_error("unable to marshal %s: yaml_emitter_initialize failed", name);
 		return NULL;
 	}
 
@@ -136,17 +136,17 @@ char *yaml_document_to_string(yaml_document_t *document) {
 	yaml_emitter_set_output(&emitter, write_handler, &yaml);
 
 	if (!yaml_emitter_open(&emitter)) {
-		log_error("unable to marshal cfg: yaml_emitter_open failed");
+		log_error("unable to marshal %s: yaml_emitter_open failed", name);
 		goto err;
 	}
 
 	if (!yaml_emitter_dump(&emitter, document)) {
-		log_error("unable to marshal cfg: yaml_emitter_dump failed");
+		log_error("unable to marshal %s: yaml_emitter_dump failed", name);
 		goto err;
 	}
 
 	if (!yaml_emitter_close(&emitter)) {
-		log_warn("unable to marshal cfg: yaml_emitter_close failed");
+		log_warn("unable to marshal %s: yaml_emitter_close failed", name);
 		goto err;
 	}
 
@@ -164,3 +164,34 @@ end:
 	return yaml;
 }
 
+char *marshal_yaml(const void *data, map_fn fn, const char *name) {
+	if (!data) {
+		return NULL;
+	}
+
+	char *yaml = NULL;
+
+	yaml_document_t document;
+	ctx.document = &document;
+
+	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
+		log_error("unable to marshal %s: yaml_document_initialize failed", name);
+		return NULL;
+	}
+
+	int root;
+	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
+		log_error("unable to marshal %s: yaml_document_add_mapping for root failed", name);
+		goto end;
+	}
+
+	if (!fn(data, root))
+		goto end;
+
+	yaml = yaml_document_to_string(&document, name);
+
+end:
+	yaml_document_delete(&document);
+
+	return yaml;
+}

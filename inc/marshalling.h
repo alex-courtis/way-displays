@@ -23,6 +23,7 @@ struct SList *unmarshal_ipc_responses(const char *yaml);
 char *marshal_cfg(struct Cfg *cfg);
 
 bool unmarshal_cfg_from_file(struct Cfg *cfg);
+bool unmarshal_cfg_from_file_2(struct Cfg *cfg);
 
 #if __cplusplus
 } // extern "C"

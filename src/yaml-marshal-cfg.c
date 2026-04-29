@@ -7,7 +7,6 @@
 #include "cfg.h"
 #include "convert.h"
 #include "conditions.h"
-#include "log.h"
 #include "mode.h"
 
 static bool seq_user_scale(const void *data, int sequence) {
@@ -110,53 +109,25 @@ bool map_cfg(const void *data, int mapping) {
 
 	const struct Cfg *cfg = data;
 
-	map_key_to_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,              mapping);
-	map_key_to_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,                mapping);
+	map_key_to_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,       mapping);
+	map_key_to_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,         mapping);
 	map_key_to_list (cfg_element_name(ORDER),                 cfg->order_name_desc,             seq_str,            mapping);
-	map_key_to_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,               mapping);
-	map_key_to_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,               mapping);
-	map_key_to_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                         mapping);
-	map_key_to_float(cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                         mapping);
+	map_key_to_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,        mapping);
+	map_key_to_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,        mapping);
+	map_key_to_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                  mapping);
+	map_key_to_float(cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                  mapping);
 	map_key_to_list (cfg_element_name(SCALE),                 cfg->user_scales,                 seq_user_scale,     mapping);
 	map_key_to_list (cfg_element_name(MODE),                  cfg->user_modes,                  seq_user_mode,      mapping);
 	map_key_to_list (cfg_element_name(TRANSFORM),             cfg->user_transforms,             seq_user_transform, mapping);
 	map_key_to_list (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, seq_str,            mapping);
-	map_key_to_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                           mapping);
-	map_key_to_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                  mapping);
-	map_key_to_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name,        mapping);
+	map_key_to_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                    mapping);
+	map_key_to_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                           mapping);
+	map_key_to_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name, mapping);
 	map_key_to_list (cfg_element_name(DISABLED),              cfg->disabled,                    seq_disabled,       mapping);
 
 	return true;
 }
 
 char *marshal_cfg_2(const struct Cfg *cfg) {
-	if (!cfg) {
-		return NULL;
-	}
-
-	char *yaml = NULL;
-
-	yaml_document_t document;
-	ctx.document = &document;
-
-	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
-		log_error("unable to marshal cfg: yaml_document_initialize failed");
-		return NULL;
-	}
-
-	int root;
-	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
-		log_error("unable to marshal cfg: yaml_document_add_mapping for root failed");
-		goto end;
-	}
-
-	if (!map_cfg(cfg, root))
-		goto end;
-
-	yaml = yaml_document_to_string(&document);
-
-end:
-	yaml_document_delete(&document);
-
-	return yaml;
+	return marshal_yaml(cfg, map_cfg, "cfg");
 }

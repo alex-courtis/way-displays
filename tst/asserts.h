@@ -12,7 +12,7 @@
 #include "slist.h"
 #include "stable.h"
 #include "util.h"
-#include "yaml-marshal.h"
+#include "yaml-marshal-cfg.h"
 
 void _assert_nul(const void *a, const char * const ae, const char * const file, const int line) {
 	if (a) {

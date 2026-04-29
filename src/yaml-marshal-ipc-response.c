@@ -14,6 +14,7 @@
 #include "mode.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
+#include "yaml-marshal-cfg.h"
 
 static bool map_lid(const void *data, int mapping) {
 	map_key_to_bool("CLOSED",      lid->closed,      mapping);
@@ -94,12 +95,10 @@ static bool seq_head(const void *data, int sequence) {
 	map_key_to_int(                         "WIDTH_MM",      head->width_mm,      map);
 	map_key_to_int(                         "HEIGHT_MM",     head->height_mm,     map);
 
-	map_key_to_map("CURRENT", &head->current, map_head_state, map);
-	map_key_to_map("DESIRED", &head->desired, map_head_state, map);
-
-	map_key_to_map("OVERRIDES", head, map_head_overrides, map);
-
-	map_key_to_list("MODES", head->modes, seq_mode, map);
+	map_key_to_map ("CURRENT",   &head->current, map_head_state,     map);
+	map_key_to_map ("DESIRED",   &head->desired, map_head_state,     map);
+	map_key_to_map ("OVERRIDES", head,           map_head_overrides, map);
+	map_key_to_list("MODES",     head->modes,    seq_mode,           map);
 
 	return yaml_document_append_sequence_item(ctx.document, sequence, map);
 }
@@ -122,26 +121,25 @@ static bool seq_log_cap_line(struct LogCapLine *line, int sequence) {
 	return yaml_document_append_sequence_item(ctx.document, sequence, map);
 }
 
-// mutates operation->rc based on max line level
-static bool map_messages(struct IpcOperation *operation, int mapping) {
+static bool map_messages(struct IpcOperation *ipc_operation, int mapping) {
 	bool lines_added = false;
 
 	int seq_lines = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
 	if (!seq_lines)
 		return false;
 
-	for (struct SList *i = operation->log_cap_lines; i; i = i->nex) {
+	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
 		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 
-		if (!cap_line || !cap_line->line || cap_line->threshold < operation->request->log_threshold)
+		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
 			continue;
 
 		lines_added = seq_log_cap_line(cap_line, seq_lines) || lines_added;
 
-		if (cap_line->threshold == WARNING && operation->rc < IPC_RC_WARN)
-			operation->rc = IPC_RC_WARN;
-		if (cap_line->threshold == ERROR && operation->rc < IPC_RC_ERROR)
-			operation->rc = IPC_RC_ERROR;
+		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
+			ipc_operation->rc = IPC_RC_WARN;
+		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
+			ipc_operation->rc = IPC_RC_ERROR;
 	}
 
 	if (lines_added) {
@@ -153,56 +151,32 @@ static bool map_messages(struct IpcOperation *operation, int mapping) {
 	return true;
 }
 
-static bool map_ipc_response(struct IpcOperation *operation, int mapping) {
-	if (!operation)
+static bool map_ipc_response(const void *data, int mapping) {
+	if (!data)
 		return false;
+
+	// map_messages mutates operation->rc based on max line level
+	struct IpcOperation *ipc_operation = (struct IpcOperation*)data;
 
 	// TODO GET sends only one response as a map
 
-	map_key_to_bool("DONE", operation->done, mapping);
+	map_key_to_bool("DONE", ipc_operation->done, mapping);
 
-	if (operation->send_state) {
+	if (ipc_operation->send_state) {
 		if (cfg)
 			map_key_to_map("CFG", cfg, map_cfg, mapping);
 		if (lid || heads)
-			map_key_to_map("STATE", operation, map_state, mapping);
+			map_key_to_map("STATE", ipc_operation, map_state, mapping);
 	}
 
-	map_messages(operation, mapping);
+	map_messages(ipc_operation, mapping);
 
-	map_key_to_int("RC", operation->rc, mapping);
+	map_key_to_int("RC", ipc_operation->rc, mapping);
 
 	return true;
 }
 
-char *marshal_ipc_response_2(struct IpcOperation *operation) {
-	if (!operation)
-		return NULL;
-
-	char *yaml = NULL;
-
-	yaml_document_t document;
-	ctx.document = &document;
-
-	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
-		log_error("unable to marshal ipc response: yaml_document_initialize failed");
-		return NULL;
-	}
-
-	int root;
-	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
-		log_error("unable to marshal ipc response: yaml_document_add_mapping for root failed");
-		goto end;
-	}
-
-	if (!map_ipc_response(operation, root))
-		goto end;
-
-	yaml = yaml_document_to_string(&document);
-
-end:
-	yaml_document_delete(&document);
-
-	return yaml;
+char *marshal_ipc_response_2(struct IpcOperation *ipc_operation) {
+	return marshal_yaml(ipc_operation, map_ipc_response, "ipc response");
 }
 
