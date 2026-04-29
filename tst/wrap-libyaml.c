@@ -1,4 +1,4 @@
-#include <cmocka.h>
+#include <stdbool.h>
 #include <yaml.h>
 
 bool yaml_document_initialize__fail = false;

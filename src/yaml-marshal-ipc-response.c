@@ -1,0 +1,208 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <wayland-util.h>
+#include <yaml.h>
+
+#include "yaml-marshal.h"
+
+#include "convert.h"
+#include "global.h"
+#include "head.h"
+#include "ipc.h"
+#include "lid.h"
+#include "log.h"
+#include "mode.h"
+#include "slist.h"
+#include "wlr-output-management-unstable-v1.h"
+
+static bool map_lid(const void *data, int mapping) {
+	map_key_to_bool("CLOSED",      lid->closed,      mapping);
+	map_key_to_str ("DEVICE_PATH", lid->device_path, mapping);
+
+	return true;
+}
+
+static bool map_mode(const void *data, int mapping) {
+	if (!data)
+		return false;
+
+	const struct Mode *mode = data;
+
+	map_key_to_int("WIDTH",       mode->width,       mapping);
+	map_key_to_int("HEIGHT",      mode->height,      mapping);
+	map_key_to_int("REFRESH_MHZ", mode->refresh_mhz, mapping);
+	map_key_to_bool("PREFERRED",  mode->preferred,   mapping);
+
+	return true;
+}
+
+static bool map_head_state(const void *data, int mapping) {
+	if (!data)
+		return false;
+
+	const struct HeadState *head_state = data;
+
+	map_key_to_float("SCALE",    wl_fixed_to_double(head_state->scale),                                          mapping);
+	map_key_to_bool ("ENABLED",  head_state->enabled,                                                            mapping);
+	map_key_to_int  ("X",        head_state->x,                                                                  mapping);
+	map_key_to_int  ("Y",        head_state->y,                                                                  mapping);
+	map_key_to_bool ("VRR",      (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
+	map_key_to_enum("TRANSFORM", head_state->transform,                                          transform_name, mapping);
+
+	map_key_to_map("MODE", head_state->mode, map_mode, mapping);
+
+	return true;
+}
+
+static bool map_head_overrides(const void *data, int mapping) {
+	if (!data)
+		return false;
+
+	const struct Head *head = data;
+
+	return (head->overrided_enabled != NoOverride) && map_key_to_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
+}
+
+static bool seq_mode(const void *data, int sequence) {
+	if (!data)
+		return false;
+
+	const struct Mode *mode = data;
+
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	return map &&
+		map_mode(mode, map) &&
+		yaml_document_append_sequence_item(ctx.document, sequence, map);
+}
+
+static bool seq_head(const void *data, int sequence) {
+	if (!data || !sequence)
+		return false;
+
+	const struct Head *head = data;
+
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return false;
+
+	if (head->name)          map_key_to_str("NAME",          head->name,          map);
+	if (head->description)   map_key_to_str("DESCRIPTION",   head->description,   map);
+	if (head->make)          map_key_to_str("MAKE",          head->make,          map);
+	if (head->model)         map_key_to_str("MODEL",         head->model,         map);
+	if (head->serial_number) map_key_to_str("SERIAL_NUMBER", head->serial_number, map);
+	map_key_to_int(                         "WIDTH_MM",      head->width_mm,      map);
+	map_key_to_int(                         "HEIGHT_MM",     head->height_mm,     map);
+
+	map_key_to_map("CURRENT", &head->current, map_head_state, map);
+	map_key_to_map("DESIRED", &head->desired, map_head_state, map);
+
+	map_key_to_map("OVERRIDES", head, map_head_overrides, map);
+
+	map_key_to_list("MODES", head->modes, seq_mode, map);
+
+	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+}
+
+static bool map_state(const void *data, int mapping) {
+	map_key_to_map("LID", NULL, map_lid, mapping);
+	map_key_to_list("HEADS", heads, seq_head, mapping);
+
+	return true;
+}
+
+static bool seq_log_cap_line(struct LogCapLine *line, int sequence) {
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return false;
+
+	if (!map_key_to_str(log_threshold_name(line->threshold), line->line, map))
+		return false;
+
+	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+}
+
+// mutates operation->rc based on max line level
+static bool map_messages(struct IpcOperation *operation, int mapping) {
+	bool lines_added = false;
+
+	int seq_lines = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq_lines)
+		return false;
+
+	for (struct SList *i = operation->log_cap_lines; i; i = i->nex) {
+		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+
+		if (!cap_line || !cap_line->line || cap_line->threshold < operation->request->log_threshold)
+			continue;
+
+		lines_added = seq_log_cap_line(cap_line, seq_lines) || lines_added;
+
+		if (cap_line->threshold == WARNING && operation->rc < IPC_RC_WARN)
+			operation->rc = IPC_RC_WARN;
+		if (cap_line->threshold == ERROR && operation->rc < IPC_RC_ERROR)
+			operation->rc = IPC_RC_ERROR;
+	}
+
+	if (lines_added) {
+		int key = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
+		if (key)
+			yaml_document_append_mapping_pair(ctx.document, mapping, key, seq_lines);
+	}
+
+	return true;
+}
+
+static bool map_ipc_response(struct IpcOperation *operation, int mapping) {
+	if (!operation)
+		return false;
+
+	// TODO GET sends only one response as a map
+
+	map_key_to_bool("DONE", operation->done, mapping);
+
+	if (operation->send_state) {
+		if (cfg)
+			map_key_to_map("CFG", cfg, map_cfg, mapping);
+		if (lid || heads)
+			map_key_to_map("STATE", operation, map_state, mapping);
+	}
+
+	map_messages(operation, mapping);
+
+	map_key_to_int("RC", operation->rc, mapping);
+
+	return true;
+}
+
+char *marshal_ipc_response_2(struct IpcOperation *operation) {
+	if (!operation)
+		return NULL;
+
+	char *yaml = NULL;
+
+	yaml_document_t document;
+	ctx.document = &document;
+
+	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
+		log_error("unable to marshal ipc response: yaml_document_initialize failed");
+		return NULL;
+	}
+
+	int root;
+	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
+		log_error("unable to marshal ipc response: yaml_document_add_mapping for root failed");
+		goto end;
+	}
+
+	if (!map_ipc_response(operation, root))
+		goto end;
+
+	yaml = yaml_document_to_string(&document);
+
+end:
+	yaml_document_delete(&document);
+
+	return yaml;
+}
+
