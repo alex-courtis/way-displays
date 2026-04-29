@@ -164,7 +164,36 @@ end:
 	return yaml;
 }
 
-char *marshal_yaml(const void *data, map_fn fn, const char *name) {
+char *marshal_yaml(const void *data, marshal_fn fn, const char *name) {
+	if (!data) {
+		return NULL;
+	}
+
+	char *yaml = NULL;
+
+	yaml_document_t document;
+	marshal_ctx.doc = &document;
+
+	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
+		log_error("unable to marshal %s: yaml_document_initialize failed", name);
+		return NULL;
+	}
+
+	if (!fn(data))
+		goto end;
+
+	yaml = yaml_document_to_string(&document, name);
+
+end:
+	yaml_document_delete(&document);
+
+	marshal_ctx.doc = NULL;
+
+	return yaml;
+}
+
+// TODO use marshal_yaml
+char *marshal_yaml_map(const void *data, map_fn fn, const char *name) {
 	if (!data) {
 		return NULL;
 	}

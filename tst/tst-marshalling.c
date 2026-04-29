@@ -721,6 +721,17 @@ static void marshal_ipc_response__seq(void **state) {
 
 	assert_non_nul(actual);
 
+	char *expected;
+	if (V2)
+		expected = read_file("tst/marshalling/ipc-responses-seq.yaml");
+	else
+		expected = read_file("tst/marshalling/ipc-responses-seq-v1.yaml");
+
+	if (strcmp(actual, expected) != 0) {
+		write_file("actual.yaml", actual);
+		write_file("expected.yaml", expected);
+	}
+
 	assert_str_equal(actual, "- DONE: TRUE\n  RC: 1\n");
 
 	ipc_operation_free(ipc_operation);

@@ -151,15 +151,7 @@ static bool map_messages(struct IpcOperation *ipc_operation, int mapping) {
 	return true;
 }
 
-static bool map_ipc_response(const void *data, int mapping) {
-	if (!data)
-		return false;
-
-	// map_messages mutates operation->rc based on max line level
-	struct IpcOperation *ipc_operation = (struct IpcOperation*)data;
-
-	// TODO GET sends only one response as a map
-
+static bool map_ipc_response(struct IpcOperation *ipc_operation, int mapping) {
 	map_key_to_bool("DONE", ipc_operation->done, mapping);
 
 	if (ipc_operation->send_state) {
@@ -176,7 +168,40 @@ static bool map_ipc_response(const void *data, int mapping) {
 	return true;
 }
 
+// TODO this emits non-compact when using a sequence
+static bool root_ipc_response(const void *data) {
+	if (!data)
+		return false;
+
+	// map_messages mutates operation->rc based on max line level
+	struct IpcOperation *ipc_operation = (struct IpcOperation*)data;
+
+	// root is a sequence when not GET
+	int seq = 0;
+	if (ipc_operation->request->command != GET) {
+		seq = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+		if (!seq) {
+			log_error("unable to marshal ipc response: yaml_document_add_sequence for root failed");
+			return false;
+		}
+	}
+
+	// map will be root (GET) or appended to seq
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map) {
+		log_error("unable to marshal ipc response: yaml_document_add_mapping for root failed");
+		return false;
+	}
+	if (!map_ipc_response(ipc_operation, map))
+		return false;
+
+	if (seq)
+		return yaml_document_append_sequence_item(marshal_ctx.doc, seq, map);
+	else
+		return true;
+}
+
 char *marshal_ipc_response_2(struct IpcOperation *ipc_operation) {
-	return marshal_yaml(ipc_operation, map_ipc_response, "ipc response");
+	return marshal_yaml(ipc_operation, root_ipc_response, "ipc response");
 }
 

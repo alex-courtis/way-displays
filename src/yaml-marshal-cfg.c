@@ -129,5 +129,5 @@ bool map_cfg(const void *data, int mapping) {
 }
 
 char *marshal_cfg_2(const struct Cfg *cfg) {
-	return marshal_yaml(cfg, map_cfg, "cfg");
+	return marshal_yaml_map(cfg, map_cfg, "cfg");
 }

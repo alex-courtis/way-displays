@@ -30,6 +30,6 @@ static bool map_ipc_request(const void *data, int mapping) {
 }
 
 char *marshal_ipc_request_2(const struct IpcRequest *ipc_request) {
-	return marshal_yaml(ipc_request, map_ipc_request, "ipc request");
+	return marshal_yaml_map(ipc_request, map_ipc_request, "ipc request");
 }
 
