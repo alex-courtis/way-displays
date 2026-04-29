@@ -736,6 +736,7 @@ static void marshal_ipc_response__seq(void **state) {
 
 	ipc_operation_free(ipc_operation);
 	free(actual);
+	free(expected);
 
 	assert_logs_empty();
 }
