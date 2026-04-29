@@ -345,6 +345,48 @@ static bool map_add_state(const void *data, int mapping) {
 	return true;
 }
 
+static bool seq_append_log_cap_line(struct LogCapLine *line, int sequence) {
+	int map = yaml_document_add_mapping(ctx.document, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return false;
+
+	if (!map_add_str(log_threshold_name(line->threshold), line->line, map))
+		return false;
+
+	return yaml_document_append_sequence_item(ctx.document, sequence, map);
+}
+
+// mutates operation->rc based on max line level
+static bool map_add_messages_rc(struct IpcOperation *operation, int mapping) {
+	bool lines_added = false;
+
+	int seq_lines = yaml_document_add_sequence(ctx.document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq_lines)
+		return false;
+
+	for (struct SList *i = operation->log_cap_lines; i; i = i->nex) {
+		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+
+		if (!cap_line || !cap_line->line || cap_line->threshold < operation->request->log_threshold)
+			continue;
+
+		lines_added = seq_append_log_cap_line(cap_line, seq_lines) || lines_added;
+
+		if (cap_line->threshold == WARNING && operation->rc < IPC_RC_WARN)
+			operation->rc = IPC_RC_WARN;
+		if (cap_line->threshold == ERROR && operation->rc < IPC_RC_ERROR)
+			operation->rc = IPC_RC_ERROR;
+	}
+
+	if (lines_added) {
+		int key = yaml_document_add_scalar(ctx.document, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
+		if (key)
+			yaml_document_append_mapping_pair(ctx.document, mapping, key, seq_lines);
+	}
+
+	return true;
+}
+
 static bool map_add_ipc_request(const struct IpcRequest *request, int mapping) {
 	if (!request)
 		return false;
@@ -365,7 +407,8 @@ static bool map_add_ipc_request(const struct IpcRequest *request, int mapping) {
 	return true;
 }
 
-static bool map_add_ipc_response(const struct IpcOperation *operation, int mapping) {
+// TODO rename to map_ipc_response, also similar
+static bool map_add_ipc_response(struct IpcOperation *operation, int mapping) {
 	if (!operation)
 		return false;
 
@@ -374,13 +417,15 @@ static bool map_add_ipc_response(const struct IpcOperation *operation, int mappi
 	map_add_bool("DONE", operation->done, mapping);
 
 	if (operation->send_state) {
-		if (cfg) {
+		if (cfg)
 			map_add_map("CFG", cfg, map_add_cfg, mapping);
-		}
-		if (lid || heads) {
+		if (lid || heads)
 			map_add_map("STATE", operation, map_add_state, mapping);
-		}
 	}
+
+	map_add_messages_rc(operation, mapping);
+
+	map_add_int("RC", operation->rc, mapping);
 
 	return true;
 }
@@ -503,7 +548,7 @@ end:
 	return yaml;
 }
 
-char *marshal_ipc_response_2(const struct IpcOperation *operation) {
+char *marshal_ipc_response_2(struct IpcOperation *operation) {
 	if (!operation)
 		return NULL;
 
