@@ -2,12 +2,14 @@
 #include <stdbool.h>
 #include <yaml.h>
 
-#include "yaml-marshal.h"
+#include "yaml-marshal-cfg.h"
 
 #include "cfg.h"
 #include "convert.h"
 #include "conditions.h"
+#include "log.h"
 #include "mode.h"
+#include "yaml-marshal.h"
 
 static bool seq_user_scale(const void *data, int sequence) {
 	if (!data || !sequence)
@@ -128,6 +130,15 @@ bool map_cfg(const void *data, int mapping) {
 	return true;
 }
 
-char *marshal_cfg_2(const struct Cfg *cfg) {
-	return marshal_yaml_map(cfg, map_cfg, "cfg");
+bool marshal_cfg_fn(const void *data) {
+	if (!data)
+		return false;
+
+	int mapping = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!mapping) {
+		log_error("unable to marshal cfg: yaml_document_add_mapping for root failed");
+		return false;
+	}
+
+	return map_cfg(data, mapping);
 }

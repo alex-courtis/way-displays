@@ -33,8 +33,5 @@ bool map_key_to_enum(const char *k, const int v, enum_key_fn fn_name, int mappin
 // append to a sequence
 bool seq_str(const void *data, int sequence);
 
-// TODO refactor away
-char *marshal_yaml_map(const void *data, map_fn fn, const char *name);
-
 #endif // YAML_MARSHAL_H
 

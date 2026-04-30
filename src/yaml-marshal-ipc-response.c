@@ -169,7 +169,7 @@ static bool map_ipc_response(struct IpcOperation *ipc_operation, int mapping) {
 }
 
 // TODO this emits non-compact when using a sequence
-static bool root_ipc_response(const void *data) {
+bool marshal_ipc_response_fn(const void *data) {
 	if (!data)
 		return false;
 
@@ -199,9 +199,5 @@ static bool root_ipc_response(const void *data) {
 		return yaml_document_append_sequence_item(marshal_ctx.doc, seq, map);
 	else
 		return true;
-}
-
-char *marshal_ipc_response_2(struct IpcOperation *ipc_operation) {
-	return marshal_yaml(ipc_operation, root_ipc_response, "ipc response");
 }
 

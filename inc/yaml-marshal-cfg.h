@@ -3,10 +3,8 @@
 
 #include <stdbool.h>
 
-#include "cfg.h"
-
-// TODO replace with a direct call to marshal_yaml when removing v1
-char *marshal_cfg_2(const struct Cfg *cfg);
+// marshal_fn to be executed via marshal_yaml, data is Cfg
+bool marshal_cfg_fn(const void *data);
 
 bool map_cfg(const void *data, int mapping);
 

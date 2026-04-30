@@ -22,6 +22,7 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #include "marshalling.h"
+#include "yaml-marshal.h"
 #include "yaml-marshal-cfg.h"
 #include "yaml-marshal-ipc-request.h"
 #include "yaml-marshal-ipc-response.h"
@@ -29,17 +30,11 @@
 #ifdef V2
 #define V2 true
 #define UCFF unmarshal_cfg_from_file_2
-#define MC marshal_cfg_2
-#define MIREQ marshal_ipc_request_2
-#define MIRES marshal_ipc_response_2
 #define UIREQ unmarshal_ipc_request
 #define UIRES unmarshal_ipc_responses
 #else
 #define V2 false
 #define UCFF unmarshal_cfg_from_file
-#define MC marshal_cfg
-#define MIREQ marshal_ipc_request
-#define MIRES marshal_ipc_response
 #define UIREQ unmarshal_ipc_request
 #define UIRES unmarshal_ipc_responses
 #endif
@@ -387,7 +382,10 @@ static void unmarshal_cfg_from_file__legacy(void **state) {
 	struct Cfg *read = cfg_default();
 	read->file_path = strdup("tst/marshalling/cfg-legacy.yaml");
 
-	assert_true(UCFF(read));
+	if (V2)
+		unmarshal_cfg_from_file_2(read);
+	else
+		unmarshal_cfg_from_file_2(read);
 
 	struct Cfg *expected = cfg_default();
 
@@ -410,7 +408,11 @@ static void unmarshal_cfg_from_file__legacy(void **state) {
 static void marshal_cfg__ok(void **state) {
 	struct Cfg *cfg = cfg_all();
 
-	char *actual = MC(cfg);
+	char *actual;
+	if (V2)
+		actual = marshal_yaml(cfg, marshal_cfg_fn, "cfg");
+	else
+		actual = marshal_cfg(cfg);
 
 	assert_non_nul(actual);
 
@@ -433,7 +435,11 @@ static void marshal_cfg__ok(void **state) {
 static void marshal_cfg__default(void **state) {
 	struct Cfg *cfg = cfg_default();
 
-	char *actual = MC(cfg);
+	char *actual;
+	if (V2)
+		actual = marshal_yaml(cfg, marshal_cfg_fn, "cfg");
+	else
+		actual = marshal_cfg(cfg);
 
 	assert_non_nul(actual);
 
@@ -461,7 +467,11 @@ static void marshal_cfg__yaml_document_initialize_fail(void **state) {
 
 	yaml_document_initialize__fail = true;
 
-	char *actual = MC(cfg);
+	char *actual;
+	if (V2)
+		actual = marshal_yaml(cfg, marshal_cfg_fn, "cfg");
+	else
+		actual = marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -480,7 +490,11 @@ static void marshal_cfg__yaml_document_add_mapping_fail(void **state) {
 
 	yaml_document_add_mapping__fail = true;
 
-	char *actual = MC(cfg);
+	char *actual;
+	if (V2)
+		actual = marshal_yaml(cfg, marshal_cfg_fn, "cfg");
+	else
+		actual = marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -499,7 +513,11 @@ static void marshal_cfg__yaml_emitter_initialize_fail(void **state) {
 
 	yaml_emitter_initialize__fail = true;
 
-	char *actual = MC(cfg);
+	char *actual;
+	if (V2)
+		actual = marshal_yaml(cfg, marshal_cfg_fn, "cfg");
+	else
+		actual = marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -518,7 +536,11 @@ static void marshal_cfg__yaml_emitter_open_fail(void **state) {
 
 	yaml_emitter_dump__fail = true;
 
-	char *actual = MC(cfg);
+	char *actual;
+	if (V2)
+		actual = marshal_yaml(cfg, marshal_cfg_fn, "cfg");
+	else
+		actual = marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -538,7 +560,11 @@ static void marshal_cfg__yaml_emitter_dump_fail(void **state) {
 
 	yaml_emitter_dump__fail = true;
 
-	char *actual = MC(cfg);
+	char *actual;
+	if (V2)
+		actual = marshal_yaml(cfg, marshal_cfg_fn, "cfg");
+	else
+		actual = marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -557,7 +583,11 @@ static void marshal_cfg__yaml_emitter_close_fail(void **state) {
 
 	yaml_emitter_close__fail = true;
 
-	char *actual = MC(cfg);
+	char *actual;
+	if (V2)
+		actual = marshal_yaml(cfg, marshal_cfg_fn, "cfg");
+	else
+		actual = marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -571,12 +601,13 @@ static void marshal_cfg__yaml_emitter_close_fail(void **state) {
 static void marshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
-	assert_nul(MIREQ(ipc_request));
-
-	if (V2)
+	if (V2) {
+		assert_nul(marshal_yaml(ipc_request, marshal_ipc_request_fn, "ipc request"));
 		assert_log(ERROR, "unable to marshal ipc request: missing OP\n");
-	else
+	} else {
+		assert_nul(marshal_ipc_request(ipc_request));
 		assert_log(ERROR, "marshalling ipc request: missing OP\n");
+	}
 
 	ipc_request_free(ipc_request);
 }
@@ -588,7 +619,12 @@ static void marshal_ipc_request__cfg_set(void **state) {
 
 	ipc_request->cfg = cfg_all();
 
-	char *actual = MIREQ(ipc_request);
+	char *actual;
+	if (V2) {
+		actual = marshal_yaml(ipc_request, marshal_ipc_request_fn, "ipc request");
+	} else {
+		actual = marshal_ipc_request(ipc_request);
+	}
 
 	assert_non_nul(actual);
 
@@ -681,7 +717,12 @@ static void marshal_ipc_response__map(void **state) {
 
 	slist_append(&heads, &head);
 
-	char *actual = MIRES(ipc_operation);
+	char *actual;
+	if (V2) {
+		actual = marshal_yaml(ipc_operation, marshal_ipc_response_fn, "ipc response");
+	} else {
+		actual = marshal_ipc_response(ipc_operation);
+	}
 
 	assert_non_nul(actual);
 
@@ -717,7 +758,12 @@ static void marshal_ipc_response__seq(void **state) {
 	ipc_operation->done = true;
 	ipc_operation->rc = 1;
 
-	char *actual = MIRES(ipc_operation);
+	char *actual;
+	if (V2) {
+		actual = marshal_yaml(ipc_operation, marshal_ipc_response_fn, "ipc response");
+	} else {
+		actual = marshal_ipc_response(ipc_operation);
+	}
 
 	assert_non_nul(actual);
 

@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <stddef.h>
+#include <yaml.h>
 
 #include "yaml-marshal.h"
 
@@ -7,9 +9,12 @@
 #include "log.h"
 #include "yaml-marshal-cfg.h"
 
-static bool map_ipc_request(const void *data, int mapping) {
-	if (!data)
+bool marshal_ipc_request_fn(const void *data) {
+	int root = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!root) {
+		log_error("unable to marshal ipc request: yaml_document_add_mapping for root failed");
 		return false;
+	}
 
 	const struct IpcRequest *ipc_request = data;
 
@@ -19,17 +24,13 @@ static bool map_ipc_request(const void *data, int mapping) {
 		return false;
 	}
 
-	map_key_to_str("OP", ipc_command_name(ipc_request->command), mapping);
+	map_key_to_str("OP", ipc_command_name(ipc_request->command), root);
 
 	if (ipc_request->log_threshold)
-		map_key_to_str("LOG_THRESHOLD", log_threshold_name(ipc_request->log_threshold), mapping);
+		map_key_to_str("LOG_THRESHOLD", log_threshold_name(ipc_request->log_threshold), root);
 
-	map_key_to_map("CFG", ipc_request->cfg, map_cfg, mapping);
+	map_key_to_map("CFG", ipc_request->cfg, map_cfg, root);
 
 	return true;
-}
-
-char *marshal_ipc_request_2(const struct IpcRequest *ipc_request) {
-	return marshal_yaml_map(ipc_request, map_ipc_request, "ipc request");
 }
 

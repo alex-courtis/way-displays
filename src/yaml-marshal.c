@@ -192,37 +192,3 @@ end:
 	return yaml;
 }
 
-// TODO use marshal_yaml
-char *marshal_yaml_map(const void *data, map_fn fn, const char *name) {
-	if (!data) {
-		return NULL;
-	}
-
-	char *yaml = NULL;
-
-	yaml_document_t document;
-	marshal_ctx.doc = &document;
-
-	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
-		log_error("unable to marshal %s: yaml_document_initialize failed", name);
-		return NULL;
-	}
-
-	int root;
-	if (!(root = yaml_document_add_mapping(&document, NULL, YAML_BLOCK_MAPPING_STYLE))) {
-		log_error("unable to marshal %s: yaml_document_add_mapping for root failed", name);
-		goto end;
-	}
-
-	if (!fn(data, root))
-		goto end;
-
-	yaml = yaml_document_to_string(&document, name);
-
-end:
-	yaml_document_delete(&document);
-
-	marshal_ctx.doc = NULL;
-
-	return yaml;
-}
