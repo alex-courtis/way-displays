@@ -1,10 +1,10 @@
 #ifndef YAML_MARSHAL_IPC_RESPONSE_H
 #define YAML_MARSHAL_IPC_RESPONSE_H
 
-#include <stdbool.h>
+#include "ipc.h"
 
-// marshal_fn to be executed via marshal_yaml, data is IpcOperation
-bool marshal_ipc_response_fn(const void *data);
+// mutates rc
+char *ipc_response_to_yaml(struct IpcOperation *ipc_operation);
 
 #endif // YAML_MARSHAL_IPC_RESPONSE_H
 

@@ -1,10 +1,9 @@
 #ifndef YAML_MARSHAL_IPC_REQUEST_H
 #define YAML_MARSHAL_IPC_REQUEST_H
 
-#include <stdbool.h>
+#include "ipc.h"
 
-// marshal_fn to be executed via marshal_yaml, data is IpcRequest
-bool marshal_ipc_request_fn(const void *data);
+char *ipc_request_to_yaml(const struct IpcRequest *ipc_request);
 
 #endif // YAML_MARSHAL_IPC_REQUEST_H
 

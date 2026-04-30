@@ -13,8 +13,8 @@ extern struct MarshalCtx {
 } marshal_ctx;
 
 // marshal data to a yaml string via fn, logs use name
-typedef bool (*marshal_fn)(const void *data);
-char *marshal_yaml(const void *data, marshal_fn fn, const char *name);
+typedef bool (*struct_to_yaml_fn)(const void *data);
+char *struct_to_yaml(const void *data, struct_to_yaml_fn fn, const char *name);
 
 // marshalling function prototypes
 typedef bool (*map_fn)(const void *data, const int mapping);

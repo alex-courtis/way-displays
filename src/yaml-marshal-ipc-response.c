@@ -68,12 +68,10 @@ static bool seq_mode(const void *data, int sequence) {
 	if (!data)
 		return false;
 
-	const struct Mode *mode = data;
-
 	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
-		map_mode(mode, map) &&
+		map_mode(data, map) &&
 		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
@@ -169,7 +167,7 @@ static bool map_ipc_response(struct IpcOperation *ipc_operation, int mapping) {
 }
 
 // TODO this emits non-compact when using a sequence
-bool marshal_ipc_response_fn(const void *data) {
+static bool marshal_ipc_response_fn(const void *data) {
 	if (!data)
 		return false;
 
@@ -201,3 +199,6 @@ bool marshal_ipc_response_fn(const void *data) {
 		return true;
 }
 
+char *ipc_response_to_yaml(struct IpcOperation *ipc_operation) {
+	return struct_to_yaml(ipc_operation, marshal_ipc_response_fn, "ipc response");
+}

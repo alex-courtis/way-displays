@@ -164,7 +164,7 @@ end:
 	return yaml;
 }
 
-char *marshal_yaml(const void *data, marshal_fn fn, const char *name) {
+char *struct_to_yaml(const void *data, struct_to_yaml_fn fn, const char *name) {
 	if (!data) {
 		return NULL;
 	}

@@ -809,7 +809,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 	return true;
 }
 
-bool unmarshal_cfg_from_file_2(struct Cfg *cfg) {
+bool yaml_file_to_cfg(struct Cfg *cfg) {
 	if (!cfg->file_path) {
 		return false;
 	}

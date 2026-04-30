@@ -3,8 +3,9 @@
 
 #include <stdbool.h>
 
-// marshal_fn to be executed via marshal_yaml, data is Cfg
-bool marshal_cfg_fn(const void *data);
+#include "cfg.h"
+
+char *cfg_to_yaml(const struct Cfg *cfg);
 
 bool map_cfg(const void *data, int mapping);
 

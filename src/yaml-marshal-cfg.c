@@ -130,7 +130,7 @@ bool map_cfg(const void *data, int mapping) {
 	return true;
 }
 
-bool marshal_cfg_fn(const void *data) {
+static bool marshal_cfg_fn(const void *data) {
 	if (!data)
 		return false;
 
@@ -141,4 +141,8 @@ bool marshal_cfg_fn(const void *data) {
 	}
 
 	return map_cfg(data, mapping);
+}
+
+char *cfg_to_yaml(const struct Cfg *cfg) {
+	return struct_to_yaml(cfg, marshal_cfg_fn, "cfg");
 }

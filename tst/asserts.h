@@ -97,9 +97,9 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 
 void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
 	if (!cfg_equal(a, b)) {
-		cmocka_print_error("assert_cfg_equal\nactual.cfg:\n%s\nexpected.cfg:\n%s\n", marshal_yaml(a, marshal_cfg_fn, "cfg"), marshal_yaml(b, marshal_cfg_fn, "cfg"));
-		write_file("actual.cfg", marshal_yaml(a, marshal_cfg_fn, "cfg"));
-		write_file("expected.cfg", marshal_yaml(b, marshal_cfg_fn, "cfg"));
+		cmocka_print_error("assert_cfg_equal\nactual.cfg:\n%s\nexpected.cfg:\n%s\n", cfg_to_yaml(a), cfg_to_yaml(b));
+		write_file("actual.cfg", cfg_to_yaml(a));
+		write_file("expected.cfg", cfg_to_yaml(b));
 		_fail(file, line);
 	}
 }
