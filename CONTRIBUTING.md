@@ -18,7 +18,7 @@ Please raise an [issue](https://github.com/alex-courtis/way-displays/issues), fo
 
 Most will be available if you are running a wlroots based compositor like sway.
 
-yaml-cpp will need to be installed via your distribution's package manager.
+yaml-cpp will need to be installed via your distribution's package manager. Note that if your distribution decouples libraries from their headers you will need to install the "development" versions of these packages (with the exception of make/gcc/glang).
 
 ## Development
 
