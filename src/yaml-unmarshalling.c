@@ -7,6 +7,8 @@
 #include <string.h>
 #include <yaml.h>
 
+#include "yaml-unmarshal.h"
+
 #include "cfg.h"
 #include "convert.h"
 #include "conditions.h"
@@ -14,24 +16,12 @@
 #include "slist.h"
 #include "stable.h"
 
-// TODO
-// deal with unsigned char
-// clean up test alternates, gitignore etc.
-// consider SSet
-// take another look at non-compact output
+struct UnmarshalCtx ctx = { 0 };
 
-static struct UnmarshalContext {
-	yaml_document_t *document;
-	enum CfgElement element;
-	yaml_node_type_t type_expected;
-	yaml_node_type_t type_actual;
-	char *name_desc;
-	char *key;
-	char *def;
-} ctx = { 0 };
-
-static void ctx_clear(void) {
+void ctx_clear(void) {
 	ctx.document = NULL;
+	if (ctx.yaml)
+		free(ctx.yaml);
 	ctx.type_expected = YAML_NO_NODE;
 	ctx.type_actual = YAML_NO_NODE;
 	if (ctx.name_desc)
@@ -40,7 +30,13 @@ static void ctx_clear(void) {
 		free(ctx.key);
 	if (ctx.def)
 		free(ctx.def);
-	memset(&ctx, 0, sizeof(struct UnmarshalContext));
+	memset(&ctx, 0, sizeof(struct UnmarshalCtx));
+}
+
+void ctx_yaml(char *yaml) {
+	if (ctx.yaml)
+		free(ctx.yaml);
+	ctx.yaml = strdup(yaml);
 }
 
 static void ctx_clear_name_desc_key(void) {
@@ -231,10 +227,8 @@ static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar
 	return false;
 }
 
-// unmarshal an scalar enum to dst
-typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
-typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
-static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
+// TODO common
+bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 

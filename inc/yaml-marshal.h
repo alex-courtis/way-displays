@@ -7,6 +7,8 @@
 
 #include "slist.h"
 
+// TODO compress into one header
+
 // global, set and unset by marshal_yaml
 extern struct MarshalCtx {
 	yaml_document_t *doc;
