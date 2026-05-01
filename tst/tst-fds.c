@@ -70,6 +70,7 @@ void fd_wd_cfg_dir_create__bad_dir(void **state) {
 	assert_int_equal(wd_cfg_dir, -1);
 
 	assert_log(FATAL, "\nunable to create config directory watch for /inexistent, exiting\n");
+	assert_logs_empty();
 }
 
 void fd_wd_cfg_dir_create__ok(void **state) {
@@ -97,6 +98,7 @@ void fd_wd_cfg_dir_destroy__bad(void **state) {
 	assert_int_equal(wd_cfg_dir, -1);
 
 	assert_log(ERROR, "\nunable to remove config directory watch\n\nunable to close config directory watch\n");
+	assert_logs_empty();
 }
 
 void fd_wd_cfg_dir_destroy__ok(void **state) {

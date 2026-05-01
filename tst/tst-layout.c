@@ -689,6 +689,7 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 	handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
+	assert_logs_empty();
 
 	assert_false(head.adaptive_sync_failed);
 }
@@ -731,6 +732,7 @@ void handle_success__head_changing_mode(void **state) {
 	handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
+	assert_logs_empty();
 
 	assert_ptr_equal(head.current.mode, &mode);
 }
@@ -745,6 +747,7 @@ void handle_success__ok(void **state) {
 	handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
+	assert_logs_empty();
 }
 
 void handle_failure__mode(void **state) {
@@ -813,6 +816,7 @@ void handle_failure__unspecified(void **state) {
 	handle_failure();
 
 	assert_log(FATAL, "\nChanges failed, exiting\n");
+	assert_logs_empty();
 }
 
 int main(void) {

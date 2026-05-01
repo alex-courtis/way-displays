@@ -156,6 +156,7 @@ void cfg_file_write__none(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/zero\n");
+	assert_logs_empty();
 
 	assert_str_equal(cfg->file_path, "/path/to/zero");
 	assert_str_equal(cfg->dir_path, "/path/to");
@@ -221,6 +222,7 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/three\n");
+	assert_logs_empty();
 
 	assert_str_equal(cfg->file_path, "/path/to/three");
 	assert_str_equal(cfg->dir_path, "/path/to");
@@ -302,6 +304,7 @@ void cfg_file_write__existing(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: tst/tmp/write-existing-cfg.yaml\n");
+	assert_logs_empty();
 
 	assert_int_equal(cfg->updated, true);
 

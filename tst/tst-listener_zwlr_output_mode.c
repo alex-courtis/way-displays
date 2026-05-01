@@ -60,6 +60,7 @@ void preferred__subsequent(void **state) {
 	zwlr_output_mode_listener()->preferred(&mode_subsequent, NULL);
 
 	assert_log(INFO, "\nNAM: multiple preferred modes advertised: using initial 3840x2160@60Hz (60,000mHz) (preferred), ignoring 2560x1440@30Hz (30,000mHz)\n");
+	assert_logs_empty();
 
 	assert_true(mode_existing.preferred);
 	assert_false(mode_subsequent.preferred);

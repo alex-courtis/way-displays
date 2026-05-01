@@ -180,6 +180,7 @@ void print_cfg_commands__ok(void **state) {
 
 	char *expected_log = read_file("tst/info/print-cfg-commands-ok.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 
 	cfg_free(cfg);
 	free(expected_log);
@@ -195,6 +196,7 @@ void print_head_arrived__all(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-arrived-all.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -208,6 +210,7 @@ void print_head_arrived__min(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-arrived-min.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 
 	head_free(head);
@@ -220,6 +223,7 @@ void print_head_departed__ok(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-departed-ok.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -233,6 +237,7 @@ void print_head_deltas__mode(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-mode.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -249,6 +254,7 @@ void print_head_deltas__vrr(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-vrr.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -264,6 +270,7 @@ void print_head_deltas__other(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-other.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -279,6 +286,7 @@ void print_head_deltas__disable(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-disable.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -294,6 +302,7 @@ void print_head_deltas__enable(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-enable.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -311,6 +320,7 @@ void print_active__many(void **state) {
 
 	char *expected_log = read_file("tst/info/print-list.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -330,6 +340,7 @@ void print_adaptive_sync_fail__head(void **state) {
 			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
 			"  VRR_OFF:\n"
 			"    - 'model0'\n");
+	assert_logs_empty();
 }
 
 void print_mode_fail__nulls(void **state) {
@@ -337,6 +348,7 @@ void print_mode_fail__nulls(void **state) {
 	print_mode_fail(WARNING, NULL, NULL);
 
 	assert_log(WARNING, "\nChanges failed\n");
+	assert_logs_empty();
 }
 
 void print_mode_fail__head(void **state) {
@@ -345,6 +357,7 @@ void print_mode_fail__head(void **state) {
 	print_mode_fail(WARNING, &head, NULL);
 
 	assert_log(WARNING, "\nChanges failed\n  head0:\n    (no mode)\n");
+	assert_logs_empty();
 }
 
 void delta_human_mode__to_no(void **state) {
@@ -526,6 +539,7 @@ void call_back__one(void **state) {
 	call_back(INFO, "msg1", NULL);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+	assert_logs_empty();
 
 	stable_free(env);
 }
@@ -548,6 +562,7 @@ void call_back__two(void **state) {
 	call_back(FATAL, "msg1", "msg2");
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+	assert_logs_empty();
 
 	stable_free(env);
 }
@@ -572,6 +587,7 @@ void call_back_mode_fail__(void **state) {
 	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+	assert_logs_empty();
 
 	stable_free(env);
 }
@@ -601,6 +617,7 @@ void call_back_adaptive_sync_fail__(void **state) {
 	call_back_adaptive_sync_fail(WARNING, displ->delta.head);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+	assert_logs_empty();
 
 	stable_free(env);
 }

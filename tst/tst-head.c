@@ -205,6 +205,7 @@ void head_set_scaled_dimensions__dimensions(void **state) {
 	assert_int_equal(head.scaled.width, 2194);
 	assert_int_equal(head.scaled.height, 1234);
 	assert_log(DEBUG, "\n???: Rounded scale 1.7 to nearest multiple of 1/8: 1.750\n");
+	assert_logs_empty();
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.9, head.scaling_base);
 	// actual scale will be 1.875
@@ -212,6 +213,7 @@ void head_set_scaled_dimensions__dimensions(void **state) {
 	assert_int_equal(head.scaled.width, 2048);
 	assert_int_equal(head.scaled.height, 1152);
 	assert_log(DEBUG, "\n???: Rounded scale 1.9 to nearest multiple of 1/8: 1.875\n");
+	assert_logs_empty();
 
 	head.name = "name";
 
@@ -221,6 +223,7 @@ void head_set_scaled_dimensions__dimensions(void **state) {
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
 	assert_log(DEBUG, "\nname: Rounded scale 2.01 to nearest multiple of 1/8: 2.000\n");
+	assert_logs_empty();
 }
 
 void head_find_mode__all_failed(void **state) {
@@ -238,6 +241,7 @@ void head_find_mode__all_failed(void **state) {
 	assert_nul(head_find_mode(&head));
 
 	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
+	assert_logs_empty();
 
 	slist_free(&head.modes);
 	slist_free(&head.modes_failed);
@@ -363,6 +367,7 @@ void head_find_mode__max(void **state) {
 	// one and only notice
 	assert_ptr_equal(head_find_mode(&head), &mode);
 	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
+	assert_logs_empty();
 
 	// no notice
 	assert_ptr_equal(head_find_mode(&head), &mode);
@@ -385,6 +390,7 @@ void head_find_mode__none(void **state) {
 	assert_nul(head_find_mode(&head));
 
 	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
+	assert_logs_empty();
 
 	slist_free(&head.modes_failed);
 }
@@ -411,11 +417,13 @@ void head_apply_toggles__disabled__enable(void **state) {
 
 	assert_true(head.overrided_enabled == OverrideTrue);
 	assert_log(INFO, "\nApplying \"DISABLED\" override for head0\n");
+	assert_logs_empty();
 
 	head_apply_toggles(&head, cfg);
 
 	assert_true(head.overrided_enabled == NoOverride);
 	assert_log(INFO, "\nResetting \"DISABLED\" override for head0\n");
+	assert_logs_empty();
 
 	cfg_free(cfg);
 }
@@ -429,11 +437,13 @@ void head_apply_toggles__disabled__disable(void **state) {
 
 	assert_true(head.overrided_enabled == OverrideFalse);
 	assert_log(INFO, "\nApplying \"DISABLED\" override for head0\n");
+	assert_logs_empty();
 
 	head_apply_toggles(&head, cfg);
 
 	assert_true(head.overrided_enabled == NoOverride);
 	assert_log(INFO, "\nResetting \"DISABLED\" override for head0\n");
+	assert_logs_empty();
 
 	cfg_free(cfg);
 }

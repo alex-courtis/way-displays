@@ -458,6 +458,7 @@ void validate_fix__col(void **state) {
 	validate_fix(s->from);
 
 	assert_log(WARNING, "\nIgnoring invalid ALIGN TOP for COLUMN arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.\n");
+	assert_logs_empty();
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -474,6 +475,7 @@ void validate_fix__row(void **state) {
 	validate_fix(s->from);
 
 	assert_log(WARNING, "\nIgnoring invalid ALIGN RIGHT for ROW arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.\n");
+	assert_logs_empty();
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -491,6 +493,7 @@ void validate_fix__scale(void **state) {
 
 	char *expected_log = read_file("tst/cfg/validate-fix-scale.log");
 	assert_log(WARNING, expected_log);
+	assert_logs_empty();
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
 
@@ -519,6 +522,7 @@ void validate_fix__mode(void **state) {
 
 	char *expected_log = read_file("tst/cfg/validate-fix-mode.log");
 	assert_log(WARNING, expected_log);
+	assert_logs_empty();
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
@@ -574,6 +578,7 @@ void validate_warn__(void **state) {
 
 	char *expected_log = read_file("tst/cfg/validate-warn.log");
 	assert_log(WARNING, expected_log);
+	assert_logs_empty();
 
 	free(expected_log);
 }
