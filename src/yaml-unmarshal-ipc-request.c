@@ -58,7 +58,7 @@ static struct IpcRequest *doc_to_ipc_request(yaml_document_t *document) {
 err:
 	// TODO some context
 	log_error("\nunmarshalling ipc request: invalid OP '%s'", "aoeu");
-	log_error("========================================\n%s\n----------------------------------------", ctx.yaml);
+	log_error("========================================\n%s\n----------------------------------------", unmarshal_ctx.yaml);
 
 	ipc_request_free(ipc_request);
 	ipc_request = NULL;
@@ -91,9 +91,9 @@ struct IpcRequest *yaml_to_ipc_request(char *yaml) {
 		return NULL;
 	}
 
-	ctx_clear();
-	ctx.document = &document;
-	ctx_yaml(yaml);
+	unmarshal_ctx_clear();
+	unmarshal_ctx.document = &document;
+	unmarshal_ctx_yaml(yaml);
 
 	struct IpcRequest *ipc_request = doc_to_ipc_request(&document);
 

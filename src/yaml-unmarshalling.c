@@ -16,65 +16,63 @@
 #include "slist.h"
 #include "stable.h"
 
-struct UnmarshalCtx ctx = { 0 };
-
-void ctx_clear(void) {
-	ctx.document = NULL;
-	if (ctx.yaml)
-		free(ctx.yaml);
-	ctx.type_expected = YAML_NO_NODE;
-	ctx.type_actual = YAML_NO_NODE;
-	if (ctx.name_desc)
-		free(ctx.name_desc);
-	if (ctx.key)
-		free(ctx.key);
-	if (ctx.def)
-		free(ctx.def);
-	memset(&ctx, 0, sizeof(struct UnmarshalCtx));
+void unmarshal_ctx_clear(void) {
+	unmarshal_ctx.document = NULL;
+	if (unmarshal_ctx.yaml)
+		free(unmarshal_ctx.yaml);
+	unmarshal_ctx.type_expected = YAML_NO_NODE;
+	unmarshal_ctx.type_actual = YAML_NO_NODE;
+	if (unmarshal_ctx.name_desc)
+		free(unmarshal_ctx.name_desc);
+	if (unmarshal_ctx.key)
+		free(unmarshal_ctx.key);
+	if (unmarshal_ctx.def)
+		free(unmarshal_ctx.def);
+	memset(&unmarshal_ctx, 0, sizeof(struct UnmarshalCtx));
 }
 
-void ctx_yaml(char *yaml) {
-	if (ctx.yaml)
-		free(ctx.yaml);
-	ctx.yaml = strdup(yaml);
+void unmarshal_ctx_yaml(char *yaml) {
+	if (unmarshal_ctx.yaml)
+		free(unmarshal_ctx.yaml);
+	unmarshal_ctx.yaml = strdup(yaml);
 }
 
-static void ctx_clear_name_desc_key(void) {
-	if (ctx.name_desc) {
-		free(ctx.name_desc);
-		ctx.name_desc = NULL;
+static void unmarshal_ctx_clear_name_desc_key(void) {
+	if (unmarshal_ctx.name_desc) {
+		free(unmarshal_ctx.name_desc);
+		unmarshal_ctx.name_desc = NULL;
 	}
-	if (ctx.key) {
-		free(ctx.key);
-		ctx.key = NULL;
+	if (unmarshal_ctx.key) {
+		free(unmarshal_ctx.key);
+		unmarshal_ctx.key = NULL;
 	}
 }
 
-static void ctx_name_desc(const char *name_desc) {
-	if (ctx.name_desc)
-		free(ctx.name_desc);
+static void unmarshal_ctx_name_desc(const char *name_desc) {
+	if (unmarshal_ctx.name_desc)
+		free(unmarshal_ctx.name_desc);
 	if (name_desc)
-		ctx.name_desc = strdup(name_desc);
+		unmarshal_ctx.name_desc = strdup(name_desc);
 	else
-		ctx.name_desc = NULL;
+		unmarshal_ctx.name_desc = NULL;
 }
 
-static void ctx_key(const char *key) {
-	if (ctx.key)
-		free(ctx.key);
+static void unmarshal_ctx_key(const char *key) {
+	if (unmarshal_ctx.key)
+		free(unmarshal_ctx.key);
 	if (key)
-		ctx.key = strdup(key);
+		unmarshal_ctx.key = strdup(key);
 	else
-		ctx.key = NULL;
+		unmarshal_ctx.key = NULL;
 }
 
-static void ctx_def(const char *def) {
-	if (ctx.def)
-		free(ctx.def);
+static void unmarshal_ctx_def(const char *def) {
+	if (unmarshal_ctx.def)
+		free(unmarshal_ctx.def);
 	if (def)
-		ctx.def = strdup(def);
+		unmarshal_ctx.def = strdup(def);
 	else
-		ctx.def = NULL;
+		unmarshal_ctx.def = NULL;
 }
 
 // return a static string for the node type
@@ -99,20 +97,20 @@ static void log_invalid_value(const yaml_char_t *value) {
 
 	bufp += snprintf(bufp, 1024 - (bufp - buf), "Ignoring invalid");
 
-	if (ctx.element)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", cfg_element_name(ctx.element));
-	if (ctx.name_desc)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.name_desc);
-	if (ctx.key)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.key);
-	if (ctx.type_expected)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " expected %s", node_type_str(ctx.type_expected));
-	if (ctx.type_expected)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), ", got %s", node_type_str(ctx.type_actual));
+	if (unmarshal_ctx.element)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", cfg_element_name(unmarshal_ctx.element));
+	if (unmarshal_ctx.name_desc)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.name_desc);
+	if (unmarshal_ctx.key)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.key);
+	if (unmarshal_ctx.type_expected)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " expected %s", node_type_str(unmarshal_ctx.type_expected));
+	if (unmarshal_ctx.type_expected)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), ", got %s", node_type_str(unmarshal_ctx.type_actual));
 	if (value)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", value);
-	if (ctx.def)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", ctx.def);
+	if (unmarshal_ctx.def)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", unmarshal_ctx.def);
 
 	log_warn("%s", buf);
 }
@@ -125,14 +123,14 @@ static void log_misssing(void) {
 	static char buf[1024];
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, 1024 - (bufp - buf), "%s: Ignoring missing", cfg_element_name(ctx.element));
+	bufp += snprintf(bufp, 1024 - (bufp - buf), "%s: Ignoring missing", cfg_element_name(unmarshal_ctx.element));
 
-	if (ctx.key)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.key);
-	if (ctx.name_desc)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " for '%s'", ctx.name_desc);
-	if (ctx.def)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", ctx.def);
+	if (unmarshal_ctx.key)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.key);
+	if (unmarshal_ctx.name_desc)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " for '%s'", unmarshal_ctx.name_desc);
+	if (unmarshal_ctx.def)
+		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", unmarshal_ctx.def);
 
 	log_warn("%s", buf);
 }
@@ -148,7 +146,7 @@ static bool invalid_regex(const void *pattern, const void *unused) {
 		if (result) {
 			char err[1024];
 			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring invalid %s regex '%s':  %s", cfg_element_name(ctx.element), p + 1, err);
+			log_warn("Ignoring invalid %s regex '%s':  %s", cfg_element_name(unmarshal_ctx.element), p + 1, err);
 			rc = true;
 		}
 		regfree(&regex);
@@ -161,8 +159,8 @@ static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expe
 	if (node->type == expected)
 		return true;
 
-	ctx.type_expected = expected;
-	ctx.type_actual = node->type;
+	unmarshal_ctx.type_expected = expected;
+	unmarshal_ctx.type_actual = node->type;
 
 	log_invalid();
 
@@ -218,7 +216,7 @@ static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar
 	char def_str[10];
 	snprintf(def_str, 10, "%.1f", def);
 
-	ctx_def(def_str);
+	unmarshal_ctx_def(def_str);
 
 	if (scalar_to_float(dst, scalar))
 		return true;
@@ -244,7 +242,7 @@ bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val f
 
 // unmarshal an scalar enum to dst, sets def on failure
 static bool scalar_to_enum_def(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
-	ctx_def(fn_name(def));
+	unmarshal_ctx_def(fn_name(def));
 
 	if (scalar_to_enum(dst, scalar, fn_val)) {
 		return true;
@@ -277,7 +275,7 @@ static bool map_to_node_table(const struct STable **dst, const yaml_node_t *map)
 		if (!pair->key || !pair->value)
 			continue;
 
-		const yaml_node_t *pair_key = yaml_document_get_node(ctx.document, pair->key);
+		const yaml_node_t *pair_key = yaml_document_get_node(unmarshal_ctx.document, pair->key);
 
 		char *key = NULL;
 		if (!scalar_to_string(&key, pair_key)) {
@@ -286,7 +284,7 @@ static bool map_to_node_table(const struct STable **dst, const yaml_node_t *map)
 			return false;
 		}
 
-		const yaml_node_t *pair_value = yaml_document_get_node(ctx.document, pair->value);
+		const yaml_node_t *pair_value = yaml_document_get_node(unmarshal_ctx.document, pair->value);
 
 		if (key && pair_value)
 			stable_put(*dst, key, pair_value);
@@ -306,7 +304,7 @@ static bool seq_to_string_list(struct SList **dst, const yaml_node_t *seq) {
 	const struct STable *table = stable_init(10, 10, false);
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		const yaml_node_t *scalar = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *scalar = yaml_document_get_node(unmarshal_ctx.document, *item);
 		if (!scalar)
 			continue;
 
@@ -337,10 +335,10 @@ static bool scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 	if (*dst)
 		free(*dst);
 
-	ctx_def(CALLBACK_CMD_DEFAULT);
+	unmarshal_ctx_def(CALLBACK_CMD_DEFAULT);
 
 	if (!check_node_type(scalar, YAML_SCALAR_NODE)) {
-		*dst = strdup(ctx.def);
+		*dst = strdup(unmarshal_ctx.def);
 		return false;
 	}
 
@@ -376,13 +374,13 @@ static bool map_to_condition(struct Condition **condition, const yaml_node_t *ma
 
 	*condition = (struct Condition*)calloc(1, sizeof(struct Condition));
 
-	ctx_key("PLUGGED");
-	seq = stable_get(table, ctx.key);
+	unmarshal_ctx_key("PLUGGED");
+	seq = stable_get(table, unmarshal_ctx.key);
 	if (seq && !seq_to_name_desc(&(*condition)->plugged, seq))
 		goto err;
 
-	ctx_key("UNPLUGGED");
-	seq = stable_get(table, ctx.key);
+	unmarshal_ctx_key("UNPLUGGED");
+	seq = stable_get(table, unmarshal_ctx.key);
 	if (seq && !seq_to_name_desc(&(*condition)->unplugged, seq))
 		goto err;
 
@@ -407,7 +405,7 @@ static bool seq_to_conditions_list(struct SList **conditions_list, const yaml_no
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *node = yaml_document_get_node(unmarshal_ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -432,8 +430,8 @@ static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map) 
 
 	*disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
-	ctx_key("NAME_DESC");
-	node = stable_get(table, ctx.key);
+	unmarshal_ctx_key("NAME_DESC");
+	node = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(node))
 		goto err;
 	if (!scalar_to_string(&(*disabled)->name_desc, node))
@@ -441,10 +439,10 @@ static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map) 
 	if (invalid_regex((*disabled)->name_desc, NULL))
 		goto err;
 
-	ctx_name_desc((*disabled)->name_desc);
+	unmarshal_ctx_name_desc((*disabled)->name_desc);
 
-	ctx_key("IF");
-	node = stable_get(table, ctx.key);
+	unmarshal_ctx_key("IF");
+	node = stable_get(table, unmarshal_ctx.key);
 	if (node)
 		seq_to_conditions_list(&(*disabled)->conditions, node);
 
@@ -458,7 +456,7 @@ err:
 
 end:
 	stable_free(table);
-	ctx_clear_name_desc_key();
+	unmarshal_ctx_clear_name_desc_key();
 
 	return ok;
 }
@@ -470,7 +468,7 @@ static bool seq_to_disabled_list(struct SList **disableds, const yaml_node_t *se
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *node = yaml_document_get_node(unmarshal_ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -514,8 +512,8 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 
 	*user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
-	ctx_key("NAME_DESC");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("NAME_DESC");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
 	if (!scalar_to_string(&(*user_scale)->name_desc, scalar))
@@ -523,10 +521,10 @@ static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *
 	if (invalid_regex((*user_scale)->name_desc, NULL))
 		goto err;
 
-	ctx_name_desc((*user_scale)->name_desc);
+	unmarshal_ctx_name_desc((*user_scale)->name_desc);
 
-	ctx_key("SCALE");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("SCALE");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
 	if (!scalar_to_float(&(*user_scale)->scale, scalar))
@@ -542,7 +540,7 @@ err:
 
 end:
 	stable_free(table);
-	ctx_clear_name_desc_key();
+	unmarshal_ctx_clear_name_desc_key();
 
 	return ok;
 }
@@ -554,7 +552,7 @@ static bool seq_to_user_scale_list(struct SList **user_scales, const yaml_node_t
 
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *node = yaml_document_get_node(unmarshal_ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -579,8 +577,8 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 
 	*user_mode = cfg_user_mode_default();
 
-	ctx_key("NAME_DESC");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("NAME_DESC");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
 	if (!scalar_to_string(&(*user_mode)->name_desc, scalar))
@@ -588,20 +586,20 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 	if (invalid_regex((*user_mode)->name_desc, NULL))
 		goto err;
 
-	ctx_name_desc((*user_mode)->name_desc);
+	unmarshal_ctx_name_desc((*user_mode)->name_desc);
 
-	ctx_key("WIDTH");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("WIDTH");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (scalar && !scalar_to_int(&(*user_mode)->width, scalar))
 		goto err;
 
-	ctx_key("HEIGHT");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("HEIGHT");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (scalar && !scalar_to_int(&(*user_mode)->height, scalar))
 		goto err;
 
-	ctx_key("HZ");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("HZ");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (scalar) {
 		float hz = 0;
 		if (!scalar_to_float(&hz, scalar))
@@ -609,8 +607,8 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 		(*user_mode)->refresh_mhz = lround(hz * 1000);
 	}
 
-	ctx_key("MAX");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("MAX");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (scalar && !scalar_to_boolean(&(*user_mode)->max, scalar))
 		goto err;
 
@@ -624,7 +622,7 @@ err:
 
 end:
 	stable_free(table);
-	ctx_clear_name_desc_key();
+	unmarshal_ctx_clear_name_desc_key();
 
 	return ok;
 }
@@ -636,7 +634,7 @@ static bool seq_to_user_mode_list(struct SList **user_modes, const yaml_node_t *
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *node = yaml_document_get_node(unmarshal_ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -661,8 +659,8 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 
 	const yaml_node_t *scalar;
 
-	ctx_key("NAME_DESC");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("NAME_DESC");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
 	if (!scalar_to_string(&(*user_transform)->name_desc, scalar))
@@ -670,10 +668,10 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 	if (invalid_regex((*user_transform)->name_desc, NULL))
 		goto err;
 
-	ctx_name_desc((*user_transform)->name_desc);
+	unmarshal_ctx_name_desc((*user_transform)->name_desc);
 
-	ctx_key("TRANSFORM");
-	scalar = stable_get(table, ctx.key);
+	unmarshal_ctx_key("TRANSFORM");
+	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
 	if (!scalar_to_enum((int*)&(*user_transform)->transform, scalar, transform_val))
@@ -689,7 +687,7 @@ err:
 
 end:
 	stable_free(table);
-	ctx_clear_name_desc_key();
+	unmarshal_ctx_clear_name_desc_key();
 
 	return ok;
 }
@@ -701,7 +699,7 @@ static bool seq_to_transform_list(struct SList **user_transforms, const yaml_nod
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *node = yaml_document_get_node(unmarshal_ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -738,11 +736,11 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 		if (!value)
 			continue;
 
-		ctx_clear();
-		ctx.document = document;
-		ctx.element = cfg_element_val((char*)key->data.scalar.value);
+		unmarshal_ctx_clear();
+		unmarshal_ctx.document = document;
+		unmarshal_ctx.element = cfg_element_val((char*)key->data.scalar.value);
 
-		switch (ctx.element) {
+		switch (unmarshal_ctx.element) {
 			case ARRANGE:
 				scalar_to_enum_def((int*)&cfg->arrange, ARRANGE_DEFAULT, value, arrange_val_start, arrange_name);
 				break;
@@ -798,7 +796,7 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 		}
 	}
 
-	ctx_clear();
+	unmarshal_ctx_clear();
 
 	return true;
 }

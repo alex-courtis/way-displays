@@ -24,11 +24,11 @@ extern struct UnmarshalCtx {
 	char *name_desc;
 	char *key;
 	char *def;
-} ctx;
+} unmarshal_ctx;
 
-void ctx_clear(void);
+void unmarshal_ctx_clear(void);
 
-void ctx_yaml(char *yaml);
+void unmarshal_ctx_yaml(char *yaml);
 
 // // return a static string for the node type
 // char* node_type_str(const yaml_node_type_t type);
