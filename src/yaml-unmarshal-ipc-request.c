@@ -44,13 +44,13 @@ static struct IpcRequest *doc_to_ipc_request(yaml_document_t *document) {
 		if (!value)
 			continue;
 
-		const char *k = (char*)key->data.scalar.value;
+		unmarshal_ctx_top_level_key((char*)key->data.scalar.value);
 
-		if (strcmp(k, "OP") == 0) {
+		if (strcmp(unmarshal_ctx.top_level_key, "OP") == 0) {
 			if (!scalar_to_enum((int*)&ipc_request->command, value, ipc_command_val)) {
 				goto err;
 			}
-		} else if (strcmp(k, "LOG_THRESHOLD") == 0) {
+		} else if (strcmp(unmarshal_ctx.top_level_key, "LOG_THRESHOLD") == 0) {
 			scalar_to_enum((int*)&ipc_request->log_threshold, value, log_threshold_val);
 		}
 	}
@@ -59,7 +59,7 @@ static struct IpcRequest *doc_to_ipc_request(yaml_document_t *document) {
 
 err:
 	// TODO some context
-	log_error("\nunmarshalling ipc request: invalid OP '%s'", "aoeu");
+	log_error("\nunmarshalling ipc request: invalid %s '%s'", unmarshal_ctx.top_level_key, "aoeu");
 	log_error("========================================\n%s\n----------------------------------------", unmarshalling_yaml);
 
 	ipc_request_free(ipc_request);

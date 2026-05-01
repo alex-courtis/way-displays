@@ -17,9 +17,9 @@
 // global, set and unset by TODO
 extern struct UnmarshalCtx {
 	yaml_document_t *document;
-	enum CfgElement element;
 	yaml_node_type_t type_expected;
 	yaml_node_type_t type_actual;
+	char top_level_key[128];
 	char name_desc[128];
 	char key[128];
 	char def[1024];
@@ -27,7 +27,7 @@ extern struct UnmarshalCtx {
 
 void unmarshal_ctx_clear(void);
 
-void unmarshal_ctx_yaml(char *yaml);
+void unmarshal_ctx_top_level_key(const char *key);
 
 // // return a static string for the node type
 // char* node_type_str(const yaml_node_type_t type);

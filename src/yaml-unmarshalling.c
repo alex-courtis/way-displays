@@ -28,6 +28,10 @@ static void unmarshal_ctx_clear_name_desc_key(void) {
 	unmarshal_ctx.key[0] = '\0';
 }
 
+void unmarshal_ctx_top_level_key(const char *key) {
+	snprintf(unmarshal_ctx.top_level_key, 128, "%s", key);
+}
+
 static void unmarshal_ctx_name_desc(const char *name_desc) {
 	snprintf(unmarshal_ctx.name_desc, 128, "%s", name_desc);
 }
@@ -63,8 +67,8 @@ static void log_invalid_value(const yaml_char_t *value) {
 
 	bufp += snprintf(bufp, 1024 - (bufp - buf), "Ignoring invalid");
 
-	if (unmarshal_ctx.element)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", cfg_element_name(unmarshal_ctx.element));
+	if (unmarshal_ctx.top_level_key[0])
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.top_level_key);
 	if (unmarshal_ctx.name_desc[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.name_desc);
 	if (unmarshal_ctx.key[0])
@@ -85,7 +89,7 @@ static void log_misssing(void) {
 	static char buf[1024];
 	char *bufp = buf;
 
-	bufp += snprintf(bufp, 1024 - (bufp - buf), "%s: Ignoring missing", cfg_element_name(unmarshal_ctx.element));
+	bufp += snprintf(bufp, 1024 - (bufp - buf), "%s: Ignoring missing", unmarshal_ctx.top_level_key);
 
 	if (unmarshal_ctx.key[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.key);
@@ -108,7 +112,7 @@ static bool invalid_regex(const void *pattern, const void *unused) {
 		if (result) {
 			char err[1024];
 			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring invalid %s regex '%s':  %s", cfg_element_name(unmarshal_ctx.element), p + 1, err);
+			log_warn("Ignoring invalid %s regex '%s':  %s", unmarshal_ctx.top_level_key, p + 1, err);
 			rc = true;
 		}
 		regfree(&regex);
@@ -700,9 +704,9 @@ static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
 
 		unmarshal_ctx_clear();
 		unmarshal_ctx.document = document;
-		unmarshal_ctx.element = cfg_element_val((char*)key->data.scalar.value);
+		unmarshal_ctx_top_level_key((char*)key->data.scalar.value);
 
-		switch (unmarshal_ctx.element) {
+		switch (cfg_element_val((char*)key->data.scalar.value)) {
 			case ARRANGE:
 				scalar_to_enum_def((int*)&cfg->arrange, ARRANGE_DEFAULT, value, arrange_val_start, arrange_name);
 				break;
