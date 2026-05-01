@@ -166,7 +166,6 @@ static bool map_ipc_response(struct IpcOperation *ipc_operation, int mapping) {
 	return true;
 }
 
-// TODO this emits non-compact when using a sequence
 static bool marshal_ipc_response_fn(const void *data) {
 	if (!data)
 		return false;

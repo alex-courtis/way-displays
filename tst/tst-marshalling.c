@@ -132,6 +132,66 @@ struct Cfg *cfg_all(void) {
 	return cfg;
 }
 
+// ipc-responses-map.yaml
+struct IpcOperation *ipc_response_map(void) {
+	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
+	ipc_request->log_threshold = WARNING;
+	ipc_request->command = GET;
+
+	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
+	ipc_operation->request = ipc_request;
+	ipc_operation->done = true;
+	ipc_operation->rc = 1;
+	ipc_operation->send_state = true;
+
+	cfg = cfg_all();
+
+	lid = calloc(1, sizeof(struct Lid));
+	lid->closed = true;
+	lid->device_path = "/path/to/lid";
+
+	lcl(DEBUG, "dbg", &ipc_operation->log_cap_lines);
+	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
+	lcl(WARNING, "war", &ipc_operation->log_cap_lines);
+	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
+	lcl(FATAL, "fat", &ipc_operation->log_cap_lines);
+
+	struct Head *head0 = calloc(1, sizeof(struct Head));
+
+	head0->name = strdup("name");
+	head0->description = strdup("desc");
+	head0->width_mm = 1;
+	head0->height_mm = 2;
+	head0->make = strdup("make");
+	head0->model = strdup("model");
+	head0->serial_number = strdup("serial");
+	head0->overrided_enabled = true;
+
+	head0->current.scale = wl_fixed_from_double(4.0);
+	head0->current.enabled = true;
+	head0->current.x = 5;
+	head0->current.y = 6;
+	head0->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head0->current.transform = WL_OUTPUT_TRANSFORM_270;
+
+	head0->current.mode = mode_init(NULL, NULL, 10, 11, 12, true);
+	slist_append(&head0->modes, head0->current.mode);
+
+	head0->desired.scale = wl_fixed_from_double(7.0);
+	head0->desired.enabled = true;
+	head0->desired.x = 8;
+	head0->desired.y = 9;
+	head0->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head0->desired.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
+
+	head0->desired.mode = mode_init(NULL, NULL, 13, 14, 15, false);;
+	slist_append(&head0->modes, head0->desired.mode);
+
+	slist_append(&heads, head0);
+
+	return ipc_operation;
+}
+
 static void yaml_file_to_cfg__ok(void **state) {
 
 	struct Cfg *read = cfg_default();
@@ -614,73 +674,7 @@ static void ipc_request_to_yaml__cfg_set(void **state) {
 }
 
 static void ipc_response_to_yaml__map(void **state) {
-	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->log_threshold = WARNING;
-	ipc_request->command = GET; // get is a map, others sequence
-
-	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
-	ipc_operation->request = ipc_request;
-	ipc_operation->done = true;
-	ipc_operation->rc = 1;
-	ipc_operation->send_state = true;
-
-	cfg = cfg_all();
-
-	lid = calloc(1, sizeof(struct Lid));
-	lid->closed = true;
-	lid->device_path = "/path/to/lid";
-
-	lcl(DEBUG, "dbg", &ipc_operation->log_cap_lines);
-	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
-	lcl(WARNING, "war", &ipc_operation->log_cap_lines);
-	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
-	lcl(FATAL, "fat", &ipc_operation->log_cap_lines);
-
-	struct Mode mode1 = {
-		.width = 10,
-		.height = 11,
-		.refresh_mhz = 12,
-		.preferred = true,
-	};
-	struct Mode mode2 = {
-		.width = 13,
-		.height = 14,
-		.refresh_mhz = 15,
-		.preferred = false,
-	};
-	struct Head head = {
-		.name = "name",
-		.description = "desc",
-		.width_mm = 1,
-		.height_mm = 2,
-		.make = "make",
-		.model = "model",
-		.serial_number = "serial",
-		.current = {
-			.scale = wl_fixed_from_double(4.0),
-			.enabled = true,
-			.x = 5,
-			.y = 6,
-			.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
-			.mode = &mode1,
-			.transform = WL_OUTPUT_TRANSFORM_270, // 3
-		},
-		.desired = {
-			.scale = wl_fixed_from_double(7.0),
-			.enabled = true,
-			.x = 8,
-			.y = 9,
-			.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
-			.mode = &mode2,
-			.transform = WL_OUTPUT_TRANSFORM_FLIPPED, // 4
-		},
-		.overrided_enabled = true,
-	};
-
-	slist_append(&head.modes, &mode1);
-	slist_append(&head.modes, &mode2);
-
-	slist_append(&heads, &head);
+	struct IpcOperation *ipc_operation = ipc_response_map();
 
 	char *actual = IRESTY(ipc_operation);
 
@@ -700,23 +694,18 @@ static void ipc_response_to_yaml__map(void **state) {
 	assert_str_equal(actual, expected);
 
 	ipc_operation_free(ipc_operation);
+
 	free(actual);
 	free(expected);
-	slist_free(&head.modes);
-	slist_free(&heads);
+
+	slist_free_vals(&heads, head_free);
 
 	assert_logs_empty();
 }
 
 static void ipc_response_to_yaml__seq(void **state) {
-	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->log_threshold = WARNING;
-	ipc_request->command = CFG_SET; // get is a map, others sequence
-
-	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
-	ipc_operation->request = ipc_request;
-	ipc_operation->done = true;
-	ipc_operation->rc = 1;
+	struct IpcOperation *ipc_operation = ipc_response_map();
+	ipc_operation->request->command = LIST;
 
 	char *actual = IRESTY(ipc_operation);
 
@@ -733,11 +722,14 @@ static void ipc_response_to_yaml__seq(void **state) {
 		write_file("expected.yaml", expected);
 	}
 
-	assert_str_equal(actual, "- DONE: TRUE\n  RC: 1\n");
+	assert_str_equal(actual, expected);
 
 	ipc_operation_free(ipc_operation);
+
 	free(actual);
 	free(expected);
+
+	slist_free_vals(&heads, head_free);
 
 	assert_logs_empty();
 }
@@ -945,7 +937,7 @@ static void unmarshal_ipc_responses__map(void **state) {
 }
 
 static void unmarshal_ipc_responses__seq(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-responses-seq.yaml");
+	char *yaml = read_file("tst/marshalling/ipc-responses-seq-brief.yaml");
 
 	expect_function_calls(__wrap_lid_free, 3);
 
