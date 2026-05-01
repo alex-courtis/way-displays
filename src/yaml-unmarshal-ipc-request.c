@@ -16,16 +16,18 @@
 #include "slist.h"
 #include "stable.h"
 
+static char *unmarshalling_yaml = NULL;
+
 static struct IpcRequest *doc_to_ipc_request(yaml_document_t *document) {
 	if (!yaml_document_get_root_node(document)) {
 		log_error("\nTODO");
-		return false;
+		return NULL;
 	}
 
 	const yaml_node_t *start_doc = document->nodes.start;
 	if (!start_doc || start_doc->type != YAML_MAPPING_NODE) {
 		log_error("\nTODO");
-		return false;
+		return NULL;
 	}
 
 	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
@@ -58,7 +60,7 @@ static struct IpcRequest *doc_to_ipc_request(yaml_document_t *document) {
 err:
 	// TODO some context
 	log_error("\nunmarshalling ipc request: invalid OP '%s'", "aoeu");
-	log_error("========================================\n%s\n----------------------------------------", unmarshal_ctx.yaml);
+	log_error("========================================\n%s\n----------------------------------------", unmarshalling_yaml);
 
 	ipc_request_free(ipc_request);
 	ipc_request = NULL;
@@ -91,11 +93,15 @@ struct IpcRequest *yaml_to_ipc_request(char *yaml) {
 		return NULL;
 	}
 
+
 	unmarshal_ctx_clear();
 	unmarshal_ctx.document = &document;
-	unmarshal_ctx_yaml(yaml);
+	unmarshalling_yaml = yaml;
 
 	struct IpcRequest *ipc_request = doc_to_ipc_request(&document);
+
+	unmarshal_ctx_clear();
+	unmarshalling_yaml = NULL;
 
 	yaml_document_delete(&document);
 	yaml_parser_delete(&parser);

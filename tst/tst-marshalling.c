@@ -1021,6 +1021,7 @@ int main(void) {
 		ipc_request_to_yaml(NULL);
 		ipc_response_to_yaml(NULL);
 		yaml_file_to_cfg(NULL);
+		yaml_to_ipc_request(NULL);
 	}
 
 	const struct CMUnitTest tests[] = {

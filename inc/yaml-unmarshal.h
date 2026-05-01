@@ -17,13 +17,12 @@
 // global, set and unset by TODO
 extern struct UnmarshalCtx {
 	yaml_document_t *document;
-	char *yaml;
 	enum CfgElement element;
 	yaml_node_type_t type_expected;
 	yaml_node_type_t type_actual;
-	char *name_desc;
-	char *key;
-	char *def;
+	char name_desc[128];
+	char key[128];
+	char def[1024];
 } unmarshal_ctx;
 
 void unmarshal_ctx_clear(void);

@@ -18,61 +18,26 @@
 
 void unmarshal_ctx_clear(void) {
 	unmarshal_ctx.document = NULL;
-	if (unmarshal_ctx.yaml)
-		free(unmarshal_ctx.yaml);
 	unmarshal_ctx.type_expected = YAML_NO_NODE;
 	unmarshal_ctx.type_actual = YAML_NO_NODE;
-	if (unmarshal_ctx.name_desc)
-		free(unmarshal_ctx.name_desc);
-	if (unmarshal_ctx.key)
-		free(unmarshal_ctx.key);
-	if (unmarshal_ctx.def)
-		free(unmarshal_ctx.def);
 	memset(&unmarshal_ctx, 0, sizeof(struct UnmarshalCtx));
 }
 
-void unmarshal_ctx_yaml(char *yaml) {
-	if (unmarshal_ctx.yaml)
-		free(unmarshal_ctx.yaml);
-	unmarshal_ctx.yaml = strdup(yaml);
-}
-
 static void unmarshal_ctx_clear_name_desc_key(void) {
-	if (unmarshal_ctx.name_desc) {
-		free(unmarshal_ctx.name_desc);
-		unmarshal_ctx.name_desc = NULL;
-	}
-	if (unmarshal_ctx.key) {
-		free(unmarshal_ctx.key);
-		unmarshal_ctx.key = NULL;
-	}
+	unmarshal_ctx.name_desc[0] = '\0';
+	unmarshal_ctx.key[0] = '\0';
 }
 
 static void unmarshal_ctx_name_desc(const char *name_desc) {
-	if (unmarshal_ctx.name_desc)
-		free(unmarshal_ctx.name_desc);
-	if (name_desc)
-		unmarshal_ctx.name_desc = strdup(name_desc);
-	else
-		unmarshal_ctx.name_desc = NULL;
+	snprintf(unmarshal_ctx.name_desc, 128, "%s", name_desc);
 }
 
 static void unmarshal_ctx_key(const char *key) {
-	if (unmarshal_ctx.key)
-		free(unmarshal_ctx.key);
-	if (key)
-		unmarshal_ctx.key = strdup(key);
-	else
-		unmarshal_ctx.key = NULL;
+	snprintf(unmarshal_ctx.key, 128, "%s", key);
 }
 
 static void unmarshal_ctx_def(const char *def) {
-	if (unmarshal_ctx.def)
-		free(unmarshal_ctx.def);
-	if (def)
-		unmarshal_ctx.def = strdup(def);
-	else
-		unmarshal_ctx.def = NULL;
+	snprintf(unmarshal_ctx.def, 1024, "%s", def);
 }
 
 // return a static string for the node type
@@ -91,6 +56,7 @@ static char* node_type_str(const yaml_node_type_t type) {
 	}
 }
 
+// TODO specific log_invalid_value for each unmarshaller
 static void log_invalid_value(const yaml_char_t *value) {
 	static char buf[1024];
 	char *bufp = buf;
@@ -99,9 +65,9 @@ static void log_invalid_value(const yaml_char_t *value) {
 
 	if (unmarshal_ctx.element)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", cfg_element_name(unmarshal_ctx.element));
-	if (unmarshal_ctx.name_desc)
+	if (unmarshal_ctx.name_desc[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.name_desc);
-	if (unmarshal_ctx.key)
+	if (unmarshal_ctx.key[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.key);
 	if (unmarshal_ctx.type_expected)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " expected %s", node_type_str(unmarshal_ctx.type_expected));
@@ -109,14 +75,10 @@ static void log_invalid_value(const yaml_char_t *value) {
 		bufp += snprintf(bufp, 1024 - (bufp - buf), ", got %s", node_type_str(unmarshal_ctx.type_actual));
 	if (value)
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", value);
-	if (unmarshal_ctx.def)
+	if (unmarshal_ctx.def[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", unmarshal_ctx.def);
 
 	log_warn("%s", buf);
-}
-
-static void log_invalid(void) {
-	log_invalid_value(NULL);
 }
 
 static void log_misssing(void) {
@@ -125,11 +87,11 @@ static void log_misssing(void) {
 
 	bufp += snprintf(bufp, 1024 - (bufp - buf), "%s: Ignoring missing", cfg_element_name(unmarshal_ctx.element));
 
-	if (unmarshal_ctx.key)
+	if (unmarshal_ctx.key[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.key);
-	if (unmarshal_ctx.name_desc)
+	if (unmarshal_ctx.name_desc[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " for '%s'", unmarshal_ctx.name_desc);
-	if (unmarshal_ctx.def)
+	if (unmarshal_ctx.def[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", unmarshal_ctx.def);
 
 	log_warn("%s", buf);
@@ -162,7 +124,7 @@ static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expe
 	unmarshal_ctx.type_expected = expected;
 	unmarshal_ctx.type_actual = node->type;
 
-	log_invalid();
+	log_invalid_value(NULL);
 
 	return false;
 }
