@@ -16,10 +16,13 @@
 #include "slist.h"
 #include "stable.h"
 
-void unmarshal_ctx_clear(void) {
+static char *unmarshalling_yaml = NULL;
+
+static void unmarshal_ctx_clear(void) {
 	unmarshal_ctx.document = NULL;
 	unmarshal_ctx.type_expected = YAML_NO_NODE;
 	unmarshal_ctx.type_actual = YAML_NO_NODE;
+	unmarshal_ctx.silent = false;
 	memset(&unmarshal_ctx, 0, sizeof(struct UnmarshalCtx));
 }
 
@@ -28,7 +31,7 @@ static void unmarshal_ctx_clear_name_desc_key(void) {
 	unmarshal_ctx.key[0] = '\0';
 }
 
-void unmarshal_ctx_top_level_key(const char *key) {
+static void unmarshal_ctx_top_level_key(const char *key) {
 	snprintf(unmarshal_ctx.top_level_key, 128, "%s", key);
 }
 
@@ -62,6 +65,9 @@ static char* node_type_str(const yaml_node_type_t type) {
 
 // TODO specific log_invalid_value for each unmarshaller
 static void log_invalid_value(const yaml_char_t *value) {
+	if (unmarshal_ctx.silent)
+		return;
+
 	static char buf[1024];
 	char *bufp = buf;
 
@@ -191,8 +197,10 @@ static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar
 	return false;
 }
 
-// TODO common
-bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
+// unmarshal an scalar enum to dst
+typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
+typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
+static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
@@ -678,19 +686,10 @@ static bool seq_to_transform_list(struct SList **user_transforms, const yaml_nod
 	return true;
 }
 
-static bool doc_to_cfg(struct Cfg *cfg, yaml_document_t *document) {
-	if (!yaml_document_get_root_node(document)) {
-		log_error("\nparsing file %s no root node", cfg->file_path);
-		return false;
-	}
+static bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
+	yaml_document_t *document = unmarshal_ctx.document;
 
-	const yaml_node_t *start_doc = document->nodes.start;
-	if (!start_doc || start_doc->type != YAML_MAPPING_NODE) {
-		log_error("\nparsing file %s empty cfg, expected map", cfg->file_path);
-		return false;
-	}
-
-	for (const yaml_node_pair_t *pair = start_doc->data.mapping.pairs.start; pair < start_doc->data.mapping.pairs.top; pair++) {
+	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
 			continue;
 
@@ -797,11 +796,131 @@ bool yaml_file_to_cfg(struct Cfg *cfg) {
 		return false;
 	}
 
-	bool ok = doc_to_cfg(cfg, &document);
+	bool ok = true;
+
+	const yaml_node_t *root;
+
+	if (!(root = yaml_document_get_root_node(&document))) {
+		log_error("\nparsing file %s no root node", cfg->file_path);
+		ok = false;
+		goto end;
+	}
+
+	if (root->type != YAML_MAPPING_NODE) {
+		log_error("\nparsing file %s empty cfg, expected map", cfg->file_path);
+		ok = false;
+		goto end;
+	}
+
+	unmarshal_ctx.document = &document;
+
+	ok = map_to_cfg(cfg, root);
+
+end:
+	unmarshal_ctx_clear();
 
 	yaml_document_delete(&document);
 	yaml_parser_delete(&parser);
 	fclose(input);
 
 	return ok;
+}
+
+static struct IpcRequest *doc_to_ipc_request(yaml_document_t *document) {
+	char unmarshalling_err[2048];
+
+	unmarshal_ctx.document = document;
+
+	const struct STable *table = NULL;
+
+	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
+	ipc_request->cfg = cfg_init();
+
+	const yaml_node_t *root;
+
+	if (!(root = yaml_document_get_root_node(document))) {
+		snprintf(unmarshalling_err, sizeof(unmarshalling_err), "empty request");
+		goto err;
+	}
+
+	if (root->type != YAML_MAPPING_NODE) {
+		snprintf(unmarshalling_err, sizeof(unmarshalling_err), "expected %s, got %s", node_type_str(YAML_MAPPING_NODE), node_type_str(root->type));
+		goto err;
+	}
+
+	map_to_node_table(&table, root);
+
+	// validate OP
+	const yaml_node_t *op;
+	if (!(op = stable_get(table, "OP"))) {
+		snprintf(unmarshalling_err, sizeof(unmarshalling_err), "missing OP");
+		goto err;
+	}
+	if (!check_node_type(op, YAML_SCALAR_NODE)) {
+		snprintf(unmarshalling_err, sizeof(unmarshalling_err), "invalid OP expected %s, got %s", node_type_str(YAML_SCALAR_NODE), node_type_str(op->type));
+		goto err;
+	}
+	if (!scalar_to_enum((int*)&ipc_request->command, op, ipc_command_val)) {
+		snprintf(unmarshalling_err, sizeof(unmarshalling_err), "invalid OP '%s'", (char*)op->data.scalar.value);
+		goto err;
+	}
+
+	// silently ignore
+	scalar_to_enum((int*)&ipc_request->log_threshold, stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
+	map_to_cfg(ipc_request->cfg, stable_get(table, "CFG"));
+
+	goto end;
+
+err:
+	// TODO some context
+	log_error("\nunmarshalling ipc request: %s", unmarshalling_err);
+	log_error("========================================\n%s\n----------------------------------------", unmarshalling_yaml);
+
+	ipc_request_free(ipc_request);
+	ipc_request = NULL;
+
+end:
+	stable_free(table);
+
+	return ipc_request;
+}
+
+struct IpcRequest *yaml_to_ipc_request(char *yaml) {
+	if (!yaml) {
+		return NULL;
+	}
+
+	char *name = "ipc request";
+
+	yaml_parser_t parser;
+
+	if (!yaml_parser_initialize(&parser)) {
+		log_error("unable to unmarshal %s: yaml_parser_initialize failed", name);
+		return NULL;
+	}
+
+	yaml_parser_set_input_string(&parser, (yaml_char_t*)yaml, strlen(yaml));
+
+	yaml_document_t document;
+
+	if (!yaml_parser_load(&parser, &document)) {
+		log_error("unable to unmarshal %s: yaml_parser_load failed", name);
+		yaml_parser_delete(&parser);
+		return NULL;
+	}
+
+	unmarshal_ctx_clear();
+	unmarshal_ctx.document = &document;
+	unmarshal_ctx.silent = true;
+	unmarshalling_yaml = yaml;
+
+	struct IpcRequest *ipc_request = doc_to_ipc_request(&document);
+
+	unmarshal_ctx_clear();
+	unmarshalling_yaml = NULL;
+
+	yaml_document_delete(&document);
+	yaml_parser_delete(&parser);
+
+	return ipc_request;
 }

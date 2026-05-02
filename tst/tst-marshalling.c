@@ -752,6 +752,22 @@ static void unmarshal_ipc_request__empty(void **state) {
 	assert_logs_empty();
 }
 
+static void unmarshal_ipc_request__root_not_map(void **state) {
+	if (!V2)
+		return;
+
+	struct IpcRequest *actual = Y_T_IREQ("- FOO");
+
+	assert_nul(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc request: expected map, got sequence\n"
+			"========================================\n"
+			"- FOO\n"
+			"----------------------------------------\n");
+	assert_logs_empty();
+}
+
 static void unmarshal_ipc_request__bad_op(void **state) {
 	struct IpcRequest *actual = Y_T_IREQ("OP: aoeu");
 
@@ -764,6 +780,24 @@ static void unmarshal_ipc_request__bad_op(void **state) {
 			"----------------------------------------\n");
 	assert_logs_empty();
 }
+
+static void unmarshal_ipc_request__mistyped_op(void **state) {
+	if (!V2)
+		return;
+
+	struct IpcRequest *actual = Y_T_IREQ("OP:\n  FOO: BAR");
+
+	assert_nul(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc request: invalid OP expected scalar, got map\n"
+			"========================================\n"
+			"OP:\n"
+			"  FOO: BAR\n"
+			"----------------------------------------\n");
+	assert_logs_empty();
+}
+
 
 static void unmarshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *actual = Y_T_IREQ("FOO: BAR");
@@ -1022,6 +1056,11 @@ int main(void) {
 		ipc_response_to_yaml(NULL);
 		yaml_file_to_cfg(NULL);
 		yaml_to_ipc_request(NULL);
+
+		unmarshal_ipc_request__empty(NULL);
+		unmarshal_ipc_request__bad_op(NULL);
+		unmarshal_ipc_request__no_op(NULL);
+		unmarshal_ipc_request__cfg_set(NULL);
 	}
 
 	const struct CMUnitTest tests[] = {
@@ -1058,10 +1097,12 @@ int main(void) {
 		TEST(ipc_response_to_yaml__map),
 		TEST(ipc_response_to_yaml__seq),
 
-		// TEST(unmarshal_ipc_request__empty),
-		// TEST(unmarshal_ipc_request__bad_op),
-		// TEST(unmarshal_ipc_request__no_op),
-		// TEST(unmarshal_ipc_request__cfg_set),
+		TEST(unmarshal_ipc_request__empty),
+		TEST(unmarshal_ipc_request__root_not_map),
+		TEST(unmarshal_ipc_request__bad_op),
+		TEST(unmarshal_ipc_request__mistyped_op),
+		TEST(unmarshal_ipc_request__no_op),
+		TEST(unmarshal_ipc_request__cfg_set),
 
 		TEST(unmarshal_ipc_responses__empty),
 		TEST(unmarshal_ipc_responses__seq_no_map),

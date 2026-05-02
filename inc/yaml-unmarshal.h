@@ -23,11 +23,12 @@ extern struct UnmarshalCtx {
 	char name_desc[128];
 	char key[128];
 	char def[1024];
+	bool silent;
 } unmarshal_ctx;
 
-void unmarshal_ctx_clear(void);
+// void unmarshal_ctx_clear(void);
 
-void unmarshal_ctx_top_level_key(const char *key);
+// void unmarshal_ctx_top_level_key(const char *key);
 
 // // return a static string for the node type
 // char* node_type_str(const yaml_node_type_t type);
@@ -47,10 +48,10 @@ void unmarshal_ctx_top_level_key(const char *key);
 // // unmarshal a scalar float to dst
 // bool scalar_to_float(float *dst, const yaml_node_t *scalar);
 //
-// unmarshal an scalar enum to dst
-typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
-typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
-bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val);
+// // unmarshal an scalar enum to dst
+// typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
+// typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
+// bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val);
 //
 // // unmarshal a scalar bool to dst
 // bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar);

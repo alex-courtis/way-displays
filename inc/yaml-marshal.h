@@ -9,7 +9,7 @@
 
 // TODO compress into one header
 
-// global, set and unset by marshal_yaml
+// global, set and unset by struct_to_yaml
 extern struct MarshalCtx {
 	yaml_document_t *doc;
 } marshal_ctx;
