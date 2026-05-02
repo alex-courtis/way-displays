@@ -16,7 +16,6 @@
 
 // global, set and unset by TODO
 extern struct UnmarshalCtx {
-	yaml_document_t *document;
 	yaml_node_type_t type_expected;
 	yaml_node_type_t type_actual;
 	char top_level_key[128];
