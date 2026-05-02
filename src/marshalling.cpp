@@ -528,7 +528,7 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 		const std::string &threshold_str = node["LOG_THRESHOLD"].as<std::string>();
 		cfg->log_threshold = log_threshold_val(threshold_str.c_str());
 		if (!cfg->log_threshold) {
-			log_warn("Ignoring invalid LOG_THRESHOLD %s, using default %s", threshold_str.c_str(), log_threshold_name(LOG_THRESHOLD_DEFAULT));
+			log_warn("Ignoring invalid LOG_THRESHOLD %s", threshold_str.c_str());
 		}
 	}
 

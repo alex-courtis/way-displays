@@ -1,4 +1,4 @@
-Ignoring invalid LOG_THRESHOLD BAD_LOG_THRESHOLD, using default INFO
+Ignoring invalid LOG_THRESHOLD BAD_LOG_THRESHOLD
 Ignoring invalid ORDER regex '(order':  Unmatched ( or \(
 Ignoring invalid ARRANGE BAD_ARRANGE, using default ROW
 Ignoring invalid ALIGN BAD_ALIGN, using default TOP

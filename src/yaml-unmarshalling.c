@@ -201,40 +201,37 @@ static bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar
 	return false;
 }
 
-// unmarshal an scalar enum to dst
+// unmarshal an scalar enum
 typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
 typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
-static bool scalar_to_enum(int *dst, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
+static int scalar_to_enum(const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
 	if (!check_node_type(scalar, YAML_SCALAR_NODE))
-		return false;
+		return 0;
 
 	int val = fn_val((char*)scalar->data.scalar.value);
-	if (val) {
-		*dst = val;
-		return true;
-	}
+	if (val)
+		return val;
 
 	log_invalid_value(scalar->data.scalar.value);
-	return false;
+	return 0;
 }
 
-// unmarshal an scalar enum to dst, sets def on failure
-static bool scalar_to_enum_def(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
+// unmarshal an scalar enum, returns def on failure
+static int scalar_to_enum_def(const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
 	unmarshal_ctx_def(fn_name(def));
 
-	if (scalar_to_enum(dst, scalar, fn_val)) {
-		return true;
-	} else {
-		*dst = def;
-		return false;
-	}
+	int val = scalar_to_enum(scalar, fn_val);
+	if (val)
+		return val;
+	else
+		return def;
 }
 
 // unmarshal a scalar bool to dst
 static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
-	int val;
+	int val = scalar_to_enum(scalar, on_off_val);
 
-	if (scalar_to_enum(&val, scalar, on_off_val)) {
+	if (val) {
 		*dst = val == ON;
 		return true;
 	}
@@ -242,12 +239,12 @@ static bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 	return false;
 }
 
-// unmarshal a map of nodes into dst
-static bool map_to_node_table(const struct STable **dst, const yaml_node_t *map) {
+// unmarshal a map of nodes
+static const struct STable *map_to_node_table(const yaml_node_t *map) {
 	if (!check_node_type(map, YAML_MAPPING_NODE))
-		return false;
+		return NULL;
 
-	*dst = stable_init(10, 10, false);
+	const struct STable *dst = stable_init(10, 10, false);
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
@@ -257,21 +254,20 @@ static bool map_to_node_table(const struct STable **dst, const yaml_node_t *map)
 
 		char *key = NULL;
 		if (!scalar_to_string(&key, pair_key)) {
-			stable_free(*dst);
-			*dst = NULL;
-			return false;
+			stable_free(dst);
+			return NULL;
 		}
 
 		const yaml_node_t *pair_value = yaml_document_get_node(&document, pair->value);
 
 		if (key && pair_value)
-			stable_put(*dst, key, pair_value);
+			stable_put(dst, key, pair_value);
 
 		if (key)
 			free(key);
 	}
 
-	return true;
+	return dst;
 }
 
 // unmarshal a sequence of strings into dst, removing duplicates
@@ -329,51 +325,36 @@ static bool scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 	return true;
 }
 
-// unmarshal a LOG_THRESHOLD to dst, sets empty on failure
-static bool scalar_to_log_threshold(int *dst, const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
-
-	if (scalar_to_enum_def(dst, LOG_THRESHOLD_DEFAULT, scalar, log_threshold_val, log_threshold_name))
-		return true;
-
-	*dst = 0;
-
-	return false;
-}
-
 // unmarshal an IF into a Condition
-static bool map_to_condition(struct Condition **condition, const yaml_node_t *map) {
+static struct Condition *map_to_condition(const yaml_node_t *map) {
 	const struct STable *table = NULL;
-	if (!map_to_node_table(&table, map))
-		return false;
-
-	bool ok = true;
+	if (!(table = map_to_node_table(map)))
+		return NULL;
 
 	const yaml_node_t *seq;
 
-	*condition = (struct Condition*)calloc(1, sizeof(struct Condition));
+	struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
 
 	unmarshal_ctx_key("PLUGGED");
 	seq = stable_get(table, unmarshal_ctx.key);
-	if (seq && !seq_to_name_desc(&(*condition)->plugged, seq))
+	if (seq && !seq_to_name_desc(&condition->plugged, seq))
 		goto err;
 
 	unmarshal_ctx_key("UNPLUGGED");
 	seq = stable_get(table, unmarshal_ctx.key);
-	if (seq && !seq_to_name_desc(&(*condition)->unplugged, seq))
+	if (seq && !seq_to_name_desc(&condition->unplugged, seq))
 		goto err;
 
 	goto end;
 
 err:
-	ok = false;
-
-	condition_free(*condition);
-	*condition = NULL;
+	condition_free(condition);
+	condition = NULL;
 
 end:
 	stable_free(table);
 
-	return ok;
+	return condition;
 }
 
 // unmarshal IF into a Conditions_list
@@ -381,68 +362,66 @@ static bool seq_to_conditions_list(struct SList **conditions_list, const yaml_no
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return false;
 
+	struct Condition *condition = NULL;
+
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
 		const yaml_node_t *node = yaml_document_get_node(&document, *item);
 		if (!node)
 			continue;
 
-		struct Condition *condition = NULL;
-
-		if (map_to_condition(&condition, node))
+		if ((condition = map_to_condition(node)))
 			slist_append(conditions_list, condition);
 	}
 
 	return true;
 }
 
-// unmarshal a DISABLED into a Disabled
-static bool map_to_disabled(struct Disabled **disabled, const yaml_node_t *map) {
+// unmarshal a DISABLED
+static struct Disabled *map_to_disabled(const yaml_node_t *map) {
 	const struct STable *table = NULL;
-	if (!map_to_node_table(&table, map))
-		return false;
-
-	bool ok = true;
+	if (!(table = map_to_node_table(map)))
+		return NULL;
 
 	const yaml_node_t *node;
 
-	*disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
 	unmarshal_ctx_key("NAME_DESC");
 	node = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(node))
 		goto err;
-	if (!scalar_to_string(&(*disabled)->name_desc, node))
+	if (!scalar_to_string(&disabled->name_desc, node))
 		goto err;
-	if (invalid_regex((*disabled)->name_desc, NULL))
+	if (invalid_regex(disabled->name_desc, NULL))
 		goto err;
 
-	unmarshal_ctx_name_desc((*disabled)->name_desc);
+	unmarshal_ctx_name_desc(disabled->name_desc);
 
 	unmarshal_ctx_key("IF");
 	node = stable_get(table, unmarshal_ctx.key);
 	if (node)
-		seq_to_conditions_list(&(*disabled)->conditions, node);
+		seq_to_conditions_list(&disabled->conditions, node);
 
 	goto end;
 
 err:
-	ok = false;
-
-	cfg_disabled_free(*disabled);
-	*disabled = NULL;
+	cfg_disabled_free(disabled);
+	disabled = NULL;
 
 end:
 	stable_free(table);
 	unmarshal_ctx_clear_name_desc_key();
 
-	return ok;
+	return disabled;
 }
 
 // unmarshal DISABLED into a Disabled list
 static bool seq_to_disabled_list(struct SList **disableds, const yaml_node_t *seq) {
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return false;
+
+	struct Disabled *disabled = NULL;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
@@ -463,8 +442,7 @@ static bool seq_to_disabled_list(struct SList **disableds, const yaml_node_t *se
 
 			case YAML_MAPPING_NODE:
 				{
-					struct Disabled *disabled = NULL;
-					if (map_to_disabled(&disabled, node))
+					if ((disabled = map_to_disabled(node)))
 						slist_append(disableds, disabled);
 					break;
 				}
@@ -479,48 +457,44 @@ static bool seq_to_disabled_list(struct SList **disableds, const yaml_node_t *se
 }
 
 // unmarshal a SCALE into a UserScale
-static bool map_to_user_scale(struct UserScale **user_scale, const yaml_node_t *map) {
+static struct UserScale *map_to_user_scale(const yaml_node_t *map) {
 	const struct STable *table = NULL;
-	if (!map_to_node_table(&table, map))
+	if (!(table = map_to_node_table(map)))
 		return false;
-
-	bool ok = true;
 
 	const yaml_node_t *scalar;
 
-	*user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+	struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
 	unmarshal_ctx_key("NAME_DESC");
 	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
-	if (!scalar_to_string(&(*user_scale)->name_desc, scalar))
+	if (!scalar_to_string(&user_scale->name_desc, scalar))
 		goto err;
-	if (invalid_regex((*user_scale)->name_desc, NULL))
+	if (invalid_regex(user_scale->name_desc, NULL))
 		goto err;
 
-	unmarshal_ctx_name_desc((*user_scale)->name_desc);
+	unmarshal_ctx_name_desc(user_scale->name_desc);
 
 	unmarshal_ctx_key("SCALE");
 	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
-	if (!scalar_to_float(&(*user_scale)->scale, scalar))
+	if (!scalar_to_float(&user_scale->scale, scalar))
 		goto err;
 
 	goto end;
 
 err:
-	ok = false;
-
-	cfg_user_scale_free(*user_scale);
-	*user_scale = NULL;
+	cfg_user_scale_free(user_scale);
+	user_scale = NULL;
 
 end:
 	stable_free(table);
 	unmarshal_ctx_clear_name_desc_key();
 
-	return ok;
+	return user_scale;
 }
 
 // unmarshal SCALE into a UserScale list
@@ -528,15 +502,15 @@ static bool seq_to_user_scale_list(struct SList **user_scales, const yaml_node_t
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return false;
 
+	struct UserScale *user_scale = NULL;
+
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
 		const yaml_node_t *node = yaml_document_get_node(&document, *item);
 		if (!node)
 			continue;
 
-		struct UserScale *user_scale = NULL;
-
-		if (map_to_user_scale(&user_scale, node))
+		if ((user_scale = map_to_user_scale(node)))
 			slist_append(user_scales, user_scale);
 	}
 
@@ -544,36 +518,34 @@ static bool seq_to_user_scale_list(struct SList **user_scales, const yaml_node_t
 }
 
 // unmarshal a MODE into a UserMode
-static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map) {
+static struct UserMode *map_to_user_mode(const yaml_node_t *map) {
 	const struct STable *table = NULL;
-	if (!map_to_node_table(&table, map))
+	if (!(table = map_to_node_table(map)))
 		return false;
-
-	bool ok = true;
 
 	const yaml_node_t *scalar;
 
-	*user_mode = cfg_user_mode_default();
+	struct UserMode *user_mode = cfg_user_mode_default();
 
 	unmarshal_ctx_key("NAME_DESC");
 	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
-	if (!scalar_to_string(&(*user_mode)->name_desc, scalar))
+	if (!scalar_to_string(&user_mode->name_desc, scalar))
 		goto err;
-	if (invalid_regex((*user_mode)->name_desc, NULL))
+	if (invalid_regex(user_mode->name_desc, NULL))
 		goto err;
 
-	unmarshal_ctx_name_desc((*user_mode)->name_desc);
+	unmarshal_ctx_name_desc(user_mode->name_desc);
 
 	unmarshal_ctx_key("WIDTH");
 	scalar = stable_get(table, unmarshal_ctx.key);
-	if (scalar && !scalar_to_int(&(*user_mode)->width, scalar))
+	if (scalar && !scalar_to_int(&user_mode->width, scalar))
 		goto err;
 
 	unmarshal_ctx_key("HEIGHT");
 	scalar = stable_get(table, unmarshal_ctx.key);
-	if (scalar && !scalar_to_int(&(*user_mode)->height, scalar))
+	if (scalar && !scalar_to_int(&user_mode->height, scalar))
 		goto err;
 
 	unmarshal_ctx_key("HZ");
@@ -582,27 +554,25 @@ static bool map_to_user_mode(struct UserMode **user_mode, const yaml_node_t *map
 		float hz = 0;
 		if (!scalar_to_float(&hz, scalar))
 			goto err;
-		(*user_mode)->refresh_mhz = lround(hz * 1000);
+		user_mode->refresh_mhz = lround(hz * 1000);
 	}
 
 	unmarshal_ctx_key("MAX");
 	scalar = stable_get(table, unmarshal_ctx.key);
-	if (scalar && !scalar_to_boolean(&(*user_mode)->max, scalar))
+	if (scalar && !scalar_to_boolean(&user_mode->max, scalar))
 		goto err;
 
 	goto end;
 
 err:
-	ok = false;
-
-	cfg_user_mode_free(*user_mode);
-	*user_mode = NULL;
+	cfg_user_mode_free(user_mode);
+	user_mode = NULL;
 
 end:
 	stable_free(table);
 	unmarshal_ctx_clear_name_desc_key();
 
-	return ok;
+	return user_mode;
 }
 
 // unmarshal MODE into a UserMode list
@@ -610,15 +580,15 @@ static bool seq_to_user_mode_list(struct SList **user_modes, const yaml_node_t *
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return false;
 
+	struct UserMode *user_mode = NULL;
+
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
 		const yaml_node_t *node = yaml_document_get_node(&document, *item);
 		if (!node)
 			continue;
 
-		struct UserMode *user_mode = NULL;
-
-		if (map_to_user_mode(&user_mode, node))
+		if ((user_mode = map_to_user_mode(node)))
 			slist_append(user_modes, user_mode);
 	}
 
@@ -626,14 +596,12 @@ static bool seq_to_user_mode_list(struct SList **user_modes, const yaml_node_t *
 }
 
 // unmarshal a TRANSFORM into a UserTransform
-static bool map_to_user_transform(struct UserTransform **user_transform, const yaml_node_t *map) {
+static struct UserTransform *map_to_user_transform(const yaml_node_t *map) {
 	const struct STable *table = NULL;
-	if (!map_to_node_table(&table, map))
+	if (!(table = map_to_node_table(map)))
 		return false;
 
-	bool ok = true;
-
-	*user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
+	struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
 	const yaml_node_t *scalar;
 
@@ -641,33 +609,31 @@ static bool map_to_user_transform(struct UserTransform **user_transform, const y
 	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
-	if (!scalar_to_string(&(*user_transform)->name_desc, scalar))
+	if (!scalar_to_string(&user_transform->name_desc, scalar))
 		goto err;
-	if (invalid_regex((*user_transform)->name_desc, NULL))
+	if (invalid_regex(user_transform->name_desc, NULL))
 		goto err;
 
-	unmarshal_ctx_name_desc((*user_transform)->name_desc);
+	unmarshal_ctx_name_desc(user_transform->name_desc);
 
 	unmarshal_ctx_key("TRANSFORM");
 	scalar = stable_get(table, unmarshal_ctx.key);
 	if (!check_mandatory(scalar))
 		goto err;
-	if (!scalar_to_enum((int*)&(*user_transform)->transform, scalar, transform_val))
+	if (!(user_transform->transform = scalar_to_enum(scalar, transform_val)))
 		goto err;
 
 	goto end;
 
 err:
-	ok = false;
-
-	cfg_user_transform_free(*user_transform);
-	*user_transform = NULL;
+	cfg_user_transform_free(user_transform);
+	user_transform = NULL;
 
 end:
 	stable_free(table);
 	unmarshal_ctx_clear_name_desc_key();
 
-	return ok;
+	return user_transform;
 }
 
 // unmarshal TRANSFORM into a UserTransform list
@@ -675,15 +641,15 @@ static bool seq_to_transform_list(struct SList **user_transforms, const yaml_nod
 	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
 		return false;
 
+	struct UserTransform *user_transform = NULL;
+
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
 		const yaml_node_t *node = yaml_document_get_node(&document, *item);
 		if (!node)
 			continue;
 
-		struct UserTransform *user_transform = NULL;
-
-		if (map_to_user_transform(&user_transform, node))
+		if ((user_transform = map_to_user_transform(node)))
 			slist_append(user_transforms, user_transform);
 	}
 
@@ -711,19 +677,19 @@ static bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 
 		switch (cfg_element_val((char*)key->data.scalar.value)) {
 			case ARRANGE:
-				scalar_to_enum_def((int*)&cfg->arrange, ARRANGE_DEFAULT, value, arrange_val_start, arrange_name);
+				cfg->arrange = scalar_to_enum_def(ARRANGE_DEFAULT, value, arrange_val_start, arrange_name);
 				break;
 			case ALIGN:
-				scalar_to_enum_def((int*)&cfg->align, ALIGN_DEFAULT, value, align_val_start, align_name);
+				cfg->align = scalar_to_enum_def(ALIGN_DEFAULT, value, align_val_start, align_name);
 				break;
 			case ORDER:
 				seq_to_name_desc(&cfg->order_name_desc, value);
 				break;
 			case SCALING:
-				scalar_to_enum_def((int*)&cfg->scaling, SCALING_DEFAULT, value, on_off_val, on_off_name);
+				cfg->scaling  = scalar_to_enum_def(SCALING_DEFAULT, value, on_off_val, on_off_name);
 				break;
 			case AUTO_SCALE:
-				scalar_to_enum_def((int*)&cfg->auto_scale, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name);
+				cfg->auto_scale = scalar_to_enum_def(AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name);
 				break;
 			case SCALE:
 				seq_to_user_scale_list(&cfg->user_scales, value);
@@ -748,7 +714,7 @@ static bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 				seq_to_name_desc(&cfg->max_preferred_refresh_name_desc, value);
 				break;
 			case LOG_THRESHOLD:
-				scalar_to_log_threshold((int*)&cfg->log_threshold, LOG_THRESHOLD_DEFAULT, value, log_threshold_val, log_threshold_name);
+				cfg->log_threshold = scalar_to_enum(value, log_threshold_val);
 				break;
 			case DISABLED:
 				seq_to_disabled_list(&cfg->disabled, value);
@@ -829,15 +795,16 @@ static void log_error_with_yaml(const char *action, const char *name, const char
 	log_error("========================================\n%s\n----------------------------------------", yaml);
 }
 
-static struct IpcRequest *doc_to_ipc_request(const yaml_node_t *map, const char *yaml) {
+static void *map_to_ipc_request(const yaml_node_t *map, const char *yaml) {
 	char err[2048];
 
-	const struct STable *table = NULL;
+	unmarshal_ctx_clear();
+	unmarshal_ctx.silent = true;
 
 	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
 	ipc_request->cfg = cfg_init();
 
-	map_to_node_table(&table, map);
+	const struct STable *table = map_to_node_table(map);
 
 	// validate OP
 	const yaml_node_t *op = stable_get(table, "OP");
@@ -850,13 +817,13 @@ static struct IpcRequest *doc_to_ipc_request(const yaml_node_t *map, const char 
 		snprintf(err, sizeof(err), "invalid OP expected %s, got %s", node_type_str(YAML_SCALAR_NODE), node_type_str(op->type));
 		goto err;
 	}
-	if (!scalar_to_enum((int*)&ipc_request->command, op, ipc_command_val)) {
+	if (!(ipc_request->command = scalar_to_enum(op, ipc_command_val))) {
 		snprintf(err, sizeof(err), "invalid OP '%s'", (char*)op->data.scalar.value);
 		goto err;
 	}
 
 	// silently ignore
-	scalar_to_enum((int*)&ipc_request->log_threshold, stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
+	ipc_request->log_threshold = scalar_to_enum(stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
 	map_to_cfg(ipc_request->cfg, stable_get(table, "CFG"));
 
 	goto end;
@@ -870,19 +837,19 @@ err:
 end:
 	stable_free(table);
 
+	unmarshal_ctx_clear();
+
 	return ipc_request;
 }
 
-struct IpcRequest *yaml_to_ipc_request(char *yaml) {
+void *yaml_to_struct(const char *yaml, map_to_struct_fn fn, const char *name) {
 	char err[2048];
 
 	if (!yaml) {
 		return NULL;
 	}
 
-	struct IpcRequest *ipc_request = NULL;
-
-	char *name = "ipc request";
+	void *data = NULL;
 
 	if (!yaml_parser_initialize(&parser)) {
 		log_error("unmarshalling %s: yaml_parser_initialize failed", name);
@@ -910,15 +877,15 @@ struct IpcRequest *yaml_to_ipc_request(char *yaml) {
 		goto end;
 	}
 
-	unmarshal_ctx.silent = true;
-
-	ipc_request = doc_to_ipc_request(root, yaml);
+	data = fn(root, yaml);
 
 end:
-	unmarshal_ctx_clear();
-
 	yaml_document_delete(&document);
 	yaml_parser_delete(&parser);
 
-	return ipc_request;
+	return data;
+}
+
+struct IpcRequest *yaml_to_ipc_request(char *yaml) {
+	return yaml_to_struct(yaml, map_to_ipc_request, "ipc request");
 }

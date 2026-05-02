@@ -11,7 +11,7 @@ Ignoring invalid TRANSFORM expected sequence, got scalar
 Ignoring invalid VRR_OFF expected sequence, got scalar
 Ignoring invalid CALLBACK_CMD expected scalar, got sequence, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 Ignoring invalid LAPTOP_DISPLAY_PREFIX expected scalar, got sequence
-Ignoring invalid LOG_THRESHOLD expected scalar, got sequence, using default INFO
+Ignoring invalid LOG_THRESHOLD expected scalar, got sequence
 Ignoring invalid DISABLED expected sequence, got scalar
 Ignoring invalid CHANGE_SUCCESS_CMD expected scalar, got sequence, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 Ignoring invalid MAX_PREFERRED_REFRESH expected sequence, got scalar

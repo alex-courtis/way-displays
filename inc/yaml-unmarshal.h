@@ -25,6 +25,12 @@ extern struct UnmarshalCtx {
 	bool silent;
 } unmarshal_ctx;
 
+// marshal a yaml string to data via fn, logs use name
+typedef void *(*map_to_struct_fn)(const yaml_node_t *root, const char *yaml);
+void *yaml_to_struct(const char *yaml, map_to_struct_fn fn, const char *name);
+
+// static struct IpcRequest *doc_to_ipc_request(const yaml_node_t *map, const char *yaml);
+
 // void unmarshal_ctx_clear(void);
 
 // void unmarshal_ctx_top_level_key(const char *key);
