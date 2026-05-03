@@ -351,8 +351,8 @@ static void scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 
 // unmarshal an IF into a Condition
 static struct Condition *map_to_condition(const yaml_node_t *map) {
-	const struct STable *table = NULL;
-	if (!(table = map_to_node_table(map)))
+	const struct STable *table = map_to_node_table(map);
+	if (!table)
 		return NULL;
 
 	const yaml_node_t *seq;
@@ -405,8 +405,8 @@ static struct SList *seq_to_conditions_list(const yaml_node_t *seq) {
 
 // unmarshal a DISABLED
 static struct Disabled *map_to_disabled(const yaml_node_t *map) {
-	const struct STable *table = NULL;
-	if (!(table = map_to_node_table(map)))
+	const struct STable *table = map_to_node_table(map);
+	if (!table)
 		return NULL;
 
 	const yaml_node_t *node;
@@ -486,8 +486,8 @@ static struct SList *seq_to_disabled_list(const yaml_node_t *seq) {
 
 // unmarshal a SCALE into a UserScale
 static struct UserScale *map_to_user_scale(const yaml_node_t *map) {
-	const struct STable *table = NULL;
-	if (!(table = map_to_node_table(map)))
+	const struct STable *table = map_to_node_table(map);
+	if (!table)
 		return NULL;
 
 	const yaml_node_t *scalar;
@@ -549,8 +549,8 @@ static struct SList *seq_to_user_scale_list(const yaml_node_t *seq) {
 
 // unmarshal a MODE into a UserMode
 static struct UserMode *map_to_user_mode(const yaml_node_t *map) {
-	const struct STable *table = NULL;
-	if (!(table = map_to_node_table(map)))
+	const struct STable *table = map_to_node_table(map);
+	if (!table)
 		return NULL;
 
 	const yaml_node_t *scalar;
@@ -629,8 +629,8 @@ static struct SList *seq_to_user_mode_list(const yaml_node_t *seq) {
 
 // unmarshal a TRANSFORM into a UserTransform
 static struct UserTransform *map_to_user_transform(const yaml_node_t *map) {
-	const struct STable *table = NULL;
-	if (!(table = map_to_node_table(map)))
+	const struct STable *table = map_to_node_table(map);
+	if (!table)
 		return NULL;
 
 	struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
@@ -825,13 +825,12 @@ end:
 static void *root_to_ipc_request(const yaml_node_t *root) {
 	unmarshal_ctx.t = ERROR;
 
-	if (!root || !check_node_type(root, YAML_MAPPING_NODE))
+	const struct STable *table = map_to_node_table(root);
+	if (!table)
 		return NULL;
 
 	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
 	ipc_request->cfg = cfg_init();
-
-	const struct STable *table = map_to_node_table(root);
 
 	unmarshal_ctx_top_level_key("OP");
 	const yaml_node_t *op = stable_get(table, unmarshal_ctx.top_level_key);
@@ -859,10 +858,9 @@ end:
 }
 
 static struct Lid *map_to_lid(const yaml_node_t *map) {
-	if (!map || !check_node_type(map, YAML_MAPPING_NODE))
-		return NULL;
-
 	const struct STable *table = map_to_node_table(map);
+	if (!table)
+		return NULL;
 
 	struct Lid *lid = (struct Lid*)calloc(1, sizeof(struct Lid));
 
@@ -876,12 +874,10 @@ static struct Lid *map_to_lid(const yaml_node_t *map) {
 
 // populates lid and heads
 static bool map_into_state(struct IpcResponse *ipc_response, const yaml_node_t *map) {
-	if (!ipc_response || !map || !check_node_type(map, YAML_MAPPING_NODE))
+	if (!ipc_response)
 		return false;
 
-	const struct STable *table = NULL;
-
-	table = map_to_node_table(map);
+	const struct STable *table = map_to_node_table(map);
 
 	ipc_response->lid =	map_to_lid(stable_get(table, "LID"));
 
@@ -891,9 +887,11 @@ static bool map_into_state(struct IpcResponse *ipc_response, const yaml_node_t *
 }
 
 static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
-	struct IpcResponse *ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-
 	const struct STable *table = map_to_node_table(map);
+	if (!table)
+		return NULL;
+
+	struct IpcResponse *ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
 
 	const yaml_node_t *done = stable_get(table, "DONE");
 	unmarshal_ctx_top_level_key("DONE");
@@ -955,9 +953,6 @@ static void *root_to_ipc_response_list(const yaml_node_t *root) {
 			if (!node)
 				continue;
 
-			if (!check_node_type(node, YAML_MAPPING_NODE))
-				goto err;
-
 			struct IpcResponse *ipc_response = map_to_ipc_response(node);
 			if (ipc_response)
 				slist_append(&ipc_responses, ipc_response);
@@ -978,9 +973,8 @@ end:
 // marshal a yaml string to data via fn, logs use action
 typedef void *(*root_to_struct_fn)(const yaml_node_t *root);
 static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, char *action) {
-	if (!yaml) {
+	if (!yaml || !action)
 		return NULL;
-	}
 
 	if (!yaml_parser_initialize(&parser)) {
 		log_error("\n%s: yaml_parser_initialize failed", action);
@@ -996,6 +990,7 @@ static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, char *action
 		return NULL;
 	}
 
+	unmarshal_ctx_clear();
 	unmarshal_ctx_action(action);
 
 	const yaml_node_t *root;
