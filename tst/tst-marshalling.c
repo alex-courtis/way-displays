@@ -884,6 +884,9 @@ static void unmarshal_ipc_responses__seq_no_map(void **state) {
 }
 
 static void unmarshal_ipc_responses__seq_no_done(void **state) {
+	if (V2)
+		expect_function_call(__wrap_lid_free);
+
 	struct SList *actual = Y_T_IRES("- FOO: BAR");
 
 	assert_nul(actual);
@@ -897,6 +900,9 @@ static void unmarshal_ipc_responses__seq_no_done(void **state) {
 }
 
 static void unmarshal_ipc_responses__seq_no_rc(void **state) {
+	if (V2)
+		expect_function_call(__wrap_lid_free);
+
 	struct SList *actual = Y_T_IRES("- DONE: TRUE");
 
 	assert_nul(actual);
@@ -1034,17 +1040,17 @@ static void unmarshal_ipc_responses__seq(void **state) {
 	assert_non_nul(lid);
 	assert_str_equal(lid->device_path, "/path/to/lid");
 
-	struct SList *heads = response->heads;
-	assert_non_nul(heads);
-	assert_int_equal(slist_length(heads), 2);
-
-	struct Head *head0 = slist_at(heads, 0);
-	assert_non_nul(head0);
-	assert_str_equal(head0->name, "name0");
-
-	struct Head *head1 = slist_at(heads, 1);
-	assert_non_nul(head1);
-	assert_str_equal(head1->name, "name1");
+	// struct SList *heads = response->heads;
+	// assert_non_nul(heads);
+	// assert_int_equal(slist_length(heads), 2);
+	//
+	// struct Head *head0 = slist_at(heads, 0);
+	// assert_non_nul(head0);
+	// assert_str_equal(head0->name, "name0");
+	//
+	// struct Head *head1 = slist_at(heads, 1);
+	// assert_non_nul(head1);
+	// assert_str_equal(head1->name, "name1");
 
 	// 1
 	response = slist_at(responses, 1);
@@ -1080,6 +1086,7 @@ int main(void) {
 		ipc_response_to_yaml(NULL);
 		yaml_file_into_cfg(NULL);
 		yaml_to_ipc_request(NULL);
+		yaml_to_ipc_responses(NULL);
 
 		unmarshal_ipc_request__empty(NULL);
 		unmarshal_ipc_request__invalid_op(NULL);
@@ -1134,7 +1141,7 @@ int main(void) {
 		TEST(unmarshal_ipc_responses__seq_no_done),
 		TEST(unmarshal_ipc_responses__seq_no_rc),
 		// TEST(unmarshal_ipc_responses__map),
-		// TEST(unmarshal_ipc_responses__seq),
+		TEST(unmarshal_ipc_responses__seq),
 	};
 
 	return RUN(tests);

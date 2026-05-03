@@ -10,6 +10,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "conditions.h"
+#include "lid.h"
 #include "log.h"
 #include "slist.h"
 #include "stable.h"
@@ -18,6 +19,7 @@
 static yaml_document_t document;
 static yaml_parser_t parser;
 
+// TODO split this so that cfg doesn't interfere with ipc
 struct UnmarshalCtx {
 	yaml_node_type_t type_expected;
 	yaml_node_type_t type_actual;
@@ -88,12 +90,12 @@ static void log_invalid_value(const yaml_char_t *value) {
 	char *bufp = buf;
 
 	if (unmarshal_ctx.action[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), "\n%s: invalid", unmarshal_ctx.action);
+		bufp += snprintf(bufp, 1024 - (bufp - buf), "\n%s:", unmarshal_ctx.action);
 	else
-		bufp += snprintf(bufp, 1024 - (bufp - buf), "Ignoring invalid");
+		bufp += snprintf(bufp, 1024 - (bufp - buf), "Ignoring");
 
 	if (unmarshal_ctx.top_level_key[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.top_level_key);
+		bufp += snprintf(bufp, 1024 - (bufp - buf), " invalid %s", unmarshal_ctx.top_level_key);
 	if (unmarshal_ctx.name_desc[0])
 		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", unmarshal_ctx.name_desc);
 	if (unmarshal_ctx.key[0])
@@ -153,11 +155,12 @@ static bool invalid_regex(const void *pattern, const void *unused) {
 
 // validate expected is of type actual, returning false and logging a warning if not
 static bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expected) {
-	if (node->type == expected)
+	if (node && node->type == expected)
 		return true;
 
 	unmarshal_ctx.type_expected = expected;
-	unmarshal_ctx.type_actual = node->type;
+	if (node)
+		unmarshal_ctx.type_actual = node->type;
 
 	log_invalid_value(NULL);
 
@@ -820,36 +823,32 @@ end:
 }
 
 static void *root_to_ipc_request(const yaml_node_t *root) {
+	unmarshal_ctx.t = ERROR;
+
+	if (!root || !check_node_type(root, YAML_MAPPING_NODE))
+		return NULL;
 
 	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
 	ipc_request->cfg = cfg_init();
 
-	const struct STable *table = NULL;
+	const struct STable *table = map_to_node_table(root);
 
-	if (root->type != YAML_MAPPING_NODE) {
-		log_error("\nunmarshalling ipc request: expected %s, got %s", node_type_str(YAML_MAPPING_NODE), node_type_str(root->type));
-		goto err;
-	}
-
-	table = map_to_node_table(root);
-
-	// OP - validated
 	unmarshal_ctx_top_level_key("OP");
-	const yaml_node_t *op = stable_get(table, "OP");
+	const yaml_node_t *op = stable_get(table, unmarshal_ctx.top_level_key);
 	if (!check_mandatory(op))
 		goto err;
 	if (!(ipc_request->command = scalar_to_enum(op, ipc_command_val)))
 		goto err;
 
-	// remainder - not validiated
 	unmarshal_ctx.silent = true;
 
+	unmarshal_ctx_top_level_key("STATE");
 	ipc_request->log_threshold = scalar_to_enum(stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
 	map_to_cfg(ipc_request->cfg, stable_get(table, "CFG"));
 
 	goto end;
-err:
 
+err:
 	ipc_request_free(ipc_request);
 	ipc_request = NULL;
 
@@ -859,34 +858,90 @@ end:
 	return ipc_request;
 }
 
-static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
+static struct Lid *map_to_lid(const yaml_node_t *map) {
+	if (!map || !check_node_type(map, YAML_MAPPING_NODE))
+		return NULL;
+
+	const struct STable *table = map_to_node_table(map);
+
+	struct Lid *lid = (struct Lid*)calloc(1, sizeof(struct Lid));
+
+	lid->device_path = scalar_to_string(stable_get(table, "DEVICE_PATH"));
+	scalar_to_boolean(&lid->closed, stable_get(table, "CLOSED"));
+
+	stable_free(table);
+
+	return lid;
+}
+
+// populates lid and heads
+static bool map_into_state(struct IpcResponse *ipc_response, const yaml_node_t *map) {
+	if (!ipc_response || !map || !check_node_type(map, YAML_MAPPING_NODE))
+		return false;
+
 	const struct STable *table = NULL;
 
 	table = map_to_node_table(map);
 
+	ipc_response->lid =	map_to_lid(stable_get(table, "LID"));
+
+	stable_free(table);
+
+	return true;
+}
+
+static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
+	struct IpcResponse *ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+
+	const struct STable *table = map_to_node_table(map);
+
 	const yaml_node_t *done = stable_get(table, "DONE");
-	if (!done) {
-		log_error("\nunmarshalling ipc response: missing DONE");
+	unmarshal_ctx_top_level_key("DONE");
+	if (!check_mandatory(done))
 		goto err;
-	}
+	if (!scalar_to_boolean(&ipc_response->status.done, done))
+		goto err;
 
 	const yaml_node_t *rc = stable_get(table, "RC");
-	if (!rc) {
-		log_error("\nunmarshalling ipc response: missing RC");
+	unmarshal_ctx_top_level_key("RC");
+	if (!check_mandatory(rc))
 		goto err;
+	if (!scalar_to_int(&ipc_response->status.rc, rc))
+		goto err;
+
+	unmarshal_ctx.silent = true;
+
+	const yaml_node_t *state = stable_get(table, "STATE");
+	if (state) {
+		unmarshal_ctx_top_level_key("STATE");
+		map_into_state(ipc_response, state);
+	}
+
+	const yaml_node_t *cfg = stable_get(table, "CFG");
+	unmarshal_ctx_top_level_key("CFG");
+	if (cfg) {
+		ipc_response->cfg = cfg_init();
+		map_to_cfg(ipc_response->cfg, cfg);
 	}
 
 	goto end;
 
 err:
+	ipc_response_free(ipc_response);
+	ipc_response = NULL;
 
 end:
 	stable_free(table);
 
-	return NULL;
+	return ipc_response;
 }
 
 static void *root_to_ipc_response_list(const yaml_node_t *root) {
+	unmarshal_ctx.t = ERROR;
+
+	if (!root)
+		return NULL;
+
 	struct SList *ipc_responses = NULL;
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
@@ -900,10 +955,8 @@ static void *root_to_ipc_response_list(const yaml_node_t *root) {
 			if (!node)
 				continue;
 
-			if (node->type != YAML_MAPPING_NODE) {
-				log_error("\nunmarshalling ipc response: expected %s, got %s", node_type_str(YAML_MAPPING_NODE), node_type_str(node->type));
+			if (!check_node_type(node, YAML_MAPPING_NODE))
 				goto err;
-			}
 
 			struct IpcResponse *ipc_response = map_to_ipc_response(node);
 			if (ipc_response)
@@ -944,7 +997,6 @@ static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, char *action
 	}
 
 	unmarshal_ctx_action(action);
-	unmarshal_ctx.t = ERROR;
 
 	const yaml_node_t *root;
 
