@@ -20,6 +20,8 @@
 static yaml_document_t document;
 static yaml_parser_t parser;
 
+struct UnmarshalCtx unmarshal_ctx = { 0 };
+
 static void unmarshal_ctx_clear(void) {
 	unmarshal_ctx.type_expected = YAML_NO_NODE;
 	unmarshal_ctx.type_actual = YAML_NO_NODE;
