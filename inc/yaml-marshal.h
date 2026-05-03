@@ -8,6 +8,7 @@
 #include "slist.h"
 
 // TODO compress into one header
+// TODO use static doc
 
 // global, set and unset by struct_to_yaml
 extern struct MarshalCtx {

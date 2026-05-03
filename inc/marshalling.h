@@ -20,11 +20,12 @@ char *marshal_ipc_response(struct IpcOperation *operation);
 
 // unmarshal all responses
 struct SList *unmarshal_ipc_responses(const char *yaml);
+struct SList *yaml_to_ipc_responses(const char *yaml);
 
 char *marshal_cfg(struct Cfg *cfg);
 
 bool unmarshal_cfg_from_file(struct Cfg *cfg);
-bool yaml_file_to_cfg(struct Cfg *cfg);
+bool yaml_file_into_cfg(struct Cfg *cfg);
 
 #if __cplusplus
 } // extern "C"

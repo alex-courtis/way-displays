@@ -1280,7 +1280,7 @@ struct SList *unmarshal_ipc_responses(const char *yaml) {
 			struct IpcResponse *response = NULL;
 			slist_append(&responses, response << node);
 		} else {
-			throw std::runtime_error("expected sequence or map");
+			throw std::runtime_error("empty request");
 		}
 
 	} catch (const std::exception &e) {

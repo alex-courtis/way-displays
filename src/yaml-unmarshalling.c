@@ -7,8 +7,6 @@
 #include <string.h>
 #include <yaml.h>
 
-#include "yaml-unmarshal.h"
-
 #include "cfg.h"
 #include "convert.h"
 #include "conditions.h"
@@ -20,7 +18,15 @@
 static yaml_document_t document;
 static yaml_parser_t parser;
 
-struct UnmarshalCtx unmarshal_ctx = { 0 };
+struct UnmarshalCtx {
+	yaml_node_type_t type_expected;
+	yaml_node_type_t type_actual;
+	char top_level_key[128];
+	char name_desc[128];
+	char key[128];
+	char def[1024];
+	bool silent;
+} unmarshal_ctx = { 0 };
 
 static void unmarshal_ctx_clear(void) {
 	unmarshal_ctx.type_expected = YAML_NO_NODE;
@@ -748,7 +754,7 @@ static bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 	return true;
 }
 
-bool yaml_file_to_cfg(struct Cfg *cfg) {
+bool yaml_file_into_cfg(struct Cfg *cfg) {
 	if (!cfg->file_path) {
 		return false;
 	}
@@ -802,46 +808,44 @@ end:
 	return ok;
 }
 
-static void log_error_with_yaml(const char *action, const char *name, const char *err, const char *yaml) {
-	log_error("\n%s %s: %s", action, name, err);
-	log_error("========================================\n%s\n----------------------------------------", yaml);
-}
-
-static void *map_to_ipc_request(const yaml_node_t *map, const char *yaml) {
-	char err[2048];
-
+static void *root_to_ipc_request(const yaml_node_t *root) {
 	unmarshal_ctx_clear();
 	unmarshal_ctx.silent = true;
 
 	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
 	ipc_request->cfg = cfg_init();
 
-	const struct STable *table = map_to_node_table(map);
+	const struct STable *table = NULL;
+
+	if (root->type != YAML_MAPPING_NODE) {
+		log_error("\nunmarshalling ipc request: expected %s, got %s", node_type_str(YAML_MAPPING_NODE), node_type_str(root->type));
+		goto err;
+	}
+
+	table = map_to_node_table(root);
 
 	// validate OP
 	const yaml_node_t *op = stable_get(table, "OP");
 	if (!check_mandatory(op)) {
-		snprintf(err, sizeof(err), "missing OP");
+		log_error("\nunmarshalling ipc request: missing OP");
 		goto err;
 	}
-
 	if (!check_node_type(op, YAML_SCALAR_NODE)) {
-		snprintf(err, sizeof(err), "invalid OP expected %s, got %s", node_type_str(YAML_SCALAR_NODE), node_type_str(op->type));
+		log_error("\nunmarshalling ipc request: invalid OP expected %s, got %s", node_type_str(YAML_SCALAR_NODE), node_type_str(op->type));
 		goto err;
 	}
 	if (!(ipc_request->command = scalar_to_enum(op, ipc_command_val))) {
-		snprintf(err, sizeof(err), "invalid OP '%s'", (char*)op->data.scalar.value);
+		log_error("\nunmarshalling ipc request: invalid OP '%s'", (char*)op->data.scalar.value);
 		goto err;
 	}
 
-	// silently ignore
+	// silently parse remainder
 	ipc_request->log_threshold = scalar_to_enum(stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
 	map_to_cfg(ipc_request->cfg, stable_get(table, "CFG"));
 
 	goto end;
 
 err:
-	log_error_with_yaml("unmarshalling", "ipc request", err, yaml);
 
 	ipc_request_free(ipc_request);
 	ipc_request = NULL;
@@ -854,14 +858,23 @@ end:
 	return ipc_request;
 }
 
-void *yaml_to_struct(const char *yaml, map_to_struct_fn fn, const char *name) {
-	char err[2048];
+static void *root_to_ipc_responses(const yaml_node_t *map) {
+	unmarshal_ctx_clear();
+	unmarshal_ctx.silent = true;
 
+	struct SList *responses = NULL;
+
+	return responses;
+}
+
+// marshal a yaml string to data via fn, logs use name
+typedef void *(*root_to_struct_fn)(const yaml_node_t *root);
+static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, const char *name) {
 	if (!yaml) {
 		return NULL;
 	}
 
-	void *data = NULL;
+	void *out = NULL;
 
 	if (!yaml_parser_initialize(&parser)) {
 		log_error("unmarshalling %s: yaml_parser_initialize failed", name);
@@ -879,25 +892,27 @@ void *yaml_to_struct(const char *yaml, map_to_struct_fn fn, const char *name) {
 	const yaml_node_t *root;
 
 	if (!(root = yaml_document_get_root_node(&document))) {
-		log_error_with_yaml("unmarshalling", name, "empty request", yaml);
-		goto end;
+		log_error("\nunmarshalling %s: empty request", name);
+		goto err;
 	}
 
-	if (root->type != YAML_MAPPING_NODE) {
-		snprintf(err, sizeof(err), "expected %s, got %s", node_type_str(YAML_MAPPING_NODE), node_type_str(root->type));
-		log_error_with_yaml("unmarshalling", name, err, yaml);
+	if ((out = fn(root)))
 		goto end;
-	}
 
-	data = fn(root, yaml);
+err:
+	log_error("========================================\n%s\n----------------------------------------", yaml);
 
 end:
 	yaml_document_delete(&document);
 	yaml_parser_delete(&parser);
 
-	return data;
+	return out;
 }
 
 struct IpcRequest *yaml_to_ipc_request(char *yaml) {
-	return yaml_to_struct(yaml, map_to_ipc_request, "ipc request");
+	return yaml_to_struct(yaml, root_to_ipc_request, "ipc request");
+}
+
+struct SList *yaml_to_ipc_responses(const char *yaml) {
+	return yaml_to_struct(yaml, root_to_ipc_responses, "ipc response");
 }
