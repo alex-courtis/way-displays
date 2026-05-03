@@ -858,13 +858,68 @@ end:
 	return ipc_request;
 }
 
-static void *root_to_ipc_responses(const yaml_node_t *map) {
+static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
+	const struct STable *table = NULL;
+
+	table = map_to_node_table(map);
+
+	const yaml_node_t *done = stable_get(table, "DONE");
+	if (!done) {
+		log_error("\nunmarshalling ipc response: missing DONE");
+		goto err;
+	}
+
+	const yaml_node_t *rc = stable_get(table, "RC");
+	if (!rc) {
+		log_error("\nunmarshalling ipc response: missing RC");
+		goto err;
+	}
+
+	goto end;
+
+err:
+
+end:
+	return NULL;
+}
+
+static void *root_to_ipc_response_list(const yaml_node_t *root) {
 	unmarshal_ctx_clear();
 	unmarshal_ctx.silent = true;
 
-	struct SList *responses = NULL;
+	struct SList *ipc_responses = NULL;
 
-	return responses;
+	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
+		log_error("\nunmarshalling ipc response: expected %s or %s, got %s", node_type_str(YAML_MAPPING_NODE), node_type_str(YAML_SEQUENCE_NODE), node_type_str(root->type));
+		goto err;
+	}
+
+	if (root->type == YAML_SEQUENCE_NODE) {
+		for (const yaml_node_item_t *item = root->data.sequence.items.start; item < root->data.sequence.items.top; item ++) {
+			const yaml_node_t *node = yaml_document_get_node(&document, *item);
+			if (!node)
+				continue;
+
+			if (node->type != YAML_MAPPING_NODE) {
+				log_error("\nunmarshalling ipc response: expected %s, got %s", node_type_str(YAML_MAPPING_NODE), node_type_str(node->type));
+				goto err;
+			}
+
+			struct IpcResponse *ipc_response = map_to_ipc_response(node);
+			if (ipc_response)
+				slist_append(&ipc_responses, ipc_response);
+		}
+	} else {
+	}
+
+	goto end;
+
+err:
+	slist_free_vals(&ipc_responses, ipc_response_free);
+	ipc_responses = NULL;
+
+end:
+	return ipc_responses;
 }
 
 // marshal a yaml string to data via fn, logs use name
@@ -914,5 +969,5 @@ struct IpcRequest *yaml_to_ipc_request(char *yaml) {
 }
 
 struct SList *yaml_to_ipc_responses(const char *yaml) {
-	return yaml_to_struct(yaml, root_to_ipc_responses, "ipc response");
+	return yaml_to_struct(yaml, root_to_ipc_response_list, "ipc response");
 }

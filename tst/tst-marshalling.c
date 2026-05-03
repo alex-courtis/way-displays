@@ -752,7 +752,7 @@ static void unmarshal_ipc_request__empty(void **state) {
 	assert_logs_empty();
 }
 
-static void unmarshal_ipc_request__root_not_map(void **state) {
+static void unmarshal_ipc_request__mistyped_root(void **state) {
 	if (!V2)
 		return;
 
@@ -768,7 +768,7 @@ static void unmarshal_ipc_request__root_not_map(void **state) {
 	assert_logs_empty();
 }
 
-static void unmarshal_ipc_request__bad_op(void **state) {
+static void unmarshal_ipc_request__invalid_op(void **state) {
 	struct IpcRequest *actual = Y_T_IREQ("OP: aoeu");
 
 	assert_nul(actual);
@@ -846,16 +846,40 @@ static void unmarshal_ipc_responses__empty(void **state) {
 	assert_logs_empty();
 }
 
+static void unmarshal_ipc_responses__mistyped_root(void **state) {
+	if (!V2)
+		return;
+
+	struct SList *actual = Y_T_IRES("foo");
+
+	assert_nul(actual);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling ipc response: expected map or sequence, got scalar\n"
+			"========================================\n"
+			"foo\n"
+			"----------------------------------------\n");
+	assert_logs_empty();
+}
+
 static void unmarshal_ipc_responses__seq_no_map(void **state) {
 	struct SList *actual = Y_T_IRES("-");
 
 	assert_nul(actual);
 
-	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: expected map\n"
-			"========================================\n"
-			"-\n"
-			"----------------------------------------\n");
+	if (V2) {
+		assert_log(ERROR, "\n"
+				"unmarshalling ipc response: expected map, got scalar\n"
+				"========================================\n"
+				"-\n"
+				"----------------------------------------\n");
+	} else {
+		assert_log(ERROR, "\n"
+				"unmarshalling ipc response: expected map\n"
+				"========================================\n"
+				"-\n"
+				"----------------------------------------\n");
+	}
 	assert_logs_empty();
 }
 
@@ -865,7 +889,7 @@ static void unmarshal_ipc_responses__seq_no_done(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: DONE missing\n"
+			"unmarshalling ipc response: missing DONE\n"
 			"========================================\n"
 			"- FOO: BAR\n"
 			"----------------------------------------\n");
@@ -878,7 +902,7 @@ static void unmarshal_ipc_responses__seq_no_rc(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: RC missing\n"
+			"unmarshalling ipc response: missing RC\n"
 			"========================================\n"
 			"- DONE: TRUE\n"
 			"----------------------------------------\n");
@@ -1058,7 +1082,7 @@ int main(void) {
 		yaml_to_ipc_request(NULL);
 
 		unmarshal_ipc_request__empty(NULL);
-		unmarshal_ipc_request__bad_op(NULL);
+		unmarshal_ipc_request__invalid_op(NULL);
 		unmarshal_ipc_request__no_op(NULL);
 		unmarshal_ipc_request__cfg_set(NULL);
 	}
@@ -1098,16 +1122,17 @@ int main(void) {
 		TEST(ipc_response_to_yaml__seq),
 
 		TEST(unmarshal_ipc_request__empty),
-		TEST(unmarshal_ipc_request__root_not_map),
-		TEST(unmarshal_ipc_request__bad_op),
+		TEST(unmarshal_ipc_request__mistyped_root),
+		TEST(unmarshal_ipc_request__invalid_op),
 		TEST(unmarshal_ipc_request__mistyped_op),
 		TEST(unmarshal_ipc_request__no_op),
 		TEST(unmarshal_ipc_request__cfg_set),
 
 		TEST(unmarshal_ipc_responses__empty),
-		// TEST(unmarshal_ipc_responses__seq_no_map),
-		// TEST(unmarshal_ipc_responses__seq_no_done),
-		// TEST(unmarshal_ipc_responses__seq_no_rc),
+		TEST(unmarshal_ipc_responses__mistyped_root),
+		TEST(unmarshal_ipc_responses__seq_no_map),
+		TEST(unmarshal_ipc_responses__seq_no_done),
+		TEST(unmarshal_ipc_responses__seq_no_rc),
 		// TEST(unmarshal_ipc_responses__map),
 		// TEST(unmarshal_ipc_responses__seq),
 	};

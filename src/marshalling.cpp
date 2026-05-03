@@ -746,10 +746,10 @@ struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Nod
 		return response;
 
 	if (!node_response["DONE"])
-		throw std::runtime_error("DONE missing");
+		throw std::runtime_error("missing DONE");
 
 	if (!node_response["RC"])
-		throw std::runtime_error("RC missing");
+		throw std::runtime_error("missing RC");
 
 	if (!response)
 		response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
