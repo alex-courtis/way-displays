@@ -774,7 +774,7 @@ static void unmarshal_ipc_request__invalid_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc request: invalid OP 'aoeu'\n"
+			"unmarshalling ipc request: invalid OP aoeu\n"
 			"========================================\n"
 			"OP: aoeu\n"
 			"----------------------------------------\n");

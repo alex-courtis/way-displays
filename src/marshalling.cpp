@@ -1106,7 +1106,7 @@ struct IpcRequest *unmarshal_ipc_request(char *yaml) {
 			const std::string &op_str = node_op.as<std::string>();
 			request->command = ipc_command_val(op_str.c_str());
 			if (!request->command) {
-				throw std::runtime_error("invalid OP '" + op_str + "'");
+				throw std::runtime_error("invalid OP " + op_str);
 			}
 		} else {
 			throw std::runtime_error("missing OP");
