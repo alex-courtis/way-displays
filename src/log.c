@@ -244,3 +244,25 @@ void log_cap_lines_stop(struct SList **lines) {
 void log_cap_lines_free(struct SList **lines) {
 	slist_free_vals(lines, log_cap_line_free);
 }
+
+char *str_app(char *__restrict s, const char *__restrict __format, ...) {
+	size_t l_left = s ? strlen(s) : 0;
+
+	va_list args;
+	va_start(args, __format);
+	size_t l_right = vsnprintf(NULL, 0, __format, args);
+	va_end(args);
+
+	char *left = calloc(l_left + l_right + 1, sizeof(char*));
+
+	char *right = l_left ? stpncpy(left, s, l_left) : left;
+
+	va_start(args, __format);
+	vsnprintf(right, l_right + 1, __format, args);
+	va_end(args);
+
+	if (s)
+		free(s);
+
+	return left;
+}

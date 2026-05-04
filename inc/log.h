@@ -61,5 +61,10 @@ void log_cap_lines_free(struct SList **log_cap_lines);
 
 void log_cap_lines_playback(struct SList *log_cap_lines);
 
+
+// append to nullable s, returning a new string, freeing s
+char *str_app(char *__restrict s, const char *__restrict __format, ...) __attribute__ ((__format__ (__printf__, 2, 3)));
+
+
 #endif // LOG_H
 

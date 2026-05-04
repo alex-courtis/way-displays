@@ -57,7 +57,7 @@ static void ctx_def(const char *def) {
 }
 
 // return a static string for the node type
-static char* node_type_str(const yaml_node_type_t type) {
+static char *node_type_str(const yaml_node_type_t type) {
 	switch (type) {
 		case YAML_NO_NODE:
 			return "empty";
@@ -76,49 +76,53 @@ static void log_invalid(const yaml_char_t *value, const yaml_node_type_t type_ex
 	if (ctx.silent)
 		return;
 
-	// TODO this can overflow
-	static char buf[1024];
-	char *bufp = buf;
+	char *b = NULL;
 
 	if (ctx.action[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), "\n%s:", ctx.action);
+		b = str_app(b, "\n%s:", ctx.action);
 	else
-		bufp += snprintf(bufp, 1024 - (bufp - buf), "Ignoring");
+		b = str_app(b, "Ignoring");
 
 	if (ctx.top_level_key[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " invalid %s", ctx.top_level_key);
+		b = str_app(b, " invalid %s", ctx.top_level_key);
 	if (ctx.name_desc[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.name_desc);
+		b = str_app(b, " %s", ctx.name_desc);
 	if (ctx.key[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.key);
+		b = str_app(b, " %s", ctx.key);
 	if (type_expected)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " expected %s, got %s", node_type_str(type_expected), node_type_str(type_actual));
+		b = str_app(b, " expected %s, got %s", node_type_str(type_expected), node_type_str(type_actual));
 	if (value)
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", value);
+		b = str_app(b, " %s", value);
 	if (ctx.def[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), ", using default %s", ctx.def);
+		b = str_app(b, ", using default %s", ctx.def);
 
-	log_(ctx.t, "%s", buf);
+	if (b) {
+		log_(ctx.t, "%s", b);
+		free(b);
+	}
 }
 
 static void log_misssing(void) {
 	if (ctx.silent)
 		return;
 
-	static char buf[1024];
-	char *bufp = buf;
+	char *b = NULL;
 
 	if (ctx.action[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), "\n%s: missing %s", ctx.action, ctx.top_level_key);
+		b = str_app(b, "\n%s: missing %s", ctx.action, ctx.top_level_key);
 	else
-		bufp += snprintf(bufp, 1024 - (bufp - buf), "%s: Ignoring missing", ctx.top_level_key);
+		b = str_app(b, "%s: Ignoring missing", ctx.top_level_key);
 
 	if (ctx.key[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " %s", ctx.key);
-	if (ctx.name_desc[0])
-		bufp += snprintf(bufp, 1024 - (bufp - buf), " for '%s'", ctx.name_desc);
+		b = str_app(b, " %s", ctx.key);
 
-	log_(ctx.t, "%s", buf);
+	if (ctx.name_desc[0])
+		b = str_app(b, " for '%s'", ctx.name_desc);
+
+	if (b) {
+		log_(ctx.t, "%s", b);
+		free(b);
+	}
 }
 
 static void log_invalid_value(const yaml_char_t *value) {
