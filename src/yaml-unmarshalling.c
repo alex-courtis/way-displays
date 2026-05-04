@@ -15,13 +15,11 @@
 #include "slist.h"
 #include "stable.h"
 
-// static for convenience, must be deleted after use to free resources
-static yaml_document_t document;
-static yaml_parser_t parser;
-
 struct UnmarshalCtx {
 	bool silent;
 	enum LogThreshold t;
+
+	yaml_document_t *document;
 
 	char *action;
 	char *top;
@@ -61,13 +59,13 @@ static void ctx_def(const char *def) {
 }
 
 static void ctx_reset(void) {
+	ctx.silent = false;
+	ctx.t = WARNING;
 	ctx_action(NULL);
 	ctx_top(NULL);
 	ctx_name_desc(NULL);
 	ctx_key(NULL);
 	ctx_def(NULL);
-	ctx.silent = false;
-	ctx.t = WARNING;
 }
 
 // return a static string for the node type
@@ -286,7 +284,7 @@ static const struct STable *map_to_node_table(const yaml_node_t *map) {
 		if (!pair->key || !pair->value)
 			continue;
 
-		const yaml_node_t *pair_key = yaml_document_get_node(&document, pair->key);
+		const yaml_node_t *pair_key = yaml_document_get_node(ctx.document, pair->key);
 
 		char *key = NULL;
 		if (!(key = scalar_to_string(pair_key))) {
@@ -294,7 +292,7 @@ static const struct STable *map_to_node_table(const yaml_node_t *map) {
 			return NULL;
 		}
 
-		const yaml_node_t *pair_value = yaml_document_get_node(&document, pair->value);
+		const yaml_node_t *pair_value = yaml_document_get_node(ctx.document, pair->value);
 
 		if (key && pair_value)
 			stable_put(table, key, pair_value);
@@ -314,7 +312,7 @@ static struct SList *seq_to_string_list(const yaml_node_t *seq) {
 	const struct STable *table = stable_init(10, 10, false);
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		const yaml_node_t *scalar = yaml_document_get_node(&document, *item);
+		const yaml_node_t *scalar = yaml_document_get_node(ctx.document, *item);
 		if (!scalar)
 			continue;
 
@@ -409,7 +407,7 @@ static struct SList *seq_to_conditions_list(const yaml_node_t *seq) {
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(&document, *item);
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -467,7 +465,7 @@ static struct SList *seq_to_disabled_list(const yaml_node_t *seq) {
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(&document, *item);
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -545,7 +543,7 @@ static struct SList *seq_to_user_scale_list(const yaml_node_t *seq) {
 
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(&document, *item);
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -622,7 +620,7 @@ static struct SList *seq_to_user_mode_list(const yaml_node_t *seq) {
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(&document, *item);
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -680,7 +678,7 @@ static struct SList *seq_to_transform_list(const yaml_node_t *seq) {
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(&document, *item);
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
 		if (!node)
 			continue;
 
@@ -699,11 +697,11 @@ static bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 		if (!pair->key || !pair->value)
 			continue;
 
-		const yaml_node_t *key = yaml_document_get_node(&document, pair->key);
+		const yaml_node_t *key = yaml_document_get_node(ctx.document, pair->key);
 		if (!key || key->type != YAML_SCALAR_NODE || !key->data.scalar.value)
 			continue;
 
-		const yaml_node_t *value = yaml_document_get_node(&document, pair->value);
+		const yaml_node_t *value = yaml_document_get_node(ctx.document, pair->value);
 		if (!value)
 			continue;
 
@@ -779,6 +777,8 @@ bool yaml_file_into_cfg(struct Cfg *cfg) {
 		return false;
 	}
 
+	yaml_parser_t parser;
+
 	if (!yaml_parser_initialize(&parser)) {
 		log_error("\nparsing file %s: yaml_parser_initialize failed", cfg->file_path);
 		fclose(input);
@@ -786,6 +786,9 @@ bool yaml_file_into_cfg(struct Cfg *cfg) {
 	}
 
 	yaml_parser_set_input_file(&parser, input);
+
+	yaml_document_t document;
+	ctx.document = &document;
 
 	if (!yaml_parser_load(&parser, &document)) {
 		log_error("\nparsing file %s: yaml_parser_load failed", cfg->file_path);
@@ -798,7 +801,7 @@ bool yaml_file_into_cfg(struct Cfg *cfg) {
 
 	const yaml_node_t *root;
 
-	if (!(root = yaml_document_get_root_node(&document))) {
+	if (!(root = yaml_document_get_root_node(ctx.document))) {
 		log_error("\nparsing file %s no root node", cfg->file_path);
 		ok = false;
 		goto end;
@@ -815,8 +818,10 @@ bool yaml_file_into_cfg(struct Cfg *cfg) {
 
 end:
 	ctx_reset();
+	ctx.document = NULL;
 
 	yaml_document_delete(&document);
+
 	yaml_parser_delete(&parser);
 	fclose(input);
 
@@ -944,7 +949,7 @@ static void *root_to_ipc_response_list(const yaml_node_t *root) {
 
 	if (root->type == YAML_SEQUENCE_NODE) {
 		for (const yaml_node_item_t *item = root->data.sequence.items.start; item < root->data.sequence.items.top; item ++) {
-			const yaml_node_t *node = yaml_document_get_node(&document, *item);
+			const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
 			if (!node)
 				continue;
 
@@ -971,12 +976,17 @@ static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, char *action
 	if (!yaml || !action)
 		return NULL;
 
+	yaml_parser_t parser;
+
 	if (!yaml_parser_initialize(&parser)) {
 		log_error("\n%s: yaml_parser_initialize failed", action);
 		return NULL;
 	}
 
 	yaml_parser_set_input_string(&parser, (yaml_char_t*)yaml, strlen(yaml));
+
+	yaml_document_t document;
+	ctx.document = &document;
 
 	if (!yaml_parser_load(&parser, &document)) {
 		log_error("\n%s: yaml_parser_load failed", action);
@@ -989,7 +999,7 @@ static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, char *action
 
 	void *out = NULL;
 
-	if (!(root = yaml_document_get_root_node(&document))) {
+	if (!(root = yaml_document_get_root_node(ctx.document))) {
 		log_error("\n%s: empty request", action);
 		goto err;
 	}
@@ -1005,8 +1015,10 @@ err:
 
 end:
 	ctx_reset();
+	ctx.document = NULL;
 
 	yaml_document_delete(&document);
+
 	yaml_parser_delete(&parser);
 
 	return out;
