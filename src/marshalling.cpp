@@ -93,19 +93,32 @@ bool parse_node_val_bool(const YAML::Node &node, const char *key, bool *val, con
 	return true;
 }
 
-bool parse_node_val_bool_def(const YAML::Node &node, const char *key, bool *val, const char *def) {
+void parse_node_val_bool_def(const YAML::Node &node, const char *key, bool *val, const bool def) {
 	if (node[key]) {
 		try {
 			*val = node[key].as<bool>();
 		} catch (YAML::BadConversion &e) {
-			log_warn("Ignoring invalid %s %s, using default %s", key, node[key].as<std::string>().c_str(), def);
-			return false;
+			log_warn("Ignoring invalid %s %s, using default %s", key, node[key].as<std::string>().c_str(), on_off_name(def ? ON : OFF));
+			*val = def;
 		}
 	} else {
 		log_warn("Ignoring missing %s", key);
-		return false;
+		*val = def;
 	}
-	return true;
+}
+
+void parse_node_val_on_off_def(const YAML::Node &node, const char *key, enum OnOff *val, const enum OnOff def) {
+	if (node[key]) {
+		try {
+			*val = node[key].as<bool>() ? ON : OFF;
+		} catch (YAML::BadConversion &e) {
+			log_warn("Ignoring invalid %s %s, using default %s", key, node[key].as<std::string>().c_str(), on_off_name(def ? ON : OFF));
+			*val = def;
+		}
+	} else {
+		log_warn("Ignoring missing %s", key);
+		*val = def;
+	}
 }
 
 bool parse_node_val_string(const YAML::Node &node, const char *key, char **val, const char *desc1, const char *desc2) {
@@ -151,19 +164,18 @@ bool parse_node_val_float(const YAML::Node &node, const char *key, float *val, c
 	return true;
 }
 
-bool parse_node_val_float_def(const YAML::Node &node, const char *key, float *val, float def) {
+void parse_node_val_float_def(const YAML::Node &node, const char *key, float *val, float def) {
 	if (node[key]) {
 		try {
 			*val = node[key].as<float>();
 		} catch (YAML::BadConversion &e) {
 			log_warn("Ignoring invalid %s %s, using default %.1f", key, node[key].as<std::string>().c_str(), def);
-			return false;
+		*val = def;
 		}
 	} else {
 		log_warn("Ignoring missing %s", key);
-		return false;
+		*val = def;
 	}
-	return true;
 }
 
 bool parse_node_val_output_transform(const YAML::Node &node, const char *key, enum wl_output_transform *val, const char *desc1, const char *desc2) {
@@ -596,17 +608,11 @@ struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YA
 	}
 
 	if (node["SCALING"]) {
-		bool scaling;
-		if (parse_node_val_bool_def(node, "SCALING", &scaling, "ON")) {
-			cfg->scaling = scaling ? ON : OFF;
-		}
+		parse_node_val_on_off_def(node, "SCALING", &cfg->scaling, SCALING_DEFAULT);
 	}
 
 	if (node["AUTO_SCALE"]) {
-		bool auto_scale;
-		if (parse_node_val_bool_def(node, "AUTO_SCALE", &auto_scale, "ON")) {
-			cfg->auto_scale = auto_scale ? ON : OFF;
-		}
+		parse_node_val_on_off_def(node, "AUTO_SCALE", &cfg->auto_scale, AUTO_SCALE_DEFAULT);
 	}
 
 	if (node["AUTO_SCALE_MIN"]) {

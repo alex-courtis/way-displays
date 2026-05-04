@@ -1,4 +1,5 @@
 Ignoring invalid LOG_THRESHOLD BAD_LOG_THRESHOLD
+Ignoring invalid CALLBACK_CMD expected scalar, got sequence, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 Ignoring invalid ORDER regex '(order':  Unmatched ( or \(
 Ignoring invalid ARRANGE BAD_ARRANGE, using default ROW
 Ignoring invalid ALIGN BAD_ALIGN, using default TOP

@@ -538,6 +538,7 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 		return NULL;
 	}
 
+	// TODO this can overflow
 	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
 	char *bufp = buf;
 

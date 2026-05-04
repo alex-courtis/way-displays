@@ -1,6 +1,8 @@
 # all fields have an invalid value
 
 LOG_THRESHOLD: BAD_LOG_THRESHOLD
+CALLBACK_CMD:
+  -
 ORDER:
   - '!(order'
 ARRANGE: BAD_ARRANGE
