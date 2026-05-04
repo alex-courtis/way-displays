@@ -23,37 +23,51 @@ struct UnmarshalCtx {
 	bool silent;
 	enum LogThreshold t;
 
-	char action[128];
-	char top_level_key[128];
-	char name_desc[128];
-	char key[128];
-	char def[1024];
+	char *action;
+	char *top;
+	char *name_desc;
+	char *key;
+	char *def;
 } ctx = { 0 };
 
-static void ctx_reset(void) {
-	memset(&ctx, 0, sizeof(struct UnmarshalCtx));
-	ctx.silent = false;
-	ctx.t = WARNING;
-}
-
 static void ctx_action(const char *action) {
-	snprintf(ctx.action, 128, "%s", action ? action : "");
+	if (ctx.action)
+		free(ctx.action);
+	ctx.action = action ? strdup(action) : NULL;
 }
 
-static void ctx_top_level_key(const char *key) {
-	snprintf(ctx.top_level_key, 128, "%s", key);
+static void ctx_top(const char *top) {
+	if (ctx.top)
+		free(ctx.top);
+	ctx.top = top ? strdup(top) : NULL;
 }
 
 static void ctx_name_desc(const char *name_desc) {
-	snprintf(ctx.name_desc, 128, "%s", name_desc ? name_desc : "");
+	if (ctx.name_desc)
+		free(ctx.name_desc);
+	ctx.name_desc = name_desc ? strdup(name_desc) : NULL;
 }
 
 static void ctx_key(const char *key) {
-	snprintf(ctx.key, 128, "%s", key ? key : "");
+	if (ctx.key)
+		free(ctx.key);
+	ctx.key = key ? strdup(key) : NULL;
 }
 
 static void ctx_def(const char *def) {
-	snprintf(ctx.def, 1024, "%s", def ? def : "");
+	if (ctx.def)
+		free(ctx.def);
+	ctx.def = def ? strdup(def) : NULL;
+}
+
+static void ctx_reset(void) {
+	ctx_action(NULL);
+	ctx_top(NULL);
+	ctx_name_desc(NULL);
+	ctx_key(NULL);
+	ctx_def(NULL);
+	ctx.silent = false;
+	ctx.t = WARNING;
 }
 
 // return a static string for the node type
@@ -78,22 +92,22 @@ static void log_invalid(const yaml_char_t *value, const yaml_node_type_t type_ex
 
 	char *b = NULL;
 
-	if (ctx.action[0])
+	if (ctx.action)
 		b = str_app(b, "\n%s:", ctx.action);
 	else
 		b = str_app(b, "Ignoring");
 
-	if (ctx.top_level_key[0])
-		b = str_app(b, " invalid %s", ctx.top_level_key);
-	if (ctx.name_desc[0])
+	if (ctx.top)
+		b = str_app(b, " invalid %s", ctx.top);
+	if (ctx.name_desc)
 		b = str_app(b, " %s", ctx.name_desc);
-	if (ctx.key[0])
+	if (ctx.key)
 		b = str_app(b, " %s", ctx.key);
 	if (type_expected)
 		b = str_app(b, " expected %s, got %s", node_type_str(type_expected), node_type_str(type_actual));
 	if (value)
 		b = str_app(b, " %s", value);
-	if (ctx.def[0])
+	if (ctx.def)
 		b = str_app(b, ", using default %s", ctx.def);
 
 	if (b) {
@@ -108,15 +122,15 @@ static void log_misssing(void) {
 
 	char *b = NULL;
 
-	if (ctx.action[0])
-		b = str_app(b, "\n%s: missing %s", ctx.action, ctx.top_level_key);
+	if (ctx.action)
+		b = str_app(b, "\n%s: missing %s", ctx.action, ctx.top);
 	else
-		b = str_app(b, "%s: Ignoring missing", ctx.top_level_key);
+		b = str_app(b, "%s: Ignoring missing", ctx.top);
 
-	if (ctx.key[0])
+	if (ctx.key)
 		b = str_app(b, " %s", ctx.key);
 
-	if (ctx.name_desc[0])
+	if (ctx.name_desc)
 		b = str_app(b, " for '%s'", ctx.name_desc);
 
 	if (b) {
@@ -144,7 +158,7 @@ static bool invalid_regex(const void *pattern, const void *unused) {
 		if (result) {
 			char err[1024];
 			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring invalid %s regex '%s':  %s", ctx.top_level_key, p + 1, err);
+			log_warn("Ignoring invalid %s regex '%s':  %s", ctx.top, p + 1, err);
 			rc = true;
 		}
 		regfree(&regex);
@@ -339,12 +353,13 @@ static void scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 
 	ctx_def(CALLBACK_CMD_DEFAULT);
 
-	if (!check_node_type(scalar, YAML_SCALAR_NODE)) {
+	*dst = scalar_to_string(scalar);
+
+	if (!*dst) {
 		*dst = strdup(CALLBACK_CMD_DEFAULT);
-	} else if (strlen((char*)scalar->data.scalar.value) == 0) {
+	} else if (*dst && strlen(*dst) == 0) {
+		free(*dst);
 		*dst = NULL;
-	} else {
-		*dst = strdup((char*)scalar->data.scalar.value);
 	}
 
 	ctx_def(NULL);
@@ -417,11 +432,7 @@ static struct Disabled *map_to_disabled(const yaml_node_t *map) {
 
 	ctx_key("NAME_DESC");
 	node = stable_get(table, ctx.key);
-	if (!check_mandatory(node))
-		goto err;
-	if (!(disabled->name_desc = scalar_to_string(node)))
-		goto err;
-	if (invalid_regex(disabled->name_desc, NULL))
+	if (!check_mandatory(node) || !(disabled->name_desc = scalar_to_string(node)) || invalid_regex(disabled->name_desc, NULL))
 		goto err;
 
 	ctx_name_desc(disabled->name_desc);
@@ -499,20 +510,14 @@ static struct UserScale *map_to_user_scale(const yaml_node_t *map) {
 
 	ctx_key("NAME_DESC");
 	scalar = stable_get(table, ctx.key);
-	if (!check_mandatory(scalar))
-		goto err;
-	if (!(user_scale->name_desc = scalar_to_string(scalar)))
-		goto err;
-	if (invalid_regex(user_scale->name_desc, NULL))
+	if (!check_mandatory(scalar) || !(user_scale->name_desc = scalar_to_string(scalar)) || invalid_regex(user_scale->name_desc, NULL))
 		goto err;
 
 	ctx_name_desc(user_scale->name_desc);
 
 	ctx_key("SCALE");
 	scalar = stable_get(table, ctx.key);
-	if (!check_mandatory(scalar))
-		goto err;
-	if (!scalar_to_float(&user_scale->scale, scalar))
+	if (!check_mandatory(scalar) || !scalar_to_float(&user_scale->scale, scalar))
 		goto err;
 
 	goto end;
@@ -563,11 +568,7 @@ static struct UserMode *map_to_user_mode(const yaml_node_t *map) {
 
 	ctx_key("NAME_DESC");
 	scalar = stable_get(table, ctx.key);
-	if (!check_mandatory(scalar))
-		goto err;
-	if (!(user_mode->name_desc = scalar_to_string(scalar)))
-		goto err;
-	if (invalid_regex(user_mode->name_desc, NULL))
+	if (!check_mandatory(scalar) || !(user_mode->name_desc = scalar_to_string(scalar)) || invalid_regex(user_mode->name_desc, NULL))
 		goto err;
 
 	ctx_name_desc(user_mode->name_desc);
@@ -644,20 +645,14 @@ static struct UserTransform *map_to_user_transform(const yaml_node_t *map) {
 
 	ctx_key("NAME_DESC");
 	scalar = stable_get(table, ctx.key);
-	if (!check_mandatory(scalar))
-		goto err;
-	if (!(user_transform->name_desc = scalar_to_string(scalar)))
-		goto err;
-	if (invalid_regex(user_transform->name_desc, NULL))
+	if (!check_mandatory(scalar) ||!(user_transform->name_desc = scalar_to_string(scalar)) || invalid_regex(user_transform->name_desc, NULL))
 		goto err;
 
 	ctx_name_desc(user_transform->name_desc);
 
 	ctx_key("TRANSFORM");
 	scalar = stable_get(table, ctx.key);
-	if (!check_mandatory(scalar))
-		goto err;
-	if (!(user_transform->transform = scalar_to_enum(scalar, transform_val)))
+	if (!check_mandatory(scalar) || !(user_transform->transform = scalar_to_enum(scalar, transform_val)))
 		goto err;
 
 	goto end;
@@ -712,7 +707,7 @@ static bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 		if (!value)
 			continue;
 
-		ctx_top_level_key((char*)key->data.scalar.value);
+		ctx_top((char*)key->data.scalar.value);
 
 		switch (cfg_element_val((char*)key->data.scalar.value)) {
 			case ARRANGE:
@@ -838,16 +833,14 @@ static void *root_to_ipc_request(const yaml_node_t *root) {
 	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
 	ipc_request->cfg = cfg_init();
 
-	ctx_top_level_key("OP");
-	const yaml_node_t *op = stable_get(table, ctx.top_level_key);
-	if (!check_mandatory(op))
-		goto err;
-	if (!(ipc_request->command = scalar_to_enum(op, ipc_command_val)))
+	ctx_top("OP");
+	const yaml_node_t *op = stable_get(table, ctx.top);
+	if (!check_mandatory(op) || !(ipc_request->command = scalar_to_enum(op, ipc_command_val)))
 		goto err;
 
 	ctx.silent = true;
 
-	ctx_top_level_key("STATE");
+	ctx_top("STATE");
 	ipc_request->log_threshold = scalar_to_enum(stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
 	map_to_cfg(ipc_request->cfg, stable_get(table, "CFG"));
 
@@ -899,32 +892,28 @@ static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
 
 	struct IpcResponse *ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
 
-	const yaml_node_t *done = stable_get(table, "DONE");
-	ctx_top_level_key("DONE");
-	if (!check_mandatory(done))
-		goto err;
-	if (!scalar_to_boolean(&ipc_response->status.done, done))
+	ctx_top("DONE");
+	const yaml_node_t *done = stable_get(table, ctx.top);
+	if (!check_mandatory(done) || !scalar_to_boolean(&ipc_response->status.done, done))
 		goto err;
 
-	const yaml_node_t *rc = stable_get(table, "RC");
-	ctx_top_level_key("RC");
-	if (!check_mandatory(rc))
-		goto err;
-	if (!scalar_to_int(&ipc_response->status.rc, rc))
+	ctx_top("RC");
+	const yaml_node_t *rc = stable_get(table, ctx.top);
+	if (!check_mandatory(rc) || !scalar_to_int(&ipc_response->status.rc, rc))
 		goto err;
 
 	ctx.silent = true;
 
-	const yaml_node_t *cfg = stable_get(table, "CFG");
-	ctx_top_level_key("CFG");
+	ctx_top("CFG");
+	const yaml_node_t *cfg = stable_get(table, ctx.top);
 	if (cfg) {
 		ipc_response->cfg = cfg_init();
 		map_to_cfg(ipc_response->cfg, cfg);
 	}
 
-	const yaml_node_t *state = stable_get(table, "STATE");
+	ctx_top("STATE");
+	const yaml_node_t *state = stable_get(table, ctx.top);
 	if (state) {
-		ctx_top_level_key("STATE");
 		map_into_state(ipc_response, state);
 	}
 
