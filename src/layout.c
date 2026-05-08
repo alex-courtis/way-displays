@@ -317,24 +317,35 @@ static void apply(void) {
 	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
 
 	struct Head *head;
-	if ((head = slist_find_val(heads, head_current_enabled_not_desired))) {
-		// 1 - enabled change in its own operation
-		log_debug("APPLY enabled");
+	if ((head = slist_find_val(heads, head_desires_enabled))) {
+
+		// 1 - enable
+		log_debug("APPLY enable");
 
 		displ_delta_init(DISABLED, head);
 
 		print_head(INFO, DELTA, head);
 
-		if (head->desired.enabled) {
-			head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		} else {
-			zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
-		}
+		zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+
+		displ->delta.human = delta_human_enabled(displ->state, head);
+
+	} else if ((head = slist_find_val(heads, head_desires_disabled))) {
+
+		// 2 - disable
+		log_debug("APPLY disable");
+
+		displ_delta_init(DISABLED, head);
+
+		print_head(INFO, DELTA, head);
+
+		zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 
 		displ->delta.human = delta_human_enabled(displ->state, head);
 
 	} else if ((head = slist_find_val(heads, head_current_mode_not_desired))) {
-		// 2 - mode change in its own operation
+
+		// 3 - mode set
 		log_debug("APPLY mode");
 
 		displ_delta_init(MODE, head);
@@ -347,7 +358,8 @@ static void apply(void) {
 		displ->delta.human = delta_human_mode(displ->state, head);
 
 	} else if ((head = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
-		// 3 - adaptive sync change in its own operation
+
+		// 4 - VRR
 		log_debug("APPLY vrr");
 
 		displ_delta_init(VRR_OFF, head);
@@ -360,7 +372,8 @@ static void apply(void) {
 		displ->delta.human = delta_human_adaptive_sync(displ->state, head);
 
 	} else {
-		// 4 - all other changes
+
+		// 5 - all other changes
 		log_debug("APPLY remainder");
 
 		displ_delta_init(0, NULL);

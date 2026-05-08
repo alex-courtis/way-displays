@@ -370,10 +370,16 @@ bool head_current_mode_not_desired(const void * const data) {
 	return (head && head->desired.mode != head->current.mode);
 }
 
-bool head_current_enabled_not_desired(const void * const data) {
+bool head_desires_disabled(const void * const data) {
 	const struct Head *head = data;
 
-	return (head && head->current.enabled != head->desired.enabled);
+	return (head && head->current.enabled && !head->desired.enabled);
+}
+
+bool head_desires_enabled(const void * const data) {
+	const struct Head *head = data;
+
+	return (head && !head->current.enabled && head->desired.enabled);
 }
 
 bool head_current_adaptive_sync_not_desired(const void * const data) {
