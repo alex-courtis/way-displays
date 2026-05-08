@@ -347,6 +347,44 @@ void print_mode_fail__head(void **state) {
 	assert_log(WARNING, "\nChanges failed\n  head0:\n    (no mode)\n");
 }
 
+void delta_human_enabled__enable(void **state) {
+	struct State *s = *state;
+
+	s->head1->desired.enabled = true;
+
+	char *deltas = delta_human_enabled(SUCCEEDED, s->head1);
+
+	assert_string_equal(deltas, ""
+			"description1\n"
+			"  enabled\n"
+			);
+
+	slist_free(&heads);
+
+	free(deltas);
+
+	assert_logs_empty();
+}
+
+void delta_human_enabled__disable(void **state) {
+	struct State *s = *state;
+
+	s->head1->desired.enabled = false;
+
+	char *deltas = delta_human_enabled(SUCCEEDED, s->head1);
+
+	assert_string_equal(deltas, ""
+			"description1\n"
+			"  disabled\n"
+			);
+
+	slist_free(&heads);
+
+	free(deltas);
+
+	assert_logs_empty();
+}
+
 void delta_human_mode__to_no(void **state) {
 	struct State *s = *state;
 
@@ -628,6 +666,9 @@ int main(void) {
 
 		TEST(print_mode_fail__nulls),
 		TEST(print_mode_fail__head),
+
+		TEST(delta_human_enabled__disable),
+		TEST(delta_human_enabled__enable),
 
 		TEST(delta_human_mode__to_no),
 		TEST(delta_human_mode__from_no),

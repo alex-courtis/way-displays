@@ -42,6 +42,9 @@ void info_mode_string(const struct Mode * const mode, char * const buf, const si
 char *delta_human(const enum DisplState state, const struct SList * const heads);
 
 // consumer frees
+char *delta_human_enabled(const enum DisplState state, const struct Head * const head);
+
+// consumer frees
 char *delta_human_mode(const enum DisplState state, const struct Head * const head);
 
 // consumer frees

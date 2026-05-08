@@ -590,6 +590,23 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 	return buf;
 }
 
+char *delta_human_enabled(const enum DisplState state, const struct Head * const head) {
+	if (!head) {
+		return NULL;
+	}
+
+	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
+	char *bufp = buf;
+
+	if (head->desired.enabled) {
+		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  enabled\n", head_human(head));
+	} else {
+		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  disabled\n", head_human(head));
+	}
+
+	return buf;
+}
+
 char *delta_human_mode(const enum DisplState state, const struct Head * const head) {
 	if (!head) {
 		return NULL;

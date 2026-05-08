@@ -119,6 +119,8 @@ bool head_current_mode_not_desired(const void * const head);
 
 bool head_current_adaptive_sync_not_desired(const void * const head);
 
+bool head_current_enabled_not_desired(const void * const head);
+
 void head_release_mode(struct Head * const head, const struct Mode * const mode);
 
 void head_free(const void * const head);

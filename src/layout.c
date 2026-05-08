@@ -317,51 +317,63 @@ static void apply(void) {
 	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
 
 	struct Head *head;
-	if ((head = slist_find_val(heads, head_current_mode_not_desired))) {
+	if ((head = slist_find_val(heads, head_current_enabled_not_desired))) {
+		// 1 - enabled change in its own operation
+		log_debug("APPLY enabled");
+
+		displ_delta_init(DISABLED, head);
+
+		print_head(INFO, DELTA, head);
+
+		if (head->desired.enabled) {
+			head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+		} else {
+			zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+		}
+
+		displ->delta.human = delta_human_enabled(displ->state, head);
+
+	} else if ((head = slist_find_val(heads, head_current_mode_not_desired))) {
+		// 2 - mode change in its own operation
 		log_debug("APPLY mode");
 
 		displ_delta_init(MODE, head);
 
 		print_head(INFO, DELTA, head);
 
-		// mode change in its own operation; mode change desire is always enabled
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
 
 		displ->delta.human = delta_human_mode(displ->state, head);
 
 	} else if ((head = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
+		// 3 - adaptive sync change in its own operation
 		log_debug("APPLY vrr");
 
 		displ_delta_init(VRR_OFF, head);
 
 		print_head(INFO, DELTA, head);
 
-		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
 
 		displ->delta.human = delta_human_adaptive_sync(displ->state, head);
 
 	} else {
+		// 4 - all other changes
 		log_debug("APPLY remainder");
 
 		displ_delta_init(0, NULL);
 
 		print_heads(INFO, DELTA, heads);
 
-		// all other changes
 		for (i = heads_changing; i; i = i->nex) {
 			struct Head *head = (struct Head*)i->val;
 
-			if (head->desired.enabled) {
-				head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-				zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
-				zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
-				zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
-			} else {
-				zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
-			}
+			head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+			zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
+			zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
+			zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
 		}
 
 		displ->delta.human = delta_human(displ->state, heads_changing);
