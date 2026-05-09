@@ -246,7 +246,23 @@ void log_cap_lines_free(struct SList **lines) {
 	slist_free_vals(lines, log_cap_line_free);
 }
 
-char *str_app(char *__restrict s, const char *__restrict __format, ...) {
+char *sprintf_alloc(const char *__restrict __format, ...) {
+
+	va_list args;
+	va_start(args, __format);
+	size_t len = vsnprintf(NULL, 0, __format, args);
+	va_end(args);
+
+	char *str = calloc(len + 1, sizeof(char*));
+
+	va_start(args, __format);
+	vsnprintf(str, len + 1, __format, args);
+	va_end(args);
+
+	return str;
+}
+
+char *sprintf_append(char *__restrict s, const char *__restrict __format, ...) {
 	size_t l_left = s ? strlen(s) : 0;
 
 	va_list args;

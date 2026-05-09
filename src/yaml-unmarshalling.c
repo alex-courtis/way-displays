@@ -91,22 +91,22 @@ static void log_invalid(const yaml_char_t *value, const yaml_node_type_t type_ex
 	char *b = NULL;
 
 	if (ctx.action)
-		b = str_app(b, "\n%s:", ctx.action);
+		b = sprintf_append(b, "\n%s:", ctx.action);
 	else
-		b = str_app(b, "Ignoring");
+		b = sprintf_append(b, "Ignoring");
 
 	if (ctx.top)
-		b = str_app(b, " invalid %s", ctx.top);
+		b = sprintf_append(b, " invalid %s", ctx.top);
 	if (ctx.name_desc)
-		b = str_app(b, " %s", ctx.name_desc);
+		b = sprintf_append(b, " %s", ctx.name_desc);
 	if (ctx.key)
-		b = str_app(b, " %s", ctx.key);
+		b = sprintf_append(b, " %s", ctx.key);
 	if (type_expected)
-		b = str_app(b, " expected %s, got %s", node_type_str(type_expected), node_type_str(type_actual));
+		b = sprintf_append(b, " expected %s, got %s", node_type_str(type_expected), node_type_str(type_actual));
 	if (value)
-		b = str_app(b, " %s", value);
+		b = sprintf_append(b, " %s", value);
 	if (ctx.def)
-		b = str_app(b, ", using default %s", ctx.def);
+		b = sprintf_append(b, ", using default %s", ctx.def);
 
 	if (b) {
 		log_(ctx.t, "%s", b);
@@ -121,15 +121,15 @@ static void log_misssing(void) {
 	char *b = NULL;
 
 	if (ctx.action)
-		b = str_app(b, "\n%s: missing %s", ctx.action, ctx.top);
+		b = sprintf_append(b, "\n%s: missing %s", ctx.action, ctx.top);
 	else
-		b = str_app(b, "%s: Ignoring missing", ctx.top);
+		b = sprintf_append(b, "%s: Ignoring missing", ctx.top);
 
 	if (ctx.key)
-		b = str_app(b, " %s", ctx.key);
+		b = sprintf_append(b, " %s", ctx.key);
 
 	if (ctx.name_desc)
-		b = str_app(b, " for '%s'", ctx.name_desc);
+		b = sprintf_append(b, " for '%s'", ctx.name_desc);
 
 	if (b) {
 		log_(ctx.t, "%s", b);

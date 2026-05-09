@@ -268,11 +268,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	static char human[CALLBACK_MSG_LEN];
-
 	if (slist_length(head->modes) == slist_length(head->modes_failed)) {
 		log_error("\nNo mode for %s, disabling.", head->name);
-		snprintf(human, CALLBACK_MSG_LEN, "%s\n  No mode, disabling", head_human(head));
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 		return NULL;
 	}
@@ -286,13 +283,16 @@ struct Mode *head_find_mode(struct Head * const head) {
 		if (!mode && !um->warned_no_mode) {
 			um->warned_no_mode = true;
 
-			static char um_str[512];
-			info_user_mode_string(um, um_str, sizeof(um_str));
+			char *um_str = info_user_mode_string(um);
 
 			log_warn("\n%s: No available mode for user MODE %s, falling back to preferred", head->name, um_str);
 
-			snprintf(human, CALLBACK_MSG_LEN, "%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), um_str);
+			char *human = sprintf_alloc("%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), um_str);
+
 			call_back(WARNING, human, NULL);
+
+			free(um_str);
+			free(human);
 		}
 	}
 
@@ -308,8 +308,11 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 			log_info("\n%s: No preferred mode, falling back to maximum available", head_human(head));
 
-			snprintf(human, CALLBACK_MSG_LEN, "%s\n  No preferred mode, falling back to maximum available", head_human(head));
+			char *human = sprintf_alloc("%s\n  No preferred mode, falling back to maximum available", head_human(head));
+
 			call_back(WARNING, human, NULL);
+
+			free(human);
 		}
 	}
 
