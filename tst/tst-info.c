@@ -367,7 +367,7 @@ void delta_human_mode__to_no(void **state) {
 
 	char *deltas = delta_human_mode(SUCCEEDED, s->head1);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n"
 			"  100x200@30Hz -> (no mode)"
 			);
@@ -386,7 +386,7 @@ void delta_human_mode__from_no(void **state) {
 
 	char *deltas = delta_human_mode(SUCCEEDED, s->head2);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"name2\n"
 			"  (no mode) -> 1400x1500@160Hz"
 			);
@@ -406,7 +406,7 @@ void delta_human_adaptive_sync__on(void **state) {
 
 	char *deltas = delta_human_adaptive_sync(SUCCEEDED, s->head1);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n"
 			"  VRR on"
 			);
@@ -426,7 +426,7 @@ void delta_human_adaptive_sync__off(void **state) {
 
 	char *deltas = delta_human_adaptive_sync(SUCCEEDED, s->head2);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"name2\n"
 			"  VRR off"
 			);
@@ -443,7 +443,7 @@ void delta_human__all(void **state) {
 
 	char *deltas = delta_human(SUCCEEDED, s->heads);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n"
 			"  scale:     2.000 -> 4.000\n"
 			"  transform: 180 -> 90\n"
@@ -472,7 +472,7 @@ void delta_human__enabled(void **state) {
 
 	char *deltas = delta_human(SUCCEEDED, s->heads);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n  enabled\n"
 			"name2\n  enabled"
 			);
@@ -495,7 +495,7 @@ void delta_human__disabled(void **state) {
 
 	char *deltas = delta_human(SUCCEEDED, s->heads);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n  disabled\n"
 			"name2\n  disabled"
 			);

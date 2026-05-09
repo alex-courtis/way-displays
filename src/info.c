@@ -110,9 +110,6 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	if (!head)
 		return;
 
-	static char buf[2048];
-	char *bp;
-
 	struct SList *mrrs = modes_res_refresh(head->modes);
 	struct Mode *preferred_mode = head_preferred_mode(head);
 
@@ -122,17 +119,18 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	for (struct SList *i = mrrs; i; i = i->nex) {
 		mrr = i->val;
 
-		bp = buf;
-		bp += snprintf(bp, sizeof(buf) - (bp - buf), "    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
+		char *buf = NULL;
+		buf = str_app(buf, "    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
 		for (struct SList *j = mrr->modes; j; j = j->nex) {
 			mode = j->val;
-			bp += snprintf(bp, sizeof(buf) - (bp - buf), "%4d,%03d mHz", mode->refresh_mhz / 1000, mode->refresh_mhz % 1000);
+			buf = str_app(buf, "%4d,%03d mHz", mode->refresh_mhz / 1000, mode->refresh_mhz % 1000);
 			if (mode == preferred_mode) {
-				bp += snprintf(bp, sizeof(buf) - (bp - buf), " (preferred)");
+				buf = str_app(buf, " (preferred)");
 			}
 		}
 		log_(t,"%s", buf);
+		free(buf);
 	}
 
 	slist_free_vals(&mrrs, mode_res_refresh_free);
@@ -244,7 +242,6 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 		return;
 
 	static char buf[2048];
-	char *bp;
 
 	struct SList *i = NULL;
 	bool newline;
@@ -254,14 +251,15 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	if (cfg->order_name_desc) {
-		bp = buf;
-		*bp = '\0';
+		char *b = NULL;
 
 		for (i = cfg->order_name_desc; i; i = i->nex) {
-			bp += snprintf(bp, sizeof(buf) - (bp - buf), "'%s' ", (char*)i->val);
+			b = str_app(b, "'%s' ", (char*)i->val);
 		}
 
-		log_(t, "\nway-displays -s ORDER %s", buf);
+		log_(t, "\nway-displays -s ORDER %s", b);
+
+		free(b);
 	}
 
 	if (cfg->scaling) {
@@ -538,44 +536,42 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 		return NULL;
 	}
 
-	// TODO this can overflow
-	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
-	char *bufp = buf;
+	char *buf = NULL;
 
 	for (const struct SList *i = heads; i; i = i->nex) {
 		const struct Head * head = i->val;
 
 		// disable in own operation
 		if (head->current.enabled && !head->desired.enabled) {
-			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  disabled\n", head_human(head));
+			buf = str_app(buf, "%s\n  disabled\n", head_human(head));
 			continue;
 		}
 
 		// enable in own operation
 		if (!head->current.enabled && head->desired.enabled) {
-			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  enabled\n", head_human(head));
+			buf = str_app(buf, "%s\n  enabled\n", head_human(head));
 			continue;
 		}
 
 		if (head_current_not_desired(head)) {
-			bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n", head_human(head));
+			buf = str_app(buf, "%s\n", head_human(head));
 
 			if (head->current.scale != head->desired.scale) {
-				bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "  scale:     %.3f -> %.3f\n",
+				buf = str_app(buf, "  scale:     %.3f -> %.3f\n",
 						wl_fixed_to_double(head->current.scale),
 						wl_fixed_to_double(head->desired.scale)
 						);
 			}
 
 			if (head->current.transform != head->desired.transform) {
-				bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "  transform: %s -> %s\n",
+				buf = str_app(buf, "  transform: %s -> %s\n",
 						head->current.transform ? transform_name(head->current.transform) : "none",
 						head->desired.transform ? transform_name(head->desired.transform) : "none"
 						);
 			}
 
 			if (head->current.x != head->desired.x || head->current.y != head->desired.y) {
-				bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "  position:  %d,%d -> %d,%d\n",
+				buf = str_app(buf, "  position:  %d,%d -> %d,%d\n",
 						head->current.x, head->current.y,
 						head->desired.x, head->desired.y
 						);
@@ -584,8 +580,11 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 	}
 
 	// strip trailing newline
-	if (bufp > buf) {
-		*(bufp - 1) = '\0';
+	if (buf) {
+		size_t len = strlen(buf);
+		if (len > 0) {
+			buf[len - 1] = '\0';
+		}
 	}
 
 	return buf;
@@ -596,31 +595,30 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 		return NULL;
 	}
 
-	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
-	char *bufp = buf;
+	char *buf = NULL;
 
-	bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  ",
+	buf = str_app(buf, "%s\n  ",
 			head_human(head)
 			);
 
 	if (head->current.mode) {
-		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%dx%d@%dHz -> ",
+		buf = str_app(buf, "%dx%d@%dHz -> ",
 				head->current.mode->width,
 				head->current.mode->height,
 				mhz_to_hz_rounded(head->current.mode->refresh_mhz)
 				);
 	} else {
-		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "(no mode) -> ");
+		buf = str_app(buf, "(no mode) -> ");
 	}
 
 	if (head->desired.mode) {
-		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%dx%d@%dHz",
+		buf = str_app(buf, "%dx%d@%dHz",
 				head->desired.mode->width,
 				head->desired.mode->height,
 				mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
 				);
 	} else {
-		bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "(no mode)");
+		buf = str_app(buf, "(no mode)");
 	}
 
 	return buf;
@@ -632,15 +630,10 @@ char *delta_human_adaptive_sync(const enum DisplState state, const struct Head *
 		return NULL;
 	}
 
-	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
-	char *bufp = buf;
-
-	bufp += snprintf(bufp, CALLBACK_MSG_LEN - (bufp - buf), "%s\n  VRR %s",
+	return str_app(NULL, "%s\n  VRR %s",
 			head_human(head),
 			head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
 			);
-
-	return buf;
 }
 
 void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2) {

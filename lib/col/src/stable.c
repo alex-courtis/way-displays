@@ -318,6 +318,8 @@ char *stable_str(const struct STable* const tab) {
 			1;                      // "\n"
 	}
 
+	// TODO rewrite with str_app
+
 	// render
 	char *buf = (char*)calloc(len, sizeof(char));
 	char *bufp = buf;

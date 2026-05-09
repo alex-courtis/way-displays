@@ -192,6 +192,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			break;
 	}
 
+	// TODO this can overflow
 	if (!parsed) {
 		char buf[256];
 		char *bp = buf;

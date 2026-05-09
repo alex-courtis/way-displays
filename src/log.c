@@ -10,6 +10,7 @@
 
 #include "slist.h"
 
+// TODO potential overflow
 #define LS 16384
 
 struct LogActive {
