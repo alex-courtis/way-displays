@@ -23,13 +23,11 @@
 
 char *info_user_mode_string(const struct UserMode * const user_mode) {
 	if (!user_mode)
-		return sprintf_alloc("");
+		return NULL;
 
 	if (user_mode->max) {
-		// TODO unit test coverage
 		return sprintf_alloc("MAX");
 	} else if (user_mode->refresh_mhz != -1) {
-		// TODO unit test coverage
 		return sprintf_alloc("%dx%d@%sHz",
 				user_mode->width,
 				user_mode->height,
@@ -45,7 +43,7 @@ char *info_user_mode_string(const struct UserMode * const user_mode) {
 
 char *info_mode_string(const struct Mode * const mode) {
 	if (!mode)
-		return sprintf_alloc("");
+		return NULL;
 
 	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
 			mode->width,
@@ -64,7 +62,6 @@ static void print_user_mode(const enum LogThreshold t, const struct UserMode * c
 	if (del) {
 		log_(t, "    %s", user_mode->name_desc);
 	} else {
-		// TODO unit test coverage
 		char *um_str = info_user_mode_string(user_mode);
 		log_(t, "    %s: %s", user_mode->name_desc, um_str);
 		free(um_str);
@@ -134,6 +131,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	slist_free_vals(&mrrs, mode_res_refresh_free);
 }
 
+// TODO unit test coverage
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del) {
 	if (!cfg)
 		return;
