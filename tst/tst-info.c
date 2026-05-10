@@ -176,6 +176,30 @@ void print_cfg__all(void **state) {
 	cfg_free(c);
 }
 
+void print_cfg__del(void **state) {
+	struct Cfg *c = cfg_init();
+
+	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
+	slist_append(&c->user_scales, cfg_user_scale_init("four", 4));
+
+	slist_append(&c->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+
+	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+	slist_append(&c->user_transforms, cfg_user_transform_init("thirteen", WL_OUTPUT_TRANSFORM_FLIPPED));
+
+	print_cfg(INFO, c, true);
+
+	char *expected_log = read_file("tst/info/print-cfg-del.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
 void print_cfg__arrange_only(void **state) {
 	struct Cfg *c = cfg_init();
 	c->arrange = ROW;
@@ -714,6 +738,7 @@ int main(void) {
 		TEST(print_cfg__arrange_only),
 		TEST(print_cfg__align_only),
 		TEST(print_cfg__auto_scale_max),
+		TEST(print_cfg__del),
 
 		TEST(print_cfg_commands__empty),
 		TEST(print_cfg_commands__ok),
