@@ -10,6 +10,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "conditions.h"
+#include "ipc.h"
 #include "lid.h"
 #include "log.h"
 #include "slist.h"
@@ -88,29 +89,29 @@ static void log_invalid(const yaml_char_t *value, const yaml_node_type_t type_ex
 	if (ctx.silent)
 		return;
 
-	char *b = NULL;
+	char *msg = NULL;
 
 	if (ctx.action)
-		b = sprintf_append(b, "\n%s:", ctx.action);
+		msg = sprintf_append(msg, "\n%s:", ctx.action);
 	else
-		b = sprintf_append(b, "Ignoring");
+		msg = sprintf_append(msg, "Ignoring");
 
 	if (ctx.top)
-		b = sprintf_append(b, " invalid %s", ctx.top);
+		msg = sprintf_append(msg, " invalid %s", ctx.top);
 	if (ctx.name_desc)
-		b = sprintf_append(b, " %s", ctx.name_desc);
+		msg = sprintf_append(msg, " %s", ctx.name_desc);
 	if (ctx.key)
-		b = sprintf_append(b, " %s", ctx.key);
+		msg = sprintf_append(msg, " %s", ctx.key);
 	if (type_expected)
-		b = sprintf_append(b, " expected %s, got %s", node_type_str(type_expected), node_type_str(type_actual));
+		msg = sprintf_append(msg, " expected %s, got %s", node_type_str(type_expected), node_type_str(type_actual));
 	if (value)
-		b = sprintf_append(b, " %s", value);
+		msg = sprintf_append(msg, " %s", value);
 	if (ctx.def)
-		b = sprintf_append(b, ", using default %s", ctx.def);
+		msg = sprintf_append(msg, ", using default %s", ctx.def);
 
-	if (b) {
-		log_(ctx.t, "%s", b);
-		free(b);
+	if (msg) {
+		log_(ctx.t, "%s", msg);
+		free(msg);
 	}
 }
 
@@ -118,22 +119,22 @@ static void log_misssing(void) {
 	if (ctx.silent)
 		return;
 
-	char *b = NULL;
+	char *msg = NULL;
 
 	if (ctx.action)
-		b = sprintf_append(b, "\n%s: missing %s", ctx.action, ctx.top);
+		msg = sprintf_append(msg, "\n%s: missing %s", ctx.action, ctx.top);
 	else
-		b = sprintf_append(b, "%s: Ignoring missing", ctx.top);
+		msg = sprintf_append(msg, "%s: Ignoring missing", ctx.top);
 
 	if (ctx.key)
-		b = sprintf_append(b, " %s", ctx.key);
+		msg = sprintf_append(msg, " %s", ctx.key);
 
 	if (ctx.name_desc)
-		b = sprintf_append(b, " for '%s'", ctx.name_desc);
+		msg = sprintf_append(msg, " for '%s'", ctx.name_desc);
 
-	if (b) {
-		log_(ctx.t, "%s", b);
-		free(b);
+	if (msg) {
+		log_(ctx.t, "%s", msg);
+		free(msg);
 	}
 }
 

@@ -2,7 +2,6 @@
 #define INFO_H
 
 #include <stdbool.h>
-#include <stddef.h>
 
 #include "cfg.h"
 #include "displ.h"

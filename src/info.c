@@ -114,18 +114,17 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	for (struct SList *i = mrrs; i; i = i->nex) {
 		mrr = i->val;
 
-		char *buf = NULL;
-		buf = sprintf_append(buf, "    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
+		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
 		for (struct SList *j = mrr->modes; j; j = j->nex) {
 			mode = j->val;
-			buf = sprintf_append(buf, "%4d,%03d mHz", mode->refresh_mhz / 1000, mode->refresh_mhz % 1000);
+			msg = sprintf_append(msg, "%4d,%03d mHz", mode->refresh_mhz / 1000, mode->refresh_mhz % 1000);
 			if (mode == preferred_mode) {
-				buf = sprintf_append(buf, " (preferred)");
+				msg = sprintf_append(msg, " (preferred)");
 			}
 		}
-		log_(t,"%s", buf);
-		free(buf);
+		log_(t,"%s", msg);
+		free(msg);
 	}
 
 	slist_free_vals(&mrrs, mode_res_refresh_free);
@@ -244,15 +243,15 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	if (cfg->order_name_desc) {
-		char *b = NULL;
+		char *msg = NULL;
 
 		for (i = cfg->order_name_desc; i; i = i->nex) {
-			b = sprintf_append(b, "'%s' ", (char*)i->val);
+			msg = sprintf_append(msg, "'%s' ", (char*)i->val);
 		}
 
-		log_(t, "\nway-displays -s ORDER %s", b);
+		log_(t, "\nway-displays -s ORDER %s", msg);
 
-		free(b);
+		free(msg);
 	}
 
 	if (cfg->scaling) {
@@ -266,28 +265,28 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	newline = true;
 	for (i = cfg->user_scales; i; i = i->nex) {
 		struct UserScale *user_scale = (struct UserScale*)i->val;
-		char *scale_str = sprintf_alloc("%.3f", user_scale->scale);
+		char *msg = sprintf_alloc("%.3f", user_scale->scale);
 		print_newline(t, &newline);
-		log_(t, "way-displays -s SCALE '%s' %s", user_scale->name_desc, scale_str);
-		free(scale_str);
+		log_(t, "way-displays -s SCALE '%s' %s", user_scale->name_desc, msg);
+		free(msg);
 	}
 
 	newline = true;
 	for (i = cfg->user_modes; i; i = i->nex) {
 		struct UserMode *user_mode = (struct UserMode*)i->val;
 
-		char *buf;
+		char *msg;
 		if (user_mode->max) {
-			buf = sprintf_alloc("MAX");
+			msg = sprintf_alloc("MAX");
 		} else if (user_mode->refresh_mhz != -1) {
-			buf = sprintf_alloc("%d %d %s", user_mode->width, user_mode->height, mhz_to_hz_str(user_mode->refresh_mhz));
+			msg = sprintf_alloc("%d %d %s", user_mode->width, user_mode->height, mhz_to_hz_str(user_mode->refresh_mhz));
 		} else {
-			buf = sprintf_alloc("%d %d", user_mode->width, user_mode->height);
+			msg = sprintf_alloc("%d %d", user_mode->width, user_mode->height);
 		}
 
 		print_newline(t, &newline);
-		log_(t, "way-displays -s MODE '%s' %s", user_mode->name_desc, buf);
-		free(buf);
+		log_(t, "way-displays -s MODE '%s' %s", user_mode->name_desc, msg);
+		free(msg);
 	}
 
 	newline = true;

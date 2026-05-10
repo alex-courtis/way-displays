@@ -253,7 +253,7 @@ char *sprintf_alloc(const char *__restrict __format, ...) {
 	size_t len = vsnprintf(NULL, 0, __format, args);
 	va_end(args);
 
-	char *str = calloc(len + 1, sizeof(char*));
+	char *str = calloc(len + 1, sizeof(char));
 
 	va_start(args, __format);
 	vsnprintf(str, len + 1, __format, args);
@@ -270,7 +270,7 @@ char *sprintf_append(char *__restrict s, const char *__restrict __format, ...) {
 	size_t l_right = vsnprintf(NULL, 0, __format, args);
 	va_end(args);
 
-	char *left = calloc(l_left + l_right + 1, sizeof(char*));
+	char *left = calloc(l_left + l_right + 1, sizeof(char));
 
 	char *right = l_left ? stpncpy(left, s, l_left) : left;
 
