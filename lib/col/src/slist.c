@@ -300,8 +300,6 @@ char *slist_str(struct SList *head) {
 		len += strlen(i->val) + 1;
 	}
 
-	// TODO rewrite with str_app
-
 	// render
 	char *buf = (char*)calloc(len, sizeof(char));
 	char *bufp = buf;

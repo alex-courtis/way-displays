@@ -192,14 +192,13 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			break;
 	}
 
-	// TODO this can overflow
 	if (!parsed) {
-		char buf[256];
-		char *bp = buf;
+		char *err = NULL;
 		for (int i = optind; i < argc; i++) {
-			bp += snprintf(bp, sizeof(buf) - (bp - buf), " %s", argv[i]);
+			err = sprintf_append(err, " %s", argv[i]);
 		}
-		log_fatal("invalid %s%s", cfg_element_name(element), buf);
+		log_fatal("invalid %s%s", cfg_element_name(element), err);
+		free(err);
 		if (cfg) {
 			cfg_free(cfg);
 		}

@@ -304,8 +304,6 @@ char *itable_str(const struct ITable* const tab) {
 			1;                      // "\n"
 	}
 
-	// TODO rewrite with str_app
-
 	// render
 	char *buf = (char*)calloc(len, sizeof(char));
 	char *bufp = buf;
