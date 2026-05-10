@@ -877,6 +877,93 @@ static struct Lid *map_to_lid(const yaml_node_t *map) {
 	return lid;
 }
 
+static struct Mode *map_to_mode(const yaml_node_t *map) {
+	const struct STable *table = map_to_node_table(map);
+	if (!table)
+		return NULL;
+
+	struct Mode *mode = (struct Mode*)calloc(1, sizeof(struct Mode));
+
+	scalar_to_int(&mode->width, stable_get(table, "WIDTH"));
+	scalar_to_int(&mode->height, stable_get(table, "HEIGHT"));
+	scalar_to_int(&mode->refresh_mhz, stable_get(table, "REFRESH_MHZ"));
+	scalar_to_boolean(&mode->preferred, stable_get(table, "PREFERRED"));
+
+	stable_free(table);
+
+	return mode;
+}
+
+static void map_to_head_state(struct HeadState *head_state, const yaml_node_t *map) {
+	const struct STable *table = map_to_node_table(map);
+	if (!table)
+		return;
+
+	scalar_to_boolean(&head_state->enabled, stable_get(table, "ENABLED"));
+
+	scalar_to_int(&head_state->x, stable_get(table, "X"));
+	scalar_to_int(&head_state->y, stable_get(table, "Y"));
+
+	head_state->transform = scalar_to_enum(stable_get(table, "TRANSFORM"), transform_val);
+
+	float scale;
+	if (scalar_to_float(&scale, stable_get(table, "SCALE")))
+		head_state->scale = wl_fixed_from_double(scale);
+
+	bool vrr = false;
+	if (scalar_to_boolean(&vrr, stable_get(table, "VRR")))
+		head_state->adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+
+	head_state->mode = map_to_mode(stable_get(table, "MODE"));
+
+	stable_free(table);
+}
+
+static struct Head *map_to_head(const yaml_node_t *map) {
+	const struct STable *table = map_to_node_table(map);
+	if (!table)
+		return NULL;
+
+	struct Head *head = (struct Head*)calloc(1, sizeof(struct Head));
+
+	head->name = scalar_to_string(stable_get(table, "NAME"));
+	head->description = scalar_to_string(stable_get(table, "DESCRIPTION"));
+	head->make = scalar_to_string(stable_get(table, "MAKE"));
+	head->model = scalar_to_string(stable_get(table, "MODEL"));
+	head->serial_number = scalar_to_string(stable_get(table, "SERIAL_NUMBER"));
+	scalar_to_int(&head->width_mm, stable_get(table, "WIDTH_MM"));
+	scalar_to_int(&head->height_mm, stable_get(table, "HEIGHT_MM"));
+
+	map_to_head_state(&head->current, stable_get(table,"CURRENT"));
+	map_to_head_state(&head->desired, stable_get(table,"DESIRED"));
+
+	stable_free(table);
+
+	return head;
+}
+
+// unmarshal HEADS into a Head list
+static struct SList *seq_to_head_list(const yaml_node_t *seq) {
+	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
+		return NULL;
+
+	struct SList *list = NULL;
+
+	struct Head *head = NULL;
+
+	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		if (!node)
+			continue;
+
+		if ((head = map_to_head(node)))
+			slist_append(&list, head);
+	}
+
+	return list;
+}
+
 // populates lid and heads
 static bool map_into_state(struct IpcResponse *ipc_response, const yaml_node_t *map) {
 	if (!ipc_response)
@@ -885,6 +972,8 @@ static bool map_into_state(struct IpcResponse *ipc_response, const yaml_node_t *
 	const struct STable *table = map_to_node_table(map);
 
 	ipc_response->lid =	map_to_lid(stable_get(table, "LID"));
+
+	ipc_response->heads = seq_to_head_list(stable_get(table, "HEADS"));
 
 	stable_free(table);
 
@@ -959,6 +1048,9 @@ static void *root_to_ipc_response_list(const yaml_node_t *root) {
 				slist_append(&ipc_responses, ipc_response);
 		}
 	} else {
+		struct IpcResponse *ipc_response = map_to_ipc_response(root);
+		if (ipc_response)
+			slist_append(&ipc_responses, ipc_response);
 	}
 
 	goto end;

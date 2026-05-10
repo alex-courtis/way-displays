@@ -1020,6 +1020,8 @@ static void unmarshal_ipc_responses__map(void **state) {
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err");
 
+	// TODO overrides
+
 	slist_free_vals(&responses, ipc_response_free);
 	cfg_free(expected_cfg);
 	free(yaml);
@@ -1055,17 +1057,17 @@ static void unmarshal_ipc_responses__seq(void **state) {
 	assert_non_nul(lid);
 	assert_str_equal(lid->device_path, "/path/to/lid");
 
-	// struct SList *heads = response->heads;
-	// assert_non_nul(heads);
-	// assert_int_equal(slist_length(heads), 2);
-	//
-	// struct Head *head0 = slist_at(heads, 0);
-	// assert_non_nul(head0);
-	// assert_str_equal(head0->name, "name0");
-	//
-	// struct Head *head1 = slist_at(heads, 1);
-	// assert_non_nul(head1);
-	// assert_str_equal(head1->name, "name1");
+	struct SList *heads = response->heads;
+	assert_non_nul(heads);
+	assert_int_equal(slist_length(heads), 2);
+
+	struct Head *head0 = slist_at(heads, 0);
+	assert_non_nul(head0);
+	assert_str_equal(head0->name, "name0");
+
+	struct Head *head1 = slist_at(heads, 1);
+	assert_non_nul(head1);
+	assert_str_equal(head1->name, "name1");
 
 	// 1
 	response = slist_at(responses, 1);
@@ -1084,6 +1086,8 @@ static void unmarshal_ipc_responses__seq(void **state) {
 	assert_nul(response->cfg);
 	assert_nul(response->lid);
 	assert_nul(response->heads);
+
+	// TODO log message validation
 
 	slist_free_vals(&responses, ipc_response_free);
 	free(yaml);
@@ -1107,6 +1111,8 @@ int main(void) {
 		unmarshal_ipc_request__invalid_op(NULL);
 		unmarshal_ipc_request__no_op(NULL);
 		unmarshal_ipc_request__cfg_set(NULL);
+
+		unmarshal_ipc_responses__map(NULL);
 	}
 
 	const struct CMUnitTest tests[] = {
@@ -1155,7 +1161,7 @@ int main(void) {
 		TEST(unmarshal_ipc_responses__seq_no_map),
 		TEST(unmarshal_ipc_responses__seq_no_done),
 		TEST(unmarshal_ipc_responses__seq_no_rc),
-		// TEST(unmarshal_ipc_responses__map),
+		TEST(unmarshal_ipc_responses__map),
 		TEST(unmarshal_ipc_responses__seq),
 	};
 

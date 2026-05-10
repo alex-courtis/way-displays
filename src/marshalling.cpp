@@ -93,20 +93,6 @@ bool parse_node_val_bool(const YAML::Node &node, const char *key, bool *val, con
 	return true;
 }
 
-void parse_node_val_bool_def(const YAML::Node &node, const char *key, bool *val, const bool def) {
-	if (node[key]) {
-		try {
-			*val = node[key].as<bool>();
-		} catch (YAML::BadConversion &e) {
-			log_warn("Ignoring invalid %s %s, using default %s", key, node[key].as<std::string>().c_str(), on_off_name(def ? ON : OFF));
-			*val = def;
-		}
-	} else {
-		log_warn("Ignoring missing %s", key);
-		*val = def;
-	}
-}
-
 void parse_node_val_on_off_def(const YAML::Node &node, const char *key, enum OnOff *val, const enum OnOff def) {
 	if (node[key]) {
 		try {
