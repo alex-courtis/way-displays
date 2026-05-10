@@ -10,6 +10,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "conditions.h"
 #include "displ.h"
 #include "global.h"
 #include "head.h"
@@ -137,6 +138,91 @@ int after_each(void **state) {
 	return 0;
 }
 
+void print_cfg__all(void **state) {
+	struct Cfg *c = cfg_default();
+
+	slist_append(&c->order_name_desc, strdup("first"));
+	slist_append(&c->order_name_desc, strdup("last"));
+
+	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
+	slist_append(&c->user_scales, cfg_user_scale_init("four", 4));
+
+	slist_append(&c->disabled, cfg_disabled_always("disabled always"));
+	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	disabled->name_desc = strdup("disabled conditionally");
+	struct Condition *cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->plugged, strdup("ONE"));
+	slist_append(&disabled->conditions, cond);
+	slist_append(&c->disabled, disabled);
+
+	slist_append(&c->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+
+	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+
+	slist_append(&c->max_preferred_refresh_name_desc, strdup("legacy"));
+
+	c->laptop_display_prefix = strdup("lappy");
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-all.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
+void print_cfg__arrange_only(void **state) {
+	struct Cfg *c = cfg_init();
+	c->arrange = ROW;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-arrange-only.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
+void print_cfg__align_only(void **state) {
+	struct Cfg *c = cfg_init();
+	c->align = TOP;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-align-only.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
+void print_cfg__auto_scale_max(void **state) {
+	struct Cfg *c = cfg_init();
+	c->auto_scale = true;
+	c->auto_scale_min = 88.0f;
+	c->auto_scale_max = 99.0f;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-auto-scale-max.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
 void print_cfg_commands__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
@@ -148,41 +234,41 @@ void print_cfg_commands__empty(void **state) {
 }
 
 void print_cfg_commands__ok(void **state) {
-	struct Cfg *cfg = cfg_default();
+	struct Cfg *c = cfg_default();
 
-	cfg->arrange = COL;
-	cfg->align = RIGHT;
+	c->arrange = COL;
+	c->align = RIGHT;
 
-	slist_append(&cfg->order_name_desc, strdup("one"));
-	slist_append(&cfg->order_name_desc, strdup("two"));
-	slist_append(&cfg->order_name_desc, strdup("three"));
+	slist_append(&c->order_name_desc, strdup("one"));
+	slist_append(&c->order_name_desc, strdup("two"));
+	slist_append(&c->order_name_desc, strdup("three"));
 
-	cfg->scaling = OFF;
+	c->scaling = OFF;
 
-	cfg->auto_scale = OFF;
+	c->auto_scale = OFF;
 
-	slist_append(&cfg->user_scales, cfg_user_scale_init("one", 1));
-	slist_append(&cfg->user_scales, cfg_user_scale_init("two", 2.3456));
+	slist_append(&c->user_scales, cfg_user_scale_init("one", 1));
+	slist_append(&c->user_scales, cfg_user_scale_init("two", 2.3456));
 
-	slist_append(&cfg->user_modes, cfg_user_mode_init("all", false, 1, 2, 12340, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("all", false, 1, 2, 12340, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
 
-	slist_append(&cfg->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
+	slist_append(&c->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
 
-	slist_append(&cfg->disabled, cfg_disabled_always("three"));
-	slist_append(&cfg->disabled, cfg_disabled_always("four"));
+	slist_append(&c->disabled, cfg_disabled_always("three"));
+	slist_append(&c->disabled, cfg_disabled_always("four"));
 
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("five"));
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("six"));
+	slist_append(&c->adaptive_sync_off_name_desc, strdup("five"));
+	slist_append(&c->adaptive_sync_off_name_desc, strdup("six"));
 
-	print_cfg_commands(INFO, cfg);
+	print_cfg_commands(INFO, c);
 
 	char *expected_log = read_file("tst/info/print-cfg-commands-ok.log");
 	assert_log(INFO, expected_log);
 	assert_logs_empty();
 
-	cfg_free(cfg);
+	cfg_free(c);
 	free(expected_log);
 }
 
@@ -624,6 +710,11 @@ void call_back_adaptive_sync_fail__(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST(print_cfg__all),
+		TEST(print_cfg__arrange_only),
+		TEST(print_cfg__align_only),
+		TEST(print_cfg__auto_scale_max),
+
 		TEST(print_cfg_commands__empty),
 		TEST(print_cfg_commands__ok),
 

@@ -131,7 +131,6 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	slist_free_vals(&mrrs, mode_res_refresh_free);
 }
 
-// TODO unit test coverage
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del) {
 	if (!cfg)
 		return;
