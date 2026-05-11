@@ -7,18 +7,18 @@
     HEADS:
     - NAME: name0
     - NAME: name1
-  # MESSAGES:
-  # - DEBUG: dbg0
-  # - INFO: inf0
-  # - WARNING: war0
-  # - ERROR: err0
+  MESSAGES:
+  - DEBUG: dbg0
+  - INFO: inf0
+  - WARNING: war0
+  - ERROR: err0
   RC: 0
 - DONE: FALSE
-  # MESSAGES:
-  # - DEBUG: dbg1
-  # - INFO: inf1
-  # - WARNING: war1
-  # - ERROR: err1
+  MESSAGES:
+  - DEBUG: dbg1
+  - INFO: inf1
+  - WARNING: war1
+  - ERROR: err1
   RC: 1
 - DONE: TRUE
   RC: 2

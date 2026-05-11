@@ -1003,6 +1003,8 @@ static bool map_into_state(struct IpcResponse *ipc_response, const yaml_node_t *
 		return false;
 
 	const struct STable *table = map_to_node_table(map);
+	if (!table)
+		return false;
 
 	ipc_response->lid =	map_to_lid(stable_get(table, "LID"));
 
@@ -1011,6 +1013,45 @@ static bool map_into_state(struct IpcResponse *ipc_response, const yaml_node_t *
 	stable_free(table);
 
 	return true;
+}
+
+static struct SList *seq_to_log_cap_lines(const yaml_node_t *seq) {
+	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
+		return NULL;
+
+	struct SList *list = NULL;
+
+	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		if (!node)
+			continue;
+
+		const struct STable *table_line = map_to_node_table(node);
+		if (!table_line)
+			return NULL;
+
+		// unmarshal many pairs even though schema specifies exactly one
+		for (const struct STableIter *i = stable_iter(table_line); i; i = stable_iter_next(i)) {
+
+			enum LogThreshold threshold = log_threshold_val(stable_iter_key(i));
+			char *line = scalar_to_string(stable_iter_val(i));
+
+			if (threshold && line) {
+				struct LogCapLine *log_cap_line = (struct LogCapLine*)calloc(1, sizeof(struct LogCapLine));
+				log_cap_line->threshold = threshold;
+				log_cap_line->line = strdup(line);
+				slist_append(&list, log_cap_line);
+
+			}
+
+			free(line);
+		}
+
+		stable_free(table_line);
+	}
+
+	return list;
 }
 
 static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
@@ -1043,6 +1084,12 @@ static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
 	const yaml_node_t *state = stable_get(table, ctx.top);
 	if (state) {
 		map_into_state(ipc_response, state);
+	}
+
+	ctx_top("MESSAGES");
+	const yaml_node_t *messages = stable_get(table, ctx.top);
+	if (messages) {
+		ipc_response->log_cap_lines = seq_to_log_cap_lines(messages);
 	}
 
 	goto end;

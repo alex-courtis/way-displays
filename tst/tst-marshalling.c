@@ -1008,19 +1008,22 @@ static void unmarshal_ipc_responses__map(void **state) {
 	assert_int_equal(head->current.transform, 3);
 	assert_int_equal(head->desired.transform, 4);
 
-	// TODO log message validation
-	//
-	// assert_int_equal(slist_length(response->log_cap_lines), 3);
-	//
-	// struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
-	// assert_non_nul(line);
-	// assert_int_equal(line->threshold, WARNING);
-	// assert_str_equal(line->line, "war");
-	//
-	// line = slist_at(response->log_cap_lines, 1);
-	// assert_non_nul(line);
-	// assert_int_equal(line->threshold, ERROR);
-	// assert_str_equal(line->line, "err");
+	assert_int_equal(slist_length(response->log_cap_lines), 3);
+
+	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
+	assert_non_nul(line);
+	assert_int_equal(line->threshold, WARNING);
+	assert_str_equal(line->line, "war");
+
+	line = slist_at(response->log_cap_lines, 1);
+	assert_non_nul(line);
+	assert_int_equal(line->threshold, ERROR);
+	assert_str_equal(line->line, "err");
+
+	line = slist_at(response->log_cap_lines, 2);
+	assert_non_nul(line);
+	assert_int_equal(line->threshold, FATAL);
+	assert_str_equal(line->line, "fat");
 
 	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
@@ -1073,6 +1076,12 @@ static void unmarshal_ipc_responses__seq(void **state) {
 	assert_str_equal(head1->name, "name1");
 	assert_int_equal(head1->overrided_enabled, NoOverride);
 
+	assert_int_equal(slist_length(response->log_cap_lines), 4);
+	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
+	assert_non_nul(line);
+	assert_int_equal(line->threshold, DEBUG);
+	assert_str_equal(line->line, "dbg0");
+
 	// 1
 	response = slist_at(responses, 1);
 	assert_non_nul(response);
@@ -1082,6 +1091,12 @@ static void unmarshal_ipc_responses__seq(void **state) {
 	assert_nul(response->lid);
 	assert_nul(response->heads);
 
+	assert_int_equal(slist_length(response->log_cap_lines), 4);
+	line = slist_at(response->log_cap_lines, 0);
+	assert_non_nul(line);
+	assert_int_equal(line->threshold, DEBUG);
+	assert_str_equal(line->line, "dbg1");
+
 	// 2
 	response = slist_at(responses, 2);
 	assert_non_nul(response);
@@ -1090,8 +1105,7 @@ static void unmarshal_ipc_responses__seq(void **state) {
 	assert_nul(response->cfg);
 	assert_nul(response->lid);
 	assert_nul(response->heads);
-
-	// TODO log message validation
+	assert_nul(response->log_cap_lines);
 
 	slist_free_vals(&responses, ipc_response_free);
 	free(yaml);
