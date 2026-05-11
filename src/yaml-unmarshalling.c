@@ -17,7 +17,6 @@
 #include "stable.h"
 
 struct UnmarshalCtx {
-	bool silent;
 	enum LogThreshold t;
 
 	yaml_document_t *document;
@@ -60,7 +59,6 @@ static void ctx_def(const char *def) {
 }
 
 static void ctx_reset(void) {
-	ctx.silent = false;
 	ctx.t = WARNING;
 	ctx_action(NULL);
 	ctx_top(NULL);
@@ -86,8 +84,6 @@ static char *node_type_str(const yaml_node_type_t type) {
 }
 
 static void log_invalid(const yaml_char_t *value, const yaml_node_type_t type_expected, const yaml_node_type_t type_actual) {
-	if (ctx.silent)
-		return;
 
 	char *msg = NULL;
 
@@ -116,8 +112,6 @@ static void log_invalid(const yaml_char_t *value, const yaml_node_type_t type_ex
 }
 
 static void log_misssing(void) {
-	if (ctx.silent)
-		return;
 
 	char *msg = NULL;
 
@@ -831,7 +825,7 @@ end:
 
 static void *root_to_ipc_request(const yaml_node_t *root) {
 
-	// fatal errors for required fields
+	// log exceptions and fail for required fields
 	ctx.t = ERROR;
 
 	const struct STable *table = map_to_node_table(root);
@@ -846,7 +840,7 @@ static void *root_to_ipc_request(const yaml_node_t *root) {
 	if (!check_mandatory(op) || !(ipc_request->command = scalar_to_enum(op, ipc_command_val)))
 		goto err;
 
-	// non-fatal warnings for remainder
+	// log warnings for remainder
 	ctx.t = WARNING;
 	ctx_action(NULL);
 
@@ -1062,7 +1056,7 @@ static struct SList *seq_to_log_cap_lines(const yaml_node_t *seq) {
 
 static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
 
-	// fatal errors for required fields
+	// log exceptions and fail for required fields
 	ctx.t = ERROR;
 
 	const struct STable *table = map_to_node_table(map);
@@ -1082,7 +1076,7 @@ static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
 		goto err;
 
 	// suppress validation failures for remainder
-	ctx.silent = true;
+	ctx.t = 0;
 
 	ctx_top("CFG");
 	const yaml_node_t *cfg = stable_get(table, ctx.top);
