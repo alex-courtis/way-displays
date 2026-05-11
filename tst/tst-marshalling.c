@@ -1147,13 +1147,6 @@ int main(void) {
 		yaml_file_into_cfg(NULL);
 		yaml_to_ipc_request(NULL);
 		yaml_to_ipc_responses(NULL);
-
-		unmarshal_ipc_request__empty(NULL);
-		unmarshal_ipc_request__invalid_op(NULL);
-		unmarshal_ipc_request__no_op(NULL);
-		unmarshal_ipc_request__cfg_set(NULL);
-
-		unmarshal_ipc_responses__map(NULL);
 	}
 
 	const struct CMUnitTest tests[] = {
