@@ -830,6 +830,8 @@ end:
 }
 
 static void *root_to_ipc_request(const yaml_node_t *root) {
+
+	// fatal errors for required fields
 	ctx.t = ERROR;
 
 	const struct STable *table = map_to_node_table(root);
@@ -844,11 +846,15 @@ static void *root_to_ipc_request(const yaml_node_t *root) {
 	if (!check_mandatory(op) || !(ipc_request->command = scalar_to_enum(op, ipc_command_val)))
 		goto err;
 
-	ctx.silent = true;
+	// non-fatal warnings for remainder
+	ctx.t = WARNING;
+	ctx_action(NULL);
 
-	ctx_top("STATE");
-	ipc_request->log_threshold = scalar_to_enum(stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
-	map_to_cfg(ipc_request->cfg, stable_get(table, "CFG"));
+	ctx_top("LOG_THRESHOLD");
+	ipc_request->log_threshold = scalar_to_enum(stable_get(table, ctx.top), log_threshold_val);
+
+	ctx_top("CFG");
+	map_to_cfg(ipc_request->cfg, stable_get(table, ctx.top));
 
 	goto end;
 
@@ -1055,6 +1061,10 @@ static struct SList *seq_to_log_cap_lines(const yaml_node_t *seq) {
 }
 
 static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
+
+	// fatal errors for required fields
+	ctx.t = ERROR;
+
 	const struct STable *table = map_to_node_table(map);
 	if (!table)
 		return NULL;
@@ -1071,6 +1081,7 @@ static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
 	if (!check_mandatory(rc) || !scalar_to_int(&ipc_response->status.rc, rc))
 		goto err;
 
+	// suppress validation failures for remainder
 	ctx.silent = true;
 
 	ctx_top("CFG");
@@ -1105,7 +1116,6 @@ end:
 }
 
 static void *root_to_ipc_response_list(const yaml_node_t *root) {
-	ctx.t = ERROR;
 
 	if (!root)
 		return NULL;
@@ -1113,7 +1123,7 @@ static void *root_to_ipc_response_list(const yaml_node_t *root) {
 	struct SList *ipc_responses = NULL;
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
-		log_error("\nunmarshalling ipc response: expected %s or %s, got %s", node_type_str(YAML_MAPPING_NODE), node_type_str(YAML_SEQUENCE_NODE), node_type_str(root->type));
+		log_error("\n%s: expected %s or %s, got %s", ctx.action, node_type_str(YAML_MAPPING_NODE), node_type_str(YAML_SEQUENCE_NODE), node_type_str(root->type));
 		goto err;
 	}
 
@@ -1159,7 +1169,6 @@ static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, char *action
 	yaml_parser_set_input_string(&parser, (yaml_char_t*)yaml, strlen(yaml));
 
 	yaml_document_t document;
-	ctx.document = &document;
 
 	if (!yaml_parser_load(&parser, &document)) {
 		log_error("\n%s: yaml_parser_load failed", action);
@@ -1172,12 +1181,13 @@ static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, char *action
 
 	void *out = NULL;
 
-	if (!(root = yaml_document_get_root_node(ctx.document))) {
+	if (!(root = yaml_document_get_root_node(&document))) {
 		log_error("\n%s: empty request", action);
 		goto err;
 	}
 
 	ctx_reset();
+	ctx.document = &document;
 	ctx_action(action);
 
 	if ((out = fn(root)))

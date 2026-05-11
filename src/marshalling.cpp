@@ -40,6 +40,7 @@ struct CfgValidated {};
 struct CfgValidated*& operator << (struct CfgValidated*& cfg_validated, const YAML::Node& node);
 struct IpcResponse*& operator << (struct IpcResponse *&response, const YAML::Node& node_response);
 
+// TODO why do we not validate response?
 // Unmarshal operators, ignoring failures for individual values
 #define TI(STATEMENT) try { STATEMENT; } catch (...) { }
 struct UserScale*& operator << (struct UserScale*& user_scale, const YAML::Node& node);

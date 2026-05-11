@@ -827,19 +827,42 @@ static void unmarshal_ipc_request__no_op(void **state) {
 	assert_logs_empty();
 }
 
-static void unmarshal_ipc_request__cfg_set(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
+static void unmarshal_ipc_request__invalid_cfg(void **state) {
+	char *yaml = read_file("tst/marshalling/ipc-request-cfg-invalid.yaml");
+
+	struct Cfg *expected_cfg = cfg_default();
+	slist_append(&expected_cfg->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
 
 	struct IpcRequest *actual = Y_T_IREQ(yaml);
 
 	assert_non_nul(actual);
 	assert_int_equal(actual->command, CFG_SET);
-
-	struct Cfg *expected_cfg = cfg_all();
+	assert_int_equal(actual->log_threshold, ERROR);
 
 	assert_cfg_equal(actual->cfg, expected_cfg);
 
+	char *expected_log = read_file("tst/marshalling/cfg-invalid.log");
+	assert_log(WARNING, expected_log);
+	assert_logs_empty();
+
+	free(yaml);
+	ipc_request_free(actual);
+	cfg_free(expected_cfg);
+	free(expected_log);
+}
+
+static void unmarshal_ipc_request__cfg_set(void **state) {
+	char *yaml = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
+
+	struct Cfg *expected_cfg = cfg_all();
+
+	struct IpcRequest *actual = Y_T_IREQ(yaml);
+
+	assert_non_nul(actual);
+	assert_int_equal(actual->command, CFG_SET);
 	assert_int_equal(actual->log_threshold, ERROR);
+
+	assert_cfg_equal(actual->cfg, expected_cfg);
 
 	ipc_request_free(actual);
 	cfg_free(expected_cfg);
@@ -1172,6 +1195,7 @@ int main(void) {
 		TEST(unmarshal_ipc_request__invalid_op),
 		TEST(unmarshal_ipc_request__mistyped_op),
 		TEST(unmarshal_ipc_request__no_op),
+		TEST(unmarshal_ipc_request__invalid_cfg),
 		TEST(unmarshal_ipc_request__cfg_set),
 
 		TEST(unmarshal_ipc_responses__empty),
