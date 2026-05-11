@@ -11,57 +11,64 @@
 #include "cfg.h"
 #include "convert.h"
 #include "log.h"
+#include "stable.h"
 
 struct UnmarshalCtx ctx = { 0 };
 
 struct UnmarshalLogCtx {
-	char *name_desc;
+	enum LogThreshold t;
+	char *prefix;
 	char *def;
 	char *key;
+	char *name_desc;
 	char *top;
 } log_ctx;
 
-void ctx_action(const char *action) {
-	if (ctx.action)
-		free(ctx.action);
-	ctx.action = action ? strdup(action) : NULL;
+void yaml_log_ctx_t(const enum LogThreshold t) {
+	log_ctx.t = t;
 }
 
-void ctx_top(const char *top) {
-	if (log_ctx.top)
-		free(log_ctx.top);
-	log_ctx.top = top ? strdup(top) : NULL;
+void yaml_log_ctx_prefix(const char *action) {
+	if (log_ctx.prefix)
+		free(log_ctx.prefix);
+	log_ctx.prefix = action ? strdup(action) : NULL;
 }
 
-void ctx_name_desc(const char *name_desc) {
-	if (log_ctx.name_desc)
-		free(log_ctx.name_desc);
-	log_ctx.name_desc = name_desc ? strdup(name_desc) : NULL;
-}
-
-void ctx_key(const char *key) {
-	if (log_ctx.key)
-		free(log_ctx.key);
-	log_ctx.key = key ? strdup(key) : NULL;
-}
-
-void ctx_def(const char *def) {
+void yaml_log_ctx_def(const char *def) {
 	if (log_ctx.def)
 		free(log_ctx.def);
 	log_ctx.def = def ? strdup(def) : NULL;
 }
 
-void ctx_reset(void) {
-	ctx.t = WARNING;
-	ctx_action(NULL);
-	ctx_top(NULL);
-	ctx_name_desc(NULL);
-	ctx_key(NULL);
-	ctx_def(NULL);
+void yaml_log_ctx_key(const char *key) {
+	if (log_ctx.key)
+		free(log_ctx.key);
+	log_ctx.key = key ? strdup(key) : NULL;
+}
+
+void yaml_log_ctx_name_desc(const char *name_desc) {
+	if (log_ctx.name_desc)
+		free(log_ctx.name_desc);
+	log_ctx.name_desc = name_desc ? strdup(name_desc) : NULL;
+}
+
+void yaml_log_ctx_top(const char *top) {
+	if (log_ctx.top)
+		free(log_ctx.top);
+	log_ctx.top = top ? strdup(top) : NULL;
+}
+
+void yaml_log_ctx_reset(void) {
+	yaml_log_ctx_t(WARNING);
+	yaml_log_ctx_prefix(NULL);
+	yaml_log_ctx_top(NULL);
+	yaml_log_ctx_name_desc(NULL);
+	yaml_log_ctx_key(NULL);
+	yaml_log_ctx_def(NULL);
 }
 
 // return a static string for the node type
-char *node_type_str(const yaml_node_type_t type) {
+char *yaml_node_type_str(const yaml_node_type_t type) {
 	switch (type) {
 		case YAML_NO_NODE:
 			return "empty";
@@ -80,8 +87,8 @@ static void log_invalid(const yaml_char_t *value, const yaml_node_type_t type_ex
 
 	char *msg = NULL;
 
-	if (ctx.action)
-		msg = sprintf_append(msg, "\n%s:", ctx.action);
+	if (log_ctx.prefix)
+		msg = sprintf_append(msg, "\n%s:", log_ctx.prefix);
 	else
 		msg = sprintf_append(msg, "Ignoring");
 
@@ -92,14 +99,14 @@ static void log_invalid(const yaml_char_t *value, const yaml_node_type_t type_ex
 	if (log_ctx.key)
 		msg = sprintf_append(msg, " %s", log_ctx.key);
 	if (type_expected)
-		msg = sprintf_append(msg, " expected %s, got %s", node_type_str(type_expected), node_type_str(type_actual));
+		msg = sprintf_append(msg, " expected %s, got %s", yaml_node_type_str(type_expected), yaml_node_type_str(type_actual));
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
 	if (log_ctx.def)
 		msg = sprintf_append(msg, ", using default %s", log_ctx.def);
 
 	if (msg) {
-		log_(ctx.t, "%s", msg);
+		log_(log_ctx.t, "%s", msg);
 		free(msg);
 	}
 }
@@ -108,8 +115,8 @@ static void log_misssing(void) {
 
 	char *msg = NULL;
 
-	if (ctx.action)
-		msg = sprintf_append(msg, "\n%s: missing %s", ctx.action, log_ctx.top);
+	if (log_ctx.prefix)
+		msg = sprintf_append(msg, "\n%s: missing %s", log_ctx.prefix, log_ctx.top);
 	else
 		msg = sprintf_append(msg, "%s: Ignoring missing", log_ctx.top);
 
@@ -120,7 +127,7 @@ static void log_misssing(void) {
 		msg = sprintf_append(msg, " for '%s'", log_ctx.name_desc);
 
 	if (msg) {
-		log_(ctx.t, "%s", msg);
+		log_(log_ctx.t, "%s", msg);
 		free(msg);
 	}
 }
@@ -133,7 +140,26 @@ static void log_invalid_type(const yaml_node_type_t expected, const yaml_node_t 
 	log_invalid(NULL, expected, node ? node->type : YAML_NO_NODE);
 }
 
-bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expected) {
+// fn_equals to valdate a regex pattern by attempting to compile it
+static bool valid_regex(const void *pattern) {
+	bool rc = true;
+	char *p = (char*)pattern;
+
+	if (p && p[0] == '!') {
+		regex_t regex;
+		int result = regcomp(&regex, p + 1, REG_EXTENDED);
+		if (result) {
+			char err[1024];
+			regerror(result, &regex, err, 1024);
+			log_warn("Ignoring invalid %s regex '%s':  %s", log_ctx.top, p + 1, err);
+			rc = false;
+		}
+		regfree(&regex);
+	}
+	return rc;
+}
+
+bool yaml_check_node_type(const yaml_node_t *node, const yaml_node_type_t expected) {
 	if (node && node->type == expected)
 		return true;
 
@@ -142,7 +168,7 @@ bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expected) {
 	return false;
 }
 
-bool check_mandatory(const yaml_node_t *node) {
+bool yaml_check_mandatory(const yaml_node_t *node) {
 	if (node)
 		return true;
 
@@ -151,15 +177,15 @@ bool check_mandatory(const yaml_node_t *node) {
 	return false;
 }
 
-char *scalar_to_string(const yaml_node_t *scalar) {
-	if (!check_node_type(scalar, YAML_SCALAR_NODE))
+char *yaml_scalar_to_string(const yaml_node_t *scalar) {
+	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
 		return NULL;
 
 	return(strdup((char*)scalar->data.scalar.value));
 }
 
-bool scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
-	if (!check_node_type(scalar, YAML_SCALAR_NODE))
+bool yaml_scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
+	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) == 1)
@@ -169,8 +195,8 @@ bool scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
 	return false;
 }
 
-bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
-	if (!check_node_type(scalar, YAML_SCALAR_NODE))
+bool yaml_scalar_to_float(float *dst, const yaml_node_t *scalar) {
+	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) == 1)
@@ -180,24 +206,24 @@ bool scalar_to_float(float *dst, const yaml_node_t *scalar) {
 	return false;
 }
 
-bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) {
+bool yaml_scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) {
 	bool ok = true;
 
 	char def_str[10];
 	snprintf(def_str, 10, "%.1f", def);
 
-	ctx_def(def_str);
+	yaml_log_ctx_def(def_str);
 
-	if (!(ok = scalar_to_float(dst, scalar)))
+	if (!(ok = yaml_scalar_to_float(dst, scalar)))
 		*dst = def;
 
-	ctx_def(NULL);
+	yaml_log_ctx_def(NULL);
 
 	return ok;
 }
 
-int scalar_to_enum(const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
-	if (!check_node_type(scalar, YAML_SCALAR_NODE))
+int yaml_scalar_to_enum(const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
+	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
 		return 0;
 
 	int val = fn_val((char*)scalar->data.scalar.value);
@@ -208,20 +234,20 @@ int scalar_to_enum(const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
 	return 0;
 }
 
-int scalar_to_enum_def(const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
-	ctx_def(fn_name(def));
+int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
+	yaml_log_ctx_def(fn_name(def));
 
-	int ret = scalar_to_enum(scalar, fn_val);
+	int ret = yaml_scalar_to_enum(scalar, fn_val);
 	if (!ret)
 		ret = def;
 
-	ctx_def(NULL);
+	yaml_log_ctx_def(NULL);
 
 	return ret;
 }
 
-bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
-	int val = scalar_to_enum(scalar, on_off_val);
+bool yaml_scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
+	int val = yaml_scalar_to_enum(scalar, on_off_val);
 
 	if (val) {
 		*dst = val == ON;
@@ -231,20 +257,40 @@ bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 	return false;
 }
 
-bool invalid_regex(const void *pattern, const void *unused) {
-	bool rc = false;
-	char *p = (char*)pattern;
+char *yaml_scalar_to_name_desc(const yaml_node_t *scalar) {
+	char *name_desc = yaml_scalar_to_string(scalar);
+	if (!name_desc)
+		return NULL;
 
-	if (p && p[0] == '!') {
-		regex_t regex;
-		int result = regcomp(&regex, p + 1, REG_EXTENDED);
-		if (result) {
-			char err[1024];
-			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring invalid %s regex '%s':  %s", log_ctx.top, p + 1, err);
-			rc = true;
+	if (valid_regex(name_desc))
+		return name_desc;
+
+	free(name_desc);
+	return NULL;
+}
+
+// unmarshal a sequence of valid name_desc, removing duplicates
+struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq) {
+	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
+		return NULL;
+
+	const struct STable *table = stable_init(10, 10, false);
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		const yaml_node_t *scalar = yaml_document_get_node(ctx.document, *item);
+		if (!scalar)
+			continue;
+
+		char *val = NULL;
+		if ((val = yaml_scalar_to_name_desc(scalar))) {
+			stable_put(table, val, NULL);
+			free(val);
 		}
-		regfree(&regex);
 	}
-	return rc;
+
+	struct SList *list = stable_keys_slist(table);
+
+	stable_free(table);
+
+	return list;
 }

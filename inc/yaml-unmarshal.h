@@ -7,59 +7,69 @@
 
 #include "log.h"
 
+// TODO abstract this away
 extern struct UnmarshalCtx {
-	enum LogThreshold t;
-
 	yaml_document_t *document;
-
-	char *action;
-	// char *top;
-	// char *name_desc;
-	// char *key;
-	// char *def;
 } ctx;
 
-void ctx_action(const char *action);
-void ctx_top(const char *top);
-void ctx_name_desc(const char *name_desc);
-void ctx_key(const char *key);
-void ctx_def(const char *def);
-void ctx_reset(void);
+// clear the yaml unmarshalling logging context
+void yaml_log_ctx_reset(void);
+
+// log threshold for unmarshalling failures
+void yaml_log_ctx_t(const enum LogThreshold t);
+
+// optional prefix for unmarshalling log messages
+void yaml_log_ctx_prefix(const char *action);
+
+// optional default value
+void yaml_log_ctx_def(const char *def);
+
+// optional key name
+void yaml_log_ctx_key(const char *key);
+
+// optional NAME_DESC for context
+void yaml_log_ctx_name_desc(const char *name_desc);
+
+// optional top level element name
+void yaml_log_ctx_top(const char *top);
 
 // return a static string for the node type
-char *node_type_str(const yaml_node_type_t type);
+char *yaml_node_type_str(const yaml_node_type_t type);
 
 // validate expected is of type actual, returning false and logging a warning if not
-bool check_node_type(const yaml_node_t *node, const yaml_node_type_t expected);
+bool yaml_check_node_type(const yaml_node_t *node, const yaml_node_type_t expected);
 
 // check that node is not null, logging a contextual warning
-bool check_mandatory(const yaml_node_t *node);
+bool yaml_check_mandatory(const yaml_node_t *node);
 
 // unmarshal a scalar to a strdup string
-char *scalar_to_string(const yaml_node_t *scalar);
+char *yaml_scalar_to_string(const yaml_node_t *scalar);
 
 // unmarshal a scalar int to dst
-bool scalar_to_int(int32_t *dst, const yaml_node_t *scalar);
+bool yaml_scalar_to_int(int32_t *dst, const yaml_node_t *scalar);
 
 // unmarshal a scalar float to dst
-bool scalar_to_float(float *dst, const yaml_node_t *scalar);
+bool yaml_scalar_to_float(float *dst, const yaml_node_t *scalar);
 
 // unmarshal a scalar float to dst, sets def on failure
-bool scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar);
+bool yaml_scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar);
 
 // unmarshal a scalar enum
 typedef unsigned int (*scalar_to_enum_fn_val)(const char *name);
 typedef const char* (*scalar_to_enum_fn_name)(unsigned int val);
-int scalar_to_enum(const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val);
+int yaml_scalar_to_enum(const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val);
 
 // unmarshal an scalar enum, returns def on failure
-int scalar_to_enum_def(const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name);
+int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name);
 
 // unmarshal a scalar bool to dst
-bool scalar_to_boolean(bool *dst, const yaml_node_t *scalar);
+bool yaml_scalar_to_boolean(bool *dst, const yaml_node_t *scalar);
 
-// fn_equals to valdate a regex pattern by attempting to compile it
-bool invalid_regex(const void *pattern, const void *unused);
+// unmarshal a scalar to a name_desc, validating regex
+char *yaml_scalar_to_name_desc(const yaml_node_t *scalar);
+
+// unmarshal a sequence of valid name_desc, removing duplicates and validating regex
+struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq);
 
 #endif // YAML_UNMARSHAL_H
 
