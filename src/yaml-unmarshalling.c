@@ -894,6 +894,28 @@ static struct Mode *map_to_mode(const yaml_node_t *map) {
 	return mode;
 }
 
+// unmarshal MODES into a Mode list
+static struct SList *seq_to_mode_list(const yaml_node_t *seq) {
+	if (!check_node_type(seq, YAML_SEQUENCE_NODE))
+		return NULL;
+
+	struct SList *list = NULL;
+
+	struct Mode *mode = NULL;
+
+	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		if (!node)
+			continue;
+
+		if ((mode = map_to_mode(node)))
+			slist_append(&list, mode);
+	}
+
+	return list;
+}
+
 static void map_to_head_state(struct HeadState *head_state, const yaml_node_t *map) {
 	const struct STable *table = map_to_node_table(map);
 	if (!table)
@@ -937,7 +959,18 @@ static struct Head *map_to_head(const yaml_node_t *map) {
 	map_to_head_state(&head->current, stable_get(table,"CURRENT"));
 	map_to_head_state(&head->desired, stable_get(table,"DESIRED"));
 
+	head->modes = seq_to_mode_list(stable_get(table, "MODES"));
+
+	const struct STable *table_overrides = map_to_node_table(stable_get(table, "OVERRIDES"));
+	if (table_overrides) {
+		bool disabled;
+		if (scalar_to_boolean(&disabled, stable_get(table_overrides, "DISABLED"))) {
+			head->overrided_enabled = disabled ? OverrideFalse : OverrideTrue;
+		}
+	}
+
 	stable_free(table);
+	stable_free(table_overrides);
 
 	return head;
 }

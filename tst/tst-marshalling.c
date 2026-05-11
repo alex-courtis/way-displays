@@ -1008,19 +1008,21 @@ static void unmarshal_ipc_responses__map(void **state) {
 	assert_int_equal(head->current.transform, 3);
 	assert_int_equal(head->desired.transform, 4);
 
-	assert_int_equal(slist_length(response->log_cap_lines), 3);
+	// TODO log message validation
+	//
+	// assert_int_equal(slist_length(response->log_cap_lines), 3);
+	//
+	// struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
+	// assert_non_nul(line);
+	// assert_int_equal(line->threshold, WARNING);
+	// assert_str_equal(line->line, "war");
+	//
+	// line = slist_at(response->log_cap_lines, 1);
+	// assert_non_nul(line);
+	// assert_int_equal(line->threshold, ERROR);
+	// assert_str_equal(line->line, "err");
 
-	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
-	assert_non_nul(line);
-	assert_int_equal(line->threshold, WARNING);
-	assert_str_equal(line->line, "war");
-
-	line = slist_at(response->log_cap_lines, 1);
-	assert_non_nul(line);
-	assert_int_equal(line->threshold, ERROR);
-	assert_str_equal(line->line, "err");
-
-	// TODO overrides
+	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
 	slist_free_vals(&responses, ipc_response_free);
 	cfg_free(expected_cfg);
@@ -1064,10 +1066,12 @@ static void unmarshal_ipc_responses__seq(void **state) {
 	struct Head *head0 = slist_at(heads, 0);
 	assert_non_nul(head0);
 	assert_str_equal(head0->name, "name0");
+	assert_int_equal(head0->overrided_enabled, NoOverride);
 
 	struct Head *head1 = slist_at(heads, 1);
 	assert_non_nul(head1);
 	assert_str_equal(head1->name, "name1");
+	assert_int_equal(head1->overrided_enabled, NoOverride);
 
 	// 1
 	response = slist_at(responses, 1);

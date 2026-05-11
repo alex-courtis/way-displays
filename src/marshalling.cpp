@@ -156,7 +156,7 @@ void parse_node_val_float_def(const YAML::Node &node, const char *key, float *va
 			*val = node[key].as<float>();
 		} catch (YAML::BadConversion &e) {
 			log_warn("Ignoring invalid %s %s, using default %.1f", key, node[key].as<std::string>().c_str(), def);
-		*val = def;
+			*val = def;
 		}
 	} else {
 		log_warn("Ignoring missing %s", key);
@@ -977,16 +977,16 @@ struct Head*& operator << (struct Head*& head, const YAML::Node& node) {
 	head->current << node["CURRENT"];
 	head->desired << node["DESIRED"];
 
-	TI(head->overrided_enabled = node["OVERRIDES"]["DISABLED"].as<bool>() ? OverrideFalse : OverrideTrue)
+	TI(head->overrided_enabled = node["OVERRIDES"]["DISABLED"].as<bool>() ? OverrideFalse : OverrideTrue);
 
-		if (node["MODES"] && node["MODES"].IsSequence()) {
-			for (const auto &node_mode : node["MODES"]) {
-				struct Mode *mode = NULL;
-				if (mode << node_mode) {
-					slist_append(&head->modes, mode);
-				}
+	if (node["MODES"] && node["MODES"].IsSequence()) {
+		for (const auto &node_mode : node["MODES"]) {
+			struct Mode *mode = NULL;
+			if (mode << node_mode) {
+				slist_append(&head->modes, mode);
 			}
 		}
+	}
 
 	return head;
 }
