@@ -36,24 +36,30 @@ void *map_to_mode(const yaml_node_t *map);
 void *map_to_head(const yaml_node_t *map);
 
 /*
- * specific
+ * concrete types
  */
 
-// unmarshal into existing Cfg
+// into existing Cfg
 bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map);
 
 // HeadState
 void map_to_head_state(struct HeadState *head_state, const yaml_node_t *map);
 
-// a CALLBACK_CMD, frees first, sets NULL on empty string, otherwise default
+// Head.callback_cmd, frees first, sets NULL on empty string, otherwise default
 void scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar);
-
-/*
- * util
- */
 
 // LogCapLine list
 struct SList *seq_to_log_cap_lines(const yaml_node_t *seq);
+
+/*
+ * NAME_DESC validating
+ */
+
+// unmarshal a scalar to a name_desc, validating regex
+char *yaml_scalar_to_name_desc(const yaml_node_t *scalar);
+
+// unmarshal a sequence of valid name_desc, removing duplicates and validating regex
+struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq);
 
 #endif // YAML_UNMARSHAL_TYPES_H
 

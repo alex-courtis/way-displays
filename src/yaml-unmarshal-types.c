@@ -233,26 +233,6 @@ end:
 	return user_transform;
 }
 
-void scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
-	if (*dst) {
-		free(*dst);
-		*dst = NULL;
-	}
-
-	yaml_log_ctx_def(CALLBACK_CMD_DEFAULT);
-
-	*dst = yaml_scalar_to_string(scalar);
-
-	if (!*dst) {
-		*dst = strdup(CALLBACK_CMD_DEFAULT);
-	} else if (*dst && strlen(*dst) == 0) {
-		free(*dst);
-		*dst = NULL;
-	}
-
-	yaml_log_ctx_def(NULL);
-}
-
 void *map_to_lid(const yaml_node_t *map) {
 	const struct STable *table = yaml_map_to_node_table(map);
 	if (!table)
@@ -344,45 +324,6 @@ void *map_to_head(const yaml_node_t *map) {
 	return head;
 }
 
-struct SList *seq_to_log_cap_lines(const yaml_node_t *seq) {
-	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
-		return NULL;
-
-	struct SList *list = NULL;
-
-	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-
-		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
-		if (!node)
-			continue;
-
-		const struct STable *table_line = yaml_map_to_node_table(node);
-		if (!table_line)
-			return NULL;
-
-		// unmarshal many pairs even though schema specifies exactly one
-		for (const struct STableIter *i = stable_iter(table_line); i; i = stable_iter_next(i)) {
-
-			enum LogThreshold threshold = log_threshold_val(stable_iter_key(i));
-			char *line = yaml_scalar_to_string(stable_iter_val(i));
-
-			if (threshold && line) {
-				struct LogCapLine *log_cap_line = (struct LogCapLine*)calloc(1, sizeof(struct LogCapLine));
-				log_cap_line->threshold = threshold;
-				log_cap_line->line = strdup(line);
-				slist_append(&list, log_cap_line);
-
-			}
-
-			free(line);
-		}
-
-		stable_free(table_line);
-	}
-
-	return list;
-}
-
 bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 	if (!cfg || !map)
 		return false;
@@ -458,4 +399,100 @@ bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 	}
 
 	return true;
+}
+
+void scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
+	if (*dst) {
+		free(*dst);
+		*dst = NULL;
+	}
+
+	yaml_log_ctx_def(CALLBACK_CMD_DEFAULT);
+
+	*dst = yaml_scalar_to_string(scalar);
+
+	if (!*dst) {
+		*dst = strdup(CALLBACK_CMD_DEFAULT);
+	} else if (*dst && strlen(*dst) == 0) {
+		free(*dst);
+		*dst = NULL;
+	}
+
+	yaml_log_ctx_def(NULL);
+}
+
+struct SList *seq_to_log_cap_lines(const yaml_node_t *seq) {
+	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
+		return NULL;
+
+	struct SList *list = NULL;
+
+	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		if (!node)
+			continue;
+
+		const struct STable *table_line = yaml_map_to_node_table(node);
+		if (!table_line)
+			return NULL;
+
+		// unmarshal many pairs even though schema specifies exactly one
+		for (const struct STableIter *i = stable_iter(table_line); i; i = stable_iter_next(i)) {
+
+			enum LogThreshold threshold = log_threshold_val(stable_iter_key(i));
+			char *line = yaml_scalar_to_string(stable_iter_val(i));
+
+			if (threshold && line) {
+				struct LogCapLine *log_cap_line = (struct LogCapLine*)calloc(1, sizeof(struct LogCapLine));
+				log_cap_line->threshold = threshold;
+				log_cap_line->line = strdup(line);
+				slist_append(&list, log_cap_line);
+
+			}
+
+			free(line);
+		}
+
+		stable_free(table_line);
+	}
+
+	return list;
+}
+
+char *yaml_scalar_to_name_desc(const yaml_node_t *scalar) {
+	char *name_desc = yaml_scalar_to_string(scalar);
+	if (!name_desc)
+		return NULL;
+
+	if (yaml_valid_regex(name_desc))
+		return name_desc;
+
+	free(name_desc);
+	return NULL;
+}
+
+struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq) {
+	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
+		return NULL;
+
+	const struct STable *table = stable_init(10, 10, false);
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		const yaml_node_t *scalar = yaml_document_get_node(ctx.document, *item);
+		if (!scalar)
+			continue;
+
+		char *val = NULL;
+		if ((val = yaml_scalar_to_name_desc(scalar))) {
+			stable_put(table, val, NULL);
+			free(val);
+		}
+	}
+
+	struct SList *list = stable_keys_slist(table);
+
+	stable_free(table);
+
+	return list;
 }

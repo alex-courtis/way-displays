@@ -124,43 +124,6 @@ bool yaml_scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 	return false;
 }
 
-char *yaml_scalar_to_name_desc(const yaml_node_t *scalar) {
-	char *name_desc = yaml_scalar_to_string(scalar);
-	if (!name_desc)
-		return NULL;
-
-	if (yaml_valid_regex(name_desc))
-		return name_desc;
-
-	free(name_desc);
-	return NULL;
-}
-
-struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq) {
-	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
-		return NULL;
-
-	const struct STable *table = stable_init(10, 10, false);
-
-	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		const yaml_node_t *scalar = yaml_document_get_node(ctx.document, *item);
-		if (!scalar)
-			continue;
-
-		char *val = NULL;
-		if ((val = yaml_scalar_to_name_desc(scalar))) {
-			stable_put(table, val, NULL);
-			free(val);
-		}
-	}
-
-	struct SList *list = stable_keys_slist(table);
-
-	stable_free(table);
-
-	return list;
-}
-
 struct SList *seq_to_type_list(const yaml_node_t *seq, node_to_type_fn fn) {
 	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
 		return NULL;

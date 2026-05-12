@@ -43,15 +43,5 @@ const struct STable *yaml_map_to_node_table(const yaml_node_t *map);
 typedef void *(*node_to_type_fn)(const yaml_node_t *node);
 struct SList *seq_to_type_list(const yaml_node_t *seq, node_to_type_fn fn);
 
-/*
- * NAME_DESC validating
- */
-
-// unmarshal a scalar to a name_desc, validating regex
-char *yaml_scalar_to_name_desc(const yaml_node_t *scalar);
-
-// unmarshal a sequence of valid name_desc, removing duplicates and validating regex
-struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq);
-
 #endif // YAML_UNMARSHAL_PRIMITIVES_H
 
