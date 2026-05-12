@@ -136,7 +136,6 @@ char *yaml_scalar_to_name_desc(const yaml_node_t *scalar) {
 	return NULL;
 }
 
-// unmarshal a sequence of valid name_desc, removing duplicates
 struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq) {
 	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
 		return NULL;
@@ -158,6 +157,27 @@ struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq) {
 	struct SList *list = stable_keys_slist(table);
 
 	stable_free(table);
+
+	return list;
+}
+
+struct SList *seq_to_type_list(const yaml_node_t *seq, node_to_type_fn fn) {
+	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
+		return NULL;
+
+	struct SList *list = NULL;
+
+	void *val = NULL;
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		if (!node)
+			continue;
+
+		if ((val = fn(node)))
+			slist_append(&list, val);
+	}
 
 	return list;
 }

@@ -39,6 +39,10 @@ bool yaml_scalar_to_boolean(bool *dst, const yaml_node_t *scalar);
 // unmarshal a map of nodes
 const struct STable *yaml_map_to_node_table(const yaml_node_t *map);
 
+// unmarshal a sequence into a list of structs
+typedef void *(*node_to_type_fn)(const yaml_node_t *node);
+struct SList *seq_to_type_list(const yaml_node_t *seq, node_to_type_fn fn);
+
 /*
  * NAME_DESC validating
  */

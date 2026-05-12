@@ -156,7 +156,7 @@ static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
 
 			ipc_response->lid =	map_to_lid(stable_get(table_state, "LID"));
 
-			ipc_response->heads = seq_to_head_list(stable_get(table_state, "HEADS"));
+			ipc_response->heads = seq_to_type_list(stable_get(table_state, "HEADS"), map_to_head);
 
 			stable_free(table_state);
 		}
