@@ -42,6 +42,8 @@ bool yaml_map_populate_cfg(const void *data, int mapping) {
 }
 
 bool yaml_map_populate_ipc_operation(void *data, int mapping) {
+	if (!data || !mapping)
+		return false;
 
 	struct IpcOperation *ipc_operation = data;
 
@@ -64,31 +66,31 @@ bool yaml_map_populate_ipc_operation(void *data, int mapping) {
 }
 
 bool yaml_map_populate_mode(const void *data, int mapping) {
-	if (!data)
+	if (!data || !mapping)
 		return false;
 
 	const struct Mode *mode = data;
 
-	yaml_map_add_int("WIDTH",       mode->width,       mapping);
-	yaml_map_add_int("HEIGHT",      mode->height,      mapping);
-	yaml_map_add_int("REFRESH_MHZ", mode->refresh_mhz, mapping);
-	yaml_map_add_bool("PREFERRED",  mode->preferred,   mapping);
+	yaml_map_add_int ("WIDTH",       mode->width,       mapping);
+	yaml_map_add_int ("HEIGHT",      mode->height,      mapping);
+	yaml_map_add_int ("REFRESH_MHZ", mode->refresh_mhz, mapping);
+	yaml_map_add_bool("PREFERRED",   mode->preferred,   mapping);
 
 	return true;
 }
 
 bool yaml_map_populate_head_state(const void *data, int mapping) {
-	if (!data)
+	if (!data || !mapping)
 		return false;
 
 	const struct HeadState *head_state = data;
 
-	yaml_map_add_float("SCALE",    wl_fixed_to_double(head_state->scale),                                          mapping);
-	yaml_map_add_bool ("ENABLED",  head_state->enabled,                                                            mapping);
-	yaml_map_add_int  ("X",        head_state->x,                                                                  mapping);
-	yaml_map_add_int  ("Y",        head_state->y,                                                                  mapping);
-	yaml_map_add_bool ("VRR",      (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
-	yaml_map_add_enum("TRANSFORM", head_state->transform,                                          transform_name, mapping);
+	yaml_map_add_float("SCALE",     wl_fixed_to_double(head_state->scale),                                          mapping);
+	yaml_map_add_bool ("ENABLED",   head_state->enabled,                                                            mapping);
+	yaml_map_add_int  ("X",         head_state->x,                                                                  mapping);
+	yaml_map_add_int  ("Y",         head_state->y,                                                                  mapping);
+	yaml_map_add_bool ("VRR",       (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
+	yaml_map_add_enum ("TRANSFORM", head_state->transform,                                          transform_name, mapping);
 
 	yaml_map_add_map("MODE", head_state->mode, yaml_map_populate_mode, mapping);
 
@@ -96,7 +98,7 @@ bool yaml_map_populate_head_state(const void *data, int mapping) {
 }
 
 bool yaml_map_populate_head_overrides(const void *data, int mapping) {
-	if (!data)
+	if (!data || !mapping)
 		return false;
 
 	const struct Head *head = data;
@@ -104,7 +106,55 @@ bool yaml_map_populate_head_overrides(const void *data, int mapping) {
 	return (head->overrided_enabled != NoOverride) && yaml_map_add_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
 }
 
+bool yaml_map_populate_messages(void *data, int mapping) {
+	if (!data || !mapping)
+		return false;
+
+	struct IpcOperation *ipc_operation = data;
+
+	bool lines_added = false;
+
+	int seq_lines = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq_lines)
+		return false;
+
+	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
+		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+
+		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
+			continue;
+
+		lines_added = yaml_seq_append_log_cap_line(cap_line, seq_lines) || lines_added;
+
+		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
+			ipc_operation->rc = IPC_RC_WARN;
+		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
+			ipc_operation->rc = IPC_RC_ERROR;
+	}
+
+	if (lines_added) {
+		int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
+		if (key)
+			yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, seq_lines);
+	}
+
+	return true;
+}
+
+bool yaml_map_populate_state(const void *unused, int mapping) {
+	if (!mapping)
+		return false;
+
+	yaml_map_add_map("LID",   NULL,  yaml_map_populate_lid, mapping);
+	yaml_map_add_seq("HEADS", heads, yaml_seq_append_head,  mapping);
+
+	return true;
+}
+
 bool yaml_map_populate_lid(const void *unused, int mapping) {
+	if (!lid || !mapping)
+		return false;
+
 	yaml_map_add_bool("CLOSED",      lid->closed,      mapping);
 	yaml_map_add_str ("DEVICE_PATH", lid->device_path, mapping);
 
@@ -242,14 +292,10 @@ bool yaml_seq_append_head(const void *data, int sequence) {
 	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
-bool yaml_map_populate_state(const void *unused, int mapping) {
-	yaml_map_add_map("LID", NULL, yaml_map_populate_lid, mapping);
-	yaml_map_add_seq("HEADS", heads, yaml_seq_append_head, mapping);
-
-	return true;
-}
-
 bool yaml_seq_append_log_cap_line(const void *data, int sequence) {
+	if (!data || !sequence)
+		return false;
+
 	const struct LogCapLine *line = data;
 
 	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
@@ -260,37 +306,5 @@ bool yaml_seq_append_log_cap_line(const void *data, int sequence) {
 		return false;
 
 	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
-}
-
-bool yaml_map_populate_messages(void *data, int mapping) {
-	struct IpcOperation *ipc_operation = data;
-
-	bool lines_added = false;
-
-	int seq_lines = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-	if (!seq_lines)
-		return false;
-
-	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
-		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
-
-		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
-			continue;
-
-		lines_added = yaml_seq_append_log_cap_line(cap_line, seq_lines) || lines_added;
-
-		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
-			ipc_operation->rc = IPC_RC_WARN;
-		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
-			ipc_operation->rc = IPC_RC_ERROR;
-	}
-
-	if (lines_added) {
-		int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
-		if (key)
-			yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, seq_lines);
-	}
-
-	return true;
 }
 
