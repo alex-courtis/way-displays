@@ -271,7 +271,7 @@ char *sprintf_append(char *__restrict s, const char *__restrict __format, ...) {
 
 	char *left = calloc(l_left + l_right + 1, sizeof(char));
 
-	char *right = l_left ? stpncpy(left, s, l_left) : left;
+	char *right = l_left ? stpncpy(left, s, l_left + 1) : left;
 
 	va_start(args, __format);
 	vsnprintf(right, l_right + 1, __format, args);
