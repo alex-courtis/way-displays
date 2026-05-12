@@ -7,8 +7,6 @@
 #include "convert.h"
 #include "slist.h"
 
-// TODO annotate all implementations
-
 /*
  * Marshal primitives: false on failure
  */
@@ -23,14 +21,18 @@ bool yaml_map_add_bool(const char *k, const bool v, int mapping);
 
 bool yaml_map_add_enum(const char *k, const int v, enum_name_fn fn_name, int mapping);
 
+/*
+ * yaml_seq_append_fn: false on failure
+ */
+
 bool yaml_seq_append_str(const void *data, int sequence);
 
 /*
  * Marshal nodes: false on failure
  */
 
-typedef bool (*yaml_map_add_fn)(const void *data, const int mapping);
-bool yaml_map_add_map(const char *k, const void *data, yaml_map_add_fn fn, int mapping);
+typedef bool (*yaml_map_populate_fn)(const void *data, const int mapping);
+bool yaml_map_add_map(const char *k, const void *data, yaml_map_populate_fn fn, int mapping);
 
 typedef bool (*yaml_seq_append_fn)(const void *data, const int sequence);
 bool yaml_map_add_seq(const char *k, const struct SList *list, yaml_seq_append_fn fn, int mapping);

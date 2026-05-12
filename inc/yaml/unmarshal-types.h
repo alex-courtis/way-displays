@@ -43,7 +43,7 @@ void *map_to_head(const yaml_node_t *map);
 bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map);
 
 // HeadState
-void map_to_head_state(struct HeadState *head_state, const yaml_node_t *map);
+bool map_to_head_state(struct HeadState *head_state, const yaml_node_t *map);
 
 // Head.callback_cmd, frees first, sets NULL on empty string, otherwise default
 void scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar);

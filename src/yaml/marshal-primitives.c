@@ -71,7 +71,7 @@ bool yaml_seq_append_str(const void *data, int sequence) {
 	return scalar && yaml_document_append_sequence_item(marshal_ctx.doc, sequence, scalar);
 }
 
-bool yaml_map_add_map(const char *k, const void *data, yaml_map_add_fn fn, int mapping) {
+bool yaml_map_add_map(const char *k, const void *data, yaml_map_populate_fn fn, int mapping) {
 	if (!k || !fn || !mapping)
 		return false;
 

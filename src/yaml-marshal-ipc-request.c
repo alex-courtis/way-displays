@@ -7,8 +7,8 @@
 #include "convert.h"
 #include "ipc.h"
 #include "log.h"
-#include "yaml-marshal-cfg.h"
 #include "yaml/marshal-primitives.h"
+#include "yaml/marshal-types.h"
 
 static bool marshal_ipc_request_fn(const void *data) {
 	if (!data)
@@ -33,7 +33,7 @@ static bool marshal_ipc_request_fn(const void *data) {
 	if (ipc_request->log_threshold)
 		yaml_map_add_str("LOG_THRESHOLD", log_threshold_name(ipc_request->log_threshold), root);
 
-	yaml_map_add_map("CFG", ipc_request->cfg, map_cfg, root);
+	yaml_map_add_map("CFG", ipc_request->cfg, yaml_map_populate_cfg, root);
 
 	return true;
 }

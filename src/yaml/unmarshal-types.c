@@ -265,10 +265,10 @@ void *map_to_mode(const yaml_node_t *map) {
 	return mode;
 }
 
-void map_to_head_state(struct HeadState *head_state, const yaml_node_t *map) {
+bool map_to_head_state(struct HeadState *head_state, const yaml_node_t *map) {
 	const struct STable *table = yaml_map_to_node_table(map);
 	if (!table)
-		return;
+		return false;
 
 	yaml_scalar_to_boolean(&head_state->enabled, stable_get(table, "ENABLED"));
 
@@ -288,6 +288,8 @@ void map_to_head_state(struct HeadState *head_state, const yaml_node_t *map) {
 	head_state->mode = map_to_mode(stable_get(table, "MODE"));
 
 	stable_free(table);
+
+	return true;
 }
 
 void *map_to_head(const yaml_node_t *map) {
