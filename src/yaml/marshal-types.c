@@ -41,6 +41,28 @@ bool yaml_map_populate_cfg(const void *data, int mapping) {
 	return true;
 }
 
+bool yaml_map_populate_ipc_operation(void *data, int mapping) {
+
+	struct IpcOperation *ipc_operation = data;
+
+	yaml_map_add_bool("DONE", ipc_operation->done, mapping);
+
+	if (ipc_operation->send_state) {
+		if (cfg)
+			yaml_map_add_map("CFG", cfg, yaml_map_populate_cfg, mapping);
+		if (lid || heads) {
+
+			yaml_map_add_map("STATE", ipc_operation, yaml_map_populate_state, mapping);
+		}
+	}
+
+	yaml_map_populate_messages(ipc_operation, mapping);
+
+	yaml_map_add_int("RC", ipc_operation->rc, mapping);
+
+	return true;
+}
+
 bool yaml_map_populate_mode(const void *data, int mapping) {
 	if (!data)
 		return false;
@@ -82,7 +104,7 @@ bool yaml_map_populate_head_overrides(const void *data, int mapping) {
 	return (head->overrided_enabled != NoOverride) && yaml_map_add_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
 }
 
-bool yaml_map_populate_lid(const void *data, int mapping) {
+bool yaml_map_populate_lid(const void *unused, int mapping) {
 	yaml_map_add_bool("CLOSED",      lid->closed,      mapping);
 	yaml_map_add_str ("DEVICE_PATH", lid->device_path, mapping);
 
@@ -204,8 +226,6 @@ bool yaml_seq_append_head(const void *data, int sequence) {
 	if (!map)
 		return false;
 
-	// TODO tidy spacing
-
 	if (head->name)          yaml_map_add_str("NAME",          head->name,          map);
 	if (head->description)   yaml_map_add_str("DESCRIPTION",   head->description,   map);
 	if (head->make)          yaml_map_add_str("MAKE",          head->make,          map);
@@ -221,3 +241,56 @@ bool yaml_seq_append_head(const void *data, int sequence) {
 
 	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
+
+bool yaml_map_populate_state(const void *unused, int mapping) {
+	yaml_map_add_map("LID", NULL, yaml_map_populate_lid, mapping);
+	yaml_map_add_seq("HEADS", heads, yaml_seq_append_head, mapping);
+
+	return true;
+}
+
+bool yaml_seq_append_log_cap_line(const void *data, int sequence) {
+	const struct LogCapLine *line = data;
+
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return false;
+
+	if (!yaml_map_add_str(log_threshold_name(line->threshold), line->line, map))
+		return false;
+
+	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+}
+
+bool yaml_map_populate_messages(void *data, int mapping) {
+	struct IpcOperation *ipc_operation = data;
+
+	bool lines_added = false;
+
+	int seq_lines = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	if (!seq_lines)
+		return false;
+
+	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
+		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+
+		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
+			continue;
+
+		lines_added = yaml_seq_append_log_cap_line(cap_line, seq_lines) || lines_added;
+
+		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
+			ipc_operation->rc = IPC_RC_WARN;
+		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
+			ipc_operation->rc = IPC_RC_ERROR;
+	}
+
+	if (lines_added) {
+		int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
+		if (key)
+			yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, seq_lines);
+	}
+
+	return true;
+}
+
