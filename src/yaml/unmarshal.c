@@ -4,9 +4,9 @@
 #include <string.h>
 #include <yaml.h>
 
-#include "yaml-unmarshal-context.h"
-#include "yaml-unmarshal-primitives.h"
-#include "yaml-unmarshal-types.h"
+#include "yaml/unmarshal-context.h"
+#include "yaml/unmarshal-primitives.h"
+#include "yaml/unmarshal-types.h"
 
 #include "cfg.h"
 #include "convert.h"

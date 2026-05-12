@@ -1,17 +1,15 @@
 #include <math.h>
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wayland-util.h>
 #include <yaml.h>
 
-#include "yaml-unmarshal-context.h"
-#include "yaml-unmarshal-primitives.h"
-#include "yaml-unmarshal-types.h"
+#include "yaml/unmarshal-types.h"
 
 #include "cfg.h"
-#include "convert.h"
 #include "conditions.h"
+#include "convert.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"
@@ -19,6 +17,8 @@
 #include "slist.h"
 #include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
+#include "yaml/unmarshal-context.h"
+#include "yaml/unmarshal-primitives.h"
 
 void *map_to_condition(const yaml_node_t *map) {
 	const struct STable *table = yaml_map_to_node_table(map);

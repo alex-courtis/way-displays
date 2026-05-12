@@ -5,12 +5,13 @@
 #include <string.h>
 #include <yaml.h>
 
-#include "yaml-unmarshal-context.h"
-#include "yaml-unmarshal-primitives.h"
+#include "yaml/unmarshal-primitives.h"
 
 #include "cfg.h"
 #include "convert.h"
+#include "slist.h"
 #include "stable.h"
+#include "yaml/unmarshal-context.h"
 
 // TODO move to yaml directory
 

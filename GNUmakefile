@@ -1,8 +1,8 @@
 include config.mk
 
-INC_H = $(wildcard inc/*.h) $(wildcard lib/col/inc/*.h)
+INC_H = $(wildcard inc/*.h) $(wildcard inc/*/*.h) $(wildcard lib/col/inc/*.h)
 
-SRC_C = $(wildcard src/*.c) $(wildcard lib/col/src/*.c)
+SRC_C = $(wildcard src/*.c) $(wildcard src/*/*.c) $(wildcard lib/col/src/*.c)
 SRC_CXX = $(wildcard src/*.cpp)
 SRC_O = $(SRC_C:.c=.o) $(SRC_CXX:.cpp=.o)
 
@@ -40,6 +40,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
+	@echo $(INC_H)
 	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
 
 install: way-displays doc/way-displays.1 examples/cfg.yaml
