@@ -6,6 +6,7 @@
 /*
  * Functions to add to an existing yaml_document_t from structs
  * Returns false on failure to add to the document
+ * Returns true and does nothing when NULL data
  */
 
 // yaml_map_populate_fn: add pairs to an existing mapping node
@@ -14,9 +15,9 @@ bool yaml_map_populate_ipc_operation(void *ipc_operation, int mapping);     // I
 bool yaml_map_populate_mode(const void *mode, int mapping);                 // Mode
 bool yaml_map_populate_head_state(const void *head_state, int mapping);     // HeadState
 bool yaml_map_populate_head_overrides(const void *head, int mapping);       // Head
-bool yaml_map_populate_messages(void *ipc_operation, int mapping);          // IpcOperation.log_cap_lines, mutates IpcOperation.rc
+bool yaml_map_populate_lid(const void *unused, int mapping);                // Lid
+bool yaml_map_populate_messages(void *ipc_operation, int mapping);          // IpcOperation, mutates IpcOperation.rc
 bool yaml_map_populate_state(const void *unused, int mapping);              // global: heads and lid
-bool yaml_map_populate_lid(const void *unused, int mapping);                // global: lid
 
 // yaml_seq_append_fn: create and append a new item node to an existing sequence node
 bool yaml_seq_append_user_scale(const void *user_scale, int sequence);          // UserScale

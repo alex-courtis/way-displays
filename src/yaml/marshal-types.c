@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <wayland-util.h>
@@ -17,98 +18,127 @@
 #include "yaml/marshal-primitives.h"
 
 bool yaml_map_populate_cfg(const void *data, int mapping) {
+	if (!mapping)
+		return false;
+
 	if (!data)
 		return false;
 
 	const struct Cfg *cfg = data;
 
-	yaml_map_add_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,                   mapping);
-	yaml_map_add_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,                     mapping);
-	yaml_map_add_seq  (cfg_element_name(ORDER),                 cfg->order_name_desc,             yaml_seq_append_str,            mapping);
-	yaml_map_add_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,                    mapping);
-	yaml_map_add_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,                    mapping);
-	yaml_map_add_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                              mapping);
-	yaml_map_add_float(cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                              mapping);
-	yaml_map_add_seq  (cfg_element_name(SCALE),                 cfg->user_scales,                 yaml_seq_append_user_scale,     mapping);
-	yaml_map_add_seq  (cfg_element_name(MODE),                  cfg->user_modes,                  yaml_seq_append_user_mode,      mapping);
-	yaml_map_add_seq  (cfg_element_name(TRANSFORM),             cfg->user_transforms,             yaml_seq_append_user_transform, mapping);
-	yaml_map_add_seq  (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, yaml_seq_append_str,            mapping);
-	yaml_map_add_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                mapping);
-	yaml_map_add_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                       mapping);
-	yaml_map_add_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name,             mapping);
-	yaml_map_add_seq  (cfg_element_name(DISABLED),              cfg->disabled,                    yaml_seq_append_disabled,       mapping);
-
-	return true;
+	return
+		yaml_map_add_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,                   mapping) &&
+		yaml_map_add_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,                     mapping) &&
+		yaml_map_add_seq  (cfg_element_name(ORDER),                 cfg->order_name_desc,             yaml_seq_append_str,            mapping) &&
+		yaml_map_add_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,                    mapping) &&
+		yaml_map_add_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,                    mapping) &&
+		yaml_map_add_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                              mapping) &&
+		yaml_map_add_float(cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                              mapping) &&
+		yaml_map_add_seq  (cfg_element_name(SCALE),                 cfg->user_scales,                 yaml_seq_append_user_scale,     mapping) &&
+		yaml_map_add_seq  (cfg_element_name(MODE),                  cfg->user_modes,                  yaml_seq_append_user_mode,      mapping) &&
+		yaml_map_add_seq  (cfg_element_name(TRANSFORM),             cfg->user_transforms,             yaml_seq_append_user_transform, mapping) &&
+		yaml_map_add_seq  (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, yaml_seq_append_str,            mapping) &&
+		yaml_map_add_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                mapping) &&
+		yaml_map_add_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                       mapping) &&
+		yaml_map_add_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name,             mapping) &&
+		yaml_map_add_seq  (cfg_element_name(DISABLED),              cfg->disabled,                    yaml_seq_append_disabled,       mapping);
 }
 
 bool yaml_map_populate_ipc_operation(void *data, int mapping) {
-	if (!data || !mapping)
+	if (!mapping)
 		return false;
+
+	if (!data)
+		return true;
 
 	struct IpcOperation *ipc_operation = data;
 
-	yaml_map_add_bool("DONE", ipc_operation->done, mapping);
+	if (!yaml_map_add_bool("DONE", ipc_operation->done, mapping))
+		return false;
 
 	if (ipc_operation->send_state) {
-		if (cfg)
-			yaml_map_add_map("CFG", cfg, yaml_map_populate_cfg, mapping);
-		if (lid || heads) {
-
-			yaml_map_add_map("STATE", ipc_operation, yaml_map_populate_state, mapping);
-		}
+		if (!yaml_map_add_map("CFG", cfg, yaml_map_populate_cfg, mapping))
+			return false;
+		if (!yaml_map_add_map("STATE", NULL, yaml_map_populate_state, mapping))
+			return false;
 	}
 
-	yaml_map_populate_messages(ipc_operation, mapping);
-
-	yaml_map_add_int("RC", ipc_operation->rc, mapping);
-
-	return true;
+	return
+		yaml_map_populate_messages(ipc_operation, mapping) &&
+		yaml_map_add_int("RC", ipc_operation->rc, mapping);
 }
 
 bool yaml_map_populate_mode(const void *data, int mapping) {
-	if (!data || !mapping)
+	if (!mapping)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct Mode *mode = data;
 
-	yaml_map_add_int ("WIDTH",       mode->width,       mapping);
-	yaml_map_add_int ("HEIGHT",      mode->height,      mapping);
-	yaml_map_add_int ("REFRESH_MHZ", mode->refresh_mhz, mapping);
-	yaml_map_add_bool("PREFERRED",   mode->preferred,   mapping);
-
-	return true;
+	return
+		yaml_map_add_int ("WIDTH",       mode->width,       mapping) &&
+		yaml_map_add_int ("HEIGHT",      mode->height,      mapping) &&
+		yaml_map_add_int ("REFRESH_MHZ", mode->refresh_mhz, mapping) &&
+		yaml_map_add_bool("PREFERRED",   mode->preferred,   mapping);
 }
 
 bool yaml_map_populate_head_state(const void *data, int mapping) {
-	if (!data || !mapping)
+	if (!mapping)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct HeadState *head_state = data;
 
-	yaml_map_add_float("SCALE",     wl_fixed_to_double(head_state->scale),                                          mapping);
-	yaml_map_add_bool ("ENABLED",   head_state->enabled,                                                            mapping);
-	yaml_map_add_int  ("X",         head_state->x,                                                                  mapping);
-	yaml_map_add_int  ("Y",         head_state->y,                                                                  mapping);
-	yaml_map_add_bool ("VRR",       (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
-	yaml_map_add_enum ("TRANSFORM", head_state->transform,                                          transform_name, mapping);
-
-	yaml_map_add_map("MODE", head_state->mode, yaml_map_populate_mode, mapping);
-
-	return true;
+	return
+		yaml_map_add_float("SCALE",     wl_fixed_to_double(head_state->scale),                                          mapping) &&
+		yaml_map_add_bool ("ENABLED",   head_state->enabled,                                                            mapping) &&
+		yaml_map_add_int  ("X",         head_state->x,                                                                  mapping) &&
+		yaml_map_add_int  ("Y",         head_state->y,                                                                  mapping) &&
+		yaml_map_add_bool ("VRR",       (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping) &&
+		yaml_map_add_enum ("TRANSFORM", head_state->transform,                                          transform_name, mapping) &&
+		yaml_map_add_map  ("MODE",      head_state->mode,                                       yaml_map_populate_mode, mapping);
 }
 
 bool yaml_map_populate_head_overrides(const void *data, int mapping) {
-	if (!data || !mapping)
+	if (!mapping)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct Head *head = data;
 
-	return (head->overrided_enabled != NoOverride) && yaml_map_add_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
+	if (head->overrided_enabled != NoOverride)
+		return yaml_map_add_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
+	else
+		return true;
 }
 
-bool yaml_map_populate_messages(void *data, int mapping) {
-	if (!data || !mapping)
+bool yaml_map_populate_lid(const void *data, int mapping) {
+	if (!mapping)
 		return false;
+
+	if (!data)
+		return true;
+
+	const struct Lid *lid = data;
+
+	return
+		yaml_map_add_bool("CLOSED",      lid->closed,      mapping) &&
+		yaml_map_add_str ("DEVICE_PATH", lid->device_path, mapping);
+}
+
+// TODO test no messages - should not add sequence
+bool yaml_map_populate_messages(void *data, int mapping) {
+	if (!mapping)
+		return false;
+
+	if (!data)
+		return true;
 
 	struct IpcOperation *ipc_operation = data;
 
@@ -124,8 +154,12 @@ bool yaml_map_populate_messages(void *data, int mapping) {
 		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
 			continue;
 
-		lines_added = yaml_seq_append_log_cap_line(cap_line, seq_lines) || lines_added;
+		if (!yaml_seq_append_log_cap_line(cap_line, seq_lines))
+			return false;
 
+		lines_added = true;
+
+		// mutate rc here as this is the only place we are processing lines
 		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
 			ipc_operation->rc = IPC_RC_WARN;
 		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
@@ -134,36 +168,27 @@ bool yaml_map_populate_messages(void *data, int mapping) {
 
 	if (lines_added) {
 		int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
-		if (key)
-			yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, seq_lines);
+		return key && yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, seq_lines);
+	} else {
+		return true;
 	}
-
-	return true;
 }
 
 bool yaml_map_populate_state(const void *unused, int mapping) {
 	if (!mapping)
 		return false;
 
-	yaml_map_add_map("LID",   NULL,  yaml_map_populate_lid, mapping);
-	yaml_map_add_seq("HEADS", heads, yaml_seq_append_head,  mapping);
-
-	return true;
-}
-
-bool yaml_map_populate_lid(const void *unused, int mapping) {
-	if (!lid || !mapping)
-		return false;
-
-	yaml_map_add_bool("CLOSED",      lid->closed,      mapping);
-	yaml_map_add_str ("DEVICE_PATH", lid->device_path, mapping);
-
-	return true;
+	return
+		yaml_map_add_map("LID",   lid,   yaml_map_populate_lid, mapping) &&
+		yaml_map_add_seq("HEADS", heads, yaml_seq_append_head,  mapping);
 }
 
 bool yaml_seq_append_user_scale(const void *data, int sequence) {
-	if (!data || !sequence)
+	if (!sequence)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct UserScale *user_scale = data;
 
@@ -176,8 +201,11 @@ bool yaml_seq_append_user_scale(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_user_mode(const void *data, int sequence) {
-	if (!data || !sequence)
+	if (!sequence)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct UserMode *user_mode = data;
 
@@ -204,8 +232,11 @@ bool yaml_seq_append_user_mode(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_user_transform(const void *data, int sequence) {
-	if (!data || !sequence)
+	if (!sequence)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct UserTransform *user_transform = data;
 
@@ -218,30 +249,31 @@ bool yaml_seq_append_user_transform(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_condition(const void *data, int sequence) {
-	if (!data || !sequence)
+	if (!sequence)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct Condition *condition = data;
 
 	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
-	if (condition->plugged)
-		yaml_map_add_seq("PLUGGED", condition->plugged, yaml_seq_append_str, map);
-
-	if (condition->unplugged)
-		yaml_map_add_seq("UNPLUGGED", condition->unplugged, yaml_seq_append_str, map);
-
-	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+	return
+		map &&
+		yaml_map_add_seq("PLUGGED", condition->plugged, yaml_seq_append_str, map) &&
+		yaml_map_add_seq("UNPLUGGED", condition->unplugged, yaml_seq_append_str, map) &&
+		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 bool yaml_seq_append_disabled(const void *data, int sequence) {
-	if (!data || !sequence)
+	if (!sequence)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct Disabled *disabled = data;
-
-	if (!disabled->name_desc)
-		return false;
 
 	if (disabled->conditions) {
 		int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
@@ -256,8 +288,11 @@ bool yaml_seq_append_disabled(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_mode(const void *data, int sequence) {
-	if (!data)
+	if (!sequence)
 		return false;
+
+	if (!data)
+		return true;
 
 	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
@@ -267,44 +302,45 @@ bool yaml_seq_append_mode(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_head(const void *data, int sequence) {
-	if (!data || !sequence)
+	if (!sequence)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct Head *head = data;
 
 	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
-	if (!map)
-		return false;
 
-	if (head->name)          yaml_map_add_str("NAME",          head->name,          map);
-	if (head->description)   yaml_map_add_str("DESCRIPTION",   head->description,   map);
-	if (head->make)          yaml_map_add_str("MAKE",          head->make,          map);
-	if (head->model)         yaml_map_add_str("MODEL",         head->model,         map);
-	if (head->serial_number) yaml_map_add_str("SERIAL_NUMBER", head->serial_number, map);
-
-	yaml_map_add_int("WIDTH_MM",  head->width_mm,                                    map);
-	yaml_map_add_int("HEIGHT_MM", head->height_mm,                                   map);
-	yaml_map_add_map("CURRENT",   &head->current,  yaml_map_populate_head_state,     map);
-	yaml_map_add_map("DESIRED",   &head->desired,  yaml_map_populate_head_state,     map);
-	yaml_map_add_map("OVERRIDES", head,            yaml_map_populate_head_overrides, map);
-	yaml_map_add_seq("MODES",     head->modes,     yaml_seq_append_mode,             map);
-
-	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+	return
+		map &&
+		yaml_map_add_str("NAME",          head->name,                                        map) &&
+		yaml_map_add_str("DESCRIPTION",   head->description,                                 map) &&
+		yaml_map_add_str("MAKE",          head->make,                                        map) &&
+		yaml_map_add_str("MODEL",         head->model,                                       map) &&
+		yaml_map_add_str("SERIAL_NUMBER", head->serial_number,                               map) &&
+		yaml_map_add_int("WIDTH_MM",      head->width_mm,                                    map) &&
+		yaml_map_add_int("HEIGHT_MM",     head->height_mm,                                   map) &&
+		yaml_map_add_map("CURRENT",       &head->current,  yaml_map_populate_head_state,     map) &&
+		yaml_map_add_map("DESIRED",       &head->desired,  yaml_map_populate_head_state,     map) &&
+		yaml_map_add_map("OVERRIDES",     head,            yaml_map_populate_head_overrides, map) &&
+		yaml_map_add_seq("MODES",         head->modes,     yaml_seq_append_mode,             map) &&
+		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 bool yaml_seq_append_log_cap_line(const void *data, int sequence) {
-	if (!data || !sequence)
+	if (!sequence)
 		return false;
+
+	if (!data)
+		return true;
 
 	const struct LogCapLine *line = data;
 
 	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
-	if (!map)
-		return false;
 
-	if (!yaml_map_add_str(log_threshold_name(line->threshold), line->line, map))
-		return false;
-
-	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+	return map &&
+		yaml_map_add_str(log_threshold_name(line->threshold), line->line, map) &&
+		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 

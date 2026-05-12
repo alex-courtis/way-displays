@@ -13,11 +13,11 @@
  */
 
 // yaml_map_populate_fn: add a scalar pair to an existing maping node
-bool yaml_map_add_str(const char *key, const char *str, int mapping);
+bool yaml_map_add_str(const char *key, const char *str, int mapping); // returns true and does nothing on NULL 
 bool yaml_map_add_int(const char *key, const int32_t val, int mapping);
-bool yaml_map_add_float(const char *key, const float val, int mapping);
+bool yaml_map_add_float(const char *key, const float val, int mapping); // returns true and does nothing on 0
 bool yaml_map_add_bool(const char *key, const bool val, int mapping);
-bool yaml_map_add_enum(const char *key, const int val, enum_name_fn fn_name, int mapping);
+bool yaml_map_add_enum(const char *key, const int val, enum_name_fn fn_name, int mapping); // returns true on 0 enum
 
 // yaml_seq_append_fn: append a scalar item to an existing sequence node
 bool yaml_seq_append_str(const void *str, int sequence);

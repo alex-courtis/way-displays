@@ -538,6 +538,29 @@ static void cfg_to_yaml__default(void **state) {
 	assert_logs_empty();
 }
 
+static void cfg_to_yaml__empty(void **state) {
+	struct Cfg *cfg = cfg_init();
+
+	char *actual = C_T_Y(cfg);
+
+	assert_non_nul(actual);
+
+	char *expected = read_file("tst/marshalling/empty.yaml");
+
+	if (strcmp(actual, expected) != 0) {
+		write_file("actual.yaml", actual);
+		write_file("expected.yaml", expected);
+	}
+
+	assert_str_equal(actual, expected);
+
+	cfg_free(cfg);
+	free(actual);
+	free(expected);
+
+	assert_logs_empty();
+}
+
 static void cfg_to_yaml__yaml_document_initialize_fail(void **state) {
 	if (!V2)
 		return;
@@ -1169,6 +1192,7 @@ int main(void) {
 
 		TEST(cfg_to_yaml__ok),
 		TEST(cfg_to_yaml__default),
+		TEST(cfg_to_yaml__empty),
 
 		TEST(cfg_to_yaml__yaml_document_initialize_fail),
 		TEST(cfg_to_yaml__yaml_document_add_mapping_fail),
