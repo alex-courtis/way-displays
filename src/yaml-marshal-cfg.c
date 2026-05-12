@@ -77,10 +77,10 @@ static bool seq_condition(const void *data, int sequence) {
 	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (condition->plugged)
-		yaml_map_add_seq("PLUGGED", condition->plugged, yaml_seq_add_str, map);
+		yaml_map_add_seq("PLUGGED", condition->plugged, yaml_seq_append_str, map);
 
 	if (condition->unplugged)
-		yaml_map_add_seq("UNPLUGGED", condition->unplugged, yaml_seq_add_str, map);
+		yaml_map_add_seq("UNPLUGGED", condition->unplugged, yaml_seq_append_str, map);
 
 	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
@@ -102,7 +102,7 @@ static bool seq_disabled(const void *data, int sequence) {
 			yaml_map_add_seq("IF", disabled->conditions, seq_condition, map) &&
 			yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 	} else {
-		return yaml_seq_add_str(disabled->name_desc, sequence);
+		return yaml_seq_append_str(disabled->name_desc, sequence);
 	}
 }
 
@@ -115,7 +115,7 @@ bool map_cfg(const void *data, int mapping) {
 	// TODO tidy spacing
 	yaml_map_add_enum (cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,       mapping);
 	yaml_map_add_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,         mapping);
-	yaml_map_add_seq (cfg_element_name(ORDER),                 cfg->order_name_desc,             yaml_seq_add_str,            mapping);
+	yaml_map_add_seq (cfg_element_name(ORDER),                 cfg->order_name_desc,             yaml_seq_append_str,            mapping);
 	yaml_map_add_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,        mapping);
 	yaml_map_add_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,        mapping);
 	yaml_map_add_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                  mapping);
@@ -123,7 +123,7 @@ bool map_cfg(const void *data, int mapping) {
 	yaml_map_add_seq (cfg_element_name(SCALE),                 cfg->user_scales,                 seq_user_scale,     mapping);
 	yaml_map_add_seq (cfg_element_name(MODE),                  cfg->user_modes,                  seq_user_mode,      mapping);
 	yaml_map_add_seq (cfg_element_name(TRANSFORM),             cfg->user_transforms,             seq_user_transform, mapping);
-	yaml_map_add_seq (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, yaml_seq_add_str,            mapping);
+	yaml_map_add_seq (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, yaml_seq_append_str,            mapping);
 	yaml_map_add_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                    mapping);
 	yaml_map_add_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                           mapping);
 	yaml_map_add_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name, mapping);

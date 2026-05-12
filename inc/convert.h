@@ -8,6 +8,9 @@
 #include "ipc.h"
 #include "log.h"
 
+typedef unsigned int (*enum_val_fn)(const char *name);
+typedef const char* (*enum_name_fn)(unsigned int val);
+
 enum CfgElement cfg_element_val(const char *name);
 const char *cfg_element_name(enum CfgElement cfg_element);
 

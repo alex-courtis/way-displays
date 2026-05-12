@@ -47,7 +47,7 @@ bool yaml_map_add_bool(const char *k, const bool v, int mapping) {
 	return yaml_map_add_str(k, (v ? "TRUE" : "FALSE"), mapping);
 }
 
-bool yaml_map_add_enum(const char *k, const int v, yaml_enum_name_fn fn_name, int mapping) {
+bool yaml_map_add_enum(const char *k, const int v, enum_name_fn fn_name, int mapping) {
 	if (!k || !fn_name || !mapping)
 		return false;
 
@@ -62,7 +62,7 @@ bool yaml_map_add_enum(const char *k, const int v, yaml_enum_name_fn fn_name, in
 	return yaml_map_add_str(k, v_str, mapping);
 }
 
-bool yaml_seq_add_str(const void *data, int sequence) {
+bool yaml_seq_append_str(const void *data, int sequence) {
 	if (!data || !sequence)
 		return false;
 
@@ -71,7 +71,7 @@ bool yaml_seq_add_str(const void *data, int sequence) {
 	return scalar && yaml_document_append_sequence_item(marshal_ctx.doc, sequence, scalar);
 }
 
-bool yaml_map_add_map(const char *k, const void *data, yaml_type_to_map_fn fn, int mapping) {
+bool yaml_map_add_map(const char *k, const void *data, yaml_map_add_fn fn, int mapping) {
 	if (!k || !fn || !mapping)
 		return false;
 
@@ -86,7 +86,7 @@ bool yaml_map_add_map(const char *k, const void *data, yaml_type_to_map_fn fn, i
 	return yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, map);
 }
 
-bool yaml_map_add_seq(const char *k, const struct SList *list, yaml_list_to_seq_fn fn, int mapping) {
+bool yaml_map_add_seq(const char *k, const struct SList *list, yaml_seq_append_fn fn, int mapping) {
 	if (!k || !list || !fn || !mapping)
 		return false;
 

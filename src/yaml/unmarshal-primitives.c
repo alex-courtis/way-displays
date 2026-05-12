@@ -90,11 +90,11 @@ bool yaml_scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) 
 	return ok;
 }
 
-int yaml_scalar_to_enum(const yaml_node_t *scalar, yaml_scalar_to_enum_fn_val fn_val) {
+int yaml_scalar_to_enum(const yaml_node_t *scalar, enum_val_fn val_fn) {
 	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
 		return 0;
 
-	int val = fn_val((char*)scalar->data.scalar.value);
+	int val = val_fn((char*)scalar->data.scalar.value);
 	if (val)
 		return val;
 
@@ -102,10 +102,10 @@ int yaml_scalar_to_enum(const yaml_node_t *scalar, yaml_scalar_to_enum_fn_val fn
 	return 0;
 }
 
-int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, yaml_scalar_to_enum_fn_val fn_val, yaml_scalar_to_enum_fn_name fn_name) {
-	yaml_log_ctx_def(fn_name(def));
+int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn) {
+	yaml_log_ctx_def(name_fn(def));
 
-	int ret = yaml_scalar_to_enum(scalar, fn_val);
+	int ret = yaml_scalar_to_enum(scalar, val_fn);
 	if (!ret)
 		ret = def;
 
