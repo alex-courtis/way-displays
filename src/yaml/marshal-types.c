@@ -132,7 +132,6 @@ bool yaml_map_populate_lid(const void *data, int mapping) {
 		yaml_map_add_str ("DEVICE_PATH", lid->device_path, mapping);
 }
 
-// TODO test no messages - should not add sequence
 bool yaml_map_populate_messages(void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -142,11 +141,7 @@ bool yaml_map_populate_messages(void *data, int mapping) {
 
 	struct IpcOperation *ipc_operation = data;
 
-	bool lines_added = false;
-
-	int seq_lines = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-	if (!seq_lines)
-		return false;
+	int seq_lines = 0;
 
 	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
 		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
@@ -154,10 +149,11 @@ bool yaml_map_populate_messages(void *data, int mapping) {
 		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
 			continue;
 
-		if (!yaml_seq_append_log_cap_line(cap_line, seq_lines))
+		if (!seq_lines && !(seq_lines = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE)))
 			return false;
 
-		lines_added = true;
+		if (!yaml_seq_append_log_cap_line(cap_line, seq_lines))
+			return false;
 
 		// mutate rc here as this is the only place we are processing lines
 		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
@@ -166,7 +162,7 @@ bool yaml_map_populate_messages(void *data, int mapping) {
 			ipc_operation->rc = IPC_RC_ERROR;
 	}
 
-	if (lines_added) {
+	if (seq_lines) {
 		int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
 		return key && yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, seq_lines);
 	} else {
