@@ -15,10 +15,11 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml-marshal-cfg.h"
+#include "yaml/marshal-primitives.h"
 
 static bool map_lid(const void *data, int mapping) {
-	map_key_to_bool("CLOSED",      lid->closed,      mapping);
-	map_key_to_str ("DEVICE_PATH", lid->device_path, mapping);
+	yaml_map_add_bool("CLOSED",      lid->closed,      mapping);
+	yaml_map_add_str ("DEVICE_PATH", lid->device_path, mapping);
 
 	return true;
 }
@@ -29,10 +30,10 @@ static bool map_mode(const void *data, int mapping) {
 
 	const struct Mode *mode = data;
 
-	map_key_to_int("WIDTH",       mode->width,       mapping);
-	map_key_to_int("HEIGHT",      mode->height,      mapping);
-	map_key_to_int("REFRESH_MHZ", mode->refresh_mhz, mapping);
-	map_key_to_bool("PREFERRED",  mode->preferred,   mapping);
+	yaml_map_add_int("WIDTH",       mode->width,       mapping);
+	yaml_map_add_int("HEIGHT",      mode->height,      mapping);
+	yaml_map_add_int("REFRESH_MHZ", mode->refresh_mhz, mapping);
+	yaml_map_add_bool("PREFERRED",  mode->preferred,   mapping);
 
 	return true;
 }
@@ -43,14 +44,14 @@ static bool map_head_state(const void *data, int mapping) {
 
 	const struct HeadState *head_state = data;
 
-	map_key_to_float("SCALE",    wl_fixed_to_double(head_state->scale),                                          mapping);
-	map_key_to_bool ("ENABLED",  head_state->enabled,                                                            mapping);
-	map_key_to_int  ("X",        head_state->x,                                                                  mapping);
-	map_key_to_int  ("Y",        head_state->y,                                                                  mapping);
-	map_key_to_bool ("VRR",      (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
-	map_key_to_enum("TRANSFORM", head_state->transform,                                          transform_name, mapping);
+	yaml_map_add_float("SCALE",    wl_fixed_to_double(head_state->scale),                                          mapping);
+	yaml_map_add_bool ("ENABLED",  head_state->enabled,                                                            mapping);
+	yaml_map_add_int  ("X",        head_state->x,                                                                  mapping);
+	yaml_map_add_int  ("Y",        head_state->y,                                                                  mapping);
+	yaml_map_add_bool ("VRR",      (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
+	yaml_map_add_enum("TRANSFORM", head_state->transform,                                          transform_name, mapping);
 
-	map_key_to_map("MODE", head_state->mode, map_mode, mapping);
+	yaml_map_add_map("MODE", head_state->mode, map_mode, mapping);
 
 	return true;
 }
@@ -61,7 +62,7 @@ static bool map_head_overrides(const void *data, int mapping) {
 
 	const struct Head *head = data;
 
-	return (head->overrided_enabled != NoOverride) && map_key_to_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
+	return (head->overrided_enabled != NoOverride) && yaml_map_add_bool("DISABLED", head->overrided_enabled == OverrideTrue, mapping);
 }
 
 static bool seq_mode(const void *data, int sequence) {
@@ -85,25 +86,25 @@ static bool seq_head(const void *data, int sequence) {
 	if (!map)
 		return false;
 
-	if (head->name)          map_key_to_str("NAME",          head->name,          map);
-	if (head->description)   map_key_to_str("DESCRIPTION",   head->description,   map);
-	if (head->make)          map_key_to_str("MAKE",          head->make,          map);
-	if (head->model)         map_key_to_str("MODEL",         head->model,         map);
-	if (head->serial_number) map_key_to_str("SERIAL_NUMBER", head->serial_number, map);
-	map_key_to_int(                         "WIDTH_MM",      head->width_mm,      map);
-	map_key_to_int(                         "HEIGHT_MM",     head->height_mm,     map);
+	if (head->name)          yaml_map_add_str("NAME",          head->name,          map);
+	if (head->description)   yaml_map_add_str("DESCRIPTION",   head->description,   map);
+	if (head->make)          yaml_map_add_str("MAKE",          head->make,          map);
+	if (head->model)         yaml_map_add_str("MODEL",         head->model,         map);
+	if (head->serial_number) yaml_map_add_str("SERIAL_NUMBER", head->serial_number, map);
+	yaml_map_add_int(                         "WIDTH_MM",      head->width_mm,      map);
+	yaml_map_add_int(                         "HEIGHT_MM",     head->height_mm,     map);
 
-	map_key_to_map ("CURRENT",   &head->current, map_head_state,     map);
-	map_key_to_map ("DESIRED",   &head->desired, map_head_state,     map);
-	map_key_to_map ("OVERRIDES", head,           map_head_overrides, map);
-	map_key_to_list("MODES",     head->modes,    seq_mode,           map);
+	yaml_map_add_map ("CURRENT",   &head->current, map_head_state,     map);
+	yaml_map_add_map ("DESIRED",   &head->desired, map_head_state,     map);
+	yaml_map_add_map ("OVERRIDES", head,           map_head_overrides, map);
+	yaml_map_add_seq("MODES",     head->modes,    seq_mode,           map);
 
 	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
 }
 
 static bool map_state(const void *data, int mapping) {
-	map_key_to_map("LID", NULL, map_lid, mapping);
-	map_key_to_list("HEADS", heads, seq_head, mapping);
+	yaml_map_add_map("LID", NULL, map_lid, mapping);
+	yaml_map_add_seq("HEADS", heads, seq_head, mapping);
 
 	return true;
 }
@@ -113,7 +114,7 @@ static bool seq_log_cap_line(struct LogCapLine *line, int sequence) {
 	if (!map)
 		return false;
 
-	if (!map_key_to_str(log_threshold_name(line->threshold), line->line, map))
+	if (!yaml_map_add_str(log_threshold_name(line->threshold), line->line, map))
 		return false;
 
 	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
@@ -150,18 +151,18 @@ static bool map_messages(struct IpcOperation *ipc_operation, int mapping) {
 }
 
 static bool map_ipc_response(struct IpcOperation *ipc_operation, int mapping) {
-	map_key_to_bool("DONE", ipc_operation->done, mapping);
+	yaml_map_add_bool("DONE", ipc_operation->done, mapping);
 
 	if (ipc_operation->send_state) {
 		if (cfg)
-			map_key_to_map("CFG", cfg, map_cfg, mapping);
+			yaml_map_add_map("CFG", cfg, map_cfg, mapping);
 		if (lid || heads)
-			map_key_to_map("STATE", ipc_operation, map_state, mapping);
+			yaml_map_add_map("STATE", ipc_operation, map_state, mapping);
 	}
 
 	map_messages(ipc_operation, mapping);
 
-	map_key_to_int("RC", ipc_operation->rc, mapping);
+	yaml_map_add_int("RC", ipc_operation->rc, mapping);
 
 	return true;
 }

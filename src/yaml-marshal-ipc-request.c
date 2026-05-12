@@ -8,6 +8,7 @@
 #include "ipc.h"
 #include "log.h"
 #include "yaml-marshal-cfg.h"
+#include "yaml/marshal-primitives.h"
 
 static bool marshal_ipc_request_fn(const void *data) {
 	if (!data)
@@ -27,12 +28,12 @@ static bool marshal_ipc_request_fn(const void *data) {
 		return false;
 	}
 
-	map_key_to_str("OP", ipc_command_name(ipc_request->command), root);
+	yaml_map_add_str("OP", ipc_command_name(ipc_request->command), root);
 
 	if (ipc_request->log_threshold)
-		map_key_to_str("LOG_THRESHOLD", log_threshold_name(ipc_request->log_threshold), root);
+		yaml_map_add_str("LOG_THRESHOLD", log_threshold_name(ipc_request->log_threshold), root);
 
-	map_key_to_map("CFG", ipc_request->cfg, map_cfg, root);
+	yaml_map_add_map("CFG", ipc_request->cfg, map_cfg, root);
 
 	return true;
 }

@@ -90,7 +90,7 @@ bool yaml_scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) 
 	return ok;
 }
 
-int yaml_scalar_to_enum(const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val) {
+int yaml_scalar_to_enum(const yaml_node_t *scalar, yaml_scalar_to_enum_fn_val fn_val) {
 	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
 		return 0;
 
@@ -102,7 +102,7 @@ int yaml_scalar_to_enum(const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val)
 	return 0;
 }
 
-int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, scalar_to_enum_fn_val fn_val, scalar_to_enum_fn_name fn_name) {
+int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, yaml_scalar_to_enum_fn_val fn_val, yaml_scalar_to_enum_fn_name fn_name) {
 	yaml_log_ctx_def(fn_name(def));
 
 	int ret = yaml_scalar_to_enum(scalar, fn_val);
@@ -125,7 +125,7 @@ bool yaml_scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 	return false;
 }
 
-struct SList *seq_to_type_list(const yaml_node_t *seq, node_to_type_fn fn) {
+struct SList *yaml_seq_to_type_list(const yaml_node_t *seq, yaml_node_to_type_fn fn) {
 	if (!yaml_check_node_type(seq, YAML_SEQUENCE_NODE))
 		return NULL;
 

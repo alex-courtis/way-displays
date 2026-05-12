@@ -8,7 +8,7 @@
 #include "head.h"
 
 /*
- * general node_to_type_fn
+ * yaml_node_to_type_fn: NULL on failure
  */
 
 // Condition
@@ -36,7 +36,7 @@ void *map_to_mode(const yaml_node_t *map);
 void *map_to_head(const yaml_node_t *map);
 
 /*
- * concrete types
+ * Concrete types: NULL or false on failure
  */
 
 // into existing Cfg

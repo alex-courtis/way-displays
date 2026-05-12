@@ -84,7 +84,7 @@ void *node_to_disabled(const yaml_node_t *node) {
 				yaml_log_ctx_key("IF");
 				scalar = stable_get(table_map, "IF");
 				if (scalar)
-					disabled->conditions = seq_to_type_list(scalar, map_to_condition);
+					disabled->conditions = yaml_seq_to_type_list(scalar, map_to_condition);
 
 				break;
 			}
@@ -308,7 +308,7 @@ void *map_to_head(const yaml_node_t *map) {
 	map_to_head_state(&head->current, stable_get(table,"CURRENT"));
 	map_to_head_state(&head->desired, stable_get(table,"DESIRED"));
 
-	head->modes = seq_to_type_list(stable_get(table, "MODES"), map_to_mode);
+	head->modes = yaml_seq_to_type_list(stable_get(table, "MODES"), map_to_mode);
 
 	const struct STable *table_overrides = yaml_map_to_node_table(stable_get(table, "OVERRIDES"));
 	if (table_overrides) {
@@ -359,13 +359,13 @@ bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 				cfg->auto_scale = yaml_scalar_to_enum_def(AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name);
 				break;
 			case SCALE:
-				cfg->user_scales = seq_to_type_list(value, map_to_user_scale);
+				cfg->user_scales = yaml_seq_to_type_list(value, map_to_user_scale);
 				break;
 			case MODE:
-				cfg->user_modes = seq_to_type_list(value, map_to_user_mode);
+				cfg->user_modes = yaml_seq_to_type_list(value, map_to_user_mode);
 				break;
 			case TRANSFORM:
-				cfg->user_transforms = seq_to_type_list(value, map_to_user_transform);
+				cfg->user_transforms = yaml_seq_to_type_list(value, map_to_user_transform);
 				break;
 			case VRR_OFF:
 				cfg->adaptive_sync_off_name_desc = yaml_seq_to_name_desc_list(value);
@@ -384,7 +384,7 @@ bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 				cfg->log_threshold = yaml_scalar_to_enum(value, log_threshold_val);
 				break;
 			case DISABLED:
-				cfg->disabled = seq_to_type_list(value, node_to_disabled);
+				cfg->disabled = yaml_seq_to_type_list(value, node_to_disabled);
 				break;
 			case AUTO_SCALE_MIN:
 				yaml_scalar_to_float_def(&cfg->auto_scale_min, AUTO_SCALE_MIN_DEFAULT, value);
