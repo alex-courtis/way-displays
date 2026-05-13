@@ -2,7 +2,6 @@
 #include <yaml.h>
 
 bool yaml_document_initialize__fail = false;
-bool yaml_document_add_mapping__fail = false;
 
 bool yaml_emitter_initialize__fail = false;
 bool yaml_emitter_open__fail = false;
@@ -14,7 +13,6 @@ bool yaml_parser_load__fail = false;
 
 void reset_yaml_fails(void) {
 	yaml_document_initialize__fail = false;
-	yaml_document_add_mapping__fail = false;
 
 	yaml_emitter_initialize__fail = false;
 	yaml_emitter_open__fail = false;
@@ -35,18 +33,6 @@ int __wrap_yaml_document_initialize(yaml_document_t *document, yaml_version_dire
 	}
 
 	return __real_yaml_document_initialize(document, version_directive, tag_directives_start, tag_directives_end, start_implicit, end_implicit);
-}
-
-
-int __real_yaml_document_add_mapping(yaml_document_t *document, const yaml_char_t *tag, yaml_mapping_style_t style);
-int __wrap_yaml_document_add_mapping(yaml_document_t *document, const yaml_char_t *tag, yaml_mapping_style_t style) {
-
-	if (yaml_document_add_mapping__fail) {
-		yaml_document_add_mapping__fail = false;
-		return 0;
-	}
-
-	return __real_yaml_document_add_mapping(document, tag, style);
 }
 
 

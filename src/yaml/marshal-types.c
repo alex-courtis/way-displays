@@ -17,6 +17,56 @@
 #include "yaml-marshal.h"
 #include "yaml/marshal-primitives.h"
 
+bool yaml_doc_cfg(const void *data) {
+	if (!data)
+		return true;
+
+	int mapping = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	return mapping && yaml_map_populate_cfg(data, mapping);
+}
+
+bool yaml_doc_ipc_operation(const void *data) {
+	if (!data)
+		return true;
+
+	// map_messages mutates operation->rc based on max line level
+	struct IpcOperation *ipc_operation = (struct IpcOperation*)data;
+
+	// root sequence when not GET
+	int seq = 0;
+	if (ipc_operation->request->command != GET) {
+		if (!(seq = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE)))
+			return false;
+	}
+
+	// root map for GET, otherwise append the map to seq
+	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map || !yaml_map_populate_ipc_operation(ipc_operation, map))
+		return false;
+
+	if (seq)
+		return yaml_document_append_sequence_item(marshal_ctx.doc, seq, map);
+	else
+		return true;
+}
+
+bool yaml_doc_ipc_request(const void *data) {
+	if (!data)
+		return true;
+
+	const struct IpcRequest *ipc_request = data;
+
+	if (!ipc_command_name(ipc_request->command)) {
+		log_error("unable to marshal ipc request: missing OP");
+		return false;
+	}
+
+	int root = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+
+	return root && yaml_map_populate_ipc_request(ipc_request, root);
+}
+
 bool yaml_map_populate_cfg(const void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -66,6 +116,25 @@ bool yaml_map_populate_ipc_operation(void *data, int mapping) {
 	return
 		yaml_map_populate_messages(ipc_operation, mapping) &&
 		yaml_map_add_int("RC", ipc_operation->rc, mapping);
+}
+
+bool yaml_map_populate_ipc_request(const void *data, int mapping) {
+	if (!mapping)
+		return false;
+
+	if (!data)
+		return true;
+
+	const struct IpcRequest *ipc_request = data;
+
+	yaml_map_add_str("OP", ipc_command_name(ipc_request->command), mapping);
+
+	if (ipc_request->log_threshold)
+		yaml_map_add_str("LOG_THRESHOLD", log_threshold_name(ipc_request->log_threshold), mapping);
+
+	yaml_map_add_map("CFG", ipc_request->cfg, yaml_map_populate_cfg, mapping);
+
+	return true;
 }
 
 bool yaml_map_populate_mode(const void *data, int mapping) {

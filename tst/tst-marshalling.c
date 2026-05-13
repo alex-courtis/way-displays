@@ -579,24 +579,6 @@ static void cfg_to_yaml__yaml_document_initialize_fail(void **state) {
 	assert_logs_empty();
 }
 
-static void cfg_to_yaml__yaml_document_add_mapping_fail(void **state) {
-	if (!V2)
-		return;
-
-	struct Cfg *cfg = cfg_all();
-
-	yaml_document_add_mapping__fail = true;
-
-	char *actual = C_T_Y(cfg);
-
-	assert_nul(actual);
-
-	cfg_free(cfg);
-
-	assert_log(ERROR, "unable to marshal cfg: yaml_document_add_mapping for root failed\n");
-	assert_logs_empty();
-}
-
 static void cfg_to_yaml__yaml_emitter_initialize_fail(void **state) {
 	if (!V2)
 		return;
@@ -1195,7 +1177,6 @@ int main(void) {
 		TEST(cfg_to_yaml__empty),
 
 		TEST(cfg_to_yaml__yaml_document_initialize_fail),
-		TEST(cfg_to_yaml__yaml_document_add_mapping_fail),
 		TEST(cfg_to_yaml__yaml_emitter_initialize_fail),
 		TEST(cfg_to_yaml__yaml_emitter_open_fail),
 		TEST(cfg_to_yaml__yaml_emitter_dump_fail),

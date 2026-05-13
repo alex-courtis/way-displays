@@ -9,9 +9,15 @@
  * Returns true and does nothing when NULL data
  */
 
+// yaml_doc_fn: create a document
+bool yaml_doc_cfg(const void *cfg);                     // Cfg
+bool yaml_doc_ipc_operation(const void *ipc_operation); // IpcOperation
+bool yaml_doc_ipc_request(const void *ipc_request);     // IpcRequest
+
 // yaml_map_populate_fn: add pairs to an existing mapping node
 bool yaml_map_populate_cfg(const void *cfg, int mapping);                   // Cfg
 bool yaml_map_populate_ipc_operation(void *ipc_operation, int mapping);     // IpcOperation, mutates IpcOperation.rc
+bool yaml_map_populate_ipc_request(const void *ipc_request, int mapping);   // IpcRequest
 bool yaml_map_populate_mode(const void *mode, int mapping);                 // Mode
 bool yaml_map_populate_head_state(const void *head_state, int mapping);     // HeadState
 bool yaml_map_populate_head_overrides(const void *head, int mapping);       // Head
