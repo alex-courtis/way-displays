@@ -8,8 +8,6 @@
 
 #include "log.h"
 
-#include "yaml/context.h"
-
 struct UnmarshalLogCtx {
 	enum LogThreshold t;
 	char *prefix;

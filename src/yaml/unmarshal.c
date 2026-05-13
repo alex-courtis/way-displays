@@ -1,18 +1,12 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <yaml.h>
 
 #include "cfg.h"
-#include "convert.h"
-#include "ipc.h"
 #include "log.h"
-#include "slist.h"
-#include "stable.h"
 #include "yaml/context.h"
 #include "yaml/unmarshal-log.h"
-#include "yaml/unmarshal-primitives.h"
 #include "yaml/unmarshal-types.h"
 
 bool yaml_file_into_cfg(struct Cfg *cfg) {
@@ -64,7 +58,7 @@ bool yaml_file_into_cfg(struct Cfg *cfg) {
 		goto end;
 	}
 
-	ok = map_to_cfg(cfg, root);
+	ok = yaml_map_to_cfg(cfg, root);
 
 end:
 	yaml_unmarshal_log_ctx_reset();
@@ -78,149 +72,9 @@ end:
 	return ok;
 }
 
-static void *root_to_ipc_request(const yaml_node_t *root) {
-
-	// log exceptions and fail for required fields
-	yaml_unmarshal_log_ctx_threshold(ERROR);
-
-	const struct STable *table = yaml_map_to_node_table(root);
-	if (!table)
-		return NULL;
-
-	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
-	ipc_request->cfg = cfg_init();
-
-	yaml_unmarshal_log_ctx_top("OP");
-	const yaml_node_t *op = stable_get(table, "OP");
-	if (!yaml_check_mandatory(op) || !(ipc_request->command = yaml_scalar_to_enum(op, ipc_command_val)))
-		goto err;
-
-	// log warnings for remainder
-	yaml_unmarshal_log_ctx_threshold(WARNING);
-	yaml_unmarshal_log_ctx_prefix(NULL);
-
-	yaml_unmarshal_log_ctx_top("LOG_THRESHOLD");
-	ipc_request->log_threshold = yaml_scalar_to_enum(stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
-
-	yaml_unmarshal_log_ctx_top("CFG");
-	map_to_cfg(ipc_request->cfg, stable_get(table, "CFG"));
-
-	goto end;
-
-err:
-	ipc_request_free(ipc_request);
-	ipc_request = NULL;
-
-end:
-	stable_free(table);
-
-	return ipc_request;
-}
-
-static struct IpcResponse *map_to_ipc_response(const yaml_node_t *map) {
-
-	// log exceptions and fail for required fields
-	yaml_unmarshal_log_ctx_threshold(ERROR);
-
-	const struct STable *table = yaml_map_to_node_table(map);
-	if (!table)
-		return NULL;
-
-	struct IpcResponse *ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
-
-	yaml_unmarshal_log_ctx_top("DONE");
-	const yaml_node_t *done = stable_get(table, "DONE");
-	if (!yaml_check_mandatory(done) || !yaml_scalar_to_boolean(&ipc_response->status.done, done))
-		goto err;
-
-	yaml_unmarshal_log_ctx_top("RC");
-	const yaml_node_t *rc = stable_get(table, "RC");
-	if (!yaml_check_mandatory(rc) || !yaml_scalar_to_int(&ipc_response->status.rc, rc))
-		goto err;
-
-	// suppress validation failures for remainder
-	yaml_unmarshal_log_ctx_threshold(0);
-
-	yaml_unmarshal_log_ctx_top("CFG");
-	const yaml_node_t *cfg = stable_get(table, "CFG");
-	if (cfg) {
-		ipc_response->cfg = cfg_init();
-		map_to_cfg(ipc_response->cfg, cfg);
-	}
-
-	yaml_unmarshal_log_ctx_top("STATE");
-	const yaml_node_t *state = stable_get(table, "STATE");
-	if (state) {
-		const struct STable *table_state = yaml_map_to_node_table(state);
-		if (table_state) {
-
-			ipc_response->lid =	map_to_lid(stable_get(table_state, "LID"));
-
-			ipc_response->heads = yaml_seq_to_type_list(stable_get(table_state, "HEADS"), map_to_head);
-
-			stable_free(table_state);
-		}
-	}
-
-	yaml_unmarshal_log_ctx_top("MESSAGES");
-	const yaml_node_t *messages = stable_get(table, "MESSAGES");
-	if (messages) {
-		ipc_response->log_cap_lines = seq_to_log_cap_lines(messages);
-	}
-
-	goto end;
-
-err:
-	ipc_response_free(ipc_response);
-	ipc_response = NULL;
-
-end:
-	stable_free(table);
-
-	return ipc_response;
-}
-
-static void *root_to_ipc_response_list(const yaml_node_t *root) {
-
-	if (!root)
-		return NULL;
-
-	struct SList *ipc_responses = NULL;
-
-	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
-		log_error("\nunmarshalling ipc response: expected %s or %s, got %s", yaml_node_type_str(YAML_MAPPING_NODE), yaml_node_type_str(YAML_SEQUENCE_NODE), yaml_node_type_str(root->type));
-		goto err;
-	}
-
-	if (root->type == YAML_SEQUENCE_NODE) {
-		for (const yaml_node_item_t *item = root->data.sequence.items.start; item < root->data.sequence.items.top; item ++) {
-			const yaml_node_t *node = yaml_document_get_node(yaml_document, *item);
-			if (!node)
-				continue;
-
-			struct IpcResponse *ipc_response = map_to_ipc_response(node);
-			if (ipc_response)
-				slist_append(&ipc_responses, ipc_response);
-		}
-	} else {
-		struct IpcResponse *ipc_response = map_to_ipc_response(root);
-		if (ipc_response)
-			slist_append(&ipc_responses, ipc_response);
-	}
-
-	goto end;
-
-err:
-	slist_free_vals(&ipc_responses, ipc_response_free);
-	ipc_responses = NULL;
-
-end:
-	return ipc_responses;
-}
-
 // marshal a yaml string to data via fn, logs use action
-typedef void *(*root_to_struct_fn)(const yaml_node_t *root);
-static void *yaml_to_struct(const char *yaml, root_to_struct_fn fn, char *action) {
+typedef void *(*yaml_root_to_struct_fn)(const yaml_node_t *root);
+static void *yaml_to_struct(const char *yaml, yaml_root_to_struct_fn fn, char *action) {
 	yaml_unmarshal_log_ctx_reset();
 
 	if (!yaml || !action)
@@ -274,9 +128,9 @@ end:
 }
 
 struct IpcRequest *yaml_to_ipc_request(char *yaml) {
-	return yaml_to_struct(yaml, root_to_ipc_request, "unmarshalling ipc request");
+	return yaml_to_struct(yaml, yaml_root_to_ipc_request, "unmarshalling ipc request");
 }
 
 struct SList *yaml_to_ipc_responses(const char *yaml) {
-	return yaml_to_struct(yaml, root_to_ipc_response_list, "unmarshalling ipc response");
+	return yaml_to_struct(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
 }
