@@ -3,6 +3,8 @@
 #include <string.h>
 #include <yaml.h>
 
+#include "yaml/unmarshal.h"
+
 #include "cfg.h"
 #include "log.h"
 #include "yaml/context.h"
@@ -72,18 +74,16 @@ end:
 	return ok;
 }
 
-// marshal a yaml string to data via fn, logs use action
-typedef void *(*yaml_root_to_struct_fn)(const yaml_node_t *root);
-static void *yaml_to_struct(const char *yaml, yaml_root_to_struct_fn fn, char *action) {
+void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *name) {
 	yaml_unmarshal_log_ctx_reset();
 
-	if (!yaml || !action)
+	if (!yaml || !name)
 		return NULL;
 
 	yaml_parser_t parser;
 
 	if (!yaml_parser_initialize(&parser)) {
-		log_error("\n%s: yaml_parser_initialize failed", action);
+		log_error("\n%s: yaml_parser_initialize failed", name);
 		return NULL;
 	}
 
@@ -92,7 +92,7 @@ static void *yaml_to_struct(const char *yaml, yaml_root_to_struct_fn fn, char *a
 	yaml_document_t document;
 
 	if (!yaml_parser_load(&parser, &document)) {
-		log_error("\n%s: yaml_parser_load failed", action);
+		log_error("\n%s: yaml_parser_load failed", name);
 		yaml_parser_delete(&parser);
 		log_error("========================================\n%s\n----------------------------------------", yaml);
 		return NULL;
@@ -103,12 +103,12 @@ static void *yaml_to_struct(const char *yaml, yaml_root_to_struct_fn fn, char *a
 	void *out = NULL;
 
 	if (!(root = yaml_document_get_root_node(&document))) {
-		log_error("\n%s: empty request", action);
+		log_error("\n%s: empty request", name);
 		goto err;
 	}
 
 	yaml_document = &document;
-	yaml_unmarshal_log_ctx_prefix(action);
+	yaml_unmarshal_log_ctx_prefix(name);
 
 	if ((out = fn(root)))
 		goto end;
@@ -125,12 +125,4 @@ end:
 	yaml_parser_delete(&parser);
 
 	return out;
-}
-
-struct IpcRequest *yaml_to_ipc_request(char *yaml) {
-	return yaml_to_struct(yaml, yaml_root_to_ipc_request, "unmarshalling ipc request");
-}
-
-struct SList *yaml_to_ipc_responses(const char *yaml) {
-	return yaml_to_struct(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
 }

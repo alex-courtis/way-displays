@@ -12,7 +12,7 @@
  * Returns NULL or false and logs on failure
  */
 
-// yaml_root_to_struct_fn: create a struct from the document root
+// yaml_root_to_type_fn: create a struct from the document root
 void *yaml_root_to_ipc_request(const yaml_node_t *root);       // IpcRequest
 void *yaml_root_to_ipc_response_list(const yaml_node_t *root); // list of IpcResponse
 
