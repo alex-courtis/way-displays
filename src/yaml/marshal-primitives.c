@@ -8,7 +8,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "slist.h"
-#include "yaml/marshal.h"
+#include "yaml/context.h"
 
 bool yaml_map_add_str(const char *key, const char *str, int mapping) {
 	if (!key || !mapping)
@@ -17,10 +17,10 @@ bool yaml_map_add_str(const char *key, const char *str, int mapping) {
 	if (!str)
 		return true;
 
-	int k = yaml_document_add_scalar(marshal_ctx.doc, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-	int v = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)str, -1, YAML_PLAIN_SCALAR_STYLE);
+	int k = yaml_document_add_scalar(yaml_document, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int v = yaml_document_add_scalar(yaml_document, NULL, (yaml_char_t *)str, -1, YAML_PLAIN_SCALAR_STYLE);
 
-	return k && v && yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, k, v);
+	return k && v && yaml_document_append_mapping_pair(yaml_document, mapping, k, v);
 }
 
 bool yaml_map_add_int(const char *key, const int32_t val, int mapping) {
@@ -72,22 +72,22 @@ bool yaml_seq_append_str(const void *str, int sequence) {
 	if (!str || !sequence)
 		return false;
 
-	int scalar = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)str, -1, YAML_PLAIN_SCALAR_STYLE);
+	int scalar = yaml_document_add_scalar(yaml_document, NULL, (yaml_char_t *)str, -1, YAML_PLAIN_SCALAR_STYLE);
 
-	return scalar && yaml_document_append_sequence_item(marshal_ctx.doc, sequence, scalar);
+	return scalar && yaml_document_append_sequence_item(yaml_document, sequence, scalar);
 }
 
 bool yaml_map_add_map(const char *key, const void *data, yaml_map_populate_fn fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
 
-	int k = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int k = yaml_document_add_scalar(yaml_document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (!k || !map)
 		return false;
 
-	return fn(data, map) && yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, k, map);
+	return fn(data, map) && yaml_document_append_mapping_pair(yaml_document, mapping, k, map);
 }
 
 bool yaml_map_add_seq(const char *key, const struct SList *list, yaml_seq_append_fn fn, int mapping) {
@@ -97,8 +97,8 @@ bool yaml_map_add_seq(const char *key, const struct SList *list, yaml_seq_append
 	if (!list)
 		return true;
 
-	int k = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-	int seq = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+	int k = yaml_document_add_scalar(yaml_document, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int seq = yaml_document_add_sequence(yaml_document, NULL, YAML_BLOCK_SEQUENCE_STYLE);
 
 	if (!k || !seq)
 		return false;
@@ -108,5 +108,5 @@ bool yaml_map_add_seq(const char *key, const struct SList *list, yaml_seq_append
 			return false;
 	}
 
-	return yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, k, seq);
+	return yaml_document_append_mapping_pair(yaml_document, mapping, k, seq);
 }

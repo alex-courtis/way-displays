@@ -22,6 +22,7 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #include "marshalling.h"
+#include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
 
 #ifdef V2

@@ -11,9 +11,8 @@
 #include "convert.h"
 #include "slist.h"
 #include "stable.h"
-#include "yaml/unmarshal-context.h"
-
-// TODO move to yaml directory
+#include "yaml/context.h"
+#include "yaml/unmarshal-log.h"
 
 const struct STable *yaml_map_to_node_table(const yaml_node_t *map) {
 	if (!yaml_check_node_type(map, YAML_MAPPING_NODE))
@@ -25,7 +24,7 @@ const struct STable *yaml_map_to_node_table(const yaml_node_t *map) {
 		if (!pair->key || !pair->value)
 			continue;
 
-		const yaml_node_t *pair_key = yaml_document_get_node(ctx.document, pair->key);
+		const yaml_node_t *pair_key = yaml_document_get_node(yaml_document, pair->key);
 
 		char *key = NULL;
 		if (!(key = yaml_scalar_to_string(pair_key))) {
@@ -33,7 +32,7 @@ const struct STable *yaml_map_to_node_table(const yaml_node_t *map) {
 			return NULL;
 		}
 
-		const yaml_node_t *pair_value = yaml_document_get_node(ctx.document, pair->value);
+		const yaml_node_t *pair_value = yaml_document_get_node(yaml_document, pair->value);
 
 		if (key && pair_value)
 			stable_put(table, key, pair_value);
@@ -59,7 +58,7 @@ bool yaml_scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
 	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) == 1)
 		return true;
 
-	yaml_log_invalid_value(scalar->data.scalar.value);
+	yaml_unmarshal_log_invalid_value(scalar->data.scalar.value);
 	return false;
 }
 
@@ -70,7 +69,7 @@ bool yaml_scalar_to_float(float *dst, const yaml_node_t *scalar) {
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) == 1)
 		return true;
 
-	yaml_log_invalid_value(scalar->data.scalar.value);
+	yaml_unmarshal_log_invalid_value(scalar->data.scalar.value);
 	return false;
 }
 
@@ -80,12 +79,12 @@ bool yaml_scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) 
 	char def_str[10];
 	snprintf(def_str, 10, "%.1f", def);
 
-	yaml_log_ctx_def(def_str);
+	yaml_unmarshal_log_ctx_def(def_str);
 
 	if (!(ok = yaml_scalar_to_float(dst, scalar)))
 		*dst = def;
 
-	yaml_log_ctx_def(NULL);
+	yaml_unmarshal_log_ctx_def(NULL);
 
 	return ok;
 }
@@ -98,18 +97,18 @@ int yaml_scalar_to_enum(const yaml_node_t *scalar, enum_val_fn val_fn) {
 	if (val)
 		return val;
 
-	yaml_log_invalid_value(scalar->data.scalar.value);
+	yaml_unmarshal_log_invalid_value(scalar->data.scalar.value);
 	return 0;
 }
 
 int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn) {
-	yaml_log_ctx_def(name_fn(def));
+	yaml_unmarshal_log_ctx_def(name_fn(def));
 
 	int ret = yaml_scalar_to_enum(scalar, val_fn);
 	if (!ret)
 		ret = def;
 
-	yaml_log_ctx_def(NULL);
+	yaml_unmarshal_log_ctx_def(NULL);
 
 	return ret;
 }
@@ -135,7 +134,7 @@ struct SList *yaml_seq_to_type_list(const yaml_node_t *seq, yaml_node_to_type_fn
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *node = yaml_document_get_node(yaml_document, *item);
 		if (!node)
 			continue;
 

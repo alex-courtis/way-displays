@@ -4,13 +4,11 @@
 #include <string.h>
 #include <yaml.h>
 
-#include "yaml/unmarshal-context.h"
+#include "yaml/unmarshal-log.h"
 
 #include "log.h"
 
-// TODO move to yaml directory
-
-struct UnmarshalCtx ctx = { 0 };
+#include "yaml/context.h"
 
 struct UnmarshalLogCtx {
 	enum LogThreshold t;
@@ -21,63 +19,47 @@ struct UnmarshalLogCtx {
 	char *top;
 } log_ctx;
 
-void yaml_log_ctx_t(const enum LogThreshold t) {
+void yaml_unmarshal_log_ctx_threshold(const enum LogThreshold t) {
 	log_ctx.t = t;
 }
 
-void yaml_log_ctx_prefix(const char *action) {
+void yaml_unmarshal_log_ctx_prefix(const char *action) {
 	if (log_ctx.prefix)
 		free(log_ctx.prefix);
 	log_ctx.prefix = action ? strdup(action) : NULL;
 }
 
-void yaml_log_ctx_def(const char *def) {
+void yaml_unmarshal_log_ctx_def(const char *def) {
 	if (log_ctx.def)
 		free(log_ctx.def);
 	log_ctx.def = def ? strdup(def) : NULL;
 }
 
-void yaml_log_ctx_key(const char *key) {
+void yaml_unmarshal_log_ctx_key(const char *key) {
 	if (log_ctx.key)
 		free(log_ctx.key);
 	log_ctx.key = key ? strdup(key) : NULL;
 }
 
-void yaml_log_ctx_name_desc(const char *name_desc) {
+void yaml_unmarshal_log_ctx_name_desc(const char *name_desc) {
 	if (log_ctx.name_desc)
 		free(log_ctx.name_desc);
 	log_ctx.name_desc = name_desc ? strdup(name_desc) : NULL;
 }
 
-void yaml_log_ctx_top(const char *top) {
+void yaml_unmarshal_log_ctx_top(const char *top) {
 	if (log_ctx.top)
 		free(log_ctx.top);
 	log_ctx.top = top ? strdup(top) : NULL;
 }
 
-void yaml_log_ctx_reset(void) {
-	yaml_log_ctx_t(WARNING);
-	yaml_log_ctx_prefix(NULL);
-	yaml_log_ctx_top(NULL);
-	yaml_log_ctx_name_desc(NULL);
-	yaml_log_ctx_key(NULL);
-	yaml_log_ctx_def(NULL);
-}
-
-// return a static string for the node type
-char *yaml_node_type_str(const yaml_node_type_t type) {
-	switch (type) {
-		case YAML_NO_NODE:
-			return "empty";
-		case YAML_MAPPING_NODE:
-			return "map";
-		case YAML_SEQUENCE_NODE:
-			return "sequence";
-		case YAML_SCALAR_NODE:
-			return "scalar";
-		default:
-			return "???";
-	}
+void yaml_unmarshal_log_ctx_reset(void) {
+	yaml_unmarshal_log_ctx_threshold(WARNING);
+	yaml_unmarshal_log_ctx_prefix(NULL);
+	yaml_unmarshal_log_ctx_top(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_def(NULL);
 }
 
 static void yaml_log_invalid(const yaml_char_t *value, const yaml_node_type_t type_expected, const yaml_node_type_t type_actual) {
@@ -129,7 +111,7 @@ static void yaml_log_misssing(void) {
 	}
 }
 
-void yaml_log_invalid_value(const yaml_char_t *value) {
+void yaml_unmarshal_log_invalid_value(const yaml_char_t *value) {
 	yaml_log_invalid(value, YAML_NO_NODE, YAML_NO_NODE);
 }
 
@@ -151,7 +133,6 @@ bool yaml_check_mandatory(const yaml_node_t *node) {
 	return false;
 }
 
-// fn_equals to valdate a regex pattern by attempting to compile it
 bool yaml_valid_regex(const void *pattern) {
 	bool rc = true;
 	char *p = (char*)pattern;
@@ -170,3 +151,17 @@ bool yaml_valid_regex(const void *pattern) {
 	return rc;
 }
 
+char *yaml_node_type_str(const yaml_node_type_t type) {
+	switch (type) {
+		case YAML_NO_NODE:
+			return "empty";
+		case YAML_MAPPING_NODE:
+			return "map";
+		case YAML_SEQUENCE_NODE:
+			return "sequence";
+		case YAML_SCALAR_NODE:
+			return "scalar";
+		default:
+			return "???";
+	}
+}

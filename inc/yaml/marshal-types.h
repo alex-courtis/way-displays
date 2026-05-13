@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 /*
- * Functions to add to an existing yaml_document_t from structs
+ * Functions to add to yaml_document from structs
  * Returns false on failure to add to the document
  * Returns true and does nothing when NULL data
  */

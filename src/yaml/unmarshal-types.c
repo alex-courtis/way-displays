@@ -17,7 +17,8 @@
 #include "slist.h"
 #include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml/unmarshal-context.h"
+#include "yaml/context.h"
+#include "yaml/unmarshal-log.h"
 #include "yaml/unmarshal-primitives.h"
 
 void *map_to_condition(const yaml_node_t *map) {
@@ -29,12 +30,12 @@ void *map_to_condition(const yaml_node_t *map) {
 
 	struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
 
-	yaml_log_ctx_key("PLUGGED");
+	yaml_unmarshal_log_ctx_key("PLUGGED");
 	seq = stable_get(table, "PLUGGED");
 	if (seq && !(condition->plugged = yaml_seq_to_name_desc_list(seq)))
 		goto err;
 
-	yaml_log_ctx_key("UNPLUGGED");
+	yaml_unmarshal_log_ctx_key("UNPLUGGED");
 	seq = stable_get(table, "UNPLUGGED");
 	if (seq && !(condition->unplugged = yaml_seq_to_name_desc_list(seq)))
 		goto err;
@@ -46,7 +47,7 @@ err:
 	condition = NULL;
 
 end:
-	yaml_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
 	stable_free(table);
 
 	return condition;
@@ -74,14 +75,14 @@ void *node_to_disabled(const yaml_node_t *node) {
 
 				disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
-				yaml_log_ctx_key("NAME_DESC");
+				yaml_unmarshal_log_ctx_key("NAME_DESC");
 				scalar = stable_get(table_map, "NAME_DESC");
 				if (!yaml_check_mandatory(scalar) || !(disabled->name_desc = yaml_scalar_to_name_desc(scalar)))
 					goto err;
 
-				yaml_log_ctx_name_desc(disabled->name_desc);
+				yaml_unmarshal_log_ctx_name_desc(disabled->name_desc);
 
-				yaml_log_ctx_key("IF");
+				yaml_unmarshal_log_ctx_key("IF");
 				scalar = stable_get(table_map, "IF");
 				if (scalar)
 					disabled->conditions = yaml_seq_to_type_list(scalar, map_to_condition);
@@ -103,8 +104,8 @@ err:
 
 end:
 	stable_free(table_map);
-	yaml_log_ctx_key(NULL);
-	yaml_log_ctx_name_desc(NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
 
 	return disabled;
 }
@@ -118,14 +119,14 @@ void *map_to_user_scale(const yaml_node_t *map) {
 
 	struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
-	yaml_log_ctx_key("NAME_DESC");
+	yaml_unmarshal_log_ctx_key("NAME_DESC");
 	scalar = stable_get(table, "NAME_DESC");
 	if (!yaml_check_mandatory(scalar) || !(user_scale->name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto err;
 
-	yaml_log_ctx_name_desc(user_scale->name_desc);
+	yaml_unmarshal_log_ctx_name_desc(user_scale->name_desc);
 
-	yaml_log_ctx_key("SCALE");
+	yaml_unmarshal_log_ctx_key("SCALE");
 	scalar = stable_get(table, "SCALE");
 	if (!yaml_check_mandatory(scalar) || !yaml_scalar_to_float(&user_scale->scale, scalar))
 		goto err;
@@ -138,8 +139,8 @@ err:
 
 end:
 	stable_free(table);
-	yaml_log_ctx_key(NULL);
-	yaml_log_ctx_name_desc(NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
 
 	return user_scale;
 }
@@ -153,24 +154,24 @@ void *map_to_user_mode(const yaml_node_t *map) {
 
 	struct UserMode *user_mode = cfg_user_mode_default();
 
-	yaml_log_ctx_key("NAME_DESC");
+	yaml_unmarshal_log_ctx_key("NAME_DESC");
 	scalar = stable_get(table, "NAME_DESC");
 	if (!yaml_check_mandatory(scalar) || !(user_mode->name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto err;
 
-	yaml_log_ctx_name_desc(user_mode->name_desc);
+	yaml_unmarshal_log_ctx_name_desc(user_mode->name_desc);
 
-	yaml_log_ctx_key("WIDTH");
+	yaml_unmarshal_log_ctx_key("WIDTH");
 	scalar = stable_get(table, "WIDTH");
 	if (scalar && !yaml_scalar_to_int(&user_mode->width, scalar))
 		goto err;
 
-	yaml_log_ctx_key("HEIGHT");
+	yaml_unmarshal_log_ctx_key("HEIGHT");
 	scalar = stable_get(table, "HEIGHT");
 	if (scalar && !yaml_scalar_to_int(&user_mode->height, scalar))
 		goto err;
 
-	yaml_log_ctx_key("HZ");
+	yaml_unmarshal_log_ctx_key("HZ");
 	scalar = stable_get(table, "HZ");
 	if (scalar) {
 		float hz = 0;
@@ -179,7 +180,7 @@ void *map_to_user_mode(const yaml_node_t *map) {
 		user_mode->refresh_mhz = lround(hz * 1000);
 	}
 
-	yaml_log_ctx_key("MAX");
+	yaml_unmarshal_log_ctx_key("MAX");
 	scalar = stable_get(table, "MAX");
 	if (scalar && !yaml_scalar_to_boolean(&user_mode->max, scalar))
 		goto err;
@@ -192,8 +193,8 @@ err:
 
 end:
 	stable_free(table);
-	yaml_log_ctx_key(NULL);
-	yaml_log_ctx_name_desc(NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
 
 	return user_mode;
 }
@@ -207,14 +208,14 @@ void *map_to_user_transform(const yaml_node_t *map) {
 
 	const yaml_node_t *scalar;
 
-	yaml_log_ctx_key("NAME_DESC");
+	yaml_unmarshal_log_ctx_key("NAME_DESC");
 	scalar = stable_get(table, "NAME_DESC");
 	if (!yaml_check_mandatory(scalar) || !(user_transform->name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto err;
 
-	yaml_log_ctx_name_desc(user_transform->name_desc);
+	yaml_unmarshal_log_ctx_name_desc(user_transform->name_desc);
 
-	yaml_log_ctx_key("TRANSFORM");
+	yaml_unmarshal_log_ctx_key("TRANSFORM");
 	scalar = stable_get(table, "TRANSFORM");
 	if (!yaml_check_mandatory(scalar) || !(user_transform->transform = yaml_scalar_to_enum(scalar, transform_val)))
 		goto err;
@@ -227,8 +228,8 @@ err:
 
 end:
 	stable_free(table);
-	yaml_log_ctx_key(NULL);
-	yaml_log_ctx_name_desc(NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
 
 	return user_transform;
 }
@@ -334,15 +335,15 @@ bool map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 		if (!pair->key || !pair->value)
 			continue;
 
-		const yaml_node_t *key = yaml_document_get_node(ctx.document, pair->key);
+		const yaml_node_t *key = yaml_document_get_node(yaml_document, pair->key);
 		if (!key || key->type != YAML_SCALAR_NODE || !key->data.scalar.value)
 			continue;
 
-		const yaml_node_t *value = yaml_document_get_node(ctx.document, pair->value);
+		const yaml_node_t *value = yaml_document_get_node(yaml_document, pair->value);
 		if (!value)
 			continue;
 
-		yaml_log_ctx_top((char*)key->data.scalar.value);
+		yaml_unmarshal_log_ctx_top((char*)key->data.scalar.value);
 
 		switch (cfg_element_val((char*)key->data.scalar.value)) {
 			case ARRANGE:
@@ -409,7 +410,7 @@ void scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 		*dst = NULL;
 	}
 
-	yaml_log_ctx_def(CALLBACK_CMD_DEFAULT);
+	yaml_unmarshal_log_ctx_def(CALLBACK_CMD_DEFAULT);
 
 	*dst = yaml_scalar_to_string(scalar);
 
@@ -420,7 +421,7 @@ void scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
 		*dst = NULL;
 	}
 
-	yaml_log_ctx_def(NULL);
+	yaml_unmarshal_log_ctx_def(NULL);
 }
 
 struct SList *seq_to_log_cap_lines(const yaml_node_t *seq) {
@@ -431,7 +432,7 @@ struct SList *seq_to_log_cap_lines(const yaml_node_t *seq) {
 
 	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 
-		const yaml_node_t *node = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *node = yaml_document_get_node(yaml_document, *item);
 		if (!node)
 			continue;
 
@@ -481,7 +482,7 @@ struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq) {
 	const struct STable *table = stable_init(10, 10, false);
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		const yaml_node_t *scalar = yaml_document_get_node(ctx.document, *item);
+		const yaml_node_t *scalar = yaml_document_get_node(yaml_document, *item);
 		if (!scalar)
 			continue;
 

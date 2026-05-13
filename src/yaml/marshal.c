@@ -5,8 +5,7 @@
 #include "yaml/marshal.h"
 
 #include "log.h"
-
-struct MarshalCtx marshal_ctx = { 0 };
+#include "yaml/context.h"
 
 static int write_handler(void *data, unsigned char *buffer, size_t size) {
 	if (!data)
@@ -64,14 +63,13 @@ end:
 }
 
 char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *name) {
-	if (!data) {
+	if (!data)
 		return NULL;
-	}
 
 	char *yaml = NULL;
 
 	yaml_document_t document;
-	marshal_ctx.doc = &document;
+	yaml_document = &document;
 
 	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
 		log_error("unable to marshal %s: yaml_document_initialize failed", name);
@@ -86,7 +84,7 @@ char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *name) {
 end:
 	yaml_document_delete(&document);
 
-	marshal_ctx.doc = NULL;
+	yaml_document = NULL;
 
 	return yaml;
 }

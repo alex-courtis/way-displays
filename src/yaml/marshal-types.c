@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <wayland-util.h>
@@ -11,17 +10,20 @@
 #include "convert.h"
 #include "global.h"
 #include "head.h"
+#include "ipc.h"
 #include "lid.h"
+#include "log.h"
 #include "mode.h"
+#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml/marshal.h"
+#include "yaml/context.h"
 #include "yaml/marshal-primitives.h"
 
 bool yaml_doc_cfg(const void *data) {
 	if (!data)
 		return true;
 
-	int mapping = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int mapping = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return mapping && yaml_map_populate_cfg(data, mapping);
 }
@@ -36,17 +38,17 @@ bool yaml_doc_ipc_operation(const void *data) {
 	// root sequence when not GET
 	int seq = 0;
 	if (ipc_operation->request->command != GET) {
-		if (!(seq = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE)))
+		if (!(seq = yaml_document_add_sequence(yaml_document, NULL, YAML_BLOCK_SEQUENCE_STYLE)))
 			return false;
 	}
 
 	// root map for GET, otherwise append the map to seq
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map || !yaml_map_populate_ipc_operation(ipc_operation, map))
 		return false;
 
 	if (seq)
-		return yaml_document_append_sequence_item(marshal_ctx.doc, seq, map);
+		return yaml_document_append_sequence_item(yaml_document, seq, map);
 	else
 		return true;
 }
@@ -62,7 +64,7 @@ bool yaml_doc_ipc_request(const void *data) {
 		return false;
 	}
 
-	int root = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int root = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return root && yaml_map_populate_ipc_request(ipc_request, root);
 }
@@ -218,7 +220,7 @@ bool yaml_map_populate_messages(void *data, int mapping) {
 		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
 			continue;
 
-		if (!seq_lines && !(seq_lines = yaml_document_add_sequence(marshal_ctx.doc, NULL, YAML_BLOCK_SEQUENCE_STYLE)))
+		if (!seq_lines && !(seq_lines = yaml_document_add_sequence(yaml_document, NULL, YAML_BLOCK_SEQUENCE_STYLE)))
 			return false;
 
 		if (!yaml_seq_append_log_cap_line(cap_line, seq_lines))
@@ -232,8 +234,8 @@ bool yaml_map_populate_messages(void *data, int mapping) {
 	}
 
 	if (seq_lines) {
-		int key = yaml_document_add_scalar(marshal_ctx.doc, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
-		return key && yaml_document_append_mapping_pair(marshal_ctx.doc, mapping, key, seq_lines);
+		int key = yaml_document_add_scalar(yaml_document, NULL, (yaml_char_t *)"MESSAGES", -1, YAML_PLAIN_SCALAR_STYLE);
+		return key && yaml_document_append_mapping_pair(yaml_document, mapping, key, seq_lines);
 	} else {
 		return true;
 	}
@@ -257,12 +259,12 @@ bool yaml_seq_append_user_scale(const void *data, int sequence) {
 
 	const struct UserScale *user_scale = data;
 
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
 		yaml_map_add_str("NAME_DESC", user_scale->name_desc, map) &&
 		yaml_map_add_float("SCALE", user_scale->scale, map) &&
-		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+		yaml_document_append_sequence_item(yaml_document, sequence, map);
 }
 
 bool yaml_seq_append_user_mode(const void *data, int sequence) {
@@ -274,7 +276,7 @@ bool yaml_seq_append_user_mode(const void *data, int sequence) {
 
 	const struct UserMode *user_mode = data;
 
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	if (!map || !yaml_map_add_str("NAME_DESC", user_mode->name_desc, map))
 		return false;
@@ -293,7 +295,7 @@ bool yaml_seq_append_user_mode(const void *data, int sequence) {
 		}
 	}
 
-	return yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+	return yaml_document_append_sequence_item(yaml_document, sequence, map);
 }
 
 bool yaml_seq_append_user_transform(const void *data, int sequence) {
@@ -305,12 +307,12 @@ bool yaml_seq_append_user_transform(const void *data, int sequence) {
 
 	const struct UserTransform *user_transform = data;
 
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
 		yaml_map_add_str("NAME_DESC", user_transform->name_desc, map) &&
 		yaml_map_add_str("TRANSFORM", transform_name(user_transform->transform), map) &&
-		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+		yaml_document_append_sequence_item(yaml_document, sequence, map);
 }
 
 bool yaml_seq_append_condition(const void *data, int sequence) {
@@ -322,13 +324,13 @@ bool yaml_seq_append_condition(const void *data, int sequence) {
 
 	const struct Condition *condition = data;
 
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return
 		map &&
 		yaml_map_add_seq("PLUGGED", condition->plugged, yaml_seq_append_str, map) &&
 		yaml_map_add_seq("UNPLUGGED", condition->unplugged, yaml_seq_append_str, map) &&
-		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+		yaml_document_append_sequence_item(yaml_document, sequence, map);
 }
 
 bool yaml_seq_append_disabled(const void *data, int sequence) {
@@ -341,12 +343,12 @@ bool yaml_seq_append_disabled(const void *data, int sequence) {
 	const struct Disabled *disabled = data;
 
 	if (disabled->conditions) {
-		int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+		int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 		return map &&
 			yaml_map_add_str("NAME_DESC", disabled->name_desc, map) &&
 			yaml_map_add_seq("IF", disabled->conditions, yaml_seq_append_condition, map) &&
-			yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+			yaml_document_append_sequence_item(yaml_document, sequence, map);
 	} else {
 		return yaml_seq_append_str(disabled->name_desc, sequence);
 	}
@@ -359,11 +361,11 @@ bool yaml_seq_append_mode(const void *data, int sequence) {
 	if (!data)
 		return true;
 
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
 		yaml_map_populate_mode(data, map) &&
-		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+		yaml_document_append_sequence_item(yaml_document, sequence, map);
 }
 
 bool yaml_seq_append_head(const void *data, int sequence) {
@@ -375,7 +377,7 @@ bool yaml_seq_append_head(const void *data, int sequence) {
 
 	const struct Head *head = data;
 
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return
 		map &&
@@ -390,7 +392,7 @@ bool yaml_seq_append_head(const void *data, int sequence) {
 		yaml_map_add_map("DESIRED",       &head->desired,  yaml_map_populate_head_state,     map) &&
 		yaml_map_add_map("OVERRIDES",     head,            yaml_map_populate_head_overrides, map) &&
 		yaml_map_add_seq("MODES",         head->modes,     yaml_seq_append_mode,             map) &&
-		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+		yaml_document_append_sequence_item(yaml_document, sequence, map);
 }
 
 bool yaml_seq_append_log_cap_line(const void *data, int sequence) {
@@ -402,10 +404,10 @@ bool yaml_seq_append_log_cap_line(const void *data, int sequence) {
 
 	const struct LogCapLine *line = data;
 
-	int map = yaml_document_add_mapping(marshal_ctx.doc, NULL, YAML_BLOCK_MAPPING_STYLE);
+	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
 		yaml_map_add_str(log_threshold_name(line->threshold), line->line, map) &&
-		yaml_document_append_sequence_item(marshal_ctx.doc, sequence, map);
+		yaml_document_append_sequence_item(yaml_document, sequence, map);
 }
 
