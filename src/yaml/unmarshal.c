@@ -11,56 +11,56 @@
 #include "yaml/unmarshal-log.h"
 #include "yaml/unmarshal-types.h"
 
-bool yaml_file_into_cfg(struct Cfg *cfg) {
+void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	yaml_unmarshal_log_ctx_reset();
 
-	if (!cfg->file_path) {
-		return false;
+	if (!path) {
+		return NULL;
 	}
 
-	FILE *input = fopen(cfg->file_path, "rb");
+	FILE *input = fopen(path, "rb");
 	if (!input) {
-		log_error("\nparsing file %s: inexistent", cfg->file_path);
-		return false;
+		log_error("\nparsing file %s: inexistent", path);
+		return NULL;
 	}
 
 	yaml_parser_t parser;
 
 	if (!yaml_parser_initialize(&parser)) {
-		log_error("\nparsing file %s: yaml_parser_initialize failed", cfg->file_path);
+		log_error("\nparsing file %s: yaml_parser_initialize failed", path);
 		fclose(input);
-		return false;
+		return NULL;
 	}
 
 	yaml_parser_set_input_file(&parser, input);
 
 	yaml_document_t document;
-	yaml_document = &document;
 
 	if (!yaml_parser_load(&parser, &document)) {
-		log_error("\nparsing file %s: yaml_parser_load failed", cfg->file_path);
+		log_error("\nparsing file %s: yaml_parser_load failed", path);
 		yaml_parser_delete(&parser);
 		fclose(input);
 		return false;
 	}
 
-	bool ok = true;
-
 	const yaml_node_t *root;
 
-	if (!(root = yaml_document_get_root_node(yaml_document))) {
-		log_error("\nparsing file %s no root node", cfg->file_path);
-		ok = false;
+	void *out = NULL;
+
+	if (!(root = yaml_document_get_root_node(&document))) {
+		log_error("\nparsing file %s no root node", path);
 		goto end;
 	}
 
+	yaml_document = &document;
+
+	// TODO put in action
 	if (root->type != YAML_MAPPING_NODE) {
-		log_error("\nparsing file %s empty cfg, expected map", cfg->file_path);
-		ok = false;
+		log_error("\nparsing file %s empty cfg, expected map", path);
 		goto end;
 	}
 
-	ok = yaml_map_to_cfg(cfg, root);
+	out = fn(root);
 
 end:
 	yaml_unmarshal_log_ctx_reset();
@@ -71,7 +71,7 @@ end:
 	yaml_parser_delete(&parser);
 	fclose(input);
 
-	return ok;
+	return out;
 }
 
 void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *name) {

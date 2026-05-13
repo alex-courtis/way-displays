@@ -22,6 +22,14 @@
 #include "yaml/unmarshal-log.h"
 #include "yaml/unmarshal-primitives.h"
 
+void *yaml_root_to_cfg(const yaml_node_t *root) {
+	// TODO move map check from caller
+	if (!root)
+		return NULL;
+
+	return yaml_map_to_cfg(root);
+}
+
 void *yaml_root_to_ipc_request(const yaml_node_t *root) {
 	if (!root)
 		return NULL;
@@ -34,7 +42,6 @@ void *yaml_root_to_ipc_request(const yaml_node_t *root) {
 		return NULL;
 
 	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
-	ipc_request->cfg = cfg_init();
 
 	yaml_unmarshal_log_ctx_top("OP");
 	const yaml_node_t *op = stable_get(table, "OP");
@@ -49,7 +56,7 @@ void *yaml_root_to_ipc_request(const yaml_node_t *root) {
 	ipc_request->log_threshold = yaml_scalar_to_enum(stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
 
 	yaml_unmarshal_log_ctx_top("CFG");
-	yaml_map_to_cfg(ipc_request->cfg, stable_get(table, "CFG"));
+	ipc_request->cfg = yaml_map_to_cfg(stable_get(table, "CFG"));
 
 	goto end;
 
@@ -127,8 +134,7 @@ void *yaml_map_to_ipc_response(const yaml_node_t *map) {
 	yaml_unmarshal_log_ctx_top("CFG");
 	const yaml_node_t *cfg = stable_get(table, "CFG");
 	if (cfg) {
-		ipc_response->cfg = cfg_init();
-		yaml_map_to_cfg(ipc_response->cfg, cfg);
+		ipc_response->cfg = yaml_map_to_cfg(cfg);
 	}
 
 	yaml_unmarshal_log_ctx_top("STATE");
@@ -469,9 +475,12 @@ void *yaml_map_to_head(const yaml_node_t *map) {
 	return head;
 }
 
-bool yaml_map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
-	if (!cfg || !map)
+void *yaml_map_to_cfg(const yaml_node_t *map) {
+	if (!map)
 		return false;
+
+	// TODO this should be default when reading cfg file
+	struct Cfg *cfg = cfg_init();
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
@@ -543,7 +552,7 @@ bool yaml_map_to_cfg(struct Cfg *cfg, const yaml_node_t *map) {
 		}
 	}
 
-	return true;
+	return cfg;
 }
 
 void yaml_scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
