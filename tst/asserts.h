@@ -12,8 +12,7 @@
 #include "slist.h"
 #include "stable.h"
 #include "util.h"
-#include "yaml-marshal.h"
-#include "yaml-marshal-cfg.h"
+#include "yaml/marshal.h"
 
 void _assert_nul(const void *a, const char * const ae, const char * const file, const int line) {
 	if (a) {
@@ -97,9 +96,9 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 
 void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
 	if (!cfg_equal(a, b)) {
-		cmocka_print_error("assert_cfg_equal\nactual.cfg:\n%s\nexpected.cfg:\n%s\n", cfg_to_yaml(a), cfg_to_yaml(b));
-		write_file("actual.cfg", cfg_to_yaml(a));
-		write_file("expected.cfg", cfg_to_yaml(b));
+		cmocka_print_error("V1 assert_cfg_equal\nactual.cfg:\n%s\nexpected.cfg:\n%s\n", marshal_cfg(a), marshal_cfg(b));
+		write_file("actual.cfg", marshal_cfg(a));
+		write_file("expected.cfg", marshal_cfg(b));
 		_fail(file, line);
 	}
 }

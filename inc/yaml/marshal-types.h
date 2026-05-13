@@ -9,7 +9,7 @@
  * Returns true and does nothing when NULL data
  */
 
-// yaml_doc_fn: create a document
+// yaml_doc_fn: create the document's contents
 bool yaml_doc_cfg(const void *cfg);                     // Cfg
 bool yaml_doc_ipc_operation(const void *ipc_operation); // IpcOperation
 bool yaml_doc_ipc_request(const void *ipc_request);     // IpcRequest

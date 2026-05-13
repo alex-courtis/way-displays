@@ -2,7 +2,7 @@
 #include <string.h>
 #include <yaml.h>
 
-#include "yaml-marshal.h"
+#include "yaml/marshal.h"
 
 #include "log.h"
 
@@ -63,7 +63,7 @@ end:
 	return yaml;
 }
 
-char *struct_to_yaml(const void *data, struct_to_yaml_fn fn, const char *name) {
+char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *name) {
 	if (!data) {
 		return NULL;
 	}

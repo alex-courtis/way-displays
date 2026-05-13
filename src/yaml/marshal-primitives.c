@@ -8,7 +8,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "slist.h"
-#include "yaml-marshal.h"
+#include "yaml/marshal.h"
 
 bool yaml_map_add_str(const char *key, const char *str, int mapping) {
 	if (!key || !mapping)

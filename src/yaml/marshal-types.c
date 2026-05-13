@@ -14,7 +14,7 @@
 #include "lid.h"
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml-marshal.h"
+#include "yaml/marshal.h"
 #include "yaml/marshal-primitives.h"
 
 bool yaml_doc_cfg(const void *data) {

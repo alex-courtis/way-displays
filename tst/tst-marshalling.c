@@ -22,23 +22,15 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #include "marshalling.h"
-#include "yaml-marshal-cfg.h"
-#include "yaml-marshal-ipc-request.h"
-#include "yaml-marshal-ipc-response.h"
+#include "yaml/marshal-types.h"
 
 #ifdef V2
 #define V2 true
-#define C_T_Y cfg_to_yaml
-#define IREQ_T_Y ipc_request_to_yaml
-#define IRES_T_Y ipc_response_to_yaml
 #define YF_T_C yaml_file_into_cfg
 #define Y_T_IREQ yaml_to_ipc_request
 #define Y_T_IRES yaml_to_ipc_responses
 #else
 #define V2 false
-#define C_T_Y marshal_cfg
-#define IREQ_T_Y marshal_ipc_request
-#define IRES_T_Y marshal_ipc_response
 #define YF_T_C unmarshal_cfg_from_file
 #define Y_T_IREQ unmarshal_ipc_request
 #define Y_T_IRES unmarshal_ipc_responses
@@ -495,7 +487,7 @@ static void yaml_file_to_cfg__legacy(void **state) {
 static void cfg_to_yaml__ok(void **state) {
 	struct Cfg *cfg = cfg_all();
 
-	char *actual = C_T_Y(cfg);
+	char *actual = V2 ? yaml_marshal(cfg, yaml_doc_cfg, "cfg") : marshal_cfg(cfg);
 
 	assert_non_nul(actual);
 
@@ -518,7 +510,7 @@ static void cfg_to_yaml__ok(void **state) {
 static void cfg_to_yaml__default(void **state) {
 	struct Cfg *cfg = cfg_default();
 
-	char *actual = C_T_Y(cfg);
+	char *actual = V2 ? yaml_marshal(cfg, yaml_doc_cfg, "cfg") : marshal_cfg(cfg);
 
 	assert_non_nul(actual);
 
@@ -541,7 +533,7 @@ static void cfg_to_yaml__default(void **state) {
 static void cfg_to_yaml__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
-	char *actual = C_T_Y(cfg);
+	char *actual = V2 ? yaml_marshal(cfg, yaml_doc_cfg, "cfg") : marshal_cfg(cfg);
 
 	assert_non_nul(actual);
 
@@ -569,7 +561,7 @@ static void cfg_to_yaml__yaml_document_initialize_fail(void **state) {
 
 	yaml_document_initialize__fail = true;
 
-	char *actual = C_T_Y(cfg);
+	char *actual = V2 ? yaml_marshal(cfg, yaml_doc_cfg, "cfg") : marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -587,7 +579,7 @@ static void cfg_to_yaml__yaml_emitter_initialize_fail(void **state) {
 
 	yaml_emitter_initialize__fail = true;
 
-	char *actual = C_T_Y(cfg);
+	char *actual = V2 ? yaml_marshal(cfg, yaml_doc_cfg, "cfg") : marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -605,7 +597,7 @@ static void cfg_to_yaml__yaml_emitter_open_fail(void **state) {
 
 	yaml_emitter_dump__fail = true;
 
-	char *actual = C_T_Y(cfg);
+	char *actual = V2 ? yaml_marshal(cfg, yaml_doc_cfg, "cfg") : marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -624,7 +616,7 @@ static void cfg_to_yaml__yaml_emitter_dump_fail(void **state) {
 
 	yaml_emitter_dump__fail = true;
 
-	char *actual = C_T_Y(cfg);
+	char *actual = V2 ? yaml_marshal(cfg, yaml_doc_cfg, "cfg") : marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -642,7 +634,7 @@ static void cfg_to_yaml__yaml_emitter_close_fail(void **state) {
 
 	yaml_emitter_close__fail = true;
 
-	char *actual = C_T_Y(cfg);
+	char *actual = V2 ? yaml_marshal(cfg, yaml_doc_cfg, "cfg") : marshal_cfg(cfg);
 
 	assert_nul(actual);
 
@@ -655,7 +647,10 @@ static void cfg_to_yaml__yaml_emitter_close_fail(void **state) {
 static void ipc_request_to_yaml__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
-	assert_nul(IREQ_T_Y(ipc_request));
+	if (V2)
+		assert_nul(yaml_marshal(ipc_request, yaml_doc_ipc_request, "ipc request"));
+	else
+		assert_nul(marshal_ipc_request(ipc_request));
 
 	if (V2) {
 		assert_log(ERROR, "unable to marshal ipc request: missing OP\n");
@@ -674,7 +669,11 @@ static void ipc_request_to_yaml__cfg_set(void **state) {
 
 	ipc_request->cfg = cfg_all();
 
-	char *actual = IREQ_T_Y(ipc_request);
+	char *actual;
+	if (V2)
+		actual = yaml_marshal(ipc_request, yaml_doc_ipc_request, "ipc request");
+	else
+		actual = marshal_ipc_request(ipc_request);
 
 	assert_non_nul(actual);
 
@@ -701,7 +700,7 @@ static void ipc_request_to_yaml__cfg_set(void **state) {
 static void ipc_response_to_yaml__map(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 
-	char *actual = IRES_T_Y(ipc_operation);
+	char *actual = V2 ? actual = yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response") : marshal_ipc_response(ipc_operation);
 
 	assert_non_nul(actual);
 
@@ -732,7 +731,7 @@ static void ipc_response_to_yaml__seq(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 	ipc_operation->request->command = LIST;
 
-	char *actual = IRES_T_Y(ipc_operation);
+	char *actual = V2 ? actual = yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response") : marshal_ipc_response(ipc_operation);
 
 	assert_non_nul(actual);
 
@@ -1142,17 +1141,6 @@ static void unmarshal_ipc_responses__seq(void **state) {
 }
 
 int main(void) {
-
-	// fools cppcheck
-	// TODO remove
-	if (false) {
-		cfg_to_yaml(NULL);
-		ipc_request_to_yaml(NULL);
-		ipc_response_to_yaml(NULL);
-		yaml_file_into_cfg(NULL);
-		yaml_to_ipc_request(NULL);
-		yaml_to_ipc_responses(NULL);
-	}
 
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_file_to_cfg__ok),
