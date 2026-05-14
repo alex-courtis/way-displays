@@ -202,7 +202,7 @@ static void yaml_file_to_cfg__ok(void **state) {
 		read = yaml_unmarshal_file("tst/marshalling/cfg-all.yaml", yaml_root_to_cfg);
 		assert_non_nul(read);
 	} else {
-		read = cfg_non_default();
+		read = cfg_init();
 		read->file_path = strdup("tst/marshalling/cfg-all.yaml");
 		assert_true(unmarshal_cfg_from_file(read));
 	}
@@ -224,7 +224,7 @@ static void yaml_file_to_cfg__empty(void **state) {
 		read = yaml_unmarshal_file("tst/marshalling/cfg-empty.yaml", yaml_root_to_cfg);
 		assert_nul(read);
 	} else {
-		read = cfg_default();
+		read = cfg_init();
 		read->file_path = strdup("tst/marshalling/cfg-empty.yaml");
 		assert_false(unmarshal_cfg_from_file(read));
 	}
@@ -238,13 +238,15 @@ static void yaml_file_to_cfg__empty(void **state) {
 	cfg_free(read);
 }
 
+// TODO add test for sequence as doc root
+
 static void yaml_file_to_cfg__missing(void **state) {
 	struct Cfg *read;
 	if (V2) {
 		read = yaml_unmarshal_file("foo/bar/baz.yaml", yaml_root_to_cfg);
 		assert_nul(read);
 	} else {
-		read = cfg_default();
+		read = cfg_init();
 		read->file_path = strdup("foo/bar/baz.yaml");
 		assert_false(unmarshal_cfg_from_file(read));
 	}
@@ -269,6 +271,7 @@ static void yaml_file_to_cfg__invalid(void **state) {
 		assert_true(unmarshal_cfg_from_file(read));
 	}
 
+	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
 	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
 
@@ -290,6 +293,7 @@ static void yaml_file_to_cfg__mistyped(void **state) {
 	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-mistyped.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
+	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
 
 	assert_cfg_equal(read, expected);
