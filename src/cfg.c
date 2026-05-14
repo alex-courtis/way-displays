@@ -859,56 +859,6 @@ void cfg_file_paths_init(const char *user_path) {
 	slist_append(&cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
 }
 
-void cfg_init_path(const char *user_path) {
-	cfg = cfg_default();
-
-	bool found = resolve_cfg_file(cfg);
-
-	if (found) {
-		log_info("\nFound configuration file: %s", cfg->file_path);
-		if (!unmarshal_cfg_from_file(cfg)) {
-			log_info("\nUsing default configuration:");
-			struct Cfg *def = cfg_default();
-			def->dir_path = cfg->dir_path ? strdup(cfg->dir_path) : NULL;
-			def->file_path = cfg->file_path ? strdup(cfg->file_path) : NULL;
-			def->file_name = cfg->file_name ? strdup(cfg->file_name) : NULL;
-			cfg_free(cfg);
-			cfg = def;
-		}
-	} else {
-		log_info("\nNo configuration file found, using defaults:");
-	}
-	validate_fix(cfg);
-	log_info("\nActive configuration:");
-	print_cfg(INFO, cfg, false);
-	validate_warn(cfg);
-}
-
-void cfg_file_reload(void) {
-	if (!cfg->file_path)
-		return;
-
-	struct Cfg *reloaded = cfg_default();
-	reloaded->dir_path = cfg->dir_path ? strdup(cfg->dir_path) : NULL;
-	reloaded->file_path = cfg->file_path ? strdup(cfg->file_path) : NULL;
-	reloaded->file_name = cfg->file_name ? strdup(cfg->file_name) : NULL;
-
-	log_info("\nReloading configuration file: %s", cfg->file_path);
-	if (unmarshal_cfg_from_file(reloaded)) {
-		cfg_free(cfg);
-		cfg = reloaded;
-		log_set_threshold(cfg->log_threshold, false);
-		validate_fix(cfg);
-		log_info("\nNew configuration:");
-		print_cfg(INFO, cfg, false);
-		validate_warn(cfg);
-	} else {
-		log_info("\nConfiguration unchanged:");
-		print_cfg(INFO, cfg, false);
-		cfg_free(reloaded);
-	}
-}
-
 static bool cfg_file_write_content(const char * const yaml) {
 	return
 		file_write(cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&

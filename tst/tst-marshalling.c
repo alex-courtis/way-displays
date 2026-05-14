@@ -238,8 +238,6 @@ static void yaml_file_to_cfg__empty(void **state) {
 	cfg_free(read);
 }
 
-// TODO add test for sequence as doc root
-
 static void yaml_file_to_cfg__missing(void **state) {
 	struct Cfg *read;
 	if (V2) {

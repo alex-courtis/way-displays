@@ -115,10 +115,6 @@ enum CfgElement {
 
 void cfg_file_paths_init(const char *user_path);
 
-void cfg_init_path(const char *cfg_path);
-
-void cfg_file_reload(void);
-
 void cfg_file_write(void);
 
 void cfg_destroy(void);

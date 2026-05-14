@@ -23,7 +23,6 @@
 #include "yaml/unmarshal-primitives.h"
 
 void *yaml_root_to_cfg(const yaml_node_t *root) {
-	// TODO move map check from caller
 	if (!root)
 		return NULL;
 
@@ -479,7 +478,6 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 	if (!map)
 		return false;
 
-	// TODO this should be default when reading cfg file
 	struct Cfg *cfg = cfg_init();
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {

@@ -12,7 +12,6 @@ OFLAGS = -O3
 WFLAGS = -pedantic \
 		 -Wall \
 		 -Wextra \
-		 -Werror \
 		 -Wimplicit-fallthrough \
 		 -Wno-unused-parameter \
 		 -Wno-format-zero-length

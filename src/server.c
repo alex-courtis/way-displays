@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/signalfd.h>
 #include <unistd.h>
 
@@ -20,6 +21,7 @@
 #include "layout.h"
 #include "lid.h"
 #include "log.h"
+#include "marshalling.h"
 #include "process.h"
 #include "slist.h"
 
@@ -213,7 +215,7 @@ static int loop(void) {
 					cfg->updated = false;
 				} else {
 					log_debug("LOOP cfg_file_reload");
-					cfg_file_reload();
+					reload_cfg();
 				}
 			}
 		}
@@ -263,6 +265,56 @@ static void setup_signal_handlers(void) {
 	sigaction(SIGCHLD, &sa, NULL);
 }
 
+void reload_cfg(void) {
+	if (!cfg->file_path)
+		return;
+
+	struct Cfg *reloaded = cfg_default();
+	reloaded->dir_path = cfg->dir_path ? strdup(cfg->dir_path) : NULL;
+	reloaded->file_path = cfg->file_path ? strdup(cfg->file_path) : NULL;
+	reloaded->file_name = cfg->file_name ? strdup(cfg->file_name) : NULL;
+
+	log_info("\nReloading configuration file: %s", cfg->file_path);
+	if (unmarshal_cfg_from_file(reloaded)) {
+		cfg_free(cfg);
+		cfg = reloaded;
+		log_set_threshold(cfg->log_threshold, false);
+		validate_fix(cfg);
+		log_info("\nNew configuration:");
+		print_cfg(INFO, cfg, false);
+		validate_warn(cfg);
+	} else {
+		log_info("\nConfiguration unchanged:");
+		print_cfg(INFO, cfg, false);
+		cfg_free(reloaded);
+	}
+}
+
+void load_cfg(void) {
+	cfg = cfg_default();
+
+	bool found = resolve_cfg_file(cfg);
+
+	if (found) {
+		log_info("\nFound configuration file: %s", cfg->file_path);
+		if (!unmarshal_cfg_from_file(cfg)) {
+			log_info("\nUsing default configuration:");
+			struct Cfg *def = cfg_default();
+			def->dir_path = cfg->dir_path ? strdup(cfg->dir_path) : NULL;
+			def->file_path = cfg->file_path ? strdup(cfg->file_path) : NULL;
+			def->file_name = cfg->file_name ? strdup(cfg->file_name) : NULL;
+			cfg_free(cfg);
+			cfg = def;
+		}
+	} else {
+		log_info("\nNo configuration file found, using defaults:");
+	}
+	validate_fix(cfg);
+	log_info("\nActive configuration:");
+	print_cfg(INFO, cfg, false);
+	validate_warn(cfg);
+}
+
 
 int
 server(char *cfg_path) {
@@ -284,7 +336,7 @@ server(char *cfg_path) {
 	cfg_file_paths_init(cfg_path);
 
 	// maybe default, never exits
-	cfg_init_path(cfg_path);
+	load_cfg();
 	free(cfg_path);
 
 	// play back captured logs from cfg parse
