@@ -17,6 +17,15 @@ struct UnmarshalLogCtx {
 	char *top;
 } log_ctx;
 
+void yaml_unmarshal_log_ctx_reset(void) {
+	yaml_unmarshal_log_ctx_threshold(WARNING);
+	yaml_unmarshal_log_ctx_prefix(NULL);
+	yaml_unmarshal_log_ctx_top(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_def(NULL);
+}
+
 void yaml_unmarshal_log_ctx_threshold(const enum LogThreshold t) {
 	log_ctx.t = t;
 }
@@ -49,15 +58,6 @@ void yaml_unmarshal_log_ctx_top(const char *top) {
 	if (log_ctx.top)
 		free(log_ctx.top);
 	log_ctx.top = top ? strdup(top) : NULL;
-}
-
-void yaml_unmarshal_log_ctx_reset(void) {
-	yaml_unmarshal_log_ctx_threshold(WARNING);
-	yaml_unmarshal_log_ctx_prefix(NULL);
-	yaml_unmarshal_log_ctx_top(NULL);
-	yaml_unmarshal_log_ctx_name_desc(NULL);
-	yaml_unmarshal_log_ctx_key(NULL);
-	yaml_unmarshal_log_ctx_def(NULL);
 }
 
 static void yaml_log_invalid(const yaml_char_t *value, const yaml_node_type_t type_expected, const yaml_node_type_t type_actual) {

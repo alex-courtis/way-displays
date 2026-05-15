@@ -14,36 +14,6 @@
 #include "yaml/context.h"
 #include "yaml/unmarshal-log.h"
 
-const struct STable *yaml_map_to_node_table(const yaml_node_t *map) {
-	if (!yaml_check_node_type(map, YAML_MAPPING_NODE))
-		return NULL;
-
-	const struct STable *table = stable_init(10, 10, false);
-
-	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
-		if (!pair->key || !pair->value)
-			continue;
-
-		const yaml_node_t *pair_key = yaml_document_get_node(yaml_document, pair->key);
-
-		char *key = NULL;
-		if (!(key = yaml_scalar_to_string(pair_key))) {
-			stable_free(table);
-			return NULL;
-		}
-
-		const yaml_node_t *pair_value = yaml_document_get_node(yaml_document, pair->value);
-
-		if (key && pair_value)
-			stable_put(table, key, pair_value);
-
-		if (key)
-			free(key);
-	}
-
-	return table;
-}
-
 char *yaml_scalar_to_string(const yaml_node_t *scalar) {
 	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
 		return NULL;
@@ -156,4 +126,34 @@ struct SList *yaml_seq_to_type_list(const yaml_node_t *seq, yaml_node_to_type_fn
 	}
 
 	return list;
+}
+
+const struct STable *yaml_map_to_node_table(const yaml_node_t *map) {
+	if (!yaml_check_node_type(map, YAML_MAPPING_NODE))
+		return NULL;
+
+	const struct STable *table = stable_init(10, 10, false);
+
+	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
+		if (!pair->key || !pair->value)
+			continue;
+
+		const yaml_node_t *pair_key = yaml_document_get_node(yaml_document, pair->key);
+
+		char *key = NULL;
+		if (!(key = yaml_scalar_to_string(pair_key))) {
+			stable_free(table);
+			return NULL;
+		}
+
+		const yaml_node_t *pair_value = yaml_document_get_node(yaml_document, pair->value);
+
+		if (key && pair_value)
+			stable_put(table, key, pair_value);
+
+		if (key)
+			free(key);
+	}
+
+	return table;
 }
