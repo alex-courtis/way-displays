@@ -524,7 +524,7 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 				break;
 			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
-				yaml_scalar_to_callback_cmd(&cfg->callback_cmd, value);
+				cfg->callback_cmd = yaml_scalar_to_string_def(value, CALLBACK_CMD_DEFAULT);
 				break;
 			case LAPTOP_DISPLAY_PREFIX:
 				cfg->laptop_display_prefix = yaml_scalar_to_string(value);

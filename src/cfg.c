@@ -484,7 +484,6 @@ void cfg_apply_defaults(struct Cfg *dst) {
 	if (!dst->auto_scale_max)
 		dst->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
 
-	// TODO mechanism to handle genuine null callback or just default it during read
 	if (!dst->callback_cmd)
 		dst->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
 }

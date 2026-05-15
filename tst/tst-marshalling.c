@@ -408,28 +408,6 @@ static void yaml_file_to_cfg__disabled(void **state) {
 	free(expected_log);
 }
 
-static void yaml_file_to_cfg__callback_cmd_empty(void **state) {
-	struct Cfg *read;
-	if (V2) {
-		read = yaml_unmarshal_file("tst/marshalling/cfg-callback-cmd-empty.yaml", yaml_root_to_cfg);
-		assert_non_nul(read);
-	} else {
-		read = unmarshal_cfg_from_file("tst/marshalling/cfg-callback-cmd-empty.yaml");
-		assert_non_nul(read);
-	}
-
-	assert_nul(read->callback_cmd);
-
-	struct Cfg *expected = cfg_init();
-
-	assert_cfg_equal(read, expected);
-
-	cfg_free(read);
-	cfg_free(expected);
-
-	assert_logs_empty();
-}
-
 static void yaml_file_to_cfg__yaml_parser_initialize_fail(void **state) {
 	if (!V2)
 		return;
@@ -1178,7 +1156,6 @@ int main(void) {
 		TEST(yaml_file_to_cfg__scale),
 		TEST(yaml_file_to_cfg__mode),
 		TEST(yaml_file_to_cfg__disabled),
-		TEST(yaml_file_to_cfg__callback_cmd_empty),
 
 		TEST(yaml_file_to_cfg__yaml_parser_initialize_fail),
 		TEST(yaml_file_to_cfg__yaml_parser_load_fail),

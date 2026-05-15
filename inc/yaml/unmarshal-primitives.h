@@ -14,6 +14,7 @@
 
 // extract scalars
 char *yaml_scalar_to_string(const yaml_node_t *scalar);
+char *yaml_scalar_to_string_def(const yaml_node_t *scalar, const char *def);
 bool  yaml_scalar_to_int(int32_t *dst, const yaml_node_t *scalar);
 bool  yaml_scalar_to_float(float *dst, const yaml_node_t *scalar);
 bool  yaml_scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar);

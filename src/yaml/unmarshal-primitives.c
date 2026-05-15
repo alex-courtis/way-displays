@@ -51,6 +51,19 @@ char *yaml_scalar_to_string(const yaml_node_t *scalar) {
 	return(strdup((char*)scalar->data.scalar.value));
 }
 
+char *yaml_scalar_to_string_def(const yaml_node_t *scalar, const char *def) {
+	yaml_unmarshal_log_ctx_def(def);
+
+	char *str = yaml_scalar_to_string(scalar);
+
+	if (!str)
+		str = strdup(def);
+
+	yaml_unmarshal_log_ctx_def(NULL);
+
+	return str;
+}
+
 bool yaml_scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
 	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
 		return false;
