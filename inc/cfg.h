@@ -121,6 +121,10 @@ void cfg_destroy(void);
 
 void cfg_file_paths_destroy(void);
 
+bool cfg_resolve_file(struct Cfg *cfg);
+
+void cfg_copy_file_path(struct Cfg *from, struct Cfg *to);
+
 struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command);
 
 //
@@ -129,6 +133,9 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command)
 struct Cfg *cfg_init(void);
 
 struct Cfg *cfg_default(void);
+
+// TODO this is test only
+void cfg_apply_defaults(struct Cfg *dst);
 
 struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
 
@@ -177,6 +184,5 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from);
 struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
 void validate_warn(struct Cfg *cfg);
 void validate_fix(struct Cfg *cfg);
-bool resolve_cfg_file(struct Cfg *cfg);
 
 #endif // CFG_H

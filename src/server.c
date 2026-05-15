@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -266,53 +267,64 @@ static void setup_signal_handlers(void) {
 }
 
 void reload_cfg(void) {
-	if (!cfg->file_path)
+	if (!cfg || !cfg->file_path)
 		return;
 
-	struct Cfg *reloaded = cfg_default();
-	reloaded->dir_path = cfg->dir_path ? strdup(cfg->dir_path) : NULL;
-	reloaded->file_path = cfg->file_path ? strdup(cfg->file_path) : NULL;
-	reloaded->file_name = cfg->file_name ? strdup(cfg->file_name) : NULL;
-
 	log_info("\nReloading configuration file: %s", cfg->file_path);
-	if (unmarshal_cfg_from_file(reloaded)) {
+
+	struct Cfg *cfg_loaded = unmarshal_cfg_from_file(cfg->file_path);
+
+	if (cfg_loaded) {
+		cfg_apply_defaults(cfg_loaded);
+		cfg_copy_file_path(cfg, cfg_loaded);
+
 		cfg_free(cfg);
-		cfg = reloaded;
+		cfg = cfg_loaded;
+
 		log_set_threshold(cfg->log_threshold, false);
 		validate_fix(cfg);
 		log_info("\nNew configuration:");
 		print_cfg(INFO, cfg, false);
 		validate_warn(cfg);
+
 	} else {
 		log_info("\nConfiguration unchanged:");
 		print_cfg(INFO, cfg, false);
-		cfg_free(reloaded);
 	}
 }
 
-void load_cfg(void) {
-	cfg = cfg_default();
+struct Cfg *load_cfg(void) {
+	struct Cfg *cfg_resolved = cfg_init();
 
-	bool found = resolve_cfg_file(cfg);
+	bool resolved = cfg_resolve_file(cfg_resolved);
 
-	if (found) {
-		log_info("\nFound configuration file: %s", cfg->file_path);
-		if (!unmarshal_cfg_from_file(cfg)) {
+	struct Cfg *cfg_loaded = NULL;
+
+	if (resolved) {
+		log_info("\nFound configuration file: %s", cfg_resolved->file_path);
+
+		cfg_loaded = unmarshal_cfg_from_file(cfg_resolved->file_path);
+
+		if (!cfg_loaded) {
 			log_info("\nUsing default configuration:");
-			struct Cfg *def = cfg_default();
-			def->dir_path = cfg->dir_path ? strdup(cfg->dir_path) : NULL;
-			def->file_path = cfg->file_path ? strdup(cfg->file_path) : NULL;
-			def->file_name = cfg->file_name ? strdup(cfg->file_name) : NULL;
-			cfg_free(cfg);
-			cfg = def;
+			cfg_loaded = cfg_init();
 		}
 	} else {
 		log_info("\nNo configuration file found, using defaults:");
+		cfg_loaded = cfg_init();
 	}
-	validate_fix(cfg);
+
+	cfg_apply_defaults(cfg_loaded);
+	cfg_copy_file_path(cfg_resolved, cfg_loaded);
+
+	validate_fix(cfg_loaded);
 	log_info("\nActive configuration:");
-	print_cfg(INFO, cfg, false);
-	validate_warn(cfg);
+	print_cfg(INFO, cfg_loaded, false);
+	validate_warn(cfg_loaded);
+
+	cfg_free(cfg_resolved);
+
+	return cfg_loaded;
 }
 
 
@@ -336,7 +348,7 @@ server(char *cfg_path) {
 	cfg_file_paths_init(cfg_path);
 
 	// maybe default, never exits
-	load_cfg();
+	cfg = load_cfg();
 	free(cfg_path);
 
 	// play back captured logs from cfg parse

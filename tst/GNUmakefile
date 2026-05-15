@@ -43,7 +43,7 @@ tst-cfg-file: WRAPS=,$\
 	--wrap=fd_wd_cfg_dir_create
 
 tst-server: WRAPS=,$\
-	--wrap=resolve_cfg_file,$\
+	--wrap=cfg_resolve_file,$\
 	--wrap=unmarshal_cfg_from_file
 
 tst-marshalling:

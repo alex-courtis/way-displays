@@ -23,7 +23,7 @@ char *_dir_path = NULL;
 char *_file_name = NULL;
 char *_file_path = NULL;
 
-bool __wrap_resolve_cfg_file(struct Cfg *cfg) {
+bool __wrap_cfg_resolve_file(struct Cfg *cfg) {
 	check_expected_ptr(cfg);
 
 	cfg->dir_path = _dir_path ? strdup(_dir_path) : NULL;
@@ -33,13 +33,10 @@ bool __wrap_resolve_cfg_file(struct Cfg *cfg) {
 	return mock_type(bool);
 }
 
-bool __wrap_unmarshal_cfg_from_file(struct Cfg *cfg) {
-	check_expected_ptr(cfg);
+struct Cfg *__wrap_unmarshal_cfg_from_file(const char *path) {
+	check_expected_ptr(path);
 
-	cfg->auto_scale_max = 888;
-	cfg->log_threshold = FATAL;
-
-	return mock_type(bool);
+	return mock_ptr_type_checked(struct Cfg*);
 }
 
 int before_all(void **state) {
@@ -51,15 +48,12 @@ int after_all(void **state) {
 }
 
 int before_each(void **state) {
-	cfg_destroy();
 	logs_clear();
 
 	return 0;
 }
 
 int after_each(void **state) {
-	cfg_destroy();
-
 	free(_dir_path);
 	_dir_path = NULL;
 	free(_file_name);
@@ -71,169 +65,197 @@ int after_each(void **state) {
 }
 
 void load_cfg__no_file(void **state) {
-	struct Cfg *cfg_orig = cfg;
+	expect_any(__wrap_cfg_resolve_file, cfg);
+	will_return_int(__wrap_cfg_resolve_file, false);
 
-	expect_any(__wrap_resolve_cfg_file, cfg);
-	will_return_int(__wrap_resolve_cfg_file, false);
+	struct Cfg *cfg_actual = load_cfg();
 
-	load_cfg();
+	struct Cfg *cfg_expected = cfg_default();
 
-	assert_non_nul(cfg);
-	assert_ptr_not_equal(cfg, cfg_orig);
+	assert_cfg_equal(cfg_actual, cfg_expected);
+	assert_nul(cfg_actual->file_name);
+	assert_nul(cfg_actual->file_path);
+	assert_nul(cfg_actual->dir_path);
 
-	struct Cfg *expected_cfg = cfg_default();
-
-	assert_cfg_equal(cfg, expected_cfg);
-	assert_nul(cfg->file_name);
-	assert_nul(cfg->file_path);
-	assert_nul(cfg->dir_path);
-
-	char *expected_log = read_file("tst/server/load-no-file.log");
-	assert_log(INFO, expected_log);
+	char *log_expected = read_file("tst/server/load-no-file.log");
+	assert_log(INFO, log_expected);
 	assert_logs_empty();
 
-	free(expected_log);
-	cfg_free(expected_cfg);
+	assert_nul(cfg);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
+	cfg_free(cfg_actual);
 }
 
 void load_cfg__invalid_file(void **state) {
-	struct Cfg *cfg_orig = cfg;
-
-	expect_any(__wrap_resolve_cfg_file, cfg);
-	will_return_int(__wrap_resolve_cfg_file, true);
-
-	expect_any(__wrap_unmarshal_cfg_from_file, cfg);
-	will_return_int(__wrap_unmarshal_cfg_from_file, false);
-
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
 
-	load_cfg();
+	expect_any(__wrap_cfg_resolve_file, cfg);
+	will_return_int(__wrap_cfg_resolve_file, true);
 
-	assert_non_nul(cfg);
-	assert_ptr_not_equal(cfg, cfg_orig);
+	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
+	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, NULL, struct Cfg*);
 
-	struct Cfg *expected_cfg = cfg_default();
+	struct Cfg *cfg_actual = load_cfg();
 
-	assert_cfg_equal(cfg, expected_cfg);
-	assert_str_equal(cfg->file_path, "file_path");
-	assert_str_equal(cfg->file_name, "file_name");
-	assert_str_equal(cfg->dir_path, "dir_path");
+	struct Cfg *cfg_expected = cfg_default();
 
-	char *expected_log = read_file("tst/server/load-invalid-file.log");
-	assert_log(INFO, expected_log);
+	assert_cfg_equal(cfg_actual, cfg_expected);
+	assert_str_equal(cfg_actual->file_path, "file_path");
+	assert_str_equal(cfg_actual->file_name, "file_name");
+	assert_str_equal(cfg_actual->dir_path, "dir_path");
+
+	char *log_expected = read_file("tst/server/load-invalid-file.log");
+	assert_log(INFO, log_expected);
 	assert_logs_empty();
 
-	free(expected_log);
-	cfg_free(expected_cfg);
+	assert_nul(cfg);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
+	cfg_free(cfg_actual);
 }
 
 void load_cfg__valid_file(void **state) {
-	struct Cfg *cfg_orig = cfg;
-
-	expect_any(__wrap_resolve_cfg_file, cfg);
-	will_return_int(__wrap_resolve_cfg_file, true);
-
-	expect_any(__wrap_unmarshal_cfg_from_file, cfg);
-	will_return_int(__wrap_unmarshal_cfg_from_file, true);
-
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
 
-	load_cfg();
+	struct Cfg *cfg_read = cfg_default();
+	cfg_read->auto_scale_max = 888;
+	cfg_read->log_threshold = FATAL;
 
-	assert_non_nul(cfg);
+	expect_any(__wrap_cfg_resolve_file, cfg);
+	will_return_int(__wrap_cfg_resolve_file, true);
 
-	assert_ptr_not_equal(cfg, cfg_orig);
+	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
+	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, cfg_read, struct Cfg*);
 
-	struct Cfg *expected_cfg = cfg_default();
-	expected_cfg->auto_scale_max = 888;
-	expected_cfg->log_threshold = FATAL;
+	struct Cfg *cfg_actual = load_cfg();
 
-	assert_cfg_equal(cfg, expected_cfg);
-	assert_str_equal(cfg->file_path, "file_path");
-	assert_str_equal(cfg->file_name, "file_name");
-	assert_str_equal(cfg->dir_path, "dir_path");
+	assert_ptr_equal(cfg_actual, cfg_read);
 
-	char *expected_log = read_file("tst/server/load-valid-file.log");
-	assert_log(INFO, expected_log);
+	struct Cfg *cfg_expected = cfg_default();
+	cfg_expected->auto_scale_max = 888;
+	cfg_expected->log_threshold = FATAL;
+
+	assert_cfg_equal(cfg_actual, cfg_expected);
+	assert_str_equal(cfg_actual->file_path, "file_path");
+	assert_str_equal(cfg_actual->file_name, "file_name");
+	assert_str_equal(cfg_actual->dir_path, "dir_path");
+
+	char *log_expected = read_file("tst/server/load-valid-file.log");
+	assert_log(INFO, log_expected);
 	assert_logs_empty();
 
-	free(expected_log);
-	cfg_free(expected_cfg);
+	assert_nul(cfg);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
+	cfg_free(cfg_actual);
+}
+
+void load_cfg__missing_defaults(void **state) {
+	_file_path = strdup("file_path");
+	_file_name = strdup("file_name");
+	_dir_path = strdup("dir_path");
+
+	struct Cfg *cfg_read = cfg_init();
+	slist_append(&cfg_read->order_name_desc, strdup("first head"));
+	cfg_read->align = BOTTOM;
+	cfg_read->auto_scale = OFF;
+
+	expect_any(__wrap_cfg_resolve_file, cfg);
+	will_return_int(__wrap_cfg_resolve_file, true);
+
+	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
+	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, cfg_read, struct Cfg*);
+
+	struct Cfg *cfg_actual = load_cfg();
+
+	assert_ptr_equal(cfg_actual, cfg_read);
+
+	struct Cfg *cfg_expected = cfg_default();
+	slist_append(&cfg_expected->order_name_desc, strdup("first head"));
+	cfg_expected->align = BOTTOM;
+	cfg_expected->auto_scale = OFF;
+
+	assert_cfg_equal(cfg_actual, cfg_expected);
+	assert_str_equal(cfg_actual->file_path, "file_path");
+	assert_str_equal(cfg_actual->file_name, "file_name");
+	assert_str_equal(cfg_actual->dir_path, "dir_path");
+
+	char *log_expected = read_file("tst/server/load-missing-defaults.log");
+	assert_log(INFO, log_expected);
+	assert_logs_empty();
+
+	assert_nul(cfg);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
+	cfg_free(cfg_actual);
 }
 
 void reload_cfg__no_file(void **state) {
-	cfg = cfg_default();
-	cfg->auto_scale_max = 111;
-	cfg->dir_path = strdup("foo");
-
-	struct Cfg *cfg_orig = cfg;
-
 	// no mock calls expected
 
 	reload_cfg();
 
-	assert_ptr_equal(cfg, cfg_orig);
-
-	struct Cfg *expected_cfg = cfg_default();
-	expected_cfg->auto_scale_max = 111;
-
-	assert_cfg_equal(cfg, expected_cfg);
-	assert_str_equal(cfg->dir_path, "foo");
-
 	assert_logs_empty();
-
-	cfg_free(expected_cfg);
 }
 
 void reload_cfg__invalid_file(void **state) {
-	cfg = cfg_default();
+	struct Cfg *cfg_orig = cfg_default();
+	cfg = cfg_orig;
 	cfg->auto_scale_max = 111;
 
 	cfg->file_path = strdup("file_path");
 	cfg->file_name = strdup("file_name");
 	cfg->dir_path = strdup("dir_path");
 
-	struct Cfg *cfg_orig = cfg;
-
-	expect_any(__wrap_unmarshal_cfg_from_file, cfg);
-	will_return_int(__wrap_unmarshal_cfg_from_file, false);
+	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
+	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, NULL, struct Cfg*);
 
 	reload_cfg();
 
 	assert_ptr_equal(cfg, cfg_orig);
 
-	struct Cfg *expected_cfg = cfg_default();
-	expected_cfg->auto_scale_max = 111;
+	struct Cfg *cfg_expected = cfg_default();
+	cfg_expected->auto_scale_max = 111;
 
-	assert_cfg_equal(cfg, expected_cfg);
+	assert_cfg_equal(cfg, cfg_expected);
 	assert_str_equal(cfg->file_path, "file_path");
 	assert_str_equal(cfg->file_name, "file_name");
 	assert_str_equal(cfg->dir_path, "dir_path");
 
-	char *expected_log = read_file("tst/server/reload-invalid-file.log");
-	assert_log(INFO, expected_log);
+	char *log_expected = read_file("tst/server/reload-invalid-file.log");
+	assert_log(INFO, log_expected);
 	assert_logs_empty();
 
-	free(expected_log);
-	cfg_free(expected_cfg);
+	free(log_expected);
+	cfg_free(cfg_expected);
+	cfg_free(cfg_orig);
 }
 
 void reload_cfg__valid_file(void **state) {
-	cfg = cfg_default();
+	struct Cfg *cfg_orig = cfg_default();
+	cfg = cfg_orig;
 	cfg->auto_scale_max = 222;
+	cfg->log_threshold = INFO;
+
+	struct Cfg *cfg_read = cfg_default();
+	cfg_read->auto_scale_max = 888;
+	cfg_read->log_threshold = FATAL;
 
 	cfg->file_path = strdup("file_path");
 	cfg->file_name = strdup("file_name");
 	cfg->dir_path = strdup("dir_path");
 
-	struct Cfg *cfg_orig = cfg;
-
-	expect_any(__wrap_unmarshal_cfg_from_file, cfg);
-	will_return_int(__wrap_unmarshal_cfg_from_file, true);
+	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
+	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, cfg_read, struct Cfg*);
 
 	expect_int_value(__wrap_log_set_threshold, threshold, FATAL);
 	expect_int_value(__wrap_log_set_threshold, cli, false);
@@ -241,22 +263,24 @@ void reload_cfg__valid_file(void **state) {
 	reload_cfg();
 
 	assert_ptr_not_equal(cfg, cfg_orig);
+	assert_ptr_equal(cfg, cfg_read);
 
-	struct Cfg *expected_cfg = cfg_default();
-	expected_cfg->auto_scale_max = 888;
-	expected_cfg->log_threshold = FATAL;
+	struct Cfg *cfg_expected = cfg_default();
+	cfg_expected->auto_scale_max = 888;
+	cfg_expected->log_threshold = FATAL;
 
-	assert_cfg_equal(cfg, expected_cfg);
+	assert_cfg_equal(cfg, cfg_expected);
 	assert_str_equal(cfg->file_path, "file_path");
 	assert_str_equal(cfg->file_name, "file_name");
 	assert_str_equal(cfg->dir_path, "dir_path");
 
-	char *expected_log = read_file("tst/server/reload-valid-file.log");
-	assert_log(INFO, expected_log);
+	char *log_expected = read_file("tst/server/reload-valid-file.log");
+	assert_log(INFO, log_expected);
 	assert_logs_empty();
 
-	free(expected_log);
-	cfg_free(expected_cfg);
+	free(log_expected);
+	cfg_free(cfg_expected);
+	cfg_free(cfg);
 }
 
 int main(void) {
@@ -264,6 +288,7 @@ int main(void) {
 		TEST(load_cfg__no_file),
 		TEST(load_cfg__valid_file),
 		TEST(load_cfg__invalid_file),
+		TEST(load_cfg__missing_defaults),
 
 		TEST(reload_cfg__no_file),
 		TEST(reload_cfg__invalid_file),

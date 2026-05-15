@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1312,19 +1313,21 @@ char *marshal_cfg(struct Cfg *cfg) {
 	}
 }
 
-bool unmarshal_cfg_from_file(struct Cfg *cfg) {
-	if (!cfg->file_path) {
-		return false;
-	}
+struct Cfg *unmarshal_cfg_from_file(const char *path) {
+	if (!path)
+		return NULL;
+
+	struct Cfg *cfg_loaded = cfg_init();
 
 	try {
-		struct CfgValidated *cfg_validated = reinterpret_cast<struct CfgValidated*>(cfg);
-		cfg_validated << YAML::LoadFile(cfg->file_path);;
+		struct CfgValidated *cfg_validated = reinterpret_cast<struct CfgValidated*>(cfg_loaded);
+		cfg_validated << YAML::LoadFile(path);;
 	} catch (const std::exception &e) {
-		log_error("\nparsing file %s %s", cfg->file_path, e.what());
-		return false;
+		log_error("\nparsing file %s %s", path, e.what());
+		cfg_free(cfg_loaded);
+		return NULL;
 	}
 
-	return true;
+	return cfg_loaded;
 }
 

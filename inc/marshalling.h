@@ -22,7 +22,7 @@ struct SList *unmarshal_ipc_responses(const char *yaml);
 
 char *marshal_cfg(struct Cfg *cfg);
 
-bool unmarshal_cfg_from_file(struct Cfg *cfg);
+struct Cfg *unmarshal_cfg_from_file(const char *path);
 bool yaml_file_into_cfg(struct Cfg *cfg);
 
 #if __cplusplus

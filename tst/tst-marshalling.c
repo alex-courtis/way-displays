@@ -202,9 +202,8 @@ static void yaml_file_to_cfg__ok(void **state) {
 		read = yaml_unmarshal_file("tst/marshalling/cfg-all.yaml", yaml_root_to_cfg);
 		assert_non_nul(read);
 	} else {
-		read = cfg_init();
-		read->file_path = strdup("tst/marshalling/cfg-all.yaml");
-		assert_true(unmarshal_cfg_from_file(read));
+		read = unmarshal_cfg_from_file("tst/marshalling/cfg-all.yaml");
+		assert_non_nul(read);
 	}
 
 	struct Cfg *expected = cfg_all();
@@ -224,9 +223,8 @@ static void yaml_file_to_cfg__empty(void **state) {
 		read = yaml_unmarshal_file("tst/marshalling/cfg-empty.yaml", yaml_root_to_cfg);
 		assert_nul(read);
 	} else {
-		read = cfg_init();
-		read->file_path = strdup("tst/marshalling/cfg-empty.yaml");
-		assert_false(unmarshal_cfg_from_file(read));
+		read = unmarshal_cfg_from_file("tst/marshalling/cfg-empty.yaml");
+		assert_nul(read);
 	}
 
 	if (V2)
@@ -234,8 +232,6 @@ static void yaml_file_to_cfg__empty(void **state) {
 	else
 		assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml empty cfg, expected map\n");
 	assert_logs_empty();
-
-	cfg_free(read);
 }
 
 static void yaml_file_to_cfg__missing(void **state) {
@@ -246,7 +242,7 @@ static void yaml_file_to_cfg__missing(void **state) {
 	} else {
 		read = cfg_init();
 		read->file_path = strdup("foo/bar/baz.yaml");
-		assert_false(unmarshal_cfg_from_file(read));
+		assert_false(unmarshal_cfg_from_file(read->file_path));
 	}
 
 	if (V2)
@@ -264,9 +260,8 @@ static void yaml_file_to_cfg__invalid(void **state) {
 		read = yaml_unmarshal_file("tst/marshalling/cfg-invalid.yaml", yaml_root_to_cfg);
 		assert_non_nul(read);
 	} else {
-		read = cfg_non_default();
-		read->file_path = strdup("tst/marshalling/cfg-invalid.yaml");
-		assert_true(unmarshal_cfg_from_file(read));
+		read = unmarshal_cfg_from_file("tst/marshalling/cfg-invalid.yaml");
+		assert_non_nul(read);
 	}
 
 	// all invalid have been set to default
@@ -419,9 +414,8 @@ static void yaml_file_to_cfg__callback_cmd_empty(void **state) {
 		read = yaml_unmarshal_file("tst/marshalling/cfg-callback-cmd-empty.yaml", yaml_root_to_cfg);
 		assert_non_nul(read);
 	} else {
-		read = cfg_init();
-		read->file_path = strdup("tst/marshalling/cfg-callback-cmd-empty.yaml");
-		assert_true(unmarshal_cfg_from_file(read));
+		read = unmarshal_cfg_from_file("tst/marshalling/cfg-callback-cmd-empty.yaml");
+		assert_non_nul(read);
 	}
 
 	assert_nul(read->callback_cmd);
@@ -473,9 +467,8 @@ static void yaml_file_to_cfg__legacy(void **state) {
 		read = yaml_unmarshal_file("tst/marshalling/cfg-legacy.yaml", yaml_root_to_cfg);
 		assert_non_nul(read);
 	} else {
-		read = cfg_init();
-		read->file_path = strdup("tst/marshalling/cfg-legacy.yaml");
-		assert_true(unmarshal_cfg_from_file(read));
+		read = unmarshal_cfg_from_file("tst/marshalling/cfg-legacy.yaml");
+		assert_non_nul(read);
 	}
 
 	struct Cfg *expected = cfg_init();

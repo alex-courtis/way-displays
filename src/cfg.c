@@ -464,6 +464,31 @@ struct Cfg *cfg_default(void) {
 	return def;
 }
 
+void cfg_apply_defaults(struct Cfg *dst) {
+
+	if (!dst->arrange)
+		dst->arrange = ARRANGE_DEFAULT;
+
+	if (!dst->align)
+		dst->align = ALIGN_DEFAULT;
+
+	if (!dst->scaling)
+		dst->scaling = SCALING_DEFAULT;
+
+	if (!dst->auto_scale)
+		dst->auto_scale = AUTO_SCALE_DEFAULT;
+
+	if (!dst->auto_scale_min)
+		dst->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
+
+	if (!dst->auto_scale_max)
+		dst->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
+
+	// TODO mechanism to handle genuine null callback or just default it during read
+	if (!dst->callback_cmd)
+		dst->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
+}
+
 struct UserMode *cfg_user_mode_default(void) {
 	return cfg_user_mode_init(NULL, false, -1, -1, -1, false);
 }
@@ -528,11 +553,11 @@ static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_pat
 	cfg->file_name = strdup(basename(path));
 }
 
-bool resolve_cfg_file(struct Cfg *cfg) {
-	if (!cfg)
+bool cfg_resolve_file(struct Cfg *dst) {
+	if (!dst)
 		return false;
 
-	cfg_paths_free(cfg);
+	cfg_paths_free(dst);
 
 	for (struct SList *i = cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
@@ -547,7 +572,7 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 				continue;
 			}
 
-			set_paths(cfg, i->val, file_path);
+			set_paths(dst, i->val, file_path);
 
 			free(file_path);
 
@@ -556,6 +581,19 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 	}
 
 	return false;
+}
+
+void cfg_copy_file_path(struct Cfg *from, struct Cfg *to) {
+	if (!from || !to)
+		return;
+
+	free(to->dir_path);
+	free(to->file_path);
+	free(to->file_name);
+
+	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
+	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
+	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
 }
 
 void validate_fix(struct Cfg *cfg) {

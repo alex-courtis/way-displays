@@ -3,8 +3,10 @@
 
 int server(char *cfg_path);
 
-void load_cfg(void);
-
+//
+// visible for testing
+//
+struct Cfg *load_cfg(void);
 void reload_cfg(void);
 
 #endif // SERVER_H
