@@ -1,9 +1,7 @@
-#include <assert.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/signalfd.h>
 #include <unistd.h>
 
@@ -296,7 +294,7 @@ void reload_cfg(void) {
 struct Cfg *load_cfg(void) {
 	struct Cfg *cfg_resolved = cfg_init();
 
-	bool resolved = cfg_resolve_file(cfg_resolved);
+	bool resolved = cfg_resolve_file_path(cfg_resolved);
 
 	struct Cfg *cfg_loaded = NULL;
 

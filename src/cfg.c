@@ -16,7 +16,6 @@
 #include "conditions.h"
 #include "convert.h"
 #include "global.h"
-#include "info.h"
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
@@ -453,13 +452,7 @@ struct Cfg *cfg_init(void) {
 struct Cfg *cfg_default(void) {
 	struct Cfg *def = cfg_init();
 
-	def->arrange = ARRANGE_DEFAULT;
-	def->align = ALIGN_DEFAULT;
-	def->scaling = SCALING_DEFAULT;
-	def->auto_scale = AUTO_SCALE_DEFAULT;
-	def->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
-	def->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
-	def->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
+	cfg_apply_defaults(def);
 
 	return def;
 }
@@ -552,7 +545,7 @@ static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_pat
 	cfg->file_name = strdup(basename(path));
 }
 
-bool cfg_resolve_file(struct Cfg *dst) {
+bool cfg_resolve_file_path(struct Cfg *dst) {
 	if (!dst)
 		return false;
 

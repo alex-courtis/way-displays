@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <yaml.h>
 
-#include "cfg.h"
 #include "head.h"
 
 /*

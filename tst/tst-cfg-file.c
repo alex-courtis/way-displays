@@ -379,7 +379,7 @@ void cfg_file_paths_init__user(void **state) {
 	assert_logs_empty();
 }
 
-void resolve_cfg_file__not_found(void **state) {
+void cfg_resolve_file_path__not_found(void **state) {
 	char cwd[PATH_MAX];
 	char file_path[PATH_MAX + 20];
 
@@ -389,7 +389,7 @@ void resolve_cfg_file__not_found(void **state) {
 
 	slist_append(&cfg_file_paths, strdup(file_path));
 
-	assert_false(cfg_resolve_file(cfg));
+	assert_false(cfg_resolve_file_path(cfg));
 
 	assert_nul(cfg->file_path);
 	assert_nul(cfg->dir_path);
@@ -399,7 +399,7 @@ void resolve_cfg_file__not_found(void **state) {
 	assert_logs_empty();
 }
 
-void resolve_cfg_file__direct(void **state) {
+void cfg_resolve_file_path__direct(void **state) {
 	char cwd[PATH_MAX];
 	char dir_path[PATH_MAX + 20];
 	char file_path[PATH_MAX + 40];
@@ -416,7 +416,7 @@ void resolve_cfg_file__direct(void **state) {
 		fclose(f);
 	}
 
-	assert_true(cfg_resolve_file(cfg));
+	assert_true(cfg_resolve_file_path(cfg));
 
 	assert_str_equal(cfg->file_path, file_path);
 	assert_str_equal(cfg->dir_path, dir_path);
@@ -427,7 +427,7 @@ void resolve_cfg_file__direct(void **state) {
 	assert_logs_empty();
 }
 
-void resolve_cfg_file__linked(void **state) {
+void cfg_resolve_file_path__linked(void **state) {
 	char cwd[PATH_MAX];
 	char dir_path[PATH_MAX + 20];
 	char file_path[PATH_MAX + 40];
@@ -449,7 +449,7 @@ void resolve_cfg_file__linked(void **state) {
 	}
 	assert_int_equal(symlink(file_path, linked_path), 0);
 
-	assert_true(cfg_resolve_file(cfg));
+	assert_true(cfg_resolve_file_path(cfg));
 
 	assert_str_equal(cfg->file_path, file_path);
 	assert_str_equal(cfg->dir_path, dir_path);
@@ -473,9 +473,9 @@ int main(void) {
 		TEST(cfg_file_paths_init__xch),
 		TEST(cfg_file_paths_init__user),
 
-		TEST(resolve_cfg_file__not_found),
-		TEST(resolve_cfg_file__direct),
-		TEST(resolve_cfg_file__linked),
+		TEST(cfg_resolve_file_path__not_found),
+		TEST(cfg_resolve_file_path__direct),
+		TEST(cfg_resolve_file_path__linked),
 	};
 
 	return RUN(tests);

@@ -5,11 +5,9 @@
 
 #include "yaml/unmarshal.h"
 
-#include "cfg.h"
 #include "log.h"
 #include "yaml/context.h"
 #include "yaml/unmarshal-log.h"
-#include "yaml/unmarshal-types.h"
 
 void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	yaml_unmarshal_log_ctx_reset();

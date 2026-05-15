@@ -121,7 +121,7 @@ void cfg_destroy(void);
 
 void cfg_file_paths_destroy(void);
 
-bool cfg_resolve_file(struct Cfg *cfg);
+bool cfg_resolve_file_path(struct Cfg *cfg);
 
 void cfg_copy_file_path(struct Cfg *from, struct Cfg *to);
 
@@ -134,7 +134,6 @@ struct Cfg *cfg_init(void);
 
 struct Cfg *cfg_default(void);
 
-// TODO this is test only
 void cfg_apply_defaults(struct Cfg *dst);
 
 struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
