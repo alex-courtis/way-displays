@@ -31,9 +31,6 @@ void *yaml_node_to_disabled(const yaml_node_t *node);     // Disabled
 // into HeadState
 bool yaml_map_to_head_state(struct HeadState *head_state, const yaml_node_t *map);
 
-// into Head.callback_cmd, frees first, sets NULL on empty string, otherwise default
-void yaml_scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar);
-
 // create LogCapLine list
 struct SList *yaml_seq_to_log_cap_lines(const yaml_node_t *seq);
 

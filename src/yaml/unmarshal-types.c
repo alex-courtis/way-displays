@@ -479,7 +479,7 @@ void *yaml_map_to_head(const yaml_node_t *map) {
 
 void *yaml_map_to_cfg(const yaml_node_t *map) {
 	if (!map)
-		return false;
+		return NULL;
 
 	struct Cfg *cfg = cfg_init();
 
@@ -527,6 +527,7 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 				break;
 			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
+				free(cfg->callback_cmd); // may be both entries present, use the last
 				cfg->callback_cmd = yaml_scalar_to_string_def(value, CALLBACK_CMD_DEFAULT);
 				break;
 			case LAPTOP_DISPLAY_PREFIX:
@@ -554,26 +555,6 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 	}
 
 	return cfg;
-}
-
-void yaml_scalar_to_callback_cmd(char **dst, const yaml_node_t *scalar) {
-	if (*dst) {
-		free(*dst);
-		*dst = NULL;
-	}
-
-	yaml_unmarshal_log_ctx_def(CALLBACK_CMD_DEFAULT);
-
-	*dst = yaml_scalar_to_string(scalar);
-
-	if (!*dst) {
-		*dst = strdup(CALLBACK_CMD_DEFAULT);
-	} else if (*dst && strlen(*dst) == 0) {
-		free(*dst);
-		*dst = NULL;
-	}
-
-	yaml_unmarshal_log_ctx_def(NULL);
 }
 
 struct SList *yaml_seq_to_log_cap_lines(const yaml_node_t *seq) {

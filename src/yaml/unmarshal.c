@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <yaml.h>
 
@@ -38,7 +37,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 		log_error("\nparsing file %s: yaml_parser_load failed", path);
 		yaml_parser_delete(&parser);
 		fclose(input);
-		return false;
+		return NULL;
 	}
 
 	const yaml_node_t *root;

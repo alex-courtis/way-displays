@@ -121,20 +121,6 @@ struct Cfg *cfg_all(void) {
 	return cfg;
 }
 
-struct Cfg *cfg_non_default(void) {
-	struct Cfg *def = cfg_init();
-
-	def->arrange = COL;
-	def->align = RIGHT;
-	def->scaling = OFF;
-	def->auto_scale = OFF;
-	def->auto_scale_min = 88;
-	def->auto_scale_max = 99;
-	def->callback_cmd = strdup("FOOBARBAZ");
-
-	return def;
-}
-
 // ipc-responses-map.yaml and ipc-responses-seq.yaml
 struct IpcOperation *ipc_response(void) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
