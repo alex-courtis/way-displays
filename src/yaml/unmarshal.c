@@ -45,7 +45,6 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	void *out = NULL;
 
-	// TODO put in action, needs a unit test to match V1
 	if (!(root = yaml_document_get_root_node(&document))) {
 		log_error("\nparsing file %s no root node", path);
 		goto end;
@@ -53,10 +52,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	yaml_document = &document;
 
-	if (root->type != YAML_MAPPING_NODE) {
-		log_error("\nparsing file %s empty cfg, expected map", path);
-		goto end;
-	}
+	yaml_unmarshal_log_ctx_top(path);
 
 	out = fn(root);
 

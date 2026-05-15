@@ -26,6 +26,9 @@ void *yaml_root_to_cfg(const yaml_node_t *root) {
 	if (!root)
 		return NULL;
 
+	if (!yaml_check_node_type(root, YAML_MAPPING_NODE))
+		return NULL;
+
 	return yaml_map_to_cfg(root);
 }
 

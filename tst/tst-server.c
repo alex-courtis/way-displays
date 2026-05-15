@@ -19,7 +19,7 @@ char *_dir_path = NULL;
 char *_file_name = NULL;
 char *_file_path = NULL;
 
-bool __wrap_cfg_resolve_file(struct Cfg *cfg) {
+bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 	check_expected_ptr(cfg);
 
 	cfg->dir_path = _dir_path ? strdup(_dir_path) : NULL;
@@ -61,8 +61,8 @@ int after_each(void **state) {
 }
 
 void load_cfg__no_file(void **state) {
-	expect_any(__wrap_cfg_resolve_file, cfg);
-	will_return_int(__wrap_cfg_resolve_file, false);
+	expect_any(__wrap_cfg_resolve_file_path, cfg);
+	will_return_int(__wrap_cfg_resolve_file_path, false);
 
 	struct Cfg *cfg_actual = load_cfg();
 
@@ -89,8 +89,8 @@ void load_cfg__invalid_file(void **state) {
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
 
-	expect_any(__wrap_cfg_resolve_file, cfg);
-	will_return_int(__wrap_cfg_resolve_file, true);
+	expect_any(__wrap_cfg_resolve_file_path, cfg);
+	will_return_int(__wrap_cfg_resolve_file_path, true);
 
 	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
 	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, NULL, struct Cfg*);
@@ -124,8 +124,8 @@ void load_cfg__valid_file(void **state) {
 	cfg_read->auto_scale_max = 888;
 	cfg_read->log_threshold = FATAL;
 
-	expect_any(__wrap_cfg_resolve_file, cfg);
-	will_return_int(__wrap_cfg_resolve_file, true);
+	expect_any(__wrap_cfg_resolve_file_path, cfg);
+	will_return_int(__wrap_cfg_resolve_file_path, true);
 
 	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
 	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, cfg_read, struct Cfg*);
@@ -164,8 +164,8 @@ void load_cfg__missing_defaults(void **state) {
 	cfg_read->align = BOTTOM;
 	cfg_read->auto_scale = OFF;
 
-	expect_any(__wrap_cfg_resolve_file, cfg);
-	will_return_int(__wrap_cfg_resolve_file, true);
+	expect_any(__wrap_cfg_resolve_file_path, cfg);
+	will_return_int(__wrap_cfg_resolve_file_path, true);
 
 	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
 	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, cfg_read, struct Cfg*);

@@ -300,6 +300,20 @@ static void yaml_file_to_cfg__mistyped(void **state) {
 	free(expected_log);
 }
 
+static void yaml_file_to_cfg__root_mistyped(void **state) {
+	if (!V2)
+		return;
+
+	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-root-mistyped.yaml", yaml_root_to_cfg);
+	assert_nul(read);
+
+	char *expected_log = read_file("tst/marshalling/cfg-root-mistyped.log");
+	assert_log(WARNING, expected_log);
+	assert_logs_empty();
+
+	free(expected_log);
+}
+
 static void yaml_file_to_cfg__transform(void **state) {
 	if (!V2)
 		return;
@@ -1152,6 +1166,7 @@ int main(void) {
 		TEST(yaml_file_to_cfg__invalid),
 		TEST(yaml_file_to_cfg__legacy),
 		TEST(yaml_file_to_cfg__mistyped),
+		TEST(yaml_file_to_cfg__root_mistyped),
 		TEST(yaml_file_to_cfg__transform),
 		TEST(yaml_file_to_cfg__scale),
 		TEST(yaml_file_to_cfg__mode),
