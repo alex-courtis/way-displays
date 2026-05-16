@@ -15,15 +15,17 @@
 #include "global.h"
 #include "slist.h"
 #include "log.h"
+#include "yaml/marshal.h"
 
 #include "cfg.h"
 
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 
+char *__wrap_yaml_marshal(const void *data, yaml_marshal_fn fn, const char *human) {
+	check_expected_ptr(data);
+	check_expected_ptr(human);
 
-char *__wrap_marshal_cfg(struct Cfg *cfg) {
-	check_expected_ptr(cfg);
 	return mock_ptr_type_checked(char*);
 }
 
@@ -119,8 +121,9 @@ int after_each(void **state) {
 void cfg_file_write__bad_yaml(void **state) {
 	cfg->file_path = strdup("something");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, NULL, char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, NULL, char*);
 
 	cfg_file_write();
 
@@ -132,8 +135,9 @@ void cfg_file_write__none(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, expected, char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, expected, char*);
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
@@ -180,8 +184,9 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 
 	char *expected = strdup("XXXXxxxX");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, strdup(expected), char*);
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
@@ -245,8 +250,9 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, strdup(expected), char*);
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
@@ -288,8 +294,9 @@ void cfg_file_write__existing(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, strdup(expected), char*);
 
 	expect_str(__wrap_file_write, path, cfg->file_path);
 	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);

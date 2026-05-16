@@ -3,15 +3,16 @@
 
 #include <cmocka.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wayland-util.h>
 
 #include "cfg.h"
 #include "head.h"
-#include "marshalling.h"
 #include "slist.h"
 #include "stable.h"
 #include "util.h"
+#include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 
 void _assert_nul(const void *a, const char * const ae, const char * const file, const int line) {
@@ -96,9 +97,13 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 
 void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
 	if (!cfg_equal(a, b)) {
-		cmocka_print_error("V1 assert_cfg_equal\nactual.cfg:\n%s\nexpected.cfg:\n%s\n", marshal_cfg(a), marshal_cfg(b));
-		write_file("actual.cfg", marshal_cfg(a));
-		write_file("expected.cfg", marshal_cfg(b));
+		char *yaml_a = yaml_marshal(a, yaml_doc_cfg, "cfg a");
+		char *yaml_b = yaml_marshal(b, yaml_doc_cfg, "cfg b");
+		cmocka_print_error("assert_cfg_equal\nactual.cfg:\n%s\nexpected.cfg:\n%s\n", yaml_a, yaml_b);
+		write_file("actual.cfg", yaml_a);
+		write_file("expected.cfg", yaml_b);
+		free(yaml_a);
+		free(yaml_b);
 		_fail(file, line);
 	}
 }

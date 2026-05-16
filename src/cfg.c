@@ -20,7 +20,8 @@
 #include "mode.h"
 #include "slist.h"
 #include "log.h"
-#include "marshalling.h"
+#include "yaml/marshal.h"
+#include "yaml/marshal-types.h"
 
 static enum OnOff on_off_invert(enum OnOff val) {
 	return (val == ON) ? OFF : ON;
@@ -902,7 +903,7 @@ void cfg_file_write(void) {
 
 	cfg->updated = false;
 
-	if (!(yaml = marshal_cfg(cfg))) {
+	if (!(yaml = yaml_marshal(cfg, yaml_doc_cfg, "cfg"))) {
 		goto end;
 	}
 

@@ -20,9 +20,10 @@
 #include "layout.h"
 #include "lid.h"
 #include "log.h"
-#include "marshalling.h"
 #include "process.h"
 #include "slist.h"
+#include "yaml/unmarshal.h"
+#include "yaml/unmarshal-types.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;
@@ -270,7 +271,7 @@ void reload_cfg(void) {
 
 	log_info("\nReloading configuration file: %s", cfg->file_path);
 
-	struct Cfg *cfg_loaded = unmarshal_cfg_from_file(cfg->file_path);
+	struct Cfg *cfg_loaded = yaml_unmarshal_file(cfg->file_path, yaml_root_to_cfg);
 
 	if (cfg_loaded) {
 		cfg_apply_defaults(cfg_loaded);
@@ -299,7 +300,7 @@ void load_cfg(void) {
 	if (resolved) {
 		log_info("\nFound configuration file: %s", cfg_resolved->file_path);
 
-		cfg = unmarshal_cfg_from_file(cfg_resolved->file_path);
+		cfg = yaml_unmarshal_file(cfg_resolved->file_path, yaml_root_to_cfg);
 
 		if (!cfg) {
 			log_info("\nUsing default configuration:");

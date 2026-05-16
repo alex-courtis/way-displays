@@ -14,6 +14,7 @@
 
 #include "server.h"
 #include "cfg.h"
+#include "yaml/unmarshal.h"
 
 char *_dir_path = NULL;
 char *_file_name = NULL;
@@ -29,7 +30,7 @@ bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 	return mock_type(bool);
 }
 
-struct Cfg *__wrap_unmarshal_cfg_from_file(const char *path) {
+void *__wrap_yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	check_expected_ptr(path);
 
 	return mock_ptr_type_checked(struct Cfg*);
@@ -97,8 +98,8 @@ void load_cfg__valid_file(void **state) {
 	expect_any(__wrap_cfg_resolve_file_path, cfg);
 	will_return_int(__wrap_cfg_resolve_file_path, true);
 
-	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
-	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, cfg_read, struct Cfg*);
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
 	load_cfg();
 
@@ -129,8 +130,8 @@ void load_cfg__invalid_file(void **state) {
 	expect_any(__wrap_cfg_resolve_file_path, cfg);
 	will_return_int(__wrap_cfg_resolve_file_path, true);
 
-	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
-	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, NULL, struct Cfg*);
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
 
 	load_cfg();
 
@@ -162,8 +163,8 @@ void load_cfg__missing_defaults(void **state) {
 	expect_any(__wrap_cfg_resolve_file_path, cfg);
 	will_return_int(__wrap_cfg_resolve_file_path, true);
 
-	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
-	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, cfg_read, struct Cfg*);
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
 	load_cfg();
 
@@ -209,8 +210,8 @@ void reload_cfg__invalid_file(void **state) {
 	cfg->file_name = strdup("file_name");
 	cfg->dir_path = strdup("dir_path");
 
-	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
-	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, NULL, struct Cfg*);
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
 
 	reload_cfg();
 
@@ -246,8 +247,8 @@ void reload_cfg__valid_file(void **state) {
 	cfg->file_name = strdup("file_name");
 	cfg->dir_path = strdup("dir_path");
 
-	expect_str(__wrap_unmarshal_cfg_from_file, path, "file_path");
-	will_return_ptr_type(__wrap_unmarshal_cfg_from_file, cfg_read, struct Cfg*);
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
 	expect_int_value(__wrap_log_set_threshold, threshold, FATAL);
 	expect_int_value(__wrap_log_set_threshold, cli, false);

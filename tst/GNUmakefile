@@ -36,7 +36,7 @@ tst-layout: WRAPS=,$\
 	--wrap=head_auto_scale
 
 tst-cfg-file: WRAPS=,$\
-	--wrap=marshal_cfg,$\
+	--wrap=yaml_marshal,$\
 	--wrap=file_write,$\
 	--wrap=mkdir_p,$\
 	--wrap=fd_wd_cfg_dir_destroy,$\
@@ -44,7 +44,7 @@ tst-cfg-file: WRAPS=,$\
 
 tst-server: WRAPS=,$\
 	--wrap=cfg_resolve_file_path,$\
-	--wrap=unmarshal_cfg_from_file
+	--wrap=yaml_unmarshal_file
 
 tst-marshalling:
 

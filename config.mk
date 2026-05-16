@@ -24,6 +24,7 @@ CFLAGS += $(COMPFLAGS) \
 		  -Wold-style-definition \
 		  -Wstrict-prototypes
 
+# TODO remove cpp
 CXXFLAGS += $(COMPFLAGS) \
 			-std=gnu++17 \
 			-Wno-c99-extensions
