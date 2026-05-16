@@ -39,7 +39,7 @@
             libinput
           ];
 
-          makeFlags = [ "CC=clang CXX=clang++ DESTDIR=$(out) PREFIX= PREFIX_ETC= ROOT_ETC=$(out)/etc" ];
+          makeFlags = [ "CC=clang DESTDIR=$(out) PREFIX= PREFIX_ETC= ROOT_ETC=$(out)/etc" ];
           doCheck = true;
           checkTarget = "test";
           checkInputs = [

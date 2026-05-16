@@ -151,6 +151,7 @@ struct Disabled *cfg_disabled_always(const char *name_desc);
 //
 bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 
+// TODO remove if not necessary
 bool cfg_user_scale_name_equal(const void *a, const void *b);
 
 bool cfg_user_mode_name_equal(const void *a, const void *b);

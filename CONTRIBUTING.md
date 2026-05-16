@@ -24,9 +24,9 @@ yaml-cpp will need to be installed via your distribution's package manager. Note
 
 gcc is the default for packaging reasons, however clang is preferred.
 
-Set CC and CXX when invoking make:
+Set CC when invoking make:
 
-`make CC=clang CXX=clang++ ...`
+`make CC=clang ...`
 
 [ccls](https://github.com/MaskRay/ccls) using clang is configured via `.ccls`, for editors that support the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
 
@@ -71,16 +71,16 @@ See all violations:
 
 Compilation can be done without 32-bit libs:
 ```sh
-make CC=gcc   CXX=g++     MFLAGS=-m32 clean compile
-make CC=clang CXX=clang++ MFLAGS=-m32 clean compile
+make CC=gcc   MFLAGS=-m32 clean compile
+make CC=clang MFLAGS=-m32 clean compile
 ```
 
 Testing requires 32-bit libs, libinput is excluded:
 ```sh
-make CC=gcc   CXX=g++     MFLAGS=-m32 clean test
-make CC=gcc   CXX=g++     MFLAGS=-m32 clean test-vg
-make CC=clang CXX=clang++ MFLAGS=-m32 clean test
-make CC=clang CXX=clang++ MFLAGS=-m32 clean test-vg
+make CC=gcc   MFLAGS=-m32 clean test
+make CC=gcc   MFLAGS=-m32 clean test-vg
+make CC=clang MFLAGS=-m32 clean test
+make CC=clang MFLAGS=-m32 clean test-vg
 ```
 
 ### Developing On The (CI) Arch Image

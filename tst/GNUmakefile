@@ -2,7 +2,6 @@ include GNUmakefile
 
 PKGS_TST = cmocka
 CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
-CXXFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
 
 # filter libinput as it is 64-bit only
@@ -51,4 +50,4 @@ tst-marshalling:
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
 $(TST_E): $(TST_O) $(OBJS)
-	$(CXX) -o $(@) tst/$(@).o $(OBJS) $(LDFLAGS) $(LDLIBS) $(WRAPS_COMMON)$(WRAPS)
+	$(CC) -o $(@) tst/$(@).o $(OBJS) $(LDFLAGS) $(LDLIBS) $(WRAPS_COMMON)$(WRAPS)
