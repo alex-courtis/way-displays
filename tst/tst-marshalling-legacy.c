@@ -20,7 +20,6 @@
 #include "slist.h"
 #include "log.h"
 #include "mode.h"
-#include "yaml/marshal-primitives.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal-types.h"
