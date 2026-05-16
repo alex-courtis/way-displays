@@ -23,6 +23,7 @@
 #include "yaml/unmarshal-types.h"
 
 #include "data-yaml.c"
+#include "wrap-libyaml.h"
 
 int before_all(void **state) {
 	return 0;
@@ -34,6 +35,8 @@ int after_all(void **state) {
 
 int before_each(void **state) {
 	logs_clear();
+
+	reset_yaml_fails();
 
 	return 0;
 }
@@ -633,6 +636,66 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_logs_empty();
 }
 
+static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_parser_initialize__fail = true;
+
+	assert_nul(yaml_unmarshal_str("", yaml_root_to_cfg, "foo"));
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "\nunmarshalling foo: yaml_parser_initialize failed\n");
+	assert_logs_empty();
+}
+
+static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_parser_load__fail = true;
+
+	assert_nul(yaml_unmarshal_str("FOO: bar", yaml_root_to_cfg, "foo"));
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "\n"
+			"unmarshalling foo: yaml_parser_load failed\n"
+			"========================================\n"
+			"FOO: bar\n"
+			"----------------------------------------\n");
+	assert_logs_empty();
+}
+
+static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_parser_initialize__fail = true;
+
+	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "\nparsing file tst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
+	assert_logs_empty();
+}
+
+static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_parser_load__fail = true;
+
+	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "\nparsing file tst/yaml/cfg-all.yaml: yaml_parser_load failed\n");
+	assert_logs_empty();
+}
+
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
@@ -663,6 +726,11 @@ int main(void) {
 		TEST(yaml_root_to_ipc_response_list__seq_no_rc),
 		TEST(yaml_root_to_ipc_response_list__map),
 		TEST(yaml_root_to_ipc_response_list__seq),
+
+		TEST(yaml_unmarshal_str__yaml_document_initialize_fail),
+		TEST(yaml_unmarshal_str__yaml_parser_load_fail),
+		TEST(yaml_unmarshal_file__yaml_document_initialize_fail),
+		TEST(yaml_unmarshal_file__yaml_parser_load_fail),
 	};
 
 	return RUN(tests);

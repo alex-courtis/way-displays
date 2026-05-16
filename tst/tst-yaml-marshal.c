@@ -13,12 +13,12 @@
 #include "ipc.h"
 #include "log.h"
 #include "slist.h"
-#include "wrap-libyaml.h"
 
 #include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
 
 #include "data-yaml.c"
+#include "wrap-libyaml.h"
 
 int before_all(void **state) {
 	return 0;
@@ -113,86 +113,6 @@ static void yaml_doc_cfg__empty(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_doc_cfg__yaml_document_initialize_fail(void **state) {
-
-	struct Cfg *cfg = cfg_all();
-
-	yaml_document_initialize__fail = true;
-
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
-
-	assert_nul(actual);
-
-	cfg_free(cfg);
-
-	assert_log(ERROR, "unable to marshal cfg: yaml_document_initialize failed\n");
-	assert_logs_empty();
-}
-
-static void yaml_doc_cfg__yaml_emitter_initialize_fail(void **state) {
-
-	struct Cfg *cfg = cfg_all();
-
-	yaml_emitter_initialize__fail = true;
-
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
-
-	assert_nul(actual);
-
-	cfg_free(cfg);
-
-	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_initialize failed\n");
-	assert_logs_empty();
-}
-
-static void yaml_doc_cfg__yaml_emitter_open_fail(void **state) {
-
-	struct Cfg *cfg = cfg_all();
-
-	yaml_emitter_dump__fail = true;
-
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
-
-	assert_nul(actual);
-
-	cfg_free(cfg);
-
-	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_dump failed\n");
-	assert_logs_empty();
-}
-
-// also covers case of write_handler fail
-static void yaml_doc_cfg__yaml_emitter_dump_fail(void **state) {
-
-	struct Cfg *cfg = cfg_all();
-
-	yaml_emitter_dump__fail = true;
-
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
-
-	assert_nul(actual);
-
-	cfg_free(cfg);
-
-	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_dump failed\n");
-	assert_logs_empty();
-}
-
-static void yaml_doc_cfg__yaml_emitter_close_fail(void **state) {
-
-	struct Cfg *cfg = cfg_all();
-
-	yaml_emitter_close__fail = true;
-
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
-
-	assert_nul(actual);
-
-	cfg_free(cfg);
-
-	assert_log(WARNING, "unable to marshal cfg: yaml_emitter_close failed\n");
-	assert_logs_empty();
-}
 
 static void yaml_doc_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
@@ -284,6 +204,87 @@ static void yaml_doc_ipc_operation__seq(void **state) {
 	assert_logs_empty();
 }
 
+static void yaml_marshal__yaml_document_initialize_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_document_initialize__fail = true;
+
+	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_document_initialize failed\n");
+	assert_logs_empty();
+}
+
+static void yaml_marshal__yaml_emitter_initialize_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_emitter_initialize__fail = true;
+
+	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_initialize failed\n");
+	assert_logs_empty();
+}
+
+static void yaml_marshal__yaml_emitter_open_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_emitter_open__fail = true;
+
+	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_open failed\n");
+	assert_logs_empty();
+}
+
+// also covers case of write_handler fail
+static void yaml_marshal__yaml_emitter_dump_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_emitter_dump__fail = true;
+
+	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_dump failed\n");
+	assert_logs_empty();
+}
+
+static void yaml_marshal__yaml_emitter_close_fail(void **state) {
+
+	struct Cfg *cfg = cfg_all();
+
+	yaml_emitter_close__fail = true;
+
+	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+
+	assert_nul(actual);
+
+	cfg_free(cfg);
+
+	assert_log(WARNING, "unable to marshal cfg: yaml_emitter_close failed\n");
+	assert_logs_empty();
+}
+
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
@@ -291,17 +292,17 @@ int main(void) {
 		TEST(yaml_doc_cfg__default),
 		TEST(yaml_doc_cfg__empty),
 
-		TEST(yaml_doc_cfg__yaml_document_initialize_fail),
-		TEST(yaml_doc_cfg__yaml_emitter_initialize_fail),
-		TEST(yaml_doc_cfg__yaml_emitter_open_fail),
-		TEST(yaml_doc_cfg__yaml_emitter_dump_fail),
-		TEST(yaml_doc_cfg__yaml_emitter_close_fail),
-
 		TEST(yaml_doc_ipc_request__no_op),
 		TEST(yaml_doc_ipc_request__cfg_set),
 
 		TEST(yaml_doc_ipc_operation__map),
 		TEST(yaml_doc_ipc_operation__seq),
+
+		TEST(yaml_marshal__yaml_document_initialize_fail),
+		TEST(yaml_marshal__yaml_emitter_initialize_fail),
+		TEST(yaml_marshal__yaml_emitter_open_fail),
+		TEST(yaml_marshal__yaml_emitter_dump_fail),
+		TEST(yaml_marshal__yaml_emitter_close_fail),
 	};
 
 	return RUN(tests);
