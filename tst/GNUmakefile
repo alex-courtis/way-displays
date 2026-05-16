@@ -48,8 +48,6 @@ tst-server: WRAPS=,$\
 
 tst-marshalling:
 
-tst-marshalling-2: CFLAGS += -DV2=true
-
 $(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
 
 $(TST_E): $(TST_O) $(OBJS)
