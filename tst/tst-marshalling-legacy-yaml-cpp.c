@@ -1,4 +1,4 @@
-// original test before migration, tweaked a little for formatting etc.
+// original test before migration, testing yaml-cpp, tweaked a little for formatting etc.
 
 #include "tst.h"
 #include "asserts.h"
@@ -106,7 +106,7 @@ struct Cfg *cfg_all(void) {
 
 void unmarshal_cfg_from_file__ok(void **state) {
 
-	struct Cfg *read = unmarshal_cfg_from_file("tst/marshalling-legacy-v1/cfg-all.yaml");
+	struct Cfg *read = unmarshal_cfg_from_file("tst/marshalling-legacy-yaml-cpp/cfg-all.yaml");
 
 	struct Cfg *expected = cfg_all();
 
@@ -120,18 +120,18 @@ void unmarshal_cfg_from_file__ok(void **state) {
 
 void unmarshal_cfg_from_file__empty(void **state) {
 
-	struct Cfg *read = unmarshal_cfg_from_file("tst/marshalling-legacy-v1/cfg-empty.yaml");
+	struct Cfg *read = unmarshal_cfg_from_file("tst/marshalling-legacy-yaml-cpp/cfg-empty.yaml");
 
 	assert_nul(read);
 
-	assert_log(ERROR, "\nparsing file tst/marshalling-legacy-v1/cfg-empty.yaml empty cfg, expected map\n");
+	assert_log(ERROR, "\nparsing file tst/marshalling-legacy-yaml-cpp/cfg-empty.yaml empty cfg, expected map\n");
 
 	cfg_free(read);
 }
 
 void unmarshal_cfg_from_file__bad(void **state) {
 
-	struct Cfg *read = unmarshal_cfg_from_file("tst/marshalling-legacy-v1/cfg-bad.yaml");
+	struct Cfg *read = unmarshal_cfg_from_file("tst/marshalling-legacy-yaml-cpp/cfg-bad.yaml");
 	cfg_apply_defaults(read);
 
 	struct Cfg *expected = cfg_default();
@@ -139,7 +139,7 @@ void unmarshal_cfg_from_file__bad(void **state) {
 	assert_cfg_equal(read, expected);
 
 	// these are just formatting issues
-	// char *expected_log = read_file("tst/marshalling-legacy-v1/cfg-bad.log");
+	// char *expected_log = read_file("tst/marshalling-legacy-yaml-cpp/cfg-bad.log");
 	// assert_log(WARNING, expected_log);
 
 	cfg_free(read);
@@ -148,7 +148,7 @@ void unmarshal_cfg_from_file__bad(void **state) {
 }
 
 void unmarshal_cfg_from_file__legacy(void **state) {
-	struct Cfg *read = unmarshal_cfg_from_file("tst/marshalling-legacy-v1/cfg-legacy.yaml");
+	struct Cfg *read = unmarshal_cfg_from_file("tst/marshalling-legacy-yaml-cpp/cfg-legacy.yaml");
 	cfg_apply_defaults(read);
 
 	struct Cfg *expected = cfg_default();
@@ -170,7 +170,7 @@ void marshal_cfg__ok(void **state) {
 
 	char *actual = marshal_cfg(cfg_actual);
 
-	char *expected = read_file("tst/marshalling-legacy-v1/cfg-all.yaml");
+	char *expected = read_file("tst/marshalling-legacy-yaml-cpp/cfg-all.yaml");
 
 	assert_str_equal(actual, expected);
 
@@ -200,7 +200,7 @@ void marshal_ipc_request__cfg_set(void **state) {
 
 	char *actual = marshal_ipc_request(ipc_request);
 
-	char *expected = read_file("tst/marshalling-legacy-v1/ipc-request-cfg-set.yaml");
+	char *expected = read_file("tst/marshalling-legacy-yaml-cpp/ipc-request-cfg-set.yaml");
 
 	assert_str_equal(actual, expected);
 
@@ -284,7 +284,7 @@ void marshal_ipc_response__map(void **state) {
 
 	assert_non_nul(actual);
 
-	char *expected = read_file("tst/marshalling-legacy-v1/ipc-responses-map.yaml");
+	char *expected = read_file("tst/marshalling-legacy-yaml-cpp/ipc-responses-map.yaml");
 
 	assert_str_equal(actual, expected);
 
@@ -356,7 +356,7 @@ void unmarshal_ipc_request__no_op(void **state) {
 }
 
 void unmarshal_ipc_request__cfg_set(void **state) {
-	char *yaml = read_file("tst/marshalling-legacy-v1/ipc-request-cfg-set.yaml");
+	char *yaml = read_file("tst/marshalling-legacy-yaml-cpp/ipc-request-cfg-set.yaml");
 
 	struct IpcRequest *actual = unmarshal_ipc_request(yaml);
 
@@ -425,7 +425,7 @@ void unmarshal_ipc_responses__seq_no_rc(void **state) {
 }
 
 void unmarshal_ipc_responses__map(void **state) {
-	char *yaml = read_file("tst/marshalling-legacy-v1/ipc-responses-map.yaml");
+	char *yaml = read_file("tst/marshalling-legacy-yaml-cpp/ipc-responses-map.yaml");
 
 	expect_function_call(__wrap_lid_free);
 
@@ -522,7 +522,7 @@ void unmarshal_ipc_responses__map(void **state) {
 }
 
 void unmarshal_ipc_responses__seq(void **state) {
-	char *yaml = read_file("tst/marshalling-legacy-v1/ipc-responses-seq.yaml");
+	char *yaml = read_file("tst/marshalling-legacy-yaml-cpp/ipc-responses-seq.yaml");
 
 	expect_function_calls(__wrap_lid_free, 3);
 
