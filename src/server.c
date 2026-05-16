@@ -291,40 +291,35 @@ void reload_cfg(void) {
 	}
 }
 
-struct Cfg *load_cfg(void) {
+void load_cfg(void) {
 	struct Cfg *cfg_resolved = cfg_init();
 
 	bool resolved = cfg_resolve_file_path(cfg_resolved);
 
-	struct Cfg *cfg_loaded = NULL;
-
 	if (resolved) {
 		log_info("\nFound configuration file: %s", cfg_resolved->file_path);
 
-		cfg_loaded = unmarshal_cfg_from_file(cfg_resolved->file_path);
+		cfg = unmarshal_cfg_from_file(cfg_resolved->file_path);
 
-		if (!cfg_loaded) {
+		if (!cfg) {
 			log_info("\nUsing default configuration:");
-			cfg_loaded = cfg_init();
+			cfg = cfg_init();
 		}
 	} else {
 		log_info("\nNo configuration file found, using defaults:");
-		cfg_loaded = cfg_init();
+		cfg = cfg_init();
 	}
 
-	cfg_apply_defaults(cfg_loaded);
-	cfg_copy_file_path(cfg_resolved, cfg_loaded);
+	cfg_apply_defaults(cfg);
+	cfg_copy_file_path(cfg_resolved, cfg);
 
-	validate_fix(cfg_loaded);
+	validate_fix(cfg);
 	log_info("\nActive configuration:");
-	print_cfg(INFO, cfg_loaded, false);
-	validate_warn(cfg_loaded);
+	print_cfg(INFO, cfg, false);
+	validate_warn(cfg);
 
 	cfg_free(cfg_resolved);
-
-	return cfg_loaded;
 }
-
 
 int
 server(char *cfg_path) {
@@ -346,7 +341,7 @@ server(char *cfg_path) {
 	cfg_file_paths_init(cfg_path);
 
 	// maybe default, never exits
-	cfg = load_cfg();
+	load_cfg();
 	free(cfg_path);
 
 	// play back captured logs from cfg parse
