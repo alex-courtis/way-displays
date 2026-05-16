@@ -22,6 +22,8 @@
 #include "yaml/unmarshal.h"
 #include "yaml/unmarshal-types.h"
 
+#include "data-yaml.c"
+
 int before_all(void **state) {
 	return 0;
 }
@@ -40,64 +42,10 @@ int after_each(void **state) {
 	return 0;
 }
 
-// TODO extract this common
-// cfg-all.yaml
-struct Cfg *cfg_all(void) {
-	struct Cfg *cfg = cfg_default();
-
-	cfg->arrange = COL;
-	cfg->align = BOTTOM;
-	cfg->scaling = OFF;
-	cfg->auto_scale = OFF;
-	cfg->log_threshold = ERROR;
-
-	cfg->auto_scale_min = 0.5f;
-	cfg->auto_scale_max = 2.5f;
-
-	free(cfg->callback_cmd);
-	cfg->callback_cmd = strdup("cmd");
-	cfg->laptop_display_prefix = strdup("ldp");
-
-	slist_append(&cfg->order_name_desc, strdup("one"));
-	slist_append(&cfg->order_name_desc, strdup("ONE"));
-	slist_append(&cfg->order_name_desc, strdup("!two"));
-
-	slist_append(&cfg->user_scales, cfg_user_scale_init("three", 3));
-	slist_append(&cfg->user_scales, cfg_user_scale_init("four", 4));
-
-	slist_append(&cfg->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
-
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));
-
-	slist_append(&cfg->disabled, cfg_disabled_always("eight"));
-	slist_append(&cfg->disabled, cfg_disabled_always("EIGHT"));
-	slist_append(&cfg->disabled, cfg_disabled_always("nine"));
-
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
-	disabled->name_desc = strdup("twelve");
-
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("ONE"));
-	slist_append(&cond->plugged, strdup("TWO"));
-	slist_append(&disabled->conditions, cond);
-
-	cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->unplugged, strdup("THREE"));
-	slist_append(&disabled->conditions, cond);
-
-	slist_append(&cfg->disabled, disabled);
-
-	slist_append(&cfg->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
-
-	return cfg;
-}
 
 static void yaml_root_to_cfg__ok(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-all.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
 	struct Cfg *expected = cfg_all();
@@ -112,10 +60,10 @@ static void yaml_root_to_cfg__ok(void **state) {
 
 static void yaml_root_to_cfg__empty(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-empty.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg);
 	assert_nul(read);
 
-	assert_log(ERROR, "\nparsing file tst/marshalling/cfg-empty.yaml no root node\n");
+	assert_log(ERROR, "\nparsing file tst/yaml/cfg-empty.yaml no root node\n");
 
 	assert_logs_empty();
 }
@@ -132,7 +80,7 @@ static void yaml_root_to_cfg__missing(void **state) {
 }
 
 static void yaml_root_to_cfg__invalid(void **state) {
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-invalid.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-invalid.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
 	// all invalid have been set to default
@@ -141,7 +89,7 @@ static void yaml_root_to_cfg__invalid(void **state) {
 
 	assert_cfg_equal(read, expected);
 
-	char *expected_log = read_file("tst/marshalling/cfg-invalid.log");
+	char *expected_log = read_file("tst/yaml/cfg-invalid.log");
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
@@ -152,7 +100,7 @@ static void yaml_root_to_cfg__invalid(void **state) {
 
 static void yaml_root_to_cfg__legacy(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-legacy.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-legacy.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
 	struct Cfg *expected = cfg_init();
@@ -176,7 +124,7 @@ static void yaml_root_to_cfg__legacy(void **state) {
 
 static void yaml_root_to_cfg__mistyped(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-mistyped.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-mistyped.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
 	// all invalid have been set to default
@@ -184,7 +132,7 @@ static void yaml_root_to_cfg__mistyped(void **state) {
 
 	assert_cfg_equal(read, expected);
 
-	char *expected_log = read_file("tst/marshalling/cfg-mistyped.log");
+	char *expected_log = read_file("tst/yaml/cfg-mistyped.log");
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
@@ -195,19 +143,16 @@ static void yaml_root_to_cfg__mistyped(void **state) {
 
 static void yaml_root_to_cfg__root_mistyped(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-root-mistyped.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-root-mistyped.yaml", yaml_root_to_cfg);
 	assert_nul(read);
 
-	char *expected_log = read_file("tst/marshalling/cfg-root-mistyped.log");
-	assert_log(WARNING, expected_log);
+	assert_log(WARNING, "Ignoring invalid tst/yaml/cfg-root-mistyped.yaml expected map, got sequence\n");
 	assert_logs_empty();
-
-	free(expected_log);
 }
 
 static void yaml_root_to_cfg__transform(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-transform.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-transform.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
 	struct Cfg *expected = cfg_init();
@@ -215,7 +160,7 @@ static void yaml_root_to_cfg__transform(void **state) {
 
 	assert_cfg_equal(read, expected);
 
-	char *expected_log = read_file("tst/marshalling/cfg-transform.log");
+	char *expected_log = read_file("tst/yaml/cfg-transform.log");
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
@@ -226,7 +171,7 @@ static void yaml_root_to_cfg__transform(void **state) {
 
 static void yaml_root_to_cfg__scale(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-scale.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-scale.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
 	struct Cfg *expected = cfg_init();
@@ -234,7 +179,7 @@ static void yaml_root_to_cfg__scale(void **state) {
 
 	assert_cfg_equal(read, expected);
 
-	char *expected_log = read_file("tst/marshalling/cfg-scale.log");
+	char *expected_log = read_file("tst/yaml/cfg-scale.log");
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
@@ -245,7 +190,7 @@ static void yaml_root_to_cfg__scale(void **state) {
 
 static void yaml_root_to_cfg__mode(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-mode.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-mode.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
 	struct Cfg *expected = cfg_init();
@@ -255,7 +200,7 @@ static void yaml_root_to_cfg__mode(void **state) {
 
 	assert_cfg_equal(read, expected);
 
-	char *expected_log = read_file("tst/marshalling/cfg-mode.log");
+	char *expected_log = read_file("tst/yaml/cfg-mode.log");
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
@@ -266,7 +211,7 @@ static void yaml_root_to_cfg__mode(void **state) {
 
 static void yaml_root_to_cfg__disabled(void **state) {
 
-	struct Cfg *read = yaml_unmarshal_file("tst/marshalling/cfg-disabled.yaml", yaml_root_to_cfg);
+	struct Cfg *read = yaml_unmarshal_file("tst/yaml/cfg-disabled.yaml", yaml_root_to_cfg);
 	assert_non_nul(read);
 
 	struct Cfg *expected = cfg_init();
@@ -296,7 +241,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 
 	assert_cfg_equal(read, expected);
 
-	char *expected_log = read_file("tst/marshalling/cfg-disabled.log");
+	char *expected_log = read_file("tst/yaml/cfg-disabled.log");
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
@@ -382,7 +327,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 }
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-request-cfg-invalid.yaml");
+	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 
 	struct Cfg *expected_cfg = cfg_default();
 	slist_append(&expected_cfg->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
@@ -395,7 +340,7 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 
 	assert_cfg_equal(actual->cfg, expected_cfg);
 
-	char *expected_log = read_file("tst/marshalling/cfg-invalid.log");
+	char *expected_log = read_file("tst/yaml/cfg-invalid.log");
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
@@ -406,7 +351,7 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 }
 
 static void yaml_root_to_ipc_request__cfg_set(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-request-cfg-set.yaml");
+	char *yaml = read_file("tst/yaml/ipc-request-cfg-set.yaml");
 
 	struct Cfg *expected_cfg = cfg_all();
 
@@ -507,7 +452,7 @@ static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
 }
 
 static void yaml_root_to_ipc_response_list__map(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-responses-map.yaml");
+	char *yaml = read_file("tst/yaml/ipc-responses-map.yaml");
 
 	expect_function_call(__wrap_lid_free);
 
@@ -611,7 +556,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 }
 
 static void yaml_root_to_ipc_response_list__seq(void **state) {
-	char *yaml = read_file("tst/marshalling/ipc-responses-seq-brief.yaml");
+	char *yaml = read_file("tst/yaml/ipc-responses-seq-brief.yaml");
 
 	expect_function_calls(__wrap_lid_free, 3);
 
