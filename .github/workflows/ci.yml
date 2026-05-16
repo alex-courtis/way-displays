@@ -55,12 +55,6 @@ jobs:
       - run: make CC=clang test
       - run: make CC=clang test-vg
 
-      - name: build lib32-yaml-cpp package
-        run: .github/workflows/packages/lib32-yaml-cpp/build.sh
-      - name: install lib32-yaml-cpp package
-        run: .github/workflows/packages/lib32-yaml-cpp/install.sh
-        shell: sh -e {0}
-
       - run: make                      clean
       - run: make CC=gcc   MFLAGS=-m32 test
       - run: make CC=gcc   MFLAGS=-m32 test-vg

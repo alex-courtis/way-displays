@@ -35,7 +35,7 @@
           # built for target system
           buildInputs = with pkgs; [
             wayland # target for libs
-            yaml-cpp
+            libyaml
             libinput
           ];
 

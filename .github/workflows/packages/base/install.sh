@@ -8,9 +8,9 @@ pacman --noconfirm -Syu \
 	git \
 	lib32-systemd \
 	libinput \
+	libyaml \
 	llvm \
 	ninja \
 	valgrind \
 	wayland lib32-wayland \
-	wayland-protocols \
-	yaml-cpp
+	wayland-protocols

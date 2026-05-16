@@ -14,11 +14,11 @@ Please raise an [issue](https://github.com/alex-courtis/way-displays/issues), fo
 * wayland-protocols
 * wlroots
 * libinput
-* yaml-cpp
+* libyaml
 
 Most will be available if you are running a wlroots based compositor like sway.
 
-yaml-cpp will need to be installed via your distribution's package manager. Note that if your distribution decouples libraries from their headers you will need to install the "development" versions of these packages (with the exception of make/gcc/glang).
+libyaml will need to be installed via your distribution's package manager. Note that if your distribution decouples libraries from their headers you will need to install the "development" versions of these packages (with the exception of make/gcc/glang).
 
 ## Development
 
@@ -99,7 +99,7 @@ Run a detached container:
 make docker-run
 ```
 
-Build and install the AUR lib32-yaml-cpp and include-what-you-use packages:
+Build and install the AUR include-what-you-use packages:
 ```sh
 make docker-packages
 ```

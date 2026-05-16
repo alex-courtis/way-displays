@@ -10,8 +10,6 @@ pro/*.c
 
 /tst/tmp/
 
-/tst/tst-marshalling-2.c
-
 actual.cfg
 actual.log
 actual.yaml

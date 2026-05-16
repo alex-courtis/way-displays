@@ -119,8 +119,6 @@ docker-run: docker-rm
 		"way-displays:latest"
 
 docker-packages:
-	docker exec                    way-displays .github/workflows/packages/lib32-yaml-cpp/build.sh
-	docker exec --user "root:root" way-displays .github/workflows/packages/lib32-yaml-cpp/install.sh
 	docker exec                    way-displays .github/workflows/packages/include-what-you-use/build.sh
 	docker exec --user "root:root" way-displays .github/workflows/packages/include-what-you-use/install.sh
 
