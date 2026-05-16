@@ -20,6 +20,7 @@
 #include "slist.h"
 #include "log.h"
 #include "mode.h"
+#include "yaml/marshal-primitives.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal-types.h"
@@ -140,13 +141,12 @@ void unmarshal_cfg_from_file__bad(void **state) {
 
 	assert_cfg_equal(read, expected);
 
-	// these are just formatting issues
-	// char *expected_log = read_file("tst/marshalling-legacy/cfg-bad.log");
-	// assert_log(WARNING, expected_log);
+	char *expected_log = read_file("tst/marshalling-legacy/cfg-bad.log");
+	assert_log(WARNING, expected_log);
 
 	cfg_free(read);
 	cfg_free(expected);
-	// free(expected_log);
+	free(expected_log);
 }
 
 void unmarshal_cfg_from_file__legacy(void **state) {
@@ -174,10 +174,6 @@ void marshal_cfg__ok(void **state) {
 
 	char *expected = read_file("tst/marshalling-legacy/cfg-all.yaml");
 
-	if (strcmp(actual, expected) != 0) {
-		write_file("actual.yaml", actual);
-		write_file("expected.yaml", expected);
-	}
 	assert_str_equal(actual, expected);
 
 	cfg_free(cfg_actual);
@@ -190,7 +186,7 @@ void marshal_cfg__ok(void **state) {
 void marshal_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
-	assert_nul(yaml_marshal(ipc_request, yaml_doc_ipc_request, "unmarshalling ipc request"));
+	assert_nul(yaml_marshal(ipc_request, yaml_doc_ipc_request, "ipc request"));
 
 	assert_log(ERROR, "unable to marshal ipc request: missing OP\n");
 
@@ -204,14 +200,10 @@ void marshal_ipc_request__cfg_set(void **state) {
 
 	ipc_request->cfg = cfg_all();
 
-	char *actual = yaml_marshal(ipc_request, yaml_doc_ipc_request, "unmarshalling ipc request");
+	char *actual = yaml_marshal(ipc_request, yaml_doc_ipc_request, "ipc request");
 
 	char *expected = read_file("tst/marshalling-legacy/ipc-request-cfg-set.yaml");
 
-	if (strcmp(actual, expected) != 0) {
-		write_file("actual.yaml", actual);
-		write_file("expected.yaml", expected);
-	}
 	assert_str_equal(actual, expected);
 
 	ipc_request_free(ipc_request);
@@ -290,7 +282,7 @@ void marshal_ipc_response__map(void **state) {
 
 	slist_append(&heads, &head);
 
-	char *actual = yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "unmarshalling ipc request");
+	char *actual = yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response");
 
 	assert_non_nul(actual);
 
@@ -317,7 +309,7 @@ void marshal_ipc_response__seq(void **state) {
 	ipc_operation->done = true;
 	ipc_operation->rc = 1;
 
-	char *actual = marshal_ipc_response(ipc_operation);
+	char *actual = yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response");
 
 	assert_non_nul(actual);
 

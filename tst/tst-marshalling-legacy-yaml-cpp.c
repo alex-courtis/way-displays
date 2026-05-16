@@ -138,13 +138,12 @@ void unmarshal_cfg_from_file__bad(void **state) {
 
 	assert_cfg_equal(read, expected);
 
-	// these are just formatting issues
-	// char *expected_log = read_file("tst/marshalling-legacy-yaml-cpp/cfg-bad.log");
-	// assert_log(WARNING, expected_log);
+	char *expected_log = read_file("tst/marshalling-legacy-yaml-cpp/cfg-bad.log");
+	assert_log(WARNING, expected_log);
 
 	cfg_free(read);
 	cfg_free(expected);
-	// free(expected_log);
+	free(expected_log);
 }
 
 void unmarshal_cfg_from_file__legacy(void **state) {
