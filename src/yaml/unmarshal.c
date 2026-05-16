@@ -67,16 +67,16 @@ end:
 	return out;
 }
 
-void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *name) {
+void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human) {
 	yaml_unmarshal_log_ctx_reset();
 
-	if (!yaml || !name)
+	if (!yaml || !human)
 		return NULL;
 
 	yaml_parser_t parser;
 
 	if (!yaml_parser_initialize(&parser)) {
-		log_error("\n%s: yaml_parser_initialize failed", name);
+		log_error("\nunmarshalling %s: yaml_parser_initialize failed", human);
 		return NULL;
 	}
 
@@ -85,7 +85,7 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *name) 
 	yaml_document_t document;
 
 	if (!yaml_parser_load(&parser, &document)) {
-		log_error("\n%s: yaml_parser_load failed", name);
+		log_error("\nunmarshalling %s: yaml_parser_load failed", human);
 		yaml_parser_delete(&parser);
 		log_error("========================================\n%s\n----------------------------------------", yaml);
 		return NULL;
@@ -96,12 +96,15 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *name) 
 	void *out = NULL;
 
 	if (!(root = yaml_document_get_root_node(&document))) {
-		log_error("\n%s: empty request", name);
+		log_error("\nunmarshalling %s: empty request", human);
 		goto err;
 	}
 
 	yaml_document = &document;
-	yaml_unmarshal_log_ctx_prefix(name);
+
+	char *prefix = sprintf_alloc("unmarshalling %s", human);
+	yaml_unmarshal_log_ctx_prefix(prefix);
+	free(prefix);
 
 	if ((out = fn(root)))
 		goto end;

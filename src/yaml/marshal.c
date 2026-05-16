@@ -62,7 +62,7 @@ end:
 	return yaml;
 }
 
-char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *name) {
+char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *human) {
 	if (!data)
 		return NULL;
 
@@ -72,14 +72,14 @@ char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *name) {
 	yaml_document = &document;
 
 	if (!yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1)) {
-		log_error("unable to marshal %s: yaml_document_initialize failed", name);
+		log_error("unable to marshal %s: yaml_document_initialize failed", human);
 		return NULL;
 	}
 
 	if (!fn(data))
 		goto end;
 
-	yaml = yaml_document_to_string(&document, name);
+	yaml = yaml_document_to_string(&document, human);
 
 end:
 	yaml_document_delete(&document);

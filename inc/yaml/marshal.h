@@ -10,7 +10,7 @@
 
 typedef bool (*yaml_marshal_fn)(const void *data);
 
-// Marshal a yaml document and render it as a string, name is arbitrary and used for logging
-char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *name);
+// Marshal a yaml document and render it as a string, human is arbitrary and used for logging
+char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *human);
 
 #endif // YAML_MARSHAL_H

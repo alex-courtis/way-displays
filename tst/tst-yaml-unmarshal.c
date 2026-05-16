@@ -251,8 +251,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 }
 
 static void yaml_root_to_ipc_request__empty(void **state) {
-	// TODO these should just be "ipc request"
-	struct IpcRequest *actual = yaml_unmarshal_str("", yaml_root_to_ipc_request, "unmarshalling ipc request");
+	struct IpcRequest *actual = yaml_unmarshal_str("", yaml_root_to_ipc_request, "ipc request");
 
 	assert_nul(actual);
 
@@ -267,7 +266,7 @@ static void yaml_root_to_ipc_request__empty(void **state) {
 static void yaml_root_to_ipc_request__mistyped_root(void **state) {
 	char *yaml = "- FOO";
 
-	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "unmarshalling ipc request");
+	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
 	assert_nul(actual);
 
@@ -282,7 +281,7 @@ static void yaml_root_to_ipc_request__mistyped_root(void **state) {
 static void yaml_root_to_ipc_request__invalid_op(void **state) {
 	char *yaml = "OP: aoeu";
 
-	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "unmarshalling ipc request");
+	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
 	assert_nul(actual);
 
@@ -297,7 +296,7 @@ static void yaml_root_to_ipc_request__invalid_op(void **state) {
 static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 	char *yaml = "OP:\n  FOO: BAR";
 
-	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "unmarshalling ipc request");
+	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
 	assert_nul(actual);
 
@@ -314,7 +313,7 @@ static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 static void yaml_root_to_ipc_request__no_op(void **state) {
 	char *yaml = "FOO: BAR";
 
-	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "unmarshalling ipc request");
+	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
 	assert_nul(actual);
 
@@ -332,7 +331,7 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected_cfg = cfg_default();
 	slist_append(&expected_cfg->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
 
-	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "unmarshalling ipc request");
+	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
 	assert_non_nul(actual);
 	assert_int_equal(actual->command, CFG_SET);
@@ -355,7 +354,7 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 
 	struct Cfg *expected_cfg = cfg_all();
 
-	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "unmarshalling ipc request");
+	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
 	assert_non_nul(actual);
 	assert_int_equal(actual->command, CFG_SET);
@@ -373,7 +372,7 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 static void yaml_root_to_ipc_response_list__empty(void **state) {
 	char *yaml = "";
 
-	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
+	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	assert_nul(actual);
 
@@ -389,7 +388,7 @@ static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
 
 	char *yaml = "foo";
 
-	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
+	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	assert_nul(actual);
 
@@ -404,7 +403,7 @@ static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
 static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
 	char *yaml = "-";
 
-	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
+	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	assert_nul(actual);
 
@@ -422,7 +421,7 @@ static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
 
 	expect_function_call(__wrap_lid_free);
 
-	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
+	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	assert_nul(actual);
 
@@ -439,7 +438,7 @@ static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
 
 	expect_function_call(__wrap_lid_free);
 
-	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
+	struct SList *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	assert_nul(actual);
 
@@ -456,7 +455,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	expect_function_call(__wrap_lid_free);
 
-	struct SList *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
+	struct SList *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	assert_non_nul(responses);
 	assert_int_equal(slist_length(responses), 1);
@@ -560,7 +559,7 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 
 	expect_function_calls(__wrap_lid_free, 3);
 
-	struct SList *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "unmarshalling ipc response");
+	struct SList *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	struct Cfg cfg_expected = {
 		.arrange = COL
