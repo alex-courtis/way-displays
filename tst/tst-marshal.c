@@ -171,7 +171,7 @@ struct IpcOperation *ipc_response(void) {
 	return ipc_operation;
 }
 
-static void cfg_to_yaml__ok(void **state) {
+static void yaml_doc_cfg__ok(void **state) {
 	struct Cfg *cfg = cfg_all();
 
 	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
@@ -194,7 +194,7 @@ static void cfg_to_yaml__ok(void **state) {
 	assert_logs_empty();
 }
 
-static void cfg_to_yaml__default(void **state) {
+static void yaml_doc_cfg__default(void **state) {
 	struct Cfg *cfg = cfg_default();
 
 	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
@@ -217,7 +217,7 @@ static void cfg_to_yaml__default(void **state) {
 	assert_logs_empty();
 }
 
-static void cfg_to_yaml__empty(void **state) {
+static void yaml_doc_cfg__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
 	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
@@ -240,7 +240,7 @@ static void cfg_to_yaml__empty(void **state) {
 	assert_logs_empty();
 }
 
-static void cfg_to_yaml__yaml_document_initialize_fail(void **state) {
+static void yaml_doc_cfg__yaml_document_initialize_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
@@ -256,7 +256,7 @@ static void cfg_to_yaml__yaml_document_initialize_fail(void **state) {
 	assert_logs_empty();
 }
 
-static void cfg_to_yaml__yaml_emitter_initialize_fail(void **state) {
+static void yaml_doc_cfg__yaml_emitter_initialize_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
@@ -272,7 +272,7 @@ static void cfg_to_yaml__yaml_emitter_initialize_fail(void **state) {
 	assert_logs_empty();
 }
 
-static void cfg_to_yaml__yaml_emitter_open_fail(void **state) {
+static void yaml_doc_cfg__yaml_emitter_open_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
@@ -289,7 +289,7 @@ static void cfg_to_yaml__yaml_emitter_open_fail(void **state) {
 }
 
 // also covers case of write_handler fail
-static void cfg_to_yaml__yaml_emitter_dump_fail(void **state) {
+static void yaml_doc_cfg__yaml_emitter_dump_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
@@ -305,7 +305,7 @@ static void cfg_to_yaml__yaml_emitter_dump_fail(void **state) {
 	assert_logs_empty();
 }
 
-static void cfg_to_yaml__yaml_emitter_close_fail(void **state) {
+static void yaml_doc_cfg__yaml_emitter_close_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
@@ -321,7 +321,7 @@ static void cfg_to_yaml__yaml_emitter_close_fail(void **state) {
 	assert_logs_empty();
 }
 
-static void ipc_request_to_yaml__no_op(void **state) {
+static void yaml_doc_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
 	assert_nul(yaml_marshal(ipc_request, yaml_doc_ipc_request, "ipc request"));
@@ -333,7 +333,7 @@ static void ipc_request_to_yaml__no_op(void **state) {
 	ipc_request_free(ipc_request);
 }
 
-static void ipc_request_to_yaml__cfg_set(void **state) {
+static void yaml_doc_ipc_request__cfg_set(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 	ipc_request->command = CFG_SET;
 	ipc_request->log_threshold = ERROR;
@@ -358,7 +358,7 @@ static void ipc_request_to_yaml__cfg_set(void **state) {
 	assert_logs_empty();
 }
 
-static void ipc_response_to_yaml__map(void **state) {
+static void yaml_doc_ipc_operation__map(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 
 	char *actual = actual = yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response");
@@ -384,7 +384,7 @@ static void ipc_response_to_yaml__map(void **state) {
 	assert_logs_empty();
 }
 
-static void ipc_response_to_yaml__seq(void **state) {
+static void yaml_doc_ipc_operation__seq(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 	ipc_operation->request->command = LIST;
 
@@ -414,21 +414,21 @@ static void ipc_response_to_yaml__seq(void **state) {
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
-		TEST(cfg_to_yaml__ok),
-		TEST(cfg_to_yaml__default),
-		TEST(cfg_to_yaml__empty),
+		TEST(yaml_doc_cfg__ok),
+		TEST(yaml_doc_cfg__default),
+		TEST(yaml_doc_cfg__empty),
 
-		TEST(cfg_to_yaml__yaml_document_initialize_fail),
-		TEST(cfg_to_yaml__yaml_emitter_initialize_fail),
-		TEST(cfg_to_yaml__yaml_emitter_open_fail),
-		TEST(cfg_to_yaml__yaml_emitter_dump_fail),
-		TEST(cfg_to_yaml__yaml_emitter_close_fail),
+		TEST(yaml_doc_cfg__yaml_document_initialize_fail),
+		TEST(yaml_doc_cfg__yaml_emitter_initialize_fail),
+		TEST(yaml_doc_cfg__yaml_emitter_open_fail),
+		TEST(yaml_doc_cfg__yaml_emitter_dump_fail),
+		TEST(yaml_doc_cfg__yaml_emitter_close_fail),
 
-		TEST(ipc_request_to_yaml__no_op),
-		TEST(ipc_request_to_yaml__cfg_set),
+		TEST(yaml_doc_ipc_request__no_op),
+		TEST(yaml_doc_ipc_request__cfg_set),
 
-		TEST(ipc_response_to_yaml__map),
-		TEST(ipc_response_to_yaml__seq),
+		TEST(yaml_doc_ipc_operation__map),
+		TEST(yaml_doc_ipc_operation__seq),
 	};
 
 	return RUN(tests);
