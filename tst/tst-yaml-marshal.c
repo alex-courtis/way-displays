@@ -13,12 +13,12 @@
 #include "ipc.h"
 #include "log.h"
 #include "slist.h"
+#include "wrap-libyaml.h"
 
 #include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
 
-#include "data-yaml.c"
-#include "wrap-libyaml.h"
+#include "yaml/data.c"
 
 int before_all(void **state) {
 	return 0;
