@@ -1,4 +1,10 @@
-#!/bin/sh
+#
+# Install packages within the docker container.
+# Not for running locally.
+#
+
+# speed up builds a bit
+# export MAKEFLAGS=-j4
 
 # 
 # arch 64 and 32 bit packages
@@ -18,8 +24,6 @@ pacman --noconfirm -Syu \
 	wayland lib32-wayland \
 	wayland-protocols
 
-# speed up builds a bit
-export MAKEFLAGS=-j4
 
 #
 # include-what-you-use to /usr/local

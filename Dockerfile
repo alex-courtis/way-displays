@@ -4,9 +4,9 @@
 
 FROM archlinux:multilib-devel
 
-COPY .github/workflows/packages.sh /usr/local/bin
+COPY bld/docker-install-packages.sh /usr/local/bin
 
-RUN packages.sh
+RUN . docker-install-packages.sh
 
 ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 ENV DEBUGINFOD_CACHE_PATH="/tmp/debuginfod_client"

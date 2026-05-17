@@ -41,7 +41,7 @@ jobs:
 
       - name: install packages
         shell: sh -e {0}
-        run: .github/workflows/packages.sh
+        run: . bld/docker-install-packages.sh
 
       - run: make          clean
       - run: make CC=gcc   all
