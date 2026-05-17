@@ -3,16 +3,17 @@
 # Not for running locally.
 #
 
+VERSION="0.26"
+
 # speed up builds a bit
 export MAKEFLAGS=-j8
 
 #
 # include-what-you-use to /usr/local
 #
-mkdir -p iwyu
-curl -L https://github.com/include-what-you-use/include-what-you-use/archive/refs/tags/0.26.tar.gz | tar zx --directory iwyu
+curl -L "https://github.com/include-what-you-use/include-what-you-use/archive/refs/tags/${VERSION}.tar.gz" | tar zx
 
-cd iwyu/include-what-you-use-0.26
+cd "include-what-you-use-${VERSION}"
 
 cmake -Bbuild --install-prefix /usr/local
 
