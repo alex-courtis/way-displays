@@ -18,7 +18,7 @@
 
 void ipc_send_request(struct IpcRequest *request) {
 
-	char *yaml = yaml_marshal(request, yaml_doc_ipc_operation, "ipc request");
+	char *yaml = yaml_marshal(request, yaml_doc_ipc_request, "ipc request");
 	if (!yaml) {
 		goto end;
 	}
