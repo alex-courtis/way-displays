@@ -19,6 +19,7 @@
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
+#include "stable.h"
 #include "log.h"
 #include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
@@ -89,7 +90,7 @@ void* cfg_disabled_clone(const void *val) {
 //
 // equality functions
 //
-bool cfg_user_mode_name_equal(const void *a, const void *b) {
+static bool cfg_user_mode_name_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -104,7 +105,7 @@ bool cfg_user_mode_name_equal(const void *a, const void *b) {
 	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
-bool cfg_user_scale_name_equal(const void *a, const void *b) {
+static bool cfg_user_scale_name_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -165,7 +166,7 @@ static bool cfg_user_mode_equal(const void *a, const void *b) {
 	return true;
 }
 
-bool cfg_user_transform_name_equal(const void *a, const void *b) {
+static bool cfg_user_transform_name_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -589,6 +590,74 @@ void cfg_copy_file_path(struct Cfg *from, struct Cfg *to) {
 	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
 }
 
+static void remove_duplicate_user_scales(struct Cfg *cfg) {
+	const struct STable *by_name_desc = stable_init(10, 10, false);
+
+	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
+		const struct UserScale *user_scale = i->val;
+		const struct UserScale *dup = stable_put(by_name_desc, user_scale->name_desc, user_scale);
+		if (dup) {
+			log_warn("\nRemoving duplicate SCALE %s", dup->name_desc);
+			cfg_user_scale_free(dup);
+		}
+	}
+
+	slist_free(&cfg->user_scales);
+	cfg->user_scales = stable_vals_slist(by_name_desc);
+	stable_free(by_name_desc);
+}
+
+static void remove_duplicate_user_modes(struct Cfg *cfg) {
+	const struct STable *by_name_desc = stable_init(10, 10, false);
+
+	for (struct SList *i = cfg->user_modes; i; i = i->nex) {
+		const struct UserMode *mode = i->val;
+		const struct UserMode *dup = stable_put(by_name_desc, mode->name_desc, mode);
+		if (dup) {
+			log_warn("\nRemoving duplicate MODE %s", dup->name_desc);
+			cfg_user_mode_free(dup);
+		}
+	}
+
+	slist_free(&cfg->user_modes);
+	cfg->user_modes = stable_vals_slist(by_name_desc);
+	stable_free(by_name_desc);
+}
+
+static void remove_duplicate_user_transforms(struct Cfg *cfg) {
+	const struct STable *by_name_desc = stable_init(10, 10, false);
+
+	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
+		const struct UserTransform *transform = i->val;
+		const struct UserTransform *dup = stable_put(by_name_desc, transform->name_desc, transform);
+		if (dup) {
+			log_warn("\nRemoving duplicate TRANSFORM %s", dup->name_desc);
+			cfg_user_transform_free(dup);
+		}
+	}
+
+	slist_free(&cfg->user_transforms);
+	cfg->user_transforms = stable_vals_slist(by_name_desc);
+	stable_free(by_name_desc);
+}
+
+static void remove_duplicate_disabled(struct Cfg *cfg) {
+	const struct STable *by_name_desc = stable_init(10, 10, false);
+
+	for (struct SList *i = cfg->disabled; i; i = i->nex) {
+		const struct Disabled *disabled = i->val;
+		const struct Disabled *dup = stable_put(by_name_desc, disabled->name_desc, disabled);
+		if (dup) {
+			log_warn("\nRemoving duplicate DISABLED %s", dup->name_desc);
+			cfg_disabled_free(dup);
+		}
+	}
+
+	slist_free(&cfg->disabled);
+	cfg->disabled = stable_vals_slist(by_name_desc);
+	stable_free(by_name_desc);
+}
+
 void validate_fix(struct Cfg *cfg) {
 	if (!cfg) {
 		return;
@@ -612,8 +681,14 @@ void validate_fix(struct Cfg *cfg) {
 	}
 
 	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, cfg_user_scale_free);
+	remove_duplicate_user_scales(cfg);
 
 	slist_remove_all_free(&cfg->user_modes, invalid_user_mode, NULL, cfg_user_mode_free);
+	remove_duplicate_user_modes(cfg);
+
+	remove_duplicate_user_transforms(cfg);
+
+	remove_duplicate_disabled(cfg);
 }
 
 static void warn_ambiguous_name_desc_list(struct SList *name_desc, const char * const element) {
