@@ -4,7 +4,7 @@
 #
 
 # speed up builds a bit
-# export MAKEFLAGS=-j4
+export MAKEFLAGS=-j8
 
 # 
 # arch 64 and 32 bit packages
