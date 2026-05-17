@@ -4,11 +4,9 @@
 
 FROM archlinux:multilib-devel
 
-COPY .github/workflows/packages/base/install.sh /usr/local/bin/packages-base-install.sh
+COPY .github/workflows/packages.sh /usr/local/bin
 
-RUN packages-base-install.sh
+RUN packages.sh
 
 ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 ENV DEBUGINFOD_CACHE_PATH="/tmp/debuginfod_client"
-
-ENTRYPOINT [ "sleep", "infinity" ]

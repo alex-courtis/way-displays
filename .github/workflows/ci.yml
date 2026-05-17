@@ -41,7 +41,7 @@ jobs:
 
       - name: install packages
         shell: sh -e {0}
-        run: .github/workflows/packages/base/install.sh
+        run: .github/workflows/packages.sh
 
       - run: make          clean
       - run: make CC=gcc   all
@@ -62,12 +62,6 @@ jobs:
       - run: make                      clean
       - run: make CC=clang MFLAGS=-m32 test
       - run: make CC=clang MFLAGS=-m32 test-vg
-
-      - name: build include-what-you-use package
-        run: .github/workflows/packages/include-what-you-use/build.sh
-      - name: install include-what-you-use package
-        run: .github/workflows/packages/include-what-you-use/install.sh
-        shell: sh -e {0}
 
       - run: make clean iwyu
 

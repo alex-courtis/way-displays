@@ -100,28 +100,6 @@ examples: $(EXAMPLE_E)
 examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-docker-build:
-	docker build --no-cache --tag "way-displays:latest" .
-
-docker-rm:
-	docker rm -f way-displays || true
-
-docker-image-rm: docker-rm
-	docker image rm way-displays:latest
-
-docker-run: docker-rm
-	docker run \
-		--name="way-displays" \
-		--volume "${PWD}:/way-displays" \
-		--workdir="/way-displays" \
-		--user "`id -u`:`id -g`" \
-		--detach \
-		"way-displays:latest"
-
-docker-packages:
-	docker exec                    way-displays .github/workflows/packages/include-what-you-use/build.sh
-	docker exec --user "root:root" way-displays .github/workflows/packages/include-what-you-use/install.sh
-
 .PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg docker-build docker-stop docker-run $(TST_T)
 
 .NOTPARALLEL: iwyu test test-vg

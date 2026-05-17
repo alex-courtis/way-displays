@@ -89,41 +89,20 @@ make CC=clang MFLAGS=-m32 clean test-vg
 
 `Dockerfile` defines an image similar to that used by the docker container in `ci.yml`
 
-It is intended to run in detached mode, thus the `ENTRYPOINT [ "sleep", "infinity" ]`
-
 Build the image:
 ```sh
-make docker-build
-```
-
-Run a detached container:
-```sh
-make docker-run
-```
-
-Build and install the AUR include-what-you-use packages:
-```sh
-make docker-packages
+bld/docker-build.sh
 ```
 
 Execute a command in the container e.g.:
 ```sh
-docker exec way-displays make MFLAGS=-m32 clean test-vg
+bld/docker-run.sh make MFLAGS=-m32 clean test-vg
 ```
 
 OR run a shell in the container:
-```sh
-docker exec -it way-displays /bin/bash
-```
 
-Stop and remove the container:
 ```sh
-make docker-rm
-```
-
-Remove the image:
-```sh
-make docker-image-rm
+bld/docker-run.sh
 ```
 
 ## Documentation
