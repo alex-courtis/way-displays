@@ -193,7 +193,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	}
 
 	if (!parsed) {
-		char *msg = NULL;
+		char *msg = sprintf_alloc("");
 		for (int i = optind; i < argc; i++) {
 			msg = sprintf_append(msg, " %s", argv[i]);
 		}
