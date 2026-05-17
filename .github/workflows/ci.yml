@@ -57,6 +57,7 @@ jobs:
 
       - name: build and install 32-bit libyaml
         run: bld/docker-install-libyaml-32.sh
+        shell: sh -e {0}
 
       - run: make                      clean
       - run: make CC=gcc   MFLAGS=-m32 test
@@ -68,6 +69,7 @@ jobs:
 
       - name: build and install include-what-you-use
         run: bld/docker-install-iwyu.sh
+        shell: sh -e {0}
 
       - run: make clean iwyu
 
