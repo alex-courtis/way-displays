@@ -69,6 +69,8 @@ See all violations:
 
 ### 32-bit
 
+`way-displays` requires libinput for which 32-bit packages are not widely available, hence only the test targets should be exercised.
+
 Compilation can be done without 32-bit libs:
 ```sh
 make CC=gcc   MFLAGS=-m32 clean compile
