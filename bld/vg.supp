@@ -1,6 +1,16 @@
 # suppressions for valgrinding way-displays itself
 
 {
+   wl_display_read_events - always
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   ...
+   fun:wl_display_read_events
+   ...
+}
+
+{
    libinput_udev_assign_seat - sporadic
    Memcheck:Leak
    match-leak-kinds: definite
