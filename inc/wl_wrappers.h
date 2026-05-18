@@ -13,6 +13,7 @@ int _wl_display_prepare_read(struct wl_display *display, char *file, int line);
 
 int _wl_display_flush(struct wl_display *display, char *file, int line);
 
+// returns 0 on success, -1 on epipe, exits otherwise
 int _wl_display_read_events(struct wl_display *display, char *file, int line);
 
 #endif // WL_WRAPPERS

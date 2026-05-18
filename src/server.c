@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/signalfd.h>
 #include <unistd.h>
 
@@ -184,7 +185,8 @@ static int loop(void) {
 
 		// always read and dispatch wayland events; stop the file descriptor from getting stale
 		log_debug("LOOP _wl_display_read_events");
-		_wl_display_read_events(displ->display, FL);
+		if (_wl_display_read_events(displ->display, FL) == -1)
+			return EXIT_SUCCESS;
 
 		log_debug("LOOP _wl_display_dispatch_pending__read_events");
 		_wl_display_dispatch_pending__read_events(displ->display, FL);
@@ -200,8 +202,9 @@ static int loop(void) {
 		if (pfd_signal && pfd_signal->revents & pfd_signal->events) {
 			struct signalfd_siginfo fdsi;
 			if (read(fd_signal, &fdsi, sizeof(fdsi)) == sizeof(fdsi)) {
+				log_debug("LOOP signal %d: %s", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
 				if (fdsi.ssi_signo != SIGPIPE) {
-					log_debug("LOOP clean exit");
+					log_info("\nReceived signal %d: %s, exiting", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
 					return fdsi.ssi_signo;
 				}
 			}
