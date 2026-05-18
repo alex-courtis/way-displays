@@ -1,4 +1,4 @@
-VERSION ?= "1.15.1-SNAPSHOT"
+VERSION ?= "2.0.0-SNAPSHOT"
 
 PREFIX ?= /usr/local
 PREFIX_ETC ?= /usr/local
