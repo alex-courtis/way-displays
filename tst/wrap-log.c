@@ -28,9 +28,9 @@ void _assert_log(enum LogThreshold t, const char * s, const char * const file, c
 	if (bp[t]) {
 		bp[t] = NULL;
 		if (strcmp(b[t], s) != 0) {
-			cmocka_print_error("assert_log\nlog.actual:\n\"%s\"\nlog.expected:\n\"%s\"\n", b[t], s);
-			write_file("log.actual", b[t]);
-			write_file("log.expected", s);
+			cmocka_print_error("assert_log\nactual.log:\n\"%s\"\nexpected.log:\n\"%s\"\n", b[t], s);
+			write_file("actual.log", b[t]);
+			write_file("expected.log", s);
 			_fail(file, line);
 		}
 	} else {

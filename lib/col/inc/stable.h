@@ -76,7 +76,7 @@ bool stable_equal(const struct STable* const a, const struct STable* const b, fn
  * Conversion
  */
 
-// ordered key pointers to table, caller frees list only
+// ordered key pointers to table, caller frees list and contents
 struct SList *stable_keys_slist(const struct STable* const tab);
 
 // ordered val pointers to table, caller frees list only

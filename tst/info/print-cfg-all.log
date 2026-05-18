@@ -1,0 +1,24 @@
+  Arrange in a ROW aligned at the TOP
+  Order:
+    first
+    last
+  Scaling: ON
+  Auto scale: ON (min: 1.000)
+  Scale:
+    three: 3.000
+    four: 4.000
+  Mode:
+    five: 1920x1080@12.34Hz
+    six: 2560x1440
+    seven: MAX
+  Transform:
+    twelve: FLIPPED
+  Max preferred refresh:
+    legacy
+  Disabled:
+    disabled always
+    disabled conditionally (conditionally)
+  Change success command:
+    notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
+  Laptop display prefix: lappy
+

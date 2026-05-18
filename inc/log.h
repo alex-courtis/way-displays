@@ -61,5 +61,13 @@ void log_cap_lines_free(struct SList **log_cap_lines);
 
 void log_cap_lines_playback(struct SList *log_cap_lines);
 
+
+// sprintf to a malloc'd buffer
+char *sprintf_alloc(const char *__restrict __format, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
+
+// append to nullable s, returning a malloc'd buffer, freeing s
+char *sprintf_append(char *__restrict s, const char *__restrict __format, ...) __attribute__ ((__format__ (__printf__, 2, 3)));
+
+
 #endif // LOG_H
 

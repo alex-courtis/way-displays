@@ -279,7 +279,7 @@ struct SList *stable_keys_slist(const struct STable* const tab) {
 
 	const char **k;
 	for (k = tab->keys; k < tab->keys + tab->size; k++) {
-		slist_append(&list, (void*)*k);
+		slist_append(&list, strdup(*k));
 	}
 
 	return list;

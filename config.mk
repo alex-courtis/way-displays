@@ -1,4 +1,4 @@
-VERSION ?= "1.15.1-SNAPSHOT"
+VERSION ?= "2.0.0-SNAPSHOT"
 
 PREFIX ?= /usr/local
 PREFIX_ETC ?= /usr/local
@@ -25,20 +25,15 @@ CFLAGS += $(COMPFLAGS) \
 		  -Wold-style-definition \
 		  -Wstrict-prototypes
 
-CXXFLAGS += $(COMPFLAGS) \
-			-std=gnu++17 \
-			-Wno-c99-extensions
-
 LDFLAGS += $(MFLAGS)
 
 ifeq (,$(filter-out DragonFly FreeBSD NetBSD OpenBSD,$(shell uname -s)))
 	PKGS += epoll-shim libinotify
 endif
 
-PKGS += wayland-client yaml-cpp libinput libudev
+PKGS += wayland-client libinput libudev yaml-0.1
 PKG_CONFIG ?= pkg-config
 CFLAGS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --cflags $(p)))
-CXXFLAGS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS),$(shell $(PKG_CONFIG) --libs $(p)))
 
 ifneq (,$(findstring -m32,$(MFLAGS)))
@@ -46,4 +41,3 @@ ifneq (,$(findstring -m32,$(MFLAGS)))
 endif
 
 CC = gcc
-CXX = g++

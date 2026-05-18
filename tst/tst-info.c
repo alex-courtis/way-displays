@@ -10,6 +10,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "conditions.h"
 #include "displ.h"
 #include "global.h"
 #include "head.h"
@@ -137,6 +138,115 @@ int after_each(void **state) {
 	return 0;
 }
 
+void print_cfg__all(void **state) {
+	struct Cfg *c = cfg_default();
+
+	slist_append(&c->order_name_desc, strdup("first"));
+	slist_append(&c->order_name_desc, strdup("last"));
+
+	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
+	slist_append(&c->user_scales, cfg_user_scale_init("four", 4));
+
+	slist_append(&c->disabled, cfg_disabled_always("disabled always"));
+	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	disabled->name_desc = strdup("disabled conditionally");
+	struct Condition *cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->plugged, strdup("ONE"));
+	slist_append(&disabled->conditions, cond);
+	slist_append(&c->disabled, disabled);
+
+	slist_append(&c->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+
+	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+
+	slist_append(&c->max_preferred_refresh_name_desc, strdup("legacy"));
+
+	c->laptop_display_prefix = strdup("lappy");
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-all.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
+void print_cfg__del(void **state) {
+	struct Cfg *c = cfg_init();
+
+	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
+	slist_append(&c->user_scales, cfg_user_scale_init("four", 4));
+
+	slist_append(&c->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+
+	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+	slist_append(&c->user_transforms, cfg_user_transform_init("thirteen", WL_OUTPUT_TRANSFORM_FLIPPED));
+
+	print_cfg(INFO, c, true);
+
+	char *expected_log = read_file("tst/info/print-cfg-del.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
+void print_cfg__arrange_only(void **state) {
+	struct Cfg *c = cfg_init();
+	c->arrange = ROW;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-arrange-only.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
+void print_cfg__align_only(void **state) {
+	struct Cfg *c = cfg_init();
+	c->align = TOP;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-align-only.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
+void print_cfg__auto_scale_max(void **state) {
+	struct Cfg *c = cfg_init();
+	c->auto_scale = true;
+	c->auto_scale_min = 88.0f;
+	c->auto_scale_max = 99.0f;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-auto-scale-max.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
 void print_cfg_commands__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
@@ -148,40 +258,41 @@ void print_cfg_commands__empty(void **state) {
 }
 
 void print_cfg_commands__ok(void **state) {
-	struct Cfg *cfg = cfg_default();
+	struct Cfg *c = cfg_default();
 
-	cfg->arrange = COL;
-	cfg->align = RIGHT;
+	c->arrange = COL;
+	c->align = RIGHT;
 
-	slist_append(&cfg->order_name_desc, strdup("one"));
-	slist_append(&cfg->order_name_desc, strdup("two"));
-	slist_append(&cfg->order_name_desc, strdup("three"));
+	slist_append(&c->order_name_desc, strdup("one"));
+	slist_append(&c->order_name_desc, strdup("two"));
+	slist_append(&c->order_name_desc, strdup("three"));
 
-	cfg->scaling = OFF;
+	c->scaling = OFF;
 
-	cfg->auto_scale = OFF;
+	c->auto_scale = OFF;
 
-	slist_append(&cfg->user_scales, cfg_user_scale_init("one", 1));
-	slist_append(&cfg->user_scales, cfg_user_scale_init("two", 2.3456));
+	slist_append(&c->user_scales, cfg_user_scale_init("one", 1));
+	slist_append(&c->user_scales, cfg_user_scale_init("two", 2.3456));
 
-	slist_append(&cfg->user_modes, cfg_user_mode_init("all", false, 1, 2, 12340, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("all", false, 1, 2, 12340, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
+	slist_append(&c->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
 
-	slist_append(&cfg->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
+	slist_append(&c->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
 
-	slist_append(&cfg->disabled, cfg_disabled_always("three"));
-	slist_append(&cfg->disabled, cfg_disabled_always("four"));
+	slist_append(&c->disabled, cfg_disabled_always("three"));
+	slist_append(&c->disabled, cfg_disabled_always("four"));
 
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("five"));
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("six"));
+	slist_append(&c->adaptive_sync_off_name_desc, strdup("five"));
+	slist_append(&c->adaptive_sync_off_name_desc, strdup("six"));
 
-	print_cfg_commands(INFO, cfg);
+	print_cfg_commands(INFO, c);
 
 	char *expected_log = read_file("tst/info/print-cfg-commands-ok.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 
-	cfg_free(cfg);
+	cfg_free(c);
 	free(expected_log);
 }
 
@@ -195,6 +306,7 @@ void print_head_arrived__all(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-arrived-all.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -208,6 +320,7 @@ void print_head_arrived__min(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-arrived-min.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 
 	head_free(head);
@@ -220,6 +333,7 @@ void print_head_departed__ok(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-departed-ok.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -233,6 +347,7 @@ void print_head_deltas__mode(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-mode.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -249,6 +364,7 @@ void print_head_deltas__vrr(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-vrr.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -264,6 +380,7 @@ void print_head_deltas__other(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-other.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -279,6 +396,7 @@ void print_head_deltas__disable(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-disable.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -294,6 +412,7 @@ void print_head_deltas__enable(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-enable.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -311,6 +430,7 @@ void print_active__many(void **state) {
 
 	char *expected_log = read_file("tst/info/print-list.log");
 	assert_log(INFO, expected_log);
+	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -330,6 +450,7 @@ void print_adaptive_sync_fail__head(void **state) {
 			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
 			"  VRR_OFF:\n"
 			"    - 'model0'\n");
+	assert_logs_empty();
 }
 
 void print_mode_fail__nulls(void **state) {
@@ -337,6 +458,7 @@ void print_mode_fail__nulls(void **state) {
 	print_mode_fail(WARNING, NULL, NULL);
 
 	assert_log(WARNING, "\nChanges failed\n");
+	assert_logs_empty();
 }
 
 void print_mode_fail__head(void **state) {
@@ -345,6 +467,7 @@ void print_mode_fail__head(void **state) {
 	print_mode_fail(WARNING, &head, NULL);
 
 	assert_log(WARNING, "\nChanges failed\n  head0:\n    (no mode)\n");
+	assert_logs_empty();
 }
 
 void delta_human_mode__to_no(void **state) {
@@ -354,7 +477,7 @@ void delta_human_mode__to_no(void **state) {
 
 	char *deltas = delta_human_mode(SUCCEEDED, s->head1);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n"
 			"  100x200@30Hz -> (no mode)"
 			);
@@ -373,7 +496,7 @@ void delta_human_mode__from_no(void **state) {
 
 	char *deltas = delta_human_mode(SUCCEEDED, s->head2);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"name2\n"
 			"  (no mode) -> 1400x1500@160Hz"
 			);
@@ -393,7 +516,7 @@ void delta_human_adaptive_sync__on(void **state) {
 
 	char *deltas = delta_human_adaptive_sync(SUCCEEDED, s->head1);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n"
 			"  VRR on"
 			);
@@ -413,7 +536,7 @@ void delta_human_adaptive_sync__off(void **state) {
 
 	char *deltas = delta_human_adaptive_sync(SUCCEEDED, s->head2);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"name2\n"
 			"  VRR off"
 			);
@@ -430,7 +553,7 @@ void delta_human__all(void **state) {
 
 	char *deltas = delta_human(SUCCEEDED, s->heads);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n"
 			"  scale:     2.000 -> 4.000\n"
 			"  transform: 180 -> 90\n"
@@ -459,7 +582,7 @@ void delta_human__enabled(void **state) {
 
 	char *deltas = delta_human(SUCCEEDED, s->heads);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n  enabled\n"
 			"name2\n  enabled"
 			);
@@ -482,7 +605,7 @@ void delta_human__disabled(void **state) {
 
 	char *deltas = delta_human(SUCCEEDED, s->heads);
 
-	assert_string_equal(deltas, ""
+	assert_str_equal(deltas, ""
 			"description1\n  disabled\n"
 			"name2\n  disabled"
 			);
@@ -526,6 +649,7 @@ void call_back__one(void **state) {
 	call_back(INFO, "msg1", NULL);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+	assert_logs_empty();
 
 	stable_free(env);
 }
@@ -548,6 +672,7 @@ void call_back__two(void **state) {
 	call_back(FATAL, "msg1", "msg2");
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+	assert_logs_empty();
 
 	stable_free(env);
 }
@@ -572,6 +697,7 @@ void call_back_mode_fail__(void **state) {
 	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+	assert_logs_empty();
 
 	stable_free(env);
 }
@@ -601,12 +727,19 @@ void call_back_adaptive_sync_fail__(void **state) {
 	call_back_adaptive_sync_fail(WARNING, displ->delta.head);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+	assert_logs_empty();
 
 	stable_free(env);
 }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST(print_cfg__all),
+		TEST(print_cfg__arrange_only),
+		TEST(print_cfg__align_only),
+		TEST(print_cfg__auto_scale_max),
+		TEST(print_cfg__del),
+
 		TEST(print_cfg_commands__empty),
 		TEST(print_cfg_commands__ok),
 

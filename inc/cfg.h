@@ -9,6 +9,7 @@
 #include "ipc.h"
 
 #define AUTO_SCALE_MIN_DEFAULT 1.0f
+
 #define AUTO_SCALE_MAX_DEFAULT -1.0f
 
 struct UserScale {
@@ -107,20 +108,22 @@ enum CfgElement {
 	DISABLED,
 	ARRANGE_ALIGN,
 	AUTO_SCALE_MIN,
-	AUTO_SCALE_MAX
+	AUTO_SCALE_MAX,
+	// legacy
+	CHANGE_SUCCESS_CMD,
 };
 
 void cfg_file_paths_init(const char *user_path);
-
-void cfg_init_path(const char *cfg_path);
-
-void cfg_file_reload(void);
 
 void cfg_file_write(void);
 
 void cfg_destroy(void);
 
 void cfg_file_paths_destroy(void);
+
+bool cfg_resolve_file_path(struct Cfg *cfg);
+
+void cfg_copy_file_path(struct Cfg *from, struct Cfg *to);
 
 struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command);
 
@@ -130,6 +133,8 @@ struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command)
 struct Cfg *cfg_init(void);
 
 struct Cfg *cfg_default(void);
+
+void cfg_apply_defaults(struct Cfg *dst);
 
 struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
 
@@ -145,12 +150,6 @@ struct Disabled *cfg_disabled_always(const char *name_desc);
 // equality functions
 //
 bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
-
-bool cfg_user_scale_name_equal(const void *a, const void *b);
-
-bool cfg_user_mode_name_equal(const void *a, const void *b);
-
-bool cfg_user_transform_name_equal(const void *a, const void *b);
 
 //
 // freeing functions
@@ -178,6 +177,5 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from);
 struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
 void validate_warn(struct Cfg *cfg);
 void validate_fix(struct Cfg *cfg);
-bool resolve_cfg_file(struct Cfg *cfg);
 
 #endif // CFG_H

@@ -16,12 +16,13 @@
 #include "conditions.h"
 #include "convert.h"
 #include "global.h"
-#include "info.h"
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
+#include "stable.h"
 #include "log.h"
-#include "marshalling.h"
+#include "yaml/marshal.h"
+#include "yaml/marshal-types.h"
 
 static enum OnOff on_off_invert(enum OnOff val) {
 	return (val == ON) ? OFF : ON;
@@ -89,7 +90,7 @@ void* cfg_disabled_clone(const void *val) {
 //
 // equality functions
 //
-bool cfg_user_mode_name_equal(const void *a, const void *b) {
+static bool cfg_user_mode_name_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -104,7 +105,7 @@ bool cfg_user_mode_name_equal(const void *a, const void *b) {
 	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
-bool cfg_user_scale_name_equal(const void *a, const void *b) {
+static bool cfg_user_scale_name_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -165,7 +166,7 @@ static bool cfg_user_mode_equal(const void *a, const void *b) {
 	return true;
 }
 
-bool cfg_user_transform_name_equal(const void *a, const void *b) {
+static bool cfg_user_transform_name_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -453,15 +454,33 @@ struct Cfg *cfg_init(void) {
 struct Cfg *cfg_default(void) {
 	struct Cfg *def = cfg_init();
 
-	def->arrange = ARRANGE_DEFAULT;
-	def->align = ALIGN_DEFAULT;
-	def->scaling = SCALING_DEFAULT;
-	def->auto_scale = AUTO_SCALE_DEFAULT;
-	def->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
-	def->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
-	def->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
+	cfg_apply_defaults(def);
 
 	return def;
+}
+
+void cfg_apply_defaults(struct Cfg *dst) {
+
+	if (!dst->arrange)
+		dst->arrange = ARRANGE_DEFAULT;
+
+	if (!dst->align)
+		dst->align = ALIGN_DEFAULT;
+
+	if (!dst->scaling)
+		dst->scaling = SCALING_DEFAULT;
+
+	if (!dst->auto_scale)
+		dst->auto_scale = AUTO_SCALE_DEFAULT;
+
+	if (!dst->auto_scale_min)
+		dst->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
+
+	if (!dst->auto_scale_max)
+		dst->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
+
+	if (!dst->callback_cmd)
+		dst->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
 }
 
 struct UserMode *cfg_user_mode_default(void) {
@@ -528,11 +547,11 @@ static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_pat
 	cfg->file_name = strdup(basename(path));
 }
 
-bool resolve_cfg_file(struct Cfg *cfg) {
-	if (!cfg)
+bool cfg_resolve_file_path(struct Cfg *dst) {
+	if (!dst)
 		return false;
 
-	cfg_paths_free(cfg);
+	cfg_paths_free(dst);
 
 	for (struct SList *i = cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
@@ -547,7 +566,7 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 				continue;
 			}
 
-			set_paths(cfg, i->val, file_path);
+			set_paths(dst, i->val, file_path);
 
 			free(file_path);
 
@@ -556,6 +575,87 @@ bool resolve_cfg_file(struct Cfg *cfg) {
 	}
 
 	return false;
+}
+
+void cfg_copy_file_path(struct Cfg *from, struct Cfg *to) {
+	if (!from || !to)
+		return;
+
+	free(to->dir_path);
+	free(to->file_path);
+	free(to->file_name);
+
+	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
+	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
+	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
+}
+
+static void remove_duplicate_user_scales(struct Cfg *cfg) {
+	const struct STable *by_name_desc = stable_init(10, 10, false);
+
+	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
+		const struct UserScale *user_scale = i->val;
+		const struct UserScale *dup = stable_put(by_name_desc, user_scale->name_desc, user_scale);
+		if (dup) {
+			log_warn("\nRemoving duplicate SCALE %s", dup->name_desc);
+			cfg_user_scale_free(dup);
+		}
+	}
+
+	slist_free(&cfg->user_scales);
+	cfg->user_scales = stable_vals_slist(by_name_desc);
+	stable_free(by_name_desc);
+}
+
+static void remove_duplicate_user_modes(struct Cfg *cfg) {
+	const struct STable *by_name_desc = stable_init(10, 10, false);
+
+	for (struct SList *i = cfg->user_modes; i; i = i->nex) {
+		const struct UserMode *mode = i->val;
+		const struct UserMode *dup = stable_put(by_name_desc, mode->name_desc, mode);
+		if (dup) {
+			log_warn("\nRemoving duplicate MODE %s", dup->name_desc);
+			cfg_user_mode_free(dup);
+		}
+	}
+
+	slist_free(&cfg->user_modes);
+	cfg->user_modes = stable_vals_slist(by_name_desc);
+	stable_free(by_name_desc);
+}
+
+static void remove_duplicate_user_transforms(struct Cfg *cfg) {
+	const struct STable *by_name_desc = stable_init(10, 10, false);
+
+	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
+		const struct UserTransform *transform = i->val;
+		const struct UserTransform *dup = stable_put(by_name_desc, transform->name_desc, transform);
+		if (dup) {
+			log_warn("\nRemoving duplicate TRANSFORM %s", dup->name_desc);
+			cfg_user_transform_free(dup);
+		}
+	}
+
+	slist_free(&cfg->user_transforms);
+	cfg->user_transforms = stable_vals_slist(by_name_desc);
+	stable_free(by_name_desc);
+}
+
+static void remove_duplicate_disabled(struct Cfg *cfg) {
+	const struct STable *by_name_desc = stable_init(10, 10, false);
+
+	for (struct SList *i = cfg->disabled; i; i = i->nex) {
+		const struct Disabled *disabled = i->val;
+		const struct Disabled *dup = stable_put(by_name_desc, disabled->name_desc, disabled);
+		if (dup) {
+			log_warn("\nRemoving duplicate DISABLED %s", dup->name_desc);
+			cfg_disabled_free(dup);
+		}
+	}
+
+	slist_free(&cfg->disabled);
+	cfg->disabled = stable_vals_slist(by_name_desc);
+	stable_free(by_name_desc);
 }
 
 void validate_fix(struct Cfg *cfg) {
@@ -581,8 +681,14 @@ void validate_fix(struct Cfg *cfg) {
 	}
 
 	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, cfg_user_scale_free);
+	remove_duplicate_user_scales(cfg);
 
 	slist_remove_all_free(&cfg->user_modes, invalid_user_mode, NULL, cfg_user_mode_free);
+	remove_duplicate_user_modes(cfg);
+
+	remove_duplicate_user_transforms(cfg);
+
+	remove_duplicate_disabled(cfg);
 }
 
 static void warn_ambiguous_name_desc_list(struct SList *name_desc, const char * const element) {
@@ -859,56 +965,6 @@ void cfg_file_paths_init(const char *user_path) {
 	slist_append(&cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
 }
 
-void cfg_init_path(const char *user_path) {
-	cfg = cfg_default();
-
-	bool found = resolve_cfg_file(cfg);
-
-	if (found) {
-		log_info("\nFound configuration file: %s", cfg->file_path);
-		if (!unmarshal_cfg_from_file(cfg)) {
-			log_info("\nUsing default configuration:");
-			struct Cfg *def = cfg_default();
-			def->dir_path = cfg->dir_path ? strdup(cfg->dir_path) : NULL;
-			def->file_path = cfg->file_path ? strdup(cfg->file_path) : NULL;
-			def->file_name = cfg->file_name ? strdup(cfg->file_name) : NULL;
-			cfg_free(cfg);
-			cfg = def;
-		}
-	} else {
-		log_info("\nNo configuration file found, using defaults:");
-	}
-	validate_fix(cfg);
-	log_info("\nActive configuration:");
-	print_cfg(INFO, cfg, false);
-	validate_warn(cfg);
-}
-
-void cfg_file_reload(void) {
-	if (!cfg->file_path)
-		return;
-
-	struct Cfg *reloaded = cfg_default();
-	reloaded->dir_path = cfg->dir_path ? strdup(cfg->dir_path) : NULL;
-	reloaded->file_path = cfg->file_path ? strdup(cfg->file_path) : NULL;
-	reloaded->file_name = cfg->file_name ? strdup(cfg->file_name) : NULL;
-
-	log_info("\nReloading configuration file: %s", cfg->file_path);
-	if (unmarshal_cfg_from_file(reloaded)) {
-		cfg_free(cfg);
-		cfg = reloaded;
-		log_set_threshold(cfg->log_threshold, false);
-		validate_fix(cfg);
-		log_info("\nNew configuration:");
-		print_cfg(INFO, cfg, false);
-		validate_warn(cfg);
-	} else {
-		log_info("\nConfiguration unchanged:");
-		print_cfg(INFO, cfg, false);
-		cfg_free(reloaded);
-	}
-}
-
 static bool cfg_file_write_content(const char * const yaml) {
 	return
 		file_write(cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
@@ -922,7 +978,7 @@ void cfg_file_write(void) {
 
 	cfg->updated = false;
 
-	if (!(yaml = marshal_cfg(cfg))) {
+	if (!(yaml = yaml_marshal(cfg, yaml_doc_cfg, "cfg"))) {
 		goto end;
 	}
 

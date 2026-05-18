@@ -15,15 +15,17 @@
 #include "global.h"
 #include "slist.h"
 #include "log.h"
+#include "yaml/marshal.h"
 
 #include "cfg.h"
 
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 
+char *__wrap_yaml_marshal(const void *data, yaml_marshal_fn fn, const char *human) {
+	check_expected_ptr(data);
+	check_expected_ptr(human);
 
-char *__wrap_marshal_cfg(struct Cfg *cfg) {
-	check_expected_ptr(cfg);
 	return mock_ptr_type_checked(char*);
 }
 
@@ -119,8 +121,9 @@ int after_each(void **state) {
 void cfg_file_write__bad_yaml(void **state) {
 	cfg->file_path = strdup("something");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, NULL, char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, NULL, char*);
 
 	cfg_file_write();
 
@@ -132,8 +135,9 @@ void cfg_file_write__none(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, expected, char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, expected, char*);
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
@@ -156,6 +160,7 @@ void cfg_file_write__none(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/zero\n");
+	assert_logs_empty();
 
 	assert_str_equal(cfg->file_path, "/path/to/zero");
 	assert_str_equal(cfg->dir_path, "/path/to");
@@ -179,8 +184,9 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 
 	char *expected = strdup("XXXXxxxX");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, strdup(expected), char*);
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
@@ -221,6 +227,7 @@ void cfg_file_write__cannot_write_use_alternative(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/three\n");
+	assert_logs_empty();
 
 	assert_str_equal(cfg->file_path, "/path/to/three");
 	assert_str_equal(cfg->dir_path, "/path/to");
@@ -243,8 +250,9 @@ void cfg_file_write__cannot_write_no_alternative(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, strdup(expected), char*);
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
@@ -286,8 +294,9 @@ void cfg_file_write__existing(void **state) {
 
 	char *expected = strdup("XXXX");
 
-	expect_ptr(__wrap_marshal_cfg, cfg, cfg);
-	will_return_ptr_type(__wrap_marshal_cfg, strdup(expected), char*);
+	expect_ptr(__wrap_yaml_marshal, data, cfg);
+	expect_str(__wrap_yaml_marshal, human, "cfg");
+	will_return_ptr_type(__wrap_yaml_marshal, strdup(expected), char*);
 
 	expect_str(__wrap_file_write, path, cfg->file_path);
 	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
@@ -302,6 +311,7 @@ void cfg_file_write__existing(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: tst/tmp/write-existing-cfg.yaml\n");
+	assert_logs_empty();
 
 	assert_int_equal(cfg->updated, true);
 
@@ -376,7 +386,7 @@ void cfg_file_paths_init__user(void **state) {
 	assert_logs_empty();
 }
 
-void resolve_cfg_file__not_found(void **state) {
+void cfg_resolve_file_path__not_found(void **state) {
 	char cwd[PATH_MAX];
 	char file_path[PATH_MAX + 20];
 
@@ -386,7 +396,7 @@ void resolve_cfg_file__not_found(void **state) {
 
 	slist_append(&cfg_file_paths, strdup(file_path));
 
-	assert_false(resolve_cfg_file(cfg));
+	assert_false(cfg_resolve_file_path(cfg));
 
 	assert_nul(cfg->file_path);
 	assert_nul(cfg->dir_path);
@@ -396,7 +406,7 @@ void resolve_cfg_file__not_found(void **state) {
 	assert_logs_empty();
 }
 
-void resolve_cfg_file__direct(void **state) {
+void cfg_resolve_file_path__direct(void **state) {
 	char cwd[PATH_MAX];
 	char dir_path[PATH_MAX + 20];
 	char file_path[PATH_MAX + 40];
@@ -413,7 +423,7 @@ void resolve_cfg_file__direct(void **state) {
 		fclose(f);
 	}
 
-	assert_true(resolve_cfg_file(cfg));
+	assert_true(cfg_resolve_file_path(cfg));
 
 	assert_str_equal(cfg->file_path, file_path);
 	assert_str_equal(cfg->dir_path, dir_path);
@@ -424,7 +434,7 @@ void resolve_cfg_file__direct(void **state) {
 	assert_logs_empty();
 }
 
-void resolve_cfg_file__linked(void **state) {
+void cfg_resolve_file_path__linked(void **state) {
 	char cwd[PATH_MAX];
 	char dir_path[PATH_MAX + 20];
 	char file_path[PATH_MAX + 40];
@@ -446,7 +456,7 @@ void resolve_cfg_file__linked(void **state) {
 	}
 	assert_int_equal(symlink(file_path, linked_path), 0);
 
-	assert_true(resolve_cfg_file(cfg));
+	assert_true(cfg_resolve_file_path(cfg));
 
 	assert_str_equal(cfg->file_path, file_path);
 	assert_str_equal(cfg->dir_path, dir_path);
@@ -470,9 +480,9 @@ int main(void) {
 		TEST(cfg_file_paths_init__xch),
 		TEST(cfg_file_paths_init__user),
 
-		TEST(resolve_cfg_file__not_found),
-		TEST(resolve_cfg_file__direct),
-		TEST(resolve_cfg_file__linked),
+		TEST(cfg_resolve_file_path__not_found),
+		TEST(cfg_resolve_file_path__direct),
+		TEST(cfg_resolve_file_path__linked),
 	};
 
 	return RUN(tests);

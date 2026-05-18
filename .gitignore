@@ -1,4 +1,5 @@
 **/*.o
+**/*.o.tmp
 
 pro/*.h
 pro/*.c
@@ -9,8 +10,12 @@ pro/*.c
 
 /tst/tmp/
 
-cfg.actual
-cfg.expected
+actual.cfg
+actual.log
+actual.yaml
+expected.cfg
+expected.log
+expected.yaml
 
 log.actual
 log.expected

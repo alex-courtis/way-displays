@@ -1,6 +1,8 @@
 # do not check generated code
 *:pro/*
 
+staticFunction:yaml/*-types.c
+
 unusedFunction:src/convert.c
 
 unusedFunction:lib/col/*c

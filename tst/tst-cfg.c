@@ -458,6 +458,7 @@ void validate_fix__col(void **state) {
 	validate_fix(s->from);
 
 	assert_log(WARNING, "\nIgnoring invalid ALIGN TOP for COLUMN arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.\n");
+	assert_logs_empty();
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -474,11 +475,12 @@ void validate_fix__row(void **state) {
 	validate_fix(s->from);
 
 	assert_log(WARNING, "\nIgnoring invalid ALIGN RIGHT for ROW arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.\n");
+	assert_logs_empty();
 
 	assert_cfg_equal(s->from, s->expected);
 }
 
-void validate_fix__scale(void **state) {
+void validate_fix__user_scale(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("ok", 1));
@@ -487,19 +489,24 @@ void validate_fix__scale(void **state) {
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("zero", 0));
 
+	slist_append(&s->from->user_scales, cfg_user_scale_init("dup", 2));
+	slist_append(&s->from->user_scales, cfg_user_scale_init("dup", 3));
+
 	validate_fix(s->from);
 
-	char *expected_log = read_file("tst/cfg/validate-fix-scale.log");
+	char *expected_log = read_file("tst/cfg/validate-fix-user-scale.log");
 	assert_log(WARNING, expected_log);
+	assert_logs_empty();
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
+	slist_append(&s->expected->user_scales, cfg_user_scale_init("dup", 3));
 
 	assert_cfg_equal(s->from, s->expected);
 
 	free(expected_log);
 }
 
-void validate_fix__mode(void **state) {
+void validate_fix__user_mode(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
@@ -515,13 +522,60 @@ void validate_fix__mode(void **state) {
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("missing height", false, 1, -1, 3, false));
 
+	slist_append(&s->from->user_modes, cfg_user_mode_init("dup", false, 1, 2, 3, false));
+	slist_append(&s->from->user_modes, cfg_user_mode_init("dup", true, 10, 20, 30, false));
+
 	validate_fix(s->from);
 
-	char *expected_log = read_file("tst/cfg/validate-fix-mode.log");
+	char *expected_log = read_file("tst/cfg/validate-fix-user-mode.log");
 	assert_log(WARNING, expected_log);
+	assert_logs_empty();
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
+	slist_append(&s->expected->user_modes, cfg_user_mode_init("dup", true, 10, 20, 30, false));
+
+	assert_cfg_equal(s->from, s->expected);
+
+	free(expected_log);
+}
+
+void validate_fix__user_transform(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->from->user_transforms, cfg_user_transform_init("one", 1));
+	slist_append(&s->from->user_transforms, cfg_user_transform_init("dup", 2));
+	slist_append(&s->from->user_transforms, cfg_user_transform_init("dup", 3));
+
+	validate_fix(s->from);
+
+	char *expected_log = read_file("tst/cfg/validate-fix-user-transform.log");
+	assert_log(WARNING, expected_log);
+	assert_logs_empty();
+
+	slist_append(&s->expected->user_transforms, cfg_user_transform_init("one", 1));
+	slist_append(&s->expected->user_transforms, cfg_user_transform_init("dup", 3));
+
+	assert_cfg_equal(s->from, s->expected);
+
+	free(expected_log);
+}
+
+void validate_fix__disabled(void **state) {
+	struct State *s = *state;
+
+	slist_append(&s->from->disabled, cfg_disabled_always("one"));
+	slist_append(&s->from->disabled, cfg_disabled_always("dup"));
+	slist_append(&s->from->disabled, cfg_disabled_always("dup"));
+
+	validate_fix(s->from);
+
+	char *expected_log = read_file("tst/cfg/validate-fix-disabled.log");
+	assert_log(WARNING, expected_log);
+	assert_logs_empty();
+
+	slist_append(&s->expected->disabled, cfg_disabled_always("one"));
+	slist_append(&s->expected->disabled, cfg_disabled_always("dup"));
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -574,6 +628,7 @@ void validate_warn__(void **state) {
 
 	char *expected_log = read_file("tst/cfg/validate-warn.log");
 	assert_log(WARNING, expected_log);
+	assert_logs_empty();
 
 	free(expected_log);
 }
@@ -604,8 +659,10 @@ int main(void) {
 
 		TEST(validate_fix__col),
 		TEST(validate_fix__row),
-		TEST(validate_fix__scale),
-		TEST(validate_fix__mode),
+		TEST(validate_fix__user_scale),
+		TEST(validate_fix__user_mode),
+		TEST(validate_fix__user_transform),
+		TEST(validate_fix__disabled),
 
 		TEST(validate_warn__),
 	};

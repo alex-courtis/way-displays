@@ -1,10 +1,9 @@
 include config.mk
 
-INC_H = $(wildcard inc/*.h) $(wildcard lib/col/inc/*.h)
+INC_H = $(wildcard inc/*.h) $(wildcard inc/*/*.h) $(wildcard lib/col/inc/*.h)
 
-SRC_C = $(wildcard src/*.c) $(wildcard lib/col/src/*.c)
-SRC_CXX = $(wildcard src/*.cpp)
-SRC_O = $(SRC_C:.c=.o) $(SRC_CXX:.cpp=.o)
+SRC_C = $(wildcard src/*.c) $(wildcard src/*/*.c) $(wildcard lib/col/src/*.c)
+SRC_O = $(SRC_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
 EXAMPLE_O = $(EXAMPLE_C:.c=.o)
@@ -28,7 +27,7 @@ $(PRO_O): $(PRO_H) config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
 way-displays: $(SRC_O) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
+	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 	@test -x ../deploy.sh && ../deploy.sh || true
 
 compile: $(SRC_O) $(PRO_O) $(EXAMPLE_O)
@@ -40,6 +39,7 @@ $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 clean:
+	@echo $(INC_H)
 	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
 
 install: way-displays doc/way-displays.1 examples/cfg.yaml
@@ -63,7 +63,6 @@ man: doc/way-displays.1.pandoc
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc= )
 
 iwyu: override CC = $(IWYU) -Xiwyu --check_also="inc/*h"
-iwyu: override CXX = $(IWYU) -Xiwyu --check_also="inc/marshalling.h"
 iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
 
 IWYU = include-what-you-use \
@@ -72,7 +71,7 @@ IWYU = include-what-you-use \
 	   -Xiwyu --verbose=3 \
 	   -Xiwyu --mapping_file=.iwyu.imp
 
-cppcheck: $(SRC_C) $(SRC_CXX) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
+cppcheck: $(SRC_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
 		--enable=warning,unusedFunction,performance,portability \
 		--check-level=exhaustive \
@@ -99,31 +98,7 @@ $(TST_T): compile
 
 examples: $(EXAMPLE_E)
 examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
-	$(CXX) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
-
-docker-build:
-	docker build --no-cache --tag "way-displays:latest" .
-
-docker-rm:
-	docker rm -f way-displays || true
-
-docker-image-rm: docker-rm
-	docker image rm way-displays:latest
-
-docker-run: docker-rm
-	docker run \
-		--name="way-displays" \
-		--volume "${PWD}:/way-displays" \
-		--workdir="/way-displays" \
-		--user "`id -u`:`id -g`" \
-		--detach \
-		"way-displays:latest"
-
-docker-packages:
-	docker exec                    way-displays .github/workflows/packages/lib32-yaml-cpp/build.sh
-	docker exec --user "root:root" way-displays .github/workflows/packages/lib32-yaml-cpp/install.sh
-	docker exec                    way-displays .github/workflows/packages/include-what-you-use/build.sh
-	docker exec --user "root:root" way-displays .github/workflows/packages/include-what-you-use/install.sh
+	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 .PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg docker-build docker-stop docker-run $(TST_T)
 

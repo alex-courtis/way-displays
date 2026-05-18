@@ -1,0 +1,8 @@
+Ignoring invalid TRANSFORM invalid TRANSFORM foobar
+Ignoring invalid TRANSFORM regex '(transform':  Unmatched ( or \(
+Ignoring invalid TRANSFORM NAME_DESC expected scalar, got sequence
+Ignoring invalid TRANSFORM mistyped TRANSFORM expected scalar, got sequence
+Ignoring invalid TRANSFORM expected map, got sequence
+TRANSFORM: Ignoring missing TRANSFORM for 'missing_transform'
+TRANSFORM: Ignoring missing NAME_DESC
+

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "listeners.h"
 
@@ -38,17 +39,18 @@ static void preferred(void *data,
 		struct Mode *mode_preferred;
 		if ((mode_preferred = head_preferred_mode(mode->head))) {
 
-			static char mode_preferred_buf[2048];
-			info_mode_string(mode_preferred, mode_preferred_buf, sizeof(mode_preferred_buf));
+			char *mode_preferred_str = info_mode_string(mode_preferred);
 
-			static char mode_buf[2048];
-			info_mode_string(mode, mode_buf, sizeof(mode_buf));
+			char *mode_str = info_mode_string(mode);
 
 			if (mode_preferred->head && mode_preferred->head->name) {
-				log_info("\n%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred->head->name, mode_preferred_buf, mode_buf);
+				log_info("\n%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred->head->name, mode_preferred_str, mode_str);
 			} else {
-				log_info("\n???: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred_buf, mode_buf);
+				log_info("\n???: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred_str, mode_str);
 			}
+
+			free(mode_preferred_str);
+			free(mode_str);
 
 			return;
 		}

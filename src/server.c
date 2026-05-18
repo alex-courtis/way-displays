@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/signalfd.h>
 #include <unistd.h>
 
@@ -22,6 +23,8 @@
 #include "log.h"
 #include "process.h"
 #include "slist.h"
+#include "yaml/unmarshal.h"
+#include "yaml/unmarshal-types.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;
@@ -182,7 +185,8 @@ static int loop(void) {
 
 		// always read and dispatch wayland events; stop the file descriptor from getting stale
 		log_debug("LOOP _wl_display_read_events");
-		_wl_display_read_events(displ->display, FL);
+		if (_wl_display_read_events(displ->display, FL) == -1)
+			return EXIT_SUCCESS;
 
 		log_debug("LOOP _wl_display_dispatch_pending__read_events");
 		_wl_display_dispatch_pending__read_events(displ->display, FL);
@@ -198,8 +202,9 @@ static int loop(void) {
 		if (pfd_signal && pfd_signal->revents & pfd_signal->events) {
 			struct signalfd_siginfo fdsi;
 			if (read(fd_signal, &fdsi, sizeof(fdsi)) == sizeof(fdsi)) {
+				log_debug("LOOP signal %d: %s", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
 				if (fdsi.ssi_signo != SIGPIPE) {
-					log_debug("LOOP clean exit");
+					log_info("\nReceived signal %d: %s, exiting", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
 					return fdsi.ssi_signo;
 				}
 			}
@@ -213,7 +218,7 @@ static int loop(void) {
 					cfg->updated = false;
 				} else {
 					log_debug("LOOP cfg_file_reload");
-					cfg_file_reload();
+					reload_cfg();
 				}
 			}
 		}
@@ -263,6 +268,62 @@ static void setup_signal_handlers(void) {
 	sigaction(SIGCHLD, &sa, NULL);
 }
 
+void reload_cfg(void) {
+	if (!cfg || !cfg->file_path)
+		return;
+
+	log_info("\nReloading configuration file: %s", cfg->file_path);
+
+	struct Cfg *cfg_loaded = yaml_unmarshal_file(cfg->file_path, yaml_root_to_cfg);
+
+	if (cfg_loaded) {
+		cfg_apply_defaults(cfg_loaded);
+		cfg_copy_file_path(cfg, cfg_loaded);
+
+		cfg_free(cfg);
+		cfg = cfg_loaded;
+
+		log_set_threshold(cfg->log_threshold, false);
+		validate_fix(cfg);
+		log_info("\nNew configuration:");
+		print_cfg(INFO, cfg, false);
+		validate_warn(cfg);
+
+	} else {
+		log_info("\nConfiguration unchanged:");
+		print_cfg(INFO, cfg, false);
+	}
+}
+
+void load_cfg(void) {
+	struct Cfg *cfg_resolved = cfg_init();
+
+	bool resolved = cfg_resolve_file_path(cfg_resolved);
+
+	if (resolved) {
+		log_info("\nFound configuration file: %s", cfg_resolved->file_path);
+
+		cfg = yaml_unmarshal_file(cfg_resolved->file_path, yaml_root_to_cfg);
+
+		if (!cfg) {
+			log_info("\nUsing default configuration:");
+			cfg = cfg_init();
+		}
+	} else {
+		log_info("\nNo configuration file found, using defaults:");
+		cfg = cfg_init();
+	}
+
+	cfg_apply_defaults(cfg);
+	cfg_copy_file_path(cfg_resolved, cfg);
+
+	validate_fix(cfg);
+	log_info("\nActive configuration:");
+	print_cfg(INFO, cfg, false);
+	validate_warn(cfg);
+
+	cfg_free(cfg_resolved);
+}
 
 int
 server(char *cfg_path) {
@@ -284,7 +345,7 @@ server(char *cfg_path) {
 	cfg_file_paths_init(cfg_path);
 
 	// maybe default, never exits
-	cfg_init_path(cfg_path);
+	load_cfg();
 	free(cfg_path);
 
 	// play back captured logs from cfg parse

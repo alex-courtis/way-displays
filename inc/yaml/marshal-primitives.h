@@ -1,0 +1,35 @@
+#ifndef YAML_MARSHAL_PRIMITIVES_H
+#define YAML_MARSHAL_PRIMITIVES_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "convert.h"
+#include "slist.h"
+
+/*
+ * Functions to add nodes to an existing yaml_document_t
+ * Returns false on failure to add to the document
+ */
+
+// yaml_map_populate_fn: add a scalar pair to an existing maping node
+bool yaml_map_add_str(const char *key, const char *str, int mapping); // returns true and does nothing on NULL 
+bool yaml_map_add_int(const char *key, const int32_t val, int mapping);
+bool yaml_map_add_float(const char *key, const float val, int mapping); // returns true and does nothing on 0
+bool yaml_map_add_bool(const char *key, const bool val, int mapping);
+bool yaml_map_add_enum(const char *key, const int val, enum_name_fn fn_name, int mapping); // returns true on 0 enum
+
+// yaml_seq_append_fn: append a scalar item to an existing sequence node
+bool yaml_seq_append_str(const void *str, int sequence);
+
+// Create a new map node and add it to an existing maping node
+// New map node is populated by evaluating fn on data
+typedef bool (*yaml_map_populate_fn)(const void *data, const int mapping);
+bool yaml_map_add_map(const char *key, const void *data, yaml_map_populate_fn fn, int mapping);
+
+// Create a new sequence node and add it to an existing sequence node
+// New sequence node values are populated by evaluating fn on each item in list
+typedef bool (*yaml_seq_append_fn)(const void *data, const int sequence);
+bool yaml_map_add_seq(const char *key, const struct SList *list, yaml_seq_append_fn fn, int mapping);
+
+#endif // YAML_MARSHAL_PRIMITIVES_H

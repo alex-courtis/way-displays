@@ -50,6 +50,7 @@ void mkdir_p__no_perm(void **state) {
 	assert_false(mkdir_p("tst/mkdir_p/foo/bar", 0755));
 
 	assert_log(ERROR, "\nCannot create directory tst/mkdir_p/foo/bar\n");
+	assert_logs_empty();
 
 	struct stat sb;
 	assert_int_equal(stat("tst/mkdir_p/foo/bar", &sb), -1);

@@ -14,19 +14,19 @@ Please raise an [issue](https://github.com/alex-courtis/way-displays/issues), fo
 * wayland-protocols
 * wlroots
 * libinput
-* yaml-cpp
+* libyaml
 
 Most will be available if you are running a wlroots based compositor like sway.
 
-yaml-cpp will need to be installed via your distribution's package manager. Note that if your distribution decouples libraries from their headers you will need to install the "development" versions of these packages (with the exception of make/gcc/glang).
+libyaml will need to be installed via your distribution's package manager. Note that if your distribution decouples libraries from their headers you will need to install the "development" versions of these packages (with the exception of make/gcc/glang).
 
 ## Development
 
 gcc is the default for packaging reasons, however clang is preferred.
 
-Set CC and CXX when invoking make:
+Set CC when invoking make:
 
-`make CC=clang CXX=clang++ ...`
+`make CC=clang ...`
 
 [ccls](https://github.com/MaskRay/ccls) using clang is configured via `.ccls`, for editors that support the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
 
@@ -69,59 +69,40 @@ See all violations:
 
 ### 32-bit
 
+`way-displays` requires libinput for which 32-bit packages are not widely available, hence only the test targets should be exercised.
+
 Compilation can be done without 32-bit libs:
 ```sh
-make CC=gcc   CXX=g++     MFLAGS=-m32 clean compile
-make CC=clang CXX=clang++ MFLAGS=-m32 clean compile
+make CC=gcc   MFLAGS=-m32 clean compile
+make CC=clang MFLAGS=-m32 clean compile
 ```
 
 Testing requires 32-bit libs, libinput is excluded:
 ```sh
-make CC=gcc   CXX=g++     MFLAGS=-m32 clean test
-make CC=gcc   CXX=g++     MFLAGS=-m32 clean test-vg
-make CC=clang CXX=clang++ MFLAGS=-m32 clean test
-make CC=clang CXX=clang++ MFLAGS=-m32 clean test-vg
+make CC=gcc   MFLAGS=-m32 clean test
+make CC=gcc   MFLAGS=-m32 clean test-vg
+make CC=clang MFLAGS=-m32 clean test
+make CC=clang MFLAGS=-m32 clean test-vg
 ```
 
 ### Developing On The (CI) Arch Image
 
 `Dockerfile` defines an image similar to that used by the docker container in `ci.yml`
 
-It is intended to run in detached mode, thus the `ENTRYPOINT [ "sleep", "infinity" ]`
-
 Build the image:
 ```sh
-make docker-build
-```
-
-Run a detached container:
-```sh
-make docker-run
-```
-
-Build and install the AUR lib32-yaml-cpp and include-what-you-use packages:
-```sh
-make docker-packages
+bld/docker-build.sh
 ```
 
 Execute a command in the container e.g.:
 ```sh
-docker exec way-displays make MFLAGS=-m32 clean test-vg
+bld/docker-run.sh make MFLAGS=-m32 clean test-vg
 ```
 
 OR run a shell in the container:
-```sh
-docker exec -it way-displays /bin/bash
-```
 
-Stop and remove the container:
 ```sh
-make docker-rm
-```
-
-Remove the image:
-```sh
-make docker-image-rm
+bld/docker-run.sh
 ```
 
 ## Documentation

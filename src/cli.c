@@ -193,12 +193,12 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	}
 
 	if (!parsed) {
-		char buf[256];
-		char *bp = buf;
+		char *msg = strdup("");
 		for (int i = optind; i < argc; i++) {
-			bp += snprintf(bp, sizeof(buf) - (bp - buf), " %s", argv[i]);
+			msg = sprintf_append(msg, " %s", argv[i]);
 		}
-		log_fatal("invalid %s%s", cfg_element_name(element), buf);
+		log_fatal("invalid %s%s", cfg_element_name(element), msg);
+		free(msg);
 		if (cfg) {
 			cfg_free(cfg);
 		}

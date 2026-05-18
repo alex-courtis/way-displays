@@ -39,40 +39,36 @@ jobs:
         run: chown -R runner:docker .
         shell: sh -e {0}
 
-      - name: install packages
+      - name: install arch packages
         shell: sh -e {0}
-        run: .github/workflows/packages/base/install.sh
+        run: bld/docker-install-arch.sh
 
-      - run: make                      clean
-      - run: make CC=gcc   CXX=g++     all
-      - run: make CC=gcc   CXX=g++     test
-      - run: make CC=gcc   CXX=g++     test-vg
+      - run: make          clean
+      - run: make CC=gcc   all
+      - run: make CC=gcc   test
+      - run: make CC=gcc   test-vg
 
       - run: make clean cppcheck
 
-      - run: make                      clean
-      - run: make CC=clang CXX=clang++ all
-      - run: make CC=clang CXX=clang++ test
-      - run: make CC=clang CXX=clang++ test-vg
+      - run: make          clean
+      - run: make CC=clang all
+      - run: make CC=clang test
+      - run: make CC=clang test-vg
 
-      - name: build lib32-yaml-cpp package
-        run: .github/workflows/packages/lib32-yaml-cpp/build.sh
-      - name: install lib32-yaml-cpp package
-        run: .github/workflows/packages/lib32-yaml-cpp/install.sh
+      - name: build and install 32-bit libyaml
+        run: bld/docker-install-libyaml-32.sh
         shell: sh -e {0}
 
-      - run: make                                  clean
-      - run: make CC=gcc   CXX=g++     MFLAGS=-m32 test
-      - run: make CC=gcc   CXX=g++     MFLAGS=-m32 test-vg
+      - run: make                      clean
+      - run: make CC=gcc   MFLAGS=-m32 test
+      - run: make CC=gcc   MFLAGS=-m32 test-vg
 
-      - run: make                                  clean
-      - run: make CC=clang CXX=clang++ MFLAGS=-m32 test
-      - run: make CC=clang CXX=clang++ MFLAGS=-m32 test-vg
+      - run: make                      clean
+      - run: make CC=clang MFLAGS=-m32 test
+      - run: make CC=clang MFLAGS=-m32 test-vg
 
-      - name: build include-what-you-use package
-        run: .github/workflows/packages/include-what-you-use/build.sh
-      - name: install include-what-you-use package
-        run: .github/workflows/packages/include-what-you-use/install.sh
+      - name: build and install include-what-you-use
+        run: bld/docker-install-iwyu.sh
         shell: sh -e {0}
 
       - run: make clean iwyu

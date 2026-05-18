@@ -1,0 +1,20 @@
+SCALE:
+  - NAME_DESC: three
+    SCALE: 3
+
+  - NAME_DESC: invalid
+    SCALE: foobar
+
+  - NAME_DESC: '!(foobar'
+
+  - NAME_DESC:
+      -
+
+  - NAME_DESC: mistyped
+    SCALE:
+      -
+
+  - - foo
+    - bar
+  - NAME_DESC: missing_scale
+  - SCALE: 99

@@ -2,7 +2,6 @@
 #define INFO_H
 
 #include <stdbool.h>
-#include <stddef.h>
 
 #include "cfg.h"
 #include "displ.h"
@@ -34,9 +33,11 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
 
-void info_user_mode_string(const struct UserMode * const user_mode, char * const buf, const size_t nbuf);
+// consumer frees
+char *info_user_mode_string(const struct UserMode * const user_mode);
 
-void info_mode_string(const struct Mode * const mode, char * const buf, const size_t nbuf);
+// consumer frees
+char *info_mode_string(const struct Mode * const mode);
 
 // consumer frees
 char *delta_human(const enum DisplState state, const struct SList * const heads);

@@ -1,0 +1,10 @@
+
+Reloading configuration file: file_path
+
+New configuration:
+  Arrange in a ROW aligned at the TOP
+  Scaling: ON
+  Auto scale: ON (min: 1.000, max: 888.000)
+  Change success command:
+    notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
+
