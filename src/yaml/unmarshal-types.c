@@ -55,10 +55,14 @@ void *yaml_root_to_ipc_request(const yaml_node_t *root) {
 	yaml_unmarshal_log_ctx_prefix(NULL);
 
 	yaml_unmarshal_log_ctx_top("LOG_THRESHOLD");
-	ipc_request->log_threshold = yaml_scalar_to_enum(stable_get(table, "LOG_THRESHOLD"), log_threshold_val);
+	const yaml_node_t *log_threshold = stable_get(table, "LOG_THRESHOLD");
+	if (log_threshold)
+		ipc_request->log_threshold = yaml_scalar_to_enum(log_threshold, log_threshold_val);
 
 	yaml_unmarshal_log_ctx_top("CFG");
-	ipc_request->cfg = yaml_map_to_cfg(stable_get(table, "CFG"));
+	const yaml_node_t *cfg = stable_get(table, "CFG");
+	if (cfg)
+		ipc_request->cfg = yaml_map_to_cfg(cfg);
 
 	goto end;
 
@@ -215,9 +219,8 @@ void *yaml_map_to_ipc_response(const yaml_node_t *map) {
 
 	yaml_unmarshal_log_ctx_top("CFG");
 	const yaml_node_t *cfg = stable_get(table, "CFG");
-	if (cfg) {
+	if (cfg)
 		ipc_response->cfg = yaml_map_to_cfg(cfg);
-	}
 
 	yaml_unmarshal_log_ctx_top("STATE");
 	const yaml_node_t *state = stable_get(table, "STATE");
