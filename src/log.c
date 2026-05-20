@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/param.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "log.h"
 
@@ -19,17 +20,17 @@ struct LogActive {
 	bool times;
 	bool suppressing;
 };
-struct LogActive active = {
+static struct LogActive active = {
 	.threshold = LOG_THRESHOLD_DEFAULT,
 	.threshold_cli = false,
 	.times = false,
 	.suppressing = false,
 };
 
-struct SList *log_cap_lines_active = NULL;
+static struct SList *log_cap_lines_active = NULL;
 
 // all thresholds, start of line
-char threshold_char[] = {
+static const char threshold_char[] = {
 	'?',
 	'D',
 	'I',
@@ -39,7 +40,7 @@ char threshold_char[] = {
 };
 
 // not for all thresholds
-char *threshold_label[] = {
+static const char *threshold_label[] = {
 	NULL,
 	NULL,
 	NULL,
@@ -47,6 +48,17 @@ char *threshold_label[] = {
 	"ERROR: ",
 	"FATAL: ",
 };
+
+// all but info
+static const char *threshold_colours[] = {
+	NULL,
+	"\x1B[1;36m", // cyan    debug
+	NULL,         //         info
+	"\x1B[1;35m", // magenta warning
+	"\x1B[1;31m", // red     error
+	"\x1B[1;33m", // yellow  fatal
+};
+static const char reset_colour[] = "\x1B[0m";
 
 static void capture_line(enum LogThreshold threshold, char *l) {
 	for (struct SList *i = log_cap_lines_active; i; i = i->nex) {
@@ -65,6 +77,16 @@ static void print_line(const enum LogThreshold threshold, const char *l) {
 		return;
 
 	FILE *stream = threshold >= ERROR ? stderr : stdout;
+	const int fd = threshold >= ERROR ? STDERR_FILENO : STDOUT_FILENO;
+
+	// colour only for terminal output
+	const char *colour = NULL;
+	if (isatty(fd))
+		colour = threshold_colours[threshold];
+
+	// colour for entire line
+	if (colour)
+		fprintf(stream, "%s", colour);
 
 	// maybe one char threshold and time
 	if (active.times) {
@@ -77,17 +99,19 @@ static void print_line(const enum LogThreshold threshold, const char *l) {
 	}
 
 	if (l) {
+
 		// maybe label on non-empty lines
 		if (l[0] != '\0' && threshold_label[threshold]) {
 			fprintf(stream, "%s", threshold_label[threshold]);
 		}
 
 		// line contents
-		fprintf(stream, "%s\n", l);
+		fprintf(stream, "%s%s\n", l, colour ? reset_colour : "");
+
 	} else {
 
 		// empty line
-		fprintf(stream, "\n");
+		fprintf(stream, "%s\n", colour ? reset_colour : "");
 	}
 }
 
