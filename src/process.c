@@ -56,7 +56,8 @@ void pid_file_create(void) {
 
 	pid_t pid = pid_active_server();
 	if (pid_active_server()) {
-		log_fatal("\nanother instance %d is running, exiting", pid);
+		log_fatal("");
+		log_fatal("another instance %d is running, exiting", pid);
 		wd_exit(EXIT_FAILURE);
 		return;
 	}
@@ -146,7 +147,8 @@ void wd_exit(const int __status) {
 }
 
 void wd_exit_message(const int __status) {
-	log_fatal("\nPlease raise an issue: https://github.com/alex-courtis/way-displays/issues");
+	log_fatal("");
+	log_fatal("Please raise an issue: https://github.com/alex-courtis/way-displays/issues");
 	log_fatal("Attach this log and describe the events that occurred before this failure.");
 	exit(__status);
 }

@@ -442,7 +442,8 @@ void handle_failure(void) {
 
 			break;
 		default:
-			log_fatal("\nChanges failed, exiting");
+			log_fatal("");
+			log_fatal("Changes failed, exiting");
 			call_back(FATAL, displ->delta.human, "\nChanges failed, exiting");
 
 			wd_exit_message(EXIT_FAILURE);
