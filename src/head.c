@@ -176,7 +176,8 @@ wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double sca
 	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * b) \
 				  * ((double)HEAD_WLFIXED_SCALING_BASE / b);
 	if (fixed_scale != fixed_scale_before) {
-		log_debug("\n%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head_human(head), scale, b, wl_fixed_to_double(fixed_scale));
+		log_debug("");
+		log_debug("%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head_human(head), scale, b, wl_fixed_to_double(fixed_scale));
 	}
 
 	return fixed_scale;

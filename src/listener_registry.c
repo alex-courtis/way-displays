@@ -68,7 +68,8 @@ static void global(void *data,
 	} else if (strcmp(interface, wl_output_interface.name) == 0) {
 		bind_wl_output(data, wl_registry, name, interface, version);
 	} else if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
-		log_debug("\nCompositor supports %s version %d", interface, version);
+		log_debug("");
+		log_debug("Compositor supports %s version %d", interface, version);
 	}
 }
 

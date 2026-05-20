@@ -95,7 +95,8 @@ static void receive_ipc_request(int server_socket) {
 		goto send;
 	}
 
-	log_debug("\nServer received request: %s", ipc_command_friendly(ipc_request->command));
+	log_debug("");
+	log_debug("Server received request: %s", ipc_command_friendly(ipc_request->command));
 	if (ipc_request->cfg) {
 		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
