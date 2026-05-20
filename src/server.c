@@ -119,11 +119,13 @@ static void receive_ipc_request(int server_socket) {
 					ipc_operation->done = false;
 					cfg_free(cfg);
 					cfg = cfg_merged;
-					log_info("\nNew configuration:");
+					log_info("");
+					log_info("New configuration:");
 					print_cfg(INFO, cfg, false);
 				} else {
 					// complete
-					log_info("\nNo config changes to make.");
+					log_info("");
+					log_info("No config changes to make.");
 				}
 				break;
 			}
@@ -143,7 +145,8 @@ static void receive_ipc_request(int server_socket) {
 		default:
 			{
 				// complete
-				log_info("\nActive configuration:");
+				log_info("");
+				log_info("Active configuration:");
 				print_cfg(INFO, cfg, false);
 				print_cfg_commands(INFO, cfg);
 				print_heads(INFO, NONE, heads);
@@ -193,7 +196,8 @@ static int loop(void) {
 		_wl_display_dispatch_pending__read_events(displ->display, FL);
 
 		if (!displ->zwlr_output_manager) {
-			log_info("\nDisplay's output manager has departed, exiting");
+			log_info("");
+			log_info("Display's output manager has departed, exiting");
 			wd_exit(EXIT_SUCCESS);
 			return EXIT_SUCCESS;
 		}
@@ -205,7 +209,8 @@ static int loop(void) {
 			if (read(fd_signal, &fdsi, sizeof(fdsi)) == sizeof(fdsi)) {
 				log_debug("LOOP signal %d: %s", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
 				if (fdsi.ssi_signo != SIGPIPE) {
-					log_info("\nReceived signal %d: %s, exiting", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
+					log_info("");
+					log_info("Received signal %d: %s, exiting", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
 					return fdsi.ssi_signo;
 				}
 			}
@@ -273,7 +278,8 @@ void reload_cfg(void) {
 	if (!cfg || !cfg->file_path)
 		return;
 
-	log_info("\nReloading configuration file: %s", cfg->file_path);
+	log_info("");
+	log_info("Reloading configuration file: %s", cfg->file_path);
 
 	struct Cfg *cfg_loaded = yaml_unmarshal_file(cfg->file_path, yaml_root_to_cfg);
 
@@ -286,12 +292,14 @@ void reload_cfg(void) {
 
 		log_set_threshold(cfg->log_threshold, false);
 		validate_fix(cfg);
-		log_info("\nNew configuration:");
+		log_info("");
+		log_info("New configuration:");
 		print_cfg(INFO, cfg, false);
 		validate_warn(cfg);
 
 	} else {
-		log_info("\nConfiguration unchanged:");
+		log_info("");
+		log_info("Configuration unchanged:");
 		print_cfg(INFO, cfg, false);
 	}
 }
@@ -302,16 +310,19 @@ void load_cfg(void) {
 	bool resolved = cfg_resolve_file_path(cfg_resolved);
 
 	if (resolved) {
-		log_info("\nFound configuration file: %s", cfg_resolved->file_path);
+		log_info("");
+		log_info("Found configuration file: %s", cfg_resolved->file_path);
 
 		cfg = yaml_unmarshal_file(cfg_resolved->file_path, yaml_root_to_cfg);
 
 		if (!cfg) {
-			log_info("\nUsing default configuration:");
+			log_info("");
+			log_info("Using default configuration:");
 			cfg = cfg_init();
 		}
 	} else {
-		log_info("\nNo configuration file found, using defaults:");
+		log_info("");
+		log_info("No configuration file found, using defaults:");
 		cfg = cfg_init();
 	}
 
@@ -319,7 +330,8 @@ void load_cfg(void) {
 	cfg_copy_file_path(cfg_resolved, cfg);
 
 	validate_fix(cfg);
-	log_info("\nActive configuration:");
+	log_info("");
+	log_info("Active configuration:");
 	print_cfg(INFO, cfg, false);
 	validate_warn(cfg);
 

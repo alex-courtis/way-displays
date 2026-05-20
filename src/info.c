@@ -636,7 +636,8 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 		return;
 	}
 
-	log_info("\nExecuting CALLBACK_CMD:");
+	log_info("");
+	log_info("Executing CALLBACK_CMD:");
 	log_info("  %s", cfg->callback_cmd);
 
 	// decorate human message and optional log

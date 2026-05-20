@@ -174,7 +174,8 @@ void lid_update(void) {
 		libinput_dispatch(lid->libinput_monitor);
 	}
 
-	log_info("\nLid %s", lid->closed ? "closed" : "open");
+	log_info("");
+	log_info("Lid %s", lid->closed ? "closed" : "open");
 }
 
 void lid_init(void) {
@@ -204,7 +205,8 @@ void lid_init(void) {
 		return;
 	}
 
-	log_info("\nMonitoring lid device: %s", device_path);
+	log_info("");
+	log_info("Monitoring lid device: %s", device_path);
 
 	lid = calloc(1, sizeof(struct Lid));
 	lid->device_path = device_path;

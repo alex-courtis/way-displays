@@ -251,14 +251,16 @@ void head_set_scaled_dimensions(struct Head * const head) {
 void head_apply_toggles(struct Head * const head, struct Cfg* cfg) {
 	if (slist_find_equal(cfg->disabled, head_disabled_matches_head, head) != NULL) {
 		if (head->overrided_enabled == NoOverride) {
-			log_info("\nApplying \"DISABLED\" override for %s", head->name);
+			log_info("");
+			log_info("Applying \"DISABLED\" override for %s", head->name);
 			if (head->current.enabled) {
 				head->overrided_enabled = OverrideFalse;
 			} else {
 				head->overrided_enabled = OverrideTrue;
 			}
 		} else {
-			log_info("\nResetting \"DISABLED\" override for %s", head->name);
+			log_info("");
+			log_info("Resetting \"DISABLED\" override for %s", head->name);
 			head->overrided_enabled = NoOverride;
 		}
 	}
@@ -306,7 +308,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
 
-			log_info("\n%s: No preferred mode, falling back to maximum available", head_human(head));
+			log_info("");
+			log_info("%s: No preferred mode, falling back to maximum available", head_human(head));
 
 			char *human = sprintf_alloc("%s\n  No preferred mode, falling back to maximum available", head_human(head));
 

@@ -59,7 +59,8 @@ int _wl_display_read_events(struct wl_display *display, char *file, int line) {
 
 	if ((ret = wl_display_read_events(display)) == -1) {
 		if (errno == EPIPE) {
-			log_info("\nWayland display terminated, exiting.");
+			log_info("");
+			log_info("Wayland display terminated, exiting.");
 		} else {
 			log_fatal_errno("\nwl_display_read_events failed at %s:%d, exiting", file, line);
 			wd_exit_message(EXIT_FAILURE);

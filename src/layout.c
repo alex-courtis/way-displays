@@ -395,7 +395,8 @@ void handle_success(void) {
 			break;
 	}
 
-	log_info("\nChanges successful");
+	log_info("");
+	log_info("Changes successful");
 	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
 
 	displ_delta_destroy();

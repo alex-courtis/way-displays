@@ -1019,7 +1019,8 @@ end:
 	free(yaml);
 
 	if (written) {
-		log_info("\nWrote configuration file: %s", cfg->file_path);
+		log_info("");
+		log_info("Wrote configuration file: %s", cfg->file_path);
 	}
 }
 
