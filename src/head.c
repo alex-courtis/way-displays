@@ -271,7 +271,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 		return NULL;
 
 	if (slist_length(head->modes) == slist_length(head->modes_failed)) {
-		log_error("\nNo mode for %s, disabling.", head->name);
+		log_error("");
+		log_error("No mode for %s, disabling.", head->name);
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 		return NULL;
 	}
@@ -326,7 +327,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 	}
 
 	if (!mode) {
-		log_error("\nNo mode for %s, disabling.", head_human(head));
+		log_error("");
+		log_error("No mode for %s, disabling.", head_human(head));
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 	}
 

@@ -114,13 +114,15 @@ static struct libinput *create_libinput_monitor(char *device_path) {
 
 	struct libinput *libinput_context = libinput_path_create_context(&libinput_impl, NULL);
 	if (!libinput_context) {
-		log_error("\nunable to create libinput monitoring context, abandoning laptop lid detection");
+		log_error("");
+		log_error("unable to create libinput monitoring context, abandoning laptop lid detection");
 		return NULL;
 	}
 
 	struct libinput_device *device = libinput_path_add_device(libinput_context, device_path);
 	if (!device) {
-		log_error("\nunable to add libinput path device %s, abandoning laptop lid detection", device_path);
+		log_error("");
+		log_error("unable to add libinput path device %s, abandoning laptop lid detection", device_path);
 		return NULL;
 	}
 

@@ -47,7 +47,8 @@ char *socket_read(int socket_client) {
 	// peek, as the sender may experience delay between connecting and sending
 	if (recv(socket_client, NULL, 0, MSG_PEEK) == -1) {
 		if (errno == EAGAIN) {
-			log_error("\nSocket read timeout");
+			log_error("");
+			log_error("Socket read timeout");
 		} else {
 			log_error_errno("\nSocket recv failed");
 		}

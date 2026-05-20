@@ -33,7 +33,8 @@ struct IpcOperation *ipc_operation = NULL;
 static void handle_ipc_in_progress(int server_socket) {
 	struct IpcRequest *request = ipc_receive_request(server_socket);
 	if (!request) {
-		log_error("\nFailed to read IPC request");
+		log_error("");
+		log_error("Failed to read IPC request");
 		return;
 	}
 
@@ -77,7 +78,8 @@ static void receive_ipc_request(int server_socket) {
 
 	struct IpcRequest *ipc_request = ipc_receive_request(server_socket);
 	if (!ipc_request) {
-		log_error("\nFailed to read IPC request");
+		log_error("");
+		log_error("Failed to read IPC request");
 		log_cap_lines_stop(&ipc_operation->log_cap_lines);
 		ipc_operation_free(ipc_operation);
 		ipc_operation = NULL;
