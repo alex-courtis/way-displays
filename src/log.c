@@ -5,13 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 #include <time.h>
 
 #include "log.h"
 
 #include "slist.h"
 
-#define LS 16384
+#define MAX_LINE_LEN 16384
 
 struct LogActive {
 	enum LogThreshold threshold;
@@ -98,7 +99,7 @@ static void log_line(const enum LogThreshold threshold, const int eno, const cha
 
 	// allocate the line for output and capture
 	if (__format && __args)
-		l = vsprintf_alloc(__format, __args);
+		l = vsnprintf_alloc(MAX_LINE_LEN, __format, __args);
 	else
 		l = strdup("");
 
@@ -252,6 +253,24 @@ char *vsprintf_alloc(const char *__restrict __format, va_list __args) {
 	va_copy(args, __args);
 	size_t len = vsnprintf(NULL, 0, __format, args);
 	va_end(args);
+
+	char *str = calloc(len + 1, sizeof(char));
+
+	va_copy(args, __args);
+	vsnprintf(str, len + 1, __format, args);
+	va_end(args);
+
+	return str;
+}
+
+char *vsnprintf_alloc(size_t __maxlen, const char *__restrict __format, va_list __args) {
+
+	va_list args;
+	va_copy(args, __args);
+	size_t raw = vsnprintf(NULL, 0, __format, args);
+	va_end(args);
+
+	size_t len = MIN(raw, __maxlen);
 
 	char *str = calloc(len + 1, sizeof(char));
 
