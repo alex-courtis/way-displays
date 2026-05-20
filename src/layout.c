@@ -405,10 +405,12 @@ void handle_success(void) {
 static bool handle_cancelled(void) {
 	cancellation_retries++;
 	if (cancellation_retries <= MAX_CANCELLATION_RETRIES) {
-		log_warn("\nChanges cancelled, retrying (attempt %i)", cancellation_retries);
+		log_warn("");
+		log_warn("Changes cancelled, retrying (attempt %i)", cancellation_retries);
 		return true;
 	} else {
-		log_warn("\nChanges cancelled, max number of retry attempts exceeded");
+		log_warn("");
+		log_warn("Changes cancelled, max number of retry attempts exceeded");
 		return false;
 	}
 }

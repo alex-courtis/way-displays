@@ -287,7 +287,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 			char *um_str = info_user_mode_string(um);
 
-			log_warn("\n%s: No available mode for user MODE %s, falling back to preferred", head->name, um_str);
+			log_warn("");
+			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, um_str);
 
 			char *human = sprintf_alloc("%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), um_str);
 
