@@ -84,7 +84,7 @@ static void print_line(const enum LogThreshold threshold, const char *l) {
 	if (isatty(fd))
 		colour = threshold_colours[threshold];
 
-	// colour for entire line
+	// maybe colour for entire line
 	if (colour)
 		fprintf(stream, "%s", colour);
 
