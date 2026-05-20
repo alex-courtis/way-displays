@@ -24,7 +24,8 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 	int fd = open(path, flags);
 
 	if (fd <= 0) {
-		log_warn_errno("\nlibinput open %s failed", path);
+		log_warn_errno("");
+		log_warn_errno("libinput open %s failed", path);
 		return -errno;
 	}
 
@@ -34,7 +35,8 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 static void libinput_close_restricted(int fd, void *data) {
 
 	if (close(fd) != 0) {
-		log_warn_errno("\nlibinput close failed");
+		log_warn_errno("");
+		log_warn_errno("libinput close failed");
 	}
 }
 

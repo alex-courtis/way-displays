@@ -239,7 +239,8 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	bool newline;
 
 	if (cfg->align && cfg->arrange) {
-		log_(t, "\nway-displays -s ARRANGE_ALIGN %s %s", arrange_name(cfg->arrange), align_name(cfg->align));
+		log_(t, "");
+		log_(t, "way-displays -s ARRANGE_ALIGN %s %s", arrange_name(cfg->arrange), align_name(cfg->align));
 	}
 
 	if (cfg->order_name_desc) {
@@ -249,17 +250,20 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 			msg = sprintf_append(msg, "'%s' ", (char*)i->val);
 		}
 
-		log_(t, "\nway-displays -s ORDER %s", msg);
+		log_(t, "");
+		log_(t, "way-displays -s ORDER %s", msg);
 
 		free(msg);
 	}
 
 	if (cfg->scaling) {
-		log_(t, "\nway-displays -s SCALING %s", on_off_name(cfg->scaling));
+		log_(t, "");
+		log_(t, "way-displays -s SCALING %s", on_off_name(cfg->scaling));
 	}
 
 	if (cfg->auto_scale) {
-		log_(t, "\nway-displays -s AUTO_SCALE %s", on_off_name(cfg->auto_scale));
+		log_(t, "");
+		log_(t, "way-displays -s AUTO_SCALE %s", on_off_name(cfg->auto_scale));
 	}
 
 	newline = true;
@@ -418,7 +422,8 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 	switch (event) {
 		case ARRIVED:
 		case NONE:
-			log_(t, "\n%s%s:", head->name ? head->name : "???", event == ARRIVED ? " Arrived" : "");
+			log_(t, "");
+			log_(t, "%s%s:", head->name ? head->name : "???", event == ARRIVED ? " Arrived" : "");
 			log_(t, "  info:");
 			if (head->name)
 				log_(t, "    name:      '%s'", head->name);
@@ -446,7 +451,8 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 			print_head_current(t, head);
 			break;
 		case DEPARTED:
-			log_(t, "\n%s Departed:", head->name);
+			log_(t, "");
+			log_(t, "%s Departed:", head->name);
 			if (head->name)
 				log_(t, "    name:      '%s'", head->name);
 			if (head->description)
@@ -454,7 +460,8 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 			break;
 		case DELTA:
 			if (head_current_not_desired(head)) {
-				log_(t, "\n%s Changing:", head->name);
+				log_(t, "");
+				log_(t, "%s Changing:", head->name);
 				log_(t, "  from:");
 				print_head_current(t, head);
 				log_(t, "  to:");
@@ -508,7 +515,8 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 		return;
 	}
 
-	log_(t, "\n%s:", head_human(head));
+	log_(t, "");
+	log_(t, "%s:", head_human(head));
 	log_(t, "  Cannot enable VRR: this display or compositor may not support it.");
 	log_(t, "  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
 	log_(t, "  VRR_OFF:");
@@ -516,7 +524,8 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 }
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
-	log_(t, "\nChanges failed");
+	log_(t, "");
+	log_(t, "Changes failed");
 
 	if (!head) {
 		return;
