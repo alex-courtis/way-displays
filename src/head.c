@@ -176,7 +176,8 @@ wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double sca
 	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * b) \
 				  * ((double)HEAD_WLFIXED_SCALING_BASE / b);
 	if (fixed_scale != fixed_scale_before) {
-		log_debug("\n%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head_human(head), scale, b, wl_fixed_to_double(fixed_scale));
+		log_debug("");
+		log_debug("%s: Rounded scale %g to nearest multiple of 1/%d: %.03f", head_human(head), scale, b, wl_fixed_to_double(fixed_scale));
 	}
 
 	return fixed_scale;
@@ -250,14 +251,16 @@ void head_set_scaled_dimensions(struct Head * const head) {
 void head_apply_toggles(struct Head * const head, struct Cfg* cfg) {
 	if (slist_find_equal(cfg->disabled, head_disabled_matches_head, head) != NULL) {
 		if (head->overrided_enabled == NoOverride) {
-			log_info("\nApplying \"DISABLED\" override for %s", head->name);
+			log_info("");
+			log_info("Applying \"DISABLED\" override for %s", head->name);
 			if (head->current.enabled) {
 				head->overrided_enabled = OverrideFalse;
 			} else {
 				head->overrided_enabled = OverrideTrue;
 			}
 		} else {
-			log_info("\nResetting \"DISABLED\" override for %s", head->name);
+			log_info("");
+			log_info("Resetting \"DISABLED\" override for %s", head->name);
 			head->overrided_enabled = NoOverride;
 		}
 	}
@@ -268,7 +271,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 		return NULL;
 
 	if (slist_length(head->modes) == slist_length(head->modes_failed)) {
-		log_error("\nNo mode for %s, disabling.", head->name);
+		log_error("");
+		log_error("No mode for %s, disabling.", head->name);
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 		return NULL;
 	}
@@ -284,7 +288,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 			char *um_str = info_user_mode_string(um);
 
-			log_warn("\n%s: No available mode for user MODE %s, falling back to preferred", head->name, um_str);
+			log_warn("");
+			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, um_str);
 
 			char *human = sprintf_alloc("%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), um_str);
 
@@ -305,7 +310,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
 
-			log_info("\n%s: No preferred mode, falling back to maximum available", head_human(head));
+			log_info("");
+			log_info("%s: No preferred mode, falling back to maximum available", head_human(head));
 
 			char *human = sprintf_alloc("%s\n  No preferred mode, falling back to maximum available", head_human(head));
 
@@ -321,7 +327,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 	}
 
 	if (!mode) {
-		log_error("\nNo mode for %s, disabling.", head_human(head));
+		log_error("");
+		log_error("No mode for %s, disabling.", head_human(head));
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 	}
 

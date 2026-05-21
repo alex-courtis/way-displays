@@ -4,13 +4,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "log.h"
 
 #include "slist.h"
 
-#define LS 16384
+#define MAX_LINE_LEN 16384
 
 struct LogActive {
 	enum LogThreshold threshold;
@@ -18,16 +20,17 @@ struct LogActive {
 	bool times;
 	bool suppressing;
 };
-struct LogActive active = {
+static struct LogActive active = {
 	.threshold = LOG_THRESHOLD_DEFAULT,
 	.threshold_cli = false,
 	.times = false,
 	.suppressing = false,
 };
 
-struct SList *log_cap_lines_active = NULL;
+static struct SList *log_cap_lines_active = NULL;
 
-char threshold_char[] = {
+// all thresholds, start of line
+static const char threshold_char[] = {
 	'?',
 	'D',
 	'I',
@@ -36,84 +39,106 @@ char threshold_char[] = {
 	'F',
 };
 
-char *threshold_prefix[] = {
-	"",
-	"",
-	"",
+// not for all thresholds
+static const char *threshold_label[] = {
+	NULL,
+	NULL,
+	NULL,
 	"WARNING: ",
 	"ERROR: ",
 	"FATAL: ",
 };
 
-static void print_time(enum LogThreshold threshold, FILE *__restrict __stream) {
-	static char buf[16];
-	static time_t t;
+// all but info
+static const char *threshold_colours[] = {
+	NULL,
+	"\x1B[1;36m", // cyan    debug
+	NULL,         //         info
+	"\x1B[1;35m", // magenta warning
+	"\x1B[1;31m", // red     error
+	"\x1B[1;33m", // yellow  fatal
+};
+static const char reset_colour[] = "\x1B[0m";
 
-	t = time(NULL);
-
-	strftime(buf, sizeof(buf), "%H:%M:%S", localtime(&t));
-
-	fprintf(__stream, "%c [%s] ", threshold_char[threshold], buf);
-}
-
-static void capture_line(struct SList **lines, enum LogThreshold threshold, char *l) {
-	struct LogCapLine *line = calloc(1, sizeof(struct LogCapLine));
-	line->line = strdup(l);
-	line->threshold = threshold;
-	slist_append(lines, line);
-}
-
-static void print_raw(enum LogThreshold threshold, bool prefix, const char *l) {
-	static FILE *stream;
-
-	stream = threshold >= ERROR ? stderr : stdout;
-
-	if (threshold >= active.threshold && !active.suppressing) {
-		if (active.times) {
-			print_time(threshold, stream);
-		}
-		if (l[0] != '\0') {
-			fprintf(stream, "%s%s\n", prefix ? threshold_prefix[threshold] : "", l);
-		} else {
-			fprintf(stream, "\n");
-		}
-	}
-}
-
-static void print_line(enum LogThreshold threshold, bool prefix, int eno, const char *__restrict __format, va_list __args) {
-	static char l[LS];
-	static size_t n;
-
-	n = 0;
-	l[0] = '\0';
-
-	if (__format) {
-		n += vsnprintf(l + n, LS - n, __format, __args);
-	}
-	if (eno) {
-		n += snprintf(l + n, LS - n, ": %d %s", eno, strerror(eno));
-	}
-
-	if (n >= LS) {
-		sprintf(l + LS - 4, "...");
-	}
-
+static void capture_line(enum LogThreshold threshold, char *l) {
 	for (struct SList *i = log_cap_lines_active; i; i = i->nex) {
-		capture_line(i->val, threshold, l);
-	}
+		struct LogCapLine *line = calloc(1, sizeof(struct LogCapLine));
+		line->line = strdup(l);
+		line->threshold = threshold;
 
-	print_raw(threshold, prefix, l);
+		slist_append(i->val, line);
+	}
 }
 
-static void print_log(enum LogThreshold threshold, int eno, const char *__restrict __format, va_list __args) {
-	static const char *format;
+static void print_line(const enum LogThreshold threshold, const char *l) {
+	static char buf_time[16];
 
-	format = __format;
-	while (*format == '\n') {
-		print_line(threshold, false, 0, NULL, __args);
-		format++;
+	if (threshold < active.threshold || active.suppressing)
+		return;
+
+	FILE *stream = threshold >= ERROR ? stderr : stdout;
+	const int fd = threshold >= ERROR ? STDERR_FILENO : STDOUT_FILENO;
+
+	// colour only for terminal output
+	const char *colour = NULL;
+	if (isatty(fd))
+		colour = threshold_colours[threshold];
+
+	// maybe colour for entire line
+	if (colour)
+		fprintf(stream, "%s", colour);
+
+	// maybe one char threshold and time
+	if (active.times) {
+
+		time_t t = time(NULL);
+
+		strftime(buf_time, sizeof(buf_time), "%H:%M:%S", localtime(&t));
+
+		fprintf(stream, "%c [%s] ", threshold_char[threshold], buf_time);
 	}
-	print_line(threshold, true, eno, format, __args);
+
+	if (l) {
+
+		// maybe label on non-empty lines
+		if (l[0] != '\0' && threshold_label[threshold]) {
+			fprintf(stream, "%s", threshold_label[threshold]);
+		}
+
+		// line contents
+		fprintf(stream, "%s%s\n", l, colour ? reset_colour : "");
+
+	} else {
+
+		// empty line
+		fprintf(stream, "%s\n", colour ? reset_colour : "");
+	}
+}
+
+// allocate a buffer containing the line's content, maybe printing and capturing
+// allocating the buffer is slower than direct vfprintf, however it is the safer way to capture
+static void log_line(const enum LogThreshold threshold, const int eno, const char *__restrict __format, va_list __args) {
+	char *l;
+
+	// allocate the line for output and capture
+	if (__format && __args)
+		l = vsnprintf_alloc(MAX_LINE_LEN, __format, __args);
+	else
+		l = strdup("");
+
+	// append errno
+	if (eno)
+		l = sprintf_append(l, ": %d %s", eno, strerror(eno));
+
+
+	// output depending on threshold
+	print_line(threshold, l);
+
+	// capture content regardless of threshold
+	if (log_cap_lines_active)
+		capture_line(threshold, l);
+
+	free(l);
 }
 
 void log_set_threshold(enum LogThreshold threshold, bool cli) {
@@ -138,63 +163,63 @@ void log_set_times(bool times) {
 void log_(enum LogThreshold threshold, const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(threshold, 0, __format, args);
+	log_line(threshold, 0, __format, args);
 	va_end(args);
 }
 
 void log_debug(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(DEBUG, 0, __format, args);
+	log_line(DEBUG, 0, __format, args);
 	va_end(args);
 }
 
 void log_info(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(INFO, 0, __format, args);
+	log_line(INFO, 0, __format, args);
 	va_end(args);
 }
 
 void log_warn(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(WARNING, 0, __format, args);
+	log_line(WARNING, 0, __format, args);
 	va_end(args);
 }
 
 void log_warn_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(WARNING, errno, __format, args);
+	log_line(WARNING, errno, __format, args);
 	va_end(args);
 }
 
 void log_error(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(ERROR, 0, __format, args);
+	log_line(ERROR, 0, __format, args);
 	va_end(args);
 }
 
 void log_error_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(ERROR, errno, __format, args);
+	log_line(ERROR, errno, __format, args);
 	va_end(args);
 }
 
 void log_fatal(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(FATAL, 0, __format, args);
+	log_line(FATAL, 0, __format, args);
 	va_end(args);
 }
 
 void log_fatal_errno(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
-	print_log(FATAL, errno, __format, args);
+	log_line(FATAL, errno, __format, args);
 	va_end(args);
 }
 
@@ -229,7 +254,7 @@ void log_cap_lines_playback(struct SList *lines) {
 		if (!line)
 			continue;
 
-		print_raw(line->threshold, true, line->line);
+		print_line(line->threshold, line->line);
 	}
 }
 
@@ -243,6 +268,40 @@ void log_cap_lines_stop(struct SList **lines) {
 
 void log_cap_lines_free(struct SList **lines) {
 	slist_free_vals(lines, log_cap_line_free);
+}
+
+char *vsprintf_alloc(const char *__restrict __format, va_list __args) {
+
+	va_list args;
+	va_copy(args, __args);
+	size_t len = vsnprintf(NULL, 0, __format, args);
+	va_end(args);
+
+	char *str = calloc(len + 1, sizeof(char));
+
+	va_copy(args, __args);
+	vsnprintf(str, len + 1, __format, args);
+	va_end(args);
+
+	return str;
+}
+
+char *vsnprintf_alloc(size_t __maxlen, const char *__restrict __format, va_list __args) {
+
+	va_list args;
+	va_copy(args, __args);
+	size_t raw = vsnprintf(NULL, 0, __format, args);
+	va_end(args);
+
+	size_t len = MIN(raw, __maxlen);
+
+	char *str = calloc(len + 1, sizeof(char));
+
+	va_copy(args, __args);
+	vsnprintf(str, len + 1, __format, args);
+	va_end(args);
+
+	return str;
 }
 
 char *sprintf_alloc(const char *__restrict __format, ...) {

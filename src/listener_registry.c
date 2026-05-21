@@ -68,7 +68,8 @@ static void global(void *data,
 	} else if (strcmp(interface, wl_output_interface.name) == 0) {
 		bind_wl_output(data, wl_registry, name, interface, version);
 	} else if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
-		log_debug("\nCompositor supports %s version %d", interface, version);
+		log_debug("");
+		log_debug("Compositor supports %s version %d", interface, version);
 	}
 }
 
@@ -81,7 +82,8 @@ static void global_remove(void *data,
 
 	// a "who cares?" situation in the WLR examples
 	if (displ && displ->zwlr_output_manager_name == name) {
-		log_info("\nDisplay's output manager has been removed, exiting");
+		log_info("");
+		log_info("Display's output manager has been removed, exiting");
 		wd_exit(EXIT_SUCCESS);
 	}
 }

@@ -3,6 +3,9 @@
 
 staticFunction:yaml/*-types.c
 
+staticFunction:log.c
+unusedFunction:log.c
+
 unusedFunction:src/convert.c
 
 unusedFunction:lib/col/*c
