@@ -10,7 +10,6 @@
 #include "log.h"
 #include "output.h"
 #include "process.h"
-#include "fractional-scale-v1.h"
 #include "xdg-output-unstable-v1.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -67,9 +66,6 @@ static void global(void *data,
 		bind_zxdg_output_manager(data, wl_registry, name, interface, version);
 	} else if (strcmp(interface, wl_output_interface.name) == 0) {
 		bind_wl_output(data, wl_registry, name, interface, version);
-	} else if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
-		log_debug("");
-		log_debug("Compositor supports %s version %d", interface, version);
 	}
 }
 
