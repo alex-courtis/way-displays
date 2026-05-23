@@ -17,7 +17,7 @@
 
 #include "cli.h"
 
-static void usage(FILE *stream) {
+void usage(FILE *stream) {
 	static char mesg[] =
 		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
 		"  Runs the server when no COMMAND specified.\n"

@@ -17,13 +17,13 @@
 struct LogActive {
 	enum LogThreshold threshold;
 	bool threshold_cli;
-	bool times;
+	bool prefix;
 	bool suppressing;
 };
 static struct LogActive active = {
 	.threshold = LOG_THRESHOLD_DEFAULT,
 	.threshold_cli = false,
-	.times = false,
+	.prefix = false,
 	.suppressing = false,
 };
 
@@ -89,7 +89,7 @@ static void print_line(const enum LogThreshold threshold, const char *l) {
 		fprintf(stream, "%s", colour);
 
 	// maybe one char threshold and time
-	if (active.times) {
+	if (active.prefix) {
 
 		time_t t = time(NULL);
 
@@ -156,8 +156,8 @@ enum LogThreshold log_get_threshold(void) {
 	return active.threshold;
 }
 
-void log_set_times(bool times) {
-	active.times = times;
+void log_set_prefix(bool prefix) {
+	active.prefix = prefix;
 }
 
 void log_(enum LogThreshold threshold, const char *__restrict __format, ...) {

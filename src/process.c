@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "cli.h"
 #include "process.h"
 #include "stable.h"
 
@@ -56,8 +57,8 @@ void pid_file_create(void) {
 
 	pid_t pid = pid_active_server();
 	if (pid_active_server()) {
-		log_fatal("");
-		log_fatal("another instance %d is running, exiting", pid);
+		log_fatal("another instance %d is running, exiting\n", pid);
+		usage(stderr);
 		wd_exit(EXIT_FAILURE);
 		return;
 	}

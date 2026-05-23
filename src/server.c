@@ -343,10 +343,10 @@ void load_cfg(void) {
 
 int
 server(char *cfg_path) {
-	log_set_times(true);
-
-	// only one instance
+	// exits when another instance running
 	pid_file_create();
+
+	log_set_prefix(true);
 
 	setup_signal_handlers();
 

@@ -26,7 +26,7 @@ void log_set_threshold(enum LogThreshold threshold, bool cli);
 
 enum LogThreshold log_get_threshold(void);
 
-void log_set_times(bool times);
+void log_set_prefix(bool prefix);
 
 
 void log_(enum LogThreshold threshold, const char *__restrict __format, ...) __attribute__ ((__format__ (__printf__, 2, 3)));
