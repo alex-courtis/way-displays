@@ -21,7 +21,7 @@
 
 bool yaml_doc_cfg(const void *data) {
 	if (!data)
-		return true;
+		return false;
 
 	int mapping = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
@@ -30,7 +30,7 @@ bool yaml_doc_cfg(const void *data) {
 
 bool yaml_doc_ipc_operation(const void *data) {
 	if (!data)
-		return true;
+		return false;
 
 	// map_messages mutates operation->rc based on max line level
 	struct IpcOperation *ipc_operation = (struct IpcOperation*)data;
@@ -55,7 +55,7 @@ bool yaml_doc_ipc_operation(const void *data) {
 
 bool yaml_doc_ipc_request(const void *data) {
 	if (!data)
-		return true;
+		return false;
 
 	const struct IpcRequest *ipc_request = data;
 
@@ -70,10 +70,7 @@ bool yaml_doc_ipc_request(const void *data) {
 }
 
 bool yaml_map_populate_cfg(const void *data, int mapping) {
-	if (!mapping)
-		return false;
-
-	if (!data)
+	if (!mapping || !data)
 		return false;
 
 	const struct Cfg *cfg = data;
@@ -97,11 +94,8 @@ bool yaml_map_populate_cfg(const void *data, int mapping) {
 }
 
 bool yaml_map_populate_ipc_operation(void *data, int mapping) {
-	if (!mapping)
+	if (!mapping || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	struct IpcOperation *ipc_operation = data;
 
@@ -121,11 +115,8 @@ bool yaml_map_populate_ipc_operation(void *data, int mapping) {
 }
 
 bool yaml_map_populate_ipc_request(const void *data, int mapping) {
-	if (!mapping)
+	if (!mapping || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct IpcRequest *ipc_request = data;
 
@@ -140,11 +131,8 @@ bool yaml_map_populate_ipc_request(const void *data, int mapping) {
 }
 
 bool yaml_map_populate_mode(const void *data, int mapping) {
-	if (!mapping)
+	if (!mapping || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct Mode *mode = data;
 
@@ -156,11 +144,8 @@ bool yaml_map_populate_mode(const void *data, int mapping) {
 }
 
 bool yaml_map_populate_head_state(const void *data, int mapping) {
-	if (!mapping)
+	if (!mapping || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct HeadState *head_state = data;
 
@@ -175,11 +160,8 @@ bool yaml_map_populate_head_state(const void *data, int mapping) {
 }
 
 bool yaml_map_populate_head_overrides(const void *data, int mapping) {
-	if (!mapping)
+	if (!mapping || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct Head *head = data;
 
@@ -190,11 +172,8 @@ bool yaml_map_populate_head_overrides(const void *data, int mapping) {
 }
 
 bool yaml_map_populate_lid(const void *data, int mapping) {
-	if (!mapping)
+	if (!mapping || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct Lid *lid = data;
 
@@ -204,11 +183,8 @@ bool yaml_map_populate_lid(const void *data, int mapping) {
 }
 
 bool yaml_map_populate_messages(void *data, int mapping) {
-	if (!mapping)
+	if (!mapping || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	struct IpcOperation *ipc_operation = data;
 
@@ -245,17 +221,18 @@ bool yaml_map_populate_state(const void *unused, int mapping) {
 	if (!mapping)
 		return false;
 
-	return
-		yaml_map_add_map("LID",   lid,   yaml_map_populate_lid, mapping) &&
-		yaml_map_add_seq("HEADS", heads, yaml_seq_append_head,  mapping);
+	if (lid && !yaml_map_add_map("LID", lid, yaml_map_populate_lid, mapping))
+		return false;
+
+	if (heads && !yaml_map_add_seq("HEADS", heads, yaml_seq_append_head,  mapping))
+		return false;
+
+	return true;
 }
 
 bool yaml_seq_append_user_scale(const void *data, int sequence) {
-	if (!sequence)
+	if (!sequence || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct UserScale *user_scale = data;
 
@@ -268,11 +245,8 @@ bool yaml_seq_append_user_scale(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_user_mode(const void *data, int sequence) {
-	if (!sequence)
+	if (!sequence || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct UserMode *user_mode = data;
 
@@ -299,11 +273,8 @@ bool yaml_seq_append_user_mode(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_user_transform(const void *data, int sequence) {
-	if (!sequence)
+	if (!sequence || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct UserTransform *user_transform = data;
 
@@ -316,11 +287,8 @@ bool yaml_seq_append_user_transform(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_condition(const void *data, int sequence) {
-	if (!sequence)
+	if (!sequence || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct Condition *condition = data;
 
@@ -334,11 +302,8 @@ bool yaml_seq_append_condition(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_disabled(const void *data, int sequence) {
-	if (!sequence)
+	if (!sequence || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct Disabled *disabled = data;
 
@@ -355,11 +320,8 @@ bool yaml_seq_append_disabled(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_mode(const void *data, int sequence) {
-	if (!sequence)
+	if (!sequence || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	int map = yaml_document_add_mapping(yaml_document, NULL, YAML_BLOCK_MAPPING_STYLE);
 
@@ -369,11 +331,8 @@ bool yaml_seq_append_mode(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_head(const void *data, int sequence) {
-	if (!sequence)
+	if (!sequence || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct Head *head = data;
 
@@ -396,11 +355,8 @@ bool yaml_seq_append_head(const void *data, int sequence) {
 }
 
 bool yaml_seq_append_log_cap_line(const void *data, int sequence) {
-	if (!sequence)
+	if (!sequence || !data)
 		return false;
-
-	if (!data)
-		return true;
 
 	const struct LogCapLine *line = data;
 
