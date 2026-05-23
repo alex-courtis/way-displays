@@ -41,6 +41,8 @@ end:
 void ipc_send_operation(struct IpcOperation *operation) {
 	char *yaml = yaml_marshal(operation, yaml_doc_ipc_operation, "ipc response");
 
+	log_cap_lines_free(&operation->log_cap_lines);
+
 	if (!yaml) {
 		operation->done = true;
 		return;
