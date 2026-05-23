@@ -56,6 +56,44 @@ int after_each(void **state) {
 	return 0;
 }
 
+void head_get_fixed_scale__rounding(void **state) {
+	struct Head head = { 0 };
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.37, 8);
+	assert_log(DEBUG, "\n???: Rounded scale 1.37 to nearest multiple of 1/8: 1.375\n");
+	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.375));
+	assert_logs_empty();
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.37, 4);
+	assert_log(DEBUG, "\n???: Rounded scale 1.37 to nearest multiple of 1/4: 1.250\n");
+	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.25));
+	assert_logs_empty();
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.37, 2);
+	assert_log(DEBUG, "\n???: Rounded scale 1.37 to nearest multiple of 1/2: 1.500\n");
+	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.5));
+	assert_logs_empty();
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.37, 1);
+	assert_log(DEBUG, "\n???: Rounded scale 1.37 to nearest multiple of 1/1: 1.000\n");
+	assert_int_equal(head.desired.scale, wl_fixed_from_double(1));
+	assert_logs_empty();
+}
+
+void head_get_fixed_scale__no_rounding(void **state) {
+	struct Head head = { 0 };
+
+	head.desired.scale = head_get_fixed_scale(&head, 1, head.scaling_base);
+	assert_int_equal(head.desired.scale, wl_fixed_from_double(1));
+
+	head.desired.scale = head_get_fixed_scale(&head, 1.125, head.scaling_base);
+	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.125));
+
+	head.desired.scale = head_get_fixed_scale(&head, 2, head.scaling_base);
+	assert_int_equal(head.desired.scale, wl_fixed_from_double(2));
+
+	assert_logs_empty();
+}
 
 void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
@@ -450,6 +488,9 @@ void head_apply_toggles__disabled__disable(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST(head_get_fixed_scale__rounding),
+		TEST(head_get_fixed_scale__no_rounding),
+
 		TEST(head_auto_scale__default),
 		TEST(head_auto_scale__mode),
 		TEST(head_auto_scale__range),
