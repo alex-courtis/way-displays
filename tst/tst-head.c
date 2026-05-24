@@ -60,22 +60,18 @@ void head_get_fixed_scale__rounding(void **state) {
 	struct Head head = { 0 };
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.37, 8);
-	assert_log(DEBUG, "\n???: Rounded scale 1.37 to nearest multiple of 1/8: 1.375\n");
 	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.375));
 	assert_logs_empty();
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.37, 4);
-	assert_log(DEBUG, "\n???: Rounded scale 1.37 to nearest multiple of 1/4: 1.250\n");
 	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.25));
 	assert_logs_empty();
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.37, 2);
-	assert_log(DEBUG, "\n???: Rounded scale 1.37 to nearest multiple of 1/2: 1.500\n");
 	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.5));
 	assert_logs_empty();
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.37, 1);
-	assert_log(DEBUG, "\n???: Rounded scale 1.37 to nearest multiple of 1/1: 1.000\n");
 	assert_int_equal(head.desired.scale, wl_fixed_from_double(1));
 	assert_logs_empty();
 }
@@ -242,7 +238,6 @@ void head_set_scaled_dimensions__dimensions(void **state) {
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2194);
 	assert_int_equal(head.scaled.height, 1234);
-	assert_log(DEBUG, "\n???: Rounded scale 1.7 to nearest multiple of 1/8: 1.750\n");
 	assert_logs_empty();
 
 	head.desired.scale = head_get_fixed_scale(&head, 1.9, head.scaling_base);
@@ -250,7 +245,6 @@ void head_set_scaled_dimensions__dimensions(void **state) {
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2048);
 	assert_int_equal(head.scaled.height, 1152);
-	assert_log(DEBUG, "\n???: Rounded scale 1.9 to nearest multiple of 1/8: 1.875\n");
 	assert_logs_empty();
 
 	head.name = "name";
@@ -260,7 +254,6 @@ void head_set_scaled_dimensions__dimensions(void **state) {
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
-	assert_log(DEBUG, "\nname: Rounded scale 2.01 to nearest multiple of 1/8: 2.000\n");
 	assert_logs_empty();
 }
 
