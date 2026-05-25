@@ -36,5 +36,11 @@ const char *log_threshold_name(enum LogThreshold log_threshold);
 enum DisplState displ_state_val(const char *name);
 const char *displ_state_name(enum DisplState displ_state);
 
+enum ScaleRoundStrategy scale_round_strategy_val(const char *name);
+const char *scale_round_strategy_name(enum ScaleRoundStrategy scale_round_strategy);
+
+unsigned int scale_round_to_val(const float scale_round_to);
+const char *scale_round_to_name(const unsigned int scale_round_to);
+
 #endif // CONVERT_H
 

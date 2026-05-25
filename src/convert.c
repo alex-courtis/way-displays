@@ -1,3 +1,5 @@
+#include <assert.h>
+#include <stdio.h>
 #include <string.h>
 #include <strings.h>
 #include <wayland-client-protocol.h>
@@ -22,6 +24,8 @@ static struct NameVal cfg_elements[] = {
 	{ .val = SCALING,               .name = "SCALING",               },
 	{ .val = AUTO_SCALE,            .name = "AUTO_SCALE",            },
 	{ .val = SCALE,                 .name = "SCALE",                 },
+	{ .val = SCALE_ROUND_TO,        .name = "SCALE_ROUND_TO"         },
+	{ .val = SCALE_ROUND_STRATEGY,  .name = "SCALE_ROUND_STRATEGY"   },
 	{ .val = MODE,                  .name = "MODE",                  },
 	{ .val = VRR_OFF,               .name = "VRR_OFF",               },
 	{ .val = CALLBACK_CMD,          .name = "CALLBACK_CMD"           },
@@ -99,6 +103,21 @@ static struct NameVal displ_states[] = {
 	{ .val = CANCELLED,   .name = "CANCELLED",   },
 	{ .val = FAILED,      .name = "FAILED",      },
 	{ .val = 0,           .name = NULL,          },
+};
+
+static struct NameVal scale_round_strategies[] = {
+	{ .val = NEAREST, .name = "NEAREST", },
+	{ .val = UP,      .name = "UP",      },
+	{ .val = DOWN,    .name = "DOWN",    },
+	{ .val = 0,       .name = NULL,      },
+};
+
+static struct NameVal scale_round_tos[] = {
+	{ .val = 8, .name = "0.125", },
+	{ .val = 4, .name = "0.25", },
+	{ .val = 2, .name = "0.5", },
+	{ .val = 1, .name = "1", },
+	{ .val = 0, .name = NULL, },
 };
 
 static unsigned int val(struct NameVal *name_vals, const char *name) {
@@ -222,3 +241,30 @@ enum DisplState displ_state_val(const char *name) {
 const char *displ_state_name(enum DisplState displ_state) {
 	return friendly(displ_states, displ_state);
 }
+
+enum ScaleRoundStrategy scale_round_strategy_val(const char *name) {
+	return val(scale_round_strategies, name);
+}
+
+const char *scale_round_strategy_name(enum ScaleRoundStrategy scale_round_strategy) {
+	return friendly(scale_round_strategies, scale_round_strategy);
+}
+
+unsigned int scale_round_to_val(const float scale_round_to) {
+	if (scale_round_to == 0) {
+		return 0;
+	}
+
+	unsigned int ret = 1.0f / scale_round_to;
+
+	if (!friendly(scale_round_tos, ret)) {
+		return 0;
+	}
+
+	return ret;
+}
+
+const char *scale_round_to_name(const unsigned int scale_round_to) {
+	return friendly(scale_round_tos, scale_round_to);
+}
+

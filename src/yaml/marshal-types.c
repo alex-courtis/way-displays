@@ -80,6 +80,8 @@ bool yaml_map_populate_cfg(const void *data, int mapping) {
 		yaml_map_add_enum (cfg_element_name(ALIGN),                 cfg->align,                       align_name,                     mapping) &&
 		yaml_map_add_seq  (cfg_element_name(ORDER),                 cfg->order_name_desc,             yaml_seq_append_str,            mapping) &&
 		yaml_map_add_enum (cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,                    mapping) &&
+		yaml_map_add_enum (cfg_element_name(SCALE_ROUND_TO),        cfg->scale_round_to,              scale_round_to_name,            mapping) &&
+		yaml_map_add_enum (cfg_element_name(SCALE_ROUND_STRATEGY),  cfg->scale_round_strategy,        scale_round_strategy_name,      mapping) &&
 		yaml_map_add_enum (cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,                    mapping) &&
 		yaml_map_add_float(cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                              mapping) &&
 		yaml_map_add_float(cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                              mapping) &&

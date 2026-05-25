@@ -6,6 +6,8 @@ Ignoring invalid AUTO_SCALE expected scalar, got sequence, using default ON
 Ignoring invalid AUTO_SCALE_MIN expected scalar, got sequence, using default 1.0
 Ignoring invalid AUTO_SCALE_MAX expected scalar, got sequence, using default -1.0
 Ignoring invalid SCALE expected sequence, got scalar
+Ignoring invalid SCALE_ROUND_TO expected scalar, got sequence, using default 0.125
+Ignoring invalid SCALE_ROUND_STRATEGY expected scalar, got sequence, using default NEAREST
 Ignoring invalid MODE expected sequence, got scalar
 Ignoring invalid TRANSFORM expected sequence, got scalar
 Ignoring invalid VRR_OFF expected sequence, got scalar

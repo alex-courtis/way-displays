@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -151,6 +152,12 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 				break;
 			case SCALE:
 				cfg->user_scales = yaml_seq_to_type_list(value, yaml_map_to_user_scale);
+				break;
+			case SCALE_ROUND_TO:
+				cfg->scale_round_to = yaml_scalar_to_scale_round_to(value);
+				break;
+			case SCALE_ROUND_STRATEGY:
+				cfg->scale_round_strategy = yaml_scalar_to_enum_def(SCALE_ROUND_STRATEGY_DEFAULT, value, scale_round_strategy_val, scale_round_strategy_name);
 				break;
 			case MODE:
 				cfg->user_modes = yaml_seq_to_type_list(value, yaml_map_to_user_mode);
@@ -609,6 +616,30 @@ char *yaml_scalar_to_name_desc(const yaml_node_t *scalar) {
 
 	free(name_desc);
 	return NULL;
+}
+
+unsigned int yaml_scalar_to_scale_round_to(const yaml_node_t *scalar) {
+	float val;
+	unsigned int ret;
+
+	yaml_unmarshal_log_ctx_def(scale_round_to_name(HEAD_DEFAULT_SCALING_BASE));
+
+	if (!yaml_scalar_to_float(&val, scalar)) {
+		ret = HEAD_DEFAULT_SCALING_BASE;
+		goto end;
+	}
+
+	ret = scale_round_to_val(val);
+	if (!ret) {
+		yaml_unmarshal_log_invalid_value(scalar->data.scalar.value);
+		ret = HEAD_DEFAULT_SCALING_BASE;
+		goto end;
+	}
+
+end:
+	yaml_unmarshal_log_ctx_def(NULL);
+
+	return ret;
 }
 
 struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq) {

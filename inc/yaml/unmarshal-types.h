@@ -37,6 +37,9 @@ struct SList *yaml_seq_to_log_cap_lines(const yaml_node_t *seq);
 // unmarshal a scalar to a name_desc, validating regex
 char *yaml_scalar_to_name_desc(const yaml_node_t *scalar);
 
+// unmarshal a scalar float to a scale_round_to
+unsigned int yaml_scalar_to_scale_round_to(const yaml_node_t *scalar);
+
 // unmarshal a sequence of valid name_desc, removing duplicates and validating regex
 struct SList *yaml_seq_to_name_desc_list(const yaml_node_t *seq);
 

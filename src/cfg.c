@@ -403,6 +403,16 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		return false;
 	}
 
+	// SCALE_ROUND_TO
+	if (a->scale_round_to != b->scale_round_to) {
+		return false;
+	}
+
+	// SCALE_ROUND_STRATEGY
+	if (a->scale_round_strategy != b->scale_round_strategy) {
+		return false;
+	}
+
 	// MODE
 	if (!slist_equal(a->user_modes, b->user_modes, cfg_user_mode_equal)) {
 		return false;
@@ -480,6 +490,12 @@ void cfg_apply_defaults(struct Cfg *dst) {
 
 	if (!dst->auto_scale)
 		dst->auto_scale = AUTO_SCALE_DEFAULT;
+
+	if (!dst->scale_round_to)
+		dst->scale_round_to = HEAD_DEFAULT_SCALING_BASE;
+
+	if (!dst->scale_round_strategy)
+		dst->scale_round_strategy = NEAREST;
 
 	if (!dst->auto_scale_min)
 		dst->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;

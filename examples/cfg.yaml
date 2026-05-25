@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.1.0.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.2.0.yaml
 
 ## Default cfg.yaml for way-displays.
 ## Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
@@ -55,6 +55,12 @@ AUTO_SCALE_MIN: 1.0
 # SCALE:
 #   - NAME_DESC: 'monitor description'
 #     SCALE: 1.75
+
+## Round scale to: 0.125 (default), 0.25, 0.5 or 1.0
+SCALE_ROUND_TO: 0.125
+
+## Rounding strategy for ROUND_SCALE_TO: NEAREST (default), (always) UP or (always) DOWN
+SCALE_ROUND_STRATEGY: NEAREST
 
 ## Override the preferred mode.
 ## WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
