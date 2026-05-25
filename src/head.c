@@ -164,27 +164,32 @@ bool head_disabled_matches_head(const void * const d, const void * const h) {
 	return head_matches_name_desc(h, disabled_if->name_desc);
 }
 
-wl_fixed_t head_get_fixed_scale(const struct Head * const head, const double scale, const int32_t base) {
+// wl_fixed_t, used by the wlr-output-management protocol, uses scales in multiples of 1/256.
+// Meanwhile, the fractional-scale-v1 protocol deals with scales in multiples of 1/120,
+// and there are observed differences in behavior between compositors, see !138.
+// We force scales to be multiples of 1/8, because gcd(256, 120) = 8.
+wl_fixed_t head_get_fixed_scale(const double scale) {
 	// computes a scale value that is appropriate for putting into `zwlr_output_configuration_head_v1_set_scale`
+
+	// TODO actually apply scale_round_strategy
 
 	wl_fixed_t fixed_scale = wl_fixed_from_double(scale);
 
-	int32_t b = base ? base : HEAD_DEFAULT_SCALING_BASE;
+	int32_t b = cfg->scale_round_to ? cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
 	// See !138
-	fixed_scale = round((double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * b) \
-				  * ((double)HEAD_WLFIXED_SCALING_BASE / b);
+	fixed_scale = round((double)fixed_scale / 256 * b) \
+				  * ((double)256 / b);
 
 	return fixed_scale;
 }
 
-static int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fixed_scale, const int32_t base) {
+static int32_t head_desired_scaled_length(const struct Head * const head, const int32_t length) {
 	// scales a (pixel) length by fixed_scale
 
-	// in case `base` comes from a not fully initialized Head (like in tests)
-	int32_t b = base ? base : HEAD_DEFAULT_SCALING_BASE;
+	int32_t b = cfg->scale_round_to ? cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
-	wl_fixed_t f = (double)fixed_scale / HEAD_WLFIXED_SCALING_BASE * b + 0.5;
+	wl_fixed_t f = (double)head->desired.scale / 256 * b + 0.5;
 
 	// wayland truncates when calculating size
 	return floor((double)length * b / f);
@@ -192,19 +197,19 @@ static int32_t head_get_scaled_length(const int32_t length, const wl_fixed_t fix
 
 wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max) {
 	if (!head) {
-		return head_get_fixed_scale(head, 1.0, HEAD_DEFAULT_SCALING_BASE);
+		return head_get_fixed_scale(1.0);
 	}
 
-	int32_t scaling_base = head->scaling_base ? head->scaling_base : HEAD_DEFAULT_SCALING_BASE;
+	int32_t scaling_base = cfg->scale_round_to ? cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
 	if (!head->desired.mode) {
-		return head_get_fixed_scale(head, 1.0, scaling_base);
+		return head_get_fixed_scale(1.0);
 	}
 
 	// average dpi
 	double dpi = mode_dpi(head->desired.mode);
 	if (dpi == 0) {
-		return head_get_fixed_scale(head, 1.0, scaling_base);
+		return head_get_fixed_scale(1.0);
 	}
 
 	// convert min and max to quantized dpi inside range
@@ -222,7 +227,7 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 		dpi_clamped = dpi_max;
 	}
 
-	return head_get_fixed_scale(head, dpi_clamped / 96, scaling_base);
+	return head_get_fixed_scale(dpi_clamped / 96);
 }
 
 void head_set_scaled_dimensions(struct Head * const head) {
@@ -238,8 +243,8 @@ void head_set_scaled_dimensions(struct Head * const head) {
 		head->scaled.height = head->desired.mode->width;
 	}
 
-	head->scaled.height = head_get_scaled_length(head->scaled.height, head->desired.scale, head->scaling_base);
-	head->scaled.width = head_get_scaled_length(head->scaled.width, head->desired.scale, head->scaling_base);
+	head->scaled.height = head_desired_scaled_length(head, head->scaled.height);
+	head->scaled.width = head_desired_scaled_length(head, head->scaled.width);
 }
 
 void head_apply_toggles(struct Head * const head, struct Cfg* cfg) {

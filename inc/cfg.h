@@ -12,6 +12,8 @@
 
 #define AUTO_SCALE_MAX_DEFAULT -1.0f
 
+#define SCALE_ROUND_TO_DEFAULT 8
+
 struct UserScale {
 	char *name_desc;
 	float scale;

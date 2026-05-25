@@ -621,17 +621,17 @@ unsigned int yaml_scalar_to_scale_round_to(const yaml_node_t *scalar) {
 	float val;
 	unsigned int ret;
 
-	yaml_unmarshal_log_ctx_def(scale_round_to_name(HEAD_DEFAULT_SCALING_BASE));
+	yaml_unmarshal_log_ctx_def(scale_round_to_name(SCALE_ROUND_TO_DEFAULT));
 
 	if (!yaml_scalar_to_float(&val, scalar)) {
-		ret = HEAD_DEFAULT_SCALING_BASE;
+		ret = SCALE_ROUND_TO_DEFAULT;
 		goto end;
 	}
 
 	ret = scale_round_to_val(val);
 	if (!ret) {
 		yaml_unmarshal_log_invalid_value(scalar->data.scalar.value);
-		ret = HEAD_DEFAULT_SCALING_BASE;
+		ret = SCALE_ROUND_TO_DEFAULT;
 		goto end;
 	}
 

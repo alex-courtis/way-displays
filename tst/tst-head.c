@@ -57,36 +57,30 @@ int after_each(void **state) {
 }
 
 void head_get_fixed_scale__rounding(void **state) {
-	struct Head head = { 0 };
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.37, 8);
-	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.375));
+	cfg->scale_round_to = 8;
+	assert_int_equal(head_get_fixed_scale(1.37), wl_fixed_from_double(1.375));
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.37, 4);
-	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.25));
+	cfg->scale_round_to = 4;
+	assert_int_equal(head_get_fixed_scale(1.37), wl_fixed_from_double(1.25));
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.37, 2);
-	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.5));
+	cfg->scale_round_to = 2;
+	assert_int_equal(head_get_fixed_scale(1.37), wl_fixed_from_double(1.5));
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.37, 1);
-	assert_int_equal(head.desired.scale, wl_fixed_from_double(1));
+	cfg->scale_round_to = 1;
+	assert_int_equal(head_get_fixed_scale(1.37), wl_fixed_from_double(1));
 	assert_logs_empty();
 }
 
 void head_get_fixed_scale__no_rounding(void **state) {
-	struct Head head = { 0 };
+	assert_int_equal(head_get_fixed_scale(1), wl_fixed_from_double(1));
 
-	head.desired.scale = head_get_fixed_scale(&head, 1, head.scaling_base);
-	assert_int_equal(head.desired.scale, wl_fixed_from_double(1));
+	assert_int_equal(head_get_fixed_scale(1.125), wl_fixed_from_double(1.125));
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.125, head.scaling_base);
-	assert_int_equal(head.desired.scale, wl_fixed_from_double(1.125));
-
-	head.desired.scale = head_get_fixed_scale(&head, 2, head.scaling_base);
-	assert_int_equal(head.desired.scale, wl_fixed_from_double(2));
+	assert_int_equal(head_get_fixed_scale(2), wl_fixed_from_double(2));
 
 	assert_logs_empty();
 }
@@ -219,28 +213,28 @@ void head_set_scaled_dimensions__transform(void **state) {
 
 void head_set_scaled_dimensions__dimensions(void **state) {
 	struct Mode mode = { .width = 3840, .height = 2160, };
-	struct Head head = { .desired.mode = &mode, .scaling_base = HEAD_DEFAULT_SCALING_BASE, };
+	struct Head head = { .desired.mode = &mode, };
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.0, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(1.0);
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 3840);
 	assert_int_equal(head.scaled.height, 2160);
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 2.0, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(2.0);
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.7, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(1.7);
 	// actual scale will be 1.75
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2194);
 	assert_int_equal(head.scaled.height, 1234);
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.9, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(1.9);
 	// actual scale will be 1.875
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2048);
@@ -249,7 +243,7 @@ void head_set_scaled_dimensions__dimensions(void **state) {
 
 	head.name = "name";
 
-	head.desired.scale = head_get_fixed_scale(&head, 2.01, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(2.01);
 	// actual scale will be 2.0
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);

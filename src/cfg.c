@@ -17,7 +17,6 @@
 #include "convert.h"
 #include "global.h"
 #include "ipc.h"
-#include "head.h"
 #include "mode.h"
 #include "slist.h"
 #include "stable.h"
@@ -499,10 +498,10 @@ void cfg_apply_defaults(struct Cfg *dst) {
 		dst->auto_scale = AUTO_SCALE_DEFAULT;
 
 	if (!dst->scale_round_to)
-		dst->scale_round_to = HEAD_DEFAULT_SCALING_BASE;
+		dst->scale_round_to = SCALE_ROUND_TO_DEFAULT;
 
 	if (!dst->scale_round_strategy)
-		dst->scale_round_strategy = NEAREST;
+		dst->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
 
 	if (!dst->auto_scale_min)
 		dst->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
