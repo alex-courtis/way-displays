@@ -165,6 +165,10 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
+	if (cfg->scale_round_to && cfg->scale_round_strategy) {
+		log_(t, "  Round scales to: %s, %s", scale_round_to_name(cfg->scale_round_to), scale_round_strategy_name(cfg->scale_round_strategy));
+	}
+
 	if (cfg->user_scales) {
 		log_(t, "  Scale:");
 		struct UserScale *user_scale;

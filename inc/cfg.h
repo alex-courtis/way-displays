@@ -44,7 +44,7 @@ enum OnOff {
 enum ScaleRoundStrategy {
 	NEAREST = 1,
 	UP,
-	DOWN = ON,
+	DOWN,
 	SCALE_ROUND_STRATEGY_DEFAULT = NEAREST,
 };
 

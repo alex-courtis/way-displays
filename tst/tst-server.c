@@ -94,6 +94,7 @@ void load_cfg__valid_file(void **state) {
 	struct Cfg *cfg_read = cfg_default();
 	cfg_read->auto_scale_max = 888;
 	cfg_read->log_threshold = FATAL;
+	cfg_read->scale_round_to = 4;
 
 	expect_any(__wrap_cfg_resolve_file_path, cfg);
 	will_return_int(__wrap_cfg_resolve_file_path, true);
@@ -108,6 +109,7 @@ void load_cfg__valid_file(void **state) {
 	struct Cfg *cfg_expected = cfg_default();
 	cfg_expected->auto_scale_max = 888;
 	cfg_expected->log_threshold = FATAL;
+	cfg_expected->scale_round_to = 4;
 
 	assert_cfg_equal(cfg, cfg_expected);
 	assert_str_equal(cfg->file_path, "file_path");
@@ -159,6 +161,7 @@ void load_cfg__missing_defaults(void **state) {
 	slist_append(&cfg_read->order_name_desc, strdup("first head"));
 	cfg_read->align = BOTTOM;
 	cfg_read->auto_scale = OFF;
+	cfg_read->scale_round_to = 2;
 
 	expect_any(__wrap_cfg_resolve_file_path, cfg);
 	will_return_int(__wrap_cfg_resolve_file_path, true);
@@ -174,6 +177,7 @@ void load_cfg__missing_defaults(void **state) {
 	slist_append(&cfg_expected->order_name_desc, strdup("first head"));
 	cfg_expected->align = BOTTOM;
 	cfg_expected->auto_scale = OFF;
+	cfg_expected->scale_round_to = 2;
 
 	assert_cfg_equal(cfg, cfg_expected);
 	assert_str_equal(cfg->file_path, "file_path");
