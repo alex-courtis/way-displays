@@ -17,6 +17,7 @@
 #include "convert.h"
 #include "global.h"
 #include "ipc.h"
+#include "head.h"
 #include "mode.h"
 #include "slist.h"
 #include "stable.h"
@@ -325,6 +326,12 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->auto_scale = from->auto_scale;
 	to->auto_scale_min = from->auto_scale_min;
 	to->auto_scale_max = from->auto_scale_max;
+
+	// SCALE_ROUND_TO
+	to->scale_round_to = from->scale_round_to;
+
+	// SCALE_ROUND_STRATEGY
+	to->scale_round_strategy = from->scale_round_strategy;
 
 	// SCALE
 	to->user_scales = slist_clone(from->user_scales, cfg_user_scale_clone);
@@ -808,6 +815,16 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		merged->auto_scale = from->auto_scale;
 		merged->auto_scale_min = from->auto_scale_min;
 		merged->auto_scale_max = from->auto_scale_max;
+	}
+
+	// SCALE_ROUND_TO
+	if (from->scale_round_to) {
+		merged->scale_round_to = from->scale_round_to;
+	}
+
+	// SCALE_ROUND_STRATEGY
+	if (from->scale_round_strategy) {
+		merged->scale_round_strategy = from->scale_round_strategy;
 	}
 
 	// SCALE
