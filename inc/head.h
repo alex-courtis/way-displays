@@ -83,6 +83,7 @@ bool head_name_desc_matches_head(const void * const name_desc, const void * cons
 
 bool head_disabled_matches_head(const void * const d, const void * const h);
 
+// calculate fixed scale correctly quantized for fractional scaling, obeying scale_round_to and scale_round_strategy
 wl_fixed_t head_get_fixed_scale(const double scale);
 
 wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);

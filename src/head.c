@@ -168,20 +168,26 @@ bool head_disabled_matches_head(const void * const d, const void * const h) {
 // Meanwhile, the fractional-scale-v1 protocol deals with scales in multiples of 1/120,
 // and there are observed differences in behavior between compositors, see !138.
 // We force scales to be multiples of 1/8, because gcd(256, 120) = 8.
+// See #138
 wl_fixed_t head_get_fixed_scale(const double scale) {
-	// computes a scale value that is appropriate for putting into `zwlr_output_configuration_head_v1_set_scale`
-
-	// TODO actually apply scale_round_strategy
-
-	wl_fixed_t fixed_scale = wl_fixed_from_double(scale);
-
 	int32_t b = cfg->scale_round_to ? cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
-	// See !138
-	fixed_scale = round((double)fixed_scale / 256 * b) \
-				  * ((double)256 / b);
+	double (*round_fn)(double x);
 
-	return fixed_scale;
+	switch (cfg->scale_round_strategy) {
+		case DOWN:
+			round_fn = floor;
+			break;
+		case UP:
+			round_fn = ceil;
+			break;
+		case NEAREST:
+		default:
+			round_fn = round;
+			break;
+	}
+
+	return round_fn((double)wl_fixed_from_double(scale) / 256 * b) * ((double)256 / b);
 }
 
 static int32_t head_desired_scaled_length(const struct Head * const head, const int32_t length) {

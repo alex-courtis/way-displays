@@ -56,31 +56,64 @@ int after_each(void **state) {
 	return 0;
 }
 
-void head_get_fixed_scale__rounding(void **state) {
+void head_get_fixed_scale__rounding_nearest(void **state) {
+	cfg->scale_round_strategy = NEAREST;
 
 	cfg->scale_round_to = 8;
-	assert_int_equal(head_get_fixed_scale(1.37), wl_fixed_from_double(1.375));
-	assert_logs_empty();
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.375);
 
 	cfg->scale_round_to = 4;
-	assert_int_equal(head_get_fixed_scale(1.37), wl_fixed_from_double(1.25));
-	assert_logs_empty();
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
 
 	cfg->scale_round_to = 2;
-	assert_int_equal(head_get_fixed_scale(1.37), wl_fixed_from_double(1.5));
-	assert_logs_empty();
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
 
 	cfg->scale_round_to = 1;
-	assert_int_equal(head_get_fixed_scale(1.37), wl_fixed_from_double(1));
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
+
+	// no rounding
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
+
 	assert_logs_empty();
 }
 
-void head_get_fixed_scale__no_rounding(void **state) {
-	assert_int_equal(head_get_fixed_scale(1), wl_fixed_from_double(1));
+void head_get_fixed_scale__rounding_up(void **state) {
+	cfg->scale_round_strategy = UP;
 
-	assert_int_equal(head_get_fixed_scale(1.125), wl_fixed_from_double(1.125));
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.375);
 
-	assert_int_equal(head_get_fixed_scale(2), wl_fixed_from_double(2));
+	cfg->scale_round_to = 4;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
+
+	cfg->scale_round_to = 2;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
+
+	cfg->scale_round_to = 1;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 2);
+
+	// no rounding
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
+
+	assert_logs_empty();
+}
+
+void head_get_fixed_scale__rounding_down(void **state) {
+	cfg->scale_round_strategy = DOWN;
+
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
+
+	cfg->scale_round_to = 4;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
+
+	cfg->scale_round_to = 2;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
+
+	cfg->scale_round_to = 1;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
 
 	assert_logs_empty();
 }
@@ -475,8 +508,9 @@ void head_apply_toggles__disabled__disable(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(head_get_fixed_scale__rounding),
-		TEST(head_get_fixed_scale__no_rounding),
+		TEST(head_get_fixed_scale__rounding_nearest),
+		TEST(head_get_fixed_scale__rounding_up),
+		TEST(head_get_fixed_scale__rounding_down),
 
 		TEST(head_auto_scale__default),
 		TEST(head_auto_scale__mode),
