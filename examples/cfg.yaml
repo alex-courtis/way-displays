@@ -56,10 +56,10 @@ AUTO_SCALE_MIN: 1.0
 #   - NAME_DESC: 'monitor description'
 #     SCALE: 1.75
 
-## Round scale to: 0.125 (default), 0.25, 0.5 or 1.0
+## Round scale to 0.125 (default), 0.25, 0.5 or 1.0
 SCALE_ROUND_TO: 0.125
 
-## Rounding strategy for ROUND_SCALE_TO: NEAREST (default), (always) UP or (always) DOWN
+## Round scale to NEAREST (default), UP or DOWN
 SCALE_ROUND_STRATEGY: NEAREST
 
 ## Override the preferred mode.

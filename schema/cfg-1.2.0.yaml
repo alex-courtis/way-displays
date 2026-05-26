@@ -51,7 +51,7 @@ properties:
       - NEAREST
       - UP
       - DOWN
-    description: Rounding strategy for ROUND_SCALE_TO - NEAREST (default), (always) UP or (always) DOWN
+    description: Round scale to NEAREST (default), UP or DOWN
     default: NEAREST
 
   AUTO_SCALE:
