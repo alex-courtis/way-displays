@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
+
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/ipc-response-1.1.0.yaml
+
+title: way-displays IPC
+description: |-
+  Schema for https://github.com/alex-courtis/way-displays IPC
+
+oneOf:
+  - $ref: "#$defs/response"
+  - type: array
+    items:
+      $ref: "#$defs/response"
+
+$defs:
+  response:
+    type: object
+    properties:
+      DONE:
+        type: boolean
+        description: |-
+          Operation complete, no further data.
+
+      CFG:
+        $ref: "cfg-1.1.0.yaml"
+
+      STATE:
+        type: object
+        properties:
+          LID:
+            $ref: "types-1.1.0.yaml#/$defs/lid"
+          HEADS:
+            type: array
+            items:
+              $ref: "types-1.1.0.yaml#/$defs/head"
+        additionalProperties: false
+
+      MESSAGES:
+        type: array
+        items:
+          $ref: "types-1.1.0.yaml#/$defs/ipc_message"
+
+      RC:
+        type: integer
+        description: |-
+          0: success
+          1: warning
+          2: error
+          11: bad request
+          12: bad response
+          13: request in progress
+    additionalProperties: false

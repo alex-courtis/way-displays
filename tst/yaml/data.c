@@ -33,6 +33,8 @@ struct Cfg *cfg_all(void) {
 	cfg->scaling = OFF;
 	cfg->auto_scale = OFF;
 	cfg->log_threshold = ERROR;
+	cfg->scale_round_strategy = UP;
+	cfg->scale_round_to = 4;
 
 	cfg->auto_scale_min = 0.5f;
 	cfg->auto_scale_max = 2.5f;

@@ -326,6 +326,12 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->auto_scale_min = from->auto_scale_min;
 	to->auto_scale_max = from->auto_scale_max;
 
+	// SCALE_ROUND_TO
+	to->scale_round_to = from->scale_round_to;
+
+	// SCALE_ROUND_STRATEGY
+	to->scale_round_strategy = from->scale_round_strategy;
+
 	// SCALE
 	to->user_scales = slist_clone(from->user_scales, cfg_user_scale_clone);
 
@@ -400,6 +406,16 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 
 	// SCALE
 	if (!slist_equal(a->user_scales, b->user_scales, cfg_user_scale_equal)) {
+		return false;
+	}
+
+	// SCALE_ROUND_TO
+	if (a->scale_round_to != b->scale_round_to) {
+		return false;
+	}
+
+	// SCALE_ROUND_STRATEGY
+	if (a->scale_round_strategy != b->scale_round_strategy) {
 		return false;
 	}
 
@@ -480,6 +496,12 @@ void cfg_apply_defaults(struct Cfg *dst) {
 
 	if (!dst->auto_scale)
 		dst->auto_scale = AUTO_SCALE_DEFAULT;
+
+	if (!dst->scale_round_to)
+		dst->scale_round_to = SCALE_ROUND_TO_DEFAULT;
+
+	if (!dst->scale_round_strategy)
+		dst->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
 
 	if (!dst->auto_scale_min)
 		dst->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
@@ -792,6 +814,16 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 		merged->auto_scale = from->auto_scale;
 		merged->auto_scale_min = from->auto_scale_min;
 		merged->auto_scale_max = from->auto_scale_max;
+	}
+
+	// SCALE_ROUND_TO
+	if (from->scale_round_to) {
+		merged->scale_round_to = from->scale_round_to;
+	}
+
+	// SCALE_ROUND_STRATEGY
+	if (from->scale_round_strategy) {
+		merged->scale_round_strategy = from->scale_round_strategy;
 	}
 
 	// SCALE

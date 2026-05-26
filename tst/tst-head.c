@@ -56,6 +56,67 @@ int after_each(void **state) {
 	return 0;
 }
 
+void head_get_fixed_scale__rounding_nearest(void **state) {
+	cfg->scale_round_strategy = NEAREST;
+
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.375);
+
+	cfg->scale_round_to = 4;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
+
+	cfg->scale_round_to = 2;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
+
+	cfg->scale_round_to = 1;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
+
+	// no rounding
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
+
+	assert_logs_empty();
+}
+
+void head_get_fixed_scale__rounding_up(void **state) {
+	cfg->scale_round_strategy = UP;
+
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.375);
+
+	cfg->scale_round_to = 4;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
+
+	cfg->scale_round_to = 2;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
+
+	cfg->scale_round_to = 1;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 2);
+
+	// no rounding
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
+
+	assert_logs_empty();
+}
+
+void head_get_fixed_scale__rounding_down(void **state) {
+	cfg->scale_round_strategy = DOWN;
+
+	cfg->scale_round_to = 8;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
+
+	cfg->scale_round_to = 4;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
+
+	cfg->scale_round_to = 2;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
+
+	cfg->scale_round_to = 1;
+	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
+
+	assert_logs_empty();
+}
 
 void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
@@ -185,44 +246,41 @@ void head_set_scaled_dimensions__transform(void **state) {
 
 void head_set_scaled_dimensions__dimensions(void **state) {
 	struct Mode mode = { .width = 3840, .height = 2160, };
-	struct Head head = { .desired.mode = &mode, .scaling_base = HEAD_DEFAULT_SCALING_BASE, };
+	struct Head head = { .desired.mode = &mode, };
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.0, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(1.0);
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 3840);
 	assert_int_equal(head.scaled.height, 2160);
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 2.0, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(2.0);
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.7, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(1.7);
 	// actual scale will be 1.75
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2194);
 	assert_int_equal(head.scaled.height, 1234);
-	assert_log(DEBUG, "\n???: Rounded scale 1.7 to nearest multiple of 1/8: 1.750\n");
 	assert_logs_empty();
 
-	head.desired.scale = head_get_fixed_scale(&head, 1.9, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(1.9);
 	// actual scale will be 1.875
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 2048);
 	assert_int_equal(head.scaled.height, 1152);
-	assert_log(DEBUG, "\n???: Rounded scale 1.9 to nearest multiple of 1/8: 1.875\n");
 	assert_logs_empty();
 
 	head.name = "name";
 
-	head.desired.scale = head_get_fixed_scale(&head, 2.01, head.scaling_base);
+	head.desired.scale = head_get_fixed_scale(2.01);
 	// actual scale will be 2.0
 	head_set_scaled_dimensions(&head);
 	assert_int_equal(head.scaled.width, 1920);
 	assert_int_equal(head.scaled.height, 1080);
-	assert_log(DEBUG, "\nname: Rounded scale 2.01 to nearest multiple of 1/8: 2.000\n");
 	assert_logs_empty();
 }
 
@@ -450,6 +508,10 @@ void head_apply_toggles__disabled__disable(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST(head_get_fixed_scale__rounding_nearest),
+		TEST(head_get_fixed_scale__rounding_up),
+		TEST(head_get_fixed_scale__rounding_down),
+
 		TEST(head_auto_scale__default),
 		TEST(head_auto_scale__mode),
 		TEST(head_auto_scale__range),

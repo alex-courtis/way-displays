@@ -4,6 +4,7 @@
     last
   Scaling: ON
   Auto scale: ON (min: 1.000)
+  Round scales to: 0.5, DOWN
   Scale:
     three: 3.000
     four: 4.000

@@ -165,6 +165,9 @@ void print_cfg__all(void **state) {
 
 	c->laptop_display_prefix = strdup("lappy");
 
+	c->scale_round_to = 2;
+	c->scale_round_strategy = DOWN;
+
 	print_cfg(INFO, c, false);
 
 	char *expected_log = read_file("tst/info/print-cfg-all.log");

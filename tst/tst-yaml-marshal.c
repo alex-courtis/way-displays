@@ -44,25 +44,29 @@ int after_each(void **state) {
 	return 0;
 }
 
-static void yaml_doc_cfg__ok(void **state) {
-	struct Cfg *cfg = cfg_all();
+void _check_marshalled(char *actual, const char *expected_path, const char * const file, const int line) {
+	_assert_non_nul(actual, "actual", file, line);
 
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
-
-	assert_non_nul(actual);
-
-	char *expected = read_file("tst/yaml/cfg-all.yaml");
+	char *expected = read_file(expected_path);
 
 	if (strcmp(actual, expected) != 0) {
 		write_file("actual.yaml", actual);
 		write_file("expected.yaml", expected);
 	}
 
-	assert_str_equal(actual, expected);
+	_assert_str_equal(actual, "actual", expected, "expected", file, line);
 
-	cfg_free(cfg);
 	free(actual);
 	free(expected);
+}
+#define check_marshalled(actual, expected_path) _check_marshalled(actual, expected_path, __FILE__, __LINE__)
+
+static void yaml_doc_cfg__ok(void **state) {
+	struct Cfg *cfg = cfg_all();
+
+	check_marshalled(yaml_marshal(cfg, yaml_doc_cfg, "cfg"), "tst/yaml/cfg-all.yaml");
+
+	cfg_free(cfg);
 
 	assert_logs_empty();
 }
@@ -70,22 +74,9 @@ static void yaml_doc_cfg__ok(void **state) {
 static void yaml_doc_cfg__default(void **state) {
 	struct Cfg *cfg = cfg_default();
 
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
-
-	assert_non_nul(actual);
-
-	char *expected = read_file("tst/yaml/cfg-default.yaml");
-
-	if (strcmp(actual, expected) != 0) {
-		write_file("actual.yaml", actual);
-		write_file("expected.yaml", expected);
-	}
-
-	assert_str_equal(actual, expected);
+	check_marshalled(yaml_marshal(cfg, yaml_doc_cfg, "cfg"), "tst/yaml/cfg-default.yaml");
 
 	cfg_free(cfg);
-	free(actual);
-	free(expected);
 
 	assert_logs_empty();
 }
@@ -93,22 +84,9 @@ static void yaml_doc_cfg__default(void **state) {
 static void yaml_doc_cfg__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
-
-	assert_non_nul(actual);
-
-	char *expected = read_file("tst/yaml/empty.yaml");
-
-	if (strcmp(actual, expected) != 0) {
-		write_file("actual.yaml", actual);
-		write_file("expected.yaml", expected);
-	}
-
-	assert_str_equal(actual, expected);
+	check_marshalled(yaml_marshal(cfg, yaml_doc_cfg, "cfg"), "tst/yaml/empty.yaml");
 
 	cfg_free(cfg);
-	free(actual);
-	free(expected);
 
 	assert_logs_empty();
 }
@@ -133,20 +111,9 @@ static void yaml_doc_ipc_request__cfg_set(void **state) {
 
 	ipc_request->cfg = cfg_all();
 
-	char *actual = yaml_marshal(ipc_request, yaml_doc_ipc_request, "ipc request");
-
-	char *expected = read_file("tst/yaml/ipc-request-cfg-set.yaml");
-
-	if (strcmp(actual, expected) != 0) {
-		write_file("actual.yaml", actual);
-		write_file("expected.yaml", expected);
-	}
-
-	assert_str_equal(actual, expected);
+	check_marshalled(yaml_marshal(ipc_request, yaml_doc_ipc_request, "ipc request"), "tst/yaml/ipc-request-cfg-set.yaml");
 
 	ipc_request_free(ipc_request);
-	free(actual);
-	free(expected);
 
 	assert_logs_empty();
 }
@@ -154,23 +121,9 @@ static void yaml_doc_ipc_request__cfg_set(void **state) {
 static void yaml_doc_ipc_operation__map(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 
-	char *actual = yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response");
-
-	assert_non_nul(actual);
-
-	char *expected = read_file("tst/yaml/ipc-responses-map.yaml");
-
-	if (strcmp(actual, expected) != 0) {
-		write_file("actual.yaml", actual);
-		write_file("expected.yaml", expected);
-	}
-
-	assert_str_equal(actual, expected);
+	check_marshalled(yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-map.yaml");
 
 	ipc_operation_free(ipc_operation);
-
-	free(actual);
-	free(expected);
 
 	slist_free_vals(&heads, head_free);
 
@@ -181,23 +134,9 @@ static void yaml_doc_ipc_operation__seq(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 	ipc_operation->request->command = LIST;
 
-	char *actual = yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response");
-
-	assert_non_nul(actual);
-
-	char *expected = read_file("tst/yaml/ipc-responses-seq.yaml");
-
-	if (strcmp(actual, expected) != 0) {
-		write_file("actual.yaml", actual);
-		write_file("expected.yaml", expected);
-	}
-
-	assert_str_equal(actual, expected);
+	check_marshalled(yaml_marshal(ipc_operation, yaml_doc_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-seq.yaml");
 
 	ipc_operation_free(ipc_operation);
-
-	free(actual);
-	free(expected);
 
 	slist_free_vals(&heads, head_free);
 

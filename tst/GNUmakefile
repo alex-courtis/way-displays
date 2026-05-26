@@ -45,7 +45,7 @@ tst-server: WRAPS=,$\
 	--wrap=cfg_resolve_file_path,$\
 	--wrap=yaml_unmarshal_file
 
-$(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile
+$(TST_O): $(TST_H) $(SRC_O) config.mk GNUmakefile tst/GNUmakefile tst/yaml/data.c
 
 $(TST_E): $(TST_O) $(OBJS)
 	$(CC) -o $(@) tst/$(@).o $(OBJS) $(LDFLAGS) $(LDLIBS) $(WRAPS_COMMON)$(WRAPS)

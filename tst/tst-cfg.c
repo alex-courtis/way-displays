@@ -124,6 +124,36 @@ void merge_set__auto_scale(void **state) {
 	assert_logs_empty();
 }
 
+void merge_set__scale_round_to(void **state) {
+	struct State *s = *state;
+
+	s->from->scale_round_to = 2;
+	s->expected->scale_round_to = 2;
+
+	struct Cfg *merged = merge_set(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+
+	assert_logs_empty();
+}
+
+void merge_set__scale_round_strategy(void **state) {
+	struct State *s = *state;
+
+	s->from->scale_round_strategy = UP;
+	s->expected->scale_round_strategy = UP;
+
+	struct Cfg *merged = merge_set(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+
+	assert_logs_empty();
+}
+
 void merge_set__user_scale(void **state) {
 	struct State *s = *state;
 
@@ -639,6 +669,8 @@ int main(void) {
 		TEST(merge_set__align),
 		TEST(merge_set__order),
 		TEST(merge_set__auto_scale),
+		TEST(merge_set__scale_round_to),
+		TEST(merge_set__scale_round_strategy),
 		TEST(merge_set__user_scale),
 		TEST(merge_set__user_transform),
 		TEST(merge_set__mode),

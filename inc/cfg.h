@@ -12,6 +12,8 @@
 
 #define AUTO_SCALE_MAX_DEFAULT -1.0f
 
+#define SCALE_ROUND_TO_DEFAULT 8
+
 struct UserScale {
 	char *name_desc;
 	float scale;
@@ -37,6 +39,13 @@ enum OnOff {
 	OFF,
 	SCALING_DEFAULT = ON,
 	AUTO_SCALE_DEFAULT = ON,
+};
+
+enum ScaleRoundStrategy {
+	NEAREST = 1,
+	UP,
+	DOWN,
+	SCALE_ROUND_STRATEGY_DEFAULT = NEAREST,
 };
 
 struct UserMode {
@@ -89,6 +98,8 @@ struct Cfg {
 
 	float auto_scale_min;
 	float auto_scale_max;
+	enum ScaleRoundStrategy scale_round_strategy;
+	unsigned int scale_round_to;
 };
 
 enum CfgElement {
@@ -109,6 +120,8 @@ enum CfgElement {
 	ARRANGE_ALIGN,
 	AUTO_SCALE_MIN,
 	AUTO_SCALE_MAX,
+	SCALE_ROUND_TO,
+	SCALE_ROUND_STRATEGY,
 	// legacy
 	CHANGE_SUCCESS_CMD,
 };
