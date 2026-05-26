@@ -46,23 +46,24 @@ int after_each(void **state) {
 }
 
 // expected will be free'd, log_path is optional WARNING
-void check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected, const char *log_path) {
+void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected, const char *log_path, const char * const file, const int line) {
 	struct Cfg *actual = yaml_unmarshal_file(yaml_path, yaml_root_to_cfg);
-	assert_non_nul(actual);
+	_assert_non_nul(actual, "actual", file, line);
 
-	assert_cfg_equal(actual, expected);
+	_assert_cfg_equal(actual, expected, file, line);
 
 	if (log_path) {
 		char *expected_log = read_file(log_path);
-		assert_log(WARNING, expected_log);
+		_assert_log(WARNING, expected_log, file, line);
 		free(expected_log);
 	}
 
-	assert_logs_empty();
+	_assert_logs_empty(file, line);
 
 	cfg_free(actual);
 	cfg_free(expected);
 }
+#define check_unmarshalled_cfg(yaml_path, expected, log_path) _check_unmarshalled_cfg(yaml_path, expected, log_path, __FILE__, __LINE__)
 
 static void yaml_root_to_cfg__ok(void **state) {
 	check_unmarshalled_cfg("tst/yaml/cfg-all.yaml", cfg_all(), NULL);

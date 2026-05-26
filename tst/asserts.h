@@ -95,7 +95,7 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 
 #define assert_head_position(h, x, y) _assert_head_position(h, x, y, __FILE__, __LINE__)
 
-void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
+void _assert_cfg_equal(struct Cfg *a, struct Cfg *b, const char * const file, const int line) {
 	if (!cfg_equal(a, b)) {
 		char *yaml_a = yaml_marshal(a, yaml_doc_cfg, "cfg a");
 		char *yaml_b = yaml_marshal(b, yaml_doc_cfg, "cfg b");
@@ -108,7 +108,7 @@ void _assert_equal_cfg(struct Cfg *a, struct Cfg *b, const char * const file, co
 	}
 }
 
-#define assert_cfg_equal(a, b) _assert_equal_cfg(a, b, __FILE__, __LINE__)
+#define assert_cfg_equal(a, b) _assert_cfg_equal(a, b, __FILE__, __LINE__)
 
 void _assert_log(enum LogThreshold t, const char* s, const char * const file, const int line);
 #define assert_log(t, s) _assert_log(t, s, __FILE__, __LINE__)

@@ -44,8 +44,8 @@ int after_each(void **state) {
 	return 0;
 }
 
-void check_marshalled(char *actual, const char *expected_path) {
-	assert_non_nul(actual);
+void _check_marshalled(char *actual, const char *expected_path, const char * const file, const int line) {
+	_assert_non_nul(actual, "actual", file, line);
 
 	char *expected = read_file(expected_path);
 
@@ -54,11 +54,12 @@ void check_marshalled(char *actual, const char *expected_path) {
 		write_file("expected.yaml", expected);
 	}
 
-	assert_str_equal(actual, expected);
+	_assert_str_equal(actual, "actual", expected, "expected", file, line);
 
 	free(actual);
 	free(expected);
 }
+#define check_marshalled(actual, expected_path) _check_marshalled(actual, expected_path, __FILE__, __LINE__)
 
 static void yaml_doc_cfg__ok(void **state) {
 	struct Cfg *cfg = cfg_all();
