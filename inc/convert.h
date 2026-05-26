@@ -57,8 +57,10 @@ enum ScaleRoundStrategy scale_round_strategy_val(const char *name);
 const char *scale_round_strategy_name(enum ScaleRoundStrategy scale_round_strategy);
 char *scale_round_strategy_names(void);
 
+// not an enum however follows most semantics
 unsigned int scale_round_to_val(const float scale_round_to);
 const char *scale_round_to_name(const unsigned int scale_round_to);
+char *scale_round_to_names(void);
 
 #endif // CONVERT_H
 

@@ -622,6 +622,7 @@ unsigned int yaml_scalar_to_scale_round_to(const yaml_node_t *scalar) {
 	unsigned int ret;
 
 	yaml_unmarshal_log_ctx_def(scale_round_to_name(SCALE_ROUND_TO_DEFAULT));
+	yaml_unmarshal_log_ctx_valid_values_fn(scale_round_to_names);
 
 	if (!yaml_scalar_to_float(&val, scalar)) {
 		ret = SCALE_ROUND_TO_DEFAULT;
@@ -637,6 +638,7 @@ unsigned int yaml_scalar_to_scale_round_to(const yaml_node_t *scalar) {
 
 end:
 	yaml_unmarshal_log_ctx_def(NULL);
+	yaml_unmarshal_log_ctx_valid_values_fn(NULL);
 
 	return ret;
 }

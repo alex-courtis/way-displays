@@ -305,3 +305,7 @@ const char *scale_round_to_name(const unsigned int scale_round_to) {
 	return name(scale_round_tos, scale_round_to);
 }
 
+char *scale_round_to_names(void) {
+	return names(scale_round_tos);
+}
+

@@ -4,7 +4,7 @@ Ignoring invalid ORDER regex '(order':  Unmatched ( or \(
 Ignoring invalid ARRANGE BAD_ARRANGE, valid values: ROW|COLUMN, using default ROW
 Ignoring invalid ALIGN BAD_ALIGN, valid values: TOP|MIDDLE|BOTTOM|LEFT|RIGHT, using default TOP
 Ignoring invalid SCALING BAD_SCALING, valid values: ON|OFF|TRUE|FALSE|YES|NO, using default ON
-Ignoring invalid SCALE_ROUND_TO BAD_SCALE_ROUND_TO, using default 0.125
+Ignoring invalid SCALE_ROUND_TO BAD_SCALE_ROUND_TO, valid values: 0.125|0.25|0.5|1, using default 0.125
 Ignoring invalid SCALE_ROUND_STRATEGY BAD_SCALE_ROUND_STRATEGY, valid values: NEAREST|UP|DOWN, using default NEAREST
 Ignoring invalid AUTO_SCALE BAD_AUTO_SCALE, valid values: ON|OFF|TRUE|FALSE|YES|NO, using default ON
 Ignoring invalid AUTO_SCALE_MIN BAD_AUTO_SCALE_MIN, using default 1.0
