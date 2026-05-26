@@ -72,22 +72,27 @@ bool yaml_scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar) 
 	return ok;
 }
 
-int yaml_scalar_to_enum(const yaml_node_t *scalar, enum_val_fn val_fn) {
-	if (!yaml_check_node_type(scalar, YAML_SCALAR_NODE))
-		return 0;
+int yaml_scalar_to_enum(const yaml_node_t *scalar, enum_val_fn val_fn, enum_names_fn names_fn) {
+	yaml_unmarshal_log_ctx_valid_values_fn(names_fn);
 
-	int val = val_fn((char*)scalar->data.scalar.value);
-	if (val)
-		return val;
+	int ret = 0;
 
-	yaml_unmarshal_log_invalid_value(scalar->data.scalar.value);
-	return 0;
+	if (yaml_check_node_type(scalar, YAML_SCALAR_NODE)) {
+		ret = val_fn((char*)scalar->data.scalar.value);
+		if (!ret) {
+			yaml_unmarshal_log_invalid_value(scalar->data.scalar.value);
+		}
+	}
+
+	yaml_unmarshal_log_ctx_valid_values_fn(NULL);
+
+	return ret;
 }
 
-int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn) {
+int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn, enum_names_fn names_fn) {
 	yaml_unmarshal_log_ctx_def(name_fn(def));
 
-	int ret = yaml_scalar_to_enum(scalar, val_fn);
+	int ret = yaml_scalar_to_enum(scalar, val_fn, names_fn);
 	if (!ret)
 		ret = def;
 
@@ -97,7 +102,7 @@ int yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, enum_val_f
 }
 
 bool yaml_scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
-	int val = yaml_scalar_to_enum(scalar, on_off_val);
+	int val = yaml_scalar_to_enum(scalar, on_off_val, on_off_names);
 
 	if (val) {
 		*dst = val == ON;

@@ -6,6 +6,7 @@
 
 #include "yaml/unmarshal-log.h"
 
+#include "convert.h"
 #include "log.h"
 
 struct UnmarshalLogCtx {
@@ -15,6 +16,7 @@ struct UnmarshalLogCtx {
 	char *key;
 	char *name_desc;
 	char *top;
+	enum_names_fn valid_names_fn;
 } log_ctx;
 
 void yaml_unmarshal_log_ctx_reset(void) {
@@ -24,6 +26,7 @@ void yaml_unmarshal_log_ctx_reset(void) {
 	yaml_unmarshal_log_ctx_name_desc(NULL);
 	yaml_unmarshal_log_ctx_key(NULL);
 	yaml_unmarshal_log_ctx_def(NULL);
+	yaml_unmarshal_log_ctx_valid_values_fn(NULL);
 }
 
 void yaml_unmarshal_log_ctx_threshold(const enum LogThreshold t) {
@@ -60,6 +63,10 @@ void yaml_unmarshal_log_ctx_top(const char *top) {
 	log_ctx.top = top ? strdup(top) : NULL;
 }
 
+void yaml_unmarshal_log_ctx_valid_values_fn(enum_names_fn names_fn) {
+	log_ctx.valid_names_fn = names_fn;
+}
+
 static void yaml_log_invalid(const yaml_char_t *value, const yaml_node_type_t type_expected, const yaml_node_type_t type_actual) {
 
 	char *msg = NULL;
@@ -79,6 +86,13 @@ static void yaml_log_invalid(const yaml_char_t *value, const yaml_node_type_t ty
 		msg = sprintf_append(msg, " expected %s, got %s", yaml_node_type_str(type_expected), yaml_node_type_str(type_actual));
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
+	if (log_ctx.valid_names_fn) {
+		char *valids = log_ctx.valid_names_fn();
+		if (valids) {
+			msg = sprintf_append(msg, ", valid values: %s", valids);
+			free(valids);
+		}
+	}
 	if (log_ctx.def)
 		msg = sprintf_append(msg, ", using default %s", log_ctx.def);
 

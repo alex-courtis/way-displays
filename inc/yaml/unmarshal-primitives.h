@@ -18,8 +18,8 @@ char *yaml_scalar_to_string_def(const yaml_node_t *scalar, const char *def);
 bool  yaml_scalar_to_int(int32_t *dst, const yaml_node_t *scalar);
 bool  yaml_scalar_to_float(float *dst, const yaml_node_t *scalar);
 bool  yaml_scalar_to_float_def(float *dst, float def, const yaml_node_t *scalar);
-int   yaml_scalar_to_enum(const yaml_node_t *scalar, enum_val_fn val_fn);
-int   yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn);
+int   yaml_scalar_to_enum(const yaml_node_t *scalar, enum_val_fn val_fn, enum_names_fn names_fn);
+int   yaml_scalar_to_enum_def(const int def, const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn, enum_names_fn names_fn);
 bool  yaml_scalar_to_boolean(bool *dst, const yaml_node_t *scalar);
 
 // create a list of structs using fn to unmarshal each item

@@ -1,22 +1,22 @@
-Ignoring invalid LOG_THRESHOLD BAD_LOG_THRESHOLD
+Ignoring invalid LOG_THRESHOLD BAD_LOG_THRESHOLD, valid values: DEBUG|INFO|WARNING|ERROR|FATAL
 Ignoring invalid CALLBACK_CMD expected scalar, got sequence, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 Ignoring invalid ORDER regex '(order':  Unmatched ( or \(
-Ignoring invalid ARRANGE BAD_ARRANGE, using default ROW
-Ignoring invalid ALIGN BAD_ALIGN, using default TOP
-Ignoring invalid SCALING BAD_SCALING, using default ON
+Ignoring invalid ARRANGE BAD_ARRANGE, valid values: ROW|COLUMN, using default ROW
+Ignoring invalid ALIGN BAD_ALIGN, valid values: TOP|MIDDLE|BOTTOM|LEFT|RIGHT, using default TOP
+Ignoring invalid SCALING BAD_SCALING, valid values: ON|OFF|TRUE|FALSE|YES|NO, using default ON
 Ignoring invalid SCALE_ROUND_TO BAD_SCALE_ROUND_TO, using default 0.125
-Ignoring invalid SCALE_ROUND_STRATEGY BAD_SCALE_ROUND_STRATEGY, using default NEAREST
-Ignoring invalid AUTO_SCALE BAD_AUTO_SCALE, using default ON
+Ignoring invalid SCALE_ROUND_STRATEGY BAD_SCALE_ROUND_STRATEGY, valid values: NEAREST|UP|DOWN, using default NEAREST
+Ignoring invalid AUTO_SCALE BAD_AUTO_SCALE, valid values: ON|OFF|TRUE|FALSE|YES|NO, using default ON
 Ignoring invalid AUTO_SCALE_MIN BAD_AUTO_SCALE_MIN, using default 1.0
 Ignoring invalid AUTO_SCALE_MAX BAD_AUTO_SCALE_MAX, using default -1.0
 Ignoring invalid SCALE BAD_SCALE_NAME SCALE BAD_SCALE_VAL
 Ignoring invalid SCALE regex '(scale':  Unmatched ( or \(
-Ignoring invalid MODE BAD_MODE_MAX MAX BAD_MAX
+Ignoring invalid MODE BAD_MODE_MAX MAX BAD_MAX, valid values: ON|OFF|TRUE|FALSE|YES|NO
 Ignoring invalid MODE BAD_MODE_WIDTH WIDTH BAD_WIDTH
 Ignoring invalid MODE BAD_MODE_HEIGHT HEIGHT BAD_HEIGHT
 Ignoring invalid MODE BAD_MODE_HZ HZ BAD_HZ
 Ignoring invalid MODE regex '(mode':  Unmatched ( or \(
-Ignoring invalid TRANSFORM BAD_TRANSFORM_NAME TRANSFORM BAD_TRANSFORM_VAL
+Ignoring invalid TRANSFORM BAD_TRANSFORM_NAME TRANSFORM BAD_TRANSFORM_VAL, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 Ignoring invalid TRANSFORM regex '(transform':  Unmatched ( or \(
 Ignoring invalid VRR_OFF regex '(vrroff':  Unmatched ( or \(
 Ignoring invalid MAX_PREFERRED_REFRESH regex '(max':  Unmatched ( or \(

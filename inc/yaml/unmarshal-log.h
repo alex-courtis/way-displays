@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <yaml.h>
 
+#include "convert.h"
 #include "log.h"
 
 /*
@@ -21,6 +22,7 @@ void yaml_unmarshal_log_ctx_def(const char *def); // default value
 void yaml_unmarshal_log_ctx_key(const char *key); // failed key name
 void yaml_unmarshal_log_ctx_name_desc(const char *name_desc); // NAME_DESC for context
 void yaml_unmarshal_log_ctx_top(const char *top); // root map key
+void yaml_unmarshal_log_ctx_valid_values_fn(enum_names_fn fn);
 
 // explicitly log a value as invalid
 void yaml_unmarshal_log_invalid_value(const yaml_char_t *value);

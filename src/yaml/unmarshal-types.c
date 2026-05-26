@@ -47,7 +47,7 @@ void *yaml_root_to_ipc_request(const yaml_node_t *root) {
 
 	yaml_unmarshal_log_ctx_top("OP");
 	const yaml_node_t *op = stable_get(table, "OP");
-	if (!yaml_check_mandatory(op) || !(ipc_request->command = yaml_scalar_to_enum(op, ipc_command_val)))
+	if (!yaml_check_mandatory(op) || !(ipc_request->command = yaml_scalar_to_enum(op, ipc_command_val, ipc_command_names)))
 		goto err;
 
 	// log warnings for remainder
@@ -57,7 +57,7 @@ void *yaml_root_to_ipc_request(const yaml_node_t *root) {
 	yaml_unmarshal_log_ctx_top("LOG_THRESHOLD");
 	const yaml_node_t *log_threshold = stable_get(table, "LOG_THRESHOLD");
 	if (log_threshold)
-		ipc_request->log_threshold = yaml_scalar_to_enum(log_threshold, log_threshold_val);
+		ipc_request->log_threshold = yaml_scalar_to_enum(log_threshold, log_threshold_val, log_threshold_names);
 
 	yaml_unmarshal_log_ctx_top("CFG");
 	const yaml_node_t *cfg = stable_get(table, "CFG");
@@ -135,19 +135,19 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 
 		switch (cfg_element_val((char*)key->data.scalar.value)) {
 			case ARRANGE:
-				cfg->arrange = yaml_scalar_to_enum_def(ARRANGE_DEFAULT, value, arrange_val_start, arrange_name);
+				cfg->arrange = yaml_scalar_to_enum_def(ARRANGE_DEFAULT, value, arrange_val_start, arrange_name, arrange_names);
 				break;
 			case ALIGN:
-				cfg->align = yaml_scalar_to_enum_def(ALIGN_DEFAULT, value, align_val_start, align_name);
+				cfg->align = yaml_scalar_to_enum_def(ALIGN_DEFAULT, value, align_val_start, align_name, align_names);
 				break;
 			case ORDER:
 				cfg->order_name_desc = yaml_seq_to_name_desc_list(value);
 				break;
 			case SCALING:
-				cfg->scaling  = yaml_scalar_to_enum_def(SCALING_DEFAULT, value, on_off_val, on_off_name);
+				cfg->scaling  = yaml_scalar_to_enum_def(SCALING_DEFAULT, value, on_off_val, on_off_name, on_off_names);
 				break;
 			case AUTO_SCALE:
-				cfg->auto_scale = yaml_scalar_to_enum_def(AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name);
+				cfg->auto_scale = yaml_scalar_to_enum_def(AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name, on_off_names);
 				break;
 			case SCALE:
 				cfg->user_scales = yaml_seq_to_type_list(value, yaml_map_to_user_scale);
@@ -156,7 +156,7 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 				cfg->scale_round_to = yaml_scalar_to_scale_round_to(value);
 				break;
 			case SCALE_ROUND_STRATEGY:
-				cfg->scale_round_strategy = yaml_scalar_to_enum_def(SCALE_ROUND_STRATEGY_DEFAULT, value, scale_round_strategy_val, scale_round_strategy_name);
+				cfg->scale_round_strategy = yaml_scalar_to_enum_def(SCALE_ROUND_STRATEGY_DEFAULT, value, scale_round_strategy_val, scale_round_strategy_name, scale_round_strategy_names);
 				break;
 			case MODE:
 				cfg->user_modes = yaml_seq_to_type_list(value, yaml_map_to_user_mode);
@@ -179,7 +179,7 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 				cfg->max_preferred_refresh_name_desc = yaml_seq_to_name_desc_list(value);
 				break;
 			case LOG_THRESHOLD:
-				cfg->log_threshold = yaml_scalar_to_enum(value, log_threshold_val);
+				cfg->log_threshold = yaml_scalar_to_enum(value, log_threshold_val, log_threshold_names);
 				break;
 			case DISABLED:
 				cfg->disabled = yaml_seq_to_type_list(value, yaml_node_to_disabled);
@@ -399,7 +399,7 @@ void *yaml_map_to_user_transform(const yaml_node_t *map) {
 
 	yaml_unmarshal_log_ctx_key("TRANSFORM");
 	scalar = stable_get(table, "TRANSFORM");
-	if (!yaml_check_mandatory(scalar) || !(user_transform->transform = yaml_scalar_to_enum(scalar, transform_val)))
+	if (!yaml_check_mandatory(scalar) || !(user_transform->transform = yaml_scalar_to_enum(scalar, transform_val, transform_names)))
 		goto err;
 
 	goto end;
@@ -549,7 +549,7 @@ bool yaml_map_to_head_state(struct HeadState *head_state, const yaml_node_t *map
 	yaml_scalar_to_int(&head_state->x, stable_get(table, "X"));
 	yaml_scalar_to_int(&head_state->y, stable_get(table, "Y"));
 
-	head_state->transform = yaml_scalar_to_enum(stable_get(table, "TRANSFORM"), transform_val);
+	head_state->transform = yaml_scalar_to_enum(stable_get(table, "TRANSFORM"), transform_val, NULL);
 
 	float scale;
 	if (yaml_scalar_to_float(&scale, stable_get(table, "SCALE")))
