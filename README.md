@@ -24,7 +24,7 @@ See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/C
 
 A wlroots based compositor that supports the WLR Output Management protocol.
 
-way-displays is blessed for the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river). It may work on others; please tell me of your experiences!
+way-displays is blessed for the [sway](https://swaywm.org/), [river](https://codeberg.org/river/river) and [river-classic](https://codeberg.org/river/river-classic) compositors. It may work on others; please tell me of your experiences!
 
 [Hpyrland](https://hyprland.org/) already provides all the features of `way-displays`. It may function, however it is explicitly not supported and you will likely experience problems. Please do not raise issues.
 
@@ -56,7 +56,14 @@ exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 
 ### River
 
-Add the following to your `init`:
+Add the following to your [River Window Manager](https://codeberg.org/river/wiki/src/branch/main/pages/wm-list.md)'s init script or similar:
+```sh
+exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
+```
+
+### River Classic
+
+Add the following to your `${XDG_CONFIG_HOME}/river/init`:
 ```sh
 way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
 ```
