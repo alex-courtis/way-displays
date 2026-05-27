@@ -390,6 +390,22 @@ bool head_current_adaptive_sync_not_desired(const void * const data) {
 	return (head && head->desired.adaptive_sync != head->current.adaptive_sync);
 }
 
+void head_set_description(struct Head * const head, const char *description) {
+	if (!head)
+		return;
+
+	if (head->description)
+		free(head->description);
+	head->description = NULL;
+
+	if (description) {
+		while (strstr(description, "(null) ") == description) {
+			description += 7;
+		}
+		head->description = strdup(description);
+	}
+}
+
 void head_free(const void * const data) {
 	struct Head *head = (struct Head*)data;
 

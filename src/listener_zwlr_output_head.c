@@ -25,7 +25,7 @@ static void description(void *data,
 		const char *description) {
 	struct Head *head = data;
 
-	head->description = strdup(description);
+	head_set_description(head, description);
 }
 
 static void physical_size(void *data,

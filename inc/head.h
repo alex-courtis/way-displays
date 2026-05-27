@@ -111,6 +111,9 @@ bool head_current_mode_not_desired(const void * const head);
 
 bool head_current_adaptive_sync_not_desired(const void * const head);
 
+// set description, stripping any leading "(null) "
+void head_set_description(struct Head * const head, const char *description);
+
 void head_release_mode(struct Head * const head, const struct Mode * const mode);
 
 void head_free(const void * const head);

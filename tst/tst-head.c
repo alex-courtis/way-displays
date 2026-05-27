@@ -56,7 +56,7 @@ int after_each(void **state) {
 	return 0;
 }
 
-void head_get_fixed_scale__rounding_nearest(void **state) {
+static void head_get_fixed_scale__rounding_nearest(void **state) {
 	cfg->scale_round_strategy = NEAREST;
 
 	cfg->scale_round_to = 8;
@@ -78,7 +78,7 @@ void head_get_fixed_scale__rounding_nearest(void **state) {
 	assert_logs_empty();
 }
 
-void head_get_fixed_scale__rounding_up(void **state) {
+static void head_get_fixed_scale__rounding_up(void **state) {
 	cfg->scale_round_strategy = UP;
 
 	cfg->scale_round_to = 8;
@@ -100,7 +100,7 @@ void head_get_fixed_scale__rounding_up(void **state) {
 	assert_logs_empty();
 }
 
-void head_get_fixed_scale__rounding_down(void **state) {
+static void head_get_fixed_scale__rounding_down(void **state) {
 	cfg->scale_round_strategy = DOWN;
 
 	cfg->scale_round_to = 8;
@@ -118,7 +118,7 @@ void head_get_fixed_scale__rounding_down(void **state) {
 	assert_logs_empty();
 }
 
-void head_auto_scale__default(void **state) {
+static void head_auto_scale__default(void **state) {
 	struct Head head = { 0 };
 
 	// no head
@@ -130,7 +130,7 @@ void head_auto_scale__default(void **state) {
 	assert_logs_empty();
 }
 
-void head_auto_scale__mode(void **state) {
+static void head_auto_scale__mode(void **state) {
 	struct Mode mode = { 0 };
 	struct Head head = { .desired.mode = &mode };
 
@@ -157,7 +157,7 @@ void head_auto_scale__mode(void **state) {
 	assert_logs_empty();
 }
 
-void head_auto_scale__range(void **state) {
+static void head_auto_scale__range(void **state) {
 	struct Mode mode = { 0 };
 	struct Head head = { .desired.mode = &mode };
 
@@ -199,7 +199,7 @@ void head_auto_scale__range(void **state) {
 	assert_logs_empty();
 }
 
-void head_set_scaled_dimensions__default(void **state) {
+static void head_set_scaled_dimensions__default(void **state) {
 	struct Head head = { .scaled.width = 1, .scaled.height = 1, };
 
 	// no head
@@ -221,7 +221,7 @@ void head_set_scaled_dimensions__default(void **state) {
 	assert_logs_empty();
 }
 
-void head_set_scaled_dimensions__transform(void **state) {
+static void head_set_scaled_dimensions__transform(void **state) {
 	struct Mode mode = { .width = 200, .height = 100, };
 	struct Head head = { .desired.mode = &mode, };
 
@@ -244,7 +244,7 @@ void head_set_scaled_dimensions__transform(void **state) {
 	assert_logs_empty();
 }
 
-void head_set_scaled_dimensions__dimensions(void **state) {
+static void head_set_scaled_dimensions__dimensions(void **state) {
 	struct Mode mode = { .width = 3840, .height = 2160, };
 	struct Head head = { .desired.mode = &mode, };
 
@@ -284,7 +284,7 @@ void head_set_scaled_dimensions__dimensions(void **state) {
 	assert_logs_empty();
 }
 
-void head_find_mode__all_failed(void **state) {
+static void head_find_mode__all_failed(void **state) {
 	struct Head head = { .name = "head0" };
 	struct Mode mode = { 0 };
 
@@ -305,7 +305,7 @@ void head_find_mode__all_failed(void **state) {
 	slist_free(&head.modes_failed);
 }
 
-void head_find_mode__user_available(void **state) {
+static void head_find_mode__user_available(void **state) {
 	struct Head head = { 0 };
 	struct Mode mode = { 0 };
 	slist_append(&head.modes, &mode);
@@ -331,7 +331,7 @@ void head_find_mode__user_available(void **state) {
 	assert_logs_empty();
 }
 
-void head_find_mode__user_failed(void **state) {
+static void head_find_mode__user_failed(void **state) {
 	struct Head head = { 0 };
 	struct Mode mode = { 0 };
 	slist_append(&head.modes, &mode);
@@ -380,7 +380,7 @@ void head_find_mode__user_failed(void **state) {
 	free(head.name);
 }
 
-void head_find_mode__preferred(void **state) {
+static void head_find_mode__preferred(void **state) {
 	struct Head head = { .name = "name", };
 	struct Mode mode = { .preferred = true, };
 
@@ -393,7 +393,7 @@ void head_find_mode__preferred(void **state) {
 	assert_logs_empty();
 }
 
-void head_find_mode__max_preferred_refresh(void **state) {
+static void head_find_mode__max_preferred_refresh(void **state) {
 	struct Head head = { .name = "name", };
 	struct Mode mode = { 0 };
 
@@ -412,7 +412,7 @@ void head_find_mode__max_preferred_refresh(void **state) {
 	assert_logs_empty();
 }
 
-void head_find_mode__max(void **state) {
+static void head_find_mode__max(void **state) {
 	struct Head head = { .name = "name", };
 	struct Mode mode = { 0 };
 
@@ -433,7 +433,7 @@ void head_find_mode__max(void **state) {
 	slist_free(&head.modes);
 }
 
-void head_find_mode__none(void **state) {
+static void head_find_mode__none(void **state) {
 	struct Head head = { .name = "head0", };
 	struct Mode mode = { 0 };
 
@@ -453,7 +453,7 @@ void head_find_mode__none(void **state) {
 	slist_free(&head.modes_failed);
 }
 
-void head_apply_toggles__none(void **state) {
+static void head_apply_toggles__none(void **state) {
 	struct Head head = { .name = "head0", };
 	struct Cfg *cfg = cfg_init();
 
@@ -466,7 +466,7 @@ void head_apply_toggles__none(void **state) {
 	assert_logs_empty();
 }
 
-void head_apply_toggles__disabled__enable(void **state) {
+static void head_apply_toggles__disabled__enable(void **state) {
 	struct Head head = { .name = "head0", .current.enabled = false };
 	struct Cfg *cfg = cfg_init();
 	slist_append(&cfg->disabled, cfg_disabled_always("head0"));
@@ -486,7 +486,7 @@ void head_apply_toggles__disabled__enable(void **state) {
 	cfg_free(cfg);
 }
 
-void head_apply_toggles__disabled__disable(void **state) {
+static void head_apply_toggles__disabled__disable(void **state) {
 	struct Head head = { .name = "head0", .current.enabled = true };
 	struct Cfg *cfg = cfg_init();
 	slist_append(&cfg->disabled, cfg_disabled_always("head0"));
@@ -504,6 +504,44 @@ void head_apply_toggles__disabled__disable(void **state) {
 	assert_logs_empty();
 
 	cfg_free(cfg);
+}
+
+static void head_set_description__nulls(void **state) {
+	struct Head head = { .description = strdup("orig"), };
+
+	head_set_description(&head, "(null) (null) (null) foo (null) bar baz");
+
+	assert_str_equal(head.description, "foo (null) bar baz");
+
+	free(head.description);
+}
+
+static void head_set_description__no_nulls(void **state) {
+	struct Head head = { .description = strdup("orig"), };
+
+	head_set_description(&head, "foo");
+
+	assert_str_equal(head.description, "foo");
+
+	free(head.description);
+}
+
+static void head_set_description__empty(void **state) {
+	struct Head head = { .description = strdup("orig"), };
+
+	head_set_description(&head, "");
+
+	assert_str_equal(head.description, "");
+
+	free(head.description);
+}
+
+static void head_set_description__null_input(void **state) {
+	struct Head head = { .description = strdup("orig"), };
+
+	head_set_description(&head, NULL);
+
+	assert_nul(head.description);
 }
 
 int main(void) {
@@ -531,6 +569,11 @@ int main(void) {
 		TEST(head_apply_toggles__none),
 		TEST(head_apply_toggles__disabled__enable),
 		TEST(head_apply_toggles__disabled__disable),
+
+		TEST(head_set_description__nulls),
+		TEST(head_set_description__no_nulls),
+		TEST(head_set_description__empty),
+		TEST(head_set_description__null_input),
 	};
 
 	return RUN(tests);
