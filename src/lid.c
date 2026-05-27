@@ -189,7 +189,9 @@ void lid_update(void) {
 
 		if (event_type == LIBINPUT_EVENT_SWITCH_TOGGLE) {
 			struct libinput_event_switch *event_switch = libinput_event_get_switch_event(event);
-			lid->closed = libinput_event_switch_get_switch_state(event_switch) == LIBINPUT_SWITCH_STATE_ON;
+			if (cfg->laptop_lid_monitor == ON) {
+				lid->closed = libinput_event_switch_get_switch_state(event_switch) == LIBINPUT_SWITCH_STATE_ON;
+			}
 		}
 
 		libinput_event_destroy(event);
@@ -197,11 +199,19 @@ void lid_update(void) {
 	}
 
 	log_info("");
-	log_info("Lid %s", lid->closed ? "closed" : "open");
+	if (cfg->laptop_lid_monitor == ON) {
+		log_info("Lid %s", lid->closed ? "closed" : "open");
+	} else {
+		log_info("Lid event ignored: Laptop lid monitoring disabled");
+	}
 }
 
 void lid_init(void) {
 	lid = NULL;
+
+	if (cfg->laptop_lid_monitor == OFF)
+		return;
+
 	struct libinput *libinput_discovery = NULL;
 	struct libinput *libinput_monitor = NULL;
 	char *device_path = NULL;
