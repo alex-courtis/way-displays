@@ -9,6 +9,33 @@
 #include "yaml/context.h"
 #include "yaml/unmarshal-log.h"
 
+static void log_parser_error(const yaml_parser_t *parser, const char *prefix, const char *yaml) {
+	char *err = sprintf_alloc("parsing %s", prefix);
+
+	if (parser && parser->problem) {
+
+		if (parser->problem_mark.line)
+			err = sprintf_append(err, " line %zu", parser->problem_mark.line);
+
+		if (parser->problem_mark.column)
+			err = sprintf_append(err, " column %zu", parser->problem_mark.column);
+
+		err = sprintf_append(err, ": %s", parser->problem);
+
+		if (parser->context)
+			err = sprintf_append(err, " (%s)", parser->context);
+	}
+
+	log_error("");
+	log_error("%s", err);
+
+	if (yaml) {
+		log_error("========================================\n%s\n----------------------------------------", yaml);
+	}
+
+	free(err);
+}
+
 void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	yaml_unmarshal_log_ctx_reset();
 
@@ -19,7 +46,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	FILE *input = fopen(path, "rb");
 	if (!input) {
 		log_error("");
-		log_error("parsing file %s: inexistent", path);
+		log_error("parsing %s: inexistent", path);
 		return NULL;
 	}
 
@@ -27,7 +54,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	if (!yaml_parser_initialize(&parser)) {
 		log_error("");
-		log_error("parsing file %s: yaml_parser_initialize failed", path);
+		log_error("parsing %s: yaml_parser_initialize failed", path);
 		fclose(input);
 		return NULL;
 	}
@@ -37,8 +64,8 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	yaml_document_t document;
 
 	if (!yaml_parser_load(&parser, &document)) {
-		log_error("");
-		log_error("parsing file %s: yaml_parser_load failed", path);
+		log_parser_error(&parser, path, NULL);
+
 		yaml_parser_delete(&parser);
 		fclose(input);
 		return NULL;
@@ -50,7 +77,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	if (!(root = yaml_document_get_root_node(&document))) {
 		log_error("");
-		log_error("parsing file %s no root node", path);
+		log_error("parsing %s no root node", path);
 		goto end;
 	}
 
@@ -91,10 +118,8 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human)
 	yaml_document_t document;
 
 	if (!yaml_parser_load(&parser, &document)) {
-		log_error("");
-		log_error("unmarshalling %s: yaml_parser_load failed", human);
+		log_parser_error(&parser, human, yaml);
 		yaml_parser_delete(&parser);
-		log_error("========================================\n%s\n----------------------------------------", yaml);
 		return NULL;
 	}
 

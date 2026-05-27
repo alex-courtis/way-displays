@@ -73,7 +73,7 @@ static void yaml_root_to_cfg__empty(void **state) {
 
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing file tst/yaml/cfg-empty.yaml no root node\n");
+	assert_log(ERROR, "\nparsing tst/yaml/cfg-empty.yaml no root node\n");
 
 	assert_logs_empty();
 }
@@ -81,7 +81,7 @@ static void yaml_root_to_cfg__empty(void **state) {
 static void yaml_root_to_cfg__missing(void **state) {
 	assert_nul(yaml_unmarshal_file("foo/bar/baz.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing file foo/bar/baz.yaml: inexistent\n");
+	assert_log(ERROR, "\nparsing foo/bar/baz.yaml: inexistent\n");
 
 	assert_logs_empty();
 }
@@ -559,16 +559,29 @@ static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
 }
 
 static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
-	yaml_parser_load__fail = true;
 
-	assert_nul(yaml_unmarshal_str("FOO: bar", yaml_root_to_cfg, "foo"));
+	// https://github.com/yaml/libyaml/tree/run-test-suite
+	// 4HVU
+	// line and column error
+	char *yaml =
+		"key:\n"
+		"   - ok\n"
+		"   - also ok\n"
+		"  - wrong";
 
-	assert_log(ERROR, "\n"
-			"unmarshalling foo: yaml_parser_load failed\n"
+	assert_nul(yaml_unmarshal_str(yaml, yaml_root_to_cfg, "foo"));
+
+	char *err = sprintf_alloc(
+			"\nparsing foo line 3 column 2: did not find expected key (while parsing a block mapping)\n"
 			"========================================\n"
-			"FOO: bar\n"
-			"----------------------------------------\n");
+			"%s\n"
+			"----------------------------------------\n",
+			yaml);
+
+	assert_log(ERROR, err);
 	assert_logs_empty();
+
+	free(err);
 }
 
 static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
@@ -576,16 +589,17 @@ static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
 
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing file tst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
+	assert_log(ERROR, "\nparsing tst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
 	assert_logs_empty();
 }
 
 static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
-	yaml_parser_load__fail = true;
 
-	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
+	// https://github.com/yaml/libyaml/tree/run-test-suite
+	// line error only
+	assert_nul(yaml_unmarshal_file("tst/yaml/CQ3W.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing file tst/yaml/cfg-all.yaml: yaml_parser_load failed\n");
+	assert_log(ERROR, "\nparsing tst/yaml/CQ3W.yaml line 2: found unexpected end of stream (while scanning a quoted scalar)\n");
 	assert_logs_empty();
 }
 
