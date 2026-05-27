@@ -117,6 +117,12 @@ properties:
       Laptop displays usually start with eDP e.g. eDP-1.
       This may be overridden if your laptop is different.
 
+  LAPTOP_LID_MONITOR:
+    type: boolean
+    default: true
+    description: |-
+      Enable laptop lid detection.
+
   LOG_THRESHOLD:
     $ref: 'types-1.1.0.yaml#/$defs/log_threshold'
     default: INFO

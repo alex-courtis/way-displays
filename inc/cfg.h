@@ -39,6 +39,7 @@ enum OnOff {
 	OFF,
 	SCALING_DEFAULT = ON,
 	AUTO_SCALE_DEFAULT = ON,
+	LAPTOP_LID_MONITOR_DEFAULT = ON,
 };
 
 enum ScaleRoundStrategy {
@@ -83,6 +84,7 @@ struct Cfg {
 
 	char *callback_cmd;
 	char *laptop_display_prefix;
+	enum OnOff laptop_lid_monitor;
 	struct SList *order_name_desc;
 	enum Arrange arrange;
 	enum Align align;
@@ -114,6 +116,7 @@ enum CfgElement {
 	VRR_OFF,
 	CALLBACK_CMD,
 	LAPTOP_DISPLAY_PREFIX,
+	LAPTOP_LID_MONITOR,
 	MAX_PREFERRED_REFRESH,
 	LOG_THRESHOLD,
 	DISABLED,

@@ -223,7 +223,9 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		log_(t, "    %s", cfg->callback_cmd);
 	}
 
-	if (cfg->laptop_display_prefix) {
+	if (cfg->laptop_lid_monitor == OFF) {
+		log_(t, "  Laptop lid monitoring disabled");
+	} else if (cfg->laptop_display_prefix) {
 		log_(t, "  Laptop display prefix: %s", cfg->laptop_display_prefix);
 	}
 }

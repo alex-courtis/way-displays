@@ -91,6 +91,7 @@ bool yaml_map_populate_cfg(const void *data, int mapping) {
 		yaml_map_add_seq  (cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, yaml_seq_append_str,            mapping) &&
 		yaml_map_add_str  (cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                mapping) &&
 		yaml_map_add_str  (cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                       mapping) &&
+		yaml_map_add_enum (cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,          on_off_name,                    mapping) &&
 		yaml_map_add_enum (cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name,             mapping) &&
 		yaml_map_add_seq  (cfg_element_name(DISABLED),              cfg->disabled,                    yaml_seq_append_disabled,       mapping);
 }

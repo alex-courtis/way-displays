@@ -13,6 +13,7 @@
 #include "lid.h"
 
 #include "cfg.h"
+#include "convert.h"
 #include "global.h"
 #include "log.h"
 
@@ -34,7 +35,7 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 				log_warn("  To grant permission, add your user to the appropriate group e.g. usermod -a -G input \"${USER}\"");
 				log_warn("    or");
 				log_warn("  Disable laptop lid monitoring by adding the following to your cfg.yaml");
-				log_warn("  LAPTOP_LID_MONITOR: FALSE");
+				log_warn("  %s: FALSE", cfg_element_name(LAPTOP_LID_MONITOR));
 			}
 		} else {
 			log_warn("");

@@ -1,4 +1,5 @@
 Ignoring invalid LOG_THRESHOLD BAD_LOG_THRESHOLD, valid values: DEBUG|INFO|WARNING|ERROR|FATAL
+Ignoring invalid LAPTOP_LID_MONITOR BAD_LAPTOP_LID_MONITOR, valid values: ON|OFF|TRUE|FALSE|YES|NO, using default ON
 Ignoring invalid CALLBACK_CMD expected scalar, got sequence, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 Ignoring invalid ORDER regex '(order':  Unmatched ( or \(
 Ignoring invalid ARRANGE BAD_ARRANGE, valid values: ROW|COLUMN, using default ROW

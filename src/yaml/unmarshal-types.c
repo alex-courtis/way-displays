@@ -175,6 +175,9 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 			case LAPTOP_DISPLAY_PREFIX:
 				cfg->laptop_display_prefix = yaml_scalar_to_string(value);
 				break;
+			case LAPTOP_LID_MONITOR:
+				cfg->laptop_lid_monitor = yaml_scalar_to_enum_def(LAPTOP_LID_MONITOR_DEFAULT, value, on_off_val, on_off_name, on_off_names);
+				break;
 			case MAX_PREFERRED_REFRESH:
 				cfg->max_preferred_refresh_name_desc = yaml_seq_to_name_desc_list(value);
 				break;
