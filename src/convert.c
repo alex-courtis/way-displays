@@ -28,6 +28,7 @@ static struct NameVal cfg_elements[] = {
 	{ .val = VRR_OFF,               .name = "VRR_OFF",               },
 	{ .val = CALLBACK_CMD,          .name = "CALLBACK_CMD"           },
 	{ .val = LAPTOP_DISPLAY_PREFIX, .name = "LAPTOP_DISPLAY_PREFIX", },
+	{ .val = LAPTOP_LID_MONITOR,    .name = "LAPTOP_LID_MONITOR",    },
 	{ .val = MAX_PREFERRED_REFRESH, .name = "MAX_PREFERRED_REFRESH", },
 	{ .val = TRANSFORM,             .name = "TRANSFORM",             },
 	{ .val = LOG_THRESHOLD,         .name = "LOG_THRESHOLD",         },

@@ -13,10 +13,13 @@
 #include "lid.h"
 
 #include "cfg.h"
+#include "convert.h"
 #include "global.h"
 #include "log.h"
 
 static const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
+
+static bool warned_permission_fail = false;
 
 static int libinput_open_restricted(const char *path, int flags, void *data) {
 
@@ -24,8 +27,20 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 	int fd = open(path, flags);
 
 	if (fd <= 0) {
-		log_warn_errno("");
-		log_warn_errno("libinput open %s failed", path);
+		if (errno == EACCES) {
+			if (!warned_permission_fail) {
+				warned_permission_fail = true;
+				log_warn("");
+				log_warn_errno("Unable to monitor laptop lid via libinput");
+				log_warn("  To grant permission, add your user to the appropriate group e.g. usermod -a -G input \"${USER}\"");
+				log_warn("    or");
+				log_warn("  Disable laptop lid monitoring by adding the following to your cfg.yaml");
+				log_warn("  %s: FALSE", cfg_element_name(LAPTOP_LID_MONITOR));
+			}
+		} else {
+			log_warn("");
+			log_warn_errno("libinput open %s failed", path);
+		}
 		return -errno;
 	}
 
@@ -35,7 +50,7 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 static void libinput_close_restricted(int fd, void *data) {
 
 	if (close(fd) != 0) {
-		log_warn_errno("");
+		log_warn("");
 		log_warn_errno("libinput close failed");
 	}
 }
@@ -174,7 +189,9 @@ void lid_update(void) {
 
 		if (event_type == LIBINPUT_EVENT_SWITCH_TOGGLE) {
 			struct libinput_event_switch *event_switch = libinput_event_get_switch_event(event);
-			lid->closed = libinput_event_switch_get_switch_state(event_switch) == LIBINPUT_SWITCH_STATE_ON;
+			if (cfg->laptop_lid_monitor == ON) {
+				lid->closed = libinput_event_switch_get_switch_state(event_switch) == LIBINPUT_SWITCH_STATE_ON;
+			}
 		}
 
 		libinput_event_destroy(event);
@@ -182,11 +199,19 @@ void lid_update(void) {
 	}
 
 	log_info("");
-	log_info("Lid %s", lid->closed ? "closed" : "open");
+	if (cfg->laptop_lid_monitor == ON) {
+		log_info("Lid %s", lid->closed ? "closed" : "open");
+	} else {
+		log_info("Lid event ignored: Laptop lid monitoring disabled");
+	}
 }
 
 void lid_init(void) {
 	lid = NULL;
+
+	if (cfg->laptop_lid_monitor == OFF)
+		return;
+
 	struct libinput *libinput_discovery = NULL;
 	struct libinput *libinput_monitor = NULL;
 	char *device_path = NULL;

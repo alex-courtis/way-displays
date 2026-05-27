@@ -83,7 +83,8 @@ void *yaml_root_to_ipc_response_list(const yaml_node_t *root) {
 	struct SList *ipc_responses = NULL;
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
-		log_error("\nunmarshalling ipc response: expected %s or %s, got %s", yaml_node_type_str(YAML_MAPPING_NODE), yaml_node_type_str(YAML_SEQUENCE_NODE), yaml_node_type_str(root->type));
+		log_error("");
+		log_error("unmarshalling ipc response: expected %s or %s, got %s", yaml_node_type_str(YAML_MAPPING_NODE), yaml_node_type_str(YAML_SEQUENCE_NODE), yaml_node_type_str(root->type));
 		goto err;
 	}
 
@@ -174,6 +175,9 @@ void *yaml_map_to_cfg(const yaml_node_t *map) {
 				break;
 			case LAPTOP_DISPLAY_PREFIX:
 				cfg->laptop_display_prefix = yaml_scalar_to_string(value);
+				break;
+			case LAPTOP_LID_MONITOR:
+				cfg->laptop_lid_monitor = yaml_scalar_to_enum_def(LAPTOP_LID_MONITOR_DEFAULT, value, on_off_val, on_off_name, on_off_names);
 				break;
 			case MAX_PREFERRED_REFRESH:
 				cfg->max_preferred_refresh_name_desc = yaml_seq_to_name_desc_list(value);

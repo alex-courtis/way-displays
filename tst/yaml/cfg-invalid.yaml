@@ -1,6 +1,7 @@
 # all fields have an invalid value
 
 LOG_THRESHOLD: BAD_LOG_THRESHOLD
+LAPTOP_LID_MONITOR: BAD_LAPTOP_LID_MONITOR
 CALLBACK_CMD:
   -
 ORDER:
@@ -44,4 +45,3 @@ DISABLED:
           - '!(plugged1'
       - UNPLUGGED:
           - '!(unplugged1'
-

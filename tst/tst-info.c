@@ -250,6 +250,21 @@ void print_cfg__auto_scale_max(void **state) {
 	cfg_free(c);
 }
 
+void print_cfg__lid_disabled(void **state) {
+	struct Cfg *c = cfg_init();
+	c->laptop_lid_monitor = OFF;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-lid-disabled.log");
+	assert_log(INFO, expected_log);
+
+	assert_logs_empty();
+
+	free(expected_log);
+	cfg_free(c);
+}
+
 void print_cfg_commands__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
@@ -742,6 +757,7 @@ int main(void) {
 		TEST(print_cfg__align_only),
 		TEST(print_cfg__auto_scale_max),
 		TEST(print_cfg__del),
+		TEST(print_cfg__lid_disabled),
 
 		TEST(print_cfg_commands__empty),
 		TEST(print_cfg_commands__ok),

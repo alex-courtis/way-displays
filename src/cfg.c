@@ -354,6 +354,11 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 		to->laptop_display_prefix = strdup(from->laptop_display_prefix);
 	}
 
+	// LAPTOP_LID_MONITOR
+	if (from->laptop_lid_monitor) {
+		to->laptop_lid_monitor = from->laptop_lid_monitor;
+	}
+
 	// MAX_PREFERRED_REFRESH
 	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
 
@@ -448,6 +453,11 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		return false;
 	}
 
+	// LAPTOP_LID_MONITOR
+	if (a->laptop_lid_monitor != b->laptop_lid_monitor) {
+		return false;
+	}
+
 	// MAX_PREFERRED_REFRESH
 	if (!slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, fn_comp_equals_strcmp)) {
 		return false;
@@ -511,6 +521,9 @@ void cfg_apply_defaults(struct Cfg *dst) {
 
 	if (!dst->callback_cmd)
 		dst->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
+
+	if (!dst->laptop_lid_monitor)
+		dst->laptop_lid_monitor = LAPTOP_LID_MONITOR_DEFAULT;
 }
 
 struct UserMode *cfg_user_mode_default(void) {
