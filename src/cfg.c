@@ -567,12 +567,12 @@ static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_pat
 	cfg->file_path = strdup(file_path);
 
 	// dirname modifies path
-	strcpy(path, cfg->file_path);
+	strncpy(path, cfg->file_path, PATH_MAX - 1);
 	free(cfg->dir_path);
 	cfg->dir_path = strdup(dirname(path));
 
 	// basename modifies path
-	strcpy(path, cfg->file_path);
+	strncpy(path, cfg->file_path, PATH_MAX - 1);
 	free(cfg->file_name);
 	cfg->file_name = strdup(basename(path));
 }
