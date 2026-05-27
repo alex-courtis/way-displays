@@ -183,7 +183,7 @@ static int loop(void) {
 		// poll for all events
 		log_debug("LOOP poll");
 		if (poll(pfds, npfds, -1) < 0) {
-			log_fatal_errno("");
+			log_fatal("");
 			log_fatal_errno("poll failed, exiting");
 			wd_exit_message(EXIT_FAILURE);
 			return EXIT_FAILURE;

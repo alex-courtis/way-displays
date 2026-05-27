@@ -18,7 +18,7 @@
 static bool set_socket_timeout(int socket, struct timeval timeout) {
 
 	if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Socket set timeout failed");
 		return false;
 	}
@@ -31,7 +31,7 @@ int socket_accept(int socket_server) {
 	int socket_client = accept(socket_server, NULL, NULL);
 
 	if (socket_client == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Socket accept failed");
 		return -1;
 	}
@@ -52,7 +52,7 @@ char *socket_read(int socket_client) {
 			log_error("");
 			log_error("Socket read timeout");
 		} else {
-			log_error_errno("");
+			log_error("");
 			log_error_errno("Socket recv failed");
 		}
 		return NULL;
@@ -61,7 +61,7 @@ char *socket_read(int socket_client) {
 	// total message size right now; further data will be disregarded
 	int n = 0;
 	if (ioctl(socket_client, FIONREAD, &n) == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Server FIONREAD failed");
 		return NULL;
 	}
@@ -72,7 +72,7 @@ char *socket_read(int socket_client) {
 	// read it
 	char *buf = calloc(n + 1, sizeof(char));
 	if (recv(socket_client, buf, n, 0) == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Socket recv failed");
 		return NULL;
 	}
@@ -83,7 +83,7 @@ char *socket_read(int socket_client) {
 ssize_t socket_write(int socket_client, char *data, size_t len) {
 	ssize_t n;
 	if ((n = write(socket_client, data, len)) == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Socket write failed");
 		return -1;
 	}
@@ -111,7 +111,7 @@ void socket_path(struct sockaddr_un *addr) {
 int create_socket_server(void) {
 	int socket_server = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (socket_server == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Server socket failed, clients unavailable");
 		return -1;
 	}
@@ -122,14 +122,14 @@ int create_socket_server(void) {
 	unlink(addr.sun_path);
 
 	if (bind(socket_server, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Server socket bind failed, clients unavailable");
 		close(socket_server);
 		return -1;
 	}
 
 	if (listen(socket_server, 3) < 0) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Server socket listen failed, clients unavailable");
 		close(socket_server);
 		return -1;
@@ -147,7 +147,7 @@ int create_socket_server(void) {
 int create_socket_client(void) {
 	int socket_client = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (socket_client == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Socket create failed");
 		return -1;
 	}
@@ -157,7 +157,7 @@ int create_socket_client(void) {
 	socket_path(&addr);
 
 	if (connect(socket_client, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("Socket connect failed");
 		close(socket_client);
 		return -1;

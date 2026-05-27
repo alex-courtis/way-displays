@@ -66,7 +66,7 @@ void pid_file_create(void) {
 	// attempt to use existing, regardless of owner
 	int fd = open(path, O_RDWR | O_CLOEXEC);
 	if (fd == -1 && errno != ENOENT) {
-		log_fatal_errno("");
+		log_fatal("");
 		log_fatal_errno("unable to open existing pid file for writing %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
@@ -78,7 +78,7 @@ void pid_file_create(void) {
 		fd = open(path, O_RDWR | O_CLOEXEC | O_CREAT, 0666);
 		umask(umask_prev);
 		if (fd == -1) {
-			log_fatal_errno("");
+			log_fatal("");
 			log_fatal_errno("unable to create pid file %s, exiting", path);
 			wd_exit_message(EXIT_FAILURE);
 			return;
@@ -87,7 +87,7 @@ void pid_file_create(void) {
 
 	// lock it forever
 	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
-		log_fatal_errno("");
+		log_fatal("");
 		log_fatal_errno("unable to lock pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
@@ -95,7 +95,7 @@ void pid_file_create(void) {
 
 	// clear it
 	if (ftruncate(fd, 0) == -1) {
-		log_fatal_errno("");
+		log_fatal("");
 		log_fatal_errno("unable to truncate pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
@@ -103,7 +103,7 @@ void pid_file_create(void) {
 
 	// write the new pid
 	if (dprintf(fd, "%d", getpid()) <= 0) {
-		log_fatal_errno("");
+		log_fatal("");
 		log_fatal_errno("unable to write to pid file %s, exiting", path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
@@ -121,7 +121,7 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 
 	pid_t pid = fork();
 	if (pid < 0) {
-		log_error_errno("");
+		log_error("");
 		log_error_errno("failed to fork");
 		return;
 	}
@@ -143,7 +143,7 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 
 		// execute command in the child process
 		execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL);
-		log_error_errno("");
+		log_error("");
 		log_error_errno("failed to execute /bin/sh");
 		// exit the child process in case the exec fails
 		exit(-1);
