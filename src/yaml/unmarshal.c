@@ -18,14 +18,16 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	FILE *input = fopen(path, "rb");
 	if (!input) {
-		log_error("\nparsing file %s: inexistent", path);
+		log_error("");
+		log_error("parsing file %s: inexistent", path);
 		return NULL;
 	}
 
 	yaml_parser_t parser;
 
 	if (!yaml_parser_initialize(&parser)) {
-		log_error("\nparsing file %s: yaml_parser_initialize failed", path);
+		log_error("");
+		log_error("parsing file %s: yaml_parser_initialize failed", path);
 		fclose(input);
 		return NULL;
 	}
@@ -35,7 +37,8 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	yaml_document_t document;
 
 	if (!yaml_parser_load(&parser, &document)) {
-		log_error("\nparsing file %s: yaml_parser_load failed", path);
+		log_error("");
+		log_error("parsing file %s: yaml_parser_load failed", path);
 		yaml_parser_delete(&parser);
 		fclose(input);
 		return NULL;
@@ -46,7 +49,8 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	void *out = NULL;
 
 	if (!(root = yaml_document_get_root_node(&document))) {
-		log_error("\nparsing file %s no root node", path);
+		log_error("");
+		log_error("parsing file %s no root node", path);
 		goto end;
 	}
 
@@ -77,7 +81,8 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human)
 	yaml_parser_t parser;
 
 	if (!yaml_parser_initialize(&parser)) {
-		log_error("\nunmarshalling %s: yaml_parser_initialize failed", human);
+		log_error("");
+		log_error("unmarshalling %s: yaml_parser_initialize failed", human);
 		return NULL;
 	}
 
@@ -86,7 +91,8 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human)
 	yaml_document_t document;
 
 	if (!yaml_parser_load(&parser, &document)) {
-		log_error("\nunmarshalling %s: yaml_parser_load failed", human);
+		log_error("");
+		log_error("unmarshalling %s: yaml_parser_load failed", human);
 		yaml_parser_delete(&parser);
 		log_error("========================================\n%s\n----------------------------------------", yaml);
 		return NULL;
@@ -97,7 +103,8 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human)
 	void *out = NULL;
 
 	if (!(root = yaml_document_get_root_node(&document))) {
-		log_error("\nunmarshalling %s: empty request", human);
+		log_error("");
+		log_error("unmarshalling %s: empty request", human);
 		goto err;
 	}
 
