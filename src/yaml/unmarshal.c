@@ -33,12 +33,8 @@ static void log_error_parser(const yaml_parser_t *parser, const char *prefix) {
 }
 
 static void log_error_yaml(const char *yaml) {
-	if (!yaml)
-		return;
-
-	if (yaml) {
+	if (yaml)
 		log_error("========================================\n%s\n----------------------------------------", yaml);
-	}
 }
 
 void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
@@ -82,7 +78,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	if (!(root = yaml_document_get_root_node(&document))) {
 		log_error("");
-		log_error("parsing %s no root node", path);
+		log_error("parsing %s: no root node", path);
 		goto end;
 	}
 

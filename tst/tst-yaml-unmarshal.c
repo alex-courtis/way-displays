@@ -73,7 +73,7 @@ static void yaml_root_to_cfg__empty(void **state) {
 
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing tst/yaml/cfg-empty.yaml no root node\n");
+	assert_log(ERROR, "\nparsing tst/yaml/cfg-empty.yaml: no root node\n");
 
 	assert_logs_empty();
 }
