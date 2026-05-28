@@ -168,6 +168,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_UN_PLUGGED_SCALAR"));
 	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_UN_PLUGGED_MAP"));
 	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_LID_MAP"));
+	slist_append(&expected->disabled, cfg_disabled_always("NO_VALID_CONDITIONS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
 }

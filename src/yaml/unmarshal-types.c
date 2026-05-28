@@ -288,6 +288,9 @@ void *yaml_map_to_condition(const yaml_node_t *map) {
 	if (node && !(condition->lid = yaml_scalar_to_enum(node, condition_lid_val, condition_lid_names)))
 		goto err;
 
+	if (!condition->plugged && !condition->unplugged && !condition->lid)
+		goto err;
+
 	goto end;
 
 err:

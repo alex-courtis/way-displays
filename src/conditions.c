@@ -23,6 +23,7 @@ void* condition_clone(const void *data) {
 
 	cloned->plugged = slist_clone(original->plugged, fn_clone_strdup);
 	cloned->unplugged = slist_clone(original->unplugged, fn_clone_strdup);
+	cloned->lid = original->lid;
 
 	return cloned;
 }
@@ -32,7 +33,8 @@ bool condition_equal(const void *a, const void *b) {
 	struct Condition *rhs = (struct Condition*)b;
 
 	return slist_equal(lhs->plugged, rhs->plugged, fn_comp_equals_strcmp) &&
-	       slist_equal(lhs->unplugged, rhs->unplugged, fn_comp_equals_strcmp);
+	       slist_equal(lhs->unplugged, rhs->unplugged, fn_comp_equals_strcmp) &&
+		   lhs->lid == rhs->lid;
 }
 
 bool condition_evaluate(const struct Condition *condition) {

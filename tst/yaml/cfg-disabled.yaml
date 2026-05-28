@@ -38,6 +38,9 @@ DISABLED:
     IF:
       - LID:
         -
+  - NAME_DESC: NO_VALID_CONDITIONS
+    IF:
+      - FOO: bar
   - -
     -
 
