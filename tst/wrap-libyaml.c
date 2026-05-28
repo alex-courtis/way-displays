@@ -9,7 +9,6 @@ bool yaml_emitter_dump__fail = false;
 bool yaml_emitter_close__fail = false;
 
 bool yaml_parser_initialize__fail = false;
-bool yaml_parser_load__fail = false;
 
 void reset_yaml_fails(void) {
 	yaml_document_initialize__fail = false;
@@ -20,7 +19,6 @@ void reset_yaml_fails(void) {
 	yaml_emitter_close__fail = false;
 
 	yaml_parser_initialize__fail = false;
-	yaml_parser_load__fail = false;
 }
 
 
@@ -94,16 +92,4 @@ int __wrap_yaml_parser_initialize(yaml_parser_t *parser) {
 	}
 
 	return __real_yaml_parser_initialize(parser);
-}
-
-
-int __real_yaml_parser_load(yaml_parser_t *parser, yaml_document_t *document);
-int __wrap_yaml_parser_load(yaml_parser_t *parser, yaml_document_t *document) {
-
-	if (yaml_parser_load__fail) {
-		yaml_parser_load__fail = false;
-		return 0;
-	}
-
-	return __real_yaml_parser_load(parser, document);
 }
