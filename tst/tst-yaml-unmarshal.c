@@ -191,7 +191,7 @@ static void yaml_root_to_ipc_request__empty(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc request: empty request\n"
+			"parsing ipc request: empty request\n"
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
@@ -206,7 +206,7 @@ static void yaml_root_to_ipc_request__mistyped_root(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc request: expected map, got sequence\n"
+			"parsing ipc request: expected map, got sequence\n"
 			"========================================\n"
 			"- FOO\n"
 			"----------------------------------------\n");
@@ -221,7 +221,7 @@ static void yaml_root_to_ipc_request__invalid_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc request: invalid OP aoeu, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+			"parsing ipc request: invalid OP aoeu, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP: aoeu\n"
 			"----------------------------------------\n");
@@ -236,7 +236,7 @@ static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc request: invalid OP expected scalar, got map, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+			"parsing ipc request: invalid OP expected scalar, got map, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP:\n"
 			"  FOO: BAR\n"
@@ -253,7 +253,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc request: missing OP\n"
+			"parsing ipc request: missing OP\n"
 			"========================================\n"
 			"FOO: BAR\n"
 			"----------------------------------------\n");
@@ -308,7 +308,7 @@ static void yaml_root_to_ipc_response_list__empty(void **state) {
 	assert_nul(yaml_unmarshal_str("", yaml_root_to_ipc_response_list, "ipc response"));
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: empty request\n"
+			"parsing ipc response: empty request\n"
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
@@ -319,7 +319,7 @@ static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
 	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_list, "ipc response"));
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: expected map or sequence, got scalar\n"
+			"parsing ipc response: expected map or sequence, got scalar\n"
 			"========================================\n"
 			"foo\n"
 			"----------------------------------------\n");
@@ -330,7 +330,7 @@ static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
 	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_list, "ipc response"));
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: expected map, got scalar\n"
+			"parsing ipc response: expected map, got scalar\n"
 			"========================================\n"
 			"-\n"
 			"----------------------------------------\n");
@@ -343,7 +343,7 @@ static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
 	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_list, "ipc response"));
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: missing DONE\n"
+			"parsing ipc response: missing DONE\n"
 			"========================================\n"
 			"- FOO: BAR\n"
 			"----------------------------------------\n");
@@ -358,7 +358,7 @@ static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"unmarshalling ipc response: missing RC\n"
+			"parsing ipc response: missing RC\n"
 			"========================================\n"
 			"- DONE: TRUE\n"
 			"----------------------------------------\n");
@@ -554,7 +554,7 @@ static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
 
 	assert_nul(yaml_unmarshal_str("", yaml_root_to_cfg, "foo"));
 
-	assert_log(ERROR, "\nunmarshalling foo: yaml_parser_initialize failed\n");
+	assert_log(ERROR, "\nparsing foo: yaml_parser_initialize failed\n");
 	assert_logs_empty();
 }
 
