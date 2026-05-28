@@ -4,10 +4,15 @@
 #include <stdbool.h>
 #include "slist.h"
 
+enum ConditionLid {
+	CLOSED = 1,
+	OPEN,
+};
 
 struct Condition {
 	struct SList *plugged;
 	struct SList *unplugged;
+	enum ConditionLid lid;
 };
 
 void condition_free(const void *data);

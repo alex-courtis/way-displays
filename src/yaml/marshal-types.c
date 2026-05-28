@@ -301,6 +301,7 @@ bool yaml_seq_append_condition(const void *data, int sequence) {
 		map &&
 		yaml_map_add_seq("PLUGGED", condition->plugged, yaml_seq_append_str, map) &&
 		yaml_map_add_seq("UNPLUGGED", condition->unplugged, yaml_seq_append_str, map) &&
+		yaml_map_add_enum("LID", condition->lid, condition_lid_name, map) &&
 		yaml_document_append_sequence_item(yaml_document, sequence, map);
 }
 

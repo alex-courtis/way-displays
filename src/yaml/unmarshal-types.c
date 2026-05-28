@@ -269,18 +269,23 @@ void *yaml_map_to_condition(const yaml_node_t *map) {
 	if (!table)
 		return NULL;
 
-	const yaml_node_t *seq;
+	const yaml_node_t *node;
 
 	struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
 
 	yaml_unmarshal_log_ctx_key("PLUGGED");
-	seq = stable_get(table, "PLUGGED");
-	if (seq && !(condition->plugged = yaml_seq_to_name_desc_list(seq)))
+	node = stable_get(table, "PLUGGED");
+	if (node && !(condition->plugged = yaml_seq_to_name_desc_list(node)))
 		goto err;
 
 	yaml_unmarshal_log_ctx_key("UNPLUGGED");
-	seq = stable_get(table, "UNPLUGGED");
-	if (seq && !(condition->unplugged = yaml_seq_to_name_desc_list(seq)))
+	node = stable_get(table, "UNPLUGGED");
+	if (node && !(condition->unplugged = yaml_seq_to_name_desc_list(node)))
+		goto err;
+
+	yaml_unmarshal_log_ctx_key("LID");
+	node = stable_get(table, "LID");
+	if (node && !(condition->lid = yaml_scalar_to_enum(node, condition_lid_val, condition_lid_names)))
 		goto err;
 
 	goto end;

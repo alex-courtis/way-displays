@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
 
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.1.0.yaml
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.2.0.yaml
 
 title: way-displays types
 description: |-
@@ -30,6 +30,12 @@ $defs:
           $ref: '#/$defs/fuzzy_display_match'
         description: |-
           Subcondition. Evaluates to true if all specified displays are currently unplugged.
+      LID:
+        enum:
+          - CLOSED
+          - OPEN
+        description: |-
+          Subcondition. Evaluates to true if lid is open or closed.
     description: |-
       Dynamically evaluated condition.
       Evaluates to true if all its subconditions are also true.
@@ -96,7 +102,7 @@ $defs:
   scale:
     properties:
       NAME_DESC:
-        $ref: 'types-1.1.0.yaml#/$defs/fuzzy_display_match'
+        $ref: 'types-1.2.0.yaml#/$defs/fuzzy_display_match'
       SCALE:
         type: number
         description: |-
@@ -106,7 +112,7 @@ $defs:
   transform:
     properties:
       NAME_DESC:
-        $ref: 'types-1.1.0.yaml#/$defs/fuzzy_display_match'
+        $ref: 'types-1.2.0.yaml#/$defs/fuzzy_display_match'
       TRANSFORM:
         enum:
           - 90

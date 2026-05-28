@@ -104,6 +104,12 @@ static struct NameVal displ_states[] = {
 	{ .val = 0,           .name = NULL,          },
 };
 
+static struct NameVal condition_lids[] = {
+	{ .val = OPEN,   .name = "OPEN",   },
+	{ .val = CLOSED, .name = "CLOSED", },
+	{ .val = 0,      .name = NULL,     },
+};
+
 static struct NameVal scale_round_strategies[] = {
 	{ .val = NEAREST, .name = "NEAREST", },
 	{ .val = UP,      .name = "UP",      },
@@ -274,6 +280,18 @@ enum DisplState displ_state_val(const char *name) {
 
 const char *displ_state_name(enum DisplState displ_state) {
 	return name(displ_states, displ_state);
+}
+
+enum ConditionLid condition_lid_val(const char *name) {
+	return val(condition_lids, name);
+}
+
+const char *condition_lid_name(enum ConditionLid condition_lid) {
+	return name(condition_lids, condition_lid);
+}
+
+char *condition_lid_names(void) {
+	return names(condition_lids);
 }
 
 enum ScaleRoundStrategy scale_round_strategy_val(const char *name) {
