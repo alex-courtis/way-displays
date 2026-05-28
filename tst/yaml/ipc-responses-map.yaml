@@ -48,6 +48,7 @@ CFG:
       - TWO
     - UNPLUGGED:
       - THREE
+    - LID: CLOSED
 STATE:
   LID:
     CLOSED: TRUE

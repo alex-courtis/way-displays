@@ -45,3 +45,4 @@ DISABLED:
           - '!(plugged1'
       - UNPLUGGED:
           - '!(unplugged1'
+      - LID: BAD_DISABLED_LID

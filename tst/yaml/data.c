@@ -74,6 +74,10 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cond->unplugged, strdup("THREE"));
 	slist_append(&disabled->conditions, cond);
 
+	cond = calloc(1, sizeof(struct Condition));
+	cond->lid = CLOSED;
+	slist_append(&disabled->conditions, cond);
+
 	slist_append(&cfg->disabled, disabled);
 
 	slist_append(&cfg->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
