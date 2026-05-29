@@ -13,7 +13,6 @@
 
 struct State {
 	struct Condition *condition;
-	struct SList *conditions;
 };
 
 static int before_all(void **state) {
@@ -50,7 +49,6 @@ static int after_each(void **state) {
 	struct State *s = *state;
 
 	condition_free(s->condition);
-	slist_free_vals(&s->conditions, condition_free);
 	slist_free_vals(&heads, head_free);
 
 	free(lid);
