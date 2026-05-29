@@ -106,9 +106,10 @@ static struct NameVal displ_states[] = {
 };
 
 static struct NameVal condition_lids[] = {
-	{ .val = OPEN,   .name = "OPEN",   },
-	{ .val = CLOSED, .name = "CLOSED", },
-	{ .val = 0,      .name = NULL,     },
+	{ .val = LID_OPEN,        .name = "OPEN",        },
+	{ .val = LID_CLOSED,      .name = "CLOSED",      },
+	{ .val = LID_NOT_PRESENT, .name = "NOT_PRESENT", },
+	{ .val = 0,               .name = NULL,          },
 };
 
 static struct NameVal scale_round_strategies[] = {

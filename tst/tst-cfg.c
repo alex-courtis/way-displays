@@ -250,6 +250,9 @@ void merge_set__disabled(void **state) {
 	struct Condition *cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("display"));
 	slist_append(&disabled->conditions, cond);
+	cond = calloc(1, sizeof(struct Condition));
+	cond->lid = LID_NOT_PRESENT;
+	slist_append(&disabled->conditions, cond);
 
 	slist_append(&s->to->disabled, cfg_disabled_always("to"));
 	slist_append(&s->to->disabled, cfg_disabled_always("both"));

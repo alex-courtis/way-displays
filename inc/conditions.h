@@ -5,8 +5,9 @@
 #include "slist.h"
 
 enum ConditionLid {
-	CLOSED = 1,
-	OPEN,
+	LID_CLOSED = 1,
+	LID_OPEN,
+	LID_NOT_PRESENT,
 };
 
 struct Condition {

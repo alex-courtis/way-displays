@@ -1,11 +1,14 @@
 #include "tst.h"
 
 #include <cmocka.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "conditions.h"
+#include "global.h"
 #include "head.h"
+#include "lid.h"
 #include "slist.h"
 
 struct State {
@@ -13,15 +16,15 @@ struct State {
 	struct SList *conditions;
 };
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 	s->condition = calloc(1, sizeof(struct Condition));
 
@@ -37,16 +40,21 @@ int before_each(void **state) {
 	slist_append(&heads, h2);
 	slist_append(&heads, h3);
 
+	lid = NULL;
+
 	*state = s;
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	struct State *s = *state;
 
 	condition_free(s->condition);
 	slist_free_vals(&s->conditions, condition_free);
 	slist_free_vals(&heads, head_free);
+
+	free(lid);
+	lid = NULL;
 
 	free(s);
 
@@ -54,7 +62,7 @@ int after_each(void **state) {
 }
 
 
-void conditions__plugged(void **state) {
+static void conditions__plugged(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->condition->plugged, strdup("DP-1"));
@@ -70,7 +78,7 @@ void conditions__plugged(void **state) {
 	assert_false(condition_evaluate(s->condition));
 }
 
-void conditions__unplugged(void **state) {
+static void conditions__unplugged(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->condition->unplugged, strdup("DP-4"));
@@ -80,7 +88,37 @@ void conditions__unplugged(void **state) {
 	assert_false(condition_evaluate(s->condition));
 }
 
-void conditions__complex(void **state) {
+static void conditions__lid_closed(void **state) {
+	struct State *s = *state;
+
+	s->condition->lid = LID_CLOSED;
+
+	lid = calloc(1, sizeof(struct Lid));
+	lid->closed = true;
+
+	assert_false(condition_evaluate(s->condition));
+}
+
+static void conditions__lid_open(void **state) {
+	struct State *s = *state;
+
+	s->condition->lid = LID_OPEN;
+
+	lid = calloc(1, sizeof(struct Lid));
+	lid->closed = false;
+
+	assert_false(condition_evaluate(s->condition));
+}
+
+static void conditions__lid_not_present(void **state) {
+	struct State *s = *state;
+
+	s->condition->lid = LID_NOT_PRESENT;
+
+	assert_false(condition_evaluate(s->condition));
+}
+
+static void conditions__complex(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->condition->plugged, strdup("DP-1"));
@@ -88,12 +126,21 @@ void conditions__complex(void **state) {
 
 	slist_append(&s->condition->unplugged, strdup("DP-4"));
 	assert_true(condition_evaluate(s->condition));
+
+	s->condition->lid = LID_CLOSED;
+	lid = calloc(1, sizeof(struct Lid));
+	lid->closed = false;
+
+	assert_true(condition_evaluate(s->condition));
 }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(conditions__plugged),
 		TEST(conditions__unplugged),
+		TEST(conditions__lid_closed),
+		TEST(conditions__lid_open),
+		TEST(conditions__lid_not_present),
 		TEST(conditions__complex),
 	};
 

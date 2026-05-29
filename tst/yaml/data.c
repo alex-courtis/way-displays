@@ -75,7 +75,7 @@ struct Cfg *cfg_all(void) {
 	slist_append(&disabled->conditions, cond);
 
 	cond = calloc(1, sizeof(struct Condition));
-	cond->lid = CLOSED;
+	cond->lid = LID_CLOSED;
 	slist_append(&disabled->conditions, cond);
 
 	slist_append(&cfg->disabled, disabled);

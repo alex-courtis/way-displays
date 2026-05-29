@@ -35,8 +35,9 @@ $defs:
         enum:
           - CLOSED
           - OPEN
+          - NOT_PRESENT
         description: |-
-          Subcondition. Evaluates to true if lid is open or closed.
+          Subcondition. Evaluates to true if lid is open, closed or no lid.
     description: |-
       Dynamically evaluated condition.
       Evaluates to true if all its subconditions are also true.
