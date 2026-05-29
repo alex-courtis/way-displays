@@ -94,7 +94,7 @@ static void conditions__lid_closed(void **state) {
 	lid = calloc(1, sizeof(struct Lid));
 	lid->closed = true;
 
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_evaluate(s->condition));
 }
 
 static void conditions__lid_open(void **state) {
@@ -105,7 +105,7 @@ static void conditions__lid_open(void **state) {
 	lid = calloc(1, sizeof(struct Lid));
 	lid->closed = false;
 
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_evaluate(s->condition));
 }
 
 static void conditions__lid_not_present(void **state) {
@@ -113,7 +113,7 @@ static void conditions__lid_not_present(void **state) {
 
 	s->condition->lid = LID_NOT_PRESENT;
 
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_evaluate(s->condition));
 }
 
 static void conditions__complex(void **state) {
@@ -127,7 +127,7 @@ static void conditions__complex(void **state) {
 
 	s->condition->lid = LID_CLOSED;
 	lid = calloc(1, sizeof(struct Lid));
-	lid->closed = false;
+	lid->closed = true;
 
 	assert_true(condition_evaluate(s->condition));
 }

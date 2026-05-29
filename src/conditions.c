@@ -60,17 +60,17 @@ bool condition_evaluate(const struct Condition *condition) {
 
 	switch (condition->lid) {
 		case LID_CLOSED:
-			if (lid && lid->closed) {
+			if (!lid || !lid->closed) {
 				return false;
 			}
 			break;
 		case LID_OPEN:
-			if (lid && !lid->closed) {
+			if (!lid || lid->closed) {
 				return false;
 			}
 			break;
 		case LID_NOT_PRESENT:
-			if (!lid) {
+			if (lid) {
 				return false;
 			}
 			break;
