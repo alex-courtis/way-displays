@@ -245,26 +245,35 @@ void merge_set__adaptive_sync_off(void **state) {
 void merge_set__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
-	disabled->name_desc = strdup("cond");
+	struct Disabled *disabled1 = calloc(1, sizeof(struct Disabled));
+	disabled1->name_desc = strdup("cond");
 	struct Condition *cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("display"));
-	slist_append(&disabled->conditions, cond);
+	slist_append(&disabled1->conditions, cond);
 	cond = calloc(1, sizeof(struct Condition));
 	cond->lid = LID_NOT_PRESENT;
-	slist_append(&disabled->conditions, cond);
+	slist_append(&disabled1->conditions, cond);
+
+	struct Disabled *disabled2 = calloc(1, sizeof(struct Disabled));
+	disabled2->name_desc = strdup("twelve");
+
+	cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->plugged, strdup("FOUR"));
+	slist_append(&disabled1->conditions, cond);
 
 	slist_append(&s->to->disabled, cfg_disabled_always("to"));
 	slist_append(&s->to->disabled, cfg_disabled_always("both"));
 
 	slist_append(&s->from->disabled, cfg_disabled_always("from"));
 	slist_append(&s->from->disabled, cfg_disabled_always("both"));
-	slist_append(&s->from->disabled, cfg_disabled_clone(disabled));
+	slist_append(&s->from->disabled, cfg_disabled_clone(disabled1));
+	slist_append(&s->from->disabled, cfg_disabled_clone(disabled2));
 
 	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
 	slist_append(&s->expected->disabled, cfg_disabled_always("both"));
 	slist_append(&s->expected->disabled, cfg_disabled_always("from"));
-	slist_append(&s->expected->disabled, disabled);
+	slist_append(&s->expected->disabled, disabled1);
+	slist_append(&s->expected->disabled, disabled2);
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -594,27 +603,6 @@ void validate_fix__user_transform(void **state) {
 	free(expected_log);
 }
 
-void validate_fix__disabled(void **state) {
-	struct State *s = *state;
-
-	slist_append(&s->from->disabled, cfg_disabled_always("one"));
-	slist_append(&s->from->disabled, cfg_disabled_always("dup"));
-	slist_append(&s->from->disabled, cfg_disabled_always("dup"));
-
-	validate_fix(s->from);
-
-	char *expected_log = read_file("tst/cfg/validate-fix-disabled.log");
-	assert_log(WARNING, expected_log);
-	assert_logs_empty();
-
-	slist_append(&s->expected->disabled, cfg_disabled_always("one"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("dup"));
-
-	assert_cfg_equal(s->from, s->expected);
-
-	free(expected_log);
-}
-
 void validate_warn__(void **state) {
 	struct State *s = *state;
 
@@ -697,7 +685,6 @@ int main(void) {
 		TEST(validate_fix__user_scale),
 		TEST(validate_fix__user_mode),
 		TEST(validate_fix__user_transform),
-		TEST(validate_fix__disabled),
 
 		TEST(validate_warn__),
 	};

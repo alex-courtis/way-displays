@@ -9,6 +9,10 @@ DISABLED:
           - TWO
       - UNPLUGGED:
           - THREE
+  - NAME_DESC: twelve
+    IF:
+      - PLUGGED:
+          - FOUR
   - '!(disabled1'
   - NAME_DESC: '!(disabled2'
   - NAME_DESC: BAD_DISABLED_IFS

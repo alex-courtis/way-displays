@@ -687,24 +687,6 @@ static void remove_duplicate_user_transforms(struct Cfg *cfg) {
 	stable_free(by_name_desc);
 }
 
-static void remove_duplicate_disabled(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init(10, 10, false);
-
-	for (struct SList *i = cfg->disabled; i; i = i->nex) {
-		const struct Disabled *disabled = i->val;
-		const struct Disabled *dup = stable_put(by_name_desc, disabled->name_desc, disabled);
-		if (dup) {
-			log_warn("");
-			log_warn("Removing duplicate DISABLED %s", dup->name_desc);
-			cfg_disabled_free(dup);
-		}
-	}
-
-	slist_free(&cfg->disabled);
-	cfg->disabled = stable_vals_slist(by_name_desc);
-	stable_free(by_name_desc);
-}
-
 void validate_fix(struct Cfg *cfg) {
 	if (!cfg) {
 		return;
@@ -736,8 +718,6 @@ void validate_fix(struct Cfg *cfg) {
 	remove_duplicate_user_modes(cfg);
 
 	remove_duplicate_user_transforms(cfg);
-
-	remove_duplicate_disabled(cfg);
 }
 
 static void warn_ambiguous_name_desc_list(struct SList *name_desc, const char * const element) {

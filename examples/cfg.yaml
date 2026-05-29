@@ -118,7 +118,7 @@ LOG_THRESHOLD: INFO
 ## In this example:
 ##  HDMI-1 will always be disabled
 ##  eDP-1 will be disabled only if both DP-1 and DP-2 are plugged.
-##  DP-3 will be disabled only when the lid is open
+##  DP-3 will be disabled when the lid is open or HDMI-2 is plugged
 # DISABLED:
 #   - 'HDMI-1'
 #   - NAME_DESC: 'eDP-1'
@@ -129,3 +129,7 @@ LOG_THRESHOLD: INFO
 #   - NAME_DESC: 'DP-3'
 #     IF:
 #       - LID: OPEN
+#   - NAME_DESC: 'DP-3'
+#     IF:
+#       - PLUGGED:
+#           - 'HDMI-2'

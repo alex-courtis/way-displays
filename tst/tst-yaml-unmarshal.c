@@ -162,6 +162,15 @@ static void yaml_root_to_cfg__disabled(void **state) {
 
 	slist_append(&expected->disabled, disabled);
 
+	disabled = calloc(1, sizeof(struct Disabled));
+	disabled->name_desc = strdup("twelve");
+
+	cond = calloc(1, sizeof(struct Condition));
+	slist_append(&cond->plugged, strdup("FOUR"));
+	slist_append(&disabled->conditions, cond);
+
+	slist_append(&expected->disabled, disabled);
+
 	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
 	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_IF_SCALAR"));
 	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_IF_MAP"));
