@@ -78,7 +78,7 @@ static void global_remove(void *data,
 
 	// a "who cares?" situation in the WLR examples
 	if (displ && displ->zwlr_output_manager_name == name) {
-		log_info("");
+		log_info(NULL);
 		log_info("Display's output manager has been removed, exiting");
 		wd_exit(EXIT_SUCCESS);
 	}

@@ -395,7 +395,7 @@ void handle_success(void) {
 			break;
 	}
 
-	log_info("");
+	log_info(NULL);
 	log_info("Changes successful");
 	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
 
@@ -405,11 +405,11 @@ void handle_success(void) {
 static bool handle_cancelled(void) {
 	cancellation_retries++;
 	if (cancellation_retries <= MAX_CANCELLATION_RETRIES) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("Changes cancelled, retrying (attempt %i)", cancellation_retries);
 		return true;
 	} else {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("Changes cancelled, max number of retry attempts exceeded");
 		return false;
 	}
@@ -442,7 +442,7 @@ void handle_failure(void) {
 
 			break;
 		default:
-			log_fatal("");
+			log_fatal(NULL);
 			log_fatal("Changes failed, exiting");
 			call_back(FATAL, displ->delta.human, "\nChanges failed, exiting");
 

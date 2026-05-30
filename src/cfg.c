@@ -231,7 +231,7 @@ static bool invalid_user_scale(const void *a, const void *b) {
 	struct UserScale *user_scale = (struct UserScale*)a;
 
 	if (user_scale->scale <= 0) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("Ignoring non-positive SCALE %s %.3f", user_scale->name_desc, user_scale->scale);
 		return true;
 	}
@@ -246,29 +246,29 @@ static bool invalid_user_mode(const void *a, const void *b) {
 	struct UserMode *user_mode = (struct UserMode*)a;
 
 	if (user_mode->width != -1 && user_mode->width <= 0) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("Ignoring non-positive MODE %s WIDTH %d", user_mode->name_desc, user_mode->width);
 		return true;
 	}
 	if (user_mode->height != -1 && user_mode->height <= 0) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("Ignoring non-positive MODE %s HEIGHT %d", user_mode->name_desc, user_mode->height);
 		return true;
 	}
 	if (user_mode->refresh_mhz != -1 && user_mode->refresh_mhz <= 0) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("Ignoring non-positive MODE %s HZ %s", user_mode->name_desc, mhz_to_hz_str(user_mode->refresh_mhz));
 		return true;
 	}
 
 	if (!user_mode->max) {
 		if (user_mode->width == -1) {
-			log_warn("");
+			log_warn(NULL);
 			log_warn("Ignoring invalid MODE %s missing WIDTH", user_mode->name_desc);
 			return true;
 		}
 		if (user_mode->height == -1) {
-			log_warn("");
+			log_warn(NULL);
 			log_warn("Ignoring invalid MODE %s missing HEIGHT", user_mode->name_desc);
 			return true;
 		}
@@ -282,12 +282,12 @@ static void warn_ambiguous_name_desc(const char *name_desc, const char *element)
 		return;
 
 	if (strlen(name_desc) < 4) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("%s '%s' is less than 4 characters, which may result in some unwanted matches.", element, name_desc);
 	}
 
 	if (strcmp(name_desc, "DP-1") == 0) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("%s '%s' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.", element, name_desc);
 	}
 }
@@ -640,7 +640,7 @@ static void remove_duplicate_user_scales(struct Cfg *cfg) {
 		const struct UserScale *user_scale = i->val;
 		const struct UserScale *dup = stable_put(by_name_desc, user_scale->name_desc, user_scale);
 		if (dup) {
-			log_warn("");
+			log_warn(NULL);
 			log_warn("Removing duplicate SCALE %s", dup->name_desc);
 			cfg_user_scale_free(dup);
 		}
@@ -658,7 +658,7 @@ static void remove_duplicate_user_modes(struct Cfg *cfg) {
 		const struct UserMode *mode = i->val;
 		const struct UserMode *dup = stable_put(by_name_desc, mode->name_desc, mode);
 		if (dup) {
-			log_warn("");
+			log_warn(NULL);
 			log_warn("Removing duplicate MODE %s", dup->name_desc);
 			cfg_user_mode_free(dup);
 		}
@@ -676,7 +676,7 @@ static void remove_duplicate_user_transforms(struct Cfg *cfg) {
 		const struct UserTransform *transform = i->val;
 		const struct UserTransform *dup = stable_put(by_name_desc, transform->name_desc, transform);
 		if (dup) {
-			log_warn("");
+			log_warn(NULL);
 			log_warn("Removing duplicate TRANSFORM %s", dup->name_desc);
 			cfg_user_transform_free(dup);
 		}
@@ -696,7 +696,7 @@ void validate_fix(struct Cfg *cfg) {
 	switch(arrange) {
 		case COL:
 			if (align != LEFT && align != MIDDLE && align != RIGHT) {
-				log_warn("");
+				log_warn(NULL);
 				log_warn("Ignoring invalid ALIGN %s for %s arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.", align_name(align), arrange_name(arrange));
 				cfg->align = LEFT;
 			}
@@ -704,7 +704,7 @@ void validate_fix(struct Cfg *cfg) {
 		case ROW:
 		default:
 			if (align != TOP && align != MIDDLE && align != BOTTOM) {
-				log_warn("");
+				log_warn(NULL);
 				log_warn("Ignoring invalid ALIGN %s for %s arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.", align_name(align), arrange_name(arrange));
 				cfg->align = TOP;
 			}
@@ -1058,7 +1058,7 @@ end:
 	free(yaml);
 
 	if (written) {
-		log_info("");
+		log_info(NULL);
 		log_info("Wrote configuration file: %s", cfg->file_path);
 	}
 }

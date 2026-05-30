@@ -84,7 +84,7 @@ void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root) {
 	struct SList *ipc_responses = NULL;
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
-		log_error("");
+		log_error(NULL);
 		log_error("%s: expected %s or %s, got %s", *c->prefix ? c->prefix : "", yaml_node_type_str(YAML_MAPPING_NODE), yaml_node_type_str(YAML_SEQUENCE_NODE), yaml_node_type_str(root->type));
 		goto err;
 	}

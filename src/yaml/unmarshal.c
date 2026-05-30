@@ -27,7 +27,7 @@ static void log_error_parser(const yaml_parser_t *parser, const char *prefix) {
 			err = sprintf_append(err, " (%s)", parser->context);
 	}
 
-	log_error("");
+	log_error(NULL);
 	log_error("%s", err);
 
 	free(err);
@@ -45,7 +45,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	FILE *input = fopen(path, "rb");
 	if (!input) {
-		log_error("");
+		log_error(NULL);
 		log_error("%s: inexistent", path);
 		return NULL;
 	}
@@ -53,7 +53,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	yaml_parser_t parser;
 
 	if (!yaml_parser_initialize(&parser)) {
-		log_error("");
+		log_error(NULL);
 		log_error("%s: yaml_parser_initialize failed", path);
 		fclose(input);
 		return NULL;
@@ -76,7 +76,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	void *out = NULL;
 
 	if (!(root = yaml_document_get_root_node(&c.d))) {
-		log_error("");
+		log_error(NULL);
 		log_error("%s: no root node", path);
 		goto end;
 	}
@@ -103,7 +103,7 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human)
 	yaml_parser_t parser;
 
 	if (!yaml_parser_initialize(&parser)) {
-		log_error("");
+		log_error(NULL);
 		log_error("%s: yaml_parser_initialize failed", human);
 		return NULL;
 	}
@@ -125,7 +125,7 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human)
 	void *out = NULL;
 
 	if (!(root = yaml_document_get_root_node(&c.d))) {
-		log_error("");
+		log_error(NULL);
 		log_error("%s: empty request", human);
 		log_error_yaml(yaml);
 		goto end;
