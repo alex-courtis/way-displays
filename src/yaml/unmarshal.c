@@ -41,8 +41,6 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 		return NULL;
 	}
 
-	void *out = NULL;
-
 	FILE *input = fopen(path, "rb");
 	if (!input) {
 		log_error("");
@@ -73,6 +71,8 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	const yaml_node_t *root;
 
+	void *out = NULL;
+
 	if (!(root = yaml_document_get_root_node(&c.d))) {
 		log_error("");
 		log_error("%s: no root node", path);
@@ -81,9 +81,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	yaml_unmarshal_log_ctx_top(&c, path);
 
-	void *unmarshalled = fn(&c, root);
-	if (unmarshalled)
-		out = unmarshalled;
+	out = fn(&c, root);
 
 end:
 	yaml_document_delete(&c.d);
@@ -91,6 +89,8 @@ end:
 	yaml_parser_delete(&parser);
 	fclose(input);
 
+	// false flag resulting from function pointer call
+	// cppcheck-suppress returnDanglingLifetime
 	return out;
 }
 
