@@ -13,6 +13,7 @@ clang
 -Wall
 -Wextra
 -Wimplicit-fallthrough
+-Wno-unused-parameter
 -Wno-format-zero-length
 
 %c -Wold-style-definition

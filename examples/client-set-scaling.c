@@ -12,7 +12,8 @@
 /*
  * Execute a CFG_SET scaling off and unpack the responses
  */
-int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
+int
+main(int argc, char **argv) {
 	char *yaml;
 	struct SList *responses = NULL;
 	struct IpcResponse *response = NULL;

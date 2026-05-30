@@ -209,7 +209,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	return cfg;
 }
 
-static struct IpcRequest *parse_list(int argc) {
+static struct IpcRequest *parse_list(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--list takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -222,7 +222,7 @@ static struct IpcRequest *parse_list(int argc) {
 	return request;
 }
 
-static struct IpcRequest *parse_get(int argc) {
+static struct IpcRequest *parse_get(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--get takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -235,7 +235,7 @@ static struct IpcRequest *parse_get(int argc) {
 	return request;
 }
 
-struct IpcRequest *parse_write(int argc) {
+struct IpcRequest *parse_write(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--write takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -424,10 +424,10 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				yaml = true;
 				break;
 			case 'l':
-				*ipc_request = parse_list(argc);
+				*ipc_request = parse_list(argc, argv);
 				break;
 			case 'g':
-				*ipc_request = parse_get(argc);
+				*ipc_request = parse_get(argc, argv);
 				break;
 			case 's':
 				*ipc_request = parse_set(argc, argv);
@@ -439,7 +439,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				*ipc_request = parse_toggle(argc, argv);
 				break;
 			case 'w':
-				*ipc_request = parse_write(argc);
+				*ipc_request = parse_write(argc, argv);
 				break;
 			case '?':
 			default:

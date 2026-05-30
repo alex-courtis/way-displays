@@ -11,7 +11,7 @@
 // Displ data
 
 static void head(void *data,
-		__attribute__((unused)) struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
+		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 
 	struct Displ *displ = data;
@@ -30,7 +30,7 @@ static void head(void *data,
 }
 
 static void done(void *data,
-		__attribute__((unused)) struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
+		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		uint32_t serial) {
 	struct Displ *displ = data;
 
@@ -38,7 +38,7 @@ static void done(void *data,
 }
 
 static void finished(void *data,
-		__attribute__((unused)) struct zwlr_output_manager_v1 *zwlr_output_manager_v1) {
+		struct zwlr_output_manager_v1 *zwlr_output_manager_v1) {
 	struct Displ *displ = data;
 
 	if (displ->zwlr_output_manager) {

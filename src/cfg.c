@@ -223,7 +223,7 @@ static bool cfg_disabled_equal(const void *a, const void *b) {
 	return slist_equal(lhs->conditions, rhs->conditions, condition_equal);
 }
 
-static bool invalid_user_scale(const void *a, __attribute__((unused)) const void *b) {
+static bool invalid_user_scale(const void *a, const void *b) {
 	if (!a) {
 		return true;
 	}
@@ -239,7 +239,7 @@ static bool invalid_user_scale(const void *a, __attribute__((unused)) const void
 	return false;
 }
 
-static bool invalid_user_mode(const void *a, __attribute__((unused)) const void *b) {
+static bool invalid_user_mode(const void *a, const void *b) {
 	if (!a) {
 		return true;
 	}

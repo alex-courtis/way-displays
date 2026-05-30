@@ -15,7 +15,7 @@ void usage(FILE *stream);
 // visible for testing
 //
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
-struct IpcRequest *parse_write(int argc);
+struct IpcRequest *parse_write(int argc, char **argv);
 struct IpcRequest *parse_set(int argc, char **argv);
 struct IpcRequest *parse_del(int argc, char **argv);
 struct IpcRequest *parse_toggle(int argc, char **argv);

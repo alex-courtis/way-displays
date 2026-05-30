@@ -13,7 +13,7 @@
 // Mode data
 
 static void size(void *data,
-		__attribute__((unused)) struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
+		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t width,
 		int32_t height) {
 	struct Mode *mode = data;
@@ -23,7 +23,7 @@ static void size(void *data,
 }
 
 static void refresh(void *data,
-		__attribute__((unused)) struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
+		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t refresh) {
 	struct Mode *mode = data;
 
@@ -31,7 +31,7 @@ static void refresh(void *data,
 }
 
 static void preferred(void *data,
-		__attribute__((unused)) struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
+		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Mode *mode = data;
 
 	// some heads may advertise multiple preferred modes; ignore subsequent

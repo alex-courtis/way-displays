@@ -12,7 +12,8 @@ const char *request_yaml = "OP: GET";
 /*
  * Execute a GET and print the raw output
  */
-int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
+int
+main(int argc, char **argv) {
 
 	// open a socket
 	int fd;

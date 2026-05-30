@@ -328,7 +328,7 @@ static void apply(void) {
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
 
-		displ->delta.human = delta_human_mode(head);
+		displ->delta.human = delta_human_mode(displ->state, head);
 
 	} else if ((head = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
 		log_debug("APPLY vrr");
@@ -341,7 +341,7 @@ static void apply(void) {
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
 
-		displ->delta.human = delta_human_adaptive_sync(head);
+		displ->delta.human = delta_human_adaptive_sync(displ->state, head);
 
 	} else {
 		log_debug("APPLY remainder");
@@ -364,7 +364,7 @@ static void apply(void) {
 			}
 		}
 
-		displ->delta.human = delta_human(heads_changing);
+		displ->delta.human = delta_human(displ->state, heads_changing);
 	}
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
