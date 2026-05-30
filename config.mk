@@ -14,7 +14,6 @@ WFLAGS = -pedantic \
 		 -Wextra \
 		 -Werror \
 		 -Wimplicit-fallthrough \
-		 -Wno-unused-parameter \
 		 -Wno-format-zero-length
 DFLAGS = -g
 MFLAGS = 

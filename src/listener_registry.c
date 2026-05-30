@@ -42,7 +42,7 @@ static void bind_zxdg_output_manager(struct Displ *displ,
 static void bind_wl_output(struct Displ *displ,
 		struct wl_registry *wl_registry,
 		uint32_t name,
-		const char *interface,
+		__attribute__((unused)) const char *interface,
 		uint32_t version) {
 
 	struct wl_output *wl_output = wl_registry_bind(wl_registry, name, &wl_output_interface, version);
@@ -70,7 +70,7 @@ static void global(void *data,
 }
 
 static void global_remove(void *data,
-		struct wl_registry *wl_registry,
+		__attribute__((unused)) struct wl_registry *wl_registry ,
 		uint32_t name) {
 	struct Displ *displ = data;
 

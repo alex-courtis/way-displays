@@ -220,7 +220,7 @@ bool yaml_map_populate_messages(struct MC *c, void *data, int mapping) {
 	}
 }
 
-bool yaml_map_populate_state(struct MC *c, const void *unused, int mapping) {
+bool yaml_map_populate_state(struct MC *c, __attribute__((unused)) const void *unused, int mapping) {
 	if (!mapping)
 		return false;
 

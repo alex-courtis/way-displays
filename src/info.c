@@ -541,7 +541,7 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	print_mode(t, mode);
 }
 
-char *delta_human(const enum DisplState state, const struct SList * const heads) {
+char *delta_human(const struct SList * const heads) {
 	if (!heads) {
 		return NULL;
 	}
@@ -600,7 +600,7 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 	return delta;
 }
 
-char *delta_human_mode(const enum DisplState state, const struct Head * const head) {
+char *delta_human_mode(const struct Head * const head) {
 	if (!head) {
 		return NULL;
 	}
@@ -635,7 +635,7 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 }
 
 
-char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head) {
+char *delta_human_adaptive_sync(const struct Head * const head) {
 	if (!head) {
 		return NULL;
 	}

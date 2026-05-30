@@ -10,8 +10,7 @@
 /*
  * Check environment and locate the server socket and pid
  */
-int
-main(int argc, char **argv) {
+int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
 
 	if (!getenv("WAYLAND_DISPLAY")) {
 		fprintf(stderr, "environment variable $WAYLAND_DISPLAY missing\n");

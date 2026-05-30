@@ -13,7 +13,7 @@
 // Head data
 
 static void name(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *name) {
 	struct Head *head = data;
 
@@ -21,7 +21,7 @@ static void name(void *data,
 }
 
 static void description(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *description) {
 	struct Head *head = data;
 
@@ -29,7 +29,7 @@ static void description(void *data,
 }
 
 static void physical_size(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		int32_t width,
 		int32_t height) {
 	struct Head *head = data;
@@ -39,7 +39,7 @@ static void physical_size(void *data,
 }
 
 static void mode(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
@@ -53,7 +53,7 @@ static void mode(void *data,
 }
 
 static void enabled(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		int32_t enabled) {
 	struct Head *head = data;
 
@@ -61,7 +61,7 @@ static void enabled(void *data,
 }
 
 static void current_mode(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
@@ -76,7 +76,7 @@ static void current_mode(void *data,
 }
 
 static void position(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		int32_t x,
 		int32_t y) {
 	struct Head *head = data;
@@ -86,7 +86,7 @@ static void position(void *data,
 }
 
 static void transform(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		int32_t transform) {
 	struct Head *head = data;
 
@@ -94,7 +94,7 @@ static void transform(void *data,
 }
 
 static void scale(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		wl_fixed_t scale) {
 	struct Head *head = data;
 
@@ -102,7 +102,7 @@ static void scale(void *data,
 }
 
 static void make(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *make) {
 	struct Head *head = data;
 
@@ -110,7 +110,7 @@ static void make(void *data,
 }
 
 static void model(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *model) {
 	struct Head *head = data;
 
@@ -118,7 +118,7 @@ static void model(void *data,
 }
 
 static void serial_number(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *serial_number) {
 	struct Head *head = data;
 
@@ -126,7 +126,7 @@ static void serial_number(void *data,
 }
 
 static void adaptive_sync(void *data,
-		struct zwlr_output_head_v1 *zwlr_output_head_v1,
+		__attribute__((unused)) struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		uint32_t state) {
 	struct Head *head = data;
 
