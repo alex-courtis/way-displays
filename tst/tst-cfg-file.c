@@ -22,7 +22,7 @@
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 
-char *__wrap_yaml_marshal(const void *data, yaml_marshal_fn fn, const char *human) {
+char *__wrap_yaml_marshal(const void *data, yaml_doc_fn fn, const char *human) {
 	check_expected_ptr(data);
 	check_expected_ptr(human);
 

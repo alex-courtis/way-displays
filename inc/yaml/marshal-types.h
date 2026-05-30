@@ -11,7 +11,7 @@
  * Returns true and does nothing when NULL data
  */
 
-// yaml_marshal_fn: create the document's contents
+// yaml_doc_fn: create the document's contents
 bool yaml_doc_cfg          (struct MC *c, const void *cfg);
 bool yaml_doc_ipc_operation(struct MC *c, const void *ipc_operation);
 bool yaml_doc_ipc_request  (struct MC *c, const void *ipc_request);

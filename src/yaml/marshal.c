@@ -61,7 +61,7 @@ end:
 	return yaml;
 }
 
-char *yaml_marshal(const void *data, yaml_marshal_fn fn, const char *human) {
+char *yaml_marshal(const void *data, yaml_doc_fn fn, const char *human) {
 	if (!data)
 		return NULL;
 

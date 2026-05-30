@@ -13,7 +13,7 @@
  * Returns false on failure to add to the document
  */
 
-// yaml_map_populate_fn: add a scalar pair to an existing maping node
+// add a scalar pair to an existing maping node
 bool yaml_map_add_str  (struct MC *c, const char *key, const char *str,   int mapping); // returns true and does nothing on NULL
 bool yaml_map_add_int  (struct MC *c, const char *key, const int32_t val, int mapping);
 bool yaml_map_add_float(struct MC *c, const char *key, const float val,   int mapping); // returns true and does nothing on 0
