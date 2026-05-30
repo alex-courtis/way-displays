@@ -67,7 +67,7 @@ char *yaml_marshal(const void *data, yaml_doc_fn fn, const char *human) {
 
 	char *yaml = NULL;
 
-	struct MC c;
+	struct MC c = { 0 };
 
 	if (!yaml_document_initialize(&c.d, NULL, NULL, NULL, 1, 1)) {
 		log_error("unable to marshal %s: yaml_document_initialize failed", human);
