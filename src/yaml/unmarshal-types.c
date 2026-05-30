@@ -18,6 +18,7 @@
 #include "slist.h"
 #include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
+#include "yaml/unmarshal.h"
 #include "yaml/unmarshal-primitives.h"
 
 void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {

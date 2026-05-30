@@ -1,4 +1,5 @@
 #include <regex.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +7,7 @@
 
 #include "yaml/unmarshal.h"
 
+#include "convert.h"
 #include "log.h"
 
 static void log_error_parser(const yaml_parser_t *parser, const char *prefix) {

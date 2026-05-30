@@ -1,6 +1,7 @@
 #ifndef YAML_UNMARSHAL_H
 #define YAML_UNMARSHAL_H
 
+#include <stdbool.h>
 #include <yaml.h>
 
 #include "convert.h"

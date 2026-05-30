@@ -493,7 +493,7 @@ void delta_human_mode__to_no(void **state) {
 
 	s->head1->desired.mode = NULL;
 
-	char *deltas = delta_human_mode(SUCCEEDED, s->head1);
+	char *deltas = delta_human_mode(s->head1);
 
 	assert_str_equal(deltas, ""
 			"description1\n"
@@ -512,7 +512,7 @@ void delta_human_mode__from_no(void **state) {
 
 	s->head2->current.mode = NULL;
 
-	char *deltas = delta_human_mode(SUCCEEDED, s->head2);
+	char *deltas = delta_human_mode(s->head2);
 
 	assert_str_equal(deltas, ""
 			"name2\n"
@@ -532,7 +532,7 @@ void delta_human_adaptive_sync__on(void **state) {
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
-	char *deltas = delta_human_adaptive_sync(SUCCEEDED, s->head1);
+	char *deltas = delta_human_adaptive_sync(s->head1);
 
 	assert_str_equal(deltas, ""
 			"description1\n"
@@ -552,7 +552,7 @@ void delta_human_adaptive_sync__off(void **state) {
 	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	char *deltas = delta_human_adaptive_sync(SUCCEEDED, s->head2);
+	char *deltas = delta_human_adaptive_sync(s->head2);
 
 	assert_str_equal(deltas, ""
 			"name2\n"
@@ -569,7 +569,7 @@ void delta_human_adaptive_sync__off(void **state) {
 void delta_human__all(void **state) {
 	struct State *s = *state;
 
-	char *deltas = delta_human(SUCCEEDED, s->heads);
+	char *deltas = delta_human(s->heads);
 
 	assert_str_equal(deltas, ""
 			"description1\n"
@@ -598,7 +598,7 @@ void delta_human__enabled(void **state) {
 	s->head2->current.enabled = false;
 	s->head2->desired.enabled = true;
 
-	char *deltas = delta_human(SUCCEEDED, s->heads);
+	char *deltas = delta_human(s->heads);
 
 	assert_str_equal(deltas, ""
 			"description1\n  enabled\n"
@@ -621,7 +621,7 @@ void delta_human__disabled(void **state) {
 	s->head2->current.enabled = true;
 	s->head2->desired.enabled = false;
 
-	char *deltas = delta_human(SUCCEEDED, s->heads);
+	char *deltas = delta_human(s->heads);
 
 	assert_str_equal(deltas, ""
 			"description1\n  disabled\n"
