@@ -9,6 +9,10 @@ DISABLED:
           - TWO
       - UNPLUGGED:
           - THREE
+  - NAME_DESC: twelve
+    IF:
+      - PLUGGED:
+          - FOUR
   - '!(disabled1'
   - NAME_DESC: '!(disabled2'
   - NAME_DESC: BAD_DISABLED_IFS
@@ -34,6 +38,13 @@ DISABLED:
           FOO: bar
       - UNPLUGGED:
           FOO: bar
+  - NAME_DESC: MISTYPED_LID_MAP
+    IF:
+      - LID:
+        -
+  - NAME_DESC: NO_VALID_CONDITIONS
+    IF:
+      - FOO: bar
   - -
     -
 

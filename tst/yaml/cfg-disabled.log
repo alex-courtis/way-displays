@@ -9,6 +9,7 @@ Ignoring invalid DISABLED MISTYPED_UN_PLUGGED_SCALAR PLUGGED expected sequence, 
 Ignoring invalid DISABLED MISTYPED_UN_PLUGGED_SCALAR UNPLUGGED expected sequence, got scalar
 Ignoring invalid DISABLED MISTYPED_UN_PLUGGED_MAP PLUGGED expected sequence, got map
 Ignoring invalid DISABLED MISTYPED_UN_PLUGGED_MAP UNPLUGGED expected sequence, got map
+Ignoring invalid DISABLED MISTYPED_LID_MAP LID expected scalar, got sequence, valid values: OPEN|CLOSED|NOT_PRESENT
 Ignoring invalid DISABLED expected scalar or map, got sequence
 DISABLED: Ignoring missing NAME_DESC
 

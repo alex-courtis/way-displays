@@ -25,4 +25,5 @@ Ignoring invalid DISABLED regex '(disabled1':  Unmatched ( or \(
 Ignoring invalid DISABLED regex '(disabled2':  Unmatched ( or \(
 Ignoring invalid DISABLED regex '(plugged1':  Unmatched ( or \(
 Ignoring invalid DISABLED regex '(unplugged1':  Unmatched ( or \(
+Ignoring invalid DISABLED BAD_DISABLED_IFS LID BAD_DISABLED_LID, valid values: OPEN|CLOSED|NOT_PRESENT
 

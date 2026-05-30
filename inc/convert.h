@@ -4,6 +4,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "conditions.h"
 #include "displ.h"
 #include "ipc.h"
 #include "log.h"
@@ -52,6 +53,10 @@ char *log_threshold_names(void);
 
 enum DisplState displ_state_val(const char *name);
 const char *displ_state_name(enum DisplState displ_state);
+
+enum ConditionLid condition_lid_val(const char *name);
+const char *condition_lid_name(enum ConditionLid condition_lid);
+char *condition_lid_names(void);
 
 enum ScaleRoundStrategy scale_round_strategy_val(const char *name);
 const char *scale_round_strategy_name(enum ScaleRoundStrategy scale_round_strategy);

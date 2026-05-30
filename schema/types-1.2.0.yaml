@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
 
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.1.0.yaml
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/types-1.2.0.yaml
 
 title: way-displays types
 description: |-
@@ -17,6 +17,7 @@ $defs:
       - Case insensitive mach of name or description e.g. 'ROG PG27AQ'
 
   condition:
+    type: object
     properties:
       PLUGGED:
         type: array
@@ -30,6 +31,13 @@ $defs:
           $ref: '#/$defs/fuzzy_display_match'
         description: |-
           Subcondition. Evaluates to true if all specified displays are currently unplugged.
+      LID:
+        enum:
+          - CLOSED
+          - OPEN
+          - NOT_PRESENT
+        description: |-
+          Subcondition. Evaluates to true if lid is open, closed or no lid.
     description: |-
       Dynamically evaluated condition.
       Evaluates to true if all its subconditions are also true.
@@ -39,6 +47,7 @@ $defs:
     type: array
     items:
       $ref: '#/$defs/condition'
+    minItems: 1
     description: |-
       A list of conditions. Evaluates to true if at least one of the conditions is true.
 
@@ -69,9 +78,12 @@ $defs:
             $ref: '#/$defs/fuzzy_display_match'
           IF:
             $ref: '#/$defs/condition_list'
+        required:
+          - NAME_DESC
         additionalProperties: false
 
   mode:
+    type: object
     properties:
       NAME_DESC:
         $ref: '#/$defs/fuzzy_display_match'
@@ -91,22 +103,30 @@ $defs:
         type: boolean
         description: |-
           Use the highest available mode.
+    required:
+      - NAME_DESC
+    minProperties: 2
     additionalProperties: false
 
   scale:
+    type: object
     properties:
       NAME_DESC:
-        $ref: 'types-1.1.0.yaml#/$defs/fuzzy_display_match'
+        $ref: 'types-1.2.0.yaml#/$defs/fuzzy_display_match'
       SCALE:
         type: number
         description: |-
           Scale: float.
+    required:
+      - NAME_DESC
+      - SCALE
     additionalProperties: false
 
   transform:
+    type: object
     properties:
       NAME_DESC:
-        $ref: 'types-1.1.0.yaml#/$defs/fuzzy_display_match'
+        $ref: 'types-1.2.0.yaml#/$defs/fuzzy_display_match'
       TRANSFORM:
         enum:
           - 90
@@ -116,6 +136,9 @@ $defs:
           - FLIPPED-90
           - FLIPPED-180
           - FLIPPED-270
+    required:
+      - NAME_DESC
+      - TRANSFORM
     additionalProperties: false
 
   log_threshold:
