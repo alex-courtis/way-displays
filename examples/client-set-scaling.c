@@ -43,7 +43,6 @@ main(int argc, char **argv) {
 			status.done = true;
 			status.rc = IPC_RC_BAD_RESPONSE;
 		}
-		log_info("================================");
 
 		// parse one to many responses
 		for (struct SList *i = responses; i; i = i->nex) {
@@ -74,6 +73,8 @@ main(int argc, char **argv) {
 		slist_free_vals(&responses, ipc_response_free);
 		free(yaml);
 	}
+
+	log_info("--------------------------------");
 
 	ipc_request_free(request);
 

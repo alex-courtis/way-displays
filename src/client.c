@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +64,10 @@ int client(struct IpcRequest *ipc_request) {
 
 	int rc = EXIT_SUCCESS;
 
-	if (pid_active_server() == 0) {
+	char pid_path[PATH_MAX];
+	pid_path_generate(pid_path);
+
+	if (pid_active_server(pid_path) == 0) {
 		log_fatal("way-displays not running, check $XDG_VTNR");
 		rc = EXIT_FAILURE;
 		goto end;

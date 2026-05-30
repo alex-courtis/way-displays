@@ -117,7 +117,7 @@ static char *discover_lid_device(struct libinput *libinput) {
 				libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_SWITCH) &&
 				(libinput_device_switch_has_switch(device, LIBINPUT_SWITCH_LID) == 1)) {
 			device_path = calloc(PATH_MAX, sizeof(char));
-			snprintf(device_path, PATH_MAX, "/dev/input/%s", libinput_device_get_sysname(device));
+			snprintf(device_path, PATH_MAX - 1, "/dev/input/%s", libinput_device_get_sysname(device));
 		}
 
 		libinput_event_destroy(event);

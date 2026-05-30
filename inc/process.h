@@ -5,9 +5,9 @@
 
 #include "stable.h"
 
-char *pid_path(void);
+void pid_path_generate(char *pid_path);
 
-pid_t pid_active_server(void);
+pid_t pid_active_server(const char *pid_path);
 
 void pid_file_create(void);
 

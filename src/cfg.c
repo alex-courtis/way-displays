@@ -991,11 +991,11 @@ void cfg_file_paths_init(const char *user_path) {
 
 	if (getenv("XDG_CONFIG_HOME") != NULL) {
 		// maybe XDG_CONFIG_HOME
-		snprintf(path, PATH_MAX, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
+		snprintf(path, PATH_MAX - 1, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
 		slist_append(&cfg_file_paths, strdup(path));
 	} else if (getenv("HOME") != NULL) {
 		// ~/.config
-		snprintf(path, PATH_MAX, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
+		snprintf(path, PATH_MAX - 1, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
 		slist_append(&cfg_file_paths, strdup(path));
 	}
 
