@@ -9,7 +9,7 @@
 #include "log.h"
 
 static void log_error_parser(const yaml_parser_t *parser, const char *prefix) {
-	char *err = sprintf_alloc("parsing %s", prefix);
+	char *err = strdup(prefix);
 
 	if (parser && parser->problem) {
 
@@ -46,7 +46,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	FILE *input = fopen(path, "rb");
 	if (!input) {
 		log_error("");
-		log_error("parsing %s: inexistent", path);
+		log_error("%s: inexistent", path);
 		return NULL;
 	}
 
@@ -54,7 +54,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	if (!yaml_parser_initialize(&parser)) {
 		log_error("");
-		log_error("parsing %s: yaml_parser_initialize failed", path);
+		log_error("%s: yaml_parser_initialize failed", path);
 		fclose(input);
 		return NULL;
 	}
@@ -75,7 +75,7 @@ void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 
 	if (!(root = yaml_document_get_root_node(&c.d))) {
 		log_error("");
-		log_error("parsing %s: no root node", path);
+		log_error("%s: no root node", path);
 		goto end;
 	}
 
@@ -102,14 +102,14 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human)
 
 	if (!yaml_parser_initialize(&parser)) {
 		log_error("");
-		log_error("parsing %s: yaml_parser_initialize failed", human);
+		log_error("%s: yaml_parser_initialize failed", human);
 		return NULL;
 	}
 
 	yaml_parser_set_input_string(&parser, (yaml_char_t*)yaml, strlen(yaml));
 
 	struct UC c = { 0 };
-	snprintf(c.prefix, sizeof(c.prefix), "parsing %s", human);
+	yaml_unmarshal_log_prefix(&c, human);
 
 	if (!yaml_parser_load(&parser, &c.d)) {
 		log_error_parser(&parser, human);
@@ -124,7 +124,7 @@ void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human)
 
 	if (!(root = yaml_document_get_root_node(&c.d))) {
 		log_error("");
-		log_error("parsing %s: empty request", human);
+		log_error("%s: empty request", human);
 		log_error_yaml(yaml);
 		goto end;
 	}
@@ -169,7 +169,7 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 	char *msg = NULL;
 
 	if (*c->prefix)
-		msg = sprintf_append(msg, "\n%s:", c->prefix);
+		msg = sprintf_append(msg, "%s:", c->prefix);
 	else
 		msg = sprintf_append(msg, "Ignoring");
 
@@ -204,7 +204,7 @@ static void yaml_log_misssing(struct UC *c) {
 	char *msg = NULL;
 
 	if (*c->prefix)
-		msg = sprintf_append(msg, "\n%s: missing %s", c->prefix, c->top);
+		msg = sprintf_append(msg, "%s: missing %s", c->prefix, c->top);
 	else
 		msg = sprintf_append(msg, "%s: Ignoring missing", c->top);
 
@@ -252,7 +252,11 @@ bool yaml_valid_regex(struct UC *c, const void *pattern) {
 		if (result) {
 			char err[1024];
 			regerror(result, &regex, err, 1024);
-			log_warn("Ignoring invalid %s regex '%s':  %s", *c->top ? c->top : "", p + 1, err);
+
+			char *msg = sprintf_alloc("regex '%s': %s", p + 1, err);
+			yaml_unmarshal_log_invalid_value(c, (yaml_char_t*)msg);
+			free(msg);
+
 			rc = false;
 		}
 		regfree(&regex);

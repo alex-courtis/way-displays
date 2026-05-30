@@ -73,7 +73,7 @@ static void yaml_root_to_cfg__empty(void **state) {
 
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing tst/yaml/cfg-empty.yaml: no root node\n");
+	assert_log(ERROR, "\ntst/yaml/cfg-empty.yaml: no root node\n");
 
 	assert_logs_empty();
 }
@@ -81,7 +81,7 @@ static void yaml_root_to_cfg__empty(void **state) {
 static void yaml_root_to_cfg__missing(void **state) {
 	assert_nul(yaml_unmarshal_file("foo/bar/baz.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing foo/bar/baz.yaml: inexistent\n");
+	assert_log(ERROR, "\nfoo/bar/baz.yaml: inexistent\n");
 
 	assert_logs_empty();
 }
@@ -202,7 +202,7 @@ static void yaml_root_to_ipc_request__empty(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR, "\n"
-			"parsing ipc request: empty request\n"
+			"ipc request: empty request\n"
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
@@ -216,8 +216,8 @@ static void yaml_root_to_ipc_request__mistyped_root(void **state) {
 
 	assert_nul(actual);
 
-	assert_log(ERROR, "\n"
-			"parsing ipc request: expected map, got sequence\n"
+	assert_log(ERROR,
+			"ipc request: expected map, got sequence\n"
 			"========================================\n"
 			"- FOO\n"
 			"----------------------------------------\n");
@@ -231,8 +231,8 @@ static void yaml_root_to_ipc_request__invalid_op(void **state) {
 
 	assert_nul(actual);
 
-	assert_log(ERROR, "\n"
-			"parsing ipc request: invalid OP aoeu, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+	assert_log(ERROR,
+			"ipc request: invalid OP aoeu, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP: aoeu\n"
 			"----------------------------------------\n");
@@ -246,8 +246,8 @@ static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 
 	assert_nul(actual);
 
-	assert_log(ERROR, "\n"
-			"parsing ipc request: invalid OP expected scalar, got map, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+	assert_log(ERROR,
+			"ipc request: invalid OP expected scalar, got map, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP:\n"
 			"  FOO: BAR\n"
@@ -263,8 +263,8 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 	assert_nul(actual);
 
-	assert_log(ERROR, "\n"
-			"parsing ipc request: missing OP\n"
+	assert_log(ERROR,
+			"ipc request: missing OP\n"
 			"========================================\n"
 			"FOO: BAR\n"
 			"----------------------------------------\n");
@@ -285,7 +285,7 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 
 	assert_cfg_equal(actual->cfg, expected);
 
-	char *expected_log = read_file("tst/yaml/cfg-invalid.log");
+	char *expected_log = read_file("tst/yaml/ipc-request-cfg-invalid.log");
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
@@ -319,7 +319,7 @@ static void yaml_root_to_ipc_response_list__empty(void **state) {
 	assert_nul(yaml_unmarshal_str("", yaml_root_to_ipc_response_list, "ipc response"));
 
 	assert_log(ERROR, "\n"
-			"parsing ipc response: empty request\n"
+			"ipc response: empty request\n"
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
@@ -330,7 +330,7 @@ static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
 	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_list, "ipc response"));
 
 	assert_log(ERROR, "\n"
-			"parsing ipc response: expected map or sequence, got scalar\n"
+			"ipc response: expected map or sequence, got scalar\n"
 			"========================================\n"
 			"foo\n"
 			"----------------------------------------\n");
@@ -340,8 +340,8 @@ static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
 static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
 	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_list, "ipc response"));
 
-	assert_log(ERROR, "\n"
-			"parsing ipc response: expected map, got scalar\n"
+	assert_log(ERROR,
+			"ipc response: expected map, got scalar\n"
 			"========================================\n"
 			"-\n"
 			"----------------------------------------\n");
@@ -353,8 +353,8 @@ static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
 
 	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_list, "ipc response"));
 
-	assert_log(ERROR, "\n"
-			"parsing ipc response: missing DONE\n"
+	assert_log(ERROR,
+			"ipc response: missing DONE\n"
 			"========================================\n"
 			"- FOO: BAR\n"
 			"----------------------------------------\n");
@@ -368,8 +368,8 @@ static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
 
 	assert_nul(actual);
 
-	assert_log(ERROR, "\n"
-			"parsing ipc response: missing RC\n"
+	assert_log(ERROR,
+			"ipc response: missing RC\n"
 			"========================================\n"
 			"- DONE: TRUE\n"
 			"----------------------------------------\n");
@@ -565,7 +565,7 @@ static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
 
 	assert_nul(yaml_unmarshal_str("", yaml_root_to_cfg, "foo"));
 
-	assert_log(ERROR, "\nparsing foo: yaml_parser_initialize failed\n");
+	assert_log(ERROR, "\nfoo: yaml_parser_initialize failed\n");
 	assert_logs_empty();
 }
 
@@ -583,7 +583,7 @@ static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
 	assert_nul(yaml_unmarshal_str(yaml, yaml_root_to_cfg, "foo"));
 
 	char *err = sprintf_alloc(
-			"\nparsing foo line 3 column 2: did not find expected key (while parsing a block mapping)\n"
+			"\nfoo line 3 column 2: did not find expected key (while parsing a block mapping)\n"
 			"========================================\n"
 			"%s\n"
 			"----------------------------------------\n",
@@ -600,7 +600,7 @@ static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
 
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing tst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
+	assert_log(ERROR, "\ntst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
 	assert_logs_empty();
 }
 
@@ -610,7 +610,7 @@ static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
 	// line error only
 	assert_nul(yaml_unmarshal_file("tst/yaml/CQ3W.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\nparsing tst/yaml/CQ3W.yaml line 2: found unexpected end of stream (while scanning a quoted scalar)\n");
+	assert_log(ERROR, "\ntst/yaml/CQ3W.yaml line 2: found unexpected end of stream (while scanning a quoted scalar)\n");
 	assert_logs_empty();
 }
 

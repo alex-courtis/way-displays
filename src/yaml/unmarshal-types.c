@@ -53,8 +53,6 @@ void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {
 
 	// log warnings for remainder
 	c->t = WARNING;
-	// TODO sort out prefixes once and for all
-	yaml_unmarshal_log_prefix(c, NULL);
 
 	yaml_unmarshal_log_ctx_top(c, "LOG_THRESHOLD");
 	const yaml_node_t *log_threshold = stable_get(table, "LOG_THRESHOLD");
@@ -86,7 +84,7 @@ void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root) {
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
 		log_error("");
-		log_error("parsing ipc response: expected %s or %s, got %s", yaml_node_type_str(YAML_MAPPING_NODE), yaml_node_type_str(YAML_SEQUENCE_NODE), yaml_node_type_str(root->type));
+		log_error("%s: expected %s or %s, got %s", *c->prefix ? c->prefix : "", yaml_node_type_str(YAML_MAPPING_NODE), yaml_node_type_str(YAML_SEQUENCE_NODE), yaml_node_type_str(root->type));
 		goto err;
 	}
 
