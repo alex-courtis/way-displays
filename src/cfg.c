@@ -24,6 +24,9 @@
 #include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
 
+// one-shot singleton set via cfg_file_paths_init
+struct SList *cfg_file_paths = NULL;
+
 static enum OnOff on_off_invert(enum OnOff val) {
 	return (val == ON) ? OFF : ON;
 }

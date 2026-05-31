@@ -19,6 +19,8 @@
 
 #include "cfg.h"
 
+extern struct SList *cfg_file_paths;
+
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 

@@ -15,6 +15,8 @@
 #include "log.h"
 #include "slist.h"
 
+extern struct SList *cfg_file_paths;
+
 struct State {
 	struct Cfg *from;
 	struct Cfg *to;
