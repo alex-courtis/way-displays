@@ -222,9 +222,8 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	struct UserScale *user_scale;
 	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
-		user_scale = (struct UserScale*)i->val;
+		struct UserScale *user_scale = (struct UserScale*)i->val;
 		if (head_matches_name_desc(head, user_scale->name_desc)) {
 			head->desired.scale = head_get_fixed_scale(user_scale->scale);
 			return;

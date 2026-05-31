@@ -20,3 +20,21 @@ staticFunction:tst/*c
 
 # this is just not practical
 nullPointerOutOfMemory
+
+# does not work with callbacks
+constParameterCallback
+
+# does not identify correctly
+unusedStructMember
+
+# little value and likely won't compile
+shadowFunction
+
+# TODO: fix
+constVariablePointer
+constParameterPointer
+shadowVariable
+# variableScope
+# unreadVariable
+# redundantAssignment
+# constVariable

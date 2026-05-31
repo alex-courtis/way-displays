@@ -170,9 +170,8 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->user_scales) {
 		log_(t, "  Scale:");
-		struct UserScale *user_scale;
 		for (i = cfg->user_scales; i; i = i->nex) {
-			user_scale = (struct UserScale*)i->val;
+			struct UserScale *user_scale = (struct UserScale*)i->val;
 			if (del) {
 				log_(t, "    %s", user_scale->name_desc);
 			} else {
@@ -183,9 +182,8 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->user_modes) {
 		log_(t, "  Mode:");
-		struct UserMode *user_mode;
 		for (i = cfg->user_modes; i; i = i->nex) {
-			user_mode = (struct UserMode*)i->val;
+			struct UserMode *user_mode = (struct UserMode*)i->val;
 			print_user_mode(t, user_mode, del);
 		}
 	}

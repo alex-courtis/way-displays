@@ -27,11 +27,10 @@ struct SList *slist_shallow_clone(struct SList *head) {
 }
 
 void slist_free(struct SList **head) {
-	struct SList *i, *f;
-
-	i = *head;
+	// TODO fix upstream
+	struct SList *i = *head;
 	while (i) {
-		f = i;
+		struct SList *f = i;
 		i = i->nex;
 		free(f);
 	}
@@ -73,7 +72,8 @@ void *slist_remove(struct SList **head, struct SList **item) {
 	struct SList *i, *f, *p;
 	void *removed = NULL;
 
-	i = *head;
+	// TODO fix upstream
+	// i = *head;
 	p = NULL;
 	f = NULL;
 
@@ -251,12 +251,10 @@ struct SList *slist_sort(struct SList *head, fn_less_than less_than) {
 
 	struct SList *sorting = slist_shallow_clone(head);
 
-	struct SList *sorting_head  = sorting;
-	struct SList **sorted_trail = &sorted;
-
 	while (sorting != NULL) {
-		sorting_head = sorting;
-		sorted_trail = &sorted;
+		// TODO fix upstream
+		struct SList *sorting_head = sorting;
+		struct SList **sorted_trail = &sorted;
 
 		sorting = sorting->nex;
 

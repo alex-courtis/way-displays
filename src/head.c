@@ -97,7 +97,6 @@ bool head_matches_name_desc_regex(const void * const h, const void * const n) {
 
 	regex_t regex;
 	int result;
-	char error_msg[100];
 
 	result = regcomp(&regex, regex_pattern, REG_EXTENDED);
 	if (result) {
@@ -113,6 +112,7 @@ bool head_matches_name_desc_regex(const void * const h, const void * const n) {
 		result = regexec(&regex, head->description, 0, NULL, 0);
 	}
 	if (result && result != REG_NOMATCH) {
+		char error_msg[100];
 		regerror(result, &regex, error_msg, sizeof(error_msg));
 		log_debug("Regex match failed: %s\n", error_msg);
 	}

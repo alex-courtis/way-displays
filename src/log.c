@@ -71,7 +71,6 @@ static void capture_line(enum LogThreshold threshold, char *l) {
 }
 
 static void print_line(const enum LogThreshold threshold, const char *l) {
-	static char buf_time[16];
 
 	if (threshold < active.threshold || active.suppressing)
 		return;
@@ -90,6 +89,8 @@ static void print_line(const enum LogThreshold threshold, const char *l) {
 
 	// maybe one char threshold and time
 	if (active.prefix) {
+
+		static char buf_time[16];
 
 		time_t t = time(NULL);
 
