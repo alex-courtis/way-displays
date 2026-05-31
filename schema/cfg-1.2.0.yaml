@@ -64,8 +64,9 @@ properties:
   AUTO_SCALE_DPI:
     type: integer
     description: |-
-      DPI for auto scaling.
+      DPI for auto scaling, minimum 8.
     default: 96
+    minimum: 8
 
   AUTO_SCALE_MIN:
     type: number

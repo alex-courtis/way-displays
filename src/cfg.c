@@ -724,7 +724,7 @@ void validate_fix(struct Cfg *cfg) {
 
 	if (cfg->auto_scale_dpi <= 0) {
 		log_warn(NULL);
-		log_warn("Ignoring non-positive AUTO_SCALE_DPI %d. Using default %d.", cfg->auto_scale_dpi, AUTO_SCALE_DPI_DEFAULT);
+		log_warn("Ignoring AUTO_SCALE_DPI %d < %d. Using default %d.", cfg->auto_scale_dpi, AUTO_SCALE_DPI_MIN, AUTO_SCALE_DPI_DEFAULT);
 		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
 	}
 

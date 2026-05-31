@@ -610,7 +610,7 @@ void validate_fix__auto_scale_dpi(void **state) {
 
 	validate_fix(s->from);
 
-	assert_log(WARNING, "\nIgnoring non-positive AUTO_SCALE_DPI -1. Using default 96.\n");
+	assert_log(WARNING, "\nIgnoring AUTO_SCALE_DPI -1 < 8. Using default 96.\n");
 	assert_logs_empty();
 
 	assert_cfg_equal(s->from, s->expected);

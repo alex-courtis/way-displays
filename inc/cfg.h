@@ -12,6 +12,7 @@
 extern struct Cfg *g_cfg;
 
 #define AUTO_SCALE_DPI_DEFAULT 96
+#define AUTO_SCALE_DPI_MIN SCALE_ROUND_TO_DEFAULT
 
 #define AUTO_SCALE_MIN_DEFAULT 1.0f
 
