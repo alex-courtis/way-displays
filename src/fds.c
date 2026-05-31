@@ -15,7 +15,6 @@
 #include "displ.h"
 #include "lid.h"
 #include "log.h"
-#include "global.h"
 #include "process.h"
 #include "sockets.h"
 
@@ -48,15 +47,15 @@ static int create_fd_signal(void) {
 }
 
 void fd_wd_cfg_dir_create(void) {
-	if (!cfg->dir_path)
+	if (!g_cfg->dir_path)
 		return;
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
-	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE)) == -1) {
+	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, g_cfg->dir_path, IN_CLOSE_WRITE)) == -1) {
 		close(fd_cfg_dir);
 		fd_cfg_dir = -1;
 		log_fatal(NULL);
-		log_fatal_errno("unable to create config directory watch for %s, exiting", cfg->dir_path);
+		log_fatal_errno("unable to create config directory watch for %s, exiting", g_cfg->dir_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
@@ -97,7 +96,7 @@ void pfds_init(void) {
 
 	// wayland and signal are always present, others are optional
 	npfds = 2;
-	if (lid)
+	if (g_lid)
 		npfds++;
 	if (fd_socket_server != -1)
 		npfds++;
@@ -111,7 +110,7 @@ void pfds_init(void) {
 	pfd_signal->events = POLLIN;
 
 	pfd_wayland = &pfds[i++];
-	pfd_wayland->fd = wl_display_get_fd(displ->display);
+	pfd_wayland->fd = wl_display_get_fd(g_displ->display);
 	pfd_wayland->events = POLLIN;
 
 	if (fd_socket_server != -1) {
@@ -120,9 +119,9 @@ void pfds_init(void) {
 		pfd_ipc->events = POLLIN;
 	}
 
-	if (lid) {
+	if (g_lid) {
 		pfd_lid = &pfds[i++];
-		pfd_lid->fd = lid->libinput_fd;
+		pfd_lid->fd = g_lid->libinput_fd;
 		pfd_lid->events = POLLIN;
 	}
 
@@ -150,7 +149,7 @@ void pfds_destroy(void) {
 }
 
 // see man 7 inotify
-bool fd_cfg_dir_modified(char *file_name) {
+bool fd_cfg_dir_modified(const char *file_name) {
 	if (!file_name) {
 		return false;
 	}

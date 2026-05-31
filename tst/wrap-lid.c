@@ -4,6 +4,8 @@
 
 #include "lid.h"
 
+struct Lid *g_lid = NULL;
+
 void __wrap_lid_init(void) {
 	function_called();
 }

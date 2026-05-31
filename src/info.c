@@ -9,7 +9,6 @@
 
 #include "cfg.h"
 #include "convert.h"
-#include "global.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"
@@ -84,7 +83,7 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 
 	if (head->modes_failed) {
 		log_(t, "  failed:");
-		for (struct SList *i = head->modes_failed; i; i = i->nex) {
+		for (const struct SList *i = head->modes_failed; i; i = i->nex) {
 			print_mode(t, i->val);
 		}
 	}
@@ -105,17 +104,17 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		return;
 
 	struct SList *mrrs = modes_res_refresh(head->modes);
-	struct Mode *preferred_mode = head_preferred_mode(head);
+	const struct Mode *preferred_mode = head_preferred_mode(head);
 
 	struct ModesResRefresh *mrr = NULL;
-	struct Mode *mode = NULL;
+	const struct Mode *mode = NULL;
 
 	for (struct SList *i = mrrs; i; i = i->nex) {
 		mrr = i->val;
 
 		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
-		for (struct SList *j = mrr->modes; j; j = j->nex) {
+		for (const struct SList *j = mrr->modes; j; j = j->nex) {
 			mode = j->val;
 			msg = sprintf_append(msg, "%4d,%03d mHz", mode->refresh_mhz / 1000, mode->refresh_mhz % 1000);
 			if (mode == preferred_mode) {
@@ -170,9 +169,8 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->user_scales) {
 		log_(t, "  Scale:");
-		struct UserScale *user_scale;
 		for (i = cfg->user_scales; i; i = i->nex) {
-			user_scale = (struct UserScale*)i->val;
+			struct UserScale *user_scale = (struct UserScale*)i->val;
 			if (del) {
 				log_(t, "    %s", user_scale->name_desc);
 			} else {
@@ -183,9 +181,8 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->user_modes) {
 		log_(t, "  Mode:");
-		struct UserMode *user_mode;
 		for (i = cfg->user_modes; i; i = i->nex) {
-			user_mode = (struct UserMode*)i->val;
+			const struct UserMode *user_mode = (struct UserMode*)i->val;
 			print_user_mode(t, user_mode, del);
 		}
 	}
@@ -646,13 +643,13 @@ char *delta_human_adaptive_sync(const struct Head * const head) {
 }
 
 void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
-	if (!cfg->callback_cmd || t < log_get_threshold()) {
+	if (!g_cfg->callback_cmd || t < log_get_threshold()) {
 		return;
 	}
 
 	log_info(NULL);
 	log_info("Executing CALLBACK_CMD:");
-	log_info("  %s", cfg->callback_cmd);
+	log_info("  %s", g_cfg->callback_cmd);
 
 	// decorate human message and optional log
 	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
@@ -664,7 +661,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
 	// execute callback
-	spawn_sh_cmd(cfg->callback_cmd, env);
+	spawn_sh_cmd(g_cfg->callback_cmd, env);
 
 	stable_free(env);
 	free(buf);
@@ -690,7 +687,7 @@ void call_back_mode_fail(const enum LogThreshold t, const struct Head * const he
 }
 
 void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
-	if (!cfg->callback_cmd || !head) {
+	if (!g_cfg->callback_cmd || !head) {
 		return;
 	}
 

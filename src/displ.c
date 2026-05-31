@@ -5,7 +5,6 @@
 #include "displ.h"
 
 #include "cfg.h"
-#include "global.h"
 #include "head.h"
 #include "listeners.h"
 #include "log.h"
@@ -14,29 +13,31 @@
 #include "wlr-output-management-unstable-v1.h"
 #include "xdg-output-unstable-v1.h"
 
+struct Displ *g_displ = NULL;
+
 void displ_init(void) {
 
-	displ = calloc(1, sizeof(struct Displ));
+	g_displ = calloc(1, sizeof(struct Displ));
 
-	if (!(displ->display = wl_display_connect(NULL))) {
+	if (!(g_displ->display = wl_display_connect(NULL))) {
 		log_fatal(NULL);
 		log_fatal("Unable to connect to the compositor. Check or set the WAYLAND_DISPLAY environment variable. exiting");
 		wd_exit(EXIT_FAILURE);
 		return;
 	}
 
-	displ->registry = wl_display_get_registry(displ->display);
+	g_displ->registry = wl_display_get_registry(g_displ->display);
 
-	wl_registry_add_listener(displ->registry, registry_listener(), displ);
+	wl_registry_add_listener(g_displ->registry, registry_listener(), g_displ);
 
-	if (wl_display_roundtrip(displ->display) == -1) {
+	if (wl_display_roundtrip(g_displ->display) == -1) {
 		log_fatal(NULL);
 		log_fatal("wl_display_roundtrip failed -1, exiting");
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
 
-	if (!displ->zwlr_output_manager) {
+	if (!g_displ->zwlr_output_manager) {
 		log_fatal(NULL);
 		log_fatal("compositor does not support WLR output manager protocol, exiting");
 		wd_exit(EXIT_FAILURE);
@@ -47,42 +48,42 @@ void displ_init(void) {
 void displ_delta_init(enum CfgElement element, struct Head *head) {
 	displ_delta_destroy();
 
-	displ->delta.element = element;
+	g_displ->delta.element = element;
 
-	displ->delta.head = head;
+	g_displ->delta.head = head;
 }
 
 void displ_delta_destroy(void) {
 
-	displ->delta.element = 0;
+	g_displ->delta.element = 0;
 
-	displ->delta.head = NULL;
+	g_displ->delta.head = NULL;
 
-	free(displ->delta.human);
-	displ->delta.human = NULL;
+	free(g_displ->delta.human);
+	g_displ->delta.human = NULL;
 }
 
 void displ_destroy(void) {
 
 	output_destroy_all();
 
-	if (displ->zwlr_output_manager) {
-		zwlr_output_manager_v1_destroy(displ->zwlr_output_manager);
+	if (g_displ->zwlr_output_manager) {
+		zwlr_output_manager_v1_destroy(g_displ->zwlr_output_manager);
 	}
 
-	if (displ->zxdg_output_manager) {
-		zxdg_output_manager_v1_destroy(displ->zxdg_output_manager);
+	if (g_displ->zxdg_output_manager) {
+		zxdg_output_manager_v1_destroy(g_displ->zxdg_output_manager);
 	}
 
-	wl_registry_destroy(displ->registry);
+	wl_registry_destroy(g_displ->registry);
 
-	wl_display_disconnect(displ->display);
+	wl_display_disconnect(g_displ->display);
 
-	free(displ->zwlr_output_manager_interface);
+	free(g_displ->zwlr_output_manager_interface);
 
-	free(displ->zxdg_output_manager_interface);
+	free(g_displ->zxdg_output_manager_interface);
 
-	free(displ);
-	displ = NULL;
+	free(g_displ);
+	g_displ = NULL;
 }
 

@@ -15,7 +15,6 @@
 #include "fn.h"
 #include "conditions.h"
 #include "convert.h"
-#include "global.h"
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
@@ -23,6 +22,11 @@
 #include "log.h"
 #include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
+
+struct Cfg *g_cfg = NULL;
+
+// one-shot singleton set via cfg_file_paths_init
+struct SList *cfg_file_paths = NULL;
 
 static enum OnOff on_off_invert(enum OnOff val) {
 	return (val == ON) ? OFF : ON;
@@ -48,7 +52,7 @@ static void cfg_paths_free(struct Cfg *cfg) {
 // cloning functions
 //
 static void* cfg_user_mode_clone(const void* const val) {
-	struct UserMode *original = (struct UserMode*)val;
+	const struct UserMode *original = (struct UserMode*)val;
 	struct UserMode *clone = (struct UserMode*)calloc(1, sizeof(struct UserMode));
 
 	*clone = *original;
@@ -58,7 +62,7 @@ static void* cfg_user_mode_clone(const void* const val) {
 }
 
 static void* cfg_user_transform_clone(const void* const val) {
-	struct UserTransform *original = (struct UserTransform*)val;
+	const struct UserTransform *original = (struct UserTransform*)val;
 	struct UserTransform *clone = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
 	*clone = *original;
@@ -68,7 +72,7 @@ static void* cfg_user_transform_clone(const void* const val) {
 }
 
 static void* cfg_user_scale_clone(const void* const val) {
-	struct UserScale *original = (struct UserScale*)val;
+	const struct UserScale *original = (struct UserScale*)val;
 	struct UserScale *clone = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
 	*clone = *original;
@@ -95,8 +99,8 @@ static bool cfg_user_mode_name_equal(const void *a, const void *b) {
 		return false;
 	}
 
-	struct UserMode *lhs = (struct UserMode*)a;
-	struct UserMode *rhs = (struct UserMode*)b;
+	const struct UserMode *lhs = (struct UserMode*)a;
+	const struct UserMode *rhs = (struct UserMode*)b;
 
 	if (!lhs->name_desc || !rhs->name_desc) {
 		return false;
@@ -110,8 +114,8 @@ static bool cfg_user_scale_name_equal(const void *a, const void *b) {
 		return false;
 	}
 
-	struct UserScale *lhs = (struct UserScale*)a;
-	struct UserScale *rhs = (struct UserScale*)b;
+	const struct UserScale *lhs = (struct UserScale*)a;
+	const struct UserScale *rhs = (struct UserScale*)b;
 
 	if (!lhs->name_desc || !rhs->name_desc) {
 		return false;
@@ -125,8 +129,8 @@ static bool cfg_user_scale_equal(const void *a, const void *b) {
 		return false;
 	}
 
-	struct UserScale *lhs = (struct UserScale*)a;
-	struct UserScale *rhs = (struct UserScale*)b;
+	const struct UserScale *lhs = (struct UserScale*)a;
+	const struct UserScale *rhs = (struct UserScale*)b;
 
 	if (!lhs->name_desc || !rhs->name_desc) {
 		return false;
@@ -140,8 +144,8 @@ static bool cfg_user_mode_equal(const void *a, const void *b) {
 		return false;
 	}
 
-	struct UserMode *lhs = (struct UserMode*)a;
-	struct UserMode *rhs = (struct UserMode*)b;
+	const struct UserMode *lhs = (struct UserMode*)a;
+	const struct UserMode *rhs = (struct UserMode*)b;
 
 	if (!lhs->name_desc || !rhs->name_desc) {
 		return false;
@@ -171,8 +175,8 @@ static bool cfg_user_transform_name_equal(const void *a, const void *b) {
 		return false;
 	}
 
-	struct UserTransform *lhs = (struct UserTransform*)a;
-	struct UserTransform *rhs = (struct UserTransform*)b;
+	const struct UserTransform *lhs = (struct UserTransform*)a;
+	const struct UserTransform *rhs = (struct UserTransform*)b;
 
 	if (!lhs->name_desc || !rhs->name_desc) {
 		return false;
@@ -186,8 +190,8 @@ static bool cfg_user_transform_equal(const void *a, const void *b) {
 		return false;
 	}
 
-	struct UserTransform *lhs = (struct UserTransform*)a;
-	struct UserTransform *rhs = (struct UserTransform*)b;
+	const struct UserTransform *lhs = (struct UserTransform*)a;
+	const struct UserTransform *rhs = (struct UserTransform*)b;
 
 	if (!lhs->name_desc || !rhs->name_desc) {
 		return false;
@@ -440,15 +444,15 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// CALLBACK_CMD
-	char *ao = a->callback_cmd;
-	char *bo = b->callback_cmd;
+	const char *ao = a->callback_cmd;
+	const char *bo = b->callback_cmd;
 	if ((ao && !bo) || (!ao && bo) || (ao && bo && strcmp(ao, bo) != 0)) {
 		return false;
 	}
 
 	// LAPTOP_DISPLAY_PREFIX
-	char *al = a->laptop_display_prefix;
-	char *bl = b->laptop_display_prefix;
+	const char *al = a->laptop_display_prefix;
+	const char *bl = b->laptop_display_prefix;
 	if ((al && !bl) || (!al && bl) || (al && bl && strcmp(al, bl) != 0)) {
 		return false;
 	}
@@ -493,37 +497,37 @@ struct Cfg *cfg_default(void) {
 	return def;
 }
 
-void cfg_apply_defaults(struct Cfg *dst) {
+void cfg_apply_defaults(struct Cfg *cfg) {
 
-	if (!dst->arrange)
-		dst->arrange = ARRANGE_DEFAULT;
+	if (!cfg->arrange)
+		cfg->arrange = ARRANGE_DEFAULT;
 
-	if (!dst->align)
-		dst->align = ALIGN_DEFAULT;
+	if (!cfg->align)
+		cfg->align = ALIGN_DEFAULT;
 
-	if (!dst->scaling)
-		dst->scaling = SCALING_DEFAULT;
+	if (!cfg->scaling)
+		cfg->scaling = SCALING_DEFAULT;
 
-	if (!dst->auto_scale)
-		dst->auto_scale = AUTO_SCALE_DEFAULT;
+	if (!cfg->auto_scale)
+		cfg->auto_scale = AUTO_SCALE_DEFAULT;
 
-	if (!dst->scale_round_to)
-		dst->scale_round_to = SCALE_ROUND_TO_DEFAULT;
+	if (!cfg->scale_round_to)
+		cfg->scale_round_to = SCALE_ROUND_TO_DEFAULT;
 
-	if (!dst->scale_round_strategy)
-		dst->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
+	if (!cfg->scale_round_strategy)
+		cfg->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
 
-	if (!dst->auto_scale_min)
-		dst->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
+	if (!cfg->auto_scale_min)
+		cfg->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
 
-	if (!dst->auto_scale_max)
-		dst->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
+	if (!cfg->auto_scale_max)
+		cfg->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
 
-	if (!dst->callback_cmd)
-		dst->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
+	if (!cfg->callback_cmd)
+		cfg->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
 
-	if (!dst->laptop_lid_monitor)
-		dst->laptop_lid_monitor = LAPTOP_LID_MONITOR_DEFAULT;
+	if (!cfg->laptop_lid_monitor)
+		cfg->laptop_lid_monitor = LAPTOP_LID_MONITOR_DEFAULT;
 }
 
 struct UserMode *cfg_user_mode_default(void) {
@@ -636,7 +640,7 @@ void cfg_copy_file_path(struct Cfg *from, struct Cfg *to) {
 static void remove_duplicate_user_scales(struct Cfg *cfg) {
 	const struct STable *by_name_desc = stable_init(10, 10, false);
 
-	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
+	for (const struct SList *i = cfg->user_scales; i; i = i->nex) {
 		const struct UserScale *user_scale = i->val;
 		const struct UserScale *dup = stable_put(by_name_desc, user_scale->name_desc, user_scale);
 		if (dup) {
@@ -654,7 +658,7 @@ static void remove_duplicate_user_scales(struct Cfg *cfg) {
 static void remove_duplicate_user_modes(struct Cfg *cfg) {
 	const struct STable *by_name_desc = stable_init(10, 10, false);
 
-	for (struct SList *i = cfg->user_modes; i; i = i->nex) {
+	for (const struct SList *i = cfg->user_modes; i; i = i->nex) {
 		const struct UserMode *mode = i->val;
 		const struct UserMode *dup = stable_put(by_name_desc, mode->name_desc, mode);
 		if (dup) {
@@ -672,7 +676,7 @@ static void remove_duplicate_user_modes(struct Cfg *cfg) {
 static void remove_duplicate_user_transforms(struct Cfg *cfg) {
 	const struct STable *by_name_desc = stable_init(10, 10, false);
 
-	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
+	for (const struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		const struct UserTransform *transform = i->val;
 		const struct UserTransform *dup = stable_put(by_name_desc, transform->name_desc, transform);
 		if (dup) {
@@ -720,8 +724,8 @@ void validate_fix(struct Cfg *cfg) {
 	remove_duplicate_user_transforms(cfg);
 }
 
-static void warn_ambiguous_name_desc_list(struct SList *name_desc, const char * const element) {
-	for (struct SList *i = name_desc; i; i = i->nex) {
+static void warn_ambiguous_name_desc_list(const struct SList *name_desc, const char * const element) {
+	for (const struct SList *i = name_desc; i; i = i->nex) {
 		warn_ambiguous_name_desc((const char*)i->val, element);
 	}
 }
@@ -736,19 +740,19 @@ void validate_warn(struct Cfg *cfg) {
 	for (i = cfg->user_scales; i; i = i->nex) {
 		if (!i->val)
 			continue;
-		struct UserScale *user_scale = (struct UserScale*)i->val;
+		const struct UserScale *user_scale = (struct UserScale*)i->val;
 		warn_ambiguous_name_desc(user_scale->name_desc, "SCALE");
 	}
 	for (i = cfg->user_modes; i; i = i->nex) {
 		if (!i->val)
 			continue;
-		struct UserMode *user_mode = (struct UserMode*)i->val;
+		const struct UserMode *user_mode = (struct UserMode*)i->val;
 		warn_ambiguous_name_desc(user_mode->name_desc, "MODE");
 	}
 	for (i = cfg->user_transforms; i; i = i->nex) {
 		if (!i->val)
 			continue;
-		struct UserTransform *user_transform = (struct UserTransform*)i->val;
+		const struct UserTransform *user_transform = (struct UserTransform*)i->val;
 		warn_ambiguous_name_desc(user_transform->name_desc, "TRANSFORM");
 	}
 
@@ -765,7 +769,7 @@ void validate_warn(struct Cfg *cfg) {
 		for (j = disabled->conditions; j; j = j->nex) {
 			if (!j->val)
 				continue;
-			struct Condition *condition = (struct Condition*)j->val;
+			const struct Condition *condition = (struct Condition*)j->val;
 			warn_ambiguous_name_desc_list(condition->plugged, "PLUGGED");
 			warn_ambiguous_name_desc_list(condition->unplugged, "UNPLUGGED");
 		}
@@ -1006,30 +1010,30 @@ void cfg_file_paths_init(const char *user_path) {
 
 static bool cfg_file_write_content(const char * const yaml) {
 	return
-		file_write(cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
-		file_write(cfg->file_path, yaml, "a");
+		file_write(g_cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
+		file_write(g_cfg->file_path, yaml, "a");
 }
 
 void cfg_file_write(void) {
 	char *yaml = NULL;
-	char *resolved_from = cfg->resolved_from;
+	const char *resolved_from = g_cfg->resolved_from;
 	bool written = false;
 
-	cfg->updated = false;
+	g_cfg->updated = false;
 
-	if (!(yaml = yaml_marshal(cfg, yaml_doc_cfg, "cfg"))) {
+	if (!(yaml = yaml_marshal(g_cfg, yaml_doc_cfg, "cfg"))) {
 		goto end;
 	}
 
-	if (cfg->file_path && (written = cfg_file_write_content(yaml))) {
-		cfg->updated = true;
+	if (g_cfg->file_path && (written = cfg_file_write_content(yaml))) {
+		g_cfg->updated = true;
 		goto end;
 	}
 
 	if (!written) {
 
 		// kill that cfg file
-		cfg_paths_free(cfg);
+		cfg_paths_free(g_cfg);
 		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
@@ -1040,17 +1044,17 @@ void cfg_file_write(void) {
 				continue;
 			}
 
-			set_paths(cfg, i->val, i->val);
+			set_paths(g_cfg, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(cfg->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
+			if (mkdir_p(g_cfg->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
 				goto end;
 			}
 
-			cfg_paths_free(cfg);
+			cfg_paths_free(g_cfg);
 		}
 	}
 
@@ -1059,13 +1063,13 @@ end:
 
 	if (written) {
 		log_info(NULL);
-		log_info("Wrote configuration file: %s", cfg->file_path);
+		log_info("Wrote configuration file: %s", g_cfg->file_path);
 	}
 }
 
 void cfg_destroy(void) {
-	cfg_free(cfg);
-	cfg = NULL;
+	cfg_free(g_cfg);
+	g_cfg = NULL;
 }
 
 void cfg_file_paths_destroy(void) {

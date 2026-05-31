@@ -9,15 +9,14 @@
 #include "head.h"
 
 #include "cfg.h"
-#include "global.h"
 #include "info.h"
 #include "slist.h"
 #include "log.h"
 #include "mode.h"
 
-struct SList *heads = NULL;
-struct SList *heads_arrived = NULL;
-struct SList *heads_departed = NULL;
+struct SList *g_heads = NULL;
+struct SList *g_heads_arrived = NULL;
+struct SList *g_heads_departed = NULL;
 
 const char *head_human(const struct Head * const head) {
 	static const char *unknown = "???";
@@ -37,7 +36,7 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	if (!head)
 		return false;
 
-	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
+	for (const struct SList *i = g_cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
 		if (head_matches_name_desc(head, i->val)) {
 			return true;
 		}
@@ -97,7 +96,6 @@ bool head_matches_name_desc_regex(const void * const h, const void * const n) {
 
 	regex_t regex;
 	int result;
-	char error_msg[100];
 
 	result = regcomp(&regex, regex_pattern, REG_EXTENDED);
 	if (result) {
@@ -113,6 +111,7 @@ bool head_matches_name_desc_regex(const void * const h, const void * const n) {
 		result = regexec(&regex, head->description, 0, NULL, 0);
 	}
 	if (result && result != REG_NOMATCH) {
+		char error_msg[100];
 		regerror(result, &regex, error_msg, sizeof(error_msg));
 		log_debug("Regex match failed: %s\n", error_msg);
 	}
@@ -156,7 +155,7 @@ bool head_matches_name_desc_exact(const void * const h, const void * const n) {
 }
 
 bool head_disabled_matches_head(const void * const d, const void * const h) {
-	struct Disabled *disabled_if = (struct Disabled*)d;
+	const struct Disabled *disabled_if = (struct Disabled*)d;
 
 	if (!d)
 		return false;
@@ -170,11 +169,11 @@ bool head_disabled_matches_head(const void * const d, const void * const h) {
 // We force scales to be multiples of 1/8, because gcd(256, 120) = 8.
 // See #138
 wl_fixed_t head_get_fixed_scale(const double scale) {
-	int32_t b = cfg->scale_round_to ? cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
+	int32_t b = g_cfg->scale_round_to ? g_cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
 	double (*round_fn)(double x);
 
-	switch (cfg->scale_round_strategy) {
+	switch (g_cfg->scale_round_strategy) {
 		case DOWN:
 			round_fn = floor;
 			break;
@@ -193,7 +192,7 @@ wl_fixed_t head_get_fixed_scale(const double scale) {
 static int32_t head_desired_scaled_length(const struct Head * const head, const int32_t length) {
 	// scales a (pixel) length by fixed_scale
 
-	int32_t b = cfg->scale_round_to ? cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
+	int32_t b = g_cfg->scale_round_to ? g_cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
 	wl_fixed_t f = (double)head->desired.scale / 256 * b + 0.5;
 
@@ -206,7 +205,7 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 		return head_get_fixed_scale(1.0);
 	}
 
-	int32_t scaling_base = cfg->scale_round_to ? cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
+	int32_t scaling_base = g_cfg->scale_round_to ? g_cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
 	if (!head->desired.mode) {
 		return head_get_fixed_scale(1.0);
@@ -285,7 +284,7 @@ struct Mode *head_find_mode(struct Head * const head) {
 	struct Mode *mode = NULL;
 
 	// maybe a user mode
-	struct UserMode *um = slist_find_equal_val(cfg->user_modes, head_matches_user_mode, head);
+	struct UserMode *um = slist_find_equal_val(g_cfg->user_modes, head_matches_user_mode, head);
 	if (um) {
 		mode = mode_user_mode(head->modes, head->modes_failed, um);
 		if (!mode && !um->warned_no_mode) {
@@ -344,7 +343,7 @@ struct Mode *head_preferred_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	for (struct SList *i = head->modes; i; i = i->nex) {
+	for (const struct SList *i = head->modes; i; i = i->nex) {
 		if (((struct Mode*)i->val)->preferred) {
 			return i->val;
 		}
@@ -446,16 +445,16 @@ void head_release_mode(struct Head * const head, const struct Mode * const mode)
 }
 
 void heads_release_head(const struct Head * const head) {
-	slist_remove_all(&heads_arrived, NULL, head);
-	slist_remove_all(&heads_departed, NULL, head);
-	slist_remove_all(&heads, NULL, head);
+	slist_remove_all(&g_heads_arrived, NULL, head);
+	slist_remove_all(&g_heads_departed, NULL, head);
+	slist_remove_all(&g_heads, NULL, head);
 }
 
 void heads_destroy(void) {
 
-	slist_free_vals(&heads, head_free);
-	slist_free_vals(&heads_departed, head_free);
+	slist_free_vals(&g_heads, head_free);
+	slist_free_vals(&g_heads_departed, head_free);
 
-	slist_free(&heads_arrived);
+	slist_free(&g_heads_arrived);
 }
 

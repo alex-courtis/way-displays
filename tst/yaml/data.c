@@ -6,7 +6,6 @@
 
 #include "cfg.h"
 #include "conditions.h"
-#include "global.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -15,7 +14,7 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
-static void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
+static void lcl(enum LogThreshold threshold, const char *line, struct SList **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
 	lcl->threshold = threshold;
@@ -97,11 +96,11 @@ struct IpcOperation *ipc_response(void) {
 	ipc_operation->rc = 1;
 	ipc_operation->send_state = true;
 
-	cfg = cfg_all();
+	g_cfg = cfg_all();
 
-	lid = calloc(1, sizeof(struct Lid));
-	lid->closed = true;
-	lid->device_path = "/path/to/lid";
+	g_lid = calloc(1, sizeof(struct Lid));
+	g_lid->closed = true;
+	g_lid->device_path = "/path/to/lid";
 
 	lcl(DEBUG, "dbg", &ipc_operation->log_cap_lines);
 	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
@@ -140,7 +139,7 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.mode = mode_init(NULL, NULL, 13, 14, 15, false);;
 	slist_append(&head0->modes, head0->desired.mode);
 
-	slist_append(&heads, head0);
+	slist_append(&g_heads, head0);
 
 	return ipc_operation;
 }

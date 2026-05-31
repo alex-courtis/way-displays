@@ -25,12 +25,11 @@ void pid_path_generate(char *pid_path) {
 }
 
 pid_t pid_active_server(const char *pid_path) {
-	static char pbuf[11];
-
 	pid_t pid = 0;
 
 	int fd = open(pid_path, O_RDONLY | O_CLOEXEC);
 	if (fd != -1) {
+		static char pbuf[11];
 		if (read(fd, pbuf, sizeof(pbuf)) != -1) {
 			if (sscanf(pbuf, "%d", &pid) != 1) {
 				pid = 0;
@@ -107,9 +106,6 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 	if (!command)
 		return;
 
-	// experiments show that environment variable length tops out at 128k: variable itself plus contents
-	char value[1024 * 120];
-
 	pid_t pid = fork();
 	if (pid < 0) {
 		log_error(NULL);
@@ -128,6 +124,9 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 		sigaction(SIGCHLD, &sa, NULL);
 
 		for (const struct STableIter *i = stable_iter(env); i; i = stable_iter_next(i)) {
+
+			// experiments show that environment variable length tops out at 128k: variable itself plus contents
+			char value[1024 * 120];
 			snprintf(value, sizeof(value), "%s", (char*)stable_iter_val(i));
 			setenv(stable_iter_key(i), value, 1);
 		}

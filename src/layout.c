@@ -10,7 +10,6 @@
 #include "conditions.h"
 #include "convert.h"
 #include "displ.h"
-#include "global.h"
 #include "head.h"
 #include "info.h"
 #include "lid.h"
@@ -53,14 +52,14 @@ void position_heads(struct SList *heads) {
 			continue;
 		}
 
-		switch (cfg->arrange) {
+		switch (g_cfg->arrange) {
 			case COL:
 				// position
 				head->desired.y = y;
 				y += head->scaled.height;
 
 				// align
-				switch (cfg->align) {
+				switch (g_cfg->align) {
 					case RIGHT:
 						head->desired.x = widest - head->scaled.width;
 						break;
@@ -80,7 +79,7 @@ void position_heads(struct SList *heads) {
 				x += head->scaled.width;
 
 				// align
-				switch (cfg->align) {
+				switch (g_cfg->align) {
 					case BOTTOM:
 						head->desired.y = tallest - head->scaled.height;
 						break;
@@ -157,12 +156,12 @@ void desire_enabled(struct Head *head) {
 	enabled = !lid_is_closed(head->name);
 
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
-	enabled |= slist_length(heads) == 1;
+	enabled |= slist_length(g_heads) == 1;
 
 	// iterate over all matching NAME_DESC's and evaluate their conditions
-	struct SList *d = cfg->disabled;
+	struct SList *d = g_cfg->disabled;
 	while ((d = slist_find_equal(d, head_disabled_matches_head, head)) != NULL) {
-		struct Disabled *disabled_if = (struct Disabled*)d->val;
+		const struct Disabled *disabled_if = (struct Disabled*)d->val;
 		enabled &= !condition_list_evaluate(disabled_if->conditions);
 
 		if (!enabled) break;
@@ -216,15 +215,14 @@ void desire_scale(struct Head *head) {
 	}
 
 	// all scaling disabled
-	if (cfg->scaling == OFF) {
+	if (g_cfg->scaling == OFF) {
 		head->desired.scale = head_get_fixed_scale(1.0);
 		return;
 	}
 
 	// user scale first
-	struct UserScale *user_scale;
-	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
-		user_scale = (struct UserScale*)i->val;
+	for (struct SList *i = g_cfg->user_scales; i; i = i->nex) {
+		const struct UserScale *user_scale = (struct UserScale*)i->val;
 		if (head_matches_name_desc(head, user_scale->name_desc)) {
 			head->desired.scale = head_get_fixed_scale(user_scale->scale);
 			return;
@@ -232,9 +230,9 @@ void desire_scale(struct Head *head) {
 	}
 
 	// auto or 1
-	if (cfg->auto_scale == ON) {
+	if (g_cfg->auto_scale == ON) {
 		head->desired.scale =
-			head_auto_scale(head, cfg->auto_scale_min, cfg->auto_scale_max);
+			head_auto_scale(head, g_cfg->auto_scale_min, g_cfg->auto_scale_max);
 	} else {
 		head->desired.scale = head_get_fixed_scale(1.0);
 	}
@@ -246,8 +244,8 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	struct UserTransform *user_transform;
-	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
+	const struct UserTransform *user_transform;
+	for (struct SList *i = g_cfg->user_transforms; i; i = i->nex) {
 		user_transform = (struct UserTransform*)i->val;
 		if (head_matches_name_desc(head, user_transform->name_desc)) {
 			head->desired.transform = user_transform->transform;
@@ -268,7 +266,7 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (slist_find_equal(cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
+	if (slist_find_equal(g_cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -277,7 +275,7 @@ void desire_adaptive_sync(struct Head *head) {
 
 static void desire(void) {
 
-	for (struct SList *i = heads; i; i = i->nex) {
+	for (struct SList *i = g_heads; i; i = i->nex) {
 		struct Head *head = (struct Head*)i->val;
 
 		memcpy(&head->desired, &head->current, sizeof(struct HeadState));
@@ -291,7 +289,7 @@ static void desire(void) {
 		head_set_scaled_dimensions(head);
 	}
 
-	struct SList *heads_ordered = order_heads(cfg->order_name_desc, heads);
+	struct SList *heads_ordered = order_heads(g_cfg->order_name_desc, g_heads);
 
 	position_heads(heads_ordered);
 
@@ -304,7 +302,7 @@ static void apply(void) {
 	displ_delta_destroy();
 
 	// determine whether changes are needed before initiating output configuration
-	struct SList *i = heads;
+	struct SList *i = g_heads;
 	while ((i = slist_find(i, head_current_not_desired))) {
 		slist_append(&heads_changing, i->val);
 		i = i->nex;
@@ -313,42 +311,42 @@ static void apply(void) {
 		return;
 
 	// passed into our configuration listener
-	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
+	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(g_displ->zwlr_output_manager, g_displ->zwlr_output_manager_serial);
+	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), g_displ);
 
-	struct Head *head;
-	if ((head = slist_find_val(heads, head_current_mode_not_desired))) {
+	struct Head *head_own_op;
+	if ((head_own_op = slist_find_val(g_heads, head_current_mode_not_desired))) {
 		log_debug("APPLY mode");
 
-		displ_delta_init(MODE, head);
+		displ_delta_init(MODE, head_own_op);
 
-		print_head(INFO, DELTA, head);
+		print_head(INFO, DELTA, head_own_op);
 
 		// mode change in its own operation; mode change desire is always enabled
-		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
+		head_own_op->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_own_op->zwlr_head);
+		zwlr_output_configuration_head_v1_set_mode(head_own_op->zwlr_config_head, head_own_op->desired.mode->zwlr_mode);
 
-		displ->delta.human = delta_human_mode(head);
+		g_displ->delta.human = delta_human_mode(head_own_op);
 
-	} else if ((head = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
+	} else if ((head_own_op = slist_find_val(g_heads, head_current_adaptive_sync_not_desired))) {
 		log_debug("APPLY vrr");
 
-		displ_delta_init(VRR_OFF, head);
+		displ_delta_init(VRR_OFF, head_own_op);
 
-		print_head(INFO, DELTA, head);
+		print_head(INFO, DELTA, head_own_op);
 
 		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
-		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
+		head_own_op->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_own_op->zwlr_head);
+		zwlr_output_configuration_head_v1_set_adaptive_sync(head_own_op->zwlr_config_head, head_own_op->desired.adaptive_sync);
 
-		displ->delta.human = delta_human_adaptive_sync(head);
+		g_displ->delta.human = delta_human_adaptive_sync(head_own_op);
 
 	} else {
 		log_debug("APPLY remainder");
 
 		displ_delta_init(0, NULL);
 
-		print_heads(INFO, DELTA, heads);
+		print_heads(INFO, DELTA, g_heads);
 
 		// all other changes
 		for (i = heads_changing; i; i = i->nex) {
@@ -364,12 +362,12 @@ static void apply(void) {
 			}
 		}
 
-		displ->delta.human = delta_human(heads_changing);
+		g_displ->delta.human = delta_human(heads_changing);
 	}
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
 
-	displ->state = OUTSTANDING;
+	g_displ->state = OUTSTANDING;
 
 	slist_free(&heads_changing);
 }
@@ -377,15 +375,15 @@ static void apply(void) {
 void handle_success(void) {
 	cancellation_retries = 0;
 
-	switch(displ->delta.element) {
+	switch(g_displ->delta.element) {
 		case MODE:
 			// successful mode change is not always reported
-			displ->delta.head->current.mode = displ->delta.head->desired.mode;
+			g_displ->delta.head->current.mode = g_displ->delta.head->desired.mode;
 			break;
 
 		case VRR_OFF:
 			// sway reports adaptive sync failure as success
-			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
+			if (head_current_adaptive_sync_not_desired(g_displ->delta.head)) {
 				handle_failure();
 				return;
 			}
@@ -397,7 +395,7 @@ void handle_success(void) {
 
 	log_info(NULL);
 	log_info("Changes successful");
-	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
+	call_back(INFO, g_displ->delta.human ? g_displ->delta.human : "Changes successful", NULL);
 
 	displ_delta_destroy();
 }
@@ -416,35 +414,35 @@ static bool handle_cancelled(void) {
 }
 
 void handle_failure(void) {
-	switch(displ->delta.element) {
+	switch(g_displ->delta.element) {
 		case MODE:
 
-			print_mode_fail(ERROR, displ->delta.head, displ->delta.head->desired.mode);
-			call_back_mode_fail(ERROR, displ->delta.head, displ->delta.head->desired.mode);
+			print_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.mode);
+			call_back_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.mode);
 
 			// mode setting failure, try again
-			slist_append(&displ->delta.head->modes_failed, displ->delta.head->desired.mode);
+			slist_append(&g_displ->delta.head->modes_failed, g_displ->delta.head->desired.mode);
 
 			// current mode may be misreported
-			displ->delta.head->current.mode = NULL;
+			g_displ->delta.head->current.mode = NULL;
 
 			break;
 
 		case VRR_OFF:
 			// river reports adaptive sync failure as failure
-			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
+			if (head_current_adaptive_sync_not_desired(g_displ->delta.head)) {
 
-				print_adaptive_sync_fail(WARNING, displ->delta.head);
-				call_back_adaptive_sync_fail(WARNING, displ->delta.head);
+				print_adaptive_sync_fail(WARNING, g_displ->delta.head);
+				call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
 
-				displ->delta.head->adaptive_sync_failed = true;
+				g_displ->delta.head->adaptive_sync_failed = true;
 			}
 
 			break;
 		default:
 			log_fatal(NULL);
 			log_fatal("Changes failed, exiting");
-			call_back(FATAL, displ->delta.human, "\nChanges failed, exiting");
+			call_back(FATAL, g_displ->delta.human, "\nChanges failed, exiting");
 
 			wd_exit_message(EXIT_FAILURE);
 			break;
@@ -454,18 +452,18 @@ void handle_failure(void) {
 }
 
 void layout(void) {
-	print_heads(INFO, ARRIVED, heads_arrived);
-	slist_free(&heads_arrived);
+	print_heads(INFO, ARRIVED, g_heads_arrived);
+	slist_free(&g_heads_arrived);
 
-	print_heads(INFO, DEPARTED, heads_departed);
-	slist_free_vals(&heads_departed, head_free);
+	print_heads(INFO, DEPARTED, g_heads_departed);
+	slist_free_vals(&g_heads_departed, head_free);
 
-	log_debug("LAYOUT %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 
-	switch (displ->state) {
+	switch (g_displ->state) {
 		case SUCCEEDED:
 			handle_success();
-			displ->state = IDLE;
+			g_displ->state = IDLE;
 			break;
 
 		case OUTSTANDING:
@@ -474,11 +472,11 @@ void layout(void) {
 
 		case FAILED:
 			handle_failure();
-			displ->state = IDLE;
+			g_displ->state = IDLE;
 			break;
 
 		case CANCELLED:
-			displ->state = IDLE;
+			g_displ->state = IDLE;
 			// whether to keep retrying
 			if (handle_cancelled()) {
 				break;
@@ -492,9 +490,9 @@ void layout(void) {
 	}
 
 	desire();
-	log_debug("LAYOUT desired %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT desired %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 
 	apply();
-	log_debug("LAYOUT applied %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT applied %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 }
 

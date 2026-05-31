@@ -8,6 +8,9 @@
 #include "log.h"
 #include "ipc.h"
 
+// global singleton
+extern struct Cfg *g_cfg;
+
 #define AUTO_SCALE_MIN_DEFAULT 1.0f
 
 #define AUTO_SCALE_MAX_DEFAULT -1.0f
@@ -150,7 +153,7 @@ struct Cfg *cfg_init(void);
 
 struct Cfg *cfg_default(void);
 
-void cfg_apply_defaults(struct Cfg *dst);
+void cfg_apply_defaults(struct Cfg *cfg);
 
 struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
 

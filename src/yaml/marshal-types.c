@@ -8,7 +8,6 @@
 #include "cfg.h"
 #include "conditions.h"
 #include "convert.h"
-#include "global.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -106,7 +105,7 @@ bool yaml_map_populate_ipc_operation(struct MC *c, void *data, int mapping) {
 		return false;
 
 	if (ipc_operation->send_state) {
-		if (!yaml_map_add_map(c, "CFG", cfg, yaml_map_populate_cfg, mapping))
+		if (!yaml_map_add_map(c, "CFG", g_cfg, yaml_map_populate_cfg, mapping))
 			return false;
 		if (!yaml_map_add_map(c, "STATE", NULL, yaml_map_populate_state, mapping))
 			return false;
@@ -194,7 +193,7 @@ bool yaml_map_populate_messages(struct MC *c, void *data, int mapping) {
 	int seq_lines = 0;
 
 	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
-		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+		const struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 
 		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
 			continue;
@@ -224,10 +223,10 @@ bool yaml_map_populate_state(struct MC *c, const void *unused, int mapping) {
 	if (!mapping)
 		return false;
 
-	if (lid && !yaml_map_add_map(c, "LID", lid, yaml_map_populate_lid, mapping))
+	if (g_lid && !yaml_map_add_map(c, "LID", g_lid, yaml_map_populate_lid, mapping))
 		return false;
 
-	if (heads && !yaml_map_add_seq(c, "HEADS", heads, yaml_seq_append_head,  mapping))
+	if (g_heads && !yaml_map_add_seq(c, "HEADS", g_heads, yaml_seq_append_head,  mapping))
 		return false;
 
 	return true;

@@ -8,12 +8,12 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
-#include "global.h"
-
 #include "cfg.h"
 #include "conditions.h"
 #include "log.h"
 #include "slist.h"
+
+extern struct SList *cfg_file_paths;
 
 struct State {
 	struct Cfg *from;
@@ -35,8 +35,6 @@ int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 
 	slist_free_vals(&cfg_file_paths, NULL);
-
-	cfg = cfg_default();
 
 	s->from = cfg_default();
 	s->to = cfg_default();

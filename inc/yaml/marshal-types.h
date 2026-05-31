@@ -25,7 +25,7 @@ bool yaml_map_populate_head_state    (struct MC *c, const void *head_state,  int
 bool yaml_map_populate_head_overrides(struct MC *c, const void *head,        int mapping);
 bool yaml_map_populate_lid           (struct MC *c, const void *unused,      int mapping);
 bool yaml_map_populate_messages      (struct MC *c, void *ipc_operation,     int mapping); // IpcOperation, mutates IpcOperation.rc
-bool yaml_map_populate_state         (struct MC *c, const void *unused,      int mapping); // global: heads and lid
+bool yaml_map_populate_state         (struct MC *c, const void *unused,      int mapping); // g_heads and g_lid
 
 // yaml_seq_append_fn: create and append a new item node to an existing sequence node
 bool yaml_seq_append_user_scale    (struct MC *c, const void *user_scale,     int sequence);

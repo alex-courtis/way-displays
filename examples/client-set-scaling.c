@@ -17,7 +17,6 @@ main(int argc, char **argv) {
 	char *yaml;
 	struct SList *responses = NULL;
 	struct IpcResponse *response = NULL;
-	struct Head *head = NULL;
 
 	// request CFG_SET
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
@@ -57,7 +56,7 @@ main(int argc, char **argv) {
 
 			// inspect head state
 			for (struct SList *j = response->heads; j; j = j->nex) {
-				head = j->val;
+				struct Head *head = j->val;
 				float scale_current = wl_fixed_to_double(head->current.scale);
 				float scale_desired = wl_fixed_to_double(head->desired.scale);
 

@@ -60,7 +60,7 @@ static const char *threshold_colours[] = {
 };
 static const char reset_colour[] = "\x1B[0m";
 
-static void capture_line(enum LogThreshold threshold, char *l) {
+static void capture_line(enum LogThreshold threshold, const char *l) {
 	for (struct SList *i = log_cap_lines_active; i; i = i->nex) {
 		struct LogCapLine *line = calloc(1, sizeof(struct LogCapLine));
 		line->line = strdup(l);
@@ -71,7 +71,6 @@ static void capture_line(enum LogThreshold threshold, char *l) {
 }
 
 static void print_line(const enum LogThreshold threshold, const char *l) {
-	static char buf_time[16];
 
 	if (threshold < active.threshold || active.suppressing)
 		return;
@@ -90,6 +89,8 @@ static void print_line(const enum LogThreshold threshold, const char *l) {
 
 	// maybe one char threshold and time
 	if (active.prefix) {
+
+		static char buf_time[16];
 
 		time_t t = time(NULL);
 
@@ -245,12 +246,12 @@ static void log_cap_line_free(const void *data) {
 	free((struct LogCapLine*)line);
 }
 
-void log_cap_lines_playback(struct SList *lines) {
+void log_cap_lines_playback(const struct SList *lines) {
 	if (!lines)
 		return;
 
-	for (struct SList *i = lines; i; i = i->nex) {
-		struct LogCapLine *line = i->val;
+	for (const struct SList *i = lines; i; i = i->nex) {
+		const struct LogCapLine *line = i->val;
 		if (!line)
 			continue;
 

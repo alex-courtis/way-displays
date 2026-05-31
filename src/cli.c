@@ -18,7 +18,7 @@
 #include "cli.h"
 
 void usage(FILE *stream) {
-	static char mesg[] =
+	const char mesg[] =
 		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
 		"  Runs the server when no COMMAND specified.\n"
 		"OPTIONS\n"
@@ -395,10 +395,9 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 	bool yaml = false;
 	enum LogThreshold threshold = 0;
 
-	int c;
 	while (1) {
 		int long_index = 0;
-		c = getopt_long(argc, argv, short_options, long_options, &long_index);
+		int c = getopt_long(argc, argv, short_options, long_options, &long_index);
 		if (c == -1)
 			break;
 		switch (c) {

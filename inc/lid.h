@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 
+// global singleton
+extern struct Lid *g_lid;
+
 struct Lid {
 	bool closed;
 

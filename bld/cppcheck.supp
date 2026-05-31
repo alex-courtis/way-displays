@@ -18,5 +18,18 @@ unusedFunction:tst/expects.h
 unusedFunction:tst/wrap-*.c
 staticFunction:tst/*c
 
+# needs fixing upstream
+constVariablePointer:lib/col/src/slist.c
+redundantAssignment:lib/col/src/slist.c
+shadowVariable:lib/col/src/slist.c
+unreadVariable:lib/col/src/slist.c
+variableScope:lib/col/src/slist.c
+
 # this is just not practical
 nullPointerOutOfMemory
+
+# questionable value and requires much casting
+constParameterCallback
+
+# does not identify correctly
+unusedStructMember
