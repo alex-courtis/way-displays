@@ -1,7 +1,9 @@
 # do not check generated code
 *:pro/*
 
-staticFunction:yaml/*-types.c
+staticFunction:yaml/marshal-types.c
+staticFunction:yaml/unmarshal.c
+staticFunction:yaml/unmarshal-types.c
 
 staticFunction:log.c
 unusedFunction:log.c

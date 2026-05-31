@@ -30,7 +30,7 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 		if (errno == EACCES) {
 			if (!warned_permission_fail) {
 				warned_permission_fail = true;
-				log_warn("");
+				log_warn(NULL);
 				log_warn_errno("Unable to monitor laptop lid via libinput");
 				log_warn("  To grant permission, add your user to the appropriate group e.g. usermod -a -G input \"${USER}\"");
 				log_warn("    or");
@@ -38,7 +38,7 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 				log_warn("  %s: FALSE", cfg_element_name(LAPTOP_LID_MONITOR));
 			}
 		} else {
-			log_warn("");
+			log_warn(NULL);
 			log_warn_errno("libinput open %s failed", path);
 		}
 		return -errno;
@@ -50,7 +50,7 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 static void libinput_close_restricted(int fd, void *data) {
 
 	if (close(fd) != 0) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn_errno("libinput close failed");
 	}
 }
@@ -65,14 +65,14 @@ static struct libinput *create_libinput_discovery(void) {
 
 	struct udev *udev = udev_new();
 	if (!udev) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("unable to create udev context, abandoning laptop lid detection");
 		return NULL;
 	}
 
 	libinput = libinput_udev_create_context(&libinput_impl, NULL, udev);
 	if (!libinput) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("unable to create libinput discovery context, abandoning laptop lid detection");
 		return NULL;
 	}
@@ -85,7 +85,7 @@ static struct libinput *create_libinput_discovery(void) {
 	}
 
 	if (libinput_udev_assign_seat(libinput, xdg_seat) != 0) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("failed to assign seat to libinput, abandoning laptop lid detection");
 		return NULL;
 	}
@@ -117,7 +117,7 @@ static char *discover_lid_device(struct libinput *libinput) {
 				libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_SWITCH) &&
 				(libinput_device_switch_has_switch(device, LIBINPUT_SWITCH_LID) == 1)) {
 			device_path = calloc(PATH_MAX, sizeof(char));
-			snprintf(device_path, PATH_MAX, "/dev/input/%s", libinput_device_get_sysname(device));
+			snprintf(device_path, PATH_MAX - 1, "/dev/input/%s", libinput_device_get_sysname(device));
 		}
 
 		libinput_event_destroy(event);
@@ -131,14 +131,14 @@ static struct libinput *create_libinput_monitor(char *device_path) {
 
 	struct libinput *libinput_context = libinput_path_create_context(&libinput_impl, NULL);
 	if (!libinput_context) {
-		log_error("");
+		log_error(NULL);
 		log_error("unable to create libinput monitoring context, abandoning laptop lid detection");
 		return NULL;
 	}
 
 	struct libinput_device *device = libinput_path_add_device(libinput_context, device_path);
 	if (!device) {
-		log_error("");
+		log_error(NULL);
 		log_error("unable to add libinput path device %s, abandoning laptop lid detection", device_path);
 		return NULL;
 	}
@@ -198,7 +198,7 @@ void lid_update(void) {
 		libinput_dispatch(lid->libinput_monitor);
 	}
 
-	log_info("");
+	log_info(NULL);
 	if (cfg->laptop_lid_monitor == ON) {
 		log_info("Lid %s", lid->closed ? "closed" : "open");
 	} else {
@@ -237,7 +237,7 @@ void lid_init(void) {
 		return;
 	}
 
-	log_info("");
+	log_info(NULL);
 	log_info("Monitoring lid device: %s", device_path);
 
 	lid = calloc(1, sizeof(struct Lid));

@@ -9,7 +9,6 @@
 
 #include "cfg.h"
 #include "convert.h"
-#include "displ.h"
 #include "global.h"
 #include "head.h"
 #include "lid.h"
@@ -232,7 +231,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 static void print_newline(const enum LogThreshold t, bool *print) {
 	if (print && *print) {
-		log_(t, "");
+		log_(t, NULL);
 		*print = false;
 	}
 }
@@ -245,7 +244,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	bool newline;
 
 	if (cfg->align && cfg->arrange) {
-		log_(t, "");
+		log_(t, NULL);
 		log_(t, "way-displays -s ARRANGE_ALIGN %s %s", arrange_name(cfg->arrange), align_name(cfg->align));
 	}
 
@@ -256,19 +255,19 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 			msg = sprintf_append(msg, "'%s' ", (char*)i->val);
 		}
 
-		log_(t, "");
+		log_(t, NULL);
 		log_(t, "way-displays -s ORDER %s", msg);
 
 		free(msg);
 	}
 
 	if (cfg->scaling) {
-		log_(t, "");
+		log_(t, NULL);
 		log_(t, "way-displays -s SCALING %s", on_off_name(cfg->scaling));
 	}
 
 	if (cfg->auto_scale) {
-		log_(t, "");
+		log_(t, NULL);
 		log_(t, "way-displays -s AUTO_SCALE %s", on_off_name(cfg->auto_scale));
 	}
 
@@ -428,7 +427,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 	switch (event) {
 		case ARRIVED:
 		case NONE:
-			log_(t, "");
+			log_(t, NULL);
 			log_(t, "%s%s:", head->name ? head->name : "???", event == ARRIVED ? " Arrived" : "");
 			log_(t, "  info:");
 			if (head->name)
@@ -457,7 +456,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 			print_head_current(t, head);
 			break;
 		case DEPARTED:
-			log_(t, "");
+			log_(t, NULL);
 			log_(t, "%s Departed:", head->name);
 			if (head->name)
 				log_(t, "    name:      '%s'", head->name);
@@ -466,7 +465,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 			break;
 		case DELTA:
 			if (head_current_not_desired(head)) {
-				log_(t, "");
+				log_(t, NULL);
 				log_(t, "%s Changing:", head->name);
 				log_(t, "  from:");
 				print_head_current(t, head);
@@ -521,7 +520,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 		return;
 	}
 
-	log_(t, "");
+	log_(t, NULL);
 	log_(t, "%s:", head_human(head));
 	log_(t, "  Cannot enable VRR: this display or compositor may not support it.");
 	log_(t, "  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
@@ -530,7 +529,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 }
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
-	log_(t, "");
+	log_(t, NULL);
 	log_(t, "Changes failed");
 
 	if (!head) {
@@ -541,7 +540,7 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	print_mode(t, mode);
 }
 
-char *delta_human(const enum DisplState state, const struct SList * const heads) {
+char *delta_human(const struct SList * const heads) {
 	if (!heads) {
 		return NULL;
 	}
@@ -600,7 +599,7 @@ char *delta_human(const enum DisplState state, const struct SList * const heads)
 	return delta;
 }
 
-char *delta_human_mode(const enum DisplState state, const struct Head * const head) {
+char *delta_human_mode(const struct Head * const head) {
 	if (!head) {
 		return NULL;
 	}
@@ -635,7 +634,7 @@ char *delta_human_mode(const enum DisplState state, const struct Head * const he
 }
 
 
-char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head) {
+char *delta_human_adaptive_sync(const struct Head * const head) {
 	if (!head) {
 		return NULL;
 	}
@@ -651,7 +650,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 		return;
 	}
 
-	log_info("");
+	log_info(NULL);
 	log_info("Executing CALLBACK_CMD:");
 	log_info("  %s", cfg->callback_cmd);
 

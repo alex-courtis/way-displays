@@ -328,7 +328,7 @@ static void apply(void) {
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
 
-		displ->delta.human = delta_human_mode(displ->state, head);
+		displ->delta.human = delta_human_mode(head);
 
 	} else if ((head = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
 		log_debug("APPLY vrr");
@@ -341,7 +341,7 @@ static void apply(void) {
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
 
-		displ->delta.human = delta_human_adaptive_sync(displ->state, head);
+		displ->delta.human = delta_human_adaptive_sync(head);
 
 	} else {
 		log_debug("APPLY remainder");
@@ -364,7 +364,7 @@ static void apply(void) {
 			}
 		}
 
-		displ->delta.human = delta_human(displ->state, heads_changing);
+		displ->delta.human = delta_human(heads_changing);
 	}
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
@@ -395,7 +395,7 @@ void handle_success(void) {
 			break;
 	}
 
-	log_info("");
+	log_info(NULL);
 	log_info("Changes successful");
 	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
 
@@ -405,11 +405,11 @@ void handle_success(void) {
 static bool handle_cancelled(void) {
 	cancellation_retries++;
 	if (cancellation_retries <= MAX_CANCELLATION_RETRIES) {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("Changes cancelled, retrying (attempt %i)", cancellation_retries);
 		return true;
 	} else {
-		log_warn("");
+		log_warn(NULL);
 		log_warn("Changes cancelled, max number of retry attempts exceeded");
 		return false;
 	}
@@ -442,7 +442,7 @@ void handle_failure(void) {
 
 			break;
 		default:
-			log_fatal("");
+			log_fatal(NULL);
 			log_fatal("Changes failed, exiting");
 			call_back(FATAL, displ->delta.human, "\nChanges failed, exiting");
 

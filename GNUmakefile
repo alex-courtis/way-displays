@@ -75,6 +75,7 @@ cppcheck: $(SRC_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
 		--enable=warning,unusedFunction,performance,portability \
 		--check-level=exhaustive \
+		--inline-suppr \
 		--suppressions-list=bld/cppcheck.supp \
 		--error-exitcode=1 \
 		$(CPPFLAGS)

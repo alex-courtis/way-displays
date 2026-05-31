@@ -1,5 +1,5 @@
 Ignoring invalid TRANSFORM invalid TRANSFORM foobar, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
-Ignoring invalid TRANSFORM regex '(transform':  Unmatched ( or \(
+Ignoring invalid TRANSFORM NAME_DESC regex '(transform': Unmatched ( or \(
 Ignoring invalid TRANSFORM NAME_DESC expected scalar, got sequence
 Ignoring invalid TRANSFORM mistyped TRANSFORM expected scalar, got sequence, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 Ignoring invalid TRANSFORM expected map, got sequence

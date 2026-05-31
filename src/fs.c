@@ -28,7 +28,7 @@ bool mkdir_p(char *path, mode_t mode) {
 	}
 
 	if (mkdir(path, mode) != 0) {
-		log_error("");
+		log_error(NULL);
 		log_error_errno("Cannot create directory %s", path);
 		goto end;
 	}
@@ -49,7 +49,7 @@ bool file_write(const char *path, const char *contents, const char *mode) {
 	FILE *f = fopen(path, mode);
 
 	if (!f) {
-		log_error("");
+		log_error(NULL);
 		log_error_errno("Unable to write to %s", path);
 		return false;
 	}
@@ -61,7 +61,7 @@ bool file_write(const char *path, const char *contents, const char *mode) {
 	fflush(f);
 
 	if (fclose(f) != 0) {
-		log_error("");
+		log_error(NULL);
 		log_error_errno("Unable to write to %s", path);
 		return false;
 	}

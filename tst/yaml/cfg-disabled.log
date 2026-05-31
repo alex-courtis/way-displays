@@ -1,7 +1,7 @@
-Ignoring invalid DISABLED regex '(disabled1':  Unmatched ( or \(
-Ignoring invalid DISABLED regex '(disabled2':  Unmatched ( or \(
-Ignoring invalid DISABLED regex '(plugged1':  Unmatched ( or \(
-Ignoring invalid DISABLED regex '(unplugged1':  Unmatched ( or \(
+Ignoring invalid DISABLED regex '(disabled1': Unmatched ( or \(
+Ignoring invalid DISABLED NAME_DESC regex '(disabled2': Unmatched ( or \(
+Ignoring invalid DISABLED BAD_DISABLED_IFS PLUGGED regex '(plugged1': Unmatched ( or \(
+Ignoring invalid DISABLED BAD_DISABLED_IFS UNPLUGGED regex '(unplugged1': Unmatched ( or \(
 Ignoring invalid DISABLED NAME_DESC expected scalar, got sequence
 Ignoring invalid DISABLED MISTYPED_IF_SCALAR IF expected sequence, got scalar
 Ignoring invalid DISABLED MISTYPED_IF_MAP IF expected sequence, got map

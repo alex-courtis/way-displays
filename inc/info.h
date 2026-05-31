@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "cfg.h"
-#include "displ.h"
 #include "head.h"
 #include "slist.h"
 #include "log.h"
@@ -40,13 +39,13 @@ char *info_user_mode_string(const struct UserMode * const user_mode);
 char *info_mode_string(const struct Mode * const mode);
 
 // consumer frees
-char *delta_human(const enum DisplState state, const struct SList * const heads);
+char *delta_human(const struct SList * const heads);
 
 // consumer frees
-char *delta_human_mode(const enum DisplState state, const struct Head * const head);
+char *delta_human_mode(const struct Head * const head);
 
 // consumer frees
-char *delta_human_adaptive_sync(const enum DisplState state, const struct Head * const head);
+char *delta_human_adaptive_sync(const struct Head * const head);
 
 // maybe execute CALLBACK_CMD
 // set CALLBACK_MSG to msg1..msg2

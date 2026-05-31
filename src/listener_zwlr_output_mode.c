@@ -44,10 +44,10 @@ static void preferred(void *data,
 			char *mode_str = info_mode_string(mode);
 
 			if (mode_preferred->head && mode_preferred->head->name) {
-				log_info("");
+				log_info(NULL);
 				log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred->head->name, mode_preferred_str, mode_str);
 			} else {
-				log_info("");
+				log_info(NULL);
 				log_info("???: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred_str, mode_str);
 			}
 

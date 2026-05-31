@@ -61,7 +61,11 @@ void _log(enum LogThreshold t, const char *__restrict __format, va_list __args) 
 
 	printed = bp[t];
 
-	bp[t] += vsnprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), __format, __args);
+	if (__format) {
+		bp[t] += vsnprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), __format, __args);
+	} else {
+		bp[t] += snprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), "%s", "");
+	}
 
 	if (LOG_PRINT) {
 		fprintf(stderr, "%s\n", printed);

@@ -15,27 +15,21 @@
 
 #include "log.h"
 
-char *pid_path(void) {
-	char *path = calloc(1, PATH_MAX);
-
+void pid_path_generate(char *pid_path) {
 	const char *xdg_vtnr = getenv("XDG_VTNR");
 	if (xdg_vtnr) {
-		snprintf(path, PATH_MAX, "/tmp/way-displays.%s.pid", xdg_vtnr);
+		snprintf(pid_path, PATH_MAX - 1, "/tmp/way-displays.%s.pid", xdg_vtnr);
 	} else {
-		snprintf(path, PATH_MAX, "/tmp/way-displays.pid");
+		snprintf(pid_path, PATH_MAX - 1, "/tmp/way-displays.pid");
 	}
-
-	return path;
 }
 
-pid_t pid_active_server(void) {
+pid_t pid_active_server(const char *pid_path) {
 	static char pbuf[11];
 
 	pid_t pid = 0;
 
-	char *path = pid_path();
-
-	int fd = open(path, O_RDONLY | O_CLOEXEC);
+	int fd = open(pid_path, O_RDONLY | O_CLOEXEC);
 	if (fd != -1) {
 		if (read(fd, pbuf, sizeof(pbuf)) != -1) {
 			if (sscanf(pbuf, "%d", &pid) != 1) {
@@ -47,16 +41,15 @@ pid_t pid_active_server(void) {
 		close(fd);
 	}
 
-	free(path);
-
 	return pid;
 }
 
 void pid_file_create(void) {
-	char *path = pid_path();
+	char pid_path[PATH_MAX];
+	pid_path_generate(pid_path);
 
-	pid_t pid = pid_active_server();
-	if (pid_active_server()) {
+	pid_t pid = pid_active_server(pid_path);
+	if (pid) {
 		log_fatal("another instance %d is running, exiting\n", pid);
 		usage(stderr);
 		wd_exit(EXIT_FAILURE);
@@ -64,10 +57,10 @@ void pid_file_create(void) {
 	}
 
 	// attempt to use existing, regardless of owner
-	int fd = open(path, O_RDWR | O_CLOEXEC);
+	int fd = open(pid_path, O_RDWR | O_CLOEXEC);
 	if (fd == -1 && errno != ENOENT) {
-		log_fatal("");
-		log_fatal_errno("unable to open existing pid file for writing %s, exiting", path);
+		log_fatal(NULL);
+		log_fatal_errno("unable to open existing pid file for writing %s, exiting", pid_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
@@ -75,11 +68,11 @@ void pid_file_create(void) {
 	// create a new file
 	if (fd == -1) {
 		mode_t umask_prev = umask(0000);
-		fd = open(path, O_RDWR | O_CLOEXEC | O_CREAT, 0666);
+		fd = open(pid_path, O_RDWR | O_CLOEXEC | O_CREAT, 0666);
 		umask(umask_prev);
 		if (fd == -1) {
-			log_fatal("");
-			log_fatal_errno("unable to create pid file %s, exiting", path);
+			log_fatal(NULL);
+			log_fatal_errno("unable to create pid file %s, exiting", pid_path);
 			wd_exit_message(EXIT_FAILURE);
 			return;
 		}
@@ -87,29 +80,27 @@ void pid_file_create(void) {
 
 	// lock it forever
 	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
-		log_fatal("");
-		log_fatal_errno("unable to lock pid file %s, exiting", path);
+		log_fatal(NULL);
+		log_fatal_errno("unable to lock pid file %s, exiting", pid_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
 
 	// clear it
 	if (ftruncate(fd, 0) == -1) {
-		log_fatal("");
-		log_fatal_errno("unable to truncate pid file %s, exiting", path);
+		log_fatal(NULL);
+		log_fatal_errno("unable to truncate pid file %s, exiting", pid_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
 
 	// write the new pid
 	if (dprintf(fd, "%d", getpid()) <= 0) {
-		log_fatal("");
-		log_fatal_errno("unable to write to pid file %s, exiting", path);
+		log_fatal(NULL);
+		log_fatal_errno("unable to write to pid file %s, exiting", pid_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
-
-	free(path);
 }
 
 void spawn_sh_cmd(const char * const command, const struct STable * const env) {
@@ -121,7 +112,7 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 
 	pid_t pid = fork();
 	if (pid < 0) {
-		log_error("");
+		log_error(NULL);
 		log_error_errno("failed to fork");
 		return;
 	}
@@ -143,7 +134,7 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 
 		// execute command in the child process
 		execl("/bin/sh", "/bin/sh", "-c", command, (char *)NULL);
-		log_error("");
+		log_error(NULL);
 		log_error_errno("failed to execute /bin/sh");
 		// exit the child process in case the exec fails
 		exit(-1);
@@ -155,7 +146,7 @@ void wd_exit(const int __status) {
 }
 
 void wd_exit_message(const int __status) {
-	log_fatal("");
+	log_fatal(NULL);
 	log_fatal("Please raise an issue: https://github.com/alex-courtis/way-displays/issues");
 	log_fatal("Attach this log and describe the events that occurred before this failure.");
 	exit(__status);
