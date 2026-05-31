@@ -224,7 +224,7 @@ bool yaml_map_populate_state(struct MC *c, const void *unused, int mapping) {
 	if (!mapping)
 		return false;
 
-	if (lid && !yaml_map_add_map(c, "LID", lid, yaml_map_populate_lid, mapping))
+	if (g_lid && !yaml_map_add_map(c, "LID", g_lid, yaml_map_populate_lid, mapping))
 		return false;
 
 	if (heads && !yaml_map_add_seq(c, "HEADS", heads, yaml_seq_append_head,  mapping))

@@ -97,7 +97,7 @@ void pfds_init(void) {
 
 	// wayland and signal are always present, others are optional
 	npfds = 2;
-	if (lid)
+	if (g_lid)
 		npfds++;
 	if (fd_socket_server != -1)
 		npfds++;
@@ -120,9 +120,9 @@ void pfds_init(void) {
 		pfd_ipc->events = POLLIN;
 	}
 
-	if (lid) {
+	if (g_lid) {
 		pfd_lid = &pfds[i++];
-		pfd_lid->fd = lid->libinput_fd;
+		pfd_lid->fd = g_lid->libinput_fd;
 		pfd_lid->events = POLLIN;
 	}
 

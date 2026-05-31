@@ -99,9 +99,9 @@ struct IpcOperation *ipc_response(void) {
 
 	cfg = cfg_all();
 
-	lid = calloc(1, sizeof(struct Lid));
-	lid->closed = true;
-	lid->device_path = "/path/to/lid";
+	g_lid = calloc(1, sizeof(struct Lid));
+	g_lid->closed = true;
+	g_lid->device_path = "/path/to/lid";
 
 	lcl(DEBUG, "dbg", &ipc_operation->log_cap_lines);
 	lcl(INFO, "inf", &ipc_operation->log_cap_lines);

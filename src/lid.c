@@ -17,6 +17,8 @@
 #include "global.h"
 #include "log.h"
 
+struct Lid *g_lid = NULL;
+
 static const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
 
 static bool warned_permission_fail = false;
@@ -156,14 +158,14 @@ static void destroy_libinput_monitor(struct libinput* libinput) {
 }
 
 void lid_destroy(void) {
-	if (!lid)
+	if (!g_lid)
 		return;
 
-	destroy_libinput_monitor(lid->libinput_monitor);
+	destroy_libinput_monitor(g_lid->libinput_monitor);
 
-	lid_free(lid);
+	lid_free(g_lid);
 
-	lid = NULL;
+	g_lid = NULL;
 }
 
 void lid_free(void *data) {
@@ -178,36 +180,36 @@ void lid_free(void *data) {
 }
 
 void lid_update(void) {
-	if (!lid || !lid->libinput_monitor)
+	if (!g_lid || !g_lid->libinput_monitor)
 		return;
 
 	struct libinput_event *event;
 
-	libinput_dispatch(lid->libinput_monitor);
-	while ((event = libinput_get_event(lid->libinput_monitor))) {
+	libinput_dispatch(g_lid->libinput_monitor);
+	while ((event = libinput_get_event(g_lid->libinput_monitor))) {
 		enum libinput_event_type event_type = libinput_event_get_type(event);
 
 		if (event_type == LIBINPUT_EVENT_SWITCH_TOGGLE) {
 			struct libinput_event_switch *event_switch = libinput_event_get_switch_event(event);
 			if (cfg->laptop_lid_monitor == ON) {
-				lid->closed = libinput_event_switch_get_switch_state(event_switch) == LIBINPUT_SWITCH_STATE_ON;
+				g_lid->closed = libinput_event_switch_get_switch_state(event_switch) == LIBINPUT_SWITCH_STATE_ON;
 			}
 		}
 
 		libinput_event_destroy(event);
-		libinput_dispatch(lid->libinput_monitor);
+		libinput_dispatch(g_lid->libinput_monitor);
 	}
 
 	log_info(NULL);
 	if (cfg->laptop_lid_monitor == ON) {
-		log_info("Lid %s", lid->closed ? "closed" : "open");
+		log_info("Lid %s", g_lid->closed ? "closed" : "open");
 	} else {
 		log_info("Lid event ignored: Laptop lid monitoring disabled");
 	}
 }
 
 void lid_init(void) {
-	lid = NULL;
+	g_lid = NULL;
 
 	if (cfg->laptop_lid_monitor == OFF)
 		return;
@@ -240,17 +242,17 @@ void lid_init(void) {
 	log_info(NULL);
 	log_info("Monitoring lid device: %s", device_path);
 
-	lid = calloc(1, sizeof(struct Lid));
-	lid->device_path = device_path;
-	lid->libinput_fd = libinput_get_fd(libinput_monitor);
-	lid->libinput_monitor = libinput_monitor;
+	g_lid = calloc(1, sizeof(struct Lid));
+	g_lid->device_path = device_path;
+	g_lid->libinput_fd = libinput_get_fd(libinput_monitor);
+	g_lid->libinput_monitor = libinput_monitor;
 }
 
 bool lid_is_closed(char *name) {
 	if (!name)
 		return false;
 
-	if (!lid)
+	if (!g_lid)
 		return false;
 
 	const char *laptop_display_prefix;
@@ -261,7 +263,7 @@ bool lid_is_closed(char *name) {
 	}
 
 	if (strncasecmp(laptop_display_prefix, name, strlen(laptop_display_prefix)) == 0) {
-		return lid->closed;
+		return g_lid->closed;
 	} else {
 		return false;
 	}

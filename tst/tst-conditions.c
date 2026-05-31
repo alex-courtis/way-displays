@@ -39,7 +39,7 @@ static int before_each(void **state) {
 	slist_append(&heads, h2);
 	slist_append(&heads, h3);
 
-	lid = NULL;
+	g_lid = NULL;
 
 	*state = s;
 	return 0;
@@ -51,8 +51,8 @@ static int after_each(void **state) {
 	condition_free(s->condition);
 	slist_free_vals(&heads, head_free);
 
-	free(lid);
-	lid = NULL;
+	free(g_lid);
+	g_lid = NULL;
 
 	free(s);
 
@@ -91,8 +91,8 @@ static void conditions__lid_closed(void **state) {
 
 	s->condition->lid = LID_CLOSED;
 
-	lid = calloc(1, sizeof(struct Lid));
-	lid->closed = true;
+	g_lid = calloc(1, sizeof(struct Lid));
+	g_lid->closed = true;
 
 	assert_true(condition_evaluate(s->condition));
 }
@@ -102,8 +102,8 @@ static void conditions__lid_open(void **state) {
 
 	s->condition->lid = LID_OPEN;
 
-	lid = calloc(1, sizeof(struct Lid));
-	lid->closed = false;
+	g_lid = calloc(1, sizeof(struct Lid));
+	g_lid->closed = false;
 
 	assert_true(condition_evaluate(s->condition));
 }
@@ -126,8 +126,8 @@ static void conditions__complex(void **state) {
 	assert_true(condition_evaluate(s->condition));
 
 	s->condition->lid = LID_CLOSED;
-	lid = calloc(1, sizeof(struct Lid));
-	lid->closed = true;
+	g_lid = calloc(1, sizeof(struct Lid));
+	g_lid->closed = true;
 
 	assert_true(condition_evaluate(s->condition));
 }

@@ -39,8 +39,8 @@ int before_each(void **state) {
 int after_each(void **state) {
 	cfg_free(cfg);
 	cfg = NULL;
-	free(lid);
-	lid = NULL;
+	free(g_lid);
+	g_lid = NULL;
 	return 0;
 }
 
