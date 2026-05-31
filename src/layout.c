@@ -314,32 +314,32 @@ static void apply(void) {
 	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(g_displ->zwlr_output_manager, g_displ->zwlr_output_manager_serial);
 	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), g_displ);
 
-	struct Head *head;
-	if ((head = slist_find_val(g_heads, head_current_mode_not_desired))) {
+	struct Head *head_own_op;
+	if ((head_own_op = slist_find_val(g_heads, head_current_mode_not_desired))) {
 		log_debug("APPLY mode");
 
-		displ_delta_init(MODE, head);
+		displ_delta_init(MODE, head_own_op);
 
-		print_head(INFO, DELTA, head);
+		print_head(INFO, DELTA, head_own_op);
 
 		// mode change in its own operation; mode change desire is always enabled
-		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
+		head_own_op->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_own_op->zwlr_head);
+		zwlr_output_configuration_head_v1_set_mode(head_own_op->zwlr_config_head, head_own_op->desired.mode->zwlr_mode);
 
-		g_displ->delta.human = delta_human_mode(head);
+		g_displ->delta.human = delta_human_mode(head_own_op);
 
-	} else if ((head = slist_find_val(g_heads, head_current_adaptive_sync_not_desired))) {
+	} else if ((head_own_op = slist_find_val(g_heads, head_current_adaptive_sync_not_desired))) {
 		log_debug("APPLY vrr");
 
-		displ_delta_init(VRR_OFF, head);
+		displ_delta_init(VRR_OFF, head_own_op);
 
-		print_head(INFO, DELTA, head);
+		print_head(INFO, DELTA, head_own_op);
 
 		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
-		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
+		head_own_op->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head_own_op->zwlr_head);
+		zwlr_output_configuration_head_v1_set_adaptive_sync(head_own_op->zwlr_config_head, head_own_op->desired.adaptive_sync);
 
-		g_displ->delta.human = delta_human_adaptive_sync(head);
+		g_displ->delta.human = delta_human_adaptive_sync(head_own_op);
 
 	} else {
 		log_debug("APPLY remainder");

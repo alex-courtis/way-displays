@@ -19,15 +19,16 @@ unusedFunction:tst/wrap-*.c
 staticFunction:tst/*c
 
 # needs fixing upstream
-variableScope:lib/col/src/slist.c
 constVariablePointer:lib/col/src/slist.c
-unreadVariable:lib/col/src/slist.c
 redundantAssignment:lib/col/src/slist.c
+shadowVariable:lib/col/src/slist.c
+unreadVariable:lib/col/src/slist.c
+variableScope:lib/col/src/slist.c
 
 # this is just not practical
 nullPointerOutOfMemory
 
-# little value and requires much casting
+# questionable value and requires much casting
 constParameterCallback
 
 # does not identify correctly
@@ -35,12 +36,3 @@ unusedStructMember
 
 # little value and likely won't compile
 shadowFunction
-
-# TODO: fix remaining
-# constVariablePointer
-# constParameterPointer
-shadowVariable
-# variableScope
-# unreadVariable
-# redundantAssignment
-# constVariable
