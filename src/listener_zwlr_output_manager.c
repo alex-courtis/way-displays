@@ -14,7 +14,7 @@ static void head(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 
-	struct Displ *displ = data;
+	const struct Displ *displ = data;
 
 	struct Head *head = calloc(1, sizeof(struct Head));
 	head->zwlr_head = zwlr_output_head_v1;

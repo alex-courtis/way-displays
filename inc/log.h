@@ -61,7 +61,7 @@ void log_cap_lines_stop(struct SList **log_cap_lines);
 
 void log_cap_lines_free(struct SList **log_cap_lines);
 
-void log_cap_lines_playback(struct SList *log_cap_lines);
+void log_cap_lines_playback(const struct SList *log_cap_lines);
 
 
 // vsprintf to a malloc'd buffer, does not mutate __args

@@ -18,6 +18,12 @@ unusedFunction:tst/expects.h
 unusedFunction:tst/wrap-*.c
 staticFunction:tst/*c
 
+# needs fixing upstream
+variableScope:lib/col/src/slist.c
+constVariablePointer:lib/col/src/slist.c
+unreadVariable:lib/col/src/slist.c
+redundantAssignment:lib/col/src/slist.c
+
 # this is just not practical
 nullPointerOutOfMemory
 
@@ -31,7 +37,7 @@ unusedStructMember
 shadowFunction
 
 # TODO: fix remaining
-constVariablePointer
+# constVariablePointer
 # constParameterPointer
 shadowVariable
 # variableScope

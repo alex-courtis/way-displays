@@ -44,14 +44,14 @@ bool condition_evaluate(const struct Condition *condition) {
 		return true;
 	}
 
-	for (struct SList *i = condition->plugged; i; i = i->nex) {
+	for (const struct SList *i = condition->plugged; i; i = i->nex) {
 		const char* name_desc = (const char*)i->val;
 		if (slist_find_equal(heads, head_matches_name_desc, name_desc) == NULL) {
 			return false;
 		}
 	}
 
-	for (struct SList *i = condition->unplugged; i; i = i->nex) {
+	for (const struct SList *i = condition->unplugged; i; i = i->nex) {
 		const char* name_desc = (const char*)i->val;
 		if (slist_find_equal(heads, head_matches_name_desc, name_desc) != NULL) {
 			return false;
@@ -83,7 +83,7 @@ bool condition_evaluate(const struct Condition *condition) {
 
 bool condition_list_evaluate(const struct SList *conditions) {
 	for (const struct SList *i = conditions; i; i = i->nex) {
-		struct Condition* condition = (struct Condition*)i->val;
+		const struct Condition* condition = (struct Condition*)i->val;
 
 		if (!condition_evaluate(condition)) {
 			return false;

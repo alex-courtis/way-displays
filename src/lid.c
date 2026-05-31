@@ -136,7 +136,7 @@ static struct libinput *create_libinput_monitor(char *device_path) {
 		return NULL;
 	}
 
-	struct libinput_device *device = libinput_path_add_device(libinput_context, device_path);
+	const struct libinput_device *device = libinput_path_add_device(libinput_context, device_path);
 	if (!device) {
 		log_error(NULL);
 		log_error("unable to add libinput path device %s, abandoning laptop lid detection", device_path);

@@ -149,7 +149,7 @@ static void yaml_marshal__yaml_document_initialize_fail(void **state) {
 
 	yaml_document_initialize__fail = true;
 
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 
@@ -165,7 +165,7 @@ static void yaml_marshal__yaml_emitter_initialize_fail(void **state) {
 
 	yaml_emitter_initialize__fail = true;
 
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 
@@ -181,7 +181,7 @@ static void yaml_marshal__yaml_emitter_open_fail(void **state) {
 
 	yaml_emitter_open__fail = true;
 
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 
@@ -198,7 +198,7 @@ static void yaml_marshal__yaml_emitter_dump_fail(void **state) {
 
 	yaml_emitter_dump__fail = true;
 
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 
@@ -214,7 +214,7 @@ static void yaml_marshal__yaml_emitter_close_fail(void **state) {
 
 	yaml_emitter_close__fail = true;
 
-	char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 

@@ -37,7 +37,7 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	if (!head)
 		return false;
 
-	for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
+	for (const struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
 		if (head_matches_name_desc(head, i->val)) {
 			return true;
 		}
@@ -156,7 +156,7 @@ bool head_matches_name_desc_exact(const void * const h, const void * const n) {
 }
 
 bool head_disabled_matches_head(const void * const d, const void * const h) {
-	struct Disabled *disabled_if = (struct Disabled*)d;
+	const struct Disabled *disabled_if = (struct Disabled*)d;
 
 	if (!d)
 		return false;
@@ -344,7 +344,7 @@ struct Mode *head_preferred_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	for (struct SList *i = head->modes; i; i = i->nex) {
+	for (const struct SList *i = head->modes; i; i = i->nex) {
 		if (((struct Mode*)i->val)->preferred) {
 			return i->val;
 		}

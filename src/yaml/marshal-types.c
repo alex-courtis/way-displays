@@ -194,7 +194,7 @@ bool yaml_map_populate_messages(struct MC *c, void *data, int mapping) {
 	int seq_lines = 0;
 
 	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
-		struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+		const struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 
 		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
 			continue;

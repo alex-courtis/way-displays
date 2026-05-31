@@ -72,7 +72,7 @@ static void global(void *data,
 static void global_remove(void *data,
 		struct wl_registry *wl_registry,
 		uint32_t name) {
-	struct Displ *displ = data;
+	const struct Displ *displ = data;
 
 	output_destroy_by_wl_output_name(name);
 

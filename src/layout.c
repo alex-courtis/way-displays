@@ -162,7 +162,7 @@ void desire_enabled(struct Head *head) {
 	// iterate over all matching NAME_DESC's and evaluate their conditions
 	struct SList *d = cfg->disabled;
 	while ((d = slist_find_equal(d, head_disabled_matches_head, head)) != NULL) {
-		struct Disabled *disabled_if = (struct Disabled*)d->val;
+		const struct Disabled *disabled_if = (struct Disabled*)d->val;
 		enabled &= !condition_list_evaluate(disabled_if->conditions);
 
 		if (!enabled) break;
@@ -223,7 +223,7 @@ void desire_scale(struct Head *head) {
 
 	// user scale first
 	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
-		struct UserScale *user_scale = (struct UserScale*)i->val;
+		const struct UserScale *user_scale = (struct UserScale*)i->val;
 		if (head_matches_name_desc(head, user_scale->name_desc)) {
 			head->desired.scale = head_get_fixed_scale(user_scale->scale);
 			return;
@@ -245,7 +245,7 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	struct UserTransform *user_transform;
+	const struct UserTransform *user_transform;
 	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		user_transform = (struct UserTransform*)i->val;
 		if (head_matches_name_desc(head, user_transform->name_desc)) {

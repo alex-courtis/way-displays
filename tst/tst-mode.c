@@ -76,7 +76,7 @@ void mode_user_mode__max(void **state) {
 void mode_user_mode__no_hz_no_match(void **state) {
 	user_mode = cfg_user_mode_init("um", false, 999, 999, -1, false);
 
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
 	assert_nul(actual);
 }
@@ -92,7 +92,7 @@ void mode_user_mode__no_hz_match(void **state) {
 void mode_user_mode__even_hz_no_match(void **state) {
 	user_mode = cfg_user_mode_init("um", false, 200, 100, 144000, false);
 
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
 	assert_nul(actual);
 }

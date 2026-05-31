@@ -68,7 +68,7 @@ void _assert_heads_order(struct SList *a, struct SList *b, const char * const fi
 		char *ap = actual;
 		*ap = '\0';
 		for (struct SList *i = a; i; i = i->nex) {
-			struct Head *head = (struct Head*)i->val;
+			const struct Head *head = (struct Head*)i->val;
 			ap += sprintf(ap, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 
@@ -76,7 +76,7 @@ void _assert_heads_order(struct SList *a, struct SList *b, const char * const fi
 		char *ep = expected;
 		*ep = '\0';
 		for (struct SList *i = b; i; i = i->nex) {
-			struct Head *head = (struct Head*)i->val;
+			const struct Head *head = (struct Head*)i->val;
 			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 

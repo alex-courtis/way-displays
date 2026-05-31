@@ -246,12 +246,12 @@ static void log_cap_line_free(const void *data) {
 	free((struct LogCapLine*)line);
 }
 
-void log_cap_lines_playback(struct SList *lines) {
+void log_cap_lines_playback(const struct SList *lines) {
 	if (!lines)
 		return;
 
-	for (struct SList *i = lines; i; i = i->nex) {
-		struct LogCapLine *line = i->val;
+	for (const struct SList *i = lines; i; i = i->nex) {
+		const struct LogCapLine *line = i->val;
 		if (!line)
 			continue;
 

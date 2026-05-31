@@ -28,7 +28,7 @@ struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed) {
 }
 
 struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
-	struct Mode *preferred = mode_preferred(modes, modes_failed);
+	const struct Mode *preferred = mode_preferred(modes, modes_failed);
 
 	if (!preferred)
 		return NULL;
@@ -80,8 +80,8 @@ static bool equal_mode_res_hz(const void *a, const void *b) {
 		return false;
 	}
 
-	struct Mode *lhs = (struct Mode*)a;
-	struct Mode *rhs = (struct Mode*)b;
+	const struct Mode *lhs = (struct Mode*)a;
+	const struct Mode *rhs = (struct Mode*)b;
 
 	return lhs->width == rhs->width &&
 		lhs->height == rhs->height &&
@@ -93,8 +93,8 @@ static bool equal_mode_user_mode_res_refresh(const void *a, const void *b) {
 		return false;
 	}
 
-	struct Mode *lhs = (struct Mode*)a;
-	struct UserMode *rhs = (struct UserMode*)b;
+	const struct Mode *lhs = (struct Mode*)a;
+	const struct UserMode *rhs = (struct UserMode*)b;
 
 	return lhs->width == rhs->width && lhs->height == rhs->height && lhs->refresh_mhz == rhs->refresh_mhz;
 }
@@ -104,8 +104,8 @@ static bool greater_than_res_refresh(const void *a, const void *b) {
 		return false;
 	}
 
-	struct Mode *lhs = (struct Mode*)a;
-	struct Mode *rhs = (struct Mode*)b;
+	const struct Mode *lhs = (struct Mode*)a;
+	const struct Mode *rhs = (struct Mode*)b;
 
 	if (lhs->width > rhs->width) {
 		return true;

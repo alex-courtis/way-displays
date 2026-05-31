@@ -84,7 +84,7 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 
 	if (head->modes_failed) {
 		log_(t, "  failed:");
-		for (struct SList *i = head->modes_failed; i; i = i->nex) {
+		for (const struct SList *i = head->modes_failed; i; i = i->nex) {
 			print_mode(t, i->val);
 		}
 	}
@@ -105,17 +105,17 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		return;
 
 	struct SList *mrrs = modes_res_refresh(head->modes);
-	struct Mode *preferred_mode = head_preferred_mode(head);
+	const struct Mode *preferred_mode = head_preferred_mode(head);
 
 	struct ModesResRefresh *mrr = NULL;
-	struct Mode *mode = NULL;
+	const struct Mode *mode = NULL;
 
 	for (struct SList *i = mrrs; i; i = i->nex) {
 		mrr = i->val;
 
 		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
-		for (struct SList *j = mrr->modes; j; j = j->nex) {
+		for (const struct SList *j = mrr->modes; j; j = j->nex) {
 			mode = j->val;
 			msg = sprintf_append(msg, "%4d,%03d mHz", mode->refresh_mhz / 1000, mode->refresh_mhz % 1000);
 			if (mode == preferred_mode) {
@@ -183,7 +183,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 	if (cfg->user_modes) {
 		log_(t, "  Mode:");
 		for (i = cfg->user_modes; i; i = i->nex) {
-			struct UserMode *user_mode = (struct UserMode*)i->val;
+			const struct UserMode *user_mode = (struct UserMode*)i->val;
 			print_user_mode(t, user_mode, del);
 		}
 	}

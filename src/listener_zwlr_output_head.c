@@ -135,7 +135,7 @@ static void adaptive_sync(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
-	struct Head *head = data;
+	const struct Head *head = data;
 
 	// dummy Head, just for printing
 	struct Head *head_departed = calloc(1, sizeof(struct Head));

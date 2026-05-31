@@ -315,7 +315,7 @@ void print_cfg_commands__ok(void **state) {
 }
 
 void print_head_arrived__all(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -329,7 +329,7 @@ void print_head_arrived__all(void **state) {
 }
 
 void print_head_arrived__min(void **state) {
-	struct Head *head = calloc(1, sizeof(struct Head));
+	const struct Head *head = calloc(1, sizeof(struct Head));
 
 	expect_str(__wrap_lid_is_closed, name, NULL);
 	will_return_int(__wrap_lid_is_closed, false);
@@ -345,7 +345,7 @@ void print_head_arrived__min(void **state) {
 }
 
 void print_head_departed__ok(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
 	print_head(INFO, DEPARTED, s->head1);
 
@@ -356,7 +356,7 @@ void print_head_departed__ok(void **state) {
 }
 
 void print_head_deltas__mode(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -567,7 +567,7 @@ void delta_human_adaptive_sync__off(void **state) {
 }
 
 void delta_human__all(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
 	char *deltas = delta_human(s->heads);
 
@@ -696,7 +696,7 @@ void call_back__two(void **state) {
 }
 
 void call_back_mode_fail__(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
 	free(cfg->callback_cmd);
 	cfg->callback_cmd = strdup("command");
