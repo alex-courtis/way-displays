@@ -601,6 +601,21 @@ void validate_fix__user_transform(void **state) {
 	free(expected_log);
 }
 
+void validate_fix__auto_scale_dpi(void **state) {
+	struct State *s = *state;
+
+	s->from->auto_scale_dpi = -1;
+
+	s->expected->auto_scale_dpi = 96;
+
+	validate_fix(s->from);
+
+	assert_log(WARNING, "\nIgnoring non-positive AUTO_SCALE_DPI -1. Using default 96.\n");
+	assert_logs_empty();
+
+	assert_cfg_equal(s->from, s->expected);
+}
+
 void validate_warn__(void **state) {
 	struct State *s = *state;
 
@@ -683,6 +698,7 @@ int main(void) {
 		TEST(validate_fix__user_scale),
 		TEST(validate_fix__user_mode),
 		TEST(validate_fix__user_transform),
+		TEST(validate_fix__auto_scale_dpi),
 
 		TEST(validate_warn__),
 	};

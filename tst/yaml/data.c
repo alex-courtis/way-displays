@@ -35,6 +35,7 @@ struct Cfg *cfg_all(void) {
 	cfg->scale_round_strategy = UP;
 	cfg->scale_round_to = 4;
 
+	cfg->auto_scale_dpi = 48;
 	cfg->auto_scale_min = 0.5f;
 	cfg->auto_scale_max = 2.5f;
 

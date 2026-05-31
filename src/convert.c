@@ -35,6 +35,7 @@ static struct NameVal cfg_elements[] = {
 	{ .val = LOG_THRESHOLD,         .name = "LOG_THRESHOLD",         },
 	{ .val = DISABLED,              .name = "DISABLED",              },
 	{ .val = ARRANGE_ALIGN,         .name = "ARRANGE_ALIGN",         },
+	{ .val = AUTO_SCALE_DPI,        .name = "AUTO_SCALE_DPI",        },
 	{ .val = AUTO_SCALE_MIN,        .name = "AUTO_SCALE_MIN",        },
 	{ .val = AUTO_SCALE_MAX,        .name = "AUTO_SCALE_MAX",        },
 	{ .val = CHANGE_SUCCESS_CMD,    .name = "CHANGE_SUCCESS_CMD",    },

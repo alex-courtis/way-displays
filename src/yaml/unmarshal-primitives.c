@@ -44,6 +44,22 @@ bool yaml_scalar_to_int(struct UC *c, int32_t *dst, const yaml_node_t *scalar) {
 	return false;
 }
 
+bool yaml_scalar_to_int_def(struct UC *c, int32_t *dst, int32_t def, const yaml_node_t *scalar) {
+	bool ok = true;
+
+	char def_str[10];
+	snprintf(def_str, sizeof(def_str) - 1, "%d", def);
+
+	yaml_unmarshal_log_def(c, def_str);
+
+	if (!(ok = yaml_scalar_to_int(c, dst, scalar)))
+		*dst = def;
+
+	yaml_unmarshal_log_def(c, NULL);
+
+	return ok;
+}
+
 bool yaml_scalar_to_float(struct UC *c, float *dst, const yaml_node_t *scalar) {
 	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE))
 		return false;
@@ -59,7 +75,7 @@ bool yaml_scalar_to_float_def(struct UC *c, float *dst, float def, const yaml_no
 	bool ok = true;
 
 	char def_str[10];
-	snprintf(def_str, 10, "%.1f", def);
+	snprintf(def_str, sizeof(def_str) - 1, "%.1f", def);
 
 	yaml_unmarshal_log_def(c, def_str);
 

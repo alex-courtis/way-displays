@@ -189,6 +189,9 @@ void *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 			case DISABLED:
 				cfg->disabled = yaml_seq_to_type_list(c, value, yaml_node_to_disabled);
 				break;
+			case AUTO_SCALE_DPI:
+				yaml_scalar_to_int_def(c, &cfg->auto_scale_dpi, AUTO_SCALE_DPI_DEFAULT, value);
+				break;
 			case AUTO_SCALE_MIN:
 				yaml_scalar_to_float_def(c, &cfg->auto_scale_min, AUTO_SCALE_MIN_DEFAULT, value);
 				break;

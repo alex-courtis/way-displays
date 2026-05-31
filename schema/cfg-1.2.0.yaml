@@ -61,6 +61,12 @@ properties:
       This may be disabled and scale 1 will be used, unless a SCALE has been specified.
     default: true
 
+  AUTO_SCALE_DPI:
+    type: integer
+    description: |-
+      DPI for auto scaling.
+    default: 96
+
   AUTO_SCALE_MIN:
     type: number
     description: |-

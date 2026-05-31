@@ -3,7 +3,7 @@
     first
     last
   Scaling: ON
-  Auto scale: ON (min: 1.000)
+  Auto scale: ON (dpi: 96, min: 1.000)
   Round scales to: 0.5, DOWN
   Scale:
     three: 3.000

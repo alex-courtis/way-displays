@@ -235,6 +235,7 @@ void print_cfg__align_only(void **state) {
 void print_cfg__auto_scale_max(void **state) {
 	struct Cfg *c = cfg_init();
 	c->auto_scale = true;
+	c->auto_scale_dpi = 77;
 	c->auto_scale_min = 88.0f;
 	c->auto_scale_max = 99.0f;
 
