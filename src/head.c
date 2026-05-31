@@ -207,6 +207,8 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 
 	int32_t scaling_base = g_cfg->scale_round_to ? g_cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
+	int32_t dpi_base = g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT;
+
 	if (!head->desired.mode) {
 		return head_get_fixed_scale(1.0);
 	}
@@ -218,10 +220,10 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 	}
 
 	// convert min and max to quantized dpi inside range
-	long dpi_min = 96 / scaling_base * (long)ceil(min * scaling_base);
-	long dpi_max = 96 / scaling_base * (long)(max * scaling_base);
-	if (dpi_min < 96 / scaling_base) {
-		dpi_min = 96 / scaling_base;
+	long dpi_min = dpi_base / scaling_base * (long)ceil(min * scaling_base);
+	long dpi_max = dpi_base / scaling_base * (long)(max * scaling_base);
+	if (dpi_min < dpi_base / scaling_base) {
+		dpi_min = dpi_base / scaling_base;
 	}
 
 	// clamp dpi between min and max (if set)
@@ -232,7 +234,7 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 		dpi_clamped = dpi_max;
 	}
 
-	return head_get_fixed_scale(dpi_clamped / 96);
+	return head_get_fixed_scale(dpi_clamped / dpi_base);
 }
 
 void head_set_scaled_dimensions(struct Head * const head) {
