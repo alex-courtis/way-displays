@@ -14,11 +14,12 @@
  */
 
 // add a scalar pair to an existing maping node
-bool yaml_map_add_str  (struct MC *c, const char *key, const char *str,                         int mapping); // returns true and does nothing on NULL
-bool yaml_map_add_int  (struct MC *c, const char *key, const int32_t val,                       int mapping);
-bool yaml_map_add_float(struct MC *c, const char *key, const float val,                         int mapping); // returns true and does nothing on 0
-bool yaml_map_add_bool (struct MC *c, const char *key, const bool val,                          int mapping);
-bool yaml_map_add_enum (struct MC *c, const char *key, const int val,     enum_name_fn fn_name, int mapping); // returns true on 0 enum
+bool yaml_map_add_str     (struct MC *c, const char *key, const char *str,                         int mapping); // returns true and does nothing on NULL
+bool yaml_map_add_int     (struct MC *c, const char *key, const int32_t val,                       int mapping);
+bool yaml_map_add_int_nz  (struct MC *c, const char *key, const int32_t val,                       int mapping); // returns true and does nothing on 0
+bool yaml_map_add_float_nz(struct MC *c, const char *key, const float val,                         int mapping); // returns true and does nothing on 0
+bool yaml_map_add_bool    (struct MC *c, const char *key, const bool val,                          int mapping);
+bool yaml_map_add_enum    (struct MC *c, const char *key, const int val,     enum_name_fn fn_name, int mapping); // returns true on 0 enum
 
 // yaml_seq_append_fn: append a scalar item to an existing sequence node
 bool yaml_seq_append_str(struct MC *c, const void *str, int sequence);

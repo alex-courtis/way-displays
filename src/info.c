@@ -155,11 +155,11 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->auto_scale) {
 		if (cfg->auto_scale_max > 0) {
-			log_(t, "  Auto scale: %s (min: %0.3f, max: %0.3f)",
-					on_off_name(cfg->auto_scale), cfg->auto_scale_min, cfg->auto_scale_max);
+			log_(t, "  Auto scale: %s (dpi: %d, min: %0.3f, max: %0.3f)",
+					on_off_name(cfg->auto_scale), cfg->auto_scale_dpi, cfg->auto_scale_min, cfg->auto_scale_max);
 		} else {
-			log_(t, "  Auto scale: %s (min: %0.3f)",
-					on_off_name(cfg->auto_scale), cfg->auto_scale_min);
+			log_(t, "  Auto scale: %s (dpi: %d, min: %0.3f)",
+					on_off_name(cfg->auto_scale), cfg->auto_scale_dpi, cfg->auto_scale_min);
 		}
 	}
 

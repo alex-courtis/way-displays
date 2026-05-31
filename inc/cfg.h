@@ -11,6 +11,9 @@
 // global singleton
 extern struct Cfg *g_cfg;
 
+#define AUTO_SCALE_DPI_DEFAULT 96
+#define AUTO_SCALE_DPI_MIN SCALE_ROUND_TO_DEFAULT
+
 #define AUTO_SCALE_MIN_DEFAULT 1.0f
 
 #define AUTO_SCALE_MAX_DEFAULT -1.0f
@@ -101,6 +104,7 @@ struct Cfg {
 	struct SList *user_transforms;
 	enum LogThreshold log_threshold;
 
+	int32_t auto_scale_dpi;
 	float auto_scale_min;
 	float auto_scale_max;
 	enum ScaleRoundStrategy scale_round_strategy;
@@ -124,6 +128,7 @@ enum CfgElement {
 	LOG_THRESHOLD,
 	DISABLED,
 	ARRANGE_ALIGN,
+	AUTO_SCALE_DPI,
 	AUTO_SCALE_MIN,
 	AUTO_SCALE_MAX,
 	SCALE_ROUND_TO,

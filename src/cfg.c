@@ -327,6 +327,7 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 
 	// AUTO_SCALE
 	to->auto_scale = from->auto_scale;
+	to->auto_scale_dpi = from->auto_scale_dpi;
 	to->auto_scale_min = from->auto_scale_min;
 	to->auto_scale_max = from->auto_scale_max;
 
@@ -404,6 +405,9 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 
 	// AUTO_SCALE
 	if (a->auto_scale != b->auto_scale) {
+		return false;
+	}
+	if (a->auto_scale_dpi != b->auto_scale_dpi) {
 		return false;
 	}
 	if (a->auto_scale_min != b->auto_scale_min) {
@@ -516,6 +520,9 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 
 	if (!cfg->scale_round_strategy)
 		cfg->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
+
+	if (!cfg->auto_scale_dpi)
+		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
 
 	if (!cfg->auto_scale_min)
 		cfg->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
@@ -715,6 +722,12 @@ void validate_fix(struct Cfg *cfg) {
 			break;
 	}
 
+	if (cfg->auto_scale_dpi <= AUTO_SCALE_DPI_MIN) {
+		log_warn(NULL);
+		log_warn("Ignoring AUTO_SCALE_DPI %d < %d. Using default %d.", cfg->auto_scale_dpi, AUTO_SCALE_DPI_MIN, AUTO_SCALE_DPI_DEFAULT);
+		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
+	}
+
 	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, cfg_user_scale_free);
 	remove_duplicate_user_scales(cfg);
 
@@ -809,6 +822,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	// AUTO_SCALE
 	if (from->auto_scale) {
 		merged->auto_scale = from->auto_scale;
+		merged->auto_scale_dpi = from->auto_scale_dpi;
 		merged->auto_scale_min = from->auto_scale_min;
 		merged->auto_scale_max = from->auto_scale_max;
 	}

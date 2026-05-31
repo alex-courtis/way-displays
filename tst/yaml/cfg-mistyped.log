@@ -3,6 +3,7 @@ Ignoring invalid ALIGN expected scalar, got sequence, valid values: TOP|MIDDLE|B
 Ignoring invalid ORDER expected sequence, got scalar
 Ignoring invalid SCALING expected scalar, got sequence, valid values: ON|OFF|TRUE|FALSE|YES|NO, using default ON
 Ignoring invalid AUTO_SCALE expected scalar, got sequence, valid values: ON|OFF|TRUE|FALSE|YES|NO, using default ON
+Ignoring invalid AUTO_SCALE_DPI expected scalar, got sequence, using default 96
 Ignoring invalid AUTO_SCALE_MIN expected scalar, got sequence, using default 1.0
 Ignoring invalid AUTO_SCALE_MAX expected scalar, got sequence, using default -1.0
 Ignoring invalid SCALE expected sequence, got scalar

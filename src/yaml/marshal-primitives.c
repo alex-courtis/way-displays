@@ -33,7 +33,20 @@ bool yaml_map_add_int(struct MC *c, const char *key, const int32_t val, int mapp
 	return yaml_map_add_str(c, key, str, mapping);
 }
 
-bool yaml_map_add_float(struct MC *c, const char *key, const float val, int mapping) {
+bool yaml_map_add_int_nz(struct MC *c, const char *key, const int32_t val, int mapping) {
+	if (!key || !mapping)
+		return false;
+
+	if (val == 0)
+		return true;
+
+	char str[20];
+	snprintf(str, 20, "%d", val);
+
+	return yaml_map_add_str(c, key, str, mapping);
+}
+
+bool yaml_map_add_float_nz(struct MC *c, const char *key, const float val, int mapping) {
 	if (!key || !mapping)
 		return false;
 

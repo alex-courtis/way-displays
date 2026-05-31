@@ -154,7 +154,7 @@ double mode_scale(struct Mode *mode) {
 		return 1;
 	}
 
-	return dpi / 96;
+	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
 }
 
 struct SList *modes_res_refresh(struct SList *modes) {

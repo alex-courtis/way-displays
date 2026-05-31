@@ -8,6 +8,7 @@ ipc request: invalid SCALING BAD_SCALING, valid values: ON|OFF|TRUE|FALSE|YES|NO
 ipc request: invalid SCALE_ROUND_TO BAD_SCALE_ROUND_TO, valid values: 0.125|0.25|0.5|1, using default 0.125
 ipc request: invalid SCALE_ROUND_STRATEGY BAD_SCALE_ROUND_STRATEGY, valid values: NEAREST|UP|DOWN, using default NEAREST
 ipc request: invalid AUTO_SCALE BAD_AUTO_SCALE, valid values: ON|OFF|TRUE|FALSE|YES|NO, using default ON
+ipc request: invalid AUTO_SCALE_DPI BAD_AUTO_SCALE_DPI, using default 96
 ipc request: invalid AUTO_SCALE_MIN BAD_AUTO_SCALE_MIN, using default 1.0
 ipc request: invalid AUTO_SCALE_MAX BAD_AUTO_SCALE_MAX, using default -1.0
 ipc request: invalid SCALE BAD_SCALE_NAME SCALE BAD_SCALE_VAL
