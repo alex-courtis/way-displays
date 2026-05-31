@@ -8,9 +8,9 @@
 #include <string.h>
 
 #include "cfg.h"
-#include "global.h"
 #include "head.h"
 #include "ipc.h"
+#include "lid.h"
 #include "log.h"
 #include "slist.h"
 #include "wrap-libyaml.h"
@@ -37,8 +37,8 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
-	cfg_free(cfg);
-	cfg = NULL;
+	cfg_free(g_cfg);
+	g_cfg = NULL;
 	free(g_lid);
 	g_lid = NULL;
 	return 0;

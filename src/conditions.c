@@ -4,7 +4,6 @@
 #include "conditions.h"
 
 #include "lid.h"
-#include "global.h"
 #include "slist.h"
 #include "fn.h"
 #include "head.h"

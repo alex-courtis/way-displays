@@ -8,8 +8,6 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
-#include "global.h"
-
 #include "cfg.h"
 #include "conditions.h"
 #include "log.h"
@@ -38,7 +36,7 @@ int before_each(void **state) {
 
 	slist_free_vals(&cfg_file_paths, NULL);
 
-	cfg = cfg_default();
+	g_cfg = cfg_default();
 
 	s->from = cfg_default();
 	s->to = cfg_default();

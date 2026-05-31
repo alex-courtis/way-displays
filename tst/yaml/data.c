@@ -6,7 +6,6 @@
 
 #include "cfg.h"
 #include "conditions.h"
-#include "global.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -97,7 +96,7 @@ struct IpcOperation *ipc_response(void) {
 	ipc_operation->rc = 1;
 	ipc_operation->send_state = true;
 
-	cfg = cfg_all();
+	g_cfg = cfg_all();
 
 	g_lid = calloc(1, sizeof(struct Lid));
 	g_lid->closed = true;

@@ -15,7 +15,6 @@
 #include "fn.h"
 #include "conditions.h"
 #include "convert.h"
-#include "global.h"
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
@@ -23,6 +22,8 @@
 #include "log.h"
 #include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
+
+struct Cfg *g_cfg = NULL;
 
 // one-shot singleton set via cfg_file_paths_init
 struct SList *cfg_file_paths = NULL;
@@ -1009,30 +1010,30 @@ void cfg_file_paths_init(const char *user_path) {
 
 static bool cfg_file_write_content(const char * const yaml) {
 	return
-		file_write(cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
-		file_write(cfg->file_path, yaml, "a");
+		file_write(g_cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
+		file_write(g_cfg->file_path, yaml, "a");
 }
 
 void cfg_file_write(void) {
 	char *yaml = NULL;
-	const char *resolved_from = cfg->resolved_from;
+	const char *resolved_from = g_cfg->resolved_from;
 	bool written = false;
 
-	cfg->updated = false;
+	g_cfg->updated = false;
 
-	if (!(yaml = yaml_marshal(cfg, yaml_doc_cfg, "cfg"))) {
+	if (!(yaml = yaml_marshal(g_cfg, yaml_doc_cfg, "cfg"))) {
 		goto end;
 	}
 
-	if (cfg->file_path && (written = cfg_file_write_content(yaml))) {
-		cfg->updated = true;
+	if (g_cfg->file_path && (written = cfg_file_write_content(yaml))) {
+		g_cfg->updated = true;
 		goto end;
 	}
 
 	if (!written) {
 
 		// kill that cfg file
-		cfg_paths_free(cfg);
+		cfg_paths_free(g_cfg);
 		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
@@ -1043,17 +1044,17 @@ void cfg_file_write(void) {
 				continue;
 			}
 
-			set_paths(cfg, i->val, i->val);
+			set_paths(g_cfg, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(cfg->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
+			if (mkdir_p(g_cfg->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
 				goto end;
 			}
 
-			cfg_paths_free(cfg);
+			cfg_paths_free(g_cfg);
 		}
 	}
 
@@ -1062,13 +1063,13 @@ end:
 
 	if (written) {
 		log_info(NULL);
-		log_info("Wrote configuration file: %s", cfg->file_path);
+		log_info("Wrote configuration file: %s", g_cfg->file_path);
 	}
 }
 
 void cfg_destroy(void) {
-	cfg_free(cfg);
-	cfg = NULL;
+	cfg_free(g_cfg);
+	g_cfg = NULL;
 }
 
 void cfg_file_paths_destroy(void) {

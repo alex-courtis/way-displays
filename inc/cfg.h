@@ -8,6 +8,9 @@
 #include "log.h"
 #include "ipc.h"
 
+// global singleton
+extern struct Cfg *g_cfg;
+
 #define AUTO_SCALE_MIN_DEFAULT 1.0f
 
 #define AUTO_SCALE_MAX_DEFAULT -1.0f

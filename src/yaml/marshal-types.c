@@ -8,7 +8,6 @@
 #include "cfg.h"
 #include "conditions.h"
 #include "convert.h"
-#include "global.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -106,7 +105,7 @@ bool yaml_map_populate_ipc_operation(struct MC *c, void *data, int mapping) {
 		return false;
 
 	if (ipc_operation->send_state) {
-		if (!yaml_map_add_map(c, "CFG", cfg, yaml_map_populate_cfg, mapping))
+		if (!yaml_map_add_map(c, "CFG", g_cfg, yaml_map_populate_cfg, mapping))
 			return false;
 		if (!yaml_map_add_map(c, "STATE", NULL, yaml_map_populate_state, mapping))
 			return false;

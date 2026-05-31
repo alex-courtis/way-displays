@@ -10,7 +10,6 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
-#include "global.h"
 #include "slist.h"
 #include "log.h"
 #include "mode.h"
@@ -47,7 +46,7 @@ int after_all(void **state) {
 int before_each(void **state) {
 	logs_clear();
 
-	cfg = cfg_default();
+	g_cfg = cfg_default();
 	return 0;
 }
 
@@ -57,62 +56,62 @@ int after_each(void **state) {
 }
 
 static void head_get_fixed_scale__rounding_nearest(void **state) {
-	cfg->scale_round_strategy = NEAREST;
+	g_cfg->scale_round_strategy = NEAREST;
 
-	cfg->scale_round_to = 8;
+	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.375);
 
-	cfg->scale_round_to = 4;
+	g_cfg->scale_round_to = 4;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
 
-	cfg->scale_round_to = 2;
+	g_cfg->scale_round_to = 2;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
 
-	cfg->scale_round_to = 1;
+	g_cfg->scale_round_to = 1;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
 
 	// no rounding
-	cfg->scale_round_to = 8;
+	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
 
 	assert_logs_empty();
 }
 
 static void head_get_fixed_scale__rounding_up(void **state) {
-	cfg->scale_round_strategy = UP;
+	g_cfg->scale_round_strategy = UP;
 
-	cfg->scale_round_to = 8;
+	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.375);
 
-	cfg->scale_round_to = 4;
+	g_cfg->scale_round_to = 4;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
 
-	cfg->scale_round_to = 2;
+	g_cfg->scale_round_to = 2;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.5);
 
-	cfg->scale_round_to = 1;
+	g_cfg->scale_round_to = 1;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 2);
 
 	// no rounding
-	cfg->scale_round_to = 8;
+	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
 
 	assert_logs_empty();
 }
 
 static void head_get_fixed_scale__rounding_down(void **state) {
-	cfg->scale_round_strategy = DOWN;
+	g_cfg->scale_round_strategy = DOWN;
 
-	cfg->scale_round_to = 8;
+	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
 
-	cfg->scale_round_to = 4;
+	g_cfg->scale_round_to = 4;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1.25);
 
-	cfg->scale_round_to = 2;
+	g_cfg->scale_round_to = 2;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
 
-	cfg->scale_round_to = 1;
+	g_cfg->scale_round_to = 1;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
 
 	assert_logs_empty();
@@ -313,7 +312,7 @@ static void head_find_mode__user_available(void **state) {
 	// user preferred head
 	struct UserMode *user_mode = cfg_user_mode_default();
 	user_mode->name_desc = strdup("!.*EAD");
-	slist_append(&cfg->user_modes, user_mode);
+	slist_append(&g_cfg->user_modes, user_mode);
 	head.name = strdup("HEAD");
 
 	// mode matched to user
@@ -339,7 +338,7 @@ static void head_find_mode__user_failed(void **state) {
 	// user preferred head
 	struct UserMode *user_mode = cfg_user_mode_default();
 	user_mode->name_desc = strdup("!HEA.*");
-	slist_append(&cfg->user_modes, user_mode);
+	slist_append(&g_cfg->user_modes, user_mode);
 	head.name = strdup("HEAD");
 
 	// mode not matched to user
@@ -397,7 +396,7 @@ static void head_find_mode__max_preferred_refresh(void **state) {
 	struct Head head = { .name = "name", };
 	struct Mode mode = { 0 };
 
-	slist_append(&cfg->max_preferred_refresh_name_desc, strdup("!nam.*"));
+	slist_append(&g_cfg->max_preferred_refresh_name_desc, strdup("!nam.*"));
 
 	slist_append(&head.modes, &mode);
 

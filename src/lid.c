@@ -14,7 +14,6 @@
 
 #include "cfg.h"
 #include "convert.h"
-#include "global.h"
 #include "log.h"
 
 struct Lid *g_lid = NULL;
@@ -191,7 +190,7 @@ void lid_update(void) {
 
 		if (event_type == LIBINPUT_EVENT_SWITCH_TOGGLE) {
 			struct libinput_event_switch *event_switch = libinput_event_get_switch_event(event);
-			if (cfg->laptop_lid_monitor == ON) {
+			if (g_cfg->laptop_lid_monitor == ON) {
 				g_lid->closed = libinput_event_switch_get_switch_state(event_switch) == LIBINPUT_SWITCH_STATE_ON;
 			}
 		}
@@ -201,7 +200,7 @@ void lid_update(void) {
 	}
 
 	log_info(NULL);
-	if (cfg->laptop_lid_monitor == ON) {
+	if (g_cfg->laptop_lid_monitor == ON) {
 		log_info("Lid %s", g_lid->closed ? "closed" : "open");
 	} else {
 		log_info("Lid event ignored: Laptop lid monitoring disabled");
@@ -211,7 +210,7 @@ void lid_update(void) {
 void lid_init(void) {
 	g_lid = NULL;
 
-	if (cfg->laptop_lid_monitor == OFF)
+	if (g_cfg->laptop_lid_monitor == OFF)
 		return;
 
 	struct libinput *libinput_discovery = NULL;
@@ -256,8 +255,8 @@ bool lid_is_closed(char *name) {
 		return false;
 
 	const char *laptop_display_prefix;
-	if (cfg->laptop_display_prefix) {
-		laptop_display_prefix = cfg->laptop_display_prefix;
+	if (g_cfg->laptop_display_prefix) {
+		laptop_display_prefix = g_cfg->laptop_display_prefix;
 	} else {
 		laptop_display_prefix = LAPTOP_DISPLAY_PREFIX_DEFAULT;
 	}

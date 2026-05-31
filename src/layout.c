@@ -10,7 +10,6 @@
 #include "conditions.h"
 #include "convert.h"
 #include "displ.h"
-#include "global.h"
 #include "head.h"
 #include "info.h"
 #include "lid.h"
@@ -53,14 +52,14 @@ void position_heads(struct SList *heads) {
 			continue;
 		}
 
-		switch (cfg->arrange) {
+		switch (g_cfg->arrange) {
 			case COL:
 				// position
 				head->desired.y = y;
 				y += head->scaled.height;
 
 				// align
-				switch (cfg->align) {
+				switch (g_cfg->align) {
 					case RIGHT:
 						head->desired.x = widest - head->scaled.width;
 						break;
@@ -80,7 +79,7 @@ void position_heads(struct SList *heads) {
 				x += head->scaled.width;
 
 				// align
-				switch (cfg->align) {
+				switch (g_cfg->align) {
 					case BOTTOM:
 						head->desired.y = tallest - head->scaled.height;
 						break;
@@ -160,7 +159,7 @@ void desire_enabled(struct Head *head) {
 	enabled |= slist_length(heads) == 1;
 
 	// iterate over all matching NAME_DESC's and evaluate their conditions
-	struct SList *d = cfg->disabled;
+	struct SList *d = g_cfg->disabled;
 	while ((d = slist_find_equal(d, head_disabled_matches_head, head)) != NULL) {
 		const struct Disabled *disabled_if = (struct Disabled*)d->val;
 		enabled &= !condition_list_evaluate(disabled_if->conditions);
@@ -216,13 +215,13 @@ void desire_scale(struct Head *head) {
 	}
 
 	// all scaling disabled
-	if (cfg->scaling == OFF) {
+	if (g_cfg->scaling == OFF) {
 		head->desired.scale = head_get_fixed_scale(1.0);
 		return;
 	}
 
 	// user scale first
-	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
+	for (struct SList *i = g_cfg->user_scales; i; i = i->nex) {
 		const struct UserScale *user_scale = (struct UserScale*)i->val;
 		if (head_matches_name_desc(head, user_scale->name_desc)) {
 			head->desired.scale = head_get_fixed_scale(user_scale->scale);
@@ -231,9 +230,9 @@ void desire_scale(struct Head *head) {
 	}
 
 	// auto or 1
-	if (cfg->auto_scale == ON) {
+	if (g_cfg->auto_scale == ON) {
 		head->desired.scale =
-			head_auto_scale(head, cfg->auto_scale_min, cfg->auto_scale_max);
+			head_auto_scale(head, g_cfg->auto_scale_min, g_cfg->auto_scale_max);
 	} else {
 		head->desired.scale = head_get_fixed_scale(1.0);
 	}
@@ -246,7 +245,7 @@ void desire_transform(struct Head *head) {
 
 	// maybe user transform
 	const struct UserTransform *user_transform;
-	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
+	for (struct SList *i = g_cfg->user_transforms; i; i = i->nex) {
 		user_transform = (struct UserTransform*)i->val;
 		if (head_matches_name_desc(head, user_transform->name_desc)) {
 			head->desired.transform = user_transform->transform;
@@ -267,7 +266,7 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (slist_find_equal(cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
+	if (slist_find_equal(g_cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -290,7 +289,7 @@ static void desire(void) {
 		head_set_scaled_dimensions(head);
 	}
 
-	struct SList *heads_ordered = order_heads(cfg->order_name_desc, heads);
+	struct SList *heads_ordered = order_heads(g_cfg->order_name_desc, heads);
 
 	position_heads(heads_ordered);
 

@@ -11,7 +11,6 @@
 
 #include "cfg.h"
 #include "displ.h"
-#include "global.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"
@@ -48,11 +47,11 @@ int after_all(void **state) {
 int before_each(void **state) {
 	logs_clear();
 
-	cfg = cfg_default();
+	g_cfg = cfg_default();
 
 	// only set this when we specifically want to test it
-	free(cfg->callback_cmd);
-	cfg->callback_cmd = NULL;
+	free(g_cfg->callback_cmd);
+	g_cfg->callback_cmd = NULL;
 
 	g_displ = calloc(1, sizeof(struct Displ));
 
@@ -204,8 +203,8 @@ void position_heads__col_left(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
-	cfg->arrange = COL;
-	cfg->align = LEFT;
+	g_cfg->arrange = COL;
+	g_cfg->align = LEFT;
 
 	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
@@ -224,8 +223,8 @@ void position_heads__col_mid(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
-	cfg->arrange = COL;
-	cfg->align = MIDDLE;
+	g_cfg->arrange = COL;
+	g_cfg->align = MIDDLE;
 
 	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
@@ -244,8 +243,8 @@ void position_heads__col_right(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
-	cfg->arrange = COL;
-	cfg->align = RIGHT;
+	g_cfg->arrange = COL;
+	g_cfg->align = RIGHT;
 
 	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
@@ -264,8 +263,8 @@ void position_heads__row_top(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
-	cfg->arrange = ROW;
-	cfg->align = TOP;
+	g_cfg->arrange = ROW;
+	g_cfg->align = TOP;
 
 	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
@@ -284,8 +283,8 @@ void position_heads__row_mid(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
-	cfg->arrange = ROW;
-	cfg->align = MIDDLE;
+	g_cfg->arrange = ROW;
+	g_cfg->align = MIDDLE;
 
 	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
@@ -304,8 +303,8 @@ void position_heads__row_bottom(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
-	cfg->arrange = ROW;
-	cfg->align = BOTTOM;
+	g_cfg->arrange = ROW;
+	g_cfg->align = BOTTOM;
 
 	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
@@ -366,7 +365,7 @@ void desire_enabled__lid_closed_one_disabled(void **state) {
 	};
 	slist_append(&heads, &head0);
 
-	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
+	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, true);
@@ -386,7 +385,7 @@ void desire_enabled__override(void **state) {
 	};
 	slist_append(&heads, &head0);
 
-	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
+	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -407,7 +406,7 @@ void desire_enabled__override_reset(void **state) {
 	};
 	slist_append(&heads, &head0);
 
-	slist_append(&cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
+	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -513,8 +512,8 @@ void desire_scale__no_scaling(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 	};
-	cfg->scaling = OFF;
-	cfg->auto_scale = ON;
+	g_cfg->scaling = OFF;
+	g_cfg->auto_scale = ON;
 
 	desire_scale(&head0);
 
@@ -527,8 +526,8 @@ void desire_scale__no_auto(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 	};
-	cfg->scaling = ON;
-	cfg->auto_scale = OFF;
+	g_cfg->scaling = ON;
+	g_cfg->auto_scale = OFF;
 
 	desire_scale(&head0);
 
@@ -541,8 +540,8 @@ void desire_scale__auto(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 	};
-	cfg->scaling = ON;
-	cfg->auto_scale = ON;
+	g_cfg->scaling = ON;
+	g_cfg->auto_scale = ON;
 
 	expect_ptr(__wrap_head_auto_scale, head, &head0);
 	will_return_int(__wrap_head_auto_scale, wl_fixed_from_double(2.5));
@@ -559,11 +558,11 @@ void desire_scale__user(void **state) {
 		.name = "head0",
 		.desired.enabled = true,
 	};
-	cfg->scaling = ON;
-	cfg->auto_scale = ON;
+	g_cfg->scaling = ON;
+	g_cfg->auto_scale = ON;
 
-	slist_append(&cfg->user_scales, cfg_user_scale_init("![Hh]ea.*", 3.5));
-	slist_append(&cfg->user_scales, cfg_user_scale_init("head1", 7.5));
+	slist_append(&g_cfg->user_scales, cfg_user_scale_init("![Hh]ea.*", 3.5));
+	slist_append(&g_cfg->user_scales, cfg_user_scale_init("head1", 7.5));
 
 	desire_scale(&head0);
 
@@ -578,7 +577,7 @@ void desire_transform__disabled(void **state) {
 		.desired.enabled = false,
 		.desired.transform = WL_OUTPUT_TRANSFORM_90,
 	};
-	slist_append(&cfg->user_transforms, cfg_user_transform_init("head0", WL_OUTPUT_TRANSFORM_180));
+	slist_append(&g_cfg->user_transforms, cfg_user_transform_init("head0", WL_OUTPUT_TRANSFORM_180));
 
 	desire_transform(&head0);
 
@@ -607,8 +606,8 @@ void desire_transform__user(void **state) {
 		.desired.enabled = true,
 		.desired.transform = WL_OUTPUT_TRANSFORM_90,
 	};
-	slist_append(&cfg->user_transforms, cfg_user_transform_init("head9", WL_OUTPUT_TRANSFORM_270));
-	slist_append(&cfg->user_transforms, cfg_user_transform_init("head0", WL_OUTPUT_TRANSFORM_180));
+	slist_append(&g_cfg->user_transforms, cfg_user_transform_init("head9", WL_OUTPUT_TRANSFORM_270));
+	slist_append(&g_cfg->user_transforms, cfg_user_transform_init("head0", WL_OUTPUT_TRANSFORM_180));
 
 	desire_transform(&head0);
 
@@ -651,7 +650,7 @@ void desire_adaptive_sync__disabled(void **state) {
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 	};
 
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("!.*hea"));
+	slist_append(&g_cfg->adaptive_sync_off_name_desc, strdup("!.*hea"));
 
 	desire_adaptive_sync(&head0);
 

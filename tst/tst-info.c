@@ -12,7 +12,6 @@
 #include "cfg.h"
 #include "conditions.h"
 #include "displ.h"
-#include "global.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"
@@ -43,7 +42,7 @@ int before_each(void **state) {
 
 	g_displ = calloc(1, sizeof(struct Displ));
 
-	cfg = cfg_default();
+	g_cfg = cfg_default();
 
 	s->head1 = calloc(1, sizeof(struct Head));
 
@@ -636,8 +635,8 @@ void delta_human__disabled(void **state) {
 }
 
 void call_back__no_callback(void **state) {
-	free(cfg->callback_cmd);
-	cfg->callback_cmd = NULL;
+	free(g_cfg->callback_cmd);
+	g_cfg->callback_cmd = NULL;
 
 	call_back(INFO, "msg1", NULL);
 
@@ -656,12 +655,12 @@ void call_back__one(void **state) {
 	stable_put(env, "CALLBACK_MSG", "msg1");
 	stable_put(env, "CALLBACK_LEVEL", "INFO");
 
-	free(cfg->callback_cmd);
-	cfg->callback_cmd = strdup("command");
+	free(g_cfg->callback_cmd);
+	g_cfg->callback_cmd = strdup("command");
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
-	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
+	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
 	call_back(INFO, "msg1", NULL);
@@ -677,14 +676,14 @@ void call_back__two(void **state) {
 	stable_put(env, "CALLBACK_MSG", "msg1msg2");
 	stable_put(env, "CALLBACK_LEVEL", "FATAL");
 
-	free(cfg->callback_cmd);
-	cfg->callback_cmd = strdup("command");
+	free(g_cfg->callback_cmd);
+	g_cfg->callback_cmd = strdup("command");
 
 	g_displ->delta.human = strdup("not successful");
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
-	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
+	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
 	call_back(FATAL, "msg1", "msg2");
@@ -698,8 +697,8 @@ void call_back__two(void **state) {
 void call_back_mode_fail__(void **state) {
 	const struct State *s = *state;
 
-	free(cfg->callback_cmd);
-	cfg->callback_cmd = strdup("command");
+	free(g_cfg->callback_cmd);
+	g_cfg->callback_cmd = strdup("command");
 
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG",
@@ -709,7 +708,7 @@ void call_back_mode_fail__(void **state) {
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
-	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
+	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
 	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
@@ -725,8 +724,8 @@ void call_back_adaptive_sync_fail__(void **state) {
 
 	g_displ->delta.head = &head;
 
-	free(cfg->callback_cmd);
-	cfg->callback_cmd = strdup("command");
+	free(g_cfg->callback_cmd);
+	g_cfg->callback_cmd = strdup("command");
 
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG",
@@ -739,7 +738,7 @@ void call_back_adaptive_sync_fail__(void **state) {
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
-	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
+	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
 	call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);

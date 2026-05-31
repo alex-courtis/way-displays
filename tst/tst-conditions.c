@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "conditions.h"
-#include "global.h"
 #include "head.h"
 #include "lid.h"
 #include "slist.h"

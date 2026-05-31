@@ -15,7 +15,6 @@
 #include "displ.h"
 #include "lid.h"
 #include "log.h"
-#include "global.h"
 #include "process.h"
 #include "sockets.h"
 
@@ -48,15 +47,15 @@ static int create_fd_signal(void) {
 }
 
 void fd_wd_cfg_dir_create(void) {
-	if (!cfg->dir_path)
+	if (!g_cfg->dir_path)
 		return;
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
-	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, cfg->dir_path, IN_CLOSE_WRITE)) == -1) {
+	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, g_cfg->dir_path, IN_CLOSE_WRITE)) == -1) {
 		close(fd_cfg_dir);
 		fd_cfg_dir = -1;
 		log_fatal(NULL);
-		log_fatal_errno("unable to create config directory watch for %s, exiting", cfg->dir_path);
+		log_fatal_errno("unable to create config directory watch for %s, exiting", g_cfg->dir_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}

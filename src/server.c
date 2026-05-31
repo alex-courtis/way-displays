@@ -14,7 +14,6 @@
 #include "convert.h"
 #include "displ.h"
 #include "fds.h"
-#include "global.h"
 #include "head.h"
 #include "info.h"
 #include "ipc.h"
@@ -115,15 +114,15 @@ static void receive_ipc_request(int server_socket) {
 		case CFG_SET:
 		case CFG_TOGGLE:
 			{
-				struct Cfg *cfg_merged = cfg_merge(cfg, ipc_request->cfg, ipc_request->command);
+				struct Cfg *cfg_merged = cfg_merge(g_cfg, ipc_request->cfg, ipc_request->command);
 				if (cfg_merged) {
 					// ongoing
 					ipc_operation->done = false;
-					cfg_free(cfg);
-					cfg = cfg_merged;
+					cfg_free(g_cfg);
+					g_cfg = cfg_merged;
 					log_info(NULL);
 					log_info("New configuration:");
-					print_cfg(INFO, cfg, false);
+					print_cfg(INFO, g_cfg, false);
 				} else {
 					// complete
 					log_info(NULL);
@@ -149,8 +148,8 @@ static void receive_ipc_request(int server_socket) {
 				// complete
 				log_info(NULL);
 				log_info("Active configuration:");
-				print_cfg(INFO, cfg, false);
-				print_cfg_commands(INFO, cfg);
+				print_cfg(INFO, g_cfg, false);
+				print_cfg_commands(INFO, g_cfg);
 				print_heads(INFO, NONE, heads);
 				break;
 			}
@@ -222,9 +221,9 @@ static int loop(void) {
 
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (fd_cfg_dir_modified(cfg->file_name)) {
-				if (cfg->updated) {
-					cfg->updated = false;
+			if (fd_cfg_dir_modified(g_cfg->file_name)) {
+				if (g_cfg->updated) {
+					g_cfg->updated = false;
 				} else {
 					log_debug("LOOP cfg_file_reload");
 					reload_cfg();
@@ -278,32 +277,32 @@ static void setup_signal_handlers(void) {
 }
 
 void reload_cfg(void) {
-	if (!cfg || !cfg->file_path)
+	if (!g_cfg || !g_cfg->file_path)
 		return;
 
 	log_info(NULL);
-	log_info("Reloading configuration file: %s", cfg->file_path);
+	log_info("Reloading configuration file: %s", g_cfg->file_path);
 
-	struct Cfg *cfg_loaded = yaml_unmarshal_file(cfg->file_path, yaml_root_to_cfg);
+	struct Cfg *cfg_loaded = yaml_unmarshal_file(g_cfg->file_path, yaml_root_to_cfg);
 
 	if (cfg_loaded) {
 		cfg_apply_defaults(cfg_loaded);
-		cfg_copy_file_path(cfg, cfg_loaded);
+		cfg_copy_file_path(g_cfg, cfg_loaded);
 
-		cfg_free(cfg);
-		cfg = cfg_loaded;
+		cfg_free(g_cfg);
+		g_cfg = cfg_loaded;
 
-		log_set_threshold(cfg->log_threshold, false);
-		validate_fix(cfg);
+		log_set_threshold(g_cfg->log_threshold, false);
+		validate_fix(g_cfg);
 		log_info(NULL);
 		log_info("New configuration:");
-		print_cfg(INFO, cfg, false);
-		validate_warn(cfg);
+		print_cfg(INFO, g_cfg, false);
+		validate_warn(g_cfg);
 
 	} else {
 		log_info(NULL);
 		log_info("Configuration unchanged:");
-		print_cfg(INFO, cfg, false);
+		print_cfg(INFO, g_cfg, false);
 	}
 }
 
@@ -316,27 +315,27 @@ void load_cfg(void) {
 		log_info(NULL);
 		log_info("Found configuration file: %s", cfg_resolved->file_path);
 
-		cfg = yaml_unmarshal_file(cfg_resolved->file_path, yaml_root_to_cfg);
+		g_cfg = yaml_unmarshal_file(cfg_resolved->file_path, yaml_root_to_cfg);
 
-		if (!cfg) {
+		if (!g_cfg) {
 			log_info(NULL);
 			log_info("Using default configuration:");
-			cfg = cfg_init();
+			g_cfg = cfg_init();
 		}
 	} else {
 		log_info(NULL);
 		log_info("No configuration file found, using defaults:");
-		cfg = cfg_init();
+		g_cfg = cfg_init();
 	}
 
-	cfg_apply_defaults(cfg);
-	cfg_copy_file_path(cfg_resolved, cfg);
+	cfg_apply_defaults(g_cfg);
+	cfg_copy_file_path(cfg_resolved, g_cfg);
 
-	validate_fix(cfg);
+	validate_fix(g_cfg);
 	log_info(NULL);
 	log_info("Active configuration:");
-	print_cfg(INFO, cfg, false);
-	validate_warn(cfg);
+	print_cfg(INFO, g_cfg, false);
+	validate_warn(g_cfg);
 
 	cfg_free(cfg_resolved);
 }
@@ -365,7 +364,7 @@ server(char *cfg_path) {
 	free(cfg_path);
 
 	// play back captured logs from cfg parse
-	log_set_threshold(cfg->log_threshold, false);
+	log_set_threshold(g_cfg->log_threshold, false);
 	log_suppress_stop();
 	log_cap_lines_stop(&log_cap_lines);
 	log_cap_lines_playback(log_cap_lines);
