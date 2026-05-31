@@ -153,7 +153,7 @@ struct Cfg *cfg_init(void);
 
 struct Cfg *cfg_default(void);
 
-void cfg_apply_defaults(struct Cfg *dst);
+void cfg_apply_defaults(struct Cfg *cfg);
 
 struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
 

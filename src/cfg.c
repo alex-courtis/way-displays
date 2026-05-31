@@ -497,37 +497,37 @@ struct Cfg *cfg_default(void) {
 	return def;
 }
 
-void cfg_apply_defaults(struct Cfg *dst) {
+void cfg_apply_defaults(struct Cfg *cfg) {
 
-	if (!dst->arrange)
-		dst->arrange = ARRANGE_DEFAULT;
+	if (!cfg->arrange)
+		cfg->arrange = ARRANGE_DEFAULT;
 
-	if (!dst->align)
-		dst->align = ALIGN_DEFAULT;
+	if (!cfg->align)
+		cfg->align = ALIGN_DEFAULT;
 
-	if (!dst->scaling)
-		dst->scaling = SCALING_DEFAULT;
+	if (!cfg->scaling)
+		cfg->scaling = SCALING_DEFAULT;
 
-	if (!dst->auto_scale)
-		dst->auto_scale = AUTO_SCALE_DEFAULT;
+	if (!cfg->auto_scale)
+		cfg->auto_scale = AUTO_SCALE_DEFAULT;
 
-	if (!dst->scale_round_to)
-		dst->scale_round_to = SCALE_ROUND_TO_DEFAULT;
+	if (!cfg->scale_round_to)
+		cfg->scale_round_to = SCALE_ROUND_TO_DEFAULT;
 
-	if (!dst->scale_round_strategy)
-		dst->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
+	if (!cfg->scale_round_strategy)
+		cfg->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
 
-	if (!dst->auto_scale_min)
-		dst->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
+	if (!cfg->auto_scale_min)
+		cfg->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
 
-	if (!dst->auto_scale_max)
-		dst->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
+	if (!cfg->auto_scale_max)
+		cfg->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
 
-	if (!dst->callback_cmd)
-		dst->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
+	if (!cfg->callback_cmd)
+		cfg->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
 
-	if (!dst->laptop_lid_monitor)
-		dst->laptop_lid_monitor = LAPTOP_LID_MONITOR_DEFAULT;
+	if (!cfg->laptop_lid_monitor)
+		cfg->laptop_lid_monitor = LAPTOP_LID_MONITOR_DEFAULT;
 }
 
 struct UserMode *cfg_user_mode_default(void) {

@@ -36,8 +36,6 @@ int before_each(void **state) {
 
 	slist_free_vals(&cfg_file_paths, NULL);
 
-	g_cfg = cfg_default();
-
 	s->from = cfg_default();
 	s->to = cfg_default();
 	s->expected = cfg_default();
