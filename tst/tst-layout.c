@@ -70,7 +70,7 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
-	slist_free(&heads);
+	slist_free(&g_heads);
 
 	free(g_displ);
 
@@ -324,12 +324,12 @@ void desire_enabled__lid_closed_many(void **state) {
 		.name = "head0",
 		.desired.enabled = true,
 	};
-	slist_append(&heads, &head0);
+	slist_append(&g_heads, &head0);
 	struct Head head1 = {
 		.name = "head1",
 		.desired.enabled = true,
 	};
-	slist_append(&heads, &head1);
+	slist_append(&g_heads, &head1);
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, true);
@@ -346,7 +346,7 @@ void desire_enabled__lid_closed_one(void **state) {
 		.name = "head0",
 		.desired.enabled = true,
 	};
-	slist_append(&heads, &head0);
+	slist_append(&g_heads, &head0);
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, true);
@@ -363,7 +363,7 @@ void desire_enabled__lid_closed_one_disabled(void **state) {
 		.name = "head0",
 		.desired.enabled = true,
 	};
-	slist_append(&heads, &head0);
+	slist_append(&g_heads, &head0);
 
 	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
@@ -383,7 +383,7 @@ void desire_enabled__override(void **state) {
 		.desired.enabled = false,
 		.overrided_enabled = OverrideTrue,
 	};
-	slist_append(&heads, &head0);
+	slist_append(&g_heads, &head0);
 
 	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 
@@ -404,7 +404,7 @@ void desire_enabled__override_reset(void **state) {
 		.desired.enabled = true,
 		.overrided_enabled = OverrideFalse,
 	};
-	slist_append(&heads, &head0);
+	slist_append(&g_heads, &head0);
 
 	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
 

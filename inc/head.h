@@ -12,9 +12,10 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
-extern struct SList *heads;
-extern struct SList *heads_arrived;
-extern struct SList *heads_departed;
+// global singletons
+extern struct SList *g_heads;
+extern struct SList *g_heads_arrived;
+extern struct SList *g_heads_departed;
 
 enum ManualOverride {
 	NoOverride = 0,

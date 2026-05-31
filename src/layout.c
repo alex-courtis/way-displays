@@ -156,7 +156,7 @@ void desire_enabled(struct Head *head) {
 	enabled = !lid_is_closed(head->name);
 
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
-	enabled |= slist_length(heads) == 1;
+	enabled |= slist_length(g_heads) == 1;
 
 	// iterate over all matching NAME_DESC's and evaluate their conditions
 	struct SList *d = g_cfg->disabled;
@@ -275,7 +275,7 @@ void desire_adaptive_sync(struct Head *head) {
 
 static void desire(void) {
 
-	for (struct SList *i = heads; i; i = i->nex) {
+	for (struct SList *i = g_heads; i; i = i->nex) {
 		struct Head *head = (struct Head*)i->val;
 
 		memcpy(&head->desired, &head->current, sizeof(struct HeadState));
@@ -289,7 +289,7 @@ static void desire(void) {
 		head_set_scaled_dimensions(head);
 	}
 
-	struct SList *heads_ordered = order_heads(g_cfg->order_name_desc, heads);
+	struct SList *heads_ordered = order_heads(g_cfg->order_name_desc, g_heads);
 
 	position_heads(heads_ordered);
 
@@ -302,7 +302,7 @@ static void apply(void) {
 	displ_delta_destroy();
 
 	// determine whether changes are needed before initiating output configuration
-	struct SList *i = heads;
+	struct SList *i = g_heads;
 	while ((i = slist_find(i, head_current_not_desired))) {
 		slist_append(&heads_changing, i->val);
 		i = i->nex;
@@ -315,7 +315,7 @@ static void apply(void) {
 	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), g_displ);
 
 	struct Head *head;
-	if ((head = slist_find_val(heads, head_current_mode_not_desired))) {
+	if ((head = slist_find_val(g_heads, head_current_mode_not_desired))) {
 		log_debug("APPLY mode");
 
 		displ_delta_init(MODE, head);
@@ -328,7 +328,7 @@ static void apply(void) {
 
 		g_displ->delta.human = delta_human_mode(head);
 
-	} else if ((head = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
+	} else if ((head = slist_find_val(g_heads, head_current_adaptive_sync_not_desired))) {
 		log_debug("APPLY vrr");
 
 		displ_delta_init(VRR_OFF, head);
@@ -346,7 +346,7 @@ static void apply(void) {
 
 		displ_delta_init(0, NULL);
 
-		print_heads(INFO, DELTA, heads);
+		print_heads(INFO, DELTA, g_heads);
 
 		// all other changes
 		for (i = heads_changing; i; i = i->nex) {
@@ -452,13 +452,13 @@ void handle_failure(void) {
 }
 
 void layout(void) {
-	print_heads(INFO, ARRIVED, heads_arrived);
-	slist_free(&heads_arrived);
+	print_heads(INFO, ARRIVED, g_heads_arrived);
+	slist_free(&g_heads_arrived);
 
-	print_heads(INFO, DEPARTED, heads_departed);
-	slist_free_vals(&heads_departed, head_free);
+	print_heads(INFO, DEPARTED, g_heads_departed);
+	slist_free_vals(&g_heads_departed, head_free);
 
-	log_debug("LAYOUT %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 
 	switch (g_displ->state) {
 		case SUCCEEDED:
@@ -490,9 +490,9 @@ void layout(void) {
 	}
 
 	desire();
-	log_debug("LAYOUT desired %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT desired %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 
 	apply();
-	log_debug("LAYOUT applied %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT applied %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 }
 

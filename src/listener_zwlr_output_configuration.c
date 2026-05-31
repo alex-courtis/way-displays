@@ -13,7 +13,7 @@ static void cleanup(struct Displ *displ,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1,
 		enum DisplState state) {
 
-	for (struct SList *i = heads; i; i = i->nex) {
+	for (struct SList *i = g_heads; i; i = i->nex) {
 		struct Head *head = i->val;
 		if (head->zwlr_config_head) {
 			zwlr_output_configuration_head_v1_destroy(head->zwlr_config_head);

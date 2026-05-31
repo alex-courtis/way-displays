@@ -141,7 +141,7 @@ static void finished(void *data,
 	struct Head *head_departed = calloc(1, sizeof(struct Head));
 	head_departed->name = strdup(head->name);
 	head_departed->description = strdup(head->description);
-	slist_append(&heads_departed, head_departed);
+	slist_append(&g_heads_departed, head_departed);
 
 	heads_release_head(head);
 	head_free(head);

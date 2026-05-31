@@ -104,7 +104,7 @@ static void receive_ipc_request(int server_socket) {
 
 	// handle extra toggles
 	if (ipc_request->command == CFG_TOGGLE) {
-		for (struct SList *i = heads; i; i = i->nex) {
+		for (struct SList *i = g_heads; i; i = i->nex) {
 			head_apply_toggles(i->val, ipc_request->cfg);
 		}
 	}
@@ -139,7 +139,7 @@ static void receive_ipc_request(int server_socket) {
 		case LIST:
 			{
 				// complete
-				print_list(INFO, heads);
+				print_list(INFO, g_heads);
 				break;
 			}
 		case GET:
@@ -150,7 +150,7 @@ static void receive_ipc_request(int server_socket) {
 				log_info("Active configuration:");
 				print_cfg(INFO, g_cfg, false);
 				print_cfg_commands(INFO, g_cfg);
-				print_heads(INFO, NONE, heads);
+				print_heads(INFO, NONE, g_heads);
 				break;
 			}
 	}

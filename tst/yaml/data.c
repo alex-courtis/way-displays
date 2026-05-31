@@ -139,7 +139,7 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.mode = mode_init(NULL, NULL, 13, 14, 15, false);;
 	slist_append(&head0->modes, head0->desired.mode);
 
-	slist_append(&heads, head0);
+	slist_append(&g_heads, head0);
 
 	return ipc_operation;
 }

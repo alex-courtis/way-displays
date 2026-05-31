@@ -14,9 +14,9 @@
 #include "log.h"
 #include "mode.h"
 
-struct SList *heads = NULL;
-struct SList *heads_arrived = NULL;
-struct SList *heads_departed = NULL;
+struct SList *g_heads = NULL;
+struct SList *g_heads_arrived = NULL;
+struct SList *g_heads_departed = NULL;
 
 const char *head_human(const struct Head * const head) {
 	static const char *unknown = "???";
@@ -445,16 +445,16 @@ void head_release_mode(struct Head * const head, const struct Mode * const mode)
 }
 
 void heads_release_head(const struct Head * const head) {
-	slist_remove_all(&heads_arrived, NULL, head);
-	slist_remove_all(&heads_departed, NULL, head);
-	slist_remove_all(&heads, NULL, head);
+	slist_remove_all(&g_heads_arrived, NULL, head);
+	slist_remove_all(&g_heads_departed, NULL, head);
+	slist_remove_all(&g_heads, NULL, head);
 }
 
 void heads_destroy(void) {
 
-	slist_free_vals(&heads, head_free);
-	slist_free_vals(&heads_departed, head_free);
+	slist_free_vals(&g_heads, head_free);
+	slist_free_vals(&g_heads_departed, head_free);
 
-	slist_free(&heads_arrived);
+	slist_free(&g_heads_arrived);
 }
 

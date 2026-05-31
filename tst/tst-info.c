@@ -499,7 +499,7 @@ void delta_human_mode__to_no(void **state) {
 			"  100x200@30Hz -> (no mode)"
 			);
 
-	slist_free(&heads);
+	slist_free(&g_heads);
 
 	free(deltas);
 
@@ -518,7 +518,7 @@ void delta_human_mode__from_no(void **state) {
 			"  (no mode) -> 1400x1500@160Hz"
 			);
 
-	slist_free(&heads);
+	slist_free(&g_heads);
 
 	free(deltas);
 
@@ -538,7 +538,7 @@ void delta_human_adaptive_sync__on(void **state) {
 			"  VRR on"
 			);
 
-	slist_free(&heads);
+	slist_free(&g_heads);
 
 	free(deltas);
 
@@ -558,7 +558,7 @@ void delta_human_adaptive_sync__off(void **state) {
 			"  VRR off"
 			);
 
-	slist_free(&heads);
+	slist_free(&g_heads);
 
 	free(deltas);
 
@@ -581,7 +581,7 @@ void delta_human__all(void **state) {
 			"  position:  1700,1800 -> 1900,11000"
 			);
 
-	slist_free(&heads);
+	slist_free(&g_heads);
 
 	free(deltas);
 
@@ -604,7 +604,7 @@ void delta_human__enabled(void **state) {
 			"name2\n  enabled"
 			);
 
-	slist_free(&heads);
+	slist_free(&g_heads);
 
 	free(deltas);
 
@@ -627,7 +627,7 @@ void delta_human__disabled(void **state) {
 			"name2\n  disabled"
 			);
 
-	slist_free(&heads);
+	slist_free(&g_heads);
 
 	free(deltas);
 

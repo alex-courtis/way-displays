@@ -34,9 +34,9 @@ static int before_each(void **state) {
 	h2->name = strdup("DP-2");
 	h3->name = strdup("DP-3");
 
-	slist_append(&heads, h1);
-	slist_append(&heads, h2);
-	slist_append(&heads, h3);
+	slist_append(&g_heads, h1);
+	slist_append(&g_heads, h2);
+	slist_append(&g_heads, h3);
 
 	g_lid = NULL;
 
@@ -48,7 +48,7 @@ static int after_each(void **state) {
 	struct State *s = *state;
 
 	condition_free(s->condition);
-	slist_free_vals(&heads, head_free);
+	slist_free_vals(&g_heads, head_free);
 
 	free(g_lid);
 	g_lid = NULL;
