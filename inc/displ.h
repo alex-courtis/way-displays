@@ -6,6 +6,9 @@
 #include "cfg.h"
 #include "head.h"
 
+// global singleton
+extern struct Displ *g_displ;
+
 enum DisplState {
 	IDLE = 0,
 	SUCCEEDED,

@@ -54,7 +54,7 @@ int before_each(void **state) {
 	free(cfg->callback_cmd);
 	cfg->callback_cmd = NULL;
 
-	displ = calloc(1, sizeof(struct Displ));
+	g_displ = calloc(1, sizeof(struct Displ));
 
 	struct State *s = calloc(1, sizeof(struct State));
 
@@ -73,7 +73,7 @@ int before_each(void **state) {
 int after_each(void **state) {
 	slist_free(&heads);
 
-	free(displ);
+	free(g_displ);
 
 	cfg_destroy();
 
@@ -679,8 +679,8 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 		.adaptive_sync_failed = false,
 	};
-	displ->delta.element = VRR_OFF;
-	displ->delta.head = &head;
+	g_displ->delta.element = VRR_OFF;
+	g_displ->delta.head = &head;
 
 	expect_int_value(__wrap_call_back, t, INFO);
 	expect_str(__wrap_call_back, msg1, "Changes successful");
@@ -701,8 +701,8 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 	};
-	displ->delta.element = VRR_OFF;
-	displ->delta.head = &head;
+	g_displ->delta.element = VRR_OFF;
+	g_displ->delta.head = &head;
 
 	expect_int_value(__wrap_print_adaptive_sync_fail, t, WARNING);
 	expect_ptr(__wrap_print_adaptive_sync_fail, head, &head);
@@ -722,8 +722,8 @@ void handle_success__head_changing_mode(void **state) {
 	struct Head head = {
 		.desired.mode = &mode,
 	};
-	displ->delta.element = MODE;
-	displ->delta.head = &head;
+	g_displ->delta.element = MODE;
+	g_displ->delta.head = &head;
 
 	expect_int_value(__wrap_call_back, t, INFO);
 	expect_str(__wrap_call_back, msg1, "Changes successful");
@@ -738,7 +738,7 @@ void handle_success__head_changing_mode(void **state) {
 }
 
 void handle_success__ok(void **state) {
-	displ->delta.human = strdup("human");
+	g_displ->delta.human = strdup("human");
 
 	expect_int_value(__wrap_call_back, t, INFO);
 	expect_str(__wrap_call_back, msg1, "human");
@@ -758,8 +758,8 @@ void handle_failure__mode(void **state) {
 		.current.mode = &mode_cur,
 		.desired.mode = &mode_des,
 	};
-	displ->delta.element = MODE;
-	displ->delta.head = &head;
+	g_displ->delta.element = MODE;
+	g_displ->delta.head = &head;
 
 	expect_int_value(__wrap_print_mode_fail, t, ERROR);
 	expect_ptr(__wrap_print_mode_fail, head, &head);
@@ -788,8 +788,8 @@ void handle_failure__adaptive_sync(void **state) {
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 	};
-	displ->delta.element = VRR_OFF;
-	displ->delta.head = &head;
+	g_displ->delta.element = VRR_OFF;
+	g_displ->delta.head = &head;
 
 	expect_int_value(__wrap_print_adaptive_sync_fail, t, WARNING);
 	expect_ptr(__wrap_print_adaptive_sync_fail, head, &head);
@@ -805,7 +805,7 @@ void handle_failure__adaptive_sync(void **state) {
 }
 
 void handle_failure__unspecified(void **state) {
-	displ->delta.human = strdup("human");
+	g_displ->delta.human = strdup("human");
 
 	expect_int_value(__wrap_call_back, t, FATAL);
 	expect_str(__wrap_call_back, msg1, "human");

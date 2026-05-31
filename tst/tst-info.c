@@ -41,7 +41,7 @@ int before_each(void **state) {
 
 	struct State *s = calloc(1, sizeof(struct State));
 
-	displ = calloc(1, sizeof(struct Displ));
+	g_displ = calloc(1, sizeof(struct Displ));
 
 	cfg = cfg_default();
 
@@ -131,7 +131,7 @@ int after_each(void **state) {
 	free(s);
 
 	displ_delta_destroy();
-	free(displ);
+	free(g_displ);
 
 	cfg_destroy();
 
@@ -680,7 +680,7 @@ void call_back__two(void **state) {
 	free(cfg->callback_cmd);
 	cfg->callback_cmd = strdup("command");
 
-	displ->delta.human = strdup("not successful");
+	g_displ->delta.human = strdup("not successful");
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
@@ -723,7 +723,7 @@ void call_back_mode_fail__(void **state) {
 void call_back_adaptive_sync_fail__(void **state) {
 	struct Head head = { .name = "name1", .model = "model1", .description = "description1", };
 
-	displ->delta.head = &head;
+	g_displ->delta.head = &head;
 
 	free(cfg->callback_cmd);
 	cfg->callback_cmd = strdup("command");
@@ -742,7 +742,7 @@ void call_back_adaptive_sync_fail__(void **state) {
 	expect_str(__wrap_spawn_sh_cmd, command, cfg->callback_cmd);
 	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
 
-	call_back_adaptive_sync_fail(WARNING, displ->delta.head);
+	call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 	assert_logs_empty();

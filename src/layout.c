@@ -312,8 +312,8 @@ static void apply(void) {
 		return;
 
 	// passed into our configuration listener
-	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
+	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(g_displ->zwlr_output_manager, g_displ->zwlr_output_manager_serial);
+	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), g_displ);
 
 	struct Head *head;
 	if ((head = slist_find_val(heads, head_current_mode_not_desired))) {
@@ -327,7 +327,7 @@ static void apply(void) {
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
 
-		displ->delta.human = delta_human_mode(head);
+		g_displ->delta.human = delta_human_mode(head);
 
 	} else if ((head = slist_find_val(heads, head_current_adaptive_sync_not_desired))) {
 		log_debug("APPLY vrr");
@@ -340,7 +340,7 @@ static void apply(void) {
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
 		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
 
-		displ->delta.human = delta_human_adaptive_sync(head);
+		g_displ->delta.human = delta_human_adaptive_sync(head);
 
 	} else {
 		log_debug("APPLY remainder");
@@ -363,12 +363,12 @@ static void apply(void) {
 			}
 		}
 
-		displ->delta.human = delta_human(heads_changing);
+		g_displ->delta.human = delta_human(heads_changing);
 	}
 
 	zwlr_output_configuration_v1_apply(zwlr_config);
 
-	displ->state = OUTSTANDING;
+	g_displ->state = OUTSTANDING;
 
 	slist_free(&heads_changing);
 }
@@ -376,15 +376,15 @@ static void apply(void) {
 void handle_success(void) {
 	cancellation_retries = 0;
 
-	switch(displ->delta.element) {
+	switch(g_displ->delta.element) {
 		case MODE:
 			// successful mode change is not always reported
-			displ->delta.head->current.mode = displ->delta.head->desired.mode;
+			g_displ->delta.head->current.mode = g_displ->delta.head->desired.mode;
 			break;
 
 		case VRR_OFF:
 			// sway reports adaptive sync failure as success
-			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
+			if (head_current_adaptive_sync_not_desired(g_displ->delta.head)) {
 				handle_failure();
 				return;
 			}
@@ -396,7 +396,7 @@ void handle_success(void) {
 
 	log_info(NULL);
 	log_info("Changes successful");
-	call_back(INFO, displ->delta.human ? displ->delta.human : "Changes successful", NULL);
+	call_back(INFO, g_displ->delta.human ? g_displ->delta.human : "Changes successful", NULL);
 
 	displ_delta_destroy();
 }
@@ -415,35 +415,35 @@ static bool handle_cancelled(void) {
 }
 
 void handle_failure(void) {
-	switch(displ->delta.element) {
+	switch(g_displ->delta.element) {
 		case MODE:
 
-			print_mode_fail(ERROR, displ->delta.head, displ->delta.head->desired.mode);
-			call_back_mode_fail(ERROR, displ->delta.head, displ->delta.head->desired.mode);
+			print_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.mode);
+			call_back_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.mode);
 
 			// mode setting failure, try again
-			slist_append(&displ->delta.head->modes_failed, displ->delta.head->desired.mode);
+			slist_append(&g_displ->delta.head->modes_failed, g_displ->delta.head->desired.mode);
 
 			// current mode may be misreported
-			displ->delta.head->current.mode = NULL;
+			g_displ->delta.head->current.mode = NULL;
 
 			break;
 
 		case VRR_OFF:
 			// river reports adaptive sync failure as failure
-			if (head_current_adaptive_sync_not_desired(displ->delta.head)) {
+			if (head_current_adaptive_sync_not_desired(g_displ->delta.head)) {
 
-				print_adaptive_sync_fail(WARNING, displ->delta.head);
-				call_back_adaptive_sync_fail(WARNING, displ->delta.head);
+				print_adaptive_sync_fail(WARNING, g_displ->delta.head);
+				call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
 
-				displ->delta.head->adaptive_sync_failed = true;
+				g_displ->delta.head->adaptive_sync_failed = true;
 			}
 
 			break;
 		default:
 			log_fatal(NULL);
 			log_fatal("Changes failed, exiting");
-			call_back(FATAL, displ->delta.human, "\nChanges failed, exiting");
+			call_back(FATAL, g_displ->delta.human, "\nChanges failed, exiting");
 
 			wd_exit_message(EXIT_FAILURE);
 			break;
@@ -459,12 +459,12 @@ void layout(void) {
 	print_heads(INFO, DEPARTED, heads_departed);
 	slist_free_vals(&heads_departed, head_free);
 
-	log_debug("LAYOUT %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(heads));
 
-	switch (displ->state) {
+	switch (g_displ->state) {
 		case SUCCEEDED:
 			handle_success();
-			displ->state = IDLE;
+			g_displ->state = IDLE;
 			break;
 
 		case OUTSTANDING:
@@ -473,11 +473,11 @@ void layout(void) {
 
 		case FAILED:
 			handle_failure();
-			displ->state = IDLE;
+			g_displ->state = IDLE;
 			break;
 
 		case CANCELLED:
-			displ->state = IDLE;
+			g_displ->state = IDLE;
 			// whether to keep retrying
 			if (handle_cancelled()) {
 				break;
@@ -491,9 +491,9 @@ void layout(void) {
 	}
 
 	desire();
-	log_debug("LAYOUT desired %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT desired %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(heads));
 
 	apply();
-	log_debug("LAYOUT applied %s %zu", displ_state_name(displ->state), head_num_current_not_desired(heads));
+	log_debug("LAYOUT applied %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(heads));
 }
 

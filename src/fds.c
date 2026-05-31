@@ -111,7 +111,7 @@ void pfds_init(void) {
 	pfd_signal->events = POLLIN;
 
 	pfd_wayland = &pfds[i++];
-	pfd_wayland->fd = wl_display_get_fd(displ->display);
+	pfd_wayland->fd = wl_display_get_fd(g_displ->display);
 	pfd_wayland->events = POLLIN;
 
 	if (fd_socket_server != -1) {

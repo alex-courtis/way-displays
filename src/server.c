@@ -171,13 +171,13 @@ static int loop(void) {
 
 		// prepare for reading wayland events
 		log_debug("LOOP _wl_display_prepare_read");
-		while (_wl_display_prepare_read(displ->display, FL) != 0) {
+		while (_wl_display_prepare_read(g_displ->display, FL) != 0) {
 			log_debug("LOOP _wl_display_dispatch_pending__prepare_read");
-			_wl_display_dispatch_pending__prepare_read(displ->display, FL);
+			_wl_display_dispatch_pending__prepare_read(g_displ->display, FL);
 		}
 
 		log_debug("LOOP _wl_display_flush");
-		_wl_display_flush(displ->display, FL);
+		_wl_display_flush(g_displ->display, FL);
 
 
 		// poll for all events
@@ -192,13 +192,13 @@ static int loop(void) {
 
 		// always read and dispatch wayland events; stop the file descriptor from getting stale
 		log_debug("LOOP _wl_display_read_events");
-		if (_wl_display_read_events(displ->display, FL) == -1)
+		if (_wl_display_read_events(g_displ->display, FL) == -1)
 			return EXIT_SUCCESS;
 
 		log_debug("LOOP _wl_display_dispatch_pending__read_events");
-		_wl_display_dispatch_pending__read_events(displ->display, FL);
+		_wl_display_dispatch_pending__read_events(g_displ->display, FL);
 
-		if (!displ->zwlr_output_manager) {
+		if (!g_displ->zwlr_output_manager) {
 			log_info(NULL);
 			log_info("Display's output manager has departed, exiting");
 			wd_exit(EXIT_SUCCESS);
@@ -254,7 +254,7 @@ static int loop(void) {
 
 		// inform the client
 		if (ipc_operation) {
-			ipc_operation->done = displ->state == IDLE;
+			ipc_operation->done = g_displ->state == IDLE;
 			log_debug("LOOP notify_ipc_operation");
 			notify_ipc_operation();
 		};
