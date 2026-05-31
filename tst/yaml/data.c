@@ -15,7 +15,7 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
-static void lcl(enum LogThreshold threshold, char *line, struct SList **log_cap_lines) {
+static void lcl(enum LogThreshold threshold, const char *line, struct SList **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
 	lcl->threshold = threshold;

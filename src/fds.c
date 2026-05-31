@@ -150,7 +150,7 @@ void pfds_destroy(void) {
 }
 
 // see man 7 inotify
-bool fd_cfg_dir_modified(char *file_name) {
+bool fd_cfg_dir_modified(const char *file_name) {
 	if (!file_name) {
 		return false;
 	}

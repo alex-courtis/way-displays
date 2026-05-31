@@ -21,7 +21,7 @@ staticFunction:tst/*c
 # this is just not practical
 nullPointerOutOfMemory
 
-# does not work with callbacks
+# little value and requires much casting
 constParameterCallback
 
 # does not identify correctly
@@ -30,9 +30,9 @@ unusedStructMember
 # little value and likely won't compile
 shadowFunction
 
-# TODO: fix
+# TODO: fix remaining
 constVariablePointer
-constParameterPointer
+# constParameterPointer
 shadowVariable
 # variableScope
 # unreadVariable

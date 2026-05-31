@@ -126,7 +126,7 @@ static bool greater_than_res_refresh(const void *a, const void *b) {
 	return false;
 }
 
-static bool mrr_satisfies_user_mode(struct ModesResRefresh *mrr, struct UserMode *user_mode) {
+static bool mrr_satisfies_user_mode(const struct ModesResRefresh *mrr, const struct UserMode *user_mode) {
 	if (!mrr || !user_mode) {
 		return false;
 	}

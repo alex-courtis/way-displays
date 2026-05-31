@@ -60,7 +60,7 @@ static const char *threshold_colours[] = {
 };
 static const char reset_colour[] = "\x1B[0m";
 
-static void capture_line(enum LogThreshold threshold, char *l) {
+static void capture_line(enum LogThreshold threshold, const char *l) {
 	for (struct SList *i = log_cap_lines_active; i; i = i->nex) {
 		struct LogCapLine *line = calloc(1, sizeof(struct LogCapLine));
 		line->line = strdup(l);
