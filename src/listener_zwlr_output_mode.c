@@ -36,16 +36,16 @@ static void preferred(void *data,
 
 	// some heads may advertise multiple preferred modes; ignore subsequent
 	if (mode->head) {
-		struct Mode *mode_preferred;
-		if ((mode_preferred = head_preferred_mode(mode->head))) {
+		struct Mode *mode_pref;
+		if ((mode_pref = head_preferred_mode(mode->head))) {
 
-			char *mode_preferred_str = info_mode_string(mode_preferred);
+			char *mode_preferred_str = info_mode_string(mode_pref);
 
 			char *mode_str = info_mode_string(mode);
 
-			if (mode_preferred->head && mode_preferred->head->name) {
+			if (mode_pref->head && mode_pref->head->name) {
 				log_info(NULL);
-				log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred->head->name, mode_preferred_str, mode_str);
+				log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_pref->head->name, mode_preferred_str, mode_str);
 			} else {
 				log_info(NULL);
 				log_info("???: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred_str, mode_str);

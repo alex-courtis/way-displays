@@ -65,11 +65,11 @@ static void current_mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	struct Mode *mode = NULL;
+	struct Mode *m = NULL;
 	for (struct SList *i = head->modes; i; i = i->nex) {
-		mode = i->val;
-		if (mode && mode->zwlr_mode == zwlr_output_mode_v1) {
-			head->current.mode = mode;
+		m = i->val;
+		if (m && m->zwlr_mode == zwlr_output_mode_v1) {
+			head->current.mode = m;
 			break;
 		}
 	}

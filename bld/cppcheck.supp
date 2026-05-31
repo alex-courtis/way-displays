@@ -33,6 +33,3 @@ constParameterCallback
 
 # does not identify correctly
 unusedStructMember
-
-# little value and likely won't compile
-shadowFunction

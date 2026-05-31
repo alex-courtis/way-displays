@@ -237,12 +237,12 @@ void mode_free(const void *data) {
 }
 
 void mode_res_refresh_free(const void *data) {
-	struct ModesResRefresh *modes_res_refresh = (struct ModesResRefresh*)data;
+	struct ModesResRefresh *mrr = (struct ModesResRefresh*)data;
 
-	if (!modes_res_refresh)
+	if (!mrr)
 		return;
 
-	slist_free(&modes_res_refresh->modes);
-	free(modes_res_refresh);
+	slist_free(&mrr->modes);
+	free(mrr);
 }
 

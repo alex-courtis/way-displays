@@ -34,15 +34,15 @@ int after_each(void **state) {
 void preferred__first(void **state) {
 	struct Head head = { .name = "NAM", };
 	struct Mode mode_existing = { .width = 3840, .height = 2160, .preferred = false, .refresh_mhz = 60000, .head = &head, };
-	struct Mode mode_preferred = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
+	struct Mode mode_pref = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
 
 	slist_append(&head.modes, &mode_existing);
-	slist_append(&head.modes, &mode_preferred);
+	slist_append(&head.modes, &mode_pref);
 
-	zwlr_output_mode_listener()->preferred(&mode_preferred, NULL);
+	zwlr_output_mode_listener()->preferred(&mode_pref, NULL);
 
 	assert_false(mode_existing.preferred);
-	assert_true(mode_preferred.preferred);
+	assert_true(mode_pref.preferred);
 
 	slist_free(&head.modes);
 
