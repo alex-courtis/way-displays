@@ -672,6 +672,32 @@ void desire_adaptive_sync__enabled(void **state) {
 	assert_logs_empty();
 }
 
+void desire_reapply__required(void **state) {
+	struct Head head0 = {
+		.desired.enabled = true,
+		.reapply_required = true,
+	};
+
+	desire_reapply(&head0);
+
+	assert_false(head0.desired.enabled);
+
+	assert_logs_empty();
+}
+
+void desire_reapply__not_required(void **state) {
+	struct Head head0 = {
+		.desired.enabled = true,
+		.reapply_required = false,
+	};
+
+	desire_reapply(&head0);
+
+	assert_true(head0.desired.enabled);
+
+	assert_logs_empty();
+}
+
 void handle_success__head_changing_adaptive_sync(void **state) {
 	struct Head head = {
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
@@ -856,6 +882,9 @@ int main(void) {
 		TEST(desire_adaptive_sync__failed),
 		TEST(desire_adaptive_sync__disabled),
 		TEST(desire_adaptive_sync__enabled),
+
+		TEST(desire_reapply__required),
+		TEST(desire_reapply__not_required),
 
 		TEST(handle_success__head_changing_adaptive_sync),
 		TEST(handle_success__head_changing_adaptive_sync_fail),

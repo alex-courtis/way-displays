@@ -54,6 +54,7 @@ struct Head {
 
 	struct HeadState current;
 	struct HeadState desired;
+	bool reapply_required;
 
 	struct SList *modes_failed;
 	bool adaptive_sync_failed;
@@ -107,6 +108,8 @@ struct Mode *head_preferred_mode(const struct Head * const head);
 bool head_current_not_desired(const void * const head);
 
 size_t head_num_current_not_desired(struct SList * const heads);
+
+bool head_reapply_required(const void * const head);
 
 bool head_current_mode_not_desired(const void * const head);
 

@@ -379,6 +379,12 @@ size_t head_num_current_not_desired(struct SList * const heads) {
 	return n;
 }
 
+bool head_reapply_required(const void * const data) {
+	const struct Head *head = data;
+
+	return (head && head->reapply_required);
+}
+
 bool head_current_mode_not_desired(const void * const data) {
 	const struct Head *head = data;
 
