@@ -146,7 +146,7 @@ static void receive_ipc_request(int server_socket) {
 			{
 				// ongoing
 				ipc_operation->done = false;
-				heads_reapply();
+				heads_reapply(g_heads);
 				break;
 			}
 		case GET:

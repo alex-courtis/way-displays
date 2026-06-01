@@ -413,31 +413,42 @@ void head_set_description(struct Head * const head, const char *description) {
 	}
 }
 
-void heads_reapply(void) {
-	log_info("");
+void heads_reapply(struct SList *heads) {
+	log_info(NULL);
 	log_info("Reapply:");
 
-	for (struct SList *i = g_heads; i; i = i->nex) {
+	for (struct SList *i = heads; i; i = i->nex) {
 		struct Head *head = (struct Head*)i->val;
 
-		head->reapply_required = true;
-		head->current.mode = NULL;
+		log_info("  %s:", head->name);
+		log_info("    Clear current mode");
 
 		if (head->modes_failed) {
-			log_info("  %s clearing failed modes:", head->name);
+			log_info("    Clear failed modes:");
 
 			for (struct SList *j = head->modes_failed; j; j = j->nex) {
-				struct Mode *mode = (struct Mode*)j->val;
+				const struct Mode *mode = (struct Mode*)j->val;
 
 				char *mode_str = info_mode_string(mode);
-				log_info("    %s", mode_str);
+				log_info("      %s", mode_str);
 				free(mode_str);
 			}
 
 			slist_free(&head->modes_failed);
-		} else {
-			log_info("  %s", head->name);
 		}
+
+		if (head->current.enabled) {
+			log_info("    Disable");
+			char *mode_str = info_mode_string(head->current.mode);
+			log_info("    Enable with mode:");
+			log_info("      %s", mode_str);
+			free(mode_str);
+		} else {
+			log_info("    Leave disabled");
+		}
+
+		head->reapply_required = true;
+		head->current.mode = NULL;
 	}
 }
 

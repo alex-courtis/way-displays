@@ -543,6 +543,46 @@ static void head_set_description__null_input(void **state) {
 	assert_nul(head.description);
 }
 
+static void heads_reapply__(void **state) {
+	struct SList *heads = NULL;
+
+
+	struct Head *head_disabled = calloc(1, sizeof(struct Head));
+	head_disabled->name = strdup("DP-7");
+	head_disabled->current.enabled = false;
+
+	slist_append(&head_disabled->modes, mode_init(NULL, NULL, 3440, 1440, 59999, true));
+	slist_append(&head_disabled->modes, mode_init(NULL, NULL, 3840, 2160, 30000, false));
+	slist_append(&head_disabled->modes, mode_init(NULL, NULL, 3840, 2160, 29970, false));
+	slist_append(&head_disabled->modes_failed, slist_at(head_disabled->modes, 0));
+	slist_append(&head_disabled->modes_failed, slist_at(head_disabled->modes, 1));
+	slist_append(&head_disabled->modes_failed, slist_at(head_disabled->modes, 2));
+
+	slist_append(&heads, head_disabled);
+
+
+	struct Head *head_enabled = calloc(1, sizeof(struct Head));
+	head_enabled->name = strdup("eDP-1");
+	head_enabled->current.enabled = true;
+
+	slist_append(&head_enabled->modes, mode_init(NULL, NULL, 2256, 1504, 59999, true));
+	head_enabled->current.mode = slist_at(head_enabled->modes, 0);
+
+	slist_append(&heads, head_enabled);
+
+
+	heads_reapply(heads);
+
+
+	char *expected_log = read_file("tst/head/reapply.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+
+
+	slist_free_vals(&heads, head_free);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(head_get_fixed_scale__rounding_nearest),
@@ -573,6 +613,8 @@ int main(void) {
 		TEST(head_set_description__no_nulls),
 		TEST(head_set_description__empty),
 		TEST(head_set_description__null_input),
+
+		TEST(heads_reapply__),
 	};
 
 	return RUN(tests);

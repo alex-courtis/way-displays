@@ -116,7 +116,7 @@ bool head_current_mode_not_desired(const void * const head);
 bool head_current_adaptive_sync_not_desired(const void * const head);
 
 // clear current and failed modes, flag for reapply
-void heads_reapply(void);
+void heads_reapply(struct SList *heads);
 
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
