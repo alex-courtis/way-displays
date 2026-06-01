@@ -413,6 +413,34 @@ void head_set_description(struct Head * const head, const char *description) {
 	}
 }
 
+void heads_reapply(void) {
+	log_info("");
+	log_info("Reapply:");
+
+	for (struct SList *i = g_heads; i; i = i->nex) {
+		struct Head *head = (struct Head*)i->val;
+
+		head->reapply_required = true;
+		head->current.mode = NULL;
+
+		if (head->modes_failed) {
+			log_info("  %s clearing failed modes:", head->name);
+
+			for (struct SList *j = head->modes_failed; j; j = j->nex) {
+				struct Mode *mode = (struct Mode*)j->val;
+
+				char *mode_str = info_mode_string(mode);
+				log_info("    %s", mode_str);
+				free(mode_str);
+			}
+
+			slist_free(&head->modes_failed);
+		} else {
+			log_info("  %s", head->name);
+		}
+	}
+}
+
 void head_free(const void * const data) {
 	struct Head *head = (struct Head*)data;
 

@@ -587,7 +587,7 @@ void delta_human_adaptive_sync__off(void **state) {
 }
 
 void delta_human_reapply__(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
 	char *deltas = delta_human_reapply(s->head2);
 

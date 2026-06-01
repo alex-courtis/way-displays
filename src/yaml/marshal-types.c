@@ -152,14 +152,19 @@ bool yaml_map_populate_head_state(struct MC *c, const void *data, int mapping) {
 
 	const struct HeadState *head_state = data;
 
-	return
-		yaml_map_add_float_nz(c, "SCALE",     wl_fixed_to_double(head_state->scale),                                          mapping) &&
-		yaml_map_add_bool (c, "ENABLED",   head_state->enabled,                                                            mapping) &&
-		yaml_map_add_int  (c, "X",         head_state->x,                                                                  mapping) &&
-		yaml_map_add_int  (c, "Y",         head_state->y,                                                                  mapping) &&
-		yaml_map_add_bool (c, "VRR",       (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping) &&
-		yaml_map_add_enum (c, "TRANSFORM", head_state->transform,                                          transform_name, mapping) &&
-		yaml_map_add_map  (c, "MODE",      head_state->mode,                                       yaml_map_populate_mode, mapping);
+	bool rc = true;
+
+	rc &= yaml_map_add_float_nz(c, "SCALE",     wl_fixed_to_double(head_state->scale),                                          mapping);
+	rc &= yaml_map_add_bool    (c, "ENABLED",   head_state->enabled,                                                            mapping);
+	rc &= yaml_map_add_int     (c, "X",         head_state->x,                                                                  mapping);
+	rc &= yaml_map_add_int     (c, "Y",         head_state->y,                                                                  mapping);
+	rc &= yaml_map_add_bool    (c, "VRR",       (head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED), mapping);
+	rc &= yaml_map_add_enum    (c, "TRANSFORM", head_state->transform,                                          transform_name, mapping);
+
+	if (head_state->mode)
+		rc &= yaml_map_add_map (c, "MODE",      head_state->mode,                                       yaml_map_populate_mode, mapping);
+
+	return rc;
 }
 
 bool yaml_map_populate_head_overrides(struct MC *c, const void *data, int mapping) {
