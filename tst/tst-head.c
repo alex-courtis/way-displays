@@ -1,6 +1,7 @@
 #include "tst.h"
 #include "asserts.h"
 #include "expects.h"
+#include "util.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
