@@ -461,7 +461,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 				log_(t, "    desc:      '%s'", head->description);
 			break;
 		case DELTA:
-			if (head_current_not_desired(head)) {
+			if (head_current_not_desired(head) || head_reapply_required(head)) {
 				log_(t, NULL);
 				log_(t, "%s Changing:", head->name);
 				log_(t, "  from:");

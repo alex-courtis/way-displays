@@ -434,6 +434,26 @@ void print_head_deltas__enable(void **state) {
 	free(expected_log);
 }
 
+void print_head_deltas__reapply(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.desired = head.current;
+	head.current.enabled = false;
+	head.desired.enabled = false;
+	head.reapply_required = true;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	print_head(INFO, DELTA, &head);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-reapply.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
 void print_active__empty(void **state) {
 	print_list(INFO, NULL);
 
@@ -809,6 +829,7 @@ int main(void) {
 		TEST(print_head_deltas__other),
 		TEST(print_head_deltas__disable),
 		TEST(print_head_deltas__enable),
+		TEST(print_head_deltas__reapply),
 
 		TEST(print_active__empty),
 		TEST(print_active__many),
