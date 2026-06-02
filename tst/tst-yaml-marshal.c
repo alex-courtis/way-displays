@@ -20,8 +20,9 @@
 
 #include "yaml/data.c"
 
-// visible for testing
+
 int write_handler(void *data, unsigned char *buffer, size_t size);
+
 
 static int before_all(void **state) {
 	return 0;
