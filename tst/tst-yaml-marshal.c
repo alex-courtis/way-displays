@@ -20,15 +20,18 @@
 
 #include "yaml/data.c"
 
-int before_all(void **state) {
+// visible for testing
+int write_handler(void *data, unsigned char *buffer, size_t size);
+
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	reset_yaml_fails();
@@ -36,7 +39,7 @@ int before_each(void **state) {
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	cfg_free(g_cfg);
 	g_cfg = NULL;
 	free(g_lid);
@@ -44,7 +47,7 @@ int after_each(void **state) {
 	return 0;
 }
 
-void _check_marshalled(char *actual, const char *expected_path, const char * const file, const int line) {
+static void _check_marshalled(char *actual, const char *expected_path, const char * const file, const int line) {
 	_assert_non_nul(actual, "actual", file, line);
 
 	char *expected = read_file(expected_path);
@@ -224,13 +227,13 @@ static void yaml_marshal__yaml_emitter_close_fail(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_write_handler__empty(void **state) {
+static void write_handler__empty(void **state) {
 	char *data = NULL;
 
 	char *buffer = strdup("1234");
 	size_t size = 2;
 
-	yaml_write_handler(&data, (unsigned char *)buffer, size);
+	write_handler(&data, (unsigned char *)buffer, size);
 
 	assert_str_equal(data, "12");
 
@@ -240,13 +243,13 @@ static void yaml_write_handler__empty(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_write_handler__append(void **state) {
+static void write_handler__append(void **state) {
 	char *data = strdup("foo");
 
 	char *buffer = strdup("1234");
 	size_t size = 2;
 
-	yaml_write_handler(&data, (unsigned char *)buffer, size);
+	write_handler(&data, (unsigned char *)buffer, size);
 
 	assert_str_equal(data, "foo12");
 
@@ -275,8 +278,8 @@ int main(void) {
 		TEST(yaml_marshal__yaml_emitter_dump_fail),
 		TEST(yaml_marshal__yaml_emitter_close_fail),
 
-		TEST(yaml_write_handler__empty),
-		TEST(yaml_write_handler__append),
+		TEST(write_handler__empty),
+		TEST(write_handler__append),
 	};
 
 	return RUN(tests);

@@ -6,7 +6,7 @@
 
 #include "log.h"
 
-int yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
+int write_handler(void *data, unsigned char *buffer, size_t size) {
 	if (!data)
 		return 0;
 
@@ -43,7 +43,7 @@ static char *yaml_document_to_string(struct MC *c, const char *name) {
 	}
 
 	yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
-	yaml_emitter_set_output(&emitter, yaml_write_handler, &yaml);
+	yaml_emitter_set_output(&emitter, write_handler, &yaml);
 
 	if (!yaml_emitter_open(&emitter)) {
 		log_error("unable to marshal %s: yaml_emitter_open failed", name);

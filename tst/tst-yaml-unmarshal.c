@@ -25,15 +25,15 @@
 
 #include "yaml/data.c"
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	reset_yaml_fails();
@@ -41,12 +41,12 @@ int before_each(void **state) {
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	return 0;
 }
 
 // expected will be free'd, log_path is optional WARNING
-void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected, const char *log_path, const char * const file, const int line) {
+static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected, const char *log_path, const char * const file, const int line) {
 	struct Cfg *actual = yaml_unmarshal_file(yaml_path, yaml_root_to_cfg);
 	_assert_non_nul(actual, "actual", file, line);
 
