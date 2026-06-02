@@ -420,11 +420,14 @@ void heads_reapply(struct SList *heads) {
 	for (struct SList *i = heads; i; i = i->nex) {
 		struct Head *head = (struct Head*)i->val;
 
+		int step = 1;
+
 		log_info("  %s:", head->name);
-		log_info("    Clear current mode");
+		log_info("    %d: Clear current mode", step++);
+		log_info("    %d: Disable", step++);
 
 		if (head->modes_failed) {
-			log_info("    Clear failed modes:");
+			log_info("    %d: Clear failed modes:", step++);
 
 			for (struct SList *j = head->modes_failed; j; j = j->nex) {
 				const struct Mode *mode = (struct Mode*)j->val;
@@ -438,13 +441,12 @@ void heads_reapply(struct SList *heads) {
 		}
 
 		if (head->current.enabled) {
-			log_info("    Disable");
 			char *mode_str = info_mode_string(head->current.mode);
-			log_info("    Enable with mode:");
+			log_info("    %d: Enable with mode:", step++);
 			log_info("      %s", mode_str);
 			free(mode_str);
 		} else {
-			log_info("    Leave disabled");
+			log_info("    %d: Enable according to config", step++);
 		}
 
 		head->reapply_required = true;

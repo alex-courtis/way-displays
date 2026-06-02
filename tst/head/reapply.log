@@ -1,15 +1,16 @@
 
 Reapply:
   DP-7:
-    Clear current mode
-    Clear failed modes:
+    1: Clear current mode
+    2: Disable
+    3: Clear failed modes:
       3440x1440@60Hz (59,999mHz) (preferred)
       3840x2160@30Hz (30,000mHz)
       3840x2160@30Hz (29,970mHz)
-    Leave disabled
+    4: Enable according to config
   eDP-1:
-    Clear current mode
-    Disable
-    Enable with mode:
+    1: Clear current mode
+    2: Disable
+    3: Enable with mode:
       2256x1504@60Hz (59,999mHz) (preferred)
 
