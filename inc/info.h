@@ -47,6 +47,9 @@ char *delta_human_mode(const struct Head * const head);
 // consumer frees
 char *delta_human_adaptive_sync(const struct Head * const head);
 
+// consumer frees
+char *delta_human_reapply(const struct Head * const head);
+
 // maybe execute CALLBACK_CMD
 // set CALLBACK_MSG to msg1..msg2
 // set CALLBACK_LEVEL to log name

@@ -461,7 +461,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 				log_(t, "    desc:      '%s'", head->description);
 			break;
 		case DELTA:
-			if (head_current_not_desired(head)) {
+			if (head_current_not_desired(head) || head_reapply_required(head)) {
 				log_(t, NULL);
 				log_(t, "%s Changing:", head->name);
 				log_(t, "  from:");
@@ -642,6 +642,15 @@ char *delta_human_adaptive_sync(const struct Head * const head) {
 			);
 }
 
+char *delta_human_reapply(const struct Head * const head) {
+	if (!head)
+		return NULL;
+
+	return sprintf_alloc("%s\n  disabled\n  modes reset",
+			head_human(head)
+			);
+}
+
 void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
 	if (!g_cfg->callback_cmd || t < log_get_threshold()) {
 		return;
@@ -659,6 +668,10 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", buf);
 	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
+
+	char *env_str = stable_str(env);
+	log_debug("%s", env_str);
+	free(env_str);
 
 	// execute callback
 	spawn_sh_cmd(g_cfg->callback_cmd, env);

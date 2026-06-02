@@ -16,6 +16,7 @@ void desire_mode(struct Head *head);
 void desire_scale(struct Head *head);
 void desire_transform(struct Head *head);
 void desire_adaptive_sync(struct Head *head);
+void desire_reapply(struct Head *head);
 void handle_success(void);
 void handle_failure(void);
 

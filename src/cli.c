@@ -31,6 +31,7 @@ void usage(FILE *stream) {
 		"  -l, --li[st]    list connected\n"
 		"  -g, --g[et]     show config and state\n"
 		"  -w, --w[rite]   write active to cfg.yaml\n"
+		"  -r, --r[eapply] disable, reset failed modes, enable\n"
 		"  -s, --s[et]     add or change\n"
 		"     ARRANGE_ALIGN <row|column> <top|middle|bottom|left|right>\n"
 		"     ORDER <name> ...\n"
@@ -248,6 +249,19 @@ struct IpcRequest *parse_write(int argc, char **argv) {
 	return request;
 }
 
+struct IpcRequest *parse_reapply(int argc, char **argv) {
+	if (optind != argc) {
+		log_fatal("--reapply takes no arguments");
+		wd_exit(EXIT_FAILURE);
+		return NULL;
+	}
+
+	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
+	request->command = REAPPLY;
+
+	return request;
+}
+
 struct IpcRequest *parse_set(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
@@ -383,6 +397,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		{ "help",          no_argument,       0, 'h' },
 		{ "list",          no_argument,       0, 'l' },
 		{ "log-threshold", required_argument, 0, 'L' },
+		{ "reapply",       no_argument,       0, 'r' },
 		{ "set",           required_argument, 0, 's' },
 		{ "toggle",        required_argument, 0, 't' },
 		{ "version",       no_argument,       0, 'v' },
@@ -390,7 +405,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		{ "yaml",          no_argument,       0, 'y' },
 		{ 0,               0,                 0,  0  }
 	};
-	static char *short_options = "c:d:ghlL:s:t:vwy";
+	static char *short_options = "c:d:ghlL:rs:t:vwy";
 
 	bool yaml = false;
 	enum LogThreshold threshold = 0;
@@ -439,6 +454,9 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				break;
 			case 'w':
 				*ipc_request = parse_write(argc, argv);
+				break;
+			case 'r':
+				*ipc_request = parse_reapply(argc, argv);
 				break;
 			case '?':
 			default:

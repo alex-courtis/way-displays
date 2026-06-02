@@ -428,6 +428,31 @@ void parse_write__ok(void **state) {
 	assert_logs_empty();
 }
 
+void parse_reapply__nargs(void **state) {
+	optind = 0;
+	optarg = "INVALID";
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_reapply(1, NULL));
+
+	assert_log(FATAL, "--reapply takes no arguments\n");
+	assert_logs_empty();
+}
+
+void parse_reapply__ok(void **state) {
+	optind = 0;
+
+	struct IpcRequest *request = parse_reapply(0, NULL);
+
+	assert_non_nul(request);
+	assert_int_equal(request->command, REAPPLY);
+
+	ipc_request_free(request);
+
+	assert_logs_empty();
+}
+
 void parse_set__mode_nargs(void **state) {
 	optind = 0;
 	optarg = "MODE";
@@ -756,6 +781,9 @@ int main(void) {
 
 		TEST(parse_write__nargs),
 		TEST(parse_write__ok),
+
+		TEST(parse_reapply__nargs),
+		TEST(parse_reapply__ok),
 
 		TEST(parse_set__mode_nargs),
 		TEST(parse_set__arrange_align_nargs),

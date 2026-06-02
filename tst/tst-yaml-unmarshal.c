@@ -232,7 +232,7 @@ static void yaml_root_to_ipc_request__invalid_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: invalid OP aoeu, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+			"ipc request: invalid OP aoeu, valid values: GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP: aoeu\n"
 			"----------------------------------------\n");
@@ -247,7 +247,7 @@ static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: invalid OP expected scalar, got map, valid values: GET|LIST|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+			"ipc request: invalid OP expected scalar, got map, valid values: GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP:\n"
 			"  FOO: BAR\n"

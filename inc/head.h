@@ -54,6 +54,7 @@ struct Head {
 
 	struct HeadState current;
 	struct HeadState desired;
+	bool reapply_required;
 
 	struct SList *modes_failed;
 	bool adaptive_sync_failed;
@@ -108,9 +109,14 @@ bool head_current_not_desired(const void * const head);
 
 size_t head_num_current_not_desired(struct SList * const heads);
 
+bool head_reapply_required(const void * const head);
+
 bool head_current_mode_not_desired(const void * const head);
 
 bool head_current_adaptive_sync_not_desired(const void * const head);
+
+// clear current and failed modes, flag for reapply
+void heads_reapply(struct SList *heads);
 
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);

@@ -434,6 +434,26 @@ void print_head_deltas__enable(void **state) {
 	free(expected_log);
 }
 
+void print_head_deltas__reapply(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.desired = head.current;
+	head.current.enabled = false;
+	head.desired.enabled = false;
+	head.reapply_required = true;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	print_head(INFO, DELTA, &head);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-reapply.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
 void print_active__empty(void **state) {
 	print_list(INFO, NULL);
 
@@ -566,6 +586,24 @@ void delta_human_adaptive_sync__off(void **state) {
 	assert_logs_empty();
 }
 
+void delta_human_reapply__(void **state) {
+	const struct State *s = *state;
+
+	char *deltas = delta_human_reapply(s->head2);
+
+	assert_str_equal(deltas, ""
+			"name2\n"
+			"  disabled\n"
+			"  modes reset"
+			);
+
+	slist_free(&g_heads);
+
+	free(deltas);
+
+	assert_logs_empty();
+}
+
 void delta_human__all(void **state) {
 	const struct State *s = *state;
 
@@ -667,6 +705,11 @@ void call_back__one(void **state) {
 	call_back(INFO, "msg1", NULL);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+
+	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	assert_log(DEBUG, env_str);
+	free(env_str);
+
 	assert_logs_empty();
 
 	stable_free(env);
@@ -690,6 +733,11 @@ void call_back__two(void **state) {
 	call_back(FATAL, "msg1", "msg2");
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+
+	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	assert_log(DEBUG, env_str);
+	free(env_str);
+
 	assert_logs_empty();
 
 	stable_free(env);
@@ -715,6 +763,11 @@ void call_back_mode_fail__(void **state) {
 	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+
+	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	assert_log(DEBUG, env_str);
+	free(env_str);
+
 	assert_logs_empty();
 
 	stable_free(env);
@@ -745,6 +798,11 @@ void call_back_adaptive_sync_fail__(void **state) {
 	call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
+
+	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	assert_log(DEBUG, env_str);
+	free(env_str);
+
 	assert_logs_empty();
 
 	stable_free(env);
@@ -771,6 +829,7 @@ int main(void) {
 		TEST(print_head_deltas__other),
 		TEST(print_head_deltas__disable),
 		TEST(print_head_deltas__enable),
+		TEST(print_head_deltas__reapply),
 
 		TEST(print_active__empty),
 		TEST(print_active__many),
@@ -786,6 +845,8 @@ int main(void) {
 
 		TEST(delta_human_adaptive_sync__on),
 		TEST(delta_human_adaptive_sync__off),
+
+		TEST(delta_human_reapply__),
 
 		TEST(delta_human__all),
 		TEST(delta_human__enabled),

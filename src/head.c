@@ -379,6 +379,12 @@ size_t head_num_current_not_desired(struct SList * const heads) {
 	return n;
 }
 
+bool head_reapply_required(const void * const data) {
+	const struct Head *head = data;
+
+	return (head && head->reapply_required);
+}
+
 bool head_current_mode_not_desired(const void * const data) {
 	const struct Head *head = data;
 
@@ -404,6 +410,47 @@ void head_set_description(struct Head * const head, const char *description) {
 			description += 7;
 		}
 		head->description = strdup(description);
+	}
+}
+
+void heads_reapply(struct SList *heads) {
+	log_info(NULL);
+	log_info("Reapply:");
+
+	for (struct SList *i = heads; i; i = i->nex) {
+		struct Head *head = (struct Head*)i->val;
+
+		int step = 1;
+
+		log_info("  %s:", head->name);
+		log_info("    %d: Clear current mode", step++);
+		log_info("    %d: Disable", step++);
+
+		if (head->modes_failed) {
+			log_info("    %d: Clear failed modes:", step++);
+
+			for (struct SList *j = head->modes_failed; j; j = j->nex) {
+				const struct Mode *mode = (struct Mode*)j->val;
+
+				char *mode_str = info_mode_string(mode);
+				log_info("      %s", mode_str);
+				free(mode_str);
+			}
+
+			slist_free(&head->modes_failed);
+		}
+
+		if (head->current.enabled) {
+			char *mode_str = info_mode_string(head->current.mode);
+			log_info("    %d: Enable with mode:", step++);
+			log_info("      %s", mode_str);
+			free(mode_str);
+		} else {
+			log_info("    %d: Enable according to config", step++);
+		}
+
+		head->reapply_required = true;
+		head->current.mode = NULL;
 	}
 }
 
