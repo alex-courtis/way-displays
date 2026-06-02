@@ -224,6 +224,38 @@ static void yaml_marshal__yaml_emitter_close_fail(void **state) {
 	assert_logs_empty();
 }
 
+static void yaml_write_handler__empty(void **state) {
+	char *data = NULL;
+
+	char *buffer = strdup("1234");
+	size_t size = 2;
+
+	yaml_write_handler(&data, (unsigned char *)buffer, size);
+
+	assert_str_equal(data, "12");
+
+	free(buffer);
+	free(data);
+
+	assert_logs_empty();
+}
+
+static void yaml_write_handler__append(void **state) {
+	char *data = strdup("foo");
+
+	char *buffer = strdup("1234");
+	size_t size = 2;
+
+	yaml_write_handler(&data, (unsigned char *)buffer, size);
+
+	assert_str_equal(data, "foo12");
+
+	free(buffer);
+	free(data);
+
+	assert_logs_empty();
+}
+
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
@@ -242,6 +274,9 @@ int main(void) {
 		TEST(yaml_marshal__yaml_emitter_open_fail),
 		TEST(yaml_marshal__yaml_emitter_dump_fail),
 		TEST(yaml_marshal__yaml_emitter_close_fail),
+
+		TEST(yaml_write_handler__empty),
+		TEST(yaml_write_handler__append),
 	};
 
 	return RUN(tests);
