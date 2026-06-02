@@ -151,6 +151,10 @@ void cfg_copy_file_path(struct Cfg *from, struct Cfg *to);
 
 struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command);
 
+void validate_warn(struct Cfg *cfg);
+
+void validate_fix(struct Cfg *cfg);
+
 //
 // init functions
 //
@@ -192,14 +196,5 @@ void cfg_disabled_free(const void *val);
 // cloning functions
 //
 void* cfg_disabled_clone(const void *data);
-
-//
-// visible for testing
-//
-struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
-struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from);
-struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
-void validate_warn(struct Cfg *cfg);
-void validate_fix(struct Cfg *cfg);
 
 #endif // CFG_H

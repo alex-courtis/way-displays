@@ -8,10 +8,16 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
-#include "cfg.h"
 #include "conditions.h"
 #include "log.h"
 #include "slist.h"
+
+#include "cfg.h"
+
+struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
+struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from);
+struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
+
 
 extern struct SList *cfg_file_paths;
 

@@ -11,7 +11,6 @@
 #include "slist.h"
 #include "log.h"
 
-#include "server.h"
 #include "cfg.h"
 #include "yaml/unmarshal.h"
 

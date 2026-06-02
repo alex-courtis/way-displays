@@ -17,8 +17,6 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
-#include "layout.h"
-
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
