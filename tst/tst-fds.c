@@ -17,7 +17,7 @@
 
 char DIR_TMP[PATH_MAX + 20];
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	char cwd[PATH_MAX];
 	assert_non_nul(getcwd(cwd, PATH_MAX));
 	snprintf(DIR_TMP, sizeof(DIR_TMP), "%s/tst/tmp", cwd);
@@ -26,13 +26,13 @@ int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	rmdir(DIR_TMP);
 
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	g_cfg = cfg_default();
@@ -40,7 +40,7 @@ int before_each(void **state) {
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	cfg_destroy();
 
 	fd_cfg_dir = -1;
@@ -49,7 +49,7 @@ int after_each(void **state) {
 	return 0;
 }
 
-void fd_wd_cfg_dir_create__no_dir(void **state) {
+static void fd_wd_cfg_dir_create__no_dir(void **state) {
 	fd_wd_cfg_dir_create();
 
 	assert_int_equal(fd_cfg_dir, -1);
@@ -58,7 +58,7 @@ void fd_wd_cfg_dir_create__no_dir(void **state) {
 	assert_logs_empty();
 }
 
-void fd_wd_cfg_dir_create__bad_dir(void **state) {
+static void fd_wd_cfg_dir_create__bad_dir(void **state) {
 	g_cfg->dir_path = strdup("/inexistent");
 
 	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
@@ -72,7 +72,7 @@ void fd_wd_cfg_dir_create__bad_dir(void **state) {
 	assert_logs_empty();
 }
 
-void fd_wd_cfg_dir_create__ok(void **state) {
+static void fd_wd_cfg_dir_create__ok(void **state) {
 	g_cfg->dir_path = strdup(DIR_TMP);
 
 	fd_wd_cfg_dir_create();
@@ -87,7 +87,7 @@ void fd_wd_cfg_dir_create__ok(void **state) {
 	assert_logs_empty();
 }
 
-void fd_wd_cfg_dir_destroy__bad(void **state) {
+static void fd_wd_cfg_dir_destroy__bad(void **state) {
 	fd_cfg_dir = 123;
 	wd_cfg_dir = 456;
 
@@ -100,7 +100,7 @@ void fd_wd_cfg_dir_destroy__bad(void **state) {
 	assert_logs_empty();
 }
 
-void fd_wd_cfg_dir_destroy__ok(void **state) {
+static void fd_wd_cfg_dir_destroy__ok(void **state) {
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
 	wd_cfg_dir = inotify_add_watch(fd_cfg_dir, DIR_TMP, IN_CLOSE_WRITE);
 

@@ -24,6 +24,7 @@ char *_dir_path = NULL;
 char *_file_name = NULL;
 char *_file_path = NULL;
 
+// cppcheck-suppress staticFunction
 bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 	check_expected_ptr(cfg);
 
@@ -34,6 +35,7 @@ bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 	return mock_type(bool);
 }
 
+// cppcheck-suppress staticFunction
 void *__wrap_yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	check_expected_ptr(path);
 

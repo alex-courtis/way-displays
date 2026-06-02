@@ -137,7 +137,7 @@ int after_each(void **state) {
 	return 0;
 }
 
-void print_cfg__all(void **state) {
+static void print_cfg__all(void **state) {
 	struct Cfg *c = cfg_default();
 
 	slist_append(&c->order_name_desc, strdup("first"));
@@ -178,7 +178,7 @@ void print_cfg__all(void **state) {
 	cfg_free(c);
 }
 
-void print_cfg__del(void **state) {
+static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
 	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
@@ -202,7 +202,7 @@ void print_cfg__del(void **state) {
 	cfg_free(c);
 }
 
-void print_cfg__arrange_only(void **state) {
+static void print_cfg__arrange_only(void **state) {
 	struct Cfg *c = cfg_init();
 	c->arrange = ROW;
 
@@ -217,7 +217,7 @@ void print_cfg__arrange_only(void **state) {
 	cfg_free(c);
 }
 
-void print_cfg__align_only(void **state) {
+static void print_cfg__align_only(void **state) {
 	struct Cfg *c = cfg_init();
 	c->align = TOP;
 
@@ -232,7 +232,7 @@ void print_cfg__align_only(void **state) {
 	cfg_free(c);
 }
 
-void print_cfg__auto_scale_max(void **state) {
+static void print_cfg__auto_scale_max(void **state) {
 	struct Cfg *c = cfg_init();
 	c->auto_scale = true;
 	c->auto_scale_dpi = 77;
@@ -250,7 +250,7 @@ void print_cfg__auto_scale_max(void **state) {
 	cfg_free(c);
 }
 
-void print_cfg__lid_disabled(void **state) {
+static void print_cfg__lid_disabled(void **state) {
 	struct Cfg *c = cfg_init();
 	c->laptop_lid_monitor = OFF;
 
@@ -265,7 +265,7 @@ void print_cfg__lid_disabled(void **state) {
 	cfg_free(c);
 }
 
-void print_cfg_commands__empty(void **state) {
+static void print_cfg_commands__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
 	print_cfg_commands(INFO, cfg);
@@ -275,7 +275,7 @@ void print_cfg_commands__empty(void **state) {
 	assert_logs_empty();
 }
 
-void print_cfg_commands__ok(void **state) {
+static void print_cfg_commands__ok(void **state) {
 	struct Cfg *c = cfg_default();
 
 	c->arrange = COL;
@@ -314,7 +314,7 @@ void print_cfg_commands__ok(void **state) {
 	free(expected_log);
 }
 
-void print_head_arrived__all(void **state) {
+static void print_head_arrived__all(void **state) {
 	const struct State *s = *state;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
@@ -328,7 +328,7 @@ void print_head_arrived__all(void **state) {
 	free(expected_log);
 }
 
-void print_head_arrived__min(void **state) {
+static void print_head_arrived__min(void **state) {
 	const struct Head *head = calloc(1, sizeof(struct Head));
 
 	expect_str(__wrap_lid_is_closed, name, NULL);
@@ -344,7 +344,7 @@ void print_head_arrived__min(void **state) {
 	head_free(head);
 }
 
-void print_head_departed__ok(void **state) {
+static void print_head_departed__ok(void **state) {
 	const struct State *s = *state;
 
 	print_head(INFO, DEPARTED, s->head1);
@@ -355,7 +355,7 @@ void print_head_departed__ok(void **state) {
 	free(expected_log);
 }
 
-void print_head_deltas__mode(void **state) {
+static void print_head_deltas__mode(void **state) {
 	const struct State *s = *state;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
@@ -369,7 +369,7 @@ void print_head_deltas__mode(void **state) {
 	free(expected_log);
 }
 
-void print_head_deltas__vrr(void **state) {
+static void print_head_deltas__vrr(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -386,7 +386,7 @@ void print_head_deltas__vrr(void **state) {
 	free(expected_log);
 }
 
-void print_head_deltas__other(void **state) {
+static void print_head_deltas__other(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.mode = s->head1->current.mode;
@@ -402,7 +402,7 @@ void print_head_deltas__other(void **state) {
 	free(expected_log);
 }
 
-void print_head_deltas__disable(void **state) {
+static void print_head_deltas__disable(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.enabled = false;
@@ -418,7 +418,7 @@ void print_head_deltas__disable(void **state) {
 	free(expected_log);
 }
 
-void print_head_deltas__enable(void **state) {
+static void print_head_deltas__enable(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
@@ -434,7 +434,7 @@ void print_head_deltas__enable(void **state) {
 	free(expected_log);
 }
 
-void print_head_deltas__reapply(void **state) {
+static void print_head_deltas__reapply(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
@@ -454,13 +454,13 @@ void print_head_deltas__reapply(void **state) {
 	free(expected_log);
 }
 
-void print_active__empty(void **state) {
+static void print_active__empty(void **state) {
 	print_list(INFO, NULL);
 
 	assert_logs_empty();
 }
 
-void print_active__many(void **state) {
+static void print_active__many(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
@@ -472,13 +472,13 @@ void print_active__many(void **state) {
 	free(expected_log);
 }
 
-void print_adaptive_sync_fail__nulls(void **state) {
+static void print_adaptive_sync_fail__nulls(void **state) {
 	print_adaptive_sync_fail(ERROR, NULL);
 
 	assert_logs_empty();
 }
 
-void print_adaptive_sync_fail__head(void **state) {
+static void print_adaptive_sync_fail__head(void **state) {
 	const struct Head head = { .name = "head0", .model = "model0", };
 
 	print_adaptive_sync_fail(WARNING, &head);
@@ -491,7 +491,7 @@ void print_adaptive_sync_fail__head(void **state) {
 	assert_logs_empty();
 }
 
-void print_mode_fail__nulls(void **state) {
+static void print_mode_fail__nulls(void **state) {
 
 	print_mode_fail(WARNING, NULL, NULL);
 
@@ -499,7 +499,7 @@ void print_mode_fail__nulls(void **state) {
 	assert_logs_empty();
 }
 
-void print_mode_fail__head(void **state) {
+static void print_mode_fail__head(void **state) {
 	const struct Head head = { .name = "head0", .model = "model0", };
 
 	print_mode_fail(WARNING, &head, NULL);
@@ -508,7 +508,7 @@ void print_mode_fail__head(void **state) {
 	assert_logs_empty();
 }
 
-void delta_human_mode__to_no(void **state) {
+static void delta_human_mode__to_no(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.mode = NULL;
@@ -527,7 +527,7 @@ void delta_human_mode__to_no(void **state) {
 	assert_logs_empty();
 }
 
-void delta_human_mode__from_no(void **state) {
+static void delta_human_mode__from_no(void **state) {
 	struct State *s = *state;
 
 	s->head2->current.mode = NULL;
@@ -546,7 +546,7 @@ void delta_human_mode__from_no(void **state) {
 	assert_logs_empty();
 }
 
-void delta_human_adaptive_sync__on(void **state) {
+static void delta_human_adaptive_sync__on(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
@@ -566,7 +566,7 @@ void delta_human_adaptive_sync__on(void **state) {
 	assert_logs_empty();
 }
 
-void delta_human_adaptive_sync__off(void **state) {
+static void delta_human_adaptive_sync__off(void **state) {
 	struct State *s = *state;
 
 	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -586,7 +586,7 @@ void delta_human_adaptive_sync__off(void **state) {
 	assert_logs_empty();
 }
 
-void delta_human_reapply__(void **state) {
+static void delta_human_reapply__(void **state) {
 	const struct State *s = *state;
 
 	char *deltas = delta_human_reapply(s->head2);
@@ -604,7 +604,7 @@ void delta_human_reapply__(void **state) {
 	assert_logs_empty();
 }
 
-void delta_human__all(void **state) {
+static void delta_human__all(void **state) {
 	const struct State *s = *state;
 
 	char *deltas = delta_human(s->heads);
@@ -627,7 +627,7 @@ void delta_human__all(void **state) {
 	assert_logs_empty();
 }
 
-void delta_human__enabled(void **state) {
+static void delta_human__enabled(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
@@ -650,7 +650,7 @@ void delta_human__enabled(void **state) {
 	assert_logs_empty();
 }
 
-void delta_human__disabled(void **state) {
+static void delta_human__disabled(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = true;
@@ -673,7 +673,7 @@ void delta_human__disabled(void **state) {
 	assert_logs_empty();
 }
 
-void call_back__no_callback(void **state) {
+static void call_back__no_callback(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = NULL;
 
@@ -682,14 +682,14 @@ void call_back__no_callback(void **state) {
 	assert_logs_empty();
 }
 
-void call_back__below_threshold(void **state) {
+static void call_back__below_threshold(void **state) {
 	will_return_int(__wrap_log_get_threshold, WARNING);
 	call_back(INFO, "msg1", NULL);
 
 	assert_logs_empty();
 }
 
-void call_back__one(void **state) {
+static void call_back__one(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", "msg1");
 	stable_put(env, "CALLBACK_LEVEL", "INFO");
@@ -715,7 +715,7 @@ void call_back__one(void **state) {
 	stable_free(env);
 }
 
-void call_back__two(void **state) {
+static void call_back__two(void **state) {
 	const struct STable *env = stable_init(1, 1, false);
 	stable_put(env, "CALLBACK_MSG", "msg1msg2");
 	stable_put(env, "CALLBACK_LEVEL", "FATAL");
@@ -743,7 +743,7 @@ void call_back__two(void **state) {
 	stable_free(env);
 }
 
-void call_back_mode_fail__(void **state) {
+static void call_back_mode_fail__(void **state) {
 	const struct State *s = *state;
 
 	free(g_cfg->callback_cmd);
@@ -773,7 +773,7 @@ void call_back_mode_fail__(void **state) {
 	stable_free(env);
 }
 
-void call_back_adaptive_sync_fail__(void **state) {
+static void call_back_adaptive_sync_fail__(void **state) {
 	struct Head head = { .name = "name1", .model = "model1", .description = "description1", };
 
 	g_displ->delta.head = &head;

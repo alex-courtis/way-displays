@@ -21,15 +21,15 @@ struct State {
 	struct Cfg *expected;
 };
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	struct State *s = calloc(1, sizeof(struct State));
@@ -44,7 +44,7 @@ int before_each(void **state) {
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	struct State *s = *state;
 
 	slist_free_vals(&cfg_file_paths, NULL);
@@ -60,7 +60,7 @@ int after_each(void **state) {
 }
 
 
-void merge_set__arrange(void **state) {
+static void merge_set__arrange(void **state) {
 	struct State *s = *state;
 
 	s->from->arrange = COL;
@@ -75,7 +75,7 @@ void merge_set__arrange(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__align(void **state) {
+static void merge_set__align(void **state) {
 	struct State *s = *state;
 
 	s->from->align = MIDDLE;
@@ -90,7 +90,7 @@ void merge_set__align(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__order(void **state) {
+static void merge_set__order(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->order_name_desc, strdup("A"));
@@ -107,7 +107,7 @@ void merge_set__order(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__auto_scale(void **state) {
+static void merge_set__auto_scale(void **state) {
 	struct State *s = *state;
 
 	s->from->auto_scale = OFF;
@@ -122,7 +122,7 @@ void merge_set__auto_scale(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__scale_round_to(void **state) {
+static void merge_set__scale_round_to(void **state) {
 	struct State *s = *state;
 
 	s->from->scale_round_to = 2;
@@ -137,7 +137,7 @@ void merge_set__scale_round_to(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__scale_round_strategy(void **state) {
+static void merge_set__scale_round_strategy(void **state) {
 	struct State *s = *state;
 
 	s->from->scale_round_strategy = UP;
@@ -152,7 +152,7 @@ void merge_set__scale_round_strategy(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__user_scale(void **state) {
+static void merge_set__user_scale(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->user_scales, cfg_user_scale_init("to", 1));
@@ -174,7 +174,7 @@ void merge_set__user_scale(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__user_transform(void **state) {
+static void merge_set__user_transform(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->user_transforms, cfg_user_transform_init("to", 1));
@@ -196,7 +196,7 @@ void merge_set__user_transform(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__mode(void **state) {
+static void merge_set__mode(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->user_modes, cfg_user_mode_init("to", false, 1, 2, 3, false));
@@ -218,7 +218,7 @@ void merge_set__mode(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__adaptive_sync_off(void **state) {
+static void merge_set__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("to"));
@@ -240,7 +240,7 @@ void merge_set__adaptive_sync_off(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__disabled(void **state) {
+static void merge_set__disabled(void **state) {
 	struct State *s = *state;
 
 	struct Disabled *disabled1 = calloc(1, sizeof(struct Disabled));
@@ -282,7 +282,7 @@ void merge_set__disabled(void **state) {
 	assert_logs_empty();
 }
 
-void merge_set__callback_cmd(void **state) {
+static void merge_set__callback_cmd(void **state) {
 	struct State *s = *state;
 
 	free(s->to->callback_cmd);
@@ -303,7 +303,7 @@ void merge_set__callback_cmd(void **state) {
 	assert_logs_empty();
 }
 
-void merge_del__scale(void **state) {
+static void merge_del__scale(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->user_scales, cfg_user_scale_init("1", 1));
@@ -323,7 +323,7 @@ void merge_del__scale(void **state) {
 	assert_logs_empty();
 }
 
-void merge_del__mode(void **state) {
+static void merge_del__mode(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->user_modes, cfg_user_mode_init("1", false, 1, 1, 1, false));
@@ -343,7 +343,7 @@ void merge_del__mode(void **state) {
 	assert_logs_empty();
 }
 
-void merge_del__transform(void **state) {
+static void merge_del__transform(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->user_transforms, cfg_user_transform_init("to", 1));
@@ -363,7 +363,7 @@ void merge_del__transform(void **state) {
 	assert_logs_empty();
 }
 
-void merge_del__adaptive_sync_off(void **state) {
+static void merge_del__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("1"));
@@ -383,7 +383,7 @@ void merge_del__adaptive_sync_off(void **state) {
 	assert_logs_empty();
 }
 
-void merge_del__disabled(void **state) {
+static void merge_del__disabled(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->to->disabled, cfg_disabled_always("1"));
@@ -403,7 +403,7 @@ void merge_del__disabled(void **state) {
 	assert_logs_empty();
 }
 
-void merge_del__callback_cmd(void **state) {
+static void merge_del__callback_cmd(void **state) {
 	struct State *s = *state;
 
 	free(s->to->callback_cmd);
@@ -424,7 +424,7 @@ void merge_del__callback_cmd(void **state) {
 	assert_logs_empty();
 }
 
-void merge_toggle__scaling(void **state) {
+static void merge_toggle__scaling(void **state) {
 	struct State *s = *state;
 
 	s->to->scaling = ON;
@@ -443,7 +443,7 @@ void merge_toggle__scaling(void **state) {
 	assert_logs_empty();
 }
 
-void merge_toggle__auto_scale(void **state) {
+static void merge_toggle__auto_scale(void **state) {
 	struct State *s = *state;
 
 	s->to->auto_scale = OFF;
@@ -462,7 +462,7 @@ void merge_toggle__auto_scale(void **state) {
 	assert_logs_empty();
 }
 
-void merge_toggle__adaptive_sync_off(void **state) {
+static void merge_toggle__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
 	s->from->auto_scale = false;
@@ -486,7 +486,7 @@ void merge_toggle__adaptive_sync_off(void **state) {
 	assert_logs_empty();
 }
 
-void validate_fix__col(void **state) {
+static void validate_fix__col(void **state) {
 	struct State *s = *state;
 
 	s->from->arrange = COL;
@@ -503,7 +503,7 @@ void validate_fix__col(void **state) {
 	assert_cfg_equal(s->from, s->expected);
 }
 
-void validate_fix__row(void **state) {
+static void validate_fix__row(void **state) {
 	struct State *s = *state;
 
 	s->from->arrange = ROW;
@@ -520,7 +520,7 @@ void validate_fix__row(void **state) {
 	assert_cfg_equal(s->from, s->expected);
 }
 
-void validate_fix__user_scale(void **state) {
+static void validate_fix__user_scale(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->from->user_scales, cfg_user_scale_init("ok", 1));
@@ -546,7 +546,7 @@ void validate_fix__user_scale(void **state) {
 	free(expected_log);
 }
 
-void validate_fix__user_mode(void **state) {
+static void validate_fix__user_mode(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
@@ -580,7 +580,7 @@ void validate_fix__user_mode(void **state) {
 	free(expected_log);
 }
 
-void validate_fix__user_transform(void **state) {
+static void validate_fix__user_transform(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->from->user_transforms, cfg_user_transform_init("one", 1));
@@ -601,7 +601,7 @@ void validate_fix__user_transform(void **state) {
 	free(expected_log);
 }
 
-void validate_fix__auto_scale_dpi(void **state) {
+static void validate_fix__auto_scale_dpi(void **state) {
 	struct State *s = *state;
 
 	s->from->auto_scale_dpi = -1;
@@ -616,7 +616,7 @@ void validate_fix__auto_scale_dpi(void **state) {
 	assert_cfg_equal(s->from, s->expected);
 }
 
-void validate_warn__(void **state) {
+static void validate_warn__(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("sss", 1));

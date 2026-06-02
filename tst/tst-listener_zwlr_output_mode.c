@@ -13,25 +13,25 @@
 
 #include "listeners.h"
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	return 0;
 }
 
-void preferred__first(void **state) {
+static void preferred__first(void **state) {
 	struct Head head = { .name = "NAM", };
 	struct Mode mode_existing = { .width = 3840, .height = 2160, .preferred = false, .refresh_mhz = 60000, .head = &head, };
 	struct Mode mode_pref = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
@@ -49,7 +49,7 @@ void preferred__first(void **state) {
 	assert_logs_empty();
 }
 
-void preferred__subsequent(void **state) {
+static void preferred__subsequent(void **state) {
 	struct Head head = { .name = "NAM", };
 	struct Mode mode_existing = { .width = 3840, .height = 2160, .preferred = true, .refresh_mhz = 60000, .head = &head, };
 	struct Mode mode_subsequent = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };

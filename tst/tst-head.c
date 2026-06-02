@@ -17,11 +17,13 @@
 
 #include "head.h"
 
+// cppcheck-suppress staticFunction
 double __wrap_mode_dpi(struct Mode *mode) {
 	check_expected_ptr(mode);
 	return mock_type(double);
 }
 
+// cppcheck-suppress staticFunction
 struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode) {
 	check_expected_ptr(modes);
 	check_expected_ptr(modes_failed);
@@ -29,6 +31,7 @@ struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_fail
 	return mock_ptr_type_checked(struct Mode*);
 }
 
+// cppcheck-suppress staticFunction
 struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
 	check_expected_ptr(modes);
 	check_expected_ptr(modes_failed);
@@ -36,22 +39,22 @@ struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_
 }
 
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	g_cfg = cfg_default();
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	cfg_destroy();
 	return 0;
 }
