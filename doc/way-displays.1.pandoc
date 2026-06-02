@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | User Manuals
 % Alexander Courtis
-% 2025/10/04
+% 2026/06/02
 
 # NAME
 
@@ -69,30 +69,30 @@ User should be a member of the `input` group for querying laptop lid state.
 
 # OPTIONS
 
-`-L` | `--l[og-threshold]` <*debug*|*info*|*warning*|*error*|*fatal*>
+`-L`, `--l[og-threshold]` <*debug*|*info*|*warning*|*error*|*fatal*>
 : Overrides cfg.yaml. *info* is default.
 
-`-c` | `--c[onfig]` <*path*>
+`-c`, `--c[onfig]` <*path*>
 : Configuration file, falls back to defaults if not found.
 
-`-y` | `--y[aml]`
+`-y`, `--y[aml]`
 : Print client output as raw YAML
 
 # COMMANDS
 
-`-h` | `--h[elp]`
+`-h`, `--h[elp]`
 : Print usage and exit.
 
-`-v` | `--v[ersion]`
+`-v`, `--v[ersion]`
 : Display version information and exit.
 
-`-l` | `--li[st]`
+`-l`, `--li[st]`
 : Show the state of the connected displays: description, enabled, scale, VRR and mode.
 
-`-g` | `--g[et]`
+`-g`, `--g[et]`
 : Show the active configuration, commands and current display state.
 
-`-s` | `--s[et]`
+`-s`, `--s[et]`
 : Add a new setting or modify an existing.
 
 	`ARRANGE_ALIGN` <*row*|*column*> <*top*|*middle*|*bottom*|*left*|*right*>
@@ -168,8 +168,11 @@ User should be a member of the `input` group for querying laptop lid state.
 	`DISABLED` <*name*>
 	: Toggle a display.
 
-`-w` | `--w[rite]`
+`-w`, `--w[rite]`
 : Write active configuration to cfg.yaml; removes any whitespace or comments.
+
+`-r`, `--r[eapply]`
+: Attempt to reapply when the displays are in an inconsistent or incorrect state. Disables all displays, clears current/failed mode and enables according to config.
 
 # NAMING
 

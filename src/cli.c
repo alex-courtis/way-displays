@@ -405,7 +405,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		{ "yaml",          no_argument,       0, 'y' },
 		{ 0,               0,                 0,  0  }
 	};
-	static char *short_options = "c:d:ghlL:s:t:vwy";
+	static char *short_options = "c:d:ghlL:rs:t:vwy";
 
 	bool yaml = false;
 	enum LogThreshold threshold = 0;
