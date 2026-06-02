@@ -8,32 +8,40 @@
 #include <unistd.h>
 #include <wayland-client-protocol.h>
 
-#include "cli.h"
 #include "cfg.h"
 #include "ipc.h"
 #include "slist.h"
 #include "log.h"
 
-int before_all(void **state) {
+struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
+struct IpcRequest *parse_write(int argc, char **argv);
+struct IpcRequest *parse_reapply(int argc, char **argv);
+struct IpcRequest *parse_set(int argc, char **argv);
+struct IpcRequest *parse_del(int argc, char **argv);
+struct IpcRequest *parse_toggle(int argc, char **argv);
+enum LogThreshold parse_log_threshold(char *optarg);
+
+
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	return 0;
 }
 
 
-void parse_element__arrange_align_invalid_arrange(void **state) {
+static void parse_element__arrange_align_invalid_arrange(void **state) {
 	optind = 0;
 	char *argv[] = { "ROW", "INVALID" };
 
@@ -45,7 +53,7 @@ void parse_element__arrange_align_invalid_arrange(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__arrange_align_invalid_align(void **state) {
+static void parse_element__arrange_align_invalid_align(void **state) {
 	optind = 0;
 	char *argv[] = { "INVALID", "LEFT" };
 
@@ -57,7 +65,7 @@ void parse_element__arrange_align_invalid_align(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__arrange_align_ok(void **state) {
+static void parse_element__arrange_align_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "ROW", "LEFT" };
 
@@ -75,7 +83,7 @@ void parse_element__arrange_align_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__auto_scale_invalid(void **state) {
+static void parse_element__auto_scale_invalid(void **state) {
 	optind = 0;
 	char *argv[] = { "INVALID", };
 
@@ -87,7 +95,7 @@ void parse_element__auto_scale_invalid(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__auto_scale_ok(void **state) {
+static void parse_element__auto_scale_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "ON", };
 
@@ -104,7 +112,7 @@ void parse_element__auto_scale_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__transform_invalid(void **state) {
+static void parse_element__transform_invalid(void **state) {
 	optind = 0;
 	char *argv[] = { "displ", "INVALID", };
 
@@ -116,7 +124,7 @@ void parse_element__transform_invalid(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__transform_ok(void **state) {
+static void parse_element__transform_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "displ", "flipped-270", };
 
@@ -133,7 +141,7 @@ void parse_element__transform_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__transform_del_ok(void **state) {
+static void parse_element__transform_del_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", };
 
@@ -155,7 +163,7 @@ void parse_element__transform_del_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__scale_set_invalid(void **state) {
+static void parse_element__scale_set_invalid(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "NOTANUMBER", };
 
@@ -167,7 +175,7 @@ void parse_element__scale_set_invalid(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__scale_set_ok(void **state) {
+static void parse_element__scale_set_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "1234.5" };
 
@@ -191,7 +199,7 @@ void parse_element__scale_set_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__scale_del_ok(void **state) {
+static void parse_element__scale_del_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", };
 
@@ -213,7 +221,7 @@ void parse_element__scale_del_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__mode_set_invalid_width(void **state) {
+static void parse_element__mode_set_invalid_width(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "NAN", "2", "3", };
 
@@ -225,7 +233,7 @@ void parse_element__mode_set_invalid_width(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__mode_set_invalid_height(void **state) {
+static void parse_element__mode_set_invalid_height(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "1", "NAN", "3", };
 
@@ -237,7 +245,7 @@ void parse_element__mode_set_invalid_height(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__mode_set_invalid_refresh(void **state) {
+static void parse_element__mode_set_invalid_refresh(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "1", "2", "NAN", };
 
@@ -249,7 +257,7 @@ void parse_element__mode_set_invalid_refresh(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__mode_set_max(void **state) {
+static void parse_element__mode_set_max(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "MAX" };
 
@@ -272,7 +280,7 @@ void parse_element__mode_set_max(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__mode_set_res(void **state) {
+static void parse_element__mode_set_res(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "1", "2" };
 
@@ -297,7 +305,7 @@ void parse_element__mode_set_res(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__mode_set_res_refresh(void **state) {
+static void parse_element__mode_set_res_refresh(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", "1", "2", "12.3456", };
 
@@ -323,7 +331,7 @@ void parse_element__mode_set_res_refresh(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__mode_del_ok(void **state) {
+static void parse_element__mode_del_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "DISPL", };
 
@@ -346,7 +354,7 @@ void parse_element__mode_del_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__adaptive_sync_off_ok(void **state) {
+static void parse_element__adaptive_sync_off_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "ONE", "TWO", };
 
@@ -365,7 +373,7 @@ void parse_element__adaptive_sync_off_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__disabled_ok(void **state) {
+static void parse_element__disabled_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "ONE", "TWO", };
 
@@ -384,7 +392,7 @@ void parse_element__disabled_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_element__order_ok(void **state) {
+static void parse_element__order_ok(void **state) {
 	optind = 0;
 	char *argv[] = { "ONE", "TWO", };
 
@@ -403,7 +411,7 @@ void parse_element__order_ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_write__nargs(void **state) {
+static void parse_write__nargs(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
@@ -415,7 +423,7 @@ void parse_write__nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_write__ok(void **state) {
+static void parse_write__ok(void **state) {
 	optind = 0;
 
 	struct IpcRequest *request = parse_write(0, NULL);
@@ -428,7 +436,7 @@ void parse_write__ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_reapply__nargs(void **state) {
+static void parse_reapply__nargs(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
@@ -440,7 +448,7 @@ void parse_reapply__nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_reapply__ok(void **state) {
+static void parse_reapply__ok(void **state) {
 	optind = 0;
 
 	struct IpcRequest *request = parse_reapply(0, NULL);
@@ -453,7 +461,7 @@ void parse_reapply__ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__mode_nargs(void **state) {
+static void parse_set__mode_nargs(void **state) {
 	optind = 0;
 	optarg = "MODE";
 
@@ -472,7 +480,7 @@ void parse_set__mode_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__arrange_align_nargs(void **state) {
+static void parse_set__arrange_align_nargs(void **state) {
 	optind = 0;
 	optarg = "ARRANGE_ALIGN";
 
@@ -484,7 +492,7 @@ void parse_set__arrange_align_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__scale_nargs(void **state) {
+static void parse_set__scale_nargs(void **state) {
 	optind = 0;
 	optarg = "SCALE";
 
@@ -496,7 +504,7 @@ void parse_set__scale_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__transform_nargs(void **state) {
+static void parse_set__transform_nargs(void **state) {
 	optind = 0;
 	optarg = "TRANSFORM";
 
@@ -508,7 +516,7 @@ void parse_set__transform_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__auto_scale_nargs(void **state) {
+static void parse_set__auto_scale_nargs(void **state) {
 	optind = 0;
 	optarg = "AUTO_SCALE";
 
@@ -520,7 +528,7 @@ void parse_set__auto_scale_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__disabled_nargs(void **state) {
+static void parse_set__disabled_nargs(void **state) {
 	optind = 0;
 	optarg = "DISABLED";
 
@@ -532,7 +540,7 @@ void parse_set__disabled_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__adaptive_sync_off_nargs(void **state) {
+static void parse_set__adaptive_sync_off_nargs(void **state) {
 	optind = 0;
 	optarg = "VRR_OFF";
 
@@ -544,7 +552,7 @@ void parse_set__adaptive_sync_off_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__order_nargs(void **state) {
+static void parse_set__order_nargs(void **state) {
 	optind = 0;
 	optarg = "ORDER";
 
@@ -556,7 +564,7 @@ void parse_set__order_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__invalid(void **state) {
+static void parse_set__invalid(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
@@ -568,7 +576,7 @@ void parse_set__invalid(void **state) {
 	assert_logs_empty();
 }
 
-void parse_set__ok(void **state) {
+static void parse_set__ok(void **state) {
 	optind = 0;
 	char *argv[] = { "arg0", };
 
@@ -584,7 +592,7 @@ void parse_set__ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_del__mode_nargs(void **state) {
+static void parse_del__mode_nargs(void **state) {
 	optind = 0;
 	optarg = "MODE";
 
@@ -596,7 +604,7 @@ void parse_del__mode_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_del__scale_nargs(void **state) {
+static void parse_del__scale_nargs(void **state) {
 	optind = 0;
 	optarg = "SCALE";
 
@@ -608,7 +616,7 @@ void parse_del__scale_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_del__disabled_nargs(void **state) {
+static void parse_del__disabled_nargs(void **state) {
 	optind = 0;
 	optarg = "DISABLED";
 
@@ -620,7 +628,7 @@ void parse_del__disabled_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_del__adaptive_sync_off_nargs(void **state) {
+static void parse_del__adaptive_sync_off_nargs(void **state) {
 	optind = 0;
 	optarg = "VRR_OFF";
 
@@ -632,7 +640,7 @@ void parse_del__adaptive_sync_off_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_del__invalid(void **state) {
+static void parse_del__invalid(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
@@ -644,7 +652,7 @@ void parse_del__invalid(void **state) {
 	assert_logs_empty();
 }
 
-void parse_del__ok(void **state) {
+static void parse_del__ok(void **state) {
 	optind = 0;
 	char *argv[] = { "arg0", };
 
@@ -660,7 +668,7 @@ void parse_del__ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_toggle__scaling_nargs(void **state) {
+static void parse_toggle__scaling_nargs(void **state) {
 	optind = 0;
 	optarg = "SCALING";
 
@@ -672,7 +680,7 @@ void parse_toggle__scaling_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_toggle__auto_scale_nargs(void **state) {
+static void parse_toggle__auto_scale_nargs(void **state) {
 	optind = 0;
 	optarg = "AUTO_SCALE";
 
@@ -684,7 +692,7 @@ void parse_toggle__auto_scale_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_toggle__vrr_off_nargs(void **state) {
+static void parse_toggle__vrr_off_nargs(void **state) {
 	optind = 0;
 	optarg = "VRR_OFF";
 
@@ -696,7 +704,7 @@ void parse_toggle__vrr_off_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_toggle__disabled_nargs(void **state) {
+static void parse_toggle__disabled_nargs(void **state) {
 	optind = 0;
 	optarg = "DISABLED";
 
@@ -708,7 +716,7 @@ void parse_toggle__disabled_nargs(void **state) {
 	assert_logs_empty();
 }
 
-void parse_toggle__invalid(void **state) {
+static void parse_toggle__invalid(void **state) {
 	optind = 0;
 	optarg = "INVALID";
 
@@ -720,7 +728,7 @@ void parse_toggle__invalid(void **state) {
 	assert_logs_empty();
 }
 
-void parse_toggle__ok(void **state) {
+static void parse_toggle__ok(void **state) {
 	optind = 0;
 
 	optarg = "SCALING";
@@ -735,14 +743,14 @@ void parse_toggle__ok(void **state) {
 	assert_logs_empty();
 }
 
-void parse_log_threshold__invalid(void **state) {
+static void parse_log_threshold__invalid(void **state) {
 	assert_int_equal(parse_log_threshold("INVALID"), 0);
 
 	assert_log(FATAL, "invalid --log-threshold INVALID\n");
 	assert_logs_empty();
 }
 
-void parse_log_threshold__ok(void **state) {
+static void parse_log_threshold__ok(void **state) {
 	assert_int_equal(parse_log_threshold("WARNING"), WARNING);
 
 	assert_logs_empty();

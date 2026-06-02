@@ -17,13 +17,26 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
-#include "layout.h"
 
+struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
+void position_heads(struct SList *heads);
+void desire_enabled(struct Head *head);
+void desire_mode(struct Head *head);
+void desire_scale(struct Head *head);
+void desire_transform(struct Head *head);
+void desire_adaptive_sync(struct Head *head);
+void desire_reapply(struct Head *head);
+void handle_success(void);
+void handle_failure(void);
+
+
+// cppcheck-suppress staticFunction
 struct Mode *__wrap_head_find_mode(struct Head *head) {
 	check_expected_ptr(head);
 	return mock_ptr_type_checked(struct Mode*);
 }
 
+// cppcheck-suppress staticFunction
 wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
 	check_expected_ptr(head);
 	return mock_type(wl_fixed_t);
@@ -36,15 +49,15 @@ struct State {
 };
 
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	g_cfg = cfg_default();
@@ -69,7 +82,7 @@ int before_each(void **state) {
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	slist_free(&g_heads);
 
 	free(g_displ);
@@ -86,7 +99,7 @@ int after_each(void **state) {
 }
 
 
-void order_heads__exact_partial_regex(void **state) {
+static void order_heads__exact_partial_regex(void **state) {
 	struct SList *order_name_desc = NULL;
 	struct SList *heads = NULL;
 	struct SList *expected = NULL;
@@ -138,7 +151,7 @@ void order_heads__exact_partial_regex(void **state) {
 	assert_logs_empty();
 }
 
-void order_heads__exact_regex_catchall(void **state) {
+static void order_heads__exact_regex_catchall(void **state) {
 	struct SList *order_name_desc = NULL;
 	struct SList *heads = NULL;
 	struct SList *expected = NULL;
@@ -183,7 +196,7 @@ void order_heads__exact_regex_catchall(void **state) {
 	assert_logs_empty();
 }
 
-void order_heads__no_order(void **state) {
+static void order_heads__no_order(void **state) {
 	struct SList *heads = NULL;
 	struct Head head = { .name = "head", };
 
@@ -199,7 +212,7 @@ void order_heads__no_order(void **state) {
 	assert_logs_empty();
 }
 
-void position_heads__col_left(void **state) {
+static void position_heads__col_left(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -219,7 +232,7 @@ void position_heads__col_left(void **state) {
 	assert_logs_empty();
 }
 
-void position_heads__col_mid(void **state) {
+static void position_heads__col_mid(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -239,7 +252,7 @@ void position_heads__col_mid(void **state) {
 	assert_logs_empty();
 }
 
-void position_heads__col_right(void **state) {
+static void position_heads__col_right(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -259,7 +272,7 @@ void position_heads__col_right(void **state) {
 	assert_logs_empty();
 }
 
-void position_heads__row_top(void **state) {
+static void position_heads__row_top(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -279,7 +292,7 @@ void position_heads__row_top(void **state) {
 	assert_logs_empty();
 }
 
-void position_heads__row_mid(void **state) {
+static void position_heads__row_mid(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -299,7 +312,7 @@ void position_heads__row_mid(void **state) {
 	assert_logs_empty();
 }
 
-void position_heads__row_bottom(void **state) {
+static void position_heads__row_bottom(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -319,7 +332,7 @@ void position_heads__row_bottom(void **state) {
 	assert_logs_empty();
 }
 
-void desire_enabled__lid_closed_many(void **state) {
+static void desire_enabled__lid_closed_many(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -341,7 +354,7 @@ void desire_enabled__lid_closed_many(void **state) {
 	assert_logs_empty();
 }
 
-void desire_enabled__lid_closed_one(void **state) {
+static void desire_enabled__lid_closed_one(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -358,7 +371,7 @@ void desire_enabled__lid_closed_one(void **state) {
 	assert_logs_empty();
 }
 
-void desire_enabled__lid_closed_one_disabled(void **state) {
+static void desire_enabled__lid_closed_one_disabled(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -377,7 +390,7 @@ void desire_enabled__lid_closed_one_disabled(void **state) {
 	assert_logs_empty();
 }
 
-void desire_enabled__override(void **state) {
+static void desire_enabled__override(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = false,
@@ -398,7 +411,7 @@ void desire_enabled__override(void **state) {
 	assert_logs_empty();
 }
 
-void desire_enabled__override_reset(void **state) {
+static void desire_enabled__override_reset(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -419,7 +432,7 @@ void desire_enabled__override_reset(void **state) {
 	assert_logs_empty();
 }
 
-void desire_mode__disabled(void **state) {
+static void desire_mode__disabled(void **state) {
 	struct Mode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
@@ -436,7 +449,7 @@ void desire_mode__disabled(void **state) {
 	assert_logs_empty();
 }
 
-void desire_mode__no_mode(void **state) {
+static void desire_mode__no_mode(void **state) {
 	struct Mode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
@@ -456,7 +469,7 @@ void desire_mode__no_mode(void **state) {
 	assert_logs_empty();
 }
 
-void desire_mode__no_mode_warned(void **state) {
+static void desire_mode__no_mode_warned(void **state) {
 	struct Mode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
@@ -477,7 +490,7 @@ void desire_mode__no_mode_warned(void **state) {
 	assert_logs_empty();
 }
 
-void desire_mode__ok(void **state) {
+static void desire_mode__ok(void **state) {
 	struct Mode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
@@ -498,7 +511,7 @@ void desire_mode__ok(void **state) {
 	assert_logs_empty();
 }
 
-void desire_scale__disabled(void **state) {
+static void desire_scale__disabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = false,
 	};
@@ -508,7 +521,7 @@ void desire_scale__disabled(void **state) {
 	assert_logs_empty();
 }
 
-void desire_scale__no_scaling(void **state) {
+static void desire_scale__no_scaling(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 	};
@@ -522,7 +535,7 @@ void desire_scale__no_scaling(void **state) {
 	assert_logs_empty();
 }
 
-void desire_scale__no_auto(void **state) {
+static void desire_scale__no_auto(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 	};
@@ -536,7 +549,7 @@ void desire_scale__no_auto(void **state) {
 	assert_logs_empty();
 }
 
-void desire_scale__auto(void **state) {
+static void desire_scale__auto(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 	};
@@ -553,7 +566,7 @@ void desire_scale__auto(void **state) {
 	assert_logs_empty();
 }
 
-void desire_scale__user(void **state) {
+static void desire_scale__user(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -571,7 +584,7 @@ void desire_scale__user(void **state) {
 	assert_logs_empty();
 }
 
-void desire_transform__disabled(void **state) {
+static void desire_transform__disabled(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = false,
@@ -586,7 +599,7 @@ void desire_transform__disabled(void **state) {
 	assert_logs_empty();
 }
 
-void desire_transform__no_transform(void **state) {
+static void desire_transform__no_transform(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -600,7 +613,7 @@ void desire_transform__no_transform(void **state) {
 	assert_logs_empty();
 }
 
-void desire_transform__user(void **state) {
+static void desire_transform__user(void **state) {
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -616,7 +629,7 @@ void desire_transform__user(void **state) {
 	assert_logs_empty();
 }
 
-void desire_adaptive_sync__head_disabled(void **state) {
+static void desire_adaptive_sync__head_disabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = false,
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
@@ -629,7 +642,7 @@ void desire_adaptive_sync__head_disabled(void **state) {
 	assert_logs_empty();
 }
 
-void desire_adaptive_sync__failed(void **state) {
+static void desire_adaptive_sync__failed(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
@@ -643,7 +656,7 @@ void desire_adaptive_sync__failed(void **state) {
 	assert_logs_empty();
 }
 
-void desire_adaptive_sync__disabled(void **state) {
+static void desire_adaptive_sync__disabled(void **state) {
 	struct Head head0 = {
 		.name = "some head",
 		.desired.enabled = true,
@@ -659,7 +672,7 @@ void desire_adaptive_sync__disabled(void **state) {
 	assert_logs_empty();
 }
 
-void desire_adaptive_sync__enabled(void **state) {
+static void desire_adaptive_sync__enabled(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
@@ -672,7 +685,7 @@ void desire_adaptive_sync__enabled(void **state) {
 	assert_logs_empty();
 }
 
-void desire_reapply__required(void **state) {
+static void desire_reapply__required(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 		.reapply_required = true,
@@ -685,7 +698,7 @@ void desire_reapply__required(void **state) {
 	assert_logs_empty();
 }
 
-void desire_reapply__not_required(void **state) {
+static void desire_reapply__not_required(void **state) {
 	struct Head head0 = {
 		.desired.enabled = true,
 		.reapply_required = false,
@@ -698,7 +711,7 @@ void desire_reapply__not_required(void **state) {
 	assert_logs_empty();
 }
 
-void handle_success__head_changing_adaptive_sync(void **state) {
+static void handle_success__head_changing_adaptive_sync(void **state) {
 	struct Head head = {
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
@@ -719,7 +732,7 @@ void handle_success__head_changing_adaptive_sync(void **state) {
 	assert_false(head.adaptive_sync_failed);
 }
 
-void handle_success__head_changing_adaptive_sync_fail(void **state) {
+static void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	struct Head head = {
 		.name = "head",
 		.model = NULL, // fall back to placeholder
@@ -742,7 +755,7 @@ void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	assert_logs_empty();
 }
 
-void handle_success__head_changing_mode(void **state) {
+static void handle_success__head_changing_mode(void **state) {
 	struct Mode mode = { 0 };
 	struct Head head = {
 		.desired.mode = &mode,
@@ -762,7 +775,7 @@ void handle_success__head_changing_mode(void **state) {
 	assert_ptr_equal(head.current.mode, &mode);
 }
 
-void handle_success__ok(void **state) {
+static void handle_success__ok(void **state) {
 	g_displ->delta.human = strdup("human");
 
 	expect_int_value(__wrap_call_back, t, INFO);
@@ -775,7 +788,7 @@ void handle_success__ok(void **state) {
 	assert_logs_empty();
 }
 
-void handle_failure__mode(void **state) {
+static void handle_failure__mode(void **state) {
 	struct Mode mode_cur = { 0 };
 	struct Mode mode_des = { 0 };
 	struct Head head = {
@@ -806,7 +819,7 @@ void handle_failure__mode(void **state) {
 	assert_logs_empty();
 }
 
-void handle_failure__adaptive_sync(void **state) {
+static void handle_failure__adaptive_sync(void **state) {
 	struct Head head = {
 		.name = "nam",
 		.model = "mod",
@@ -829,7 +842,7 @@ void handle_failure__adaptive_sync(void **state) {
 	assert_logs_empty();
 }
 
-void handle_failure__unspecified(void **state) {
+static void handle_failure__unspecified(void **state) {
 	g_displ->delta.human = strdup("human");
 
 	expect_int_value(__wrap_call_back, t, FATAL);

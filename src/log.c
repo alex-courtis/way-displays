@@ -12,7 +12,7 @@
 
 #include "slist.h"
 
-#define MAX_LINE_LEN 16384
+#define MAX_LINE_LEN 65536
 
 struct LogActive {
 	enum LogThreshold threshold;

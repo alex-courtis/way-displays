@@ -11,14 +11,19 @@
 #include "slist.h"
 #include "log.h"
 
-#include "server.h"
 #include "cfg.h"
 #include "yaml/unmarshal.h"
+
+
+void load_cfg(void);
+void reload_cfg(void);
+
 
 char *_dir_path = NULL;
 char *_file_name = NULL;
 char *_file_path = NULL;
 
+// cppcheck-suppress staticFunction
 bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 	check_expected_ptr(cfg);
 
@@ -29,21 +34,22 @@ bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 	return mock_type(bool);
 }
 
+// cppcheck-suppress staticFunction
 void *__wrap_yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	check_expected_ptr(path);
 
 	return mock_ptr_type_checked(struct Cfg*);
 }
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	cfg_destroy();
 
 	logs_clear();
@@ -51,7 +57,7 @@ int before_each(void **state) {
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	cfg_destroy();
 
 	free(_dir_path);
@@ -64,7 +70,7 @@ int after_each(void **state) {
 	return 0;
 }
 
-void load_cfg__no_file(void **state) {
+static void load_cfg__no_file(void **state) {
 	expect_any(__wrap_cfg_resolve_file_path, cfg);
 	will_return_int(__wrap_cfg_resolve_file_path, false);
 
@@ -85,7 +91,7 @@ void load_cfg__no_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-void load_cfg__valid_file(void **state) {
+static void load_cfg__valid_file(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
@@ -123,7 +129,7 @@ void load_cfg__valid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-void load_cfg__invalid_file(void **state) {
+static void load_cfg__invalid_file(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
@@ -151,7 +157,7 @@ void load_cfg__invalid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-void load_cfg__missing_defaults(void **state) {
+static void load_cfg__missing_defaults(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
@@ -191,7 +197,7 @@ void load_cfg__missing_defaults(void **state) {
 	cfg_free(cfg_expected);
 }
 
-void reload_cfg__no_file(void **state) {
+static void reload_cfg__no_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 
@@ -204,7 +210,7 @@ void reload_cfg__no_file(void **state) {
 	assert_logs_empty();
 }
 
-void reload_cfg__invalid_file(void **state) {
+static void reload_cfg__invalid_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 	g_cfg->auto_scale_max = 111;
@@ -236,7 +242,7 @@ void reload_cfg__invalid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-void reload_cfg__valid_file(void **state) {
+static void reload_cfg__valid_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 	g_cfg->auto_scale_max = 222;

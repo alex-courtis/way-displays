@@ -11,7 +11,7 @@
 
 #include "fs.h"
 
-void clean_dirs(void) {
+static void clean_dirs(void) {
 	rmdir("tst/mkdir_p/foo/bar");
 	rmdir("tst/mkdir_p/foo");
 	rmdir("tst/mkdir_p");
@@ -21,29 +21,29 @@ void clean_dirs(void) {
 	assert_int_equal(errno, ENOENT);
 }
 
-int before_all(void **state) {
+static int before_all(void **state) {
 	clean_dirs();
 	return 0;
 }
 
-int after_all(void **state) {
+static int after_all(void **state) {
 	clean_dirs();
 	return 0;
 }
 
-int before_each(void **state) {
+static int before_each(void **state) {
 	logs_clear();
 
 	clean_dirs();
 	return 0;
 }
 
-int after_each(void **state) {
+static int after_each(void **state) {
 	clean_dirs();
 	return 0;
 }
 
-void mkdir_p__no_perm(void **state) {
+static void mkdir_p__no_perm(void **state) {
 	assert_true(mkdir_p("tst/mkdir_p", 0755));
 	assert_true(mkdir_p("tst/mkdir_p/foo", 0555));
 
@@ -57,7 +57,7 @@ void mkdir_p__no_perm(void **state) {
 	assert_int_equal(errno, ENOENT);
 }
 
-void mkdir_p__ok(void **state) {
+static void mkdir_p__ok(void **state) {
 	assert_true(mkdir_p("tst/mkdir_p/foo", 0755));
 
 	struct stat sb;
@@ -66,7 +66,7 @@ void mkdir_p__ok(void **state) {
 	assert_logs_empty();
 }
 
-void mkdir_p__exists(void **state) {
+static void mkdir_p__exists(void **state) {
 	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
 	mode |=       S_IRGRP | S_IXGRP;
 	mode |=       S_IROTH | S_IXOTH;

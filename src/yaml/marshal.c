@@ -6,15 +6,28 @@
 
 #include "log.h"
 
-static int write_handler(void *data, unsigned char *buffer, size_t size) {
+int write_handler(void *data, unsigned char *buffer, size_t size) {
 	if (!data)
 		return 0;
 
 	char **yaml = (char**)(data);
 
-	*yaml = calloc(1, size + 1);
+	if (*yaml) {
+		char *current = *yaml;
+		size_t len_current = strlen(current);
 
-	strncpy(*yaml, (char*)buffer, size);
+		*yaml = calloc(len_current + size + 1, sizeof(char));
+
+		strncpy(*yaml, current, len_current);
+		strncat(*yaml, (char*)buffer, size);
+
+		free(current);
+	} else {
+
+		*yaml = calloc(1, size + 1);
+
+		strncpy(*yaml, (char*)buffer, size);
+	}
 
 	return 1;
 }

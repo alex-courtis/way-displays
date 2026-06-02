@@ -40,19 +40,6 @@ void _assert_str_equal(const char * const a, const char * const ae, const char *
 }
 #define assert_str_equal(a, b) _assert_str_equal(a, #a, b, #b, __FILE__, __LINE__)
 
-void _assert_str_equal_n(const char * const a, const char * const ae, const char * const b, const char * const be, const size_t n, const char * const file, const int line) {
-	if (!a && !b)
-		return;
-	_assert_non_nul(a, ae, file, line);
-	_assert_non_nul(b, be, file, line);
-	if (strncmp(a, b, n) != 0) {
-		cmocka_print_error("\"%.*s\" != \"%.*s\"\n", (int)n, a, (int)n, b);
-		_fail(file, line);
-	}
-}
-
-#define assert_str_equal_n(a, b, n) _assert_str_equal_n(a, #a, b, #b, n, __FILE__, __LINE__)
-
 void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const file, const int line) {
 
 	if (a != wl_fixed_from_double(b)) {

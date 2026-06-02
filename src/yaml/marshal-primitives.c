@@ -82,8 +82,11 @@ bool yaml_map_add_enum(struct MC *c, const char *key, const int val, enum_name_f
 }
 
 bool yaml_seq_append_str(struct MC *c, const void *str, int sequence) {
-	if (!str || !sequence)
+	if (!sequence)
 		return false;
+
+	if (!str)
+		return true;
 
 	int scalar = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)str, -1, YAML_PLAIN_SCALAR_STYLE);
 
@@ -93,6 +96,9 @@ bool yaml_seq_append_str(struct MC *c, const void *str, int sequence) {
 bool yaml_map_add_map(struct MC *c, const char *key, const void *data, yaml_map_populate_fn fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
+
+	if (!data)
+		return true;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
