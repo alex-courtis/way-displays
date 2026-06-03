@@ -24,8 +24,11 @@ struct STableIter; // IWYU pragma: keep
  * Lifecycle
  */
 
+// construct a table with initial size 10, growing by 10 as necessary, case sensitive
+const struct STable *stable_init(void);
+
 // construct a table with initial size, growing as necessary, NULL on zero param
-const struct STable *stable_init(const size_t initial, const size_t grow, const bool case_insensitive);
+const struct STable *stable_init_with(const size_t initial, const size_t grow, const bool case_insensitive);
 
 // free table
 void stable_free(const void* const tab);

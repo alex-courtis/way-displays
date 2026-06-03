@@ -694,7 +694,7 @@ static void call_back__below_threshold(void **state) {
 }
 
 static void call_back__one(void **state) {
-	const struct STable *expected = stable_init(1, 1, false);
+	const struct STable *expected = stable_init();
 	stable_put(expected, "CALLBACK_MSG", "msg1");
 	stable_put(expected, "CALLBACK_LEVEL", "INFO");
 
@@ -720,7 +720,7 @@ static void call_back__one(void **state) {
 }
 
 static void call_back__two(void **state) {
-	const struct STable *expected = stable_init(1, 1, false);
+	const struct STable *expected = stable_init();
 	stable_put(expected, "CALLBACK_MSG", "msg1msg2");
 	stable_put(expected, "CALLBACK_LEVEL", "FATAL");
 
@@ -753,7 +753,7 @@ static void call_back_mode_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	const struct STable *expected = stable_init(1, 1, false);
+	const struct STable *expected = stable_init();
 	stable_put(expected, "CALLBACK_MSG",
 			"description1\n"
 			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
@@ -785,7 +785,7 @@ static void call_back_adaptive_sync_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	const struct STable *expected = stable_init(1, 1, false);
+	const struct STable *expected = stable_init();
 	stable_put(expected, "CALLBACK_MSG",
 			"description1\n"
 			"  Cannot enable VRR.\n"

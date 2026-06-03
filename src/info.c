@@ -666,7 +666,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	snprintf(buf, CALLBACK_MSG_LEN, "%s%s", msg1 ? msg1 : "", msg2 ? msg2 : "");
 
 	// pack environment variables
-	const struct STable *env = stable_init(1, 1, false);
+	const struct STable *env = stable_init();
 	stable_put(env, "CALLBACK_MSG", buf);
 	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
 

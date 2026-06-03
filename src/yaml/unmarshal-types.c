@@ -663,7 +663,7 @@ struct SList *yaml_seq_to_name_desc_list(struct UC *c, const yaml_node_t *seq) {
 	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
 		return NULL;
 
-	const struct STable *table = stable_init(10, 10, false);
+	const struct STable *table = stable_init();
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *scalar = yaml_document_get_node(&c->d, *item);

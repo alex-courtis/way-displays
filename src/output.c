@@ -25,7 +25,7 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output
 	output->zxdg_output = zxdg_output;
 
 	if (!outputs)
-		outputs = itable_init(5, 5);
+		outputs = itable_init();
 	itable_put(outputs, wl_output_name, output);
 
 	zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);

@@ -645,7 +645,7 @@ void cfg_copy_file_path(struct Cfg *from, struct Cfg *to) {
 }
 
 static void remove_duplicate_user_scales(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init(10, 10, false);
+	const struct STable *by_name_desc = stable_init();
 
 	for (const struct SList *i = cfg->user_scales; i; i = i->nex) {
 		const struct UserScale *user_scale = i->val;
@@ -663,7 +663,7 @@ static void remove_duplicate_user_scales(struct Cfg *cfg) {
 }
 
 static void remove_duplicate_user_modes(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init(10, 10, false);
+	const struct STable *by_name_desc = stable_init();
 
 	for (const struct SList *i = cfg->user_modes; i; i = i->nex) {
 		const struct UserMode *mode = i->val;
@@ -681,7 +681,7 @@ static void remove_duplicate_user_modes(struct Cfg *cfg) {
 }
 
 static void remove_duplicate_user_transforms(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init(10, 10, false);
+	const struct STable *by_name_desc = stable_init();
 
 	for (const struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		const struct UserTransform *transform = i->val;

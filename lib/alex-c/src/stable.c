@@ -49,7 +49,11 @@ static void grow_stable(struct STable *tab) {
 	tab->capacity += tab->grow;
 }
 
-const struct STable *stable_init(const size_t initial, const size_t grow, const bool case_insensitive) {
+const struct STable *stable_init(void) {
+	return stable_init_with(10, 10, false);
+}
+
+const struct STable *stable_init_with(const size_t initial, const size_t grow, const bool case_insensitive) {
 	if (initial == 0 || grow == 0)
 		return NULL;
 

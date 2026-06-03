@@ -152,7 +152,7 @@ const struct STable *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map
 	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE))
 		return NULL;
 
-	const struct STable *table = stable_init(10, 10, false);
+	const struct STable *table = stable_init();
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)

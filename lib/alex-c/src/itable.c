@@ -51,7 +51,11 @@ static void grow_itable(struct ITable *tab) {
 	tab->capacity += tab->grow;
 }
 
-const struct ITable *itable_init(const size_t initial, const size_t grow) {
+const struct ITable *itable_init(void) {
+	return itable_init_with(10, 10);
+}
+
+const struct ITable *itable_init_with(const size_t initial, const size_t grow) {
 	if (initial == 0 || grow == 0)
 		return NULL;
 
