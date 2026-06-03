@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "fn.h"
-
 /*
  * Array backed ordered string set.
  * Operations linearly traverse values.
