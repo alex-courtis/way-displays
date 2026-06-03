@@ -16,6 +16,7 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
+#include "sset.h"
 #include "stable.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/unmarshal.h"
@@ -663,7 +664,7 @@ struct SList *yaml_seq_to_name_desc_list(struct UC *c, const yaml_node_t *seq) {
 	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
 		return NULL;
 
-	const struct STable *table = stable_init();
+	const struct SSet *set = sset_init();
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
 		const yaml_node_t *scalar = yaml_document_get_node(&c->d, *item);
@@ -672,14 +673,14 @@ struct SList *yaml_seq_to_name_desc_list(struct UC *c, const yaml_node_t *seq) {
 
 		char *val = NULL;
 		if ((val = yaml_scalar_to_name_desc(c, scalar))) {
-			stable_put(table, val, NULL);
+			sset_add(set, val);
 			free(val);
 		}
 	}
 
-	struct SList *list = stable_keys_slist(table);
+	struct SList *list = sset_slist(set);
 
-	stable_free(table);
+	sset_free(set);
 
 	return list;
 }

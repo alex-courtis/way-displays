@@ -1,7 +1,7 @@
 include GNUmakefile
 
 PKGS_TST = cmocka
-CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
+CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p))) -Wno-unused-function
 LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
 INCS += -Ilib/alex-c/tst
 

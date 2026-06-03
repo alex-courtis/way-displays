@@ -66,14 +66,12 @@ bool sset_remove(const struct SSet* const set, const char* const val);
 // same length, vals equal in order, case sensitivity is from a
 bool sset_equal(const struct SSet* const a, const struct SSet* const b);
 
-// TODO vals out of order
-
 /*
  * Conversion
  */
 
-// ordered val pointers to set, caller frees list only
-struct SList *sset_vals_slist(const struct SSet* const set);
+// ordered values set, caller frees list and contents
+struct SList *sset_slist(const struct SSet* const set);
 
 /*
  * Info

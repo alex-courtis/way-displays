@@ -214,14 +214,14 @@ bool sset_equal(const struct SSet* const a, const struct SSet* const b) {
 	return true;
 }
 
-struct SList *sset_vals_slist(const struct SSet* const set) {
+struct SList *sset_slist(const struct SSet* const set) {
 	if (!set)
 		return NULL;
 
 	struct SList *list = NULL;
 
 	for (const char **v = set->vals; v < set->vals + set->size; v++) {
-		slist_append(&list, (void*)*v);
+		slist_append(&list, strdup(*v));
 	}
 
 	return list;
