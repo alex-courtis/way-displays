@@ -1,6 +1,10 @@
 #include "tst.h"
+
+#include "asserts-log.h"
 #include "asserts.h"
-#include "util.h"
+#include "util-file.h"
+#include "wrap-libyaml.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -13,10 +17,9 @@
 #include "lid.h"
 #include "log.h"
 #include "slist.h"
-#include "wrap-libyaml.h"
 
-#include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
+#include "yaml/marshal.h"
 
 #include "yaml/data.c"
 

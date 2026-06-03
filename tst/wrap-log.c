@@ -1,14 +1,14 @@
-#include "tst.h"
-
 #include <cmocka.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "wrap-log.h"
+
 #include "convert.h"
 #include "log.h"
-#include "util.h"
+#include "util-file.h"
 
 // log space b is statically allocated and not cleared
 // bp is used to indicate presence of logs

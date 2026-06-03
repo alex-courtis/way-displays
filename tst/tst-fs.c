@@ -1,5 +1,7 @@
 #include "tst.h"
-#include "asserts.h"
+
+#include "asserts-log.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <errno.h>

@@ -17,6 +17,7 @@
 #include "process.h"
 #include "slist.h"
 #include "stable.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
 char *info_user_mode_string(const struct UserMode * const user_mode) {

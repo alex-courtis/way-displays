@@ -9,6 +9,7 @@
 #include "displ.h"
 #include "ipc.h"
 #include "log.h"
+#include "str.h"
 
 struct NameVal {
 	unsigned int val;

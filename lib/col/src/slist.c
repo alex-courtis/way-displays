@@ -1,9 +1,9 @@
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "fn.h"
+#include "str.h"
 
 #include "slist.h"
 
@@ -27,11 +27,9 @@ struct SList *slist_shallow_clone(struct SList *head) {
 }
 
 void slist_free(struct SList **head) {
-	struct SList *i, *f;
-
-	i = *head;
+	struct SList *i = *head;
 	while (i) {
-		f = i;
+		struct SList *f = i;
 		i = i->nex;
 		free(f);
 	}
@@ -73,7 +71,6 @@ void *slist_remove(struct SList **head, struct SList **item) {
 	struct SList *i, *f, *p;
 	void *removed = NULL;
 
-	i = *head;
 	p = NULL;
 	f = NULL;
 
@@ -128,14 +125,11 @@ size_t slist_remove_all_free(struct SList **head, fn_equals equals, const void *
 	return removed;
 }
 
-size_t slist_xor_free(struct SList **head1, struct SList *head2, fn_equals equals, fn_free_val free_val, fn_clone_val clone_val) {
+void slist_xor_free(struct SList **head1, struct SList *head2, fn_equals equals, fn_free_val free_val, fn_clone_val clone_val) {
 	struct SList *i = head2;
-	size_t removed = 0;
 
 	while (i) {
-		size_t removed = slist_remove_all_free(head1, equals, i->val, free_val);
-
-		if (!removed) {
+		if (!slist_remove_all_free(head1, equals, i->val, free_val)) {
 			if (clone_val) {
 				slist_append(head1, clone_val(i->val));
 			} else {
@@ -145,13 +139,11 @@ size_t slist_xor_free(struct SList **head1, struct SList *head2, fn_equals equal
 
 		i = i->nex;
 	}
-
-	return removed;
 }
 
-void *slist_at(struct SList *head, size_t index) {
+void *slist_at(const struct SList *head, size_t index) {
 	size_t c = 0;
-	for (struct SList *i = head; i; i = i->nex, c++) {
+	for (const struct SList *i = head; i; i = i->nex, c++) {
 		if (c == index) {
 			return i->val;
 		}
@@ -176,7 +168,7 @@ struct SList *slist_find(struct SList *head, fn_test test) {
 }
 
 void *slist_find_val(struct SList *head, fn_test test) {
-	struct SList *f = slist_find(head, test);
+	const struct SList *f = slist_find(head, test);
 	if (f)
 		return f->val;
 	else
@@ -200,7 +192,7 @@ struct SList *slist_find_equal(struct SList *head, fn_equals equals, const void 
 }
 
 void *slist_find_equal_val(struct SList *head, fn_equals equals, const void *b) {
-	struct SList *f = slist_find_equal(head, equals, b);
+	const struct SList *f = slist_find_equal(head, equals, b);
 	if (f)
 		return f->val;
 	else
@@ -227,10 +219,10 @@ bool slist_equal(struct SList *a, struct SList *b, fn_equals equals) {
 	return true;
 }
 
-size_t slist_length(struct SList *head) {
+size_t slist_length(const struct SList *head) {
 	size_t length = 0;
 
-	for (struct SList *i = head; i; i = i->nex) {
+	for (const struct SList *i = head; i; i = i->nex) {
 		length++;
 	}
 
@@ -251,12 +243,12 @@ struct SList *slist_sort(struct SList *head, fn_less_than less_than) {
 
 	struct SList *sorting = slist_shallow_clone(head);
 
-	struct SList *sorting_head  = sorting;
-	struct SList **sorted_trail = &sorted;
+	struct SList *sorting_head;
 
 	while (sorting != NULL) {
+		struct SList **sorted_trail = &sorted;
+
 		sorting_head = sorting;
-		sorted_trail = &sorted;
 
 		sorting = sorting->nex;
 
@@ -288,30 +280,16 @@ void slist_move(struct SList **to, struct SList **from, fn_equals equals, const 
 	}
 }
 
-char *slist_str(struct SList *head) {
+char *slist_str(const struct SList *head) {
 	if (!head)
 		return NULL;
 
-	size_t len = 1;
+	char *str = strdup("");
 
-	// calculate length
-	// slower but simpler than realloc, which can set off scanners/checkers
-	for (struct SList *i = head; i; i = i->nex) {
-		len += strlen(i->val) + 1;
+	for (const struct SList *i = head; i; i = i->nex) {
+		str = sprintf_append(str, "%s\n", (char*)i->val);
 	}
 
-	// render
-	char *buf = (char*)calloc(len, sizeof(char));
-	char *bufp = buf;
-	for (struct SList *i = head; i; i = i->nex) {
-		bufp += snprintf(bufp, len - (bufp - buf), "%s\n", (char*)i->val);
-	}
-
-	// strip trailing newline
-	if (bufp > buf) {
-		*(bufp - 1) = '\0';
-	}
-
-	return buf;
+	return str;
 }
 

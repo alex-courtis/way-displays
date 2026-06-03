@@ -1,5 +1,8 @@
 #include "tst.h"
+
+#include "asserts-log.h"
 #include "asserts.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <limits.h>

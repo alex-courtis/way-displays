@@ -1,18 +1,17 @@
 #include <fcntl.h>
-#include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include <stdio.h>
+#include "util-file.h"
 
 char *read_file(const char *path) {
 	int fd = open(path, O_RDONLY);
 	if (fd == -1) {
-		char *out = calloc(PATH_MAX + 64, sizeof(char));
-		snprintf(out, PATH_MAX + 64, "file not found: %s\n", path);
-		return out;
+		fprintf(stderr,"file not found: %s\n", path);
+		exit(1);
 	}
 
 	int len = lseek(fd, 0, SEEK_END);

@@ -14,8 +14,8 @@ PRO_H = $(PRO_X:.xml=.h)
 PRO_C = $(PRO_X:.xml=.c)
 PRO_O = $(PRO_X:.xml=.o)
 
-TST_H = $(wildcard tst/*.h)
-TST_C = $(wildcard tst/*.c)
+TST_H = $(wildcard tst/*.h) $(wildcard lib/col/tst/*.h)
+TST_C = $(wildcard tst/*.c) $(wildcard lib/col/tst/*.c)
 TST_O = $(TST_C:.c=.o)
 TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 TST_T = $(patsubst tst%,test%,$(TST_E))
@@ -62,7 +62,12 @@ man: doc/way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc= )
 
-iwyu: override CC = $(IWYU) -Xiwyu --check_also="inc/*h"
+# TODO this isn't properly identifying with  -Xiwyu --check_also="lib/col/inc/*h"
+iwyu: override CC = $(IWYU) \
+	-Xiwyu --check_also="inc/*h" \
+	-Xiwyu --check_also="tst/*h" \
+	-Xiwyu --check_also="lib/col/tst/*h"
+iwyu: override INCS += -Ilib/col/tst
 iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
 
 IWYU = include-what-you-use \
@@ -71,6 +76,7 @@ IWYU = include-what-you-use \
 	   -Xiwyu --verbose=3 \
 	   -Xiwyu --mapping_file=.iwyu.imp
 
+cppcheck: override INCS += -Ilib/col/tst
 cppcheck: $(SRC_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
 		--enable=warning,unusedFunction,performance,portability,style \
@@ -101,6 +107,6 @@ examples: $(EXAMPLE_E)
 examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-.PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg docker-build docker-stop docker-run $(TST_T)
+.PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg $(TST_T)
 
 .NOTPARALLEL: iwyu test test-vg

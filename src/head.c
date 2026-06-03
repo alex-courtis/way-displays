@@ -11,6 +11,7 @@
 #include "cfg.h"
 #include "info.h"
 #include "slist.h"
+#include "str.h"
 #include "log.h"
 #include "mode.h"
 

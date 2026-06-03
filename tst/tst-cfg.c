@@ -1,6 +1,9 @@
 #include "tst.h"
-#include "asserts.h"
-#include "util.h"
+
+#include "asserts-cfg.h"
+#include "asserts-log.h"
+#include "util-file.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>

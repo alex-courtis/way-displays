@@ -14,6 +14,7 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
+#include "str.h"
 
 #include "cli.h"
 

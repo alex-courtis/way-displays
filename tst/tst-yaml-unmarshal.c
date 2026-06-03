@@ -1,6 +1,10 @@
 #include "tst.h"
+
+#include "asserts-cfg.h"
+#include "asserts-log.h"
 #include "asserts.h"
-#include "util.h"
+#include "util-file.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -17,11 +21,12 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "wrap-libyaml.h"
 
-#include "yaml/unmarshal.h"
 #include "yaml/unmarshal-types.h"
+#include "yaml/unmarshal.h"
 
 #include "yaml/data.c"
 

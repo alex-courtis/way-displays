@@ -1,7 +1,10 @@
 #include "tst.h"
+
+#include "asserts-log.h"
 #include "asserts.h"
 #include "expects.h"
-#include "util.h"
+#include "util-file.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -17,6 +20,7 @@
 #include "mode.h"
 #include "slist.h"
 #include "stable.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info.h"
@@ -690,9 +694,9 @@ static void call_back__below_threshold(void **state) {
 }
 
 static void call_back__one(void **state) {
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", "msg1");
-	stable_put(env, "CALLBACK_LEVEL", "INFO");
+	const struct STable *expected = stable_init(1, 1, false);
+	stable_put(expected, "CALLBACK_MSG", "msg1");
+	stable_put(expected, "CALLBACK_LEVEL", "INFO");
 
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
@@ -700,25 +704,25 @@ static void call_back__one(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
+	expect_stable_equal_strcmp(__wrap_spawn_sh_cmd, env, expected)
 
 	call_back(INFO, "msg1", NULL);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
 	assert_logs_empty();
 
-	stable_free(env);
+	stable_free(expected);
 }
 
 static void call_back__two(void **state) {
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", "msg1msg2");
-	stable_put(env, "CALLBACK_LEVEL", "FATAL");
+	const struct STable *expected = stable_init(1, 1, false);
+	stable_put(expected, "CALLBACK_MSG", "msg1msg2");
+	stable_put(expected, "CALLBACK_LEVEL", "FATAL");
 
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
@@ -728,19 +732,19 @@ static void call_back__two(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
+	expect_stable_equal_strcmp(__wrap_spawn_sh_cmd, env, expected)
 
 	call_back(FATAL, "msg1", "msg2");
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
 	assert_logs_empty();
 
-	stable_free(env);
+	stable_free(expected);
 }
 
 static void call_back_mode_fail__(void **state) {
@@ -749,28 +753,28 @@ static void call_back_mode_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG",
+	const struct STable *expected = stable_init(1, 1, false);
+	stable_put(expected, "CALLBACK_MSG",
 			"description1\n"
 			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
-	stable_put(env, "CALLBACK_LEVEL", "INFO");
+	stable_put(expected, "CALLBACK_LEVEL", "INFO");
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
+	expect_stable_equal_strcmp(__wrap_spawn_sh_cmd, env, expected)
 
 	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
 	assert_logs_empty();
 
-	stable_free(env);
+	stable_free(expected);
 }
 
 static void call_back_adaptive_sync_fail__(void **state) {
@@ -781,31 +785,31 @@ static void call_back_adaptive_sync_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG",
+	const struct STable *expected = stable_init(1, 1, false);
+	stable_put(expected, "CALLBACK_MSG",
 			"description1\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - 'model1'");
-	stable_put(env, "CALLBACK_LEVEL", "WARNING");
+	stable_put(expected, "CALLBACK_LEVEL", "WARNING");
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
+	expect_stable_equal_strcmp(__wrap_spawn_sh_cmd, env, expected)
 
 	call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
 	assert_logs_empty();
 
-	stable_free(env);
+	stable_free(expected);
 }
 
 int main(void) {

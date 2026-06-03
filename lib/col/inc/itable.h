@@ -88,7 +88,7 @@ struct SList *itable_vals_slist(const struct ITable* const tab);
  */
 
 // to string, user frees
-// lines with format "%PRIu64 = %s"
+// lines with format "%PRIu64 = %s\n"
 // values must be char*, NULL printed as "(null)"
 char *itable_str(const struct ITable* const tab);
 

@@ -1,5 +1,9 @@
 #include "tst.h"
+
+#include "asserts-cfg.h"
+#include "asserts-log.h"
 #include "asserts.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -10,8 +14,8 @@
 
 #include "cfg.h"
 #include "ipc.h"
-#include "slist.h"
 #include "log.h"
+#include "slist.h"
 
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
 struct IpcRequest *parse_write(int argc, char **argv);

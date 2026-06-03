@@ -5,10 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "conditions.h"
 #include "head.h"
 #include "lid.h"
 #include "slist.h"
+
+#include "conditions.h"
 
 struct State {
 	struct Condition *condition;

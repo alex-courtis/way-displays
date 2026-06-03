@@ -1,6 +1,9 @@
 #include "tst.h"
+
+#include "asserts-log.h"
 #include "asserts.h"
 #include "expects.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <limits.h>
@@ -12,8 +15,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "slist.h"
 #include "log.h"
+#include "slist.h"
 #include "yaml/marshal.h"
 
 #include "cfg.h"

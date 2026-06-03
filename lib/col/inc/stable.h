@@ -87,7 +87,7 @@ struct SList *stable_vals_slist(const struct STable* const tab);
  */
 
 // to string, user frees
-// lines with format "%s = %s"
+// lines with format "%p = %s\n"
 // values must be char*, NULL printed as "(null)"
 char *stable_str(const struct STable* const tab);
 

@@ -1,17 +1,20 @@
 #include "tst.h"
+
+#include "asserts-cfg.h"
+#include "asserts-log.h"
 #include "asserts.h"
 #include "expects.h"
-#include "util.h"
+#include "util-file.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "slist.h"
-#include "log.h"
-
 #include "cfg.h"
+#include "log.h"
+#include "slist.h"
 #include "yaml/unmarshal.h"
 
 

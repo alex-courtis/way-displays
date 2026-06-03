@@ -13,6 +13,8 @@ unusedFunction:src/convert.c
 unusedFunction:lib/col/*c
 staticFunction:lib/col/*c
 
+unusedFunction:lib/col/tst/*h
+
 unusedFunction:tst/wrap-*.c
 
 # needs fixing upstream

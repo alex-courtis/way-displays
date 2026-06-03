@@ -1,11 +1,11 @@
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
 
 #include "fn.h"
 #include "slist.h"
+#include "str.h"
 
 #include "itable.h"
 
@@ -290,33 +290,15 @@ char *itable_str(const struct ITable* const tab) {
 	if (!tab)
 		return NULL;
 
-	size_t len = 1;
+	char *str = strdup("");
 
-	// calculate length
-	// slower but simpler than realloc, which can set off scanners/checkers
 	uint64_t *k;
 	const void **v;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-		len +=
-			20 +                    // longest uint64_t printed with PRIu64
-			3 +                     // " = "
-			(*v ? strlen(*v) : 6) + // value or "(null)"
-			1;                      // "\n"
+		str = sprintf_append(str, "%"PRIu64" = %s\n", *k, *v ? (char*)*v : "(null)");
 	}
 
-	// render
-	char *buf = (char*)calloc(len, sizeof(char));
-	char *bufp = buf;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-		bufp += snprintf(bufp, len - (bufp - buf), "%"PRIu64" = %s\n", *k, *v ? (char*)*v : "(null)");
-	}
-
-	// strip trailing newline
-	if (bufp > buf) {
-		*(bufp - 1) = '\0';
-	}
-
-	return buf;
+	return str;
 }
 
 size_t itable_size(const struct ITable* const tab) {

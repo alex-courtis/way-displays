@@ -4,6 +4,7 @@ clang
 -Ipro
 -Itst
 -Ilib/col/inc
+-Ilib/col/tst
 
 -D_GNU_SOURCE
 -DVERSION="DUMMY"
@@ -13,10 +14,8 @@ clang
 -Wall
 -Wextra
 -Wimplicit-fallthrough
+-Wold-style-definition
+-Wstrict-prototypes
 -Wno-unused-parameter
--Wno-format-zero-length
 
-%c -Wold-style-definition
-%c -Wstrict-prototypes
-
-%c -std=gnu17
+-std=gnu17

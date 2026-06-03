@@ -1,6 +1,11 @@
 #include "tst.h"
+
+#include "asserts-head.h"
+#include "asserts-log.h"
+#include "asserts-wl.h"
 #include "asserts.h"
 #include "expects.h"
+#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -16,7 +21,6 @@
 #include "mode.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
-
 
 struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
