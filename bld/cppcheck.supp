@@ -10,19 +10,19 @@ unusedFunction:log.c
 
 unusedFunction:src/convert.c
 
-unusedFunction:lib/col/*c
-staticFunction:lib/col/*c
+unusedFunction:lib/alex-c/*c
+staticFunction:lib/alex-c/*c
 
-unusedFunction:lib/col/tst/*h
+unusedFunction:lib/alex-c/tst/*h
 
 unusedFunction:tst/wrap-*.c
 
 # needs fixing upstream
-constVariablePointer:lib/col/src/slist.c
-redundantAssignment:lib/col/src/slist.c
-shadowVariable:lib/col/src/slist.c
-unreadVariable:lib/col/src/slist.c
-variableScope:lib/col/src/slist.c
+constVariablePointer:lib/alex-c/src/slist.c
+redundantAssignment:lib/alex-c/src/slist.c
+shadowVariable:lib/alex-c/src/slist.c
+unreadVariable:lib/alex-c/src/slist.c
+variableScope:lib/alex-c/src/slist.c
 
 # this is just not practical
 nullPointerOutOfMemory

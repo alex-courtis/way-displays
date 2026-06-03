@@ -3,13 +3,13 @@ include GNUmakefile
 PKGS_TST = cmocka
 CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
-INCS += -Ilib/col/tst
+INCS += -Ilib/alex-c/tst
 
 # filter libinput as it is 64-bit only
 LDLIBS := $(filter-out -linput,$(LDLIBS))
 
 # filter lid.o as it links the 64-bit only libinput
-OBJS = $(wildcard lib/col/tst/*.o) \
+OBJS = $(wildcard lib/alex-c/tst/*.o) \
 	   $(patsubst %.c,%.o,$(wildcard tst/wrap-*.c)) \
 		$(filter-out src/main.o src/lid.o,$(SRC_O)) \
 		$(PRO_O)

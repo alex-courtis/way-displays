@@ -1,8 +1,8 @@
 include config.mk
 
-INC_H = $(wildcard inc/*.h) $(wildcard inc/*/*.h) $(wildcard lib/col/inc/*.h)
+INC_H = $(wildcard inc/*.h) $(wildcard inc/*/*.h) $(wildcard lib/alex-c/inc/*.h)
 
-SRC_C = $(wildcard src/*.c) $(wildcard src/*/*.c) $(wildcard lib/col/src/*.c)
+SRC_C = $(wildcard src/*.c) $(wildcard src/*/*.c) $(wildcard lib/alex-c/src/*.c)
 SRC_O = $(SRC_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
@@ -14,8 +14,8 @@ PRO_H = $(PRO_X:.xml=.h)
 PRO_C = $(PRO_X:.xml=.c)
 PRO_O = $(PRO_X:.xml=.o)
 
-TST_H = $(wildcard tst/*.h) $(wildcard lib/col/tst/*.h)
-TST_C = $(wildcard tst/*.c) $(wildcard lib/col/tst/*.c)
+TST_H = $(wildcard tst/*.h) $(wildcard lib/alex-c/tst/*.h)
+TST_C = $(wildcard tst/*.c) $(wildcard lib/alex-c/tst/*.c)
 TST_O = $(TST_C:.c=.o)
 TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
 TST_T = $(patsubst tst%,test%,$(TST_E))
@@ -64,10 +64,10 @@ man: doc/way-displays.1.pandoc
 
 iwyu: override CC = $(IWYU) \
 	-Xiwyu --check_also="inc/*h" \
-	-Xiwyu --check_also="lib/col/inc/*h" \
+	-Xiwyu --check_also="lib/alex-c/inc/*h" \
 	-Xiwyu --check_also="tst/*h" \
-	-Xiwyu --check_also="lib/col/tst/*h"
-iwyu: override INCS += -Ilib/col/tst
+	-Xiwyu --check_also="lib/alex-c/tst/*h"
+iwyu: override INCS += -Ilib/alex-c/tst
 iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
 
 IWYU = include-what-you-use \
@@ -76,7 +76,7 @@ IWYU = include-what-you-use \
 	   -Xiwyu --verbose=3 \
 	   -Xiwyu --mapping_file=.iwyu.imp
 
-cppcheck: override INCS += -Ilib/col/tst
+cppcheck: override INCS += -Ilib/alex-c/tst
 cppcheck: $(SRC_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
 		--enable=warning,unusedFunction,performance,portability,style \

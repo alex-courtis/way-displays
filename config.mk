@@ -4,7 +4,7 @@ PREFIX ?= /usr/local
 PREFIX_ETC ?= /usr/local
 ROOT_ETC ?= /etc
 
-INCS = -Iinc -Ipro -Ilib/col/inc
+INCS = -Iinc -Ipro -Ilib/alex-c/inc
 
 CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" -DROOT_ETC=\"$(ROOT_ETC)\"
 
