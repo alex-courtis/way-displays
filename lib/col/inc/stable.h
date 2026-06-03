@@ -13,12 +13,12 @@
  * NULL values permitted.
  * Not thread safe.
  */
-struct STable;
+struct STable; // IWYU pragma: keep
 
 /*
  * Entry iterator.
  */
-struct STableIter;
+struct STableIter; // IWYU pragma: keep
 
 /*
  * Lifecycle

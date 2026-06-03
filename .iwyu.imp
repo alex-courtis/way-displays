@@ -1,4 +1,14 @@
 [
+# use the forward declarations from the headers
+{ "symbol": ["ITable",     "public", "\"itable.h\"", "public"] },
+{ "symbol": ["ITableIter", "public", "\"itable.h\"", "public"] },
+{ "symbol": ["OSet",       "public", "\"oset.h\"",   "public"] },
+{ "symbol": ["OSetIter",   "public", "\"oset.h\"",   "public"] },
+{ "symbol": ["PTable",     "public", "\"ptable.h\"", "public"] },
+{ "symbol": ["PTableIter", "public", "\"ptable.h\"", "public"] },
+{ "symbol": ["STable",     "public", "\"stable.h\"", "public"] },
+{ "symbol": ["STableIter", "public", "\"stable.h\"", "public"] },
+
 # ensure these are sourced from wayland, not the forward declarations in river
 { "symbol": ["wl_buffer",              "public", "<wayland-client-protocol.h>", "public"] },
 { "symbol": ["wl_callback",            "public", "<wayland-client-protocol.h>", "public"] },

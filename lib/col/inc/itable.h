@@ -14,12 +14,12 @@
  * NULL values permitted.
  * Not thread safe.
  */
-struct ITable;
+struct ITable; // IWYU pragma: keep
 
 /*
  * Entry iterator.
  */
-struct ITableIter;
+struct ITableIter; // IWYU pragma: keep
 
 /*
  * Lifecycle

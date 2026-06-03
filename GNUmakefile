@@ -62,9 +62,9 @@ man: doc/way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc= )
 
-# TODO this isn't properly identifying with  -Xiwyu --check_also="lib/col/inc/*h"
 iwyu: override CC = $(IWYU) \
 	-Xiwyu --check_also="inc/*h" \
+	-Xiwyu --check_also="lib/col/inc/*h" \
 	-Xiwyu --check_also="tst/*h" \
 	-Xiwyu --check_also="lib/col/tst/*h"
 iwyu: override INCS += -Ilib/col/tst
