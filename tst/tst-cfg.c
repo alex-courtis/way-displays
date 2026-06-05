@@ -273,8 +273,8 @@ static void merge_set__disabled(void **state) {
 
 	slist_append(&s->from->disabled, cfg_disabled_always("from"));
 	slist_append(&s->from->disabled, cfg_disabled_always("both"));
-	slist_append(&s->from->disabled, cfg_disabled_clone(disabled1));
-	slist_append(&s->from->disabled, cfg_disabled_clone(disabled2));
+	slist_append(&s->from->disabled, fn_clone_cfg_disabled(disabled1));
+	slist_append(&s->from->disabled, fn_clone_cfg_disabled(disabled2));
 
 	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
 	slist_append(&s->expected->disabled, cfg_disabled_always("both"));

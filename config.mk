@@ -18,7 +18,7 @@ WFLAGS = -pedantic \
 		 -Wstrict-prototypes \
 		 -Wno-unused-parameter
 DFLAGS = -g
-MFLAGS = 
+MFLAGS =
 COMPFLAGS = $(WFLAGS) $(OFLAGS) $(DFLAGS) $(MFLAGS)
 
 CFLAGS += $(COMPFLAGS) -std=gnu17

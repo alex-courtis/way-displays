@@ -1,8 +1,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
+#include "fn.h"
 #include "slist.h"
 #include "str.h"
 
@@ -14,14 +14,13 @@
    <(sed -e 's/sset/xset/g ; s/SSet/XSet/g' src/sset.c)
    */
 
-typedef int (*comparator)(const char *s1, const char *s2);
-
 struct SSet {
 	const char **vals;
 	size_t capacity;
 	size_t grow;
 	size_t size;
-	comparator cmp;
+	fn_equal equal;
+	fn_less_than less_than;
 };
 
 struct SSetIter {
@@ -60,9 +59,11 @@ const struct SSet *sset_init_with(const size_t initial, const size_t grow, const
 	set->grow = grow;
 	set->vals = calloc(set->capacity, sizeof(void*));
 	if (case_insensitive) {
-		set->cmp = strcasecmp;
+		set->equal = fn_equal_strcasecmp;
+		set->less_than = fn_less_than_strcasecmp;
 	} else {
-		set->cmp = strcmp;
+		set->equal = fn_equal_strcmp;
+		set->less_than = fn_less_than_strcmp;
 	}
 
 	return set;
@@ -91,13 +92,27 @@ void sset_iter_free(const struct SSetIter* const iter) {
 	free((void*)iter);
 }
 
+const struct SSet *sset_clone(const struct SSet* const set) {
+	if (!set)
+		return NULL;
+
+	const struct SSet *clone = sset_init_with(set->capacity, set->grow, set->equal == fn_equal_strcasecmp);
+
+	// loop over vals
+	for (const char **v = set->vals; v < set->vals + set->size; v++) {
+		sset_add(clone, *v);
+	}
+
+	return clone;
+}
+
 bool sset_contains(const struct SSet* const set, const char* const val) {
 	if (!set || !val)
 		return false;
 
 	// loop over vals
 	for (const char **v = set->vals; v < set->vals + set->size; v++) {
-		if (set->cmp(*v, val) == 0) {
+		if (set->equal(*v, val)) {
 			return true;
 		}
 	}
@@ -153,7 +168,7 @@ bool sset_add(const struct SSet* const cset, const char* const val) {
 	for (v = set->vals; v < set->vals + set->size; v++) {
 
 		// already present
-		if (set->cmp(*v, val) == 0) {
+		if (set->equal(*v, val)) {
 			return false;
 		}
 	}
@@ -179,7 +194,7 @@ bool sset_remove(const struct SSet* const cset, const char* const val) {
 
 	// loop over vals
 	for (const char **v = set->vals; v < set->vals + set->size; v++) {
-		if (set->cmp(*v, val) == 0 ) {
+		if (set->equal(*v, val)) {
 
 			free((void*)*v);
 
@@ -200,13 +215,29 @@ bool sset_remove(const struct SSet* const cset, const char* const val) {
 	return false;
 }
 
+void sset_sort(const struct SSet* const set) {
+	if (!set)
+		return;
+
+	size_t i = 1;
+	while (i < set->size) {
+		size_t j = i;
+		while (j > 0 && set->less_than(set->vals[j], set->vals[j - 1])) {
+			const void *tmp = set->vals[j];
+			set->vals[j] = set->vals[j - 1];
+			set->vals[j - 1] = tmp;
+			j = j - 1;
+		}
+		i++;
+	}
+}
+
 bool sset_equal(const struct SSet* const a, const struct SSet* const b) {
 	if (!a || !b || a->size != b->size)
 		return false;
 
 	for (const char **av = a->vals, **bv = b->vals; av < (a->vals + a->size); av++, bv++) {
-
-		if (a->cmp(*av, *bv) != 0) {
+		if (!a->equal(*av, *bv)) {
 			return false;
 		}
 	}

@@ -18,7 +18,7 @@ void condition_free(const void *data) {
 	free(condition);
 }
 
-void* condition_clone(const void *data) {
+void* fn_clone_condition(const void *data) {
 	struct Condition *original = (struct Condition*)data;
 	struct Condition *cloned = (struct Condition*)calloc(1, sizeof(struct Condition));
 
@@ -29,12 +29,12 @@ void* condition_clone(const void *data) {
 	return cloned;
 }
 
-bool condition_equal(const void *a, const void *b) {
+bool fn_equal_condition(const void *a, const void *b) {
 	struct Condition *lhs = (struct Condition*)a;
 	struct Condition *rhs = (struct Condition*)b;
 
-	return slist_equal(lhs->plugged, rhs->plugged, fn_comp_equals_strcmp) &&
-	       slist_equal(lhs->unplugged, rhs->unplugged, fn_comp_equals_strcmp) &&
+	return slist_equal(lhs->plugged, rhs->plugged, fn_equal_strcmp) &&
+	       slist_equal(lhs->unplugged, rhs->unplugged, fn_equal_strcmp) &&
 		   lhs->lid == rhs->lid;
 }
 

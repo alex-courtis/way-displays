@@ -6,6 +6,9 @@
 { "symbol": ["OSetIter",   "public", "\"oset.h\"",   "public"] },
 { "symbol": ["PTable",     "public", "\"ptable.h\"", "public"] },
 { "symbol": ["PTableIter", "public", "\"ptable.h\"", "public"] },
+{ "symbol": ["SList",      "public", "\"slist.h\"",  "public"] },
+{ "symbol": ["SSet",       "public", "\"sset.h\"",   "public"] },
+{ "symbol": ["SSetIter",   "public", "\"sset.h\"",   "public"] },
 { "symbol": ["STable",     "public", "\"stable.h\"", "public"] },
 { "symbol": ["STableIter", "public", "\"stable.h\"", "public"] },
 

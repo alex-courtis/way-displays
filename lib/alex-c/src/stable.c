@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 #include "fn.h"
 #include "str.h"
@@ -10,15 +9,13 @@
 
 #include "stable.h"
 
-typedef int (*comparator)(const char *s1, const char *s2);
-
 struct STable {
 	const char **keys;
 	const void **vals;
 	size_t capacity;
 	size_t grow;
 	size_t size;
-	comparator cmp;
+	fn_equal equal;
 };
 
 struct STableIter {
@@ -61,9 +58,9 @@ const struct STable *stable_init_with(const size_t initial, const size_t grow, c
 	tab->capacity = initial;
 	tab->grow = grow;
 	if (case_insensitive) {
-		tab->cmp = strcasecmp;
+		tab->equal = fn_equal_strcasecmp;
 	} else {
-		tab->cmp = strcmp;
+		tab->equal = fn_equal_strcmp;
 	}
 	tab->keys = calloc(tab->capacity, sizeof(char*));
 	tab->vals = calloc(tab->capacity, sizeof(void*));
@@ -86,7 +83,7 @@ void stable_free(const void* const cvtab) {
 	free(tab);
 }
 
-void stable_free_vals(const struct STable* const tab, fn_free_val free_val) {
+void stable_free_vals(const struct STable* const tab, fn_free free_val) {
 	if (!tab)
 		return;
 
@@ -120,7 +117,7 @@ const void *stable_get(const struct STable* const tab, const char* const key) {
 	for (k = tab->keys, v = tab->vals;
 			k < tab->keys + tab->size;
 			k++, v++) {
-		if (tab->cmp(*k, key) == 0) {
+		if (tab->equal(*k, key)) {
 			return *v;
 		}
 	}
@@ -183,7 +180,7 @@ const void *stable_put(const struct STable* const ctab, const char* const key, c
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
 
 		// overwrite existing values
-		if (tab->cmp(*k, key) == 0) {
+		if (tab->equal(*k, key)) {
 			const void *prev = *v;
 			*v = val;
 			return prev;
@@ -216,7 +213,7 @@ const void *stable_remove(const struct STable* const ctab, const char* const key
 	const void **v;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
 
-		if (tab->cmp(*k, key) == 0) {
+		if (tab->equal(*k, key)) {
 			free((void*)*k);
 			*k = NULL;
 			const void* prev = *v;
@@ -240,7 +237,7 @@ const void *stable_remove(const struct STable* const ctab, const char* const key
 	return NULL;
 }
 
-bool stable_equal(const struct STable* const a, const struct STable* const b, fn_equals equals) {
+bool stable_equal(const struct STable* const a, const struct STable* const b, fn_equal equal) {
 	if (!a || !b || a->size != b->size)
 		return false;
 
@@ -252,19 +249,13 @@ bool stable_equal(const struct STable* const a, const struct STable* const b, fn
 			ak++, bk++, av++, bv++) {
 
 		// key
-		if (a->cmp == strcasecmp || b->cmp == strcasecmp) {
-			if (strcasecmp(*ak, *bk) != 0) {
-				return false;
-			}
-		} else {
-			if (strcmp(*ak, *bk) != 0) {
-				return false;
-			}
+		if (!a->equal(*ak, *bk)) {
+			return false;
 		}
 
 		// value
-		if (equals) {
-			if (!equals(*av, *bv)) {
+		if (equal) {
+			if (!equal(*av, *bv)) {
 				return false;
 			}
 		} else if (*av != *bv) {

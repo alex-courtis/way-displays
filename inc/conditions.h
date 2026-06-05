@@ -18,9 +18,9 @@ struct Condition {
 
 void condition_free(const void *data);
 
-void* condition_clone(const void *data);
+void* fn_clone_condition(const void *data);
 
-bool condition_equal(const void *a, const void *b);
+bool fn_equal_condition(const void *a, const void *b);
 
 // evaluates a condition.
 // NULL condition is always evaluated to be true.

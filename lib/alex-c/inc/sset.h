@@ -27,6 +27,9 @@ const struct SSet *sset_init(void);
 // construct a set with initial size, grow as needed, NULL on zero param
 const struct SSet *sset_init_with(const size_t initial, const size_t grow, const bool case_insensitive);
 
+// deep clone
+const struct SSet *sset_clone(const struct SSet* const set);
+
 // free set and vals
 void sset_free(const struct SSet* const set);
 
@@ -59,6 +62,9 @@ bool sset_add(const struct SSet* const set, const char* const val);
 // true if this set contained the element
 bool sset_remove(const struct SSet* const set, const char* const val);
 
+// sort in place
+void sset_sort(const struct SSet* const set);
+
 /*
  * Comparison
  */
@@ -70,7 +76,7 @@ bool sset_equal(const struct SSet* const a, const struct SSet* const b);
  * Conversion
  */
 
-// ordered values set, caller frees list and contents
+// ordered strings, caller frees list and contents
 struct SList *sset_slist(const struct SSet* const set);
 
 /*

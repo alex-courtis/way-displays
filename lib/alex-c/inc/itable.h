@@ -34,8 +34,8 @@ const struct ITable *itable_init_with(const size_t initial, const size_t grow);
 // free table
 void itable_free(const void* const tab);
 
-// free table and vals, null fn_free_val uses free()
-void itable_free_vals(const struct ITable* const tab, fn_free_val);
+// free table and vals, null fn_free uses free()
+void itable_free_vals(const struct ITable* const tab, fn_free);
 
 // free iter
 void itable_iter_free(const struct ITableIter* const iter);
@@ -74,7 +74,7 @@ const void *itable_remove(const struct ITable* const tab, const uint64_t key);
  */
 
 // same length, keys and vals equal in order, NULL equal compares pointers
-bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn_equals);
+bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn_equal);
 
 /*
  * Conversion

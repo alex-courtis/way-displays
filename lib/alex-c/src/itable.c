@@ -80,7 +80,7 @@ void itable_free(const void* const cvtab) {
 	free(tab);
 }
 
-void itable_free_vals(const struct ITable* const tab, fn_free_val free_val) {
+void itable_free_vals(const struct ITable* const tab, fn_free free_val) {
 	if (!tab)
 		return;
 
@@ -232,7 +232,7 @@ const void *itable_remove(const struct ITable* const ctab, const uint64_t key) {
 	return NULL;
 }
 
-bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn_equals equals) {
+bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn_equal equal) {
 	if (!a || !b || a->size != b->size)
 		return false;
 
@@ -249,8 +249,8 @@ bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn
 		}
 
 		// value
-		if (equals) {
-			if (!equals(*av, *bv)) {
+		if (equal) {
+			if (!equal(*av, *bv)) {
 				return false;
 			}
 		} else if (*av != *bv) {

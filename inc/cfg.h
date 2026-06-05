@@ -195,6 +195,6 @@ void cfg_disabled_free(const void *val);
 //
 // cloning functions
 //
-void* cfg_disabled_clone(const void *data);
+void* fn_clone_cfg_disabled(const void *data);
 
 #endif // CFG_H
