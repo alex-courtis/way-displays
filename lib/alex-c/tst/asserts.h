@@ -4,11 +4,6 @@
 #include <cmocka.h>
 #include <string.h>
 
-#include "fn.h"
-#include "pset.h"
-#include "slist.h"
-#include "sset.h"
-
 void _assert_nul(const void *a, const char * const ae, const char * const file, const int line) {
 	if (a) {
 		cmocka_print_error("%s is not NULL\n", ae);
@@ -46,53 +41,5 @@ void _assert_str_equal_n(const char * const a, const char * const ae, const char
 }
 
 #define assert_str_equal_n(a, b, n) _assert_str_equal_n(a, #a, b, #b, n, __FILE__, __LINE__)
-
-void _assert_slist_equal(struct SList *a, struct SList *b, fn_equal equal, fn_str str, const char * const file, const int line) {
-	if (!slist_equal(a, b, equal)) {
-		cmocka_print_error("\n%s != \n%s", slist_str(a, str), slist_str(b, str));
-		_fail(file, line);
-	}
-}
-#define assert_slist_equal(a, b, equal, str) _assert_slist_equal(a, b, equal, str, __FILE__, __LINE__)
-
-void _assert_slist_not_equal(struct SList *a, struct SList *b, fn_equal equal, fn_str str, const char * const file, const int line) {
-	if (slist_equal(a, b, equal)) {
-		cmocka_print_error("\n%s == \n%s", slist_str(a, str), slist_str(b, str));
-		_fail(file, line);
-	}
-}
-#define assert_slist_not_equal(a, b, equal, str) _assert_slist_not_equal(a, b, equal, str, __FILE__, __LINE__)
-
-void _assert_sset_equal(const struct SSet *a, const struct SSet *b, const char * const file, const int line) {
-	if (!sset_equal(a, b)) {
-		cmocka_print_error("\n%s != \n%s", sset_str(a), sset_str(b));
-		_fail(file, line);
-	}
-}
-#define assert_sset_equal(a, b) _assert_sset_equal(a, b, __FILE__, __LINE__)
-
-void _assert_sset_not_equal(const struct SSet *a, const struct SSet *b, const char * const file, const int line) {
-	if (sset_equal(a, b)) {
-		cmocka_print_error("\n%s == \n%s", sset_str(a), sset_str(b));
-		_fail(file, line);
-	}
-}
-#define assert_sset_not_equal(a, b) _assert_sset_not_equal(a, b, __FILE__, __LINE__)
-
-void _assert_pset_equal(const struct PSet *a, const struct PSet *b, fn_equal equal, fn_str str, const char * const file, const int line) {
-	if (!pset_equal(a, b, equal)) {
-		cmocka_print_error("\n%s != \n%s", pset_str(a, str), pset_str(b, str));
-		_fail(file, line);
-	}
-}
-#define assert_pset_equal(a, b, equal, str) _assert_pset_equal(a, b, equal, str, __FILE__, __LINE__)
-
-void _assert_pset_not_equal(const struct PSet *a, const struct PSet *b, fn_equal equal, fn_str str, const char * const file, const int line) {
-	if (pset_equal(a, b, equal)) {
-		cmocka_print_error("\n%s == \n%s", pset_str(a, str), pset_str(b, str));
-		_fail(file, line);
-	}
-}
-#define assert_pset_not_equal(a, b, equal, str) _assert_pset_not_equal(a, b, equal, str, __FILE__, __LINE__)
 
 #endif // ASSERTS_H

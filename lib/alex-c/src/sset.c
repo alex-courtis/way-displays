@@ -69,12 +69,25 @@ const struct SSet *sset_init_with(const size_t initial, const size_t grow, const
 	return set;
 }
 
+const struct SSet *sset_clone(const struct SSet* const set) {
+	if (!set)
+		return NULL;
+
+	const struct SSet *cloned = sset_init_with(set->capacity, set->grow, set->equal == fn_equal_strcasecmp);
+
+	for (const char **v = set->vals; v < set->vals + set->size; v++) {
+		sset_add(cloned, *v);
+	}
+
+	return cloned;
+}
+
 void sset_free(const struct SSet* const set) {
 	if (!set)
 		return;
 
 	// loop over vals
-	for (const char **v = set->vals; v < set->vals + set->capacity; v++) {
+	for (const char **v = set->vals; v < set->vals + set->size; v++) {
 		if (*v) {
 			free((void*)*v);
 		}
@@ -92,25 +105,10 @@ void sset_iter_free(const struct SSetIter* const iter) {
 	free((void*)iter);
 }
 
-const struct SSet *sset_clone(const struct SSet* const set) {
-	if (!set)
-		return NULL;
-
-	const struct SSet *clone = sset_init_with(set->capacity, set->grow, set->equal == fn_equal_strcasecmp);
-
-	// loop over vals
-	for (const char **v = set->vals; v < set->vals + set->size; v++) {
-		sset_add(clone, *v);
-	}
-
-	return clone;
-}
-
 bool sset_contains(const struct SSet* const set, const char* const val) {
 	if (!set || !val)
 		return false;
 
-	// loop over vals
 	for (const char **v = set->vals; v < set->vals + set->size; v++) {
 		if (set->equal(*v, val)) {
 			return true;
@@ -219,16 +217,17 @@ void sset_sort(const struct SSet* const set) {
 	if (!set)
 		return;
 
-	size_t i = 1;
-	while (i < set->size) {
-		size_t j = i;
-		while (j > 0 && set->less_than(set->vals[j], set->vals[j - 1])) {
-			const void *tmp = set->vals[j];
-			set->vals[j] = set->vals[j - 1];
-			set->vals[j - 1] = tmp;
-			j = j - 1;
+	static const size_t gaps[] = { 701, 301, 132, 57, 23, 10, 4, 1, 0 }; // Ciura gap sequence
+
+	for (const size_t *gap = gaps; *gap > 0; gap++) {
+		for (size_t i = *gap; i < set->size; i++) {
+			const void *tmp = set->vals[i];
+			size_t j;
+			for (j = i; (j >= *gap) && set->less_than(tmp, set->vals[j - *gap]); j -= *gap) {
+				set->vals[j] = set->vals[j - *gap];
+			}
+			set->vals[j] = tmp;
 		}
-		i++;
 	}
 }
 

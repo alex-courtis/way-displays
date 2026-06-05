@@ -670,7 +670,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	stable_put(env, "CALLBACK_MSG", buf);
 	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
-	char *env_str = stable_str(env);
+	char *env_str = stable_str(env, NULL);
 	log_debug("%s", env_str);
 	free(env_str);
 

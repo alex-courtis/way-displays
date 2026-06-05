@@ -9,6 +9,12 @@
 
 #include "stable.h"
 
+/*
+   diff -u \
+   <(sed -e ' s/itable/xtable/g ; s/ITable/XTable/g ' src/itable.c) \
+   <(sed -e 's/stable/xtable/g ; s/STable/XTable/g' src/stable.c)
+   */
+
 struct STable {
 	const char **keys;
 	const void **vals;
@@ -295,19 +301,29 @@ struct SList *stable_vals_slist(const struct STable* const tab) {
 	return list;
 }
 
-char *stable_str(const struct STable* const tab) {
+char *stable_str(const struct STable* const tab, fn_str str) {
 	if (!tab)
 		return NULL;
 
-	char *str = strdup("");
+	char *out = strdup("");
 
 	const char **k;
 	const void **v;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-		str = sprintf_append(str, "%s = %s\n", *k, *v ? (char*)*v : "(null)");
+		if (*v) {
+			if (str) {
+				char *val_str = str(*v);
+				out = sprintf_append(out, "%s = %s\n", *k, val_str);
+				free(val_str);
+			} else {
+				out = sprintf_append(out, "%s = %s\n", *k, (char*)*v);
+			}
+		} else {
+			out = sprintf_append(out, "%s = (null)\n", *k);
+		}
 	}
 
-	return str;
+	return out;
 }
 
 size_t stable_size(const struct STable* const tab) {

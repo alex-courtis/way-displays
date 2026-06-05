@@ -54,7 +54,7 @@ int check_stable_equal_strcmp(CMockaValueData value, CMockaValueData check_data)
 	if (stable_equal(actual, expected, fn_equal_strcmp)) {
 		return true;
 	} else {
-		cmocka_print_error("check_stable_equal_strcmp\nEXPECTED:\n%s\n!=\nACTUAL:\n%s\n", stable_str(expected), stable_str(actual));
+		cmocka_print_error("check_stable_equal_strcmp\nEXPECTED:\n%s\n!=\nACTUAL:\n%s\n", stable_str(expected, NULL), stable_str(actual, NULL));
 		return false;
 	}
 }

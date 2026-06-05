@@ -90,9 +90,10 @@ struct SList *stable_vals_slist(const struct STable* const tab);
  */
 
 // to string, user frees
-// lines with format "%p = %s\n"
-// values must be char*, NULL printed as "(null)"
-char *stable_str(const struct STable* const tab);
+// lines with format "%s = %s\n"
+// NULL vals printed as "(null)"
+// fn_str NULL for char* vals
+char *stable_str(const struct STable* const tab, fn_str);
 
 // number of entries
 size_t stable_size(const struct STable* const tab);

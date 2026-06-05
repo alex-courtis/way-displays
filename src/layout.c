@@ -102,7 +102,7 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 
 	unsigned long n_order = slist_length(order_name_desc);
 	unsigned long i;
-	struct SList *sorting = slist_shallow_clone(heads);
+	struct SList *sorting = slist_clone(heads, NULL);
 
 	// array of order to list of heads matched
 	struct SList **order_heads = calloc(n_order, sizeof(struct SList*));

@@ -290,19 +290,29 @@ struct SList *itable_vals_slist(const struct ITable* const tab) {
 	return list;
 }
 
-char *itable_str(const struct ITable* const tab) {
+char *itable_str(const struct ITable* const tab, fn_str str) {
 	if (!tab)
 		return NULL;
 
-	char *str = strdup("");
+	char *out = strdup("");
 
 	uint64_t *k;
 	const void **v;
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-		str = sprintf_append(str, "%"PRIu64" = %s\n", *k, *v ? (char*)*v : "(null)");
+		if (*v) {
+			if (str) {
+				char *val_str = str(*v);
+				out = sprintf_append(out, "%"PRIu64" = %s\n", *k, val_str);
+				free(val_str);
+			} else {
+				out = sprintf_append(out, "%"PRIu64" = %s\n", *k, (char*)*v);
+			}
+		} else {
+			out = sprintf_append(out, "%"PRIu64" = (null)\n", *k);
+		}
 	}
 
-	return str;
+	return out;
 }
 
 size_t itable_size(const struct ITable* const tab) {

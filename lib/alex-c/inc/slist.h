@@ -15,11 +15,8 @@ struct SList {
  * Lifecycle
  */
 
-// deep clone the list, cloning values with fn_clone, NULL means shallow copy
+// clone a list, fn_clone for deep clone, NULL fn_clone for shallow clone setting pointers only
 struct SList *slist_clone(struct SList *head, fn_clone);
-
-// clone the list, setting val pointers
-struct SList *slist_shallow_clone(struct SList *head);
 
 // free list
 void slist_free(struct SList **head);
@@ -76,7 +73,7 @@ bool slist_equal(struct SList *a, struct SList *b, fn_equal);
  * Utility
  */
 
-// sort into a new list
+// insertion sort into a new list
 struct SList *slist_sort(struct SList *head, fn_less_than);
 
 // move items between lists where from value equals b, NULL fn_equal does nothing
@@ -90,7 +87,7 @@ void slist_move(struct SList **to, struct SList **from, fn_equal, const void *b)
  */
 
 // to string, user frees
-// lines with format "%s\n"
+// lines with format "%s\n", NULL printed as "(null)\n"
 // fn_str NULL for char* vals
 char *slist_str(const struct SList *head, fn_str);
 

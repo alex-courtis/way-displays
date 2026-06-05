@@ -710,7 +710,7 @@ static void call_back__one(void **state) {
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(expected), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected, NULL), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
@@ -738,7 +738,7 @@ static void call_back__two(void **state) {
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(expected), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected, NULL), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
@@ -768,7 +768,7 @@ static void call_back_mode_fail__(void **state) {
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(expected), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected, NULL), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
@@ -803,7 +803,7 @@ static void call_back_adaptive_sync_fail__(void **state) {
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(expected), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected, NULL), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 

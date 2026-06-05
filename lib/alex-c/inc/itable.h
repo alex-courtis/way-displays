@@ -92,8 +92,9 @@ struct SList *itable_vals_slist(const struct ITable* const tab);
 
 // to string, user frees
 // lines with format "%PRIu64 = %s\n"
-// values must be char*, NULL printed as "(null)"
-char *itable_str(const struct ITable* const tab);
+// NULL vals printed as "(null)"
+// fn_str NULL for char* vals
+char *itable_str(const struct ITable* const tab, fn_str);
 
 // number of entries
 size_t itable_size(const struct ITable* const tab);

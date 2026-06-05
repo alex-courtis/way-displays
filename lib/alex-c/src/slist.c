@@ -22,10 +22,6 @@ struct SList *slist_clone(struct SList *head, fn_clone clone) {
 	return c;
 }
 
-struct SList *slist_shallow_clone(struct SList *head) {
-	return slist_clone(head, NULL);
-}
-
 void slist_free(struct SList **head) {
 	struct SList *i = *head;
 	while (i) {
@@ -241,7 +237,7 @@ struct SList *slist_sort(struct SList *head, fn_less_than less_than) {
 		return sorted;
 	}
 
-	struct SList *sorting = slist_shallow_clone(head);
+	struct SList *sorting = slist_clone(head, NULL);
 
 	struct SList *sorting_head;
 
@@ -287,12 +283,16 @@ char *slist_str(const struct SList *head, fn_str str) {
 	char *out = strdup("");
 
 	for (const struct SList *i = head; i; i = i->nex) {
-		if (str) {
-			char *val_str = str(i->val);
-			out = sprintf_append(out, "%s\n", val_str);
-			free(val_str);
+		if (i->val) {
+			if (str) {
+				char *val_str = str(i->val);
+				out = sprintf_append(out, "%s\n", val_str);
+				free(val_str);
+			} else {
+				out = sprintf_append(out, "%s\n", (char*)i->val);
+			}
 		} else {
-			out = sprintf_append(out, "%s\n", (char*)i->val);
+			out = sprintf_append(out, "(null)\n");
 		}
 	}
 
