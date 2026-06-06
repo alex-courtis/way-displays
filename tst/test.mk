@@ -12,14 +12,6 @@ LDLIBS := $(filter-out -linput,$(LDLIBS))
 # filter lid.o as it links the 64-bit only libinput and is completely mocked
 TESTED_O = $(filter-out src/main.o src/lid.o,$(SRC_O)) $(PRO_O)
 
-VALGRIND = valgrind \
-		   --error-exitcode=1 \
-		   --leak-check=full \
-		   --show-leak-kinds=all \
-		   --errors-for-leak-kinds=all \
-		   $(VG_SUPP) \
-		   --gen-suppressions=all
-
 $(TST_O): $(INC_H) $(TST_H) $(UTIL_H) config.mk GNUmakefile tst/test.mk
 
 # don't include other tst/tst-x
