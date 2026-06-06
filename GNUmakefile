@@ -17,31 +17,37 @@ PRO_O = $(PRO_X:.xml=.o)
 TST_H = $(wildcard tst/*.h) $(wildcard lib/alex-c/tst/*.h)
 TST_C = $(wildcard tst/*.c) $(wildcard lib/alex-c/tst/*.c)
 TST_O = $(TST_C:.c=.o)
-TST_E = $(patsubst tst/%.c,%,$(wildcard tst/tst-*.c))
-TST_T = $(patsubst tst%,test%,$(TST_E))
+TST_E = $(filter tst/tst%,$(TST_O:.o=))
 
 all: way-displays
+
+clean:
+	@echo $(INC_H)
+	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
 
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
+#
+# executable
+#
 way-displays: $(SRC_O) $(PRO_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 	@test -x ../deploy.sh && ../deploy.sh || true
 
-compile: $(SRC_O) $(PRO_O) $(EXAMPLE_O)
-
+#
+# protocols
+#
 $(PRO_H): $(PRO_X)
 	wayland-scanner client-header $(@:.h=.xml) $@
 
 $(PRO_C): $(PRO_X)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
-clean:
-	@echo $(INC_H)
-	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
-
+#
+# deploy
+#
 install: way-displays doc/way-displays.1 examples/cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f way-displays $(DESTDIR)$(PREFIX)/bin
@@ -58,25 +64,32 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/share/man/man1/way-displays.1
 	rm -rf $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 
+#
+# doc
+#
 man: doc/way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
 	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc= )
 
-iwyu: override CC = $(IWYU) \
+#
+# iwyu
+#
+iwyu: override CC = include-what-you-use \
+	-Xiwyu --no_fwd_decls \
+	-Xiwyu --error=1 \
+	-Xiwyu --verbose=3 \
+	-Xiwyu --mapping_file=.iwyu.imp \
 	-Xiwyu --check_also="inc/*h" \
 	-Xiwyu --check_also="lib/alex-c/inc/*h" \
 	-Xiwyu --check_also="tst/*h" \
 	-Xiwyu --check_also="lib/alex-c/tst/*h"
-iwyu: override INCS += -Ilib/alex-c/tst
+iwyu: INCS += -Ilib/alex-c/tst
 iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
 
-IWYU = include-what-you-use \
-	   -Xiwyu --no_fwd_decls \
-	   -Xiwyu --error=1 \
-	   -Xiwyu --verbose=3 \
-	   -Xiwyu --mapping_file=.iwyu.imp
-
-cppcheck: override INCS += -Ilib/alex-c/tst
+#
+# cppcheck
+#
+cppcheck: INCS += -Ilib/alex-c/tst
 cppcheck: $(SRC_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
 		--enable=warning,unusedFunction,performance,portability,style \
@@ -86,27 +99,22 @@ cppcheck: $(SRC_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 		--error-exitcode=1 \
 		$(CPPFLAGS)
 
-%-vg: VALGRIND = valgrind \
-	--error-exitcode=1 \
-	--leak-check=full \
-	--show-leak-kinds=all \
-	--errors-for-leak-kinds=all \
-	$(VG_SUPP) \
-	--gen-suppressions=all
-%-vg: % ;
+#
+# test only when executing test targets
+#
+ifneq (,$(or $(findstring test,$(MAKECMDGOALS)), $(findstring tst/tst,$(MAKECMDGOALS))))
 
-test: $(TST_T)
-test-vg: $(TST_T)
+include tst/test.mk
 
-$(TST_T): EXE = $(patsubst test%,tst%,$(@))
-$(TST_T): compile
-	$(MAKE) -f tst/GNUmakefile $(EXE)
-	$(VALGRIND) ./$(EXE)
+endif
 
+#
+# examples
+#
 examples: $(EXAMPLE_E)
 examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
-.PHONY: all clean compile install uninstall man cppcheck iwyu test test-vg $(TST_T)
+.PHONY: all clean install uninstall man cppcheck iwyu
 
 .NOTPARALLEL: iwyu test test-vg

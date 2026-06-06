@@ -6,7 +6,9 @@ pro/*.c
 
 /way-displays
 
-/tst-*
+tst/tst-*
+!tst/tst-*.h
+!tst/tst-*.c
 
 /tst/tmp/
 
