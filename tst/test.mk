@@ -3,44 +3,59 @@ PKGS_TST = cmocka
 CFLAGS += $(foreach p,$(PKGS_TST),$(shell pkg-config --cflags $(p)))
 LDLIBS += $(foreach p,$(PKGS_TST),$(shell pkg-config --libs $(p)))
 
-CFLAGS += -Wno-unused-function
 INCS += -Ilib/alex-c/tst
 
-# filter libinput as it is 64-bit only and not used by tests
+CFLAGS += -Wno-unused-function
+
+# remove libinput as it is 64-bit only and not used by tests
 LDLIBS := $(filter-out -linput,$(LDLIBS))
 
-# filter lid.o as it links the 64-bit only libinput and is completely mocked
-TESTED_O = $(filter-out src/main.o src/lid.o,$(SRC_O)) $(PRO_O)
+$(TST_O): $(INC_H) $(TST_H) config.mk GNUmakefile tst/test.mk
 
-$(TST_O): $(INC_H) $(TST_H) $(UTIL_H) config.mk GNUmakefile tst/test.mk
+# test executables exclude:
+#   main
+#   lid (completely mocked)
+#   other tst-x.o
+$(TST_E): $(filter-out src/main.o src/lid.o,$(SRC_O)) $(PRO_O) $(filter-out tst/tst%,$(TST_O))
 
-# don't include other tst/tst-x
-$(TST_E): $(TESTED_O) $(filter-out tst/tst%,$(TST_O))
-
-#
-# link test-x targets to tst/tst-x and execute them
-#
+# test-x builds tst/tst-x and executes it
 test: $(patsubst tst/tst%,test%,$(TST_E))
 test-%: tst/tst-%
 	./$(^)
 
+# test-x-vg builds tst/tst-x and executes it with valgrind
 test-vg: $(patsubst tst/tst%,test%-vg,$(TST_E))
 test-%-vg: tst/tst-%
 	$(VALGRIND) ./$(^)
 
-#
-# common wraps
-#
+# mocks: log
 LDFLAGS += -Wl,$\
 		   --wrap=log_set_threshold,--wrap=log_get_threshold,$\
-		   --wrap=log_,--wrap=log_fatal,--wrap=log_error,--wrap=log_warn,--wrap=log_info,--wrap=log_debug,--wrap=log_error_errno,--wrap=log_error_errno,--wrap=log_fatal_errno,$\
-		   --wrap=spawn_sh_cmd,--wrap=wd_exit,--wrap=wd_exit_message,$\
-		   --wrap=lid_init,--wrap=lid_is_closed,--wrap=lid_update,--wrap=lid_free,--wrap=lid_destroy,$\
-		   --wrap=yaml_document_initialize,--wrap=yaml_emitter_initialize,--wrap=yaml_emitter_open,--wrap=yaml_emitter_dump,--wrap=yaml_emitter_close,--wrap=yaml_parser_initialize
+		   --wrap=log_,$\
+		   --wrap=log_fatal,--wrap=log_fatal_errno,$\
+		   --wrap=log_error,--wrap=log_error_errno,$\
+		   --wrap=log_warn,$\
+		   --wrap=log_info,$\
+		   --wrap=log_debug
 
-#
-# test specific wraps
-#
+# mocks: process
+LDFLAGS += -Wl,$\
+		   --wrap=spawn_sh_cmd,$\
+		   --wrap=wd_exit,--wrap=wd_exit_message
+
+# mocks: lid
+LDFLAGS += -Wl,$\
+		   --wrap=lid_init,$\
+		   --wrap=lid_free,--wrap=lid_destroy,$\
+		   --wrap=lid_is_closed,--wrap=lid_update
+
+# mocks: wraps
+LDFLAGS += -Wl,$\
+		   --wrap=yaml_document_initialize,$\
+		   --wrap=yaml_parser_initialize,$\
+		   --wrap=yaml_emitter_initialize,--wrap=yaml_emitter_open,--wrap=yaml_emitter_dump,--wrap=yaml_emitter_close
+
+# mocks: test specific
 tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=mode_dpi,$\
 	--wrap=mode_user_mode,$\

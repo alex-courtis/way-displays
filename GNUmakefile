@@ -100,7 +100,7 @@ cppcheck: $(SRC_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 		$(CPPFLAGS)
 
 #
-# test only when executing test targets
+# tests only included when executing test targets
 #
 ifneq (,$(or $(findstring test,$(MAKECMDGOALS)), $(findstring tst/tst,$(MAKECMDGOALS))))
 
