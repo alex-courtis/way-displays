@@ -1,5 +1,5 @@
-#ifndef ASSERTS_CFG_H
-#define ASSERTS_CFG_H
+#ifndef ASSERT_CFG_H
+#define ASSERT_CFG_H
 
 #include <cmocka.h>
 #include <stdlib.h>
@@ -24,5 +24,5 @@ void _assert_cfg_equal(const struct Cfg *a, const struct Cfg *b, const char * co
 
 #define assert_cfg_equal(a, b) _assert_cfg_equal(a, b, __FILE__, __LINE__)
 
-#endif // ASSERTS_CFG_H
+#endif // ASSERT_CFG_H
 

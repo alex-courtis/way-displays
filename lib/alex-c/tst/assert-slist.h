@@ -10,11 +10,9 @@
 
 void _assert_slist_equal(struct SList *a, struct SList *b, fn_equal equal, fn_str str, const char * const file, const int line) {
 	if (!slist_equal(a, b, equal)) {
-		char *a_str = slist_str(a, str);
-		char *b_str = slist_str(b, str);
-		write_file("actual.slist", a_str);
-		write_file("expected.slist", b_str);
-		cmocka_print_error("\n%s != \n%s", a_str, b_str);
+		write_file("actual.slist", slist_str(a, str));
+		write_file("expected.slist", slist_str(b, str));
+		cmocka_print_error("\n%s != \n%s", slist_str(a, str), slist_str(b, str));
 		_fail(file, line);
 	}
 }
@@ -22,11 +20,9 @@ void _assert_slist_equal(struct SList *a, struct SList *b, fn_equal equal, fn_st
 
 void _assert_slist_not_equal(struct SList *a, struct SList *b, fn_equal equal, fn_str str, const char * const file, const int line) {
 	if (slist_equal(a, b, equal)) {
-		char *a_str = slist_str(a, str);
-		char *b_str = slist_str(b, str);
-		write_file("actual.slist", a_str);
-		write_file("expected.slist", b_str);
-		cmocka_print_error("\n%s == \n%s", a_str, b_str);
+		write_file("actual.slist", slist_str(a, str));
+		write_file("expected.slist", slist_str(b, str));
+		cmocka_print_error("\n%s == \n%s", slist_str(a, str), slist_str(b, str));
 		_fail(file, line);
 	}
 }

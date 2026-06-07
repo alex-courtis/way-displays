@@ -1,5 +1,5 @@
-#ifndef ASSERTS_LOG_H
-#define ASSERTS_LOG_H
+#ifndef ASSERT_LOG_H
+#define ASSERT_LOG_H
 
 #include "log.h"
 
@@ -9,5 +9,5 @@ void _assert_log(enum LogThreshold t, const char* s, const char * const file, co
 void _assert_logs_empty(const char * const file, const int line);
 #define assert_logs_empty() _assert_logs_empty(__FILE__, __LINE__)
 
-#endif // ASSERTS_LOG_H
+#endif // ASSERT_LOG_H
 

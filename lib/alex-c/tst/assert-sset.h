@@ -9,11 +9,9 @@
 
 void _assert_sset_equal(const struct SSet *a, const struct SSet *b, const char * const file, const int line) {
 	if (!sset_equal(a, b)) {
-		char *a_str = sset_str(a);
-		char *b_str = sset_str(b);
-		write_file("actual.sset", a_str);
-		write_file("expected.sset", b_str);
-		cmocka_print_error("\n%s != \n%s", a_str, b_str);
+		write_file("actual.sset", sset_str(a));
+		write_file("expected.sset", sset_str(b));
+		cmocka_print_error("\n%s != \n%s", sset_str(a), sset_str(b));
 		_fail(file, line);
 	}
 }
@@ -21,11 +19,9 @@ void _assert_sset_equal(const struct SSet *a, const struct SSet *b, const char *
 
 void _assert_sset_not_equal(const struct SSet *a, const struct SSet *b, const char * const file, const int line) {
 	if (sset_equal(a, b)) {
-		char *a_str = sset_str(a);
-		char *b_str = sset_str(b);
-		write_file("actual.sset", a_str);
-		write_file("expected.sset", b_str);
-		cmocka_print_error("\n%s == \n%s", a_str, b_str);
+		write_file("actual.sset", sset_str(a));
+		write_file("expected.sset", sset_str(b));
+		cmocka_print_error("\n%s == \n%s", sset_str(a), sset_str(b));
 		_fail(file, line);
 	}
 }

@@ -1,5 +1,5 @@
-#ifndef ASSERTS_WL_H
-#define ASSERTS_WL_H
+#ifndef ASSERT_WL_H
+#define ASSERT_WL_H
 
 #include <cmocka.h>
 #include <wayland-util.h>
@@ -13,5 +13,5 @@ void _assert_wl_fixed_t_equal_double(wl_fixed_t a, double b, const char * const 
 }
 #define assert_wl_fixed_t_equal_double(a, b) _assert_wl_fixed_t_equal_double(a, b, __FILE__, __LINE__)
 
-#endif // ASSERTS_WL_H
+#endif // ASSERT_WL_H
 

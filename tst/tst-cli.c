@@ -1,7 +1,7 @@
 #include "tst.h"
 
-#include "asserts-cfg.h"
-#include "asserts-log.h"
+#include "assert-cfg.h"
+#include "assert-log.h"
 #include "asserts.h"
 #include "wrap-log.h"
 

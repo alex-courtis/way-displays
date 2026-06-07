@@ -10,11 +10,9 @@
 
 void _assert_stable_equal(const struct STable *a, const struct STable *b, fn_equal equal, fn_str str, const char * const file, const int line) {
 	if (!stable_equal(a, b, equal)) {
-		char *a_str = stable_str(a, str);
-		char *b_str = stable_str(b, str);
-		write_file("actual.stable", a_str);
-		write_file("expected.stable", b_str);
-		cmocka_print_error("\n%s != \n%s", a_str, b_str);
+		write_file("actual.stable", stable_str(a, str));
+		write_file("expected.stable", stable_str(b, str));
+		cmocka_print_error("\n%s != \n%s", stable_str(a, str), stable_str(b, str));
 		_fail(file, line);
 	}
 }
@@ -22,11 +20,9 @@ void _assert_stable_equal(const struct STable *a, const struct STable *b, fn_equ
 
 void _assert_stable_not_equal(const struct STable *a, const struct STable *b, fn_equal equal, fn_str str, const char * const file, const int line) {
 	if (stable_equal(a, b, equal)) {
-		char *a_str = stable_str(a, str);
-		char *b_str = stable_str(b, str);
-		write_file("actual.stable", a_str);
-		write_file("expected.pet", b_str);
-		cmocka_print_error("\n%s == \n%s", a_str, b_str);
+		write_file("actual.stable", stable_str(a, str));
+		write_file("expected.pet", stable_str(b, str));
+		cmocka_print_error("\n%s == \n%s", stable_str(a, str), stable_str(b, str));
 		_fail(file, line);
 	}
 }

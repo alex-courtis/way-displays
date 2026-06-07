@@ -93,6 +93,7 @@ struct SList *stable_vals_slist(const struct STable* const tab);
 // lines with format "%s = %s\n"
 // NULL vals printed as "(null)"
 // fn_str NULL for char* vals
+// TODO is fn_str needed?
 char *stable_str(const struct STable* const tab, fn_str);
 
 // number of entries

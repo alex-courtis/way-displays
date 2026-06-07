@@ -1,8 +1,9 @@
 #include "tst.h"
 
-#include "asserts-log.h"
+#include "assert-log.h"
 #include "asserts.h"
 #include "expects.h"
+#include "expect-stable.h"
 #include "util-file.h"
 #include "wrap-log.h"
 
@@ -704,7 +705,7 @@ static void call_back__one(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_stable_equal_strcmp(__wrap_spawn_sh_cmd, env, expected)
+	expect_stable_strcmp(__wrap_spawn_sh_cmd, env, expected);
 
 	call_back(INFO, "msg1", NULL);
 
@@ -732,7 +733,7 @@ static void call_back__two(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_stable_equal_strcmp(__wrap_spawn_sh_cmd, env, expected)
+	expect_stable_strcmp(__wrap_spawn_sh_cmd, env, expected);
 
 	call_back(FATAL, "msg1", "msg2");
 
@@ -762,7 +763,7 @@ static void call_back_mode_fail__(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_stable_equal_strcmp(__wrap_spawn_sh_cmd, env, expected)
+	expect_stable_strcmp(__wrap_spawn_sh_cmd, env, expected);
 
 	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
 
@@ -797,7 +798,7 @@ static void call_back_adaptive_sync_fail__(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_stable_equal_strcmp(__wrap_spawn_sh_cmd, env, expected)
+	expect_stable_strcmp(__wrap_spawn_sh_cmd, env, expected);
 
 	call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
 

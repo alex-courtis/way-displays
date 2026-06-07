@@ -1,8 +1,8 @@
 #include "tst.h"
 
-#include "asserts-head.h"
-#include "asserts-log.h"
-#include "asserts-wl.h"
+#include "assert-head.h"
+#include "assert-log.h"
+#include "assert-wl.h"
 #include "asserts.h"
 #include "expects.h"
 #include "wrap-log.h"

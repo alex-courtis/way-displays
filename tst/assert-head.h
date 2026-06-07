@@ -1,5 +1,5 @@
-#ifndef ASSERTS_HEAD_H
-#define ASSERTS_HEAD_H
+#ifndef ASSERT_HEAD_H
+#define ASSERT_HEAD_H
 
 #include <cmocka.h>
 #include <stdint.h>
@@ -41,5 +41,5 @@ void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char *
 
 #define assert_head_position(h, x, y) _assert_head_position(h, x, y, __FILE__, __LINE__)
 
-#endif // ASSERTS_HEAD_H
+#endif // ASSERT_HEAD_H
 
