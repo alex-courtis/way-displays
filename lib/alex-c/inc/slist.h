@@ -6,6 +6,11 @@
 
 #include "fn.h"
 
+/*
+ * Containerless singly linked list.
+ * Not thread safe.
+ * NULL values permitted.
+ */
 struct SList {
 	void *val;
 	struct SList *nex;
