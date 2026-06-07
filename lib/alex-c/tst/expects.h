@@ -5,9 +5,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "fn.h"
-#include "stable.h"
-
 int check_ptr_equal(CMockaValueData value, CMockaValueData check_data) {
 	if (value.ptr != check_data.ptr) {
 		cmocka_print_error("%p != %p\n", value.ptr, check_data.ptr);

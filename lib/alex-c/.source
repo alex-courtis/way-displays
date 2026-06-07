@@ -1,8 +1,1 @@
 git@github.com:alex-courtis/alex-c-lib.git 4.0.0
-
-cp -v /home/alex/src/alex-c-lib/{README.md,LICENSE} lib/alex-c
-
-cp -v /home/alex/src/alex-c-lib/src/{fn,itable,slist,pset,sset,stable,str}.c lib/alex-c/src
-cp -v /home/alex/src/alex-c-lib/inc/{fn,itable,slist,pset,sset,stable,str}.h lib/alex-c/inc
-cp -v /home/alex/src/alex-c-lib/tst/{asserts,assert-slist,expects,tst,util-file}.h lib/alex-c/tst
-cp -v /home/alex/src/alex-c-lib/tst/util-file.c lib/alex-c/tst
