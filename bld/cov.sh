@@ -4,6 +4,7 @@ set -e
 
 INFO_PATH="/tmp/coverage.info" 
 REP_PATH="/tmp/coverage-report"
+SRC_PATH="src"
 
 usage() {
 	echo "usage: ${0} [test-x target ...]"
@@ -51,8 +52,9 @@ for TEST in ${TESTS}; do
 		--mcdc-coverage \
 		--branch-coverage \
 		--all \
+		--exclude '*.h' \
 		--output-file "${INFO_PATH}/${TEST}.info" \
-		.
+		"${SRC_PATH}"
 
 	# clear test execution data
 	find . -name '*gcda' -delete -print
@@ -75,11 +77,11 @@ genhtml \
 # clear .gnco for next (non-coverage) run
 make clean
 
-if [ $# -eq 1 ] && [ -f "${REP_PATH}/src/${1}.c.gcov.html" ]; then
-	xdg-open \
-		"${REP_PATH}/src/${1}.c.gcov.html"
+ONLY_HTML="${REP_PATH}/${SRC_PATH}/${1}.c.gcov.html"
+
+if [ $# -eq 1 ] && [ -f "${ONLY_HTML}" ]; then
+	xdg-open "${ONLY_HTML}"
 else
-	xdg-open \
-		"${REP_PATH}/index.html"
+	xdg-open "${REP_PATH}/index.html"
 fi
 

@@ -15,6 +15,9 @@ tst/tst-*
 actual.*
 expected.*
 
+**/*.gcda
+**/*.gcno
+
 /.ccls-cache
 /.cache
 compile_commands.json
