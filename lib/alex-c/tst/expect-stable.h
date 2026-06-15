@@ -15,12 +15,12 @@ static int check_stable_equal_strcmp(CMockaValueData value, CMockaValueData chec
 	const struct STable* const actual = (struct STable*)value.ptr;
 	const struct STable* const expected = (struct STable*)check_data.ptr;
 
-	if (stable_equal(actual, expected, fn_equal_strcmp)) {
+	if (stable_equal(actual, expected)) {
 		return true;
 	} else {
-		write_file("actual.stable", stable_str(actual, NULL));
-		write_file("expected.pet", stable_str(expected, NULL));
-		cmocka_print_error("\n%s != \n%s", stable_str(actual, NULL), stable_str(expected, NULL));
+		write_file("actual.stable", stable_str(actual, fn_str_or_null));
+		write_file("expected.ptable", stable_str(expected, fn_str_or_null));
+		cmocka_print_error("\n%s != \n%s", stable_str(actual, fn_str_or_null), stable_str(expected, fn_str_or_null));
 		return false;
 	}
 }

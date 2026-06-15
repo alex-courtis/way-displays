@@ -8,6 +8,8 @@
 #include "str.h"
 
 char *vsnprintf_alloc(size_t __maxlen, const char *__restrict __format, va_list __args) {
+	if (!__args)
+		return NULL;
 
 	va_list args;
 	va_copy(args, __args);
@@ -34,7 +36,7 @@ char *sprintf_alloc(const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
 
-	char *str = vsnprintf_alloc(SIZE_MAX, __format, args);
+	char *str = vsprintf_alloc(__format, args);
 
 	va_end(args);
 
@@ -53,6 +55,8 @@ char *snprintf_alloc(size_t __maxlen, const char *__restrict __format, ...) {
 }
 
 char *vsnprintf_append(char *__restrict s, size_t __maxlen, const char *__restrict __format, va_list __args) {
+	if (!__args)
+		return NULL;
 
 	size_t l_left = MIN(s ? strlen(s) : 0, __maxlen);
 	size_t l_right = 0;
@@ -91,7 +95,7 @@ char *sprintf_append(char *__restrict s, const char *__restrict __format, ...) {
 	va_list args;
 	va_start(args, __format);
 
-	char *str = vsnprintf_append(s, SIZE_MAX, __format, args);
+	char *str = vsprintf_append(s, __format, args);
 
 	va_end(args);
 

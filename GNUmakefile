@@ -26,6 +26,7 @@ all: way-displays
 
 clean:
 	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O) actual.* expected.*
+	find . -name '*.o' -type f -delete -print
 	find . -name '*.gcno' -type f -delete -print
 	find . -name '*.gcda' -type f -delete -print
 

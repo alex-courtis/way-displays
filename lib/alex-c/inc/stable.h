@@ -18,23 +18,41 @@ struct STable; // IWYU pragma: keep
 /*
  * Entry iterator.
  */
-struct STableIter; // IWYU pragma: keep
+struct STableIterState; // IWYU pragma: keep
+struct STableIter {
+	const char *key;
+	const void *val;
+	struct STableIterState *st;
+};
+
+/*
+ * Optional constructor params (default)
+ */
+struct STableParams {
+	const bool case_insensitive; //                            (false)
+	const fn_equal equal_val;    // _get, _put, _equal, _clone (compare key pointers)
+	const size_t initial;        // initial capacity           (10)
+	const size_t grow;           // grow capacity by           (10)
+};
 
 /*
  * Lifecycle
  */
 
-// construct a table with initial size 10, growing by 10 as necessary, case sensitive
+// construct a table with STableParams defaults
 const struct STable *stable_init(void);
 
-// construct a table with initial size, growing as necessary, NULL on zero param
-const struct STable *stable_init_with(const size_t initial, const size_t grow, const bool case_insensitive);
+// construct a table with params
+const struct STable *stable_init_with(const struct STableParams params);
+
+// clone a table, NULL clone_val for shallow clone
+const struct STable *stable_clone(const struct STable* const from, fn_clone clone_val);
 
 // free table
-void stable_free(const void* const tab);
+void stable_free(const struct STable* const tab);
 
-// free table and vals, null fn_free uses free()
-void stable_free_vals(const struct STable* const tab, fn_free);
+// free table and vals, NULL free_val calls free
+void stable_free_vals(const struct STable* const tab, fn_free free_val);
 
 // free iter
 void stable_iter_free(const struct STableIter* const iter);
@@ -49,14 +67,11 @@ const void *stable_get(const struct STable* const tab, const char* const key);
 // create an iterator, caller must stable_iter_free or invoke stable_next until NULL
 const struct STableIter *stable_iter(const struct STable* const tab);
 
+// create an iterator filtering by equal_key and equal_val, NULL tests match all
+const struct STableIter *stable_filter_iter(const struct STable* const tab, fn_equal_str equal_key, fn_equal equal_val, const void* const data);
+
 // next iterator entry, NULL at end of table
 const struct STableIter *stable_iter_next(const struct STableIter* const iter);
-
-// iterator key, NULL on NULL iter
-const char *stable_iter_key(const struct STableIter* const iter);
-
-// iterator value, NULL on NULL iter
-const void *stable_iter_val(const struct STableIter* const iter);
 
 /*
  * Mutate
@@ -72,34 +87,28 @@ const void *stable_remove(const struct STable* const tab, const char* const key)
  * Comparison
  */
 
-// same length, keys and vals equal, case sensitivity is from a, NULL equal compares pointers
-bool stable_equal(const struct STable* const a, const struct STable* const b, fn_equal);
+// same length, keys and vals equal in order, uses case_insensitive and equal_val from a
+bool stable_equal(const struct STable* const a, const struct STable* const b);
 
 /*
  * Conversion
  */
 
-// ordered key pointers to list, caller frees list and contents
+// ordered key pointers, caller frees list only
 struct SList *stable_keys_slist(const struct STable* const tab);
 
-// ordered val pointers to list, caller frees list only
+// ordered val pointers, caller frees list only
 struct SList *stable_vals_slist(const struct STable* const tab);
 
 /*
  * Info
  */
 
-// to string, user frees
-// lines with format "%s = %s\n"
-// NULL vals printed as "(null)"
-// fn_str NULL for char* vals
-char *stable_str(const struct STable* const tab, fn_str);
+// to string, user frees, format "k = str_val\n", "%p" for NULL fn_str
+char *stable_str(const struct STable* const tab, fn_str str_val);
 
 // number of entries
 size_t stable_size(const struct STable* const tab);
-
-// current capacity: initial + n * grow
-size_t stable_capacity(const struct STable* const tab);
 
 #endif // STABLE_H
 

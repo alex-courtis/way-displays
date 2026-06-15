@@ -127,8 +127,8 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 
 			// experiments show that environment variable length tops out at 128k: variable itself plus contents
 			char value[1024 * 120];
-			snprintf(value, sizeof(value), "%s", (char*)stable_iter_val(i));
-			setenv(stable_iter_key(i), value, 1);
+			snprintf(value, sizeof(value), "%s", (char*)i->val);
+			setenv(i->key, value, 1);
 		}
 
 		// execute command in the child process

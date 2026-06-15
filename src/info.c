@@ -666,11 +666,13 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	snprintf(buf, CALLBACK_MSG_LEN, "%s%s", msg1 ? msg1 : "", msg2 ? msg2 : "");
 
 	// pack environment variables
-	const struct STable *env = stable_init();
+	// TODO this is not sustainable; need some sort of string-string table
+	const struct STableParams params = { .equal_val = fn_equal_strcmp, };
+	const struct STable *env = stable_init_with(params);
 	stable_put(env, "CALLBACK_MSG", buf);
 	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
-	char *env_str = stable_str(env, NULL);
+	char *env_str = stable_str(env, fn_str_or_null);
 	log_debug("%s", env_str);
 	free(env_str);
 

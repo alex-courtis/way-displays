@@ -3,7 +3,7 @@
 FROM="${HOME}/src/alex-c-lib"
 TO="lib/alex-c"
 
-for l in fn itable slist sset stable str; do
+for l in fn ptable itable stable slist sset pset str; do
 	cp -v "${FROM}/src/${l}.c" "${TO}/src"
 	cp -v "${FROM}/inc/${l}.h" "${TO}/inc"
 	if [ -f "${FROM}/tst/assert-${l}.h" ]; then

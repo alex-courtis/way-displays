@@ -695,7 +695,8 @@ static void call_back__below_threshold(void **state) {
 }
 
 static void call_back__one(void **state) {
-	const struct STable *expected = stable_init();
+	const struct STableParams params = { .equal_val = fn_equal_strcmp, };
+	const struct STable *expected = stable_init_with(params);
 	stable_put(expected, "CALLBACK_MSG", "msg1");
 	stable_put(expected, "CALLBACK_LEVEL", "INFO");
 
@@ -711,7 +712,7 @@ static void call_back__one(void **state) {
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(expected, NULL), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected, fn_str_or_null), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
@@ -721,7 +722,8 @@ static void call_back__one(void **state) {
 }
 
 static void call_back__two(void **state) {
-	const struct STable *expected = stable_init();
+	const struct STableParams params = { .equal_val = fn_equal_strcmp, };
+	const struct STable *expected = stable_init_with(params);
 	stable_put(expected, "CALLBACK_MSG", "msg1msg2");
 	stable_put(expected, "CALLBACK_LEVEL", "FATAL");
 
@@ -739,7 +741,7 @@ static void call_back__two(void **state) {
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(expected, NULL), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected, fn_str_or_null), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
@@ -769,7 +771,7 @@ static void call_back_mode_fail__(void **state) {
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(expected, NULL), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected, fn_str_or_null), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
@@ -804,7 +806,7 @@ static void call_back_adaptive_sync_fail__(void **state) {
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(expected, NULL), "%s", "\n");
+	char *env_str = sprintf_append(stable_str(expected, fn_str_or_null), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 

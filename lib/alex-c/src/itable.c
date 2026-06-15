@@ -1,324 +1,200 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
 
 #include "fn.h"
-#include "slist.h"
+#include "ptable.h"
 #include "str.h"
 
 #include "itable.h"
 
 /*
-   diff -u \
-   <(sed -e ' s/itable/xtable/g ; s/ITable/XTable/g ' src/itable.c) \
-   <(sed -e 's/ptable/xtable/g ; s/PTable/XTable/g' src/ptable.c)
+   diff --color=always -U 10000 <(sed -e ' s/ptable/xtable/g ; s/PTable/XTable/g ' inc/ptable.h) <(sed -e 's/itable/xtable/g ; s/ITable/XTable/g' inc/itable.h) | less
+
+   diff --color=always -U 10000 <(sed -e ' s/itable/xtable/g ; s/ITable/XTable/g ' inc/itable.h) <(sed -e 's/stable/xtable/g ; s/STable/XTable/g' inc/stable.h) | less
+
+   diff --color=always -U 10000 <(sed -e ' s/itable/xtable/g ; s/ITable/XTable/g ' src/itable.c) <(sed -e 's/stable/xtable/g ; s/STable/XTable/g' src/stable.c) | less
    */
 
 struct ITable {
-	uint64_t *keys;
-	const void **vals;
-	size_t capacity;
-	size_t grow;
-	size_t size;
+	const struct ITableParams params;
+	const struct PTable *ptab;
 };
 
-struct ITableIter {
-	uint64_t key;
-	const void *val;
-	const struct ITable *tab;
-	size_t position;
+struct ITableIterState {
+	const struct PTableIter *pit;
+	fn_equal_size_t equal_key;
+	fn_equal equal_val;
+	const void *data;
 };
 
-// grow to capacity + grow
-static void grow_itable(struct ITable *tab) {
+static bool fn_equal_key(const void* const a, const void* const b) {
+	if (!a || !b)
+		return false;
 
-	// grow new arrays
-	uint64_t *new_keys = calloc(tab->capacity + tab->grow, sizeof(uint64_t));
-	const void **new_vals = calloc(tab->capacity + tab->grow, sizeof(void*));
+	return *(size_t*)a == *(size_t*)b;
+}
 
-	// copy old arrays
-	memcpy(new_keys, tab->keys, tab->capacity * sizeof(uint64_t));
-	memcpy(new_vals, tab->vals, tab->capacity * sizeof(void*));
+static const void *fn_alloc_key(const void* const val) {
+	size_t *out = calloc(1, sizeof(size_t));
+	*out = *(size_t*)val;
 
-	// free old arrays
-	free(tab->keys);
-	free(tab->vals);
+	return out;
+}
 
-	// lock in new
-	tab->keys = new_keys;
-	tab->vals = new_vals;
-	tab->capacity += tab->grow;
+static char *fn_str_key(const void* const val) {
+	return sprintf_alloc("%zu", *(size_t*)val);
 }
 
 const struct ITable *itable_init(void) {
-	return itable_init_with(10, 10);
+	const struct ITableParams params = { 0 };
+	return itable_init_with(params);
 }
 
-const struct ITable *itable_init_with(const size_t initial, const size_t grow) {
-	if (initial == 0 || grow == 0)
-		return NULL;
+const struct ITable *itable_init_with(const struct ITableParams params) {
+	const struct PTableParams ptable_params = {
+		.equal_key = fn_equal_key,
+		.equal_val = params.equal_val,
+		.alloc_key = fn_alloc_key,
+		.free_key = (fn_free)free,
+		.initial = params.initial,
+		.grow = params.grow,
+	};
 
-	struct ITable *tab = calloc(1, sizeof(struct ITable));
-	tab->capacity = initial;
-	tab->grow = grow;
-	tab->keys = calloc(tab->capacity, sizeof(uint64_t));
-	tab->vals = calloc(tab->capacity, sizeof(void*));
+	struct ITable *tab =  calloc(1, sizeof(struct ITable));
+	tab->ptab = ptable_init_with(ptable_params);;
+	memcpy((void*)&tab->params, &params, sizeof(struct ITableParams));
 
 	return tab;
 }
 
-void itable_free(const void* const cvtab) {
-	if (!cvtab)
+const struct ITable *itable_clone(const struct ITable* const from, fn_clone clone_val) {
+	if (!from)
+		return NULL;
+
+	struct ITable *to = calloc(1, sizeof(struct ITable));
+	to->ptab = ptable_clone(from->ptab, clone_val);
+	memcpy((void*)&to->params, &from->params, sizeof(struct ITableParams));
+
+	return to;
+}
+
+void itable_free(const struct ITable* const tab) {
+	if (!tab)
 		return;
 
-	struct ITable *tab = (struct ITable*)cvtab;
+	ptable_free(tab->ptab);
 
-	free(tab->keys);
-	free(tab->vals);
-
-	free(tab);
+	free((void*)tab);
 }
 
 void itable_free_vals(const struct ITable* const tab, fn_free free_val) {
 	if (!tab)
 		return;
 
-	for (const void **v = tab->vals; v < tab->vals + tab->capacity; v++) {
-		if (*v) {
-			if (free_val) {
-				free_val(*v);
-			} else {
-				free((void*)*v);
-			}
-		}
-	}
+	ptable_free_vals(tab->ptab, free_val);
 
-	itable_free(tab);
+	free((void*)tab);
 }
 
 void itable_iter_free(const struct ITableIter* const iter) {
 	if (!iter)
 		return;
 
+	if (iter->st)
+		ptable_iter_free(iter->st->pit);
+
+	free(iter->st);
 	free((void*)iter);
 }
 
-const void *itable_get(const struct ITable* const tab, const uint64_t key) {
-	if (!tab)
-		return NULL;
-
-	// loop over keys
-	uint64_t *k;
-	const void **v;
-	for (k = tab->keys, v = tab->vals;
-			k < tab->keys + tab->size;
-			k++, v++) {
-		if (*k == key) {
-			return *v;
-		}
-	}
-
-	return NULL;
+const void *itable_get(const struct ITable* const tab, const size_t key) {
+	return tab ? ptable_get(tab->ptab, &key) : NULL;
 }
 
 const struct ITableIter *itable_iter(const struct ITable* const tab) {
-	if (!tab || tab->size == 0)
+	return itable_filter_iter(tab, NULL, NULL, NULL);
+}
+
+static bool fn_equal_key_wrapper(const void* const val, const void* const data) {
+	const struct ITableIterState * const st = data;
+	return st->equal_key(*(size_t*)val, st->data);
+}
+
+static bool fn_equal_val_wrapper(const void* const val, const void* const data) {
+	const struct ITableIterState * const st = data;
+	return st->equal_val(val, st->data);
+}
+
+const struct ITableIter *itable_filter_iter(const struct ITable* const tab, fn_equal_size_t equal_key, fn_equal equal_val, const void* const data) {
+	if (!tab)
 		return NULL;
 
-	// first key/val
-	struct ITableIter *i = calloc(1, sizeof(struct ITableIter));
-	i->tab = tab;
-	i->key = *(tab->keys);
-	i->val = *(tab->vals);
-	i->position = 0;
+	struct ITableIter *it = calloc(1, sizeof(struct ITableIter));
+	it->st = calloc(1, sizeof(struct ITableIterState));
+	it->st->equal_key = equal_key;
+	it->st->equal_val = equal_val;
+	it->st->data = data;
 
-	return i;
+	// pass the ITableIterState as data, to be passed to the test wrappers
+	const struct PTableIter *pit = ptable_filter_iter(tab->ptab, equal_key ? fn_equal_key_wrapper : NULL, equal_val ? fn_equal_val_wrapper : NULL, it->st);
+
+	if (pit) {
+		it->st->pit = pit;
+		it->key = *(size_t*)pit->key;
+		it->val = pit->val;
+	} else {
+		itable_iter_free(it);
+		it = NULL;
+	}
+
+	return it;
 }
 
 const struct ITableIter *itable_iter_next(const struct ITableIter* const iter) {
 	if (!iter)
 		return NULL;
 
-	struct ITableIter *i = (struct ITableIter*)iter;
+	struct ITableIter *it = (struct ITableIter*)iter;
 
-	if (!i->tab) {
-		itable_iter_free(i);
+	if (!it->st || !it->st->pit) {
+		itable_iter_free(it);
 		return NULL;
 	}
 
-	if (++i->position < i->tab->size) {
-		i->key = *(i->tab->keys + i->position);
-		i->val = *(i->tab->vals + i->position);
-		return i;
+	it->st->pit = ptable_iter_next(iter->st->pit);
+
+	if (it->st->pit) {
+		it->key = *(size_t*)it->st->pit->key;
+		it->val = it->st->pit->val;
 	} else {
-		itable_iter_free(i);
-		return NULL;
-	}
-}
-
-uint64_t itable_iter_key(const struct ITableIter* const iter) {
-	return iter ? iter->key : 0;
-}
-
-const void *itable_iter_val(const struct ITableIter* const iter) {
-	return iter ? iter->val : NULL;
-}
-
-const void *itable_put(const struct ITable* const ctab, const uint64_t key, const void* const val) {
-	if (!ctab)
-		return NULL;
-
-	struct ITable *tab = (struct ITable*)ctab;
-
-	// loop over existing keys
-	uint64_t *k;
-	const void **v;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-
-		// overwrite existing values
-		if (*k == key) {
-			const void *prev = *v;
-			*v = val;
-			return prev;
-		}
+		itable_iter_free(it);
+		it = NULL;
 	}
 
-	// grow for new entry
-	if (tab->size >= tab->capacity) {
-		grow_itable(tab);
-		k = &tab->keys[tab->size];
-		v = &tab->vals[tab->size];
-	}
-
-	// new
-	*k = key;
-	*v = val;
-	tab->size++;
-
-	return NULL;
+	return it;
 }
 
-const void *itable_remove(const struct ITable* const ctab, const uint64_t key) {
-	if (!ctab)
-		return NULL;
-
-	struct ITable *tab = (struct ITable*)ctab;
-
-	// loop over existing keys
-	uint64_t *k;
-	const void **v;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-
-		if (*k == key) {
-			const void* prev = *v;
-			*v = NULL;
-			tab->size--;
-
-			// shift down over removed
-			uint64_t *mk;
-			const void **mv;
-			for (mk = k, mv = v; mk < tab->keys + tab->size; mk++, mv++) {
-				*mk = *(mk + 1);
-				*mv = *(mv + 1);
-			}
-			*mk = 0;
-			*mv = NULL;
-
-			return prev;
-		}
-	}
-
-	return NULL;
+const void *itable_put(const struct ITable* const tab, const size_t key, const void* const val) {
+	return tab ? ptable_put(tab->ptab, &key, val) : NULL;
 }
 
-bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn_equal equal) {
-	if (!a || !b || a->size != b->size)
-		return false;
-
-	uint64_t *ak, *bk;
-	const void **av, **bv;
-
-	for (ak = a->keys, bk = b->keys, av = a->vals, bv = b->vals;
-			ak < a->keys + a->size;
-			ak++, bk++, av++, bv++) {
-
-		// key
-		if (*ak != *bk) {
-			return false;
-		}
-
-		// value
-		if (equal) {
-			if (!equal(*av, *bv)) {
-				return false;
-			}
-		} else if (*av != *bv) {
-			return false;
-		}
-	}
-
-	return true;
+const void *itable_remove(const struct ITable* const tab, const size_t key) {
+	return tab ? ptable_remove(tab->ptab, &key) : NULL;
 }
 
-struct SList *itable_keys_slist(const struct ITable* const tab) {
-	if (!tab)
-		return NULL;
-
-	struct SList *list = NULL;
-
-	uint64_t *k;
-	for (k = tab->keys; k < tab->keys + tab->size; k++) {
-		slist_append(&list, (uint64_t*)k);
-	}
-
-	return list;
+bool itable_equal(const struct ITable* const a, const struct ITable* const b) {
+	return a && b ? ptable_equal(a->ptab, b->ptab) : false;
 }
 
 struct SList *itable_vals_slist(const struct ITable* const tab) {
-	if (!tab)
-		return NULL;
-
-	struct SList *list = NULL;
-
-	uint64_t *k;
-	const void **v;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-		slist_append(&list, (void*)*v);
-	}
-
-	return list;
+	return tab ? ptable_vals_slist(tab->ptab) : NULL;
 }
 
-char *itable_str(const struct ITable* const tab, fn_str str) {
-	if (!tab)
-		return NULL;
-
-	char *out = strdup("");
-
-	uint64_t *k;
-	const void **v;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
-		if (*v) {
-			if (str) {
-				char *val_str = str(*v);
-				out = sprintf_append(out, "%"PRIu64" = %s\n", *k, val_str);
-				free(val_str);
-			} else {
-				out = sprintf_append(out, "%"PRIu64" = %s\n", *k, (char*)*v);
-			}
-		} else {
-			out = sprintf_append(out, "%"PRIu64" = (null)\n", *k);
-		}
-	}
-
-	return out;
+char *itable_str(const struct ITable* const tab, fn_str str_val) {
+	return tab ? ptable_str(tab->ptab, fn_str_key, str_val) : NULL;
 }
 
 size_t itable_size(const struct ITable* const tab) {
-	return tab ? tab->size : 0;
-}
-
-size_t itable_capacity(const struct ITable* const tab) {
-	return tab ? tab->capacity : 0;
+	return tab ? ptable_size(tab->ptab) : 0;
 }

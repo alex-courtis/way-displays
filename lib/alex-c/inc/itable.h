@@ -3,12 +3,11 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 
 #include "fn.h"
 
 /*
- * Array backed integer indexed table.
+ * Array backed size_t indexed table.
  * Entries preserve insertion order.
  * Operations linearly traverse keys.
  * NULL values permitted.
@@ -19,23 +18,40 @@ struct ITable; // IWYU pragma: keep
 /*
  * Entry iterator.
  */
-struct ITableIter; // IWYU pragma: keep
+struct ITableIterState; // IWYU pragma: keep
+struct ITableIter {
+	size_t key;
+	const void *val;
+	struct ITableIterState *st;
+};
+
+/*
+ * Optional constructor params (default)
+ */
+struct ITableParams {
+	const fn_equal equal_val; // _get, _put, _equal, _clone (compare key pointers)
+	const size_t initial;     // initial capacity           (10)
+	const size_t grow;        // grow capacity by           (10)
+};
 
 /*
  * Lifecycle
  */
 
-// construct a table with initial size 10, growing by 10 as necessary
+// construct a table with ITableParams defaults
 const struct ITable *itable_init(void);
 
-// construct a table with initial size, growing as necessary, NULL on zero param
-const struct ITable *itable_init_with(const size_t initial, const size_t grow);
+// construct a table with params
+const struct ITable *itable_init_with(const struct ITableParams params);
+
+// clone a table, NULL clone_val for shallow clone
+const struct ITable *itable_clone(const struct ITable* const from, fn_clone clone_val);
 
 // free table
-void itable_free(const void* const tab);
+void itable_free(const struct ITable* const tab);
 
-// free table and vals, null fn_free uses free()
-void itable_free_vals(const struct ITable* const tab, fn_free);
+// free table and vals, NULL free_val calls free
+void itable_free_vals(const struct ITable* const tab, fn_free free_val);
 
 // free iter
 void itable_iter_free(const struct ITableIter* const iter);
@@ -44,63 +60,51 @@ void itable_iter_free(const struct ITableIter* const iter);
  * Access
  */
 
-// return val, NULL not present
-const void *itable_get(const struct ITable* const tab, const uint64_t key);
+// return val, NULL if not present
+const void *itable_get(const struct ITable* const tab, const size_t key);
 
 // create an iterator, caller must itable_iter_free or invoke itable_next until NULL
 const struct ITableIter *itable_iter(const struct ITable* const tab);
 
-// next iterator value, NULL at end of table
+// create an iterator filtering by equal_key and equal_val, NULL tests match all
+const struct ITableIter *itable_filter_iter(const struct ITable* const tab, fn_equal_size_t equal_key, fn_equal equal_val, const void* const data);
+
+// next iterator entry, NULL at end of table
 const struct ITableIter *itable_iter_next(const struct ITableIter* const iter);
-
-// iterator key, 0 on NULL iter
-uint64_t itable_iter_key(const struct ITableIter* const iter);
-
-// iterator value, NULL on NULL iter
-const void *itable_iter_val(const struct ITableIter* const iter);
 
 /*
  * Mutate
  */
 
 // set key/val, return old val if overwritten
-const void *itable_put(const struct ITable* const tab, const uint64_t key, const void* const val);
+const void *itable_put(const struct ITable* const tab, const size_t key, const void* const val);
 
 // remove key, return old val if present
-const void *itable_remove(const struct ITable* const tab, const uint64_t key);
+const void *itable_remove(const struct ITable* const tab, const size_t key);
 
 /*
  * Comparison
  */
 
-// same length, keys and vals equal in order, NULL equal compares pointers
-bool itable_equal(const struct ITable* const a, const struct ITable* const b, fn_equal);
+// same length, keys and vals equal in order, uses equal_val from a
+bool itable_equal(const struct ITable* const a, const struct ITable* const b);
 
 /*
  * Conversion
  */
 
-// ordered uint64_t* key pointers to table, caller frees list only
-struct SList *itable_keys_slist(const struct ITable* const tab);
-
-// ordered val pointers to table, caller frees list only
+// ordered val pointers, caller frees list only
 struct SList *itable_vals_slist(const struct ITable* const tab);
 
 /*
  * Info
  */
 
-// to string, user frees
-// lines with format "%PRIu64 = %s\n"
-// NULL vals printed as "(null)"
-// fn_str NULL for char* vals
-char *itable_str(const struct ITable* const tab, fn_str);
+// to string, user frees, format "k = str_val\n", "%p" for NULL fn_str
+char *itable_str(const struct ITable* const tab, fn_str str_val);
 
 // number of entries
 size_t itable_size(const struct ITable* const tab);
-
-// current capacity: initial + n * grow
-size_t itable_capacity(const struct ITable* const tab);
 
 #endif // ITABLE_H
 
