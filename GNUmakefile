@@ -2,8 +2,11 @@ include config.mk
 
 INC_H = $(wildcard inc/*.h) $(wildcard inc/*/*.h) $(wildcard lib/alex-c/inc/*.h)
 
-SRC_C = $(wildcard src/*.c) $(wildcard src/*/*.c) $(wildcard lib/alex-c/src/*.c)
+SRC_C = $(wildcard src/*.c) $(wildcard src/*/*.c)
 SRC_O = $(SRC_C:.c=.o)
+
+LIB_C = $(wildcard lib/*/src/*.c)
+LIB_O = $(LIB_C:.c=.o)
 
 EXAMPLE_C = $(wildcard examples/*.c)
 EXAMPLE_O = $(EXAMPLE_C:.c=.o)
@@ -22,17 +25,20 @@ TST_E = $(filter tst/tst%,$(TST_O:.o=))
 all: way-displays
 
 clean:
-	@echo $(INC_H)
-	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O)
+	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O) actual.* expected.*
+	find . -name '*.gcno' -type f -delete -print
+	find . -name '*.gcda' -type f -delete -print
 
+$(SRC_O): CFLAGS += $(COVCFLAGS)
 $(SRC_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
+$(LIB_O): config.mk GNUmakefile
 $(PRO_O): $(PRO_H) config.mk GNUmakefile
 $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 
 #
 # executable
 #
-way-displays: $(SRC_O) $(PRO_O)
+way-displays: $(SRC_O) $(PRO_O) $(LIB_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 	@test -x ../deploy.sh && ../deploy.sh || true
 
@@ -84,13 +90,13 @@ iwyu: override CC = include-what-you-use \
 	-Xiwyu --check_also="tst/*h" \
 	-Xiwyu --check_also="lib/alex-c/tst/*h"
 iwyu: INCS += -Ilib/alex-c/tst
-iwyu: clean $(SRC_O) $(TST_O) $(EXAMPLE_O)
+iwyu: clean $(SRC_O) $(LIB_O) $(TST_O) $(EXAMPLE_O)
 
 #
 # cppcheck
 #
 cppcheck: INCS += -Ilib/alex-c/tst
-cppcheck: $(SRC_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
+cppcheck: $(SRC_C) $(LIB_O) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
 		--enable=warning,unusedFunction,performance,portability,style \
 		--check-level=exhaustive \
@@ -112,7 +118,7 @@ endif
 # examples
 #
 examples: $(EXAMPLE_E)
-examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O)
+examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 
 .PHONY: all clean install uninstall man cppcheck iwyu

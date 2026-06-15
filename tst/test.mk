@@ -16,7 +16,7 @@ $(TST_O): $(INC_H) $(TST_H) config.mk GNUmakefile tst/test.mk
 #   main
 #   lid (completely mocked)
 #   other tst-x.o
-$(TST_E): $(filter-out src/main.o src/lid.o,$(SRC_O)) $(PRO_O) $(filter-out tst/tst%,$(TST_O))
+$(TST_E): $(filter-out src/main.o src/lid.o,$(SRC_O)) $(PRO_O) $(LIB_O) $(filter-out tst/tst%,$(TST_O))
 
 # test-x builds tst/tst-x and executes it
 test: $(patsubst tst/tst%,test%,$(TST_E))

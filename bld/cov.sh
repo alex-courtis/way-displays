@@ -1,0 +1,85 @@
+#!/bin/sh
+
+set -e
+
+INFO_PATH="/tmp/coverage.info" 
+REP_PATH="/tmp/coverage-report"
+
+usage() {
+	echo "usage: ${0} [test-x target ...]"
+	exit 0
+}
+
+if [ "${1}" = "-h" ]; then
+	usage
+fi
+
+rm -rf "${REP_PATH}"
+rm -rf "${INFO_PATH}"
+mkdir "${INFO_PATH}"
+
+export LDLIBS="-lgcov"
+
+make clean
+
+# build with coverage flag to generate only desired .gcno
+make \
+	CC="gcc" \
+	OFLAGS="-O0" \
+	COVCFLAGS="-fprofile-arcs -ftest-coverage -fcondition-coverage" \
+	all
+
+if [ $# -gt 0 ]; then
+	TESTS="${*}"
+else
+	for TEST_C in tst/tst-*c; do
+		TESTS="${TESTS} $(echo "${TEST_C}" | sed -E 's/tst\/tst\-(.*)\.c/\1/g')"
+	done
+fi
+
+for TEST in ${TESTS}; do
+
+	# execute test target to generate .gcda
+	make \
+		CC="gcc" \
+		OFLAGS="-O0" \
+		"test-${TEST}"
+
+	# generate coverage info for the individual test
+	geninfo \
+		--test-name "tst_${TEST}" \
+		--mcdc-coverage \
+		--branch-coverage \
+		--all \
+		--output-file "${INFO_PATH}/${TEST}.info" \
+		.
+
+	# clear test execution data
+	find . -name '*gcda' -delete -print
+
+done
+
+# combined report for all coverage info
+genhtml \
+	--show-details \
+	--mcdc-coverage \
+	--branch-coverage \
+	--show-proportion \
+	--dark-mode \
+	--num-spaces 4 \
+	--flat \
+	--rc genhtml_hi_limit=100 \
+	--output-directory "${REP_PATH}" \
+	${INFO_PATH}
+
+# clear .gnco for next (non-coverage) run
+make clean
+
+if [ $# -eq 1 ] && [ -f "${REP_PATH}/src/${1}.c.gcov.html" ]; then
+	xdg-open \
+		"${REP_PATH}/src/${1}.c.gcov.html"
+else
+	xdg-open \
+		"${REP_PATH}/index.html"
+fi
+
