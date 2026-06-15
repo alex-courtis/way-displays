@@ -52,7 +52,7 @@ for TEST in ${TESTS}; do
 		--mcdc-coverage \
 		--branch-coverage \
 		--all \
-		--exclude '*.h' \
+		--no-external \
 		--output-file "${INFO_PATH}/${TEST}.info" \
 		"${SRC_PATH}"
 
