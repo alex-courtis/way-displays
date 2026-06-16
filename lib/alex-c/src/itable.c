@@ -59,6 +59,7 @@ const struct ITable *itable_init_with(const struct ITableParams params) {
 		.equal_val = params.equal_val,
 		.alloc_key = fn_alloc_key,
 		.free_key = (fn_free)free,
+		.free_val = params.free_val,
 		.str_key = fn_str_key,
 		.str_val = params.str_val,
 		.initial = params.initial,
@@ -92,11 +93,11 @@ void itable_free(const struct ITable* const tab) {
 	free((void*)tab);
 }
 
-void itable_free_vals(const struct ITable* const tab, fn_free free_val) {
+void itable_free_vals(const struct ITable* const tab) {
 	if (!tab)
 		return;
 
-	ptable_free_vals(tab->ptab, free_val);
+	ptable_free_vals(tab->ptab);
 
 	free((void*)tab);
 }

@@ -11,6 +11,21 @@
 
 const struct ITable *outputs; // by wl_output_name
 
+static void destroy(const void *o) {
+	if (!o)
+		return;
+
+	struct Output *output = (struct Output*)o;
+
+	zxdg_output_v1_destroy(output->zxdg_output);
+	wl_output_destroy(output->wl_output);
+
+	free(output->name);
+	free(output->description);
+
+	free(output);
+}
+
 struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output_name, struct zxdg_output_manager_v1 *zxdg_output_manager) {
 	if (!wl_output || !zxdg_output_manager)
 		return NULL;
@@ -24,8 +39,10 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output
 	output->wl_output_name = wl_output_name;
 	output->zxdg_output = zxdg_output;
 
-	if (!outputs)
-		outputs = itable_init();
+	if (!outputs) {
+		const struct ITableParams params = { .free_val = destroy, };
+		outputs = itable_init_with(params);
+	}
 	itable_put(outputs, wl_output_name, output);
 
 	zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
@@ -50,23 +67,8 @@ const struct Output *output_for_name(const char *name) {
 	return output;
 }
 
-static void destroy(const void *o) {
-	if (!o)
-		return;
-
-	struct Output *output = (struct Output*)o;
-
-	zxdg_output_v1_destroy(output->zxdg_output);
-	wl_output_destroy(output->wl_output);
-
-	free(output->name);
-	free(output->description);
-
-	free(output);
-}
-
 void output_destroy_all(void) {
-	itable_free_vals(outputs, destroy);
+	itable_free_vals(outputs);
 }
 
 void output_destroy_by_wl_output_name(const uint32_t wl_output_name) {

@@ -31,7 +31,7 @@ struct PSetIter {
 struct PSetParams {
 	const fn_equal equal_val; // _add, _remove, _contains, _equal         (compare val pointers)
 	const fn_alloc alloc_val; // _add, _clone, _slist, must be idempotent (use key pointer)
-	const fn_free free_val;   // _remove                                  (NOP)
+	const fn_free free_val;   // _free_vals                               (free)
 	const fn_str str_val;     // _str                                     (%p)
 	const size_t initial;     // initial capacity                         (10)
 	const size_t grow;        // grow capacity by                         (10)
@@ -53,8 +53,8 @@ const struct PSet *pset_clone(const struct PSet* const from, fn_clone clone_val)
 // free set
 void pset_free(const struct PSet* const set);
 
-// free set and vals, NULL free_val calls free
-void pset_free_vals(const struct PSet* const set, fn_free free_val);
+// free set and vals
+void pset_free_vals(const struct PSet* const set);
 
 // free iter
 void pset_iter_free(const struct PSetIter* const iter);

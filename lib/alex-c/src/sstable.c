@@ -37,6 +37,7 @@ const struct SSTable *sstable_init_with(const struct SSTableParams params) {
 		.equal_val = params.case_insensitive_val ? fn_equal_strcasecmp : fn_equal_strcmp,
 		.alloc_key = (fn_alloc)strdup,
 		.free_key = (fn_free)free,
+		.free_val = (fn_free)free,
 		.str_key = fn_str_or_null,
 		.str_val = fn_str_or_null,
 		.initial = params.initial,
@@ -65,7 +66,7 @@ void sstable_free(const struct SSTable* const tab) {
 	if (!tab)
 		return;
 
-	ptable_free_vals(tab->ptab, NULL);
+	ptable_free_vals(tab->ptab);
 
 	free((void*)tab);
 }

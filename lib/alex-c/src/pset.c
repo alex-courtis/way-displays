@@ -87,14 +87,14 @@ void pset_free(const struct PSet * const set) {
 	free((void*)set);
 }
 
-void pset_free_vals(const struct PSet* const set, fn_free free_val) {
+void pset_free_vals(const struct PSet* const set) {
 	if (!set)
 		return;
 
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (*v) {
-			if (free_val) {
-				free_val(*v);
+			if (set->params.free_val) {
+				set->params.free_val(*v);
 			} else {
 				free((void*)*v);
 			}
@@ -212,10 +212,6 @@ const void *pset_remove(const struct PSet* const cset, const void* const val) {
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (set->params.equal_val ? set->params.equal_val(*v, val) : *v == val) {
 			const void *removed = *v;
-
-			if (set->params.free_val) {
-				set->params.free_val(*v);
-			}
 
 			*v = NULL;
 			set->size--;

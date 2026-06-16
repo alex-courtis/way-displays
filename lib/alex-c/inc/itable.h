@@ -26,6 +26,7 @@ struct ITableIter {
  */
 struct ITableParams {
 	const fn_equal equal_val; // _get, _put, _equal, _clone (compare key pointers)
+	const fn_free free_val;   // _free_vals                 (free)
 	const fn_str str_val;     // _str                       (%p)
 	const size_t initial;     // initial capacity           (10)
 	const size_t grow;        // grow capacity by           (10)
@@ -52,8 +53,8 @@ const struct ITable *itable_clone(const struct ITable* const from, fn_clone clon
 // free table
 void itable_free(const struct ITable* const tab);
 
-// free table and vals, NULL free_val calls free
-void itable_free_vals(const struct ITable* const tab, fn_free free_val);
+// free table and vals
+void itable_free_vals(const struct ITable* const tab);
 
 // free iter
 void itable_iter_free(const struct ITableIter* const iter);

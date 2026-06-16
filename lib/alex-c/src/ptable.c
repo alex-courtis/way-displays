@@ -99,7 +99,7 @@ void ptable_free(const struct PTable* const tab) {
 	free((void*)tab);
 }
 
-void ptable_free_vals(const struct PTable* const tab, fn_free free_val) {
+void ptable_free_vals(const struct PTable* const tab) {
 	if (!tab)
 		return;
 
@@ -107,8 +107,6 @@ void ptable_free_vals(const struct PTable* const tab, fn_free free_val) {
 		if (*v) {
 			if (tab->params.free_val) {
 				tab->params.free_val(*v);
-			} else if (free_val) {
-				free_val(*v);
 			} else {
 				free((void*)*v);
 			}

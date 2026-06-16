@@ -59,7 +59,7 @@ void sset_free(const struct SSet* const set) {
 	if (!set)
 		return;
 
-	pset_free_vals(set->pset, (fn_free)free);
+	pset_free_vals(set->pset);
 
 	free((void*)set);
 }
@@ -129,7 +129,17 @@ bool sset_add(const struct SSet* const set, const char* const val) {
 }
 
 bool sset_remove(const struct SSet* const set, const char* const val) {
-	return set ? pset_remove(set->pset, val) : false;
+	if (!set)
+		return false;
+
+	const char *old = pset_remove(set->pset, val);
+
+	if (old) {
+		free((void*)old);
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void sset_sort(const struct SSet* const set) {

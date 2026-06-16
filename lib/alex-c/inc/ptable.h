@@ -59,8 +59,8 @@ const struct PTable *ptable_clone(const struct PTable* const from, fn_clone clon
 // free table
 void ptable_free(const struct PTable* const tab);
 
-// free table and vals, NULL free_val calls free
-void ptable_free_vals(const struct PTable* const tab, fn_free free_val);
+// free table and vals
+void ptable_free_vals(const struct PTable* const tab);
 
 // free iter
 void ptable_iter_free(const struct PTableIter* const iter);
