@@ -15,6 +15,7 @@ staticFunction:lib/alex-c/*c
 
 unusedFunction:lib/alex-c/tst/*h
 
+unusedFunction:tst/mock-*.c
 unusedFunction:tst/wrap-*.c
 
 # needs fixing upstream
