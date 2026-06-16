@@ -3,7 +3,6 @@
 #include "assert-cfg.h"
 #include "assert-log.h"
 #include "asserts.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -24,25 +23,6 @@ struct IpcRequest *parse_set(int argc, char **argv);
 struct IpcRequest *parse_del(int argc, char **argv);
 struct IpcRequest *parse_toggle(int argc, char **argv);
 enum LogThreshold parse_log_threshold(char *optarg);
-
-
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
-static int before_each(void **state) {
-	logs_clear();
-
-	return 0;
-}
-
-static int after_each(void **state) {
-	return 0;
-}
 
 
 static void parse_element__arrange_align_invalid_arrange(void **state) {

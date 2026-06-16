@@ -3,7 +3,6 @@
 #include "assert-log.h"
 #include "asserts.h"
 #include "expects.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <limits.h>
@@ -66,7 +65,6 @@ static void clean_files(void) {
 	rmdir("tst/tmp/resolve");
 }
 
-
 static int before_all(void **state) {
 	env_xdg_config_home = getenv("XDG_CONFIG_HOME");
 	if (env_xdg_config_home) {
@@ -93,8 +91,6 @@ static int after_all(void **state) {
 }
 
 static int before_each(void **state) {
-	logs_clear();
-
 	slist_free_vals(&cfg_file_paths, NULL);
 
 	clean_files();
@@ -478,22 +474,22 @@ static void cfg_resolve_file_path__linked(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(cfg_file_write__bad_yaml),
-		TEST(cfg_file_write__none),
-		TEST(cfg_file_write__cannot_write_use_alternative),
-		TEST(cfg_file_write__cannot_write_no_alternative),
-		TEST(cfg_file_write__existing),
+		TEST_BA(cfg_file_write__bad_yaml),
+		TEST_BA(cfg_file_write__none),
+		TEST_BA(cfg_file_write__cannot_write_use_alternative),
+		TEST_BA(cfg_file_write__cannot_write_no_alternative),
+		TEST_BA(cfg_file_write__existing),
 
-		TEST(cfg_file_paths_init__min),
-		TEST(cfg_file_paths_init__home),
-		TEST(cfg_file_paths_init__xch),
-		TEST(cfg_file_paths_init__user),
+		TEST_BA(cfg_file_paths_init__min),
+		TEST_BA(cfg_file_paths_init__home),
+		TEST_BA(cfg_file_paths_init__xch),
+		TEST_BA(cfg_file_paths_init__user),
 
-		TEST(cfg_resolve_file_path__not_found),
-		TEST(cfg_resolve_file_path__direct),
-		TEST(cfg_resolve_file_path__linked),
+		TEST_BA(cfg_resolve_file_path__not_found),
+		TEST_BA(cfg_resolve_file_path__direct),
+		TEST_BA(cfg_resolve_file_path__linked),
 	};
 
-	return RUN(tests);
+	return RUN_BA(tests);
 }
 

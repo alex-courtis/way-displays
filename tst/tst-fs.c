@@ -1,7 +1,6 @@
 #include "tst.h"
 
 #include "assert-log.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <errno.h>
@@ -23,19 +22,7 @@ static void clean_dirs(void) {
 	assert_int_equal(errno, ENOENT);
 }
 
-static int before_all(void **state) {
-	clean_dirs();
-	return 0;
-}
-
-static int after_all(void **state) {
-	clean_dirs();
-	return 0;
-}
-
 static int before_each(void **state) {
-	logs_clear();
-
 	clean_dirs();
 	return 0;
 }
@@ -86,9 +73,9 @@ static void mkdir_p__exists(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(mkdir_p__no_perm),
-		TEST(mkdir_p__ok),
-		TEST(mkdir_p__exists),
+		TEST_BA(mkdir_p__no_perm),
+		TEST_BA(mkdir_p__ok),
+		TEST_BA(mkdir_p__exists),
 	};
 
 	return RUN(tests);

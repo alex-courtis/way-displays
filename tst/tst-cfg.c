@@ -3,7 +3,6 @@
 #include "assert-cfg.h"
 #include "assert-log.h"
 #include "util-file.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -30,17 +29,7 @@ struct State {
 	struct Cfg *expected;
 };
 
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
 static int before_each(void **state) {
-	logs_clear();
-
 	struct State *s = calloc(1, sizeof(struct State));
 
 	slist_free_vals(&cfg_file_paths, NULL);
@@ -678,38 +667,38 @@ static void validate_warn__(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(merge_set__arrange),
-		TEST(merge_set__align),
-		TEST(merge_set__order),
-		TEST(merge_set__auto_scale),
-		TEST(merge_set__scale_round_to),
-		TEST(merge_set__scale_round_strategy),
-		TEST(merge_set__user_scale),
-		TEST(merge_set__user_transform),
-		TEST(merge_set__mode),
-		TEST(merge_set__adaptive_sync_off),
-		TEST(merge_set__disabled),
-		TEST(merge_set__callback_cmd),
+		TEST_BA(merge_set__arrange),
+		TEST_BA(merge_set__align),
+		TEST_BA(merge_set__order),
+		TEST_BA(merge_set__auto_scale),
+		TEST_BA(merge_set__scale_round_to),
+		TEST_BA(merge_set__scale_round_strategy),
+		TEST_BA(merge_set__user_scale),
+		TEST_BA(merge_set__user_transform),
+		TEST_BA(merge_set__mode),
+		TEST_BA(merge_set__adaptive_sync_off),
+		TEST_BA(merge_set__disabled),
+		TEST_BA(merge_set__callback_cmd),
 
-		TEST(merge_del__scale),
-		TEST(merge_del__mode),
-		TEST(merge_del__transform),
-		TEST(merge_del__adaptive_sync_off),
-		TEST(merge_del__disabled),
-		TEST(merge_del__callback_cmd),
+		TEST_BA(merge_del__scale),
+		TEST_BA(merge_del__mode),
+		TEST_BA(merge_del__transform),
+		TEST_BA(merge_del__adaptive_sync_off),
+		TEST_BA(merge_del__disabled),
+		TEST_BA(merge_del__callback_cmd),
 
-		TEST(merge_toggle__scaling),
-		TEST(merge_toggle__auto_scale),
-		TEST(merge_toggle__adaptive_sync_off),
+		TEST_BA(merge_toggle__scaling),
+		TEST_BA(merge_toggle__auto_scale),
+		TEST_BA(merge_toggle__adaptive_sync_off),
 
-		TEST(validate_fix__col),
-		TEST(validate_fix__row),
-		TEST(validate_fix__user_scale),
-		TEST(validate_fix__user_mode),
-		TEST(validate_fix__user_transform),
-		TEST(validate_fix__auto_scale_dpi),
+		TEST_BA(validate_fix__col),
+		TEST_BA(validate_fix__row),
+		TEST_BA(validate_fix__user_scale),
+		TEST_BA(validate_fix__user_mode),
+		TEST_BA(validate_fix__user_transform),
+		TEST_BA(validate_fix__auto_scale_dpi),
 
-		TEST(validate_warn__),
+		TEST_BA(validate_warn__),
 	};
 
 	return RUN(tests);

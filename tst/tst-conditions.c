@@ -15,14 +15,6 @@ struct State {
 	struct Condition *condition;
 };
 
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
 static int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 	s->condition = calloc(1, sizeof(struct Condition));
@@ -134,12 +126,12 @@ static void conditions__complex(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(conditions__plugged),
-		TEST(conditions__unplugged),
-		TEST(conditions__lid_closed),
-		TEST(conditions__lid_open),
-		TEST(conditions__lid_not_present),
-		TEST(conditions__complex),
+		TEST_BA(conditions__plugged),
+		TEST_BA(conditions__unplugged),
+		TEST_BA(conditions__lid_closed),
+		TEST_BA(conditions__lid_open),
+		TEST_BA(conditions__lid_not_present),
+		TEST_BA(conditions__complex),
 	};
 
 	return RUN(tests);

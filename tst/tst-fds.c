@@ -2,7 +2,6 @@
 
 #include "assert-log.h"
 #include "asserts.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <limits.h>
@@ -36,8 +35,6 @@ static int after_all(void **state) {
 }
 
 static int before_each(void **state) {
-	logs_clear();
-
 	g_cfg = cfg_default();
 
 	return 0;
@@ -120,14 +117,14 @@ static void fd_wd_cfg_dir_destroy__ok(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(fd_wd_cfg_dir_create__ok),
-		TEST(fd_wd_cfg_dir_create__no_dir),
-		TEST(fd_wd_cfg_dir_create__bad_dir),
+		TEST_BA(fd_wd_cfg_dir_create__ok),
+		TEST_BA(fd_wd_cfg_dir_create__no_dir),
+		TEST_BA(fd_wd_cfg_dir_create__bad_dir),
 
-		TEST(fd_wd_cfg_dir_destroy__bad),
-		TEST(fd_wd_cfg_dir_destroy__ok),
+		TEST_BA(fd_wd_cfg_dir_destroy__bad),
+		TEST_BA(fd_wd_cfg_dir_destroy__ok),
 	};
 
-	return RUN(tests);
+	return RUN_BA(tests);
 }
 

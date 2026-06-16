@@ -5,7 +5,6 @@
 #include "asserts.h"
 #include "expects.h"
 #include "util-file.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -43,17 +42,7 @@ struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_
 }
 
 
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
 static int before_each(void **state) {
-	logs_clear();
-
 	g_cfg = cfg_default();
 	return 0;
 }
@@ -593,36 +582,36 @@ static void heads_reapply__(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(head_get_fixed_scale__rounding_nearest),
-		TEST(head_get_fixed_scale__rounding_up),
-		TEST(head_get_fixed_scale__rounding_down),
+		TEST_BA(head_get_fixed_scale__rounding_nearest),
+		TEST_BA(head_get_fixed_scale__rounding_up),
+		TEST_BA(head_get_fixed_scale__rounding_down),
 
-		TEST(head_auto_scale__default),
-		TEST(head_auto_scale__mode),
-		TEST(head_auto_scale__range),
+		TEST_BA(head_auto_scale__default),
+		TEST_BA(head_auto_scale__mode),
+		TEST_BA(head_auto_scale__range),
 
-		TEST(head_set_scaled_dimensions__default),
-		TEST(head_set_scaled_dimensions__transform),
-		TEST(head_set_scaled_dimensions__dimensions),
+		TEST_BA(head_set_scaled_dimensions__default),
+		TEST_BA(head_set_scaled_dimensions__transform),
+		TEST_BA(head_set_scaled_dimensions__dimensions),
 
-		TEST(head_find_mode__all_failed),
-		TEST(head_find_mode__user_available),
-		TEST(head_find_mode__user_failed),
-		TEST(head_find_mode__preferred),
-		TEST(head_find_mode__max_preferred_refresh),
-		TEST(head_find_mode__max),
-		TEST(head_find_mode__none),
+		TEST_BA(head_find_mode__all_failed),
+		TEST_BA(head_find_mode__user_available),
+		TEST_BA(head_find_mode__user_failed),
+		TEST_BA(head_find_mode__preferred),
+		TEST_BA(head_find_mode__max_preferred_refresh),
+		TEST_BA(head_find_mode__max),
+		TEST_BA(head_find_mode__none),
 
-		TEST(head_apply_toggles__none),
-		TEST(head_apply_toggles__disabled__enable),
-		TEST(head_apply_toggles__disabled__disable),
+		TEST_BA(head_apply_toggles__none),
+		TEST_BA(head_apply_toggles__disabled__enable),
+		TEST_BA(head_apply_toggles__disabled__disable),
 
-		TEST(head_set_description__nulls),
-		TEST(head_set_description__no_nulls),
-		TEST(head_set_description__empty),
-		TEST(head_set_description__null_input),
+		TEST_BA(head_set_description__nulls),
+		TEST_BA(head_set_description__no_nulls),
+		TEST_BA(head_set_description__empty),
+		TEST_BA(head_set_description__null_input),
 
-		TEST(heads_reapply__),
+		TEST_BA(heads_reapply__),
 	};
 
 	return RUN(tests);

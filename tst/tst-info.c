@@ -5,7 +5,6 @@
 #include "expects.h"
 #include "expect-stable.h"
 #include "util-file.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -33,17 +32,7 @@ struct State {
 	struct SList *heads;
 };
 
-int before_all(void **state) {
-	return 0;
-}
-
-int after_all(void **state) {
-	return 0;
-}
-
 int before_each(void **state) {
-	logs_clear();
-
 	struct State *s = calloc(1, sizeof(struct State));
 
 	g_displ = calloc(1, sizeof(struct Displ));
@@ -818,56 +807,56 @@ static void call_back_adaptive_sync_fail__(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(print_cfg__all),
-		TEST(print_cfg__arrange_only),
-		TEST(print_cfg__align_only),
-		TEST(print_cfg__auto_scale_max),
-		TEST(print_cfg__del),
-		TEST(print_cfg__lid_disabled),
+		TEST_BA(print_cfg__all),
+		TEST_BA(print_cfg__arrange_only),
+		TEST_BA(print_cfg__align_only),
+		TEST_BA(print_cfg__auto_scale_max),
+		TEST_BA(print_cfg__del),
+		TEST_BA(print_cfg__lid_disabled),
 
-		TEST(print_cfg_commands__empty),
-		TEST(print_cfg_commands__ok),
+		TEST_BA(print_cfg_commands__empty),
+		TEST_BA(print_cfg_commands__ok),
 
-		TEST(print_head_arrived__all),
-		TEST(print_head_arrived__min),
-		TEST(print_head_departed__ok),
+		TEST_BA(print_head_arrived__all),
+		TEST_BA(print_head_arrived__min),
+		TEST_BA(print_head_departed__ok),
 
-		TEST(print_head_deltas__mode),
-		TEST(print_head_deltas__vrr),
-		TEST(print_head_deltas__other),
-		TEST(print_head_deltas__disable),
-		TEST(print_head_deltas__enable),
-		TEST(print_head_deltas__reapply),
+		TEST_BA(print_head_deltas__mode),
+		TEST_BA(print_head_deltas__vrr),
+		TEST_BA(print_head_deltas__other),
+		TEST_BA(print_head_deltas__disable),
+		TEST_BA(print_head_deltas__enable),
+		TEST_BA(print_head_deltas__reapply),
 
-		TEST(print_active__empty),
-		TEST(print_active__many),
+		TEST_BA(print_active__empty),
+		TEST_BA(print_active__many),
 
-		TEST(print_adaptive_sync_fail__nulls),
-		TEST(print_adaptive_sync_fail__head),
+		TEST_BA(print_adaptive_sync_fail__nulls),
+		TEST_BA(print_adaptive_sync_fail__head),
 
-		TEST(print_mode_fail__nulls),
-		TEST(print_mode_fail__head),
+		TEST_BA(print_mode_fail__nulls),
+		TEST_BA(print_mode_fail__head),
 
-		TEST(delta_human_mode__to_no),
-		TEST(delta_human_mode__from_no),
+		TEST_BA(delta_human_mode__to_no),
+		TEST_BA(delta_human_mode__from_no),
 
-		TEST(delta_human_adaptive_sync__on),
-		TEST(delta_human_adaptive_sync__off),
+		TEST_BA(delta_human_adaptive_sync__on),
+		TEST_BA(delta_human_adaptive_sync__off),
 
-		TEST(delta_human_reapply__),
+		TEST_BA(delta_human_reapply__),
 
-		TEST(delta_human__all),
-		TEST(delta_human__enabled),
-		TEST(delta_human__disabled),
+		TEST_BA(delta_human__all),
+		TEST_BA(delta_human__enabled),
+		TEST_BA(delta_human__disabled),
 
-		TEST(call_back__no_callback),
-		TEST(call_back__below_threshold),
-		TEST(call_back__one),
-		TEST(call_back__two),
+		TEST_BA(call_back__no_callback),
+		TEST_BA(call_back__below_threshold),
+		TEST_BA(call_back__one),
+		TEST_BA(call_back__two),
 
-		TEST(call_back_mode_fail__),
+		TEST_BA(call_back_mode_fail__),
 
-		TEST(call_back_adaptive_sync_fail__),
+		TEST_BA(call_back_adaptive_sync_fail__),
 	};
 
 	return RUN(tests);

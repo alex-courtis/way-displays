@@ -5,7 +5,6 @@
 #include "asserts.h"
 #include "expects.h"
 #include "util-file.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -44,18 +43,8 @@ void *__wrap_yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
 	return mock_ptr_type_checked(struct Cfg*);
 }
 
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
 static int before_each(void **state) {
 	cfg_destroy();
-
-	logs_clear();
 
 	return 0;
 }
@@ -289,14 +278,14 @@ static void reload_cfg__valid_file(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(load_cfg__no_file),
-		TEST(load_cfg__valid_file),
-		TEST(load_cfg__invalid_file),
-		TEST(load_cfg__missing_defaults),
+		TEST_BA(load_cfg__no_file),
+		TEST_BA(load_cfg__valid_file),
+		TEST_BA(load_cfg__invalid_file),
+		TEST_BA(load_cfg__missing_defaults),
 
-		TEST(reload_cfg__no_file),
-		TEST(reload_cfg__invalid_file),
-		TEST(reload_cfg__valid_file),
+		TEST_BA(reload_cfg__no_file),
+		TEST_BA(reload_cfg__invalid_file),
+		TEST_BA(reload_cfg__valid_file),
 	};
 
 	return RUN(tests);
