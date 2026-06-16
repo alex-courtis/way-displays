@@ -11,7 +11,7 @@
 
 #include "cli.h"
 #include "process.h"
-#include "stable.h"
+#include "sstable.h"
 
 #include "log.h"
 
@@ -102,7 +102,7 @@ void pid_file_create(void) {
 	}
 }
 
-void spawn_sh_cmd(const char * const command, const struct STable * const env) {
+void spawn_sh_cmd(const char * const command, const struct SSTable * const env) {
 	if (!command)
 		return;
 
@@ -123,7 +123,7 @@ void spawn_sh_cmd(const char * const command, const struct STable * const env) {
 		sa.sa_handler = SIG_DFL;
 		sigaction(SIGCHLD, &sa, NULL);
 
-		for (const struct STableIter *i = stable_iter(env); i; i = stable_iter_next(i)) {
+		for (const struct SSTableIter *i = sstable_iter(env); i; i = sstable_iter_next(i)) {
 
 			// experiments show that environment variable length tops out at 128k: variable itself plus contents
 			char value[1024 * 120];

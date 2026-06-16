@@ -21,7 +21,7 @@ void _assert_itable_equal(const struct ITable *a, const struct ITable *b, const 
 void _assert_itable_not_equal(const struct ITable *a, const struct ITable *b, const char * const file, const int line) {
 	if (itable_equal(a, b)) {
 		write_file("actual.itable", itable_str(a, NULL));
-		write_file("expected.pet", itable_str(b, NULL));
+		write_file("expected.itable", itable_str(b, NULL));
 		cmocka_print_error("\n%s == \n%s", itable_str(a, NULL), itable_str(b, NULL));
 		_fail(file, line);
 	}

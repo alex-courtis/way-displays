@@ -9,7 +9,6 @@
 
 #include "cfg.h"
 #include "convert.h"
-#include "fn.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"
@@ -17,7 +16,7 @@
 #include "output.h"
 #include "process.h"
 #include "slist.h"
-#include "stable.h"
+#include "sstable.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -667,20 +666,19 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	snprintf(buf, CALLBACK_MSG_LEN, "%s%s", msg1 ? msg1 : "", msg2 ? msg2 : "");
 
 	// pack environment variables
-	// TODO this is not sustainable; need some sort of string-string table
-	const struct STableParams params = { .equal_val = fn_equal_strcmp, };
-	const struct STable *env = stable_init_with(params);
-	stable_put(env, "CALLBACK_MSG", buf);
-	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
+	const struct SSTable *env = sstable_init();
 
-	char *env_str = stable_str(env, fn_str_or_null);
+	sstable_put(env, "CALLBACK_MSG", buf);
+	sstable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
+
+	char *env_str = sstable_str(env);
 	log_debug("%s", env_str);
 	free(env_str);
 
 	// execute callback
 	spawn_sh_cmd(g_cfg->callback_cmd, env);
 
-	stable_free(env);
+	sstable_free(env);
 	free(buf);
 }
 
