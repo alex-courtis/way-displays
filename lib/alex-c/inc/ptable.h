@@ -11,7 +11,6 @@
  * Entries preserve insertion order.
  * Operations linearly traverse keys.
  * NULL values permitted.
- * Not thread safe.
  */
 struct PTable; // IWYU pragma: keep
 
@@ -24,6 +23,10 @@ struct PTableIter {
 	const void *val;
 	struct PTableIterState *st;
 };
+
+// TODO consider fn_str
+// TODO consider fn_free val
+// TODO consider fn_alloc val for clone
 
 /*
  * Optional constructor params (default)

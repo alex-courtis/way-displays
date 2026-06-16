@@ -7,11 +7,9 @@
 #include "fn.h"
 
 /*
- * Array backed string indexed table.
- * Entries preserve insertion order.
- * Operations linearly traverse keys.
- * NULL values permitted.
- * Not thread safe.
+ * `PTable` with string keys.
+ * Keys are strdup'd on successful `stable_put` and `stable_clone`
+ * Keys are free'd on `stable_free`
  */
 struct STable; // IWYU pragma: keep
 

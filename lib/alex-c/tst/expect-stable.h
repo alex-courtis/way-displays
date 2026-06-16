@@ -3,7 +3,6 @@
 
 #include <cmocka.h>
 #include <stdbool.h>
-#include <string.h>
 
 #include "util-file.h"
 

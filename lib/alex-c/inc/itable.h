@@ -7,11 +7,7 @@
 #include "fn.h"
 
 /*
- * Array backed size_t indexed table.
- * Entries preserve insertion order.
- * Operations linearly traverse keys.
- * NULL values permitted.
- * Not thread safe.
+ * `PTable` with `size_t` keys
  */
 struct ITable; // IWYU pragma: keep
 

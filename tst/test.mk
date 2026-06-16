@@ -10,7 +10,7 @@ CFLAGS += -Wno-unused-function
 # remove libinput as it is 64-bit only and not used by tests
 LDLIBS := $(filter-out -linput,$(LDLIBS))
 
-$(TST_O): $(INC_H) $(TST_H) config.mk GNUmakefile tst/test.mk
+$(TST_O): $(INC_H) $(TST_H) $(PRO_H) config.mk GNUmakefile tst/test.mk
 
 # test executables exclude:
 #   main

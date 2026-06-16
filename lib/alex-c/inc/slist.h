@@ -8,7 +8,6 @@
 
 /*
  * Containerless singly linked list.
- * Not thread safe.
  * NULL values permitted.
  */
 struct SList {

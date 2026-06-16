@@ -4,31 +4,45 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "fn.h"
+
 /*
- * Array backed ordered string set.
- * Operations linearly traverse values.
- * NULL not permitted.
- * Not thread safe.
-*/
+ * `PSet` with string values
+ * Values are strdup'd on successful `sset_add`, `sset_clone` and `sset_slist`
+ * Values are free'd on `sset_free`
+ */
 struct SSet; // IWYU pragma: keep
 
 /*
  * Entry iterator.
  */
-struct SSetIter; // IWYU pragma: keep
+struct SSetIterState; // IWYU pragma: keep
+struct SSetIter {
+	const char* val;
+	struct SSetIterState *st;
+};
+
+/*
+ * Optional constructor params, defaults noted
+ */
+struct SSetParams {
+	const bool case_insensitive; //                  (false)
+	const size_t initial;        // initial capacity (10)
+	const size_t grow;           // grow capacity by (10)
+};
 
 /*
  * Lifecycle
  */
 
-// construct a set with initial size 10, growing by 10 as necessary
+// construct a set with defaults
 const struct SSet *sset_init(void);
 
-// construct a set with initial size, grow as needed, NULL on zero param
-const struct SSet *sset_init_with(const size_t initial, const size_t grow, const bool case_insensitive);
+// construct a set with params
+const struct SSet *sset_init_with(const struct SSetParams params);
 
 // deep clone
-const struct SSet *sset_clone(const struct SSet* const set);
+const struct SSet *sset_clone(const struct SSet* const from);
 
 // free set and vals
 void sset_free(const struct SSet* const set);
@@ -43,14 +57,14 @@ void sset_iter_free(const struct SSetIter* const iter);
 // true if this set contains the specified element
 bool sset_contains(const struct SSet* const set, const char* const val);
 
-// create an iterator, caller must sset_iter_free or invoke sset_next until NULL
+// create an iterator, caller must sset_iter_free or invoke pset_next until NULL
 const struct SSetIter *sset_iter(const struct SSet* const set);
+
+// create an iterator filtering by equal_val, NULL equal_val matches all
+const struct SSetIter *sset_filter_iter(const struct SSet* const set, fn_equal_str equal_val, const void* const data);
 
 // next iterator value, NULL at end of set
 const struct SSetIter *sset_iter_next(const struct SSetIter* const iter);
-
-// iterator value, NULL on NULL iter
-const char *sset_iter_val(const struct SSetIter* const iter);
 
 /*
  * Mutate
@@ -76,22 +90,18 @@ bool sset_equal(const struct SSet* const a, const struct SSet* const b);
  * Conversion
  */
 
-// ordered strings, caller frees list and contents
+// ordered strings, caller frees list and vals
 struct SList *sset_slist(const struct SSet* const set);
 
 /*
  * Info
  */
 
-// to string, user frees
-// lines with format "%s\n"
+// to string, user frees, format "%s\n"
 char *sset_str(const struct SSet* const set);
 
 // number of values
 size_t sset_size(const struct SSet* const set);
-
-// current capacity: initial + n * grow
-size_t sset_capacity(const struct SSet* const set);
 
 #endif // SSET_H
 

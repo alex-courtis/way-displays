@@ -9,6 +9,7 @@
 
 #include "cfg.h"
 #include "convert.h"
+#include "fn.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"

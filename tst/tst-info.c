@@ -16,6 +16,7 @@
 #include "cfg.h"
 #include "conditions.h"
 #include "displ.h"
+#include "fn.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"
