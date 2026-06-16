@@ -27,9 +27,10 @@ struct SSTableIter {
  * Optional constructor params (default)
  */
 struct SSTableParams {
-	const bool case_insensitive; // keys             (false)
-	const size_t initial;        // initial capacity (10)
-	const size_t grow;           // grow capacity by (10)
+	const bool case_insensitive_key; //                  (false)
+	const bool case_insensitive_val; //                  (false)
+	const size_t initial;            // initial capacity (10)
+	const size_t grow;               // grow capacity by (10)
 };
 
 /*

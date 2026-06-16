@@ -14,6 +14,8 @@
    diff --color=always -U 10000 <(sed -e ' s/itable/xtable/g ; s/ITable/XTable/g ' inc/itable.h) <(sed -e 's/stable/xtable/g ; s/STable/XTable/g' inc/stable.h) | less
 
    diff --color=always -U 10000 <(sed -e ' s/itable/xtable/g ; s/ITable/XTable/g ' src/itable.c) <(sed -e 's/stable/xtable/g ; s/STable/XTable/g' src/stable.c) | less
+
+   diff --color=always -U 10000 <(sed -e ' s/sstable/xtable/g ; s/SSTable/XTable/g ' src/sstable.c) <(sed -e 's/stable/xtable/g ; s/STable/XTable/g' src/stable.c) | less
    */
 
 struct ITable {
