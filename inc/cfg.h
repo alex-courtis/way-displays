@@ -147,9 +147,9 @@ void cfg_file_paths_destroy(void);
 
 bool cfg_resolve_file_path(struct Cfg *cfg);
 
-void cfg_copy_file_path(struct Cfg *from, struct Cfg *to);
+void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from);
 
-struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command);
+struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command);
 
 void validate_warn(struct Cfg *cfg);
 

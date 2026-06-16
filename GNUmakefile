@@ -97,7 +97,7 @@ iwyu: clean $(SRC_O) $(LIB_O) $(TST_O) $(EXAMPLE_O)
 # cppcheck
 #
 cppcheck: INCS += -Ilib/alex-c/tst
-cppcheck: $(SRC_C) $(LIB_O) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
+cppcheck: $(SRC_C) $(LIB_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
 		--enable=warning,unusedFunction,performance,portability,style \
 		--check-level=exhaustive \

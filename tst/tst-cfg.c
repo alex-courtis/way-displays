@@ -17,9 +17,9 @@
 
 #include "cfg.h"
 
-struct Cfg *merge_set(struct Cfg *to, struct Cfg *from);
-struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from);
-struct Cfg *merge_del(struct Cfg *to, struct Cfg *from);
+struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from);
+struct Cfg *merge_toggle(struct Cfg *to, const struct Cfg *from);
+struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from);
 
 
 extern struct SList *cfg_file_paths;

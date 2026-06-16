@@ -631,7 +631,7 @@ bool cfg_resolve_file_path(struct Cfg *dst) {
 	return false;
 }
 
-void cfg_copy_file_path(struct Cfg *from, struct Cfg *to) {
+void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
 	if (!from || !to)
 		return;
 
@@ -789,7 +789,7 @@ void validate_warn(struct Cfg *cfg) {
 	}
 }
 
-struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
+struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -838,7 +838,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// SCALE
-	struct UserScale *set_user_scale = NULL;
+	const struct UserScale *set_user_scale = NULL;
 	struct UserScale *merged_user_scale = NULL;
 	for (i = from->user_scales; i; i = i->nex) {
 		set_user_scale = (struct UserScale*)i->val;
@@ -851,7 +851,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// MODE
-	struct UserMode *set_user_mode = NULL;
+	const struct UserMode *set_user_mode = NULL;
 	struct UserMode *merged_user_mode = NULL;
 	for (i = from->user_modes; i; i = i->nex) {
 		set_user_mode = (struct UserMode*)i->val;
@@ -868,7 +868,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// TRANSFORM
-	struct UserTransform *set_user_transform = NULL;
+	const struct UserTransform *set_user_transform = NULL;
 	struct UserTransform *merged_user_transform = NULL;
 	for (i = from->user_transforms; i; i = i->nex) {
 		set_user_transform = (struct UserTransform*)i->val;
@@ -905,14 +905,14 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
+struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
 
 	struct Cfg *merged = clone_cfg(to);
 
-	struct SList *i;
+	const struct SList *i;
 
 	// SCALE
 	for (i = from->user_scales; i; i = i->nex) {
@@ -948,7 +948,7 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
+struct Cfg *merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -971,7 +971,7 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command) {
+struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {
 	if (!to || !from) {
 		return NULL;
 	}

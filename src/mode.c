@@ -183,7 +183,7 @@ struct SList *modes_res_refresh(struct SList *modes) {
 	return mrrs;
 }
 
-struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode) {
+struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, const struct UserMode *user_mode) {
 	if (!modes || !user_mode)
 		return NULL;
 

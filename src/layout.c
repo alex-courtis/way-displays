@@ -96,7 +96,7 @@ void position_heads(struct SList *heads) {
 	}
 }
 
-struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
+struct SList *order_heads(const struct SList *order_name_desc, struct SList *heads) {
 	if (!heads)
 		return NULL;
 
@@ -109,21 +109,21 @@ struct SList *order_heads(struct SList *order_name_desc, struct SList *heads) {
 
 	// exact match
 	i = 0;
-	for (struct SList *o = order_name_desc; o; o = o->nex) {
+	for (const struct SList *o = order_name_desc; o; o = o->nex) {
 		slist_move(&order_heads[i], &sorting, head_matches_name_desc_exact, o->val);
 		i++;
 	}
 
 	// regex
 	i = 0;
-	for (struct SList *o = order_name_desc; o; o = o->nex) {
+	for (const struct SList *o = order_name_desc; o; o = o->nex) {
 		slist_move(&order_heads[i], &sorting, head_matches_name_desc_regex, o->val);
 		i++;
 	}
 
 	// fuzzy
 	i = 0;
-	for (struct SList *o = order_name_desc; o; o = o->nex) {
+	for (const struct SList *o = order_name_desc; o; o = o->nex) {
 		slist_move(&order_heads[i], &sorting, head_matches_name_desc_fuzzy, o->val);
 		i++;
 	}
