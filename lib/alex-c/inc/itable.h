@@ -31,6 +31,11 @@ struct ITableParams {
 };
 
 /*
+ * Test for a key
+ */
+typedef bool (*fn_equal_size_t)(const size_t a, const void* const b);
+
+/*
  * Lifecycle
  */
 

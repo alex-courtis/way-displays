@@ -2,16 +2,11 @@
 #define FN_H
 
 #include <stdbool.h>
-#include <stddef.h>
 
 //
-// a is generally the value from the collection, b is user supplied
+// a is generally the value from the collection, b generally user supplied or the value from the other collection
 //
 typedef bool (*fn_equal)(const void* const a, const void* const b);
-
-typedef bool (*fn_equal_str)(const char* const a, const char* const b);
-
-typedef bool (*fn_equal_size_t)(const size_t a, const void* const b);
 
 // true if a == b
 bool fn_equal_ptr(const void* const a, const void* const b);

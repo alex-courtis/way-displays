@@ -88,11 +88,11 @@ const struct SSTableIter *sstable_iter(const struct SSTable* const tab) {
 	return sstable_filter_iter(tab, NULL, NULL, NULL);
 }
 
-const struct SSTableIter *sstable_filter_iter(const struct SSTable* const tab, fn_equal_str equal_key, fn_equal_str equal_val, const void* const data) {
+const struct SSTableIter *sstable_filter_iter(const struct SSTable* const tab, fn_equal equal_key, fn_equal equal_val, const void* const data) {
 	if (!tab)
 		return NULL;
 
-	const struct PTableIter *pit = ptable_filter_iter(tab->ptab, (fn_equal)equal_key, (fn_equal)equal_val, data);
+	const struct PTableIter *pit = ptable_filter_iter(tab->ptab, equal_key, equal_val, data);
 
 	if (!pit)
 		return NULL;

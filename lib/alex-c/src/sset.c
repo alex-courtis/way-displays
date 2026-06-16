@@ -82,11 +82,11 @@ const struct SSetIter *sset_iter(const struct SSet* const set) {
 	return set ? sset_filter_iter(set, NULL, NULL) : NULL;
 }
 
-const struct SSetIter *sset_filter_iter(const struct SSet* const set, fn_equal_str equal_val, const void* const data) {
+const struct SSetIter *sset_filter_iter(const struct SSet* const set, fn_equal equal_val, const void* const data) {
 	if (!set)
 		return NULL;
 
-	const struct PSetIter *pit = pset_filter_iter(set->pset, (fn_equal)equal_val, data);
+	const struct PSetIter *pit = pset_filter_iter(set->pset, equal_val, data);
 
 	if (!pit)
 		return NULL;

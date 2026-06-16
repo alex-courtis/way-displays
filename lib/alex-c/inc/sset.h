@@ -61,7 +61,7 @@ bool sset_contains(const struct SSet* const set, const char* const val);
 const struct SSetIter *sset_iter(const struct SSet* const set);
 
 // create an iterator filtering by equal_val, NULL equal_val matches all
-const struct SSetIter *sset_filter_iter(const struct SSet* const set, fn_equal_str equal_val, const void* const data);
+const struct SSetIter *sset_filter_iter(const struct SSet* const set, fn_equal equal_val, const void* const data);
 
 // next iterator value, NULL at end of set
 const struct SSetIter *sset_iter_next(const struct SSetIter* const iter);

@@ -63,7 +63,7 @@ const void *sstable_get(const struct SSTable* const tab, const char* const key);
 const struct SSTableIter *sstable_iter(const struct SSTable* const tab);
 
 // create an iterator filtering by equal_key and equal_val, NULL tests match all
-const struct SSTableIter *sstable_filter_iter(const struct SSTable* const tab, fn_equal_str equal_key, fn_equal_str equal_val, const void* const data);
+const struct SSTableIter *sstable_filter_iter(const struct SSTable* const tab, fn_equal equal_key, fn_equal equal_val, const void* const data);
 
 // next iterator entry, NULL at end of table
 const struct SSTableIter *sstable_iter_next(const struct SSTableIter* const iter);
