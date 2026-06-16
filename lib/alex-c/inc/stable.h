@@ -8,7 +8,7 @@
 
 /*
  * `PTable` with string keys.
- * Keys are strdup'd on successful `stable_put` and `stable_clone`
+ * Keys are strdup'd on successful `stable_put`, `stable_clone` and `stable_keys_slist`
  * Keys are free'd on `stable_free`
  */
 struct STable; // IWYU pragma: keep
@@ -92,7 +92,7 @@ bool stable_equal(const struct STable* const a, const struct STable* const b);
  * Conversion
  */
 
-// ordered key pointers, caller frees list only
+// ordered key strings, caller frees list and vals
 struct SList *stable_keys_slist(const struct STable* const tab);
 
 // ordered val pointers, caller frees list only

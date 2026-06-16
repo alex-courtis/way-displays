@@ -305,7 +305,11 @@ struct SList *ptable_keys_slist(const struct PTable* const tab) {
 
 	const void **k;
 	for (k = tab->keys; k < tab->keys + tab->size; k++) {
-		slist_append(&list, (void*)*k);
+		if (tab->params.alloc_key) {
+			slist_append(&list, (void*)tab->params.alloc_key(*k));
+		} else {
+			slist_append(&list, (void*)*k);
+		}
 	}
 
 	return list;
