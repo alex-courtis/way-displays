@@ -25,7 +25,7 @@ TST_E = $(filter tst/tst%,$(TST_O:.o=))
 all: way-displays
 
 clean:
-	rm -f way-displays $(SRC_O) $(PRO_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O) actual.* expected.*
+	rm -f way-displays $(SRC_O) $(PRO_O) $(LIB_O) $(PRO_H) $(PRO_C) $(TST_O) $(TST_E) $(EXAMPLE_E) $(EXAMPLE_O) actual.* expected.*
 	find . -name '*.gcno' -type f -delete -print
 	find . -name '*.gcda' -type f -delete -print
 

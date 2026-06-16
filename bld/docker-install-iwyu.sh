@@ -8,10 +8,13 @@ VERSION="0.26"
 # speed up builds a bit
 export MAKEFLAGS=-j8
 
+mkdir -p /src
+cd /src
+
 #
 # include-what-you-use to /usr/local
 #
-curl -L "https://github.com/include-what-you-use/include-what-you-use/archive/refs/tags/${VERSION}.tar.gz" | tar zx
+curl -L "https://github.com/include-what-you-use/include-what-you-use/archive/refs/tags/${VERSION}.tar.gz" | tar --no-same-owner -zx
 
 cd "include-what-you-use-${VERSION}"
 
