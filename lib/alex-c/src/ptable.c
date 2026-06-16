@@ -105,7 +105,9 @@ void ptable_free_vals(const struct PTable* const tab, fn_free free_val) {
 
 	for (const void **v = tab->vals; v < tab->vals + tab->capacity; v++) {
 		if (*v) {
-			if (free_val) {
+			if (tab->params.free_val) {
+				tab->params.free_val(*v);
+			} else if (free_val) {
 				free_val(*v);
 			} else {
 				free((void*)*v);
@@ -330,7 +332,7 @@ struct SList *ptable_vals_slist(const struct PTable* const tab) {
 	return list;
 }
 
-char *ptable_str(const struct PTable* const tab, fn_str str_key, fn_str str_val) {
+char *ptable_str(const struct PTable* const tab) {
 	if (!tab)
 		return NULL;
 
@@ -341,8 +343,8 @@ char *ptable_str(const struct PTable* const tab, fn_str str_key, fn_str str_val)
 	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
 
 		if (*k) {
-			if (str_key) {
-				char *key = str_key(*k);
+			if (tab->params.str_key) {
+				char *key = tab->params.str_key(*k);
 				out = sprintf_append(out, "%s = ", key);
 				free(key);
 			} else {
@@ -353,8 +355,8 @@ char *ptable_str(const struct PTable* const tab, fn_str str_key, fn_str str_val)
 		}
 
 		if (*v) {
-			if (str_val) {
-				char *val = str_val(*v);
+			if (tab->params.str_val) {
+				char *val = tab->params.str_val(*v);
 				out = sprintf_append(out, "%s\n", val);
 				free(val);
 			} else {

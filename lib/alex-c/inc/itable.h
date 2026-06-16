@@ -26,6 +26,7 @@ struct ITableIter {
  */
 struct ITableParams {
 	const fn_equal equal_val; // _get, _put, _equal, _clone (compare key pointers)
+	const fn_str str_val;     // _str                       (%p)
 	const size_t initial;     // initial capacity           (10)
 	const size_t grow;        // grow capacity by           (10)
 };
@@ -101,8 +102,8 @@ struct SList *itable_vals_slist(const struct ITable* const tab);
  * Info
  */
 
-// to string, user frees, format "k = str_val\n", "%p" for NULL fn_str
-char *itable_str(const struct ITable* const tab, fn_str str_val);
+// to string, user frees, format "k = str_val\n"
+char *itable_str(const struct ITable* const tab);
 
 // number of entries
 size_t itable_size(const struct ITable* const tab);

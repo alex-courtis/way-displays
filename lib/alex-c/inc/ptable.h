@@ -36,6 +36,9 @@ struct PTableParams {
 	const fn_equal equal_val;   // _equal                           (compare val pointers)
 	const fn_alloc alloc_key;   // _clone, _put, must be idempotent (use key pointer)
 	const fn_free free_key;     // _remove, _free, _free_vals       (NOP)
+	const fn_free free_val;     // _free_vals                       (free)
+	const fn_str str_key;       // _str                             (%p)
+	const fn_str str_val;       // _str                             (%p)
 	const size_t initial;       // initial capacity                 (10)
 	const size_t grow;          // grow capacity by                 (10)
 };
@@ -109,8 +112,8 @@ struct SList *ptable_vals_slist(const struct PTable* const tab);
  * Info
  */
 
-// to string, user frees, format "str_key = str_val\n", "%p" for NULL fn_str
-char *ptable_str(const struct PTable* const tab, fn_str str_key, fn_str str_val);
+// to string, user frees, format "str_key = str_val\n"
+char *ptable_str(const struct PTable* const tab);
 
 // number of entries
 size_t ptable_size(const struct PTable* const tab);

@@ -37,6 +37,8 @@ const struct STable *stable_init_with(const struct STableParams params) {
 		.equal_val = params.equal_val,
 		.alloc_key = (fn_alloc)strdup,
 		.free_key = (fn_free)free,
+		.str_key = fn_str_or_null,
+		.str_val = params.str_val,
 		.initial = params.initial,
 		.grow = params.grow,
 	};
@@ -160,8 +162,8 @@ struct SList *stable_vals_slist(const struct STable* const tab) {
 	return tab ? ptable_vals_slist(tab->ptab) : NULL;
 }
 
-char *stable_str(const struct STable* const tab, fn_str str_val) {
-	return tab ? ptable_str(tab->ptab, fn_str_or_null, str_val) : NULL;
+char *stable_str(const struct STable* const tab) {
+	return tab ? ptable_str(tab->ptab) : NULL;
 }
 
 size_t stable_size(const struct STable* const tab) {

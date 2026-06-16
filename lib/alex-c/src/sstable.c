@@ -37,6 +37,8 @@ const struct SSTable *sstable_init_with(const struct SSTableParams params) {
 		.equal_val = params.case_insensitive_val ? fn_equal_strcasecmp : fn_equal_strcmp,
 		.alloc_key = (fn_alloc)strdup,
 		.free_key = (fn_free)free,
+		.str_key = fn_str_or_null,
+		.str_val = fn_str_or_null,
 		.initial = params.initial,
 		.grow = params.grow,
 	};
@@ -173,7 +175,7 @@ struct SList *sstable_vals_slist(const struct SSTable* const tab) {
 }
 
 char *sstable_str(const struct SSTable* const tab) {
-	return tab ? ptable_str(tab->ptab, fn_str_or_null, fn_str_or_null) : NULL;
+	return tab ? ptable_str(tab->ptab) : NULL;
 }
 
 size_t sstable_size(const struct SSTable* const tab) {

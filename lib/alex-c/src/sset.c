@@ -32,6 +32,7 @@ const struct SSet *sset_init_with(const struct SSetParams params) {
 		.equal_val = params.case_insensitive ? fn_equal_strcasecmp : fn_equal_strcmp,
 		.alloc_val = (fn_alloc)strdup,
 		.free_val = (fn_free)free,
+		.str_val = fn_str_or_null,
 		.initial = params.initial,
 		.grow = params.grow,
 	};
@@ -145,7 +146,7 @@ struct SList *sset_slist(const struct SSet* const set) {
 }
 
 char *sset_str(const struct SSet* const set) {
-	return set ? pset_str(set->pset, fn_str_or_null) : NULL;
+	return set ? pset_str(set->pset) : NULL;
 }
 
 size_t sset_size(const struct SSet* const set) {

@@ -286,15 +286,15 @@ struct SList *pset_slist(const struct PSet* const set) {
 	return list;
 }
 
-char *pset_str(const struct PSet* const set, fn_str str_val) {
+char *pset_str(const struct PSet* const set) {
 	if (!set)
 		return NULL;
 
 	char *out = strdup("");
 
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
-		if (str_val) {
-			char *val_str = str_val(*v);
+		if (set->params.str_val) {
+			char *val_str = set->params.str_val(*v);
 			out = sprintf_append(out, "%s\n", val_str);
 			free(val_str);
 		} else {

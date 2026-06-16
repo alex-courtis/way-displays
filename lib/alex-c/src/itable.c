@@ -59,6 +59,8 @@ const struct ITable *itable_init_with(const struct ITableParams params) {
 		.equal_val = params.equal_val,
 		.alloc_key = fn_alloc_key,
 		.free_key = (fn_free)free,
+		.str_key = fn_str_key,
+		.str_val = params.str_val,
 		.initial = params.initial,
 		.grow = params.grow,
 	};
@@ -193,8 +195,8 @@ struct SList *itable_vals_slist(const struct ITable* const tab) {
 	return tab ? ptable_vals_slist(tab->ptab) : NULL;
 }
 
-char *itable_str(const struct ITable* const tab, fn_str str_val) {
-	return tab ? ptable_str(tab->ptab, fn_str_key, str_val) : NULL;
+char *itable_str(const struct ITable* const tab) {
+	return tab ? ptable_str(tab->ptab) : NULL;
 }
 
 size_t itable_size(const struct ITable* const tab) {

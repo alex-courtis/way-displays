@@ -2,7 +2,6 @@
 #define ASSERT_PTABLE_H
 
 #include <cmocka.h>
-#include <stddef.h>
 
 #include "util-file.h"
 
@@ -10,9 +9,9 @@
 
 void _assert_ptable_equal(const struct PTable *a, const struct PTable *b, const char * const file, const int line) {
 	if (!ptable_equal(a, b)) {
-		write_file("actual.ptable", ptable_str(a, NULL, NULL));
-		write_file("expected.ptable", ptable_str(b, NULL, NULL));
-		cmocka_print_error("\n%s != \n%s", ptable_str(a, NULL, NULL), ptable_str(b, NULL, NULL));
+		write_file("actual.ptable", ptable_str(a));
+		write_file("expected.ptable", ptable_str(b));
+		cmocka_print_error("\n%s != \n%s", ptable_str(a), ptable_str(b));
 		_fail(file, line);
 	}
 }
@@ -20,9 +19,9 @@ void _assert_ptable_equal(const struct PTable *a, const struct PTable *b, const 
 
 void _assert_ptable_not_equal(const struct PTable *a, const struct PTable *b, const char * const file, const int line) {
 	if (ptable_equal(a, b)) {
-		write_file("actual.ptable", ptable_str(a, NULL, NULL));
-		write_file("expected.ptable", ptable_str(b, NULL, NULL));
-		cmocka_print_error("\n%s == \n%s", ptable_str(a, NULL, NULL), ptable_str(b, NULL, NULL));
+		write_file("actual.ptable", ptable_str(a));
+		write_file("expected.ptable", ptable_str(b));
+		cmocka_print_error("\n%s == \n%s", ptable_str(a), ptable_str(b));
 		_fail(file, line);
 	}
 }
