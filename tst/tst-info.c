@@ -706,7 +706,7 @@ static void call_back__one(void **state) {
 
 	assert_logs_empty();
 
-	smaps_free_vals(expected);
+	smaps_free(expected);
 }
 
 static void call_back__two(void **state) {
@@ -734,7 +734,7 @@ static void call_back__two(void **state) {
 
 	assert_logs_empty();
 
-	smaps_free_vals(expected);
+	smaps_free(expected);
 }
 
 static void call_back_mode_fail__(void **state) {
@@ -764,7 +764,7 @@ static void call_back_mode_fail__(void **state) {
 
 	assert_logs_empty();
 
-	smaps_free_vals(expected);
+	smaps_free(expected);
 }
 
 static void call_back_adaptive_sync_fail__(void **state) {
@@ -799,7 +799,7 @@ static void call_back_adaptive_sync_fail__(void **state) {
 
 	assert_logs_empty();
 
-	smaps_free_vals(expected);
+	smaps_free(expected);
 }
 
 int main(void) {

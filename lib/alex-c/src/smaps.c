@@ -42,7 +42,7 @@ const struct SMapS *smaps_init_with(const struct SMapSParams params) {
 	return tab;
 }
 
-const struct SMapS *smaps_clone_deep(const struct SMapS* const from) {
+const struct SMapS *smaps_clone(const struct SMapS* const from) {
 	if (!from)
 		return NULL;
 
@@ -53,7 +53,7 @@ const struct SMapS *smaps_clone_deep(const struct SMapS* const from) {
 	return to;
 }
 
-void smaps_free_vals(const struct SMapS* const tab) {
+void smaps_free(const struct SMapS* const tab) {
 	if (!tab)
 		return;
 
@@ -128,7 +128,7 @@ const struct SMapSIter *smaps_iter_next(const struct SMapSIter* const citer) {
 	}
 }
 
-bool smaps_put_free(const struct SMapS* const tab, const char* const key, const char* const val) {
+bool smaps_put(const struct SMapS* const tab, const char* const key, const char* const val) {
 	return tab ? pmap_put_free(tab->ptab, key, val): false;
 }
 
@@ -136,7 +136,7 @@ bool smaps_put_if_absent(const struct SMapS* const tab, const char* const key, c
 	return tab ? pmap_put_if_absent(tab->ptab, key, val) : false;
 }
 
-bool smaps_remove_free(const struct SMapS* const tab, const char* const key) {
+bool smaps_remove(const struct SMapS* const tab, const char* const key) {
 	return tab ? pmap_remove_free(tab->ptab, key) : false;
 }
 

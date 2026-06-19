@@ -678,7 +678,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	// execute callback
 	spawn_sh_cmd(g_cfg->callback_cmd, env);
 
-	smaps_free_vals(env);
+	smaps_free(env);
 	free(buf);
 }
 

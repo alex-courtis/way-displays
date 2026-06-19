@@ -43,10 +43,10 @@ const struct SMapS *smaps_init(void);
 const struct SMapS *smaps_init_with(const struct SMapSParams params);
 
 // clone
-const struct SMapS *smaps_clone_deep(const struct SMapS* const from);
+const struct SMapS *smaps_clone(const struct SMapS* const from);
 
-// free map keys and values
-void smaps_free_vals(const struct SMapS* const tab);
+// free map
+void smaps_free(const struct SMapS* const tab);
 
 // free iter
 void smaps_iter_free(const struct SMapSIter* const iter);
@@ -75,13 +75,13 @@ const struct SMapSIter *smaps_iter_next(const struct SMapSIter* const iter);
  */
 
 // set key/val, return true if overwritten
-bool smaps_put_free(const struct SMapS* const tab, const char* const key, const char* const val);
+bool smaps_put(const struct SMapS* const tab, const char* const key, const char* const val);
 
 // set key/val if not present, return true if overwritten
 bool smaps_put_if_absent(const struct SMapS* const tab, const char* const key, const char* const val);
 
 // remove val, return true if removed
-bool smaps_remove_free(const struct SMapS* const tab, const char* const key);
+bool smaps_remove(const struct SMapS* const tab, const char* const key);
 
 /*
  * Comparison

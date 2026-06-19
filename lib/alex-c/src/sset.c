@@ -38,7 +38,7 @@ const struct SSet *sset_init_with(const struct SSetParams params) {
 	return set;
 }
 
-const struct SSet *sset_clone_deep(const struct SSet* const from) {
+const struct SSet *sset_clone(const struct SSet* const from) {
 	if (!from)
 		return NULL;
 
@@ -49,7 +49,7 @@ const struct SSet *sset_clone_deep(const struct SSet* const from) {
 	return to;
 }
 
-void sset_free_vals(const struct SSet* const set) {
+void sset_free(const struct SSet* const set) {
 	if (!set)
 		return;
 
@@ -122,7 +122,7 @@ bool sset_add(const struct SSet* const set, const char* const val) {
 	return set ? pset_add(set->pset, val) : false;
 }
 
-bool sset_remove_free(const struct SSet* const set, const char* const val) {
+bool sset_remove(const struct SSet* const set, const char* const val) {
 	return set ? pset_remove_free(set->pset, val) : false;
 }
 

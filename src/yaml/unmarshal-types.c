@@ -680,7 +680,7 @@ struct SList *yaml_seq_to_name_desc_list(struct UC *c, const yaml_node_t *seq) {
 
 	struct SList *list = sset_slist_deep(set);
 
-	sset_free_vals(set);
+	sset_free(set);
 
 	return list;
 }

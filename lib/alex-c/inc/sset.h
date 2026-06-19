@@ -41,10 +41,10 @@ const struct SSet *sset_init(void);
 const struct SSet *sset_init_with(const struct SSetParams params);
 
 // clone a set
-const struct SSet *sset_clone_deep(const struct SSet* const from);
+const struct SSet *sset_clone(const struct SSet* const from);
 
-// free set and vals
-void sset_free_vals(const struct SSet* const set);
+// free set
+void sset_free(const struct SSet* const set);
 
 // free iter
 void sset_iter_free(const struct SSetIter* const iter);
@@ -73,7 +73,7 @@ const struct SSetIter *sset_iter_next(const struct SSetIter* const iter);
 bool sset_add(const struct SSet* const set, const char* const val);
 
 // if the set contains val, remove it, free it and return true
-bool sset_remove_free(const struct SSet* const set, const char* const val);
+bool sset_remove(const struct SSet* const set, const char* const val);
 
 // shell sort in place
 void sset_sort(const struct SSet* const set);
