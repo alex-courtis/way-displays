@@ -8,8 +8,7 @@
 
 /*
  * `PSet` with string values
- * Values are strdup'd on successful `sset_add`, `sset_clone` and `sset_slist`
- * Values are free'd on `sset_free`
+ * Values are memory managed.
  */
 struct SSet; // IWYU pragma: keep
 
@@ -26,9 +25,9 @@ struct SSetIter {
  * Optional constructor params, defaults noted
  */
 struct SSetParams {
-	const bool case_insensitive; //                  (false)
-	const size_t initial;        // initial capacity (10)
-	const size_t grow;           // grow capacity by (10)
+	const bool case_insensitive; // false
+	const size_t initial;        // 10
+	const size_t grow;           // 10
 };
 
 /*
@@ -41,11 +40,11 @@ const struct SSet *sset_init(void);
 // construct a set with params
 const struct SSet *sset_init_with(const struct SSetParams params);
 
-// deep clone
-const struct SSet *sset_clone(const struct SSet* const from);
+// clone a set
+const struct SSet *sset_clone_deep(const struct SSet* const from);
 
 // free set and vals
-void sset_free(const struct SSet* const set);
+void sset_free_vals(const struct SSet* const set);
 
 // free iter
 void sset_iter_free(const struct SSetIter* const iter);
@@ -70,11 +69,11 @@ const struct SSetIter *sset_iter_next(const struct SSetIter* const iter);
  * Mutate
  */
 
-// true if this set did not already contain the specified element
+// add if the set does not contain val, return true if added
 bool sset_add(const struct SSet* const set, const char* const val);
 
-// true if this set contained the element
-bool sset_remove(const struct SSet* const set, const char* const val);
+// if the set contains val, remove it, free it and return true
+bool sset_remove_free(const struct SSet* const set, const char* const val);
 
 // shell sort in place
 void sset_sort(const struct SSet* const set);
@@ -90,8 +89,8 @@ bool sset_equal(const struct SSet* const a, const struct SSet* const b);
  * Conversion
  */
 
-// ordered strings, caller frees list and vals
-struct SList *sset_slist(const struct SSet* const set);
+// ordered vals, caller frees list and vals
+struct SList *sset_slist_deep(const struct SSet* const set);
 
 /*
  * Info

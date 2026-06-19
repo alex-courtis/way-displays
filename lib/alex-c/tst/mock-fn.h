@@ -12,11 +12,9 @@ bool mock_less_than(const void* const a, const void* const b);
 
 bool mock_test(const void* const val);
 
-const void *mock_alloc(const void* const val);
+void *mock_clone(const void* const val);
 
 void mock_free(const void* const val);
-
-void *mock_clone(const void* const val);
 
 char* mock_str(const void* const val);
 

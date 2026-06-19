@@ -37,11 +37,6 @@ bool fn_less_than_strcasecmp(const void* const a, const void* const b);
 typedef bool (*fn_test)(const void* const data);
 
 //
-// alloc from data
-//
-typedef const void* (*fn_alloc)(const void* const val);
-
-//
 // free
 //
 typedef void (*fn_free)(const void* const val);

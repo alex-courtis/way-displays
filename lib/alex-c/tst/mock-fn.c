@@ -29,7 +29,7 @@ bool mock_test(const void* const val) {
 	return mock_type(bool);
 }
 
-const void *mock_alloc(const void* const val) {
+void *mock_clone(const void* const val) {
 	check_expected_ptr(val);
 
 	return mock_ptr_type_checked(void*);
@@ -37,12 +37,6 @@ const void *mock_alloc(const void* const val) {
 
 void mock_free(const void* const val) {
 	check_expected_ptr(val);
-}
-
-void *mock_clone(const void* const val) {
-	check_expected_ptr(val);
-
-	return mock_ptr_type_checked(void*);
 }
 
 char* mock_str(const void* const val) {

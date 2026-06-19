@@ -16,7 +16,7 @@
 #include "output.h"
 #include "process.h"
 #include "slist.h"
-#include "sstable.h"
+#include "smaps.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -666,19 +666,19 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	snprintf(buf, CALLBACK_MSG_LEN, "%s%s", msg1 ? msg1 : "", msg2 ? msg2 : "");
 
 	// pack environment variables
-	const struct SSTable *env = sstable_init();
+	const struct SMapS *env = smaps_init();
 
-	sstable_put(env, "CALLBACK_MSG", buf);
-	sstable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
+	smaps_put_if_absent(env, "CALLBACK_MSG", buf);
+	smaps_put_if_absent(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
-	char *env_str = sstable_str(env);
+	char *env_str = smaps_str(env);
 	log_debug("%s", env_str);
 	free(env_str);
 
 	// execute callback
 	spawn_sh_cmd(g_cfg->callback_cmd, env);
 
-	sstable_free(env);
+	smaps_free_vals(env);
 	free(buf);
 }
 

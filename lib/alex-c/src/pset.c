@@ -11,12 +11,6 @@
 #define PSET_DEFAULT_INITIAL 10
 #define PSET_DEFAULT_GROW 10
 
-/*
-   diff --color=always -U 10000 <(sed -e ' s/pset/xset/g ; s/PSet/XSet/g ' inc/pset.h) <(sed -e 's/sset/xset/g ; s/SSet/XSet/g' inc/sset.h) | less
-
-   diff --color=always -U 10000 <(sed -e ' s/pset/xset/g ; s/PSet/XSet/g ' src/pset.c) <(sed -e 's/sset/xset/g ; s/SSet/XSet/g' src/sset.c) | less
-   */
-
 struct PSet {
 	const struct PSetParams params;
 	const void **vals;
@@ -32,7 +26,7 @@ struct PSetIterState {
 };
 
 // grow to capacity + grow
-static void grow_pset(struct PSet *set) {
+static void grow(struct PSet *set) {
 	size_t new_capacity = set->capacity + (set->params.grow ? set->params.grow : PSET_DEFAULT_GROW);
 
 	// grow new arrays
@@ -47,6 +41,89 @@ static void grow_pset(struct PSet *set) {
 	// lock in new
 	set->vals = new_vals;
 	set->capacity = new_capacity;
+}
+
+static bool add(const struct PSet* const cset, const void* const val, fn_clone clone_val) {
+	if (!val)
+		return false;
+
+	struct PSet *set = (struct PSet*)cset;
+
+	const void **v;
+	for (v = set->vals; v < set->vals + set->size; v++) {
+		if (set->params.equal_val ? set->params.equal_val(*v, val) : *v == val) {
+			return false;
+		}
+	}
+
+	// maybe grow for new entry
+	if (set->size >= set->capacity) {
+		grow(set);
+		v = &set->vals[set->size];
+	}
+
+	// new value
+	if (clone_val) {
+		*v = clone_val(val);
+	} else {
+		*v = (void*)val;
+	}
+	set->size++;
+
+	return true;
+}
+
+static bool remove(const struct PSet* const cset, const void* const val, fn_free free_val) {
+	if (!val)
+		return false;
+
+	struct PSet *set = (struct PSet*)cset;
+
+	for (const void **v = set->vals; v < set->vals + set->size; v++) {
+		if (set->params.equal_val ? set->params.equal_val(*v, val) : *v == val) {
+			if (free_val) {
+				free_val(*v);
+			}
+
+			*v = NULL;
+			set->size--;
+
+			// shift down over removed
+			const void **m;
+			for (m = v; m < v + set->size; m++) {
+				*m = *(m + 1);
+			}
+			*m = NULL;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static const struct PSet *clone(const struct PSet* const from, fn_clone clone_val) {
+	const struct PSet *to = pset_init_with(from->params);
+
+	for (const void **v = from->vals; v < from->vals + from->size; v++) {
+		add(to, *v, clone_val);
+	}
+
+	return to;
+}
+
+static struct SList *slist(const struct PSet* const set, fn_clone clone_val) {
+	struct SList *list = NULL;
+
+	for (const void **v = set->vals; v < set->vals + set->size; v++) {
+		if (clone_val) {
+			slist_append(&list, (void*)clone_val(*v));
+		} else {
+			slist_append(&list, (void*)*v);
+		}
+	}
+
+	return list;
 }
 
 const struct PSet *pset_init(void) {
@@ -65,17 +142,15 @@ const struct PSet *pset_init_with(const struct PSetParams params) {
 	return set;
 }
 
-const struct PSet *pset_clone(const struct PSet* const from, fn_clone clone_val) {
-	if (!from)
+const struct PSet *pset_clone_shallow(const struct PSet* const from) {
+	return from ? clone(from, NULL) : NULL;
+}
+
+const struct PSet *pset_clone_deep(const struct PSet* const from) {
+	if (!from || !from->params.clone_val)
 		return NULL;
 
-	const struct PSet *to = pset_init_with(from->params);
-
-	for (const void **v = from->vals; v < from->vals + from->size; v++) {
-		pset_add(to, clone_val ? clone_val(*v) : *v);
-	}
-
-	return to;
+	return clone(from, from->params.clone_val);
 }
 
 void pset_free(const struct PSet * const set) {
@@ -142,92 +217,47 @@ const struct PSetIter *pset_filter_iter(const struct PSet* const set, fn_equal e
 	return pset_iter_next(it);
 }
 
-const struct PSetIter *pset_iter_next(const struct PSetIter* const iter) {
-	if (!iter)
+const struct PSetIter *pset_iter_next(const struct PSetIter* const citer) {
+	if (!citer)
 		return NULL;
 
-	struct PSetIter *it = (struct PSetIter*)iter;
-	struct PSetIterState *st = it->st;
-	if (!st || !st->set) {
-		pset_iter_free(it);
+	struct PSetIter *iter = (struct PSetIter*)citer;
+	struct PSetIterState *st = iter->st;
+	if (!st) {
+		pset_iter_free(iter);
 		return NULL;
 	}
 
 	// null val indicates first use, start at the beginning
-	if (it->val) {
+	if (iter->val) {
 		st->pos++;
 	}
 
 	for ( ; st->pos < st->set->size; st->pos++) {
 
-		it->val = *(st->set->vals + st->pos);
+		iter->val = *(st->set->vals + st->pos);
 
-		if ((st->equal_val && !st->equal_val(it->val, st->data))) {
+		if ((st->equal_val && !st->equal_val(iter->val, st->data))) {
 			continue;
 		}
 
-		return it;
+		return iter;
 	}
 
-	pset_iter_free(it);
+	pset_iter_free(iter);
 	return NULL;
 }
 
-bool pset_add(const struct PSet* const cset, const void* const val) {
-	if (!cset || !val)
-		return false;
-
-	struct PSet *set = (struct PSet*)cset;
-
-	const void **v;
-	for (v = set->vals; v < set->vals + set->size; v++) {
-		if (set->params.equal_val ? set->params.equal_val(*v, val) : *v == val) {
-			return false;
-		}
-	}
-
-	// maybe grow for new entry
-	if (set->size >= set->capacity) {
-		grow_pset(set);
-		v = &set->vals[set->size];
-	}
-
-	// new value
-	if (set->params.alloc_val) {
-		*v = set->params.alloc_val(val);
-	} else {
-		*v = (void*)val;
-	}
-	set->size++;
-
-	return true;
+bool pset_add(const struct PSet* const set, const void* const val) {
+	return set ? add(set, val, set->params.clone_val) : false;
 }
 
-const void *pset_remove(const struct PSet* const cset, const void* const val) {
-	if (!cset || !val)
-		return NULL;
+bool pset_remove(const struct PSet* const set, const void* const val) {
+	return set ? remove(set, val, NULL) : false;
+}
 
-	struct PSet *set = (struct PSet*)cset;
-
-	for (const void **v = set->vals; v < set->vals + set->size; v++) {
-		if (set->params.equal_val ? set->params.equal_val(*v, val) : *v == val) {
-			const void *removed = *v;
-
-			*v = NULL;
-			set->size--;
-
-			// shift down over removed
-			const void **m;
-			for (m = v; m < v + set->size; m++) {
-				*m = *(m + 1);
-			}
-			*m = NULL;
-
-			return removed;
-		}
-	}
-
-	return NULL;
+bool pset_remove_free(const struct PSet* const set, const void* const val) {
+	return set ? remove(set, val, set->params.free_val ? set->params.free_val : (fn_free)free) : false;
 }
 
 void pset_sort(const struct PSet* const set, fn_less_than less_than_val) {
@@ -265,21 +295,15 @@ bool pset_equal(const struct PSet* const a, const struct PSet* const b) {
 	return true;
 }
 
-struct SList *pset_slist(const struct PSet* const set) {
-	if (!set)
+struct SList *pset_slist_shallow(const struct PSet* const set) {
+	return set ? slist(set, NULL) : NULL;
+}
+
+struct SList *pset_slist_deep(const struct PSet* const set) {
+	if (!set || !set->params.clone_val)
 		return NULL;
 
-	struct SList *list = NULL;
-
-	for (const void **v = set->vals; v < set->vals + set->size; v++) {
-		if (set->params.alloc_val) {
-			slist_append(&list, (void*)set->params.alloc_val(*v));
-		} else {
-			slist_append(&list, (void*)*v);
-		}
-	}
-
-	return list;
+	return slist(set, set->params.clone_val);
 }
 
 char *pset_str(const struct PSet* const set) {

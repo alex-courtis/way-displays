@@ -1,8 +1,8 @@
 #include <cmocka.h>
 
-#include "sstable.h"
+#include "smaps.h"
 
-void __wrap_spawn_sh_cmd(const char * const command, const struct SSTable * const env) {
+void __wrap_spawn_sh_cmd(const char * const command, const struct SMapS * const env) {
 	check_expected_ptr(command);
 	check_expected_ptr(env);
 }

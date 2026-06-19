@@ -19,25 +19,28 @@ Not thread safe.
 ### SSet
 
 * `PSet` with string values
-* Values are strdup'd on successful `sset_add`, `sset_clone` and `sset_slist`
-* Values are free'd on `sset_free`
+* Values are memory managed.
 
-### PTable
+### PMap
 
-* Array backed pointer indexed table.
+* Array backed pointer indexed map.
 * Entries preserve insertion order.
 * Operations linearly traverse keys.
 * NULL values permitted.
 
-### ITable
+### IMap
 
-* `PTable` with `size_t` keys
+* `PMap` with `size_t` keys
 
-### STable
+### SMap
 
-* `PTable` with string keys.
-* Keys are strdup'd on successful `stable_put`, `stable_clone` and `stable_keys_slist`
-* Keys are free'd on `stable_free`
+* `PMap` with string keys.
+* Keys are memory managed.
+
+### SMapS
+
+* `PMap` with string keys and vals.
+* Keys and values are memory managed.
 
 ## Strings
 

@@ -18,7 +18,7 @@
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
-#include "stable.h"
+#include "smap.h"
 #include "log.h"
 #include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
@@ -645,11 +645,11 @@ void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
 }
 
 static void remove_duplicate_user_scales(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init();
+	const struct SMap *by_name_desc = smap_init();
 
 	for (const struct SList *i = cfg->user_scales; i; i = i->nex) {
 		const struct UserScale *user_scale = i->val;
-		const struct UserScale *dup = stable_put(by_name_desc, user_scale->name_desc, user_scale);
+		const struct UserScale *dup = smap_put(by_name_desc, user_scale->name_desc, user_scale);
 		if (dup) {
 			log_warn(NULL);
 			log_warn("Removing duplicate SCALE %s", dup->name_desc);
@@ -658,16 +658,16 @@ static void remove_duplicate_user_scales(struct Cfg *cfg) {
 	}
 
 	slist_free(&cfg->user_scales);
-	cfg->user_scales = stable_vals_slist(by_name_desc);
-	stable_free(by_name_desc);
+	cfg->user_scales = smap_vals_slist_shallow(by_name_desc);
+	smap_free(by_name_desc);
 }
 
 static void remove_duplicate_user_modes(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init();
+	const struct SMap *by_name_desc = smap_init();
 
 	for (const struct SList *i = cfg->user_modes; i; i = i->nex) {
 		const struct UserMode *mode = i->val;
-		const struct UserMode *dup = stable_put(by_name_desc, mode->name_desc, mode);
+		const struct UserMode *dup = smap_put(by_name_desc, mode->name_desc, mode);
 		if (dup) {
 			log_warn(NULL);
 			log_warn("Removing duplicate MODE %s", dup->name_desc);
@@ -676,16 +676,16 @@ static void remove_duplicate_user_modes(struct Cfg *cfg) {
 	}
 
 	slist_free(&cfg->user_modes);
-	cfg->user_modes = stable_vals_slist(by_name_desc);
-	stable_free(by_name_desc);
+	cfg->user_modes = smap_vals_slist_shallow(by_name_desc);
+	smap_free(by_name_desc);
 }
 
 static void remove_duplicate_user_transforms(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init();
+	const struct SMap *by_name_desc = smap_init();
 
 	for (const struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		const struct UserTransform *transform = i->val;
-		const struct UserTransform *dup = stable_put(by_name_desc, transform->name_desc, transform);
+		const struct UserTransform *dup = smap_put(by_name_desc, transform->name_desc, transform);
 		if (dup) {
 			log_warn(NULL);
 			log_warn("Removing duplicate TRANSFORM %s", dup->name_desc);
@@ -694,8 +694,8 @@ static void remove_duplicate_user_transforms(struct Cfg *cfg) {
 	}
 
 	slist_free(&cfg->user_transforms);
-	cfg->user_transforms = stable_vals_slist(by_name_desc);
-	stable_free(by_name_desc);
+	cfg->user_transforms = smap_vals_slist_shallow(by_name_desc);
+	smap_free(by_name_desc);
 }
 
 void validate_fix(struct Cfg *cfg) {

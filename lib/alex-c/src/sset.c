@@ -7,12 +7,6 @@
 
 #include "sset.h"
 
-/*
-   diff --color=always -U 10000 <(sed -e ' s/pset/xset/g ; s/PSet/XSet/g ' inc/pset.h) <(sed -e 's/sset/xset/g ; s/SSet/XSet/g' inc/sset.h) | less
-
-   diff --color=always -U 10000 <(sed -e ' s/pset/xset/g ; s/PSet/XSet/g ' src/pset.c) <(sed -e 's/sset/xset/g ; s/SSet/XSet/g' src/sset.c) | less
-   */
-
 struct SSet {
 	const struct SSetParams params;
 	const struct PSet *pset;
@@ -30,7 +24,7 @@ const struct SSet *sset_init(void) {
 const struct SSet *sset_init_with(const struct SSetParams params) {
 	const struct PSetParams pset_params = {
 		.equal_val = params.case_insensitive ? fn_equal_strcasecmp : fn_equal_strcmp,
-		.alloc_val = (fn_alloc)strdup,
+		.clone_val = (fn_clone)strdup,
 		.free_val = (fn_free)free,
 		.str_val = fn_str_or_null,
 		.initial = params.initial,
@@ -44,18 +38,18 @@ const struct SSet *sset_init_with(const struct SSetParams params) {
 	return set;
 }
 
-const struct SSet *sset_clone(const struct SSet* const from) {
+const struct SSet *sset_clone_deep(const struct SSet* const from) {
 	if (!from)
 		return NULL;
 
 	struct SSet *to = calloc(1, sizeof(struct SSet));
-	to->pset = pset_clone(from->pset, NULL);
+	to->pset = pset_clone_deep(from->pset);
 	memcpy((void*)&to->params, &from->params, sizeof(struct SSetParams));
 
 	return to;
 }
 
-void sset_free(const struct SSet* const set) {
+void sset_free_vals(const struct SSet* const set) {
 	if (!set)
 		return;
 
@@ -101,45 +95,35 @@ const struct SSetIter *sset_filter_iter(const struct SSet* const set, fn_equal e
 	return it;
 }
 
-const struct SSetIter *sset_iter_next(const struct SSetIter* const iter) {
-	if (!iter)
+const struct SSetIter *sset_iter_next(const struct SSetIter* const citer) {
+	if (!citer)
 		return NULL;
 
-	struct SSetIter *it = (struct SSetIter*)iter;
+	struct SSetIter *iter = (struct SSetIter*)citer;
 
-	if (!it->st || !it->st->pit) {
-		sset_iter_free(it);
+	if (!iter->st) {
+		sset_iter_free(iter);
 		return NULL;
 	}
 
-	it->st->pit = pset_iter_next(iter->st->pit);
+	iter->st->pit = pset_iter_next(citer->st->pit);
 
-	if (it->st->pit) {
-		it->val = it->st->pit->val;
+	if (iter->st->pit) {
+		iter->val = iter->st->pit->val;
 	} else {
-		sset_iter_free(it);
-		it = NULL;
+		sset_iter_free(iter);
+		iter = NULL;
 	}
 
-	return it;
+	return iter;
 }
 
 bool sset_add(const struct SSet* const set, const char* const val) {
 	return set ? pset_add(set->pset, val) : false;
 }
 
-bool sset_remove(const struct SSet* const set, const char* const val) {
-	if (!set)
-		return false;
-
-	const char *old = pset_remove(set->pset, val);
-
-	if (old) {
-		free((void*)old);
-		return true;
-	} else {
-		return false;
-	}
+bool sset_remove_free(const struct SSet* const set, const char* const val) {
+	return set ? pset_remove_free(set->pset, val) : false;
 }
 
 void sset_sort(const struct SSet* const set) {
@@ -151,8 +135,8 @@ bool sset_equal(const struct SSet* const a, const struct SSet* const b) {
 	return a && b ? pset_equal(a->pset, b->pset) : false;
 }
 
-struct SList *sset_slist(const struct SSet* const set) {
-	return set ? pset_slist(set->pset) : NULL;
+struct SList *sset_slist_deep(const struct SSet* const set) {
+	return set ? pset_slist_deep(set->pset) : NULL;
 }
 
 char *sset_str(const struct SSet* const set) {
