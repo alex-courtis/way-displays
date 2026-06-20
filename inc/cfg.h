@@ -98,6 +98,7 @@ struct Cfg {
 	enum OnOff auto_scale;
 	struct SList *user_scales;
 	struct SList *user_modes;
+	const struct SMap *user_modes_by_name_desc;
 	struct SList *adaptive_sync_off_name_desc;
 	struct SList *max_preferred_refresh_name_desc;
 	struct SList *disabled;

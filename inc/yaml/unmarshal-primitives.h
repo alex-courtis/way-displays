@@ -28,6 +28,10 @@ bool  yaml_scalar_to_boolean   (struct UC *c, bool *dst,                     con
 typedef void *(*yaml_node_to_type_fn)(struct UC *c, const yaml_node_t *node);
 struct SList *yaml_seq_to_type_list(struct UC *c, const yaml_node_t *seq, yaml_node_to_type_fn fn);
 
+// create a map of structs using fn to unmarshal each item into smap
+typedef void (*yaml_node_into_smap_fn)(struct UC *c, const struct SMap *smap, const yaml_node_t *node);
+bool yaml_seq_into_type_smap(struct UC *c, const yaml_node_t *seq, const struct SMap *smap, yaml_node_into_smap_fn fn);
+
 // create a table of yaml_node_t indexed by key
 const struct SMap *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map);
 

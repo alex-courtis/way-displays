@@ -227,6 +227,27 @@ void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value) {
 	yaml_log_invalid(c, value, YAML_NO_NODE, YAML_NO_NODE);
 }
 
+void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value) {
+	char *msg = NULL;
+
+	// TODO is prefix meaningful here?
+	if (*c->prefix)
+		msg = sprintf_append(msg, "%s: duplicate", c->prefix);
+	else
+		msg = sprintf_append(msg, "Removing duplicate");
+
+	if (*c->top)
+		msg = sprintf_append(msg, " %s", c->top);
+
+	if (value)
+		msg = sprintf_append(msg, " %s", value);
+
+	if (msg) {
+		log_(c->t, "%s", msg);
+		free(msg);
+	}
+}
+
 bool yaml_check_node_type(struct UC *c, const yaml_node_t *node, const yaml_node_type_t expected) {
 	if (node && node->type == expected)
 		return true;

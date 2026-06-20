@@ -148,6 +148,22 @@ struct SList *yaml_seq_to_type_list(struct UC *c, const yaml_node_t *seq, yaml_n
 	return list;
 }
 
+bool yaml_seq_into_type_smap(struct UC *c, const yaml_node_t *seq, const struct SMap *smap, yaml_node_into_smap_fn fn) {
+	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !smap)
+		return false;
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		const yaml_node_t *node = yaml_document_get_node(&c->d, *item);
+		if (!node)
+			continue;
+
+		fn(c, smap, node);
+	}
+
+	return true;
+}
+
 const struct SMap *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map) {
 	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE))
 		return NULL;

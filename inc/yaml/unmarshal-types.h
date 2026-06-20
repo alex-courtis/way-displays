@@ -22,7 +22,7 @@ void *yaml_map_to_cfg           (struct UC *c, const yaml_node_t *map);  // Cfg
 void *yaml_map_to_ipc_response  (struct UC *c, const yaml_node_t *map);  // IpcResponse
 void *yaml_map_to_condition     (struct UC *c, const yaml_node_t *map);  // Condition
 void *yaml_map_to_user_scale    (struct UC *c, const yaml_node_t *map);  // UserScale
-void *yaml_map_to_user_mode     (struct UC *c, const yaml_node_t *map);  // UserMode
+void yaml_map_into_user_modes     (struct UC *c, const struct SMap *smap, const yaml_node_t *map);  // UserMode
 void *yaml_map_to_user_transform(struct UC *c, const yaml_node_t *map);  // UserTransform
 void *yaml_map_to_lid           (struct UC *c, const yaml_node_t *map);  // Lid
 void *yaml_map_to_mode          (struct UC *c, const yaml_node_t *map);  // Mode

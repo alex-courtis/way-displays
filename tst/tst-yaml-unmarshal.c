@@ -125,9 +125,10 @@ static void yaml_root_to_cfg__scale(void **state) {
 
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_modes, cfg_user_mode_init("max_override", true, 1920, 1080, 12340, false));
-	slist_append(&expected->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&expected->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+
+	smap_put(expected->user_modes_by_name_desc, "max_override", cfg_user_mode_init("max_override", true, 1920, 1080, 12340, false));
+	smap_put(expected->user_modes_by_name_desc, "five", cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	smap_put(expected->user_modes_by_name_desc, "seven", cfg_user_mode_init("seven", true, -1, -1, -1, false));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
 }
@@ -477,9 +478,8 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 
 	struct SList *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
-	struct Cfg cfg_expected = {
-		.arrange = COL
-	};
+	struct Cfg *cfg_expected = cfg_init();
+	cfg_expected->arrange = COL;
 
 	assert_non_nul(responses);
 	assert_int_equal(slist_length(responses), 3);
@@ -492,7 +492,7 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 
 	const struct Cfg *cfg_actual = response->cfg;
 	assert_non_nul(cfg_actual);
-	assert_cfg_equal(cfg_actual, &cfg_expected);
+	assert_cfg_equal(cfg_actual, cfg_expected);
 
 	const struct Lid *lid = response->lid;
 	assert_non_nul(lid);
@@ -544,6 +544,7 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 
 	slist_free_vals(&responses, ipc_response_free);
 	free(yaml);
+	cfg_free(cfg_expected);
 
 	assert_logs_empty();
 }

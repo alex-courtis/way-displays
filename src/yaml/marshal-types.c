@@ -89,7 +89,7 @@ bool yaml_map_populate_cfg(struct MC *c, const void *data, int mapping) {
 		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                              mapping) &&
 		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                              mapping) &&
 		yaml_map_add_seq     (c, cfg_element_name(SCALE),                 cfg->user_scales,                 yaml_seq_append_user_scale,     mapping) &&
-		yaml_map_add_seq     (c, cfg_element_name(MODE),                  cfg->user_modes,                  yaml_seq_append_user_mode,      mapping) &&
+		yaml_map_add_seq_smap (c, cfg_element_name(MODE),                  cfg->user_modes_by_name_desc,     yaml_seq_append_user_mode,      mapping) &&
 		yaml_map_add_seq     (c, cfg_element_name(TRANSFORM),             cfg->user_transforms,             yaml_seq_append_user_transform, mapping) &&
 		yaml_map_add_seq     (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, yaml_seq_append_str,            mapping) &&
 		yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                mapping) &&

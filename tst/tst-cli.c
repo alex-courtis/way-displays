@@ -15,6 +15,7 @@
 #include "ipc.h"
 #include "log.h"
 #include "slist.h"
+#include "smap.h"
 
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
 struct IpcRequest *parse_write(int argc, char **argv);
@@ -55,14 +56,14 @@ static void parse_element__arrange_align_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv);
 
-	struct Cfg expected = {
-		.arrange = ROW,
-		.align = LEFT,
-	};
+	struct Cfg *expected = cfg_init();
+	expected->arrange = ROW;
+	expected->align = LEFT;
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -85,13 +86,13 @@ static void parse_element__auto_scale_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, AUTO_SCALE, 1, argv);
 
-	struct Cfg expected = {
-		.auto_scale = ON,
-	};
+	struct Cfg *expected = cfg_init();
+	expected->auto_scale = ON;
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -131,18 +132,13 @@ static void parse_element__transform_del_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_DEL, TRANSFORM, 1, argv);
 
-	struct UserTransform expectedUserTransform = {
-		.name_desc = "DISPL",
-		.transform = WL_OUTPUT_TRANSFORM_90,
-	};
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_transforms, &expectedUserTransform);
+	struct Cfg *expected = cfg_init();
+	slist_append(&expected->user_transforms, cfg_user_transform_init("DISPL", WL_OUTPUT_TRANSFORM_90));
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_transforms);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -165,20 +161,13 @@ static void parse_element__scale_set_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, SCALE, 2, argv);
 
-	struct UserScale expectedUserScale = {
-		.name_desc = "DISPL",
-		.scale = 1234.5,
-	};
-	struct Cfg expected = {
-		.user_scales = NULL,
-	};
-	slist_append(&expected.user_scales, &expectedUserScale);
+	struct Cfg *expected = cfg_init();
+	slist_append(&expected->user_scales, cfg_user_scale_init("DISPL", 1234.5));
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_scales);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -189,18 +178,13 @@ static void parse_element__scale_del_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_DEL, SCALE, 1, argv);
 
-	struct UserScale expectedUserScale = {
-		.name_desc = "DISPL",
-		.scale = 1,
-	};
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_scales, &expectedUserScale);
+	struct Cfg *expected = cfg_init();
+	slist_append(&expected->user_scales, cfg_user_scale_init("DISPL", 1));
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_scales);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -251,15 +235,13 @@ static void parse_element__mode_set_max(void **state) {
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = true;
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_modes, expectedUserMode);
+	struct Cfg *expected = cfg_init();
+	smap_put(expected->user_modes_by_name_desc, expectedUserMode->name_desc, expectedUserMode);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_modes);
-	cfg_user_mode_free(expectedUserMode);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -276,15 +258,13 @@ static void parse_element__mode_set_res(void **state) {
 	expectedUserMode->width = 1;
 	expectedUserMode->height = 2;
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_modes, expectedUserMode);
+	struct Cfg *expected = cfg_init();
+	smap_put(expected->user_modes_by_name_desc, expectedUserMode->name_desc, expectedUserMode);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_modes);
-	cfg_user_mode_free(expectedUserMode);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -302,15 +282,13 @@ static void parse_element__mode_set_res_refresh(void **state) {
 	expectedUserMode->height = 2;
 	expectedUserMode->refresh_mhz = 12346;
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_modes, expectedUserMode);
+	struct Cfg *expected = cfg_init();
+	smap_put(expected->user_modes_by_name_desc, expectedUserMode->name_desc, expectedUserMode);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_modes);
-	cfg_user_mode_free(expectedUserMode);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -325,15 +303,13 @@ static void parse_element__mode_del_ok(void **state) {
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = true;
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_modes, expectedUserMode);
+	struct Cfg *expected = cfg_init();
+	smap_put(expected->user_modes_by_name_desc, expectedUserMode->name_desc, expectedUserMode);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_modes);
-	cfg_user_mode_free(expectedUserMode);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -344,15 +320,14 @@ static void parse_element__adaptive_sync_off_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, VRR_OFF, 2, argv);
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.adaptive_sync_off_name_desc, "ONE");
-	slist_append(&expected.adaptive_sync_off_name_desc, "TWO");
+	struct Cfg *expected = cfg_init();
+	slist_append(&expected->adaptive_sync_off_name_desc, strdup("ONE"));
+	slist_append(&expected->adaptive_sync_off_name_desc, strdup("TWO"));
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.adaptive_sync_off_name_desc);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -363,15 +338,14 @@ static void parse_element__disabled_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, DISABLED, 2, argv);
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.disabled, cfg_disabled_always("ONE"));
-	slist_append(&expected.disabled, cfg_disabled_always("TWO"));
+	struct Cfg *expected = cfg_init();
+	slist_append(&expected->disabled, cfg_disabled_always("ONE"));
+	slist_append(&expected->disabled, cfg_disabled_always("TWO"));
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free_vals(&expected.disabled, cfg_disabled_free);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -382,15 +356,14 @@ static void parse_element__order_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, ORDER, 2, argv);
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.order_name_desc, "ONE");
-	slist_append(&expected.order_name_desc, "TWO");
+	struct Cfg *expected = cfg_init();
+	slist_append(&expected->order_name_desc, strdup("ONE"));
+	slist_append(&expected->order_name_desc, strdup("TWO"));
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.order_name_desc);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }

@@ -34,4 +34,7 @@ bool yaml_map_add_map(struct MC *c, const char *key, const void *data, yaml_map_
 typedef bool (*yaml_seq_append_fn)(struct MC *c, const void *data, const int sequence);
 bool yaml_map_add_seq(struct MC *c, const char *key, const struct SList *list, yaml_seq_append_fn fn, int mapping);
 
+// TODO remove above and rename to yaml_map_add_seq
+bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, yaml_seq_append_fn fn, int mapping);
+
 #endif // YAML_MARSHAL_PRIMITIVES_H

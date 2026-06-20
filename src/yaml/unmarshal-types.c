@@ -162,7 +162,7 @@ void *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->scale_round_strategy = yaml_scalar_to_enum_def(c, SCALE_ROUND_STRATEGY_DEFAULT, value, scale_round_strategy_val, scale_round_strategy_name, scale_round_strategy_names);
 				break;
 			case MODE:
-				cfg->user_modes = yaml_seq_to_type_list(c, value, yaml_map_to_user_mode);
+				yaml_seq_into_type_smap(c, value, cfg->user_modes_by_name_desc, yaml_map_into_user_modes);
 				break;
 			case TRANSFORM:
 				cfg->user_transforms = yaml_seq_to_type_list(c, value, yaml_map_to_user_transform);
@@ -344,34 +344,34 @@ end:
 	return user_scale;
 }
 
-void *yaml_map_to_user_mode(struct UC *c, const yaml_node_t *map) {
-	const struct SMap *table = yaml_map_to_node_table(c, map);
-	if (!table)
-		return NULL;
+void yaml_map_into_user_modes(struct UC *c, const struct SMap *user_modes, const yaml_node_t *map) {
+	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	if (!nodes)
+		return;
 
 	const yaml_node_t *scalar;
 
 	struct UserMode *user_mode = cfg_user_mode_default();
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-	scalar = smap_get(table, "NAME_DESC");
+	scalar = smap_get(nodes, "NAME_DESC");
 	if (!yaml_check_mandatory(c, scalar) || !(user_mode->name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto err;
 
 	yaml_unmarshal_log_ctx_name_desc(c, user_mode->name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "WIDTH");
-	scalar = smap_get(table, "WIDTH");
+	scalar = smap_get(nodes, "WIDTH");
 	if (scalar && !yaml_scalar_to_int(c, &user_mode->width, scalar))
 		goto err;
 
 	yaml_unmarshal_log_ctx_key(c, "HEIGHT");
-	scalar = smap_get(table, "HEIGHT");
+	scalar = smap_get(nodes, "HEIGHT");
 	if (scalar && !yaml_scalar_to_int(c, &user_mode->height, scalar))
 		goto err;
 
 	yaml_unmarshal_log_ctx_key(c, "HZ");
-	scalar = smap_get(table, "HZ");
+	scalar = smap_get(nodes, "HZ");
 	if (scalar) {
 		float hz = 0;
 		if (!yaml_scalar_to_float(c, &hz, scalar))
@@ -380,22 +380,24 @@ void *yaml_map_to_user_mode(struct UC *c, const yaml_node_t *map) {
 	}
 
 	yaml_unmarshal_log_ctx_key(c, "MAX");
-	scalar = smap_get(table, "MAX");
+	scalar = smap_get(nodes, "MAX");
 	if (scalar && !yaml_scalar_to_boolean(c, &user_mode->max, scalar))
 		goto err;
+
+	if (smap_put_if_absent(user_modes, user_mode->name_desc, user_mode)) {
+		yaml_unmarshal_log_remove_duplicate_value(c, user_mode->name_desc);
+		goto err;
+	}
 
 	goto end;
 
 err:
 	cfg_user_mode_free(user_mode);
-	user_mode = NULL;
 
 end:
-	smap_free(table);
+	smap_free(nodes);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
-
-	return user_mode;
 }
 
 void *yaml_map_to_user_transform(struct UC *c, const yaml_node_t *map) {

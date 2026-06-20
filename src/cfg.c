@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <libgen.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -433,7 +434,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// MODE
-	if (!slist_equal(a->user_modes, b->user_modes, fn_equal_cfg_user_mode)) {
+	if (!smap_equal(a->user_modes_by_name_desc, b->user_modes_by_name_desc)) {
 		return false;
 	}
 
@@ -489,6 +490,13 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 //
 struct Cfg *cfg_init(void) {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+
+	// TODO create user-mode.c and move to a function in there
+	const struct SMapParams params = {
+		.equal_val = fn_equal_cfg_user_mode,
+		.free_val = cfg_user_mode_free,
+	};
+	cfg->user_modes_by_name_desc = smap_init_with(params);
 
 	return cfg;
 }
@@ -662,24 +670,6 @@ static void remove_duplicate_user_scales(struct Cfg *cfg) {
 	smap_free(by_name_desc);
 }
 
-static void remove_duplicate_user_modes(struct Cfg *cfg) {
-	const struct SMap *by_name_desc = smap_init();
-
-	for (const struct SList *i = cfg->user_modes; i; i = i->nex) {
-		const struct UserMode *mode = i->val;
-		const struct UserMode *dup = smap_put(by_name_desc, mode->name_desc, mode);
-		if (dup) {
-			log_warn(NULL);
-			log_warn("Removing duplicate MODE %s", dup->name_desc);
-			cfg_user_mode_free(dup);
-		}
-	}
-
-	slist_free(&cfg->user_modes);
-	cfg->user_modes = smap_vals_slist_shallow(by_name_desc);
-	smap_free(by_name_desc);
-}
-
 static void remove_duplicate_user_transforms(struct Cfg *cfg) {
 	const struct SMap *by_name_desc = smap_init();
 
@@ -732,7 +722,6 @@ void validate_fix(struct Cfg *cfg) {
 	remove_duplicate_user_scales(cfg);
 
 	slist_remove_all_free(&cfg->user_modes, invalid_user_mode, NULL, cfg_user_mode_free);
-	remove_duplicate_user_modes(cfg);
 
 	remove_duplicate_user_transforms(cfg);
 }
@@ -1108,6 +1097,8 @@ void cfg_free(struct Cfg *cfg) {
 	slist_free_vals(&cfg->user_scales, cfg_user_scale_free);
 
 	slist_free_vals(&cfg->user_modes, cfg_user_mode_free);
+
+	smap_free_vals(cfg->user_modes_by_name_desc);
 
 	slist_free_vals(&cfg->adaptive_sync_off_name_desc, NULL);
 

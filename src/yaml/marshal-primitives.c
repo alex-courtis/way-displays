@@ -8,6 +8,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "slist.h"
+#include "smap.h"
 #include "yaml/marshal.h"
 
 bool yaml_map_add_str(struct MC *c, const char *key, const char *str, int mapping) {
@@ -124,6 +125,27 @@ bool yaml_map_add_seq(struct MC *c, const char *key, const struct SList *list, y
 
 	for (const struct SList *i = list; i; i = i->nex) {
 		if (!fn(c, i->val, seq))
+			return false;
+	}
+
+	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
+}
+
+bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, yaml_seq_append_fn fn, int mapping) {
+	if (!key || !fn || !mapping)
+		return false;
+
+	if (!smap || smap_size(smap) == 0)
+		return true;
+
+	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int seq = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+
+	if (!k || !seq)
+		return false;
+
+	for (const struct SMapIter *it = smap_iter(smap); it; it = smap_iter_next(it)) {
+		if (!fn(c, it->val, seq))
 			return false;
 	}
 

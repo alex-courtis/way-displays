@@ -560,9 +560,6 @@ static void validate_fix__user_mode(void **state) {
 
 	slist_append(&s->from->user_modes, cfg_user_mode_init("missing height", false, 1, -1, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("dup", false, 1, 2, 3, false));
-	slist_append(&s->from->user_modes, cfg_user_mode_init("dup", true, 10, 20, 30, false));
-
 	validate_fix(s->from);
 
 	char *expected_log = read_file("tst/cfg/validate-fix-user-mode.log");
@@ -571,7 +568,6 @@ static void validate_fix__user_mode(void **state) {
 
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
 	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("dup", true, 10, 20, 30, false));
 
 	assert_cfg_equal(s->from, s->expected);
 
