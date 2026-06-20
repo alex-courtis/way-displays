@@ -26,7 +26,7 @@ jobs:
       DEBUGINFOD_CACHE_PATH: "/tmp/debuginfod_client"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: create user
         shell: sh -e {0}

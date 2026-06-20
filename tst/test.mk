@@ -28,7 +28,11 @@ test-vg: $(patsubst tst/tst%,test%-vg,$(TST_E))
 test-%-vg: tst/tst-%
 	$(VALGRIND) ./$(^)
 
-# mocks: log
+#
+# common mocks
+#
+
+# log
 LDFLAGS += -Wl,$\
 		   --wrap=log_set_threshold,--wrap=log_get_threshold,$\
 		   --wrap=log_,$\
@@ -38,24 +42,26 @@ LDFLAGS += -Wl,$\
 		   --wrap=log_info,$\
 		   --wrap=log_debug
 
-# mocks: process
+# process
 LDFLAGS += -Wl,$\
 		   --wrap=spawn_sh_cmd,$\
 		   --wrap=wd_exit,--wrap=wd_exit_message
 
-# mocks: lid
+# lid
 LDFLAGS += -Wl,$\
 		   --wrap=lid_init,$\
 		   --wrap=lid_free,--wrap=lid_destroy,$\
 		   --wrap=lid_is_closed,--wrap=lid_update
 
-# mocks: wraps
+# yaml
 LDFLAGS += -Wl,$\
 		   --wrap=yaml_document_initialize,$\
 		   --wrap=yaml_parser_initialize,$\
 		   --wrap=yaml_emitter_initialize,--wrap=yaml_emitter_open,--wrap=yaml_emitter_dump,--wrap=yaml_emitter_close
 
-# mocks: test specific
+#
+# test specific mocks
+#
 tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=mode_dpi,$\
 	--wrap=mode_user_mode,$\

@@ -1,29 +1,20 @@
 # do not check generated code
-*:pro/*
+*:pro
 
+# compilation unit only functions are in .h for documentation purposes
 staticFunction:yaml/marshal-types.c
 staticFunction:yaml/unmarshal.c
 staticFunction:yaml/unmarshal-types.c
 
-staticFunction:log.c
-unusedFunction:log.c
-
+# unused are implemented for completeness
 unusedFunction:src/convert.c
 
-unusedFunction:lib/alex-c/*c
-staticFunction:lib/alex-c/*c
+# many library functions are not used
+unusedFunction:lib/alex-c
+staticFunction:lib/alex-c
 
-unusedFunction:lib/alex-c/tst/*h
-
-unusedFunction:tst/mock-*.c
+# wraps are dynamically invoked at runtime only
 unusedFunction:tst/wrap-*.c
-
-# needs fixing upstream
-constVariablePointer:lib/alex-c/src/slist.c
-redundantAssignment:lib/alex-c/src/slist.c
-shadowVariable:lib/alex-c/src/slist.c
-unreadVariable:lib/alex-c/src/slist.c
-variableScope:lib/alex-c/src/slist.c
 
 # this is just not practical
 nullPointerOutOfMemory
