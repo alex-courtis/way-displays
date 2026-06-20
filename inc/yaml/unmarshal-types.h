@@ -5,6 +5,7 @@
 #include <yaml.h>
 
 #include "head.h"
+#include "smap.h"
 #include "yaml/unmarshal.h"
 
 /*

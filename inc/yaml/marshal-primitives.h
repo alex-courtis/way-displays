@@ -6,6 +6,7 @@
 
 #include "convert.h"
 #include "slist.h"
+#include "smap.h"
 #include "yaml/marshal.h"
 
 /*

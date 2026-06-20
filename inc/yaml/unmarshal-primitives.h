@@ -6,6 +6,7 @@
 #include <yaml.h>
 
 #include "convert.h"
+#include "smap.h"
 #include "yaml/unmarshal.h"
 
 /*

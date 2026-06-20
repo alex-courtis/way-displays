@@ -20,6 +20,7 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
+#include "smap.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "wrap-libyaml.h"
