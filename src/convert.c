@@ -9,6 +9,7 @@
 #include "displ.h"
 #include "ipc.h"
 #include "log.h"
+#include "str.h"
 
 struct NameVal {
 	unsigned int val;
@@ -129,7 +130,7 @@ static struct NameVal scale_round_tos[] = {
 	{ .val = 0, .name = NULL, },
 };
 
-static unsigned int val(struct NameVal *name_vals, const char *name) {
+static unsigned int _val(struct NameVal *name_vals, const char *name) {
 	if (!name_vals || !name) {
 		return 0;
 	}
@@ -142,7 +143,7 @@ static unsigned int val(struct NameVal *name_vals, const char *name) {
 	return name_vals[i].val;
 }
 
-static unsigned int val_start(struct NameVal *name_vals, const char *name) {
+static unsigned int _val_start(struct NameVal *name_vals, const char *name) {
 	if (!name_vals || !name || strlen(name) == 0) {
 		return 0;
 	}
@@ -155,7 +156,7 @@ static unsigned int val_start(struct NameVal *name_vals, const char *name) {
 	return name_vals[i].val;
 }
 
-static const char *name(struct NameVal *name_vals, unsigned int val) {
+static const char *_name(struct NameVal *name_vals, unsigned int val) {
 	if (!name_vals) {
 		return NULL;
 	}
@@ -195,19 +196,19 @@ static char *names(struct NameVal *name_vals) {
 }
 
 enum CfgElement cfg_element_val(const char *name) {
-	return val(cfg_elements, name);
+	return _val(cfg_elements, name);
 }
 
 const char *cfg_element_name(enum CfgElement cfg_element) {
-	return name(cfg_elements, cfg_element);
+	return _name(cfg_elements, cfg_element);
 }
 
 enum Arrange arrange_val_start(const char *name) {
-	return val_start(arranges, name);
+	return _val_start(arranges, name);
 }
 
 const char *arrange_name(enum Arrange arrange) {
-	return name(arranges, arrange);
+	return _name(arranges, arrange);
 }
 
 char *arrange_names(void) {
@@ -215,11 +216,11 @@ char *arrange_names(void) {
 }
 
 enum Align align_val_start(const char *name) {
-	return val_start(aligns, name);
+	return _val_start(aligns, name);
 }
 
 const char *align_name(enum Align align) {
-	return name(aligns, align);
+	return _name(aligns, align);
 }
 
 char *align_names(void) {
@@ -227,11 +228,11 @@ char *align_names(void) {
 }
 
 enum OnOff on_off_val(const char *name) {
-	return val(on_offs, name);
+	return _val(on_offs, name);
 }
 
 const char *on_off_name(enum OnOff on_off) {
-	return name(on_offs, on_off);
+	return _name(on_offs, on_off);
 }
 
 char *on_off_names(void) {
@@ -239,11 +240,11 @@ char *on_off_names(void) {
 }
 
 enum IpcCommand ipc_command_val(const char *name) {
-	return val(ipc_commands, name);
+	return _val(ipc_commands, name);
 }
 
 const char *ipc_command_name(enum IpcCommand ipc_command) {
-	return name(ipc_commands, ipc_command);
+	return _name(ipc_commands, ipc_command);
 }
 
 char *ipc_command_names(void) {
@@ -255,11 +256,11 @@ const char *ipc_command_friendly(enum IpcCommand ipc_command) {
 }
 
 enum wl_output_transform transform_val(const char *name) {
-	return val(transforms, name);
+	return _val(transforms, name);
 }
 
 const char *transform_name(enum wl_output_transform transform) {
-	return name(transforms, transform);
+	return _name(transforms, transform);
 }
 
 char *transform_names(void) {
@@ -267,11 +268,11 @@ char *transform_names(void) {
 }
 
 enum LogThreshold log_threshold_val(const char *name) {
-	return val(log_thresholds, name);
+	return _val(log_thresholds, name);
 }
 
 const char *log_threshold_name(enum LogThreshold log_threshold) {
-	return name(log_thresholds, log_threshold);
+	return _name(log_thresholds, log_threshold);
 }
 
 char *log_threshold_names(void) {
@@ -279,19 +280,19 @@ char *log_threshold_names(void) {
 }
 
 enum DisplState displ_state_val(const char *name) {
-	return val(displ_states, name);
+	return _val(displ_states, name);
 }
 
 const char *displ_state_name(enum DisplState displ_state) {
-	return name(displ_states, displ_state);
+	return _name(displ_states, displ_state);
 }
 
 enum ConditionLid condition_lid_val(const char *name) {
-	return val(condition_lids, name);
+	return _val(condition_lids, name);
 }
 
 const char *condition_lid_name(enum ConditionLid condition_lid) {
-	return name(condition_lids, condition_lid);
+	return _name(condition_lids, condition_lid);
 }
 
 char *condition_lid_names(void) {
@@ -299,11 +300,11 @@ char *condition_lid_names(void) {
 }
 
 enum ScaleRoundStrategy scale_round_strategy_val(const char *name) {
-	return val(scale_round_strategies, name);
+	return _val(scale_round_strategies, name);
 }
 
 const char *scale_round_strategy_name(enum ScaleRoundStrategy scale_round_strategy) {
-	return name(scale_round_strategies, scale_round_strategy);
+	return _name(scale_round_strategies, scale_round_strategy);
 }
 
 char *scale_round_strategy_names(void) {
@@ -317,7 +318,7 @@ unsigned int scale_round_to_val(const float scale_round_to) {
 
 	unsigned int ret = 1.0f / scale_round_to;
 
-	if (!name(scale_round_tos, ret)) {
+	if (!_name(scale_round_tos, ret)) {
 		return 0;
 	}
 
@@ -325,7 +326,7 @@ unsigned int scale_round_to_val(const float scale_round_to) {
 }
 
 const char *scale_round_to_name(const unsigned int scale_round_to) {
-	return name(scale_round_tos, scale_round_to);
+	return _name(scale_round_tos, scale_round_to);
 }
 
 char *scale_round_to_names(void) {

@@ -10,7 +10,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "slist.h"
-#include "stable.h"
+#include "smap.h"
 #include "yaml/unmarshal.h"
 
 char *yaml_scalar_to_string(struct UC *c, const yaml_node_t *scalar) {
@@ -148,11 +148,11 @@ struct SList *yaml_seq_to_type_list(struct UC *c, const yaml_node_t *seq, yaml_n
 	return list;
 }
 
-const struct STable *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map) {
+const struct SMap *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map) {
 	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE))
 		return NULL;
 
-	const struct STable *table = stable_init(10, 10, false);
+	const struct SMap *table = smap_init();
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
@@ -162,14 +162,14 @@ const struct STable *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map
 
 		char *key = NULL;
 		if (!(key = yaml_scalar_to_string(c, pair_key))) {
-			stable_free(table);
+			smap_free(table);
 			return NULL;
 		}
 
 		const yaml_node_t *pair_value = yaml_document_get_node(&c->d, pair->value);
 
 		if (key && pair_value)
-			stable_put(table, key, pair_value);
+			smap_put(table, key, pair_value);
 
 		if (key)
 			free(key);

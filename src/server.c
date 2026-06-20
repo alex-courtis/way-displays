@@ -189,7 +189,7 @@ void load_cfg(void) {
 	}
 
 	cfg_apply_defaults(g_cfg);
-	cfg_copy_file_path(cfg_resolved, g_cfg);
+	cfg_copy_file_path(g_cfg, cfg_resolved);
 
 	validate_fix(g_cfg);
 	log_info(NULL);
@@ -211,7 +211,7 @@ void reload_cfg(void) {
 
 	if (cfg_loaded) {
 		cfg_apply_defaults(cfg_loaded);
-		cfg_copy_file_path(g_cfg, cfg_loaded);
+		cfg_copy_file_path(cfg_loaded, g_cfg);
 
 		cfg_free(g_cfg);
 		g_cfg = cfg_loaded;

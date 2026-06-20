@@ -16,7 +16,6 @@ pacman --noconfirm -Syu \
 	libinput \
 	libyaml \
 	llvm \
-	ninja \
 	valgrind \
 	wayland lib32-wayland \
 	wayland-protocols

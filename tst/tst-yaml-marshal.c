@@ -1,6 +1,9 @@
 #include "tst.h"
+
+#include "assert-log.h"
 #include "asserts.h"
-#include "util.h"
+#include "util-file.h"
+#include "wrap-libyaml.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -13,28 +16,16 @@
 #include "lid.h"
 #include "log.h"
 #include "slist.h"
-#include "wrap-libyaml.h"
 
-#include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
+#include "yaml/marshal.h"
 
 #include "yaml/data.c"
 
 
 int write_handler(void *data, unsigned char *buffer, size_t size);
 
-
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
 static int before_each(void **state) {
-	logs_clear();
-
 	reset_yaml_fails();
 
 	return 0;
@@ -263,24 +254,24 @@ static void write_handler__append(void **state) {
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
-		TEST(yaml_doc_cfg__ok),
-		TEST(yaml_doc_cfg__default),
-		TEST(yaml_doc_cfg__empty),
+		TEST_BA(yaml_doc_cfg__ok),
+		TEST_BA(yaml_doc_cfg__default),
+		TEST_BA(yaml_doc_cfg__empty),
 
-		TEST(yaml_doc_ipc_request__no_op),
-		TEST(yaml_doc_ipc_request__cfg_set),
+		TEST_BA(yaml_doc_ipc_request__no_op),
+		TEST_BA(yaml_doc_ipc_request__cfg_set),
 
-		TEST(yaml_doc_ipc_operation__map),
-		TEST(yaml_doc_ipc_operation__seq),
+		TEST_BA(yaml_doc_ipc_operation__map),
+		TEST_BA(yaml_doc_ipc_operation__seq),
 
-		TEST(yaml_marshal__yaml_document_initialize_fail),
-		TEST(yaml_marshal__yaml_emitter_initialize_fail),
-		TEST(yaml_marshal__yaml_emitter_open_fail),
-		TEST(yaml_marshal__yaml_emitter_dump_fail),
-		TEST(yaml_marshal__yaml_emitter_close_fail),
+		TEST_BA(yaml_marshal__yaml_document_initialize_fail),
+		TEST_BA(yaml_marshal__yaml_emitter_initialize_fail),
+		TEST_BA(yaml_marshal__yaml_emitter_open_fail),
+		TEST_BA(yaml_marshal__yaml_emitter_dump_fail),
+		TEST_BA(yaml_marshal__yaml_emitter_close_fail),
 
-		TEST(write_handler__empty),
-		TEST(write_handler__append),
+		TEST_BA(write_handler__empty),
+		TEST_BA(write_handler__append),
 	};
 
 	return RUN(tests);

@@ -1,4 +1,8 @@
 #include "tst.h"
+
+#include "assert-head.h"
+#include "assert-log.h"
+#include "assert-wl.h"
 #include "asserts.h"
 #include "expects.h"
 
@@ -17,8 +21,7 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
-
-struct SList *order_heads(struct SList *order_name_desc, struct SList *heads);
+struct SList *order_heads(const struct SList *order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
 void desire_enabled(struct Head *head);
 void desire_mode(struct Head *head);
@@ -49,17 +52,7 @@ struct State {
 };
 
 
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
 static int before_each(void **state) {
-	logs_clear();
-
 	g_cfg = cfg_default();
 
 	// only set this when we specifically want to test it
@@ -859,54 +852,54 @@ static void handle_failure__unspecified(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(order_heads__exact_partial_regex),
-		TEST(order_heads__exact_regex_catchall),
-		TEST(order_heads__no_order),
+		TEST_BA(order_heads__exact_partial_regex),
+		TEST_BA(order_heads__exact_regex_catchall),
+		TEST_BA(order_heads__no_order),
 
-		TEST(position_heads__col_left),
-		TEST(position_heads__col_mid),
-		TEST(position_heads__col_right),
-		TEST(position_heads__row_top),
-		TEST(position_heads__row_mid),
-		TEST(position_heads__row_bottom),
+		TEST_BA(position_heads__col_left),
+		TEST_BA(position_heads__col_mid),
+		TEST_BA(position_heads__col_right),
+		TEST_BA(position_heads__row_top),
+		TEST_BA(position_heads__row_mid),
+		TEST_BA(position_heads__row_bottom),
 
-		TEST(desire_enabled__lid_closed_many),
-		TEST(desire_enabled__lid_closed_one_disabled),
-		TEST(desire_enabled__lid_closed_one),
-		TEST(desire_enabled__override),
-		TEST(desire_enabled__override_reset),
+		TEST_BA(desire_enabled__lid_closed_many),
+		TEST_BA(desire_enabled__lid_closed_one_disabled),
+		TEST_BA(desire_enabled__lid_closed_one),
+		TEST_BA(desire_enabled__override),
+		TEST_BA(desire_enabled__override_reset),
 
-		TEST(desire_mode__disabled),
-		TEST(desire_mode__no_mode),
-		TEST(desire_mode__no_mode_warned),
-		TEST(desire_mode__ok),
+		TEST_BA(desire_mode__disabled),
+		TEST_BA(desire_mode__no_mode),
+		TEST_BA(desire_mode__no_mode_warned),
+		TEST_BA(desire_mode__ok),
 
-		TEST(desire_scale__disabled),
-		TEST(desire_scale__no_scaling),
-		TEST(desire_scale__no_auto),
-		TEST(desire_scale__auto),
-		TEST(desire_scale__user),
+		TEST_BA(desire_scale__disabled),
+		TEST_BA(desire_scale__no_scaling),
+		TEST_BA(desire_scale__no_auto),
+		TEST_BA(desire_scale__auto),
+		TEST_BA(desire_scale__user),
 
-		TEST(desire_transform__disabled),
-		TEST(desire_transform__no_transform),
-		TEST(desire_transform__user),
+		TEST_BA(desire_transform__disabled),
+		TEST_BA(desire_transform__no_transform),
+		TEST_BA(desire_transform__user),
 
-		TEST(desire_adaptive_sync__head_disabled),
-		TEST(desire_adaptive_sync__failed),
-		TEST(desire_adaptive_sync__disabled),
-		TEST(desire_adaptive_sync__enabled),
+		TEST_BA(desire_adaptive_sync__head_disabled),
+		TEST_BA(desire_adaptive_sync__failed),
+		TEST_BA(desire_adaptive_sync__disabled),
+		TEST_BA(desire_adaptive_sync__enabled),
 
-		TEST(desire_reapply__required),
-		TEST(desire_reapply__not_required),
+		TEST_BA(desire_reapply__required),
+		TEST_BA(desire_reapply__not_required),
 
-		TEST(handle_success__head_changing_adaptive_sync),
-		TEST(handle_success__head_changing_adaptive_sync_fail),
-		TEST(handle_success__head_changing_mode),
-		TEST(handle_success__ok),
+		TEST_BA(handle_success__head_changing_adaptive_sync),
+		TEST_BA(handle_success__head_changing_adaptive_sync_fail),
+		TEST_BA(handle_success__head_changing_mode),
+		TEST_BA(handle_success__ok),
 
-		TEST(handle_failure__mode),
-		TEST(handle_failure__adaptive_sync),
-		TEST(handle_failure__unspecified),
+		TEST_BA(handle_failure__mode),
+		TEST_BA(handle_failure__adaptive_sync),
+		TEST_BA(handle_failure__unspecified),
 	};
 
 	return RUN(tests);

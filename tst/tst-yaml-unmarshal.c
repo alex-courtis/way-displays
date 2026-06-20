@@ -1,6 +1,9 @@
 #include "tst.h"
+
+#include "assert-cfg.h"
+#include "assert-log.h"
 #include "asserts.h"
-#include "util.h"
+#include "util-file.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -17,31 +20,18 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "wrap-libyaml.h"
 
-#include "yaml/unmarshal.h"
 #include "yaml/unmarshal-types.h"
+#include "yaml/unmarshal.h"
 
 #include "yaml/data.c"
 
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
 static int before_each(void **state) {
-	logs_clear();
-
 	reset_yaml_fails();
 
-	return 0;
-}
-
-static int after_each(void **state) {
 	return 0;
 }
 
@@ -616,40 +606,40 @@ static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
-		TEST(yaml_root_to_cfg__ok),
-		TEST(yaml_root_to_cfg__empty),
-		TEST(yaml_root_to_cfg__missing),
-		TEST(yaml_root_to_cfg__invalid),
-		TEST(yaml_root_to_cfg__legacy),
-		TEST(yaml_root_to_cfg__mistyped),
-		TEST(yaml_root_to_cfg__root_mistyped),
-		TEST(yaml_root_to_cfg__transform),
-		TEST(yaml_root_to_cfg__scale),
-		TEST(yaml_root_to_cfg__mode),
-		TEST(yaml_root_to_cfg__disabled),
-		TEST(yaml_root_to_cfg__scale_round_to_invalid),
-		TEST(yaml_root_to_cfg__scale_round_to_zero),
+		TEST_B(yaml_root_to_cfg__ok),
+		TEST_B(yaml_root_to_cfg__empty),
+		TEST_B(yaml_root_to_cfg__missing),
+		TEST_B(yaml_root_to_cfg__invalid),
+		TEST_B(yaml_root_to_cfg__legacy),
+		TEST_B(yaml_root_to_cfg__mistyped),
+		TEST_B(yaml_root_to_cfg__root_mistyped),
+		TEST_B(yaml_root_to_cfg__transform),
+		TEST_B(yaml_root_to_cfg__scale),
+		TEST_B(yaml_root_to_cfg__mode),
+		TEST_B(yaml_root_to_cfg__disabled),
+		TEST_B(yaml_root_to_cfg__scale_round_to_invalid),
+		TEST_B(yaml_root_to_cfg__scale_round_to_zero),
 
-		TEST(yaml_root_to_ipc_request__empty),
-		TEST(yaml_root_to_ipc_request__mistyped_root),
-		TEST(yaml_root_to_ipc_request__invalid_op),
-		TEST(yaml_root_to_ipc_request__mistyped_op),
-		TEST(yaml_root_to_ipc_request__no_op),
-		TEST(yaml_root_to_ipc_request__invalid_cfg),
-		TEST(yaml_root_to_ipc_request__cfg_set),
+		TEST_B(yaml_root_to_ipc_request__empty),
+		TEST_B(yaml_root_to_ipc_request__mistyped_root),
+		TEST_B(yaml_root_to_ipc_request__invalid_op),
+		TEST_B(yaml_root_to_ipc_request__mistyped_op),
+		TEST_B(yaml_root_to_ipc_request__no_op),
+		TEST_B(yaml_root_to_ipc_request__invalid_cfg),
+		TEST_B(yaml_root_to_ipc_request__cfg_set),
 
-		TEST(yaml_root_to_ipc_response_list__empty),
-		TEST(yaml_root_to_ipc_response_list__mistyped_root),
-		TEST(yaml_root_to_ipc_response_list__seq_no_map),
-		TEST(yaml_root_to_ipc_response_list__seq_no_done),
-		TEST(yaml_root_to_ipc_response_list__seq_no_rc),
-		TEST(yaml_root_to_ipc_response_list__map),
-		TEST(yaml_root_to_ipc_response_list__seq),
+		TEST_B(yaml_root_to_ipc_response_list__empty),
+		TEST_B(yaml_root_to_ipc_response_list__mistyped_root),
+		TEST_B(yaml_root_to_ipc_response_list__seq_no_map),
+		TEST_B(yaml_root_to_ipc_response_list__seq_no_done),
+		TEST_B(yaml_root_to_ipc_response_list__seq_no_rc),
+		TEST_B(yaml_root_to_ipc_response_list__map),
+		TEST_B(yaml_root_to_ipc_response_list__seq),
 
-		TEST(yaml_unmarshal_str__yaml_document_initialize_fail),
-		TEST(yaml_unmarshal_str__yaml_parser_load_fail),
-		TEST(yaml_unmarshal_file__yaml_document_initialize_fail),
-		TEST(yaml_unmarshal_file__yaml_parser_load_fail),
+		TEST_B(yaml_unmarshal_str__yaml_document_initialize_fail),
+		TEST_B(yaml_unmarshal_str__yaml_parser_load_fail),
+		TEST_B(yaml_unmarshal_file__yaml_document_initialize_fail),
+		TEST_B(yaml_unmarshal_file__yaml_parser_load_fail),
 	};
 
 	return RUN(tests);

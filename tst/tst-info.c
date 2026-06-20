@@ -1,7 +1,10 @@
 #include "tst.h"
+
+#include "assert-log.h"
 #include "asserts.h"
 #include "expects.h"
-#include "util.h"
+#include "expect-smaps.h"
+#include "util-file.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -16,7 +19,8 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
-#include "stable.h"
+#include "smaps.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info.h"
@@ -27,17 +31,7 @@ struct State {
 	struct SList *heads;
 };
 
-int before_all(void **state) {
-	return 0;
-}
-
-int after_all(void **state) {
-	return 0;
-}
-
 int before_each(void **state) {
-	logs_clear();
-
 	struct State *s = calloc(1, sizeof(struct State));
 
 	g_displ = calloc(1, sizeof(struct Displ));
@@ -690,9 +684,9 @@ static void call_back__below_threshold(void **state) {
 }
 
 static void call_back__one(void **state) {
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", "msg1");
-	stable_put(env, "CALLBACK_LEVEL", "INFO");
+	const struct SMapS *expected = smaps_init();
+	smaps_put_if_absent(expected, "CALLBACK_MSG", "msg1");
+	smaps_put_if_absent(expected, "CALLBACK_LEVEL", "INFO");
 
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
@@ -700,25 +694,25 @@ static void call_back__one(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
+	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
 
 	call_back(INFO, "msg1", NULL);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	char *env_str = sprintf_append(smaps_str(expected), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
 	assert_logs_empty();
 
-	stable_free(env);
+	smaps_free(expected);
 }
 
 static void call_back__two(void **state) {
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", "msg1msg2");
-	stable_put(env, "CALLBACK_LEVEL", "FATAL");
+	const struct SMapS *expected = smaps_init();
+	smaps_put_if_absent(expected, "CALLBACK_MSG", "msg1msg2");
+	smaps_put_if_absent(expected, "CALLBACK_LEVEL", "FATAL");
 
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
@@ -728,19 +722,19 @@ static void call_back__two(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
+	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
 
 	call_back(FATAL, "msg1", "msg2");
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	char *env_str = sprintf_append(smaps_str(expected), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
 	assert_logs_empty();
 
-	stable_free(env);
+	smaps_free(expected);
 }
 
 static void call_back_mode_fail__(void **state) {
@@ -749,28 +743,28 @@ static void call_back_mode_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG",
+	const struct SMapS *expected = smaps_init();
+	smaps_put_if_absent(expected, "CALLBACK_MSG",
 			"description1\n"
 			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
-	stable_put(env, "CALLBACK_LEVEL", "INFO");
+	smaps_put_if_absent(expected, "CALLBACK_LEVEL", "INFO");
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
+	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
 
 	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	char *env_str = sprintf_append(smaps_str(expected), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
 	assert_logs_empty();
 
-	stable_free(env);
+	smaps_free(expected);
 }
 
 static void call_back_adaptive_sync_fail__(void **state) {
@@ -781,85 +775,85 @@ static void call_back_adaptive_sync_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG",
+	const struct SMapS *expected = smaps_init();
+	smaps_put_if_absent(expected, "CALLBACK_MSG",
 			"description1\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
 			"  - 'model1'");
-	stable_put(env, "CALLBACK_LEVEL", "WARNING");
+	smaps_put_if_absent(expected, "CALLBACK_LEVEL", "WARNING");
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_check_data(__wrap_spawn_sh_cmd, env, check_stable_equal_strcmp, cast_ptr_to_cmocka_value(env));
+	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
 
 	call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
-	char *env_str = sprintf_append(stable_str(env), "%s", "\n");
+	char *env_str = sprintf_append(smaps_str(expected), "%s", "\n");
 	assert_log(DEBUG, env_str);
 	free(env_str);
 
 	assert_logs_empty();
 
-	stable_free(env);
+	smaps_free(expected);
 }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(print_cfg__all),
-		TEST(print_cfg__arrange_only),
-		TEST(print_cfg__align_only),
-		TEST(print_cfg__auto_scale_max),
-		TEST(print_cfg__del),
-		TEST(print_cfg__lid_disabled),
+		TEST_BA(print_cfg__all),
+		TEST_BA(print_cfg__arrange_only),
+		TEST_BA(print_cfg__align_only),
+		TEST_BA(print_cfg__auto_scale_max),
+		TEST_BA(print_cfg__del),
+		TEST_BA(print_cfg__lid_disabled),
 
-		TEST(print_cfg_commands__empty),
-		TEST(print_cfg_commands__ok),
+		TEST_BA(print_cfg_commands__empty),
+		TEST_BA(print_cfg_commands__ok),
 
-		TEST(print_head_arrived__all),
-		TEST(print_head_arrived__min),
-		TEST(print_head_departed__ok),
+		TEST_BA(print_head_arrived__all),
+		TEST_BA(print_head_arrived__min),
+		TEST_BA(print_head_departed__ok),
 
-		TEST(print_head_deltas__mode),
-		TEST(print_head_deltas__vrr),
-		TEST(print_head_deltas__other),
-		TEST(print_head_deltas__disable),
-		TEST(print_head_deltas__enable),
-		TEST(print_head_deltas__reapply),
+		TEST_BA(print_head_deltas__mode),
+		TEST_BA(print_head_deltas__vrr),
+		TEST_BA(print_head_deltas__other),
+		TEST_BA(print_head_deltas__disable),
+		TEST_BA(print_head_deltas__enable),
+		TEST_BA(print_head_deltas__reapply),
 
-		TEST(print_active__empty),
-		TEST(print_active__many),
+		TEST_BA(print_active__empty),
+		TEST_BA(print_active__many),
 
-		TEST(print_adaptive_sync_fail__nulls),
-		TEST(print_adaptive_sync_fail__head),
+		TEST_BA(print_adaptive_sync_fail__nulls),
+		TEST_BA(print_adaptive_sync_fail__head),
 
-		TEST(print_mode_fail__nulls),
-		TEST(print_mode_fail__head),
+		TEST_BA(print_mode_fail__nulls),
+		TEST_BA(print_mode_fail__head),
 
-		TEST(delta_human_mode__to_no),
-		TEST(delta_human_mode__from_no),
+		TEST_BA(delta_human_mode__to_no),
+		TEST_BA(delta_human_mode__from_no),
 
-		TEST(delta_human_adaptive_sync__on),
-		TEST(delta_human_adaptive_sync__off),
+		TEST_BA(delta_human_adaptive_sync__on),
+		TEST_BA(delta_human_adaptive_sync__off),
 
-		TEST(delta_human_reapply__),
+		TEST_BA(delta_human_reapply__),
 
-		TEST(delta_human__all),
-		TEST(delta_human__enabled),
-		TEST(delta_human__disabled),
+		TEST_BA(delta_human__all),
+		TEST_BA(delta_human__enabled),
+		TEST_BA(delta_human__disabled),
 
-		TEST(call_back__no_callback),
-		TEST(call_back__below_threshold),
-		TEST(call_back__one),
-		TEST(call_back__two),
+		TEST_BA(call_back__no_callback),
+		TEST_BA(call_back__below_threshold),
+		TEST_BA(call_back__one),
+		TEST_BA(call_back__two),
 
-		TEST(call_back_mode_fail__),
+		TEST_BA(call_back_mode_fail__),
 
-		TEST(call_back_adaptive_sync_fail__),
+		TEST_BA(call_back_adaptive_sync_fail__),
 	};
 
 	return RUN(tests);

@@ -6,19 +6,17 @@ pro/*.c
 
 /way-displays
 
-/tst-*
+tst/tst-*
+!tst/tst-*.h
+!tst/tst-*.c
 
 /tst/tmp/
 
-actual.cfg
-actual.log
-actual.yaml
-expected.cfg
-expected.log
-expected.yaml
+actual.*
+expected.*
 
-log.actual
-log.expected
+**/*.gcda
+**/*.gcno
 
 /.ccls-cache
 /.cache

@@ -18,7 +18,7 @@
 #include "ipc.h"
 #include "mode.h"
 #include "slist.h"
-#include "stable.h"
+#include "smap.h"
 #include "log.h"
 #include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
@@ -51,7 +51,7 @@ static void cfg_paths_free(struct Cfg *cfg) {
 //
 // cloning functions
 //
-static void* cfg_user_mode_clone(const void* const val) {
+static void* fn_clone_cfg_user_mode(const void* const val) {
 	const struct UserMode *original = (struct UserMode*)val;
 	struct UserMode *clone = (struct UserMode*)calloc(1, sizeof(struct UserMode));
 
@@ -61,7 +61,7 @@ static void* cfg_user_mode_clone(const void* const val) {
 	return clone;
 }
 
-static void* cfg_user_transform_clone(const void* const val) {
+static void* fn_clone_cfg_user_transform(const void* const val) {
 	const struct UserTransform *original = (struct UserTransform*)val;
 	struct UserTransform *clone = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
@@ -71,7 +71,7 @@ static void* cfg_user_transform_clone(const void* const val) {
 	return clone;
 }
 
-static void* cfg_user_scale_clone(const void* const val) {
+static void* fn_clone_cfg_user_scale(const void* const val) {
 	const struct UserScale *original = (struct UserScale*)val;
 	struct UserScale *clone = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
@@ -81,12 +81,12 @@ static void* cfg_user_scale_clone(const void* const val) {
 	return clone;
 }
 
-void* cfg_disabled_clone(const void *val) {
+void* fn_clone_cfg_disabled(const void *val) {
 	struct Disabled *original = (struct Disabled*)val;
 	struct Disabled *clone = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
 	clone->name_desc = strdup(original->name_desc);
-	clone->conditions = slist_clone(original->conditions, condition_clone);
+	clone->conditions = slist_clone(original->conditions, fn_clone_condition);
 
 	return clone;
 }
@@ -94,7 +94,7 @@ void* cfg_disabled_clone(const void *val) {
 //
 // equality functions
 //
-static bool cfg_user_mode_name_equal(const void *a, const void *b) {
+static bool fn_equal_cfg_user_mode_name(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -124,7 +124,7 @@ static bool cfg_user_scale_name_equal(const void *a, const void *b) {
 	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
-static bool cfg_user_scale_equal(const void *a, const void *b) {
+static bool fn_equal_cfg_user_scale(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -139,7 +139,7 @@ static bool cfg_user_scale_equal(const void *a, const void *b) {
 	return strcmp(lhs->name_desc, rhs->name_desc) == 0 && lhs->scale == rhs->scale;
 }
 
-static bool cfg_user_mode_equal(const void *a, const void *b) {
+static bool fn_equal_cfg_user_mode(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -170,7 +170,7 @@ static bool cfg_user_mode_equal(const void *a, const void *b) {
 	return true;
 }
 
-static bool cfg_user_transform_name_equal(const void *a, const void *b) {
+static bool fn_equal_cfg_user_transform_name(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -185,7 +185,7 @@ static bool cfg_user_transform_name_equal(const void *a, const void *b) {
 	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
 }
 
-static bool cfg_user_transform_equal(const void *a, const void *b) {
+static bool fn_equal_cfg_user_transform(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -208,7 +208,7 @@ static bool cfg_user_transform_equal(const void *a, const void *b) {
 	return true;
 }
 
-static bool cfg_disabled_equal(const void *a, const void *b) {
+static bool fn_equal_cfg_disabled(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -224,7 +224,7 @@ static bool cfg_disabled_equal(const void *a, const void *b) {
 		return false;
 	}
 
-	return slist_equal(lhs->conditions, rhs->conditions, condition_equal);
+	return slist_equal(lhs->conditions, rhs->conditions, fn_equal_condition);
 }
 
 static bool invalid_user_scale(const void *a, const void *b) {
@@ -338,13 +338,13 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->scale_round_strategy = from->scale_round_strategy;
 
 	// SCALE
-	to->user_scales = slist_clone(from->user_scales, cfg_user_scale_clone);
+	to->user_scales = slist_clone(from->user_scales, fn_clone_cfg_user_scale);
 
 	// TRANSFORM
-	to->user_transforms = slist_clone(from->user_transforms, cfg_user_transform_clone);
+	to->user_transforms = slist_clone(from->user_transforms, fn_clone_cfg_user_transform);
 
 	// MODE
-	to->user_modes = slist_clone(from->user_modes, cfg_user_mode_clone);
+	to->user_modes = slist_clone(from->user_modes, fn_clone_cfg_user_mode);
 
 	// VRR_OFF
 	to->adaptive_sync_off_name_desc = slist_clone(from->adaptive_sync_off_name_desc, fn_clone_strdup);
@@ -368,7 +368,7 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
 
 	// DISABLED
-	to->disabled = slist_clone(from->disabled, cfg_disabled_clone);
+	to->disabled = slist_clone(from->disabled, fn_clone_cfg_disabled);
 
 	// LOG_THRESHOLD
 	if (from->log_threshold) {
@@ -394,7 +394,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// ORDER
-	if (!slist_equal(a->order_name_desc, b->order_name_desc, fn_comp_equals_strcmp)) {
+	if (!slist_equal(a->order_name_desc, b->order_name_desc, fn_equal_strcmp)) {
 		return false;
 	}
 
@@ -418,7 +418,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// SCALE
-	if (!slist_equal(a->user_scales, b->user_scales, cfg_user_scale_equal)) {
+	if (!slist_equal(a->user_scales, b->user_scales, fn_equal_cfg_user_scale)) {
 		return false;
 	}
 
@@ -433,17 +433,17 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// MODE
-	if (!slist_equal(a->user_modes, b->user_modes, cfg_user_mode_equal)) {
+	if (!slist_equal(a->user_modes, b->user_modes, fn_equal_cfg_user_mode)) {
 		return false;
 	}
 
 	// TRANSFORM
-	if (!slist_equal(a->user_transforms, b->user_transforms, cfg_user_transform_equal)) {
+	if (!slist_equal(a->user_transforms, b->user_transforms, fn_equal_cfg_user_transform)) {
 		return false;
 	}
 
 	// VRR_OFF
-	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, fn_comp_equals_strcmp)) {
+	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, fn_equal_strcmp)) {
 		return false;
 	}
 
@@ -467,12 +467,12 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// MAX_PREFERRED_REFRESH
-	if (!slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, fn_comp_equals_strcmp)) {
+	if (!slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, fn_equal_strcmp)) {
 		return false;
 	}
 
 	// DISABLED
-	if (!slist_equal(a->disabled, b->disabled, cfg_disabled_equal)) {
+	if (!slist_equal(a->disabled, b->disabled, fn_equal_cfg_disabled)) {
 		return false;
 	}
 
@@ -631,7 +631,7 @@ bool cfg_resolve_file_path(struct Cfg *dst) {
 	return false;
 }
 
-void cfg_copy_file_path(struct Cfg *from, struct Cfg *to) {
+void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
 	if (!from || !to)
 		return;
 
@@ -645,11 +645,11 @@ void cfg_copy_file_path(struct Cfg *from, struct Cfg *to) {
 }
 
 static void remove_duplicate_user_scales(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init(10, 10, false);
+	const struct SMap *by_name_desc = smap_init();
 
 	for (const struct SList *i = cfg->user_scales; i; i = i->nex) {
 		const struct UserScale *user_scale = i->val;
-		const struct UserScale *dup = stable_put(by_name_desc, user_scale->name_desc, user_scale);
+		const struct UserScale *dup = smap_put(by_name_desc, user_scale->name_desc, user_scale);
 		if (dup) {
 			log_warn(NULL);
 			log_warn("Removing duplicate SCALE %s", dup->name_desc);
@@ -658,16 +658,16 @@ static void remove_duplicate_user_scales(struct Cfg *cfg) {
 	}
 
 	slist_free(&cfg->user_scales);
-	cfg->user_scales = stable_vals_slist(by_name_desc);
-	stable_free(by_name_desc);
+	cfg->user_scales = smap_vals_slist_shallow(by_name_desc);
+	smap_free(by_name_desc);
 }
 
 static void remove_duplicate_user_modes(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init(10, 10, false);
+	const struct SMap *by_name_desc = smap_init();
 
 	for (const struct SList *i = cfg->user_modes; i; i = i->nex) {
 		const struct UserMode *mode = i->val;
-		const struct UserMode *dup = stable_put(by_name_desc, mode->name_desc, mode);
+		const struct UserMode *dup = smap_put(by_name_desc, mode->name_desc, mode);
 		if (dup) {
 			log_warn(NULL);
 			log_warn("Removing duplicate MODE %s", dup->name_desc);
@@ -676,16 +676,16 @@ static void remove_duplicate_user_modes(struct Cfg *cfg) {
 	}
 
 	slist_free(&cfg->user_modes);
-	cfg->user_modes = stable_vals_slist(by_name_desc);
-	stable_free(by_name_desc);
+	cfg->user_modes = smap_vals_slist_shallow(by_name_desc);
+	smap_free(by_name_desc);
 }
 
 static void remove_duplicate_user_transforms(struct Cfg *cfg) {
-	const struct STable *by_name_desc = stable_init(10, 10, false);
+	const struct SMap *by_name_desc = smap_init();
 
 	for (const struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		const struct UserTransform *transform = i->val;
-		const struct UserTransform *dup = stable_put(by_name_desc, transform->name_desc, transform);
+		const struct UserTransform *dup = smap_put(by_name_desc, transform->name_desc, transform);
 		if (dup) {
 			log_warn(NULL);
 			log_warn("Removing duplicate TRANSFORM %s", dup->name_desc);
@@ -694,8 +694,8 @@ static void remove_duplicate_user_transforms(struct Cfg *cfg) {
 	}
 
 	slist_free(&cfg->user_transforms);
-	cfg->user_transforms = stable_vals_slist(by_name_desc);
-	stable_free(by_name_desc);
+	cfg->user_transforms = smap_vals_slist_shallow(by_name_desc);
+	smap_free(by_name_desc);
 }
 
 void validate_fix(struct Cfg *cfg) {
@@ -789,7 +789,7 @@ void validate_warn(struct Cfg *cfg) {
 	}
 }
 
-struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
+struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -838,7 +838,7 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// SCALE
-	struct UserScale *set_user_scale = NULL;
+	const struct UserScale *set_user_scale = NULL;
 	struct UserScale *merged_user_scale = NULL;
 	for (i = from->user_scales; i; i = i->nex) {
 		set_user_scale = (struct UserScale*)i->val;
@@ -851,11 +851,11 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// MODE
-	struct UserMode *set_user_mode = NULL;
+	const struct UserMode *set_user_mode = NULL;
 	struct UserMode *merged_user_mode = NULL;
 	for (i = from->user_modes; i; i = i->nex) {
 		set_user_mode = (struct UserMode*)i->val;
-		if (!(merged_user_mode = (struct UserMode*)slist_find_equal_val(merged->user_modes, cfg_user_mode_name_equal, set_user_mode))) {
+		if (!(merged_user_mode = (struct UserMode*)slist_find_equal_val(merged->user_modes, fn_equal_cfg_user_mode_name, set_user_mode))) {
 			merged_user_mode = cfg_user_mode_default();
 			merged_user_mode->name_desc = strdup(set_user_mode->name_desc);
 			slist_append(&merged->user_modes, merged_user_mode);
@@ -868,11 +868,11 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// TRANSFORM
-	struct UserTransform *set_user_transform = NULL;
+	const struct UserTransform *set_user_transform = NULL;
 	struct UserTransform *merged_user_transform = NULL;
 	for (i = from->user_transforms; i; i = i->nex) {
 		set_user_transform = (struct UserTransform*)i->val;
-		if (!(merged_user_transform = (struct UserTransform*)slist_find_equal_val(merged->user_transforms, cfg_user_transform_name_equal, set_user_transform))) {
+		if (!(merged_user_transform = (struct UserTransform*)slist_find_equal_val(merged->user_transforms, fn_equal_cfg_user_transform_name, set_user_transform))) {
 			merged_user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 			merged_user_transform->name_desc = strdup(set_user_transform->name_desc);
 			slist_append(&merged->user_transforms, merged_user_transform);
@@ -882,15 +882,15 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 
 	// VRR_OFF
 	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
-		if (!slist_find_equal(merged->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, i->val)) {
+		if (!slist_find_equal(merged->adaptive_sync_off_name_desc, fn_equal_strcmp, i->val)) {
 			slist_append(&merged->adaptive_sync_off_name_desc, strdup((char*)i->val));
 		}
 	}
 
 	// DISABLED
 	for (i = from->disabled; i; i = i->nex) {
-		if (!slist_find_equal(merged->disabled, cfg_disabled_equal, i->val)) {
-			slist_append(&merged->disabled, cfg_disabled_clone(i->val));
+		if (!slist_find_equal(merged->disabled, fn_equal_cfg_disabled, i->val)) {
+			slist_append(&merged->disabled, fn_clone_cfg_disabled(i->val));
 		}
 	}
 
@@ -905,14 +905,14 @@ struct Cfg *merge_set(struct Cfg *to, struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
+struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
 
 	struct Cfg *merged = clone_cfg(to);
 
-	struct SList *i;
+	const struct SList *i;
 
 	// SCALE
 	for (i = from->user_scales; i; i = i->nex) {
@@ -921,22 +921,22 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 
 	// MODE
 	for (i = from->user_modes; i; i = i->nex) {
-		slist_remove_all_free(&merged->user_modes, cfg_user_mode_name_equal, i->val, cfg_user_mode_free);
+		slist_remove_all_free(&merged->user_modes, fn_equal_cfg_user_mode_name, i->val, cfg_user_mode_free);
 	}
 
 	// TRANSFORM
 	for (i = from->user_transforms; i; i = i->nex) {
-		slist_remove_all_free(&merged->user_transforms, cfg_user_transform_name_equal, i->val, cfg_user_transform_free);
+		slist_remove_all_free(&merged->user_transforms, fn_equal_cfg_user_transform_name, i->val, cfg_user_transform_free);
 	}
 
 	// VRR_OFF
 	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
-		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, i->val, NULL);
+		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, fn_equal_strcmp, i->val, NULL);
 	}
 
 	// DISABLED
 	for (i = from->disabled; i; i = i->nex) {
-		slist_remove_all_free(&merged->disabled, cfg_disabled_equal, i->val, cfg_disabled_free);
+		slist_remove_all_free(&merged->disabled, fn_equal_cfg_disabled, i->val, cfg_disabled_free);
 	}
 
 	// CALLBACK_CMD
@@ -948,7 +948,7 @@ struct Cfg *merge_del(struct Cfg *to, struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
+struct Cfg *merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -966,12 +966,12 @@ struct Cfg *merge_toggle(struct Cfg *to, struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_comp_equals_strcmp, NULL, fn_clone_strdup);
+	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_equal_strcmp, NULL, fn_clone_strdup);
 
 	return merged;
 }
 
-struct Cfg *cfg_merge(struct Cfg *to, struct Cfg *from, enum IpcCommand command) {
+struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {
 	if (!to || !from) {
 		return NULL;
 	}

@@ -9,6 +9,7 @@
 
 #include "convert.h"
 #include "log.h"
+#include "str.h"
 
 static void log_error_parser(const yaml_parser_t *parser, const char *prefix) {
 	char *err = strdup(prefix);

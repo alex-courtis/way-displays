@@ -1,5 +1,6 @@
 #include "tst.h"
-#include "asserts.h"
+
+#include "assert-log.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -12,24 +13,6 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #include "listeners.h"
-
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
-static int before_each(void **state) {
-	logs_clear();
-
-	return 0;
-}
-
-static int after_each(void **state) {
-	return 0;
-}
 
 static void preferred__first(void **state) {
 	struct Head head = { .name = "NAM", };

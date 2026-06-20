@@ -2,11 +2,10 @@
 #define EXPECTS_H
 
 #include <cmocka.h>
+#include <stdbool.h>
 #include <string.h>
 
-#include "stable.h"
-
-int _check_ptr_equal(CMockaValueData value, CMockaValueData check_data) {
+int check_ptr_equal(CMockaValueData value, CMockaValueData check_data) {
 	if (value.ptr != check_data.ptr) {
 		cmocka_print_error("%p != %p\n", value.ptr, check_data.ptr);
 		return false;
@@ -16,10 +15,10 @@ int _check_ptr_equal(CMockaValueData value, CMockaValueData check_data) {
 }
 
 #define expect_ptr(function, parameter, value) \
-	expect_check_data(function, parameter, _check_ptr_equal, cast_ptr_to_cmocka_value(value));
+	expect_check_data(function, parameter, check_ptr_equal, cast_ptr_to_cmocka_value(value))
 
 #define expect_nul(function, parameter) \
-	expect_check_data(function, parameter, _check_ptr_equal, cast_ptr_to_cmocka_value(NULL));
+	expect_check_data(function, parameter, check_ptr_equal, cast_ptr_to_cmocka_value(NULL))
 
 int check_str_equal(CMockaValueData value, CMockaValueData check_data) {
 	char *actual = value.ptr;
@@ -42,19 +41,6 @@ int check_str_equal(CMockaValueData value, CMockaValueData check_data) {
 }
 
 #define expect_str(function, parameter, value) \
-	expect_check_data(function, parameter, check_str_equal, cast_ptr_to_cmocka_value(value));
-
-int check_stable_equal_strcmp(CMockaValueData value, CMockaValueData check_data) {
-
-	const struct STable* const actual = (struct STable*)value.ptr;
-	const struct STable* const expected = (struct STable*)check_data.ptr;
-
-	if (stable_equal(actual, expected, fn_comp_equals_strcmp)) {
-		return true;
-	} else {
-		cmocka_print_error("check_stable_equal_strcmp\nEXPECTED:\n%s\n!=\nACTUAL:\n%s\n", stable_str(expected), stable_str(actual));
-		return false;
-	}
-}
+	expect_check_data(function, parameter, check_str_equal, cast_ptr_to_cmocka_value(value))
 
 #endif // EXPECTS_H

@@ -6,49 +6,10 @@
 #include "output.h"
 
 #include "listeners.h"
-#include "itable.h"
+#include "imap.h"
 #include "xdg-output-unstable-v1.h"
 
-const struct ITable *outputs; // by wl_output_name
-
-struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output_name, struct zxdg_output_manager_v1 *zxdg_output_manager) {
-	if (!wl_output || !zxdg_output_manager)
-		return NULL;
-
-	struct zxdg_output_v1 *zxdg_output = zxdg_output_manager_v1_get_xdg_output(zxdg_output_manager, wl_output);
-	if (!zxdg_output)
-		return NULL;
-
-	struct Output *output = calloc(1, sizeof(struct Output));
-	output->wl_output = wl_output;
-	output->wl_output_name = wl_output_name;
-	output->zxdg_output = zxdg_output;
-
-	if (!outputs)
-		outputs = itable_init(5, 5);
-	itable_put(outputs, wl_output_name, output);
-
-	zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
-
-	return output;
-}
-
-const struct Output *output_for_name(const char *name) {
-	const struct Output *output = NULL;
-
-	const struct ITableIter *i = NULL;
-	for (i = itable_iter(outputs); i; i = itable_iter_next(i)) {
-		output = itable_iter_val(i);
-		if (output && output->name && strcmp(output->name, name) == 0) {
-			break;
-		} else {
-			output = NULL;
-		}
-	}
-	itable_iter_free(i);
-
-	return output;
-}
+const struct IMap *outputs; // by wl_output_name
 
 static void destroy(const void *o) {
 	if (!o)
@@ -65,11 +26,52 @@ static void destroy(const void *o) {
 	free(output);
 }
 
+struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output_name, struct zxdg_output_manager_v1 *zxdg_output_manager) {
+	if (!wl_output || !zxdg_output_manager)
+		return NULL;
+
+	struct zxdg_output_v1 *zxdg_output = zxdg_output_manager_v1_get_xdg_output(zxdg_output_manager, wl_output);
+	if (!zxdg_output)
+		return NULL;
+
+	struct Output *output = calloc(1, sizeof(struct Output));
+	output->wl_output = wl_output;
+	output->wl_output_name = wl_output_name;
+	output->zxdg_output = zxdg_output;
+
+	if (!outputs) {
+		const struct IMapParams params = { .free_val = destroy, };
+		outputs = imap_init_with(params);
+	}
+	imap_put(outputs, wl_output_name, output);
+
+	zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
+
+	return output;
+}
+
+const struct Output *output_for_name(const char *name) {
+	const struct Output *output = NULL;
+
+	const struct IMapIter *i = NULL;
+	for (i = imap_iter(outputs); i; i = imap_iter_next(i)) {
+		output = i->val;
+		if (output && output->name && strcmp(output->name, name) == 0) {
+			break;
+		} else {
+			output = NULL;
+		}
+	}
+	imap_iter_free(i);
+
+	return output;
+}
+
 void output_destroy_all(void) {
-	itable_free_vals(outputs, destroy);
+	imap_free_vals(outputs);
 }
 
 void output_destroy_by_wl_output_name(const uint32_t wl_output_name) {
-	destroy(itable_remove(outputs, wl_output_name));
+	destroy(imap_remove(outputs, wl_output_name));
 }
 

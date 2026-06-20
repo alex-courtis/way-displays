@@ -1,5 +1,3 @@
-#include "tst.h"
-
 #include <cmocka.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -8,7 +6,9 @@
 
 #include "convert.h"
 #include "log.h"
-#include "util.h"
+#include "util-file.h"
+
+#include "wrap-log.h"
 
 // log space b is statically allocated and not cleared
 // bp is used to indicate presence of logs
@@ -17,12 +17,6 @@
 // 0 unused, 1 DEBUG, 5 FATAL
 static char b[6][262144] = { 0 };
 static char *bp[6] = { 0 };
-
-void logs_clear(void) {
-	for (enum LogThreshold t = DEBUG; t <= FATAL; t++) {
-		bp[t] = NULL;
-	}
-}
 
 void _assert_log(enum LogThreshold t, const char * s, const char * const file, const int line) {
 	if (bp[t]) {

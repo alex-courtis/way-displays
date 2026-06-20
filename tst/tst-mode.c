@@ -1,4 +1,5 @@
 #include "tst.h"
+
 #include "asserts.h"
 
 #include <cmocka.h>
@@ -14,25 +15,6 @@
 struct UserMode *user_mode = NULL;
 struct SList *modes = NULL;
 struct SList *modes_failed = NULL;
-
-static int before_all(void **state) {
-	return 0;
-}
-
-static int after_all(void **state) {
-	return 0;
-}
-
-static int before_each(void **state) {
-	slist_append(&modes, mode_init(NULL, NULL, 200, 100, 59999, false));
-	slist_append(&modes, mode_init(NULL, NULL, 200, 100, 60499, false));
-	slist_append(&modes, mode_init(NULL, NULL, 200, 100, 60500, false));
-	slist_append(&modes, mode_init(NULL, NULL, 400, 200, 120000, false));
-	slist_append(&modes, mode_init(NULL, NULL, 600, 300, 164999, false));
-	slist_append(&modes, mode_init(NULL, NULL, 800, 400, 144000, false));
-
-	return 0;
-}
 
 static int after_each(void **state) {
 	cfg_user_mode_free(user_mode);
@@ -155,21 +137,21 @@ static void mode_dpi__(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(mode_mhz_to_hz_str__),
-		TEST(mode_hz_str_to_mhz__),
-		TEST(mode_mhz_to_hz_rounded__),
+		TEST_A(mode_mhz_to_hz_str__),
+		TEST_A(mode_hz_str_to_mhz__),
+		TEST_A(mode_mhz_to_hz_rounded__),
 
-		TEST(mode_user_mode__max),
-		TEST(mode_user_mode__no_hz_no_match),
-		TEST(mode_user_mode__no_hz_match),
-		TEST(mode_user_mode__even_hz_no_match),
-		TEST(mode_user_mode__even_hz_match),
-		TEST(mode_user_mode__even_hz_rounded_up),
-		TEST(mode_user_mode__failed),
-		TEST(mode_user_mode__exact_hz_match),
-		TEST(mode_user_mode__exact_hz_failed),
+		TEST_A(mode_user_mode__max),
+		TEST_A(mode_user_mode__no_hz_no_match),
+		TEST_A(mode_user_mode__no_hz_match),
+		TEST_A(mode_user_mode__even_hz_no_match),
+		TEST_A(mode_user_mode__even_hz_match),
+		TEST_A(mode_user_mode__even_hz_rounded_up),
+		TEST_A(mode_user_mode__failed),
+		TEST_A(mode_user_mode__exact_hz_match),
+		TEST_A(mode_user_mode__exact_hz_failed),
 
-		TEST(mode_dpi__),
+		TEST_A(mode_dpi__),
 	};
 
 	return RUN(tests);

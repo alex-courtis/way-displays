@@ -16,7 +16,8 @@
 #include "output.h"
 #include "process.h"
 #include "slist.h"
-#include "stable.h"
+#include "smaps.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
 char *info_user_mode_string(const struct UserMode * const user_mode) {
@@ -665,18 +666,19 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	snprintf(buf, CALLBACK_MSG_LEN, "%s%s", msg1 ? msg1 : "", msg2 ? msg2 : "");
 
 	// pack environment variables
-	const struct STable *env = stable_init(1, 1, false);
-	stable_put(env, "CALLBACK_MSG", buf);
-	stable_put(env, "CALLBACK_LEVEL", log_threshold_name(t));
+	const struct SMapS *env = smaps_init();
 
-	char *env_str = stable_str(env);
+	smaps_put_if_absent(env, "CALLBACK_MSG", buf);
+	smaps_put_if_absent(env, "CALLBACK_LEVEL", log_threshold_name(t));
+
+	char *env_str = smaps_str(env);
 	log_debug("%s", env_str);
 	free(env_str);
 
 	// execute callback
 	spawn_sh_cmd(g_cfg->callback_cmd, env);
 
-	stable_free(env);
+	smaps_free(env);
 	free(buf);
 }
 
