@@ -236,7 +236,7 @@ static void parse_element__mode_set_max(void **state) {
 	expectedUserMode->max = true;
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->user_modes_by_name_desc, expectedUserMode->name_desc, expectedUserMode);
+	smap_put(expected->user_modes, expectedUserMode->name_desc, expectedUserMode);
 
 	assert_cfg_equal(actual, expected);
 
@@ -259,7 +259,7 @@ static void parse_element__mode_set_res(void **state) {
 	expectedUserMode->height = 2;
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->user_modes_by_name_desc, expectedUserMode->name_desc, expectedUserMode);
+	smap_put(expected->user_modes, expectedUserMode->name_desc, expectedUserMode);
 
 	assert_cfg_equal(actual, expected);
 
@@ -283,7 +283,7 @@ static void parse_element__mode_set_res_refresh(void **state) {
 	expectedUserMode->refresh_mhz = 12346;
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->user_modes_by_name_desc, expectedUserMode->name_desc, expectedUserMode);
+	smap_put(expected->user_modes, expectedUserMode->name_desc, expectedUserMode);
 
 	assert_cfg_equal(actual, expected);
 
@@ -304,7 +304,7 @@ static void parse_element__mode_del_ok(void **state) {
 	expectedUserMode->max = true;
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->user_modes_by_name_desc, expectedUserMode->name_desc, expectedUserMode);
+	smap_put(expected->user_modes, expectedUserMode->name_desc, expectedUserMode);
 
 	assert_cfg_equal(actual, expected);
 

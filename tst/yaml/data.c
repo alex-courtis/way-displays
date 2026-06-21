@@ -52,13 +52,9 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->user_scales, cfg_user_scale_init("three", 3));
 	slist_append(&cfg->user_scales, cfg_user_scale_init("four", 4));
 
-	slist_append(&cfg->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
-
-	smap_put(cfg->user_modes_by_name_desc, "five", cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	smap_put(cfg->user_modes_by_name_desc, "six", cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	smap_put(cfg->user_modes_by_name_desc, "seven", cfg_user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(cfg->user_modes, "five", cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	smap_put(cfg->user_modes, "six", cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	smap_put(cfg->user_modes, "seven", cfg_user_mode_init("seven", true, -1, -1, -1, false));
 
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
 	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));

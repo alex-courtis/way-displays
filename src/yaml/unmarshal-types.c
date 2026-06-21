@@ -162,7 +162,7 @@ void *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->scale_round_strategy = yaml_scalar_to_enum_def(c, SCALE_ROUND_STRATEGY_DEFAULT, value, scale_round_strategy_val, scale_round_strategy_name, scale_round_strategy_names);
 				break;
 			case MODE:
-				yaml_seq_into_type_smap(c, value, cfg->user_modes_by_name_desc, yaml_map_into_user_modes);
+				yaml_seq_into_smap(c, value, cfg->user_modes, yaml_map_into_user_modes);
 				break;
 			case TRANSFORM:
 				cfg->user_transforms = yaml_seq_to_type_list(c, value, yaml_map_to_user_transform);

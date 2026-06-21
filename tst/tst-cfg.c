@@ -13,6 +13,7 @@
 #include "conditions.h"
 #include "log.h"
 #include "slist.h"
+#include "smap.h"
 
 #include "cfg.h"
 
@@ -197,15 +198,15 @@ static void merge_set__user_transform(void **state) {
 static void merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_modes, cfg_user_mode_init("to", false, 1, 2, 3, false));
-	slist_append(&s->to->user_modes, cfg_user_mode_init("both", false, 4, 5, 6, false));
+	smap_put(s->to->user_modes, "to", cfg_user_mode_init("to", false, 1, 2, 3, false));
+	smap_put(s->to->user_modes, "both", cfg_user_mode_init("both", false, 4, 5, 6, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("from", false, 7, 8, 9, true));
-	slist_append(&s->from->user_modes, cfg_user_mode_init("both", false, 10, 11, 12, true));
+	smap_put(s->from->user_modes, "from", cfg_user_mode_init("from", false, 7, 8, 9, true));
+	smap_put(s->from->user_modes, "both", cfg_user_mode_init("both", false, 10, 11, 12, true));
 
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("to", false, 1, 2, 3, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("both", false, 10, 11, 12, true));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("from", false, 7, 8, 9, true));
+	smap_put(s->expected->user_modes, "to", cfg_user_mode_init("to", false, 1, 2, 3, false));
+	smap_put(s->expected->user_modes, "both", cfg_user_mode_init("both", false, 10, 11, 12, true));
+	smap_put(s->expected->user_modes, "from", cfg_user_mode_init("from", false, 7, 8, 9, true));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -324,13 +325,13 @@ static void merge_del__scale(void **state) {
 static void merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_modes, cfg_user_mode_init("1", false, 1, 1, 1, false));
-	slist_append(&s->to->user_modes, cfg_user_mode_init("2", false, 2, 2, 2, false));
+	smap_put(s->to->user_modes, "1", cfg_user_mode_init("1", false, 1, 1, 1, false));
+	smap_put(s->to->user_modes, "2", cfg_user_mode_init("2", false, 2, 2, 2, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("2", false, 2, 2, 2, false));
-	slist_append(&s->from->user_modes, cfg_user_mode_init("3", false, 3, 3, 3, false));
+	smap_put(s->from->user_modes, "2", cfg_user_mode_init("2", false, 2, 2, 2, false));
+	smap_put(s->from->user_modes, "3", cfg_user_mode_init("3", false, 3, 3, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("1", false, 1, 1, 1, false));
+	smap_put(s->from->user_modes, "1", cfg_user_mode_init("1", false, 1, 1, 1, false));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -547,18 +548,18 @@ static void validate_fix__user_scale(void **state) {
 static void validate_fix__user_mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
-	slist_append(&s->from->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
+	smap_put(s->from->user_modes, "ok", cfg_user_mode_init("ok", false, 1, 2, 3, false));
+	smap_put(s->from->user_modes, "max", cfg_user_mode_init("max", true, -1, -1, -1, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("negative width", false, -99, 2, 3, false));
+	smap_put(s->from->user_modes, "negative width", cfg_user_mode_init("negative width", false, -99, 2, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("negative height", false, 1, -99, 3, false));
+	smap_put(s->from->user_modes, "negative height", cfg_user_mode_init("negative height", false, 1, -99, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("negative hz", false, 1, 2, -12340, false));
+	smap_put(s->from->user_modes, "negative hz", cfg_user_mode_init("negative hz", false, 1, 2, -12340, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("missing width", false, -1, 2, 3, false));
+	smap_put(s->from->user_modes, "missing width", cfg_user_mode_init("missing width", false, -1, 2, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("missing height", false, 1, -1, 3, false));
+	smap_put(s->from->user_modes, "missing height", cfg_user_mode_init("missing height", false, 1, -1, 3, false));
 
 	validate_fix(s->from);
 
@@ -566,8 +567,8 @@ static void validate_fix__user_mode(void **state) {
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
+	smap_put(s->expected->user_modes, "ok", cfg_user_mode_init("ok", false, 1, 2, 3, false));
+	smap_put(s->expected->user_modes, "max", cfg_user_mode_init("max", true, -1, -1, -1, false));
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -617,9 +618,9 @@ static void validate_warn__(void **state) {
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("ssssssss", 2));
 	slist_append(&s->expected->user_scales, cfg_user_scale_init("DP-1", 3));
 
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmm", false, 1, 1, 1, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("DP-1", false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "mmm", cfg_user_mode_init("mmm", false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "mmmmmmmm", cfg_user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "DP-1", cfg_user_mode_init("DP-1", false, 1, 1, 1, false));
 
 	slist_append(&s->expected->user_transforms, cfg_user_transform_init("ttt", WL_OUTPUT_TRANSFORM_180));
 	slist_append(&s->expected->user_transforms, cfg_user_transform_init("tttttttttt", WL_OUTPUT_TRANSFORM_270));

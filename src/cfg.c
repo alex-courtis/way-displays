@@ -94,21 +94,6 @@ void* fn_clone_cfg_disabled(const void *val) {
 //
 // equality functions
 //
-static bool fn_equal_cfg_user_mode_name(const void *a, const void *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	const struct UserMode *lhs = (struct UserMode*)a;
-	const struct UserMode *rhs = (struct UserMode*)b;
-
-	if (!lhs->name_desc || !rhs->name_desc) {
-		return false;
-	}
-
-	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
-}
-
 static bool cfg_user_scale_name_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
@@ -344,7 +329,10 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->user_transforms = slist_clone(from->user_transforms, fn_clone_cfg_user_transform);
 
 	// MODE
-	to->user_modes = slist_clone(from->user_modes, fn_clone_cfg_user_mode);
+	// TODO SMap deep clone independent of clone_val
+	for (const struct SMapIter *it = smap_iter(from->user_modes); it; it = smap_iter_next(it)) {
+		smap_put(to->user_modes, it->key, fn_clone_cfg_user_mode(it->val));
+	}
 
 	// VRR_OFF
 	to->adaptive_sync_off_name_desc = slist_clone(from->adaptive_sync_off_name_desc, fn_clone_strdup);
@@ -433,7 +421,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// MODE
-	if (!smap_equal(a->user_modes_by_name_desc, b->user_modes_by_name_desc)) {
+	if (!smap_equal(a->user_modes, b->user_modes)) {
 		return false;
 	}
 
@@ -495,7 +483,7 @@ struct Cfg *cfg_init(void) {
 		.equal_val = fn_equal_cfg_user_mode,
 		.free_val = cfg_user_mode_free,
 	};
-	cfg->user_modes_by_name_desc = smap_init_with(params);
+	cfg->user_modes = smap_init_with(params);
 
 	return cfg;
 }
@@ -720,7 +708,12 @@ void validate_fix(struct Cfg *cfg) {
 	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, cfg_user_scale_free);
 	remove_duplicate_user_scales(cfg);
 
-	slist_remove_all_free(&cfg->user_modes, invalid_user_mode, NULL, cfg_user_mode_free);
+	// TODO SMap remove if or find, depends on whether we get many similar cases
+	const struct SMapIter *it = NULL;
+	while ((it = smap_filter_iter(cfg->user_modes, NULL, invalid_user_mode, NULL))) {
+		smap_remove_free(cfg->user_modes, it->key);
+		smap_iter_free(it);
+	}
 
 	remove_duplicate_user_transforms(cfg);
 }
@@ -744,11 +737,12 @@ void validate_warn(struct Cfg *cfg) {
 		const struct UserScale *user_scale = (struct UserScale*)i->val;
 		warn_ambiguous_name_desc(user_scale->name_desc, "SCALE");
 	}
-	for (i = cfg->user_modes; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		const struct UserMode *user_mode = (struct UserMode*)i->val;
-		warn_ambiguous_name_desc(user_mode->name_desc, "MODE");
+	for (const struct SMapIter *it = smap_iter(cfg->user_modes); it; it = smap_iter_next(it)) {
+		// TODO SMap may a no-nulls allowed version of maps
+		const struct UserMode *user_mode = (struct UserMode*)it->val;
+		if (user_mode) {
+			warn_ambiguous_name_desc(user_mode->name_desc, "MODE");
+		}
 	}
 	for (i = cfg->user_transforms; i; i = i->nex) {
 		if (!i->val)
@@ -839,20 +833,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// MODE
-	const struct UserMode *set_user_mode = NULL;
-	struct UserMode *merged_user_mode = NULL;
-	for (i = from->user_modes; i; i = i->nex) {
-		set_user_mode = (struct UserMode*)i->val;
-		if (!(merged_user_mode = (struct UserMode*)slist_find_equal_val(merged->user_modes, fn_equal_cfg_user_mode_name, set_user_mode))) {
-			merged_user_mode = cfg_user_mode_default();
-			merged_user_mode->name_desc = strdup(set_user_mode->name_desc);
-			slist_append(&merged->user_modes, merged_user_mode);
-		}
-		merged_user_mode->max = set_user_mode->max;
-		merged_user_mode->width = set_user_mode->width;
-		merged_user_mode->height = set_user_mode->height;
-		merged_user_mode->refresh_mhz = set_user_mode->refresh_mhz;
-		merged_user_mode->warned_no_mode = set_user_mode->warned_no_mode;
+	for (const struct SMapIter *it = smap_iter(from->user_modes); it; it = smap_iter_next(it)) {
+		smap_put_free(merged->user_modes, it->key, fn_clone_cfg_user_mode(it->val));
 	}
 
 	// TRANSFORM
@@ -908,8 +890,8 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// MODE
-	for (i = from->user_modes; i; i = i->nex) {
-		slist_remove_all_free(&merged->user_modes, fn_equal_cfg_user_mode_name, i->val, cfg_user_mode_free);
+	for (const struct SMapIter *it = smap_iter(from->user_modes); it; it = smap_iter_next(it)) {
+		smap_remove_free(merged->user_modes, it->key);
 	}
 
 	// TRANSFORM
@@ -1095,9 +1077,7 @@ void cfg_free(struct Cfg *cfg) {
 
 	slist_free_vals(&cfg->user_scales, cfg_user_scale_free);
 
-	slist_free_vals(&cfg->user_modes, cfg_user_mode_free);
-
-	smap_free_vals(cfg->user_modes_by_name_desc);
+	smap_free_vals(cfg->user_modes);
 
 	slist_free_vals(&cfg->adaptive_sync_off_name_desc, NULL);
 

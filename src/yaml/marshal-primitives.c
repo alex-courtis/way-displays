@@ -110,7 +110,7 @@ bool yaml_map_add_map(struct MC *c, const char *key, const void *data, yaml_map_
 	return fn(c, data, map) && yaml_document_append_mapping_pair(&c->d, mapping, k, map);
 }
 
-bool yaml_map_add_seq(struct MC *c, const char *key, const struct SList *list, yaml_seq_append_fn fn, int mapping) {
+bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, yaml_seq_append_fn fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
 

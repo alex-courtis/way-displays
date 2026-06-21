@@ -127,14 +127,14 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 							parsed = parsed && ((user_mode->refresh_mhz = hz_str_to_mhz(argv[optind + 3])) > 0);
 						}
 					}
-					smap_put(cfg->user_modes_by_name_desc, user_mode->name_desc, user_mode);
+					smap_put(cfg->user_modes, user_mode->name_desc, user_mode);
 					break;
 				case CFG_DEL:
 					// dummy value
 					user_mode = cfg_user_mode_default();
 					user_mode->name_desc = strdup(argv[optind]);
 					user_mode->max = true;
-					smap_put(cfg->user_modes_by_name_desc, user_mode->name_desc, user_mode);
+					smap_put(cfg->user_modes, user_mode->name_desc, user_mode);
 					parsed = true;
 					break;
 				default:

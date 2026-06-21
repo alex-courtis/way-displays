@@ -19,6 +19,7 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
+#include "smap.h"
 #include "smaps.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -148,9 +149,9 @@ static void print_cfg__all(void **state) {
 	slist_append(&disabled->conditions, cond);
 	slist_append(&c->disabled, disabled);
 
-	slist_append(&c->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(c->user_modes, "five", cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	smap_put(c->user_modes, "six", cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	smap_put(c->user_modes, "seven", cfg_user_mode_init("seven", true, -1, -1, -1, false));
 
 	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
 
@@ -178,9 +179,9 @@ static void print_cfg__del(void **state) {
 	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
 	slist_append(&c->user_scales, cfg_user_scale_init("four", 4));
 
-	slist_append(&c->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(c->user_modes, "five", cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
+	smap_put(c->user_modes, "six", cfg_user_mode_init("six", false, 2560, 1440, -1, false));
+	smap_put(c->user_modes, "seven", cfg_user_mode_init("seven", true, -1, -1, -1, false));
 
 	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
 	slist_append(&c->user_transforms, cfg_user_transform_init("thirteen", WL_OUTPUT_TRANSFORM_FLIPPED));
@@ -286,9 +287,9 @@ static void print_cfg_commands__ok(void **state) {
 	slist_append(&c->user_scales, cfg_user_scale_init("one", 1));
 	slist_append(&c->user_scales, cfg_user_scale_init("two", 2.3456));
 
-	slist_append(&c->user_modes, cfg_user_mode_init("all", false, 1, 2, 12340, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
+	smap_put(c->user_modes, "all", cfg_user_mode_init("all", false, 1, 2, 12340, false));
+	smap_put(c->user_modes, "res", cfg_user_mode_init("res", false, 4, 5, -1, false));
+	smap_put(c->user_modes, "max", cfg_user_mode_init("max", true, 7, 8, 9, false));
 
 	slist_append(&c->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
 

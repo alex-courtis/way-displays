@@ -228,13 +228,7 @@ void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value) {
 }
 
 void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value) {
-	char *msg = NULL;
-
-	// TODO is prefix meaningful here?
-	if (*c->prefix)
-		msg = sprintf_append(msg, "%s: duplicate", c->prefix);
-	else
-		msg = sprintf_append(msg, "Removing duplicate");
+	char *msg = strdup("Removing duplicate");
 
 	if (*c->top)
 		msg = sprintf_append(msg, " %s", c->top);

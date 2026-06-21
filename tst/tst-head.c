@@ -15,6 +15,7 @@
 
 #include "cfg.h"
 #include "slist.h"
+#include "smap.h"
 #include "log.h"
 #include "mode.h"
 
@@ -309,7 +310,7 @@ static void head_find_mode__user_available(void **state) {
 	// user preferred head
 	struct UserMode *user_mode = cfg_user_mode_default();
 	user_mode->name_desc = strdup("!.*EAD");
-	slist_append(&g_cfg->user_modes, user_mode);
+	smap_put(g_cfg->user_modes, user_mode->name_desc, user_mode);
 	head.name = strdup("HEAD");
 
 	// mode matched to user
@@ -335,7 +336,7 @@ static void head_find_mode__user_failed(void **state) {
 	// user preferred head
 	struct UserMode *user_mode = cfg_user_mode_default();
 	user_mode->name_desc = strdup("!HEA.*");
-	slist_append(&g_cfg->user_modes, user_mode);
+	smap_put(g_cfg->user_modes, user_mode->name_desc, user_mode);
 	head.name = strdup("HEAD");
 
 	// mode not matched to user

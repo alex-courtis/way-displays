@@ -11,6 +11,7 @@
 #include "cfg.h"
 #include "info.h"
 #include "slist.h"
+#include "smap.h"
 #include "str.h"
 #include "log.h"
 #include "mode.h"
@@ -286,8 +287,13 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 	struct Mode *mode = NULL;
 
+	// TODO generify head_matches_user_mode to use the key instead of value
+	// TODO SMap _find_key/val
+	const struct SMapIter *it = smap_filter_iter(g_cfg->user_modes, NULL, head_matches_user_mode, head);
+	struct UserMode *um = it ? (struct UserMode*)it->val : NULL;
+	smap_iter_free(it);
+
 	// maybe a user mode
-	struct UserMode *um = slist_find_equal_val(g_cfg->user_modes, head_matches_user_mode, head);
 	if (um) {
 		mode = mode_user_mode(head->modes, head->modes_failed, um);
 		if (!mode && !um->warned_no_mode) {

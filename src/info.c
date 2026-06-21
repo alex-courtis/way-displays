@@ -16,6 +16,7 @@
 #include "output.h"
 #include "process.h"
 #include "slist.h"
+#include "smap.h"
 #include "smaps.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -180,11 +181,10 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (cfg->user_modes) {
+	if (smap_size(cfg->user_modes) > 0) {
 		log_(t, "  Mode:");
-		for (i = cfg->user_modes; i; i = i->nex) {
-			const struct UserMode *user_mode = (struct UserMode*)i->val;
-			print_user_mode(t, user_mode, del);
+		for (const struct SMapIter *it = smap_iter(cfg->user_modes); it; it = smap_iter_next(it)) {
+			print_user_mode(t, it->val, del);
 		}
 	}
 
@@ -279,8 +279,9 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (i = cfg->user_modes; i; i = i->nex) {
-		struct UserMode *user_mode = (struct UserMode*)i->val;
+
+	for (const struct SMapIter *it = smap_iter(cfg->user_modes); it; it = smap_iter_next(it)) {
+		struct UserMode *user_mode = (struct UserMode*)it->val;
 
 		char *msg;
 		if (user_mode->max) {

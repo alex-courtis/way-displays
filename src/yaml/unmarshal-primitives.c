@@ -148,7 +148,7 @@ struct SList *yaml_seq_to_type_list(struct UC *c, const yaml_node_t *seq, yaml_n
 	return list;
 }
 
-bool yaml_seq_into_type_smap(struct UC *c, const yaml_node_t *seq, const struct SMap *smap, yaml_node_into_smap_fn fn) {
+bool yaml_seq_into_smap(struct UC *c, const yaml_node_t *seq, const struct SMap *smap, yaml_node_into_smap_fn fn) {
 	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !smap)
 		return false;
 
