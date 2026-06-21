@@ -7,6 +7,7 @@
 #include "mode.h"
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "head.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"

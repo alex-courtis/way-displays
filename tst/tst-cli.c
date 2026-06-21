@@ -12,6 +12,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "ipc.h"
 #include "log.h"
 #include "slist.h"
@@ -231,7 +232,7 @@ static void parse_element__mode_set_max(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 2, argv);
 
-	struct UserMode *expectedUserMode = cfg_user_mode_default();
+	struct UserMode *expectedUserMode = user_mode_default();
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = true;
 
@@ -252,7 +253,7 @@ static void parse_element__mode_set_res(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 3, argv);
 
-	struct UserMode *expectedUserMode = cfg_user_mode_default();
+	struct UserMode *expectedUserMode = user_mode_default();
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
@@ -275,7 +276,7 @@ static void parse_element__mode_set_res_refresh(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 4, argv);
 
-	struct UserMode *expectedUserMode = cfg_user_mode_default();
+	struct UserMode *expectedUserMode = user_mode_default();
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
@@ -299,7 +300,7 @@ static void parse_element__mode_del_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_DEL, MODE, 1, argv);
 
-	struct UserMode *expectedUserMode = cfg_user_mode_default();
+	struct UserMode *expectedUserMode = user_mode_default();
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = true;
 

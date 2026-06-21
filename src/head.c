@@ -9,12 +9,13 @@
 #include "head.h"
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "info.h"
+#include "log.h"
+#include "mode.h"
 #include "slist.h"
 #include "smap.h"
 #include "str.h"
-#include "log.h"
-#include "mode.h"
 
 struct SList *g_heads = NULL;
 struct SList *g_heads_arrived = NULL;

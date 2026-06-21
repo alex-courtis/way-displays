@@ -8,6 +8,7 @@
 #include "yaml/unmarshal-types.h"
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "conditions.h"
 #include "convert.h"
 #include "head.h"
@@ -16,11 +17,11 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
-#include "sset.h"
 #include "smap.h"
+#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml/unmarshal.h"
 #include "yaml/unmarshal-primitives.h"
+#include "yaml/unmarshal.h"
 
 void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {
 	if (!root)
@@ -351,7 +352,7 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap *user_modes, const
 
 	const yaml_node_t *scalar;
 
-	struct UserMode *user_mode = cfg_user_mode_default();
+	struct UserMode *user_mode = user_mode_default();
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 	scalar = smap_get(nodes, "NAME_DESC");
@@ -392,7 +393,7 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap *user_modes, const
 	goto end;
 
 err:
-	cfg_user_mode_free(user_mode);
+	user_mode_free(user_mode);
 
 end:
 	smap_free(nodes);

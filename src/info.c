@@ -8,6 +8,7 @@
 #include "info.h"
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "convert.h"
 #include "head.h"
 #include "lid.h"

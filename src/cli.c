@@ -8,6 +8,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "convert.h"
 #include "ipc.h"
 #include "log.h"
@@ -113,7 +114,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			switch (command) {
 				case CFG_SET:
 					// parse input value
-					user_mode = cfg_user_mode_default();
+					user_mode = user_mode_default();
 					user_mode->name_desc = strdup(argv[optind]);
 					if (strcasecmp(argv[optind + 1], "MAX") == 0) {
 						user_mode->max = true;
@@ -131,7 +132,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 					break;
 				case CFG_DEL:
 					// dummy value
-					user_mode = cfg_user_mode_default();
+					user_mode = user_mode_default();
 					user_mode->name_desc = strdup(argv[optind]);
 					user_mode->max = true;
 					smap_put(cfg->user_modes, user_mode->name_desc, user_mode);

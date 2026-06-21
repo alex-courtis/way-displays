@@ -14,10 +14,11 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
-#include "slist.h"
-#include "smap.h"
+#include "cfg/user-mode.h"
 #include "log.h"
 #include "mode.h"
+#include "slist.h"
+#include "smap.h"
 
 #include "head.h"
 
@@ -308,7 +309,7 @@ static void head_find_mode__user_available(void **state) {
 	slist_append(&head.modes, &mode);
 
 	// user preferred head
-	struct UserMode *user_mode = cfg_user_mode_default();
+	struct UserMode *user_mode = user_mode_default();
 	user_mode->name_desc = strdup("!.*EAD");
 	smap_put(g_cfg->user_modes, user_mode->name_desc, user_mode);
 	head.name = strdup("HEAD");
@@ -334,7 +335,7 @@ static void head_find_mode__user_failed(void **state) {
 	slist_append(&head.modes, &mode);
 
 	// user preferred head
-	struct UserMode *user_mode = cfg_user_mode_default();
+	struct UserMode *user_mode = user_mode_default();
 	user_mode->name_desc = strdup("!HEA.*");
 	smap_put(g_cfg->user_modes, user_mode->name_desc, user_mode);
 	head.name = strdup("HEAD");

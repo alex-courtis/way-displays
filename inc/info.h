@@ -4,10 +4,11 @@
 #include <stdbool.h>
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "head.h"
-#include "slist.h"
 #include "log.h"
 #include "mode.h"
+#include "slist.h"
 
 #define CALLBACK_MSG_LEN 1024 * 64
 

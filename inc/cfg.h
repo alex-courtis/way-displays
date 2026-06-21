@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "log.h"
 #include "ipc.h"
 
@@ -53,15 +54,6 @@ enum ScaleRoundStrategy {
 	UP,
 	DOWN,
 	SCALE_ROUND_STRATEGY_DEFAULT = NEAREST,
-};
-
-struct UserMode {
-	char *name_desc;
-	bool max;
-	int32_t width;
-	int32_t height;
-	int32_t refresh_mhz;
-	bool warned_no_mode;
 };
 
 struct UserTransform {
@@ -164,10 +156,6 @@ struct Cfg *cfg_default(void);
 
 void cfg_apply_defaults(struct Cfg *cfg);
 
-struct UserMode *cfg_user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
-
-struct UserMode *cfg_user_mode_default(void);
-
 struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale);
 
 struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum wl_output_transform transform);
@@ -185,8 +173,6 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 void cfg_free(struct Cfg *cfg);
 
 void cfg_user_scale_free(const void *val);
-
-void cfg_user_mode_free(const void *val);
 
 void cfg_user_transform_free(const void *val);
 

@@ -6,6 +6,7 @@
 #include "yaml/marshal-types.h"
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "conditions.h"
 #include "convert.h"
 #include "head.h"
@@ -15,8 +16,8 @@
 #include "mode.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml/marshal.h"
 #include "yaml/marshal-primitives.h"
+#include "yaml/marshal.h"
 
 bool yaml_doc_cfg(struct MC *c, const void *data) {
 	if (!data)
