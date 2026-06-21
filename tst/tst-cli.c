@@ -17,6 +17,7 @@
 #include "log.h"
 #include "slist.h"
 #include "smap.h"
+#include "sset.h"
 
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
 struct IpcRequest *parse_write(int argc, char **argv);
@@ -322,8 +323,8 @@ static void parse_element__adaptive_sync_off_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, VRR_OFF, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->adaptive_sync_off_name_desc, strdup("ONE"));
-	slist_append(&expected->adaptive_sync_off_name_desc, strdup("TWO"));
+	sset_add(expected->adaptive_sync_off, "ONE");
+	sset_add(expected->adaptive_sync_off, "TWO");
 
 	assert_cfg_equal(actual, expected);
 

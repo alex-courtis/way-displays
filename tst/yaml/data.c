@@ -13,6 +13,7 @@
 #include "mode.h"
 #include "slist.h"
 #include "smap.h"
+#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 static void lcl(enum LogThreshold threshold, const char *line, struct SList **log_cap_lines) {
@@ -56,8 +57,8 @@ struct Cfg *cfg_all(void) {
 	smap_put(cfg->user_modes, "six", user_mode_init("six", false, 2560, 1440, -1, false));
 	smap_put(cfg->user_modes, "seven", user_mode_init("seven", true, -1, -1, -1, false));
 
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));
+	sset_add(cfg->adaptive_sync_off, "ten");
+	sset_add(cfg->adaptive_sync_off, "ELEVEN");
 
 	slist_append(&cfg->disabled, cfg_disabled_always("eight"));
 	slist_append(&cfg->disabled, cfg_disabled_always("EIGHT"));

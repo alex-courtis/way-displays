@@ -19,6 +19,7 @@
 #include "log.h"
 #include "mode.h"
 #include "slist.h"
+#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct SList *order_heads(const struct SList *order_name_desc, struct SList *heads);
@@ -656,7 +657,7 @@ static void desire_adaptive_sync__disabled(void **state) {
 		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
 	};
 
-	slist_append(&g_cfg->adaptive_sync_off_name_desc, strdup("!.*hea"));
+	sset_add(g_cfg->adaptive_sync_off, "!.*hea");
 
 	desire_adaptive_sync(&head0);
 

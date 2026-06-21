@@ -169,7 +169,7 @@ void *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->user_transforms = yaml_seq_to_type_list(c, value, yaml_map_to_user_transform);
 				break;
 			case VRR_OFF:
-				cfg->adaptive_sync_off_name_desc = yaml_seq_to_name_desc_list(c, value);
+				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, value);
 				break;
 			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
@@ -346,6 +346,9 @@ end:
 }
 
 void yaml_map_into_user_modes(struct UC *c, const struct SMap *user_modes, const yaml_node_t *map) {
+	if (!user_modes)
+		return;
+
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
 	if (!nodes)
 		return;
@@ -687,3 +690,21 @@ struct SList *yaml_seq_to_name_desc_list(struct UC *c, const yaml_node_t *seq) {
 
 	return list;
 }
+
+void yaml_seq_into_name_desc_sset(struct UC *c, const struct SSet *sset, const yaml_node_t *seq) {
+	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
+		return;
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		const yaml_node_t *scalar = yaml_document_get_node(&c->d, *item);
+		if (!scalar)
+			continue;
+
+		char *val = NULL;
+		if ((val = yaml_scalar_to_name_desc(c, scalar))) {
+			sset_add(sset, val);
+			free(val);
+		}
+	}
+}
+

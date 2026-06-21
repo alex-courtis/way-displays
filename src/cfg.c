@@ -19,6 +19,7 @@
 #include "log.h"
 #include "slist.h"
 #include "smap.h"
+#include "sset.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 
@@ -255,7 +256,8 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	to->adaptive_sync_off_name_desc = slist_clone(from->adaptive_sync_off_name_desc, fn_clone_strdup);
+	sset_free(to->adaptive_sync_off);
+	to->adaptive_sync_off = sset_clone(from->adaptive_sync_off);
 
 	// CALLBACK_CMD
 	if (from->callback_cmd) {
@@ -350,8 +352,9 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		return false;
 	}
 
+	// TODO SSet this could be order insensitive
 	// VRR_OFF
-	if (!slist_equal(a->adaptive_sync_off_name_desc, b->adaptive_sync_off_name_desc, fn_equal_strcmp)) {
+	if (!sset_equal(a->adaptive_sync_off, b->adaptive_sync_off)) {
 		return false;
 	}
 
@@ -399,6 +402,7 @@ struct Cfg *cfg_init(void) {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
 	cfg->user_modes = user_mode_smap_init();
+	cfg->adaptive_sync_off = sset_init();
 
 	return cfg;
 }
@@ -620,6 +624,12 @@ static void warn_ambiguous_name_desc_list(const struct SList *name_desc, const c
 	}
 }
 
+static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const char * const element) {
+	for (const struct SSetIter *it = sset_iter(name_descs); it; it = sset_iter_next(it)) {
+		warn_ambiguous_name_desc(it->val, element);
+	}
+}
+
 void validate_warn(struct Cfg *cfg) {
 	if (!cfg)
 		return;
@@ -648,7 +658,7 @@ void validate_warn(struct Cfg *cfg) {
 	}
 
 	warn_ambiguous_name_desc_list(cfg->order_name_desc, "ORDER");
-	warn_ambiguous_name_desc_list(cfg->adaptive_sync_off_name_desc, "VRR_OFF");
+	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, "VRR_OFF");
 	warn_ambiguous_name_desc_list(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
 
 	for (i = cfg->disabled; i; i = i->nex) {
@@ -747,10 +757,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
-		if (!slist_find_equal(merged->adaptive_sync_off_name_desc, fn_equal_strcmp, i->val)) {
-			slist_append(&merged->adaptive_sync_off_name_desc, strdup((char*)i->val));
-		}
+	for (const struct SSetIter *it = sset_iter(from->adaptive_sync_off); it; it = sset_iter_next(it)) {
+		sset_add(merged->adaptive_sync_off, it->val);
 	}
 
 	// DISABLED
@@ -795,9 +803,10 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 		slist_remove_all_free(&merged->user_transforms, fn_equal_cfg_user_transform_name, i->val, cfg_user_transform_free);
 	}
 
+	// TODO SSet remove_set
 	// VRR_OFF
-	for (i = from->adaptive_sync_off_name_desc; i; i = i->nex) {
-		slist_remove_all_free(&merged->adaptive_sync_off_name_desc, fn_equal_strcmp, i->val, NULL);
+	for (const struct SSetIter *it = sset_iter(from->adaptive_sync_off); it; it = sset_iter_next(it)) {
+		sset_remove(merged->adaptive_sync_off, it->val);
 	}
 
 	// DISABLED
@@ -832,7 +841,11 @@ struct Cfg *merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	slist_xor_free(&merged->adaptive_sync_off_name_desc, from->adaptive_sync_off_name_desc, fn_equal_strcmp, NULL, fn_clone_strdup);
+	for (const struct SSetIter *it = sset_iter(from->adaptive_sync_off); it; it = sset_iter_next(it)) {
+		if (!sset_remove(merged->adaptive_sync_off, it->val)) {
+			sset_add(merged->adaptive_sync_off, it->val);
+		}
+	}
 
 	return merged;
 }
@@ -975,7 +988,7 @@ void cfg_free(struct Cfg *cfg) {
 
 	smap_free_vals(cfg->user_modes);
 
-	slist_free_vals(&cfg->adaptive_sync_off_name_desc, NULL);
+	sset_free(cfg->adaptive_sync_off);
 
 	slist_free_vals(&cfg->max_preferred_refresh_name_desc, NULL);
 

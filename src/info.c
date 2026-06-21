@@ -19,6 +19,7 @@
 #include "slist.h"
 #include "smap.h"
 #include "smaps.h"
+#include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -316,9 +317,9 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (i = cfg->adaptive_sync_off_name_desc; i; i = i->nex) {
+	for (const struct SSetIter *it = sset_iter(cfg->adaptive_sync_off); it; it = sset_iter_next(it)) {
 		print_newline(t, &newline);
-		log_(t, "way-displays -s VRR_OFF '%s'", (char*)i->val);
+		log_(t, "way-displays -s VRR_OFF '%s'", (char*)it->val);
 	}
 
 	newline = true;

@@ -79,25 +79,25 @@ bool yaml_map_populate_cfg(struct MC *c, const void *data, int mapping) {
 	const struct Cfg *cfg = data;
 
 	return
-		yaml_map_add_enum    (c, cfg_element_name(ARRANGE),               cfg->arrange,                     arrange_name,                   mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(ALIGN),                 cfg->align,                       align_name,                     mapping) &&
-		yaml_map_add_seq_list(c, cfg_element_name(ORDER),                 cfg->order_name_desc,             yaml_seq_append_str,            mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(SCALING),               cfg->scaling,                     on_off_name,                    mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_TO),        cfg->scale_round_to,              scale_round_to_name,            mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_STRATEGY),  cfg->scale_round_strategy,        scale_round_strategy_name,      mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(AUTO_SCALE),            cfg->auto_scale,                  on_off_name,                    mapping) &&
-		yaml_map_add_int_nz  (c, cfg_element_name(AUTO_SCALE_DPI),        cfg->auto_scale_dpi,                                              mapping) &&
-		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                              mapping) &&
-		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                              mapping) &&
-		yaml_map_add_seq_list(c, cfg_element_name(SCALE),                 cfg->user_scales,                 yaml_seq_append_user_scale,     mapping) &&
-		yaml_map_add_seq_smap(c, cfg_element_name(MODE),                  cfg->user_modes,                  yaml_seq_append_user_mode,      mapping) &&
-		yaml_map_add_seq_list(c, cfg_element_name(TRANSFORM),             cfg->user_transforms,             yaml_seq_append_user_transform, mapping) &&
-		yaml_map_add_seq_list(c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off_name_desc, yaml_seq_append_str,            mapping) &&
-		yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                mapping) &&
-		yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                       mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,          on_off_name,                    mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,               log_threshold_name,             mapping) &&
-		yaml_map_add_seq_list(c, cfg_element_name(DISABLED),              cfg->disabled,                    yaml_seq_append_disabled,       mapping);
+		yaml_map_add_enum    (c, cfg_element_name(ARRANGE),               cfg->arrange,               arrange_name,                   mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(ALIGN),                 cfg->align,                 align_name,                     mapping) &&
+		yaml_map_add_seq_list(c, cfg_element_name(ORDER),                 cfg->order_name_desc,       yaml_seq_append_str,            mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(SCALING),               cfg->scaling,               on_off_name,                    mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_TO),        cfg->scale_round_to,        scale_round_to_name,            mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_STRATEGY),  cfg->scale_round_strategy,  scale_round_strategy_name,      mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(AUTO_SCALE),            cfg->auto_scale,            on_off_name,                    mapping) &&
+		yaml_map_add_int_nz  (c, cfg_element_name(AUTO_SCALE_DPI),        cfg->auto_scale_dpi,                                        mapping) &&
+		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                        mapping) &&
+		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                        mapping) &&
+		yaml_map_add_seq_list(c, cfg_element_name(SCALE),                 cfg->user_scales,           yaml_seq_append_user_scale,     mapping) &&
+		yaml_map_add_seq_smap(c, cfg_element_name(MODE),                  cfg->user_modes,            yaml_seq_append_user_mode,      mapping) &&
+		yaml_map_add_seq_list(c, cfg_element_name(TRANSFORM),             cfg->user_transforms,       yaml_seq_append_user_transform, mapping) &&
+		yaml_map_add_seq_sset(c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,     yaml_seq_append_str,            mapping) &&
+		yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                          mapping) &&
+		yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                 mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                    mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,             mapping) &&
+		yaml_map_add_seq_list(c, cfg_element_name(DISABLED),              cfg->disabled,              yaml_seq_append_disabled,       mapping);
 }
 
 bool yaml_map_populate_ipc_operation(struct MC *c, void *data, int mapping) {

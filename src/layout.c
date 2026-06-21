@@ -13,11 +13,12 @@
 #include "head.h"
 #include "info.h"
 #include "lid.h"
-#include "slist.h"
 #include "listeners.h"
 #include "log.h"
 #include "mode.h"
 #include "process.h"
+#include "slist.h"
+#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #define MAX_CANCELLATION_RETRIES 5
@@ -266,11 +267,14 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (slist_find_equal(g_cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
+	// TODO SSet _find_val
+	const struct SSetIter *it = sset_filter_iter(g_cfg->adaptive_sync_off, head_name_desc_matches_head, head);
+	if (it) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	}
+	sset_iter_free(it);
 }
 
 void desire_reapply(struct Head *head) {

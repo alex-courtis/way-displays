@@ -19,6 +19,7 @@
 #include "head.h"
 #include "log.h"
 #include "mode.h"
+#include "sset.h"
 #include "slist.h"
 #include "smap.h"
 #include "smaps.h"
@@ -297,8 +298,8 @@ static void print_cfg_commands__ok(void **state) {
 	slist_append(&c->disabled, cfg_disabled_always("three"));
 	slist_append(&c->disabled, cfg_disabled_always("four"));
 
-	slist_append(&c->adaptive_sync_off_name_desc, strdup("five"));
-	slist_append(&c->adaptive_sync_off_name_desc, strdup("six"));
+	sset_add(c->adaptive_sync_off, "five");
+	sset_add(c->adaptive_sync_off, "six");
 
 	print_cfg_commands(INFO, c);
 

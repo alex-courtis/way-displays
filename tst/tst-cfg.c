@@ -15,6 +15,7 @@
 #include "log.h"
 #include "slist.h"
 #include "smap.h"
+#include "sset.h"
 
 #include "cfg.h"
 
@@ -221,15 +222,15 @@ static void merge_set__mode(void **state) {
 static void merge_set__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("to"));
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("both"));
+	sset_add(s->to->adaptive_sync_off, "to");
+	sset_add(s->to->adaptive_sync_off, "both");
 
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("from"));
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("both"));
+	sset_add(s->from->adaptive_sync_off, "from");
+	sset_add(s->from->adaptive_sync_off, "both");
 
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("to"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("both"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("from"));
+	sset_add(s->expected->adaptive_sync_off, "to");
+	sset_add(s->expected->adaptive_sync_off, "both");
+	sset_add(s->expected->adaptive_sync_off, "from");
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -366,13 +367,13 @@ static void merge_del__transform(void **state) {
 static void merge_del__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("1"));
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("2"));
+	sset_add(s->to->adaptive_sync_off, "1");
+	sset_add(s->to->adaptive_sync_off, "2");
 
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("2"));
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("3"));
+	sset_add(s->from->adaptive_sync_off, "2");
+	sset_add(s->from->adaptive_sync_off, "3");
 
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("1"));
+	sset_add(s->expected->adaptive_sync_off, "1");
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -468,14 +469,14 @@ static void merge_toggle__adaptive_sync_off(void **state) {
 	s->from->auto_scale = false;
 	s->from->scaling = false;
 
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("display1"));
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("display2"));
+	sset_add(s->to->adaptive_sync_off, "display1");
+	sset_add(s->to->adaptive_sync_off, "display2");
 
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("display2"));
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("display3"));
+	sset_add(s->from->adaptive_sync_off, "display2");
+	sset_add(s->from->adaptive_sync_off, "display3");
 
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("display1"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("display3"));
+	sset_add(s->expected->adaptive_sync_off, "display1");
+	sset_add(s->expected->adaptive_sync_off, "display3");
 
 	struct Cfg *merged = merge_toggle(s->to, s->from);
 
@@ -631,9 +632,9 @@ static void validate_warn__(void **state) {
 	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
 	slist_append(&s->expected->order_name_desc, strdup("DP-1"));
 
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvv"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvvvvvvvvv"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("DP-1"));
+	sset_add(s->expected->adaptive_sync_off, "vvv");
+	sset_add(s->expected->adaptive_sync_off, "vvvvvvvvvv");
+	sset_add(s->expected->adaptive_sync_off, "DP-1");
 
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
