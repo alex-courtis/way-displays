@@ -5,12 +5,14 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "conditions.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "sset.h"
@@ -60,9 +62,9 @@ struct Cfg *cfg_all(void) {
 	sset_add(cfg->adaptive_sync_off, "ten");
 	sset_add(cfg->adaptive_sync_off, "ELEVEN");
 
-	slist_append(&cfg->disabled, cfg_disabled_always("eight"));
-	slist_append(&cfg->disabled, cfg_disabled_always("EIGHT"));
-	slist_append(&cfg->disabled, cfg_disabled_always("nine"));
+	pset_add(cfg->disableds, disabled_init_always("eight"));
+	pset_add(cfg->disableds, disabled_init_always("EIGHT"));
+	pset_add(cfg->disableds, disabled_init_always("nine"));
 
 	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
 	disabled->name_desc = strdup("twelve");
@@ -80,7 +82,7 @@ struct Cfg *cfg_all(void) {
 	cond->lid = LID_CLOSED;
 	slist_append(&disabled->conditions, cond);
 
-	slist_append(&cfg->disabled, disabled);
+	pset_add(cfg->disableds, disabled);
 
 	slist_append(&cfg->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
 

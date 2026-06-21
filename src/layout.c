@@ -7,6 +7,7 @@
 #include "layout.h"
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "conditions.h"
 #include "convert.h"
 #include "displ.h"
@@ -17,6 +18,7 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
+#include "pset.h"
 #include "slist.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -159,15 +161,10 @@ void desire_enabled(struct Head *head) {
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
 	enabled |= slist_length(g_heads) == 1;
 
+	// TODO generify head_disabled_matches_head to use the key instead of value
 	// iterate over all matching NAME_DESC's and evaluate their conditions
-	struct SList *d = g_cfg->disabled;
-	while ((d = slist_find_equal(d, head_disabled_matches_head, head)) != NULL) {
-		const struct Disabled *disabled_if = (struct Disabled*)d->val;
-		enabled &= !condition_list_evaluate(disabled_if->conditions);
-
-		if (!enabled) break;
-
-		d = d->nex;
+	for (const struct PSetIter *it = pset_filter_iter(g_cfg->disableds, head_disabled_matches_head, head); it; it = pset_iter_next(it)) {
+		enabled &= !condition_list_evaluate(((struct Disabled*)it->val)->conditions);
 	}
 
 	// reset manual override when it matches the auto-state

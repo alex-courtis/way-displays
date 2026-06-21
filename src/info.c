@@ -8,6 +8,7 @@
 #include "info.h"
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "convert.h"
 #include "head.h"
@@ -16,6 +17,7 @@
 #include "mode.h"
 #include "output.h"
 #include "process.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "smaps.h"
@@ -136,8 +138,6 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 	if (!cfg)
 		return;
 
-	struct SList *i;
-
 	if (cfg->arrange && cfg->align) {
 		log_(t, "  Arrange in a %s aligned at the %s", arrange_name(cfg->arrange), align_name(cfg->align));
 	} else if (cfg->arrange) {
@@ -148,7 +148,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->order_name_desc) {
 		log_(t, "  Order:");
-		for (i = cfg->order_name_desc; i; i = i->nex) {
+		for (struct SList *i = cfg->order_name_desc; i; i = i->nex) {
 			log_(t, "    %s", (char*)i->val);
 		}
 	}
@@ -173,7 +173,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->user_scales) {
 		log_(t, "  Scale:");
-		for (i = cfg->user_scales; i; i = i->nex) {
+		for (struct SList *i = cfg->user_scales; i; i = i->nex) {
 			struct UserScale *user_scale = (struct UserScale*)i->val;
 			if (del) {
 				log_(t, "    %s", user_scale->name_desc);
@@ -193,7 +193,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 	if (cfg->user_transforms) {
 		log_(t, "  Transform:");
 		struct UserTransform *user_transform;
-		for (i = cfg->user_transforms; i; i = i->nex) {
+		for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
 			user_transform = (struct UserTransform*)i->val;
 			if (del) {
 				log_(t, "    %s", user_transform->name_desc);
@@ -205,17 +205,18 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->max_preferred_refresh_name_desc) {
 		log_(t, "  Max preferred refresh:");
-		for (i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
+		for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
 			log_(t, "    %s", (char*)i->val);
 		}
 	}
 
-	if (cfg->disabled) {
+	if (pset_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
-		for (i = cfg->disabled; i; i = i->nex) {
-			print_disabled(t, i->val);
+		for (const struct PSetIter *it = pset_iter(cfg->disableds); it; it = pset_iter_next(it)) {
+			print_disabled(t, it->val);
 		}
 	}
+
 
 	if (cfg->callback_cmd) {
 		log_(t, "  Change success command:");
@@ -240,7 +241,6 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	if (!cfg)
 		return;
 
-	struct SList *i = NULL;
 	bool newline;
 
 	if (cfg->align && cfg->arrange) {
@@ -251,7 +251,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	if (cfg->order_name_desc) {
 		char *msg = NULL;
 
-		for (i = cfg->order_name_desc; i; i = i->nex) {
+		for (struct SList *i = cfg->order_name_desc; i; i = i->nex) {
 			msg = sprintf_append(msg, "'%s' ", (char*)i->val);
 		}
 
@@ -272,7 +272,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (i = cfg->user_scales; i; i = i->nex) {
+	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
 		struct UserScale *user_scale = (struct UserScale*)i->val;
 		char *msg = sprintf_alloc("%.3f", user_scale->scale);
 		print_newline(t, &newline);
@@ -300,7 +300,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (i = cfg->user_transforms; i; i = i->nex) {
+	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		struct UserTransform *user_transform = (struct UserTransform*)i->val;
 
 		print_newline(t, &newline);
@@ -308,8 +308,8 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (i = cfg->disabled; i; i = i->nex) {
-		struct Disabled* d = i->val;
+	for (const struct PSetIter *it = pset_iter(cfg->disableds); it; it = pset_iter_next(it)) {
+		const struct Disabled* d = it->val;
 		if (!d->conditions) {
 			print_newline(t, &newline);
 			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);

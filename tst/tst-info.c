@@ -13,16 +13,18 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "conditions.h"
 #include "displ.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"
-#include "sset.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "smaps.h"
+#include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -143,13 +145,13 @@ static void print_cfg__all(void **state) {
 	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
 	slist_append(&c->user_scales, cfg_user_scale_init("four", 4));
 
-	slist_append(&c->disabled, cfg_disabled_always("disabled always"));
+	pset_add(c->disableds, disabled_init_always("disabled always"));
 	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
 	disabled->name_desc = strdup("disabled conditionally");
 	struct Condition *cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("ONE"));
 	slist_append(&disabled->conditions, cond);
-	slist_append(&c->disabled, disabled);
+	pset_add(c->disableds, disabled);
 
 	smap_put(c->user_modes, "five", user_mode_init("five", false, 1920, 1080, 12340, false));
 	smap_put(c->user_modes, "six", user_mode_init("six", false, 2560, 1440, -1, false));
@@ -295,8 +297,8 @@ static void print_cfg_commands__ok(void **state) {
 
 	slist_append(&c->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
 
-	slist_append(&c->disabled, cfg_disabled_always("three"));
-	slist_append(&c->disabled, cfg_disabled_always("four"));
+	pset_add(c->disableds, disabled_init_always("three"));
+	pset_add(c->disableds, disabled_init_always("four"));
 
 	sset_add(c->adaptive_sync_off, "five");
 	sset_add(c->adaptive_sync_off, "six");

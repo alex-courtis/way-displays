@@ -5,6 +5,7 @@
 #include <yaml.h>
 
 #include "head.h"
+#include "pset.h"
 #include "smap.h"
 #include "sset.h"
 #include "yaml/unmarshal.h"
@@ -24,12 +25,12 @@ void *yaml_map_to_cfg           (struct UC *c, const yaml_node_t *map);  // Cfg
 void *yaml_map_to_ipc_response  (struct UC *c, const yaml_node_t *map);  // IpcResponse
 void *yaml_map_to_condition     (struct UC *c, const yaml_node_t *map);  // Condition
 void *yaml_map_to_user_scale    (struct UC *c, const yaml_node_t *map);  // UserScale
-void yaml_map_into_user_modes     (struct UC *c, const struct SMap *smap, const yaml_node_t *map);  // UserMode
+void yaml_map_into_user_modes   (struct UC *c, const struct SMap *smap, const yaml_node_t *map);  // UserMode
 void *yaml_map_to_user_transform(struct UC *c, const yaml_node_t *map);  // UserTransform
 void *yaml_map_to_lid           (struct UC *c, const yaml_node_t *map);  // Lid
 void *yaml_map_to_mode          (struct UC *c, const yaml_node_t *map);  // Mode
 void *yaml_map_to_head          (struct UC *c, const yaml_node_t *map);  // Head
-void *yaml_node_to_disabled     (struct UC *c, const yaml_node_t *node); // Disabled
+void yaml_map_into_disableds    (struct UC *c, const struct PSet *pset, const yaml_node_t *node); // Disabled
 
 // into HeadState
 bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map);

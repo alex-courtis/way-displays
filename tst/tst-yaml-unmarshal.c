@@ -13,6 +13,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "conditions.h"
 #include "head.h"
@@ -20,6 +21,7 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "str.h"
@@ -81,7 +83,7 @@ static void yaml_root_to_cfg__missing(void **state) {
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
-	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_always("BAD_DISABLED_IFS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
 }
@@ -137,9 +139,9 @@ static void yaml_root_to_cfg__mode(void **state) {
 
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->disabled, cfg_disabled_always("eight"));
-	slist_append(&expected->disabled, cfg_disabled_always("EIGHT"));
-	slist_append(&expected->disabled, cfg_disabled_always("nine"));
+	pset_add(expected->disableds, disabled_init_always("eight"));
+	pset_add(expected->disableds, disabled_init_always("EIGHT"));
+	pset_add(expected->disableds, disabled_init_always("nine"));
 
 	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
 	disabled->name_desc = strdup("twelve");
@@ -153,7 +155,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	slist_append(&cond->unplugged, strdup("THREE"));
 	slist_append(&disabled->conditions, cond);
 
-	slist_append(&expected->disabled, disabled);
+	pset_add(expected->disableds, disabled);
 
 	disabled = calloc(1, sizeof(struct Disabled));
 	disabled->name_desc = strdup("twelve");
@@ -162,15 +164,15 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	slist_append(&cond->plugged, strdup("FOUR"));
 	slist_append(&disabled->conditions, cond);
 
-	slist_append(&expected->disabled, disabled);
+	pset_add(expected->disableds, disabled);
 
-	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_IF_SCALAR"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_IF_MAP"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_UN_PLUGGED_SCALAR"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_UN_PLUGGED_MAP"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_LID_MAP"));
-	slist_append(&expected->disabled, cfg_disabled_always("NO_VALID_CONDITIONS"));
+	pset_add(expected->disableds, disabled_init_always("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_always("MISTYPED_IF_SCALAR"));
+	pset_add(expected->disableds, disabled_init_always("MISTYPED_IF_MAP"));
+	pset_add(expected->disableds, disabled_init_always("MISTYPED_UN_PLUGGED_SCALAR"));
+	pset_add(expected->disableds, disabled_init_always("MISTYPED_UN_PLUGGED_MAP"));
+	pset_add(expected->disableds, disabled_init_always("MISTYPED_LID_MAP"));
+	pset_add(expected->disableds, disabled_init_always("NO_VALID_CONDITIONS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
 }
@@ -266,7 +268,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected = cfg_default();
-	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_always("BAD_DISABLED_IFS"));
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 

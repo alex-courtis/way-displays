@@ -10,9 +10,11 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "conditions.h"
 #include "log.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "sset.h"
@@ -260,19 +262,19 @@ static void merge_set__disabled(void **state) {
 	slist_append(&cond->plugged, strdup("FOUR"));
 	slist_append(&disabled1->conditions, cond);
 
-	slist_append(&s->to->disabled, cfg_disabled_always("to"));
-	slist_append(&s->to->disabled, cfg_disabled_always("both"));
+	assert_true(pset_add(s->to->disableds, disabled_init_always("to")));
+	assert_true(pset_add(s->to->disableds, disabled_init_always("both")));
 
-	slist_append(&s->from->disabled, cfg_disabled_always("from"));
-	slist_append(&s->from->disabled, cfg_disabled_always("both"));
-	slist_append(&s->from->disabled, fn_clone_cfg_disabled(disabled1));
-	slist_append(&s->from->disabled, fn_clone_cfg_disabled(disabled2));
+	assert_true(pset_add(s->from->disableds, disabled_init_always("from")));
+	assert_true(pset_add(s->from->disableds, disabled_init_always("both")));
+	assert_true(pset_add(s->from->disableds, disabled_clone(disabled1)));
+	assert_true(pset_add(s->from->disableds, disabled_clone(disabled2)));
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("both"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("from"));
-	slist_append(&s->expected->disabled, disabled1);
-	slist_append(&s->expected->disabled, disabled2);
+	assert_true(pset_add(s->expected->disableds, disabled_init_always("to")));
+	assert_true(pset_add(s->expected->disableds, disabled_init_always("both")));
+	assert_true(pset_add(s->expected->disableds, disabled_init_always("from")));
+	assert_true(pset_add(s->expected->disableds, disabled1));
+	assert_true(pset_add(s->expected->disableds, disabled2));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -387,13 +389,13 @@ static void merge_del__adaptive_sync_off(void **state) {
 static void merge_del__disabled(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->disabled, cfg_disabled_always("1"));
-	slist_append(&s->to->disabled, cfg_disabled_always("2"));
+	pset_add(s->to->disableds, disabled_init_always("1"));
+	pset_add(s->to->disableds, disabled_init_always("2"));
 
-	slist_append(&s->from->disabled, cfg_disabled_always("2"));
-	slist_append(&s->from->disabled, cfg_disabled_always("3"));
+	pset_add(s->from->disableds, disabled_init_always("2"));
+	pset_add(s->from->disableds, disabled_init_always("3"));
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("1"));
+	pset_add(s->expected->disableds, disabled_init_always("1"));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -640,9 +642,9 @@ static void validate_warn__(void **state) {
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
 	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("DP-1"));
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("ddd"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("dddddddddd"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("DP-1"));
+	pset_add(s->expected->disableds, disabled_init_always("ddd"));
+	pset_add(s->expected->disableds, disabled_init_always("dddddddddd"));
+	pset_add(s->expected->disableds, disabled_init_always("DP-1"));
 
 	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
 	disabled->name_desc = strdup("cond");
@@ -653,7 +655,7 @@ static void validate_warn__(void **state) {
 	slist_append(&cond->unplugged, strdup("DP-1"));
 	slist_append(&disabled->conditions, cond);
 
-	slist_append(&s->expected->disabled, disabled);
+	pset_add(s->expected->disableds, disabled);
 
 	validate_warn(s->expected);
 

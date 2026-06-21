@@ -9,6 +9,7 @@
 
 #include "cfg.h"
 #include "convert.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "yaml/unmarshal.h"
@@ -159,6 +160,22 @@ bool yaml_seq_into_smap(struct UC *c, const yaml_node_t *seq, const struct SMap 
 			continue;
 
 		fn(c, smap, node);
+	}
+
+	return true;
+}
+
+bool yaml_seq_into_pset(struct UC *c, const yaml_node_t *seq, const struct PSet *pset, yaml_node_into_pset_fn fn) {
+	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !pset)
+		return false;
+
+	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+
+		const yaml_node_t *node = yaml_document_get_node(&c->d, *item);
+		if (!node)
+			continue;
+
+		fn(c, pset, node);
 	}
 
 	return true;

@@ -9,6 +9,7 @@
 
 #include "cfg.h"
 
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "conditions.h"
 #include "convert.h"
@@ -17,6 +18,7 @@
 #include "fs.h"
 #include "ipc.h"
 #include "log.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "sset.h"
@@ -67,16 +69,6 @@ static void* fn_clone_cfg_user_scale(const void* const val) {
 
 	*clone = *original;
 	clone->name_desc = strdup(original->name_desc);
-
-	return clone;
-}
-
-void* fn_clone_cfg_disabled(const void *val) {
-	struct Disabled *original = (struct Disabled*)val;
-	struct Disabled *clone = (struct Disabled*)calloc(1, sizeof(struct Disabled));
-
-	clone->name_desc = strdup(original->name_desc);
-	clone->conditions = slist_clone(original->conditions, fn_clone_condition);
 
 	return clone;
 }
@@ -150,25 +142,6 @@ static bool fn_equal_cfg_user_transform(const void *a, const void *b) {
 	}
 
 	return true;
-}
-
-static bool fn_equal_cfg_disabled(const void *a, const void *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	struct Disabled *lhs = (struct Disabled*)a;
-	struct Disabled *rhs = (struct Disabled*)b;
-
-	if (!lhs->name_desc || !rhs->name_desc) {
-		return false;
-	}
-
-	if (strcmp(lhs->name_desc, rhs->name_desc) != 0) {
-		return false;
-	}
-
-	return slist_equal(lhs->conditions, rhs->conditions, fn_equal_condition);
 }
 
 static bool invalid_user_scale(const void *a, const void *b) {
@@ -278,7 +251,9 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
 
 	// DISABLED
-	to->disabled = slist_clone(from->disabled, fn_clone_cfg_disabled);
+	for (const struct PSetIter *it = pset_iter(from->disableds); it; it = pset_iter_next(it)) {
+		pset_add(to->disableds, disabled_clone(it->val));
+	}
 
 	// LOG_THRESHOLD
 	if (from->log_threshold) {
@@ -383,7 +358,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	}
 
 	// DISABLED
-	if (!slist_equal(a->disabled, b->disabled, fn_equal_cfg_disabled)) {
+	if (!pset_equal(a->disableds, b->disableds)) {
 		return false;
 	}
 
@@ -403,6 +378,7 @@ struct Cfg *cfg_init(void) {
 
 	cfg->user_modes = user_mode_smap_init();
 	cfg->adaptive_sync_off = sset_init();
+	cfg->disableds = disabled_pset_init();
 
 	return cfg;
 }
@@ -467,15 +443,6 @@ struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum 
 	ut->transform = transform;
 
 	return ut;
-}
-
-struct Disabled *cfg_disabled_always(const char *name_desc) {
-	struct Disabled *d = calloc(1, sizeof(struct Disabled));
-
-	d->name_desc = strdup(name_desc);
-	d->conditions = NULL;
-
-	return d;
 }
 
 static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
@@ -634,10 +601,7 @@ void validate_warn(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
-	struct SList *i = NULL;
-	struct SList *j = NULL;
-
-	for (i = cfg->user_scales; i; i = i->nex) {
+	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		const struct UserScale *user_scale = (struct UserScale*)i->val;
@@ -650,7 +614,7 @@ void validate_warn(struct Cfg *cfg) {
 			warn_ambiguous_name_desc(user_mode->name_desc, "MODE");
 		}
 	}
-	for (i = cfg->user_transforms; i; i = i->nex) {
+	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		const struct UserTransform *user_transform = (struct UserTransform*)i->val;
@@ -661,13 +625,11 @@ void validate_warn(struct Cfg *cfg) {
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, "VRR_OFF");
 	warn_ambiguous_name_desc_list(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
 
-	for (i = cfg->disabled; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		struct Disabled *disabled = (struct Disabled*)i->val;
+	for (const struct PSetIter *it = pset_iter(cfg->disableds); it; it = pset_iter_next(it)) {
+		struct Disabled *disabled = (struct Disabled*)it->val;
 		warn_ambiguous_name_desc((const char*)disabled->name_desc, "DISABLED");
 
-		for (j = disabled->conditions; j; j = j->nex) {
+		for (struct SList *j = disabled->conditions; j; j = j->nex) {
 			if (!j->val)
 				continue;
 			const struct Condition *condition = (struct Condition*)j->val;
@@ -762,9 +724,10 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// DISABLED
-	for (i = from->disabled; i; i = i->nex) {
-		if (!slist_find_equal(merged->disabled, fn_equal_cfg_disabled, i->val)) {
-			slist_append(&merged->disabled, fn_clone_cfg_disabled(i->val));
+	for (const struct PSetIter *it = pset_iter(from->disableds); it; it = pset_iter_next(it)) {
+		const struct Disabled *d = disabled_clone(it->val);
+		if (!pset_add(merged->disableds, d)) {
+			disabled_free(d);
 		}
 	}
 
@@ -809,9 +772,10 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 		sset_remove(merged->adaptive_sync_off, it->val);
 	}
 
+	// TODO PSet remove_set
 	// DISABLED
-	for (i = from->disabled; i; i = i->nex) {
-		slist_remove_all_free(&merged->disabled, fn_equal_cfg_disabled, i->val, cfg_disabled_free);
+	for (const struct PSetIter *it = pset_iter(from->disableds); it; it = pset_iter_next(it)) {
+		pset_remove_free(merged->disableds, it->val);
 	}
 
 	// CALLBACK_CMD
@@ -992,7 +956,7 @@ void cfg_free(struct Cfg *cfg) {
 
 	slist_free_vals(&cfg->max_preferred_refresh_name_desc, NULL);
 
-	slist_free_vals(&cfg->disabled, cfg_disabled_free);
+	pset_free_vals(cfg->disableds);
 
 	slist_free_vals(&cfg->user_transforms, cfg_user_transform_free);
 
@@ -1021,15 +985,3 @@ void cfg_user_transform_free(const void *val) {
 	free(user_transform);
 }
 
-void cfg_disabled_free(const void *val) {
-	struct Disabled *disabled = (struct Disabled*)val;
-
-	if (!disabled)
-		return;
-
-	free(disabled->name_desc);
-
-	slist_free_vals(&disabled->conditions, condition_free);
-
-	free(disabled);
-}

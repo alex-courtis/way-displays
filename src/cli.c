@@ -14,6 +14,7 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "sset.h"
@@ -115,7 +116,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			switch (command) {
 				case CFG_SET:
 					// parse input value
-					user_mode = user_mode_default();
+					user_mode = user_mode_init_default();
 					user_mode->name_desc = strdup(argv[optind]);
 					if (strcasecmp(argv[optind + 1], "MAX") == 0) {
 						user_mode->max = true;
@@ -133,7 +134,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 					break;
 				case CFG_DEL:
 					// dummy value
-					user_mode = user_mode_default();
+					user_mode = user_mode_init_default();
 					user_mode->name_desc = strdup(argv[optind]);
 					user_mode->max = true;
 					smap_put(cfg->user_modes, user_mode->name_desc, user_mode);
@@ -169,7 +170,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			break;
 		case DISABLED:
 			for (int i = optind; i < argc; i++) {
-				slist_append(&cfg->disabled, cfg_disabled_always(argv[i]));
+				pset_add(cfg->disableds, disabled_init_always(argv[i]));
 			}
 			parsed = true;
 			break;

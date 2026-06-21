@@ -6,6 +6,7 @@
 #include "yaml/marshal-types.h"
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "conditions.h"
 #include "convert.h"
@@ -97,7 +98,7 @@ bool yaml_map_populate_cfg(struct MC *c, const void *data, int mapping) {
 		yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                 mapping) &&
 		yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                    mapping) &&
 		yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,             mapping) &&
-		yaml_map_add_seq_list(c, cfg_element_name(DISABLED),              cfg->disabled,              yaml_seq_append_disabled,       mapping);
+		yaml_map_add_seq_pset(c, cfg_element_name(DISABLED),              cfg->disableds,         yaml_seq_append_disabled,       mapping);
 }
 
 bool yaml_map_populate_ipc_operation(struct MC *c, void *data, int mapping) {

@@ -8,6 +8,7 @@
 #include "yaml/unmarshal-types.h"
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "conditions.h"
 #include "convert.h"
@@ -16,6 +17,7 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "sset.h"
@@ -189,7 +191,7 @@ void *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->log_threshold = yaml_scalar_to_enum(c, value, log_threshold_val, log_threshold_names);
 				break;
 			case DISABLED:
-				cfg->disabled = yaml_seq_to_type_list(c, value, yaml_node_to_disabled);
+				yaml_seq_into_pset(c, value, cfg->disableds, yaml_map_into_disableds);
 				break;
 			case AUTO_SCALE_DPI:
 				yaml_scalar_to_int_def(c, &cfg->auto_scale_dpi, AUTO_SCALE_DPI_DEFAULT, value);
@@ -355,7 +357,7 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap *user_modes, const
 
 	const yaml_node_t *scalar;
 
-	struct UserMode *user_mode = user_mode_default();
+	struct UserMode *user_mode = user_mode_init_default();
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 	scalar = smap_get(nodes, "NAME_DESC");
@@ -505,9 +507,12 @@ void *yaml_map_to_head(struct UC *c, const yaml_node_t *map) {
 	return head;
 }
 
-void *yaml_node_to_disabled(struct UC *c, const yaml_node_t *node) {
+void yaml_map_into_disableds(struct UC *c, const struct PSet *disableds, const yaml_node_t *node) {
+	if (!disableds)
+		return;
+
 	struct Disabled *disabled = NULL;
-	const struct SMap *table_map = NULL;
+	const struct SMap *node_map = NULL;
 
 	switch (node->type) {
 		case YAML_SCALAR_NODE:
@@ -515,29 +520,34 @@ void *yaml_node_to_disabled(struct UC *c, const yaml_node_t *node) {
 				disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 				if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
 					goto err;
+
+				pset_add(disableds, disabled);
+
 				break;
 			}
 
 		case YAML_MAPPING_NODE:
 			{
-				if (!(table_map = yaml_map_to_node_table(c, node)))
-					return NULL;
+				if (!(node_map = yaml_map_to_node_table(c, node)))
+					return;
 
 				const yaml_node_t *scalar;
 
 				disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
 				yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-				scalar = smap_get(table_map, "NAME_DESC");
+				scalar = smap_get(node_map, "NAME_DESC");
 				if (!yaml_check_mandatory(c, scalar) || !(disabled->name_desc = yaml_scalar_to_name_desc(c, scalar)))
 					goto err;
 
 				yaml_unmarshal_log_ctx_name_desc(c, disabled->name_desc);
 
 				yaml_unmarshal_log_ctx_key(c, "IF");
-				scalar = smap_get(table_map, "IF");
+				scalar = smap_get(node_map, "IF");
 				if (scalar)
 					disabled->conditions = yaml_seq_to_type_list(c, scalar, yaml_map_to_condition);
+
+				pset_add(disableds, disabled);
 
 				break;
 			}
@@ -551,15 +561,12 @@ void *yaml_node_to_disabled(struct UC *c, const yaml_node_t *node) {
 	goto end;
 
 err:
-	cfg_disabled_free(disabled);
-	disabled = NULL;
+	disabled_free(disabled);
 
 end:
-	smap_free(table_map);
+	smap_free(node_map);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
-
-	return disabled;
 }
 
 bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map) {

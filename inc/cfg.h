@@ -61,11 +61,6 @@ struct UserTransform {
 	enum wl_output_transform transform;
 };
 
-struct Disabled {
-	char *name_desc;
-	struct SList *conditions;
-};
-
 #define WL_OUTPUT_TRANSFORM_MAX WL_OUTPUT_TRANSFORM_FLIPPED_270
 
 #define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_LEVEL}\" \"${CALLBACK_MSG}\""
@@ -92,7 +87,7 @@ struct Cfg {
 	const struct SMap *user_modes;
 	const struct SSet *adaptive_sync_off;
 	struct SList *max_preferred_refresh_name_desc;
-	struct SList *disabled;
+	const struct PSet *disableds;
 	struct SList *user_transforms;
 	enum LogThreshold log_threshold;
 
@@ -160,7 +155,7 @@ struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale);
 
 struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum wl_output_transform transform);
 
-struct Disabled *cfg_disabled_always(const char *name_desc);
+struct Disabled *disabled_init_always(const char *name_desc);
 
 //
 // equality functions
@@ -176,11 +171,11 @@ void cfg_user_scale_free(const void *val);
 
 void cfg_user_transform_free(const void *val);
 
-void cfg_disabled_free(const void *val);
+void disabled_free(const void *val);
 
 //
 // cloning functions
 //
-void* fn_clone_cfg_disabled(const void *data);
+void* disabled_clone(const void *data);
 
 #endif // CFG_H

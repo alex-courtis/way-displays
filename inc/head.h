@@ -94,7 +94,7 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 void head_set_scaled_dimensions(struct Head * const head);
 
 // applies extra toggles that should change head state directly
-void head_apply_toggles(struct Head * const head, struct Cfg *cfg);
+void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
 
 // finds a mode and logs/calls back on
 //  no mode:           error

@@ -15,6 +15,7 @@
 #include "cfg/user-mode.h"
 #include "ipc.h"
 #include "log.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "sset.h"
@@ -233,7 +234,7 @@ static void parse_element__mode_set_max(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 2, argv);
 
-	struct UserMode *expectedUserMode = user_mode_default();
+	struct UserMode *expectedUserMode = user_mode_init_default();
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = true;
 
@@ -254,7 +255,7 @@ static void parse_element__mode_set_res(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 3, argv);
 
-	struct UserMode *expectedUserMode = user_mode_default();
+	struct UserMode *expectedUserMode = user_mode_init_default();
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
@@ -277,7 +278,7 @@ static void parse_element__mode_set_res_refresh(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 4, argv);
 
-	struct UserMode *expectedUserMode = user_mode_default();
+	struct UserMode *expectedUserMode = user_mode_init_default();
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
@@ -301,7 +302,7 @@ static void parse_element__mode_del_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_DEL, MODE, 1, argv);
 
-	struct UserMode *expectedUserMode = user_mode_default();
+	struct UserMode *expectedUserMode = user_mode_init_default();
 	expectedUserMode->name_desc = strdup("DISPL");
 	expectedUserMode->max = true;
 
@@ -341,8 +342,8 @@ static void parse_element__disabled_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, DISABLED, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->disabled, cfg_disabled_always("ONE"));
-	slist_append(&expected->disabled, cfg_disabled_always("TWO"));
+	pset_add(expected->disableds, disabled_init_always("ONE"));
+	pset_add(expected->disableds, disabled_init_always("TWO"));
 
 	assert_cfg_equal(actual, expected);
 

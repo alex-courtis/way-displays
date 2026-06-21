@@ -9,10 +9,12 @@
 #include "head.h"
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "info.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "str.h"
@@ -257,8 +259,9 @@ void head_set_scaled_dimensions(struct Head * const head) {
 	head->scaled.width = head_desired_scaled_length(head, head->scaled.width);
 }
 
-void head_apply_toggles(struct Head * const head, struct Cfg* cfg) {
-	if (slist_find_equal(cfg->disabled, head_disabled_matches_head, head) != NULL) {
+void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
+	const struct PSetIter *it = pset_filter_iter(cfg->disableds, head_disabled_matches_head, head);
+	if (it) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);
@@ -273,6 +276,7 @@ void head_apply_toggles(struct Head * const head, struct Cfg* cfg) {
 			head->overrided_enabled = NoOverride;
 		}
 	}
+	pset_iter_free(it);
 }
 
 struct Mode *head_find_mode(struct Head * const head) {

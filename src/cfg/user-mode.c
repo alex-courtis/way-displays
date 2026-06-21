@@ -88,7 +88,7 @@ bool user_mode_invalid(const void *a, const void *b) {
 	return false;
 }
 
-struct UserMode *user_mode_default(void) {
+struct UserMode *user_mode_init_default(void) {
 	return user_mode_init(NULL, false, -1, -1, -1, false);
 }
 

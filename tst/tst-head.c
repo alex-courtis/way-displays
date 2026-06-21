@@ -17,6 +17,7 @@
 #include "cfg/user-mode.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
 #include "smap.h"
 
@@ -309,7 +310,7 @@ static void head_find_mode__user_available(void **state) {
 	slist_append(&head.modes, &mode);
 
 	// user preferred head
-	struct UserMode *user_mode = user_mode_default();
+	struct UserMode *user_mode = user_mode_init_default();
 	user_mode->name_desc = strdup("!.*EAD");
 	smap_put(g_cfg->user_modes, user_mode->name_desc, user_mode);
 	head.name = strdup("HEAD");
@@ -335,7 +336,7 @@ static void head_find_mode__user_failed(void **state) {
 	slist_append(&head.modes, &mode);
 
 	// user preferred head
-	struct UserMode *user_mode = user_mode_default();
+	struct UserMode *user_mode = user_mode_init_default();
 	user_mode->name_desc = strdup("!HEA.*");
 	smap_put(g_cfg->user_modes, user_mode->name_desc, user_mode);
 	head.name = strdup("HEAD");
@@ -467,7 +468,7 @@ static void head_apply_toggles__none(void **state) {
 static void head_apply_toggles__disabled__enable(void **state) {
 	struct Head head = { .name = "head0", .current.enabled = false };
 	struct Cfg *cfg = cfg_init();
-	slist_append(&cfg->disabled, cfg_disabled_always("head0"));
+	pset_add(cfg->disableds, disabled_init_always("head0"));
 
 	head_apply_toggles(&head, cfg);
 
@@ -487,7 +488,7 @@ static void head_apply_toggles__disabled__enable(void **state) {
 static void head_apply_toggles__disabled__disable(void **state) {
 	struct Head head = { .name = "head0", .current.enabled = true };
 	struct Cfg *cfg = cfg_init();
-	slist_append(&cfg->disabled, cfg_disabled_always("head0"));
+	pset_add(cfg->disableds, disabled_init_always("head0"));
 
 	head_apply_toggles(&head, cfg);
 

@@ -15,7 +15,7 @@ struct UserMode {
 
 struct UserMode *user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_hz, const bool warned_no_mode);
 
-struct UserMode *user_mode_default(void);
+struct UserMode *user_mode_init_default(void);
 
 const struct SMap *user_mode_smap_init(void);
 

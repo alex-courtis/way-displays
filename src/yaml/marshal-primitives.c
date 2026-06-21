@@ -8,6 +8,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "slist.h"
+#include "pset.h"
 #include "smap.h"
 #include "sset.h"
 #include "yaml/marshal.h"
@@ -146,6 +147,27 @@ bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sse
 		return false;
 
 	for (const struct SSetIter *it = sset_iter(sset); it; it = sset_iter_next(it)) {
+		if (!fn(c, it->val, seq))
+			return false;
+	}
+
+	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
+}
+
+bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset, yaml_seq_append_fn fn, int mapping) {
+	if (!key || !fn || !mapping)
+		return false;
+
+	if (!pset || pset_size(pset) == 0)
+		return true;
+
+	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int seq = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+
+	if (!k || !seq)
+		return false;
+
+	for (const struct PSetIter *it = pset_iter(pset); it; it = pset_iter_next(it)) {
 		if (!fn(c, it->val, seq))
 			return false;
 	}

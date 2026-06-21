@@ -18,6 +18,7 @@
 #include "head.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -372,7 +373,7 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 	};
 	slist_append(&g_heads, &head0);
 
-	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
+	pset_add(g_cfg->disableds, disabled_init_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, true);
@@ -392,7 +393,7 @@ static void desire_enabled__override(void **state) {
 	};
 	slist_append(&g_heads, &head0);
 
-	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
+	pset_add(g_cfg->disableds, disabled_init_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -413,7 +414,7 @@ static void desire_enabled__override_reset(void **state) {
 	};
 	slist_append(&g_heads, &head0);
 
-	slist_append(&g_cfg->disabled, cfg_disabled_always("![hH]ead[0-9]"));
+	pset_add(g_cfg->disableds, disabled_init_always("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
