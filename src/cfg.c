@@ -175,6 +175,7 @@ static void warn_ambiguous_name_desc(const char *name_desc, const char *element)
 	}
 }
 
+// TODO refactor into assignments into an empty struct
 static struct Cfg *clone_cfg(struct Cfg *from) {
 	if (!from) {
 		return NULL;
@@ -263,113 +264,29 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	return to;
 }
 
-// TODO refactor to a single return
 bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	// ARRANGE
-	if (a->arrange != b->arrange) {
-		return false;
-	}
-
-	// ALIGN
-	if (a->align != b->align) {
-		return false;
-	}
-
-	// ORDER
-	if (!slist_equal(a->order_name_desc, b->order_name_desc, fn_equal_strcmp)) {
-		return false;
-	}
-
-	// SCALING
-	if (a->scaling != b->scaling) {
-		return false;
-	}
-
-	// AUTO_SCALE
-	if (a->auto_scale != b->auto_scale) {
-		return false;
-	}
-	if (a->auto_scale_dpi != b->auto_scale_dpi) {
-		return false;
-	}
-	if (a->auto_scale_min != b->auto_scale_min) {
-		return false;
-	}
-	if (a->auto_scale_max != b->auto_scale_max) {
-		return false;
-	}
-
-	// SCALE
-	if (!slist_equal(a->user_scales, b->user_scales, fn_equal_cfg_user_scale)) {
-		return false;
-	}
-
-	// SCALE_ROUND_TO
-	if (a->scale_round_to != b->scale_round_to) {
-		return false;
-	}
-
-	// SCALE_ROUND_STRATEGY
-	if (a->scale_round_strategy != b->scale_round_strategy) {
-		return false;
-	}
-
-	// MODE
-	if (!smap_equal(a->user_modes, b->user_modes)) {
-		return false;
-	}
-
-	// TRANSFORM
-	if (!slist_equal(a->user_transforms, b->user_transforms, fn_equal_cfg_user_transform)) {
-		return false;
-	}
-
-	// TODO SSet this could be order insensitive
-	// VRR_OFF
-	if (!sset_equal(a->adaptive_sync_off, b->adaptive_sync_off)) {
-		return false;
-	}
-
-	// TODO use a fn_equal_str
-	// CALLBACK_CMD
-	const char *ao = a->callback_cmd;
-	const char *bo = b->callback_cmd;
-	if ((ao && !bo) || (!ao && bo) || (ao && bo && strcmp(ao, bo) != 0)) {
-		return false;
-	}
-
-	// LAPTOP_DISPLAY_PREFIX
-	const char *al = a->laptop_display_prefix;
-	const char *bl = b->laptop_display_prefix;
-	if ((al && !bl) || (!al && bl) || (al && bl && strcmp(al, bl) != 0)) {
-		return false;
-	}
-
-	// LAPTOP_LID_MONITOR
-	if (a->laptop_lid_monitor != b->laptop_lid_monitor) {
-		return false;
-	}
-
-	// MAX_PREFERRED_REFRESH
-	if (!slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, fn_equal_strcmp)) {
-		return false;
-	}
-
-	// DISABLED
-	if (!pset_equal(a->disableds, b->disableds)) {
-		return false;
-	}
-
-	// LOG_THRESHOLD
-	if (a->log_threshold != b->log_threshold) {
-		return false;
-	}
-
-	return true;
+	return a && b &&
+		// TODO SSet this could be order insensitive
+		sset_equal(a->adaptive_sync_off, b->adaptive_sync_off) &&
+		a->align == b->align &&
+		a->arrange == b->arrange &&
+		a->auto_scale == b->auto_scale &&
+		a->auto_scale_dpi == b->auto_scale_dpi &&
+		a->auto_scale_max == b->auto_scale_max &&
+		a->auto_scale_min == b->auto_scale_min &&
+		fn_equal_strcmp(a->callback_cmd, b->callback_cmd) &&
+		pset_equal(a->disableds, b->disableds) &&
+		fn_equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
+		a->laptop_lid_monitor == b->laptop_lid_monitor &&
+		a->log_threshold == b->log_threshold &&
+		slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, fn_equal_strcmp) &&
+		slist_equal(a->order_name_desc, b->order_name_desc, fn_equal_strcmp) &&
+		a->scale_round_strategy == b->scale_round_strategy &&
+		a->scale_round_to == b->scale_round_to &&
+		a->scaling == b->scaling &&
+		smap_equal(a->user_modes, b->user_modes) &&
+		slist_equal(a->user_scales, b->user_scales, fn_equal_cfg_user_scale) &&
+		slist_equal(a->user_transforms, b->user_transforms, fn_equal_cfg_user_transform);
 }
 
 //
