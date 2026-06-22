@@ -183,7 +183,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->log_threshold = yaml_scalar_to_enum(c, value, log_threshold_val, log_threshold_names);
 				break;
 			case DISABLED:
-				yaml_seq_into_col(c, value, cfg->disableds, yaml_map_into_disableds);
+				yaml_seq_into_col(c, value, cfg->disableds, yaml_node_into_disableds);
 				break;
 			case AUTO_SCALE_DPI:
 				yaml_scalar_to_int_def(c, &cfg->auto_scale_dpi, AUTO_SCALE_DPI_DEFAULT, value);
@@ -528,7 +528,7 @@ void yaml_map_into_heads(struct UC *c, const void *col, const yaml_node_t *map) 
 }
 
 // TODO this should be yaml_node_into_disableds
-void yaml_map_into_disableds(struct UC *c, const void *col, const yaml_node_t *node) {
+void yaml_node_into_disableds(struct UC *c, const void *col, const yaml_node_t *node) {
 	if (!col)
 		return;
 

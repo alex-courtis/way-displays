@@ -31,7 +31,7 @@ void yaml_map_into_user_modes     (struct UC *c, const void *col, const yaml_nod
 void yaml_map_into_user_transforms(struct UC *c, const void *col, const yaml_node_t *map);  // UserTransform
 void yaml_map_into_heads          (struct UC *c, const void *col, const yaml_node_t *map);  // Head
 void yaml_map_into_modes          (struct UC *c, const void *col, const yaml_node_t *map);  // Mode
-void yaml_map_into_disableds      (struct UC *c, const void *col, const yaml_node_t *node); // Disabled
+void yaml_node_into_disableds     (struct UC *c, const void *col, const yaml_node_t *node); // Disabled
 
 // TODO all list operations can be normalised to yaml_seq_into_col 
 
