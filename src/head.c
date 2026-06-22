@@ -49,10 +49,6 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	return false;
 }
 
-static bool head_matches_user_mode(const void * const user_mode, const void * const head) {
-	return user_mode && head && head_matches_name_desc((struct Head*)head, ((struct UserMode*)user_mode)->name_desc);
-}
-
 static struct Mode *max_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
@@ -292,9 +288,8 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 	struct Mode *mode = NULL;
 
-	// TODO generify head_matches_user_mode to use the key instead of value
 	// TODO SMap _find_key/val
-	const struct SMapIter *it = smap_filter_iter(g_cfg->user_modes, NULL, head_matches_user_mode, head);
+	const struct SMapIter *it = smap_filter_iter(g_cfg->user_modes, head_name_desc_matches_head, NULL, head);
 	struct UserMode *um = it ? (struct UserMode*)it->val : NULL;
 	smap_iter_free(it);
 

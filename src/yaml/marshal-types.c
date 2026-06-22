@@ -279,18 +279,19 @@ bool yaml_seq_append_user_scale(struct MC *c, const void *data, int sequence) {
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }
 
-bool yaml_seq_append_user_mode(struct MC *c, const void *data, int sequence) {
+bool yaml_seq_append_user_mode(struct MC *c, const void *key, const void *val, int sequence) {
 	if (!sequence)
 		return false;
 
-	if (!data)
+	if (!val)
 		return true;
 
-	const struct UserMode *user_mode = data;
+	const char *name_desc = key;
+	const struct UserMode *user_mode = val;
 
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 
-	if (!map || !yaml_map_add_str(c, "NAME_DESC", user_mode->name_desc, map))
+	if (!map || !yaml_map_add_str(c, "NAME_DESC", name_desc, map))
 		return false;
 
 	if (user_mode->max) {

@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 struct UserMode {
-	char *name_desc;
 	bool max;
 	int32_t width;
 	int32_t height;
@@ -21,7 +20,7 @@ const struct SMap *user_mode_smap_init(void);
 
 void* user_mode_clone(const void* const val);
 
-bool user_mode_invalid(const void *a, const void *b);
+bool user_mode_invalid(const char *name_desc, const struct UserMode *user_mode);
 
 void user_mode_free(const void *val);
 

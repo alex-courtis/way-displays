@@ -33,11 +33,13 @@ bool yaml_map_add_map(struct MC *c, const char *key, const void *data, yaml_map_
 
 // Create a new sequence node and add it to an existing mapping node
 // New sequence node values are populated by evaluating fn on each item
-typedef bool (*yaml_seq_append_fn)(struct MC *c, const void *data, const int sequence);
-bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, yaml_seq_append_fn fn, int mapping);
-bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, yaml_seq_append_fn fn, int mapping);
-bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sset, yaml_seq_append_fn fn, int mapping);
-bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset, yaml_seq_append_fn fn, int mapping);
+typedef bool (*yaml_seq_append_val_fn)(struct MC *c, const void *data, const int sequence);
+bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, yaml_seq_append_val_fn fn, int mapping);
+bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sset,  yaml_seq_append_val_fn fn, int mapping);
+bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset,  yaml_seq_append_val_fn fn, int mapping);
+
+typedef bool (*yaml_seq_append_key_val_fn)(struct MC *c, const void *key, const void *val, const int sequence);
+bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, yaml_seq_append_key_val_fn fn, int mapping);
 
 // yaml_seq_append_fn: append a scalar item to an existing sequence node
 bool yaml_seq_append_str(struct MC *c, const void *str, int sequence);

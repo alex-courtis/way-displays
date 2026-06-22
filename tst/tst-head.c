@@ -311,8 +311,7 @@ static void head_find_mode__user_available(void **state) {
 
 	// user preferred head
 	struct UserMode *user_mode = user_mode_init_default();
-	user_mode->name_desc = strdup("!.*EAD");
-	smap_put(g_cfg->user_modes, user_mode->name_desc, user_mode);
+	smap_put(g_cfg->user_modes, "!.*EAD", user_mode);
 	head.name = strdup("HEAD");
 
 	// mode matched to user
@@ -337,8 +336,7 @@ static void head_find_mode__user_failed(void **state) {
 
 	// user preferred head
 	struct UserMode *user_mode = user_mode_init_default();
-	user_mode->name_desc = strdup("!HEA.*");
-	smap_put(g_cfg->user_modes, user_mode->name_desc, user_mode);
+	smap_put(g_cfg->user_modes, "!HEA.*", user_mode);
 	head.name = strdup("HEAD");
 
 	// mode not matched to user

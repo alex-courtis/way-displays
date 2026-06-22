@@ -263,6 +263,7 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	return to;
 }
 
+// TODO refactor to a single return
 bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	if (!a || !b) {
 		return false;
@@ -333,6 +334,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		return false;
 	}
 
+	// TODO use a fn_equal_str
 	// CALLBACK_CMD
 	const char *ao = a->callback_cmd;
 	const char *bo = b->callback_cmd;
@@ -576,11 +578,15 @@ void validate_fix(struct Cfg *cfg) {
 	remove_duplicate_user_scales(cfg);
 
 	// TODO SMap remove if or find, depends on whether we get many similar cases
-	const struct SMapIter *it = NULL;
-	while ((it = smap_filter_iter(cfg->user_modes, NULL, user_mode_invalid, NULL))) {
-		smap_remove_free(cfg->user_modes, it->key);
-		smap_iter_free(it);
+	// TODO SMap filter take an equal with key and val params
+	const struct SMap *unfiltered = cfg->user_modes;
+	cfg->user_modes = user_mode_smap_init();
+	for (const struct SMapIter *it = smap_iter(unfiltered); it; it = smap_iter_next(it)) {
+		if (!user_mode_invalid(it->key, it->val)) {
+			smap_put(cfg->user_modes, it->key, user_mode_clone(it->val));
+		}
 	}
+	smap_free_vals(unfiltered);
 
 	remove_duplicate_user_transforms(cfg);
 }
@@ -611,7 +617,7 @@ void validate_warn(struct Cfg *cfg) {
 		// TODO SMap may a no-nulls allowed version of maps
 		const struct UserMode *user_mode = (struct UserMode*)it->val;
 		if (user_mode) {
-			warn_ambiguous_name_desc(user_mode->name_desc, "MODE");
+			warn_ambiguous_name_desc(it->key, "MODE");
 		}
 	}
 	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {

@@ -112,7 +112,7 @@ bool yaml_map_add_map(struct MC *c, const char *key, const void *data, yaml_map_
 	return fn(c, data, map) && yaml_document_append_mapping_pair(&c->d, mapping, k, map);
 }
 
-bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, yaml_seq_append_fn fn, int mapping) {
+bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, yaml_seq_append_val_fn fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
 
@@ -133,7 +133,7 @@ bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *li
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sset, yaml_seq_append_fn fn, int mapping) {
+bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sset, yaml_seq_append_val_fn fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
 
@@ -154,7 +154,7 @@ bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sse
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset, yaml_seq_append_fn fn, int mapping) {
+bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset, yaml_seq_append_val_fn fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
 
@@ -175,7 +175,7 @@ bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pse
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, yaml_seq_append_fn fn, int mapping) {
+bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, yaml_seq_append_key_val_fn fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
 
@@ -189,7 +189,7 @@ bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* sma
 		return false;
 
 	for (const struct SMapIter *it = smap_iter(smap); it; it = smap_iter_next(it)) {
-		if (!fn(c, it->val, seq))
+		if (!fn(c, it->key, it->val, seq))
 			return false;
 	}
 

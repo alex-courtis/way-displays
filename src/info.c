@@ -59,15 +59,15 @@ char *info_mode_string(const struct Mode * const mode) {
 			);
 }
 
-static void print_user_mode(const enum LogThreshold t, const struct UserMode * const user_mode, const bool del) {
+static void print_user_mode(const enum LogThreshold t, const char * name_desc, const struct UserMode * const user_mode, const bool del) {
 	if (!user_mode)
 		return;
 
 	if (del) {
-		log_(t, "    %s", user_mode->name_desc);
+		log_(t, "    %s", name_desc);
 	} else {
 		char *um_str = info_user_mode_string(user_mode);
-		log_(t, "    %s: %s", user_mode->name_desc, um_str);
+		log_(t, "    %s: %s", name_desc, um_str);
 		free(um_str);
 	}
 }
@@ -186,7 +186,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 	if (smap_size(cfg->user_modes) > 0) {
 		log_(t, "  Mode:");
 		for (const struct SMapIter *it = smap_iter(cfg->user_modes); it; it = smap_iter_next(it)) {
-			print_user_mode(t, it->val, del);
+			print_user_mode(t, it->key, it->val, del);
 		}
 	}
 
@@ -295,7 +295,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 		}
 
 		print_newline(t, &newline);
-		log_(t, "way-displays -s MODE '%s' %s", user_mode->name_desc, msg);
+		log_(t, "way-displays -s MODE '%s' %s", it->key, msg);
 		free(msg);
 	}
 

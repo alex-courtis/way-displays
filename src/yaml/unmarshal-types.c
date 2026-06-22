@@ -358,13 +358,14 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap *user_modes, const
 	const yaml_node_t *scalar;
 
 	struct UserMode *user_mode = user_mode_init_default();
+	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 	scalar = smap_get(nodes, "NAME_DESC");
-	if (!yaml_check_mandatory(c, scalar) || !(user_mode->name_desc = yaml_scalar_to_name_desc(c, scalar)))
+	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto err;
 
-	yaml_unmarshal_log_ctx_name_desc(c, user_mode->name_desc);
+	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "WIDTH");
 	scalar = smap_get(nodes, "WIDTH");
@@ -390,8 +391,8 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap *user_modes, const
 	if (scalar && !yaml_scalar_to_boolean(c, &user_mode->max, scalar))
 		goto err;
 
-	if (smap_put_if_absent(user_modes, user_mode->name_desc, user_mode)) {
-		yaml_unmarshal_log_remove_duplicate_value(c, user_mode->name_desc);
+	if (smap_put_if_absent(user_modes, name_desc, user_mode)) {
+		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
 		goto err;
 	}
 
@@ -401,6 +402,7 @@ err:
 	user_mode_free(user_mode);
 
 end:
+	free(name_desc);
 	smap_free(nodes);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
