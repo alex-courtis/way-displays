@@ -161,7 +161,6 @@ void desire_enabled(struct Head *head) {
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
 	enabled |= slist_length(g_heads) == 1;
 
-	// TODO generify head_disabled_matches_head to use the key instead of value
 	// iterate over all matching NAME_DESC's and evaluate their conditions
 	for (const struct PSetIter *it = pset_filter_iter(g_cfg->disableds, head_disabled_matches_head, head); it; it = pset_iter_next(it)) {
 		enabled &= !condition_list_evaluate(((struct Disabled*)it->val)->conditions);

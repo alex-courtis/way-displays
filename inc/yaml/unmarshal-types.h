@@ -5,8 +5,6 @@
 #include <yaml.h>
 
 #include "head.h"
-#include "pset.h"
-#include "smap.h"
 #include "sset.h"
 #include "yaml/unmarshal.h"
 
@@ -20,17 +18,22 @@ void *yaml_root_to_cfg              (struct UC *c, const yaml_node_t *root); // 
 void *yaml_root_to_ipc_request      (struct UC *c, const yaml_node_t *root); // IpcRequest
 void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root); // list of IpcResponse
 
-// yaml_node_to_type_fn: create a struct from a node
-void *yaml_map_to_cfg           (struct UC *c, const yaml_node_t *map);  // Cfg
-void *yaml_map_to_ipc_response  (struct UC *c, const yaml_node_t *map);  // IpcResponse
-void *yaml_map_to_condition     (struct UC *c, const yaml_node_t *map);  // Condition
-void *yaml_map_to_user_scale    (struct UC *c, const yaml_node_t *map);  // UserScale
-void yaml_map_into_user_modes   (struct UC *c, const struct SMap *smap, const yaml_node_t *map);  // UserMode
-void *yaml_map_to_user_transform(struct UC *c, const yaml_node_t *map);  // UserTransform
-void *yaml_map_to_lid           (struct UC *c, const yaml_node_t *map);  // Lid
-void *yaml_map_to_mode          (struct UC *c, const yaml_node_t *map);  // Mode
-void *yaml_map_to_head          (struct UC *c, const yaml_node_t *map);  // Head
-void yaml_map_into_disableds    (struct UC *c, const struct PSet *pset, const yaml_node_t *node); // Disabled
+// create a struct from a map
+struct Cfg  *yaml_map_to_cfg (struct UC *c, const yaml_node_t *map);  // Cfg
+struct Lid  *yaml_map_to_lid (struct UC *c, const yaml_node_t *map);  // Lid
+struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
+
+// yaml_node_into_col_fn: create a struct and add to collection
+void yaml_map_into_ipc_responses  (struct UC *c, const void *col, const yaml_node_t *map);  // IpcResponse
+void yaml_map_into_conditions     (struct UC *c, const void *col, const yaml_node_t *map);  // Condition
+void yaml_map_into_user_scales    (struct UC *c, const void *col, const yaml_node_t *map);  // UserScale
+void yaml_map_into_user_modes     (struct UC *c, const void *col, const yaml_node_t *map);  // UserMode
+void yaml_map_into_user_transforms(struct UC *c, const void *col, const yaml_node_t *map);  // UserTransform
+void yaml_map_into_heads          (struct UC *c, const void *col, const yaml_node_t *map);  // Head
+void yaml_map_into_modes          (struct UC *c, const void *col, const yaml_node_t *map);  // Mode
+void yaml_map_into_disableds      (struct UC *c, const void *col, const yaml_node_t *node); // Disabled
+
+// TODO all list operations can be normalised to yaml_seq_into_col 
 
 // into HeadState
 bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map);

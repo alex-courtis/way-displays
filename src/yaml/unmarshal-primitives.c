@@ -9,8 +9,6 @@
 
 #include "cfg.h"
 #include "convert.h"
-#include "pset.h"
-#include "slist.h"
 #include "smap.h"
 #include "yaml/unmarshal.h"
 
@@ -128,29 +126,8 @@ bool yaml_scalar_to_boolean(struct UC *c, bool *dst, const yaml_node_t *scalar) 
 	return false;
 }
 
-struct SList *yaml_seq_to_type_list(struct UC *c, const yaml_node_t *seq, yaml_node_to_type_fn fn) {
-	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
-		return NULL;
-
-	struct SList *list = NULL;
-
-	void *val = NULL;
-
-	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-
-		const yaml_node_t *node = yaml_document_get_node(&c->d, *item);
-		if (!node)
-			continue;
-
-		if ((val = fn(c, node)))
-			slist_append(&list, val);
-	}
-
-	return list;
-}
-
-bool yaml_seq_into_smap(struct UC *c, const yaml_node_t *seq, const struct SMap *smap, yaml_node_into_smap_fn fn) {
-	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !smap)
+bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, yaml_node_into_col_fn fn) {
+	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !col)
 		return false;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
@@ -159,23 +136,7 @@ bool yaml_seq_into_smap(struct UC *c, const yaml_node_t *seq, const struct SMap 
 		if (!node)
 			continue;
 
-		fn(c, smap, node);
-	}
-
-	return true;
-}
-
-bool yaml_seq_into_pset(struct UC *c, const yaml_node_t *seq, const struct PSet *pset, yaml_node_into_pset_fn fn) {
-	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !pset)
-		return false;
-
-	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-
-		const yaml_node_t *node = yaml_document_get_node(&c->d, *item);
-		if (!node)
-			continue;
-
-		fn(c, pset, node);
+		fn(c, col, node);
 	}
 
 	return true;

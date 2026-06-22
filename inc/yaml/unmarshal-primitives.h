@@ -6,8 +6,6 @@
 #include <yaml.h>
 
 #include "convert.h"
-#include "pset.h"
-#include "smap.h"
 #include "yaml/unmarshal.h"
 
 /*
@@ -26,19 +24,9 @@ int   yaml_scalar_to_enum      (struct UC *c,                                con
 int   yaml_scalar_to_enum_def  (struct UC *c, const int def,                 const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn, enum_names_fn names_fn);
 bool  yaml_scalar_to_boolean   (struct UC *c, bool *dst,                     const yaml_node_t *scalar);
 
-// create a list of structs using fn to unmarshal each item
-typedef void *(*yaml_node_to_type_fn)(struct UC *c, const yaml_node_t *node);
-struct SList *yaml_seq_to_type_list(struct UC *c, const yaml_node_t *seq, yaml_node_to_type_fn fn);
-
-// TODO below two can be generified
-
-// put into smap using fn to unmarshal each item
-typedef void (*yaml_node_into_smap_fn)(struct UC *c, const struct SMap *smap, const yaml_node_t *node);
-bool yaml_seq_into_smap(struct UC *c, const yaml_node_t *seq, const struct SMap *smap, yaml_node_into_smap_fn fn);
-
-// put into smap using fn to unmarshal each item
-typedef void (*yaml_node_into_pset_fn)(struct UC *c, const struct PSet *pset, const yaml_node_t *node);
-bool yaml_seq_into_pset(struct UC *c, const yaml_node_t *seq, const struct PSet *pset, yaml_node_into_pset_fn fn);
+// put into col using fn to unmarshal each item
+typedef void (*yaml_node_into_col_fn)(struct UC *c, const void *col, const yaml_node_t *node);
+bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, yaml_node_into_col_fn fn);
 
 // create a table of yaml_node_t indexed by key
 const struct SMap *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map);
