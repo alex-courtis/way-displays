@@ -224,10 +224,8 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->user_transforms = slist_clone(from->user_transforms, fn_clone_cfg_user_transform);
 
 	// MODE
-	// TODO SMap deep clone independent of clone_val
-	for (const struct SMapIter *it = smap_iter(from->user_modes); it; it = smap_iter_next(it)) {
-		smap_put(to->user_modes, it->key, user_mode_clone(it->val));
-	}
+	smap_free(to->user_modes);
+	to->user_modes = smap_clone_deep(from->user_modes);
 
 	// VRR_OFF
 	sset_free(to->adaptive_sync_off);
@@ -252,9 +250,8 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
 
 	// DISABLED
-	for (const struct PSetIter *it = pset_iter(from->disableds); it; it = pset_iter_next(it)) {
-		pset_add(to->disableds, disabled_clone(it->val));
-	}
+	pset_free(to->disableds);
+	to->disableds = pset_clone_deep(from->disableds);
 
 	// LOG_THRESHOLD
 	if (from->log_threshold) {

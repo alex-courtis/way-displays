@@ -42,22 +42,13 @@ static const struct IMap *clone(const struct IMap* const from, bool deep) {
 	if (!from)
 		return NULL;
 
-	const struct PMap *ptab;
+	struct IMap *to = calloc(1, sizeof(struct IMap));
 
-	if (deep) {
-		ptab = pmap_clone_deep(from->ptab);
-	} else {
-		ptab = pmap_clone_shallow(from->ptab);
-	}
+	to->ptab = deep ? pmap_clone_deep(from->ptab) : pmap_clone_shallow(from->ptab);
 
-	if (ptab) {
-		struct IMap *to = calloc(1, sizeof(struct IMap));
-		to->ptab = ptab;
-		memcpy((void*)&to->params, &from->params, sizeof(struct IMapParams));
-		return to;
-	} else {
-		return NULL;
-	}
+	memcpy((void*)&to->params, &from->params, sizeof(struct IMapParams));
+
+	return to;
 }
 
 const struct IMap *imap_init(void) {
@@ -69,10 +60,11 @@ const struct IMap *imap_init_with(const struct IMapParams params) {
 	const struct PMapParams pmap_params = {
 		.equal_key = fn_equal_key,
 		.equal_val = params.equal_val,
-		.clone_key = fn_clone_key,
-		.clone_val = params.clone_val,
+		.alloc_key = fn_clone_key,
+		.alloc_val = params.alloc_val,
 		.free_key = (fn_free)free,
 		.free_val = params.free_val,
+		.clone_val = params.clone_val,
 		.str_key = fn_str_key,
 		.str_val = params.str_val,
 		.initial = params.initial,

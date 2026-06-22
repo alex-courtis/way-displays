@@ -43,7 +43,7 @@ static void grow(struct PSet *set) {
 	set->capacity = new_capacity;
 }
 
-static bool add(const struct PSet* const cset, const void* const val, fn_clone clone_val) {
+static bool add(const struct PSet* const cset, const void* const val, fn_clone alloc_val) {
 	if (!val)
 		return false;
 
@@ -56,18 +56,19 @@ static bool add(const struct PSet* const cset, const void* const val, fn_clone c
 		}
 	}
 
+	// create new value
+	const void *new = alloc_val ? alloc_val(val) : val;
+	if (!new)
+		return false;
+
 	// maybe grow for new entry
 	if (set->size >= set->capacity) {
 		grow(set);
 		v = &set->vals[set->size];
 	}
 
-	// new value
-	if (clone_val) {
-		*v = clone_val(val);
-	} else {
-		*v = (void*)val;
-	}
+	// assign new value
+	*v = new;
 	set->size++;
 
 	return true;
@@ -147,10 +148,13 @@ const struct PSet *pset_clone_shallow(const struct PSet* const from) {
 }
 
 const struct PSet *pset_clone_deep(const struct PSet* const from) {
-	if (!from || !from->params.clone_val)
+	if (!from)
 		return NULL;
 
-	return clone(from, from->params.clone_val);
+	if (from->params.clone_val)
+		return clone(from, from->params.clone_val);
+	else
+		return pset_init_with(from->params);
 }
 
 void pset_free(const struct PSet * const set) {
@@ -249,7 +253,7 @@ const struct PSetIter *pset_iter_next(const struct PSetIter* const citer) {
 }
 
 bool pset_add(const struct PSet* const set, const void* const val) {
-	return set ? add(set, val, set->params.clone_val) : false;
+	return set ? add(set, val, set->params.alloc_val) : false;
 }
 
 bool pset_remove(const struct PSet* const set, const void* const val) {

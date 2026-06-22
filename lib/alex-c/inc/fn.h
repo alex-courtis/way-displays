@@ -50,6 +50,11 @@ typedef void* (*fn_clone)(const void* const val);
 void *fn_clone_strdup(const void* const val);
 
 //
+// allocate a new val, must equal original
+//
+typedef void* (*fn_alloc)(const void* const val);
+
+//
 // to string, caller frees, may return NULL
 //
 typedef char* (*fn_str)(const void* const val);

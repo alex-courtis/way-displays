@@ -96,6 +96,7 @@ const struct SMap *user_mode_smap_init(void) {
 	const struct SMapParams params = {
 		.equal_val = user_mode_equal,
 		.free_val = user_mode_free,
+		.clone_val = user_mode_clone,
 	};
 	return smap_init_with(params);
 }

@@ -24,8 +24,9 @@ const struct SSet *sset_init(void) {
 const struct SSet *sset_init_with(const struct SSetParams params) {
 	const struct PSetParams pset_params = {
 		.equal_val = params.case_insensitive ? fn_equal_strcasecmp : fn_equal_strcmp,
-		.clone_val = (fn_clone)strdup,
+		.alloc_val = fn_clone_strdup,
 		.free_val = (fn_free)free,
+		.clone_val = fn_clone_strdup,
 		.str_val = fn_str_or_null,
 		.initial = params.initial,
 		.grow = params.grow,

@@ -41,6 +41,7 @@ const struct PSet *disabled_pset_init(void) {
 	const struct PSetParams params = {
 		.equal_val = disabled_equal,
 		.free_val = disabled_free,
+		.clone_val = disabled_clone,
 	};
 	return pset_init_with(params);
 }

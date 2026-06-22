@@ -14,6 +14,8 @@ bool mock_test(const void* const val);
 
 void *mock_clone(const void* const val);
 
+void *mock_alloc(const void* const val);
+
 void mock_free(const void* const val);
 
 char* mock_str(const void* const val);

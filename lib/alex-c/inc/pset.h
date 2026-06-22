@@ -28,8 +28,9 @@ struct PSetIter {
  */
 struct PSetParams {
 	const fn_equal equal_val; // compare val pointers
-	const fn_clone clone_val; // use key pointer
+	const fn_alloc alloc_val; // use key pointer
 	const fn_free free_val;   // free
+	const fn_clone clone_val; // use key pointer
 	const fn_str str_val;     // %p
 	const size_t initial;     // 10
 	const size_t grow;        // 10
@@ -48,7 +49,7 @@ const struct PSet *pset_init_with(const struct PSetParams params);
 // clone, setting val pointers
 const struct PSet *pset_clone_shallow(const struct PSet* const from);
 
-// clone, NOP when NULL clone_val [clone_val]
+// clone, empty when NULL clone_val [clone_val]
 const struct PSet *pset_clone_deep(const struct PSet* const from);
 
 // free set
@@ -80,13 +81,13 @@ const struct PSetIter *pset_iter_next(const struct PSetIter* const iter);
  * Mutate
  */
 
-// add if the set does not contain val, return true if added [equal_val, clone_val]
+// add if the set does not contain val, return true if added [equal_val, alloc_val]
 bool pset_add(const struct PSet* const set, const void* const val);
 
-// if the set contains val, remove it and return true [equal_val, clone_val]
+// if the set contains val, remove it and return true [equal_val, alloc_val]
 bool pset_remove(const struct PSet* const set, const void* const val);
 
-// if the set contains val, remove it, free it and return true [equal_val, clone_val, free_val]
+// if the set contains val, remove it, free it and return true [equal_val, alloc_val, free_val]
 bool pset_remove_free(const struct PSet* const set, const void* const val);
 
 // shell sort in place, NULL less_than_val NOP
@@ -106,7 +107,7 @@ bool pset_equal(const struct PSet* const a, const struct PSet* const b);
 // ordered vals, caller frees list only
 struct SList *pset_slist_shallow(const struct PSet* const set);
 
-// ordered vals, caller frees list and vals, NOP when NULL clone_val [clone_val]
+// ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
 struct SList *pset_slist_deep(const struct PSet* const set);
 
 /*

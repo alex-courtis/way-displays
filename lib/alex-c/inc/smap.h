@@ -28,8 +28,9 @@ struct SMapIter {
 struct SMapParams {
 	const bool case_insensitive; // false
 	const fn_equal equal_val;    // compare key pointers
-	const fn_clone clone_val;    // assign val pointer
+	const fn_alloc alloc_val;    // assign val pointer
 	const fn_free free_val;      // free
+	const fn_clone clone_val;    // NOP
 	const fn_str str_val;        // %p
 	const size_t initial;        // 10
 	const size_t grow;           // 10
@@ -48,7 +49,7 @@ const struct SMap *smap_init_with(const struct SMapParams params);
 // clone, setting val pointers
 const struct SMap *smap_clone_shallow(const struct SMap* const from);
 
-// clone, NOP when NULL clone_val [clone_val]
+// clone, empty when NULL clone_val [clone_val]
 const struct SMap *smap_clone_deep(const struct SMap* const from);
 
 // free map
@@ -83,13 +84,13 @@ const struct SMapIter *smap_iter_next(const struct SMapIter* const iter);
  * Mutate
  */
 
-// set key/val, return old val if overwritten [clone_val]
+// set key/val, return old val if overwritten [alloc_val]
 const void *smap_put(const struct SMap* const tab, const char* const key, const void* const val);
 
-// set key/val if not present, return existing val if present [clone_val]
+// set key/val if not present, return existing val if present [alloc_val]
 const void *smap_put_if_absent(const struct SMap* const tab, const char* const key, const void* const val);
 
-// set key/val, free old val, return true if overwritten [clone_val, free_val]
+// set key/val, free old val, return true if overwritten [alloc_val, free_val]
 bool smap_put_free(const struct SMap* const tab, const  char* const key, const void* const val);
 
 // remove val, return old val if present
@@ -115,7 +116,7 @@ struct SList *smap_keys_slist_deep(const struct SMap* const tab);
 // ordered vals, caller frees list only
 struct SList *smap_vals_slist_shallow(const struct SMap* const tab);
 
-// ordered vals, caller frees list and vals, NOP when NULL clone_val [clone_val]
+// ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
 struct SList *smap_vals_slist_deep(const struct SMap* const tab);
 
 /*
