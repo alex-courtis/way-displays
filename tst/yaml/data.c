@@ -6,6 +6,7 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
+#include "cfg/user-scale.h"
 #include "conditions.h"
 #include "head.h"
 #include "ipc.h"
@@ -52,8 +53,8 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->order_name_desc, strdup("ONE"));
 	slist_append(&cfg->order_name_desc, strdup("!two"));
 
-	slist_append(&cfg->user_scales, cfg_user_scale_init("three", 3));
-	slist_append(&cfg->user_scales, cfg_user_scale_init("four", 4));
+	slist_append(&cfg->user_scales, user_scale_init("three", 3));
+	slist_append(&cfg->user_scales, user_scale_init("four", 4));
 
 	smap_put(cfg->user_modes, "five", user_mode_init("five", false, 1920, 1080, 12340, false));
 	smap_put(cfg->user_modes, "six", user_mode_init("six", false, 2560, 1440, -1, false));

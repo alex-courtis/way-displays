@@ -15,6 +15,7 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
+#include "cfg/user-scale.h"
 #include "displ.h"
 #include "head.h"
 #include "log.h"
@@ -570,8 +571,8 @@ static void desire_scale__user(void **state) {
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	slist_append(&g_cfg->user_scales, cfg_user_scale_init("![Hh]ea.*", 3.5));
-	slist_append(&g_cfg->user_scales, cfg_user_scale_init("head1", 7.5));
+	slist_append(&g_cfg->user_scales, user_scale_init("![Hh]ea.*", 3.5));
+	slist_append(&g_cfg->user_scales, user_scale_init("head1", 7.5));
 
 	desire_scale(&head0);
 

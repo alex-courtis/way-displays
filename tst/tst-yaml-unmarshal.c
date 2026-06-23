@@ -15,6 +15,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
+#include "cfg/user-scale.h"
 #include "conditions.h"
 #include "head.h"
 #include "ipc.h"
@@ -122,7 +123,7 @@ static void yaml_root_to_cfg__transform(void **state) {
 
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_scales, cfg_user_scale_init("three", 3));
+	slist_append(&expected->user_scales, user_scale_init("three", 3));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
 }

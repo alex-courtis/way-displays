@@ -12,6 +12,7 @@
 
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
+#include "cfg/user-scale.h"
 #include "conditions.h"
 #include "log.h"
 #include "pset.h"
@@ -158,15 +159,15 @@ static void merge_set__scale_round_strategy(void **state) {
 static void merge_set__user_scale(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_scales, cfg_user_scale_init("to", 1));
-	slist_append(&s->to->user_scales, cfg_user_scale_init("both", 2));
+	slist_append(&s->to->user_scales, user_scale_init("to", 1));
+	slist_append(&s->to->user_scales, user_scale_init("both", 2));
 
-	slist_append(&s->from->user_scales, cfg_user_scale_init("from", 3));
-	slist_append(&s->from->user_scales, cfg_user_scale_init("both", 4));
+	slist_append(&s->from->user_scales, user_scale_init("from", 3));
+	slist_append(&s->from->user_scales, user_scale_init("both", 4));
 
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("to", 1));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("both", 4));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("from", 3));
+	slist_append(&s->expected->user_scales, user_scale_init("to", 1));
+	slist_append(&s->expected->user_scales, user_scale_init("both", 4));
+	slist_append(&s->expected->user_scales, user_scale_init("from", 3));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -309,13 +310,13 @@ static void merge_set__callback_cmd(void **state) {
 static void merge_del__scale(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_scales, cfg_user_scale_init("1", 1));
-	slist_append(&s->to->user_scales, cfg_user_scale_init("2", 2));
+	slist_append(&s->to->user_scales, user_scale_init("1", 1));
+	slist_append(&s->to->user_scales, user_scale_init("2", 2));
 
-	slist_append(&s->from->user_scales, cfg_user_scale_init("2", 3));
-	slist_append(&s->from->user_scales, cfg_user_scale_init("3", 4));
+	slist_append(&s->from->user_scales, user_scale_init("2", 3));
+	slist_append(&s->from->user_scales, user_scale_init("3", 4));
 
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("1", 1));
+	slist_append(&s->expected->user_scales, user_scale_init("1", 1));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -526,14 +527,14 @@ static void validate_fix__row(void **state) {
 static void validate_fix__user_scale(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->from->user_scales, cfg_user_scale_init("ok", 1));
+	slist_append(&s->from->user_scales, user_scale_init("ok", 1));
 
-	slist_append(&s->from->user_scales, cfg_user_scale_init("neg", -1));
+	slist_append(&s->from->user_scales, user_scale_init("neg", -1));
 
-	slist_append(&s->from->user_scales, cfg_user_scale_init("zero", 0));
+	slist_append(&s->from->user_scales, user_scale_init("zero", 0));
 
-	slist_append(&s->from->user_scales, cfg_user_scale_init("dup", 2));
-	slist_append(&s->from->user_scales, cfg_user_scale_init("dup", 3));
+	slist_append(&s->from->user_scales, user_scale_init("dup", 2));
+	slist_append(&s->from->user_scales, user_scale_init("dup", 3));
 
 	validate_fix(s->from);
 
@@ -541,8 +542,8 @@ static void validate_fix__user_scale(void **state) {
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("dup", 3));
+	slist_append(&s->expected->user_scales, user_scale_init("ok", 1));
+	slist_append(&s->expected->user_scales, user_scale_init("dup", 3));
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -618,9 +619,9 @@ static void validate_fix__auto_scale_dpi(void **state) {
 static void validate_warn__(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("sss", 1));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("ssssssss", 2));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("DP-1", 3));
+	slist_append(&s->expected->user_scales, user_scale_init("sss", 1));
+	slist_append(&s->expected->user_scales, user_scale_init("ssssssss", 2));
+	slist_append(&s->expected->user_scales, user_scale_init("DP-1", 3));
 
 	smap_put(s->expected->user_modes, "mmm", user_mode_init("mmm", false, 1, 1, 1, false));
 	smap_put(s->expected->user_modes, "mmmmmmmm", user_mode_init("mmmmmmmm", false, 1, 1, 1, false));

@@ -21,11 +21,6 @@ extern struct Cfg *g_cfg;
 
 #define SCALE_ROUND_TO_DEFAULT 8
 
-struct UserScale {
-	char *name_desc;
-	float scale;
-};
-
 enum Arrange {
 	ROW = 1,
 	COL,
@@ -84,6 +79,7 @@ struct Cfg {
 	enum OnOff scaling;
 	enum OnOff auto_scale;
 	struct SList *user_scales;
+	const struct SMap *user_scales_smap;
 	const struct SMap *user_modes;
 	const struct SSet *adaptive_sync_off;
 	struct SList *max_preferred_refresh_name_desc;
@@ -151,8 +147,6 @@ struct Cfg *cfg_default(void);
 
 void cfg_apply_defaults(struct Cfg *cfg);
 
-struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale);
-
 struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum wl_output_transform transform);
 
 struct Disabled *disabled_init_always(const char *name_desc);
@@ -166,8 +160,6 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 // freeing functions
 //
 void cfg_free(struct Cfg *cfg);
-
-void cfg_user_scale_free(const void *val);
 
 void cfg_user_transform_free(const void *val);
 

@@ -10,6 +10,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
+#include "cfg/user-scale.h"
 #include "conditions.h"
 #include "convert.h"
 #include "head.h"
@@ -338,7 +339,7 @@ void yaml_map_into_user_scales(struct UC *c, const void *col, const yaml_node_t 
 	goto end;
 
 err:
-	cfg_user_scale_free(user_scale);
+	user_scale_free(user_scale);
 
 end:
 	smap_free(nodes);

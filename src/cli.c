@@ -10,6 +10,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
+#include "cfg/user-scale.h"
 #include "convert.h"
 #include "ipc.h"
 #include "log.h"
@@ -106,7 +107,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 					break;
 				case CFG_DEL:
 					// dummy value
-					slist_append(&cfg->user_scales, cfg_user_scale_init(argv[optind], 1));
+					slist_append(&cfg->user_scales, user_scale_init(argv[optind], 1));
 					parsed = true;
 					break;
 				default:

@@ -10,6 +10,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
+#include "cfg/user-scale.h"
 #include "convert.h"
 #include "head.h"
 #include "lid.h"

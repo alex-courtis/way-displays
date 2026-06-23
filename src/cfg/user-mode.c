@@ -31,6 +31,32 @@ static bool user_mode_equal(const void *a, const void *b) {
 	return true;
 }
 
+struct UserMode *user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_mhz, const bool warned_no_mode) {
+	struct UserMode *um = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+
+	um->max = max;
+	um->width = width;
+	um->height = height;
+	um->refresh_mhz = refresh_mhz;
+	um->warned_no_mode = warned_no_mode;
+
+	return um;
+}
+
+struct UserMode *user_mode_init_default(void) {
+	return user_mode_init(NULL, false, -1, -1, -1, false);
+}
+
+const struct SMap *user_mode_smap_init(void) {
+	const struct SMapParams params = {
+		.equal_val = user_mode_equal,
+		.free_val = user_mode_free,
+		.clone_val = user_mode_clone,
+	};
+	return smap_init_with(params);
+}
+
+// TODO return the actual type
 void* user_mode_clone(const void* const val) {
 	const struct UserMode *original = (struct UserMode*)val;
 	struct UserMode *clone = (struct UserMode*)calloc(1, sizeof(struct UserMode));
@@ -74,31 +100,6 @@ bool user_mode_invalid(const char* const name_desc, const struct UserMode* const
 	}
 
 	return false;
-}
-
-struct UserMode *user_mode_init_default(void) {
-	return user_mode_init(NULL, false, -1, -1, -1, false);
-}
-
-struct UserMode *user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_mhz, const bool warned_no_mode) {
-	struct UserMode *um = (struct UserMode*)calloc(1, sizeof(struct UserMode));
-
-	um->max = max;
-	um->width = width;
-	um->height = height;
-	um->refresh_mhz = refresh_mhz;
-	um->warned_no_mode = warned_no_mode;
-
-	return um;
-}
-
-const struct SMap *user_mode_smap_init(void) {
-	const struct SMapParams params = {
-		.equal_val = user_mode_equal,
-		.free_val = user_mode_free,
-		.clone_val = user_mode_clone,
-	};
-	return smap_init_with(params);
 }
 
 void user_mode_free(const void *val) {
