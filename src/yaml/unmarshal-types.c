@@ -527,7 +527,6 @@ void yaml_map_into_heads(struct UC *c, const void *col, const yaml_node_t *map) 
 	smap_free(nodes_overrides);
 }
 
-// TODO this should be yaml_node_into_disableds
 void yaml_node_into_disableds(struct UC *c, const void *col, const yaml_node_t *node) {
 	if (!col)
 		return;

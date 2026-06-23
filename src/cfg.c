@@ -175,95 +175,34 @@ static void warn_ambiguous_name_desc(const char *name_desc, const char *element)
 	}
 }
 
-// TODO refactor into assignments into an empty struct
 static struct Cfg *clone_cfg(struct Cfg *from) {
-	if (!from) {
+	if (!from)
 		return NULL;
-	}
 
-	struct Cfg *to = cfg_init();
+	struct Cfg *to = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
-	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
-	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
-	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
+	memcpy(to, from, sizeof(struct Cfg));
 
-	// ARRANGE
-	if (from->arrange) {
-		to->arrange = from->arrange;
-	}
+	to->callback_cmd =          from->callback_cmd ?          strdup(from->callback_cmd) :          NULL;
+	to->dir_path =              from->dir_path ?              strdup(from->dir_path) :              NULL;
+	to->file_name =             from->file_name ?             strdup(from->file_name) :             NULL;
+	to->file_path =             from->file_path ?             strdup(from->file_path) :             NULL;
+	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
-	// ALIGN
-	if (from->align) {
-		to->align = from->align;
-	}
-
-	// ORDER
-	to->order_name_desc = slist_clone(from->order_name_desc, fn_clone_strdup);
-
-	// SCALING
-	if (from->scaling) {
-		to->scaling = from->scaling;
-	}
-
-	// AUTO_SCALE
-	to->auto_scale = from->auto_scale;
-	to->auto_scale_dpi = from->auto_scale_dpi;
-	to->auto_scale_min = from->auto_scale_min;
-	to->auto_scale_max = from->auto_scale_max;
-
-	// SCALE_ROUND_TO
-	to->scale_round_to = from->scale_round_to;
-
-	// SCALE_ROUND_STRATEGY
-	to->scale_round_strategy = from->scale_round_strategy;
-
-	// SCALE
-	to->user_scales = slist_clone(from->user_scales, fn_clone_cfg_user_scale);
-
-	// TRANSFORM
-	to->user_transforms = slist_clone(from->user_transforms, fn_clone_cfg_user_transform);
-
-	// MODE
-	smap_free(to->user_modes);
-	to->user_modes = smap_clone_deep(from->user_modes);
-
-	// VRR_OFF
-	sset_free(to->adaptive_sync_off);
-	to->adaptive_sync_off = sset_clone(from->adaptive_sync_off);
-
-	// CALLBACK_CMD
-	if (from->callback_cmd) {
-		to->callback_cmd = strdup(from->callback_cmd);
-	}
-
-	// LAPTOP_DISPLAY_PREFIX
-	if (from->laptop_display_prefix) {
-		to->laptop_display_prefix = strdup(from->laptop_display_prefix);
-	}
-
-	// LAPTOP_LID_MONITOR
-	if (from->laptop_lid_monitor) {
-		to->laptop_lid_monitor = from->laptop_lid_monitor;
-	}
-
-	// MAX_PREFERRED_REFRESH
 	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
+	to->order_name_desc =                 slist_clone(from->order_name_desc, fn_clone_strdup);
+	to->user_scales =                     slist_clone(from->user_scales, fn_clone_cfg_user_scale);
+	to->user_transforms =                 slist_clone(from->user_transforms, fn_clone_cfg_user_transform);
 
-	// DISABLED
-	pset_free(to->disableds);
-	to->disableds = pset_clone_deep(from->disableds);
-
-	// LOG_THRESHOLD
-	if (from->log_threshold) {
-		to->log_threshold = from->log_threshold;
-	}
+	to->adaptive_sync_off = sset_clone(from->adaptive_sync_off);
+	to->disableds =         pset_clone_deep(from->disableds);
+	to->user_modes =        smap_clone_deep(from->user_modes);
 
 	return to;
 }
 
 bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	return a && b &&
-		// TODO SSet this could be order insensitive
 		sset_equal(a->adaptive_sync_off, b->adaptive_sync_off) &&
 		a->align == b->align &&
 		a->arrange == b->arrange &&
@@ -308,39 +247,17 @@ struct Cfg *cfg_default(void) {
 }
 
 void cfg_apply_defaults(struct Cfg *cfg) {
-
-	if (!cfg->arrange)
-		cfg->arrange = ARRANGE_DEFAULT;
-
-	if (!cfg->align)
-		cfg->align = ALIGN_DEFAULT;
-
-	if (!cfg->scaling)
-		cfg->scaling = SCALING_DEFAULT;
-
-	if (!cfg->auto_scale)
-		cfg->auto_scale = AUTO_SCALE_DEFAULT;
-
-	if (!cfg->scale_round_to)
-		cfg->scale_round_to = SCALE_ROUND_TO_DEFAULT;
-
-	if (!cfg->scale_round_strategy)
-		cfg->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
-
-	if (!cfg->auto_scale_dpi)
-		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
-
-	if (!cfg->auto_scale_min)
-		cfg->auto_scale_min = AUTO_SCALE_MIN_DEFAULT;
-
-	if (!cfg->auto_scale_max)
-		cfg->auto_scale_max = AUTO_SCALE_MAX_DEFAULT;
-
-	if (!cfg->callback_cmd)
-		cfg->callback_cmd = strdup(CALLBACK_CMD_DEFAULT);
-
-	if (!cfg->laptop_lid_monitor)
-		cfg->laptop_lid_monitor = LAPTOP_LID_MONITOR_DEFAULT;
+	if (!cfg->arrange)              cfg->arrange =              ARRANGE_DEFAULT;
+	if (!cfg->align)                cfg->align =                ALIGN_DEFAULT;
+	if (!cfg->scaling)              cfg->scaling =              SCALING_DEFAULT;
+	if (!cfg->auto_scale)           cfg->auto_scale =           AUTO_SCALE_DEFAULT;
+	if (!cfg->scale_round_to)       cfg->scale_round_to =       SCALE_ROUND_TO_DEFAULT;
+	if (!cfg->scale_round_strategy) cfg->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
+	if (!cfg->auto_scale_dpi)       cfg->auto_scale_dpi =       AUTO_SCALE_DPI_DEFAULT;
+	if (!cfg->auto_scale_min)       cfg->auto_scale_min =       AUTO_SCALE_MIN_DEFAULT;
+	if (!cfg->auto_scale_max)       cfg->auto_scale_max =       AUTO_SCALE_MAX_DEFAULT;
+	if (!cfg->callback_cmd)         cfg->callback_cmd =         strdup(CALLBACK_CMD_DEFAULT);
+	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor =   LAPTOP_LID_MONITOR_DEFAULT;
 }
 
 struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale) {
@@ -683,7 +600,6 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 		sset_remove(merged->adaptive_sync_off, it->val);
 	}
 
-	// TODO PSet remove_set
 	// DISABLED
 	for (const struct PSetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
 		pset_remove_free(merged->disableds, it->val);
