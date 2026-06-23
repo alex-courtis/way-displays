@@ -408,7 +408,6 @@ void validate_fix(struct Cfg *cfg) {
 	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, cfg_user_scale_free);
 	remove_duplicate_user_scales(cfg);
 
-	// TODO SMap remove_match, depends on whether we get many similar cases
 	const char *name_desc;
 	while ((name_desc = smap_match(cfg->user_modes, (fn_match_smap)user_mode_invalid, NULL).key)) {
 		smap_remove_free(cfg->user_modes, name_desc);
@@ -594,7 +593,6 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 		slist_remove_all_free(&merged->user_transforms, fn_equal_cfg_user_transform_name, i->val, cfg_user_transform_free);
 	}
 
-	// TODO SSet remove_set
 	// VRR_OFF
 	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
 		sset_remove(merged->adaptive_sync_off, it->val);
