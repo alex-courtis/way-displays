@@ -14,6 +14,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "displ.h"
 #include "head.h"
 #include "log.h"

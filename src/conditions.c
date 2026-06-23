@@ -45,14 +45,14 @@ bool condition_evaluate(const struct Condition *condition) {
 
 	for (const struct SList *i = condition->plugged; i; i = i->nex) {
 		const char* name_desc = (const char*)i->val;
-		if (slist_find_equal(g_heads, head_matches_name_desc, name_desc) == NULL) {
+		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, name_desc) == NULL) {
 			return false;
 		}
 	}
 
 	for (const struct SList *i = condition->unplugged; i; i = i->nex) {
 		const char* name_desc = (const char*)i->val;
-		if (slist_find_equal(g_heads, head_matches_name_desc, name_desc) != NULL) {
+		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, name_desc) != NULL) {
 			return false;
 		}
 	}

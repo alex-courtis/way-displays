@@ -8,6 +8,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "mode.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -71,19 +72,17 @@ struct Head {
 // description, name, "???"
 const char *head_human(const struct Head * const head);
 
-bool head_matches_name_desc_exact(const void * const head, const void * const name_desc);
+bool head_matches_name_desc_exact(const struct Head * const head, const char * const name_desc);
 
-bool head_matches_name_desc_regex(const void * const head, const void * const name_desc);
+bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc);
 
-bool head_matches_name_desc_fuzzy(const void * const h, const void * const name_desc);
+bool head_matches_name_desc_fuzzy(const struct Head * const head, const char * const name_desc);
 
-bool head_matches_name_desc_partial(const void * const head, const void * const name_desc);
+bool head_matches_name_desc(const struct Head * const head, const char * const name_desc);
 
-bool head_matches_name_desc(const void * const head, const void * const name_desc);
+bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head);
 
-bool head_name_desc_matches_head(const char * const name_desc, const void * const head);
-
-bool head_disabled_matches_head(const void * const d, const void * const h);
+bool head_disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head);
 
 // calculate fixed scale correctly quantized for fractional scaling, obeying scale_round_to and scale_round_strategy
 wl_fixed_t head_get_fixed_scale(const double scale);

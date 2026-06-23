@@ -11,6 +11,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
+#include "fn.h"
 #include "info.h"
 #include "log.h"
 #include "mode.h"
@@ -86,13 +87,8 @@ static struct Mode *max_mode(const struct Head * const head) {
 	return max;
 }
 
-// TODO normalise all these matchers
-
-bool head_matches_name_desc_regex(const void * const h, const void * const n) {
-	const struct Head *head = h;
-	const char *name_desc = n;
-
-	if (name_desc[0] != '!')
+bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc) {
+	if (!head || !name_desc || name_desc[0] != '!')
 		return false;
 
 	const char *regex_pattern = name_desc + 1;
@@ -123,51 +119,35 @@ bool head_matches_name_desc_regex(const void * const h, const void * const n) {
 	return !result;
 }
 
-bool head_matches_name_desc_fuzzy(const void * const h, const void * const n) {
-	const struct Head *head = h;
-	const char *name_desc = n;
-
-	if (!name_desc || !head || name_desc[0] == '!')
-		return false;
-
-	return (
-			(head->name && strcasestr(head->name, name_desc)) ||
-			(head->description && strcasestr(head->description, name_desc))
+bool head_matches_name_desc_fuzzy(const struct Head * const head, const char * const name_desc) {
+	return (name_desc && head && name_desc[0] != '!' &&
+			((head->name && strcasestr(head->name, name_desc)) ||
+			 (head->description && strcasestr(head->description, name_desc)))
 		   );
 }
 
-bool head_matches_name_desc(const void * const h, const void * const n) {
-	return head_matches_name_desc_exact(h, n) ||
-		head_matches_name_desc_regex(h, n) ||
-		head_matches_name_desc_fuzzy(h, n);
+bool head_matches_name_desc(const struct Head * const head, const char * const name_desc) {
+	return head_matches_name_desc_exact(head, name_desc) ||
+		head_matches_name_desc_regex(head, name_desc) ||
+		head_matches_name_desc_fuzzy(head, name_desc);
 }
 
-static bool head_name_desc_x_matches_head(const char * const name_desc, const void * const x, const void * const head) {
+static bool head_name_desc_x_matches_head(const char * const name_desc, const void * const x, const struct Head * const head) {
 	return head_matches_name_desc(head, name_desc);
 }
 
-bool head_name_desc_matches_head(const char * const name_desc, const void * const head) {
+bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head) {
 	return head_matches_name_desc(head, name_desc);
 }
 
-bool head_matches_name_desc_exact(const void * const h, const void * const n) {
-	const struct Head *head = h;
-	const char *name_desc = n;
-
-	if (!name_desc || !head)
-		return false;
-
-	return (head->name && strcmp(head->name, name_desc) == 0) ||
-		(head->description && strcmp(head->description, name_desc) == 0);
+bool head_matches_name_desc_exact(const struct Head * const head, const char * const name_desc) {
+	return head && name_desc &&
+		((head->name && strcmp(head->name, name_desc) == 0) ||
+		 (head->description && strcmp(head->description, name_desc) == 0));
 }
 
-bool head_disabled_matches_head(const void * const d, const void * const h) {
-	const struct Disabled *disabled_if = (struct Disabled*)d;
-
-	if (!d)
-		return false;
-
-	return head_matches_name_desc(h, disabled_if->name_desc);
+bool head_disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head) {
+	return disabled && head && head_matches_name_desc(head, disabled->name_desc);
 }
 
 // wl_fixed_t, used by the wlr-output-management protocol, uses scales in multiples of 1/256.
@@ -262,7 +242,7 @@ void head_set_scaled_dimensions(struct Head * const head) {
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	if (pset_match(cfg->disableds, head_disabled_matches_head, head)) {
+	if (pset_match(cfg->disableds, (fn_match_val)head_disabled_matches_head, head)) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);
@@ -293,7 +273,7 @@ struct Mode *head_find_mode(struct Head * const head) {
 	struct Mode *mode = NULL;
 
 	// maybe a user mode
-	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, head_name_desc_x_matches_head, head).val;
+	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, (fn_match_smap)head_name_desc_x_matches_head, head).val;
 	if (user_mode) {
 		mode = mode_user_mode(head->modes, head->modes_failed, user_mode);
 		if (!mode && !user_mode->warned_no_mode) {

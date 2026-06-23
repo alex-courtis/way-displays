@@ -11,6 +11,7 @@
 #include "conditions.h"
 #include "convert.h"
 #include "displ.h"
+#include "fn.h"
 #include "head.h"
 #include "info.h"
 #include "lid.h"
@@ -113,21 +114,21 @@ struct SList *order_heads(const struct SList *order_name_desc, struct SList *hea
 	// exact match
 	i = 0;
 	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, head_matches_name_desc_exact, o->val);
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, o->val);
 		i++;
 	}
 
 	// regex
 	i = 0;
 	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, head_matches_name_desc_regex, o->val);
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, o->val);
 		i++;
 	}
 
 	// fuzzy
 	i = 0;
 	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, head_matches_name_desc_fuzzy, o->val);
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, o->val);
 		i++;
 	}
 
@@ -162,7 +163,7 @@ void desire_enabled(struct Head *head) {
 	enabled |= slist_length(g_heads) == 1;
 
 	// iterate over all matching NAME_DESC's and evaluate their conditions
-	for (const struct PSetIt *it = pset_match_it(g_cfg->disableds, head_disabled_matches_head, head); it; it = pset_it_next(it)) {
+	for (const struct PSetIt *it = pset_match_it(g_cfg->disableds, (fn_match_val)head_disabled_matches_head, head); it; it = pset_it_next(it)) {
 		enabled &= !condition_list_evaluate(((struct Disabled*)it->val)->conditions);
 	}
 
@@ -263,7 +264,7 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (sset_match(g_cfg->adaptive_sync_off, head_name_desc_matches_head, head)) {
+	if (sset_match(g_cfg->adaptive_sync_off, (fn_match_sset)head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;

@@ -8,6 +8,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "convert.h"
 #include "ipc.h"

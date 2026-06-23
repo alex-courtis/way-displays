@@ -14,6 +14,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "log.h"
 #include "mode.h"
