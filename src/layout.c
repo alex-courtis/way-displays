@@ -22,6 +22,7 @@
 #include "process.h"
 #include "pset.h"
 #include "slist.h"
+#include "smap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -220,12 +221,10 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	for (struct SList *i = g_cfg->user_scales; i; i = i->nex) {
-		const struct UserScale *user_scale = (struct UserScale*)i->val;
-		if (head_matches_name_desc(head, user_scale->name_desc)) {
-			head->desired.scale = head_get_fixed_scale(user_scale->scale);
-			return;
-		}
+	const struct UserScale *user_scale = smap_match(g_cfg->user_scales, (fn_match_smap)head_name_desc_x_matches_head, head).val;
+	if (user_scale) {
+		head->desired.scale = head_get_fixed_scale(user_scale->scale);
+		return;
 	}
 
 	// auto or 1

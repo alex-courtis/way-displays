@@ -123,7 +123,7 @@ static void yaml_root_to_cfg__transform(void **state) {
 
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_scales, user_scale_init("three", 3));
+	smap_put(expected->user_scales, "three", user_scale_init("three", 3));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
 }

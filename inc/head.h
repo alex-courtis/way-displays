@@ -82,6 +82,8 @@ bool head_matches_name_desc(const struct Head * const head, const char * const n
 
 bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head);
 
+bool head_name_desc_x_matches_head(const char * const name_desc, const void * const x, const struct Head * const head);
+
 bool head_disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head);
 
 // calculate fixed scale correctly quantized for fractional scaling, obeying scale_round_to and scale_round_strategy

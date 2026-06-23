@@ -1,3 +1,4 @@
+Removing duplicate SCALE three
 Ignoring invalid SCALE invalid SCALE foobar
 Ignoring invalid SCALE NAME_DESC regex '(foobar': Unmatched ( or \(
 Ignoring invalid SCALE NAME_DESC expected scalar, got sequence

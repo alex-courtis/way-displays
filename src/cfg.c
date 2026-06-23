@@ -67,21 +67,6 @@ static void* fn_clone_cfg_user_transform(const void* const val) {
 //
 // equality functions
 //
-static bool cfg_user_scale_name_equal(const void *a, const void *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	const struct UserScale *lhs = (struct UserScale*)a;
-	const struct UserScale *rhs = (struct UserScale*)b;
-
-	if (!lhs->name_desc || !rhs->name_desc) {
-		return false;
-	}
-
-	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
-}
-
 static bool fn_equal_cfg_user_transform_name(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
@@ -120,22 +105,6 @@ static bool fn_equal_cfg_user_transform(const void *a, const void *b) {
 	return true;
 }
 
-static bool invalid_user_scale(const void *a, const void *b) {
-	if (!a) {
-		return true;
-	}
-
-	struct UserScale *user_scale = (struct UserScale*)a;
-
-	if (user_scale->scale <= 0) {
-		log_warn(NULL);
-		log_warn("Ignoring non-positive SCALE %s %.3f", user_scale->name_desc, user_scale->scale);
-		return true;
-	}
-
-	return false;
-}
-
 static void warn_ambiguous_name_desc(const char *name_desc, const char *element) {
 	if (!name_desc)
 		return;
@@ -167,13 +136,12 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 
 	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
 	to->order_name_desc =                 slist_clone(from->order_name_desc, fn_clone_strdup);
-	to->user_scales =                     slist_clone(from->user_scales, user_scale_clone);
 	to->user_transforms =                 slist_clone(from->user_transforms, fn_clone_cfg_user_transform);
 
 	to->adaptive_sync_off = sset_clone(from->adaptive_sync_off);
 	to->disableds =         pset_clone_deep(from->disableds);
 	to->user_modes =        smap_clone_deep(from->user_modes);
-	to->user_scales_smap =       smap_clone_deep(from->user_scales_smap);
+	to->user_scales =       smap_clone_deep(from->user_scales);
 
 	return to;
 }
@@ -198,7 +166,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		a->scale_round_to == b->scale_round_to &&
 		a->scaling == b->scaling &&
 		smap_equal(a->user_modes, b->user_modes) &&
-		slist_equal(a->user_scales, b->user_scales, user_scale_equal) &&
+		smap_equal(a->user_scales, b->user_scales) &&
 		slist_equal(a->user_transforms, b->user_transforms, fn_equal_cfg_user_transform);
 }
 
@@ -211,7 +179,7 @@ struct Cfg *cfg_init(void) {
 	cfg->user_modes =        user_mode_smap_init();
 	cfg->adaptive_sync_off = sset_init();
 	cfg->disableds =         disabled_pset_init();
-	cfg->user_scales_smap =  user_scale_smap_init();
+	cfg->user_scales =  user_scale_smap_init();
 
 	return cfg;
 }
@@ -308,24 +276,6 @@ void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
 	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
 }
 
-static void remove_duplicate_user_scales(struct Cfg *cfg) {
-	const struct SMap *by_name_desc = smap_init();
-
-	for (const struct SList *i = cfg->user_scales; i; i = i->nex) {
-		const struct UserScale *user_scale = i->val;
-		const struct UserScale *dup = smap_put(by_name_desc, user_scale->name_desc, user_scale);
-		if (dup) {
-			log_warn(NULL);
-			log_warn("Removing duplicate SCALE %s", dup->name_desc);
-			user_scale_free(dup);
-		}
-	}
-
-	slist_free(&cfg->user_scales);
-	cfg->user_scales = smap_vals_slist_shallow(by_name_desc);
-	smap_free(by_name_desc);
-}
-
 static void remove_duplicate_user_transforms(struct Cfg *cfg) {
 	const struct SMap *by_name_desc = smap_init();
 
@@ -374,10 +324,12 @@ void validate_fix(struct Cfg *cfg) {
 		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
 	}
 
-	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, user_scale_free);
-	remove_duplicate_user_scales(cfg);
-
 	const char *name_desc;
+
+	while ((name_desc = smap_match(cfg->user_scales, (fn_match_smap)user_scale_invalid, NULL).key)) {
+		smap_remove_free(cfg->user_scales, name_desc);
+	}
+
 	while ((name_desc = smap_match(cfg->user_modes, (fn_match_smap)user_mode_invalid, NULL).key)) {
 		smap_remove_free(cfg->user_modes, name_desc);
 	}
@@ -401,11 +353,8 @@ void validate_warn(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
-	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		const struct UserScale *user_scale = (struct UserScale*)i->val;
-		warn_ambiguous_name_desc(user_scale->name_desc, "SCALE");
+	for (const struct SMapIt *it = smap_it(cfg->user_scales); it; it = smap_it_next(it)) {
+		warn_ambiguous_name_desc(it->key, "SCALE");
 	}
 	for (const struct SMapIt  *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
 		warn_ambiguous_name_desc(it->key, "MODE");
@@ -484,16 +433,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// SCALE
-	const struct UserScale *set_user_scale = NULL;
-	struct UserScale *merged_user_scale = NULL;
-	for (i = from->user_scales; i; i = i->nex) {
-		set_user_scale = (struct UserScale*)i->val;
-		if (!(merged_user_scale = (struct UserScale*)slist_find_equal_val(merged->user_scales, cfg_user_scale_name_equal, set_user_scale))) {
-			merged_user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-			merged_user_scale->name_desc = strdup(set_user_scale->name_desc);
-			slist_append(&merged->user_scales, merged_user_scale);
-		}
-		merged_user_scale->scale = set_user_scale->scale;
+	for (const struct SMapIt *it = smap_it(from->user_scales); it; it = smap_it_next(it)) {
+		smap_put_free(merged->user_scales, it->key, user_scale_clone(it->val));
 	}
 
 	// MODE
@@ -548,8 +489,8 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	const struct SList *i;
 
 	// SCALE
-	for (i = from->user_scales; i; i = i->nex) {
-		slist_remove_all_free(&merged->user_scales, cfg_user_scale_name_equal, i->val, user_scale_free);
+	for (const struct SMapIt *it = smap_it(from->user_scales); it; it = smap_it_next(it)) {
+		smap_remove_free(merged->user_scales, it->key);
 	}
 
 	// MODE
@@ -742,9 +683,7 @@ void cfg_free(struct Cfg *cfg) {
 
 	slist_free_vals(&cfg->order_name_desc, NULL);
 
-	slist_free_vals(&cfg->user_scales, user_scale_free);
-
-	smap_free_vals(cfg->user_scales_smap);
+	smap_free_vals(cfg->user_scales);
 
 	smap_free_vals(cfg->user_modes);
 

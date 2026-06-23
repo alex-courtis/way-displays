@@ -149,7 +149,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->auto_scale = yaml_scalar_to_enum_def(c, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name, on_off_names);
 				break;
 			case SCALE:
-				yaml_seq_into_col(c, value, &cfg->user_scales, yaml_map_into_user_scales);
+				yaml_seq_into_col(c, value, cfg->user_scales, yaml_map_into_user_scales);
 				break;
 			case SCALE_ROUND_TO:
 				cfg->scale_round_to = yaml_scalar_to_scale_round_to(c, value);
@@ -317,24 +317,28 @@ void yaml_map_into_user_scales(struct UC *c, const void *col, const yaml_node_t 
 	if (!nodes)
 		return;
 
-	const yaml_node_t *scalar;
-
-	struct SList **user_scales = (struct SList**)col;
+	const struct SMap *user_scales = col;
 	struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
-	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-	scalar = smap_get(nodes, "NAME_DESC");
-	if (!yaml_check_mandatory(c, scalar) || !(user_scale->name_desc = yaml_scalar_to_name_desc(c, scalar)))
-		goto err;
+	char *name_desc = NULL;
 
-	yaml_unmarshal_log_ctx_name_desc(c, user_scale->name_desc);
+	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
+	const yaml_node_t *scalar = smap_get(nodes, "NAME_DESC");
+	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+		goto err;
+	user_scale->name_desc = strdup(name_desc);
+
+	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "SCALE");
 	scalar = smap_get(nodes, "SCALE");
 	if (!yaml_check_mandatory(c, scalar) || !yaml_scalar_to_float(c, &user_scale->scale, scalar))
 		goto err;
 
-	slist_append(user_scales, user_scale);
+	if (smap_put_if_absent(user_scales, name_desc, user_scale)) {
+		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
+		goto err;
+	}
 
 	goto end;
 
@@ -342,6 +346,7 @@ err:
 	user_scale_free(user_scale);
 
 end:
+	free(name_desc);
 	smap_free(nodes);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);

@@ -10,6 +10,8 @@
 
 #include "wrap-log.h"
 
+// TODO put clear back
+
 // log space b is statically allocated and not cleared
 // bp is used to indicate presence of logs
 // logs are reset by clearing bp on assert_log and logs_clear

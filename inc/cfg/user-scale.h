@@ -8,13 +8,13 @@ struct UserScale {
 	float scale;
 };
 
-bool user_scale_equal(const void *a, const void *b);
-
 struct UserScale *user_scale_init(const char *name_desc, const float scale);
 
 const struct SMap *user_scale_smap_init(void);
 
 void* user_scale_clone(const void* const val);
+
+bool user_scale_invalid(const char* const name_desc, const struct UserScale* const user_scale, const void* const data);
 
 void user_scale_free(const void *val);
 

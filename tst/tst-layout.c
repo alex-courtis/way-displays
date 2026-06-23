@@ -22,6 +22,7 @@
 #include "mode.h"
 #include "pset.h"
 #include "slist.h"
+#include "smap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -571,8 +572,8 @@ static void desire_scale__user(void **state) {
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	slist_append(&g_cfg->user_scales, user_scale_init("![Hh]ea.*", 3.5));
-	slist_append(&g_cfg->user_scales, user_scale_init("head1", 7.5));
+	smap_put(g_cfg->user_scales, "![Hh]ea.*", user_scale_init("![Hh]ea.*", 3.5));
+	smap_put(g_cfg->user_scales, "head1", user_scale_init("head1", 7.5));
 
 	desire_scale(&head0);
 

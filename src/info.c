@@ -172,10 +172,10 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		log_(t, "  Round scales to: %s, %s", scale_round_to_name(cfg->scale_round_to), scale_round_strategy_name(cfg->scale_round_strategy));
 	}
 
-	if (cfg->user_scales) {
+	if (smap_size(cfg->user_scales) > 0) {
 		log_(t, "  Scale:");
-		for (struct SList *i = cfg->user_scales; i; i = i->nex) {
-			struct UserScale *user_scale = (struct UserScale*)i->val;
+		for (const struct SMapIt *it = smap_it(cfg->user_scales); it; it = smap_it_next(it)) {
+			struct UserScale *user_scale = (struct UserScale*)it->val;
 			if (del) {
 				log_(t, "    %s", user_scale->name_desc);
 			} else {
@@ -273,8 +273,8 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (struct SList *i = cfg->user_scales; i; i = i->nex) {
-		struct UserScale *user_scale = (struct UserScale*)i->val;
+	for (const struct SMapIt *it = smap_it(cfg->user_scales); it; it = smap_it_next(it)) {
+		struct UserScale *user_scale = (struct UserScale*)it->val;
 		char *msg = sprintf_alloc("%.3f", user_scale->scale);
 		print_newline(t, &newline);
 		log_(t, "way-displays -s SCALE '%s' %s", user_scale->name_desc, msg);

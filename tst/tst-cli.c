@@ -14,6 +14,7 @@
 #include "cfg.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
+#include "cfg/disabled.h"
 #include "ipc.h"
 #include "log.h"
 #include "pset.h"
@@ -166,7 +167,7 @@ static void parse_element__scale_set_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, SCALE, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_scales, user_scale_init("DISPL", 1234.5));
+	smap_put(expected->user_scales, "DISPL", user_scale_init("DISPL", 1234.5));
 
 	assert_cfg_equal(actual, expected);
 
@@ -183,7 +184,7 @@ static void parse_element__scale_del_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_DEL, SCALE, 1, argv);
 
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_scales, user_scale_init("DISPL", 1));
+	smap_put(expected->user_scales, "DISPL", user_scale_init("DISPL", 1));
 
 	assert_cfg_equal(actual, expected);
 

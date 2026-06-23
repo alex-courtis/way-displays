@@ -4,9 +4,10 @@
 
 #include "cfg/user-scale.h"
 
+#include "log.h"
 #include "smap.h"
 
-bool user_scale_equal(const void *a, const void *b) {
+static bool user_scale_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -47,6 +48,20 @@ void* user_scale_clone(const void* const val) {
 	clone->name_desc = strdup(original->name_desc);
 
 	return clone;
+}
+
+bool user_scale_invalid(const char* const name_desc, const struct UserScale* const user_scale, const void* const data) {
+	if (!name_desc || !user_scale) {
+		return true;
+	}
+
+	if (user_scale->scale <= 0) {
+		log_warn(NULL);
+		log_warn("Ignoring non-positive SCALE %s %.3f", user_scale->name_desc, user_scale->scale);
+		return true;
+	}
+
+	return false;
 }
 
 void user_scale_free(const void *val) {

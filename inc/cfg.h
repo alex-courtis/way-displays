@@ -78,8 +78,7 @@ struct Cfg {
 	enum Align align;
 	enum OnOff scaling;
 	enum OnOff auto_scale;
-	struct SList *user_scales;
-	const struct SMap *user_scales_smap;
+	const struct SMap *user_scales;
 	const struct SMap *user_modes;
 	const struct SSet *adaptive_sync_off;
 	struct SList *max_preferred_refresh_name_desc;
