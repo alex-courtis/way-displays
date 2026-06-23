@@ -15,11 +15,11 @@ struct SMap; // IWYU pragma: keep
 /*
  * Entry iterator.
  */
-struct SMapIterState; // IWYU pragma: keep
-struct SMapIter {
+struct SMapItState; // IWYU pragma: keep
+struct SMapIt {
 	const char *key;
 	const void *val;
-	struct SMapIterState *st;
+	struct SMapItState *st;
 };
 
 /*
@@ -35,6 +35,19 @@ struct SMapParams {
 	const size_t initial;        // 10
 	const size_t grow;           // 10
 };
+
+/*
+ * Key/Val
+ */
+struct SMapPair {
+	const char *key;
+	const void *val;
+};
+
+/*
+ * match against supplied data
+ */
+typedef bool (*fn_match_smap)(const char* const key, const void* const val, const void* const data);
 
 /*
  * Lifecycle
@@ -53,51 +66,54 @@ const struct SMap *smap_clone_shallow(const struct SMap* const from);
 const struct SMap *smap_clone_deep(const struct SMap* const from);
 
 // free map
-void smap_free(const struct SMap* const tab);
+void smap_free(const struct SMap* const map);
 
 // free map and vals [free_val]
-void smap_free_vals(const struct SMap* const tab);
+void smap_free_vals(const struct SMap* const map);
 
-// free iter
-void smap_iter_free(const struct SMapIter* const iter);
+// free iterator
+void smap_it_free(const struct SMapIt* const it);
 
 /*
  * Access
  */
 
 // return val, NULL if not present
-const void *smap_get(const struct SMap* const tab, const char* const key);
+const void *smap_get(const struct SMap* const map, const char* const key);
 
 // true if key is present
-bool smap_contains_key(const struct SMap* const tab, const char* const key);
+bool smap_contains_key(const struct SMap* const map, const char* const key);
 
-// create an iterator, caller must smap_iter_free or invoke smap_next until NULL
-const struct SMapIter *smap_iter(const struct SMap* const tab);
+// find the first match, {NULL,NULL} when no matches or NULL match
+struct SMapPair smap_match(const struct SMap* const map, fn_match_smap match, const void* const data);
 
-// create an iterator, filtering by equal_key and equal_val, NULL tests match all
-const struct SMapIter *smap_filter_iter(const struct SMap* const tab, fn_equal equal_key, fn_equal equal_val, const void* const data);
+// create an iterator, caller must smap_it_free or invoke smap_next until NULL
+const struct SMapIt *smap_it(const struct SMap* const map);
+
+// create an iterator filtering by match, return NULL when no matches or NULL match
+const struct SMapIt *smap_match_it(const struct SMap* const map, fn_match_smap match, const void* const data);
 
 // next iterator entry, NULL at end of map
-const struct SMapIter *smap_iter_next(const struct SMapIter* const iter);
+const struct SMapIt *smap_it_next(const struct SMapIt* const it);
 
 /*
  * Mutate
  */
 
 // set key/val, return old val if overwritten [alloc_val]
-const void *smap_put(const struct SMap* const tab, const char* const key, const void* const val);
+const void *smap_put(const struct SMap* const map, const char* const key, const void* const val);
 
 // set key/val if not present, return existing val if present [alloc_val]
-const void *smap_put_if_absent(const struct SMap* const tab, const char* const key, const void* const val);
+const void *smap_put_if_absent(const struct SMap* const map, const char* const key, const void* const val);
 
 // set key/val, free old val, return true if overwritten [alloc_val, free_val]
-bool smap_put_free(const struct SMap* const tab, const  char* const key, const void* const val);
+bool smap_put_free(const struct SMap* const map, const  char* const key, const void* const val);
 
 // remove val, return old val if present
-const void *smap_remove(const struct SMap* const tab, const char* const key);
+const void *smap_remove(const struct SMap* const map, const char* const key);
 
 // remove val, if removed free val and return true [free_val]
-bool smap_remove_free(const struct SMap* const tab, const char* const key);
+bool smap_remove_free(const struct SMap* const map, const char* const key);
 
 /*
  * Comparison
@@ -111,23 +127,23 @@ bool smap_equal(const struct SMap* const a, const struct SMap* const b);
  */
 
 // ordered keys, caller frees list and vals
-struct SList *smap_keys_slist_deep(const struct SMap* const tab);
+struct SList *smap_keys_slist_deep(const struct SMap* const map);
 
 // ordered vals, caller frees list only
-struct SList *smap_vals_slist_shallow(const struct SMap* const tab);
+struct SList *smap_vals_slist_shallow(const struct SMap* const map);
 
 // ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
-struct SList *smap_vals_slist_deep(const struct SMap* const tab);
+struct SList *smap_vals_slist_deep(const struct SMap* const map);
 
 /*
  * Info
  */
 
 // to string, user frees, format "k = str_val\n"
-char *smap_str(const struct SMap* const tab);
+char *smap_str(const struct SMap* const map);
 
 // number of entries
-size_t smap_size(const struct SMap* const tab);
+size_t smap_size(const struct SMap* const map);
 
 #endif // SMAP_H
 

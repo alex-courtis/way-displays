@@ -17,11 +17,19 @@ struct PMap; // IWYU pragma: keep
 /*
  * Entry iterator.
  */
-struct PMapIterState; // IWYU pragma: keep
-struct PMapIter {
+struct PMapItState; // IWYU pragma: keep
+struct PMapIt {
 	const void *key;
 	const void *val;
-	struct PMapIterState *st;
+	struct PMapItState *st;
+};
+
+/*
+ * Key/Val
+ */
+struct PMapPair {
+	const void *key;
+	const void *val;
 };
 
 /*
@@ -58,51 +66,54 @@ const struct PMap *pmap_clone_shallow(const struct PMap* const from);
 const struct PMap *pmap_clone_deep(const struct PMap* const from);
 
 // free map
-void pmap_free(const struct PMap* const tab);
+void pmap_free(const struct PMap* const map);
 
 // free map and vals [free_val]
-void pmap_free_vals(const struct PMap* const tab);
+void pmap_free_vals(const struct PMap* const map);
 
-// free iter
-void pmap_iter_free(const struct PMapIter* const iter);
+// free iterator
+void pmap_it_free(const struct PMapIt* const it);
 
 /*
  * Access
  */
 
 // return val, NULL if not present [equal_key]
-const void *pmap_get(const struct PMap* const tab, const void* const key);
+const void *pmap_get(const struct PMap* const map, const void* const key);
 
 // true if key is present [equal_key]
-bool pmap_contains_key(const struct PMap* const tab, const void* const key);
+bool pmap_contains_key(const struct PMap* const map, const void* const key);
 
-// create an iterator, caller must pmap_iter_free or invoke pmap_next until NULL
-const struct PMapIter *pmap_iter(const struct PMap* const tab);
+// find the first match, {NULL,NULL} when no matches or NULL match
+struct PMapPair pmap_match(const struct PMap* const map, fn_match_key_val match, const void* const data);
 
-// create an iterator filtering by equal_key and equal_val, NULL tests match all
-const struct PMapIter *pmap_filter_iter(const struct PMap* const tab, fn_equal equal_key, fn_equal equal_val, const void* const data);
+// create an iterator, caller must pmap_it_free or invoke pmap_next until NULL
+const struct PMapIt *pmap_it(const struct PMap* const map);
+
+// create an iterator filtering by match, return NULL when no matches or NULL match
+const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_key_val match, const void* const data);
 
 // next iterator entry, NULL at end of map
-const struct PMapIter *pmap_iter_next(const struct PMapIter* const iter);
+const struct PMapIt *pmap_it_next(const struct PMapIt* const it);
 
 /*
  * Mutate
  */
 
 // set key/val, return old val if overwritten [equal_key, alloc_key, alloc_val]
-const void *pmap_put(const struct PMap* const tab, const void* const key, const void* const val);
+const void *pmap_put(const struct PMap* const map, const void* const key, const void* const val);
 
 // set key/val if not present, return existing val if present [equal_key, alloc_key, alloc_val]
-const void *pmap_put_if_absent(const struct PMap* const tab, const void* const key, const void* const val);
+const void *pmap_put_if_absent(const struct PMap* const map, const void* const key, const void* const val);
 
 // set key/val, free old val, return true if overwritten [equal_key, alloc_key, alloc_val, free_key, free_val]
-bool pmap_put_free(const struct PMap* const tab, const void* const key, const void* const val);
+bool pmap_put_free(const struct PMap* const map, const void* const key, const void* const val);
 
 // remove val, return old val if present [equal_key, free_key]
-const void *pmap_remove(const struct PMap* const tab, const void* const key);
+const void *pmap_remove(const struct PMap* const map, const void* const key);
 
 // remove val, if removed free val and return true [equal_key, free_key, free_val]
-bool pmap_remove_free(const struct PMap* const tab, const void* const key);
+bool pmap_remove_free(const struct PMap* const map, const void* const key);
 
 /*
  * Comparison
@@ -116,26 +127,26 @@ bool pmap_equal(const struct PMap* const a, const struct PMap* const b);
  */
 
 // ordered keys, caller frees list only
-struct SList *pmap_keys_slist_shallow(const struct PMap* const tab);
+struct SList *pmap_keys_slist_shallow(const struct PMap* const map);
 
 // ordered keys, caller frees list list and vals, empty when NULL alloc_key [alloc_key]
-struct SList *pmap_keys_slist_deep(const struct PMap* const tab);
+struct SList *pmap_keys_slist_deep(const struct PMap* const map);
 
 // ordered vals, caller frees list only
-struct SList *pmap_vals_slist_shallow(const struct PMap* const tab);
+struct SList *pmap_vals_slist_shallow(const struct PMap* const map);
 
 // ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
-struct SList *pmap_vals_slist_deep(const struct PMap* const tab);
+struct SList *pmap_vals_slist_deep(const struct PMap* const map);
 
 /*
  * Info
  */
 
 // to string, user frees, format "str_key = str_val\n"
-char *pmap_str(const struct PMap* const tab);
+char *pmap_str(const struct PMap* const map);
 
 // number of entries
-size_t pmap_size(const struct PMap* const tab);
+size_t pmap_size(const struct PMap* const map);
 
 #endif // PMAP_H
 

@@ -12,9 +12,22 @@ struct SSet {
 	const struct PSet *pset;
 };
 
-struct SSetIterState {
-	const struct PSetIter *pit;
+struct SSetItState {
+	const struct PSetIt *pit;
 };
+
+static const struct SSetIt *it_init(const struct SSet *set, const struct PSetIt *pit) {
+	if (!pit)
+		return NULL;
+
+	struct SSetIt *it = calloc(1, sizeof(struct SSetIt));
+	it->st = calloc(1, sizeof(struct SSetItState));
+
+	it->st->pit = pit;
+	it->val = pit->val;
+
+	return it;
+}
 
 const struct SSet *sset_init(void) {
 	const struct SSetParams params = { 0 };
@@ -23,11 +36,11 @@ const struct SSet *sset_init(void) {
 
 const struct SSet *sset_init_with(const struct SSetParams params) {
 	const struct PSetParams pset_params = {
-		.equal_val = params.case_insensitive ? fn_equal_strcasecmp : fn_equal_strcmp,
+		.equal_val = params.case_insensitive ? (fn_equal)fn_equal_strcasecmp : (fn_equal)fn_equal_strcmp,
 		.alloc_val = fn_clone_strdup,
 		.free_val = (fn_free)free,
 		.clone_val = fn_clone_strdup,
-		.str_val = fn_str_or_null,
+		.str_val = (fn_str)fn_str_or_null,
 		.initial = params.initial,
 		.grow = params.grow,
 	};
@@ -59,64 +72,54 @@ void sset_free(const struct SSet* const set) {
 	free((void*)set);
 }
 
-void sset_iter_free(const struct SSetIter* const iter) {
-	if (!iter)
+void sset_it_free(const struct SSetIt* const it) {
+	if (!it)
 		return;
 
-	if (iter->st)
-		pset_iter_free(iter->st->pit);
+	if (it->st)
+		pset_it_free(it->st->pit);
 
-	free((void*)iter->st);
-	free((void*)iter);
+	free((void*)it->st);
+	free((void*)it);
 }
 
 bool sset_contains(const struct SSet* const set, const char* const val) {
 	return set ? pset_contains(set->pset, val) : false;
 }
 
-const struct SSetIter *sset_iter(const struct SSet* const set) {
-	return set ? sset_filter_iter(set, NULL, NULL) : NULL;
+const void *sset_match(const struct SSet* const set, fn_match_sset match, const void* const data) {
+	return set ? pset_match(set->pset, (fn_match_val)match, data) : NULL;
 }
 
-const struct SSetIter *sset_filter_iter(const struct SSet* const set, fn_equal equal_val, const void* const data) {
-	if (!set)
+const struct SSetIt *sset_it(const struct SSet* const set) {
+	return set ? it_init(set, pset_it(set->pset)) : NULL;
+}
+
+const struct SSetIt *sset_match_it(const struct SSet* const set, fn_match_sset match, const void* const data) {
+	return set ? it_init(set, pset_match_it(set->pset, (fn_match_val)match, data)) : NULL;
+}
+
+const struct SSetIt *sset_it_next(const struct SSetIt* const cit) {
+	if (!cit)
 		return NULL;
 
-	const struct PSetIter *pit = pset_filter_iter(set->pset, equal_val, data);
+	struct SSetIt *it = (struct SSetIt*)cit;
 
-	if (!pit)
+	if (!it->st) {
+		sset_it_free(it);
 		return NULL;
+	}
 
-	struct SSetIter *it = calloc(1, sizeof(struct SSetIter));
-	it->st = calloc(1, sizeof(struct SSetIterState));
+	it->st->pit = pset_it_next(cit->st->pit);
 
-	it->st->pit = pit;
-	it->val = pit->val;
+	if (it->st->pit) {
+		it->val = it->st->pit->val;
+	} else {
+		sset_it_free(it);
+		it = NULL;
+	}
 
 	return it;
-}
-
-const struct SSetIter *sset_iter_next(const struct SSetIter* const citer) {
-	if (!citer)
-		return NULL;
-
-	struct SSetIter *iter = (struct SSetIter*)citer;
-
-	if (!iter->st) {
-		sset_iter_free(iter);
-		return NULL;
-	}
-
-	iter->st->pit = pset_iter_next(citer->st->pit);
-
-	if (iter->st->pit) {
-		iter->val = iter->st->pit->val;
-	} else {
-		sset_iter_free(iter);
-		iter = NULL;
-	}
-
-	return iter;
 }
 
 bool sset_add(const struct SSet* const set, const char* const val) {
@@ -129,7 +132,7 @@ bool sset_remove(const struct SSet* const set, const char* const val) {
 
 void sset_sort(const struct SSet* const set) {
 	if (set)
-		pset_sort(set->pset, set->params.case_insensitive ? fn_less_than_strcasecmp : fn_less_than_strcmp);
+		pset_sort(set->pset, set->params.case_insensitive ? (fn_equal)fn_less_than_strcasecmp : (fn_equal)fn_less_than_strcmp);
 }
 
 bool sset_equal(const struct SSet* const a, const struct SSet* const b) {

@@ -634,7 +634,7 @@ struct SList *yaml_seq_to_log_cap_lines(struct UC *c, const yaml_node_t *seq) {
 			return NULL;
 
 		// unmarshal many pairs even though schema specifies exactly one
-		for (const struct SMapIter *i = smap_iter(nodes_line); i; i = smap_iter_next(i)) {
+		for (const struct SMapIt *i = smap_it(nodes_line); i; i = smap_it_next(i)) {
 
 			enum LogThreshold threshold = log_threshold_val(i->key);
 			char *line = yaml_scalar_to_string(c, i->val);

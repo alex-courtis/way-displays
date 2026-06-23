@@ -12,13 +12,13 @@ typedef bool (*fn_equal)(const void* const a, const void* const b);
 bool fn_equal_ptr(const void* const a, const void* const b);
 
 // true if both NULL or strcmp(a, b) == 0
-bool fn_equal_strcmp(const void* const a, const void* const b);
+bool fn_equal_strcmp(const char* const a, const char* const b);
 
 // true if both NULL or strcasecmp(a, b) == 0
-bool fn_equal_strcasecmp(const void* const a, const void* const b);
+bool fn_equal_strcasecmp(const char* const a, const char* const b);
 
 // true if both NULL or strstr(a, b)
-bool fn_equal_strstr(const void* const a, const void* const b);
+bool fn_equal_strstr(const char* const a, const char* const b);
 
 //
 // a < b
@@ -26,10 +26,17 @@ bool fn_equal_strstr(const void* const a, const void* const b);
 typedef bool (*fn_less_than)(const void* const a, const void* const b);
 
 // strcmp(a, b) <= 0
-bool fn_less_than_strcmp(const void* const a, const void* const b);
+bool fn_less_than_strcmp(const char* const a, const char* const b);
 
 // strcasecmp(a, b) < 0
-bool fn_less_than_strcasecmp(const void* const a, const void* const b);
+bool fn_less_than_strcasecmp(const char* const a, const char* const b);
+
+//
+// match against supplied data
+//
+typedef bool (*fn_match_val)(const void* const val, const void* const data);
+
+typedef bool (*fn_match_key_val)(const void* const key, const void* const val, const void* const data);
 
 //
 // arbitrary test
@@ -60,6 +67,6 @@ typedef void* (*fn_alloc)(const void* const val);
 typedef char* (*fn_str)(const void* const val);
 
 // val or "(null)"
-char *fn_str_or_null(const void* const val);
+char *fn_str_or_null(const char* const val);
 
 #endif // FN_H

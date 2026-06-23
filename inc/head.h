@@ -81,7 +81,7 @@ bool head_matches_name_desc_partial(const void * const head, const void * const 
 
 bool head_matches_name_desc(const void * const head, const void * const name_desc);
 
-bool head_name_desc_matches_head(const void * const name_desc, const void * const head);
+bool head_name_desc_matches_head(const char * const name_desc, const void * const head);
 
 bool head_disabled_matches_head(const void * const d, const void * const h);
 

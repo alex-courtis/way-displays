@@ -146,7 +146,7 @@ bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sse
 	if (!k || !seq)
 		return false;
 
-	for (const struct SSetIter *it = sset_iter(sset); it; it = sset_iter_next(it)) {
+	for (const struct SSetIt *it = sset_it(sset); it; it = sset_it_next(it)) {
 		if (!fn(c, it->val, seq))
 			return false;
 	}
@@ -167,7 +167,7 @@ bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pse
 	if (!k || !seq)
 		return false;
 
-	for (const struct PSetIter *it = pset_iter(pset); it; it = pset_iter_next(it)) {
+	for (const struct PSetIt *it = pset_it(pset); it; it = pset_it_next(it)) {
 		if (!fn(c, it->val, seq))
 			return false;
 	}
@@ -188,7 +188,7 @@ bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* sma
 	if (!k || !seq)
 		return false;
 
-	for (const struct SMapIter *it = smap_iter(smap); it; it = smap_iter_next(it)) {
+	for (const struct SMapIt *it = smap_it(smap); it; it = smap_it_next(it)) {
 		if (!fn(c, it->key, it->val, seq))
 			return false;
 	}

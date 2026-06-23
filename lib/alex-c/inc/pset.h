@@ -17,10 +17,10 @@ struct PSet; // IWYU pragma: keep
 /*
  * Entry iterator.
  */
-struct PSetIterState; // IWYU pragma: keep
-struct PSetIter {
+struct PSetItState; // IWYU pragma: keep
+struct PSetIt {
 	const void* val;
-	struct PSetIterState *st;
+	struct PSetItState *st;
 };
 
 /*
@@ -58,8 +58,8 @@ void pset_free(const struct PSet* const set);
 // free set and vals [free_val]
 void pset_free_vals(const struct PSet* const set);
 
-// free iter
-void pset_iter_free(const struct PSetIter* const iter);
+// free iterator
+void pset_it_free(const struct PSetIt* const it);
 
 /*
  * Access
@@ -68,14 +68,17 @@ void pset_iter_free(const struct PSetIter* const iter);
 // true if this set contains the specified element [equal_val]
 bool pset_contains(const struct PSet* const set, const void* const val);
 
-// create an iterator, caller must pset_iter_free or invoke pset_next until NULL
-const struct PSetIter *pset_iter(const struct PSet* const set);
+// find the first match, NULL when no match or NULL match
+const void *pset_match(const struct PSet* const set, fn_match_val match, const void* const data);
 
-// create an iterator filtering by equal_val, NULL equal_val matches all
-const struct PSetIter *pset_filter_iter(const struct PSet* const set, fn_equal equal_val, const void* const data);
+// create an iterator, caller must pset_it_free or invoke pset_next until NULL
+const struct PSetIt *pset_it(const struct PSet* const set);
+
+// create an iterator filtering by match, return NULL when no matches or NULL match
+const struct PSetIt *pset_match_it(const struct PSet* const set, fn_match_val match, const void* const data);
 
 // next iterator value, NULL at end of set
-const struct PSetIter *pset_iter_next(const struct PSetIter* const iter);
+const struct PSetIt *pset_it_next(const struct PSetIt* const it);
 
 /*
  * Mutate

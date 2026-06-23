@@ -147,8 +147,6 @@ void validate_fix(struct Cfg *cfg);
 //
 struct Cfg *cfg_init(void);
 
-struct Cfg *cfg_default(void);
-
 void cfg_apply_defaults(struct Cfg *cfg);
 
 struct UserScale *cfg_user_scale_init(const char *name_desc, const float scale);

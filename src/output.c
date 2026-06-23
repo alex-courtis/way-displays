@@ -50,11 +50,12 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output
 	return output;
 }
 
+// TODO change to a _match after writing a unit test
 const struct Output *output_for_name(const char *name) {
 	const struct Output *output = NULL;
 
-	const struct IMapIter *i = NULL;
-	for (i = imap_iter(outputs); i; i = imap_iter_next(i)) {
+	const struct IMapIt *i = NULL;
+	for (i = imap_it(outputs); i; i = imap_it_next(i)) {
 		output = i->val;
 		if (output && output->name && strcmp(output->name, name) == 0) {
 			break;
@@ -62,7 +63,7 @@ const struct Output *output_for_name(const char *name) {
 			output = NULL;
 		}
 	}
-	imap_iter_free(i);
+	imap_it_free(i);
 
 	return output;
 }

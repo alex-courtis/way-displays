@@ -86,6 +86,8 @@ static struct Mode *max_mode(const struct Head * const head) {
 	return max;
 }
 
+// TODO normalise all these matchers
+
 bool head_matches_name_desc_regex(const void * const h, const void * const n) {
 	const struct Head *head = h;
 	const char *name_desc = n;
@@ -140,8 +142,12 @@ bool head_matches_name_desc(const void * const h, const void * const n) {
 		head_matches_name_desc_fuzzy(h, n);
 }
 
-bool head_name_desc_matches_head(const void * const n, const void * const h) {
-	return head_matches_name_desc(h, n);
+static bool head_name_desc_x_matches_head(const char * const name_desc, const void * const x, const void * const head) {
+	return head_matches_name_desc(head, name_desc);
+}
+
+bool head_name_desc_matches_head(const char * const name_desc, const void * const head) {
+	return head_matches_name_desc(head, name_desc);
 }
 
 bool head_matches_name_desc_exact(const void * const h, const void * const n) {
@@ -256,8 +262,7 @@ void head_set_scaled_dimensions(struct Head * const head) {
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	const struct PSetIter *it = pset_filter_iter(cfg->disableds, head_disabled_matches_head, head);
-	if (it) {
+	if (pset_match(cfg->disableds, head_disabled_matches_head, head)) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);
@@ -272,7 +277,6 @@ void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
 			head->overrided_enabled = NoOverride;
 		}
 	}
-	pset_iter_free(it);
 }
 
 struct Mode *head_find_mode(struct Head * const head) {
@@ -288,27 +292,23 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 	struct Mode *mode = NULL;
 
-	// TODO SMap _find_key/val
-	const struct SMapIter *it = smap_filter_iter(g_cfg->user_modes, head_name_desc_matches_head, NULL, head);
-	struct UserMode *um = it ? (struct UserMode*)it->val : NULL;
-	smap_iter_free(it);
-
 	// maybe a user mode
-	if (um) {
-		mode = mode_user_mode(head->modes, head->modes_failed, um);
-		if (!mode && !um->warned_no_mode) {
-			um->warned_no_mode = true;
+	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, head_name_desc_x_matches_head, head).val;
+	if (user_mode) {
+		mode = mode_user_mode(head->modes, head->modes_failed, user_mode);
+		if (!mode && !user_mode->warned_no_mode) {
+			user_mode->warned_no_mode = true;
 
-			char *um_str = info_user_mode_string(um);
+			char *user_mode_str = info_user_mode_string(user_mode);
 
 			log_warn(NULL);
-			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, um_str);
+			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, user_mode_str);
 
-			char *human = sprintf_alloc("%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), um_str);
+			char *human = sprintf_alloc("%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), user_mode_str);
 
 			call_back(WARNING, human, NULL);
 
-			free(um_str);
+			free(user_mode_str);
 			free(human);
 		}
 	}

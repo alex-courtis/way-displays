@@ -276,8 +276,8 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		fn_equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
 		a->laptop_lid_monitor == b->laptop_lid_monitor &&
 		a->log_threshold == b->log_threshold &&
-		slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, fn_equal_strcmp) &&
-		slist_equal(a->order_name_desc, b->order_name_desc, fn_equal_strcmp) &&
+		slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, (fn_equal)fn_equal_strcmp) &&
+		slist_equal(a->order_name_desc, b->order_name_desc, (fn_equal)fn_equal_strcmp) &&
 		a->scale_round_strategy == b->scale_round_strategy &&
 		a->scale_round_to == b->scale_round_to &&
 		a->scaling == b->scaling &&
@@ -491,16 +491,11 @@ void validate_fix(struct Cfg *cfg) {
 	slist_remove_all_free(&cfg->user_scales, invalid_user_scale, NULL, cfg_user_scale_free);
 	remove_duplicate_user_scales(cfg);
 
-	// TODO SMap remove if or find, depends on whether we get many similar cases
-	// TODO SMap filter take an equal with key and val params
-	const struct SMap *unfiltered = cfg->user_modes;
-	cfg->user_modes = user_mode_smap_init();
-	for (const struct SMapIter *it = smap_iter(unfiltered); it; it = smap_iter_next(it)) {
-		if (!user_mode_invalid(it->key, it->val)) {
-			smap_put(cfg->user_modes, it->key, user_mode_clone(it->val));
-		}
+	// TODO SMap remove_match, depends on whether we get many similar cases
+	const char *name_desc;
+	while ((name_desc = smap_match(cfg->user_modes, (fn_match_smap)user_mode_invalid, NULL).key)) {
+		smap_remove_free(cfg->user_modes, name_desc);
 	}
-	smap_free_vals(unfiltered);
 
 	remove_duplicate_user_transforms(cfg);
 }
@@ -512,7 +507,7 @@ static void warn_ambiguous_name_desc_list(const struct SList *name_desc, const c
 }
 
 static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const char * const element) {
-	for (const struct SSetIter *it = sset_iter(name_descs); it; it = sset_iter_next(it)) {
+	for (const struct SSetIt *it = sset_it(name_descs); it; it = sset_it_next(it)) {
 		warn_ambiguous_name_desc(it->val, element);
 	}
 }
@@ -527,12 +522,8 @@ void validate_warn(struct Cfg *cfg) {
 		const struct UserScale *user_scale = (struct UserScale*)i->val;
 		warn_ambiguous_name_desc(user_scale->name_desc, "SCALE");
 	}
-	for (const struct SMapIter *it = smap_iter(cfg->user_modes); it; it = smap_iter_next(it)) {
-		// TODO SMap may a no-nulls allowed version of maps
-		const struct UserMode *user_mode = (struct UserMode*)it->val;
-		if (user_mode) {
-			warn_ambiguous_name_desc(it->key, "MODE");
-		}
+	for (const struct SMapIt  *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
+		warn_ambiguous_name_desc(it->key, "MODE");
 	}
 	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
 		if (!i->val)
@@ -545,7 +536,7 @@ void validate_warn(struct Cfg *cfg) {
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, "VRR_OFF");
 	warn_ambiguous_name_desc_list(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
 
-	for (const struct PSetIter *it = pset_iter(cfg->disableds); it; it = pset_iter_next(it)) {
+	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 		struct Disabled *disabled = (struct Disabled*)it->val;
 		warn_ambiguous_name_desc((const char*)disabled->name_desc, "DISABLED");
 
@@ -621,7 +612,7 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// MODE
-	for (const struct SMapIter *it = smap_iter(from->user_modes); it; it = smap_iter_next(it)) {
+	for (const struct SMapIt *it = smap_it(from->user_modes); it; it = smap_it_next(it)) {
 		smap_put_free(merged->user_modes, it->key, user_mode_clone(it->val));
 	}
 
@@ -639,12 +630,12 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	for (const struct SSetIter *it = sset_iter(from->adaptive_sync_off); it; it = sset_iter_next(it)) {
+	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
 		sset_add(merged->adaptive_sync_off, it->val);
 	}
 
 	// DISABLED
-	for (const struct PSetIter *it = pset_iter(from->disableds); it; it = pset_iter_next(it)) {
+	for (const struct PSetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
 		const struct Disabled *d = disabled_clone(it->val);
 		if (!pset_add(merged->disableds, d)) {
 			disabled_free(d);
@@ -677,7 +668,7 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// MODE
-	for (const struct SMapIter *it = smap_iter(from->user_modes); it; it = smap_iter_next(it)) {
+	for (const struct SMapIt *it = smap_it(from->user_modes); it; it = smap_it_next(it)) {
 		smap_remove_free(merged->user_modes, it->key);
 	}
 
@@ -688,13 +679,13 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 
 	// TODO SSet remove_set
 	// VRR_OFF
-	for (const struct SSetIter *it = sset_iter(from->adaptive_sync_off); it; it = sset_iter_next(it)) {
+	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
 		sset_remove(merged->adaptive_sync_off, it->val);
 	}
 
 	// TODO PSet remove_set
 	// DISABLED
-	for (const struct PSetIter *it = pset_iter(from->disableds); it; it = pset_iter_next(it)) {
+	for (const struct PSetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
 		pset_remove_free(merged->disableds, it->val);
 	}
 
@@ -725,7 +716,7 @@ struct Cfg *merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	for (const struct SSetIter *it = sset_iter(from->adaptive_sync_off); it; it = sset_iter_next(it)) {
+	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
 		if (!sset_remove(merged->adaptive_sync_off, it->val)) {
 			sset_add(merged->adaptive_sync_off, it->val);
 		}

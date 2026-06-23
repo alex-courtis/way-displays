@@ -33,8 +33,8 @@ bool fn_equal_condition(const void *a, const void *b) {
 	struct Condition *lhs = (struct Condition*)a;
 	struct Condition *rhs = (struct Condition*)b;
 
-	return slist_equal(lhs->plugged, rhs->plugged, fn_equal_strcmp) &&
-	       slist_equal(lhs->unplugged, rhs->unplugged, fn_equal_strcmp) &&
+	return slist_equal(lhs->plugged, rhs->plugged, (fn_equal)fn_equal_strcmp) &&
+	       slist_equal(lhs->unplugged, rhs->unplugged, (fn_equal)fn_equal_strcmp) &&
 		   lhs->lid == rhs->lid;
 }
 

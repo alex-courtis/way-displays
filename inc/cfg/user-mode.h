@@ -20,7 +20,7 @@ const struct SMap *user_mode_smap_init(void);
 
 void* user_mode_clone(const void* const val);
 
-bool user_mode_invalid(const char *name_desc, const struct UserMode *user_mode);
+bool user_mode_invalid(const char *name_desc, const struct UserMode *user_mode, const void* const data);
 
 void user_mode_free(const void *val);
 

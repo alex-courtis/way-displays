@@ -9,16 +9,55 @@ bool mock_equal(const void* const a, const void* const b) {
 	return mock_type(bool);
 }
 
-bool mock_equal_size_t(const size_t a, const void* const b) {
-	check_expected_int(a);
+bool mock_less_than(const void* const a, const void* const b) {
+	check_expected_ptr(a);
 	check_expected_ptr(b);
 
 	return mock_type(bool);
 }
 
-bool mock_less_than(const void* const a, const void* const b) {
-	check_expected_ptr(a);
-	check_expected_ptr(b);
+bool mock_match_val(const void* const val, const void* const data) {
+	check_expected_ptr(val);
+	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
+bool mock_match_key_val(const void* const key, const void* const val, const void* const data) {
+	check_expected_ptr(key);
+	check_expected_ptr(val);
+	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
+bool mock_match_smap(const char *key, const void* const val, const void* const data) {
+	check_expected_ptr(key);
+	check_expected_ptr(val);
+	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
+bool mock_match_smaps(const char *key, const char* const val, const void* const data) {
+	check_expected_ptr(key);
+	check_expected_ptr(val);
+	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
+bool mock_match_sset(const char* const val, const void* const data) {
+	check_expected_ptr(val);
+	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
+bool mock_match_imap(const size_t key, const void* const val, const void* const data) {
+	check_expected_int(key);
+	check_expected_ptr(val);
+	check_expected_ptr(data);
 
 	return mock_type(bool);
 }

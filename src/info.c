@@ -185,7 +185,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (smap_size(cfg->user_modes) > 0) {
 		log_(t, "  Mode:");
-		for (const struct SMapIter *it = smap_iter(cfg->user_modes); it; it = smap_iter_next(it)) {
+		for (const struct SMapIt *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
 			print_user_mode(t, it->key, it->val, del);
 		}
 	}
@@ -212,7 +212,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (pset_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
-		for (const struct PSetIter *it = pset_iter(cfg->disableds); it; it = pset_iter_next(it)) {
+		for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 			print_disabled(t, it->val);
 		}
 	}
@@ -282,7 +282,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 	newline = true;
 
-	for (const struct SMapIter *it = smap_iter(cfg->user_modes); it; it = smap_iter_next(it)) {
+	for (const struct SMapIt *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
 		struct UserMode *user_mode = (struct UserMode*)it->val;
 
 		char *msg;
@@ -308,7 +308,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct PSetIter *it = pset_iter(cfg->disableds); it; it = pset_iter_next(it)) {
+	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 		const struct Disabled* d = it->val;
 		if (!d->conditions) {
 			print_newline(t, &newline);
@@ -317,7 +317,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct SSetIter *it = sset_iter(cfg->adaptive_sync_off); it; it = sset_iter_next(it)) {
+	for (const struct SSetIt *it = sset_it(cfg->adaptive_sync_off); it; it = sset_it_next(it)) {
 		print_newline(t, &newline);
 		log_(t, "way-displays -s VRR_OFF '%s'", (char*)it->val);
 	}

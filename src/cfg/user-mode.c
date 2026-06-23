@@ -40,7 +40,7 @@ void* user_mode_clone(const void* const val) {
 	return clone;
 }
 
-bool user_mode_invalid(const char *name_desc, const struct UserMode *user_mode) {
+bool user_mode_invalid(const char* const name_desc, const struct UserMode* const user_mode, const void* const data) {
 	if (!user_mode || !name_desc) {
 		return true;
 	}

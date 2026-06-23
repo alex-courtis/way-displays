@@ -162,7 +162,7 @@ void desire_enabled(struct Head *head) {
 	enabled |= slist_length(g_heads) == 1;
 
 	// iterate over all matching NAME_DESC's and evaluate their conditions
-	for (const struct PSetIter *it = pset_filter_iter(g_cfg->disableds, head_disabled_matches_head, head); it; it = pset_iter_next(it)) {
+	for (const struct PSetIt *it = pset_match_it(g_cfg->disableds, head_disabled_matches_head, head); it; it = pset_it_next(it)) {
 		enabled &= !condition_list_evaluate(((struct Disabled*)it->val)->conditions);
 	}
 
@@ -263,14 +263,11 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	// TODO SSet _find_val
-	const struct SSetIter *it = sset_filter_iter(g_cfg->adaptive_sync_off, head_name_desc_matches_head, head);
-	if (it) {
+	if (sset_match(g_cfg->adaptive_sync_off, head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	}
-	sset_iter_free(it);
 }
 
 void desire_reapply(struct Head *head) {
