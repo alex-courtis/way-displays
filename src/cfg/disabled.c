@@ -6,6 +6,7 @@
 
 #include "cfg.h"
 #include "conditions.h"
+#include "fn.h"
 #include "pset.h"
 #include "slist.h"
 

@@ -4,6 +4,7 @@
 
 #include "cfg.h"
 #include "convert.h"
+#include "fn.h"
 #include "head.h"
 #include "ipc.h"
 #include "log.h"
@@ -69,7 +70,7 @@ main(int argc, char **argv) {
 			}
 		}
 
-		slist_free_vals(&responses, ipc_response_free);
+		slist_free_vals(&responses, (fn_free)ipc_response_free);
 		free(yaml);
 	}
 

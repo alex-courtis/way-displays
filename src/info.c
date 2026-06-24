@@ -13,6 +13,7 @@
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
 #include "convert.h"
+#include "fn.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"

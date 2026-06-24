@@ -16,6 +16,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
+#include "fn.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"

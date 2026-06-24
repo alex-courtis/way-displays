@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "cfg.h"
+#include "fn.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"

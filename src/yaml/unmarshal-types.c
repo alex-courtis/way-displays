@@ -14,6 +14,7 @@
 #include "cfg/user-transform.h"
 #include "conditions.h"
 #include "convert.h"
+#include "fn.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"

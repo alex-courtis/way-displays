@@ -7,6 +7,7 @@
 #include "client.h"
 
 #include "convert.h"
+#include "fn.h"
 #include "info.h"
 #include "ipc.h"
 #include "log.h"

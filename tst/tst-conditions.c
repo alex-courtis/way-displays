@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fn.h"
 #include "head.h"
 #include "lid.h"
 #include "slist.h"
