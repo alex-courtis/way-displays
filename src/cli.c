@@ -101,7 +101,6 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 				case CFG_SET:
 					// parse input value
 					user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-					user_scale->name_desc = strdup(argv[optind]);
 					parsed = ((user_scale->scale = strtof(argv[optind + 1], NULL)) > 0);
 					smap_put(cfg->user_scales, argv[optind], user_scale);
 					break;

@@ -176,10 +176,10 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 struct Cfg *cfg_init(void) {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
-	cfg->user_modes =        user_mode_smap_init();
 	cfg->adaptive_sync_off = sset_init();
 	cfg->disableds =         disabled_pset_init();
-	cfg->user_scales =  user_scale_smap_init();
+	cfg->user_modes =        user_mode_smap_init();
+	cfg->user_scales =       user_scale_smap_init();
 
 	return cfg;
 }

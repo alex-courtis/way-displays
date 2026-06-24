@@ -326,7 +326,6 @@ void yaml_map_into_user_scales(struct UC *c, const void *col, const yaml_node_t 
 	const yaml_node_t *scalar = smap_get(nodes, "NAME_DESC");
 	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto err;
-	user_scale->name_desc = strdup(name_desc);
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 

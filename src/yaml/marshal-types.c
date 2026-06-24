@@ -270,7 +270,7 @@ bool yaml_seq_append_user_scale(struct MC *c, const char * name_desc, const stru
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
-		yaml_map_add_str(c, "NAME_DESC", user_scale->name_desc, map) &&
+		yaml_map_add_str(c, "NAME_DESC", name_desc, map) &&
 		yaml_map_add_float_nz(c, "SCALE", user_scale->scale, map) &&
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }

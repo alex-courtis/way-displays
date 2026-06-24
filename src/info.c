@@ -177,9 +177,9 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		for (const struct SMapIt *it = smap_it(cfg->user_scales); it; it = smap_it_next(it)) {
 			struct UserScale *user_scale = (struct UserScale*)it->val;
 			if (del) {
-				log_(t, "    %s", user_scale->name_desc);
+				log_(t, "    %s", it->key);
 			} else {
-				log_(t, "    %s: %.3f", user_scale->name_desc, user_scale->scale);
+				log_(t, "    %s: %.3f", it->key, user_scale->scale);
 			}
 		}
 	}
@@ -277,7 +277,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 		struct UserScale *user_scale = (struct UserScale*)it->val;
 		char *msg = sprintf_alloc("%.3f", user_scale->scale);
 		print_newline(t, &newline);
-		log_(t, "way-displays -s SCALE '%s' %s", user_scale->name_desc, msg);
+		log_(t, "way-displays -s SCALE '%s' %s", it->key, msg);
 		free(msg);
 	}
 

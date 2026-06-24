@@ -8,6 +8,7 @@
 #include "mode.h"
 #include "smap.h"
 
+// TODO type these
 static bool user_mode_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;

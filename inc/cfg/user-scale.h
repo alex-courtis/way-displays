@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 struct UserScale {
-	char *name_desc;
 	float scale;
 };
 
