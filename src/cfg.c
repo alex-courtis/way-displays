@@ -362,7 +362,7 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 
 	// TRANSFORM
 	for (const struct SMapIt *it = smap_it(from->user_transforms); it; it = smap_it_next(it)) {
-		smap_put_free(merged->user_transforms, it->key, fn_clone_cfg_user_transform(it->val));
+		smap_put_free(merged->user_transforms, it->key, user_transform_clone(it->val));
 	}
 
 	// VRR_OFF
@@ -374,7 +374,7 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	for (const struct PSetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
 		const struct Disabled *d = disabled_clone(it->val);
 		if (!pset_add(merged->disableds, d)) {
-			disabled_free(d);
+			disabled_free((struct Disabled*)d);
 		}
 	}
 

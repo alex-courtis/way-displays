@@ -160,15 +160,15 @@ static void merge_set__scale_round_strategy(void **state) {
 static void merge_set__user_scale(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_scales, "to", user_scale_init("to", 1));
-	smap_put(s->to->user_scales, "both", user_scale_init("both", 2));
+	smap_put(s->to->user_scales, "to", user_scale_init(1));
+	smap_put(s->to->user_scales, "both", user_scale_init(2));
 
-	smap_put(s->from->user_scales, "from", user_scale_init("from", 3));
-	smap_put(s->from->user_scales, "both", user_scale_init("both", 4));
+	smap_put(s->from->user_scales, "from", user_scale_init(3));
+	smap_put(s->from->user_scales, "both", user_scale_init(4));
 
-	smap_put(s->expected->user_scales, "to", user_scale_init("to", 1));
-	smap_put(s->expected->user_scales, "both", user_scale_init("both", 4));
-	smap_put(s->expected->user_scales, "from", user_scale_init("from", 3));
+	smap_put(s->expected->user_scales, "to", user_scale_init(1));
+	smap_put(s->expected->user_scales, "both", user_scale_init(4));
+	smap_put(s->expected->user_scales, "from", user_scale_init(3));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -204,15 +204,15 @@ static void merge_set__user_transform(void **state) {
 static void merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_modes, "to", user_mode_init("to", false, 1, 2, 3, false));
-	smap_put(s->to->user_modes, "both", user_mode_init("both", false, 4, 5, 6, false));
+	smap_put(s->to->user_modes, "to", user_mode_init(false, 1, 2, 3, false));
+	smap_put(s->to->user_modes, "both", user_mode_init(false, 4, 5, 6, false));
 
-	smap_put(s->from->user_modes, "from", user_mode_init("from", false, 7, 8, 9, true));
-	smap_put(s->from->user_modes, "both", user_mode_init("both", false, 10, 11, 12, true));
+	smap_put(s->from->user_modes, "from", user_mode_init(false, 7, 8, 9, true));
+	smap_put(s->from->user_modes, "both", user_mode_init(false, 10, 11, 12, true));
 
-	smap_put(s->expected->user_modes, "to", user_mode_init("to", false, 1, 2, 3, false));
-	smap_put(s->expected->user_modes, "both", user_mode_init("both", false, 10, 11, 12, true));
-	smap_put(s->expected->user_modes, "from", user_mode_init("from", false, 7, 8, 9, true));
+	smap_put(s->expected->user_modes, "to", user_mode_init(false, 1, 2, 3, false));
+	smap_put(s->expected->user_modes, "both", user_mode_init(false, 10, 11, 12, true));
+	smap_put(s->expected->user_modes, "from", user_mode_init(false, 7, 8, 9, true));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -311,13 +311,13 @@ static void merge_set__callback_cmd(void **state) {
 static void merge_del__scale(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_scales, "1", user_scale_init("1", 1));
-	smap_put(s->to->user_scales, "2", user_scale_init("2", 2));
+	smap_put(s->to->user_scales, "1", user_scale_init(1));
+	smap_put(s->to->user_scales, "2", user_scale_init(2));
 
-	smap_put(s->from->user_scales, "2", user_scale_init("2", 3));
-	smap_put(s->from->user_scales, "3", user_scale_init("3", 4));
+	smap_put(s->from->user_scales, "2", user_scale_init(3));
+	smap_put(s->from->user_scales, "3", user_scale_init(4));
 
-	smap_put(s->expected->user_scales, "1", user_scale_init("1", 1));
+	smap_put(s->expected->user_scales, "1", user_scale_init(1));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -331,13 +331,13 @@ static void merge_del__scale(void **state) {
 static void merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_modes, "1", user_mode_init("1", false, 1, 1, 1, false));
-	smap_put(s->to->user_modes, "2", user_mode_init("2", false, 2, 2, 2, false));
+	smap_put(s->to->user_modes, "1", user_mode_init(false, 1, 1, 1, false));
+	smap_put(s->to->user_modes, "2", user_mode_init(false, 2, 2, 2, false));
 
-	smap_put(s->from->user_modes, "2", user_mode_init("2", false, 2, 2, 2, false));
-	smap_put(s->from->user_modes, "3", user_mode_init("3", false, 3, 3, 3, false));
+	smap_put(s->from->user_modes, "2", user_mode_init(false, 2, 2, 2, false));
+	smap_put(s->from->user_modes, "3", user_mode_init(false, 3, 3, 3, false));
 
-	smap_put(s->from->user_modes, "1", user_mode_init("1", false, 1, 1, 1, false));
+	smap_put(s->from->user_modes, "1", user_mode_init(false, 1, 1, 1, false));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -528,13 +528,13 @@ static void validate_fix__row(void **state) {
 static void validate_fix__user_scale(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->from->user_scales, "ok", user_scale_init("ok", 1));
+	smap_put(s->from->user_scales, "ok", user_scale_init(1));
 
-	smap_put(s->from->user_scales, "neg", user_scale_init("neg", -1));
+	smap_put(s->from->user_scales, "neg", user_scale_init(-1));
 
-	smap_put(s->from->user_scales, "zero", user_scale_init("zero", 0));
+	smap_put(s->from->user_scales, "zero", user_scale_init(0));
 
-	smap_put(s->from->user_scales, "another", user_scale_init("dup", 3));
+	smap_put(s->from->user_scales, "another", user_scale_init(3));
 
 	validate_fix(s->from);
 
@@ -542,8 +542,8 @@ static void validate_fix__user_scale(void **state) {
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
-	smap_put(s->expected->user_scales, "ok", user_scale_init("ok", 1));
-	smap_put(s->expected->user_scales, "another", user_scale_init("dup", 3));
+	smap_put(s->expected->user_scales, "ok", user_scale_init(1));
+	smap_put(s->expected->user_scales, "another", user_scale_init(3));
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -553,18 +553,18 @@ static void validate_fix__user_scale(void **state) {
 static void validate_fix__user_mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->from->user_modes, "ok", user_mode_init("ok", false, 1, 2, 3, false));
-	smap_put(s->from->user_modes, "max", user_mode_init("max", true, -1, -1, -1, false));
+	smap_put(s->from->user_modes, "ok", user_mode_init(false, 1, 2, 3, false));
+	smap_put(s->from->user_modes, "max", user_mode_init(true, -1, -1, -1, false));
 
-	smap_put(s->from->user_modes, "negative width", user_mode_init("negative width", false, -99, 2, 3, false));
+	smap_put(s->from->user_modes, "negative width", user_mode_init(false, -99, 2, 3, false));
 
-	smap_put(s->from->user_modes, "negative height", user_mode_init("negative height", false, 1, -99, 3, false));
+	smap_put(s->from->user_modes, "negative height", user_mode_init(false, 1, -99, 3, false));
 
-	smap_put(s->from->user_modes, "negative hz", user_mode_init("negative hz", false, 1, 2, -12340, false));
+	smap_put(s->from->user_modes, "negative hz", user_mode_init(false, 1, 2, -12340, false));
 
-	smap_put(s->from->user_modes, "missing width", user_mode_init("missing width", false, -1, 2, 3, false));
+	smap_put(s->from->user_modes, "missing width", user_mode_init(false, -1, 2, 3, false));
 
-	smap_put(s->from->user_modes, "missing height", user_mode_init("missing height", false, 1, -1, 3, false));
+	smap_put(s->from->user_modes, "missing height", user_mode_init(false, 1, -1, 3, false));
 
 	validate_fix(s->from);
 
@@ -572,8 +572,8 @@ static void validate_fix__user_mode(void **state) {
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
-	smap_put(s->expected->user_modes, "ok", user_mode_init("ok", false, 1, 2, 3, false));
-	smap_put(s->expected->user_modes, "max", user_mode_init("max", true, -1, -1, -1, false));
+	smap_put(s->expected->user_modes, "ok", user_mode_init(false, 1, 2, 3, false));
+	smap_put(s->expected->user_modes, "max", user_mode_init(true, -1, -1, -1, false));
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -598,13 +598,13 @@ static void validate_fix__auto_scale_dpi(void **state) {
 static void validate_warn__(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->expected->user_scales, "sss", user_scale_init("sss", 1));
-	smap_put(s->expected->user_scales, "ssssssss", user_scale_init("ssssssss", 2));
-	smap_put(s->expected->user_scales, "DP-1", user_scale_init("DP-1", 3));
+	smap_put(s->expected->user_scales, "sss", user_scale_init(1));
+	smap_put(s->expected->user_scales, "ssssssss", user_scale_init(2));
+	smap_put(s->expected->user_scales, "DP-1", user_scale_init(3));
 
-	smap_put(s->expected->user_modes, "mmm", user_mode_init("mmm", false, 1, 1, 1, false));
-	smap_put(s->expected->user_modes, "mmmmmmmm", user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
-	smap_put(s->expected->user_modes, "DP-1", user_mode_init("DP-1", false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "mmm", user_mode_init(false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "mmmmmmmm", user_mode_init(false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "DP-1", user_mode_init(false, 1, 1, 1, false));
 
 	smap_put(s->expected->user_transforms, "ttt", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_180));
 	smap_put(s->expected->user_transforms, "tttttttttt", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_270));

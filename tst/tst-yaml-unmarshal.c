@@ -125,7 +125,7 @@ static void yaml_root_to_cfg__transform(void **state) {
 
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->user_scales, "three", user_scale_init("three", 3));
+	smap_put(expected->user_scales, "three", user_scale_init(3));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
 }
@@ -133,9 +133,9 @@ static void yaml_root_to_cfg__scale(void **state) {
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	smap_put(expected->user_modes, "max_override", user_mode_init("max_override", true, 1920, 1080, 12340, false));
-	smap_put(expected->user_modes, "five", user_mode_init("five", false, 1920, 1080, 12340, false));
-	smap_put(expected->user_modes, "seven", user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(expected->user_modes, "max_override", user_mode_init(true, 1920, 1080, 12340, false));
+	smap_put(expected->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
+	smap_put(expected->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
 }

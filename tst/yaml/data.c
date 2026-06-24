@@ -54,12 +54,12 @@ struct Cfg *cfg_all(void) {
 	slist_append(&cfg->order_name_desc, strdup("ONE"));
 	slist_append(&cfg->order_name_desc, strdup("!two"));
 
-	smap_put(cfg->user_scales, "three", user_scale_init("three", 3));
-	smap_put(cfg->user_scales, "four", user_scale_init("four", 4));
+	smap_put(cfg->user_scales, "three", user_scale_init(3));
+	smap_put(cfg->user_scales, "four", user_scale_init(4));
 
-	smap_put(cfg->user_modes, "five", user_mode_init("five", false, 1920, 1080, 12340, false));
-	smap_put(cfg->user_modes, "six", user_mode_init("six", false, 2560, 1440, -1, false));
-	smap_put(cfg->user_modes, "seven", user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(cfg->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
+	smap_put(cfg->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
+	smap_put(cfg->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
 	sset_add(cfg->adaptive_sync_off, "ten");
 	sset_add(cfg->adaptive_sync_off, "ELEVEN");

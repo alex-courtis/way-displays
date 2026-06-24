@@ -573,8 +573,8 @@ static void desire_scale__user(void **state) {
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	smap_put(g_cfg->user_scales, "![Hh]ea.*", user_scale_init("![Hh]ea.*", 3.5));
-	smap_put(g_cfg->user_scales, "head1", user_scale_init("head1", 7.5));
+	smap_put(g_cfg->user_scales, "![Hh]ea.*", user_scale_init(3.5));
+	smap_put(g_cfg->user_scales, "head1", user_scale_init(7.5));
 
 	desire_scale(&head0);
 

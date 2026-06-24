@@ -10,23 +10,20 @@
 #include "pset.h"
 #include "slist.h"
 
-static bool disabled_equal(const void *a, const void *b) {
+static bool disabled_equal(const struct Disabled* const a, const struct Disabled* const b) {
 	if (!a || !b) {
 		return false;
 	}
 
-	struct Disabled *lhs = (struct Disabled*)a;
-	struct Disabled *rhs = (struct Disabled*)b;
-
-	if (!lhs->name_desc || !rhs->name_desc) {
+	if (!a->name_desc || !b->name_desc) {
 		return false;
 	}
 
-	if (strcmp(lhs->name_desc, rhs->name_desc) != 0) {
+	if (strcmp(a->name_desc, b->name_desc) != 0) {
 		return false;
 	}
 
-	return slist_equal(lhs->conditions, rhs->conditions, fn_equal_condition);
+	return slist_equal(a->conditions, b->conditions, fn_equal_condition);
 }
 
 struct Disabled *disabled_init_always(const char *name_desc) {
@@ -40,8 +37,8 @@ struct Disabled *disabled_init_always(const char *name_desc) {
 
 const struct PSet *disabled_pset_init(void) {
 	const struct PSetParams params = {
-		.equal_val = disabled_equal,
-		.free_val = disabled_free,
+		.equal_val = (fn_equal)disabled_equal,
+		.free_val = (fn_free)disabled_free,
 		.clone_val = (fn_clone)disabled_clone,
 	};
 	return pset_init_with(params);
@@ -51,17 +48,15 @@ const struct Disabled *disabled_clone(const struct Disabled * const from) {
 	if (!from)
 		return NULL;
 
-	struct Disabled *clone = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+	struct Disabled *to = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
-	clone->name_desc = strdup(from->name_desc);
-	clone->conditions = slist_clone(from->conditions, fn_clone_condition);
+	to->name_desc = strdup(from->name_desc);
+	to->conditions = slist_clone(from->conditions, fn_clone_condition);
 
-	return clone;
+	return to;
 }
 
-void disabled_free(const void *val) {
-	struct Disabled *disabled = (struct Disabled*)val;
-
+void disabled_free(struct Disabled *disabled) {
 	if (!disabled)
 		return;
 

@@ -3,23 +3,17 @@
 
 #include "cfg/user-scale.h"
 
+#include "fn.h"
 #include "log.h"
 #include "smap.h"
 
 // TODO SMapF or SMapI
 
-static bool user_scale_equal(const void *a, const void *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	const struct UserScale *lhs = (struct UserScale*)a;
-	const struct UserScale *rhs = (struct UserScale*)b;
-
-	return lhs->scale == rhs->scale;
+static bool user_scale_equal(const struct UserScale* const a, const struct UserScale* const b) {
+	return a && b && a->scale == b->scale;
 }
 
-struct UserScale *user_scale_init(const char *name_desc, const float scale) {
+struct UserScale *user_scale_init(const float scale) {
 	struct UserScale *us = calloc(1, sizeof(struct UserScale));
 
 	us->scale = scale;
@@ -29,21 +23,21 @@ struct UserScale *user_scale_init(const char *name_desc, const float scale) {
 
 const struct SMap *user_scale_smap_init(void) {
 	const struct SMapParams params = {
-		.equal_val = user_scale_equal,
-		.free_val = user_scale_free,
-		.clone_val = user_scale_clone,
+		.equal_val = (fn_equal)user_scale_equal,
+		.clone_val = (fn_clone)user_scale_clone,
 	};
 	return smap_init_with(params);
 }
 
-// TODO type
-void* user_scale_clone(const void* const val) {
-	const struct UserScale *original = (struct UserScale*)val;
-	struct UserScale *clone = (struct UserScale*)calloc(1, sizeof(struct UserScale));
+struct UserScale *user_scale_clone(const struct UserScale * const from) {
+	if (!from)
+		return NULL;
 
-	*clone = *original;
+	struct UserScale *to = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
-	return clone;
+	*to = *from;
+
+	return to;
 }
 
 bool user_scale_invalid(const char* const name_desc, const struct UserScale* const user_scale, const void* const data) {
@@ -58,14 +52,5 @@ bool user_scale_invalid(const char* const name_desc, const struct UserScale* con
 	}
 
 	return false;
-}
-
-void user_scale_free(const void *val) {
-	struct UserScale *user_scale = (struct UserScale*)val;
-
-	if (!user_scale)
-		return;
-
-	free(user_scale);
 }
 

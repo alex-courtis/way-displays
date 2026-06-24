@@ -344,7 +344,7 @@ void yaml_map_into_user_scales(struct UC *c, const void *col, const yaml_node_t 
 	goto end;
 
 err:
-	user_scale_free(user_scale);
+	free(user_scale);
 
 end:
 	free(name_desc);
@@ -407,7 +407,7 @@ void yaml_map_into_user_modes(struct UC *c, const void *col, const yaml_node_t *
 	goto end;
 
 err:
-	user_mode_free(user_mode);
+	free(user_mode);
 
 end:
 	free(name_desc);
@@ -449,7 +449,7 @@ void yaml_map_into_user_transforms(struct UC *c, const void *col, const yaml_nod
 	goto end;
 
 err:
-	cfg_user_transform_free(user_transform);
+	free(user_transform);
 
 end:
 	free(name_desc);

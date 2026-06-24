@@ -17,7 +17,7 @@ struct SList *modes = NULL;
 struct SList *modes_failed = NULL;
 
 static int after_each(void **state) {
-	user_mode_free(user_mode);
+	free(user_mode);
 	user_mode = NULL;
 
 	slist_free_vals(&modes, NULL);
@@ -48,7 +48,7 @@ static void mode_mhz_to_hz_rounded__(void **state) {
 }
 
 static void mode_user_mode__max(void **state) {
-	user_mode = user_mode_init("um", true, -1, -1, -1, false);
+	user_mode = user_mode_init(true, -1, -1, -1, false);
 
 	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
@@ -56,7 +56,7 @@ static void mode_user_mode__max(void **state) {
 }
 
 static void mode_user_mode__no_hz_no_match(void **state) {
-	user_mode = user_mode_init("um", false, 999, 999, -1, false);
+	user_mode = user_mode_init(false, 999, 999, -1, false);
 
 	const struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
@@ -64,7 +64,7 @@ static void mode_user_mode__no_hz_no_match(void **state) {
 }
 
 static void mode_user_mode__no_hz_match(void **state) {
-	user_mode = user_mode_init("um", false, 400, 200, -1, false);
+	user_mode = user_mode_init(false, 400, 200, -1, false);
 
 	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
@@ -72,7 +72,7 @@ static void mode_user_mode__no_hz_match(void **state) {
 }
 
 static void mode_user_mode__even_hz_no_match(void **state) {
-	user_mode = user_mode_init("um", false, 200, 100, 144000, false);
+	user_mode = user_mode_init(false, 200, 100, 144000, false);
 
 	const struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
@@ -80,7 +80,7 @@ static void mode_user_mode__even_hz_no_match(void **state) {
 }
 
 static void mode_user_mode__even_hz_match(void **state) {
-	user_mode = user_mode_init("um", false, 200, 100, 60000, false);
+	user_mode = user_mode_init(false, 200, 100, 60000, false);
 
 	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
@@ -88,7 +88,7 @@ static void mode_user_mode__even_hz_match(void **state) {
 }
 
 static void mode_user_mode__even_hz_rounded_up(void **state) {
-	user_mode = user_mode_init("um", false, 600, 300, 165000, false);
+	user_mode = user_mode_init(false, 600, 300, 165000, false);
 
 	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
@@ -96,7 +96,7 @@ static void mode_user_mode__even_hz_rounded_up(void **state) {
 }
 
 static void mode_user_mode__failed(void **state) {
-	user_mode = user_mode_init("um", false, 200, 100, 60000, false);
+	user_mode = user_mode_init(false, 200, 100, 60000, false);
 
 	slist_append(&modes_failed, slist_at(modes, 1));
 
@@ -106,7 +106,7 @@ static void mode_user_mode__failed(void **state) {
 }
 
 static void mode_user_mode__exact_hz_match(void **state) {
-	user_mode = user_mode_init("um", false, 200, 100, 60499, false);
+	user_mode = user_mode_init(false, 200, 100, 60499, false);
 
 	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
@@ -114,7 +114,7 @@ static void mode_user_mode__exact_hz_match(void **state) {
 }
 
 static void mode_user_mode__exact_hz_failed(void **state) {
-	user_mode = user_mode_init("um", false, 200, 100, 60499, false);
+	user_mode = user_mode_init(false, 200, 100, 60499, false);
 
 	slist_append(&modes_failed, slist_at(modes, 1));
 

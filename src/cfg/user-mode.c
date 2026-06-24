@@ -4,35 +4,32 @@
 
 #include "cfg/user-mode.h"
 
+#include "fn.h"
 #include "log.h"
 #include "mode.h"
 #include "smap.h"
 
-// TODO type these
-static bool user_mode_equal(const void *a, const void *b) {
+static bool user_mode_equal(const struct UserMode* const a, const struct UserMode* const b) {
 	if (!a || !b) {
 		return false;
 	}
 
-	const struct UserMode *lhs = (struct UserMode*)a;
-	const struct UserMode *rhs = (struct UserMode*)b;
-
-	if (lhs->max != rhs->max) {
+	if (a->max != b->max) {
 		return false;
 	}
 
-	if (lhs->width != rhs->width || lhs->height != rhs->height) {
+	if (a->width != b->width || a->height != b->height) {
 		return false;
 	}
 
-	if ((lhs->refresh_mhz != -1 || rhs->refresh_mhz != -1) && lhs->refresh_mhz != rhs->refresh_mhz) {
+	if ((a->refresh_mhz != -1 || b->refresh_mhz != -1) && a->refresh_mhz != b->refresh_mhz) {
 		return false;
 	}
 
 	return true;
 }
 
-struct UserMode *user_mode_init(const char *name_desc, const bool max, const int32_t width, const int32_t height, const int32_t refresh_mhz, const bool warned_no_mode) {
+struct UserMode *user_mode_init(const bool max, const int32_t width, const int32_t height, const int32_t refresh_mhz, const bool warned_no_mode) {
 	struct UserMode *um = (struct UserMode*)calloc(1, sizeof(struct UserMode));
 
 	um->max = max;
@@ -45,26 +42,26 @@ struct UserMode *user_mode_init(const char *name_desc, const bool max, const int
 }
 
 struct UserMode *user_mode_init_default(void) {
-	return user_mode_init(NULL, false, -1, -1, -1, false);
+	return user_mode_init(false, -1, -1, -1, false);
 }
 
 const struct SMap *user_mode_smap_init(void) {
 	const struct SMapParams params = {
-		.equal_val = user_mode_equal,
-		.free_val = user_mode_free,
-		.clone_val = user_mode_clone,
+		.equal_val = (fn_equal)user_mode_equal,
+		.clone_val = (fn_clone)user_mode_clone,
 	};
 	return smap_init_with(params);
 }
 
-// TODO return the actual type
-void* user_mode_clone(const void* const val) {
-	const struct UserMode *original = (struct UserMode*)val;
-	struct UserMode *clone = (struct UserMode*)calloc(1, sizeof(struct UserMode));
+struct UserMode *user_mode_clone(const struct UserMode * const from) {
+	if (!from)
+		return NULL;
 
-	*clone = *original;
+	struct UserMode *to = (struct UserMode*)calloc(1, sizeof(struct UserMode));
 
-	return clone;
+	*to = *from;
+
+	return to;
 }
 
 bool user_mode_invalid(const char* const name_desc, const struct UserMode* const user_mode, const void* const data) {
@@ -101,14 +98,5 @@ bool user_mode_invalid(const char* const name_desc, const struct UserMode* const
 	}
 
 	return false;
-}
-
-void user_mode_free(const void *val) {
-	struct UserMode *user_mode = (struct UserMode*)val;
-
-	if (!user_mode)
-		return;
-
-	free(user_mode);
 }
 

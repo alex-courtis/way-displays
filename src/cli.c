@@ -107,7 +107,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 					break;
 				case CFG_DEL:
 					// dummy value
-					smap_put(cfg->user_scales, argv[optind], user_scale_init(argv[optind], 1));
+					smap_put(cfg->user_scales, argv[optind], user_scale_init(1));
 					parsed = true;
 					break;
 				default:

@@ -12,6 +12,6 @@ const struct PSet *disabled_pset_init(void);
 
 const struct Disabled *disabled_clone(const struct Disabled * const from);
 
-void disabled_free(const void *val);
+void disabled_free(struct Disabled *disabled);
 
 #endif // CFG_DISABLED_H

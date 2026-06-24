@@ -106,8 +106,6 @@ cppcheck: $(SRC_C) $(LIB_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 		--error-exitcode=1 \
 		$(CPPFLAGS)
 
-# TODO --inconclusive
-
 #
 # tests only included when executing test targets
 #

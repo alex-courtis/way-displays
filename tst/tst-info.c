@@ -145,8 +145,8 @@ static void print_cfg__all(void **state) {
 	slist_append(&c->order_name_desc, strdup("first"));
 	slist_append(&c->order_name_desc, strdup("last"));
 
-	smap_put(c->user_scales, "three", user_scale_init("three", 3));
-	smap_put(c->user_scales, "four", user_scale_init("four", 4));
+	smap_put(c->user_scales, "three", user_scale_init(3));
+	smap_put(c->user_scales, "four", user_scale_init(4));
 
 	pset_add(c->disableds, disabled_init_always("disabled always"));
 	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
@@ -156,9 +156,9 @@ static void print_cfg__all(void **state) {
 	slist_append(&disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 
-	smap_put(c->user_modes, "five", user_mode_init("five", false, 1920, 1080, 12340, false));
-	smap_put(c->user_modes, "six", user_mode_init("six", false, 2560, 1440, -1, false));
-	smap_put(c->user_modes, "seven", user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
+	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
+	smap_put(c->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
 	smap_put(c->user_transforms, "twelve", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
 
@@ -183,12 +183,12 @@ static void print_cfg__all(void **state) {
 static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
-	smap_put(c->user_scales, "three", user_scale_init("three", 3));
-	smap_put(c->user_scales, "four", user_scale_init("four", 4));
+	smap_put(c->user_scales, "three", user_scale_init(3));
+	smap_put(c->user_scales, "four", user_scale_init(4));
 
-	smap_put(c->user_modes, "five", user_mode_init("five", false, 1920, 1080, 12340, false));
-	smap_put(c->user_modes, "six", user_mode_init("six", false, 2560, 1440, -1, false));
-	smap_put(c->user_modes, "seven", user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
+	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
+	smap_put(c->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
 	smap_put(c->user_transforms, "twelve", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
 	smap_put(c->user_transforms, "thirteen", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
@@ -291,12 +291,12 @@ static void print_cfg_commands__ok(void **state) {
 
 	c->auto_scale = OFF;
 
-	smap_put(c->user_scales, "one", user_scale_init("one", 1));
-	smap_put(c->user_scales, "two", user_scale_init("two", 2.3456));
+	smap_put(c->user_scales, "one", user_scale_init(1));
+	smap_put(c->user_scales, "two", user_scale_init(2.3456));
 
-	smap_put(c->user_modes, "all", user_mode_init("all", false, 1, 2, 12340, false));
-	smap_put(c->user_modes, "res", user_mode_init("res", false, 4, 5, -1, false));
-	smap_put(c->user_modes, "max", user_mode_init("max", true, 7, 8, 9, false));
+	smap_put(c->user_modes, "all", user_mode_init(false, 1, 2, 12340, false));
+	smap_put(c->user_modes, "res", user_mode_init(false, 4, 5, -1, false));
+	smap_put(c->user_modes, "max", user_mode_init(true, 7, 8, 9, false));
 
 	smap_put(c->user_transforms, "seven", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED_90));
 
