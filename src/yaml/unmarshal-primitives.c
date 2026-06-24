@@ -86,6 +86,7 @@ bool yaml_scalar_to_float_def(struct UC *c, float *dst, float def, const yaml_no
 	return ok;
 }
 
+// cppcheck-suppress funcArgNamesDifferentUnnamed
 int yaml_scalar_to_enum(struct UC *c, const yaml_node_t *scalar, enum_val_fn val_fn, enum_names_fn names_fn) {
 	yaml_unmarshal_log_valid_values_fn(c, names_fn);
 
@@ -103,6 +104,7 @@ int yaml_scalar_to_enum(struct UC *c, const yaml_node_t *scalar, enum_val_fn val
 	return ret;
 }
 
+// cppcheck-suppress funcArgNamesDifferentUnnamed
 int yaml_scalar_to_enum_def(struct UC *c, const int def, const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn, enum_names_fn names_fn) {
 	yaml_unmarshal_log_def(c, name_fn(def));
 

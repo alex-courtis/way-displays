@@ -204,13 +204,13 @@ struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, con
 			for (j = mrr->modes; j; j = j->nex) {
 				struct Mode *mode = j->val;
 				if (!slist_find_equal(modes_failed, NULL, mode)) {
-					slist_free_vals(&mrrs, mode_res_refresh_free);
+					slist_free_vals(&mrrs, (fn_free)mode_res_refresh_free);
 					return mode;
 				}
 			}
 		}
 	}
-	slist_free_vals(&mrrs, mode_res_refresh_free);
+	slist_free_vals(&mrrs, (fn_free)mode_res_refresh_free);
 
 	return NULL;
 }
@@ -228,18 +228,14 @@ struct Mode *mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode,
 	return mode;
 }
 
-void mode_free(const void *data) {
-	struct Mode *mode = (struct Mode*)data;
-
+void mode_free(struct Mode *mode) {
 	if (!mode)
 		return;
 
 	free(mode);
 }
 
-void mode_res_refresh_free(const void *data) {
-	struct ModesResRefresh *mrr = (struct ModesResRefresh*)data;
-
+void mode_res_refresh_free(struct ModesResRefresh *mrr) {
 	if (!mrr)
 		return;
 

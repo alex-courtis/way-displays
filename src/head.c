@@ -445,7 +445,7 @@ void head_free(struct Head *head) {
 	}
 
 	slist_free(&head->modes_failed);
-	slist_free_vals(&head->modes, mode_free);
+	slist_free_vals(&head->modes, (fn_free)mode_free);
 
 	free(head->name);
 	free(head->description);

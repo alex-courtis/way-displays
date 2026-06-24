@@ -41,17 +41,19 @@ const struct PSet *disabled_pset_init(void) {
 	const struct PSetParams params = {
 		.equal_val = disabled_equal,
 		.free_val = disabled_free,
-		.clone_val = disabled_clone,
+		.clone_val = (fn_clone)disabled_clone,
 	};
 	return pset_init_with(params);
 }
 
-void* disabled_clone(const void *val) {
-	struct Disabled *original = (struct Disabled*)val;
+const struct Disabled *disabled_clone(const struct Disabled * const from) {
+	if (!from)
+		return NULL;
+
 	struct Disabled *clone = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
-	clone->name_desc = strdup(original->name_desc);
-	clone->conditions = slist_clone(original->conditions, fn_clone_condition);
+	clone->name_desc = strdup(from->name_desc);
+	clone->conditions = slist_clone(from->conditions, fn_clone_condition);
 
 	return clone;
 }

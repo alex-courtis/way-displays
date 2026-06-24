@@ -22,6 +22,7 @@
 #include "yaml/marshal-primitives.h"
 #include "yaml/marshal.h"
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_doc_cfg(struct MC *c, const void *data) {
 	if (!data)
 		return true;
@@ -31,6 +32,7 @@ bool yaml_doc_cfg(struct MC *c, const void *data) {
 	return mapping && yaml_map_populate_cfg(c, data, mapping);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_doc_ipc_operation(struct MC *c, const void *data) {
 	if (!data)
 		return true;
@@ -56,6 +58,7 @@ bool yaml_doc_ipc_operation(struct MC *c, const void *data) {
 		return true;
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_doc_ipc_request(struct MC *c, const void *data) {
 	if (!data)
 		return true;
@@ -72,6 +75,7 @@ bool yaml_doc_ipc_request(struct MC *c, const void *data) {
 	return root && yaml_map_populate_ipc_request(c, ipc_request, root);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_cfg(struct MC *c, const void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -103,6 +107,7 @@ bool yaml_map_populate_cfg(struct MC *c, const void *data, int mapping) {
 		yaml_map_add_seq_pset(c, cfg_element_name(DISABLED),              cfg->disableds,             (yaml_seq_append_val_fn)yaml_seq_append_disabled,           mapping);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_ipc_operation(struct MC *c, void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -127,6 +132,7 @@ bool yaml_map_populate_ipc_operation(struct MC *c, void *data, int mapping) {
 		yaml_map_add_int(c, "RC", ipc_operation->rc, mapping);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_ipc_request(struct MC *c, const void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -146,6 +152,7 @@ bool yaml_map_populate_ipc_request(struct MC *c, const void *data, int mapping) 
 	return true;
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_mode(struct MC *c, const void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -162,6 +169,7 @@ bool yaml_map_populate_mode(struct MC *c, const void *data, int mapping) {
 		yaml_map_add_bool(c, "PREFERRED",   mode->preferred,   mapping);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_head_state(struct MC *c, const void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -181,6 +189,7 @@ bool yaml_map_populate_head_state(struct MC *c, const void *data, int mapping) {
 		yaml_map_add_map     (c, "MODE",      head_state->mode,                                       yaml_map_populate_mode, mapping);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_head_overrides(struct MC *c, const void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -196,6 +205,7 @@ bool yaml_map_populate_head_overrides(struct MC *c, const void *data, int mappin
 		return true;
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_lid(struct MC *c, const void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -210,6 +220,7 @@ bool yaml_map_populate_lid(struct MC *c, const void *data, int mapping) {
 		yaml_map_add_str (c, "DEVICE_PATH", lid->device_path, mapping);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_messages(struct MC *c, void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -248,6 +259,7 @@ bool yaml_map_populate_messages(struct MC *c, void *data, int mapping) {
 	}
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_state(struct MC *c, const void *data, int mapping) {
 	if (!mapping)
 		return false;
@@ -320,6 +332,7 @@ bool yaml_seq_append_user_transform(struct MC *c, const char * const name_desc, 
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_seq_append_condition(struct MC *c, const void *data, int sequence) {
 	if (!sequence)
 		return false;
@@ -358,6 +371,7 @@ bool yaml_seq_append_disabled(struct MC *c, const struct Disabled* const disable
 	}
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_seq_append_mode(struct MC *c, const void *data, int sequence) {
 	if (!sequence)
 		return false;
@@ -372,6 +386,7 @@ bool yaml_seq_append_mode(struct MC *c, const void *data, int sequence) {
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_seq_append_head(struct MC *c, const void *data, int sequence) {
 	if (!sequence)
 		return false;
@@ -399,6 +414,7 @@ bool yaml_seq_append_head(struct MC *c, const void *data, int sequence) {
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }
 
+// cppcheck-suppress funcArgNamesDifferent
 bool yaml_seq_append_log_cap_line(struct MC *c, const void *data, int sequence) {
 	if (!sequence)
 		return false;

@@ -10,7 +10,7 @@ struct Disabled *disabled_init_always(const char *name_desc);
 
 const struct PSet *disabled_pset_init(void);
 
-void* disabled_clone(const void *data);
+const struct Disabled *disabled_clone(const struct Disabled * const from);
 
 void disabled_free(const void *val);
 

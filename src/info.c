@@ -133,7 +133,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		free(msg);
 	}
 
-	slist_free_vals(&mrrs, mode_res_refresh_free);
+	slist_free_vals(&mrrs, (fn_free)mode_res_refresh_free);
 }
 
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del) {

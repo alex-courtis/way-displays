@@ -74,6 +74,7 @@ end:
 	return yaml;
 }
 
+// cppcheck-suppress funcArgNamesDifferentUnnamed
 char *yaml_marshal(const void *data, yaml_doc_fn fn, const char *human) {
 	if (!data)
 		return NULL;

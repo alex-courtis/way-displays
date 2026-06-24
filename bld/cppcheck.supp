@@ -13,6 +13,10 @@ unusedFunction:src/convert.c
 unusedFunction:lib/alex-c
 staticFunction:lib/alex-c
 
+# TODO fix upstream
+funcArgNamesDifferent:lib/alex-c
+funcArgNamesDifferentUnnamed:lib/alex-c
+
 # wraps are dynamically invoked at runtime only
 unusedFunction:tst/wrap-*.c
 

@@ -97,6 +97,7 @@ end:
 	return out;
 }
 
+// cppcheck-suppress funcArgNamesDifferentUnnamed
 void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human) {
 	if (!yaml || !human)
 		return NULL;
@@ -242,11 +243,11 @@ void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value) 
 	}
 }
 
-bool yaml_check_node_type(struct UC *c, const yaml_node_t *node, const yaml_node_type_t expected) {
-	if (node && node->type == expected)
+bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected) {
+	if (node_actual && node_actual->type == expected)
 		return true;
 
-	yaml_log_invalid(c, NULL, expected, node ? node->type : YAML_NO_NODE);
+	yaml_log_invalid(c, NULL, expected, node_actual ? node_actual->type : YAML_NO_NODE);
 
 	return false;
 }
