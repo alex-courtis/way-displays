@@ -14,6 +14,7 @@
 #include "cfg.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "cfg/disabled.h"
 #include "ipc.h"
 #include "log.h"

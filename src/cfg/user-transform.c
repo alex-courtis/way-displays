@@ -1,10 +1,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
+#include <wayland-client-protocol.h>
 
 #include "cfg/user-transform.h"
 
-#include "log.h"
 #include "smap.h"
 
 // TODO SMapI

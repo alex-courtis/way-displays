@@ -1,8 +1,6 @@
 #ifndef CFG_H
 #define CFG_H
 
-#include <wayland-client-protocol.h>
-
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -126,7 +124,7 @@ void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from);
 
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command);
 
-void validate_warn(struct Cfg *cfg);
+void validate_warn(const struct Cfg * const cfg);
 
 void validate_fix(struct Cfg *cfg);
 

@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <wayland-client-protocol.h>
 
 #include "cfg.h"
 
@@ -271,7 +270,7 @@ static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const c
 	}
 }
 
-void validate_warn(struct Cfg *cfg) {
+void validate_warn(const struct Cfg * const cfg) {
 	if (!cfg)
 		return;
 
@@ -290,15 +289,17 @@ void validate_warn(struct Cfg *cfg) {
 	warn_ambiguous_name_desc_list(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
 
 	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
-		struct Disabled *disabled = (struct Disabled*)it->val;
-		warn_ambiguous_name_desc((const char*)disabled->name_desc, "DISABLED");
+		if (it->val) {
+			struct Disabled *disabled = (struct Disabled*)it->val;
+			warn_ambiguous_name_desc((const char*)disabled->name_desc, "DISABLED");
 
-		for (struct SList *j = disabled->conditions; j; j = j->nex) {
-			if (!j->val)
-				continue;
-			const struct Condition *condition = (struct Condition*)j->val;
-			warn_ambiguous_name_desc_list(condition->plugged, "PLUGGED");
-			warn_ambiguous_name_desc_list(condition->unplugged, "UNPLUGGED");
+			for (struct SList *j = disabled->conditions; j; j = j->nex) {
+				if (!j->val)
+					continue;
+				const struct Condition *condition = (struct Condition*)j->val;
+				warn_ambiguous_name_desc_list(condition->plugged, "PLUGGED");
+				warn_ambiguous_name_desc_list(condition->unplugged, "UNPLUGGED");
+			}
 		}
 	}
 }

@@ -1,8 +1,6 @@
 #ifndef CFG_USER_TRANSFORM_H
 #define CFG_USER_TRANSFORM_H
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <wayland-client-protocol.h>
 
 struct UserTransform {
