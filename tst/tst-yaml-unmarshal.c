@@ -470,7 +470,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
-	slist_free_vals(&responses, ipc_response_free);
+	slist_free_vals(&responses, (fn_free)ipc_response_free);
 	cfg_free(expected_cfg);
 	free(yaml);
 
@@ -548,7 +548,7 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_nul(response->heads);
 	assert_nul(response->log_cap_lines);
 
-	slist_free_vals(&responses, ipc_response_free);
+	slist_free_vals(&responses, (fn_free)ipc_response_free);
 	free(yaml);
 	cfg_free(cfg_expected);
 

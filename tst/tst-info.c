@@ -126,7 +126,7 @@ int before_each(void **state) {
 int after_each(void **state) {
 	struct State *s = *state;
 
-	slist_free_vals(&s->heads, head_free);
+	slist_free_vals(&s->heads, (fn_free)head_free);
 
 	free(s);
 
@@ -330,7 +330,7 @@ static void print_head_arrived__all(void **state) {
 }
 
 static void print_head_arrived__min(void **state) {
-	const struct Head *head = calloc(1, sizeof(struct Head));
+	struct Head *head = calloc(1, sizeof(struct Head));
 
 	expect_str(__wrap_lid_is_closed, name, NULL);
 	will_return_int(__wrap_lid_is_closed, false);

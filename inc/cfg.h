@@ -118,7 +118,7 @@ void cfg_destroy(void);
 
 void cfg_file_paths_destroy(void);
 
-bool cfg_resolve_file_path(struct Cfg *cfg);
+bool cfg_resolve_file_path(struct Cfg *to);
 
 void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from);
 

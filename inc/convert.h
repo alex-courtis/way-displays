@@ -26,7 +26,7 @@ typedef char* (*enum_names_fn)(void);
 enum CfgElement cfg_element_val(const char *name);
 const char *cfg_element_name(enum CfgElement cfg_element);
 
-enum Arrange arrange_val_start(const char *str);
+enum Arrange arrange_val_start(const char *name);
 const char *arrange_name(enum Arrange arrange);
 char *arrange_names(void);
 

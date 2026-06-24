@@ -120,7 +120,7 @@ static void yaml_doc_ipc_operation__map(void **state) {
 
 	ipc_operation_free(ipc_operation);
 
-	slist_free_vals(&g_heads, head_free);
+	slist_free_vals(&g_heads, (fn_free)head_free);
 
 	assert_logs_empty();
 }
@@ -133,7 +133,7 @@ static void yaml_doc_ipc_operation__seq(void **state) {
 
 	ipc_operation_free(ipc_operation);
 
-	slist_free_vals(&g_heads, head_free);
+	slist_free_vals(&g_heads, (fn_free)head_free);
 
 	assert_logs_empty();
 }

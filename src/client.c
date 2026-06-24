@@ -45,7 +45,7 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 					log_cap_lines_playback(response->log_cap_lines);
 				}
 			}
-			slist_free_vals(&responses, ipc_response_free);
+			slist_free_vals(&responses, (fn_free)ipc_response_free);
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;

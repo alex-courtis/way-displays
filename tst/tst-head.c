@@ -579,7 +579,7 @@ static void heads_reapply__(void **state) {
 	free(expected_log);
 
 
-	slist_free_vals(&heads, head_free);
+	slist_free_vals(&heads, (fn_free)head_free);
 }
 
 int main(void) {

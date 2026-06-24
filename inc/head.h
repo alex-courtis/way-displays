@@ -106,15 +106,15 @@ struct Mode *head_find_mode(struct Head * const head);
 
 struct Mode *head_preferred_mode(const struct Head * const head);
 
-bool head_current_not_desired(const void * const head);
+bool head_current_not_desired(const struct Head * const head);
 
 size_t head_num_current_not_desired(struct SList * const heads);
 
-bool head_reapply_required(const void * const head);
+bool head_reapply_required(const struct Head * const head);
 
-bool head_current_mode_not_desired(const void * const head);
+bool head_current_mode_not_desired(const struct Head * const head);
 
-bool head_current_adaptive_sync_not_desired(const void * const head);
+bool head_current_adaptive_sync_not_desired(const struct Head * const head);
 
 // clear current and failed modes, flag for reapply
 void heads_reapply(struct SList *heads);
@@ -124,7 +124,7 @@ void head_set_description(struct Head * const head, const char *description);
 
 void head_release_mode(struct Head * const head, const struct Mode * const mode);
 
-void head_free(const void * const head);
+void head_free(struct Head *head);
 
 void heads_release_head(const struct Head * const head);
 

@@ -341,9 +341,7 @@ struct Mode *head_preferred_mode(const struct Head * const head) {
 	return NULL;
 }
 
-bool head_current_not_desired(const void * const data) {
-	const struct Head *head = data;
-
+bool head_current_not_desired(const struct Head * const head) {
 	return (head &&
 			(head->desired.mode != head->current.mode ||
 			 head->desired.scale != head->current.scale ||
@@ -358,7 +356,7 @@ size_t head_num_current_not_desired(struct SList * const heads) {
 	size_t n = 0;
 
 	struct SList *i = heads;
-	while ((i = slist_find(i, head_current_not_desired))) {
+	while ((i = slist_find(i, (fn_test)head_current_not_desired))) {
 		i = i->nex;
 		n++;
 	}
@@ -366,21 +364,15 @@ size_t head_num_current_not_desired(struct SList * const heads) {
 	return n;
 }
 
-bool head_reapply_required(const void * const data) {
-	const struct Head *head = data;
-
+bool head_reapply_required(const struct Head * const head) {
 	return (head && head->reapply_required);
 }
 
-bool head_current_mode_not_desired(const void * const data) {
-	const struct Head *head = data;
-
+bool head_current_mode_not_desired(const struct Head * const head) {
 	return (head && head->desired.mode != head->current.mode);
 }
 
-bool head_current_adaptive_sync_not_desired(const void * const data) {
-	const struct Head *head = data;
-
+bool head_current_adaptive_sync_not_desired(const struct Head * const head) {
 	return (head && head->desired.adaptive_sync != head->current.adaptive_sync);
 }
 
@@ -441,9 +433,7 @@ void heads_reapply(struct SList *heads) {
 	}
 }
 
-void head_free(const void * const data) {
-	struct Head *head = (struct Head*)data;
-
+void head_free(struct Head *head) {
 	if (!head)
 		return;
 
@@ -488,8 +478,8 @@ void heads_release_head(const struct Head * const head) {
 
 void heads_destroy(void) {
 
-	slist_free_vals(&g_heads, head_free);
-	slist_free_vals(&g_heads_departed, head_free);
+	slist_free_vals(&g_heads, (fn_free)head_free);
+	slist_free_vals(&g_heads_departed, (fn_free)head_free);
 
 	slist_free(&g_heads_arrived);
 }

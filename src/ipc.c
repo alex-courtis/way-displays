@@ -114,16 +114,10 @@ void ipc_request_free(struct IpcRequest *request) {
 	free(request);
 }
 
-void ipc_response_free(const void *vresponse) {
-	if (!vresponse) {
-		return;
-	}
-
-	struct IpcResponse *response = (struct IpcResponse*)vresponse;
-
+void ipc_response_free(struct IpcResponse *response) {
 	cfg_free(response->cfg);
 	lid_free(response->lid);
-	slist_free_vals(&response->heads, head_free);
+	slist_free_vals(&response->heads, (fn_free)head_free);
 
 	log_cap_lines_free(&response->log_cap_lines);
 

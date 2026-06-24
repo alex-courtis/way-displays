@@ -106,7 +106,7 @@ void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root) {
 	goto end;
 
 err:
-	slist_free_vals(&ipc_responses, ipc_response_free);
+	slist_free_vals(&ipc_responses, (fn_free)ipc_response_free);
 	ipc_responses = NULL;
 
 end:

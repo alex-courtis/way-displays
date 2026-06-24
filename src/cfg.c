@@ -174,11 +174,11 @@ static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_pat
 	cfg->file_name = strdup(basename(path));
 }
 
-bool cfg_resolve_file_path(struct Cfg *dst) {
-	if (!dst)
+bool cfg_resolve_file_path(struct Cfg *to) {
+	if (!to)
 		return false;
 
-	cfg_paths_free(dst);
+	cfg_paths_free(to);
 
 	for (struct SList *i = cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
@@ -193,7 +193,7 @@ bool cfg_resolve_file_path(struct Cfg *dst) {
 				continue;
 			}
 
-			set_paths(dst, i->val, file_path);
+			set_paths(to, i->val, file_path);
 
 			free(file_path);
 

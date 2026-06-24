@@ -306,7 +306,7 @@ static void apply(void) {
 
 	// determine whether changes are needed before initiating output configuration
 	struct SList *i = g_heads;
-	while ((i = slist_find(i, head_current_not_desired))) {
+	while ((i = slist_find(i, (fn_test)head_current_not_desired))) {
 		slist_append(&heads_changing, i->val);
 		i = i->nex;
 	}
@@ -319,7 +319,7 @@ static void apply(void) {
 
 	struct Head *head;
 
-	if ((head = slist_find_val(g_heads, head_reapply_required))) {
+	if ((head = slist_find_val(g_heads, (fn_test)head_reapply_required))) {
 		displ_delta_init(0, head);
 
 		print_head(INFO, DELTA, head);
@@ -330,7 +330,7 @@ static void apply(void) {
 
 		head->reapply_required = false;
 
-	} else if ((head = slist_find_val(g_heads, head_current_mode_not_desired))) {
+	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_mode_not_desired))) {
 		log_debug("APPLY mode");
 
 		displ_delta_init(MODE, head);
@@ -343,7 +343,7 @@ static void apply(void) {
 
 		g_displ->delta.human = delta_human_mode(head);
 
-	} else if ((head = slist_find_val(g_heads, head_current_adaptive_sync_not_desired))) {
+	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_adaptive_sync_not_desired))) {
 		log_debug("APPLY vrr");
 
 		displ_delta_init(VRR_OFF, head);
@@ -471,7 +471,7 @@ void layout(void) {
 	slist_free(&g_heads_arrived);
 
 	print_heads(INFO, DEPARTED, g_heads_departed);
-	slist_free_vals(&g_heads_departed, head_free);
+	slist_free_vals(&g_heads_departed, (fn_free)head_free);
 
 	log_debug("LAYOUT %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 

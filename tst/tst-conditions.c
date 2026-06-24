@@ -41,7 +41,7 @@ static int after_each(void **state) {
 	struct State *s = *state;
 
 	condition_free(s->condition);
-	slist_free_vals(&g_heads, head_free);
+	slist_free_vals(&g_heads, (fn_free)head_free);
 
 	free(g_lid);
 	g_lid = NULL;
