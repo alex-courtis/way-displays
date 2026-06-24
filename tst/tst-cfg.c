@@ -181,15 +181,15 @@ static void merge_set__user_scale(void **state) {
 static void merge_set__user_transform(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_transforms, cfg_user_transform_init("to", 1));
-	slist_append(&s->to->user_transforms, cfg_user_transform_init("both", 2));
+	smap_put(s->to->user_transforms, "to", cfg_user_transform_init(1));
+	smap_put(s->to->user_transforms, "both", cfg_user_transform_init(2));
 
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("from", 3));
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("both", 4));
+	smap_put(s->from->user_transforms, "from", cfg_user_transform_init(3));
+	smap_put(s->from->user_transforms, "both", cfg_user_transform_init(4));
 
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("to", 1));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("both", 4));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("from", 3));
+	smap_put(s->expected->user_transforms, "to", cfg_user_transform_init(1));
+	smap_put(s->expected->user_transforms, "both", cfg_user_transform_init(4));
+	smap_put(s->expected->user_transforms, "from", cfg_user_transform_init(3));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -350,13 +350,13 @@ static void merge_del__mode(void **state) {
 static void merge_del__transform(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_transforms, cfg_user_transform_init("to", 1));
-	slist_append(&s->to->user_transforms, cfg_user_transform_init("both", 2));
+	smap_put(s->to->user_transforms, "to", cfg_user_transform_init(1));
+	smap_put(s->to->user_transforms, "both", cfg_user_transform_init(2));
 
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("from", 3));
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("both", 4));
+	smap_put(s->from->user_transforms, "from", cfg_user_transform_init(3));
+	smap_put(s->from->user_transforms, "both", cfg_user_transform_init(4));
 
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("to", 1));
+	smap_put(s->expected->user_transforms, "to", cfg_user_transform_init(1));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -579,27 +579,6 @@ static void validate_fix__user_mode(void **state) {
 	free(expected_log);
 }
 
-static void validate_fix__user_transform(void **state) {
-	struct State *s = *state;
-
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("one", 1));
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("dup", 2));
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("dup", 3));
-
-	validate_fix(s->from);
-
-	char *expected_log = read_file("tst/cfg/validate-fix-user-transform.log");
-	assert_log(WARNING, expected_log);
-	assert_logs_empty();
-
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("one", 1));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("dup", 3));
-
-	assert_cfg_equal(s->from, s->expected);
-
-	free(expected_log);
-}
-
 static void validate_fix__auto_scale_dpi(void **state) {
 	struct State *s = *state;
 
@@ -626,9 +605,9 @@ static void validate_warn__(void **state) {
 	smap_put(s->expected->user_modes, "mmmmmmmm", user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
 	smap_put(s->expected->user_modes, "DP-1", user_mode_init("DP-1", false, 1, 1, 1, false));
 
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("ttt", WL_OUTPUT_TRANSFORM_180));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("tttttttttt", WL_OUTPUT_TRANSFORM_270));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("DP-1", WL_OUTPUT_TRANSFORM_270));
+	smap_put(s->expected->user_transforms, "ttt", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_180));
+	smap_put(s->expected->user_transforms, "tttttttttt", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_270));
+	smap_put(s->expected->user_transforms, "DP-1", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_270));
 
 	slist_append(&s->expected->order_name_desc, strdup("ooo"));
 	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
@@ -696,7 +675,6 @@ int main(void) {
 		TEST_BA(validate_fix__row),
 		TEST_BA(validate_fix__user_scale),
 		TEST_BA(validate_fix__user_mode),
-		TEST_BA(validate_fix__user_transform),
 		TEST_BA(validate_fix__auto_scale_dpi),
 
 		TEST_BA(validate_warn__),

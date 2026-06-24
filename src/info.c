@@ -11,6 +11,7 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "convert.h"
 #include "head.h"
 #include "lid.h"
@@ -191,15 +192,13 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (cfg->user_transforms) {
+	if (smap_size(cfg->user_transforms) > 0) {
 		log_(t, "  Transform:");
-		struct UserTransform *user_transform;
-		for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
-			user_transform = (struct UserTransform*)i->val;
-			if (del) {
-				log_(t, "    %s", user_transform->name_desc);
+		for (const struct SMapIt *it = smap_it(cfg->user_transforms); it; it = smap_it_next(it)) {
+			if (del || !it->val) {
+				log_(t, "    %s", it->key);
 			} else {
-				log_(t, "    %s: %s", user_transform->name_desc, transform_name(user_transform->transform));
+				log_(t, "    %s: %s", it->key, transform_name(((struct UserTransform*)it->val)->transform));
 			}
 		}
 	}
@@ -301,17 +300,17 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
-		struct UserTransform *user_transform = (struct UserTransform*)i->val;
-
-		print_newline(t, &newline);
-		log_(t, "way-displays -s TRANSFORM '%s' %s", user_transform->name_desc, transform_name(user_transform->transform));
+	for (const struct SMapIt *it = smap_it(cfg->user_transforms); it; it = smap_it_next(it)) {
+		if (it->val) {
+			print_newline(t, &newline);
+			log_(t, "way-displays -s TRANSFORM '%s' %s", it->key, transform_name(((struct UserTransform*)it->val)->transform));
+		}
 	}
 
 	newline = true;
 	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 		const struct Disabled* d = it->val;
-		if (!d->conditions) {
+		if (d && !d->conditions) {
 			print_newline(t, &newline);
 			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);
 		}

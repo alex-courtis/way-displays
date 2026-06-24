@@ -51,13 +51,6 @@ enum ScaleRoundStrategy {
 	SCALE_ROUND_STRATEGY_DEFAULT = NEAREST,
 };
 
-struct UserTransform {
-	char *name_desc;
-	enum wl_output_transform transform;
-};
-
-#define WL_OUTPUT_TRANSFORM_MAX WL_OUTPUT_TRANSFORM_FLIPPED_270
-
 #define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_LEVEL}\" \"${CALLBACK_MSG}\""
 
 #define COMMENT_YAML_SCHEMA "# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-1.2.0.yaml"
@@ -83,7 +76,7 @@ struct Cfg {
 	const struct SSet *adaptive_sync_off;
 	struct SList *max_preferred_refresh_name_desc;
 	const struct PSet *disableds;
-	struct SList *user_transforms;
+	const struct SMap *user_transforms;
 	enum LogThreshold log_threshold;
 
 	int32_t auto_scale_dpi;
@@ -146,8 +139,6 @@ struct Cfg *cfg_default(void);
 
 void cfg_apply_defaults(struct Cfg *cfg);
 
-struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum wl_output_transform transform);
-
 struct Disabled *disabled_init_always(const char *name_desc);
 
 //
@@ -159,14 +150,5 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 // freeing functions
 //
 void cfg_free(struct Cfg *cfg);
-
-void cfg_user_transform_free(const void *val);
-
-void disabled_free(const void *val);
-
-//
-// cloning functions
-//
-void* disabled_clone(const void *data);
 
 #endif // CFG_H

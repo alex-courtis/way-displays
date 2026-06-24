@@ -9,6 +9,7 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "conditions.h"
 #include "convert.h"
 #include "head.h"
@@ -93,7 +94,7 @@ bool yaml_map_populate_cfg(struct MC *c, const void *data, int mapping) {
 		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                                    mapping) &&
 		yaml_map_add_seq_smap(c, cfg_element_name(SCALE),                 cfg->user_scales,           (yaml_seq_append_key_val_fn)yaml_seq_append_user_scale,     mapping) &&
 		yaml_map_add_seq_smap(c, cfg_element_name(MODE),                  cfg->user_modes,            (yaml_seq_append_key_val_fn)yaml_seq_append_user_mode,      mapping) &&
-		yaml_map_add_seq_list(c, cfg_element_name(TRANSFORM),             cfg->user_transforms,       yaml_seq_append_user_transform,                             mapping) &&
+		yaml_map_add_seq_smap(c, cfg_element_name(TRANSFORM),             cfg->user_transforms,       (yaml_seq_append_key_val_fn)yaml_seq_append_user_transform, mapping) &&
 		yaml_map_add_seq_sset(c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,     yaml_seq_append_str,                                        mapping) &&
 		yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                                      mapping) &&
 		yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                             mapping) &&
@@ -304,19 +305,17 @@ bool yaml_seq_append_user_mode (struct MC *c, const char * const name_desc, cons
 	return yaml_document_append_sequence_item(&c->d, sequence, map);
 }
 
-bool yaml_seq_append_user_transform(struct MC *c, const void *data, int sequence) {
+bool yaml_seq_append_user_transform(struct MC *c, const char * const name_desc, const struct UserTransform * const user_transform, int sequence) {
 	if (!sequence)
 		return false;
 
-	if (!data)
+	if (!user_transform)
 		return true;
-
-	const struct UserTransform *user_transform = data;
 
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 	return map &&
-		yaml_map_add_str(c, "NAME_DESC", user_transform->name_desc, map) &&
+		yaml_map_add_str(c, "NAME_DESC", name_desc, map) &&
 		yaml_map_add_str(c, "TRANSFORM", transform_name(user_transform->transform), map) &&
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }

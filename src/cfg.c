@@ -12,6 +12,7 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "conditions.h"
 #include "convert.h"
 #include "fds.h"
@@ -52,59 +53,8 @@ static void cfg_paths_free(struct Cfg *cfg) {
 }
 
 //
-// cloning functions
-//
-static void* fn_clone_cfg_user_transform(const void* const val) {
-	const struct UserTransform *original = (struct UserTransform*)val;
-	struct UserTransform *clone = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
-
-	*clone = *original;
-	clone->name_desc = strdup(original->name_desc);
-
-	return clone;
-}
-
-//
 // equality functions
 //
-static bool fn_equal_cfg_user_transform_name(const void *a, const void *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	const struct UserTransform *lhs = (struct UserTransform*)a;
-	const struct UserTransform *rhs = (struct UserTransform*)b;
-
-	if (!lhs->name_desc || !rhs->name_desc) {
-		return false;
-	}
-
-	return strcmp(lhs->name_desc, rhs->name_desc) == 0;
-}
-
-static bool fn_equal_cfg_user_transform(const void *a, const void *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	const struct UserTransform *lhs = (struct UserTransform*)a;
-	const struct UserTransform *rhs = (struct UserTransform*)b;
-
-	if (!lhs->name_desc || !rhs->name_desc) {
-		return false;
-	}
-
-	if (strcmp(lhs->name_desc, rhs->name_desc) != 0) {
-		return false;
-	}
-
-	if (lhs->transform != rhs->transform) {
-		return false;
-	}
-
-	return true;
-}
-
 static void warn_ambiguous_name_desc(const char *name_desc, const char *element) {
 	if (!name_desc)
 		return;
@@ -136,12 +86,12 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 
 	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
 	to->order_name_desc =                 slist_clone(from->order_name_desc, fn_clone_strdup);
-	to->user_transforms =                 slist_clone(from->user_transforms, fn_clone_cfg_user_transform);
 
 	to->adaptive_sync_off = sset_clone(from->adaptive_sync_off);
 	to->disableds =         pset_clone_deep(from->disableds);
 	to->user_modes =        smap_clone_deep(from->user_modes);
 	to->user_scales =       smap_clone_deep(from->user_scales);
+	to->user_transforms =   smap_clone_deep(from->user_transforms);
 
 	return to;
 }
@@ -167,7 +117,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		a->scaling == b->scaling &&
 		smap_equal(a->user_modes, b->user_modes) &&
 		smap_equal(a->user_scales, b->user_scales) &&
-		slist_equal(a->user_transforms, b->user_transforms, fn_equal_cfg_user_transform);
+		smap_equal(a->user_transforms, b->user_transforms);
 }
 
 //
@@ -180,6 +130,7 @@ struct Cfg *cfg_init(void) {
 	cfg->disableds =         disabled_pset_init();
 	cfg->user_modes =        user_mode_smap_init();
 	cfg->user_scales =       user_scale_smap_init();
+	cfg->user_transforms =   user_transform_smap_init();
 
 	return cfg;
 }
@@ -204,15 +155,6 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 	if (!cfg->auto_scale_max)       cfg->auto_scale_max =       AUTO_SCALE_MAX_DEFAULT;
 	if (!cfg->callback_cmd)         cfg->callback_cmd =         strdup(CALLBACK_CMD_DEFAULT);
 	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor =   LAPTOP_LID_MONITOR_DEFAULT;
-}
-
-struct UserTransform *cfg_user_transform_init(const char *name_desc, const enum wl_output_transform transform) {
-	struct UserTransform *ut = calloc(1, sizeof(struct UserTransform));
-
-	ut->name_desc = strdup(name_desc);
-	ut->transform = transform;
-
-	return ut;
 }
 
 static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
@@ -276,24 +218,6 @@ void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
 	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
 }
 
-static void remove_duplicate_user_transforms(struct Cfg *cfg) {
-	const struct SMap *by_name_desc = smap_init();
-
-	for (const struct SList *i = cfg->user_transforms; i; i = i->nex) {
-		const struct UserTransform *transform = i->val;
-		const struct UserTransform *dup = smap_put(by_name_desc, transform->name_desc, transform);
-		if (dup) {
-			log_warn(NULL);
-			log_warn("Removing duplicate TRANSFORM %s", dup->name_desc);
-			cfg_user_transform_free(dup);
-		}
-	}
-
-	slist_free(&cfg->user_transforms);
-	cfg->user_transforms = smap_vals_slist_shallow(by_name_desc);
-	smap_free(by_name_desc);
-}
-
 void validate_fix(struct Cfg *cfg) {
 	if (!cfg) {
 		return;
@@ -333,8 +257,6 @@ void validate_fix(struct Cfg *cfg) {
 	while ((name_desc = smap_match(cfg->user_modes, (fn_match_smap)user_mode_invalid, NULL).key)) {
 		smap_remove_free(cfg->user_modes, name_desc);
 	}
-
-	remove_duplicate_user_transforms(cfg);
 }
 
 static void warn_ambiguous_name_desc_list(const struct SList *name_desc, const char * const element) {
@@ -359,11 +281,8 @@ void validate_warn(struct Cfg *cfg) {
 	for (const struct SMapIt  *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
 		warn_ambiguous_name_desc(it->key, "MODE");
 	}
-	for (struct SList *i = cfg->user_transforms; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		const struct UserTransform *user_transform = (struct UserTransform*)i->val;
-		warn_ambiguous_name_desc(user_transform->name_desc, "TRANSFORM");
+	for (const struct SMapIt  *it = smap_it(cfg->user_transforms); it; it = smap_it_next(it)) {
+		warn_ambiguous_name_desc(it->key, "TRANSFORM");
 	}
 
 	warn_ambiguous_name_desc_list(cfg->order_name_desc, "ORDER");
@@ -390,8 +309,6 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	struct Cfg *merged = clone_cfg(to);
-
-	struct SList *i;
 
 	// ARRANGE
 	if (from->arrange) {
@@ -443,16 +360,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// TRANSFORM
-	const struct UserTransform *set_user_transform = NULL;
-	struct UserTransform *merged_user_transform = NULL;
-	for (i = from->user_transforms; i; i = i->nex) {
-		set_user_transform = (struct UserTransform*)i->val;
-		if (!(merged_user_transform = (struct UserTransform*)slist_find_equal_val(merged->user_transforms, fn_equal_cfg_user_transform_name, set_user_transform))) {
-			merged_user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
-			merged_user_transform->name_desc = strdup(set_user_transform->name_desc);
-			slist_append(&merged->user_transforms, merged_user_transform);
-		}
-		merged_user_transform->transform = set_user_transform->transform;
+	for (const struct SMapIt *it = smap_it(from->user_transforms); it; it = smap_it_next(it)) {
+		smap_put_free(merged->user_transforms, it->key, fn_clone_cfg_user_transform(it->val));
 	}
 
 	// VRR_OFF
@@ -486,8 +395,6 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = clone_cfg(to);
 
-	const struct SList *i;
-
 	// SCALE
 	for (const struct SMapIt *it = smap_it(from->user_scales); it; it = smap_it_next(it)) {
 		smap_remove_free(merged->user_scales, it->key);
@@ -499,9 +406,10 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// TRANSFORM
-	for (i = from->user_transforms; i; i = i->nex) {
-		slist_remove_all_free(&merged->user_transforms, fn_equal_cfg_user_transform_name, i->val, cfg_user_transform_free);
+	for (const struct SMapIt *it = smap_it(from->user_transforms); it; it = smap_it_next(it)) {
+		smap_remove_free(merged->user_transforms, it->key);
 	}
+
 
 	// VRR_OFF
 	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
@@ -693,19 +601,8 @@ void cfg_free(struct Cfg *cfg) {
 
 	pset_free_vals(cfg->disableds);
 
-	slist_free_vals(&cfg->user_transforms, cfg_user_transform_free);
+	smap_free_vals(cfg->user_transforms);
 
 	free(cfg);
-}
-
-void cfg_user_transform_free(const void *val) {
-	struct UserTransform *user_transform = (struct UserTransform*)val;
-
-	if (!user_transform)
-		return;
-
-	free(user_transform->name_desc);
-
-	free(user_transform);
 }
 

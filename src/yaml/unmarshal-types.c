@@ -11,6 +11,7 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "conditions.h"
 #include "convert.h"
 #include "head.h"
@@ -161,7 +162,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				yaml_seq_into_col(c, value, cfg->user_modes, yaml_map_into_user_modes);
 				break;
 			case TRANSFORM:
-				yaml_seq_into_col(c, value, &cfg->user_transforms, yaml_map_into_user_transforms);
+				yaml_seq_into_col(c, value, cfg->user_transforms, yaml_map_into_user_transforms);
 				break;
 			case VRR_OFF:
 				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, value);
@@ -422,30 +423,35 @@ void yaml_map_into_user_transforms(struct UC *c, const void *col, const yaml_nod
 	if (!nodes)
 		return;
 
-	struct SList **user_transforms = (struct SList**)col;
+	const struct SMap *user_transforms = col;
 	struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
-	const yaml_node_t *scalar;
+	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-	scalar = smap_get(nodes, "NAME_DESC");
-	if (!yaml_check_mandatory(c, scalar) || !(user_transform->name_desc = yaml_scalar_to_name_desc(c, scalar)))
+	const yaml_node_t *scalar = smap_get(nodes, "NAME_DESC");
+	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto err;
 
-	yaml_unmarshal_log_ctx_name_desc(c, user_transform->name_desc);
+	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "TRANSFORM");
 	scalar = smap_get(nodes, "TRANSFORM");
 	if (!yaml_check_mandatory(c, scalar) || !(user_transform->transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names)))
 		goto err;
 
-	slist_append(user_transforms, user_transform);
+	if (smap_put_if_absent(user_transforms, name_desc, user_transform)) {
+		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
+		goto err;
+	}
+
 	goto end;
 
 err:
 	cfg_user_transform_free(user_transform);
 
 end:
+	free(name_desc);
 	smap_free(nodes);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);

@@ -7,6 +7,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "conditions.h"
 #include "head.h"
 #include "ipc.h"
@@ -85,7 +86,7 @@ struct Cfg *cfg_all(void) {
 
 	pset_add(cfg->disableds, disabled);
 
-	slist_append(&cfg->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+	smap_put(cfg->user_transforms, "twelve", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
 
 	return cfg;
 }

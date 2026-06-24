@@ -16,6 +16,7 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "conditions.h"
 #include "displ.h"
 #include "head.h"
@@ -158,7 +159,7 @@ static void print_cfg__all(void **state) {
 	smap_put(c->user_modes, "six", user_mode_init("six", false, 2560, 1440, -1, false));
 	smap_put(c->user_modes, "seven", user_mode_init("seven", true, -1, -1, -1, false));
 
-	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+	smap_put(c->user_transforms, "twelve", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
 
 	slist_append(&c->max_preferred_refresh_name_desc, strdup("legacy"));
 
@@ -188,8 +189,8 @@ static void print_cfg__del(void **state) {
 	smap_put(c->user_modes, "six", user_mode_init("six", false, 2560, 1440, -1, false));
 	smap_put(c->user_modes, "seven", user_mode_init("seven", true, -1, -1, -1, false));
 
-	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
-	slist_append(&c->user_transforms, cfg_user_transform_init("thirteen", WL_OUTPUT_TRANSFORM_FLIPPED));
+	smap_put(c->user_transforms, "twelve", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
+	smap_put(c->user_transforms, "thirteen", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
 
 	print_cfg(INFO, c, true);
 
@@ -296,7 +297,7 @@ static void print_cfg_commands__ok(void **state) {
 	smap_put(c->user_modes, "res", user_mode_init("res", false, 4, 5, -1, false));
 	smap_put(c->user_modes, "max", user_mode_init("max", true, 7, 8, 9, false));
 
-	slist_append(&c->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
+	smap_put(c->user_transforms, "seven", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED_90));
 
 	pset_add(c->disableds, disabled_init_always("three"));
 	pset_add(c->disableds, disabled_init_always("four"));

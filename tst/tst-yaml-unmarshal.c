@@ -116,7 +116,7 @@ static void yaml_root_to_cfg__root_mistyped(void **state) {
 
 static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_transforms, cfg_user_transform_init("one", WL_OUTPUT_TRANSFORM_FLIPPED));
+	smap_put(expected->user_transforms, "one", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-transform.yaml", expected, "tst/yaml/cfg-transform.log");
 }

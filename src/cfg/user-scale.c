@@ -6,6 +6,8 @@
 #include "log.h"
 #include "smap.h"
 
+// TODO SMapF or SMapI
+
 static bool user_scale_equal(const void *a, const void *b) {
 	if (!a || !b) {
 		return false;

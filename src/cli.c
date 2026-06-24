@@ -11,6 +11,7 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "convert.h"
 #include "ipc.h"
 #include "log.h"
@@ -70,7 +71,7 @@ void usage(FILE *stream) {
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
 	struct UserScale *user_scale = NULL;
 	struct UserMode *user_mode = NULL;
-	struct UserTransform *user_transform = NULL;
+	enum wl_output_transform wl_transform = 0;
 
 	struct Cfg *cfg = cfg_init();
 
@@ -153,14 +154,12 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			switch (command) {
 				case CFG_SET:
 					// parse input value
-					user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
-					user_transform->name_desc = strdup(argv[optind]);
-					parsed = (user_transform->transform = transform_val(argv[optind + 1]));
-					slist_append(&cfg->user_transforms, user_transform);
+					parsed = (wl_transform = transform_val(argv[optind + 1]));
+					smap_put(cfg->user_transforms, argv[optind], cfg_user_transform_init(wl_transform));
 					break;
 				case CFG_DEL:
 					// dummy value
-					slist_append(&cfg->user_transforms, cfg_user_transform_init(argv[optind], WL_OUTPUT_TRANSFORM_90));
+					smap_put(cfg->user_transforms, argv[optind], cfg_user_transform_init(WL_OUTPUT_TRANSFORM_90));
 					parsed = true;
 					break;
 				default:

@@ -9,6 +9,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-scale.h"
+#include "cfg/user-transform.h"
 #include "conditions.h"
 #include "convert.h"
 #include "displ.h"
@@ -242,13 +243,10 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	const struct UserTransform *user_transform;
-	for (struct SList *i = g_cfg->user_transforms; i; i = i->nex) {
-		user_transform = (struct UserTransform*)i->val;
-		if (head_matches_name_desc(head, user_transform->name_desc)) {
-			head->desired.transform = user_transform->transform;
-			return;
-		}
+	const struct UserTransform *user_transform = smap_match(g_cfg->user_transforms, (fn_match_smap)head_name_desc_x_matches_head, head).val;
+	if (user_transform) {
+		head->desired.transform = user_transform->transform;
+		return;
 	}
 
 	// normal if not specified
