@@ -27,11 +27,12 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "wrap-libyaml.h"
-
 #include "yaml/unmarshal-types.h"
+
 #include "yaml/unmarshal.h"
 
 #include "yaml/data.c"

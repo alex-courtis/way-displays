@@ -7,19 +7,17 @@
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "cfg/disabled.h"
 #include "ipc.h"
 #include "log.h"
 #include "pset.h"
-#include "slist.h"
 #include "smap.h"
 #include "sset.h"
 

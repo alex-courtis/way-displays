@@ -18,7 +18,6 @@
 #include "mode.h"
 #include "process.h"
 #include "pset.h"
-#include "slist.h"
 #include "smap.h"
 #include "sset.h"
 #include "str.h"

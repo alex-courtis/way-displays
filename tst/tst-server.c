@@ -14,9 +14,7 @@
 #include "cfg.h"
 #include "log.h"
 #include "sset.h"
-#include "slist.h"
 #include "yaml/unmarshal.h"
-
 
 void load_cfg(void);
 void reload_cfg(void);

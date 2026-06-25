@@ -596,7 +596,7 @@ static void validate_fix__auto_scale_dpi(void **state) {
 }
 
 static void validate_warn__(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
 	smap_put(s->expected->user_scales, "sss", user_scale_init(1));
 	smap_put(s->expected->user_scales, "ssssssss", user_scale_init(2));
