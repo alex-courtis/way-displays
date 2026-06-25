@@ -60,7 +60,7 @@ static void _check_marshalled(char *actual, const char *expected_path, const cha
 static void yaml_doc_cfg__ok(void **state) {
 	struct Cfg *cfg = cfg_all();
 
-	check_marshalled(yaml_marshal(cfg, (yaml_doc_fn)yaml_doc_cfg, "cfg"), "tst/yaml/cfg-all.yaml");
+	check_marshalled(yaml_marshal(cfg, (fn_yaml_doc)yaml_doc_cfg, "cfg"), "tst/yaml/cfg-all.yaml");
 
 	cfg_free(cfg);
 
@@ -70,7 +70,7 @@ static void yaml_doc_cfg__ok(void **state) {
 static void yaml_doc_cfg__default(void **state) {
 	struct Cfg *cfg = cfg_default();
 
-	check_marshalled(yaml_marshal(cfg, (yaml_doc_fn)yaml_doc_cfg, "cfg"), "tst/yaml/cfg-default.yaml");
+	check_marshalled(yaml_marshal(cfg, (fn_yaml_doc)yaml_doc_cfg, "cfg"), "tst/yaml/cfg-default.yaml");
 
 	cfg_free(cfg);
 
@@ -80,7 +80,7 @@ static void yaml_doc_cfg__default(void **state) {
 static void yaml_doc_cfg__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
-	check_marshalled(yaml_marshal(cfg, (yaml_doc_fn)yaml_doc_cfg, "cfg"), "tst/yaml/empty.yaml");
+	check_marshalled(yaml_marshal(cfg, (fn_yaml_doc)yaml_doc_cfg, "cfg"), "tst/yaml/empty.yaml");
 
 	cfg_free(cfg);
 
@@ -91,7 +91,7 @@ static void yaml_doc_cfg__empty(void **state) {
 static void yaml_doc_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
-	assert_nul(yaml_marshal(ipc_request, (yaml_doc_fn)yaml_doc_ipc_request, "ipc request"));
+	assert_nul(yaml_marshal(ipc_request, (fn_yaml_doc)yaml_doc_ipc_request, "ipc request"));
 
 	assert_log(ERROR, "unable to marshal ipc request: missing OP\n");
 
@@ -107,7 +107,7 @@ static void yaml_doc_ipc_request__cfg_set(void **state) {
 
 	ipc_request->cfg = cfg_all();
 
-	check_marshalled(yaml_marshal(ipc_request, (yaml_doc_fn)yaml_doc_ipc_request, "ipc request"), "tst/yaml/ipc-request-cfg-set.yaml");
+	check_marshalled(yaml_marshal(ipc_request, (fn_yaml_doc)yaml_doc_ipc_request, "ipc request"), "tst/yaml/ipc-request-cfg-set.yaml");
 
 	ipc_request_free(ipc_request);
 
@@ -117,7 +117,7 @@ static void yaml_doc_ipc_request__cfg_set(void **state) {
 static void yaml_doc_ipc_operation__map(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 
-	check_marshalled(yaml_marshal(ipc_operation, (yaml_doc_fn)yaml_doc_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-map.yaml");
+	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_doc)yaml_doc_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-map.yaml");
 
 	ipc_operation_free(ipc_operation);
 
@@ -130,7 +130,7 @@ static void yaml_doc_ipc_operation__seq(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 	ipc_operation->request->command = LIST;
 
-	check_marshalled(yaml_marshal(ipc_operation, (yaml_doc_fn)yaml_doc_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-seq.yaml");
+	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_doc)yaml_doc_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-seq.yaml");
 
 	ipc_operation_free(ipc_operation);
 
@@ -145,7 +145,7 @@ static void yaml_marshal__yaml_document_initialize_fail(void **state) {
 
 	yaml_document_initialize__fail = true;
 
-	const char *actual = yaml_marshal(cfg, (yaml_doc_fn)yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, (fn_yaml_doc)yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 
@@ -161,7 +161,7 @@ static void yaml_marshal__yaml_emitter_initialize_fail(void **state) {
 
 	yaml_emitter_initialize__fail = true;
 
-	const char *actual = yaml_marshal(cfg, (yaml_doc_fn)yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, (fn_yaml_doc)yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 
@@ -177,7 +177,7 @@ static void yaml_marshal__yaml_emitter_open_fail(void **state) {
 
 	yaml_emitter_open__fail = true;
 
-	const char *actual = yaml_marshal(cfg, (yaml_doc_fn)yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, (fn_yaml_doc)yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 
@@ -194,7 +194,7 @@ static void yaml_marshal__yaml_emitter_dump_fail(void **state) {
 
 	yaml_emitter_dump__fail = true;
 
-	const char *actual = yaml_marshal(cfg, (yaml_doc_fn)yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, (fn_yaml_doc)yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 
@@ -210,7 +210,7 @@ static void yaml_marshal__yaml_emitter_close_fail(void **state) {
 
 	yaml_emitter_close__fail = true;
 
-	const char *actual = yaml_marshal(cfg, (yaml_doc_fn)yaml_doc_cfg, "cfg");
+	const char *actual = yaml_marshal(cfg, (fn_yaml_doc)yaml_doc_cfg, "cfg");
 
 	assert_nul(actual);
 

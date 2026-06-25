@@ -77,30 +77,30 @@ bool yaml_map_populate_cfg(struct MC *c, const struct Cfg* const cfg, int mappin
 		return true;
 
 	return
-		yaml_map_add_enum    (c, cfg_element_name(ARRANGE),               cfg->arrange,               arrange_name,                                               mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(ALIGN),                 cfg->align,                 align_name,                                                 mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(ARRANGE),               cfg->arrange,               arrange_name,                                       mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(ALIGN),                 cfg->align,                 align_name,                                         mapping) &&
 
-		yaml_map_add_seq_sset(c, cfg_element_name(ORDER),                 cfg->order_name_desc,       yaml_seq_append_str,                                        mapping) &&
+		yaml_map_add_seq_sset(c, cfg_element_name(ORDER),                 cfg->order_name_desc,       yaml_seq_append_str,                                mapping) &&
 
-		yaml_map_add_enum    (c, cfg_element_name(SCALING),               cfg->scaling,               on_off_name,                                                mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_TO),        cfg->scale_round_to,        scale_round_to_name,                                        mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_STRATEGY),  cfg->scale_round_strategy,  scale_round_strategy_name,                                  mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(AUTO_SCALE),            cfg->auto_scale,            on_off_name,                                                mapping) &&
-		yaml_map_add_int_nz  (c, cfg_element_name(AUTO_SCALE_DPI),        cfg->auto_scale_dpi,                                                                    mapping) &&
-		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                                    mapping) &&
-		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                                    mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(SCALING),               cfg->scaling,               on_off_name,                                        mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_TO),        cfg->scale_round_to,        scale_round_to_name,                                mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_STRATEGY),  cfg->scale_round_strategy,  scale_round_strategy_name,                          mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(AUTO_SCALE),            cfg->auto_scale,            on_off_name,                                        mapping) &&
+		yaml_map_add_int_nz  (c, cfg_element_name(AUTO_SCALE_DPI),        cfg->auto_scale_dpi,                                                            mapping) &&
+		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                            mapping) &&
+		yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                            mapping) &&
 
-		yaml_map_add_seq_smap(c, cfg_element_name(SCALE),                 cfg->user_scales,           (yaml_seq_append_key_val_fn)yaml_seq_append_user_scale,     mapping) &&
-		yaml_map_add_seq_smap(c, cfg_element_name(MODE),                  cfg->user_modes,            (yaml_seq_append_key_val_fn)yaml_seq_append_user_mode,      mapping) &&
-		yaml_map_add_seq_smap(c, cfg_element_name(TRANSFORM),             cfg->user_transforms,       (yaml_seq_append_key_val_fn)yaml_seq_append_user_transform, mapping) &&
-		yaml_map_add_seq_sset(c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,     yaml_seq_append_str,                                        mapping) &&
+		yaml_map_add_seq_smap(c, cfg_element_name(SCALE),                 cfg->user_scales,           (fn_yaml_seq_app_kv)yaml_seq_append_user_scale,     mapping) &&
+		yaml_map_add_seq_smap(c, cfg_element_name(MODE),                  cfg->user_modes,            (fn_yaml_seq_app_kv)yaml_seq_append_user_mode,      mapping) &&
+		yaml_map_add_seq_smap(c, cfg_element_name(TRANSFORM),             cfg->user_transforms,       (fn_yaml_seq_app_kv)yaml_seq_append_user_transform, mapping) &&
+		yaml_map_add_seq_sset(c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,     yaml_seq_append_str,                                mapping) &&
 
-		yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                                      mapping) &&
-		yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                             mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                                                mapping) &&
-		yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,                                         mapping) &&
+		yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                              mapping) &&
+		yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                     mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                                        mapping) &&
+		yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,                                 mapping) &&
 
-		yaml_map_add_seq_pset(c, cfg_element_name(DISABLED),              cfg->disableds,             (yaml_seq_append_val_fn)yaml_seq_append_disabled,           mapping);
+		yaml_map_add_seq_pset(c, cfg_element_name(DISABLED),              cfg->disableds,             (fn_yaml_seq_app_v)yaml_seq_append_disabled,        mapping);
 }
 
 bool yaml_map_populate_ipc_operation(struct MC *c, struct IpcOperation* const ipc_operation, int mapping) {
@@ -114,7 +114,7 @@ bool yaml_map_populate_ipc_operation(struct MC *c, struct IpcOperation* const ip
 		return false;
 
 	if (ipc_operation->send_state) {
-		if (!yaml_map_add_map(c, "CFG", g_cfg, (yaml_map_populate_fn)yaml_map_populate_cfg, mapping))
+		if (!yaml_map_add_map(c, "CFG", g_cfg, (fn_yaml_map_pop)yaml_map_populate_cfg, mapping))
 			return false;
 		if (!yaml_map_add_map(c, "STATE", g_heads, yaml_map_populate_state, mapping))
 			return false;
@@ -137,7 +137,7 @@ bool yaml_map_populate_ipc_request(struct MC *c, const struct IpcRequest* const 
 	if (ipc_request->log_threshold)
 		yaml_map_add_str(c, "LOG_THRESHOLD", log_threshold_name(ipc_request->log_threshold), mapping);
 
-	yaml_map_add_map(c, "CFG", ipc_request->cfg, (yaml_map_populate_fn)yaml_map_populate_cfg, mapping);
+	yaml_map_add_map(c, "CFG", ipc_request->cfg, (fn_yaml_map_pop)yaml_map_populate_cfg, mapping);
 
 	return true;
 }
@@ -173,7 +173,7 @@ bool yaml_map_populate_head_state(struct MC *c, const struct HeadState* const he
 		yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                 mapping) &&
 		yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name, mapping) &&
 
-		yaml_map_add_map     (c, "MODE", head_state->mode, (yaml_map_populate_fn)yaml_map_populate_mode, mapping);
+		yaml_map_add_map     (c, "MODE", head_state->mode, (fn_yaml_map_pop)yaml_map_populate_mode, mapping);
 }
 
 bool yaml_map_populate_head_overrides(struct MC *c, const struct Head* const head, int mapping) {
@@ -237,15 +237,14 @@ bool yaml_map_populate_messages(struct MC *c, struct IpcOperation* const ipc_ope
 	}
 }
 
-// cppcheck-suppress funcArgNamesDifferent
 bool yaml_map_populate_state(struct MC *c, const void* const unused, int mapping) {
 	if (!mapping)
 		return false;
 
-	if (g_lid && !yaml_map_add_map(c, "LID", g_lid, (yaml_map_populate_fn)yaml_map_populate_lid, mapping))
+	if (g_lid && !yaml_map_add_map(c, "LID", g_lid, (fn_yaml_map_pop)yaml_map_populate_lid, mapping))
 		return false;
 
-	if (g_heads && !yaml_map_add_seq_list(c, "HEADS", g_heads, (yaml_seq_append_val_fn)yaml_seq_append_head,  mapping))
+	if (g_heads && !yaml_map_add_seq_list(c, "HEADS", g_heads, (fn_yaml_seq_app_v)yaml_seq_append_head,  mapping))
 		return false;
 
 	return true;
@@ -336,7 +335,7 @@ bool yaml_seq_append_disabled(struct MC *c, const struct Disabled* const disable
 
 		return map &&
 			yaml_map_add_str(c, "NAME_DESC", disabled->name_desc, map) &&
-			yaml_map_add_seq_pset(c, "IF", disabled->conditions, (yaml_seq_append_val_fn)yaml_seq_append_condition, map) &&
+			yaml_map_add_seq_pset(c, "IF", disabled->conditions, (fn_yaml_seq_app_v)yaml_seq_append_condition, map) &&
 			yaml_document_append_sequence_item(&c->d, sequence, map);
 	} else {
 		return yaml_seq_append_str(c,disabled->name_desc, sequence);
@@ -376,10 +375,10 @@ bool yaml_seq_append_head(struct MC *c, const struct Head* const head, int seque
 		yaml_map_add_int(c, "WIDTH_MM",      head->width_mm,      map) &&
 		yaml_map_add_int(c, "HEIGHT_MM",     head->height_mm,     map) &&
 
-		yaml_map_add_map     (c, "CURRENT",   &head->current,  (yaml_map_populate_fn)yaml_map_populate_head_state,     map) &&
-		yaml_map_add_map     (c, "DESIRED",   &head->desired,  (yaml_map_populate_fn)yaml_map_populate_head_state,     map) &&
-		yaml_map_add_map     (c, "OVERRIDES", head,            (yaml_map_populate_fn)yaml_map_populate_head_overrides, map) &&
-		yaml_map_add_seq_list(c, "MODES",     head->modes,     (yaml_map_populate_fn)yaml_seq_append_mode,             map) &&
+		yaml_map_add_map     (c, "CURRENT",   &head->current,  (fn_yaml_map_pop)yaml_map_populate_head_state,     map) &&
+		yaml_map_add_map     (c, "DESIRED",   &head->desired,  (fn_yaml_map_pop)yaml_map_populate_head_state,     map) &&
+		yaml_map_add_map     (c, "OVERRIDES", head,            (fn_yaml_map_pop)yaml_map_populate_head_overrides, map) &&
+		yaml_map_add_seq_list(c, "MODES",     head->modes,     (fn_yaml_map_pop)yaml_seq_append_mode,             map) &&
 
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }

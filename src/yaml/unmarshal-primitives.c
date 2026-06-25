@@ -87,28 +87,28 @@ bool yaml_scalar_to_float_def(struct UC *c, float *dst, float def, const yaml_no
 }
 
 // cppcheck-suppress funcArgNamesDifferentUnnamed
-int yaml_scalar_to_enum(struct UC *c, const yaml_node_t *scalar, enum_val_fn val_fn, enum_names_fn names_fn) {
-	yaml_unmarshal_log_valid_values_fn(c, names_fn);
+int yaml_scalar_to_enum(struct UC *c, const yaml_node_t *scalar, fn_enum_val val, fn_enum_names names) {
+	yaml_unmarshal_log_enum_names(c, names);
 
 	int ret = 0;
 
 	if (yaml_check_node_type(c, scalar, YAML_SCALAR_NODE)) {
-		ret = val_fn((char*)scalar->data.scalar.value);
+		ret = val((char*)scalar->data.scalar.value);
 		if (!ret) {
 			yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value);
 		}
 	}
 
-	yaml_unmarshal_log_valid_values_fn(c, NULL);
+	yaml_unmarshal_log_enum_names(c, NULL);
 
 	return ret;
 }
 
 // cppcheck-suppress funcArgNamesDifferentUnnamed
-int yaml_scalar_to_enum_def(struct UC *c, const int def, const yaml_node_t *scalar, enum_val_fn val_fn, enum_name_fn name_fn, enum_names_fn names_fn) {
-	yaml_unmarshal_log_def(c, name_fn(def));
+int yaml_scalar_to_enum_def(struct UC *c, const int def, const yaml_node_t *scalar, fn_enum_val val, fn_enum_name name, fn_enum_names names) {
+	yaml_unmarshal_log_def(c, name(def));
 
-	int ret = yaml_scalar_to_enum(c, scalar, val_fn, names_fn);
+	int ret = yaml_scalar_to_enum(c, scalar, val, names);
 	if (!ret)
 		ret = def;
 
@@ -128,7 +128,7 @@ bool yaml_scalar_to_boolean(struct UC *c, bool *dst, const yaml_node_t *scalar) 
 	return false;
 }
 
-bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, yaml_node_into_col_fn fn) {
+bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn_yaml_node_into_col fn) {
 	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !col)
 		return false;
 

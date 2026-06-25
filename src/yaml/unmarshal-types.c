@@ -151,7 +151,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->auto_scale = yaml_scalar_to_enum_def(c, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name, on_off_names);
 				break;
 			case SCALE:
-				yaml_seq_into_col(c, value, cfg->user_scales, yaml_map_into_user_scales);
+				yaml_seq_into_col(c, value, cfg->user_scales, (fn_yaml_node_into_col)yaml_map_into_user_scales);
 				break;
 			case SCALE_ROUND_TO:
 				cfg->scale_round_to = yaml_scalar_to_scale_round_to(c, value);
@@ -160,10 +160,10 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->scale_round_strategy = yaml_scalar_to_enum_def(c, SCALE_ROUND_STRATEGY_DEFAULT, value, scale_round_strategy_val, scale_round_strategy_name, scale_round_strategy_names);
 				break;
 			case MODE:
-				yaml_seq_into_col(c, value, cfg->user_modes, yaml_map_into_user_modes);
+				yaml_seq_into_col(c, value, cfg->user_modes, (fn_yaml_node_into_col)yaml_map_into_user_modes);
 				break;
 			case TRANSFORM:
-				yaml_seq_into_col(c, value, cfg->user_transforms, yaml_map_into_user_transforms);
+				yaml_seq_into_col(c, value, cfg->user_transforms, (fn_yaml_node_into_col)yaml_map_into_user_transforms);
 				break;
 			case VRR_OFF:
 				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, value);
@@ -186,7 +186,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->log_threshold = yaml_scalar_to_enum(c, value, log_threshold_val, log_threshold_names);
 				break;
 			case DISABLED:
-				yaml_seq_into_col(c, value, cfg->disableds, yaml_node_into_disableds);
+				yaml_seq_into_col(c, value, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds);
 				break;
 			case AUTO_SCALE_DPI:
 				yaml_scalar_to_int_def(c, &cfg->auto_scale_dpi, AUTO_SCALE_DPI_DEFAULT, value);
@@ -206,8 +206,8 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 	return cfg;
 }
 
-void yaml_map_into_ipc_responses(struct UC *c, const void *col, const yaml_node_t *map) {
-	if (!col)
+void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses, const yaml_node_t *map) {
+	if (!ipc_responses)
 		return;
 
 	// log exceptions and fail for required fields
@@ -217,7 +217,6 @@ void yaml_map_into_ipc_responses(struct UC *c, const void *col, const yaml_node_
 	if (!nodes)
 		return;
 
-	struct SList **ipc_responses = (struct SList**)col;
 	struct IpcResponse *ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
 
 	yaml_unmarshal_log_ctx_top(c, "DONE");
@@ -246,7 +245,7 @@ void yaml_map_into_ipc_responses(struct UC *c, const void *col, const yaml_node_
 
 			ipc_response->lid =	yaml_map_to_lid(c, smap_get(nodes_state, "LID"));
 
-			yaml_seq_into_col(c, smap_get(nodes_state, "HEADS"), &ipc_response->heads, yaml_map_into_heads);
+			yaml_seq_into_col(c, smap_get(nodes_state, "HEADS"), &ipc_response->heads, (fn_yaml_node_into_col)yaml_map_into_heads);
 
 			smap_free(nodes_state);
 		}
@@ -255,10 +254,10 @@ void yaml_map_into_ipc_responses(struct UC *c, const void *col, const yaml_node_
 	yaml_unmarshal_log_ctx_top(c, "MESSAGES");
 	const yaml_node_t *messages = smap_get(nodes, "MESSAGES");
 	if (messages) {
-		ipc_response->log_cap_lines = yaml_seq_to_log_cap_lines(c, messages);
+		yaml_seq_into_col(c, messages, &ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
 	}
 
-	slist_append(ipc_responses, ipc_response);
+	slist_append((struct SList**)ipc_responses, ipc_response);
 
 	goto end;
 
@@ -270,15 +269,14 @@ end:
 	smap_free(nodes);
 }
 
-void yaml_map_into_conditions(struct UC *c, const void *col, const yaml_node_t *map) {
-	if (!col)
+void yaml_map_into_conditions(struct UC *c, const struct PSet* const conditions, const yaml_node_t *map) {
+	if (!conditions)
 		return;
 
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
 	if (!nodes)
 		return;
 
-	const struct PSet *conditions = col;
 	struct Condition *condition = condition_init();
 
 	yaml_unmarshal_log_ctx_key(c, "PLUGGED");
@@ -319,15 +317,14 @@ end:
 	smap_free(nodes);
 }
 
-void yaml_map_into_user_scales(struct UC *c, const void *col, const yaml_node_t *map) {
-	if (!col)
+void yaml_map_into_user_scales(struct UC *c, const struct SMap* const user_scales, const yaml_node_t *map) {
+	if (!user_scales)
 		return;
 
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
 	if (!nodes)
 		return;
 
-	const struct SMap *user_scales = col;
 	struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
 
 	char *name_desc = NULL;
@@ -363,15 +360,14 @@ end:
 	return;
 }
 
-void yaml_map_into_user_modes(struct UC *c, const void *col, const yaml_node_t *map) {
-	if (!col)
+void yaml_map_into_user_modes(struct UC *c, const struct SMap* const user_modes, const yaml_node_t *map) {
+	if (!user_modes)
 		return;
 
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
 	if (!nodes)
 		return;
 
-	const struct SMap *user_modes = col;
 	struct UserMode *user_mode = user_mode_init_default();
 
 	char *name_desc = NULL;
@@ -424,15 +420,14 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_map_into_user_transforms(struct UC *c, const void *col, const yaml_node_t *map) {
-	if (!col)
+void yaml_map_into_user_transforms(struct UC *c, const struct SMap* const user_transforms, const yaml_node_t *map) {
+	if (!user_transforms)
 		return;
 
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
 	if (!nodes)
 		return;
 
-	const struct SMap *user_transforms = col;
 	struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
 
 	char *name_desc = NULL;
@@ -498,26 +493,25 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
 	return mode;
 }
 
-void yaml_map_into_modes(struct UC *c, const void *col, const yaml_node_t *map) {
+void yaml_map_into_modes(struct UC *c, struct SList **modes, const yaml_node_t *map) {
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
-	if (!nodes)
+	if (!modes)
 		return;
 
 	struct Mode *mode = yaml_map_to_mode(c, map);
 
 	if (mode) {
-		slist_append((struct SList**)col, mode);
+		slist_append(modes, mode);
 	}
 
 	smap_free(nodes);
 }
 
-void yaml_map_into_heads(struct UC *c, const void *col, const yaml_node_t *map) {
+void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *map) {
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
-	if (!nodes)
+	if (!heads)
 		return;
 
-	struct SList **heads = (struct SList**)col;
 	struct Head *head = (struct Head*)calloc(1, sizeof(struct Head));
 
 	head->name = yaml_scalar_to_string(c, smap_get(nodes, "NAME"));
@@ -531,7 +525,7 @@ void yaml_map_into_heads(struct UC *c, const void *col, const yaml_node_t *map) 
 	yaml_map_to_head_state(c, &head->current, smap_get(nodes,"CURRENT"));
 	yaml_map_to_head_state(c, &head->desired, smap_get(nodes,"DESIRED"));
 
-	yaml_seq_into_col(c, smap_get(nodes, "MODES"), &head->modes, yaml_map_into_modes);
+	yaml_seq_into_col(c, smap_get(nodes, "MODES"), &head->modes, (fn_yaml_node_into_col)yaml_map_into_modes);
 
 	const struct SMap *nodes_overrides = yaml_map_to_node_table(c, smap_get(nodes, "OVERRIDES"));
 	if (nodes_overrides) {
@@ -547,11 +541,10 @@ void yaml_map_into_heads(struct UC *c, const void *col, const yaml_node_t *map) 
 	smap_free(nodes_overrides);
 }
 
-void yaml_node_into_disableds(struct UC *c, const void *col, const yaml_node_t *node) {
-	if (!col)
+void yaml_node_into_disableds(struct UC *c, const struct PSet* const disableds, const yaml_node_t *node) {
+	if (!disableds)
 		return;
 
-	const struct PSet *disableds = col;
 	struct Disabled *disabled = NULL;
 
 	const struct SMap *node_map = NULL;
@@ -585,7 +578,7 @@ void yaml_node_into_disableds(struct UC *c, const void *col, const yaml_node_t *
 				yaml_unmarshal_log_ctx_key(c, "IF");
 				const yaml_node_t *map = smap_get(node_map, "IF");
 				if (map)
-					yaml_seq_into_col(c, map, disabled->conditions, yaml_map_into_conditions);
+					yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 
 				pset_add(disableds, disabled);
 
@@ -636,43 +629,29 @@ bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const ya
 	return true;
 }
 
-struct SList *yaml_seq_to_log_cap_lines(struct UC *c, const yaml_node_t *seq) {
-	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
-		return NULL;
+void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines, const yaml_node_t *map) {
+	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	if (!nodes)
+		return;
 
-	struct SList *list = NULL;
+	// unmarshal many pairs even though schema specifies exactly one
+	for (const struct SMapIt *i = smap_it(nodes); i; i = smap_it_next(i)) {
 
-	for (yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
+		enum LogThreshold threshold = log_threshold_val(i->key);
+		char *line = yaml_scalar_to_string(c, i->val);
 
-		const yaml_node_t *node = yaml_document_get_node(&c->d, *item);
-		if (!node)
-			continue;
+		if (threshold && line) {
+			struct LogCapLine *log_cap_line = (struct LogCapLine*)calloc(1, sizeof(struct LogCapLine));
+			log_cap_line->threshold = threshold;
+			log_cap_line->line = strdup(line);
+			slist_append(log_cap_lines, log_cap_line);
 
-		const struct SMap *nodes_line = yaml_map_to_node_table(c, node);
-		if (!nodes_line)
-			return NULL;
-
-		// unmarshal many pairs even though schema specifies exactly one
-		for (const struct SMapIt *i = smap_it(nodes_line); i; i = smap_it_next(i)) {
-
-			enum LogThreshold threshold = log_threshold_val(i->key);
-			char *line = yaml_scalar_to_string(c, i->val);
-
-			if (threshold && line) {
-				struct LogCapLine *log_cap_line = (struct LogCapLine*)calloc(1, sizeof(struct LogCapLine));
-				log_cap_line->threshold = threshold;
-				log_cap_line->line = strdup(line);
-				slist_append(&list, log_cap_line);
-
-			}
-
-			free(line);
 		}
 
-		smap_free(nodes_line);
+		free(line);
 	}
 
-	return list;
+	smap_free(nodes);
 }
 
 char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar) {
@@ -692,7 +671,7 @@ unsigned int yaml_scalar_to_scale_round_to(struct UC *c, const yaml_node_t *scal
 	unsigned int ret;
 
 	yaml_unmarshal_log_def(c, scale_round_to_name(SCALE_ROUND_TO_DEFAULT));
-	c->valid_names_fn = scale_round_to_names;
+	c->enum_names = scale_round_to_names;
 
 	if (!yaml_scalar_to_float(c, &val, scalar)) {
 		ret = SCALE_ROUND_TO_DEFAULT;
@@ -708,7 +687,7 @@ unsigned int yaml_scalar_to_scale_round_to(struct UC *c, const yaml_node_t *scal
 
 end:
 	yaml_unmarshal_log_def(c, NULL);
-	c->valid_names_fn = NULL;
+	c->enum_names = NULL;
 
 	return ret;
 }

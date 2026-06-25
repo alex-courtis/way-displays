@@ -39,7 +39,7 @@ static void log_error_yaml(const char *yaml) {
 		log_error("========================================\n%s\n----------------------------------------", yaml);
 }
 
-void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
+void *yaml_unmarshal_file(const char *path, fn_yaml_root_to fn) {
 	if (!path) {
 		return NULL;
 	}
@@ -98,7 +98,7 @@ end:
 }
 
 // cppcheck-suppress funcArgNamesDifferentUnnamed
-void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human) {
+void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to fn, char *human) {
 	if (!yaml || !human)
 		return NULL;
 
@@ -164,8 +164,8 @@ void yaml_unmarshal_log_ctx_top(struct UC *c, const char *top) {
 	strncpy(c->top, top ? top : "", sizeof(c->top) - 1);
 }
 
-void yaml_unmarshal_log_valid_values_fn(struct UC *c, enum_names_fn fn) {
-	c->valid_names_fn = fn;
+void yaml_unmarshal_log_enum_names(struct UC *c, fn_enum_names fn) {
+	c->enum_names = fn;
 }
 
 static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_node_type_t type_expected, const yaml_node_type_t type_actual) {
@@ -187,8 +187,8 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 		msg = sprintf_append(msg, " expected %s, got %s", yaml_node_type_str(type_expected), yaml_node_type_str(type_actual));
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
-	if (c->valid_names_fn) {
-		char *valids = c->valid_names_fn();
+	if (c->enum_names) {
+		char *valids = c->enum_names();
 		if (valids) {
 			msg = sprintf_append(msg, ", valid values: %s", valids);
 			free(valids);
