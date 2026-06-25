@@ -83,10 +83,10 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->file_path =             from->file_path ?             strdup(from->file_path) :             NULL;
 	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
-	to->max_preferred_refresh_name_desc = slist_clone(from->max_preferred_refresh_name_desc, fn_clone_strdup);
-	to->order_name_desc =                 slist_clone(from->order_name_desc, fn_clone_strdup);
+	to->adaptive_sync_off =               sset_clone(from->adaptive_sync_off);
+	to->max_preferred_refresh_name_desc = sset_clone(from->max_preferred_refresh_name_desc);
+	to->order_name_desc =                 sset_clone(from->order_name_desc);
 
-	to->adaptive_sync_off = sset_clone(from->adaptive_sync_off);
 	to->disableds =         pset_clone_deep(from->disableds);
 	to->user_modes =        smap_clone_deep(from->user_modes);
 	to->user_scales =       smap_clone_deep(from->user_scales);
@@ -109,8 +109,8 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		fn_equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
 		a->laptop_lid_monitor == b->laptop_lid_monitor &&
 		a->log_threshold == b->log_threshold &&
-		slist_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc, (fn_equal)fn_equal_strcmp) &&
-		slist_equal(a->order_name_desc, b->order_name_desc, (fn_equal)fn_equal_strcmp) &&
+		sset_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc) &&
+		sset_equal(a->order_name_desc, b->order_name_desc) &&
 		a->scale_round_strategy == b->scale_round_strategy &&
 		a->scale_round_to == b->scale_round_to &&
 		a->scaling == b->scaling &&
@@ -125,7 +125,10 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 struct Cfg *cfg_init(void) {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
-	cfg->adaptive_sync_off = sset_init();
+	cfg->adaptive_sync_off =               sset_init();
+	cfg->max_preferred_refresh_name_desc = sset_init();
+	cfg->order_name_desc =                 sset_init();
+
 	cfg->disableds =         disabled_pset_init();
 	cfg->user_modes =        user_mode_smap_init();
 	cfg->user_scales =       user_scale_smap_init();
@@ -284,9 +287,9 @@ void validate_warn(const struct Cfg * const cfg) {
 		warn_ambiguous_name_desc(it->key, "TRANSFORM");
 	}
 
-	warn_ambiguous_name_desc_list(cfg->order_name_desc, "ORDER");
+	warn_ambiguous_name_desc_sset(cfg->order_name_desc, "ORDER");
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, "VRR_OFF");
-	warn_ambiguous_name_desc_list(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
+	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
 
 	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 		if (it->val) {
@@ -322,10 +325,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// ORDER, replace
-	if (from->order_name_desc) {
-		slist_free_vals(&merged->order_name_desc, NULL);
-		merged->order_name_desc = slist_clone(from->order_name_desc, fn_clone_strdup);
-	}
+	sset_free(merged->order_name_desc);
+	merged->order_name_desc = sset_clone(from->order_name_desc);
 
 	// SCALING
 	if (from->scaling) {
@@ -587,22 +588,14 @@ void cfg_free(struct Cfg *cfg) {
 	cfg_paths_free(cfg);
 
 	free(cfg->callback_cmd);
-
 	free(cfg->laptop_display_prefix);
-
-	slist_free_vals(&cfg->order_name_desc, NULL);
-
-	smap_free_vals(cfg->user_scales);
-
-	smap_free_vals(cfg->user_modes);
-
-	sset_free(cfg->adaptive_sync_off);
-
-	slist_free_vals(&cfg->max_preferred_refresh_name_desc, NULL);
-
 	pset_free_vals(cfg->disableds);
-
+	smap_free_vals(cfg->user_modes);
+	smap_free_vals(cfg->user_scales);
 	smap_free_vals(cfg->user_transforms);
+	sset_free(cfg->adaptive_sync_off);
+	sset_free(cfg->max_preferred_refresh_name_desc);
+	sset_free(cfg->order_name_desc);
 
 	free(cfg);
 }

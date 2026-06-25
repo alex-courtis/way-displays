@@ -149,10 +149,10 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		log_(t, "  Align at the %s", align_name(cfg->align));
 	}
 
-	if (cfg->order_name_desc) {
+	if (sset_size(cfg->order_name_desc) > 0) {
 		log_(t, "  Order:");
-		for (struct SList *i = cfg->order_name_desc; i; i = i->nex) {
-			log_(t, "    %s", (char*)i->val);
+		for (const struct SSetIt *it = sset_it(cfg->order_name_desc); it; it = sset_it_next(it)) {
+			log_(t, "    %s", it->val);
 		}
 	}
 
@@ -204,10 +204,10 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (cfg->max_preferred_refresh_name_desc) {
+	if (sset_size(cfg->max_preferred_refresh_name_desc) > 0) {
 		log_(t, "  Max preferred refresh:");
-		for (struct SList *i = cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
-			log_(t, "    %s", (char*)i->val);
+		for (const struct SSetIt *it = sset_it(cfg->max_preferred_refresh_name_desc); it; it = sset_it_next(it)) {
+			log_(t, "    %s", it->val);
 		}
 	}
 
@@ -249,11 +249,11 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 		log_(t, "way-displays -s ARRANGE_ALIGN %s %s", arrange_name(cfg->arrange), align_name(cfg->align));
 	}
 
-	if (cfg->order_name_desc) {
+	if (sset_size(cfg->order_name_desc) > 0) {
 		char *msg = NULL;
 
-		for (struct SList *i = cfg->order_name_desc; i; i = i->nex) {
-			msg = sprintf_append(msg, "'%s' ", (char*)i->val);
+		for (const struct SSetIt *it = sset_it(cfg->order_name_desc); it; it = sset_it_next(it)) {
+			msg = sprintf_append(msg, "'%s' ", it->val);
 		}
 
 		log_(t, NULL);
@@ -320,7 +320,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	newline = true;
 	for (const struct SSetIt *it = sset_it(cfg->adaptive_sync_off); it; it = sset_it_next(it)) {
 		print_newline(t, &newline);
-		log_(t, "way-displays -s VRR_OFF '%s'", (char*)it->val);
+		log_(t, "way-displays -s VRR_OFF '%s'", it->val);
 	}
 
 	newline = true;

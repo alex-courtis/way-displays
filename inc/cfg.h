@@ -64,7 +64,7 @@ struct Cfg {
 	char *callback_cmd;
 	char *laptop_display_prefix;
 	enum OnOff laptop_lid_monitor;
-	struct SList *order_name_desc;
+	const struct SSet *order_name_desc;
 	enum Arrange arrange;
 	enum Align align;
 	enum OnOff scaling;
@@ -72,7 +72,7 @@ struct Cfg {
 	const struct SMap *user_scales;
 	const struct SMap *user_modes;
 	const struct SSet *adaptive_sync_off;
-	struct SList *max_preferred_refresh_name_desc;
+	const struct SSet *max_preferred_refresh_name_desc;
 	const struct PSet *disableds;
 	const struct SMap *user_transforms;
 	enum LogThreshold log_threshold;

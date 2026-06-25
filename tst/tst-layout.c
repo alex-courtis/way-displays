@@ -27,7 +27,7 @@
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
-struct SList *order_heads(const struct SList *order_name_desc, struct SList *heads);
+struct SList *order_heads(const struct SSet * const order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
 void desire_enabled(struct Head *head);
 void desire_mode(struct Head *head);
@@ -99,16 +99,16 @@ static int after_each(void **state) {
 
 
 static void order_heads__exact_partial_regex(void **state) {
-	struct SList *order_name_desc = NULL;
+	const struct SSet *order_name_desc = sset_init();
 	struct SList *heads = NULL;
 	struct SList *expected = NULL;
 
 	// ORDER
-	slist_append(&order_name_desc, strdup("exact0"));
-	slist_append(&order_name_desc, strdup("exact1"));
-	slist_append(&order_name_desc, strdup("!.*regex.*"));
-	slist_append(&order_name_desc, strdup("exact1")); // should not repeat
-	slist_append(&order_name_desc, strdup("partial"));
+	sset_add(order_name_desc, "exact0");
+	sset_add(order_name_desc, "exact1");
+	sset_add(order_name_desc, "!.*regex.*");
+	sset_add(order_name_desc, "exact1"); // should not repeat
+	sset_add(order_name_desc, "partial");
 
 	// heads
 	struct Head not_specified_1 = { .description = "not specified 1", };
@@ -142,7 +142,7 @@ static void order_heads__exact_partial_regex(void **state) {
 
 	assert_heads_order(heads_ordered, expected);
 
-	slist_free_vals(&order_name_desc, NULL);
+	sset_free(order_name_desc);
 	slist_free(&heads);
 	slist_free(&expected);
 	slist_free(&heads_ordered);
@@ -151,15 +151,15 @@ static void order_heads__exact_partial_regex(void **state) {
 }
 
 static void order_heads__exact_regex_catchall(void **state) {
-	struct SList *order_name_desc = NULL;
+	const struct SSet *order_name_desc = sset_init();
 	struct SList *heads = NULL;
 	struct SList *expected = NULL;
 
 	// ORDER
-	slist_append(&order_name_desc, strdup("exact0"));
-	slist_append(&order_name_desc, strdup("!.*regex.*"));
-	slist_append(&order_name_desc, strdup("!.*$"));
-	slist_append(&order_name_desc, strdup("exact9"));
+	sset_add(order_name_desc, "exact0");
+	sset_add(order_name_desc, "!.*regex.*");
+	sset_add(order_name_desc, "!.*$");
+	sset_add(order_name_desc, "exact9");
 
 	// heads
 	struct Head exact9 =          { .description = "exact9" };
@@ -187,7 +187,7 @@ static void order_heads__exact_regex_catchall(void **state) {
 
 	assert_heads_order(heads_ordered, expected);
 
-	slist_free_vals(&order_name_desc, NULL);
+	sset_free(order_name_desc);
 	slist_free(&heads);
 	slist_free(&expected);
 	slist_free(&heads_ordered);

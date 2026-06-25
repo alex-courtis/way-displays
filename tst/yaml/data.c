@@ -50,9 +50,9 @@ struct Cfg *cfg_all(void) {
 	cfg->laptop_display_prefix = strdup("ldp");
 	cfg->laptop_lid_monitor = OFF;
 
-	slist_append(&cfg->order_name_desc, strdup("one"));
-	slist_append(&cfg->order_name_desc, strdup("ONE"));
-	slist_append(&cfg->order_name_desc, strdup("!two"));
+	sset_add(cfg->order_name_desc, "one");
+	sset_add(cfg->order_name_desc, "ONE");
+	sset_add(cfg->order_name_desc, "!two");
 
 	smap_put(cfg->user_scales, "three", user_scale_init(3));
 	smap_put(cfg->user_scales, "four", user_scale_init(4));

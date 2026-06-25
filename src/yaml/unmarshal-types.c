@@ -142,7 +142,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->align = yaml_scalar_to_enum_def(c, ALIGN_DEFAULT, value, align_val_start, align_name, align_names);
 				break;
 			case ORDER:
-				cfg->order_name_desc = yaml_seq_to_name_desc_list(c, value);
+				yaml_seq_into_name_desc_sset(c, cfg->order_name_desc, value);
 				break;
 			case SCALING:
 				cfg->scaling  = yaml_scalar_to_enum_def(c, SCALING_DEFAULT, value, on_off_val, on_off_name, on_off_names);
@@ -180,7 +180,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->laptop_lid_monitor = yaml_scalar_to_enum_def(c, LAPTOP_LID_MONITOR_DEFAULT, value, on_off_val, on_off_name, on_off_names);
 				break;
 			case MAX_PREFERRED_REFRESH:
-				cfg->max_preferred_refresh_name_desc = yaml_seq_to_name_desc_list(c, value);
+				yaml_seq_into_name_desc_sset(c, cfg->max_preferred_refresh_name_desc, value);
 				break;
 			case LOG_THRESHOLD:
 				cfg->log_threshold = yaml_scalar_to_enum(c, value, log_threshold_val, log_threshold_names);

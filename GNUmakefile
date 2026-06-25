@@ -99,6 +99,7 @@ cppcheck: INCS += -Ilib/alex-c/tst
 cppcheck: $(SRC_C) $(LIB_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
 		--enable=all \
+		--disable=information \
 		--inconclusive \
 		--check-level=exhaustive \
 		--inline-suppr \

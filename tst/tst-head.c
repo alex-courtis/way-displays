@@ -22,6 +22,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "sset.h"
 
 #include "head.h"
 
@@ -396,7 +397,7 @@ static void head_find_mode__max_preferred_refresh(void **state) {
 	struct Head head = { .name = "name", };
 	struct Mode mode = { 0 };
 
-	slist_append(&g_cfg->max_preferred_refresh_name_desc, strdup("!nam.*"));
+	sset_add(g_cfg->max_preferred_refresh_name_desc, "!nam.*");
 
 	slist_append(&head.modes, &mode);
 

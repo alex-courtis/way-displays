@@ -103,11 +103,11 @@ void position_heads(struct SList *heads) {
 	}
 }
 
-struct SList *order_heads(const struct SList *order_name_desc, struct SList *heads) {
+struct SList *order_heads(const struct SSet * const order_name_desc, struct SList *heads) {
 	if (!heads)
 		return NULL;
 
-	unsigned long n_order = slist_length(order_name_desc);
+	unsigned long n_order = sset_size(order_name_desc);
 	unsigned long i;
 	struct SList *sorting = slist_clone(heads, NULL);
 
@@ -116,22 +116,22 @@ struct SList *order_heads(const struct SList *order_name_desc, struct SList *hea
 
 	// exact match
 	i = 0;
-	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, o->val);
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, it->val);
 		i++;
 	}
 
 	// regex
 	i = 0;
-	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, o->val);
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, it->val);
 		i++;
 	}
 
 	// fuzzy
 	i = 0;
-	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, o->val);
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, it->val);
 		i++;
 	}
 

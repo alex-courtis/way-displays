@@ -359,8 +359,8 @@ static void parse_element__order_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, ORDER, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->order_name_desc, strdup("ONE"));
-	slist_append(&expected->order_name_desc, strdup("TWO"));
+	sset_add(expected->order_name_desc, "ONE");
+	sset_add(expected->order_name_desc, "TWO");
 
 	assert_cfg_equal(actual, expected);
 

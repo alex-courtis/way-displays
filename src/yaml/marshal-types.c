@@ -88,7 +88,7 @@ bool yaml_map_populate_cfg(struct MC *c, const void *data, int mapping) {
 	return
 		yaml_map_add_enum    (c, cfg_element_name(ARRANGE),               cfg->arrange,               arrange_name,                                               mapping) &&
 		yaml_map_add_enum    (c, cfg_element_name(ALIGN),                 cfg->align,                 align_name,                                                 mapping) &&
-		yaml_map_add_seq_list(c, cfg_element_name(ORDER),                 cfg->order_name_desc,       yaml_seq_append_str,                                        mapping) &&
+		yaml_map_add_seq_sset(c, cfg_element_name(ORDER),                 cfg->order_name_desc,       yaml_seq_append_str,                                        mapping) &&
 		yaml_map_add_enum    (c, cfg_element_name(SCALING),               cfg->scaling,               on_off_name,                                                mapping) &&
 		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_TO),        cfg->scale_round_to,        scale_round_to_name,                                        mapping) &&
 		yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_STRATEGY),  cfg->scale_round_strategy,  scale_round_strategy_name,                                  mapping) &&

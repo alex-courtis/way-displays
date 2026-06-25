@@ -142,8 +142,8 @@ int after_each(void **state) {
 static void print_cfg__all(void **state) {
 	struct Cfg *c = cfg_default();
 
-	slist_append(&c->order_name_desc, strdup("first"));
-	slist_append(&c->order_name_desc, strdup("last"));
+	sset_add(c->order_name_desc, "first");
+	sset_add(c->order_name_desc, "last");
 
 	smap_put(c->user_scales, "three", user_scale_init(3));
 	smap_put(c->user_scales, "four", user_scale_init(4));
@@ -162,7 +162,7 @@ static void print_cfg__all(void **state) {
 
 	smap_put(c->user_transforms, "twelve", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
 
-	slist_append(&c->max_preferred_refresh_name_desc, strdup("legacy"));
+	sset_add(c->max_preferred_refresh_name_desc, "legacy");
 
 	c->laptop_display_prefix = strdup("lappy");
 
@@ -283,9 +283,9 @@ static void print_cfg_commands__ok(void **state) {
 	c->arrange = COL;
 	c->align = RIGHT;
 
-	slist_append(&c->order_name_desc, strdup("one"));
-	slist_append(&c->order_name_desc, strdup("two"));
-	slist_append(&c->order_name_desc, strdup("three"));
+	sset_add(c->order_name_desc, "one");
+	sset_add(c->order_name_desc, "two");
+	sset_add(c->order_name_desc, "three");
 
 	c->scaling = OFF;
 

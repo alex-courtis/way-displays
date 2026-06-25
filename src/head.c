@@ -18,6 +18,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "sset.h"
 #include "str.h"
 
 struct SList *g_heads = NULL;
@@ -42,8 +43,9 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	if (!head)
 		return false;
 
-	for (const struct SList *i = g_cfg->max_preferred_refresh_name_desc; i; i = i->nex) {
-		if (head_matches_name_desc(head, i->val)) {
+	for (const struct SSetIt *it = sset_it(g_cfg->max_preferred_refresh_name_desc); it; it = sset_it_next(it)) {
+		if (head_matches_name_desc(head, it->val)) {
+			sset_it_free(it);
 			return true;
 		}
 	}

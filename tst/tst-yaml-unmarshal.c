@@ -99,8 +99,8 @@ static void yaml_root_to_cfg__legacy(void **state) {
 	expected->callback_cmd = strdup("foo");
 
 	// MAX_PREFERRED_REFRESH
-	slist_append(&expected->max_preferred_refresh_name_desc, strdup("fifteen"));
-	slist_append(&expected->max_preferred_refresh_name_desc, strdup("!sixteen"));
+	sset_add(expected->max_preferred_refresh_name_desc, "fifteen");
+	sset_add(expected->max_preferred_refresh_name_desc, "!sixteen");
 
 	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
 }

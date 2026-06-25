@@ -9,5 +9,7 @@ void _assert_log(enum LogThreshold t, const char* s, const char * const file, co
 void _assert_logs_empty(const char * const file, const int line);
 #define assert_logs_empty() _assert_logs_empty(__FILE__, __LINE__)
 
+void logs_clear(void);
+
 #endif // ASSERT_LOG_H
 

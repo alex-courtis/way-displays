@@ -174,7 +174,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			break;
 		case ORDER:
 			for (int i = optind; i < argc; i++) {
-				slist_append(&cfg->order_name_desc, strdup(argv[i]));
+				sset_add(cfg->order_name_desc, argv[i]);
 			}
 			parsed = true;
 			break;

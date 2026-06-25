@@ -98,10 +98,10 @@ static void merge_set__align(void **state) {
 static void merge_set__order(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->order_name_desc, strdup("A"));
-	slist_append(&s->from->order_name_desc, strdup("X"));
+	sset_add(s->to->order_name_desc, "A");
+	sset_add(s->from->order_name_desc, "X");
 
-	slist_append(&s->expected->order_name_desc, strdup("X"));
+	sset_add(s->expected->order_name_desc, "X");
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -610,17 +610,17 @@ static void validate_warn__(void **state) {
 	smap_put(s->expected->user_transforms, "tttttttttt", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_270));
 	smap_put(s->expected->user_transforms, "DP-1", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_270));
 
-	slist_append(&s->expected->order_name_desc, strdup("ooo"));
-	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
-	slist_append(&s->expected->order_name_desc, strdup("DP-1"));
+	sset_add(s->expected->order_name_desc, "ooo");
+	sset_add(s->expected->order_name_desc, "oooooooooo");
+	sset_add(s->expected->order_name_desc, "DP-1");
 
 	sset_add(s->expected->adaptive_sync_off, "vvv");
 	sset_add(s->expected->adaptive_sync_off, "vvvvvvvvvv");
 	sset_add(s->expected->adaptive_sync_off, "DP-1");
 
-	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
-	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
-	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("DP-1"));
+	sset_add(s->expected->max_preferred_refresh_name_desc, "ppp");
+	sset_add(s->expected->max_preferred_refresh_name_desc, "pppppppppp");
+	sset_add(s->expected->max_preferred_refresh_name_desc, "DP-1");
 
 	pset_add(s->expected->disableds, disabled_init_always("ddd"));
 	pset_add(s->expected->disableds, disabled_init_always("dddddddddd"));
