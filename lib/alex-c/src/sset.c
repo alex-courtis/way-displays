@@ -16,7 +16,7 @@ struct SSetItState {
 	const struct PSetIt *pit;
 };
 
-static const struct SSetIt *it_init(const struct SSet *set, const struct PSetIt *pit) {
+static const struct SSetIt *it_init(const struct PSetIt *pit) {
 	if (!pit)
 		return NULL;
 
@@ -92,34 +92,33 @@ const void *sset_match(const struct SSet* const set, fn_match_sset match, const 
 }
 
 const struct SSetIt *sset_it(const struct SSet* const set) {
-	return set ? it_init(set, pset_it(set->pset)) : NULL;
+	return set ? it_init(pset_it(set->pset)) : NULL;
 }
 
 const struct SSetIt *sset_match_it(const struct SSet* const set, fn_match_sset match, const void* const data) {
-	return set ? it_init(set, pset_match_it(set->pset, (fn_match_val)match, data)) : NULL;
+	return set ? it_init(pset_match_it(set->pset, (fn_match_val)match, data)) : NULL;
 }
 
-const struct SSetIt *sset_it_next(const struct SSetIt* const cit) {
-	if (!cit)
+const struct SSetIt *sset_it_next(const struct SSetIt* const it) {
+	if (!it)
 		return NULL;
 
-	struct SSetIt *it = (struct SSetIt*)cit;
 
 	if (!it->st) {
 		sset_it_free(it);
 		return NULL;
 	}
 
-	it->st->pit = pset_it_next(cit->st->pit);
+	it->st->pit = pset_it_next(it->st->pit);
 
 	if (it->st->pit) {
-		it->val = it->st->pit->val;
+		struct SSetIt *it_m = (struct SSetIt*)it;
+		it_m->val = it->st->pit->val;
+		return it;
 	} else {
 		sset_it_free(it);
-		it = NULL;
+		return NULL;
 	}
-
-	return it;
 }
 
 bool sset_add(const struct SSet* const set, const char* const val) {

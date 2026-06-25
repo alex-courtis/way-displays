@@ -59,7 +59,7 @@ static const struct IMap *clone(const struct IMap* const from, bool deep) {
 	return to;
 }
 
-static struct IMapIt *it_init(const struct IMap *map, const struct PMapIt *pit) {
+static struct IMapIt *it_init(const struct PMapIt *pit) {
 	if (!pit)
 		return NULL;
 
@@ -167,7 +167,7 @@ struct IMapPair imap_match(const struct IMap* const map, fn_match_imap match, co
 }
 
 const struct IMapIt *imap_it(const struct IMap* const map) {
-	return map ? it_init(map, pmap_it(map->pmap)) : NULL;
+	return map ? it_init(pmap_it(map->pmap)) : NULL;
 }
 
 const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_imap match, const void* const data) {
@@ -178,7 +178,7 @@ const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_imap m
 	match_data->match = match;
 	match_data->data = data;
 
-	struct IMapIt *it = it_init(map, pmap_match_it(map->pmap, fn_match_data_wrapper, match_data));
+	struct IMapIt *it = it_init(pmap_match_it(map->pmap, fn_match_data_wrapper, match_data));
 
 	if (it) {
 		it->st->match_data = match_data;
@@ -189,22 +189,22 @@ const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_imap m
 	}
 }
 
-const struct IMapIt *imap_it_next(const struct IMapIt* const cit) {
-	if (!cit)
+const struct IMapIt *imap_it_next(const struct IMapIt* const it) {
+	if (!it)
 		return NULL;
 
-	struct IMapIt *it = (struct IMapIt*)cit;
 
 	if (!it->st) {
 		imap_it_free(it);
 		return NULL;
 	}
 
-	it->st->pit = pmap_it_next(cit->st->pit);
+	it->st->pit = pmap_it_next(it->st->pit);
 
 	if (it->st->pit) {
-		it->key = *(size_t*)it->st->pit->key;
-		it->val = it->st->pit->val;
+		struct IMapIt *it_m = (struct IMapIt*)it;
+		it_m->key = *(size_t*)it->st->pit->key;
+		it_m->val = it->st->pit->val;
 		return it;
 	} else {
 		imap_it_free(it);

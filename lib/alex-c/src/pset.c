@@ -43,11 +43,9 @@ static void grow(struct PSet *set) {
 	set->capacity = new_capacity;
 }
 
-static bool add(const struct PSet* const cset, const void* const val, fn_clone alloc_val) {
+static bool add(const struct PSet* const set, const void* const val, fn_clone alloc_val) {
 	if (!val)
 		return false;
-
-	struct PSet *set = (struct PSet*)cset;
 
 	const void **v;
 	for (v = set->vals; v < set->vals + set->size; v++) {
@@ -56,6 +54,8 @@ static bool add(const struct PSet* const cset, const void* const val, fn_clone a
 		}
 	}
 
+	struct PSet *set_m = (struct PSet*)set;
+
 	// create new value
 	const void *new = alloc_val ? alloc_val(val) : val;
 	if (!new)
@@ -63,13 +63,13 @@ static bool add(const struct PSet* const cset, const void* const val, fn_clone a
 
 	// maybe grow for new entry
 	if (set->size >= set->capacity) {
-		grow(set);
+		grow(set_m);
 		v = &set->vals[set->size];
 	}
 
 	// assign new value
 	*v = new;
-	set->size++;
+	set_m->size++;
 
 	return true;
 }
@@ -241,11 +241,10 @@ const struct PSetIt *pset_match_it(const struct PSet* const set, fn_match_val ma
 	return pset_it_next(it);
 }
 
-const struct PSetIt *pset_it_next(const struct PSetIt* const cit) {
-	if (!cit)
+const struct PSetIt *pset_it_next(const struct PSetIt* const it) {
+	if (!it)
 		return NULL;
 
-	struct PSetIt *it = (struct PSetIt*)cit;
 	struct PSetItState *st = it->st;
 	if (!st) {
 		pset_it_free(it);
@@ -259,7 +258,8 @@ const struct PSetIt *pset_it_next(const struct PSetIt* const cit) {
 
 	for ( ; st->pos < st->set->size; st->pos++) {
 
-		it->val = *(st->set->vals + st->pos);
+		struct PSetIt *it_m = (struct PSetIt*)it;
+		it_m->val = *(st->set->vals + st->pos);
 
 		if ((st->match && !st->match(it->val, st->data))) {
 			continue;

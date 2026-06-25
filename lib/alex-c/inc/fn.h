@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+// TODO remove the fn_ prefix from implementations
+
 //
 // a is generally the value from the collection, b generally user supplied or the value from the other collection
 //

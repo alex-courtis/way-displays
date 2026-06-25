@@ -16,6 +16,8 @@ bool mock_match_smap(const char *key, const void* const val, const void* const d
 
 bool mock_match_smaps(const char *key, const char* const val, const void* const data);
 
+bool mock_match_smapi(const char *key, const size_t val, const void* const data);
+
 bool mock_match_sset(const char* const val, const void* const data);
 
 bool mock_match_imap(const size_t key, const void* const val, const void* const data);

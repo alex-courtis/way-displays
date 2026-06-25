@@ -34,7 +34,7 @@ static const struct SMap *clone(const struct SMap* const from, bool deep) {
 	return to;
 }
 
-static const struct SMapIt *it_init(const struct SMap *map, const struct PMapIt *pit) {
+static const struct SMapIt *it_init(const struct PMapIt *pit) {
 	if (!pit)
 		return NULL;
 
@@ -131,29 +131,29 @@ struct SMapPair smap_match(const struct SMap* const map, fn_match_smap match, co
 }
 
 const struct SMapIt *smap_it(const struct SMap* const map) {
-	return map ? it_init(map, pmap_it(map->pmap)) : NULL;
+	return map ? it_init(pmap_it(map->pmap)) : NULL;
 }
 
 const struct SMapIt *smap_match_it(const struct SMap* const map, fn_match_smap match, const void* const data) {
-	return map ? it_init(map, pmap_match_it(map->pmap, (fn_match_key_val)match, data)) : NULL;
+	return map ? it_init(pmap_match_it(map->pmap, (fn_match_key_val)match, data)) : NULL;
 }
 
-const struct SMapIt *smap_it_next(const struct SMapIt* const cit) {
-	if (!cit)
+const struct SMapIt *smap_it_next(const struct SMapIt* const it) {
+	if (!it)
 		return NULL;
 
-	struct SMapIt *it = (struct SMapIt*)cit;
 
 	if (!it->st) {
 		smap_it_free(it);
 		return NULL;
 	}
 
-	it->st->pit = pmap_it_next(cit->st->pit);
+	it->st->pit = pmap_it_next(it->st->pit);
 
 	if (it->st->pit) {
-		it->key = it->st->pit->key;
-		it->val = it->st->pit->val;
+		struct SMapIt *it_m = (struct SMapIt*)it;
+		it_m->key = it->st->pit->key;
+		it_m->val = it->st->pit->val;
 		return it;
 	} else {
 		smap_it_free(it);

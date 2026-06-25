@@ -47,6 +47,14 @@ bool mock_match_smaps(const char *key, const char* const val, const void* const 
 	return mock_type(bool);
 }
 
+bool mock_match_smapi(const char *key, const size_t val, const void* const data) {
+	check_expected_ptr(key);
+	check_expected_int(val);
+	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
 bool mock_match_sset(const char* const val, const void* const data) {
 	check_expected_ptr(val);
 	check_expected_ptr(data);

@@ -48,11 +48,9 @@ static void grow(struct PMap *map) {
 	map->capacity = new_capacity;
 }
 
-static const void *put(const struct PMap* const cmap, const void* const key, const void* const val, fn_alloc alloc_val) {
+static const void *put(const struct PMap* const map, const void* const key, const void* const val, fn_alloc alloc_val) {
 	if (!key)
 		return NULL;
-
-	struct PMap *map = (struct PMap*)cmap;
 
 	const void **k;
 	const void **v;
@@ -70,6 +68,8 @@ static const void *put(const struct PMap* const cmap, const void* const key, con
 		}
 	}
 
+	struct PMap *map_m = (struct PMap*)map;
+
 	// create new key
 	const void *key_new = map->params.alloc_key ? map->params.alloc_key(key) : key;
 	if (!key_new)
@@ -77,7 +77,7 @@ static const void *put(const struct PMap* const cmap, const void* const key, con
 
 	// grow for new entry
 	if (map->size >= map->capacity) {
-		grow(map);
+		grow(map_m);
 		k = &map->keys[map->size];
 		v = &map->vals[map->size];
 	}
@@ -90,7 +90,7 @@ static const void *put(const struct PMap* const cmap, const void* const key, con
 		*v = val;
 	}
 
-	map->size++;
+	map_m->size++;
 
 	return NULL;
 }
@@ -286,11 +286,10 @@ const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_key_va
 	return pmap_it_next(it);
 }
 
-const struct PMapIt *pmap_it_next(const struct PMapIt* const cit) {
-	if (!cit)
+const struct PMapIt *pmap_it_next(const struct PMapIt* const it) {
+	if (!it)
 		return NULL;
 
-	struct PMapIt *it = (struct PMapIt*)cit;
 	struct PMapItState *st = it->st;
 
 	if (!it->st) {
@@ -305,8 +304,10 @@ const struct PMapIt *pmap_it_next(const struct PMapIt* const cit) {
 
 	for ( ; st->position < st->map->size; st->position++) {
 
-		it->key = *(st->map->keys + st->position);
-		it->val = *(st->map->vals + st->position);
+		struct PMapIt *it_m = (struct PMapIt*)it;
+
+		it_m->key = *(st->map->keys + st->position);
+		it_m->val = *(st->map->vals + st->position);
 
 		if (st->match && !st->match(it->key, it->val, st->data)) {
 			continue;
@@ -354,24 +355,25 @@ bool pmap_put_free(const struct PMap* const map, const void* const key, const vo
 	}
 }
 
-const void *pmap_remove(const struct PMap* const cmap, const void* const key) {
-	if (!cmap || !key)
+const void *pmap_remove(const struct PMap* const map, const void* const key) {
+	if (!map || !key)
 		return NULL;
 
-	struct PMap *map = (struct PMap*)cmap;
 
 	const void **k;
 	const void **v;
 	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
 
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
+			struct PMap *map_m = (struct PMap*)map;
+
 			if (map->params.free_key) {
 				map->params.free_key((void*)*k);
 			}
 			*k = NULL;
 			const void* val_old = *v;
 			*v = NULL;
-			map->size--;
+			map_m->size--;
 
 			// shift down over removed
 			const void **mk;
