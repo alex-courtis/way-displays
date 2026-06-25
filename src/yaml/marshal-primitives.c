@@ -69,7 +69,6 @@ bool yaml_map_add_bool(struct MC *c, const char *key, const bool val, int mappin
 	return yaml_map_add_str(c, key, (val ? "TRUE" : "FALSE"), mapping);
 }
 
-// cppcheck-suppress funcArgNamesDifferentUnnamed
 bool yaml_map_add_enum(struct MC *c, const char *key, const int val, fn_enum_name fn_name, int mapping) {
 	if (!key || !fn_name || !mapping)
 		return false;
@@ -97,7 +96,6 @@ bool yaml_seq_append_str(struct MC *c, const void *str, int sequence) {
 	return scalar && yaml_document_append_sequence_item(&c->d, sequence, scalar);
 }
 
-// cppcheck-suppress funcArgNamesDifferentUnnamed
 bool yaml_map_add_map(struct MC *c, const char *key, const void *data, fn_yaml_map_pop fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
@@ -114,7 +112,6 @@ bool yaml_map_add_map(struct MC *c, const char *key, const void *data, fn_yaml_m
 	return fn(c, data, map) && yaml_document_append_mapping_pair(&c->d, mapping, k, map);
 }
 
-// cppcheck-suppress funcArgNamesDifferentUnnamed
 bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, fn_yaml_seq_app_v fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
@@ -136,7 +133,6 @@ bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *li
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-// cppcheck-suppress funcArgNamesDifferentUnnamed
 bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sset, fn_yaml_seq_app_v fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
@@ -158,7 +154,6 @@ bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sse
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-// cppcheck-suppress funcArgNamesDifferentUnnamed
 bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset, fn_yaml_seq_app_v fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
@@ -180,7 +175,6 @@ bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pse
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-// cppcheck-suppress funcArgNamesDifferentUnnamed
 bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, fn_yaml_seq_app_kv fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;

@@ -31,3 +31,6 @@ unusedStructMember
  
 # not sure why this doesn't work
 missingIncludeSystem
+
+# this does not handle function pointer types
+funcArgNamesDifferentUnnamed

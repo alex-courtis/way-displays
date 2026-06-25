@@ -97,7 +97,6 @@ end:
 	return out;
 }
 
-// cppcheck-suppress funcArgNamesDifferentUnnamed
 void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to fn, char *human) {
 	if (!yaml || !human)
 		return NULL;
