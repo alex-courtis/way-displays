@@ -151,8 +151,8 @@ static void print_cfg__all(void **state) {
 	pset_add(c->disableds, disabled_init_always("disabled always"));
 	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("disabled conditionally");
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("ONE"));
+	const struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "ONE");
 	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 

@@ -250,18 +250,18 @@ static void merge_set__disabled(void **state) {
 
 	struct Disabled *disabled1 = disabled_init();
 	disabled1->name_desc = strdup("cond");
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("display"));
+	struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "display");
 	pset_add(disabled1->conditions, cond);
-	cond = calloc(1, sizeof(struct Condition));
+	cond = condition_init();
 	cond->lid = LID_NOT_PRESENT;
 	pset_add(disabled1->conditions, cond);
 
 	struct Disabled *disabled2 = disabled_init();
 	disabled2->name_desc = strdup("twelve");
 
-	cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("FOUR"));
+	cond = condition_init();
+	sset_add(cond->plugged, "FOUR");
 	pset_add(disabled1->conditions, cond);
 
 	assert_true(pset_add(s->to->disableds, disabled_init_always("to")));
@@ -628,11 +628,11 @@ static void validate_warn__(void **state) {
 
 	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("cond");
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("ppp"));
-	slist_append(&cond->plugged, strdup("DP-1"));
-	slist_append(&cond->unplugged, strdup("uuu"));
-	slist_append(&cond->unplugged, strdup("DP-1"));
+	const struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "ppp");
+	sset_add(cond->plugged, "DP-1");
+	sset_add(cond->unplugged, "uuu");
+	sset_add(cond->unplugged, "DP-1");
 	pset_add(disabled->conditions, cond);
 
 	pset_add(s->expected->disableds, disabled);

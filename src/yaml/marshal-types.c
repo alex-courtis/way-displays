@@ -344,8 +344,8 @@ bool yaml_seq_append_condition(struct MC *c, const struct Condition* const condi
 
 	return
 		map &&
-		yaml_map_add_seq_list(c, "PLUGGED", condition->plugged, yaml_seq_append_str, map) &&
-		yaml_map_add_seq_list(c, "UNPLUGGED", condition->unplugged, yaml_seq_append_str, map) &&
+		yaml_map_add_seq_sset(c, "PLUGGED", condition->plugged, yaml_seq_append_str, map) &&
+		yaml_map_add_seq_sset(c, "UNPLUGGED", condition->unplugged, yaml_seq_append_str, map) &&
 		yaml_map_add_enum(c, "LID", condition->lid, condition_lid_name, map) &&
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }

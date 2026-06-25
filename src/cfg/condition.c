@@ -6,13 +6,14 @@
 #include "lid.h"
 #include "slist.h"
 #include "pset.h"
+#include "sset.h"
 #include "fn.h"
 #include "head.h"
 
 static bool condition_equal(const struct Condition* const a, const struct Condition* const b) {
 	return a && b &&
-		slist_equal(a->plugged, b->plugged, (fn_equal)fn_equal_strcmp) &&
-		slist_equal(a->unplugged, b->unplugged, (fn_equal)fn_equal_strcmp) &&
+		sset_equal(a->plugged, b->plugged) &&
+		sset_equal(a->unplugged, b->unplugged) &&
 		a->lid == b->lid;
 }
 
@@ -22,11 +23,20 @@ static struct Condition *condition_clone(const struct Condition* const from) {
 
 	struct Condition *to = (struct Condition*)calloc(1, sizeof(struct Condition));
 
-	to->plugged = slist_clone(from->plugged, fn_clone_strdup);
-	to->unplugged = slist_clone(from->unplugged, fn_clone_strdup);
+	to->plugged = sset_clone(from->plugged);
+	to->unplugged = sset_clone(from->unplugged);
 	to->lid = from->lid;
 
 	return to;
+}
+
+struct Condition *condition_init(void) {
+	struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
+
+	condition->plugged = sset_init();
+	condition->unplugged = sset_init();
+
+	return condition;
 }
 
 const struct PSet *condition_pset_init(void) {
@@ -42,16 +52,16 @@ bool condition_evaluate(const struct Condition *condition) {
 	if (!condition)
 		return true;
 
-	for (const struct SList *i = condition->plugged; i; i = i->nex) {
-		const char* name_desc = (const char*)i->val;
-		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, name_desc) == NULL) {
+	for (const struct SSetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
+		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) == NULL) {
+			sset_it_free(it);
 			return false;
 		}
 	}
 
-	for (const struct SList *i = condition->unplugged; i; i = i->nex) {
-		const char* name_desc = (const char*)i->val;
-		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, name_desc) != NULL) {
+	for (const struct SSetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
+		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) != NULL) {
+			sset_it_free(it);
 			return false;
 		}
 	}
@@ -94,8 +104,8 @@ void condition_free(struct Condition *condition) {
 	if (!condition)
 		return;
 
-	slist_free_vals(&condition->plugged, NULL);
-	slist_free_vals(&condition->unplugged, NULL);
+	sset_free(condition->plugged);
+	sset_free(condition->unplugged);
 
 	free(condition);
 }

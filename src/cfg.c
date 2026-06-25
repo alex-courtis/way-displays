@@ -51,21 +51,18 @@ static void cfg_paths_free(struct Cfg *cfg) {
 	cfg->resolved_from = NULL;
 }
 
-//
-// equality functions
-//
-static void warn_ambiguous_name_desc(const char *name_desc, const char *element) {
+static void warn_ambiguous_name_desc(const char *name_desc, const enum CfgElement element) {
 	if (!name_desc)
 		return;
 
 	if (strlen(name_desc) < 4) {
 		log_warn(NULL);
-		log_warn("%s '%s' is less than 4 characters, which may result in some unwanted matches.", element, name_desc);
+		log_warn("%s '%s' is less than 4 characters, which may result in some unwanted matches.", cfg_element_name(element), name_desc);
 	}
 
 	if (strcmp(name_desc, "DP-1") == 0) {
 		log_warn(NULL);
-		log_warn("%s '%s' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.", element, name_desc);
+		log_warn("%s '%s' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.", cfg_element_name(element), name_desc);
 	}
 }
 
@@ -261,13 +258,13 @@ void validate_fix(struct Cfg *cfg) {
 	}
 }
 
-static void warn_ambiguous_name_desc_list(const struct SList *name_desc, const char * const element) {
-	for (const struct SList *i = name_desc; i; i = i->nex) {
-		warn_ambiguous_name_desc(i->val, element);
+static void warn_ambiguous_name_desc_smap(const struct SMap *name_descs, const enum CfgElement element) {
+	for (const struct SMapIt *it = smap_it(name_descs); it; it = smap_it_next(it)) {
+		warn_ambiguous_name_desc(it->key, element);
 	}
 }
 
-static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const char * const element) {
+static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const enum CfgElement element) {
 	for (const struct SSetIt *it = sset_it(name_descs); it; it = sset_it_next(it)) {
 		warn_ambiguous_name_desc(it->val, element);
 	}
@@ -277,31 +274,25 @@ void validate_warn(const struct Cfg * const cfg) {
 	if (!cfg)
 		return;
 
-	for (const struct SMapIt *it = smap_it(cfg->user_scales); it; it = smap_it_next(it)) {
-		warn_ambiguous_name_desc(it->key, "SCALE");
-	}
-	for (const struct SMapIt  *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
-		warn_ambiguous_name_desc(it->key, "MODE");
-	}
-	for (const struct SMapIt  *it = smap_it(cfg->user_transforms); it; it = smap_it_next(it)) {
-		warn_ambiguous_name_desc(it->key, "TRANSFORM");
-	}
+	warn_ambiguous_name_desc_smap(cfg->user_scales, SCALE);
+	warn_ambiguous_name_desc_smap(cfg->user_modes, MODE);
+	warn_ambiguous_name_desc_smap(cfg->user_transforms, TRANSFORM);
 
-	warn_ambiguous_name_desc_sset(cfg->order_name_desc, "ORDER");
-	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, "VRR_OFF");
-	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
+	warn_ambiguous_name_desc_sset(cfg->order_name_desc, ORDER);
+	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, VRR_OFF);
+	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh_name_desc, MAX_PREFERRED_REFRESH);
 
 	for (const struct PSetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
 		if (dit->val) {
 			const struct Disabled *disabled = (struct Disabled*)dit->val;
-			warn_ambiguous_name_desc(disabled->name_desc, "DISABLED");
+			warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
 
 			for (const struct PSetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
 				if (!cit->val)
 					continue;
 				const struct Condition *condition = (struct Condition*)cit->val;
-				warn_ambiguous_name_desc_list(condition->plugged, "PLUGGED");
-				warn_ambiguous_name_desc_list(condition->unplugged, "UNPLUGGED");
+				warn_ambiguous_name_desc_sset(condition->plugged, PLUGGED);
+				warn_ambiguous_name_desc_sset(condition->unplugged, UNPLUGGED);
 			}
 		}
 	}

@@ -12,10 +12,12 @@ enum ConditionLid {
 };
 
 struct Condition {
-	struct SList *plugged;
-	struct SList *unplugged;
+	const struct SSet *plugged;
+	const struct SSet *unplugged;
 	enum ConditionLid lid;
 };
+
+struct Condition *condition_init(void);
 
 const struct PSet *condition_pset_init(void);
 

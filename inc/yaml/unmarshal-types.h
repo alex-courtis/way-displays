@@ -48,9 +48,6 @@ char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar);
 unsigned int yaml_scalar_to_scale_round_to(struct UC *c, const yaml_node_t *scalar);
 
 // unmarshal a sequence of valid name_desc, removing duplicates and validating regex
-struct SList *yaml_seq_to_name_desc_list(struct UC *c, const yaml_node_t *seq);
-
-// unmarshal a sequence of valid name_desc, removing duplicates and validating regex
 void yaml_seq_into_name_desc_sset(struct UC *c, const struct SSet *sset, const yaml_node_t *seq);
 
 #endif // YAML_UNMARSHAL_TYPES_H

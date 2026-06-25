@@ -279,24 +279,32 @@ void yaml_map_into_conditions(struct UC *c, const void *col, const yaml_node_t *
 		return;
 
 	const struct PSet *conditions = col;
-	struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
+	struct Condition *condition = condition_init();
 
 	yaml_unmarshal_log_ctx_key(c, "PLUGGED");
 	const yaml_node_t *node = smap_get(nodes, "PLUGGED");
-	if (node && !(condition->plugged = yaml_seq_to_name_desc_list(c, node)))
-		goto err;
+	if (node) {
+		yaml_seq_into_name_desc_sset(c, condition->plugged, node);
+		if (sset_size(condition->plugged) == 0) {
+			goto err;
+		}
+	}
 
 	yaml_unmarshal_log_ctx_key(c, "UNPLUGGED");
 	node = smap_get(nodes, "UNPLUGGED");
-	if (node && !(condition->unplugged = yaml_seq_to_name_desc_list(c, node)))
-		goto err;
+	if (node) {
+		yaml_seq_into_name_desc_sset(c, condition->unplugged, node);
+		if (sset_size(condition->unplugged) == 0) {
+			goto err;
+		}
+	}
 
 	yaml_unmarshal_log_ctx_key(c, "LID");
 	node = smap_get(nodes, "LID");
 	if (node && !(condition->lid = yaml_scalar_to_enum(c, node, condition_lid_val, condition_lid_names)))
 		goto err;
 
-	if (!condition->plugged && !condition->unplugged && !condition->lid)
+	if (sset_size(condition->plugged) == 0 && sset_size(condition->unplugged) == 0 && !condition->lid)
 		goto err;
 
 	pset_add(conditions, condition);
@@ -703,31 +711,6 @@ end:
 	c->valid_names_fn = NULL;
 
 	return ret;
-}
-
-struct SList *yaml_seq_to_name_desc_list(struct UC *c, const yaml_node_t *seq) {
-	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
-		return NULL;
-
-	const struct SSet *set = sset_init();
-
-	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
-		const yaml_node_t *scalar = yaml_document_get_node(&c->d, *item);
-		if (!scalar)
-			continue;
-
-		char *val = NULL;
-		if ((val = yaml_scalar_to_name_desc(c, scalar))) {
-			sset_add(set, val);
-			free(val);
-		}
-	}
-
-	struct SList *list = sset_slist_deep(set);
-
-	sset_free(set);
-
-	return list;
 }
 
 void yaml_seq_into_name_desc_sset(struct UC *c, const struct SSet *sset, const yaml_node_t *seq) {

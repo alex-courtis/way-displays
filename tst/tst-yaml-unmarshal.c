@@ -150,13 +150,13 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("ONE"));
-	slist_append(&cond->plugged, strdup("TWO"));
+	const struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "ONE");
+	sset_add(cond->plugged, "TWO");
 	pset_add(disabled->conditions, cond);
 
-	cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->unplugged, strdup("THREE"));
+	cond = condition_init();
+	sset_add(cond->unplugged, "THREE");
 	pset_add(disabled->conditions, cond);
 
 	pset_add(expected->disableds, disabled);
@@ -164,8 +164,8 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
-	cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("FOUR"));
+	cond = condition_init();
+	sset_add(cond->plugged, "FOUR");
 	pset_add(disabled->conditions, cond);
 
 	pset_add(expected->disableds, disabled);

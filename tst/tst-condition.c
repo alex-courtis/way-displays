@@ -9,6 +9,7 @@
 #include "head.h"
 #include "lid.h"
 #include "slist.h"
+#include "sset.h"
 
 #include "cfg/condition.h"
 
@@ -18,7 +19,7 @@ struct State {
 
 static int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
-	s->condition = calloc(1, sizeof(struct Condition));
+	s->condition = condition_init();
 
 	struct Head *h1 = calloc(1, sizeof(struct Head));
 	struct Head *h2 = calloc(1, sizeof(struct Head));
@@ -52,30 +53,29 @@ static int after_each(void **state) {
 	return 0;
 }
 
-
 static void condition__plugged(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
-	slist_append(&s->condition->plugged, strdup("DP-1"));
+	sset_add(s->condition->plugged, "DP-1");
 	assert_true(condition_evaluate(s->condition));
 
-	slist_append(&s->condition->plugged, strdup("DP-2"));
+	sset_add(s->condition->plugged, "DP-2");
 	assert_true(condition_evaluate(s->condition));
 
-	slist_append(&s->condition->plugged, strdup("DP-3"));
+	sset_add(s->condition->plugged, "DP-3");
 	assert_true(condition_evaluate(s->condition));
 
-	slist_append(&s->condition->plugged, strdup("DP-4"));
+	sset_add(s->condition->plugged, "DP-4");
 	assert_false(condition_evaluate(s->condition));
 }
 
 static void condition__unplugged(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
-	slist_append(&s->condition->unplugged, strdup("DP-4"));
+	sset_add(s->condition->unplugged, "DP-4");
 	assert_true(condition_evaluate(s->condition));
 
-	slist_append(&s->condition->unplugged, strdup("DP-1"));
+	sset_add(s->condition->unplugged, "DP-1");
 	assert_false(condition_evaluate(s->condition));
 }
 
@@ -112,10 +112,10 @@ static void condition__lid_not_present(void **state) {
 static void condition__complex(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->condition->plugged, strdup("DP-1"));
+	sset_add(s->condition->plugged, "DP-1");
 	assert_true(condition_evaluate(s->condition));
 
-	slist_append(&s->condition->unplugged, strdup("DP-4"));
+	sset_add(s->condition->unplugged, "DP-4");
 	assert_true(condition_evaluate(s->condition));
 
 	s->condition->lid = LID_CLOSED;
