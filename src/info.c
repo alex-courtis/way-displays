@@ -101,7 +101,7 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 static void print_disabled(const enum LogThreshold t, const struct Disabled * const disabled) {
 	if (!disabled) return;
 
-	if (disabled->conditions) {
+	if (pset_size(disabled->conditions) > 0) {
 		log_(t, "    %s (conditionally)", disabled->name_desc);
 	} else {
 		log_(t, "    %s", disabled->name_desc);
@@ -311,7 +311,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	newline = true;
 	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 		const struct Disabled* d = it->val;
-		if (d && !d->conditions) {
+		if (d && pset_size(d->conditions) == 0) {
 			print_newline(t, &newline);
 			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);
 		}

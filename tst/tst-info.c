@@ -13,11 +13,11 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "conditions.h"
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
@@ -149,11 +149,11 @@ static void print_cfg__all(void **state) {
 	smap_put(c->user_scales, "four", user_scale_init(4));
 
 	pset_add(c->disableds, disabled_init_always("disabled always"));
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("disabled conditionally");
 	struct Condition *cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("ONE"));
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 
 	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));

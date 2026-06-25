@@ -8,11 +8,11 @@
 #include "yaml/unmarshal-types.h"
 
 #include "cfg.h"
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "conditions.h"
 #include "convert.h"
 #include "fn.h"
 #include "head.h"
@@ -278,7 +278,7 @@ void yaml_map_into_conditions(struct UC *c, const void *col, const yaml_node_t *
 	if (!nodes)
 		return;
 
-	struct SList **conditions = (struct SList**)col;
+	const struct PSet *conditions = col;
 	struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
 
 	yaml_unmarshal_log_ctx_key(c, "PLUGGED");
@@ -299,7 +299,7 @@ void yaml_map_into_conditions(struct UC *c, const void *col, const yaml_node_t *
 	if (!condition->plugged && !condition->unplugged && !condition->lid)
 		goto err;
 
-	slist_append(conditions, condition);
+	pset_add(conditions, condition);
 
 	goto end;
 
@@ -551,7 +551,7 @@ void yaml_node_into_disableds(struct UC *c, const void *col, const yaml_node_t *
 	switch (node->type) {
 		case YAML_SCALAR_NODE:
 			{
-				disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+				disabled = disabled_init();
 				if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
 					goto err;
 
@@ -565,7 +565,7 @@ void yaml_node_into_disableds(struct UC *c, const void *col, const yaml_node_t *
 				if (!(node_map = yaml_map_to_node_table(c, node)))
 					return;
 
-				disabled = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+				disabled = disabled_init();
 
 				yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 				const yaml_node_t *scalar = smap_get(node_map, "NAME_DESC");
@@ -577,7 +577,7 @@ void yaml_node_into_disableds(struct UC *c, const void *col, const yaml_node_t *
 				yaml_unmarshal_log_ctx_key(c, "IF");
 				const yaml_node_t *map = smap_get(node_map, "IF");
 				if (map)
-					yaml_seq_into_col(c, map, &disabled->conditions, yaml_map_into_conditions);
+					yaml_seq_into_col(c, map, disabled->conditions, yaml_map_into_conditions);
 
 				pset_add(disableds, disabled);
 

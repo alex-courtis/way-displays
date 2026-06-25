@@ -10,11 +10,11 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "conditions.h"
 #include "log.h"
 #include "pset.h"
 #include "slist.h"
@@ -248,21 +248,21 @@ static void merge_set__adaptive_sync_off(void **state) {
 static void merge_set__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Disabled *disabled1 = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled1 = disabled_init();
 	disabled1->name_desc = strdup("cond");
 	struct Condition *cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("display"));
-	slist_append(&disabled1->conditions, cond);
+	pset_add(disabled1->conditions, cond);
 	cond = calloc(1, sizeof(struct Condition));
 	cond->lid = LID_NOT_PRESENT;
-	slist_append(&disabled1->conditions, cond);
+	pset_add(disabled1->conditions, cond);
 
-	struct Disabled *disabled2 = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled2 = disabled_init();
 	disabled2->name_desc = strdup("twelve");
 
 	cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("FOUR"));
-	slist_append(&disabled1->conditions, cond);
+	pset_add(disabled1->conditions, cond);
 
 	assert_true(pset_add(s->to->disableds, disabled_init_always("to")));
 	assert_true(pset_add(s->to->disableds, disabled_init_always("both")));
@@ -626,14 +626,14 @@ static void validate_warn__(void **state) {
 	pset_add(s->expected->disableds, disabled_init_always("dddddddddd"));
 	pset_add(s->expected->disableds, disabled_init_always("DP-1"));
 
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("cond");
 	struct Condition *cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("ppp"));
 	slist_append(&cond->plugged, strdup("DP-1"));
 	slist_append(&cond->unplugged, strdup("uuu"));
 	slist_append(&cond->unplugged, strdup("DP-1"));
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 
 	pset_add(s->expected->disableds, disabled);
 

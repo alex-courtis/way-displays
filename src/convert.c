@@ -5,7 +5,7 @@
 #include "convert.h"
 
 #include "cfg.h"
-#include "conditions.h"
+#include "cfg/condition.h"
 #include "displ.h"
 #include "ipc.h"
 #include "log.h"

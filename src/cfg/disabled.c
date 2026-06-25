@@ -5,10 +5,9 @@
 #include "cfg/disabled.h"
 
 #include "cfg.h"
-#include "conditions.h"
+#include "cfg/condition.h"
 #include "fn.h"
 #include "pset.h"
-#include "slist.h"
 
 static bool disabled_equal(const struct Disabled* const a, const struct Disabled* const b) {
 	if (!a || !b) {
@@ -23,14 +22,23 @@ static bool disabled_equal(const struct Disabled* const a, const struct Disabled
 		return false;
 	}
 
-	return slist_equal(a->conditions, b->conditions, fn_equal_condition);
+	return pset_equal(a->conditions, b->conditions);
+}
+
+struct Disabled *disabled_init(void) {
+	struct Disabled *d = calloc(1, sizeof(struct Disabled));
+
+	d->conditions = condition_pset_init();
+
+	return d;
 }
 
 struct Disabled *disabled_init_always(const char *name_desc) {
-	struct Disabled *d = calloc(1, sizeof(struct Disabled));
+	struct Disabled *d = disabled_init();
 
-	d->name_desc = strdup(name_desc);
-	d->conditions = NULL;
+	if (name_desc) {
+		d->name_desc = strdup(name_desc);
+	}
 
 	return d;
 }
@@ -50,8 +58,11 @@ const struct Disabled *disabled_clone(const struct Disabled * const from) {
 
 	struct Disabled *to = (struct Disabled*)calloc(1, sizeof(struct Disabled));
 
-	to->name_desc = strdup(from->name_desc);
-	to->conditions = slist_clone(from->conditions, fn_clone_condition);
+	if (from->name_desc) {
+		to->name_desc = strdup(from->name_desc);
+	}
+
+	to->conditions = pset_clone_deep(from->conditions);
 
 	return to;
 }
@@ -62,7 +73,7 @@ void disabled_free(struct Disabled *disabled) {
 
 	free(disabled->name_desc);
 
-	slist_free_vals(&disabled->conditions, condition_free);
+	pset_free_vals(disabled->conditions);
 
 	free(disabled);
 }

@@ -8,11 +8,11 @@
 
 #include "cfg.h"
 
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "conditions.h"
 #include "convert.h"
 #include "fds.h"
 #include "fn.h"
@@ -263,7 +263,7 @@ void validate_fix(struct Cfg *cfg) {
 
 static void warn_ambiguous_name_desc_list(const struct SList *name_desc, const char * const element) {
 	for (const struct SList *i = name_desc; i; i = i->nex) {
-		warn_ambiguous_name_desc((const char*)i->val, element);
+		warn_ambiguous_name_desc(i->val, element);
 	}
 }
 
@@ -291,15 +291,15 @@ void validate_warn(const struct Cfg * const cfg) {
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, "VRR_OFF");
 	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh_name_desc, "MAX_PREFERRED_REFRESH");
 
-	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
-		if (it->val) {
-			struct Disabled *disabled = (struct Disabled*)it->val;
-			warn_ambiguous_name_desc((const char*)disabled->name_desc, "DISABLED");
+	for (const struct PSetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
+		if (dit->val) {
+			const struct Disabled *disabled = (struct Disabled*)dit->val;
+			warn_ambiguous_name_desc(disabled->name_desc, "DISABLED");
 
-			for (struct SList *j = disabled->conditions; j; j = j->nex) {
-				if (!j->val)
+			for (const struct PSetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
+				if (!cit->val)
 					continue;
-				const struct Condition *condition = (struct Condition*)j->val;
+				const struct Condition *condition = (struct Condition*)cit->val;
 				warn_ambiguous_name_desc_list(condition->plugged, "PLUGGED");
 				warn_ambiguous_name_desc_list(condition->unplugged, "UNPLUGGED");
 			}

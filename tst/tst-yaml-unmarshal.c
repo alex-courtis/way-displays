@@ -13,11 +13,11 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "conditions.h"
 #include "fn.h"
 #include "head.h"
 #include "ipc.h"
@@ -147,26 +147,26 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	pset_add(expected->disableds, disabled_init_always("EIGHT"));
 	pset_add(expected->disableds, disabled_init_always("nine"));
 
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
 	struct Condition *cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("ONE"));
 	slist_append(&cond->plugged, strdup("TWO"));
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 
 	cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->unplugged, strdup("THREE"));
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 
 	pset_add(expected->disableds, disabled);
 
-	disabled = calloc(1, sizeof(struct Disabled));
+	disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
 	cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("FOUR"));
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 
 	pset_add(expected->disableds, disabled);
 

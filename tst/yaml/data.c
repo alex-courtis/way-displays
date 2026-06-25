@@ -5,10 +5,10 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "conditions.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -68,21 +68,21 @@ struct Cfg *cfg_all(void) {
 	pset_add(cfg->disableds, disabled_init_always("EIGHT"));
 	pset_add(cfg->disableds, disabled_init_always("nine"));
 
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
 	struct Condition *cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->plugged, strdup("ONE"));
 	slist_append(&cond->plugged, strdup("TWO"));
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 
 	cond = calloc(1, sizeof(struct Condition));
 	slist_append(&cond->unplugged, strdup("THREE"));
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 
 	cond = calloc(1, sizeof(struct Condition));
 	cond->lid = LID_CLOSED;
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 
 	pset_add(cfg->disableds, disabled);
 

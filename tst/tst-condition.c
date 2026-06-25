@@ -10,7 +10,7 @@
 #include "lid.h"
 #include "slist.h"
 
-#include "conditions.h"
+#include "cfg/condition.h"
 
 struct State {
 	struct Condition *condition;
@@ -53,7 +53,7 @@ static int after_each(void **state) {
 }
 
 
-static void conditions__plugged(void **state) {
+static void condition__plugged(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->condition->plugged, strdup("DP-1"));
@@ -69,7 +69,7 @@ static void conditions__plugged(void **state) {
 	assert_false(condition_evaluate(s->condition));
 }
 
-static void conditions__unplugged(void **state) {
+static void condition__unplugged(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->condition->unplugged, strdup("DP-4"));
@@ -79,7 +79,7 @@ static void conditions__unplugged(void **state) {
 	assert_false(condition_evaluate(s->condition));
 }
 
-static void conditions__lid_closed(void **state) {
+static void condition__lid_closed(void **state) {
 	struct State *s = *state;
 
 	s->condition->lid = LID_CLOSED;
@@ -90,7 +90,7 @@ static void conditions__lid_closed(void **state) {
 	assert_true(condition_evaluate(s->condition));
 }
 
-static void conditions__lid_open(void **state) {
+static void condition__lid_open(void **state) {
 	struct State *s = *state;
 
 	s->condition->lid = LID_OPEN;
@@ -101,7 +101,7 @@ static void conditions__lid_open(void **state) {
 	assert_true(condition_evaluate(s->condition));
 }
 
-static void conditions__lid_not_present(void **state) {
+static void condition__lid_not_present(void **state) {
 	struct State *s = *state;
 
 	s->condition->lid = LID_NOT_PRESENT;
@@ -109,7 +109,7 @@ static void conditions__lid_not_present(void **state) {
 	assert_true(condition_evaluate(s->condition));
 }
 
-static void conditions__complex(void **state) {
+static void condition__complex(void **state) {
 	struct State *s = *state;
 
 	slist_append(&s->condition->plugged, strdup("DP-1"));
@@ -127,12 +127,12 @@ static void conditions__complex(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(conditions__plugged),
-		TEST_BA(conditions__unplugged),
-		TEST_BA(conditions__lid_closed),
-		TEST_BA(conditions__lid_open),
-		TEST_BA(conditions__lid_not_present),
-		TEST_BA(conditions__complex),
+		TEST_BA(condition__plugged),
+		TEST_BA(condition__unplugged),
+		TEST_BA(condition__lid_closed),
+		TEST_BA(condition__lid_open),
+		TEST_BA(condition__lid_not_present),
+		TEST_BA(condition__complex),
 	};
 
 	return RUN(tests);

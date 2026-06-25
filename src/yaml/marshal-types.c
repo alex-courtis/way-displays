@@ -6,17 +6,18 @@
 #include "yaml/marshal-types.h"
 
 #include "cfg.h"
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "conditions.h"
 #include "convert.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal-primitives.h"
@@ -332,15 +333,12 @@ bool yaml_seq_append_user_transform(struct MC *c, const char * const name_desc, 
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }
 
-// cppcheck-suppress funcArgNamesDifferent
-bool yaml_seq_append_condition(struct MC *c, const void *data, int sequence) {
+bool yaml_seq_append_condition(struct MC *c, const struct Condition* const condition, int sequence) {
 	if (!sequence)
 		return false;
 
-	if (!data)
+	if (!condition)
 		return true;
-
-	const struct Condition *condition = data;
 
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 
@@ -359,12 +357,12 @@ bool yaml_seq_append_disabled(struct MC *c, const struct Disabled* const disable
 	if (!disabled)
 		return true;
 
-	if (disabled->conditions) {
+	if (pset_size(disabled->conditions) > 0) {
 		int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 
 		return map &&
 			yaml_map_add_str(c, "NAME_DESC", disabled->name_desc, map) &&
-			yaml_map_add_seq_list(c, "IF", disabled->conditions, yaml_seq_append_condition, map) &&
+			yaml_map_add_seq_pset(c, "IF", disabled->conditions, (yaml_seq_append_val_fn)yaml_seq_append_condition, map) &&
 			yaml_document_append_sequence_item(&c->d, sequence, map);
 	} else {
 		return yaml_seq_append_str(c,disabled->name_desc, sequence);

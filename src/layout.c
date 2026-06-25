@@ -7,10 +7,10 @@
 #include "layout.h"
 
 #include "cfg.h"
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-scale.h"
 #include "cfg/user-transform.h"
-#include "conditions.h"
 #include "convert.h"
 #include "displ.h"
 #include "fn.h"

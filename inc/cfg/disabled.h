@@ -3,8 +3,10 @@
 
 struct Disabled {
 	char *name_desc;
-	struct SList *conditions;
+	const struct PSet *conditions;
 };
+
+struct Disabled *disabled_init(void);
 
 struct Disabled *disabled_init_always(const char *name_desc);
 

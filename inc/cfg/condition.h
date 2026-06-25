@@ -2,7 +2,8 @@
 #define CONDITIONS_H
 
 #include <stdbool.h>
-#include "slist.h"
+
+#include "pset.h"
 
 enum ConditionLid {
 	LID_CLOSED = 1,
@@ -16,11 +17,7 @@ struct Condition {
 	enum ConditionLid lid;
 };
 
-void condition_free(const void *data);
-
-void* fn_clone_condition(const void *data);
-
-bool fn_equal_condition(const void *a, const void *b);
+const struct PSet *condition_pset_init(void);
 
 // evaluates a condition.
 // NULL condition is always evaluated to be true.
@@ -28,7 +25,9 @@ bool condition_evaluate(const struct Condition *condition);
 
 // evaluates a list of conditions.
 // the result is equal to OR of all conditions in list.
-// empty list (NULL) is always evaluated to be true.
-bool condition_list_evaluate(const struct SList *conditions);
+// empty set (NULL) is always evaluated to be true.
+bool condition_list_evaluate(const struct PSet* const conditions);
+
+void condition_free(struct Condition *condition);
 
 #endif // CONDITIONS_H

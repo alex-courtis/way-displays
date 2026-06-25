@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
@@ -34,8 +35,8 @@ bool yaml_map_populate_messages      (struct MC *c, void *ipc_operation,     int
 bool yaml_map_populate_state         (struct MC *c, const void *g_heads,     int mapping); // g_heads and g_lid
 
 // yaml_seq_append_val_fn: create and append a new item node to an existing sequence node
-bool yaml_seq_append_condition     (struct MC *c, const void *condition,      int sequence);
-bool yaml_seq_append_disabled      (struct MC *c, const struct Disabled* const disabled,       int sequence);
+bool yaml_seq_append_condition     (struct MC *c, const struct Condition* const condition, int sequence);
+bool yaml_seq_append_disabled      (struct MC *c, const struct Disabled* const disabled,   int sequence);
 bool yaml_seq_append_mode          (struct MC *c, const void *mode,           int sequence);
 bool yaml_seq_append_head          (struct MC *c, const void *head,           int sequence);
 bool yaml_seq_append_log_cap_line  (struct MC *c, const void *log_cap_line,   int sequence);
