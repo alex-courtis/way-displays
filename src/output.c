@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,8 +6,8 @@
 
 #include "output.h"
 
-#include "listeners.h"
 #include "imap.h"
+#include "listeners.h"
 #include "xdg-output-unstable-v1.h"
 
 const struct IMap *g_outputs; // by wl_output_name
