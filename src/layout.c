@@ -10,7 +10,6 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "convert.h"
 #include "displ.h"
 #include "fn.h"
@@ -24,6 +23,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -222,7 +222,7 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	const struct UserScale *user_scale = smap_match(g_cfg->user_scales, (fn_match_smap)head_name_desc_x_matches_head, head).val;
+	const struct UserScale *user_scale = smap_match(g_cfg->user_scales, (fn_match_smap)head_name_desc_v_matches_head, head).val;
 	if (user_scale) {
 		head->desired.scale = head_get_fixed_scale(user_scale->scale);
 		return;
@@ -243,9 +243,9 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	const struct UserTransform *user_transform = smap_match(g_cfg->user_transforms, (fn_match_smap)head_name_desc_x_matches_head, head).val;
-	if (user_transform) {
-		head->desired.transform = user_transform->transform;
+	enum wl_output_transform transform = smapi_match(g_cfg->user_transforms, (fn_match_smapi)head_name_desc_i_matches_head, head).val;
+	if (transform) {
+		head->desired.transform = transform;
 		return;
 	}
 

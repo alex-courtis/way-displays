@@ -82,7 +82,9 @@ bool head_matches_name_desc(const struct Head * const head, const char * const n
 
 bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head);
 
-bool head_name_desc_x_matches_head(const char * const name_desc, const void * const x, const struct Head * const head);
+bool head_name_desc_v_matches_head(const char * const name_desc, const void * const v, const struct Head * const head);
+
+bool head_name_desc_i_matches_head(const char * const name_desc, const size_t i, const struct Head * const head);
 
 bool head_disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head);
 

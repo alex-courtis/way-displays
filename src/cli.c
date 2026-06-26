@@ -11,7 +11,6 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "convert.h"
 #include "ipc.h"
 #include "log.h"
@@ -19,6 +18,7 @@
 #include "process.h"
 #include "pset.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "str.h"
 
@@ -154,11 +154,11 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 				case CFG_SET:
 					// parse input value
 					parsed = (wl_transform = transform_val(argv[optind + 1]));
-					smap_put(cfg->user_transforms, argv[optind], cfg_user_transform_init(wl_transform));
+					smapi_put(cfg->user_transforms, argv[optind], transform_val(argv[optind + 1]));
 					break;
 				case CFG_DEL:
 					// dummy value
-					smap_put(cfg->user_transforms, argv[optind], cfg_user_transform_init(WL_OUTPUT_TRANSFORM_90));
+					smapi_put(cfg->user_transforms, argv[optind], WL_OUTPUT_TRANSFORM_90);
 					parsed = true;
 					break;
 				default:

@@ -2,12 +2,14 @@
 #define YAML_MARSHAL_PRIMITIVES_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "convert.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "yaml/marshal.h"
 
@@ -37,6 +39,8 @@ bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sse
 bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset,  fn_yaml_seq_app_v fn, int mapping);
 typedef bool (*fn_yaml_seq_app_kv)(struct MC *c, const void *key, const void *val, const int sequence);
 bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, fn_yaml_seq_app_kv fn, int mapping);
+typedef bool (*fn_yaml_seq_app_ki)(struct MC *c, const void *key, const size_t val, const int sequence);
+bool yaml_map_add_seq_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_yaml_seq_app_ki fn, int mapping);
 
 // fn_yaml_seq_app_v: append a scalar item to an existing sequence node
 bool yaml_seq_append_str(struct MC *c, const void *str, int sequence);

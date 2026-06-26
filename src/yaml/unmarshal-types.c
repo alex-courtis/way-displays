@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
 #include <wayland-util.h>
 #include <yaml.h>
 
@@ -12,7 +13,6 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "convert.h"
 #include "fn.h"
 #include "head.h"
@@ -23,6 +23,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/unmarshal-primitives.h"
@@ -420,7 +421,7 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_map_into_user_transforms(struct UC *c, const struct SMap* const user_transforms, const yaml_node_t *map) {
+void yaml_map_into_user_transforms(struct UC *c, const struct SMapI* const user_transforms, const yaml_node_t *map) {
 	if (!user_transforms)
 		return;
 
@@ -428,31 +429,27 @@ void yaml_map_into_user_transforms(struct UC *c, const struct SMap* const user_t
 	if (!nodes)
 		return;
 
-	struct UserTransform *user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
-
 	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 	const yaml_node_t *scalar = smap_get(nodes, "NAME_DESC");
 	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
-		goto err;
+		goto end;
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "TRANSFORM");
 	scalar = smap_get(nodes, "TRANSFORM");
-	if (!yaml_check_mandatory(c, scalar) || !(user_transform->transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names)))
-		goto err;
+	if (!yaml_check_mandatory(c, scalar))
+		goto end;
 
-	if (smap_put_if_absent(user_transforms, name_desc, user_transform)) {
+	enum wl_output_transform transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names);
+	if (!transform)
+		goto end;
+
+	if (smapi_put_if_absent(user_transforms, name_desc, transform)) {
 		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
-		goto err;
 	}
-
-	goto end;
-
-err:
-	free(user_transform);
 
 end:
 	free(name_desc);

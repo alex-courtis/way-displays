@@ -10,6 +10,7 @@
 #include "slist.h"
 #include "pset.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "yaml/marshal.h"
 
@@ -189,6 +190,27 @@ bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* sma
 		return false;
 
 	for (const struct SMapIt *it = smap_it(smap); it; it = smap_it_next(it)) {
+		if (!fn(c, it->key, it->val, seq))
+			return false;
+	}
+
+	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
+}
+
+bool yaml_map_add_seq_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_yaml_seq_app_ki fn, int mapping) {
+	if (!key || !fn || !mapping)
+		return false;
+
+	if (!smapi || smapi_size(smapi) == 0)
+		return true;
+
+	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int seq = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+
+	if (!k || !seq)
+		return false;
+
+	for (const struct SMapIIt *it = smapi_it(smapi); it; it = smapi_it_next(it)) {
 		if (!fn(c, it->key, it->val, seq))
 			return false;
 	}

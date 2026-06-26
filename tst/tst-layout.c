@@ -16,7 +16,6 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "displ.h"
 #include "head.h"
 #include "log.h"
@@ -24,6 +23,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -589,7 +589,7 @@ static void desire_transform__disabled(void **state) {
 		.desired.enabled = false,
 		.desired.transform = WL_OUTPUT_TRANSFORM_90,
 	};
-	smap_put(g_cfg->user_transforms, "head0", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_180));
+	smapi_put(g_cfg->user_transforms, "head0", WL_OUTPUT_TRANSFORM_180);
 
 	desire_transform(&head0);
 
@@ -618,8 +618,8 @@ static void desire_transform__user(void **state) {
 		.desired.enabled = true,
 		.desired.transform = WL_OUTPUT_TRANSFORM_90,
 	};
-	smap_put(g_cfg->user_transforms, "head9", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_270));
-	smap_put(g_cfg->user_transforms, "head0", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_180));
+	smapi_put(g_cfg->user_transforms, "head9", WL_OUTPUT_TRANSFORM_270);
+	smapi_put(g_cfg->user_transforms, "head0", WL_OUTPUT_TRANSFORM_180);
 
 	desire_transform(&head0);
 

@@ -14,11 +14,11 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "ipc.h"
 #include "log.h"
 #include "pset.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
@@ -120,7 +120,7 @@ static void parse_element__transform_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, TRANSFORM, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->user_transforms, "displ", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED_270));
+	smapi_put(expected->user_transforms, "displ", WL_OUTPUT_TRANSFORM_FLIPPED_270);
 
 	assert_cfg_equal(actual, expected);
 
@@ -137,7 +137,7 @@ static void parse_element__transform_del_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_DEL, TRANSFORM, 1, argv);
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->user_transforms, "DISPL", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_90));
+	smapi_put(expected->user_transforms, "DISPL", WL_OUTPUT_TRANSFORM_90);
 
 	assert_cfg_equal(actual, expected);
 

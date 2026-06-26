@@ -74,7 +74,7 @@ struct Cfg {
 	const struct SSet *adaptive_sync_off;
 	const struct SSet *max_preferred_refresh_name_desc;
 	const struct PSet *disableds;
-	const struct SMap *user_transforms;
+	const struct SMapI *user_transforms;
 	enum LogThreshold log_threshold;
 
 	int32_t auto_scale_dpi;

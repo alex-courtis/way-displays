@@ -163,7 +163,7 @@ struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_smapi match
 	struct PMapPair pres = pmap_match(map->pmap, fn_match_data_wrapper, &match_data);
 
 	res.key = pres.key;
-	res.val = *(size_t*)pres.val;
+	res.val = pres.val ? *(size_t*)pres.val : 0;
 
 	return res;
 }

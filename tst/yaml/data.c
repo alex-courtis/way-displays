@@ -8,7 +8,6 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -17,6 +16,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -86,7 +86,7 @@ struct Cfg *cfg_all(void) {
 
 	pset_add(cfg->disableds, disabled);
 
-	smap_put(cfg->user_transforms, "twelve", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
+	smapi_put(cfg->user_transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	return cfg;
 }

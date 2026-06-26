@@ -14,11 +14,11 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "log.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 
 #include "cfg.h"
@@ -182,15 +182,15 @@ static void merge_set__user_scale(void **state) {
 static void merge_set__user_transform(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_transforms, "to", cfg_user_transform_init(1));
-	smap_put(s->to->user_transforms, "both", cfg_user_transform_init(2));
+	smapi_put(s->to->user_transforms, "to", 1);
+	smapi_put(s->to->user_transforms, "both", 2);
 
-	smap_put(s->from->user_transforms, "from", cfg_user_transform_init(3));
-	smap_put(s->from->user_transforms, "both", cfg_user_transform_init(4));
+	smapi_put(s->from->user_transforms, "from", 3);
+	smapi_put(s->from->user_transforms, "both", 4);
 
-	smap_put(s->expected->user_transforms, "to", cfg_user_transform_init(1));
-	smap_put(s->expected->user_transforms, "both", cfg_user_transform_init(4));
-	smap_put(s->expected->user_transforms, "from", cfg_user_transform_init(3));
+	smapi_put(s->expected->user_transforms, "to", 1);
+	smapi_put(s->expected->user_transforms, "both", 4);
+	smapi_put(s->expected->user_transforms, "from", 3);
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -351,13 +351,13 @@ static void merge_del__mode(void **state) {
 static void merge_del__transform(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_transforms, "to", cfg_user_transform_init(1));
-	smap_put(s->to->user_transforms, "both", cfg_user_transform_init(2));
+	smapi_put(s->to->user_transforms, "to", 1);
+	smapi_put(s->to->user_transforms, "both", 2);
 
-	smap_put(s->from->user_transforms, "from", cfg_user_transform_init(3));
-	smap_put(s->from->user_transforms, "both", cfg_user_transform_init(4));
+	smapi_put(s->from->user_transforms, "from", 3);
+	smapi_put(s->from->user_transforms, "both", 4);
 
-	smap_put(s->expected->user_transforms, "to", cfg_user_transform_init(1));
+	smapi_put(s->expected->user_transforms, "to", 1);
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -606,9 +606,9 @@ static void validate_warn__(void **state) {
 	smap_put(s->expected->user_modes, "mmmmmmmm", user_mode_init(false, 1, 1, 1, false));
 	smap_put(s->expected->user_modes, "DP-1", user_mode_init(false, 1, 1, 1, false));
 
-	smap_put(s->expected->user_transforms, "ttt", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_180));
-	smap_put(s->expected->user_transforms, "tttttttttt", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_270));
-	smap_put(s->expected->user_transforms, "DP-1", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_270));
+	smapi_put(s->expected->user_transforms, "ttt", WL_OUTPUT_TRANSFORM_180);
+	smapi_put(s->expected->user_transforms, "tttttttttt", WL_OUTPUT_TRANSFORM_270);
+	smapi_put(s->expected->user_transforms, "DP-1", WL_OUTPUT_TRANSFORM_270);
 
 	sset_add(s->expected->order_name_desc, "ooo");
 	sset_add(s->expected->order_name_desc, "oooooooooo");

@@ -11,7 +11,6 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "convert.h"
 #include "fn.h"
 #include "head.h"
@@ -24,6 +23,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "smaps.h"
 #include "sset.h"
 #include "str.h"
@@ -194,13 +194,13 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (smap_size(cfg->user_transforms) > 0) {
+	if (smapi_size(cfg->user_transforms) > 0) {
 		log_(t, "  Transform:");
-		for (const struct SMapIt *it = smap_it(cfg->user_transforms); it; it = smap_it_next(it)) {
+		for (const struct SMapIIt *it = smapi_it(cfg->user_transforms); it; it = smapi_it_next(it)) {
 			if (del || !it->val) {
 				log_(t, "    %s", it->key);
 			} else {
-				log_(t, "    %s: %s", it->key, transform_name(((struct UserTransform*)it->val)->transform));
+				log_(t, "    %s: %s", it->key, transform_name(it->val));
 			}
 		}
 	}
@@ -302,10 +302,10 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct SMapIt *it = smap_it(cfg->user_transforms); it; it = smap_it_next(it)) {
+	for (const struct SMapIIt *it = smapi_it(cfg->user_transforms); it; it = smapi_it_next(it)) {
 		if (it->val) {
 			print_newline(t, &newline);
-			log_(t, "way-displays -s TRANSFORM '%s' %s", it->key, transform_name(((struct UserTransform*)it->val)->transform));
+			log_(t, "way-displays -s TRANSFORM '%s' %s", it->key, transform_name(it->val));
 		}
 	}
 

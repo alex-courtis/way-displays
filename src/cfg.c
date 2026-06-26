@@ -12,7 +12,6 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "convert.h"
 #include "fds.h"
 #include "fn.h"
@@ -22,6 +21,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
@@ -84,10 +84,10 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->max_preferred_refresh_name_desc = sset_clone(from->max_preferred_refresh_name_desc);
 	to->order_name_desc =                 sset_clone(from->order_name_desc);
 
-	to->disableds =         pset_clone_deep(from->disableds);
-	to->user_modes =        smap_clone_deep(from->user_modes);
-	to->user_scales =       smap_clone_deep(from->user_scales);
-	to->user_transforms =   smap_clone_deep(from->user_transforms);
+	to->disableds =       pset_clone_deep(from->disableds);
+	to->user_modes =      smap_clone_deep(from->user_modes);
+	to->user_scales =     smap_clone_deep(from->user_scales);
+	to->user_transforms = smapi_clone(from->user_transforms);
 
 	return to;
 }
@@ -113,7 +113,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		a->scaling == b->scaling &&
 		smap_equal(a->user_modes, b->user_modes) &&
 		smap_equal(a->user_scales, b->user_scales) &&
-		smap_equal(a->user_transforms, b->user_transforms);
+		smapi_equal(a->user_transforms, b->user_transforms);
 }
 
 //
@@ -126,10 +126,11 @@ struct Cfg *cfg_init(void) {
 	cfg->max_preferred_refresh_name_desc = sset_init();
 	cfg->order_name_desc =                 sset_init();
 
-	cfg->disableds =         disabled_pset_init();
-	cfg->user_modes =        user_mode_smap_init();
-	cfg->user_scales =       user_scale_smap_init();
-	cfg->user_transforms =   user_transform_smap_init();
+	cfg->user_transforms = smapi_init();
+
+	cfg->disableds =   disabled_pset_init();
+	cfg->user_modes =  user_mode_smap_init();
+	cfg->user_scales = user_scale_smap_init();
 
 	return cfg;
 }
@@ -264,6 +265,12 @@ static void warn_ambiguous_name_desc_smap(const struct SMap *name_descs, const e
 	}
 }
 
+static void warn_ambiguous_name_desc_smapi(const struct SMapI *name_descs, const enum CfgElement element) {
+	for (const struct SMapIIt *it = smapi_it(name_descs); it; it = smapi_it_next(it)) {
+		warn_ambiguous_name_desc(it->key, element);
+	}
+}
+
 static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const enum CfgElement element) {
 	for (const struct SSetIt *it = sset_it(name_descs); it; it = sset_it_next(it)) {
 		warn_ambiguous_name_desc(it->val, element);
@@ -276,7 +283,8 @@ void validate_warn(const struct Cfg * const cfg) {
 
 	warn_ambiguous_name_desc_smap(cfg->user_scales, SCALE);
 	warn_ambiguous_name_desc_smap(cfg->user_modes, MODE);
-	warn_ambiguous_name_desc_smap(cfg->user_transforms, TRANSFORM);
+
+	warn_ambiguous_name_desc_smapi(cfg->user_transforms, TRANSFORM);
 
 	warn_ambiguous_name_desc_sset(cfg->order_name_desc, ORDER);
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, VRR_OFF);
@@ -353,8 +361,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// TRANSFORM
-	for (const struct SMapIt *it = smap_it(from->user_transforms); it; it = smap_it_next(it)) {
-		smap_put_free(merged->user_transforms, it->key, user_transform_clone(it->val));
+	for (const struct SMapIIt *it = smapi_it(from->user_transforms); it; it = smapi_it_next(it)) {
+		smapi_put(merged->user_transforms, it->key, it->val);
 	}
 
 	// VRR_OFF
@@ -399,8 +407,8 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// TRANSFORM
-	for (const struct SMapIt *it = smap_it(from->user_transforms); it; it = smap_it_next(it)) {
-		smap_remove_free(merged->user_transforms, it->key);
+	for (const struct SMapIIt *it = smapi_it(from->user_transforms); it; it = smapi_it_next(it)) {
+		smapi_remove(merged->user_transforms, it->key);
 	}
 
 
@@ -583,7 +591,7 @@ void cfg_free(struct Cfg *cfg) {
 	pset_free_vals(cfg->disableds);
 	smap_free_vals(cfg->user_modes);
 	smap_free_vals(cfg->user_scales);
-	smap_free_vals(cfg->user_transforms);
+	smapi_free(cfg->user_transforms);
 	sset_free(cfg->adaptive_sync_off);
 	sset_free(cfg->max_preferred_refresh_name_desc);
 	sset_free(cfg->order_name_desc);

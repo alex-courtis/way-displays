@@ -17,7 +17,6 @@
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
 #include "cfg/user-scale.h"
-#include "cfg/user-transform.h"
 #include "fn.h"
 #include "head.h"
 #include "ipc.h"
@@ -27,6 +26,7 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -119,7 +119,7 @@ static void yaml_root_to_cfg__root_mistyped(void **state) {
 
 static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->user_transforms, "one", cfg_user_transform_init(WL_OUTPUT_TRANSFORM_FLIPPED));
+	smapi_put(expected->user_transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-transform.yaml", expected, "tst/yaml/cfg-transform.log");
 }

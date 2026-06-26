@@ -134,7 +134,11 @@ bool head_matches_name_desc(const struct Head * const head, const char * const n
 		head_matches_name_desc_fuzzy(head, name_desc);
 }
 
-bool head_name_desc_x_matches_head(const char * const name_desc, const void * const x, const struct Head * const head) {
+bool head_name_desc_v_matches_head(const char * const name_desc, const void * const v, const struct Head * const head) {
+	return head_matches_name_desc(head, name_desc);
+}
+
+bool head_name_desc_i_matches_head(const char * const name_desc, const size_t i, const struct Head * const head) {
 	return head_matches_name_desc(head, name_desc);
 }
 
@@ -275,7 +279,7 @@ struct Mode *head_find_mode(struct Head * const head) {
 	struct Mode *mode = NULL;
 
 	// maybe a user mode
-	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, (fn_match_smap)head_name_desc_x_matches_head, head).val;
+	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, (fn_match_smap)head_name_desc_v_matches_head, head).val;
 	if (user_mode) {
 		mode = mode_user_mode(head->modes, head->modes_failed, user_mode);
 		if (!mode && !user_mode->warned_no_mode) {
