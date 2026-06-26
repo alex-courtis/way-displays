@@ -119,7 +119,7 @@ static void parse_element__transform_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, TRANSFORM, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->user_transforms, "displ", WL_OUTPUT_TRANSFORM_FLIPPED_270);
+	smapi_put(expected->transforms, "displ", WL_OUTPUT_TRANSFORM_FLIPPED_270);
 
 	assert_cfg_equal(actual, expected);
 
@@ -136,7 +136,7 @@ static void parse_element__transform_del_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_DEL, TRANSFORM, 1, argv);
 
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->user_transforms, "DISPL", WL_OUTPUT_TRANSFORM_90);
+	smapi_put(expected->transforms, "DISPL", WL_OUTPUT_TRANSFORM_90);
 
 	assert_cfg_equal(actual, expected);
 
@@ -165,7 +165,7 @@ static void parse_element__scale_set_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, SCALE, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->user_scales, "DISPL", 1234500);
+	smapi_put(expected->scales, "DISPL", 1234500);
 
 	assert_cfg_equal(actual, expected);
 
@@ -182,7 +182,7 @@ static void parse_element__scale_del_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_DEL, SCALE, 1, argv);
 
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->user_scales, "DISPL", 1);
+	smapi_put(expected->scales, "DISPL", 1);
 
 	assert_cfg_equal(actual, expected);
 

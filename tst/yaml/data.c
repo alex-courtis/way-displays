@@ -53,8 +53,8 @@ struct Cfg *cfg_all(void) {
 	sset_add(cfg->order_name_desc, "ONE");
 	sset_add(cfg->order_name_desc, "!two");
 
-	smapi_put(cfg->user_scales, "three", 3000);
-	smapi_put(cfg->user_scales, "four", 4000);
+	smapi_put(cfg->scales, "three", 3000);
+	smapi_put(cfg->scales, "four", 4000);
 
 	smap_put(cfg->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
 	smap_put(cfg->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
@@ -85,7 +85,7 @@ struct Cfg *cfg_all(void) {
 
 	pset_add(cfg->disableds, disabled);
 
-	smapi_put(cfg->user_transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put(cfg->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	return cfg;
 }

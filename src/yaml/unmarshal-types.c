@@ -151,7 +151,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->auto_scale = yaml_scalar_to_enum_def(c, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name, on_off_names);
 				break;
 			case SCALE:
-				yaml_seq_into_col(c, value, cfg->user_scales, (fn_yaml_node_into_col)yaml_map_into_user_scales);
+				yaml_seq_into_col(c, value, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales);
 				break;
 			case SCALE_ROUND_TO:
 				cfg->scale_round_to = yaml_scalar_to_scale_round_to(c, value);
@@ -163,7 +163,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				yaml_seq_into_col(c, value, cfg->user_modes, (fn_yaml_node_into_col)yaml_map_into_user_modes);
 				break;
 			case TRANSFORM:
-				yaml_seq_into_col(c, value, cfg->user_transforms, (fn_yaml_node_into_col)yaml_map_into_user_transforms);
+				yaml_seq_into_col(c, value, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms);
 				break;
 			case VRR_OFF:
 				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, value);
@@ -180,7 +180,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->laptop_lid_monitor = yaml_scalar_to_enum_def(c, LAPTOP_LID_MONITOR_DEFAULT, value, on_off_val, on_off_name, on_off_names);
 				break;
 			case MAX_PREFERRED_REFRESH:
-				yaml_seq_into_name_desc_sset(c, cfg->max_preferred_refresh_name_desc, value);
+				yaml_seq_into_name_desc_sset(c, cfg->max_preferred_refresh, value);
 				break;
 			case LOG_THRESHOLD:
 				cfg->log_threshold = yaml_scalar_to_enum(c, value, log_threshold_val, log_threshold_names);
@@ -317,8 +317,8 @@ end:
 	smap_free(nodes);
 }
 
-void yaml_map_into_user_scales(struct UC *c, const struct SMapI* const user_scales, const yaml_node_t *map) {
-	if (!user_scales)
+void yaml_map_into_scales(struct UC *c, const struct SMapI* const scales, const yaml_node_t *map) {
+	if (!scales)
 		return;
 
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
@@ -345,7 +345,7 @@ void yaml_map_into_user_scales(struct UC *c, const struct SMapI* const user_scal
 		goto end;
 	}
 
-	if (smapi_put_if_absent(user_scales, name_desc, round(scale*1000))) {
+	if (smapi_put_if_absent(scales, name_desc, round(scale*1000))) {
 		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
 	}
 
@@ -418,8 +418,8 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_map_into_user_transforms(struct UC *c, const struct SMapI* const user_transforms, const yaml_node_t *map) {
-	if (!user_transforms)
+void yaml_map_into_transforms(struct UC *c, const struct SMapI* const transforms, const yaml_node_t *map) {
+	if (!transforms)
 		return;
 
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
@@ -441,7 +441,7 @@ void yaml_map_into_user_transforms(struct UC *c, const struct SMapI* const user_
 	if (!yaml_check_mandatory(c, scalar) || !(transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names)))
 		goto end;
 
-	if (smapi_put_if_absent(user_transforms, name_desc, transform)) {
+	if (smapi_put_if_absent(transforms, name_desc, transform)) {
 		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
 	}
 

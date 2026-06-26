@@ -38,15 +38,15 @@ bool yaml_map_populate_messages      (struct MC *c,       struct IpcOperation* c
 bool yaml_map_populate_state         (struct MC *c, const        void*         const unused,        int mapping); // g_heads and g_lid
 
 // fn_yaml_seq_app_v: create and append a new item node to an existing sequence node
-bool yaml_seq_append_condition     (struct MC *c, const struct Condition*  const condition,   int sequence);
-bool yaml_seq_append_disabled      (struct MC *c, const struct Disabled*   const disabled,    int sequence);
-bool yaml_seq_append_mode          (struct MC *c, const struct Mode*       const mode,        int sequence);
-bool yaml_seq_append_head          (struct MC *c, const struct Head*       const head,        int sequence);
-bool yaml_seq_append_log_cap_line  (struct MC *c, const struct LogCapLine* const log_cap_line,int sequence);
+bool yaml_seq_append_condition    (struct MC *c, const struct Condition*  const condition,    int sequence);
+bool yaml_seq_append_disabled     (struct MC *c, const struct Disabled*   const disabled,     int sequence);
+bool yaml_seq_append_mode         (struct MC *c, const struct Mode*       const mode,         int sequence);
+bool yaml_seq_append_head         (struct MC *c, const struct Head*       const head,         int sequence);
+bool yaml_seq_append_log_cap_line (struct MC *c, const struct LogCapLine* const log_cap_line, int sequence);
 
 // fn_yaml_seq_app_kv: create and append a new item node to an existing sequence node
-bool yaml_seq_append_user_mode     (struct MC *c, const char* const name_desc, const struct UserMode* const user_mode, int sequence);
-bool yaml_seq_append_user_scale    (struct MC *c, const char* const name_desc, const size_t user_scale,                int sequence);
-bool yaml_seq_append_user_transform(struct MC *c, const char* const name_desc, const size_t transform,                 int sequence);
+bool yaml_seq_append_user_mode(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode, int sequence);
+bool yaml_seq_append_scale    (struct MC *c, const char* const name_desc, const size_t scale,                     int sequence);
+bool yaml_seq_append_transform(struct MC *c, const char* const name_desc, const size_t transform,                 int sequence);
 
 #endif // YAML_MARSHAL_TYPES_H

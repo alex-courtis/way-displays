@@ -397,7 +397,7 @@ static void head_find_mode__max_preferred_refresh(void **state) {
 	struct Head head = { .name = "name", };
 	struct Mode mode = { 0 };
 
-	sset_add(g_cfg->max_preferred_refresh_name_desc, "!nam.*");
+	sset_add(g_cfg->max_preferred_refresh, "!nam.*");
 
 	slist_append(&head.modes, &mode);
 

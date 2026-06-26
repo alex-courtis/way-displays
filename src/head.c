@@ -43,7 +43,7 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	if (!head)
 		return false;
 
-	for (const struct SSetIt *it = sset_it(g_cfg->max_preferred_refresh_name_desc); it; it = sset_it_next(it)) {
+	for (const struct SSetIt *it = sset_it(g_cfg->max_preferred_refresh); it; it = sset_it_next(it)) {
 		if (head_matches_name_desc(head, it->val)) {
 			sset_it_free(it);
 			return true;

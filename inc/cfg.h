@@ -69,12 +69,12 @@ struct Cfg {
 	enum Align align;
 	enum OnOff scaling;
 	enum OnOff auto_scale;
-	const struct SMapI *user_scales;
+	const struct SMapI *scales;               // milliscale
 	const struct SMap *user_modes;
 	const struct SSet *adaptive_sync_off;
-	const struct SSet *max_preferred_refresh_name_desc;
+	const struct SSet *max_preferred_refresh; // deprecated, compatibility
 	const struct PSet *disableds;
-	const struct SMapI *user_transforms;
+	const struct SMapI *transforms;           // wl_output_transform
 	enum LogThreshold log_threshold;
 
 	int32_t auto_scale_dpi;

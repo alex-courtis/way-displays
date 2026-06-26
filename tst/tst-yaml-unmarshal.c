@@ -99,8 +99,8 @@ static void yaml_root_to_cfg__legacy(void **state) {
 	expected->callback_cmd = strdup("foo");
 
 	// MAX_PREFERRED_REFRESH
-	sset_add(expected->max_preferred_refresh_name_desc, "fifteen");
-	sset_add(expected->max_preferred_refresh_name_desc, "!sixteen");
+	sset_add(expected->max_preferred_refresh, "fifteen");
+	sset_add(expected->max_preferred_refresh, "!sixteen");
 
 	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
 }
@@ -118,14 +118,14 @@ static void yaml_root_to_cfg__root_mistyped(void **state) {
 
 static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->user_transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-transform.yaml", expected, "tst/yaml/cfg-transform.log");
 }
 
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->user_scales, "three", 3000);
+	smapi_put(expected->scales, "three", 3000);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
 }

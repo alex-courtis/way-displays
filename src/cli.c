@@ -70,7 +70,7 @@ void usage(FILE *stream) {
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
 	struct UserMode *user_mode = NULL;
 	enum wl_output_transform wl_transform = 0;
-	float user_scale = 0;
+	float scale = 0;
 
 	struct Cfg *cfg = cfg_init();
 
@@ -100,12 +100,12 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			switch (command) {
 				case CFG_SET:
 					// parse input value
-					parsed = ((user_scale = strtof(argv[optind + 1], NULL)) > 0);
-					smapi_put(cfg->user_scales, argv[optind], round(user_scale*1000));
+					parsed = ((scale = strtof(argv[optind + 1], NULL)) > 0);
+					smapi_put(cfg->scales, argv[optind], round(scale*1000));
 					break;
 				case CFG_DEL:
 					// dummy value
-					smapi_put(cfg->user_scales, argv[optind], 1);
+					smapi_put(cfg->scales, argv[optind], 1);
 					parsed = true;
 					break;
 				default:
@@ -153,11 +153,11 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 				case CFG_SET:
 					// parse input value
 					parsed = (wl_transform = transform_val(argv[optind + 1]));
-					smapi_put(cfg->user_transforms, argv[optind], wl_transform);
+					smapi_put(cfg->transforms, argv[optind], wl_transform);
 					break;
 				case CFG_DEL:
 					// dummy value
-					smapi_put(cfg->user_transforms, argv[optind], WL_OUTPUT_TRANSFORM_90);
+					smapi_put(cfg->transforms, argv[optind], WL_OUTPUT_TRANSFORM_90);
 					parsed = true;
 					break;
 				default:

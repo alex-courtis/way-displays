@@ -571,8 +571,8 @@ static void desire_scale__user(void **state) {
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	smapi_put(g_cfg->user_scales, "![Hh]ea.*", 3500);
-	smapi_put(g_cfg->user_scales, "head1", 7500);
+	smapi_put(g_cfg->scales, "![Hh]ea.*", 3500);
+	smapi_put(g_cfg->scales, "head1", 7500);
 
 	desire_scale(&head0);
 
@@ -587,7 +587,7 @@ static void desire_transform__disabled(void **state) {
 		.desired.enabled = false,
 		.desired.transform = WL_OUTPUT_TRANSFORM_90,
 	};
-	smapi_put(g_cfg->user_transforms, "head0", WL_OUTPUT_TRANSFORM_180);
+	smapi_put(g_cfg->transforms, "head0", WL_OUTPUT_TRANSFORM_180);
 
 	desire_transform(&head0);
 
@@ -616,8 +616,8 @@ static void desire_transform__user(void **state) {
 		.desired.enabled = true,
 		.desired.transform = WL_OUTPUT_TRANSFORM_90,
 	};
-	smapi_put(g_cfg->user_transforms, "head9", WL_OUTPUT_TRANSFORM_270);
-	smapi_put(g_cfg->user_transforms, "head0", WL_OUTPUT_TRANSFORM_180);
+	smapi_put(g_cfg->transforms, "head9", WL_OUTPUT_TRANSFORM_270);
+	smapi_put(g_cfg->transforms, "head0", WL_OUTPUT_TRANSFORM_180);
 
 	desire_transform(&head0);
 

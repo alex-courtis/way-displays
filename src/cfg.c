@@ -79,14 +79,14 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->file_path =             from->file_path ?             strdup(from->file_path) :             NULL;
 	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
-	to->adaptive_sync_off =               sset_clone(from->adaptive_sync_off);
-	to->max_preferred_refresh_name_desc = sset_clone(from->max_preferred_refresh_name_desc);
-	to->order_name_desc =                 sset_clone(from->order_name_desc);
+	to->adaptive_sync_off =     sset_clone(from->adaptive_sync_off);
+	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
+	to->order_name_desc =       sset_clone(from->order_name_desc);
 
-	to->disableds =       pset_clone_deep(from->disableds);
-	to->user_modes =      smap_clone_deep(from->user_modes);
-	to->user_scales =     smapi_clone(from->user_scales);
-	to->user_transforms = smapi_clone(from->user_transforms);
+	to->disableds =  pset_clone_deep(from->disableds);
+	to->user_modes = smap_clone_deep(from->user_modes);
+	to->scales =     smapi_clone(from->scales);
+	to->transforms = smapi_clone(from->transforms);
 
 	return to;
 }
@@ -105,14 +105,14 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		fn_equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
 		a->laptop_lid_monitor == b->laptop_lid_monitor &&
 		a->log_threshold == b->log_threshold &&
-		sset_equal(a->max_preferred_refresh_name_desc, b->max_preferred_refresh_name_desc) &&
+		sset_equal(a->max_preferred_refresh, b->max_preferred_refresh) &&
 		sset_equal(a->order_name_desc, b->order_name_desc) &&
 		a->scale_round_strategy == b->scale_round_strategy &&
 		a->scale_round_to == b->scale_round_to &&
 		a->scaling == b->scaling &&
 		smap_equal(a->user_modes, b->user_modes) &&
-		smapi_equal(a->user_scales, b->user_scales) &&
-		smapi_equal(a->user_transforms, b->user_transforms);
+		smapi_equal(a->scales, b->scales) &&
+		smapi_equal(a->transforms, b->transforms);
 }
 
 //
@@ -121,15 +121,15 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 struct Cfg *cfg_init(void) {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
-	cfg->adaptive_sync_off =               sset_init();
-	cfg->max_preferred_refresh_name_desc = sset_init();
-	cfg->order_name_desc =                 sset_init();
+	cfg->adaptive_sync_off =     sset_init();
+	cfg->max_preferred_refresh = sset_init();
+	cfg->order_name_desc =       sset_init();
 
-	cfg->user_scales = smapi_init();
-	cfg->user_transforms = smapi_init();
+	cfg->scales =     smapi_init();
+	cfg->transforms = smapi_init();
 
-	cfg->disableds =   disabled_pset_init();
-	cfg->user_modes =  user_mode_smap_init();
+	cfg->disableds =  disabled_pset_init();
+	cfg->user_modes = user_mode_smap_init();
 
 	return cfg;
 }
@@ -276,14 +276,14 @@ void validate_warn(const struct Cfg * const cfg) {
 	if (!cfg)
 		return;
 
-	warn_ambiguous_name_desc_smapi(cfg->user_scales, SCALE);
+	warn_ambiguous_name_desc_smapi(cfg->scales, SCALE);
 	warn_ambiguous_name_desc_smap(cfg->user_modes, MODE);
 
-	warn_ambiguous_name_desc_smapi(cfg->user_transforms, TRANSFORM);
+	warn_ambiguous_name_desc_smapi(cfg->transforms, TRANSFORM);
 
 	warn_ambiguous_name_desc_sset(cfg->order_name_desc, ORDER);
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, VRR_OFF);
-	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh_name_desc, MAX_PREFERRED_REFRESH);
+	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh, MAX_PREFERRED_REFRESH);
 
 	for (const struct PSetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
 		if (dit->val) {
@@ -346,8 +346,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// SCALE
-	for (const struct SMapIIt *it = smapi_it(from->user_scales); it; it = smapi_it_next(it)) {
-		smapi_put(merged->user_scales, it->key, it->val);
+	for (const struct SMapIIt *it = smapi_it(from->scales); it; it = smapi_it_next(it)) {
+		smapi_put(merged->scales, it->key, it->val);
 	}
 
 	// MODE
@@ -356,8 +356,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// TRANSFORM
-	for (const struct SMapIIt *it = smapi_it(from->user_transforms); it; it = smapi_it_next(it)) {
-		smapi_put(merged->user_transforms, it->key, it->val);
+	for (const struct SMapIIt *it = smapi_it(from->transforms); it; it = smapi_it_next(it)) {
+		smapi_put(merged->transforms, it->key, it->val);
 	}
 
 	// VRR_OFF
@@ -392,8 +392,8 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	struct Cfg *merged = clone_cfg(to);
 
 	// SCALE
-	for (const struct SMapIIt *it = smapi_it(from->user_scales); it; it = smapi_it_next(it)) {
-		smapi_remove(merged->user_scales, it->key);
+	for (const struct SMapIIt *it = smapi_it(from->scales); it; it = smapi_it_next(it)) {
+		smapi_remove(merged->scales, it->key);
 	}
 
 	// MODE
@@ -402,8 +402,8 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// TRANSFORM
-	for (const struct SMapIIt *it = smapi_it(from->user_transforms); it; it = smapi_it_next(it)) {
-		smapi_remove(merged->user_transforms, it->key);
+	for (const struct SMapIIt *it = smapi_it(from->transforms); it; it = smapi_it_next(it)) {
+		smapi_remove(merged->transforms, it->key);
 	}
 
 	// VRR_OFF
@@ -584,10 +584,10 @@ void cfg_free(struct Cfg *cfg) {
 	free(cfg->laptop_display_prefix);
 	pset_free_vals(cfg->disableds);
 	smap_free_vals(cfg->user_modes);
-	smapi_free(cfg->user_scales);
-	smapi_free(cfg->user_transforms);
+	smapi_free(cfg->scales);
+	smapi_free(cfg->transforms);
 	sset_free(cfg->adaptive_sync_off);
-	sset_free(cfg->max_preferred_refresh_name_desc);
+	sset_free(cfg->max_preferred_refresh);
 	sset_free(cfg->order_name_desc);
 
 	free(cfg);

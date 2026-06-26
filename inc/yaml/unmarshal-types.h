@@ -28,15 +28,15 @@ struct Lid  *yaml_map_to_lid (struct UC *c, const yaml_node_t *map);  // Lid
 struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
 
 // fn_yaml_node_into_col: create a struct and add to collection
-void yaml_map_into_ipc_responses  (struct UC *c, struct SList **ipc_responses, const yaml_node_t *map);
-void yaml_map_into_heads          (struct UC *c, struct SList **heads,         const yaml_node_t *map);
-void yaml_map_into_modes          (struct UC *c, struct SList **modes,         const yaml_node_t *map);
-void yaml_map_into_log_cap_lines  (struct UC *c, struct SList **log_cap_lines, const yaml_node_t *map);
-void yaml_map_into_conditions     (struct UC *c, const struct PSet* const conditions,       const yaml_node_t *map);
-void yaml_map_into_user_scales    (struct UC *c, const struct SMapI* const user_scales,     const yaml_node_t *map);
-void yaml_map_into_user_modes     (struct UC *c, const struct SMap* const user_modes,       const yaml_node_t *map);
-void yaml_map_into_user_transforms(struct UC *c, const struct SMapI* const user_transforms, const yaml_node_t *map);
-void yaml_node_into_disableds     (struct UC *c, const struct PSet* const disableds,        const yaml_node_t *node); // scalar or map
+void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses,         const yaml_node_t *map);
+void yaml_map_into_heads        (struct UC *c, struct SList **heads,                 const yaml_node_t *map);
+void yaml_map_into_modes        (struct UC *c, struct SList **modes,                 const yaml_node_t *map);
+void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines,         const yaml_node_t *map);
+void yaml_map_into_conditions   (struct UC *c, const struct PSet* const conditions,  const yaml_node_t *map);
+void yaml_map_into_scales       (struct UC *c, const struct SMapI* const scales,     const yaml_node_t *map);
+void yaml_map_into_user_modes   (struct UC *c, const struct SMap* const user_modes,  const yaml_node_t *map);
+void yaml_map_into_transforms   (struct UC *c, const struct SMapI* const transforms, const yaml_node_t *map);
+void yaml_node_into_disableds   (struct UC *c, const struct PSet* const disableds,   const yaml_node_t *node); // scalar or map
 
 // into HeadState
 bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map);

@@ -151,8 +151,8 @@ static void print_cfg__all(void **state) {
 	sset_add(c->order_name_desc, "first");
 	sset_add(c->order_name_desc, "last");
 
-	smapi_put(c->user_scales, "three", 3000);
-	smapi_put(c->user_scales, "four", 4000);
+	smapi_put(c->scales, "three", 3000);
+	smapi_put(c->scales, "four", 4000);
 
 	pset_add(c->disableds, disabled_init_always("disabled always"));
 	struct Disabled *disabled = disabled_init();
@@ -166,9 +166,9 @@ static void print_cfg__all(void **state) {
 	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
 	smap_put(c->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
-	smapi_put(c->user_transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
-	sset_add(c->max_preferred_refresh_name_desc, "legacy");
+	sset_add(c->max_preferred_refresh, "legacy");
 
 	c->laptop_display_prefix = strdup("lappy");
 
@@ -189,15 +189,15 @@ static void print_cfg__all(void **state) {
 static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
-	smapi_put(c->user_scales, "three", 3000);
-	smapi_put(c->user_scales, "four", 4000);
+	smapi_put(c->scales, "three", 3000);
+	smapi_put(c->scales, "four", 4000);
 
 	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
 	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
 	smap_put(c->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
-	smapi_put(c->user_transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
-	smapi_put(c->user_transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put(c->transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	print_cfg(INFO, c, true);
 
@@ -297,14 +297,14 @@ static void print_cfg_commands__ok(void **state) {
 
 	c->auto_scale = OFF;
 
-	smapi_put(c->user_scales, "one", 1000);
-	smapi_put(c->user_scales, "two", 2345);
+	smapi_put(c->scales, "one", 1000);
+	smapi_put(c->scales, "two", 2345);
 
 	smap_put(c->user_modes, "all", user_mode_init(false, 1, 2, 12340, false));
 	smap_put(c->user_modes, "res", user_mode_init(false, 4, 5, -1, false));
 	smap_put(c->user_modes, "max", user_mode_init(true, 7, 8, 9, false));
 
-	smapi_put(c->user_transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
+	smapi_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 
 	pset_add(c->disableds, disabled_init_always("three"));
 	pset_add(c->disableds, disabled_init_always("four"));

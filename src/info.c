@@ -174,9 +174,9 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		log_(t, "  Round scales to: %s, %s", scale_round_to_name(cfg->scale_round_to), scale_round_strategy_name(cfg->scale_round_strategy));
 	}
 
-	if (smapi_size(cfg->user_scales) > 0) {
+	if (smapi_size(cfg->scales) > 0) {
 		log_(t, "  Scale:");
-		for (const struct SMapIIt *it = smapi_it(cfg->user_scales); it; it = smapi_it_next(it)) {
+		for (const struct SMapIIt *it = smapi_it(cfg->scales); it; it = smapi_it_next(it)) {
 			if (del) {
 				log_(t, "    %s", it->key);
 			} else {
@@ -192,9 +192,9 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (smapi_size(cfg->user_transforms) > 0) {
+	if (smapi_size(cfg->transforms) > 0) {
 		log_(t, "  Transform:");
-		for (const struct SMapIIt *it = smapi_it(cfg->user_transforms); it; it = smapi_it_next(it)) {
+		for (const struct SMapIIt *it = smapi_it(cfg->transforms); it; it = smapi_it_next(it)) {
 			if (del || !it->val) {
 				log_(t, "    %s", it->key);
 			} else {
@@ -203,9 +203,9 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (sset_size(cfg->max_preferred_refresh_name_desc) > 0) {
+	if (sset_size(cfg->max_preferred_refresh) > 0) {
 		log_(t, "  Max preferred refresh:");
-		for (const struct SSetIt *it = sset_it(cfg->max_preferred_refresh_name_desc); it; it = sset_it_next(it)) {
+		for (const struct SSetIt *it = sset_it(cfg->max_preferred_refresh); it; it = sset_it_next(it)) {
 			log_(t, "    %s", it->val);
 		}
 	}
@@ -272,7 +272,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct SMapIIt *it = smapi_it(cfg->user_scales); it; it = smapi_it_next(it)) {
+	for (const struct SMapIIt *it = smapi_it(cfg->scales); it; it = smapi_it_next(it)) {
 		char *msg = sprintf_alloc("%.3f", (double)it->val/1000);
 		print_newline(t, &newline);
 		log_(t, "way-displays -s SCALE '%s' %s", it->key, msg);
@@ -299,7 +299,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct SMapIIt *it = smapi_it(cfg->user_transforms); it; it = smapi_it_next(it)) {
+	for (const struct SMapIIt *it = smapi_it(cfg->transforms); it; it = smapi_it_next(it)) {
 		print_newline(t, &newline);
 		log_(t, "way-displays -s TRANSFORM '%s' %s", it->key, transform_name(it->val));
 	}
