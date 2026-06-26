@@ -411,7 +411,6 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 		smapi_remove(merged->user_transforms, it->key);
 	}
 
-
 	// VRR_OFF
 	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
 		sset_remove(merged->adaptive_sync_off, it->val);

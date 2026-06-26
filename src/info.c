@@ -303,10 +303,8 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 	newline = true;
 	for (const struct SMapIIt *it = smapi_it(cfg->user_transforms); it; it = smapi_it_next(it)) {
-		if (it->val) {
-			print_newline(t, &newline);
-			log_(t, "way-displays -s TRANSFORM '%s' %s", it->key, transform_name(it->val));
-		}
+		print_newline(t, &newline);
+		log_(t, "way-displays -s TRANSFORM '%s' %s", it->key, transform_name(it->val));
 	}
 
 	newline = true;

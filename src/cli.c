@@ -154,7 +154,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 				case CFG_SET:
 					// parse input value
 					parsed = (wl_transform = transform_val(argv[optind + 1]));
-					smapi_put(cfg->user_transforms, argv[optind], transform_val(argv[optind + 1]));
+					smapi_put(cfg->user_transforms, argv[optind], wl_transform);
 					break;
 				case CFG_DEL:
 					// dummy value

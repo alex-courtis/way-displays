@@ -36,17 +36,19 @@ struct PMapPair {
  * Optional constructor params (default)
  */
 struct PMapParams {
-	const fn_equal equal_key; // compare key pointers
-	const fn_equal equal_val; // compare val pointers
-	const fn_alloc alloc_key; // assign key pointer
-	const fn_alloc alloc_val; // assign val pointer
-	const fn_free free_key;   // NOP
-	const fn_free free_val;   // free
-	const fn_clone clone_val; // NOP
-	const fn_str str_key;     // %p
-	const fn_str str_val;     // %p
-	const size_t initial;     // 10
-	const size_t grow;        // 10
+	// TODO
+	const bool allow_null_val; // false
+	const fn_equal equal_key;  // compare key pointers
+	const fn_equal equal_val;  // compare val pointers
+	const fn_alloc alloc_key;  // assign key pointer
+	const fn_alloc alloc_val;  // assign val pointer
+	const fn_free free_key;    // NOP
+	const fn_free free_val;    // free
+	const fn_clone clone_val;  // NOP
+	const fn_str str_key;      // %p
+	const fn_str str_val;      // %p
+	const size_t initial;      // 10
+	const size_t grow;         // 10
 };
 
 /*
