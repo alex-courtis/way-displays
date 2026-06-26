@@ -37,16 +37,17 @@ const struct SMapS *smaps_init(void) {
 
 const struct SMapS *smaps_init_with(const struct SMapSParams params) {
 	const struct PMapParams pmap_params = {
-		.equal_key = params.case_insensitive_key ? (fn_equal)fn_equal_strcasecmp : (fn_equal)fn_equal_strcmp,
-		.equal_val = params.case_insensitive_val ? (fn_equal)fn_equal_strcasecmp : (fn_equal)fn_equal_strcmp,
-		.alloc_key = fn_clone_strdup,
-		.alloc_val = fn_clone_strdup,
+		.equal_key = params.case_insensitive_key ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
+		.equal_val = params.case_insensitive_val ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
+		.alloc_key = clone_strdup,
+		.alloc_val = clone_strdup,
 		.free_key = (fn_free)free,
 		.free_val = (fn_free)free,
-		.clone_val = fn_clone_strdup,
-		.str_key = (fn_str)fn_str_or_null,
-		.str_val = (fn_str)fn_str_or_null,
+		.clone_val = clone_strdup,
+		.str_key = (fn_str)str_or_null,
+		.str_val = (fn_str)str_or_null,
 		.initial = params.initial,
+		.allow_null_val = params.allow_null_val,
 		.grow = params.grow,
 	};
 

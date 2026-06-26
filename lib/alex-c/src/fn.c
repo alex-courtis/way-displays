@@ -5,11 +5,11 @@
 #include "fn.h"
 #include "str.h"
 
-bool fn_equal_ptr(const void* const a, const void* const b) {
+bool equal_ptr(const void* const a, const void* const b) {
 	return a == b;
 }
 
-bool fn_equal_strcmp(const char* const a, const char* const b) {
+bool equal_strcmp(const char* const a, const char* const b) {
 	if (a == b)
 		return true;
 
@@ -19,7 +19,7 @@ bool fn_equal_strcmp(const char* const a, const char* const b) {
 	return strcmp(a, b) == 0;
 }
 
-bool fn_equal_strcasecmp(const char* const a, const char* const b) {
+bool equal_strcasecmp(const char* const a, const char* const b) {
 	if (a == b)
 		return true;
 
@@ -29,7 +29,7 @@ bool fn_equal_strcasecmp(const char* const a, const char* const b) {
 	return strcasecmp(a, b) == 0;
 }
 
-bool fn_equal_strstr(const char* const a, const char* const b) {
+bool equal_strstr(const char* const a, const char* const b) {
 	if (a == b)
 		return true;
 
@@ -39,7 +39,7 @@ bool fn_equal_strstr(const char* const a, const char* const b) {
 	return strstr(a, b);
 }
 
-bool fn_less_than_strcmp(const char* const a, const char* const b) {
+bool less_than_strcmp(const char* const a, const char* const b) {
 	if (a == b)
 		return true;
 
@@ -49,7 +49,7 @@ bool fn_less_than_strcmp(const char* const a, const char* const b) {
 	return strcmp(a, b) < 0;
 }
 
-bool fn_less_than_strcasecmp(const char* const a, const char* const b) {
+bool less_than_strcasecmp(const char* const a, const char* const b) {
 	if (a == b)
 		return true;
 
@@ -59,14 +59,14 @@ bool fn_less_than_strcasecmp(const char* const a, const char* const b) {
 	return strcasecmp(a, b) < 0;
 }
 
-void *fn_clone_strdup(const void* const val) {
+void *clone_strdup(const void* const val) {
 	if (val == NULL)
 		return NULL;
 
 	return strdup(val);
 }
 
-char *fn_str_or_null(const char* const val) {
+char *str_or_null(const char* const val) {
 	return sprintf_alloc("%s", val ? val : "(null)");
 }
 

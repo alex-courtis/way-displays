@@ -195,7 +195,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 	if (smapi_size(cfg->transforms) > 0) {
 		log_(t, "  Transform:");
 		for (const struct SMapIIt *it = smapi_it(cfg->transforms); it; it = smapi_it_next(it)) {
-			if (del || !it->val) {
+			if (del) {
 				log_(t, "    %s", it->key);
 			} else {
 				log_(t, "    %s: %s", it->key, transform_name(it->val));
@@ -307,7 +307,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	newline = true;
 	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 		const struct Disabled* d = it->val;
-		if (d && pset_size(d->conditions) == 0) {
+		if (pset_size(d->conditions) == 0) {
 			print_newline(t, &newline);
 			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);
 		}

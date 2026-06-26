@@ -36,8 +36,6 @@ struct PMapPair {
  * Optional constructor params (default)
  */
 struct PMapParams {
-	// TODO
-	const bool allow_null_val; // false
 	const fn_equal equal_key;  // compare key pointers
 	const fn_equal equal_val;  // compare val pointers
 	const fn_alloc alloc_key;  // assign key pointer
@@ -47,6 +45,7 @@ struct PMapParams {
 	const fn_clone clone_val;  // NOP
 	const fn_str str_key;      // %p
 	const fn_str str_val;      // %p
+	const bool allow_null_val; // false
 	const size_t initial;      // 10
 	const size_t grow;         // 10
 };

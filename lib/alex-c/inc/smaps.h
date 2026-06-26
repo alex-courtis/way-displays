@@ -26,6 +26,7 @@ struct SMapSIt {
 struct SMapSParams {
 	const bool case_insensitive_key; // (false)
 	const bool case_insensitive_val; // (false)
+	const bool allow_null_val;       // false
 	const size_t initial;            // (10)
 	const size_t grow;               // (10)
 };

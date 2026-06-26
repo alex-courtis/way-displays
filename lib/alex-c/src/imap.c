@@ -23,25 +23,25 @@ struct IMapItState {
 	const struct IMapItMatchData *match_data;
 };
 
-static bool fn_equal_key(const void* const a, const void* const b) {
+static bool equal_key_size_t(const void* const a, const void* const b) {
 	if (!a || !b)
 		return false;
 
 	return *(size_t*)a == *(size_t*)b;
 }
 
-static void *fn_clone_key(const void* const val) {
+static void *alloc_key_size_t(const void* const val) {
 	size_t *out = calloc(1, sizeof(size_t));
 	*out = *(size_t*)val;
 
 	return out;
 }
 
-static char *fn_str_key(const void* const val) {
+static char *str_key_size_t(const void* const val) {
 	return sprintf_alloc("%zu", *(size_t*)val);
 }
 
-static bool fn_match_data_wrapper(const void* const key, const void* const val, const void* const data) {
+static bool match_key_val_wrapper(const void* const key, const void* const val, const void* const data) {
 	const struct IMapItMatchData* const matcher = data;
 	return matcher->match(*(size_t*)key, val, matcher->data);
 }
@@ -80,15 +80,16 @@ const struct IMap *imap_init(void) {
 
 const struct IMap *imap_init_with(const struct IMapParams params) {
 	const struct PMapParams pmap_params = {
-		.equal_key = fn_equal_key,
+		.equal_key = equal_key_size_t,
 		.equal_val = params.equal_val,
-		.alloc_key = fn_clone_key,
+		.alloc_key = alloc_key_size_t,
 		.alloc_val = params.alloc_val,
 		.free_key = (fn_free)free,
 		.free_val = params.free_val,
 		.clone_val = params.clone_val,
-		.str_key = fn_str_key,
+		.str_key = str_key_size_t,
 		.str_val = params.str_val,
+		.allow_null_val = params.allow_null_val,
 		.initial = params.initial,
 		.grow = params.grow,
 	};
@@ -158,7 +159,7 @@ struct IMapPair imap_match(const struct IMap* const map, fn_match_imap match, co
 		.data = data,
 	};
 
-	struct PMapPair pres = pmap_match(map->pmap, fn_match_data_wrapper, &match_data);
+	struct PMapPair pres = pmap_match(map->pmap, match_key_val_wrapper, &match_data);
 
 	res.key = pres.key ? *(size_t*)pres.key : 0;
 	res.val = pres.val;
@@ -178,7 +179,7 @@ const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_imap m
 	match_data->match = match;
 	match_data->data = data;
 
-	struct IMapIt *it = it_init(pmap_match_it(map->pmap, fn_match_data_wrapper, match_data));
+	struct IMapIt *it = it_init(pmap_match_it(map->pmap, match_key_val_wrapper, match_data));
 
 	if (it) {
 		it->st->match_data = match_data;

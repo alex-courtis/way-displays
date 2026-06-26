@@ -32,6 +32,7 @@ struct SMapParams {
 	const fn_free free_val;      // free
 	const fn_clone clone_val;    // NOP
 	const fn_str str_val;        // %p
+	const bool allow_null_val;   // false
 	const size_t initial;        // 10
 	const size_t grow;           // 10
 };

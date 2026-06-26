@@ -23,22 +23,22 @@ struct SMapIItState {
 	const struct SMapIItMatchData *match_data;
 };
 
-static bool fn_equal_val(const void* const a, const void* const b) {
+static bool equal_val_size_t(const void* const a, const void* const b) {
 	return *(size_t*)a == *(size_t*)b;
 }
 
-static void *fn_clone_val(const void* const val) {
+static void *clone_val_size_t(const void* const val) {
 	size_t *out = calloc(1, sizeof(size_t));
 	*out = *(size_t*)val;
 
 	return out;
 }
 
-static char *fn_str_val(const void* const val) {
+static char *str_val_size_t(const void* const val) {
 	return sprintf_alloc("%zu", *(size_t*)val);
 }
 
-static bool fn_match_data_wrapper(const void* const key, const void* const val, const void* const data) {
+static bool match_key_val_wrapper(const void* const key, const void* const val, const void* const data) {
 	const struct SMapIItMatchData* const matcher = data;
 	return matcher->match(key, *(size_t*)val, matcher->data);
 }
@@ -64,15 +64,16 @@ const struct SMapI *smapi_init(void) {
 
 const struct SMapI *smapi_init_with(const struct SMapIParams params) {
 	const struct PMapParams pmap_params = {
-		.equal_key = params.case_insensitive_key ? (fn_equal)fn_equal_strcasecmp : (fn_equal)fn_equal_strcmp,
-		.equal_val = fn_equal_val,
-		.alloc_key = fn_clone_strdup,
-		.alloc_val = fn_clone_val,
+		.equal_key = params.case_insensitive_key ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
+		.equal_val = equal_val_size_t,
+		.alloc_key = clone_strdup,
+		.alloc_val = clone_val_size_t,
 		.free_key = (fn_free)free,
 		.free_val = (fn_free)free,
-		.clone_val = fn_clone_val,
-		.str_key = (fn_str)fn_str_or_null,
-		.str_val = fn_str_val,
+		.clone_val = clone_val_size_t,
+		.str_key = (fn_str)str_or_null,
+		.str_val = str_val_size_t,
+		.allow_null_val = false,
 		.initial = params.initial,
 		.grow = params.grow,
 	};
@@ -160,7 +161,7 @@ struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_smapi match
 		.data = data,
 	};
 
-	struct PMapPair pres = pmap_match(map->pmap, fn_match_data_wrapper, &match_data);
+	struct PMapPair pres = pmap_match(map->pmap, match_key_val_wrapper, &match_data);
 
 	res.key = pres.key;
 	res.val = pres.val ? *(size_t*)pres.val : 0;
@@ -180,7 +181,7 @@ const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_sma
 	match_data->match = match;
 	match_data->data = data;
 
-	struct SMapIIt *it = it_init(pmap_match_it(map->pmap, fn_match_data_wrapper, match_data));
+	struct SMapIIt *it = it_init(pmap_match_it(map->pmap, match_key_val_wrapper, match_data));
 
 	if (it) {
 		it->st->match_data = match_data;

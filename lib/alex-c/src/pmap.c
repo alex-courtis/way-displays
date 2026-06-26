@@ -52,6 +52,9 @@ static const void *put(const struct PMap* const map, const void* const key, cons
 	if (!key)
 		return NULL;
 
+	if (!val && !map->params.allow_null_val)
+		return NULL;
+
 	const void **k;
 	const void **v;
 	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
@@ -59,21 +62,29 @@ static const void *put(const struct PMap* const map, const void* const key, cons
 		// overwrite existing values
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			const void *val_old = *v;
-			if (val && alloc_val) {
-				*v = alloc_val(val);
-			} else {
-				*v = val;
+
+			const void *val_new = val && alloc_val ? alloc_val(val) : val;
+			if (!val_new && !map->params.allow_null_val) {
+				return NULL;
 			}
+
+			*v = val_new;
 			return val_old;
 		}
 	}
 
-	struct PMap *map_m = (struct PMap*)map;
-
-	// create new key
+	// alloc new key, never null
 	const void *key_new = map->params.alloc_key ? map->params.alloc_key(key) : key;
 	if (!key_new)
 		return NULL;
+
+	// alloc new val, maybe null
+	const void *val_new = val && alloc_val ? alloc_val(val) : val;
+	if (!val_new && !map->params.allow_null_val) {
+		return NULL;
+	}
+
+	struct PMap *map_m = (struct PMap*)map;
 
 	// grow for new entry
 	if (map->size >= map->capacity) {
@@ -84,11 +95,7 @@ static const void *put(const struct PMap* const map, const void* const key, cons
 
 	// new
 	*k = key_new;
-	if (val && alloc_val) {
-		*v = alloc_val(val);
-	} else {
-		*v = val;
-	}
+	*v = val_new;
 
 	map_m->size++;
 

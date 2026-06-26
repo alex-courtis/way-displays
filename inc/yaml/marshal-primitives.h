@@ -33,12 +33,18 @@ bool yaml_map_add_map(struct MC *c, const char *key, const void *data, fn_yaml_m
 
 // Create a new sequence node and add it to an existing mapping node
 // New sequence node values are populated by evaluating fn on each item
-typedef bool (*fn_yaml_seq_app_v)(struct MC *c, const void *data, const int sequence);
+
+// pointer value
+typedef bool (*fn_yaml_seq_app_v)(struct MC *c, const void *val, const int sequence);
 bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, fn_yaml_seq_app_v fn, int mapping);
 bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sset,  fn_yaml_seq_app_v fn, int mapping);
 bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset,  fn_yaml_seq_app_v fn, int mapping);
-typedef bool (*fn_yaml_seq_app_kv)(struct MC *c, const void *key, const void *val, const int sequence);
+
+// string key and pointer value
+typedef bool (*fn_yaml_seq_app_kv)(struct MC *c, const char *key, const void *val, const int sequence);
 bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, fn_yaml_seq_app_kv fn, int mapping);
+
+// string key and int value
 typedef bool (*fn_yaml_seq_app_ki)(struct MC *c, const void *key, const size_t val, const int sequence);
 bool yaml_map_add_seq_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_yaml_seq_app_ki fn, int mapping);
 

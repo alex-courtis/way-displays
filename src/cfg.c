@@ -100,9 +100,9 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		a->auto_scale_dpi == b->auto_scale_dpi &&
 		a->auto_scale_max == b->auto_scale_max &&
 		a->auto_scale_min == b->auto_scale_min &&
-		fn_equal_strcmp(a->callback_cmd, b->callback_cmd) &&
+		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
 		pset_equal(a->disableds, b->disableds) &&
-		fn_equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
+		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
 		a->laptop_lid_monitor == b->laptop_lid_monitor &&
 		a->log_threshold == b->log_threshold &&
 		sset_equal(a->max_preferred_refresh, b->max_preferred_refresh) &&
@@ -286,17 +286,15 @@ void validate_warn(const struct Cfg * const cfg) {
 	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh, MAX_PREFERRED_REFRESH);
 
 	for (const struct PSetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
-		if (dit->val) {
-			const struct Disabled *disabled = (struct Disabled*)dit->val;
-			warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
+		const struct Disabled *disabled = (struct Disabled*)dit->val;
+		warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
 
-			for (const struct PSetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
-				if (!cit->val)
-					continue;
-				const struct Condition *condition = (struct Condition*)cit->val;
-				warn_ambiguous_name_desc_sset(condition->plugged, PLUGGED);
-				warn_ambiguous_name_desc_sset(condition->unplugged, UNPLUGGED);
-			}
+		for (const struct PSetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
+			if (!cit->val)
+				continue;
+			const struct Condition *condition = (struct Condition*)cit->val;
+			warn_ambiguous_name_desc_sset(condition->plugged, PLUGGED);
+			warn_ambiguous_name_desc_sset(condition->unplugged, UNPLUGGED);
 		}
 	}
 }

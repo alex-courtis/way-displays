@@ -16,11 +16,6 @@ struct SMapItState {
 	const struct PMapIt *pit;
 };
 
-const struct SMap *smap_init(void) {
-	const struct SMapParams params = { 0 };
-	return smap_init_with(params);
-}
-
 static const struct SMap *clone(const struct SMap* const from, bool deep) {
 	if (!from)
 		return NULL;
@@ -48,17 +43,23 @@ static const struct SMapIt *it_init(const struct PMapIt *pit) {
 	return it;
 }
 
+const struct SMap *smap_init(void) {
+	const struct SMapParams params = { 0 };
+	return smap_init_with(params);
+}
+
 const struct SMap *smap_init_with(const struct SMapParams params) {
 	const struct PMapParams pmap_params = {
-		.equal_key = params.case_insensitive ? (fn_equal)fn_equal_strcasecmp : (fn_equal)fn_equal_strcmp,
+		.equal_key = params.case_insensitive ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
 		.equal_val = params.equal_val,
-		.alloc_key = fn_clone_strdup,
+		.alloc_key = clone_strdup,
 		.alloc_val = params.alloc_val,
 		.free_key = (fn_free)free,
 		.free_val = params.free_val,
 		.clone_val = params.clone_val,
-		.str_key = (fn_str)fn_str_or_null,
+		.str_key = (fn_str)str_or_null,
 		.str_val = params.str_val,
+		.allow_null_val = params.allow_null_val,
 		.initial = params.initial,
 		.grow = params.grow,
 	};
