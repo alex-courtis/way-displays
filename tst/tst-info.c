@@ -21,8 +21,10 @@
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
+#include "imap.h"
 #include "log.h"
 #include "mode.h"
+#include "output.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -120,6 +122,8 @@ int before_each(void **state) {
 
 	slist_append(&s->heads, s->head2);
 
+	g_outputs = imap_init();
+
 	*state = s;
 	return 0;
 }
@@ -133,6 +137,9 @@ int after_each(void **state) {
 
 	displ_delta_destroy();
 	free(g_displ);
+
+	imap_free_vals(g_outputs);
+	g_outputs = NULL;
 
 	cfg_destroy();
 
@@ -321,6 +328,18 @@ static void print_head_arrived__all(void **state) {
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return_int(__wrap_lid_is_closed, false);
+
+	struct Output *outputX = calloc(1, sizeof(struct Output));
+	outputX->name = "inexistent"; // we don't call output destroy, just free
+	imap_put(g_outputs, 888, outputX);
+
+	struct Output *output1 = calloc(1, sizeof(struct Output));
+	output1->name = "name1";
+	output1->logical_width = 4000;
+	output1->logical_height = 2000;
+	output1->logical_x = 400;
+	output1->logical_y = 200;
+	imap_put(g_outputs, 999, output1);
 
 	print_head(INFO, ARRIVED, s->head1);
 

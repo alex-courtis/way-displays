@@ -16,7 +16,8 @@ name1 Arrived:
     mode:      700x800@90Hz (90,000mHz)
   current:
     scale:     2.000 (26.458)
-    position:  700,800
+    size:      4000x2000
+    position:  400,200
     transform: 180
     mode:      100x200@30Hz (30,000mHz) (preferred)
     VRR:       off

@@ -15,6 +15,7 @@
 #include "convert.h"
 #include "fn.h"
 #include "head.h"
+#include "imap.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
@@ -331,7 +332,6 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 }
 
 static void print_head_current(const enum LogThreshold t, const struct Head * const head) {
-	static const struct Output *output = NULL;
 
 	if (!head)
 		return;
@@ -339,12 +339,14 @@ static void print_head_current(const enum LogThreshold t, const struct Head * co
 	if (head->current.enabled) {
 		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.mode));
 
-		if ((output = output_for_name(head->name))) {
+		const struct Output *output = imap_match(g_outputs, (fn_match_imap)output_matches_name, head->name).val;
+		if (output) {
 			log_(t, "    size:      %dx%d", output->logical_width, output->logical_height);
 			log_(t, "    position:  %d,%d", output->logical_x, output->logical_y);
 		} else {
 			log_(t, "    position:  %d,%d", head->current.x, head->current.y);
 		}
+
 		if (head->current.transform) {
 			log_(t, "    transform: %s", transform_name(head->current.transform));
 		}
