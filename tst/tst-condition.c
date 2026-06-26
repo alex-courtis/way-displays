@@ -8,6 +8,7 @@
 #include "fn.h"
 #include "head.h"
 #include "lid.h"
+#include "pset.h"
 #include "slist.h"
 #include "sset.h"
 
@@ -143,6 +144,33 @@ static void condition__complex(void **state) {
 	assert_true(condition_evaluate(s->condition));
 }
 
+static void condition_set_evaluate__many(void **state) {
+	const struct State *s = *state;
+
+	const struct PSet *conditions = condition_pset_init();
+
+	const struct Condition *plugged = condition_clone(s->condition);
+	sset_add(plugged->plugged, "DP-1");
+	pset_add(conditions, plugged);
+
+	struct Condition *lid = condition_clone(plugged);
+	lid->lid = LID_NOT_PRESENT;
+	pset_add(conditions, lid);
+
+	const struct Condition *unplugged = condition_clone(lid);
+	sset_add(unplugged->unplugged, "DP-99");
+	pset_add(conditions, unplugged);
+
+	assert_true(condition_set_evaluate(conditions));
+
+	lid->lid = LID_OPEN;
+
+	assert_false(condition_set_evaluate(conditions));
+
+	pset_free_vals(conditions);
+
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(condition__plugged),
@@ -151,6 +179,7 @@ int main(void) {
 		TEST_BA(condition__lid_open),
 		TEST_BA(condition__lid_not_present),
 		TEST_BA(condition__complex),
+		TEST_BA(condition_set_evaluate__many),
 	};
 
 	return RUN(tests);

@@ -167,7 +167,7 @@ void desire_enabled(struct Head *head) {
 
 	// iterate over all matching NAME_DESC's and evaluate their conditions
 	for (const struct PSetIt *it = pset_match_it(g_cfg->disableds, (fn_match_val)head_disabled_matches_head, head); it; it = pset_it_next(it)) {
-		enabled &= !condition_list_evaluate(((struct Disabled*)it->val)->conditions);
+		enabled &= !condition_set_evaluate(((struct Disabled*)it->val)->conditions);
 	}
 
 	// reset manual override when it matches the auto-state

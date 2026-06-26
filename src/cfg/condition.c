@@ -11,23 +11,9 @@
 #include "head.h"
 
 static bool condition_equal(const struct Condition* const a, const struct Condition* const b) {
-	return a && b &&
+	return a && b && a->lid == b->lid &&
 		sset_equal(a->plugged, b->plugged) &&
-		sset_equal(a->unplugged, b->unplugged) &&
-		a->lid == b->lid;
-}
-
-static struct Condition *condition_clone(const struct Condition* const from) {
-	if (!from)
-		return NULL;
-
-	struct Condition *to = (struct Condition*)calloc(1, sizeof(struct Condition));
-
-	to->plugged = sset_clone(from->plugged);
-	to->unplugged = sset_clone(from->unplugged);
-	to->lid = from->lid;
-
-	return to;
+		sset_equal(a->unplugged, b->unplugged);
 }
 
 struct Condition *condition_init(void) {
@@ -46,6 +32,19 @@ const struct PSet *condition_pset_init(void) {
 		.clone_val = (fn_clone)condition_clone,
 	};
 	return pset_init_with(params);
+}
+
+struct Condition *condition_clone(const struct Condition* const from) {
+	if (!from)
+		return NULL;
+
+	struct Condition *to = (struct Condition*)calloc(1, sizeof(struct Condition));
+
+	to->plugged = sset_clone(from->plugged);
+	to->unplugged = sset_clone(from->unplugged);
+	to->lid = from->lid;
+
+	return to;
 }
 
 bool condition_evaluate(const struct Condition *condition) {
@@ -89,7 +88,7 @@ bool condition_evaluate(const struct Condition *condition) {
 	return true;
 }
 
-bool condition_list_evaluate(const struct PSet* const conditions) {
+bool condition_set_evaluate(const struct PSet* const conditions) {
 	for (const struct PSetIt *it = pset_it(conditions); it; it = pset_it_next(it)) {
 		if (!condition_evaluate(it->val)) {
 			pset_it_free(it);

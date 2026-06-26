@@ -21,6 +21,8 @@ struct Condition *condition_init(void);
 
 const struct PSet *condition_pset_init(void);
 
+struct Condition *condition_clone(const struct Condition* const from);
+
 // evaluates a condition.
 // NULL condition is always evaluated to be true.
 bool condition_evaluate(const struct Condition *condition);
@@ -28,7 +30,7 @@ bool condition_evaluate(const struct Condition *condition);
 // evaluates a list of conditions.
 // the result is equal to OR of all conditions in list.
 // empty set (NULL) is always evaluated to be true.
-bool condition_list_evaluate(const struct PSet* const conditions);
+bool condition_set_evaluate(const struct PSet* const conditions);
 
 void condition_free(struct Condition *condition);
 
