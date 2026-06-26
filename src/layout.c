@@ -9,7 +9,6 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/user-scale.h"
 #include "convert.h"
 #include "displ.h"
 #include "fn.h"
@@ -22,7 +21,6 @@
 #include "process.h"
 #include "pset.h"
 #include "slist.h"
-#include "smap.h"
 #include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -222,9 +220,9 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	const struct UserScale *user_scale = smap_match(g_cfg->user_scales, (fn_match_smap)head_name_desc_v_matches_head, head).val;
-	if (user_scale) {
-		head->desired.scale = head_get_fixed_scale(user_scale->scale);
+	const struct SMapIPair pair = smapi_match(g_cfg->user_scales, (fn_match_smapi)head_name_desc_i_matches_head, head);
+	if (pair.key) {
+		head->desired.scale = head_get_fixed_scale((double)pair.val / 1000);
 		return;
 	}
 

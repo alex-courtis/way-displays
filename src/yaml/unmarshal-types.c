@@ -12,7 +12,6 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
-#include "cfg/user-scale.h"
 #include "convert.h"
 #include "fn.h"
 #include "head.h"
@@ -318,7 +317,7 @@ end:
 	smap_free(nodes);
 }
 
-void yaml_map_into_user_scales(struct UC *c, const struct SMap* const user_scales, const yaml_node_t *map) {
+void yaml_map_into_user_scales(struct UC *c, const struct SMapI* const user_scales, const yaml_node_t *map) {
 	if (!user_scales)
 		return;
 
@@ -326,31 +325,29 @@ void yaml_map_into_user_scales(struct UC *c, const struct SMap* const user_scale
 	if (!nodes)
 		return;
 
-	struct UserScale *user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-
 	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 	const yaml_node_t *scalar = smap_get(nodes, "NAME_DESC");
 	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
-		goto err;
+		goto end;
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "SCALE");
 	scalar = smap_get(nodes, "SCALE");
-	if (!yaml_check_mandatory(c, scalar) || !yaml_scalar_to_float(c, &user_scale->scale, scalar))
-		goto err;
+	float scale;
+	if (!yaml_check_mandatory(c, scalar) || !yaml_scalar_to_float(c, &scale, scalar))
+		goto end;
 
-	if (smap_put_if_absent(user_scales, name_desc, user_scale)) {
-		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
-		goto err;
+	if (scale <= 0) {
+		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value);
+		goto end;
 	}
 
-	goto end;
-
-err:
-	free(user_scale);
+	if (smapi_put_if_absent(user_scales, name_desc, round(scale*1000))) {
+		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
+	}
 
 end:
 	free(name_desc);
@@ -440,11 +437,8 @@ void yaml_map_into_user_transforms(struct UC *c, const struct SMapI* const user_
 
 	yaml_unmarshal_log_ctx_key(c, "TRANSFORM");
 	scalar = smap_get(nodes, "TRANSFORM");
-	if (!yaml_check_mandatory(c, scalar))
-		goto end;
-
-	enum wl_output_transform transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names);
-	if (!transform)
+	enum wl_output_transform transform;
+	if (!yaml_check_mandatory(c, scalar) || !(transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names)))
 		goto end;
 
 	if (smapi_put_if_absent(user_transforms, name_desc, transform)) {

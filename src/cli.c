@@ -1,4 +1,5 @@
 #include <getopt.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +11,6 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
-#include "cfg/user-scale.h"
 #include "convert.h"
 #include "ipc.h"
 #include "log.h"
@@ -68,9 +68,9 @@ void usage(FILE *stream) {
 }
 
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
-	struct UserScale *user_scale = NULL;
 	struct UserMode *user_mode = NULL;
 	enum wl_output_transform wl_transform = 0;
+	float user_scale = 0;
 
 	struct Cfg *cfg = cfg_init();
 
@@ -100,13 +100,12 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			switch (command) {
 				case CFG_SET:
 					// parse input value
-					user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-					parsed = ((user_scale->scale = strtof(argv[optind + 1], NULL)) > 0);
-					smap_put(cfg->user_scales, argv[optind], user_scale);
+					parsed = ((user_scale = strtof(argv[optind + 1], NULL)) > 0);
+					smapi_put(cfg->user_scales, argv[optind], round(user_scale*1000));
 					break;
 				case CFG_DEL:
 					// dummy value
-					smap_put(cfg->user_scales, argv[optind], user_scale_init(1));
+					smapi_put(cfg->user_scales, argv[optind], 1);
 					parsed = true;
 					break;
 				default:

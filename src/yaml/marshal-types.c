@@ -9,7 +9,6 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
-#include "cfg/user-scale.h"
 #include "convert.h"
 #include "head.h"
 #include "ipc.h"
@@ -89,7 +88,7 @@ bool yaml_map_populate_cfg(struct MC *c, const struct Cfg* const cfg, int mappin
 		yaml_map_add_float_nz (c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                            mapping) &&
 		yaml_map_add_float_nz (c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                            mapping) &&
 
-		yaml_map_add_seq_smap (c, cfg_element_name(SCALE),                 cfg->user_scales,           (fn_yaml_seq_app_kv)yaml_seq_append_user_scale,     mapping) &&
+		yaml_map_add_seq_smapi(c, cfg_element_name(SCALE),                 cfg->user_scales,           (fn_yaml_seq_app_ki)yaml_seq_append_user_scale,     mapping) &&
 		yaml_map_add_seq_smap (c, cfg_element_name(MODE),                  cfg->user_modes,            (fn_yaml_seq_app_kv)yaml_seq_append_user_mode,      mapping) &&
 		yaml_map_add_seq_smapi(c, cfg_element_name(TRANSFORM),             cfg->user_transforms,       (fn_yaml_seq_app_ki)yaml_seq_append_user_transform, mapping) &&
 		yaml_map_add_seq_sset (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,     yaml_seq_append_str,                                mapping) &&
@@ -249,7 +248,7 @@ bool yaml_map_populate_state(struct MC *c, const void* const unused, int mapping
 	return true;
 }
 
-bool yaml_seq_append_user_scale(struct MC *c, const char* const name_desc, const struct UserScale* const user_scale, int sequence) {
+bool yaml_seq_append_user_scale(struct MC *c, const char* const name_desc, const size_t user_scale, int sequence) {
 	if (!sequence)
 		return false;
 
@@ -257,7 +256,7 @@ bool yaml_seq_append_user_scale(struct MC *c, const char* const name_desc, const
 
 	return map &&
 		yaml_map_add_str(c, "NAME_DESC", name_desc, map) &&
-		yaml_map_add_float_nz(c, "SCALE", user_scale->scale, map) &&
+		yaml_map_add_float_nz(c, "SCALE", (double)user_scale/1000, map) &&
 		yaml_document_append_sequence_item(&c->d, sequence, map);
 }
 

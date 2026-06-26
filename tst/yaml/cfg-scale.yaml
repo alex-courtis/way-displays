@@ -21,3 +21,9 @@ SCALE:
     - bar
   - NAME_DESC: missing_scale
   - SCALE: 99
+
+  - NAME_DESC: neg
+    SCALE: -1
+
+  - NAME_DESC: zero
+    SCALE: 0

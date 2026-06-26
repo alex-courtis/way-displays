@@ -15,14 +15,12 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
-#include "cfg/user-scale.h"
 #include "displ.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
 #include "slist.h"
-#include "smap.h"
 #include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -573,8 +571,8 @@ static void desire_scale__user(void **state) {
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	smap_put(g_cfg->user_scales, "![Hh]ea.*", user_scale_init(3.5));
-	smap_put(g_cfg->user_scales, "head1", user_scale_init(7.5));
+	smapi_put(g_cfg->user_scales, "![Hh]ea.*", 3500);
+	smapi_put(g_cfg->user_scales, "head1", 7500);
 
 	desire_scale(&head0);
 

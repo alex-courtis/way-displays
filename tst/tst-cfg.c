@@ -13,7 +13,6 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
-#include "cfg/user-scale.h"
 #include "log.h"
 #include "pset.h"
 #include "slist.h"
@@ -160,15 +159,15 @@ static void merge_set__scale_round_strategy(void **state) {
 static void merge_set__user_scale(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_scales, "to", user_scale_init(1));
-	smap_put(s->to->user_scales, "both", user_scale_init(2));
+	smapi_put(s->to->user_scales, "to", 1000);
+	smapi_put(s->to->user_scales, "both", 2000);
 
-	smap_put(s->from->user_scales, "from", user_scale_init(3));
-	smap_put(s->from->user_scales, "both", user_scale_init(4));
+	smapi_put(s->from->user_scales, "from", 3000);
+	smapi_put(s->from->user_scales, "both", 4000);
 
-	smap_put(s->expected->user_scales, "to", user_scale_init(1));
-	smap_put(s->expected->user_scales, "both", user_scale_init(4));
-	smap_put(s->expected->user_scales, "from", user_scale_init(3));
+	smapi_put(s->expected->user_scales, "to", 1000);
+	smapi_put(s->expected->user_scales, "both", 4000);
+	smapi_put(s->expected->user_scales, "from", 3000);
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -182,15 +181,15 @@ static void merge_set__user_scale(void **state) {
 static void merge_set__user_transform(void **state) {
 	struct State *s = *state;
 
-	smapi_put(s->to->user_transforms, "to", 1);
-	smapi_put(s->to->user_transforms, "both", 2);
+	smapi_put(s->to->user_transforms, "to", 1000);
+	smapi_put(s->to->user_transforms, "both", 2000);
 
-	smapi_put(s->from->user_transforms, "from", 3);
-	smapi_put(s->from->user_transforms, "both", 4);
+	smapi_put(s->from->user_transforms, "from", 3000);
+	smapi_put(s->from->user_transforms, "both", 4000);
 
-	smapi_put(s->expected->user_transforms, "to", 1);
-	smapi_put(s->expected->user_transforms, "both", 4);
-	smapi_put(s->expected->user_transforms, "from", 3);
+	smapi_put(s->expected->user_transforms, "to", 1000);
+	smapi_put(s->expected->user_transforms, "both", 4000);
+	smapi_put(s->expected->user_transforms, "from", 3000);
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -311,13 +310,13 @@ static void merge_set__callback_cmd(void **state) {
 static void merge_del__scale(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_scales, "1", user_scale_init(1));
-	smap_put(s->to->user_scales, "2", user_scale_init(2));
+	smapi_put(s->to->user_scales, "1", 1000);
+	smapi_put(s->to->user_scales, "2", 2000);
 
-	smap_put(s->from->user_scales, "2", user_scale_init(3));
-	smap_put(s->from->user_scales, "3", user_scale_init(4));
+	smapi_put(s->from->user_scales, "2", 3000);
+	smapi_put(s->from->user_scales, "3", 4000);
 
-	smap_put(s->expected->user_scales, "1", user_scale_init(1));
+	smapi_put(s->expected->user_scales, "1", 1000);
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -526,28 +525,29 @@ static void validate_fix__row(void **state) {
 }
 
 static void validate_fix__user_scale(void **state) {
-	struct State *s = *state;
-
-	smap_put(s->from->user_scales, "ok", user_scale_init(1));
-
-	smap_put(s->from->user_scales, "neg", user_scale_init(-1));
-
-	smap_put(s->from->user_scales, "zero", user_scale_init(0));
-
-	smap_put(s->from->user_scales, "another", user_scale_init(3));
-
-	validate_fix(s->from);
-
-	char *expected_log = read_file("tst/cfg/validate-fix-user-scale.log");
-	assert_log(WARNING, expected_log);
-	assert_logs_empty();
-
-	smap_put(s->expected->user_scales, "ok", user_scale_init(1));
-	smap_put(s->expected->user_scales, "another", user_scale_init(3));
-
-	assert_cfg_equal(s->from, s->expected);
-
-	free(expected_log);
+	// TODO move to parsing
+	// struct State *s = *state;
+	//
+	// smapi_put(s->from->user_scales, "ok", 1);
+	//
+	// smapi_put(s->from->user_scales, "neg", -1);
+	//
+	// smapi_put(s->from->user_scales, "zero", 0);
+	//
+	// smapi_put(s->from->user_scales, "another", 3);
+	//
+	// validate_fix(s->from);
+	//
+	// char *expected_log = read_file("tst/cfg/validate-fix-user-scale.log");
+	// assert_log(WARNING, expected_log);
+	// assert_logs_empty();
+	//
+	// smapi_put(s->expected->user_scales, "ok", 1);
+	// smapi_put(s->expected->user_scales, "another", 3);
+	//
+	// assert_cfg_equal(s->from, s->expected);
+	//
+	// free(expected_log);
 }
 
 static void validate_fix__user_mode(void **state) {
@@ -598,9 +598,9 @@ static void validate_fix__auto_scale_dpi(void **state) {
 static void validate_warn__(void **state) {
 	const struct State *s = *state;
 
-	smap_put(s->expected->user_scales, "sss", user_scale_init(1));
-	smap_put(s->expected->user_scales, "ssssssss", user_scale_init(2));
-	smap_put(s->expected->user_scales, "DP-1", user_scale_init(3));
+	smapi_put(s->expected->user_scales, "sss", 1000);
+	smapi_put(s->expected->user_scales, "ssssssss", 2000);
+	smapi_put(s->expected->user_scales, "DP-1", 3000);
 
 	smap_put(s->expected->user_modes, "mmm", user_mode_init(false, 1, 1, 1, false));
 	smap_put(s->expected->user_modes, "mmmmmmmm", user_mode_init(false, 1, 1, 1, false));

@@ -16,7 +16,6 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
-#include "cfg/user-scale.h"
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
@@ -152,8 +151,8 @@ static void print_cfg__all(void **state) {
 	sset_add(c->order_name_desc, "first");
 	sset_add(c->order_name_desc, "last");
 
-	smap_put(c->user_scales, "three", user_scale_init(3));
-	smap_put(c->user_scales, "four", user_scale_init(4));
+	smapi_put(c->user_scales, "three", 3000);
+	smapi_put(c->user_scales, "four", 4000);
 
 	pset_add(c->disableds, disabled_init_always("disabled always"));
 	struct Disabled *disabled = disabled_init();
@@ -190,8 +189,8 @@ static void print_cfg__all(void **state) {
 static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
-	smap_put(c->user_scales, "three", user_scale_init(3));
-	smap_put(c->user_scales, "four", user_scale_init(4));
+	smapi_put(c->user_scales, "three", 3000);
+	smapi_put(c->user_scales, "four", 4000);
 
 	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
 	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
@@ -298,8 +297,8 @@ static void print_cfg_commands__ok(void **state) {
 
 	c->auto_scale = OFF;
 
-	smap_put(c->user_scales, "one", user_scale_init(1));
-	smap_put(c->user_scales, "two", user_scale_init(2.3456));
+	smapi_put(c->user_scales, "one", 1000);
+	smapi_put(c->user_scales, "two", 2345);
 
 	smap_put(c->user_modes, "all", user_mode_init(false, 1, 2, 12340, false));
 	smap_put(c->user_modes, "res", user_mode_init(false, 4, 5, -1, false));

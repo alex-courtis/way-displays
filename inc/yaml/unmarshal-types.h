@@ -33,7 +33,7 @@ void yaml_map_into_heads          (struct UC *c, struct SList **heads,         c
 void yaml_map_into_modes          (struct UC *c, struct SList **modes,         const yaml_node_t *map);
 void yaml_map_into_log_cap_lines  (struct UC *c, struct SList **log_cap_lines, const yaml_node_t *map);
 void yaml_map_into_conditions     (struct UC *c, const struct PSet* const conditions,       const yaml_node_t *map);
-void yaml_map_into_user_scales    (struct UC *c, const struct SMap* const user_scales,      const yaml_node_t *map);
+void yaml_map_into_user_scales    (struct UC *c, const struct SMapI* const user_scales,     const yaml_node_t *map);
 void yaml_map_into_user_modes     (struct UC *c, const struct SMap* const user_modes,       const yaml_node_t *map);
 void yaml_map_into_user_transforms(struct UC *c, const struct SMapI* const user_transforms, const yaml_node_t *map);
 void yaml_node_into_disableds     (struct UC *c, const struct PSet* const disableds,        const yaml_node_t *node); // scalar or map

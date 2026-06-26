@@ -7,7 +7,6 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/user-scale.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -54,8 +53,8 @@ struct Cfg *cfg_all(void) {
 	sset_add(cfg->order_name_desc, "ONE");
 	sset_add(cfg->order_name_desc, "!two");
 
-	smap_put(cfg->user_scales, "three", user_scale_init(3));
-	smap_put(cfg->user_scales, "four", user_scale_init(4));
+	smapi_put(cfg->user_scales, "three", 3000);
+	smapi_put(cfg->user_scales, "four", 4000);
 
 	smap_put(cfg->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
 	smap_put(cfg->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));

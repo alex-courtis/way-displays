@@ -10,7 +10,6 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
-#include "cfg/user-scale.h"
 #include "convert.h"
 #include "fn.h"
 #include "head.h"
@@ -175,14 +174,13 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		log_(t, "  Round scales to: %s, %s", scale_round_to_name(cfg->scale_round_to), scale_round_strategy_name(cfg->scale_round_strategy));
 	}
 
-	if (smap_size(cfg->user_scales) > 0) {
+	if (smapi_size(cfg->user_scales) > 0) {
 		log_(t, "  Scale:");
-		for (const struct SMapIt *it = smap_it(cfg->user_scales); it; it = smap_it_next(it)) {
-			struct UserScale *user_scale = (struct UserScale*)it->val;
+		for (const struct SMapIIt *it = smapi_it(cfg->user_scales); it; it = smapi_it_next(it)) {
 			if (del) {
 				log_(t, "    %s", it->key);
 			} else {
-				log_(t, "    %s: %.3f", it->key, user_scale->scale);
+				log_(t, "    %s: %.3f", it->key, (double)it->val/1000);
 			}
 		}
 	}
@@ -274,9 +272,8 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct SMapIt *it = smap_it(cfg->user_scales); it; it = smap_it_next(it)) {
-		struct UserScale *user_scale = (struct UserScale*)it->val;
-		char *msg = sprintf_alloc("%.3f", user_scale->scale);
+	for (const struct SMapIIt *it = smapi_it(cfg->user_scales); it; it = smapi_it_next(it)) {
+		char *msg = sprintf_alloc("%.3f", (double)it->val/1000);
 		print_newline(t, &newline);
 		log_(t, "way-displays -s SCALE '%s' %s", it->key, msg);
 		free(msg);

@@ -8,7 +8,6 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "cfg/user-mode.h"
-#include "cfg/user-scale.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -46,8 +45,8 @@ bool yaml_seq_append_head          (struct MC *c, const struct Head*       const
 bool yaml_seq_append_log_cap_line  (struct MC *c, const struct LogCapLine* const log_cap_line,int sequence);
 
 // fn_yaml_seq_app_kv: create and append a new item node to an existing sequence node
-bool yaml_seq_append_user_mode     (struct MC *c, const char* const name_desc, const struct UserMode*  const user_mode,  int sequence);
-bool yaml_seq_append_user_scale    (struct MC *c, const char* const name_desc, const struct UserScale* const user_scale, int sequence);
-bool yaml_seq_append_user_transform(struct MC *c, const char* const name_desc, const size_t transform,                   int sequence);
+bool yaml_seq_append_user_mode     (struct MC *c, const char* const name_desc, const struct UserMode* const user_mode, int sequence);
+bool yaml_seq_append_user_scale    (struct MC *c, const char* const name_desc, const size_t user_scale,                int sequence);
+bool yaml_seq_append_user_transform(struct MC *c, const char* const name_desc, const size_t transform,                 int sequence);
 
 #endif // YAML_MARSHAL_TYPES_H

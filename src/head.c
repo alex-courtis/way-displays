@@ -134,7 +134,7 @@ bool head_matches_name_desc(const struct Head * const head, const char * const n
 		head_matches_name_desc_fuzzy(head, name_desc);
 }
 
-bool head_name_desc_v_matches_head(const char * const name_desc, const void * const v, const struct Head * const head) {
+static bool head_name_desc_v_matches_head(const char * const name_desc, const void * const v, const struct Head * const head) {
 	return head_matches_name_desc(head, name_desc);
 }
 
