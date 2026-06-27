@@ -290,8 +290,6 @@ void validate_warn(const struct Cfg * const cfg) {
 		warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
 
 		for (const struct PSetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
-			if (!cit->val)
-				continue;
 			const struct Condition *condition = (struct Condition*)cit->val;
 			warn_ambiguous_name_desc_sset(condition->plugged, PLUGGED);
 			warn_ambiguous_name_desc_sset(condition->unplugged, UNPLUGGED);

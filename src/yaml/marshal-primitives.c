@@ -14,6 +14,18 @@
 #include "sset.h"
 #include "yaml/marshal.h"
 
+bool yaml_map_add_node(struct MC *c, const char *key, int node, int mapping) {
+	if (!key || !mapping)
+		return false;
+
+	if (!node)
+		return true;
+
+	int k = yaml_document_add_scalar(&c->d, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+
+	return k && yaml_document_append_mapping_pair(&c->d, mapping, k, node);
+}
+
 bool yaml_map_add_str(struct MC *c, const char *key, const char *str, int mapping) {
 	if (!key || !mapping)
 		return false;
@@ -85,18 +97,6 @@ bool yaml_map_add_enum(struct MC *c, const char *key, const int val, fn_enum_nam
 	return yaml_map_add_str(c, key, str, mapping);
 }
 
-bool yaml_seq_append_str(struct MC *c, const void *str, int sequence) {
-	if (!sequence)
-		return false;
-
-	if (!str)
-		return true;
-
-	int scalar = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)str, -1, YAML_PLAIN_SCALAR_STYLE);
-
-	return scalar && yaml_document_append_sequence_item(&c->d, sequence, scalar);
-}
-
 bool yaml_map_add_map(struct MC *c, const char *key, const void *data, fn_yaml_map_pop fn, int mapping) {
 	if (!key || !fn || !mapping)
 		return false;
@@ -113,11 +113,8 @@ bool yaml_map_add_map(struct MC *c, const char *key, const void *data, fn_yaml_m
 	return fn(c, data, map) && yaml_document_append_mapping_pair(&c->d, mapping, k, map);
 }
 
-bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, fn_yaml_seq_app_v fn, int mapping) {
-	if (!key || !fn || !mapping)
-		return false;
-
-	if (!list)
+bool yaml_map_add_list(struct MC *c, const char *key, const struct SList *list, fn_yaml_node_from_v fn, int mapping) {
+	if (slist_length(list) == 0)
 		return true;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -127,18 +124,17 @@ bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *li
 		return false;
 
 	for (const struct SList *i = list; i; i = i->nex) {
-		if (!fn(c, i->val, seq))
+		int n = fn(c, i->val);
+		if (!n || !yaml_document_append_sequence_item(&c->d, seq, n)) {
 			return false;
+		}
 	}
 
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sset, fn_yaml_seq_app_v fn, int mapping) {
-	if (!key || !fn || !mapping)
-		return false;
-
-	if (!sset || sset_size(sset) == 0)
+bool yaml_map_add_sset(struct MC *c, const char *key, const struct SSet *sset, int mapping) {
+	if (sset_size(sset) == 0)
 		return true;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -148,18 +144,18 @@ bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sse
 		return false;
 
 	for (const struct SSetIt *it = sset_it(sset); it; it = sset_it_next(it)) {
-		if (!fn(c, it->val, seq))
+		int scalar = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)it->val, -1, YAML_PLAIN_SCALAR_STYLE);
+		if (scalar)
+			yaml_document_append_sequence_item(&c->d, seq, scalar);
+		else
 			return false;
 	}
 
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset, fn_yaml_seq_app_v fn, int mapping) {
-	if (!key || !fn || !mapping)
-		return false;
-
-	if (!pset || pset_size(pset) == 0)
+bool yaml_map_add_pset(struct MC *c, const char *key, const struct PSet *pset, fn_yaml_node_from_v fn, int mapping) {
+	if (pset_size(pset) == 0)
 		return true;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -169,18 +165,17 @@ bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pse
 		return false;
 
 	for (const struct PSetIt *it = pset_it(pset); it; it = pset_it_next(it)) {
-		if (!fn(c, it->val, seq))
+		int n = fn(c, it->val);
+		if (!n || !yaml_document_append_sequence_item(&c->d, seq, n)) {
 			return false;
+		}
 	}
 
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, fn_yaml_seq_app_kv fn, int mapping) {
-	if (!key || !fn || !mapping)
-		return false;
-
-	if (!smap || smap_size(smap) == 0)
+bool yaml_map_add_smap(struct MC *c, const char *key, const struct SMap* smap, fn_yaml_node_from_kv fn, int mapping) {
+	if (smap_size(smap) == 0)
 		return true;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -190,18 +185,17 @@ bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* sma
 		return false;
 
 	for (const struct SMapIt *it = smap_it(smap); it; it = smap_it_next(it)) {
-		if (!fn(c, it->key, it->val, seq))
+		int n = fn(c, it->key, it->val);
+		if (!n || !yaml_document_append_sequence_item(&c->d, seq, n)) {
 			return false;
+		}
 	}
 
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-bool yaml_map_add_seq_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_yaml_seq_app_ki fn, int mapping) {
-	if (!key || !fn || !mapping)
-		return false;
-
-	if (!smapi || smapi_size(smapi) == 0)
+bool yaml_map_add_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_yaml_node_from_ki fn, int mapping) {
+	if (smapi_size(smapi) == 0)
 		return true;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -211,9 +205,12 @@ bool yaml_map_add_seq_smapi(struct MC *c, const char *key, const struct SMapI* s
 		return false;
 
 	for (const struct SMapIIt *it = smapi_it(smapi); it; it = smapi_it_next(it)) {
-		if (!fn(c, it->key, it->val, seq))
+		int n = fn(c, it->key, it->val);
+		if (!n || !yaml_document_append_sequence_item(&c->d, seq, n)) {
 			return false;
+		}
 	}
 
 	return yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
+

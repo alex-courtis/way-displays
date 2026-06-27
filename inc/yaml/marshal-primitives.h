@@ -18,7 +18,17 @@
  * Returns false on failure to add to the document
  */
 
-// add a scalar pair to an existing maping node
+// create a node from the pointer val
+typedef int (*fn_yaml_node_from_v)(struct MC *c, const void* const val);
+
+// create a node from the key and pointer val
+typedef int (*fn_yaml_node_from_kv)(struct MC *c, const char* const key, const void* const val);
+
+// create a node from the key and integer val
+typedef int (*fn_yaml_node_from_ki)(struct MC *c, const char* const key, const size_t val);
+
+// add a node or scalar pair to an existing maping node
+bool yaml_map_add_node    (struct MC *c, const char *key, int node,                                int mapping); // returns true and does nothing on 0
 bool yaml_map_add_str     (struct MC *c, const char *key, const char *str,                         int mapping); // returns true and does nothing on NULL
 bool yaml_map_add_int     (struct MC *c, const char *key, const int32_t val,                       int mapping);
 bool yaml_map_add_int_nz  (struct MC *c, const char *key, const int32_t val,                       int mapping); // returns true and does nothing on 0
@@ -33,22 +43,10 @@ bool yaml_map_add_map(struct MC *c, const char *key, const void *data, fn_yaml_m
 
 // Create a new sequence node and add it to an existing mapping node
 // New sequence node values are populated by evaluating fn on each item
-
-// pointer value
-typedef bool (*fn_yaml_seq_app_v)(struct MC *c, const void *val, const int sequence);
-bool yaml_map_add_seq_list(struct MC *c, const char *key, const struct SList *list, fn_yaml_seq_app_v fn, int mapping);
-bool yaml_map_add_seq_sset(struct MC *c, const char *key, const struct SSet *sset,  fn_yaml_seq_app_v fn, int mapping);
-bool yaml_map_add_seq_pset(struct MC *c, const char *key, const struct PSet *pset,  fn_yaml_seq_app_v fn, int mapping);
-
-// string key and pointer value
-typedef bool (*fn_yaml_seq_app_kv)(struct MC *c, const char *key, const void *val, const int sequence);
-bool yaml_map_add_seq_smap(struct MC *c, const char *key, const struct SMap* smap, fn_yaml_seq_app_kv fn, int mapping);
-
-// string key and int value
-typedef bool (*fn_yaml_seq_app_ki)(struct MC *c, const void *key, const size_t val, const int sequence);
-bool yaml_map_add_seq_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_yaml_seq_app_ki fn, int mapping);
-
-// fn_yaml_seq_app_v: append a scalar item to an existing sequence node
-bool yaml_seq_append_str(struct MC *c, const void *str, int sequence);
+bool yaml_map_add_sset (struct MC *c, const char *key, const struct SSet *sset,                            int mapping);
+bool yaml_map_add_pset (struct MC *c, const char *key, const struct PSet *pset,   fn_yaml_node_from_v fn,  int mapping);
+bool yaml_map_add_list (struct MC *c, const char *key, const struct SList *list,  fn_yaml_node_from_v fn,  int mapping);
+bool yaml_map_add_smap (struct MC *c, const char *key, const struct SMap* smap,   fn_yaml_node_from_kv fn, int mapping);
+bool yaml_map_add_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_yaml_node_from_ki fn, int mapping);
 
 #endif // YAML_MARSHAL_PRIMITIVES_H

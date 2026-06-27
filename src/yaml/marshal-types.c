@@ -78,7 +78,7 @@ bool yaml_map_populate_cfg(struct MC *c, const struct Cfg* const cfg, int mappin
 		yaml_map_add_enum     (c, cfg_element_name(ARRANGE),              cfg->arrange,               arrange_name,                                       mapping) &&
 		yaml_map_add_enum     (c, cfg_element_name(ALIGN),                cfg->align,                 align_name,                                         mapping) &&
 
-		yaml_map_add_seq_sset (c, cfg_element_name(ORDER),                cfg->order_name_desc,       yaml_seq_append_str,                                mapping) &&
+		yaml_map_add_sset (c, cfg_element_name(ORDER),                cfg->order_name_desc,                                                           mapping) &&
 
 		yaml_map_add_enum     (c, cfg_element_name(SCALING),              cfg->scaling,               on_off_name,                                        mapping) &&
 		yaml_map_add_enum     (c, cfg_element_name(SCALE_ROUND_TO),       cfg->scale_round_to,        scale_round_to_name,                                mapping) &&
@@ -88,17 +88,17 @@ bool yaml_map_populate_cfg(struct MC *c, const struct Cfg* const cfg, int mappin
 		yaml_map_add_float_nz (c, cfg_element_name(AUTO_SCALE_MIN),       cfg->auto_scale_min,                                                            mapping) &&
 		yaml_map_add_float_nz (c, cfg_element_name(AUTO_SCALE_MAX),       cfg->auto_scale_max,                                                            mapping) &&
 
-		yaml_map_add_seq_smapi(c, cfg_element_name(SCALE),                cfg->scales,                (fn_yaml_seq_app_ki)yaml_seq_append_scale,          mapping) &&
-		yaml_map_add_seq_smap (c, cfg_element_name(MODE),                 cfg->user_modes,            (fn_yaml_seq_app_kv)yaml_seq_append_user_mode,      mapping) &&
-		yaml_map_add_seq_smapi(c, cfg_element_name(TRANSFORM),            cfg->transforms,            (fn_yaml_seq_app_ki)yaml_seq_append_transform,      mapping) &&
-		yaml_map_add_seq_sset (c, cfg_element_name(VRR_OFF),              cfg->adaptive_sync_off,     yaml_seq_append_str,                                mapping) &&
+		yaml_map_add_smapi(c, cfg_element_name(SCALE),                cfg->scales,                yaml_map_from_scale,             mapping) &&
+		yaml_map_add_smap (c, cfg_element_name(MODE),                 cfg->user_modes,            (fn_yaml_node_from_kv)yaml_map_from_user_mode,         mapping) &&
+		yaml_map_add_smapi(c, cfg_element_name(TRANSFORM),            cfg->transforms,            yaml_map_from_transform,         mapping) &&
+		yaml_map_add_sset (c, cfg_element_name(VRR_OFF),              cfg->adaptive_sync_off,                                                         mapping) &&
 
 		yaml_map_add_str      (c, cfg_element_name(CALLBACK_CMD),         cfg->callback_cmd,                                                              mapping) &&
 		yaml_map_add_str      (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX),cfg->laptop_display_prefix,                                                     mapping) &&
 		yaml_map_add_enum     (c, cfg_element_name(LAPTOP_LID_MONITOR),   cfg->laptop_lid_monitor,    on_off_name,                                        mapping) &&
 		yaml_map_add_enum     (c, cfg_element_name(LOG_THRESHOLD),        cfg->log_threshold,         log_threshold_name,                                 mapping) &&
 
-		yaml_map_add_seq_pset (c, cfg_element_name(DISABLED),             cfg->disableds,             (fn_yaml_seq_app_v)yaml_seq_append_disabled,        mapping);
+		yaml_map_add_pset(c, cfg_element_name(DISABLED),             cfg->disableds,              (fn_yaml_node_from_v)yaml_node_from_disabled,        mapping);
 }
 
 bool yaml_map_populate_ipc_operation(struct MC *c, struct IpcOperation* const ipc_operation, int mapping) {
@@ -140,20 +140,6 @@ bool yaml_map_populate_ipc_request(struct MC *c, const struct IpcRequest* const 
 	return true;
 }
 
-bool yaml_map_populate_mode(struct MC *c, const struct Mode* const mode, int mapping) {
-	if (!mapping)
-		return false;
-
-	if (!mode)
-		return true;
-
-	return
-		yaml_map_add_int (c, "WIDTH",       mode->width,       mapping) &&
-		yaml_map_add_int (c, "HEIGHT",      mode->height,      mapping) &&
-		yaml_map_add_int (c, "REFRESH_MHZ", mode->refresh_mhz, mapping) &&
-		yaml_map_add_bool(c, "PREFERRED",   mode->preferred,   mapping);
-}
-
 bool yaml_map_populate_head_state(struct MC *c, const struct HeadState* const head_state, int mapping) {
 	if (!mapping)
 		return false;
@@ -164,14 +150,13 @@ bool yaml_map_populate_head_state(struct MC *c, const struct HeadState* const he
 	bool adaptive_sync_enabled = head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
 	return
-		yaml_map_add_float_nz(c, "SCALE",     wl_fixed_to_double(head_state->scale), mapping) &&
-		yaml_map_add_bool    (c, "ENABLED",   head_state->enabled,                   mapping) &&
-		yaml_map_add_int     (c, "X",         head_state->x,                         mapping) &&
-		yaml_map_add_int     (c, "Y",         head_state->y,                         mapping) &&
-		yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                 mapping) &&
-		yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name, mapping) &&
-
-		yaml_map_add_map     (c, "MODE", head_state->mode, (fn_yaml_map_pop)yaml_map_populate_mode, mapping);
+		yaml_map_add_float_nz(c, "SCALE",     wl_fixed_to_double(head_state->scale),   mapping) &&
+		yaml_map_add_bool    (c, "ENABLED",   head_state->enabled,                     mapping) &&
+		yaml_map_add_int     (c, "X",         head_state->x,                           mapping) &&
+		yaml_map_add_int     (c, "Y",         head_state->y,                           mapping) &&
+		yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                   mapping) &&
+		yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,   mapping) &&
+		yaml_map_add_node    (c, "MODE",      yaml_map_from_mode(c, head_state->mode), mapping);
 }
 
 bool yaml_map_populate_head_overrides(struct MC *c, const struct Head* const head, int mapping) {
@@ -242,140 +227,113 @@ bool yaml_map_populate_state(struct MC *c, const void* const unused, int mapping
 	if (g_lid && !yaml_map_add_map(c, "LID", g_lid, (fn_yaml_map_pop)yaml_map_populate_lid, mapping))
 		return false;
 
-	if (g_heads && !yaml_map_add_seq_list(c, "HEADS", g_heads, (fn_yaml_seq_app_v)yaml_seq_append_head,  mapping))
+	if (g_heads && !yaml_map_add_list(c, "HEADS", g_heads, (fn_yaml_node_from_v)yaml_map_from_head,  mapping))
 		return false;
 
 	return true;
 }
 
-bool yaml_seq_append_scale(struct MC *c, const char* const name_desc, const size_t scale, int sequence) {
-	if (!sequence)
-		return false;
-
+int yaml_map_from_scale(struct MC *c, const char* const name_desc, const size_t scale) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return 0;
 
-	return map &&
-		yaml_map_add_str(c, "NAME_DESC", name_desc, map) &&
-		yaml_map_add_float_nz(c, "SCALE", (double)scale/1000, map) &&
-		yaml_document_append_sequence_item(&c->d, sequence, map);
+	yaml_map_add_str(c, "NAME_DESC", name_desc, map);
+	yaml_map_add_float_nz(c, "SCALE", (double)scale/1000, map);
+
+	return map;
 }
 
-bool yaml_seq_append_user_mode(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode, int sequence) {
-	if (!sequence)
-		return false;
-
-	if (!user_mode)
-		return true;
-
+int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return 0;
 
-	if (!map || !yaml_map_add_str(c, "NAME_DESC", name_desc, map))
-		return false;
+	yaml_map_add_str(c, "NAME_DESC", name_desc, map);
 
 	if (user_mode->max) {
-		if (!yaml_map_add_bool(c, "MAX", user_mode->max, map)) {
-			return false;
-		}
+		yaml_map_add_bool(c, "MAX", user_mode->max, map);
 	} else {
-		if (!yaml_map_add_int(c, "WIDTH", user_mode->width, map) || !yaml_map_add_int(c, "HEIGHT", user_mode->height, map))
-			return false;
+		yaml_map_add_int(c, "WIDTH", user_mode->width, map);
+		yaml_map_add_int(c, "HEIGHT", user_mode->height, map);
 		if (user_mode->refresh_mhz != -1) {
-			if (!yaml_map_add_str(c, "HZ", mhz_to_hz_str(user_mode->refresh_mhz), map)) {
-				return false;
-			}
+			yaml_map_add_str(c, "HZ", mhz_to_hz_str(user_mode->refresh_mhz), map);
 		}
 	}
 
-	return yaml_document_append_sequence_item(&c->d, sequence, map);
+	return map;
 }
 
-bool yaml_seq_append_transform(struct MC *c, const char* const name_desc, const size_t transform, int sequence) {
-	if (!sequence)
-		return false;
-
+int yaml_map_from_transform(struct MC *c, const char* const name_desc, const size_t transform) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return 0;
 
-	return map &&
-		yaml_map_add_str(c, "NAME_DESC", name_desc, map) &&
-		yaml_map_add_str(c, "TRANSFORM", transform_name(transform), map) &&
-		yaml_document_append_sequence_item(&c->d, sequence, map);
+	yaml_map_add_str(c, "NAME_DESC", name_desc, map);
+	yaml_map_add_str(c, "TRANSFORM", transform_name(transform), map);
+
+	return map;
 }
 
-bool yaml_seq_append_condition(struct MC *c, const struct Condition* const condition, int sequence) {
-	if (!sequence)
-		return false;
-
-	if (!condition)
-		return true;
-
+int yaml_map_from_condition(struct MC *c, const struct Condition* const condition) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return 0;
 
-	return
-		map &&
-		yaml_map_add_seq_sset(c, "PLUGGED", condition->plugged, yaml_seq_append_str, map) &&
-		yaml_map_add_seq_sset(c, "UNPLUGGED", condition->unplugged, yaml_seq_append_str, map) &&
-		yaml_map_add_enum(c, "LID", condition->lid, condition_lid_name, map) &&
-		yaml_document_append_sequence_item(&c->d, sequence, map);
+	yaml_map_add_sset(c, "PLUGGED", condition->plugged, map);
+	yaml_map_add_sset(c, "UNPLUGGED", condition->unplugged, map);
+	yaml_map_add_enum(c, "LID", condition->lid, condition_lid_name, map);
+
+	return map;
 }
 
-bool yaml_seq_append_disabled(struct MC *c, const struct Disabled* const disabled, int sequence) {
-	if (!sequence)
-		return false;
-
-	if (!disabled)
-		return true;
-
+int yaml_node_from_disabled(struct MC *c, const struct Disabled* const disabled) {
 	if (pset_size(disabled->conditions) > 0) {
 		int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+		if (!map)
+			return 0;
 
-		return map &&
-			yaml_map_add_str(c, "NAME_DESC", disabled->name_desc, map) &&
-			yaml_map_add_seq_pset(c, "IF", disabled->conditions, (fn_yaml_seq_app_v)yaml_seq_append_condition, map) &&
-			yaml_document_append_sequence_item(&c->d, sequence, map);
+		yaml_map_add_str(c, "NAME_DESC", disabled->name_desc, map);
+		yaml_map_add_pset(c, "IF", disabled->conditions, (fn_yaml_node_from_v)yaml_map_from_condition, map);
+
+		return map;
 	} else {
-		return yaml_seq_append_str(c,disabled->name_desc, sequence);
+		return yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)disabled->name_desc, -1, YAML_PLAIN_SCALAR_STYLE);
 	}
 }
 
-bool yaml_seq_append_mode(struct MC *c, const struct Mode* const mode, int sequence) {
-	if (!sequence)
-		return false;
-
-	if (!mode)
-		return true;
-
+int yaml_map_from_mode(struct MC *c, const struct Mode* const mode) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return 0;
 
-	return map &&
-		yaml_map_populate_mode(c, mode, map) &&
-		yaml_document_append_sequence_item(&c->d, sequence, map);
+	yaml_map_add_int (c, "WIDTH",       mode->width,       map);
+	yaml_map_add_int (c, "HEIGHT",      mode->height,      map);
+	yaml_map_add_int (c, "REFRESH_MHZ", mode->refresh_mhz, map);
+	yaml_map_add_bool(c, "PREFERRED",   mode->preferred,   map);
+
+	return map;
 }
 
-bool yaml_seq_append_head(struct MC *c, const struct Head* const head, int sequence) {
-	if (!sequence)
-		return false;
-
-	if (!head)
-		return true;
-
+int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return 0;
 
-	return
-		map &&
-		yaml_map_add_str(c, "NAME",          head->name,          map) &&
-		yaml_map_add_str(c, "DESCRIPTION",   head->description,   map) &&
-		yaml_map_add_str(c, "MAKE",          head->make,          map) &&
-		yaml_map_add_str(c, "MODEL",         head->model,         map) &&
-		yaml_map_add_str(c, "SERIAL_NUMBER", head->serial_number, map) &&
-		yaml_map_add_int(c, "WIDTH_MM",      head->width_mm,      map) &&
-		yaml_map_add_int(c, "HEIGHT_MM",     head->height_mm,     map) &&
+	yaml_map_add_str(c, "NAME",          head->name,          map);
+	yaml_map_add_str(c, "DESCRIPTION",   head->description,   map);
+	yaml_map_add_str(c, "MAKE",          head->make,          map);
+	yaml_map_add_str(c, "MODEL",         head->model,         map);
+	yaml_map_add_str(c, "SERIAL_NUMBER", head->serial_number, map);
+	yaml_map_add_int(c, "WIDTH_MM",      head->width_mm,      map);
+	yaml_map_add_int(c, "HEIGHT_MM",     head->height_mm,     map);
 
-		yaml_map_add_map     (c, "CURRENT",   &head->current,  (fn_yaml_map_pop)yaml_map_populate_head_state,     map) &&
-		yaml_map_add_map     (c, "DESIRED",   &head->desired,  (fn_yaml_map_pop)yaml_map_populate_head_state,     map) &&
-		yaml_map_add_map     (c, "OVERRIDES", head,            (fn_yaml_map_pop)yaml_map_populate_head_overrides, map) &&
-		yaml_map_add_seq_list(c, "MODES",     head->modes,     (fn_yaml_map_pop)yaml_seq_append_mode,             map) &&
+	yaml_map_add_map  (c, "CURRENT",   &head->current,  (fn_yaml_map_pop)yaml_map_populate_head_state,     map);
+	yaml_map_add_map  (c, "DESIRED",   &head->desired,  (fn_yaml_map_pop)yaml_map_populate_head_state,     map);
+	yaml_map_add_map  (c, "OVERRIDES", head,            (fn_yaml_map_pop)yaml_map_populate_head_overrides, map);
+	yaml_map_add_list(c, "MODES",     head->modes,     (fn_yaml_node_from_v)yaml_map_from_mode,             map);
 
-		yaml_document_append_sequence_item(&c->d, sequence, map);
+	return map;
 }
 
 bool yaml_seq_append_log_cap_line(struct MC *c, const struct LogCapLine* const log_cap_line, int sequence) {

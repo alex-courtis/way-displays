@@ -30,7 +30,6 @@ bool yaml_doc_ipc_request  (struct MC *c, const struct IpcRequest*   const ipc_r
 bool yaml_map_populate_cfg           (struct MC *c, const struct Cfg*          const cfg,           int mapping);
 bool yaml_map_populate_ipc_operation (struct MC *c,       struct IpcOperation* const ipc_operation, int mapping); // yaml_map_populate_messages mutates IpcOperation.rc
 bool yaml_map_populate_ipc_request   (struct MC *c, const struct IpcRequest*   const ipc_request,   int mapping);
-bool yaml_map_populate_mode          (struct MC *c, const struct Mode*         const mode,          int mapping);
 bool yaml_map_populate_head_state    (struct MC *c, const struct HeadState*    const head_state,    int mapping);
 bool yaml_map_populate_head_overrides(struct MC *c, const struct Head*         const head,          int mapping);
 bool yaml_map_populate_lid           (struct MC *c, const struct Lid*          const lid,           int mapping);
@@ -38,15 +37,20 @@ bool yaml_map_populate_messages      (struct MC *c,       struct IpcOperation* c
 bool yaml_map_populate_state         (struct MC *c, const        void*         const unused,        int mapping); // g_heads and g_lid
 
 // fn_yaml_seq_app_v: create and append a new item node to an existing sequence node
-bool yaml_seq_append_condition    (struct MC *c, const struct Condition*  const condition,    int sequence);
-bool yaml_seq_append_disabled     (struct MC *c, const struct Disabled*   const disabled,     int sequence);
-bool yaml_seq_append_mode         (struct MC *c, const struct Mode*       const mode,         int sequence);
 bool yaml_seq_append_head         (struct MC *c, const struct Head*       const head,         int sequence);
 bool yaml_seq_append_log_cap_line (struct MC *c, const struct LogCapLine* const log_cap_line, int sequence);
 
-// fn_yaml_seq_app_kv: create and append a new item node to an existing sequence node
-bool yaml_seq_append_user_mode(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode, int sequence);
-bool yaml_seq_append_scale    (struct MC *c, const char* const name_desc, const size_t scale,                     int sequence);
-bool yaml_seq_append_transform(struct MC *c, const char* const name_desc, const size_t transform,                 int sequence);
+// fn_yaml_node_from_kv
+int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode);
+
+// fn_yaml_node_from_ki
+int yaml_map_from_scale    (struct MC *c, const char* const name_desc, const size_t scale);
+int yaml_map_from_transform(struct MC *c, const char* const name_desc, const size_t transform);
+
+// fn_yaml_node_from_v
+int yaml_map_from_condition(struct MC *c, const struct Condition* const condition);
+int yaml_node_from_disabled(struct MC *c, const struct Disabled* const disabled);
+int yaml_map_from_head     (struct MC *c, const struct Head* const head);
+int yaml_map_from_mode     (struct MC *c, const struct Mode* const mode);
 
 #endif // YAML_MARSHAL_TYPES_H
