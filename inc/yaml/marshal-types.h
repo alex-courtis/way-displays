@@ -27,14 +27,14 @@ bool yaml_doc_ipc_operation(struct MC *c,       struct IpcOperation* const ipc_o
 bool yaml_doc_ipc_request  (struct MC *c, const struct IpcRequest*   const ipc_request);
 
 // fn_yaml_map_pop: add pairs to an existing mapping node
-bool yaml_map_populate_cfg           (struct MC *c, const struct Cfg*          const cfg,           int mapping);
-bool yaml_map_populate_ipc_operation (struct MC *c,       struct IpcOperation* const ipc_operation, int mapping); // yaml_map_populate_messages mutates IpcOperation.rc
-bool yaml_map_populate_ipc_request   (struct MC *c, const struct IpcRequest*   const ipc_request,   int mapping);
-bool yaml_map_populate_head_state    (struct MC *c, const struct HeadState*    const head_state,    int mapping);
-bool yaml_map_populate_head_overrides(struct MC *c, const struct Head*         const head,          int mapping);
-bool yaml_map_populate_lid           (struct MC *c, const struct Lid*          const lid,           int mapping);
+int yaml_map_from_cfg           (struct MC *c, const struct Cfg*          const cfg);
+int yaml_map_from_ipc_operation (struct MC *c,       struct IpcOperation* const ipc_operation); // map_from_messages mutates IpcOperation.rc
+int yaml_map_from_ipc_request   (struct MC *c, const struct IpcRequest*   const ipc_request);
+int yaml_map_from_head_state    (struct MC *c, const struct HeadState*    const head_state);
+int yaml_map_from_head_overrides(struct MC *c, const struct Head*         const head);
+int yaml_map_from_lid           (struct MC *c, const struct Lid*          const lid);
 bool yaml_map_populate_messages      (struct MC *c,       struct IpcOperation* const ipc_operation, int mapping); // mutates IpcOperation.rc
-bool yaml_map_populate_state         (struct MC *c, const        void*         const unused,        int mapping); // g_heads and g_lid
+int yaml_map_from_state         (struct MC *c); // g_heads and g_lid
 
 // fn_yaml_seq_app_v: create and append a new item node to an existing sequence node
 bool yaml_seq_append_head         (struct MC *c, const struct Head*       const head,         int sequence);
@@ -49,8 +49,8 @@ int yaml_map_from_transform(struct MC *c, const char* const name_desc, const siz
 
 // fn_yaml_node_from_v
 int yaml_map_from_condition(struct MC *c, const struct Condition* const condition);
-int yaml_node_from_disabled(struct MC *c, const struct Disabled* const disabled);
-int yaml_map_from_head     (struct MC *c, const struct Head* const head);
-int yaml_map_from_mode     (struct MC *c, const struct Mode* const mode);
+int yaml_node_from_disabled(struct MC *c, const struct Disabled*  const disabled);
+int yaml_map_from_head     (struct MC *c, const struct Head*      const head);
+int yaml_map_from_mode     (struct MC *c, const struct Mode*      const mode);
 
 #endif // YAML_MARSHAL_TYPES_H

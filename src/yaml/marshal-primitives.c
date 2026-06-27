@@ -97,22 +97,6 @@ bool yaml_map_add_enum(struct MC *c, const char *key, const int val, fn_enum_nam
 	return yaml_map_add_str(c, key, str, mapping);
 }
 
-bool yaml_map_add_map(struct MC *c, const char *key, const void *data, fn_yaml_map_pop fn, int mapping) {
-	if (!key || !fn || !mapping)
-		return false;
-
-	if (!data)
-		return true;
-
-	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
-
-	if (!k || !map)
-		return false;
-
-	return fn(c, data, map) && yaml_document_append_mapping_pair(&c->d, mapping, k, map);
-}
-
 bool yaml_map_add_list(struct MC *c, const char *key, const struct SList *list, fn_yaml_node_from_v fn, int mapping) {
 	if (slist_length(list) == 0)
 		return true;
