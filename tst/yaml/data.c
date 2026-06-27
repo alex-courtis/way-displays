@@ -99,7 +99,7 @@ struct IpcOperation *ipc_response(void) {
 	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
 	ipc_operation->request = ipc_request;
 	ipc_operation->done = true;
-	ipc_operation->rc = 1;
+	ipc_operation->rc = 0;
 	ipc_operation->send_state = true;
 
 	g_cfg = cfg_all();
@@ -111,8 +111,8 @@ struct IpcOperation *ipc_response(void) {
 	lcl(DEBUG, "dbg", &ipc_operation->log_cap_lines);
 	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
 	lcl(WARNING, "war", &ipc_operation->log_cap_lines);
-	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
-	lcl(FATAL, "fat", &ipc_operation->log_cap_lines);
+
+	ipc_operation_update_rc(ipc_operation);
 
 	struct Head *head0 = calloc(1, sizeof(struct Head));
 

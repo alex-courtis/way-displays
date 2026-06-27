@@ -53,6 +53,8 @@ struct IpcResponse {
 	struct SList *log_cap_lines;
 };
 
+void ipc_operation_update_rc(struct IpcOperation *ipc_operation);
+
 void ipc_send_request(struct IpcRequest *request);
 
 void ipc_send_operation(struct IpcOperation *operation);

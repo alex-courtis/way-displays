@@ -99,7 +99,5 @@
         PREFERRED: FALSE
   MESSAGES:
   - WARNING: war
-  - ERROR: err
-  - FATAL: fat
-  RC: 2
+  RC: 1
 
