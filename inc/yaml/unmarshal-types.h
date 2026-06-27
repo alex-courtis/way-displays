@@ -1,7 +1,6 @@
 #ifndef YAML_UNMARSHAL_TYPES_H
 #define YAML_UNMARSHAL_TYPES_H
 
-#include <stdbool.h>
 #include <yaml.h>
 
 #include "head.h"
@@ -38,8 +37,8 @@ void yaml_map_into_user_modes   (struct UC *c, const struct SMap* const user_mod
 void yaml_map_into_transforms   (struct UC *c, const struct SMapI* const transforms, const yaml_node_t *map);
 void yaml_node_into_disableds   (struct UC *c, const struct PSet* const disableds,   const yaml_node_t *node); // scalar or map
 
-// into HeadState
-bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map);
+// into an existing HeadState struct
+void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map);
 
 // unmarshal a scalar to a name_desc, validating regex
 char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar);

@@ -513,8 +513,8 @@ void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *
 	yaml_scalar_to_int(c, &head->width_mm, smap_get(nodes, "WIDTH_MM"));
 	yaml_scalar_to_int(c, &head->height_mm, smap_get(nodes, "HEIGHT_MM"));
 
-	yaml_map_to_head_state(c, &head->current, smap_get(nodes,"CURRENT"));
-	yaml_map_to_head_state(c, &head->desired, smap_get(nodes,"DESIRED"));
+	yaml_map_into_head_state(c, &head->current, smap_get(nodes,"CURRENT"));
+	yaml_map_into_head_state(c, &head->desired, smap_get(nodes,"DESIRED"));
 
 	yaml_seq_into_col(c, smap_get(nodes, "MODES"), &head->modes, (fn_yaml_node_into_col)yaml_map_into_modes);
 
@@ -593,10 +593,10 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map) {
+void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map) {
 	const struct SMap *nodes = yaml_map_to_node_table(c, map);
 	if (!nodes)
-		return false;
+		return;
 
 	yaml_scalar_to_boolean(c, &head_state->enabled, smap_get(nodes, "ENABLED"));
 
@@ -617,7 +617,7 @@ bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const ya
 
 	smap_free(nodes);
 
-	return true;
+	return;
 }
 
 void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines, const yaml_node_t *map) {
