@@ -27,7 +27,7 @@ bool yaml_cfg_to_doc(struct MC *c, const struct Cfg* const cfg) {
 	return yaml_cfg_to_map(c, cfg) != 0;
 }
 
-bool yaml_ipc_operation_to_doc(struct MC *c, struct IpcOperation* const ipc_operation) {
+bool yaml_ipc_operation_to_doc(struct MC *c, const struct IpcOperation* const ipc_operation) {
 	if (!ipc_operation)
 		return false;
 
@@ -92,7 +92,7 @@ int yaml_cfg_to_map(struct MC *c, const struct Cfg* const cfg) {
 	return map;
 }
 
-int yaml_ipc_operation_to_map(struct MC *c, struct IpcOperation* const ipc_operation) {
+int yaml_ipc_operation_to_map(struct MC *c, const struct IpcOperation* const ipc_operation) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -169,7 +169,7 @@ int yaml_lid_to_map(struct MC *c, const struct Lid* const lid) {
 	return map;
 }
 
-bool yaml_map_populate_messages(struct MC *c, struct IpcOperation* const ipc_operation, int mapping) {
+bool yaml_map_populate_messages(struct MC *c, const struct IpcOperation* const ipc_operation, int mapping) {
 	if (!mapping)
 		return false;
 
@@ -189,12 +189,6 @@ bool yaml_map_populate_messages(struct MC *c, struct IpcOperation* const ipc_ope
 
 		if (!yaml_seq_append_log_cap_line(c, cap_line, seq_lines))
 			return false;
-
-		// mutate rc here as this is the only place we are processing lines
-		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
-			ipc_operation->rc = IPC_RC_WARN;
-		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
-			ipc_operation->rc = IPC_RC_ERROR;
 	}
 
 	if (seq_lines) {

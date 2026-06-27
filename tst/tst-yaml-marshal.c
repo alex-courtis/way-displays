@@ -117,6 +117,10 @@ static void yaml_ipc_request_to_doc__cfg_set(void **state) {
 static void yaml_ipc_operation_to_doc__map(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 
+	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
+	lcl(FATAL, "fat", &ipc_operation->log_cap_lines);
+	ipc_operation_update_rc(ipc_operation);
+
 	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_doc)yaml_ipc_operation_to_doc, "ipc response"), "tst/yaml/ipc-responses-map.yaml");
 
 	ipc_operation_free(ipc_operation);

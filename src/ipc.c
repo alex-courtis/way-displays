@@ -39,7 +39,23 @@ end:
 	}
 }
 
+void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
+	if (!ipc_operation)
+		return;
+
+	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
+		const struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+
+		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
+			ipc_operation->rc = IPC_RC_WARN;
+		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
+			ipc_operation->rc = IPC_RC_ERROR;
+	}
+}
+
 void ipc_send_operation(struct IpcOperation *operation) {
+	ipc_operation_update_rc(operation);
+
 	char *yaml = yaml_marshal(operation, (fn_yaml_doc)yaml_ipc_operation_to_doc, "ipc response");
 
 	log_cap_lines_free(&operation->log_cap_lines);

@@ -23,20 +23,22 @@
 
 // fn_yaml_doc: create the document's contents
 bool yaml_cfg_to_doc          (struct MC *c, const struct Cfg*          const cfg);
-bool yaml_ipc_operation_to_doc(struct MC *c,       struct IpcOperation* const ipc_operation); // yaml_map_populate_messages mutates IpcOperation.rc
+bool yaml_ipc_operation_to_doc(struct MC *c, const struct IpcOperation* const ipc_operation);
 bool yaml_ipc_request_to_doc  (struct MC *c, const struct IpcRequest*   const ipc_request);
 
 // fn_yaml_map_pop: add pairs to an existing mapping node
 int yaml_cfg_to_map           (struct MC *c, const struct Cfg*          const cfg);
-int yaml_ipc_operation_to_map (struct MC *c,       struct IpcOperation* const ipc_operation); // map_from_messages mutates IpcOperation.rc
+int yaml_ipc_operation_to_map (struct MC *c, const struct IpcOperation* const ipc_operation);
 int yaml_ipc_request_to_map   (struct MC *c, const struct IpcRequest*   const ipc_request);
 int yaml_head_state_to_map    (struct MC *c, const struct HeadState*    const head_state);
 int yaml_head_overrides_to_map(struct MC *c, const struct Head*         const head);
 int yaml_lid_to_map           (struct MC *c, const struct Lid*          const lid);
-bool yaml_map_populate_messages      (struct MC *c,       struct IpcOperation* const ipc_operation, int mapping); // mutates IpcOperation.rc
 int yaml_state_to_map         (struct MC *c); // g_heads and g_lid
 
-// fn_yaml_seq_app_v: create and append a new item node to an existing sequence node
+// TODO convert
+bool yaml_map_populate_messages      (struct MC *c,       const struct IpcOperation* const ipc_operation, int mapping);
+
+// TODO convert
 bool yaml_seq_append_log_cap_line (struct MC *c, const struct LogCapLine* const log_cap_line, int sequence);
 
 // fn_yaml_kv_to_node
