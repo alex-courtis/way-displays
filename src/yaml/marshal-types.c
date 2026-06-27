@@ -21,20 +21,20 @@
 #include "yaml/marshal-primitives.h"
 #include "yaml/marshal.h"
 
-bool yaml_doc_cfg(struct MC *c, const struct Cfg* const cfg) {
+bool yaml_cfg_to_doc(struct MC *c, const struct Cfg* const cfg) {
 
 	// creates a mapping node which is the root
-	return yaml_map_from_cfg(c, cfg) != 0;
+	return yaml_cfg_to_map(c, cfg) != 0;
 }
 
-bool yaml_doc_ipc_operation(struct MC *c, struct IpcOperation* const ipc_operation) {
+bool yaml_ipc_operation_to_doc(struct MC *c, struct IpcOperation* const ipc_operation) {
 	if (!ipc_operation)
 		return false;
 
 	if (ipc_operation->request->command == GET) {
 
 		// creates a mapping node which is the root
-		return yaml_map_from_ipc_operation(c, ipc_operation) != 0;
+		return yaml_ipc_operation_to_map(c, ipc_operation) != 0;
 
 	} else {
 
@@ -43,11 +43,11 @@ bool yaml_doc_ipc_operation(struct MC *c, struct IpcOperation* const ipc_operati
 		if (!seq)
 			return false;
 
-		return yaml_document_append_sequence_item(&c->d, seq, yaml_map_from_ipc_operation(c, ipc_operation)) != 0;
+		return yaml_document_append_sequence_item(&c->d, seq, yaml_ipc_operation_to_map(c, ipc_operation)) != 0;
 	}
 }
 
-bool yaml_doc_ipc_request(struct MC *c, const struct IpcRequest* const ipc_request) {
+bool yaml_ipc_request_to_doc(struct MC *c, const struct IpcRequest* const ipc_request) {
 	if (!ipc_request)
 		return true;
 
@@ -57,10 +57,10 @@ bool yaml_doc_ipc_request(struct MC *c, const struct IpcRequest* const ipc_reque
 	}
 
 	// creates a mapping node which is the root
-	return yaml_map_from_ipc_request(c, ipc_request) != 0;
+	return yaml_ipc_request_to_map(c, ipc_request) != 0;
 }
 
-int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
+int yaml_cfg_to_map(struct MC *c, const struct Cfg* const cfg) {
 	if (!cfg)
 		return 0;
 
@@ -79,20 +79,20 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_int_nz   (c, cfg_element_name(AUTO_SCALE_DPI),       cfg->auto_scale_dpi,                                                            map);
 	yaml_map_add_float_nz (c, cfg_element_name(AUTO_SCALE_MIN),       cfg->auto_scale_min,                                                            map);
 	yaml_map_add_float_nz (c, cfg_element_name(AUTO_SCALE_MAX),       cfg->auto_scale_max,                                                            map);
-	yaml_map_add_smapi    (c, cfg_element_name(SCALE),                cfg->scales,                yaml_map_from_scale,                                map);
-	yaml_map_add_smap     (c, cfg_element_name(MODE),                 cfg->user_modes,            (fn_yaml_node_from_kv)yaml_map_from_user_mode,      map);
-	yaml_map_add_smapi    (c, cfg_element_name(TRANSFORM),            cfg->transforms,            yaml_map_from_transform,                            map);
+	yaml_map_add_smapi    (c, cfg_element_name(SCALE),                cfg->scales,                yaml_scale_to_map,                                map);
+	yaml_map_add_smap     (c, cfg_element_name(MODE),                 cfg->user_modes,            (fn_yaml_kv_to_node)yaml_user_mode_to_map,      map);
+	yaml_map_add_smapi    (c, cfg_element_name(TRANSFORM),            cfg->transforms,            yaml_transform_to_map,                            map);
 	yaml_map_add_sset     (c, cfg_element_name(VRR_OFF),              cfg->adaptive_sync_off,                                                         map);
 	yaml_map_add_str      (c, cfg_element_name(CALLBACK_CMD),         cfg->callback_cmd,                                                              map);
 	yaml_map_add_str      (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX),cfg->laptop_display_prefix,                                                     map);
 	yaml_map_add_enum     (c, cfg_element_name(LAPTOP_LID_MONITOR),   cfg->laptop_lid_monitor,    on_off_name,                                        map);
 	yaml_map_add_enum     (c, cfg_element_name(LOG_THRESHOLD),        cfg->log_threshold,         log_threshold_name,                                 map);
-	yaml_map_add_pset     (c, cfg_element_name(DISABLED),             cfg->disableds,             (fn_yaml_node_from_v)yaml_node_from_disabled,       map);
+	yaml_map_add_pset     (c, cfg_element_name(DISABLED),             cfg->disableds,             (fn_yaml_v_to_node)yaml_disabled_to_node,       map);
 
 	return map;
 }
 
-int yaml_map_from_ipc_operation(struct MC *c, struct IpcOperation* const ipc_operation) {
+int yaml_ipc_operation_to_map(struct MC *c, struct IpcOperation* const ipc_operation) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -100,8 +100,8 @@ int yaml_map_from_ipc_operation(struct MC *c, struct IpcOperation* const ipc_ope
 	yaml_map_add_bool(c, "DONE", ipc_operation->done, map);
 
 	if (ipc_operation->send_state) {
-		yaml_map_add_node(c, "CFG", yaml_map_from_cfg(c, g_cfg), map);
-		yaml_map_add_node(c, "STATE", yaml_map_from_state(c), map);
+		yaml_map_add_node(c, "CFG", yaml_cfg_to_map(c, g_cfg), map);
+		yaml_map_add_node(c, "STATE", yaml_state_to_map(c), map);
 	}
 
 	yaml_map_populate_messages(c, (struct IpcOperation*)ipc_operation, map);
@@ -110,7 +110,7 @@ int yaml_map_from_ipc_operation(struct MC *c, struct IpcOperation* const ipc_ope
 	return map;
 }
 
-int yaml_map_from_ipc_request(struct MC *c, const struct IpcRequest* const ipc_request) {
+int yaml_ipc_request_to_map(struct MC *c, const struct IpcRequest* const ipc_request) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -120,12 +120,12 @@ int yaml_map_from_ipc_request(struct MC *c, const struct IpcRequest* const ipc_r
 	if (ipc_request->log_threshold)
 		yaml_map_add_str(c, "LOG_THRESHOLD", log_threshold_name(ipc_request->log_threshold), map);
 
-	yaml_map_add_node(c, "CFG", yaml_map_from_cfg(c, ipc_request->cfg), map);
+	yaml_map_add_node(c, "CFG", yaml_cfg_to_map(c, ipc_request->cfg), map);
 
 	return map;
 }
 
-int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_state) {
+int yaml_head_state_to_map(struct MC *c, const struct HeadState* const head_state) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -138,12 +138,12 @@ int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_st
 	yaml_map_add_int     (c, "Y",         head_state->y,                           map);
 	yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                   map);
 	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,   map);
-	yaml_map_add_node    (c, "MODE",      yaml_map_from_mode(c, head_state->mode), map);
+	yaml_map_add_node    (c, "MODE",      yaml_mode_to_map(c, head_state->mode), map);
 
 	return map;
 }
 
-int yaml_map_from_head_overrides(struct MC *c, const struct Head* const head) {
+int yaml_head_overrides_to_map(struct MC *c, const struct Head* const head) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -155,7 +155,7 @@ int yaml_map_from_head_overrides(struct MC *c, const struct Head* const head) {
 	return map;
 }
 
-int yaml_map_from_lid(struct MC *c, const struct Lid* const lid) {
+int yaml_lid_to_map(struct MC *c, const struct Lid* const lid) {
 	if (!lid)
 		return 0;
 
@@ -205,21 +205,21 @@ bool yaml_map_populate_messages(struct MC *c, struct IpcOperation* const ipc_ope
 	}
 }
 
-int yaml_map_from_state(struct MC *c) {
+int yaml_state_to_map(struct MC *c) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
 
-	if (g_lid && !yaml_map_add_node(c, "LID", yaml_map_from_lid(c, g_lid), map))
+	if (g_lid && !yaml_map_add_node(c, "LID", yaml_lid_to_map(c, g_lid), map))
 		return 0;
 
-	if (g_heads && !yaml_map_add_list(c, "HEADS", g_heads, (fn_yaml_node_from_v)yaml_map_from_head, map))
+	if (g_heads && !yaml_map_add_list(c, "HEADS", g_heads, (fn_yaml_v_to_node)yaml_head_to_map, map))
 		return 0;
 
 	return map;
 }
 
-int yaml_map_from_scale(struct MC *c, const char* const name_desc, const size_t scale) {
+int yaml_scale_to_map(struct MC *c, const char* const name_desc, const size_t scale) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -230,7 +230,7 @@ int yaml_map_from_scale(struct MC *c, const char* const name_desc, const size_t 
 	return map;
 }
 
-int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode) {
+int yaml_user_mode_to_map(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -250,7 +250,7 @@ int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const str
 	return map;
 }
 
-int yaml_map_from_transform(struct MC *c, const char* const name_desc, const size_t transform) {
+int yaml_transform_to_map(struct MC *c, const char* const name_desc, const size_t transform) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -261,7 +261,7 @@ int yaml_map_from_transform(struct MC *c, const char* const name_desc, const siz
 	return map;
 }
 
-int yaml_map_from_condition(struct MC *c, const struct Condition* const condition) {
+int yaml_condition_to_map(struct MC *c, const struct Condition* const condition) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -273,14 +273,14 @@ int yaml_map_from_condition(struct MC *c, const struct Condition* const conditio
 	return map;
 }
 
-int yaml_node_from_disabled(struct MC *c, const struct Disabled* const disabled) {
+int yaml_disabled_to_node(struct MC *c, const struct Disabled* const disabled) {
 	if (pset_size(disabled->conditions) > 0) {
 		int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 		if (!map)
 			return 0;
 
 		yaml_map_add_str(c, "NAME_DESC", disabled->name_desc, map);
-		yaml_map_add_pset(c, "IF", disabled->conditions, (fn_yaml_node_from_v)yaml_map_from_condition, map);
+		yaml_map_add_pset(c, "IF", disabled->conditions, (fn_yaml_v_to_node)yaml_condition_to_map, map);
 
 		return map;
 	} else {
@@ -288,7 +288,7 @@ int yaml_node_from_disabled(struct MC *c, const struct Disabled* const disabled)
 	}
 }
 
-int yaml_map_from_mode(struct MC *c, const struct Mode* const mode) {
+int yaml_mode_to_map(struct MC *c, const struct Mode* const mode) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -301,7 +301,7 @@ int yaml_map_from_mode(struct MC *c, const struct Mode* const mode) {
 	return map;
 }
 
-int yaml_map_from_head(struct MC *c, const struct Head* const head) {
+int yaml_head_to_map(struct MC *c, const struct Head* const head) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -314,10 +314,10 @@ int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	yaml_map_add_int(c, "WIDTH_MM",      head->width_mm,      map);
 	yaml_map_add_int(c, "HEIGHT_MM",     head->height_mm,     map);
 
-	yaml_map_add_node  (c, "CURRENT",   yaml_map_from_head_state(c, &head->current), map);
-	yaml_map_add_node  (c, "DESIRED",   yaml_map_from_head_state(c, &head->desired), map);
-	yaml_map_add_node  (c, "OVERRIDES", yaml_map_from_head_overrides(c, head),       map);
-	yaml_map_add_list(c, "MODES",     head->modes,     (fn_yaml_node_from_v)yaml_map_from_mode,             map);
+	yaml_map_add_node  (c, "CURRENT",   yaml_head_state_to_map(c, &head->current), map);
+	yaml_map_add_node  (c, "DESIRED",   yaml_head_state_to_map(c, &head->desired), map);
+	yaml_map_add_node  (c, "OVERRIDES", yaml_head_overrides_to_map(c, head),       map);
+	yaml_map_add_list(c, "MODES",     head->modes,     (fn_yaml_v_to_node)yaml_mode_to_map,             map);
 
 	return map;
 }
