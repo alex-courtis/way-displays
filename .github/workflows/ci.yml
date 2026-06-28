@@ -41,7 +41,7 @@ jobs:
 
       - name: install arch packages
         shell: sh -e {0}
-        run: bld/docker-install-arch.sh
+        run: sh bld/docker-packages/base-install.sh
 
       - run: make          clean
       - run: make CC=gcc   all
@@ -56,7 +56,7 @@ jobs:
       - run: make CC=clang test-vg
 
       - name: build and install 32-bit libyaml
-        run: bld/docker-install-libyaml-32.sh
+        run: sh bld/docker-packages/iwyu-build-install.sh
         shell: sh -e {0}
 
       - run: make                      clean
@@ -72,7 +72,7 @@ jobs:
       # - run: make CC=clang MFLAGS=-m32 test-vg
 
       - name: build and install include-what-you-use
-        run: bld/docker-install-iwyu.sh
+        run: sh bld/docker-packages/iwyu-build-install.sh
         shell: sh -e {0}
 
       - run: make clean iwyu

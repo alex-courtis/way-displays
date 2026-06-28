@@ -78,7 +78,7 @@ genhtml \
 # clear .gnco for next (non-coverage) run
 make clean
 
-ONLY_HTML=$(find "${REP_PATH}" -name "*${1}.c.gcov.html")
+ONLY_HTML=$(find "${REP_PATH}" -name "${1}.c.gcov.html")
 
 if [ $# -eq 1 ] && [ -f "${ONLY_HTML}" ]; then
 	xdg-open "${ONLY_HTML}"
