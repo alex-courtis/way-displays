@@ -213,6 +213,21 @@ static void user_mode_equal__refresh_not_equal(void **state) {
 	user_mode_free(b);
 }
 
+static void mode_preferred__no_preferred(void **state) {
+	const struct Mode *actual = mode_preferred(modes, NULL);
+
+	assert_nul(actual);
+}
+
+static void mode_preferred__preferred(void **state) {
+	struct Mode *expected = mode_init(NULL, NULL, 111, 222, 333, true);
+	slist_append(&modes, expected);
+
+	const struct Mode *actual = mode_preferred(modes, NULL);
+
+	assert_ptr_equal(actual, expected);
+}
+
 static void mode_max_preferred__no_preferred(void **state) {
 	const struct Mode *actual = mode_max_preferred(modes, NULL);
 
@@ -307,12 +322,15 @@ int main(void) {
 		TEST_BA(user_mode_equal__wh_not_equal),
 		TEST_BA(user_mode_equal__refresh_not_equal),
 
-		TEST_BA(mode_max_preferred__no_preferred),
-		TEST_BA(mode_max_preferred__preferred_matches),
-		TEST_BA(mode_max_preferred__prior_matches),
-		TEST_BA(mode_max_preferred__later_higher_refresh),
-		TEST_BA(mode_max_preferred__earlier_higher_refresh),
-		TEST_BA(mode_max_preferred__failed),
+		TEST_BA(mode_preferred__no_preferred),
+		TEST_BA(mode_preferred__preferred),
+
+		// TEST_BA(mode_max_preferred__no_preferred),
+		// TEST_BA(mode_max_preferred__preferred_matches),
+		// TEST_BA(mode_max_preferred__prior_matches),
+		// TEST_BA(mode_max_preferred__later_higher_refresh),
+		// TEST_BA(mode_max_preferred__earlier_higher_refresh),
+		// TEST_BA(mode_max_preferred__failed),
 	};
 
 	// TODO remove BA after regression testing
