@@ -12,7 +12,7 @@ pacman --noconfirm -Syu \
 	cmocka lib32-cmocka \
 	cppcheck \
 	git \
-	lib32-gcc-libs \
+	lib32-gcclibs \
 	lib32-systemd \
 	libinput \
 	libyaml \
