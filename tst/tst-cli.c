@@ -104,7 +104,7 @@ static void parse_element__auto_scale_toggle(void **state) {
 	optind = 0;
 	char *argv[] = { 0 };
 
-	struct Cfg *actual = parse_element(CFG_TOGGLE, AUTO_SCALE, 1, argv);
+	struct Cfg *actual = parse_element(CFG_TOGGLE, AUTO_SCALE, 0, argv);
 
 	struct Cfg *expected = cfg_init();
 	expected->auto_scale = ON;
@@ -347,6 +347,40 @@ static void parse_element__mode_set_res_refresh(void **state) {
 
 	struct Cfg *expected = cfg_init();
 	smap_put(expected->user_modes, "DISPL", expectedUserMode);
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__callback_cmd_set_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "foo bar\nbaz", };
+
+	struct Cfg *actual = parse_element(CFG_SET, CALLBACK_CMD, 2, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->callback_cmd = strdup(argv[0]);
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__callback_cmd_del_ok(void **state) {
+	optind = 0;
+	char *argv[] = { 0 };
+
+	struct Cfg *actual = parse_element(CFG_DEL, CALLBACK_CMD, 0, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->callback_cmd = strdup("");
 
 	assert_cfg_equal(actual, expected);
 
@@ -659,6 +693,18 @@ static void parse_del__adaptive_sync_off_nargs(void **state) {
 	assert_logs_empty();
 }
 
+static void parse_del__callback_cmd_nargs(void **state) {
+	optind = 0;
+	optarg = "CALLBACK_CMD";
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_del(1, NULL));
+
+	assert_log(FATAL, "CALLBACK_CMD takes no arguments\n");
+	assert_logs_empty();
+}
+
 static void parse_del__invalid(void **state) {
 	optind = 0;
 	optarg = "INVALID";
@@ -805,6 +851,9 @@ int main(void) {
 		TEST(parse_element__mode_set_res_refresh),
 		TEST(parse_element__mode_del_ok),
 
+		TEST(parse_element__callback_cmd_set_ok),
+		TEST(parse_element__callback_cmd_del_ok),
+
 		TEST(parse_element__adaptive_sync_off_ok),
 
 		TEST(parse_element__disabled_ok),
@@ -832,6 +881,7 @@ int main(void) {
 		TEST(parse_del__scale_nargs),
 		TEST(parse_del__disabled_nargs),
 		TEST(parse_del__adaptive_sync_off_nargs),
+		TEST(parse_del__callback_cmd_nargs),
 		TEST(parse_del__invalid),
 		TEST(parse_del__ok),
 

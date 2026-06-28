@@ -62,7 +62,7 @@ void usage(FILE *stream) {
 		"     TRANSFORM <name>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
-		"     CALLBACK_CMD <shell command>\n"
+		"     CALLBACK_CMD\n"
 		;
 	fprintf(stream, "%s", mesg);
 }
@@ -234,6 +234,7 @@ static struct IpcRequest *parse_list(int argc, char **argv) {
 	return request;
 }
 
+// TODO add the command to the fatal message
 static struct IpcRequest *parse_get(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--get takes no arguments");
