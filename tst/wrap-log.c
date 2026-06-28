@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <cmocka.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -13,21 +12,13 @@
 
 #include "wrap-log.h"
 
-// TODO use logs_clear at some point that identifies the bad test
-
 // log space b is statically allocated and not cleared
 // bp is used to indicate presence of logs
-// logs are reset by clearing bp on assert_log and logs_clear
+// logs are reset by clearing bp on assert_log
 
 // 0 unused, 1 DEBUG, 5 FATAL
 static char b[6][262144] = { 0 };
 static char *bp[6] = { 0 };
-
-void logs_clear(void) {
-	for (enum LogThreshold t = DEBUG; t <= FATAL; t++) {
-		bp[t] = NULL;
-	}
-}
 
 void _assert_log(enum LogThreshold t, const char * s, const char * const file, const int line) {
 	if (bp[t]) {
