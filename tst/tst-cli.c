@@ -83,7 +83,7 @@ static void parse_element__auto_scale_invalid(void **state) {
 	assert_logs_empty();
 }
 
-static void parse_element__auto_scale_ok(void **state) {
+static void parse_element__auto_scale_set(void **state) {
 	optind = 0;
 	char *argv[] = { "ON", };
 
@@ -91,6 +91,69 @@ static void parse_element__auto_scale_ok(void **state) {
 
 	struct Cfg *expected = cfg_init();
 	expected->auto_scale = ON;
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__auto_scale_toggle(void **state) {
+	optind = 0;
+	char *argv[] = { 0 };
+
+	struct Cfg *actual = parse_element(CFG_TOGGLE, AUTO_SCALE, 1, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->auto_scale = ON;
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__scaling_invalid(void **state) {
+	optind = 0;
+	char *argv[] = { "INVALID", };
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_element(CFG_SET, SCALING, 1, argv));
+
+	assert_log(FATAL, "invalid SCALING INVALID\n");
+	assert_logs_empty();
+}
+
+static void parse_element__scaling_set(void **state) {
+	optind = 0;
+	char *argv[] = { "OFF", };
+
+	struct Cfg *actual = parse_element(CFG_SET, SCALING, 1, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->scaling = OFF;
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__scaling_toggle(void **state) {
+	optind = 0;
+	char *argv[] = { 0 };
+
+	struct Cfg *actual = parse_element(CFG_TOGGLE, SCALING, 1, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->scaling = ON;
 
 	assert_cfg_equal(actual, expected);
 
@@ -719,7 +782,12 @@ int main(void) {
 		TEST(parse_element__arrange_align_ok),
 
 		TEST(parse_element__auto_scale_invalid),
-		TEST(parse_element__auto_scale_ok),
+		TEST(parse_element__auto_scale_set),
+		TEST(parse_element__auto_scale_toggle),
+
+		TEST(parse_element__scaling_invalid),
+		TEST(parse_element__scaling_set),
+		TEST(parse_element__scaling_toggle),
 
 		TEST(parse_element__transform_invalid),
 		TEST(parse_element__transform_ok),

@@ -81,20 +81,30 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			parsed = parsed && (cfg->align = align_val_start(argv[optind + 1]));
 			break;
 		case SCALING:
-			if (command == CFG_TOGGLE) {
-				cfg->scaling = ON;
-				parsed = true;
-				break;
+			switch (command) {
+				case CFG_TOGGLE:
+					cfg->scaling = ON;
+					parsed = true;
+					break;
+				case CFG_SET:
+					parsed = (cfg->scaling = on_off_val(argv[optind]));
+					break;
+				default:
+					break;
 			}
-			parsed = (cfg->scaling = on_off_val(argv[optind]));
 			break;
 		case AUTO_SCALE:
-			if (command == CFG_TOGGLE) {
-				cfg->auto_scale = ON;
-				parsed = true;
-				break;
+			switch (command) {
+				case CFG_TOGGLE:
+					cfg->auto_scale = ON;
+					parsed = true;
+					break;
+				case CFG_SET:
+					parsed = (cfg->auto_scale = on_off_val(argv[optind]));
+					break;
+				default:
+					break;
 			}
-			parsed = (cfg->auto_scale = on_off_val(argv[optind]));
 			break;
 		case SCALE:
 			switch (command) {

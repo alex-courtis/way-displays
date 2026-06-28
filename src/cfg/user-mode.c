@@ -9,6 +9,7 @@
 #include "mode.h"
 #include "smap.h"
 
+// TODO testing mode.c does its own equality - converge them
 static bool user_mode_equal(const struct UserMode* const a, const struct UserMode* const b) {
 	if (!a || !b) {
 		return false;

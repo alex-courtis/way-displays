@@ -75,9 +75,6 @@ genhtml \
 	--output-directory "${REP_PATH}" \
 	${INFO_PATH}
 
-# clear .gnco for next (non-coverage) run
-make clean
-
 ONLY_HTML=$(find "${REP_PATH}" -name "${1}.c.gcov.html")
 
 if [ $# -eq 1 ] && [ -f "${ONLY_HTML}" ]; then
@@ -85,4 +82,7 @@ if [ $# -eq 1 ] && [ -f "${ONLY_HTML}" ]; then
 else
 	xdg-open "${REP_PATH}/index.html"
 fi
+
+# clear .gnco for next (non-coverage) run
+make clean all
 
