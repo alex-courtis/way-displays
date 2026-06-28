@@ -29,7 +29,7 @@ typedef void (*fn_yaml_node_into_col)(struct UC *c, const void *col, const yaml_
 bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn_yaml_node_into_col fn);
 
 // create a table of yaml_node_t indexed by key
-const struct SMap *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map);
+const struct SMap *yaml_map_to_smap(struct UC *c, const yaml_node_t *map);
 
 #endif // YAML_UNMARSHAL_PRIMITIVES_H
 

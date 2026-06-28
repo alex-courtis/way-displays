@@ -196,10 +196,8 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 	if (*c->def)
 		msg = sprintf_append(msg, ", using default %s", c->def);
 
-	if (msg) {
-		log_(c->t, "%s", msg);
-		free(msg);
-	}
+	log_(c->t, "%s", msg);
+	free(msg);
 }
 
 static void yaml_log_misssing(struct UC *c) {

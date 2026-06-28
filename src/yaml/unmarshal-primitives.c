@@ -142,7 +142,7 @@ bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn
 	return true;
 }
 
-const struct SMap *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map) {
+const struct SMap *yaml_map_to_smap(struct UC *c, const yaml_node_t *map) {
 	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE))
 		return NULL;
 
@@ -153,20 +153,19 @@ const struct SMap *yaml_map_to_node_table(struct UC *c, const yaml_node_t *map) 
 			continue;
 
 		const yaml_node_t *pair_key = yaml_document_get_node(&c->d, pair->key);
+		if (!pair_key)
+			continue;
 
-		char *key = NULL;
-		if (!(key = yaml_scalar_to_string(c, pair_key))) {
-			smap_free(table);
-			return NULL;
-		}
+		char *key = yaml_scalar_to_string(c, pair_key);
+		if (!key)
+			continue;
 
 		const yaml_node_t *pair_value = yaml_document_get_node(&c->d, pair->value);
 
-		if (key && pair_value)
+		if (pair_value)
 			smap_put(table, key, pair_value);
 
-		if (key)
-			free(key);
+		free(key);
 	}
 
 	return table;

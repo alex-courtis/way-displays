@@ -66,6 +66,13 @@ static void yaml_root_to_cfg__ok(void **state) {
 	check_unmarshalled_cfg("tst/yaml/cfg-all.yaml", cfg_all(), NULL);
 }
 
+static void yaml_root_to_cfg__unknown(void **state) {
+	struct Cfg *expected = cfg_init();
+	expected->arrange = COL;
+
+	check_unmarshalled_cfg("tst/yaml/cfg-unknown.yaml", expected, NULL);
+}
+
 static void yaml_root_to_cfg__empty(void **state) {
 
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
@@ -615,6 +622,7 @@ int main(void) {
 
 	const struct CMUnitTest tests[] = {
 		TEST_B(yaml_root_to_cfg__ok),
+		TEST_B(yaml_root_to_cfg__unknown),
 		TEST_B(yaml_root_to_cfg__empty),
 		TEST_B(yaml_root_to_cfg__missing),
 		TEST_B(yaml_root_to_cfg__invalid),

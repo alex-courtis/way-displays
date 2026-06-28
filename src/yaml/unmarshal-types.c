@@ -48,7 +48,7 @@ void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {
 	// log exceptions and fail for required fields
 	c->t = ERROR;
 
-	const struct SMap *nodes = yaml_map_to_node_table(c, root);
+	const struct SMap *nodes = yaml_map_to_smap(c, root);
 	if (!nodes)
 		return NULL;
 
@@ -125,16 +125,24 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 			continue;
 
 		const yaml_node_t *key = yaml_document_get_node(&c->d, pair->key);
-		if (!key || key->type != YAML_SCALAR_NODE || !key->data.scalar.value)
+		if (!key || key->type != YAML_SCALAR_NODE)
+			continue;
+
+		const char *element_name = (char*)key->data.scalar.value;
+		if (!element_name)
+			continue;
+
+		const enum CfgElement element_val = cfg_element_val(element_name);
+		if (!element_val)
 			continue;
 
 		const yaml_node_t *value = yaml_document_get_node(&c->d, pair->value);
 		if (!value)
 			continue;
 
-		yaml_unmarshal_log_ctx_top(c, (char*)key->data.scalar.value);
+		yaml_unmarshal_log_ctx_top(c, element_name);
 
-		switch (cfg_element_val((char*)key->data.scalar.value)) {
+		switch (element_val) {
 			case ARRANGE:
 				cfg->arrange = yaml_scalar_to_enum_def(c, ARRANGE_DEFAULT, value, arrange_val_start, arrange_name, arrange_names);
 				break;
@@ -213,7 +221,7 @@ void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses, con
 	// log exceptions and fail for required fields
 	c->t = ERROR;
 
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
 
@@ -240,7 +248,7 @@ void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses, con
 	yaml_unmarshal_log_ctx_top(c, "STATE");
 	const yaml_node_t *state = smap_get(nodes, "STATE");
 	if (state) {
-		const struct SMap *nodes_state = yaml_map_to_node_table(c, state);
+		const struct SMap *nodes_state = yaml_map_to_smap(c, state);
 		if (nodes_state) {
 
 			ipc_response->lid =	yaml_map_to_lid(c, smap_get(nodes_state, "LID"));
@@ -273,7 +281,7 @@ void yaml_map_into_conditions(struct UC *c, const struct PSet* const conditions,
 	if (!conditions)
 		return;
 
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
 
@@ -321,7 +329,7 @@ void yaml_map_into_scales(struct UC *c, const struct SMapI* const scales, const 
 	if (!scales)
 		return;
 
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
 
@@ -362,7 +370,7 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap* const user_modes,
 	if (!user_modes)
 		return;
 
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
 
@@ -422,7 +430,7 @@ void yaml_map_into_transforms(struct UC *c, const struct SMapI* const transforms
 	if (!transforms)
 		return;
 
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
 
@@ -453,7 +461,7 @@ end:
 }
 
 struct Lid *yaml_map_to_lid(struct UC *c, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return NULL;
 
@@ -468,7 +476,7 @@ struct Lid *yaml_map_to_lid(struct UC *c, const yaml_node_t *map) {
 }
 
 struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return NULL;
 
@@ -485,7 +493,7 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
 }
 
 void yaml_map_into_modes(struct UC *c, struct SList **modes, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!modes)
 		return;
 
@@ -499,7 +507,7 @@ void yaml_map_into_modes(struct UC *c, struct SList **modes, const yaml_node_t *
 }
 
 void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!heads)
 		return;
 
@@ -518,7 +526,7 @@ void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *
 
 	yaml_seq_into_col(c, smap_get(nodes, "MODES"), &head->modes, (fn_yaml_node_into_col)yaml_map_into_modes);
 
-	const struct SMap *nodes_overrides = yaml_map_to_node_table(c, smap_get(nodes, "OVERRIDES"));
+	const struct SMap *nodes_overrides = yaml_map_to_smap(c, smap_get(nodes, "OVERRIDES"));
 	if (nodes_overrides) {
 		bool disabled;
 		if (yaml_scalar_to_boolean(c, &disabled, smap_get(nodes_overrides, "DISABLED"))) {
@@ -554,7 +562,7 @@ void yaml_node_into_disableds(struct UC *c, const struct PSet* const disableds, 
 
 		case YAML_MAPPING_NODE:
 			{
-				if (!(node_map = yaml_map_to_node_table(c, node)))
+				if (!(node_map = yaml_map_to_smap(c, node)))
 					return;
 
 				disabled = disabled_init();
@@ -594,7 +602,7 @@ end:
 }
 
 void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
 
@@ -621,7 +629,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 }
 
 void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_node_table(c, map);
+	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
 
