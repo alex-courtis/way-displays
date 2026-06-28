@@ -17,8 +17,23 @@ struct UserMode *user_mode = NULL;
 struct SList *modes = NULL;
 struct SList *modes_failed = NULL;
 
+static int before_all(void **state) {
+	return 0;
+}
+
+static int after_all(void **state) {
+	return 0;
+}
+
 static int before_each(void **state) {
 	assert_logs_empty_before();
+
+	slist_append(&modes, mode_init(NULL, NULL, 200, 100, 59999, false));
+	slist_append(&modes, mode_init(NULL, NULL, 200, 100, 60499, false));
+	slist_append(&modes, mode_init(NULL, NULL, 200, 100, 60500, false));
+	slist_append(&modes, mode_init(NULL, NULL, 400, 200, 120000, false));
+	slist_append(&modes, mode_init(NULL, NULL, 600, 300, 164999, false));
+	slist_append(&modes, mode_init(NULL, NULL, 800, 400, 144000, false));
 
 	return 0;
 }
@@ -198,6 +213,78 @@ static void user_mode_equal__refresh_not_equal(void **state) {
 	user_mode_free(b);
 }
 
+static void mode_max_preferred__no_preferred(void **state) {
+	const struct Mode *actual = mode_max_preferred(modes, NULL);
+
+	assert_nul(actual);
+}
+
+static void mode_max_preferred__preferred_matches(void **state) {
+	struct Mode *expected = mode_init(NULL, NULL, 111, 222, 333, true);
+	slist_append(&modes, expected);
+
+	struct Mode *actual = mode_max_preferred(modes, NULL);
+
+	assert_non_nul(actual);
+	assert_ptr_equal(actual, expected);
+}
+
+static void mode_max_preferred__prior_matches(void **state) {
+	struct Mode *expected = mode_init(NULL, NULL, 111, 222, 333, false);
+	slist_append(&modes, expected);
+
+	struct Mode *preferred = mode_init(NULL, NULL, 111, 222, 333, true);
+	slist_append(&modes, preferred);
+
+	struct Mode *actual = mode_max_preferred(modes, NULL);
+
+	assert_non_nul(actual);
+	assert_ptr_equal(actual, expected);
+}
+
+static void mode_max_preferred__later_higher_refresh(void **state) {
+	struct Mode *preferred = mode_init(NULL, NULL, 111, 222, 333, true);
+	slist_append(&modes, preferred);
+
+	struct Mode *expected = mode_init(NULL, NULL, 111, 222, 999999, false);
+	slist_append(&modes, expected);
+
+	struct Mode *actual = mode_max_preferred(modes, NULL);
+
+	assert_non_nul(actual);
+	assert_ptr_equal(actual, expected);
+}
+
+static void mode_max_preferred__earlier_higher_refresh(void **state) {
+	struct Mode *expected = mode_init(NULL, NULL, 111, 222, 999999, false);
+	slist_append(&modes, expected);
+
+	struct Mode *preferred = mode_init(NULL, NULL, 111, 222, 333, true);
+	slist_append(&modes, preferred);
+
+	struct Mode *actual = mode_max_preferred(modes, NULL);
+
+	assert_non_nul(actual);
+	assert_ptr_equal(actual, expected);
+}
+
+static void mode_max_preferred__failed(void **state) {
+	struct Mode *failed = mode_init(NULL, NULL, 111, 222, 2000, false);
+	slist_append(&modes, failed);
+	slist_append(&modes_failed, failed);
+
+	struct Mode *preferred = mode_init(NULL, NULL, 111, 222, 333, true);
+	slist_append(&modes, preferred);
+
+	struct Mode *expected = mode_init(NULL, NULL, 111, 222, 1000, false);
+	slist_append(&modes, expected);
+
+	struct Mode *actual = mode_max_preferred(modes, modes_failed);
+
+	assert_non_nul(actual);
+	assert_ptr_equal(actual, expected);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(mode_mhz_to_hz_str__),
@@ -219,8 +306,16 @@ int main(void) {
 		TEST_BA(user_mode_equal__max_not_equal),
 		TEST_BA(user_mode_equal__wh_not_equal),
 		TEST_BA(user_mode_equal__refresh_not_equal),
+
+		TEST_BA(mode_max_preferred__no_preferred),
+		TEST_BA(mode_max_preferred__preferred_matches),
+		TEST_BA(mode_max_preferred__prior_matches),
+		TEST_BA(mode_max_preferred__later_higher_refresh),
+		TEST_BA(mode_max_preferred__earlier_higher_refresh),
+		TEST_BA(mode_max_preferred__failed),
 	};
 
-	return RUN(tests);
+	// TODO remove BA after regression testing
+	return RUN_BA(tests);
 }
 
