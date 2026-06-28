@@ -230,7 +230,7 @@ static void write_handler__empty(void **state) {
 	char *buffer = strdup("1234");
 	size_t size = 2;
 
-	write_handler(&data, (unsigned char *)buffer, size);
+	assert_int_equal(write_handler(&data, (unsigned char *)buffer, size), 1);
 
 	assert_str_equal(data, "12");
 
@@ -246,12 +246,23 @@ static void write_handler__append(void **state) {
 	char *buffer = strdup("1234");
 	size_t size = 2;
 
-	write_handler(&data, (unsigned char *)buffer, size);
+	assert_int_equal(write_handler(&data, (unsigned char *)buffer, size), 1);
 
 	assert_str_equal(data, "foo12");
 
 	free(buffer);
 	free(data);
+
+	assert_logs_empty();
+}
+
+static void write_handler__no_data(void **state) {
+	char *buffer = strdup("1234");
+	size_t size = 2;
+
+	assert_int_equal(write_handler(NULL, (unsigned char *)buffer, size), 0);
+
+	free(buffer);
 
 	assert_logs_empty();
 }
@@ -277,6 +288,7 @@ int main(void) {
 
 		TEST_BA(write_handler__empty),
 		TEST_BA(write_handler__append),
+		TEST_BA(write_handler__no_data),
 	};
 
 	return RUN(tests);
