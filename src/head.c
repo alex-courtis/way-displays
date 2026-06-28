@@ -71,6 +71,8 @@ static struct Mode *max_mode(const struct Head * const head) {
 			continue;
 		}
 
+		// TODO below not tested
+
 		// highest resolution
 		if (mode->width * mode->height > max->width * max->height) {
 			max = mode;

@@ -142,6 +142,62 @@ static void mode_dpi__(void **state) {
 	assert_float_equal(actual, expected, 0);
 }
 
+static void user_mode_equal__max_not_equal(void **state) {
+	struct UserMode *a = user_mode_init(true, 1, 1, 1, false);
+	struct UserMode *b = user_mode_init(false, 1, 1, 1, false);
+
+	assert_false(user_mode_equal(a, b));
+
+	user_mode_free(a);
+	user_mode_free(b);
+}
+
+static void user_mode_equal__wh_not_equal(void **state) {
+	struct UserMode *a = user_mode_init(false, 10, 1, 1, false);
+	struct UserMode *b = user_mode_init(false, 1, 1, 1, false);
+
+	assert_false(user_mode_equal(a, b));
+
+	a->width = b->width;
+
+	assert_true(user_mode_equal(a, b));
+
+	a->height = 20;
+
+	assert_false(user_mode_equal(a, b));
+
+	user_mode_free(a);
+	user_mode_free(b);
+}
+
+static void user_mode_equal__refresh_not_equal(void **state) {
+	struct UserMode *a = user_mode_init(false, 1, 1, 10, false);
+	struct UserMode *b = user_mode_init(false, 1, 1, 1, false);
+
+	assert_false(user_mode_equal(a, b));
+
+	a->refresh_mhz = b->refresh_mhz;
+
+	assert_true(user_mode_equal(a, b));
+
+	a->refresh_mhz = -1;
+
+	assert_false(user_mode_equal(a, b));
+
+	a->refresh_mhz = 1;
+	b->refresh_mhz = -1;
+
+	assert_false(user_mode_equal(a, b));
+
+	a->refresh_mhz = -1;
+	b->refresh_mhz = -1;
+
+	assert_true(user_mode_equal(a, b));
+
+	user_mode_free(a);
+	user_mode_free(b);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(mode_mhz_to_hz_str__),
@@ -159,6 +215,10 @@ int main(void) {
 		TEST_BA(mode_user_mode__exact_hz_failed),
 
 		TEST_BA(mode_dpi__),
+
+		TEST_BA(user_mode_equal__max_not_equal),
+		TEST_BA(user_mode_equal__wh_not_equal),
+		TEST_BA(user_mode_equal__refresh_not_equal),
 	};
 
 	return RUN(tests);

@@ -13,6 +13,8 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
+// TODO unit tests mostly missing, needs to be "merged" with usermode
+
 struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed) {
 	struct Mode *mode = NULL;
 
