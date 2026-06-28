@@ -36,6 +36,8 @@ struct State {
 };
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	struct State *s = calloc(1, sizeof(struct State));
 
 	slist_free_vals(&cfg_file_paths, NULL);

@@ -43,6 +43,8 @@ void *__wrap_yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 }
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	cfg_destroy();
 
 	return 0;

@@ -12,9 +12,6 @@ tst/tst-*
 
 /tst/tmp/
 
-actual.*
-expected.*
-
 **/*.gcda
 **/*.gcno
 

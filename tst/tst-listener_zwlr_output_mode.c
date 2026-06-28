@@ -14,6 +14,12 @@
 
 #include "listeners.h"
 
+static int before_each(void **state) {
+	assert_logs_empty_before();
+
+	return 0;
+}
+
 static void preferred__first(void **state) {
 	struct Head head = { .name = "NAM", };
 	struct Mode mode_existing = { .width = 3840, .height = 2160, .preferred = false, .refresh_mhz = 60000, .head = &head, };
@@ -53,8 +59,8 @@ static void preferred__subsequent(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(preferred__first),
-		TEST(preferred__subsequent)
+		TEST_B(preferred__first),
+		TEST_B(preferred__subsequent)
 	};
 
 	return RUN(tests);

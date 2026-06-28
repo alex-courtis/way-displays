@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "assert-log.h"
 #include "fn.h"
 #include "head.h"
 #include "lid.h"
@@ -19,6 +20,8 @@ struct State {
 };
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	struct State *s = calloc(1, sizeof(struct State));
 	s->condition = condition_init();
 

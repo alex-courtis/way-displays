@@ -49,6 +49,8 @@ struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_
 
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	g_cfg = cfg_default();
 	return 0;
 }

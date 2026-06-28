@@ -57,6 +57,8 @@ struct State {
 
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	g_cfg = cfg_default();
 
 	// only set this when we specifically want to test it

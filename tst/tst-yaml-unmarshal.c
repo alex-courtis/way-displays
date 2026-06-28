@@ -37,6 +37,8 @@
 #include "yaml/data.c"
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	reset_yaml_fails();
 
 	return 0;
@@ -55,7 +57,7 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 		free(expected_log);
 	}
 
-	_assert_logs_empty(file, line);
+	_assert_logs_empty(true, false, file, line);
 
 	cfg_free(actual);
 	cfg_free(expected);

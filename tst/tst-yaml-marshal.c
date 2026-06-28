@@ -27,6 +27,8 @@
 int write_handler(void *data, unsigned char *buffer, size_t size);
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	reset_yaml_fails();
 
 	return 0;

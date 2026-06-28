@@ -41,6 +41,8 @@ struct State {
 };
 
 int before_each(void **state) {
+	assert_logs_empty_before();
+
 	struct State *s = calloc(1, sizeof(struct State));
 
 	g_displ = calloc(1, sizeof(struct Displ));

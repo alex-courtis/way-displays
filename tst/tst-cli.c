@@ -30,6 +30,11 @@ struct IpcRequest *parse_del(int argc, char **argv);
 struct IpcRequest *parse_toggle(int argc, char **argv);
 enum LogThreshold parse_log_threshold(char *optarg);
 
+static int before_each(void **state) {
+	assert_logs_empty_before();
+
+	return 0;
+}
 
 static void parse_element__arrange_align_invalid_arrange(void **state) {
 	optind = 0;
@@ -875,83 +880,83 @@ static void parse_log_threshold__ok(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(parse_element__arrange_align_invalid_arrange),
-		TEST(parse_element__arrange_align_invalid_align),
-		TEST(parse_element__arrange_align_ok),
+		TEST_B(parse_element__arrange_align_invalid_arrange),
+		TEST_B(parse_element__arrange_align_invalid_align),
+		TEST_B(parse_element__arrange_align_ok),
 
-		TEST(parse_element__auto_scale_invalid),
-		TEST(parse_element__auto_scale_set),
-		TEST(parse_element__auto_scale_toggle),
+		TEST_B(parse_element__auto_scale_invalid),
+		TEST_B(parse_element__auto_scale_set),
+		TEST_B(parse_element__auto_scale_toggle),
 
-		TEST(parse_element__scaling_invalid),
-		TEST(parse_element__scaling_set),
-		TEST(parse_element__scaling_toggle),
+		TEST_B(parse_element__scaling_invalid),
+		TEST_B(parse_element__scaling_set),
+		TEST_B(parse_element__scaling_toggle),
 
-		TEST(parse_element__transform_invalid),
-		TEST(parse_element__transform_ok),
-		TEST(parse_element__transform_del_ok),
+		TEST_B(parse_element__transform_invalid),
+		TEST_B(parse_element__transform_ok),
+		TEST_B(parse_element__transform_del_ok),
 
-		TEST(parse_element__scale_set_invalid),
-		TEST(parse_element__scale_set_ok),
-		TEST(parse_element__scale_del_ok),
+		TEST_B(parse_element__scale_set_invalid),
+		TEST_B(parse_element__scale_set_ok),
+		TEST_B(parse_element__scale_del_ok),
 
-		TEST(parse_element__mode_set_invalid_width),
-		TEST(parse_element__mode_set_invalid_height),
-		TEST(parse_element__mode_set_invalid_refresh),
-		TEST(parse_element__mode_set_max),
-		TEST(parse_element__mode_set_res),
-		TEST(parse_element__mode_set_res_refresh),
-		TEST(parse_element__mode_del_ok),
+		TEST_B(parse_element__mode_set_invalid_width),
+		TEST_B(parse_element__mode_set_invalid_height),
+		TEST_B(parse_element__mode_set_invalid_refresh),
+		TEST_B(parse_element__mode_set_max),
+		TEST_B(parse_element__mode_set_res),
+		TEST_B(parse_element__mode_set_res_refresh),
+		TEST_B(parse_element__mode_del_ok),
 
-		TEST(parse_element__callback_cmd_set_ok),
-		TEST(parse_element__callback_cmd_del_ok),
+		TEST_B(parse_element__callback_cmd_set_ok),
+		TEST_B(parse_element__callback_cmd_del_ok),
 
-		TEST(parse_element__adaptive_sync_off_ok),
+		TEST_B(parse_element__adaptive_sync_off_ok),
 
-		TEST(parse_element__disabled_ok),
+		TEST_B(parse_element__disabled_ok),
 
-		TEST(parse_element__order_ok),
+		TEST_B(parse_element__order_ok),
 
-		TEST(parse_write__nargs),
-		TEST(parse_write__ok),
+		TEST_B(parse_write__nargs),
+		TEST_B(parse_write__ok),
 
-		TEST(parse_get__nargs),
-		TEST(parse_get__ok),
+		TEST_B(parse_get__nargs),
+		TEST_B(parse_get__ok),
 
-		TEST(parse_list__nargs),
-		TEST(parse_list__ok),
+		TEST_B(parse_list__nargs),
+		TEST_B(parse_list__ok),
 
-		TEST(parse_reapply__nargs),
-		TEST(parse_reapply__ok),
+		TEST_B(parse_reapply__nargs),
+		TEST_B(parse_reapply__ok),
 
-		TEST(parse_set__mode_nargs),
-		TEST(parse_set__arrange_align_nargs),
-		TEST(parse_set__scale_nargs),
-		TEST(parse_set__transform_nargs),
-		TEST(parse_set__auto_scale_nargs),
-		TEST(parse_set__disabled_nargs),
-		TEST(parse_set__adaptive_sync_off_nargs),
-		TEST(parse_set__order_nargs),
-		TEST(parse_set__invalid),
-		TEST(parse_set__ok),
+		TEST_B(parse_set__mode_nargs),
+		TEST_B(parse_set__arrange_align_nargs),
+		TEST_B(parse_set__scale_nargs),
+		TEST_B(parse_set__transform_nargs),
+		TEST_B(parse_set__auto_scale_nargs),
+		TEST_B(parse_set__disabled_nargs),
+		TEST_B(parse_set__adaptive_sync_off_nargs),
+		TEST_B(parse_set__order_nargs),
+		TEST_B(parse_set__invalid),
+		TEST_B(parse_set__ok),
 
-		TEST(parse_del__mode_nargs),
-		TEST(parse_del__scale_nargs),
-		TEST(parse_del__disabled_nargs),
-		TEST(parse_del__adaptive_sync_off_nargs),
-		TEST(parse_del__callback_cmd_nargs),
-		TEST(parse_del__invalid),
-		TEST(parse_del__ok),
+		TEST_B(parse_del__mode_nargs),
+		TEST_B(parse_del__scale_nargs),
+		TEST_B(parse_del__disabled_nargs),
+		TEST_B(parse_del__adaptive_sync_off_nargs),
+		TEST_B(parse_del__callback_cmd_nargs),
+		TEST_B(parse_del__invalid),
+		TEST_B(parse_del__ok),
 
-		TEST(parse_toggle__scaling_nargs),
-		TEST(parse_toggle__auto_scale_nargs),
-		TEST(parse_toggle__vrr_off_nargs),
-		TEST(parse_toggle__disabled_nargs),
-		TEST(parse_toggle__invalid),
-		TEST(parse_toggle__ok),
+		TEST_B(parse_toggle__scaling_nargs),
+		TEST_B(parse_toggle__auto_scale_nargs),
+		TEST_B(parse_toggle__vrr_off_nargs),
+		TEST_B(parse_toggle__disabled_nargs),
+		TEST_B(parse_toggle__invalid),
+		TEST_B(parse_toggle__ok),
 
-		TEST(parse_log_threshold__invalid),
-		TEST(parse_log_threshold__ok),
+		TEST_B(parse_log_threshold__invalid),
+		TEST_B(parse_log_threshold__ok),
 	};
 
 	return RUN(tests);

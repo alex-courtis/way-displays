@@ -21,6 +21,7 @@ $(TST_E): $(filter-out src/main.o src/lid.o,$(SRC_O)) $(PRO_O) $(LIB_O) $(filter
 # test-x builds tst/tst-x and executes it
 test: $(patsubst tst/tst%,test%,$(TST_E))
 test-%: tst/tst-%
+	rm -f actual.* expected.* unexpected.*
 	./$(^)
 
 # test-x-vg builds tst/tst-x and executes it with valgrind

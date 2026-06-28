@@ -91,6 +91,8 @@ static int after_all(void **state) {
 }
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	slist_free_vals(&cfg_file_paths, NULL);
 
 	clean_files();
