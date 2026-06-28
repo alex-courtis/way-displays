@@ -53,7 +53,7 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 
 	if (log_path) {
 		char *expected_log = read_file(log_path);
-		_assert_log(WARNING, expected_log, file, line);
+		_assert_log(true, WARNING, expected_log, file, line);
 		free(expected_log);
 	}
 

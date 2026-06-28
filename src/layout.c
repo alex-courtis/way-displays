@@ -183,6 +183,7 @@ void desire_enabled(struct Head *head) {
 		case OverrideTrue:
 			head->desired.enabled = true;
 			break;
+		// TODO unit test
 		case OverrideFalse:
 			head->desired.enabled = false;
 			break;
@@ -413,6 +414,7 @@ void handle_success(void) {
 	displ_delta_destroy();
 }
 
+// TODO unit test
 static bool handle_cancelled(void) {
 	cancellation_retries++;
 	if (cancellation_retries <= MAX_CANCELLATION_RETRIES) {

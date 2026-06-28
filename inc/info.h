@@ -25,6 +25,10 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 void print_head(const enum LogThreshold t, const enum InfoEvent event, const struct Head * const head);
 
+void print_head_current(const enum LogThreshold t, const struct Head * const head);
+
+void print_head_desired(const enum LogThreshold t, const struct Head * const head);
+
 void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct SList * const heads);
 
 void print_list(const enum LogThreshold t, const struct SList * const heads);

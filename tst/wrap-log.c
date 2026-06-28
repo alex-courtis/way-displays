@@ -20,14 +20,23 @@
 static char b[6][262144] = { 0 };
 static char *bp[6] = { 0 };
 
-void _assert_log(enum LogThreshold t, const char * s, const char * const file, const int line) {
+void _assert_log(bool fatal, enum LogThreshold t, const char * s, const char * const file, const int line) {
 	if (bp[t]) {
 		bp[t] = NULL;
 		if (strcmp(b[t], s) != 0) {
-			cmocka_print_error("assert_log\nactual.log:\n\"%s\"\nexpected.log:\n\"%s\"\n", b[t], s);
+			char *err = sprintf_alloc("assert_log\nactual.log:\n\"%s\"\nexpected.log:\n\"%s\"\n", b[t], s);
+			if (fatal) {
+				fprintf(stderr, "%s:%d: %s", file, line, err);
+			} else {
+				cmocka_print_error("%s", err);
+			}
 			write_file("actual.log", b[t]);
 			write_file("expected.log", s);
-			_fail(file, line);
+			if (fatal) {
+				exit(1);
+			} else {
+				_fail(file, line);
+			}
 		}
 	} else {
 		_assert_string_equal("", s, file, line);

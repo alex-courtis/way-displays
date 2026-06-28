@@ -476,6 +476,153 @@ static void print_head_deltas__reapply(void **state) {
 	free(expected_log);
 }
 
+static void print_head_current__disabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = false;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-disabled.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
+static void print_head_current__disabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = false;
+	head.overrided_enabled = OverrideFalse;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-disabled-override.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
+static void print_head_current__enabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = true;
+	head.overrided_enabled = OverrideTrue;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-enabled-override.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
+static void print_head_current__lid_closed(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, true);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-lid-closed.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
+static void print_head_desired__disabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.desired.enabled = false;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    (disabled)\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__disabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.desired.enabled = false;
+	head.overrided_enabled = OverrideFalse;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    (manually disabled)\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__enabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = false;
+	head.desired.enabled = true;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (enabled)\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__enabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = false;
+	head.desired.enabled = true;
+	head.overrided_enabled = OverrideTrue;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (manually enabled)\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__transform_270(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	memcpy(&head.desired, &head.current, sizeof(struct HeadState));
+	head.desired.transform = WL_OUTPUT_TRANSFORM_270;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    transform: 270\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__transform_none(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	memcpy(&head.desired, &head.current, sizeof(struct HeadState));
+	head.desired.transform = 0;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    transform: none\n");
+	assert_logs_empty();
+}
+
 static void print_active__empty(void **state) {
 	print_list(INFO, NULL);
 
@@ -852,6 +999,20 @@ int main(void) {
 		TEST_BA(print_head_deltas__disable),
 		TEST_BA(print_head_deltas__enable),
 		TEST_BA(print_head_deltas__reapply),
+
+		TEST_BA(print_head_current__disabled),
+		TEST_BA(print_head_current__disabled_override),
+		TEST_BA(print_head_current__enabled_override),
+
+		TEST_BA(print_head_current__lid_closed),
+
+		TEST_BA(print_head_desired__disabled),
+		TEST_BA(print_head_desired__disabled_override),
+		TEST_BA(print_head_desired__enabled),
+		TEST_BA(print_head_desired__enabled_override),
+
+		TEST_BA(print_head_desired__transform_270),
+		TEST_BA(print_head_desired__transform_none),
 
 		TEST_BA(print_active__empty),
 		TEST_BA(print_active__many),

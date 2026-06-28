@@ -321,12 +321,12 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 	newline = true;
 	if (cfg->callback_cmd) {
-		print_newline(t, &newline);
+		log_(t, NULL);
 		log_(t, "way-displays -s CALLBACK_CMD '%s'", cfg->callback_cmd);
 	}
 }
 
-static void print_head_current(const enum LogThreshold t, const struct Head * const head) {
+void print_head_current(const enum LogThreshold t, const struct Head * const head) {
 
 	if (!head)
 		return;
@@ -367,7 +367,7 @@ static void print_head_current(const enum LogThreshold t, const struct Head * co
 	}
 }
 
-static void print_head_desired(const enum LogThreshold t, const struct Head * const head) {
+void print_head_desired(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 
@@ -471,8 +471,6 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 				log_(t, "  to:");
 				print_head_desired(t, head);
 			}
-			break;
-		default:
 			break;
 	}
 }
