@@ -24,6 +24,8 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 struct IpcRequest *parse_write(int argc, char **argv);
 struct IpcRequest *parse_reapply(int argc, char **argv);
 struct IpcRequest *parse_set(int argc, char **argv);
+struct IpcRequest *parse_get(int argc, char **argv);
+struct IpcRequest *parse_list(int argc, char **argv);
 struct IpcRequest *parse_del(int argc, char **argv);
 struct IpcRequest *parse_toggle(int argc, char **argv);
 enum LogThreshold parse_log_threshold(char *optarg);
@@ -489,6 +491,56 @@ static void parse_write__ok(void **state) {
 	assert_logs_empty();
 }
 
+static void parse_get__nargs(void **state) {
+	optind = 0;
+	optarg = "INVALID";
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_get(1, NULL));
+
+	assert_log(FATAL, "--get takes no arguments\n");
+	assert_logs_empty();
+}
+
+static void parse_get__ok(void **state) {
+	optind = 0;
+
+	struct IpcRequest *request = parse_get(0, NULL);
+
+	assert_non_nul(request);
+	assert_int_equal(request->command, GET);
+
+	ipc_request_free(request);
+
+	assert_logs_empty();
+}
+
+static void parse_list__nargs(void **state) {
+	optind = 0;
+	optarg = "INVALID";
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_list(1, NULL));
+
+	assert_log(FATAL, "--list takes no arguments\n");
+	assert_logs_empty();
+}
+
+static void parse_list__ok(void **state) {
+	optind = 0;
+
+	struct IpcRequest *request = parse_list(0, NULL);
+
+	assert_non_nul(request);
+	assert_int_equal(request->command, LIST);
+
+	ipc_request_free(request);
+
+	assert_logs_empty();
+}
+
 static void parse_reapply__nargs(void **state) {
 	optind = 0;
 	optarg = "INVALID";
@@ -522,14 +574,14 @@ static void parse_set__mode_nargs(void **state) {
 
 	assert_nul(parse_set(1, NULL));
 
-	assert_log(FATAL, "MODE requires two to four arguments\n");
+	assert_log(FATAL, "--set MODE requires two to four arguments\n");
 	assert_logs_empty();
 
 	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(5, NULL));
 
-	assert_log(FATAL, "MODE requires two to four arguments\n");
+	assert_log(FATAL, "--set MODE requires two to four arguments\n");
 	assert_logs_empty();
 }
 
@@ -541,7 +593,7 @@ static void parse_set__arrange_align_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "ARRANGE_ALIGN requires two arguments\n");
+	assert_log(FATAL, "--set ARRANGE_ALIGN requires two arguments\n");
 	assert_logs_empty();
 }
 
@@ -553,7 +605,7 @@ static void parse_set__scale_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "SCALE requires two arguments\n");
+	assert_log(FATAL, "--set SCALE requires two arguments\n");
 	assert_logs_empty();
 }
 
@@ -565,7 +617,7 @@ static void parse_set__transform_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "TRANSFORM requires two arguments\n");
+	assert_log(FATAL, "--set TRANSFORM requires two arguments\n");
 	assert_logs_empty();
 }
 
@@ -577,7 +629,7 @@ static void parse_set__auto_scale_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "AUTO_SCALE requires one argument\n");
+	assert_log(FATAL, "--set AUTO_SCALE requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -589,7 +641,7 @@ static void parse_set__disabled_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "DISABLED requires one argument\n");
+	assert_log(FATAL, "--set DISABLED requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -601,7 +653,7 @@ static void parse_set__adaptive_sync_off_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "VRR_OFF requires one argument\n");
+	assert_log(FATAL, "--set VRR_OFF requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -613,7 +665,7 @@ static void parse_set__order_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "ORDER requires at least one argument\n");
+	assert_log(FATAL, "--set ORDER requires at least one argument\n");
 	assert_logs_empty();
 }
 
@@ -625,7 +677,7 @@ static void parse_set__invalid(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "invalid set: INVALID\n");
+	assert_log(FATAL, "invalid --set: INVALID\n");
 	assert_logs_empty();
 }
 
@@ -653,7 +705,7 @@ static void parse_del__mode_nargs(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "MODE requires one argument\n");
+	assert_log(FATAL, "--delete MODE requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -665,7 +717,7 @@ static void parse_del__scale_nargs(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "SCALE requires one argument\n");
+	assert_log(FATAL, "--delete SCALE requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -677,7 +729,7 @@ static void parse_del__disabled_nargs(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "DISABLED requires one argument\n");
+	assert_log(FATAL, "--delete DISABLED requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -689,7 +741,7 @@ static void parse_del__adaptive_sync_off_nargs(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "VRR_OFF requires one argument\n");
+	assert_log(FATAL, "--delete VRR_OFF requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -701,7 +753,7 @@ static void parse_del__callback_cmd_nargs(void **state) {
 
 	assert_nul(parse_del(1, NULL));
 
-	assert_log(FATAL, "CALLBACK_CMD takes no arguments\n");
+	assert_log(FATAL, "--delete CALLBACK_CMD takes no arguments\n");
 	assert_logs_empty();
 }
 
@@ -713,7 +765,7 @@ static void parse_del__invalid(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "invalid delete: INVALID\n");
+	assert_log(FATAL, "invalid --delete: INVALID\n");
 	assert_logs_empty();
 }
 
@@ -741,7 +793,7 @@ static void parse_toggle__scaling_nargs(void **state) {
 
 	assert_nul(parse_toggle(1, NULL));
 
-	assert_log(FATAL, "SCALING takes no arguments\n");
+	assert_log(FATAL, "--toggle SCALING takes no arguments\n");
 	assert_logs_empty();
 }
 
@@ -753,7 +805,7 @@ static void parse_toggle__auto_scale_nargs(void **state) {
 
 	assert_nul(parse_toggle(1, NULL));
 
-	assert_log(FATAL, "AUTO_SCALE takes no arguments\n");
+	assert_log(FATAL, "--toggle AUTO_SCALE takes no arguments\n");
 	assert_logs_empty();
 }
 
@@ -765,7 +817,7 @@ static void parse_toggle__vrr_off_nargs(void **state) {
 
 	assert_nul(parse_toggle(0, NULL));
 
-	assert_log(FATAL, "VRR_OFF requires one argument\n");
+	assert_log(FATAL, "--toggle VRR_OFF requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -777,7 +829,7 @@ static void parse_toggle__disabled_nargs(void **state) {
 
 	assert_nul(parse_toggle(0, NULL));
 
-	assert_log(FATAL, "DISABLED requires one argument\n");
+	assert_log(FATAL, "--toggle DISABLED requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -789,7 +841,7 @@ static void parse_toggle__invalid(void **state) {
 
 	assert_nul(parse_toggle(0, NULL));
 
-	assert_log(FATAL, "invalid toggle: INVALID\n");
+	assert_log(FATAL, "invalid --toggle: INVALID\n");
 	assert_logs_empty();
 }
 
@@ -862,6 +914,12 @@ int main(void) {
 
 		TEST(parse_write__nargs),
 		TEST(parse_write__ok),
+
+		TEST(parse_get__nargs),
+		TEST(parse_get__ok),
+
+		TEST(parse_list__nargs),
+		TEST(parse_list__ok),
 
 		TEST(parse_reapply__nargs),
 		TEST(parse_reapply__ok),

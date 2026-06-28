@@ -221,7 +221,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	return cfg;
 }
 
-static struct IpcRequest *parse_list(int argc, char **argv) {
+struct IpcRequest *parse_list(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--list takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -234,8 +234,7 @@ static struct IpcRequest *parse_list(int argc, char **argv) {
 	return request;
 }
 
-// TODO add the command to the fatal message
-static struct IpcRequest *parse_get(int argc, char **argv) {
+struct IpcRequest *parse_get(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--get takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -279,7 +278,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 	switch (element) {
 		case MODE:
 			if (optind + 2 > argc || optind + 4 < argc) {
-				log_fatal("%s requires two to four arguments", cfg_element_name(element));
+				log_fatal("--%s %s requires two to four arguments", ipc_command_friendly(CFG_SET), cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
@@ -288,7 +287,7 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 		case SCALE:
 		case TRANSFORM:
 			if (optind + 2 != argc) {
-				log_fatal("%s requires two arguments", cfg_element_name(element));
+				log_fatal("--%s %s requires two arguments", ipc_command_friendly(CFG_SET), cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
@@ -299,20 +298,20 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 		case VRR_OFF:
 		case CALLBACK_CMD:
 			if (optind + 1 != argc) {
-				log_fatal("%s requires one argument", cfg_element_name(element));
+				log_fatal("--%s %s requires one argument", ipc_command_friendly(CFG_SET), cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		case ORDER:
 			if (optind + 1 > argc) {
-				log_fatal("%s requires at least one argument", cfg_element_name(element));
+				log_fatal("--%s %s requires at least one argument", ipc_command_friendly(CFG_SET), cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		default:
-			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
+			log_fatal("invalid --%s: %s", ipc_command_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
@@ -333,20 +332,20 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 		case DISABLED:
 		case VRR_OFF:
 			if (optind + 1 != argc) {
-				log_fatal("%s requires one argument", cfg_element_name(element));
+				log_fatal("--%s %s requires one argument", ipc_command_friendly(CFG_DEL), cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		case CALLBACK_CMD:
 			if (optind != argc) {
-				log_fatal("%s takes no arguments", cfg_element_name(element));
+				log_fatal("--%s %s takes no arguments", ipc_command_friendly(CFG_DEL), cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		default:
-			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
+			log_fatal("invalid --%s: %s", ipc_command_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
@@ -364,7 +363,7 @@ struct IpcRequest *parse_toggle(int argc, char **argv) {
 		case SCALING:
 		case AUTO_SCALE:
 			if (optind != argc) {
-				log_fatal("%s takes no arguments", cfg_element_name(element));
+				log_fatal("--%s %s takes no arguments", ipc_command_friendly(CFG_TOGGLE), cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
@@ -372,13 +371,13 @@ struct IpcRequest *parse_toggle(int argc, char **argv) {
 		case VRR_OFF:
 		case DISABLED:
 			if (optind + 1 != argc) {
-				log_fatal("%s requires one argument", cfg_element_name(element));
+				log_fatal("--%s %s requires one argument", ipc_command_friendly(CFG_TOGGLE), cfg_element_name(element));
 				wd_exit(EXIT_FAILURE);
 				return NULL;
 			}
 			break;
 		default:
-			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_TOGGLE), element ? cfg_element_name(element) : optarg);
+			log_fatal("invalid --%s: %s", ipc_command_friendly(CFG_TOGGLE), element ? cfg_element_name(element) : optarg);
 			wd_exit(EXIT_FAILURE);
 			return NULL;
 	}
