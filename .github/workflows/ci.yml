@@ -56,7 +56,7 @@ jobs:
       - run: make CC=clang test-vg
 
       - name: build and install 32-bit libyaml
-        run: sh bld/docker-packages/iwyu-build-install.sh
+        run: sh bld/docker-packages/libyaml-32-build-install.sh
         shell: sh -e {0}
 
       - run: make                      clean
