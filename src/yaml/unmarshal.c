@@ -39,7 +39,7 @@ static void log_error_yaml(const char *yaml) {
 		log_error("========================================\n%s\n----------------------------------------", yaml);
 }
 
-void *yaml_unmarshal_file(const char *path, fn_yaml_root_to fn) {
+void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 	if (!path) {
 		return NULL;
 	}
@@ -97,7 +97,7 @@ end:
 	return out;
 }
 
-void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to fn, char *human) {
+void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to_type fn, char *human) {
 	if (!yaml || !human)
 		return NULL;
 

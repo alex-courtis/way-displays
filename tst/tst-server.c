@@ -36,7 +36,7 @@ bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 }
 
 // cppcheck-suppress staticFunction
-void *__wrap_yaml_unmarshal_file(const char *path, fn_yaml_root_to fn) {
+void *__wrap_yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 	check_expected_ptr(path);
 
 	return mock_ptr_type_checked(struct Cfg*);

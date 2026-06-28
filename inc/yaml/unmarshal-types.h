@@ -16,7 +16,7 @@
  * Returns NULL or false and logs on failure
  */
 
-// fn_yaml_root_to: create a struct from the document root
+// fn_yaml_root_to_type: create a struct from the document root
 void *yaml_root_to_cfg              (struct UC *c, const yaml_node_t *root); // Cfg
 void *yaml_root_to_ipc_request      (struct UC *c, const yaml_node_t *root); // IpcRequest
 void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root); // list of IpcResponse

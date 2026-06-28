@@ -20,10 +20,10 @@
  * NOP when NULL data
  */
 
-// fn_yaml_doc: create the document's contents
-bool yaml_cfg_to_doc          (struct MC *c, const struct Cfg*          const cfg);
-bool yaml_ipc_operation_to_doc(struct MC *c, const struct IpcOperation* const ipc_operation);
-bool yaml_ipc_request_to_doc  (struct MC *c, const struct IpcRequest*   const ipc_request);
+// fn_yaml_type_to_root: populate an empty document
+bool yaml_cfg_to_root          (struct MC *c, const struct Cfg*          const cfg);
+bool yaml_ipc_operation_to_root(struct MC *c, const struct IpcOperation* const ipc_operation);
+bool yaml_ipc_request_to_root  (struct MC *c, const struct IpcRequest*   const ipc_request);
 
 /*
  * Called directly

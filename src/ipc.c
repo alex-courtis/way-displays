@@ -19,7 +19,7 @@
 
 void ipc_send_request(struct IpcRequest *request) {
 
-	char *yaml = yaml_marshal(request, (fn_yaml_doc)yaml_ipc_request_to_doc, "ipc request");
+	char *yaml = yaml_marshal(request, (fn_yaml_type_to_root)yaml_ipc_request_to_root, "ipc request");
 	if (!yaml) {
 		goto end;
 	}
@@ -56,7 +56,7 @@ void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
 void ipc_send_operation(struct IpcOperation *operation) {
 	ipc_operation_update_rc(operation);
 
-	char *yaml = yaml_marshal(operation, (fn_yaml_doc)yaml_ipc_operation_to_doc, "ipc response");
+	char *yaml = yaml_marshal(operation, (fn_yaml_type_to_root)yaml_ipc_operation_to_root, "ipc response");
 
 	log_cap_lines_free(&operation->log_cap_lines);
 

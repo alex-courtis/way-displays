@@ -27,13 +27,13 @@ struct UC {
  * Returns NULL and logs on failure
  */
 
-typedef void *(*fn_yaml_root_to)(struct UC *c, const yaml_node_t *root);
+typedef void *(*fn_yaml_root_to_type)(struct UC *c, const yaml_node_t *root);
 
 // Unmarshal a yaml string, human is arbitrary and used for logging
-void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to fn, char *human);
+void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to_type fn, char *human);
 
 // Unmarshal a yaml file
-void *yaml_unmarshal_file(const char *path, fn_yaml_root_to fn);
+void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn);
 
 /*
  * Controls logging for all unmarshalling failures

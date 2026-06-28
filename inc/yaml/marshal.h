@@ -16,9 +16,9 @@ struct MC {
  * Returns NULL and logs on failure
  */
 
-typedef bool (*fn_yaml_doc)(struct MC *c, const void *data);
+typedef bool (*fn_yaml_type_to_root)(struct MC *c, const void *data);
 
 // Marshal a yaml document and render it as a string, human is arbitrary and used for logging
-char *yaml_marshal(const void *data, fn_yaml_doc fn, const char *human);
+char *yaml_marshal(const void *data, fn_yaml_type_to_root fn, const char *human);
 
 #endif // YAML_MARSHAL_H

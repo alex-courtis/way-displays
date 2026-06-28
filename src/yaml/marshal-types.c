@@ -21,13 +21,13 @@
 #include "yaml/marshal-primitives.h"
 #include "yaml/marshal.h"
 
-bool yaml_cfg_to_doc(struct MC *c, const struct Cfg* const cfg) {
+bool yaml_cfg_to_root(struct MC *c, const struct Cfg* const cfg) {
 
 	// creates a mapping node which is the root
 	return yaml_cfg_to_map(c, cfg) != 0;
 }
 
-bool yaml_ipc_operation_to_doc(struct MC *c, const struct IpcOperation* const ipc_operation) {
+bool yaml_ipc_operation_to_root(struct MC *c, const struct IpcOperation* const ipc_operation) {
 	if (!ipc_operation)
 		return false;
 
@@ -43,11 +43,15 @@ bool yaml_ipc_operation_to_doc(struct MC *c, const struct IpcOperation* const ip
 		if (!seq)
 			return false;
 
-		return yaml_document_append_sequence_item(&c->d, seq, yaml_ipc_operation_to_map(c, ipc_operation)) != 0;
+		int map = yaml_ipc_operation_to_map(c, ipc_operation);
+		if (!map)
+			return false;
+
+		return yaml_document_append_sequence_item(&c->d, seq, map) != 0;
 	}
 }
 
-bool yaml_ipc_request_to_doc(struct MC *c, const struct IpcRequest* const ipc_request) {
+bool yaml_ipc_request_to_root(struct MC *c, const struct IpcRequest* const ipc_request) {
 	if (!ipc_request)
 		return true;
 
@@ -278,6 +282,9 @@ int yaml_condition_to_map(struct MC *c, const struct Condition* const condition)
 }
 
 int yaml_disabled_to_node(struct MC *c, const struct Disabled* const disabled) {
+	if (!disabled || !disabled->name_desc)
+		return 0;
+
 	if (pset_size(disabled->conditions) > 0) {
 		int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 		if (!map)

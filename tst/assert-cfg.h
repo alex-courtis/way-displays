@@ -11,8 +11,8 @@
 
 void _assert_cfg_equal(const struct Cfg *a, const struct Cfg *b, const char * const file, const int line) {
 	if (!cfg_equal(a, b)) {
-		char *yaml_a = yaml_marshal(a, (fn_yaml_doc)yaml_cfg_to_doc, "cfg a");
-		char *yaml_b = yaml_marshal(b, (fn_yaml_doc)yaml_cfg_to_doc, "cfg b");
+		char *yaml_a = yaml_marshal(a, (fn_yaml_type_to_root)yaml_cfg_to_root, "cfg a");
+		char *yaml_b = yaml_marshal(b, (fn_yaml_type_to_root)yaml_cfg_to_root, "cfg b");
 		cmocka_print_error("assert_cfg_equal\nactual.cfg:\n%s\nexpected.cfg:\n%s\n", yaml_a, yaml_b);
 		write_file("actual.cfg", yaml_a);
 		write_file("expected.cfg", yaml_b);

@@ -87,7 +87,7 @@ void yaml_map_add_enum(struct MC *c, const char *key, const int val, fn_enum_nam
 }
 
 void yaml_map_add_list(struct MC *c, const char *key, const struct SList *list, fn_yaml_v_to_node fn, int mapping) {
-	if (slist_length(list) == 0)
+	if (!key || slist_length(list) == 0)
 		return;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -106,7 +106,7 @@ void yaml_map_add_list(struct MC *c, const char *key, const struct SList *list, 
 }
 
 void yaml_map_add_sset(struct MC *c, const char *key, const struct SSet *sset, int mapping) {
-	if (sset_size(sset) == 0)
+	if (!key || sset_size(sset) == 0)
 		return;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -125,7 +125,7 @@ void yaml_map_add_sset(struct MC *c, const char *key, const struct SSet *sset, i
 }
 
 void yaml_map_add_pset(struct MC *c, const char *key, const struct PSet *pset, fn_yaml_v_to_node fn, int mapping) {
-	if (pset_size(pset) == 0)
+	if (!key || pset_size(pset) == 0)
 		return;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -144,7 +144,7 @@ void yaml_map_add_pset(struct MC *c, const char *key, const struct PSet *pset, f
 }
 
 void yaml_map_add_smap(struct MC *c, const char *key, const struct SMap* smap, fn_yaml_kv_to_node fn, int mapping) {
-	if (smap_size(smap) == 0)
+	if (!key || smap_size(smap) == 0)
 		return;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -163,7 +163,7 @@ void yaml_map_add_smap(struct MC *c, const char *key, const struct SMap* smap, f
 }
 
 void yaml_map_add_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_yaml_ki_to_node fn, int mapping) {
-	if (smapi_size(smapi) == 0)
+	if (!key || smapi_size(smapi) == 0)
 		return;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
