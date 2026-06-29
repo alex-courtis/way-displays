@@ -17,6 +17,10 @@ struct UserMode *user_mode = NULL;
 struct SList *modes = NULL;
 struct SList *modes_failed = NULL;
 
+bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b);
+bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b);
+bool mode_equal_user_mode_res_hz(const struct Mode* const mode, const struct UserMode* const user_mode);
+
 static int before_all(void **state) {
 	return 0;
 }
@@ -46,6 +50,27 @@ static int after_each(void **state) {
 	slist_free(&modes_failed);
 
 	return 0;
+}
+
+static void mode__sort(void **state) {
+	struct SList *unsorted = NULL;
+
+	slist_append(&unsorted, mode_init(NULL, NULL, 1000, 2000, 3000, false)); // 0
+	slist_append(&unsorted, mode_init(NULL, NULL, 1000, 9999, 3000, false)); // 1
+	slist_append(&unsorted, mode_init(NULL, NULL, 1000, 2000, 9999, false)); // 2
+	slist_append(&unsorted, mode_init(NULL, NULL, 9999, 2000, 3000, false)); // 3
+	slist_append(&unsorted, mode_init(NULL, NULL, 1000, 2000, 3000, false)); // 4
+
+	struct SList *sorted = slist_sort(unsorted, (fn_less_than)mode_greater_than_res_refresh);
+
+	assert_ptr_equal(slist_at(sorted, 0), slist_at(unsorted, 3));
+	assert_ptr_equal(slist_at(sorted, 1), slist_at(unsorted, 1));
+	assert_ptr_equal(slist_at(sorted, 2), slist_at(unsorted, 2));
+	assert_ptr_equal(slist_at(sorted, 3), slist_at(unsorted, 0));
+	assert_ptr_equal(slist_at(sorted, 4), slist_at(unsorted, 4));
+
+	slist_free_vals(&unsorted, NULL);
+	slist_free(&sorted);
 }
 
 static void mode_mhz_to_hz_str__(void **state) {
@@ -145,6 +170,22 @@ static void mode_user_mode__exact_hz_failed(void **state) {
 	assert_ptr_equal(actual, slist_at(modes, 0));
 }
 
+static void mode_user_mode__width_failed(void **state) {
+	user_mode = user_mode_init(false, 1000, 100, 60499, false);
+
+	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+
+	assert_nul(actual);
+}
+
+static void mode_user_mode__height_failed(void **state) {
+	user_mode = user_mode_init(false, 200, 9999999, 60499, false);
+
+	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+
+	assert_nul(actual);
+}
+
 static void mode_dpi__(void **state) {
 	struct Head head = { .width_mm = 1000, .height_mm = 500, };
 	struct Mode mode = { .width    = 2000, .height    = 1000, .head = &head };
@@ -155,142 +196,6 @@ static void mode_dpi__(void **state) {
 	double actual = mode_dpi(&mode);
 
 	assert_float_equal(actual, expected, 0);
-}
-
-static void mode_equal_res_hz__ok(void **state) {
-	struct Mode *a = mode_init(NULL, NULL, 111, 222, 333, false);
-	struct Mode *b = mode_init(NULL, NULL, 111, 222, 333, false);
-
-	assert_true(mode_equal_res_hz(b, a));
-
-	mode_free(a);
-	mode_free(b);
-}
-
-static void mode_equal_res_hz__no_width(void **state) {
-	struct Mode *a = mode_init(NULL, NULL, 111, 222, 333, false);
-	struct Mode *b = mode_init(NULL, NULL, 10000, 222, 333, false);
-
-	assert_false(mode_equal_res_hz(b, a));
-
-	mode_free(a);
-	mode_free(b);
-}
-
-static void mode_equal_res_hz__no_height(void **state) {
-	struct Mode *a = mode_init(NULL, NULL, 111, 222, 333, false);
-	struct Mode *b = mode_init(NULL, NULL, 111, 10000, 333, false);
-
-	assert_false(mode_equal_res_hz(b, a));
-
-	mode_free(a);
-	mode_free(b);
-}
-
-static void mode_equal_res_hz__no_refresh(void **state) {
-	struct Mode *a = mode_init(NULL, NULL, 111, 222, 333, false);
-	struct Mode *b = mode_init(NULL, NULL, 111, 222, 10000, false);
-
-	assert_false(mode_equal_res_hz(b, a));
-
-	mode_free(a);
-	mode_free(b);
-}
-
-static void mode_equal_user_mode_res_hz__ok(void **state) {
-	struct Mode *m = mode_init(NULL, NULL, 111, 222, 333, false);
-	struct UserMode *um = user_mode_init(NULL, 111, 222, 333, false);
-
-	assert_true(mode_equal_user_mode_res_hz(m, um));
-
-	mode_free(m);
-	user_mode_free(um);
-}
-
-static void mode_equal_user_mode_res_hz__no_width(void **state) {
-	struct Mode *m = mode_init(NULL, NULL, 111, 222, 333, false);
-	struct UserMode *um = user_mode_init(NULL, 10000000, 222, 333, false);
-
-	assert_false(mode_equal_user_mode_res_hz(m, um));
-
-	mode_free(m);
-	user_mode_free(um);
-}
-
-static void mode_equal_user_mode_res_hz__no_height(void **state) {
-	struct Mode *m = mode_init(NULL, NULL, 111, 222, 333, false);
-	struct UserMode *um = user_mode_init(NULL, 111, 100000, 333, false);
-
-	assert_false(mode_equal_user_mode_res_hz(m, um));
-
-	mode_free(m);
-	user_mode_free(um);
-}
-
-static void mode_equal_user_mode_res_hz__no_refresh(void **state) {
-	struct Mode *m = mode_init(NULL, NULL, 111, 222, 333, false);
-	struct UserMode *um = user_mode_init(NULL, 111, 222, 1000000, false);
-
-	assert_false(mode_equal_user_mode_res_hz(m, um));
-
-	mode_free(m);
-	user_mode_free(um);
-}
-
-static void user_mode_equal__max_not_equal(void **state) {
-	struct UserMode *a = user_mode_init(true, 1, 1, 1, false);
-	struct UserMode *b = user_mode_init(false, 1, 1, 1, false);
-
-	assert_false(user_mode_equal(a, b));
-
-	user_mode_free(a);
-	user_mode_free(b);
-}
-
-static void user_mode_equal__wh_not_equal(void **state) {
-	struct UserMode *a = user_mode_init(false, 10, 1, 1, false);
-	struct UserMode *b = user_mode_init(false, 1, 1, 1, false);
-
-	assert_false(user_mode_equal(a, b));
-
-	a->width = b->width;
-
-	assert_true(user_mode_equal(a, b));
-
-	a->height = 20;
-
-	assert_false(user_mode_equal(a, b));
-
-	user_mode_free(a);
-	user_mode_free(b);
-}
-
-static void user_mode_equal__refresh_not_equal(void **state) {
-	struct UserMode *a = user_mode_init(false, 1, 1, 10, false);
-	struct UserMode *b = user_mode_init(false, 1, 1, 1, false);
-
-	assert_false(user_mode_equal(a, b));
-
-	a->refresh_mhz = b->refresh_mhz;
-
-	assert_true(user_mode_equal(a, b));
-
-	a->refresh_mhz = -1;
-
-	assert_false(user_mode_equal(a, b));
-
-	a->refresh_mhz = 1;
-	b->refresh_mhz = -1;
-
-	assert_false(user_mode_equal(a, b));
-
-	a->refresh_mhz = -1;
-	b->refresh_mhz = -1;
-
-	assert_true(user_mode_equal(a, b));
-
-	user_mode_free(a);
-	user_mode_free(b);
 }
 
 static void mode_preferred__no_preferred(void **state) {
@@ -380,41 +285,10 @@ static void mode_max_preferred__failed(void **state) {
 	assert_ptr_equal(actual, expected);
 }
 
-static void greater_than_res_refresh__width(void **state) {
-	struct Mode *a = mode_init(NULL, NULL, 111, 222, 2000, false);
-	struct Mode *b = mode_init(NULL, NULL, 10000, 222, 2000, false);
-
-	assert_false(mode_greater_than_res_refresh(a, b));
-	assert_true(mode_greater_than_res_refresh(b, a));
-
-	mode_free(a);
-	mode_free(b);
-}
-
-static void greater_than_res_refresh__height(void **state) {
-	struct Mode *a = mode_init(NULL, NULL, 111, 222, 2000, false);
-	struct Mode *b = mode_init(NULL, NULL, 111, 10000, 2000, false);
-
-	assert_false(mode_greater_than_res_refresh(a, b));
-	assert_true(mode_greater_than_res_refresh(b, a));
-
-	mode_free(a);
-	mode_free(b);
-}
-
-static void greater_than_res_refresh__refresh(void **state) {
-	struct Mode *a = mode_init(NULL, NULL, 111, 222, 2000, false);
-	struct Mode *b = mode_init(NULL, NULL, 111, 222, 10000, false);
-
-	assert_false(mode_greater_than_res_refresh(a, b));
-	assert_true(mode_greater_than_res_refresh(b, a));
-
-	mode_free(a);
-	mode_free(b);
-}
-
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST_BA(mode__sort),
+
 		TEST_BA(mode_mhz_to_hz_str__),
 		TEST_BA(mode_hz_str_to_mhz__),
 		TEST_BA(mode_mhz_to_hz_rounded__),
@@ -428,22 +302,10 @@ int main(void) {
 		TEST_BA(mode_user_mode__failed),
 		TEST_BA(mode_user_mode__exact_hz_match),
 		TEST_BA(mode_user_mode__exact_hz_failed),
+		TEST_BA(mode_user_mode__width_failed),
+		TEST_BA(mode_user_mode__height_failed),
 
 		TEST_BA(mode_dpi__),
-
-		TEST_BA(mode_equal_res_hz__ok),
-		TEST_BA(mode_equal_res_hz__no_width),
-		TEST_BA(mode_equal_res_hz__no_height),
-		TEST_BA(mode_equal_res_hz__no_refresh),
-
-		TEST_BA(mode_equal_user_mode_res_hz__ok),
-		TEST_BA(mode_equal_user_mode_res_hz__no_width),
-		TEST_BA(mode_equal_user_mode_res_hz__no_height),
-		TEST_BA(mode_equal_user_mode_res_hz__no_refresh),
-
-		TEST_BA(user_mode_equal__max_not_equal),
-		TEST_BA(user_mode_equal__wh_not_equal),
-		TEST_BA(user_mode_equal__refresh_not_equal),
 
 		TEST_BA(mode_preferred__no_preferred),
 		TEST_BA(mode_preferred__preferred),
@@ -454,10 +316,6 @@ int main(void) {
 		TEST_BA(mode_max_preferred__later_higher_refresh),
 		TEST_BA(mode_max_preferred__earlier_higher_refresh),
 		TEST_BA(mode_max_preferred__failed),
-
-		TEST_BA(greater_than_res_refresh__width),
-		TEST_BA(greater_than_res_refresh__height),
-		TEST_BA(greater_than_res_refresh__refresh),
 	};
 
 	// TODO remove BA after regression testing
