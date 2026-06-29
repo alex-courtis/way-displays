@@ -79,28 +79,24 @@ int32_t mhz_to_hz_rounded(int32_t mhz) {
 	return (mhz + 500) / 1000;
 }
 
-static bool equal_mode_res_hz(const void *a, const void *b) {
+bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
 	if (!a || !b) {
 		return false;
 	}
 
-	const struct Mode *lhs = (struct Mode*)a;
-	const struct Mode *rhs = (struct Mode*)b;
-
-	return lhs->width == rhs->width &&
-		lhs->height == rhs->height &&
-		mhz_to_hz_rounded(lhs->refresh_mhz) == mhz_to_hz_rounded(rhs->refresh_mhz);
+	return a->width == b->width &&
+		a->height == b->height &&
+		mhz_to_hz_rounded(a->refresh_mhz) == mhz_to_hz_rounded(b->refresh_mhz);
 }
 
-static bool equal_mode_user_mode_res_refresh(const void *a, const void *b) {
-	if (!a || !b) {
+bool mode_equal_user_mode_res_hz(const struct Mode* const mode, const struct UserMode* const user_mode) {
+	if (!mode || !user_mode) {
 		return false;
 	}
 
-	const struct Mode *lhs = (struct Mode*)a;
-	const struct UserMode *rhs = (struct UserMode*)b;
-
-	return lhs->width == rhs->width && lhs->height == rhs->height && lhs->refresh_mhz == rhs->refresh_mhz;
+	return mode->width == user_mode->width &&
+		mode->height == user_mode->height &&
+		mode->refresh_mhz == user_mode->refresh_mhz;
 }
 
 bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b) {
@@ -168,7 +164,7 @@ struct SList *modes_res_refresh(struct SList *modes) {
 	for (struct SList *i = sorted; i; i = i->nex) {
 		mode = i->val;
 
-		if (!mrr || !equal_mode_res_hz(mode, mrr->modes->val)) {
+		if (!mrr || !mode_equal_res_hz(mode, mrr->modes->val)) {
 			mrr = calloc(1, sizeof(struct ModesResRefresh));
 			mrr->width = mode->width;
 			mrr->height = mode->height;
@@ -191,7 +187,7 @@ struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, con
 	struct SList *i, *j;
 
 	// exact res and refresh
-	struct Mode *mode_exact = slist_find_equal_val(modes, equal_mode_user_mode_res_refresh, user_mode);
+	struct Mode *mode_exact = slist_find_equal_val(modes, (fn_equal)mode_equal_user_mode_res_hz, user_mode);
 	if (mode_exact && !slist_find_equal_val(modes_failed, NULL, mode_exact)) {
 		return mode_exact;
 	}

@@ -157,6 +157,86 @@ static void mode_dpi__(void **state) {
 	assert_float_equal(actual, expected, 0);
 }
 
+static void mode_equal_res_hz__ok(void **state) {
+	struct Mode *a = mode_init(NULL, NULL, 111, 222, 333, false);
+	struct Mode *b = mode_init(NULL, NULL, 111, 222, 333, false);
+
+	assert_true(mode_equal_res_hz(b, a));
+
+	mode_free(a);
+	mode_free(b);
+}
+
+static void mode_equal_res_hz__no_width(void **state) {
+	struct Mode *a = mode_init(NULL, NULL, 111, 222, 333, false);
+	struct Mode *b = mode_init(NULL, NULL, 10000, 222, 333, false);
+
+	assert_false(mode_equal_res_hz(b, a));
+
+	mode_free(a);
+	mode_free(b);
+}
+
+static void mode_equal_res_hz__no_height(void **state) {
+	struct Mode *a = mode_init(NULL, NULL, 111, 222, 333, false);
+	struct Mode *b = mode_init(NULL, NULL, 111, 10000, 333, false);
+
+	assert_false(mode_equal_res_hz(b, a));
+
+	mode_free(a);
+	mode_free(b);
+}
+
+static void mode_equal_res_hz__no_refresh(void **state) {
+	struct Mode *a = mode_init(NULL, NULL, 111, 222, 333, false);
+	struct Mode *b = mode_init(NULL, NULL, 111, 222, 10000, false);
+
+	assert_false(mode_equal_res_hz(b, a));
+
+	mode_free(a);
+	mode_free(b);
+}
+
+static void mode_equal_user_mode_res_hz__ok(void **state) {
+	struct Mode *m = mode_init(NULL, NULL, 111, 222, 333, false);
+	struct UserMode *um = user_mode_init(NULL, 111, 222, 333, false);
+
+	assert_true(mode_equal_user_mode_res_hz(m, um));
+
+	mode_free(m);
+	user_mode_free(um);
+}
+
+static void mode_equal_user_mode_res_hz__no_width(void **state) {
+	struct Mode *m = mode_init(NULL, NULL, 111, 222, 333, false);
+	struct UserMode *um = user_mode_init(NULL, 10000000, 222, 333, false);
+
+	assert_false(mode_equal_user_mode_res_hz(m, um));
+
+	mode_free(m);
+	user_mode_free(um);
+}
+
+static void mode_equal_user_mode_res_hz__no_height(void **state) {
+	struct Mode *m = mode_init(NULL, NULL, 111, 222, 333, false);
+	struct UserMode *um = user_mode_init(NULL, 111, 100000, 333, false);
+
+	assert_false(mode_equal_user_mode_res_hz(m, um));
+
+	mode_free(m);
+	user_mode_free(um);
+}
+
+static void mode_equal_user_mode_res_hz__no_refresh(void **state) {
+	struct Mode *m = mode_init(NULL, NULL, 111, 222, 333, false);
+	struct UserMode *um = user_mode_init(NULL, 111, 222, 1000000, false);
+
+	assert_false(mode_equal_user_mode_res_hz(m, um));
+
+	mode_free(m);
+	user_mode_free(um);
+}
+
 static void user_mode_equal__max_not_equal(void **state) {
 	struct UserMode *a = user_mode_init(true, 1, 1, 1, false);
 	struct UserMode *b = user_mode_init(false, 1, 1, 1, false);
@@ -350,6 +430,16 @@ int main(void) {
 		TEST_BA(mode_user_mode__exact_hz_failed),
 
 		TEST_BA(mode_dpi__),
+
+		TEST_BA(mode_equal_res_hz__ok),
+		TEST_BA(mode_equal_res_hz__no_width),
+		TEST_BA(mode_equal_res_hz__no_height),
+		TEST_BA(mode_equal_res_hz__no_refresh),
+
+		TEST_BA(mode_equal_user_mode_res_hz__ok),
+		TEST_BA(mode_equal_user_mode_res_hz__no_width),
+		TEST_BA(mode_equal_user_mode_res_hz__no_height),
+		TEST_BA(mode_equal_user_mode_res_hz__no_refresh),
 
 		TEST_BA(user_mode_equal__max_not_equal),
 		TEST_BA(user_mode_equal__wh_not_equal),
