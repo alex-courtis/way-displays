@@ -30,6 +30,8 @@ struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed);
 
 struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed);
 
+bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b);
+
 // up to 3 d.p.
 const char *mhz_to_hz_str(int32_t mhz);
 

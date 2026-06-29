@@ -103,27 +103,24 @@ static bool equal_mode_user_mode_res_refresh(const void *a, const void *b) {
 	return lhs->width == rhs->width && lhs->height == rhs->height && lhs->refresh_mhz == rhs->refresh_mhz;
 }
 
-static bool greater_than_res_refresh(const void *a, const void *b) {
+bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b) {
 	if (!a || !b) {
 		return false;
 	}
 
-	const struct Mode *lhs = (struct Mode*)a;
-	const struct Mode *rhs = (struct Mode*)b;
-
-	if (lhs->width > rhs->width) {
+	if (a->width > b->width) {
 		return true;
-	} else if (lhs->width != rhs->width) {
+	} else if (a->width != b->width) {
 		return false;
 	}
 
-	if (lhs->height > rhs->height) {
+	if (a->height > b->height) {
 		return true;
-	} else if (lhs->height != rhs->height) {
+	} else if (a->height != b->height) {
 		return false;
 	}
 
-	if (lhs->refresh_mhz > rhs->refresh_mhz) {
+	if (a->refresh_mhz > b->refresh_mhz) {
 		return true;
 	}
 
@@ -164,7 +161,7 @@ double mode_scale(struct Mode *mode) {
 struct SList *modes_res_refresh(struct SList *modes) {
 	struct SList *mrrs = NULL;
 
-	struct SList *sorted = slist_sort(modes, greater_than_res_refresh);
+	struct SList *sorted = slist_sort(modes, (fn_less_than)mode_greater_than_res_refresh);
 
 	struct ModesResRefresh *mrr = NULL;
 	struct Mode *mode = NULL;
