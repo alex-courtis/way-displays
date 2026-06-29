@@ -196,7 +196,7 @@ void desire_mode(struct Head *head) {
 	}
 
 	// attempt to find a mode, will log and call back on failure to find a mode
-	struct Mode *mode = head_find_mode(head);
+	const struct WlrMode *mode = head_find_mode(head);
 
 	if (mode) {
 		head->desired.mode = mode;
@@ -443,7 +443,7 @@ void handle_failure(void) {
 			call_back_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.mode);
 
 			// mode setting failure, try again
-			slist_append(&g_displ->delta.head->modes_failed, g_displ->delta.head->desired.mode);
+			slist_append(&g_displ->delta.head->modes_failed, (void*)g_displ->delta.head->desired.mode);
 
 			// current mode may be misreported
 			g_displ->delta.head->current.mode = NULL;

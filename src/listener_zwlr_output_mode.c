@@ -16,7 +16,7 @@ static void size(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t width,
 		int32_t height) {
-	struct Mode *mode = data;
+	struct WlrMode *mode = data;
 
 	mode->width = width;
 	mode->height = height;
@@ -25,18 +25,18 @@ static void size(void *data,
 static void refresh(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t refresh) {
-	struct Mode *mode = data;
+	struct WlrMode *mode = data;
 
 	mode->refresh_mhz = refresh;
 }
 
 static void preferred(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Mode *mode = data;
+	struct WlrMode *mode = data;
 
 	// some heads may advertise multiple preferred modes; ignore subsequent
 	if (mode->head) {
-		struct Mode *mode_pref;
+		struct WlrMode *mode_pref;
 		if ((mode_pref = head_preferred_mode(mode->head))) {
 
 			char *mode_preferred_str = info_mode_string(mode_pref);
@@ -63,10 +63,10 @@ static void preferred(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Mode *mode = data;
+	struct WlrMode *mode = data;
 
 	head_release_mode(mode->head, mode);
-	mode_free(mode);
+	wlr_mode_free(mode);
 
 	zwlr_output_mode_v1_destroy(zwlr_output_mode_v1);
 }

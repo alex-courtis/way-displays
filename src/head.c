@@ -15,6 +15,7 @@
 #include "info.h"
 #include "log.h"
 #include "mode.h"
+#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -24,6 +25,14 @@
 struct SList *g_heads = NULL;
 struct SList *g_heads_arrived = NULL;
 struct SList *g_heads_departed = NULL;
+
+struct Head *head_init(void) {
+	struct Head *head = calloc(1, sizeof(struct Head));
+
+	head->wlr_modes = wlr_mode_pmap_init();
+
+	return head;
+}
 
 const char *head_human(const struct Head * const head) {
 	static const char *unknown = "???";
@@ -52,15 +61,16 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	return false;
 }
 
-struct Mode *head_max_mode(const struct Head * const head) {
+const struct WlrMode *head_max_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	struct Mode *mode = NULL, *max = NULL;
-	for (struct SList *i = head->modes; i; i = i->nex) {
-		if (!i->val)
+	const struct WlrMode *mode = NULL;
+	const struct WlrMode *max = NULL;
+	for (const struct PMapIt *it = pmap_it(head->wlr_modes); it; it = pmap_it_next(it)) {
+		if (!it->val)
 			continue;
-		mode = i->val;
+		mode = it->val;
 
 		if (slist_find_equal(head->modes_failed, NULL, mode)) {
 			continue;
@@ -262,23 +272,23 @@ void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
 	}
 }
 
-struct Mode *head_find_mode(struct Head * const head) {
+const struct WlrMode *head_find_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	if (slist_length(head->modes) == slist_length(head->modes_failed)) {
+	if (pmap_size(head->wlr_modes) == slist_length(head->modes_failed)) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head->name);
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 		return NULL;
 	}
 
-	struct Mode *mode = NULL;
+	const struct WlrMode *mode = NULL;
 
 	// maybe a user mode
 	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, (fn_match_smap)head_name_desc_v_matches_head, head).val;
 	if (user_mode) {
-		mode = mode_user_mode(head->modes, head->modes_failed, user_mode);
+		mode = mode_user_mode(head->wlr_modes, head->modes_failed, user_mode);
 		if (!mode && !user_mode->warned_no_mode) {
 			user_mode->warned_no_mode = true;
 
@@ -299,9 +309,9 @@ struct Mode *head_find_mode(struct Head * const head) {
 	// always preferred
 	if (!mode) {
 		if (head_is_max_preferred_refresh(head)) {
-			mode = mode_max_preferred(head->modes, head->modes_failed);
+			mode = mode_max_preferred(head->wlr_modes, head->modes_failed);
 		} else {
-			mode = mode_preferred(head->modes, head->modes_failed);
+			mode = mode_preferred(head->wlr_modes, head->modes_failed);
 		}
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
@@ -331,12 +341,12 @@ struct Mode *head_find_mode(struct Head * const head) {
 	return mode;
 }
 
-struct Mode *head_preferred_mode(const struct Head * const head) {
+struct WlrMode *head_preferred_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
 	for (const struct SList *i = head->modes; i; i = i->nex) {
-		if (((struct Mode*)i->val)->preferred) {
+		if (((struct WlrMode*)i->val)->preferred) {
 			return i->val;
 		}
 	}
@@ -412,7 +422,7 @@ void heads_reapply(struct SList *heads) {
 			log_info("    %d: Clear failed modes:", step++);
 
 			for (struct SList *j = head->modes_failed; j; j = j->nex) {
-				const struct Mode *mode = (struct Mode*)j->val;
+				const struct WlrMode *mode = (struct WlrMode*)j->val;
 
 				char *mode_str = info_mode_string(mode);
 				log_info("      %s", mode_str);
@@ -441,14 +451,16 @@ void head_free(struct Head *head) {
 		return;
 
 	if (!(slist_find_equal_val(head->modes, NULL, head->current.mode))) {
-		mode_free(head->current.mode);
+		wlr_mode_free((struct WlrMode*)head->current.mode);
 	}
 	if (!(slist_find_equal_val(head->modes, NULL, head->desired.mode))) {
-		mode_free(head->desired.mode);
+		wlr_mode_free((struct WlrMode*)head->desired.mode);
 	}
 
 	slist_free(&head->modes_failed);
-	slist_free_vals(&head->modes, (fn_free)mode_free);
+	slist_free_vals(&head->modes, (fn_free)wlr_mode_free);
+
+	pmap_free_vals(head->wlr_modes);
 
 	free(head->name);
 	free(head->description);
@@ -459,7 +471,7 @@ void head_free(struct Head *head) {
 	free(head);
 }
 
-void head_release_mode(struct Head * const head, const struct Mode * const mode) {
+void head_release_mode(struct Head * const head, const struct WlrMode * const mode) {
 	if (!head || !mode)
 		return;
 

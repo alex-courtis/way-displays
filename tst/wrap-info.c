@@ -5,7 +5,7 @@
 #include "head.h"
 #include "mode.h"
 
-void __wrap_print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
+void __wrap_print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const mode) {
 	check_expected_int(t);
 	check_expected_ptr(head);
 	check_expected_ptr(mode);
@@ -22,7 +22,7 @@ void __wrap_call_back(const enum LogThreshold t, const char * const msg1, const 
 	check_expected_ptr(msg2);
 }
 
-void __wrap_call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
+void __wrap_call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const mode) {
 	check_expected_int(t);
 	check_expected_ptr(head);
 	check_expected_ptr(mode);

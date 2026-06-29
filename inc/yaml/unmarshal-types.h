@@ -22,9 +22,9 @@ void *yaml_root_to_ipc_request      (struct UC *c, const yaml_node_t *root); // 
 void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root); // list of IpcResponse
 
 // create a struct from a map
-struct Cfg  *yaml_map_to_cfg (struct UC *c, const yaml_node_t *map);  // Cfg
-struct Lid  *yaml_map_to_lid (struct UC *c, const yaml_node_t *map);  // Lid
-struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
+struct Cfg     *yaml_map_to_cfg     (struct UC *c, const yaml_node_t *map);  // Cfg
+struct Lid     *yaml_map_to_lid     (struct UC *c, const yaml_node_t *map);  // Lid
+struct WlrMode *yaml_map_to_wlr_mode(struct UC *c, const yaml_node_t *map);  // WlrMode
 
 // fn_yaml_node_into_col: create a struct and add to collection
 void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses,         const yaml_node_t *map);

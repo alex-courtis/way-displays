@@ -10,6 +10,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "mode.h"
+#include "pmap.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -25,7 +26,7 @@ enum ManualOverride {
 };
 
 struct HeadState {
-	struct Mode *mode;
+	const struct WlrMode *mode;
 	wl_fixed_t scale;
 	bool enabled;
 	// layout coords
@@ -41,6 +42,7 @@ struct Head {
 
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
+	const struct PMap* wlr_modes;
 	struct SList *modes;
 
 	char *name;
@@ -68,6 +70,8 @@ struct Head {
 	bool warned_no_preferred;
 	bool warned_no_mode;
 };
+
+struct Head *head_init(void);
 
 // description, name, "???"
 const char *head_human(const struct Head * const head);
@@ -102,11 +106,11 @@ void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
 //  invalid user mode: warning
 //  no preferred:      info
 // maybe sets warned_no_preferred
-struct Mode *head_find_mode(struct Head * const head);
+const struct WlrMode *head_find_mode(struct Head * const head);
 
-struct Mode *head_max_mode(const struct Head * const head);
+const struct WlrMode *head_max_mode(const struct Head * const head);
 
-struct Mode *head_preferred_mode(const struct Head * const head);
+struct WlrMode *head_preferred_mode(const struct Head * const head);
 
 bool head_current_not_desired(const struct Head * const head);
 
@@ -124,7 +128,7 @@ void heads_reapply(struct SList *heads);
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
 
-void head_release_mode(struct Head * const head, const struct Mode * const mode);
+void head_release_mode(struct Head * const head, const struct WlrMode * const mode);
 
 void head_free(struct Head *head);
 

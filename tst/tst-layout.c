@@ -41,9 +41,9 @@ void handle_cancelled(void);
 
 
 // cppcheck-suppress staticFunction
-struct Mode *__wrap_head_find_mode(struct Head *head) {
+struct WlrMode *__wrap_head_find_mode(struct Head *head) {
 	check_expected_ptr(head);
-	return mock_ptr_type_checked(struct Mode*);
+	return mock_ptr_type_checked(struct WlrMode*);
 }
 
 // cppcheck-suppress staticFunction
@@ -54,7 +54,7 @@ wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
 
 
 struct State {
-	struct Mode *mode;
+	struct WlrMode *mode;
 	struct SList *heads;
 };
 
@@ -72,7 +72,7 @@ static int before_each(void **state) {
 
 	struct State *s = calloc(1, sizeof(struct State));
 
-	s->mode = calloc(1, sizeof(struct Mode));
+	s->mode = calloc(1, sizeof(struct WlrMode));
 	for (int i = 0; i < 10; i++) {
 		struct Head *head = calloc(1, sizeof(struct Head));
 		head->desired.enabled = true;
@@ -454,7 +454,7 @@ static void desire_enabled__no_override(void **state) {
 }
 
 static void desire_mode__disabled(void **state) {
-	struct Mode mode0 = { 0 };
+	struct WlrMode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = false,
@@ -471,7 +471,7 @@ static void desire_mode__disabled(void **state) {
 }
 
 static void desire_mode__no_mode(void **state) {
-	struct Mode mode0 = { 0 };
+	struct WlrMode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -479,7 +479,7 @@ static void desire_mode__no_mode(void **state) {
 	};
 
 	expect_ptr(__wrap_head_find_mode, head, &head0);
-	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
+	will_return_ptr_type(__wrap_head_find_mode, NULL, struct WlrMode*);
 
 	desire_mode(&head0);
 
@@ -491,7 +491,7 @@ static void desire_mode__no_mode(void **state) {
 }
 
 static void desire_mode__no_mode_warned(void **state) {
-	struct Mode mode0 = { 0 };
+	struct WlrMode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
@@ -500,7 +500,7 @@ static void desire_mode__no_mode_warned(void **state) {
 	};
 
 	expect_ptr(__wrap_head_find_mode, head, &head0);
-	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
+	will_return_ptr_type(__wrap_head_find_mode, NULL, struct WlrMode*);
 
 	desire_mode(&head0);
 
@@ -512,16 +512,16 @@ static void desire_mode__no_mode_warned(void **state) {
 }
 
 static void desire_mode__ok(void **state) {
-	struct Mode mode0 = { 0 };
+	struct WlrMode mode0 = { 0 };
 	struct Head head0 = {
 		.name = "head0",
 		.desired.enabled = true,
 		.desired.mode = &mode0,
 	};
-	struct Mode mode1 = { 0 };
+	struct WlrMode mode1 = { 0 };
 
 	expect_ptr(__wrap_head_find_mode, head, &head0);
-	will_return_ptr_type(__wrap_head_find_mode, &mode1, struct Mode*);
+	will_return_ptr_type(__wrap_head_find_mode, &mode1, struct WlrMode*);
 
 	desire_mode(&head0);
 
@@ -777,7 +777,7 @@ static void handle_success__head_changing_adaptive_sync_fail(void **state) {
 }
 
 static void handle_success__head_changing_mode(void **state) {
-	struct Mode mode = { 0 };
+	struct WlrMode mode = { 0 };
 	struct Head head = {
 		.desired.mode = &mode,
 	};
@@ -810,8 +810,8 @@ static void handle_success__ok(void **state) {
 }
 
 static void handle_failure__mode(void **state) {
-	struct Mode mode_cur = { 0 };
-	struct Mode mode_des = { 0 };
+	struct WlrMode mode_cur = { 0 };
+	struct WlrMode mode_des = { 0 };
 	struct Head head = {
 		.name = "nam",
 		.current.mode = &mode_cur,

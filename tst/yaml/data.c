@@ -132,8 +132,8 @@ struct IpcOperation *ipc_response(void) {
 	head0->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head0->current.transform = WL_OUTPUT_TRANSFORM_270;
 
-	head0->current.mode = mode_init(NULL, NULL, 10, 11, 12, true);
-	slist_append(&head0->modes, head0->current.mode);
+	head0->current.mode = wlr_mode_init(NULL, NULL, 10, 11, 12, true);
+	slist_append(&head0->modes, (void*)head0->current.mode);
 
 	head0->desired.scale = wl_fixed_from_double(7.0);
 	head0->desired.enabled = true;
@@ -142,8 +142,8 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head0->desired.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
 
-	head0->desired.mode = mode_init(NULL, NULL, 13, 14, 15, false);;
-	slist_append(&head0->modes, head0->desired.mode);
+	head0->desired.mode = wlr_mode_init(NULL, NULL, 13, 14, 15, false);;
+	slist_append(&head0->modes, (void*)head0->desired.mode);
 
 	slist_append(&g_heads, head0);
 

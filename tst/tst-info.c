@@ -51,9 +51,9 @@ int before_each(void **state) {
 
 	s->head1 = calloc(1, sizeof(struct Head));
 
-	struct Mode *mode_cur = mode_init(s->head1, NULL, 100, 200, 30000, true);
-	struct Mode *mode_des = mode_init(s->head1, NULL, 400, 500, 60000, false);
-	struct Mode *mode_failed = mode_init(s->head1, NULL, 700, 800, 90000, false);
+	struct WlrMode *mode_cur = wlr_mode_init(s->head1, NULL, 100, 200, 30000, true);
+	struct WlrMode *mode_des = wlr_mode_init(s->head1, NULL, 400, 500, 60000, false);
+	struct WlrMode *mode_failed = wlr_mode_init(s->head1, NULL, 700, 800, 90000, false);
 
 	slist_append(&s->head1->modes, mode_cur);
 	slist_append(&s->head1->modes, mode_des);
@@ -89,9 +89,9 @@ int before_each(void **state) {
 
 	s->head2 = calloc(1, sizeof(struct Head));
 
-	mode_cur = mode_init(s->head2, NULL, 1100, 1200, 130000, true);
-	mode_des = mode_init(s->head2, NULL, 1400, 1500, 160000, false);
-	mode_failed = mode_init(s->head2, NULL, 1700, 1800, 190000, false);
+	mode_cur = wlr_mode_init(s->head2, NULL, 1100, 1200, 130000, true);
+	mode_des = wlr_mode_init(s->head2, NULL, 1400, 1500, 160000, false);
+	mode_failed = wlr_mode_init(s->head2, NULL, 1700, 1800, 190000, false);
 
 	slist_append(&s->head2->modes, mode_cur);
 	slist_append(&s->head2->modes, mode_des);

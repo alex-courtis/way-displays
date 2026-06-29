@@ -22,8 +22,8 @@ static int before_each(void **state) {
 
 static void preferred__first(void **state) {
 	struct Head head = { .name = "NAM", };
-	struct Mode mode_existing = { .width = 3840, .height = 2160, .preferred = false, .refresh_mhz = 60000, .head = &head, };
-	struct Mode mode_pref = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
+	struct WlrMode mode_existing = { .width = 3840, .height = 2160, .preferred = false, .refresh_mhz = 60000, .head = &head, };
+	struct WlrMode mode_pref = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
 
 	slist_append(&head.modes, &mode_existing);
 	slist_append(&head.modes, &mode_pref);
@@ -40,8 +40,8 @@ static void preferred__first(void **state) {
 
 static void preferred__subsequent(void **state) {
 	struct Head head = { .name = "NAM", };
-	struct Mode mode_existing = { .width = 3840, .height = 2160, .preferred = true, .refresh_mhz = 60000, .head = &head, };
-	struct Mode mode_subsequent = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
+	struct WlrMode mode_existing = { .width = 3840, .height = 2160, .preferred = true, .refresh_mhz = 60000, .head = &head, };
+	struct WlrMode mode_subsequent = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
 
 	slist_append(&head.modes, &mode_existing);
 	slist_append(&head.modes, &mode_subsequent);

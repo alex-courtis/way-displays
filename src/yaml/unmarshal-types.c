@@ -475,12 +475,12 @@ struct Lid *yaml_map_to_lid(struct UC *c, const yaml_node_t *map) {
 	return lid;
 }
 
-struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
+struct WlrMode *yaml_map_to_wlr_mode(struct UC *c, const yaml_node_t *map) {
 	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return NULL;
 
-	struct Mode *mode = (struct Mode*)calloc(1, sizeof(struct Mode));
+	struct WlrMode *mode = (struct WlrMode*)calloc(1, sizeof(struct WlrMode));
 
 	yaml_scalar_to_int(c, &mode->width, smap_get(nodes, "WIDTH"));
 	yaml_scalar_to_int(c, &mode->height, smap_get(nodes, "HEIGHT"));
@@ -497,7 +497,7 @@ void yaml_map_into_modes(struct UC *c, struct SList **modes, const yaml_node_t *
 	if (!modes)
 		return;
 
-	struct Mode *mode = yaml_map_to_mode(c, map);
+	struct WlrMode *mode = yaml_map_to_wlr_mode(c, map);
 
 	if (mode) {
 		slist_append(modes, mode);
@@ -621,7 +621,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	if (yaml_scalar_to_boolean(c, &vrr, smap_get(nodes, "VRR")))
 		head_state->adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	head_state->mode = yaml_map_to_mode(c, smap_get(nodes, "MODE"));
+	head_state->mode = yaml_map_to_wlr_mode(c, smap_get(nodes, "MODE"));
 
 	smap_free(nodes);
 

@@ -48,7 +48,7 @@ char *info_user_mode_string(const struct UserMode * const user_mode) {
 	}
 }
 
-char *info_mode_string(const struct Mode * const mode) {
+char *info_mode_string(const struct WlrMode * const mode) {
 	if (!mode)
 		return NULL;
 
@@ -75,7 +75,7 @@ static void print_user_mode(const enum LogThreshold t, const char * name_desc, c
 	}
 }
 
-static void print_mode(const enum LogThreshold t, const struct Mode * const mode) {
+static void print_mode(const enum LogThreshold t, const struct WlrMode * const mode) {
 
 	if (mode) {
 		char *mode_str = info_mode_string(mode);
@@ -112,11 +112,11 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	if (!head)
 		return;
 
-	struct SList *mrrs = modes_res_refresh(head->modes);
-	const struct Mode *preferred_mode = head_preferred_mode(head);
+	struct SList *mrrs = modes_res_refresh(head->wlr_modes);
+	const struct WlrMode *wlr_mode_preferred = head_preferred_mode(head);
 
 	struct ModesResRefresh *mrr = NULL;
-	const struct Mode *mode = NULL;
+	const struct WlrMode *wlr_mode = NULL;
 
 	for (struct SList *i = mrrs; i; i = i->nex) {
 		mrr = i->val;
@@ -124,9 +124,9 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
 		for (const struct SList *j = mrr->modes; j; j = j->nex) {
-			mode = j->val;
-			msg = sprintf_append(msg, "%4d,%03d mHz", mode->refresh_mhz / 1000, mode->refresh_mhz % 1000);
-			if (mode == preferred_mode) {
+			wlr_mode = j->val;
+			msg = sprintf_append(msg, "%4d,%03d mHz", wlr_mode->refresh_mhz / 1000, wlr_mode->refresh_mhz % 1000);
+			if (wlr_mode == wlr_mode_preferred) {
 				msg = sprintf_append(msg, " (preferred)");
 			}
 		}
@@ -421,7 +421,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 	if (!head)
 		return;
 
-	struct Mode *preferred_mode = head_preferred_mode(head);
+	struct WlrMode *preferred_mode = head_preferred_mode(head);
 
 	switch (event) {
 		case ARRIVED:
@@ -525,7 +525,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
 }
 
-void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
+void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const mode) {
 	log_(t, NULL);
 	log_(t, "Changes failed");
 
@@ -681,7 +681,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	free(buf);
 }
 
-void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
+void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const mode) {
 	if (!head) {
 		return;
 	}

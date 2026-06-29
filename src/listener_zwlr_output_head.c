@@ -6,8 +6,9 @@
 #include "listeners.h"
 
 #include "head.h"
-#include "slist.h"
 #include "mode.h"
+#include "pmap.h"
+#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Head data
@@ -43,11 +44,9 @@ static void mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	struct Mode *mode = calloc(1, sizeof(struct Mode));
-	mode->head = head;
-	mode->zwlr_mode = zwlr_output_mode_v1;
+	struct WlrMode *mode = wlr_mode_init(head, zwlr_output_mode_v1, 0, 0, 0, false);
 
-	slist_append(&head->modes, mode);
+	pmap_put(head->wlr_modes, zwlr_output_mode_v1, mode);
 
 	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), mode);
 }
@@ -65,13 +64,9 @@ static void current_mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	struct Mode *m = NULL;
-	for (struct SList *i = head->modes; i; i = i->nex) {
-		m = i->val;
-		if (m && m->zwlr_mode == zwlr_output_mode_v1) {
-			head->current.mode = m;
-			break;
-		}
+	const struct WlrMode *m = pmap_get(head->wlr_modes, zwlr_output_mode_v1);
+	if (m) {
+		head->current.mode = m;
 	}
 }
 

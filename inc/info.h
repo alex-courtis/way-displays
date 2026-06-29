@@ -35,13 +35,13 @@ void print_list(const enum LogThreshold t, const struct SList * const heads);
 
 void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
-void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
+void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const mode);
 
 // consumer frees
 char *info_user_mode_string(const struct UserMode * const user_mode);
 
 // consumer frees
-char *info_mode_string(const struct Mode * const mode);
+char *info_mode_string(const struct WlrMode * const mode);
 
 // consumer frees
 char *delta_human(const struct SList * const heads);
@@ -64,7 +64,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
 // maybe execute CALLBACK_CMD
-void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
+void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const mode);
 
 #endif // INFO_H
 

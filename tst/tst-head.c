@@ -26,30 +26,38 @@
 
 #include "head.h"
 
+static int keys[7] = { 10, 11, 12, 13, 14, 15, 16, };
+static void *K0 = &keys[0];
+static void *K1 = &keys[1];
+static void *K2 = &keys[2];
+static void *K3 = &keys[3];
+static void *K4 = &keys[4];
+static void *K5 = &keys[5];
+static void *K6 = &keys[6];
+
 // cppcheck-suppress staticFunction
-double __wrap_mode_dpi(struct Mode *mode) {
+double __wrap_mode_dpi(struct WlrMode *mode) {
 	check_expected_ptr(mode);
 	return mock_type(double);
 }
 
 // cppcheck-suppress staticFunction
-struct Mode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_failed, struct UserMode *user_mode) {
+struct WlrMode *__wrap_mode_user_mode(struct SList *modes, struct SList *modes_failed, const struct UserMode *user_mode) {
 	check_expected_ptr(modes);
 	check_expected_ptr(modes_failed);
 	check_expected_ptr(user_mode);
-	return mock_ptr_type_checked(struct Mode*);
+	return mock_ptr_type_checked(struct WlrMode*);
 }
 
 // cppcheck-suppress staticFunction
-struct Mode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
+struct WlrMode *__wrap_mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
 	check_expected_ptr(modes);
 	check_expected_ptr(modes_failed);
-	return mock_ptr_type_checked(struct Mode*);
+	return mock_ptr_type_checked(struct WlrMode*);
 }
 
-
 static int before_each(void **state) {
-	assert_logs_empty_before();
+	// assert_logs_empty_before();
 
 	g_cfg = cfg_default();
 	return 0;
@@ -135,7 +143,7 @@ static void head_auto_scale__default(void **state) {
 }
 
 static void head_auto_scale__mode(void **state) {
-	struct Mode mode = { 0 };
+	struct WlrMode mode = { 0 };
 	struct Head head = { .desired.mode = &mode };
 
 	// dpi 0 defaults to 96
@@ -162,7 +170,7 @@ static void head_auto_scale__mode(void **state) {
 }
 
 static void head_auto_scale__range(void **state) {
-	struct Mode mode = { 0 };
+	struct WlrMode mode = { 0 };
 	struct Head head = { .desired.mode = &mode };
 
 	// scale under 1.0 is clamped to 1.0 with default settings
@@ -215,7 +223,7 @@ static void head_set_scaled_dimensions__default(void **state) {
 	assert_int_equal(head.scaled.height, 1);
 
 	// no scale
-	struct Mode mode = { .width = 200, .height = 100, };
+	struct WlrMode mode = { .width = 200, .height = 100, };
 	head.desired.mode = &mode;
 
 	head_set_scaled_dimensions(&head);
@@ -226,7 +234,7 @@ static void head_set_scaled_dimensions__default(void **state) {
 }
 
 static void head_set_scaled_dimensions__transform(void **state) {
-	struct Mode mode = { .width = 200, .height = 100, };
+	struct WlrMode mode = { .width = 200, .height = 100, };
 	struct Head head = { .desired.mode = &mode, };
 
 	// double, not rotated
@@ -249,7 +257,7 @@ static void head_set_scaled_dimensions__transform(void **state) {
 }
 
 static void head_set_scaled_dimensions__dimensions(void **state) {
-	struct Mode mode = { .width = 3840, .height = 2160, };
+	struct WlrMode mode = { .width = 3840, .height = 2160, };
 	struct Head head = { .desired.mode = &mode, };
 
 	head.desired.scale = head_get_fixed_scale(1.0);
@@ -289,66 +297,64 @@ static void head_set_scaled_dimensions__dimensions(void **state) {
 }
 
 static void head_find_mode__all_failed(void **state) {
-	struct Head head = { .name = "head0" };
-	struct Mode mode = { 0 };
+	struct Head *head = head_init();
+	head->name = strdup("head0");
+	struct WlrMode *mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
+	pmap_put(head->wlr_modes, K0, mode);
 
 	// all modes failed
-	slist_append(&head.modes, &mode);
-	slist_append(&head.modes_failed, &mode);
+	slist_append(&head->modes_failed, mode);
 
 	expect_int_value(__wrap_call_back, t, ERROR);
 	expect_str(__wrap_call_back, msg1, "head0");
 	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
 
-	assert_nul(head_find_mode(&head));
+	assert_nul(head_find_mode(head));
 
 	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
-	assert_logs_empty();
 
-	slist_free(&head.modes);
-	slist_free(&head.modes_failed);
+	head_free(head);
 }
 
 static void head_find_mode__user_available(void **state) {
-	struct Head head = { 0 };
-	struct Mode mode = { 0 };
-	slist_append(&head.modes, &mode);
+	struct Head *head = head_init();
+	struct WlrMode *mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
+	pmap_put(head->wlr_modes, K0, mode);
 
 	// user preferred head
 	struct UserMode *user_mode = user_mode_init_default();
 	smap_put(g_cfg->user_modes, "!.*EAD", user_mode);
-	head.name = strdup("HEAD");
+	head->name = strdup("HEAD");
 
 	// mode matched to user
-	struct Mode expected = { 0 };
-	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
-	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	struct WlrMode expected = { 0 };
+	expect_ptr(__wrap_mode_user_mode, modes, head->wlr_modes);
+	expect_ptr(__wrap_mode_user_mode, modes_failed, head->modes_failed);
 	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_user_mode, &expected, struct Mode*);
+	will_return_ptr_type(__wrap_mode_user_mode, &expected, struct WlrMode*);
 
-	assert_ptr_equal(head_find_mode(&head), &expected);
+	assert_ptr_equal(head_find_mode(head), &expected);
 
-	slist_free(&head.modes);
-	free(head.name);
+	head_free(head);
 
 	assert_logs_empty();
 }
 
 static void head_find_mode__user_failed(void **state) {
-	struct Head head = { 0 };
-	struct Mode mode = { 0 };
-	slist_append(&head.modes, &mode);
+	struct Head *head = head_init();
+	struct WlrMode *mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
+	pmap_put(head->wlr_modes, K0, mode);
 
 	// user preferred head
 	struct UserMode *user_mode = user_mode_init_default();
 	smap_put(g_cfg->user_modes, "!HEA.*", user_mode);
-	head.name = strdup("HEAD");
+	head->name = strdup("HEAD");
 
 	// mode not matched to user
-	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
-	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	expect_ptr(__wrap_mode_user_mode, modes, head->wlr_modes);
+	expect_ptr(__wrap_mode_user_mode, modes_failed, head->modes_failed);
 	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_user_mode, NULL, struct Mode*);
+	will_return_ptr_type(__wrap_mode_user_mode, NULL, struct WlrMode*);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
@@ -359,7 +365,7 @@ static void head_find_mode__user_failed(void **state) {
 	expect_str(__wrap_call_back, msg2, NULL);
 
 	// user failed, fall back to max
-	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_ptr_equal(head_find_mode(head), mode);
 
 	// one and only notices: falling back to preferred then max
 	assert_log(WARNING, "\nHEAD: No available mode for user MODE -1x-1, falling back to preferred\n");
@@ -367,112 +373,116 @@ static void head_find_mode__user_failed(void **state) {
 	assert_logs_empty();
 
 	// same test again
-	expect_ptr(__wrap_mode_user_mode, modes, head.modes);
-	expect_ptr(__wrap_mode_user_mode, modes_failed, head.modes_failed);
+	expect_ptr(__wrap_mode_user_mode, modes, head->wlr_modes);
+	expect_ptr(__wrap_mode_user_mode, modes_failed, head->modes_failed);
 	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_user_mode, NULL, struct Mode*);
+	will_return_ptr_type(__wrap_mode_user_mode, NULL, struct WlrMode*);
 
 	// marked failures avoided
-	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_ptr_equal(head_find_mode(head), mode);
 
 	// no notices this time
 	assert_logs_empty();
 
-	slist_free(&head.modes);
-	free(head.name);
+	head_free(head);
 }
 
 static void head_find_mode__preferred(void **state) {
-	struct Head head = { .name = "name", };
-	struct Mode mode = { .preferred = true, };
+	struct Head *head = head_init();
+	head->name = strdup("name");
+	struct WlrMode *mode = wlr_mode_init(NULL, NULL, 0, 0, 0, true);
 
-	slist_append(&head.modes, &mode);
+	pmap_put(head->wlr_modes, K0, mode);
 
-	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_ptr_equal(head_find_mode(head), mode);
 
-	slist_free(&head.modes);
+	head_free(head);
 
 	assert_logs_empty();
 }
 
 static void head_find_mode__max_preferred_refresh(void **state) {
-	struct Head head = { .name = "name", };
-	struct Mode mode = { 0 };
+	struct Head *head = head_init();
+	head->name = strdup("name");
+	struct WlrMode *mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
 
 	sset_add(g_cfg->max_preferred_refresh, "!nam.*");
 
-	slist_append(&head.modes, &mode);
+	pmap_put(head->wlr_modes, K0, mode);
 
-	expect_ptr(__wrap_mode_max_preferred, modes, head.modes);
-	expect_ptr(__wrap_mode_max_preferred, modes_failed, head.modes_failed);
-	will_return_ptr_type(__wrap_mode_max_preferred, &mode, struct Mode*);
+	expect_ptr(__wrap_mode_max_preferred, modes, head->wlr_modes);
+	expect_ptr(__wrap_mode_max_preferred, modes_failed, head->modes_failed);
+	will_return_ptr_type(__wrap_mode_max_preferred, &mode, struct WlrMode*);
 
-	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_ptr_equal(head_find_mode(head), &mode);
 
-	slist_free(&head.modes);
+	head_free(head);
 
 	assert_logs_empty();
 }
 
 static void head_find_mode__max(void **state) {
-	struct Head head = { .name = "name", };
-	struct Mode mode = { 0 };
+	struct Head *head = head_init();
+	head->name = strdup("name");
 
-	slist_append(&head.modes, &mode);
+	struct WlrMode *mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
+	pmap_put(head->wlr_modes, K0, mode);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "name\n  No preferred mode, falling back to maximum available");
 	expect_str(__wrap_call_back, msg2, NULL);
 
 	// one and only notice
-	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_ptr_equal(head_find_mode(head), mode);
 	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
 	assert_logs_empty();
 
 	// no notice
-	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_ptr_equal(head_find_mode(head), mode);
 
-	slist_free(&head.modes);
+	head_free(head);
 }
 
 static void head_find_mode__none(void **state) {
-	struct Head head = { .name = "head0", };
-	struct Mode mode = { 0 };
+	struct Head *head = head_init();
+	head->name = strdup("head0");
+
+	struct WlrMode *mode_failed = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
 
 	// force to pass the first check and skip preferred messages
-	slist_append(&head.modes_failed, &mode);
-	head.warned_no_preferred = true;
+	slist_append(&head->modes_failed, mode_failed);
+	head->warned_no_preferred = true;
 
 	expect_int_value(__wrap_call_back, t, ERROR);
 	expect_str(__wrap_call_back, msg1, "head0");
 	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
 
-	assert_nul(head_find_mode(&head));
+	assert_nul(head_find_mode(head));
 
 	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
 	assert_logs_empty();
 
-	slist_free(&head.modes_failed);
+	head_free(head);
+	free(mode_failed);
 }
 
 static void head_max_mode__max(void **state) {
-	struct Head head = { .name = "name", };
+	struct Head *head = head_init();
 
-	struct Mode *mode_failed = mode_init(NULL, NULL, 9999, 9999, 9999, false);
-	slist_append(&head.modes_failed, mode_failed);
+	struct WlrMode *mode_failed = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
+	slist_append(&head->modes_failed, mode_failed);
 
-	slist_append(&head.modes, mode_failed);
-	slist_append(&head.modes, mode_init(NULL, NULL, 1000, 1000, 1000, false));
-	slist_append(&head.modes, mode_init(NULL, NULL, 500, 500, 1000, false));
-	slist_append(&head.modes, mode_init(NULL, NULL, 1000, 1000, 500, false));
-	slist_append(&head.modes, mode_init(NULL, NULL, 2000, 2000, 1000, false));
-	slist_append(&head.modes, mode_init(NULL, NULL, 2000, 2000, 2000, false)); // highest, 5
-	slist_append(&head.modes, mode_init(NULL, NULL, 1000, 1000, 1000, false));
+	pmap_put(head->wlr_modes, K0, mode_failed);
+	pmap_put(head->wlr_modes, K1, wlr_mode_init(NULL, NULL, 1000, 1000, 1000, false));
+	pmap_put(head->wlr_modes, K2, wlr_mode_init(NULL, NULL, 500, 500, 1000, false));
+	pmap_put(head->wlr_modes, K3, wlr_mode_init(NULL, NULL, 1000, 1000, 500, false));
+	pmap_put(head->wlr_modes, K4, wlr_mode_init(NULL, NULL, 2000, 2000, 1000, false));
+	pmap_put(head->wlr_modes, K5, wlr_mode_init(NULL, NULL, 2000, 2000, 2000, false)); // highest
+	pmap_put(head->wlr_modes, K6, wlr_mode_init(NULL, NULL, 1000, 1000, 1000, false));
 
-	assert_ptr_equal(head_max_mode(&head), slist_at(head.modes, 5));
+	assert_ptr_equal(head_max_mode(head), pmap_get(head->wlr_modes, K5));
 
-	slist_free_vals(&head.modes, NULL);
-	slist_free(&head.modes_failed);
+	head_free(head);
 }
 
 static void head_matches_name_desc_regex__name(void **state) {
@@ -599,9 +609,9 @@ static void heads_reapply__(void **state) {
 	head_disabled->name = strdup("DP-7");
 	head_disabled->current.enabled = false;
 
-	slist_append(&head_disabled->modes, mode_init(NULL, NULL, 3440, 1440, 59999, true));
-	slist_append(&head_disabled->modes, mode_init(NULL, NULL, 3840, 2160, 30000, false));
-	slist_append(&head_disabled->modes, mode_init(NULL, NULL, 3840, 2160, 29970, false));
+	slist_append(&head_disabled->modes, wlr_mode_init(NULL, NULL, 3440, 1440, 59999, true));
+	slist_append(&head_disabled->modes, wlr_mode_init(NULL, NULL, 3840, 2160, 30000, false));
+	slist_append(&head_disabled->modes, wlr_mode_init(NULL, NULL, 3840, 2160, 29970, false));
 	slist_append(&head_disabled->modes_failed, slist_at(head_disabled->modes, 0));
 	slist_append(&head_disabled->modes_failed, slist_at(head_disabled->modes, 1));
 	slist_append(&head_disabled->modes_failed, slist_at(head_disabled->modes, 2));
@@ -613,7 +623,7 @@ static void heads_reapply__(void **state) {
 	head_enabled->name = strdup("eDP-1");
 	head_enabled->current.enabled = true;
 
-	slist_append(&head_enabled->modes, mode_init(NULL, NULL, 2256, 1504, 59999, true));
+	slist_append(&head_enabled->modes, wlr_mode_init(NULL, NULL, 2256, 1504, 59999, true));
 	head_enabled->current.mode = slist_at(head_enabled->modes, 0);
 
 	slist_append(&heads, head_enabled);

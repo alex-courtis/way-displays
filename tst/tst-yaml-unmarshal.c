@@ -429,14 +429,14 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(head->desired.y, 9);
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
-	struct Mode *mode_current = head->current.mode;
+	const struct WlrMode *mode_current = head->current.mode;
 	assert_non_nul(mode_current);
 	assert_int_equal(mode_current->width, 10);
 	assert_int_equal(mode_current->height, 11);
 	assert_int_equal(mode_current->refresh_mhz, 12);
 	assert_true(mode_current->preferred);
 
-	struct Mode *mode_desired = head->desired.mode;
+	const struct WlrMode *mode_desired = head->desired.mode;
 	assert_non_nul(mode_desired);
 	assert_int_equal(mode_desired->width, 13);
 	assert_int_equal(mode_desired->height, 14);
@@ -444,14 +444,14 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_false(mode_desired->preferred);
 
 	assert_int_equal(slist_length(head->modes), 2);
-	struct Mode *mode1 = slist_at(head->modes, 0);
+	struct WlrMode *mode1 = slist_at(head->modes, 0);
 	assert_non_nul(mode1);
 	assert_int_equal(mode1->width, 10);
 	assert_int_equal(mode1->height, 11);
 	assert_int_equal(mode1->refresh_mhz, 12);
 	assert_true(mode1->preferred);
 
-	struct Mode *mode2 = slist_at(head->modes, 1);
+	struct WlrMode *mode2 = slist_at(head->modes, 1);
 	assert_non_nul(mode2);
 	assert_int_equal(mode2->width, 13);
 	assert_int_equal(mode2->height, 14);
