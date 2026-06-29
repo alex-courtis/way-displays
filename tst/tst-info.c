@@ -23,10 +23,11 @@
 #include "log.h"
 #include "mode.h"
 #include "output.h"
+#include "pmap.h"
 #include "pset.h"
-#include "smapi.h"
 #include "slist.h"
 #include "smap.h"
+#include "smapi.h"
 #include "smaps.h"
 #include "sset.h"
 #include "str.h"
@@ -40,6 +41,14 @@ struct State {
 	struct SList *heads;
 };
 
+static int keys[8] = { 10, 11, 12, 13, 14, 15, 16, 17, };
+static void *H1_MODE_CUR = &keys[0];
+static void *H1_MODE_DES = &keys[1];
+static void *H1_MODE_FAILED = &keys[2];
+static void *H2_MODE_CUR = &keys[3];
+static void *H2_MODE_DES = &keys[4];
+static void *H2_MODE_FAILED = &keys[5];
+
 int before_each(void **state) {
 	assert_logs_empty_before();
 
@@ -49,16 +58,17 @@ int before_each(void **state) {
 
 	g_cfg = cfg_default();
 
-	s->head1 = calloc(1, sizeof(struct Head));
+	s->head1 = head_init();
 
-	struct WlrMode *mode_cur = wlr_mode_init(s->head1, NULL, 100, 200, 30000, true);
-	struct WlrMode *mode_des = wlr_mode_init(s->head1, NULL, 400, 500, 60000, false);
-	struct WlrMode *mode_failed = wlr_mode_init(s->head1, NULL, 700, 800, 90000, false);
+	const struct WlrMode *mode_cur = wlr_mode_init(s->head1, NULL, 100, 200, 30000, true);
+	const struct WlrMode *mode_des = wlr_mode_init(s->head1, NULL, 400, 500, 60000, false);
+	const struct WlrMode *mode_failed = wlr_mode_init(s->head1, NULL, 700, 800, 90000, false);
 
-	slist_append(&s->head1->modes, mode_cur);
-	slist_append(&s->head1->modes, mode_des);
-	slist_append(&s->head1->modes, mode_failed);
-	slist_append(&s->head1->modes_failed, mode_failed);
+	pmap_put(s->head1->wlr_modes, H1_MODE_CUR, mode_cur);
+	pmap_put(s->head1->wlr_modes, H1_MODE_DES, mode_des);
+	pmap_put(s->head1->wlr_modes, H1_MODE_FAILED, mode_failed);
+
+	slist_append(&s->head1->modes_failed, (void*)mode_failed);
 
 	s->head1->name = strdup("name1");
 	s->head1->description = strdup("description1");
@@ -87,16 +97,17 @@ int before_each(void **state) {
 	slist_append(&s->heads, s->head1);
 
 
-	s->head2 = calloc(1, sizeof(struct Head));
+	s->head2 = head_init();
 
 	mode_cur = wlr_mode_init(s->head2, NULL, 1100, 1200, 130000, true);
 	mode_des = wlr_mode_init(s->head2, NULL, 1400, 1500, 160000, false);
 	mode_failed = wlr_mode_init(s->head2, NULL, 1700, 1800, 190000, false);
 
-	slist_append(&s->head2->modes, mode_cur);
-	slist_append(&s->head2->modes, mode_des);
-	slist_append(&s->head2->modes, mode_failed);
-	slist_append(&s->head2->modes_failed, mode_failed);
+	pmap_put(s->head2->wlr_modes, H2_MODE_CUR, mode_cur);
+	pmap_put(s->head2->wlr_modes, H2_MODE_DES, mode_des);
+	pmap_put(s->head2->wlr_modes, H2_MODE_FAILED, mode_failed);
+
+	slist_append(&s->head2->modes_failed, (void*)mode_failed);
 
 	s->head2->name = strdup("name2");
 	s->head2->width_mm = 3;

@@ -341,13 +341,14 @@ const struct WlrMode *head_find_mode(struct Head * const head) {
 	return mode;
 }
 
-struct WlrMode *head_preferred_mode(const struct Head * const head) {
+const struct WlrMode *head_preferred_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	for (const struct SList *i = head->modes; i; i = i->nex) {
-		if (((struct WlrMode*)i->val)->preferred) {
-			return i->val;
+	for (const struct PMapIt *it = pmap_it(head->wlr_modes); it; it = pmap_it_next(it)) {
+		if (((struct WlrMode*)it->val)->preferred) {
+			pmap_it_free(it);
+			return it->val;
 		}
 	}
 
@@ -446,14 +447,20 @@ void heads_reapply(struct SList *heads) {
 	}
 }
 
+// TODO map_contains_val or generify
+static bool fn_match_val_ptr(const void* const key, const void* const val, const void* const data) {
+	return val && data && val == data;
+}
+
 void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	if (!(slist_find_equal_val(head->modes, NULL, head->current.mode))) {
+	// TODO map_contains_val
+	if (!pmap_match(head->wlr_modes, fn_match_val_ptr, head->current.mode).val) {
 		wlr_mode_free((struct WlrMode*)head->current.mode);
 	}
-	if (!(slist_find_equal_val(head->modes, NULL, head->desired.mode))) {
+	if (!pmap_match(head->wlr_modes, fn_match_val_ptr, head->desired.mode).val) {
 		wlr_mode_free((struct WlrMode*)head->desired.mode);
 	}
 

@@ -36,7 +36,7 @@ static void preferred(void *data,
 
 	// some heads may advertise multiple preferred modes; ignore subsequent
 	if (mode->head) {
-		struct WlrMode *mode_pref;
+		const struct WlrMode *mode_pref;
 		if ((mode_pref = head_preferred_mode(mode->head))) {
 
 			char *mode_preferred_str = info_mode_string(mode_pref);

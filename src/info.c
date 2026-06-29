@@ -421,7 +421,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 	if (!head)
 		return;
 
-	struct WlrMode *preferred_mode = head_preferred_mode(head);
+	const struct WlrMode *preferred_mode = head_preferred_mode(head);
 
 	switch (event) {
 		case ARRIVED:

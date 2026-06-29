@@ -109,7 +109,7 @@ const struct WlrMode *head_find_mode(struct Head * const head);
 
 const struct WlrMode *head_max_mode(const struct Head * const head);
 
-struct WlrMode *head_preferred_mode(const struct Head * const head);
+const struct WlrMode *head_preferred_mode(const struct Head * const head);
 
 bool head_current_not_desired(const struct Head * const head);
 
