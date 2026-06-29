@@ -300,6 +300,39 @@ static void mode_max_preferred__failed(void **state) {
 	assert_ptr_equal(actual, expected);
 }
 
+static void greater_than_res_refresh__width(void **state) {
+	struct Mode *a = mode_init(NULL, NULL, 111, 222, 2000, false);
+	struct Mode *b = mode_init(NULL, NULL, 10000, 222, 2000, false);
+
+	assert_false(mode_greater_than_res_refresh(a, b));
+	assert_true(mode_greater_than_res_refresh(b, a));
+
+	mode_free(a);
+	mode_free(b);
+}
+
+static void greater_than_res_refresh__height(void **state) {
+	struct Mode *a = mode_init(NULL, NULL, 111, 222, 2000, false);
+	struct Mode *b = mode_init(NULL, NULL, 111, 10000, 2000, false);
+
+	assert_false(mode_greater_than_res_refresh(a, b));
+	assert_true(mode_greater_than_res_refresh(b, a));
+
+	mode_free(a);
+	mode_free(b);
+}
+
+static void greater_than_res_refresh__refresh(void **state) {
+	struct Mode *a = mode_init(NULL, NULL, 111, 222, 2000, false);
+	struct Mode *b = mode_init(NULL, NULL, 111, 222, 10000, false);
+
+	assert_false(mode_greater_than_res_refresh(a, b));
+	assert_true(mode_greater_than_res_refresh(b, a));
+
+	mode_free(a);
+	mode_free(b);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(mode_mhz_to_hz_str__),
@@ -325,12 +358,16 @@ int main(void) {
 		TEST_BA(mode_preferred__no_preferred),
 		TEST_BA(mode_preferred__preferred),
 
-		// TEST_BA(mode_max_preferred__no_preferred),
-		// TEST_BA(mode_max_preferred__preferred_matches),
-		// TEST_BA(mode_max_preferred__prior_matches),
-		// TEST_BA(mode_max_preferred__later_higher_refresh),
-		// TEST_BA(mode_max_preferred__earlier_higher_refresh),
-		// TEST_BA(mode_max_preferred__failed),
+		TEST_BA(mode_max_preferred__no_preferred),
+		TEST_BA(mode_max_preferred__preferred_matches),
+		TEST_BA(mode_max_preferred__prior_matches),
+		TEST_BA(mode_max_preferred__later_higher_refresh),
+		TEST_BA(mode_max_preferred__earlier_higher_refresh),
+		TEST_BA(mode_max_preferred__failed),
+
+		TEST_BA(greater_than_res_refresh__width),
+		TEST_BA(greater_than_res_refresh__height),
+		TEST_BA(greater_than_res_refresh__refresh),
 	};
 
 	// TODO remove BA after regression testing
