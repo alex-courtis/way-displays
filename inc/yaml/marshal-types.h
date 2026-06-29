@@ -33,7 +33,7 @@ int yaml_head_overrides_to_map(struct MC *c, const struct Head*         const he
 int yaml_head_state_to_map    (struct MC *c, const struct HeadState*    const head_state);
 int yaml_lid_to_map           (struct MC *c, const struct Lid*          const lid);
 int yaml_messages_to_seq      (struct MC *c, const struct IpcOperation* const ipc_operation);
-int yaml_wlr_mode_to_map      (struct MC *c, const struct WlrMode*      const mode);
+int yaml_wlr_mode_to_map      (struct MC *c, const struct WlrMode*      const wlr_mode);
 int yaml_state_to_map         (struct MC *c); // g_heads and g_lid
 
 // yaml_map_add_pset: fn_yaml_v_to_node

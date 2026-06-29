@@ -10,6 +10,7 @@
 #include "cfg/user-mode.h"
 #include "fn.h"
 #include "head.h"
+#include "pmap.h"
 #include "slist.h"
 
 #include "mode.h"
@@ -218,12 +219,14 @@ static void mode_preferred__preferred_failed(void **state) {
 	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
 	pmap_put(wlr_modes, K20, expected);
 
-	struct SList *modes_failed = NULL;
-	slist_append(&modes_failed, expected);
+	struct SList *failed = NULL;
+	slist_append(&failed, expected);
 
-	const struct WlrMode *actual = mode_preferred(wlr_modes, modes_failed);
+	const struct WlrMode *actual = mode_preferred(wlr_modes, failed);
 
 	assert_nul(actual);
+
+	slist_free(&failed);
 }
 
 static void mode_max_preferred__no_preferred(void **state) {
@@ -246,7 +249,7 @@ static void mode_max_preferred__prior_matches(void **state) {
 	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, false);
 	pmap_put(wlr_modes, K20, expected);
 
-	struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
 	pmap_put(wlr_modes, K21, preferred);
 
 	const struct WlrMode *actual = mode_max_preferred(wlr_modes, NULL);
@@ -256,7 +259,7 @@ static void mode_max_preferred__prior_matches(void **state) {
 }
 
 static void mode_max_preferred__later_higher_refresh(void **state) {
-	struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
 	pmap_put(wlr_modes, K20, preferred);
 
 	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 999999, false);
@@ -272,7 +275,7 @@ static void mode_max_preferred__earlier_higher_refresh(void **state) {
 	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 999999, false);
 	pmap_put(wlr_modes, K20, expected);
 
-	struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
 	pmap_put(wlr_modes, K21, preferred);
 
 	const struct WlrMode *actual = mode_max_preferred(wlr_modes, NULL);
@@ -286,7 +289,7 @@ static void mode_max_preferred__failed(void **state) {
 	pmap_put(wlr_modes, K20, failed);
 	slist_append(&modes_failed, failed);
 
-	struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
 	pmap_put(wlr_modes, K21, preferred);
 
 	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 1000, false);

@@ -10,7 +10,7 @@
 #include "cfg/user-mode.h"
 #include "fn.h"
 #include "head.h"
-#include "imap.h"
+#include "pmap.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 

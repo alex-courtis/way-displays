@@ -10,7 +10,6 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "mode.h"
-#include "pmap.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 

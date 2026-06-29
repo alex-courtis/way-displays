@@ -19,6 +19,7 @@
 #include "fn.h"
 #include "log.h"
 #include "mode.h"
+#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -318,7 +319,7 @@ static void head_find_mode__all_failed(void **state) {
 
 static void head_find_mode__user_available(void **state) {
 	struct Head *head = head_init();
-	struct WlrMode *mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
+	const struct WlrMode *mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
 	pmap_put(head->wlr_modes, K0, mode);
 
 	// user preferred head
