@@ -25,6 +25,8 @@
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
+extern int g_cancellation_retries;
+
 struct SList *order_heads(const struct SSet * const order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
 void desire_enabled(struct Head *head);
@@ -35,6 +37,7 @@ void desire_adaptive_sync(struct Head *head);
 void desire_reapply(struct Head *head);
 void handle_success(void);
 void handle_failure(void);
+void handle_cancelled(void);
 
 
 // cppcheck-suppress staticFunction
@@ -427,6 +430,25 @@ static void desire_enabled__override_reset(void **state) {
 
 	assert_false(head0.desired.enabled);
 	assert_true(head0.overrided_enabled == NoOverride);
+
+	assert_logs_empty();
+}
+
+static void desire_enabled__no_override(void **state) {
+	struct Head head0 = {
+		.name = "head0",
+		.desired.enabled = false,
+		.overrided_enabled = OverrideFalse,
+	};
+	slist_append(&g_heads, &head0);
+
+	expect_str(__wrap_lid_is_closed, name, "head0");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	desire_enabled(&head0);
+
+	assert_false(head0.desired.enabled);
+	assert_true(head0.overrided_enabled == OverrideFalse);
 
 	assert_logs_empty();
 }
@@ -856,6 +878,36 @@ static void handle_failure__unspecified(void **state) {
 	assert_logs_empty();
 }
 
+static void handle_cancelled__retrying(void **state) {
+	g_cancellation_retries = 4;
+
+	expect_int_value(__wrap_call_back, t, WARNING);
+	expect_str(__wrap_call_back, msg1, "Changes cancelled, retrying (attempt 5)");
+	expect_nul(__wrap_call_back, msg2);
+
+	handle_cancelled();
+
+	assert_log(WARNING, "\nChanges cancelled, retrying (attempt 5)\n");
+	assert_logs_empty();
+
+	assert_int_equal(g_cancellation_retries, 5);
+}
+
+static void handle_cancelled__over_max(void **state) {
+	g_cancellation_retries = 5;
+
+	expect_int_value(__wrap_call_back, t, WARNING);
+	expect_str(__wrap_call_back, msg1, "Changes cancelled after 5 retries");
+	expect_nul(__wrap_call_back, msg2);
+
+	handle_cancelled();
+
+	assert_log(WARNING, "\nChanges cancelled after 5 retries\n");
+	assert_logs_empty();
+
+	assert_int_equal(g_cancellation_retries, 6);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(order_heads__exact_partial_regex),
@@ -874,6 +926,7 @@ int main(void) {
 		TEST_BA(desire_enabled__lid_closed_one),
 		TEST_BA(desire_enabled__override),
 		TEST_BA(desire_enabled__override_reset),
+		TEST_BA(desire_enabled__no_override),
 
 		TEST_BA(desire_mode__disabled),
 		TEST_BA(desire_mode__no_mode),
@@ -906,6 +959,9 @@ int main(void) {
 		TEST_BA(handle_failure__mode),
 		TEST_BA(handle_failure__adaptive_sync),
 		TEST_BA(handle_failure__unspecified),
+
+		TEST_BA(handle_cancelled__retrying),
+		TEST_BA(handle_cancelled__over_max),
 	};
 
 	return RUN(tests);

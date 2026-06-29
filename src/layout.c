@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
 
@@ -23,12 +24,12 @@
 #include "slist.h"
 #include "smapi.h"
 #include "sset.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #define MAX_CANCELLATION_RETRIES 5
 
-static int cancellation_retries = 0;
-
+int g_cancellation_retries = 0;
 
 void handle_failure(void);
 
@@ -183,7 +184,6 @@ void desire_enabled(struct Head *head) {
 		case OverrideTrue:
 			head->desired.enabled = true;
 			break;
-		// TODO unit test
 		case OverrideFalse:
 			head->desired.enabled = false;
 			break;
@@ -387,7 +387,7 @@ static void apply(void) {
 }
 
 void handle_success(void) {
-	cancellation_retries = 0;
+	g_cancellation_retries = 0;
 
 	switch(g_displ->delta.element) {
 		case MODE:
@@ -414,18 +414,25 @@ void handle_success(void) {
 	displ_delta_destroy();
 }
 
-// TODO unit test
-static bool handle_cancelled(void) {
-	cancellation_retries++;
-	if (cancellation_retries <= MAX_CANCELLATION_RETRIES) {
-		log_warn(NULL);
-		log_warn("Changes cancelled, retrying (attempt %i)", cancellation_retries);
-		return true;
+bool handle_cancelled(void) {
+	char *msg;
+	bool ret = false;
+
+	if (++g_cancellation_retries <= MAX_CANCELLATION_RETRIES) {
+		msg = sprintf_alloc("Changes cancelled, retrying (attempt %i)", g_cancellation_retries);
+		ret = true;
 	} else {
-		log_warn(NULL);
-		log_warn("Changes cancelled, max number of retry attempts exceeded");
-		return false;
+		msg = sprintf_alloc("Changes cancelled after %i retries", MAX_CANCELLATION_RETRIES);
+		ret = false;
 	}
+
+	log_warn(NULL);
+	log_warn("%s", msg);
+	call_back(WARNING, msg, NULL);
+
+	free(msg);
+
+	return ret;
 }
 
 void handle_failure(void) {
