@@ -18,11 +18,7 @@ struct UserMode *user_mode_init_default(void);
 
 const struct SMap *user_mode_smap_init(void);
 
-bool user_mode_equal(const struct UserMode* const a, const struct UserMode* const b);
-
 struct UserMode *user_mode_clone(const struct UserMode * const from);
-
-void user_mode_free(struct UserMode *user_mode);
 
 bool user_mode_invalid(const char* const name_desc, const struct UserMode* const user_mode, const void* const data);
 

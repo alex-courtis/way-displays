@@ -52,7 +52,7 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	return false;
 }
 
-static struct Mode *max_mode(const struct Head * const head) {
+struct Mode *head_max_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
@@ -322,7 +322,7 @@ struct Mode *head_find_mode(struct Head * const head) {
 
 	// last chance maximum
 	if (!mode) {
-		mode = max_mode(head);
+		mode = head_max_mode(head);
 	}
 
 	if (!mode) {

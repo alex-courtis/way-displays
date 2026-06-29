@@ -79,7 +79,7 @@ int32_t mhz_to_hz_rounded(int32_t mhz) {
 	return (mhz + 500) / 1000;
 }
 
-bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
+static bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -89,7 +89,7 @@ bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
 		mhz_to_hz_rounded(a->refresh_mhz) == mhz_to_hz_rounded(b->refresh_mhz);
 }
 
-bool mode_equal_user_mode_res_hz(const struct Mode* const mode, const struct UserMode* const user_mode) {
+static bool mode_equal_user_mode_res_hz(const struct Mode* const mode, const struct UserMode* const user_mode) {
 	if (!mode || !user_mode) {
 		return false;
 	}

@@ -9,6 +9,30 @@
 #include "mode.h"
 #include "smap.h"
 
+static bool user_mode_equal(const struct UserMode* const a, const struct UserMode* const b) {
+	if (!a || !b) {
+		return false;
+	}
+
+	if (a->max != b->max) {
+		return false;
+	}
+
+	if (a->width != b->width || a->height != b->height) {
+		return false;
+	}
+
+	if ((a->refresh_mhz != -1 || b->refresh_mhz != -1) && a->refresh_mhz != b->refresh_mhz) {
+		return false;
+	}
+
+	return true;
+}
+
+static void user_mode_free(struct UserMode *user_mode) {
+	free(user_mode);
+}
+
 struct UserMode *user_mode_init(const bool max, const int32_t width, const int32_t height, const int32_t refresh_mhz, const bool warned_no_mode) {
 	struct UserMode *um = (struct UserMode*)calloc(1, sizeof(struct UserMode));
 
@@ -43,31 +67,6 @@ struct UserMode *user_mode_clone(const struct UserMode * const from) {
 	*to = *from;
 
 	return to;
-}
-
-// TODO testing mode.c does its own equality - converge them
-bool user_mode_equal(const struct UserMode* const a, const struct UserMode* const b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	if (a->max != b->max) {
-		return false;
-	}
-
-	if (a->width != b->width || a->height != b->height) {
-		return false;
-	}
-
-	if ((a->refresh_mhz != -1 || b->refresh_mhz != -1) && a->refresh_mhz != b->refresh_mhz) {
-		return false;
-	}
-
-	return true;
-}
-
-void user_mode_free(struct UserMode *user_mode) {
-	free(user_mode);
 }
 
 bool user_mode_invalid(const char* const name_desc, const struct UserMode* const user_mode, const void* const data) {

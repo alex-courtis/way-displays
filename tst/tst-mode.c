@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "cfg/user-mode.h"
+#include "fn.h"
 #include "head.h"
 #include "slist.h"
 
@@ -16,10 +17,6 @@
 struct UserMode *user_mode = NULL;
 struct SList *modes = NULL;
 struct SList *modes_failed = NULL;
-
-bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b);
-bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b);
-bool mode_equal_user_mode_res_hz(const struct Mode* const mode, const struct UserMode* const user_mode);
 
 static int before_all(void **state) {
 	return 0;
@@ -173,7 +170,7 @@ static void mode_user_mode__exact_hz_failed(void **state) {
 static void mode_user_mode__width_failed(void **state) {
 	user_mode = user_mode_init(false, 1000, 100, 60499, false);
 
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
 	assert_nul(actual);
 }
@@ -181,7 +178,7 @@ static void mode_user_mode__width_failed(void **state) {
 static void mode_user_mode__height_failed(void **state) {
 	user_mode = user_mode_init(false, 200, 9999999, 60499, false);
 
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
 
 	assert_nul(actual);
 }
