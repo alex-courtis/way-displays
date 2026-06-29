@@ -100,7 +100,9 @@ bool head_matches_name_desc_regex(const struct Head * const head, const char * c
 
 	result = regcomp(&regex, regex_pattern, REG_EXTENDED);
 	if (result) {
-		log_debug("Could not compile regex '%s'\n", regex_pattern);
+		char error_msg[100];
+		regerror(result, &regex, error_msg, sizeof(error_msg));
+		log_debug("Could not compile Head NAME_DESC regex '%s': %s", regex_pattern, error_msg);
 		return false;
 	}
 
@@ -110,11 +112,6 @@ bool head_matches_name_desc_regex(const struct Head * const head, const char * c
 	}
 	if (result && head->description) {
 		result = regexec(&regex, head->description, 0, NULL, 0);
-	}
-	if (result && result != REG_NOMATCH) {
-		char error_msg[100];
-		regerror(result, &regex, error_msg, sizeof(error_msg));
-		log_debug("Regex match failed: %s\n", error_msg);
 	}
 	regfree(&regex);
 
@@ -334,7 +331,6 @@ struct Mode *head_find_mode(struct Head * const head) {
 	return mode;
 }
 
-// TODO needs individual unit test
 struct Mode *head_preferred_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
@@ -348,7 +344,6 @@ struct Mode *head_preferred_mode(const struct Head * const head) {
 	return NULL;
 }
 
-// TODO maybe individual unit test
 bool head_current_not_desired(const struct Head * const head) {
 	return (head &&
 			(head->desired.mode != head->current.mode ||

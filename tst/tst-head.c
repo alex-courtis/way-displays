@@ -475,6 +475,31 @@ static void head_max_mode__max(void **state) {
 	slist_free(&head.modes_failed);
 }
 
+static void head_matches_name_desc_regex__name(void **state) {
+	struct Head head = { .name = "name", };
+
+	assert_true(head_matches_name_desc_regex(&head, "!nam"));
+
+	assert_logs_empty();
+}
+
+static void head_matches_name_desc_regex__desc(void **state) {
+	struct Head head = { .name = "name", .description = "desc" };
+
+	assert_true(head_matches_name_desc_regex(&head, "!esc"));
+
+	assert_logs_empty();
+}
+
+static void head_matches_name_desc_regex__bad(void **state) {
+	struct Head head = { .name = "name", };
+
+	assert_false(head_matches_name_desc_regex(&head, "!(badregex"));
+
+	assert_log(DEBUG, "Could not compile Head NAME_DESC regex '(badregex': Unmatched ( or \\(\n");
+	assert_logs_empty();
+}
+
 static void head_apply_toggles__none(void **state) {
 	struct Head head = { .name = "head0", };
 	struct Cfg *cfg = cfg_init();
@@ -629,6 +654,10 @@ int main(void) {
 		TEST_BA(head_find_mode__none),
 
 		TEST_BA(head_max_mode__max),
+
+		TEST_BA(head_matches_name_desc_regex__name),
+		TEST_BA(head_matches_name_desc_regex__desc),
+		TEST_BA(head_matches_name_desc_regex__bad),
 
 		TEST_BA(head_apply_toggles__none),
 		TEST_BA(head_apply_toggles__disabled__enable),
