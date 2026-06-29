@@ -416,21 +416,29 @@ static void head_find_mode__max_preferred_refresh(void **state) {
 
 static void head_find_mode__max(void **state) {
 	struct Head head = { .name = "name", };
-	struct Mode mode = { 0 };
 
-	slist_append(&head.modes, &mode);
+	struct Mode *mode_failed = mode_init(NULL, NULL, 9999, 9999, 9999, false);
+	slist_append(&head.modes_failed, mode_failed);
+
+	slist_append(&head.modes, mode_failed);
+	slist_append(&head.modes, mode_init(NULL, NULL, 1000, 1000, 1000, false));
+	slist_append(&head.modes, mode_init(NULL, NULL, 500, 500, 1000, false));
+	slist_append(&head.modes, mode_init(NULL, NULL, 1000, 1000, 500, false));
+	slist_append(&head.modes, mode_init(NULL, NULL, 2000, 2000, 1000, false));
+	slist_append(&head.modes, mode_init(NULL, NULL, 2000, 2000, 2000, false)); // highest, 5
+	slist_append(&head.modes, mode_init(NULL, NULL, 1000, 1000, 1000, false));
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "name\n  No preferred mode, falling back to maximum available");
 	expect_str(__wrap_call_back, msg2, NULL);
 
 	// one and only notice
-	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_ptr_equal(head_find_mode(&head), slist_at(head.modes, 5));
 	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
 	assert_logs_empty();
 
 	// no notice
-	assert_ptr_equal(head_find_mode(&head), &mode);
+	assert_ptr_equal(head_find_mode(&head), slist_at(head.modes, 5));
 
 	slist_free(&head.modes);
 }

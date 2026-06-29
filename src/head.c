@@ -71,8 +71,6 @@ static struct Mode *max_mode(const struct Head * const head) {
 			continue;
 		}
 
-		// TODO below not tested
-
 		// highest resolution
 		if (mode->width * mode->height > max->width * max->height) {
 			max = mode;
@@ -336,6 +334,7 @@ struct Mode *head_find_mode(struct Head * const head) {
 	return mode;
 }
 
+// TODO needs individual unit test
 struct Mode *head_preferred_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
@@ -349,6 +348,7 @@ struct Mode *head_preferred_mode(const struct Head * const head) {
 	return NULL;
 }
 
+// TODO maybe individual unit test
 bool head_current_not_desired(const struct Head * const head) {
 	return (head &&
 			(head->desired.mode != head->current.mode ||
