@@ -19,6 +19,7 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -480,27 +481,28 @@ struct WlrMode *yaml_map_to_wlr_mode(struct UC *c, const yaml_node_t *map) {
 	if (!nodes)
 		return NULL;
 
-	struct WlrMode *mode = (struct WlrMode*)calloc(1, sizeof(struct WlrMode));
+	struct WlrMode *wlr_mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
 
-	yaml_scalar_to_int(c, &mode->width, smap_get(nodes, "WIDTH"));
-	yaml_scalar_to_int(c, &mode->height, smap_get(nodes, "HEIGHT"));
-	yaml_scalar_to_int(c, &mode->refresh_mhz, smap_get(nodes, "REFRESH_MHZ"));
-	yaml_scalar_to_boolean(c, &mode->preferred, smap_get(nodes, "PREFERRED"));
+	yaml_scalar_to_int(c, &wlr_mode->width, smap_get(nodes, "WIDTH"));
+	yaml_scalar_to_int(c, &wlr_mode->height, smap_get(nodes, "HEIGHT"));
+	yaml_scalar_to_int(c, &wlr_mode->refresh_mhz, smap_get(nodes, "REFRESH_MHZ"));
+	yaml_scalar_to_boolean(c, &wlr_mode->preferred, smap_get(nodes, "PREFERRED"));
 
 	smap_free(nodes);
 
-	return mode;
+	return wlr_mode;
 }
 
-void yaml_map_into_modes(struct UC *c, struct SList **modes, const yaml_node_t *map) {
+void yaml_map_into_wlr_modes(struct UC *c, const struct PMap *wlr_modes, const yaml_node_t *map) {
 	const struct SMap *nodes = yaml_map_to_smap(c, map);
-	if (!modes)
+	if (!wlr_modes)
 		return;
 
-	struct WlrMode *mode = yaml_map_to_wlr_mode(c, map);
+	const struct WlrMode *wlr_mode = yaml_map_to_wlr_mode(c, map);
 
-	if (mode) {
-		slist_append(modes, mode);
+	if (wlr_mode) {
+		// we use the mode pointer as the dummy key, as we are not dealing a "real" head/modes
+		pmap_put(wlr_modes, wlr_mode, wlr_mode);
 	}
 
 	smap_free(nodes);
@@ -511,7 +513,7 @@ void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *
 	if (!heads)
 		return;
 
-	struct Head *head = (struct Head*)calloc(1, sizeof(struct Head));
+	struct Head *head = head_init();
 
 	head->name = yaml_scalar_to_string(c, smap_get(nodes, "NAME"));
 	head->description = yaml_scalar_to_string(c, smap_get(nodes, "DESCRIPTION"));
@@ -524,7 +526,7 @@ void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *
 	yaml_map_into_head_state(c, &head->current, smap_get(nodes,"CURRENT"));
 	yaml_map_into_head_state(c, &head->desired, smap_get(nodes,"DESIRED"));
 
-	yaml_seq_into_col(c, smap_get(nodes, "MODES"), &head->modes, (fn_yaml_node_into_col)yaml_map_into_modes);
+	yaml_seq_into_col(c, smap_get(nodes, "MODES"), head->wlr_modes, (fn_yaml_node_into_col)yaml_map_into_wlr_modes);
 
 	const struct SMap *nodes_overrides = yaml_map_to_smap(c, smap_get(nodes, "OVERRIDES"));
 	if (nodes_overrides) {
@@ -621,7 +623,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	if (yaml_scalar_to_boolean(c, &vrr, smap_get(nodes, "VRR")))
 		head_state->adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	head_state->mode = yaml_map_to_wlr_mode(c, smap_get(nodes, "MODE"));
+	head_state->wlr_mode = yaml_map_to_wlr_mode(c, smap_get(nodes, "MODE"));
 
 	smap_free(nodes);
 

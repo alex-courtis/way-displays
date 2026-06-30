@@ -61,42 +61,42 @@ static bool head_is_max_preferred_refresh(const struct Head * const head) {
 	return false;
 }
 
-const struct WlrMode *head_max_mode(const struct Head * const head) {
+const struct WlrMode *head_max_wlr_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	const struct WlrMode *mode = NULL;
-	const struct WlrMode *max = NULL;
+	const struct WlrMode *wlr_mode = NULL;
+	const struct WlrMode *wlr_mode_max = NULL;
 	for (const struct PMapIt *it = pmap_it(head->wlr_modes); it; it = pmap_it_next(it)) {
 		if (!it->val)
 			continue;
-		mode = it->val;
+		wlr_mode = it->val;
 
-		if (slist_find_equal(head->modes_failed, NULL, mode)) {
+		if (slist_find_equal(head->wlr_modes_failed, NULL, wlr_mode)) {
 			continue;
 		}
 
-		if (!max) {
-			max = mode;
+		if (!wlr_mode_max) {
+			wlr_mode_max = wlr_mode;
 			continue;
 		}
 
 		// highest resolution
-		if (mode->width * mode->height > max->width * max->height) {
-			max = mode;
+		if (wlr_mode->width * wlr_mode->height > wlr_mode_max->width * wlr_mode_max->height) {
+			wlr_mode_max = wlr_mode;
 			continue;
 		}
 
 		// highest refresh at highest resolution
-		if (mode->width == max->width &&
-				mode->height == max->height &&
-				mode->refresh_mhz > max->refresh_mhz) {
-			max = mode;
+		if (wlr_mode->width == wlr_mode_max->width &&
+				wlr_mode->height == wlr_mode_max->height &&
+				wlr_mode->refresh_mhz > wlr_mode_max->refresh_mhz) {
+			wlr_mode_max = wlr_mode;
 			continue;
 		}
 	}
 
-	return max;
+	return wlr_mode_max;
 }
 
 bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc) {
@@ -209,12 +209,12 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 
 	int32_t dpi_base = g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT;
 
-	if (!head->desired.mode) {
+	if (!head->desired.wlr_mode) {
 		return head_get_fixed_scale(1.0);
 	}
 
 	// average dpi
-	double dpi = mode_dpi(head->desired.mode);
+	double dpi = mode_dpi(head->desired.wlr_mode);
 	if (dpi == 0) {
 		return head_get_fixed_scale(1.0);
 	}
@@ -238,16 +238,16 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 }
 
 void head_set_scaled_dimensions(struct Head * const head) {
-	if (!head || !head->desired.mode || !head->desired.scale) {
+	if (!head || !head->desired.wlr_mode || !head->desired.scale) {
 		return;
 	}
 
 	if (head->desired.transform % 2 == 0) {
-		head->scaled.width = head->desired.mode->width;
-		head->scaled.height = head->desired.mode->height;
+		head->scaled.width = head->desired.wlr_mode->width;
+		head->scaled.height = head->desired.wlr_mode->height;
 	} else {
-		head->scaled.width = head->desired.mode->height;
-		head->scaled.height = head->desired.mode->width;
+		head->scaled.width = head->desired.wlr_mode->height;
+		head->scaled.height = head->desired.wlr_mode->width;
 	}
 
 	head->scaled.height = head_desired_scaled_length(head, head->scaled.height);
@@ -272,24 +272,24 @@ void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
 	}
 }
 
-const struct WlrMode *head_find_mode(struct Head * const head) {
+const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	if (pmap_size(head->wlr_modes) == slist_length(head->modes_failed)) {
+	if (pmap_size(head->wlr_modes) == slist_length(head->wlr_modes_failed)) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head->name);
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 		return NULL;
 	}
 
-	const struct WlrMode *mode = NULL;
+	const struct WlrMode *wlr_mode = NULL;
 
 	// maybe a user mode
 	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, (fn_match_smap)head_name_desc_v_matches_head, head).val;
 	if (user_mode) {
-		mode = mode_user_mode(head->wlr_modes, head->modes_failed, user_mode);
-		if (!mode && !user_mode->warned_no_mode) {
+		wlr_mode = mode_user_mode(head->wlr_modes, head->wlr_modes_failed, user_mode);
+		if (!wlr_mode && !user_mode->warned_no_mode) {
 			user_mode->warned_no_mode = true;
 
 			char *user_mode_str = info_user_mode_string(user_mode);
@@ -307,13 +307,13 @@ const struct WlrMode *head_find_mode(struct Head * const head) {
 	}
 
 	// always preferred
-	if (!mode) {
+	if (!wlr_mode) {
 		if (head_is_max_preferred_refresh(head)) {
-			mode = mode_max_preferred(head->wlr_modes, head->modes_failed);
+			wlr_mode = mode_max_preferred(head->wlr_modes, head->wlr_modes_failed);
 		} else {
-			mode = mode_preferred(head->wlr_modes, head->modes_failed);
+			wlr_mode = mode_preferred(head->wlr_modes, head->wlr_modes_failed);
 		}
-		if (!mode && !head->warned_no_preferred) {
+		if (!wlr_mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
 
 			log_info(NULL);
@@ -328,36 +328,40 @@ const struct WlrMode *head_find_mode(struct Head * const head) {
 	}
 
 	// last chance maximum
-	if (!mode) {
-		mode = head_max_mode(head);
+	if (!wlr_mode) {
+		wlr_mode = head_max_wlr_mode(head);
 	}
 
-	if (!mode) {
+	if (!wlr_mode) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head_human(head));
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
 	}
 
-	return mode;
+	return wlr_mode;
 }
 
-const struct WlrMode *head_preferred_mode(const struct Head * const head) {
-	if (!head)
+const struct WlrMode *head_preferred_wlr_mode(const struct Head * const head) {
+	if (!head || !head->wlr_modes)
 		return NULL;
+
+	// TODO write a matcher
+	const struct WlrMode *preferred = NULL;
 
 	for (const struct PMapIt *it = pmap_it(head->wlr_modes); it; it = pmap_it_next(it)) {
 		if (((struct WlrMode*)it->val)->preferred) {
+			preferred = it->val;
 			pmap_it_free(it);
-			return it->val;
+			break;
 		}
 	}
 
-	return NULL;
+	return preferred;
 }
 
 bool head_current_not_desired(const struct Head * const head) {
 	return (head &&
-			(head->desired.mode != head->current.mode ||
+			(head->desired.wlr_mode != head->current.wlr_mode ||
 			 head->desired.scale != head->current.scale ||
 			 head->desired.enabled != head->current.enabled ||
 			 head->desired.x != head->current.x ||
@@ -383,7 +387,7 @@ bool head_reapply_required(const struct Head * const head) {
 }
 
 bool head_current_mode_not_desired(const struct Head * const head) {
-	return (head && head->desired.mode != head->current.mode);
+	return (head && head->desired.wlr_mode != head->current.wlr_mode);
 }
 
 bool head_current_adaptive_sync_not_desired(const struct Head * const head) {
@@ -419,22 +423,22 @@ void heads_reapply(struct SList *heads) {
 		log_info("    %d: Clear current mode", step++);
 		log_info("    %d: Disable", step++);
 
-		if (head->modes_failed) {
+		if (head->wlr_modes_failed) {
 			log_info("    %d: Clear failed modes:", step++);
 
-			for (struct SList *j = head->modes_failed; j; j = j->nex) {
-				const struct WlrMode *mode = (struct WlrMode*)j->val;
+			for (struct SList *j = head->wlr_modes_failed; j; j = j->nex) {
+				const struct WlrMode *wlr_mode = (struct WlrMode*)j->val;
 
-				char *mode_str = info_mode_string(mode);
+				char *mode_str = info_wlr_mode_string(wlr_mode);
 				log_info("      %s", mode_str);
 				free(mode_str);
 			}
 
-			slist_free(&head->modes_failed);
+			slist_free(&head->wlr_modes_failed);
 		}
 
 		if (head->current.enabled) {
-			char *mode_str = info_mode_string(head->current.mode);
+			char *mode_str = info_wlr_mode_string(head->current.wlr_mode);
 			log_info("    %d: Enable with mode:", step++);
 			log_info("      %s", mode_str);
 			free(mode_str);
@@ -443,7 +447,7 @@ void heads_reapply(struct SList *heads) {
 		}
 
 		head->reapply_required = true;
-		head->current.mode = NULL;
+		head->current.wlr_mode = NULL;
 	}
 }
 
@@ -456,15 +460,17 @@ void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	// TODO map_contains_val
-	if (!pmap_match(head->wlr_modes, fn_match_val_ptr, head->current.mode).val) {
-		wlr_mode_free((struct WlrMode*)head->current.mode);
+	if (head->current.wlr_mode && !pmap_match(head->wlr_modes, fn_match_val_ptr, head->current.wlr_mode).val) {
+		wlr_mode_free((struct WlrMode*)head->current.wlr_mode);
+		if (head->desired.wlr_mode == head->current.wlr_mode) {
+			head->desired.wlr_mode = NULL;
+		}
 	}
-	if (!pmap_match(head->wlr_modes, fn_match_val_ptr, head->desired.mode).val) {
-		wlr_mode_free((struct WlrMode*)head->desired.mode);
+	if (head->desired.wlr_mode && !pmap_match(head->wlr_modes, fn_match_val_ptr, head->desired.wlr_mode).val) {
+			wlr_mode_free((struct WlrMode*)head->desired.wlr_mode);
 	}
 
-	slist_free(&head->modes_failed);
+	slist_free(&head->wlr_modes_failed);
 	slist_free_vals(&head->modes, (fn_free)wlr_mode_free);
 
 	pmap_free_vals(head->wlr_modes);
@@ -478,18 +484,18 @@ void head_free(struct Head *head) {
 	free(head);
 }
 
-void head_release_mode(struct Head * const head, const struct WlrMode * const mode) {
-	if (!head || !mode)
+void head_release_mode(struct Head * const head, const struct WlrMode * const wlr_mode) {
+	if (!head || !wlr_mode)
 		return;
 
-	if (head->desired.mode == mode) {
-		head->desired.mode = NULL;
+	if (head->desired.wlr_mode == wlr_mode) {
+		head->desired.wlr_mode = NULL;
 	}
-	if (head->current.mode == mode) {
-		head->current.mode = NULL;
+	if (head->current.wlr_mode == wlr_mode) {
+		head->current.wlr_mode = NULL;
 	}
 
-	slist_remove_all(&head->modes, NULL, mode);
+	slist_remove_all(&head->modes, NULL, wlr_mode);
 }
 
 void heads_release_head(const struct Head * const head) {

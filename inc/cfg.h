@@ -139,8 +139,6 @@ struct Cfg *cfg_default(void);
 
 void cfg_apply_defaults(struct Cfg *cfg);
 
-struct Disabled *disabled_init_always(const char *name_desc);
-
 //
 // equality functions
 //

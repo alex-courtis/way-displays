@@ -265,17 +265,17 @@ static void merge_set__disabled(void **state) {
 	sset_add(cond->plugged, "FOUR");
 	pset_add(disabled1->conditions, cond);
 
-	assert_true(pset_add(s->to->disableds, disabled_init_always("to")));
-	assert_true(pset_add(s->to->disableds, disabled_init_always("both")));
+	assert_true(pset_add(s->to->disableds, disabled_init_name_desc("to")));
+	assert_true(pset_add(s->to->disableds, disabled_init_name_desc("both")));
 
-	assert_true(pset_add(s->from->disableds, disabled_init_always("from")));
-	assert_true(pset_add(s->from->disableds, disabled_init_always("both")));
+	assert_true(pset_add(s->from->disableds, disabled_init_name_desc("from")));
+	assert_true(pset_add(s->from->disableds, disabled_init_name_desc("both")));
 	assert_true(pset_add(s->from->disableds, disabled_clone(disabled1)));
 	assert_true(pset_add(s->from->disableds, disabled_clone(disabled2)));
 
-	assert_true(pset_add(s->expected->disableds, disabled_init_always("to")));
-	assert_true(pset_add(s->expected->disableds, disabled_init_always("both")));
-	assert_true(pset_add(s->expected->disableds, disabled_init_always("from")));
+	assert_true(pset_add(s->expected->disableds, disabled_init_name_desc("to")));
+	assert_true(pset_add(s->expected->disableds, disabled_init_name_desc("both")));
+	assert_true(pset_add(s->expected->disableds, disabled_init_name_desc("from")));
 	assert_true(pset_add(s->expected->disableds, disabled1));
 	assert_true(pset_add(s->expected->disableds, disabled2));
 
@@ -392,13 +392,13 @@ static void merge_del__adaptive_sync_off(void **state) {
 static void merge_del__disabled(void **state) {
 	struct State *s = *state;
 
-	pset_add(s->to->disableds, disabled_init_always("1"));
-	pset_add(s->to->disableds, disabled_init_always("2"));
+	pset_add(s->to->disableds, disabled_init_name_desc("1"));
+	pset_add(s->to->disableds, disabled_init_name_desc("2"));
 
-	pset_add(s->from->disableds, disabled_init_always("2"));
-	pset_add(s->from->disableds, disabled_init_always("3"));
+	pset_add(s->from->disableds, disabled_init_name_desc("2"));
+	pset_add(s->from->disableds, disabled_init_name_desc("3"));
 
-	pset_add(s->expected->disableds, disabled_init_always("1"));
+	pset_add(s->expected->disableds, disabled_init_name_desc("1"));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -598,9 +598,9 @@ static void validate_warn__(void **state) {
 	sset_add(s->expected->max_preferred_refresh, "pppppppppp");
 	sset_add(s->expected->max_preferred_refresh, "DP-1");
 
-	pset_add(s->expected->disableds, disabled_init_always("ddd"));
-	pset_add(s->expected->disableds, disabled_init_always("dddddddddd"));
-	pset_add(s->expected->disableds, disabled_init_always("DP-1"));
+	pset_add(s->expected->disableds, disabled_init_name_desc("ddd"));
+	pset_add(s->expected->disableds, disabled_init_name_desc("dddddddddd"));
+	pset_add(s->expected->disableds, disabled_init_name_desc("DP-1"));
 
 	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("cond");

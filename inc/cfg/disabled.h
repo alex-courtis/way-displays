@@ -8,7 +8,7 @@ struct Disabled {
 
 struct Disabled *disabled_init(void);
 
-struct Disabled *disabled_init_always(const char *name_desc);
+struct Disabled *disabled_init_name_desc(const char *name_desc);
 
 const struct PSet *disabled_pset_init(void);
 

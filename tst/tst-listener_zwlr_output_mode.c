@@ -1,6 +1,7 @@
 #include "tst.h"
 
 #include "assert-log.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -9,7 +10,7 @@
 #include "head.h"
 #include "log.h"
 #include "mode.h"
-#include "slist.h"
+#include "pmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "listeners.h"
@@ -21,40 +22,40 @@ static int before_each(void **state) {
 }
 
 static void preferred__first(void **state) {
-	struct Head head = { .name = "NAM", };
-	struct WlrMode mode_existing = { .width = 3840, .height = 2160, .preferred = false, .refresh_mhz = 60000, .head = &head, };
-	struct WlrMode mode_pref = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
+	struct Head *head = head_init();
+	struct WlrMode *wlr_mode_existing = wlr_mode_init(head, NULL, 3840, 2160, 60000, false);
+	struct WlrMode *wlr_mode_pref = wlr_mode_init(head, NULL, 2560, 1440, 30000, false);
 
-	slist_append(&head.modes, &mode_existing);
-	slist_append(&head.modes, &mode_pref);
+	pmap_put(head->wlr_modes, wlr_mode_existing, wlr_mode_existing);
+	pmap_put(head->wlr_modes, wlr_mode_pref, wlr_mode_pref);
 
-	zwlr_output_mode_listener()->preferred(&mode_pref, NULL);
+	zwlr_output_mode_listener()->preferred(wlr_mode_pref, NULL);
 
-	assert_false(mode_existing.preferred);
-	assert_true(mode_pref.preferred);
-
-	slist_free(&head.modes);
+	assert_false(wlr_mode_existing->preferred);
+	assert_true(wlr_mode_pref->preferred);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void preferred__subsequent(void **state) {
-	struct Head head = { .name = "NAM", };
-	struct WlrMode mode_existing = { .width = 3840, .height = 2160, .preferred = true, .refresh_mhz = 60000, .head = &head, };
-	struct WlrMode mode_subsequent = { .width = 2560, .height = 1440, .preferred = false, .refresh_mhz = 30000, .head = &head, };
+	struct Head *head = head_init_name("NAM");
+	struct WlrMode *wlr_mode_existing = wlr_mode_init(head, NULL, 3840, 2160, 60000, true);
+	struct WlrMode *wlr_mode_subsequent = wlr_mode_init(head, NULL, 2560, 1440, 30000, false);
 
-	slist_append(&head.modes, &mode_existing);
-	slist_append(&head.modes, &mode_subsequent);
+	pmap_put(head->wlr_modes, wlr_mode_existing, wlr_mode_existing);
+	pmap_put(head->wlr_modes, wlr_mode_subsequent, wlr_mode_subsequent);
 
-	zwlr_output_mode_listener()->preferred(&mode_subsequent, NULL);
+	zwlr_output_mode_listener()->preferred(wlr_mode_subsequent, NULL);
 
 	assert_log(INFO, "\nNAM: multiple preferred modes advertised: using initial 3840x2160@60Hz (60,000mHz) (preferred), ignoring 2560x1440@30Hz (30,000mHz)\n");
 	assert_logs_empty();
 
-	assert_true(mode_existing.preferred);
-	assert_false(mode_subsequent.preferred);
+	assert_true(wlr_mode_existing->preferred);
+	assert_false(wlr_mode_subsequent->preferred);
 
-	slist_free(&head.modes);
+	head_free(head);
 }
 
 int main(void) {

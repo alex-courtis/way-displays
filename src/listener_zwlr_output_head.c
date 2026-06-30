@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 #include <wayland-util.h>
 
@@ -45,11 +44,11 @@ static void mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	struct WlrMode *mode = wlr_mode_init(head, zwlr_output_mode_v1, 0, 0, 0, false);
+	struct WlrMode *wlr_mode = wlr_mode_init(head, zwlr_output_mode_v1, 0, 0, 0, false);
 
-	pmap_put(head->wlr_modes, zwlr_output_mode_v1, mode);
+	pmap_put(head->wlr_modes, zwlr_output_mode_v1, wlr_mode);
 
-	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), mode);
+	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), wlr_mode);
 }
 
 static void enabled(void *data,
@@ -67,7 +66,7 @@ static void current_mode(void *data,
 
 	const struct WlrMode *m = pmap_get(head->wlr_modes, zwlr_output_mode_v1);
 	if (m) {
-		head->current.mode = m;
+		head->current.wlr_mode = m;
 	}
 }
 
@@ -134,7 +133,7 @@ static void finished(void *data,
 	struct Head *head = data;
 
 	// dummy Head, just for printing
-	struct Head *head_departed = calloc(1, sizeof(struct Head));
+	struct Head *head_departed = head_init();
 	head_departed->name = strdup(head->name);
 	head_departed->description = strdup(head->description);
 	slist_append(&g_heads_departed, head_departed);

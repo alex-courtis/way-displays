@@ -22,6 +22,7 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -95,7 +96,7 @@ static void yaml_root_to_cfg__missing(void **state) {
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
-	pset_add(expected->disableds, disabled_init_always("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
 }
@@ -151,9 +152,9 @@ static void yaml_root_to_cfg__mode(void **state) {
 
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
-	pset_add(expected->disableds, disabled_init_always("eight"));
-	pset_add(expected->disableds, disabled_init_always("EIGHT"));
-	pset_add(expected->disableds, disabled_init_always("nine"));
+	pset_add(expected->disableds, disabled_init_name_desc("eight"));
+	pset_add(expected->disableds, disabled_init_name_desc("EIGHT"));
+	pset_add(expected->disableds, disabled_init_name_desc("nine"));
 
 	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
@@ -178,13 +179,13 @@ static void yaml_root_to_cfg__disabled(void **state) {
 
 	pset_add(expected->disableds, disabled);
 
-	pset_add(expected->disableds, disabled_init_always("BAD_DISABLED_IFS"));
-	pset_add(expected->disableds, disabled_init_always("MISTYPED_IF_SCALAR"));
-	pset_add(expected->disableds, disabled_init_always("MISTYPED_IF_MAP"));
-	pset_add(expected->disableds, disabled_init_always("MISTYPED_UN_PLUGGED_SCALAR"));
-	pset_add(expected->disableds, disabled_init_always("MISTYPED_UN_PLUGGED_MAP"));
-	pset_add(expected->disableds, disabled_init_always("MISTYPED_LID_MAP"));
-	pset_add(expected->disableds, disabled_init_always("NO_VALID_CONDITIONS"));
+	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_IF_SCALAR"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_IF_MAP"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_UN_PLUGGED_SCALAR"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_UN_PLUGGED_MAP"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_LID_MAP"));
+	pset_add(expected->disableds, disabled_init_name_desc("NO_VALID_CONDITIONS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
 }
@@ -280,7 +281,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected = cfg_default();
-	pset_add(expected->disableds, disabled_init_always("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 
@@ -429,34 +430,40 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(head->desired.y, 9);
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
-	const struct WlrMode *mode_current = head->current.mode;
-	assert_non_nul(mode_current);
-	assert_int_equal(mode_current->width, 10);
-	assert_int_equal(mode_current->height, 11);
-	assert_int_equal(mode_current->refresh_mhz, 12);
-	assert_true(mode_current->preferred);
+	const struct WlrMode *wlr_mode_current = head->current.wlr_mode;
+	assert_non_nul(wlr_mode_current);
+	assert_int_equal(wlr_mode_current->width, 10);
+	assert_int_equal(wlr_mode_current->height, 11);
+	assert_int_equal(wlr_mode_current->refresh_mhz, 12);
+	assert_true(wlr_mode_current->preferred);
 
-	const struct WlrMode *mode_desired = head->desired.mode;
-	assert_non_nul(mode_desired);
-	assert_int_equal(mode_desired->width, 13);
-	assert_int_equal(mode_desired->height, 14);
-	assert_int_equal(mode_desired->refresh_mhz, 15);
-	assert_false(mode_desired->preferred);
+	const struct WlrMode *wlr_mode_desired = head->desired.wlr_mode;
+	assert_non_nul(wlr_mode_desired);
+	assert_int_equal(wlr_mode_desired->width, 13);
+	assert_int_equal(wlr_mode_desired->height, 14);
+	assert_int_equal(wlr_mode_desired->refresh_mhz, 15);
+	assert_false(wlr_mode_desired->preferred);
 
-	assert_int_equal(slist_length(head->modes), 2);
-	struct WlrMode *mode1 = slist_at(head->modes, 0);
-	assert_non_nul(mode1);
-	assert_int_equal(mode1->width, 10);
-	assert_int_equal(mode1->height, 11);
-	assert_int_equal(mode1->refresh_mhz, 12);
-	assert_true(mode1->preferred);
+	assert_int_equal(pmap_size(head->wlr_modes), 2);
+	const struct PMapIt *it = pmap_it(head->wlr_modes);
 
-	struct WlrMode *mode2 = slist_at(head->modes, 1);
-	assert_non_nul(mode2);
-	assert_int_equal(mode2->width, 13);
-	assert_int_equal(mode2->height, 14);
-	assert_int_equal(mode2->refresh_mhz, 15);
-	assert_false(mode2->preferred);
+	const struct WlrMode *wlr_mode1 = it->val;
+	assert_non_nul(wlr_mode1);
+	assert_int_equal(wlr_mode1->width, 10);
+	assert_int_equal(wlr_mode1->height, 11);
+	assert_int_equal(wlr_mode1->refresh_mhz, 12);
+	assert_true(wlr_mode1->preferred);
+
+	it = pmap_it_next(it);
+
+	const struct WlrMode *wlr_mode2 = it->val;
+	assert_non_nul(wlr_mode2);
+	assert_int_equal(wlr_mode2->width, 13);
+	assert_int_equal(wlr_mode2->height, 14);
+	assert_int_equal(wlr_mode2->refresh_mhz, 15);
+	assert_false(wlr_mode2->preferred);
+
+	pmap_it_next(it);
 
 	assert_int_equal(head->current.transform, 3);
 	assert_int_equal(head->desired.transform, 4);

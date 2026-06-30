@@ -1,9 +1,9 @@
 #include "tst.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "assert-log.h"
 #include "fn.h"
@@ -25,13 +25,9 @@ static int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 	s->condition = condition_init();
 
-	struct Head *h1 = calloc(1, sizeof(struct Head));
-	struct Head *h2 = calloc(1, sizeof(struct Head));
-	struct Head *h3 = calloc(1, sizeof(struct Head));
-
-	h1->name = strdup("DP-1");
-	h2->name = strdup("DP-2");
-	h3->name = strdup("DP-3");
+	struct Head *h1 = head_init_name("DP-1");
+	struct Head *h2 = head_init_name("DP-2");
+	struct Head *h3 = head_init_name("DP-3");
 
 	slist_append(&g_heads, h1);
 	slist_append(&g_heads, h2);

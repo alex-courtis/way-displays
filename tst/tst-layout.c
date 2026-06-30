@@ -5,6 +5,7 @@
 #include "assert-wl.h"
 #include "asserts.h"
 #include "expects.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -16,9 +17,10 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "displ.h"
+#include "fn.h"
 #include "head.h"
 #include "log.h"
-#include "mode.h"
+#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smapi.h"
@@ -41,7 +43,7 @@ void handle_cancelled(void);
 
 
 // cppcheck-suppress staticFunction
-struct WlrMode *__wrap_head_find_mode(struct Head *head) {
+const struct WlrMode *__wrap_head_find_wlr_mode(struct Head * const head) {
 	check_expected_ptr(head);
 	return mock_ptr_type_checked(struct WlrMode*);
 }
@@ -54,7 +56,6 @@ wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
 
 
 struct State {
-	struct WlrMode *mode;
 	struct SList *heads;
 };
 
@@ -72,11 +73,12 @@ static int before_each(void **state) {
 
 	struct State *s = calloc(1, sizeof(struct State));
 
-	s->mode = calloc(1, sizeof(struct WlrMode));
 	for (int i = 0; i < 10; i++) {
-		struct Head *head = calloc(1, sizeof(struct Head));
+		struct Head *head = head_init();
 		head->desired.enabled = true;
-		head->desired.mode = s->mode;
+		const struct WlrMode *wlr_mode = wlr_mode_init_empty();
+		head->desired.wlr_mode = wlr_mode;
+		pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
 		slist_append(&s->heads, head);
 	}
 
@@ -85,7 +87,7 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	slist_free(&g_heads);
+	slist_free_vals(&g_heads, (fn_free)head_free);
 
 	free(g_displ);
 
@@ -93,8 +95,7 @@ static int after_each(void **state) {
 
 	struct State *s = *state;
 
-	slist_free_vals(&s->heads, NULL);
-	free(s->mode);
+	slist_free_vals(&s->heads, (fn_free)head_free);
 
 	free(s);
 	return 0;
@@ -114,39 +115,39 @@ static void order_heads__exact_partial_regex(void **state) {
 	sset_add(order_name_desc, "partial");
 
 	// heads
-	struct Head not_specified_1 = { .description = "not specified 1", };
-	struct Head exact0_partial =  { .description = "not an exact0 exact match" };
-	struct Head partial =         { .description = "a partial match" };
-	struct Head regex_match_1 =   { .description = "a regex match" };
-	struct Head exact1 =          { .description = "exact1" };
-	struct Head exact0 =          { .description = "exact0" };
-	struct Head regex_match_2 =   { .description = "another regex match" };
-	struct Head not_specified_2 = { .description = "not specified 2" };
-	slist_append(&heads, &not_specified_1);
-	slist_append(&heads, &exact0_partial);
-	slist_append(&heads, &partial);
-	slist_append(&heads, &regex_match_1);
-	slist_append(&heads, &exact1);
-	slist_append(&heads, &exact0);
-	slist_append(&heads, &regex_match_2);
-	slist_append(&heads, &not_specified_2);
+	struct Head *not_specified_1 = head_init_description("not specified 1");
+	struct Head *exact0_partial  = head_init_description("not an exact0 exact match");
+	struct Head *partial         = head_init_description("a partial match");
+	struct Head *regex_match_1   = head_init_description("a regex match");
+	struct Head *exact1          = head_init_description("exact1");
+	struct Head *exact0          = head_init_description("exact0");
+	struct Head *regex_match_2   = head_init_description("another regex match");
+	struct Head *not_specified_2 = head_init_description("not specified 2");
+	slist_append(&heads, not_specified_1);
+	slist_append(&heads, exact0_partial);
+	slist_append(&heads, partial);
+	slist_append(&heads, regex_match_1);
+	slist_append(&heads, exact1);
+	slist_append(&heads, exact0);
+	slist_append(&heads, regex_match_2);
+	slist_append(&heads, not_specified_2);
 
 	// expected
-	slist_append(&expected, &exact0);
-	slist_append(&expected, &exact0_partial);
-	slist_append(&expected, &exact1);
-	slist_append(&expected, &regex_match_1);
-	slist_append(&expected, &regex_match_2);
-	slist_append(&expected, &partial);
-	slist_append(&expected, &not_specified_1);
-	slist_append(&expected, &not_specified_2);
+	slist_append(&expected, exact0);
+	slist_append(&expected, exact0_partial);
+	slist_append(&expected, exact1);
+	slist_append(&expected, regex_match_1);
+	slist_append(&expected, regex_match_2);
+	slist_append(&expected, partial);
+	slist_append(&expected, not_specified_1);
+	slist_append(&expected, not_specified_2);
 
 	struct SList *heads_ordered = order_heads(order_name_desc, heads);
 
 	assert_heads_order(heads_ordered, expected);
 
 	sset_free(order_name_desc);
-	slist_free(&heads);
+	slist_free_vals(&heads, (fn_free)head_free);
 	slist_free(&expected);
 	slist_free(&heads_ordered);
 
@@ -165,33 +166,33 @@ static void order_heads__exact_regex_catchall(void **state) {
 	sset_add(order_name_desc, "exact9");
 
 	// heads
-	struct Head exact9 =          { .description = "exact9" };
-	struct Head not_specified_1 = { .description = "not specified 1", };
-	struct Head regex_match_1 =   { .description = "a regex match" };
-	struct Head exact0 =          { .description = "exact0" };
-	struct Head regex_match_2 =   { .description = "another regex match" };
-	struct Head not_specified_2 = { .description = "not specified 2" };
-	slist_append(&heads, &not_specified_1);
-	slist_append(&heads, &regex_match_1);
-	slist_append(&heads, &exact0);
-	slist_append(&heads, &regex_match_2);
-	slist_append(&heads, &not_specified_2);
-	slist_append(&heads, &exact9);
+	struct Head *exact9          = head_init_description("exact9");
+	struct Head *not_specified_1 = head_init_description("not specified 1");
+	struct Head *regex_match_1   = head_init_description("a regex match");
+	struct Head *exact0          = head_init_description("exact0");
+	struct Head *regex_match_2   = head_init_description("another regex match");
+	struct Head *not_specified_2 = head_init_description("not specified 2");
+	slist_append(&heads, not_specified_1);
+	slist_append(&heads, regex_match_1);
+	slist_append(&heads, exact0);
+	slist_append(&heads, regex_match_2);
+	slist_append(&heads, not_specified_2);
+	slist_append(&heads, exact9);
 
 	// expected
-	slist_append(&expected, &exact0);
-	slist_append(&expected, &regex_match_1);
-	slist_append(&expected, &regex_match_2);
-	slist_append(&expected, &not_specified_1);
-	slist_append(&expected, &not_specified_2);
-	slist_append(&expected, &exact9);
+	slist_append(&expected, exact0);
+	slist_append(&expected, regex_match_1);
+	slist_append(&expected, regex_match_2);
+	slist_append(&expected, not_specified_1);
+	slist_append(&expected, not_specified_2);
+	slist_append(&expected, exact9);
 
 	struct SList *heads_ordered = order_heads(order_name_desc, heads);
 
 	assert_heads_order(heads_ordered, expected);
 
 	sset_free(order_name_desc);
-	slist_free(&heads);
+	slist_free_vals(&heads, (fn_free)head_free);
 	slist_free(&expected);
 	slist_free(&heads_ordered);
 
@@ -200,16 +201,16 @@ static void order_heads__exact_regex_catchall(void **state) {
 
 static void order_heads__no_order(void **state) {
 	struct SList *heads = NULL;
-	struct Head head = { .name = "head", };
+	struct Head *head = head_init_name("head");
 
-	slist_append(&heads, &head);
+	slist_append(&heads, head);
 
 	// null/empty order
 	struct SList *heads_ordered = order_heads(NULL, heads);
 	assert_heads_order(heads_ordered, heads);
 
 	slist_free(&heads_ordered);
-	slist_free(&heads);
+	slist_free_vals(&heads, (fn_free)head_free);
 
 	assert_logs_empty();
 }
@@ -335,411 +336,428 @@ static void position_heads__row_bottom(void **state) {
 }
 
 static void desire_enabled__lid_closed_many(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-	};
-	slist_append(&g_heads, &head0);
-	struct Head head1 = {
-		.name = "head1",
-		.desired.enabled = true,
-	};
-	slist_append(&g_heads, &head1);
+	struct Head *head0 = head_init_name("head0");
+	slist_append(&g_heads, head0);
+
+	head0->desired.enabled = true;
+
+	struct Head *head1 = head_init_name("head1");
+	slist_append(&g_heads, head1);
+
+	head1->desired.enabled = true;
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, true);
 
-	desire_enabled(&head0);
+	desire_enabled(head0);
 
-	assert_false(head0.desired.enabled);
+	assert_false(head0->desired.enabled);
 
 	assert_logs_empty();
 }
 
 static void desire_enabled__lid_closed_one(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-	};
-	slist_append(&g_heads, &head0);
+	struct Head *head = head_init_name("head");
+	slist_append(&g_heads, head);
 
-	expect_str(__wrap_lid_is_closed, name, "head0");
+	head->desired.enabled = true;
+
+	expect_str(__wrap_lid_is_closed, name, "head");
 	will_return_int(__wrap_lid_is_closed, true);
 
-	desire_enabled(&head0);
+	desire_enabled(head);
 
-	assert_true(head0.desired.enabled);
+	assert_true(head->desired.enabled);
 
 	assert_logs_empty();
 }
 
 static void desire_enabled__lid_closed_one_disabled(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-	};
-	slist_append(&g_heads, &head0);
+	struct Head *head = head_init_name("head0");
+	slist_append(&g_heads, head);
 
-	pset_add(g_cfg->disableds, disabled_init_always("![hH]ead[0-9]"));
+	head->desired.enabled = true;
+
+	pset_add(g_cfg->disableds, disabled_init_name_desc("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, true);
 
-	desire_enabled(&head0);
+	desire_enabled(head);
 
-	assert_false(head0.desired.enabled);
+	assert_false(head->desired.enabled);
 
 	assert_logs_empty();
 }
 
 static void desire_enabled__override(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = false,
-		.overrided_enabled = OverrideTrue,
-	};
-	slist_append(&g_heads, &head0);
+	struct Head *head = head_init_name("head0");
+	slist_append(&g_heads, head);
 
-	pset_add(g_cfg->disableds, disabled_init_always("![hH]ead[0-9]"));
+	head->desired.enabled = false;
+	head->overrided_enabled = OverrideTrue;
+
+	pset_add(g_cfg->disableds, disabled_init_name_desc("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
 
-	desire_enabled(&head0);
+	desire_enabled(head);
 
-	assert_true(head0.desired.enabled);
-	assert_true(head0.overrided_enabled == OverrideTrue);
+	assert_true(head->desired.enabled);
+	assert_true(head->overrided_enabled == OverrideTrue);
 
 	assert_logs_empty();
 }
 
 static void desire_enabled__override_reset(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-		.overrided_enabled = OverrideFalse,
-	};
-	slist_append(&g_heads, &head0);
+	struct Head *head = head_init_name("head0");
+	slist_append(&g_heads, head);
 
-	pset_add(g_cfg->disableds, disabled_init_always("![hH]ead[0-9]"));
+	head->desired.enabled = true;
+	head->overrided_enabled = OverrideFalse;
+
+	pset_add(g_cfg->disableds, disabled_init_name_desc("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
 
-	desire_enabled(&head0);
+	desire_enabled(head);
 
-	assert_false(head0.desired.enabled);
-	assert_true(head0.overrided_enabled == NoOverride);
+	assert_false(head->desired.enabled);
+	assert_true(head->overrided_enabled == NoOverride);
 
 	assert_logs_empty();
 }
 
 static void desire_enabled__no_override(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = false,
-		.overrided_enabled = OverrideFalse,
-	};
-	slist_append(&g_heads, &head0);
+	struct Head *head = head_init_name("head");
+	slist_append(&g_heads, head);
 
-	expect_str(__wrap_lid_is_closed, name, "head0");
+	head->desired.enabled = false;
+	head->overrided_enabled = OverrideFalse;
+
+	expect_str(__wrap_lid_is_closed, name, "head");
 	will_return_int(__wrap_lid_is_closed, false);
 
-	desire_enabled(&head0);
+	desire_enabled(head);
 
-	assert_false(head0.desired.enabled);
-	assert_true(head0.overrided_enabled == OverrideFalse);
+	assert_false(head->desired.enabled);
+	assert_true(head->overrided_enabled == OverrideFalse);
 
 	assert_logs_empty();
 }
 
 static void desire_mode__disabled(void **state) {
-	struct WlrMode mode0 = { 0 };
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = false,
-		.desired.mode = &mode0,
-	};
+	struct Head *head = head_init_name("head");
+	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
 
-	desire_mode(&head0);
+	head->desired.enabled = false;
+	head->desired.wlr_mode = wlr_mode;
+	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
 
-	assert_ptr_equal(head0.desired.mode, &mode0);
-	assert_false(head0.desired.enabled);
-	assert_false(head0.warned_no_mode);
+	desire_mode(head);
+
+	assert_ptr_equal(head->desired.wlr_mode, wlr_mode);
+	assert_false(head->desired.enabled);
+	assert_false(head->warned_no_mode);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_mode__no_mode(void **state) {
-	struct WlrMode mode0 = { 0 };
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-		.desired.mode = &mode0,
-	};
+	struct Head *head = head_init_name("head");
+	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
 
-	expect_ptr(__wrap_head_find_mode, head, &head0);
-	will_return_ptr_type(__wrap_head_find_mode, NULL, struct WlrMode*);
+	head->desired.enabled = true;
+	head->desired.wlr_mode = wlr_mode;
+	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
 
-	desire_mode(&head0);
+	expect_ptr(__wrap_head_find_wlr_mode, head, head);
+	will_return_ptr_type(__wrap_head_find_wlr_mode, NULL, struct WlrMode*);
 
-	assert_ptr_equal(head0.desired.mode, &mode0);
-	assert_false(head0.desired.enabled);
-	assert_true(head0.warned_no_mode);
+	desire_mode(head);
+
+	assert_ptr_equal(head->desired.wlr_mode, wlr_mode);
+	assert_false(head->desired.enabled);
+	assert_true(head->warned_no_mode);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_mode__no_mode_warned(void **state) {
-	struct WlrMode mode0 = { 0 };
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-		.desired.mode = &mode0,
-		.warned_no_mode = true,
-	};
+	struct Head *head = head_init_name("head");
+	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
 
-	expect_ptr(__wrap_head_find_mode, head, &head0);
-	will_return_ptr_type(__wrap_head_find_mode, NULL, struct WlrMode*);
+	head->desired.enabled = true;
+	head->desired.wlr_mode = wlr_mode;
+	head->warned_no_mode = true;
+	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
 
-	desire_mode(&head0);
+	expect_ptr(__wrap_head_find_wlr_mode, head, head);
+	will_return_ptr_type(__wrap_head_find_wlr_mode, NULL, struct WlrMode*);
 
-	assert_ptr_equal(head0.desired.mode, &mode0);
-	assert_false(head0.desired.enabled);
-	assert_true(head0.warned_no_mode);
+	desire_mode(head);
+
+	assert_ptr_equal(head->desired.wlr_mode, wlr_mode);
+	assert_false(head->desired.enabled);
+	assert_true(head->warned_no_mode);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_mode__ok(void **state) {
-	struct WlrMode mode0 = { 0 };
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-		.desired.mode = &mode0,
-	};
-	struct WlrMode mode1 = { 0 };
+	struct Head *head = head_init_name("head");
+	const struct WlrMode *wlr_mode0 = wlr_mode_init_head(head);
 
-	expect_ptr(__wrap_head_find_mode, head, &head0);
-	will_return_ptr_type(__wrap_head_find_mode, &mode1, struct WlrMode*);
+	head->desired.enabled = true;
+	head->desired.wlr_mode = wlr_mode0;
+	pmap_put(head->wlr_modes, wlr_mode0, wlr_mode0);
 
-	desire_mode(&head0);
+	struct WlrMode *wlr_mode1 = wlr_mode_init_head(head);
+	pmap_put(head->wlr_modes, wlr_mode1, wlr_mode1);
 
-	assert_ptr_equal(head0.desired.mode, &mode1);
-	assert_true(head0.desired.enabled);
-	assert_false(head0.warned_no_mode);
+	expect_ptr(__wrap_head_find_wlr_mode, head, head);
+	will_return_ptr_type(__wrap_head_find_wlr_mode, wlr_mode1, struct WlrMode*);
+
+	desire_mode(head);
+
+	assert_ptr_equal(head->desired.wlr_mode, wlr_mode1);
+	assert_true(head->desired.enabled);
+	assert_false(head->warned_no_mode);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_scale__disabled(void **state) {
-	struct Head head0 = {
-		.desired.enabled = false,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = false;
 
-	desire_scale(&head0);
+	desire_scale(head);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_scale__no_scaling(void **state) {
-	struct Head head0 = {
-		.desired.enabled = true,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
 	g_cfg->scaling = OFF;
 	g_cfg->auto_scale = ON;
 
-	desire_scale(&head0);
+	desire_scale(head);
 
-	assert_wl_fixed_t_equal_double(head0.desired.scale, 1);
+	assert_wl_fixed_t_equal_double(head->desired.scale, 1);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_scale__no_auto(void **state) {
-	struct Head head0 = {
-		.desired.enabled = true,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = OFF;
 
-	desire_scale(&head0);
+	desire_scale(head);
 
-	assert_wl_fixed_t_equal_double(head0.desired.scale, 1);
+	assert_wl_fixed_t_equal_double(head->desired.scale, 1);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_scale__auto(void **state) {
-	struct Head head0 = {
-		.desired.enabled = true,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
+
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	expect_ptr(__wrap_head_auto_scale, head, &head0);
+	expect_ptr(__wrap_head_auto_scale, head, head);
 	will_return_int(__wrap_head_auto_scale, wl_fixed_from_double(2.5));
 
-	desire_scale(&head0);
+	desire_scale(head);
 
-	assert_wl_fixed_t_equal_double(head0.desired.scale, 2.5);
+	assert_wl_fixed_t_equal_double(head->desired.scale, 2.5);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_scale__user(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
+
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
 	smapi_put(g_cfg->scales, "![Hh]ea.*", 3500);
 	smapi_put(g_cfg->scales, "head1", 7500);
 
-	desire_scale(&head0);
+	desire_scale(head);
 
-	assert_wl_fixed_t_equal_double(head0.desired.scale, 3.5);
+	assert_wl_fixed_t_equal_double(head->desired.scale, 3.5);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_transform__disabled(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = false,
-		.desired.transform = WL_OUTPUT_TRANSFORM_90,
-	};
-	smapi_put(g_cfg->transforms, "head0", WL_OUTPUT_TRANSFORM_180);
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = false;
+	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
-	desire_transform(&head0);
+	smapi_put(g_cfg->transforms, "head", WL_OUTPUT_TRANSFORM_180);
 
-	assert_int_equal(head0.desired.transform, WL_OUTPUT_TRANSFORM_90);
+	desire_transform(head);
+
+	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_90);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_transform__no_transform(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-		.desired.transform = WL_OUTPUT_TRANSFORM_90,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
+	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
-	desire_transform(&head0);
+	desire_transform(head);
 
-	assert_int_equal(head0.desired.transform, WL_OUTPUT_TRANSFORM_NORMAL);
+	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_NORMAL);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_transform__user(void **state) {
-	struct Head head0 = {
-		.name = "head0",
-		.desired.enabled = true,
-		.desired.transform = WL_OUTPUT_TRANSFORM_90,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
+	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
+
 	smapi_put(g_cfg->transforms, "head9", WL_OUTPUT_TRANSFORM_270);
-	smapi_put(g_cfg->transforms, "head0", WL_OUTPUT_TRANSFORM_180);
+	smapi_put(g_cfg->transforms, "head", WL_OUTPUT_TRANSFORM_180);
 
-	desire_transform(&head0);
+	desire_transform(head);
 
-	assert_int_equal(head0.desired.transform, WL_OUTPUT_TRANSFORM_180);
+	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_180);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_adaptive_sync__head_disabled(void **state) {
-	struct Head head0 = {
-		.desired.enabled = false,
-		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = false;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	desire_adaptive_sync(&head0);
+	desire_adaptive_sync(head);
 
-	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_adaptive_sync__failed(void **state) {
-	struct Head head0 = {
-		.desired.enabled = true,
-		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
-		.adaptive_sync_failed = true,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head->adaptive_sync_failed = true;
 
-	desire_adaptive_sync(&head0);
+	desire_adaptive_sync(head);
 
-	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_adaptive_sync__disabled(void **state) {
-	struct Head head0 = {
-		.name = "some head",
-		.desired.enabled = true,
-		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
-	};
+	struct Head *head = head_init_name("some head");
+	head->desired.enabled = true;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
 	sset_add(g_cfg->adaptive_sync_off, "!.*hea");
 
-	desire_adaptive_sync(&head0);
+	desire_adaptive_sync(head);
 
-	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_adaptive_sync__enabled(void **state) {
-	struct Head head0 = {
-		.desired.enabled = true,
-		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	desire_adaptive_sync(&head0);
+	desire_adaptive_sync(head);
 
-	assert_int_equal(head0.desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_reapply__required(void **state) {
-	struct Head head0 = {
-		.desired.enabled = true,
-		.reapply_required = true,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
+	head->reapply_required = true;
 
-	desire_reapply(&head0);
+	desire_reapply(head);
 
-	assert_false(head0.desired.enabled);
+	assert_false(head->desired.enabled);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void desire_reapply__not_required(void **state) {
-	struct Head head0 = {
-		.desired.enabled = true,
-		.reapply_required = false,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.enabled = true;
+	head->reapply_required = false;
 
-	desire_reapply(&head0);
+	desire_reapply(head);
 
-	assert_true(head0.desired.enabled);
+	assert_true(head->desired.enabled);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void handle_success__head_changing_adaptive_sync(void **state) {
-	struct Head head = {
-		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
-		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
-		.adaptive_sync_failed = false,
-	};
+	struct Head *head = head_init_name("head");
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head->adaptive_sync_failed = false;
+
 	g_displ->delta.element = VRR_OFF;
-	g_displ->delta.head = &head;
+	g_displ->delta.head = head;
 
 	expect_int_value(__wrap_call_back, t, INFO);
 	expect_str(__wrap_call_back, msg1, "Changes successful");
@@ -750,39 +768,43 @@ static void handle_success__head_changing_adaptive_sync(void **state) {
 	assert_log(INFO, "\nChanges successful\n");
 	assert_logs_empty();
 
-	assert_false(head.adaptive_sync_failed);
+	assert_false(head->adaptive_sync_failed);
+
+	head_free(head);
 }
 
 static void handle_success__head_changing_adaptive_sync_fail(void **state) {
-	struct Head head = {
-		.name = "head",
-		.model = NULL, // fall back to placeholder
-		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
-		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
-	};
+	struct Head *head = head_init_name("head");
+	head->model = NULL;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+
 	g_displ->delta.element = VRR_OFF;
-	g_displ->delta.head = &head;
+	g_displ->delta.head = head;
 
 	expect_int_value(__wrap_print_adaptive_sync_fail, t, WARNING);
-	expect_ptr(__wrap_print_adaptive_sync_fail, head, &head);
+	expect_ptr(__wrap_print_adaptive_sync_fail, head, head);
 
 	expect_int_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
-	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, &head);
+	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, head);
 
 	handle_success();
 
-	assert_true(head.adaptive_sync_failed);
+	assert_true(head->adaptive_sync_failed);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void handle_success__head_changing_mode(void **state) {
-	struct WlrMode mode = { 0 };
-	struct Head head = {
-		.desired.mode = &mode,
-	};
+	struct Head *head = head_init_name("head");
+	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
+	head->desired.wlr_mode = wlr_mode;
+	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+
 	g_displ->delta.element = MODE;
-	g_displ->delta.head = &head;
+	g_displ->delta.head = head;
 
 	expect_int_value(__wrap_call_back, t, INFO);
 	expect_str(__wrap_call_back, msg1, "Changes successful");
@@ -793,7 +815,9 @@ static void handle_success__head_changing_mode(void **state) {
 	assert_log(INFO, "\nChanges successful\n");
 	assert_logs_empty();
 
-	assert_ptr_equal(head.current.mode, &mode);
+	assert_ptr_equal(head->current.wlr_mode, wlr_mode);
+
+	head_free(head);
 }
 
 static void handle_success__ok(void **state) {
@@ -810,57 +834,63 @@ static void handle_success__ok(void **state) {
 }
 
 static void handle_failure__mode(void **state) {
-	struct WlrMode mode_cur = { 0 };
-	struct WlrMode mode_des = { 0 };
-	struct Head head = {
-		.name = "nam",
-		.current.mode = &mode_cur,
-		.desired.mode = &mode_des,
-	};
+	struct Head *head = head_init_name("nam");
+	const struct WlrMode *wlr_mode_cur = wlr_mode_init_head(head);
+	const struct WlrMode *wlr_mode_des = wlr_mode_init_head(head);
+
+	head->current.wlr_mode = wlr_mode_cur;
+	head->desired.wlr_mode = wlr_mode_des;
+
+	pmap_put(head->wlr_modes, wlr_mode_cur, wlr_mode_cur);
+	pmap_put(head->wlr_modes, wlr_mode_des, wlr_mode_des);
+
 	g_displ->delta.element = MODE;
-	g_displ->delta.head = &head;
+	g_displ->delta.head = head;
 
 	expect_int_value(__wrap_print_mode_fail, t, ERROR);
-	expect_ptr(__wrap_print_mode_fail, head, &head);
-	expect_ptr(__wrap_print_mode_fail, mode, &mode_des);
+	expect_ptr(__wrap_print_mode_fail, head, head);
+	expect_ptr(__wrap_print_mode_fail, wlr_mode, wlr_mode_des);
 
 	expect_int_value(__wrap_call_back_mode_fail, t, ERROR);
-	expect_ptr(__wrap_call_back_mode_fail, head, &head);
-	expect_ptr(__wrap_call_back_mode_fail, mode, &mode_des);
+	expect_ptr(__wrap_call_back_mode_fail, head, head);
+	expect_ptr(__wrap_call_back_mode_fail, wlr_mode, wlr_mode_des);
 
 	handle_failure();
 
-	assert_nul(head.current.mode);
-	assert_ptr_equal(head.desired.mode, &mode_des);
+	assert_nul(head->current.wlr_mode);
+	assert_ptr_equal(head->desired.wlr_mode, wlr_mode_des);
 
-	assert_ptr_equal(slist_find_equal_val(head.modes_failed, NULL, &mode_des), &mode_des);
+	assert_ptr_equal(slist_find_equal_val(head->wlr_modes_failed, NULL, wlr_mode_des), wlr_mode_des);
 
-	slist_free(&head.modes_failed);
+	slist_free(&head->wlr_modes_failed);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void handle_failure__adaptive_sync(void **state) {
-	struct Head head = {
-		.name = "nam",
-		.model = "mod",
-		.current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED,
-		.desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED,
-	};
+	struct Head *head = head_init_name("nam");
+	head->model = strdup("mod");
+	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+
 	g_displ->delta.element = VRR_OFF;
-	g_displ->delta.head = &head;
+	g_displ->delta.head = head;
 
 	expect_int_value(__wrap_print_adaptive_sync_fail, t, WARNING);
-	expect_ptr(__wrap_print_adaptive_sync_fail, head, &head);
+	expect_ptr(__wrap_print_adaptive_sync_fail, head, head);
 
 	expect_int_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
-	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, &head);
+	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, head);
 
 	handle_failure();
 
-	assert_true(head.adaptive_sync_failed);
+	assert_true(head->adaptive_sync_failed);
 
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void handle_failure__unspecified(void **state) {

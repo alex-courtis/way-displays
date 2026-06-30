@@ -25,7 +25,7 @@ enum ManualOverride {
 };
 
 struct HeadState {
-	const struct WlrMode *mode;
+	const struct WlrMode *wlr_mode;
 	wl_fixed_t scale;
 	bool enabled;
 	// layout coords
@@ -58,7 +58,7 @@ struct Head {
 	struct HeadState desired;
 	bool reapply_required;
 
-	struct SList *modes_failed;
+	struct SList *wlr_modes_failed;
 	bool adaptive_sync_failed;
 
 	struct {
@@ -105,11 +105,11 @@ void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
 //  invalid user mode: warning
 //  no preferred:      info
 // maybe sets warned_no_preferred
-const struct WlrMode *head_find_mode(struct Head * const head);
+const struct WlrMode *head_find_wlr_mode(struct Head * const head);
 
-const struct WlrMode *head_max_mode(const struct Head * const head);
+const struct WlrMode *head_max_wlr_mode(const struct Head * const head);
 
-const struct WlrMode *head_preferred_mode(const struct Head * const head);
+const struct WlrMode *head_preferred_wlr_mode(const struct Head * const head);
 
 bool head_current_not_desired(const struct Head * const head);
 
@@ -127,7 +127,7 @@ void heads_reapply(struct SList *heads);
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
 
-void head_release_mode(struct Head * const head, const struct WlrMode * const mode);
+void head_release_mode(struct Head * const head, const struct WlrMode * const wlr_mode);
 
 void head_free(struct Head *head);
 

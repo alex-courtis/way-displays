@@ -33,7 +33,6 @@ int yaml_head_overrides_to_map(struct MC *c, const struct Head*         const he
 int yaml_head_state_to_map    (struct MC *c, const struct HeadState*    const head_state);
 int yaml_lid_to_map           (struct MC *c, const struct Lid*          const lid);
 int yaml_messages_to_seq      (struct MC *c, const struct IpcOperation* const ipc_operation);
-int yaml_wlr_mode_to_map      (struct MC *c, const struct WlrMode*      const wlr_mode);
 int yaml_state_to_map         (struct MC *c); // g_heads and g_lid
 
 // yaml_map_add_pset: fn_yaml_v_to_node
@@ -49,5 +48,8 @@ int yaml_user_mode_to_map(struct MC *c, const char* const name_desc, const struc
 // yaml_map_add_smapi: fn_yaml_ki_to_node
 int yaml_scale_to_map    (struct MC *c, const char* const name_desc, const size_t scale);
 int yaml_transform_to_map(struct MC *c, const char* const name_desc, const size_t transform);
+
+// yaml_map_add_pmap: fn_yaml_kv_to_node
+int yaml_wlr_mode_to_map (struct MC *c, const void* const unused,    const struct WlrMode* const wlr_mode);
 
 #endif // YAML_MARSHAL_TYPES_H

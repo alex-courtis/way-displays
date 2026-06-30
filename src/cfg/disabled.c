@@ -4,7 +4,6 @@
 
 #include "cfg/disabled.h"
 
-#include "cfg.h"
 #include "cfg/condition.h"
 #include "fn.h"
 #include "pset.h"
@@ -33,7 +32,7 @@ struct Disabled *disabled_init(void) {
 	return d;
 }
 
-struct Disabled *disabled_init_always(const char *name_desc) {
+struct Disabled *disabled_init_name_desc(const char *name_desc) {
 	struct Disabled *d = disabled_init();
 
 	if (name_desc) {

@@ -443,8 +443,8 @@ static void parse_element__disabled_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, DISABLED, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	pset_add(expected->disableds, disabled_init_always("ONE"));
-	pset_add(expected->disableds, disabled_init_always("TWO"));
+	pset_add(expected->disableds, disabled_init_name_desc("ONE"));
+	pset_add(expected->disableds, disabled_init_name_desc("TWO"));
 
 	assert_cfg_equal(actual, expected);
 
