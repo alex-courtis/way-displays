@@ -84,6 +84,9 @@ bool imap_contains_val(const struct IMap* const map, const void* const val);
 // find the first key/val match, {0,NULL} when no matches or NULL match
 struct IMapPair imap_match(const struct IMap* const map, fn_match_size_t_ptr match, const void* const data);
 
+// find the first key match, {0,NULL} when no matches or NULL match
+struct IMapPair imap_match_key(const struct IMap* const map, fn_match_size_t match, const void* const data);
+
 // find the first val match, {0,NULL} when no matches or NULL match
 struct IMapPair imap_match_val(const struct IMap* const map, fn_match_ptr match, const void* const data);
 

@@ -17,6 +17,7 @@ struct SMapI {
 
 struct SMapIMatchData {
 	fn_match_str_size_t match_key_val;
+	fn_match_str match_key;
 	fn_match_size_t match_val;
 	const void *data;
 };
@@ -44,6 +45,11 @@ static char *str_val_size_t(const void* const val) {
 static bool match_key_val_wrapper(const void* const key, const void* const val, const void* const data) {
 	const struct SMapIMatchData* const matcher = data;
 	return matcher->match_key_val(key, *(size_t*)val, matcher->data);
+}
+
+static bool match_key_wrapper(const void* const key, const void* const data) {
+	const struct SMapIMatchData* const matcher = data;
+	return matcher->match_key(key, matcher->data);
 }
 
 static bool match_val_wrapper(const void* const val, const void* const data) {
@@ -174,6 +180,25 @@ struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_str_size_t 
 	};
 
 	struct PMapPair pres = pmap_match(map->pmap, match_key_val_wrapper, &match_data);
+
+	res.key = pres.key;
+	res.val = pres.val ? *(size_t*)pres.val : 0;
+
+	return res;
+}
+
+struct SMapIPair smapi_match_key(const struct SMapI* const map, fn_match_str match, const void* const data) {
+	struct SMapIPair res = { 0 };
+
+	if (!map || !match)
+		return res;
+
+	struct SMapIMatchData match_data = {
+		.match_key = match,
+		.data = data,
+	};
+
+	struct PMapPair pres = pmap_match_key(map->pmap, match_key_wrapper, &match_data);
 
 	res.key = pres.key;
 	res.val = pres.val ? *(size_t*)pres.val : 0;

@@ -118,6 +118,20 @@ struct SMapSPair smaps_match(const struct SMapS* const map, fn_match_str_str mat
 	return res;
 }
 
+struct SMapSPair smaps_match_key(const struct SMapS* const map, fn_match_str match, const void* const data) {
+	struct SMapSPair res = { 0 };
+
+	if (!map)
+		return res;
+
+	struct PMapPair pres = pmap_match_key(map->pmap, (fn_match_ptr)match, data);
+
+	res.key = pres.key;
+	res.val = pres.val;
+
+	return res;
+}
+
 struct SMapSPair smaps_match_val(const struct SMapS* const map, fn_match_str match, const void* const data) {
 	struct SMapSPair res = { 0 };
 

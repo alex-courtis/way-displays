@@ -299,6 +299,25 @@ struct PMapPair pmap_match(const struct PMap* const map, fn_match_ptr_ptr match,
 	return res;
 }
 
+struct PMapPair pmap_match_key(const struct PMap* const map, fn_match_ptr match, const void* const data) {
+	struct PMapPair res = { 0 };
+
+	if (!map || !match)
+		return res;
+
+	const void **k;
+	const void **v;
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+		if (match(*k, data)) {
+			res.key = *k;
+			res.val = *v;
+			break;
+		}
+	}
+
+	return res;
+}
+
 struct PMapPair pmap_match_val(const struct PMap* const map, fn_match_ptr match, const void* const data) {
 	struct PMapPair res = { 0 };
 

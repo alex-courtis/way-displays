@@ -91,6 +91,9 @@ bool pmap_contains_val(const struct PMap* const map, const void* const val);
 // find the first key/val match, {NULL,NULL} when no matches or NULL match
 struct PMapPair pmap_match(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data);
 
+// find the first key match, {NULL,NULL} when no matches or NULL match
+struct PMapPair pmap_match_key(const struct PMap* const map, fn_match_ptr match, const void* const data);
+
 // find the first val match, {NULL,NULL} when no matches or NULL match
 struct PMapPair pmap_match_val(const struct PMap* const map, fn_match_ptr match, const void* const data);
 

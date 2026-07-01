@@ -77,6 +77,9 @@ bool smapi_contains_val(const struct SMapI* const map, const size_t val);
 // find the first key/val match, {NULL,0} when no matches or NULL match
 struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_str_size_t match, const void* const data);
 
+// find the first key match, {NULL,0} when no matches or NULL match
+struct SMapIPair smapi_match_key(const struct SMapI* const map, fn_match_str match, const void* const data);
+
 // find the first val match, {NULL,0} when no matches or NULL match
 struct SMapIPair smapi_match_val(const struct SMapI* const map, fn_match_size_t match, const void* const data);
 
