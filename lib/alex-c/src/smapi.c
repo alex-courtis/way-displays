@@ -1,9 +1,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "fn.h"
 #include "pmap.h"
+#include "sset.h"
 #include "str.h"
 
 #include "smapi.h"
@@ -13,14 +15,15 @@ struct SMapI {
 	const struct PMap *pmap;
 };
 
-struct SMapIItMatchData {
-	fn_match_smapi match;
+struct SMapIMatchData {
+	fn_match_str_size_t match_key_val;
+	fn_match_size_t match_val;
 	const void *data;
 };
 
 struct SMapIItState {
 	const struct PMapIt *pit;
-	const struct SMapIItMatchData *match_data;
+	const struct SMapIMatchData *match_data;
 };
 
 static bool equal_val_size_t(const void* const a, const void* const b) {
@@ -39,8 +42,13 @@ static char *str_val_size_t(const void* const val) {
 }
 
 static bool match_key_val_wrapper(const void* const key, const void* const val, const void* const data) {
-	const struct SMapIItMatchData* const matcher = data;
-	return matcher->match(key, *(size_t*)val, matcher->data);
+	const struct SMapIMatchData* const matcher = data;
+	return matcher->match_key_val(key, *(size_t*)val, matcher->data);
+}
+
+static bool match_val_wrapper(const void* const val, const void* const data) {
+	const struct SMapIMatchData* const matcher = data;
+	return matcher->match_val(*(size_t*)val, matcher->data);
 }
 
 static struct SMapIIt *it_init(const struct PMapIt *pit) {
@@ -150,14 +158,18 @@ bool smapi_contains_key(const struct SMapI* const map, const char* const key) {
 	return map ? pmap_contains_key(map->pmap, key) : false;
 }
 
-struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_smapi match, const void* const data) {
+bool smapi_contains_val(const struct SMapI* const map, const size_t val) {
+	return map ? pmap_contains_val(map->pmap, &val) : false;
+}
+
+struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_str_size_t match, const void* const data) {
 	struct SMapIPair res = { 0 };
 
 	if (!map || !match)
 		return res;
 
-	struct SMapIItMatchData match_data = {
-		.match = match,
+	struct SMapIMatchData match_data = {
+		.match_key_val = match,
 		.data = data,
 	};
 
@@ -169,19 +181,57 @@ struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_smapi match
 	return res;
 }
 
+struct SMapIPair smapi_match_val(const struct SMapI* const map, fn_match_size_t match, const void* const data) {
+	struct SMapIPair res = { 0 };
+
+	if (!map || !match)
+		return res;
+
+	struct SMapIMatchData match_data = {
+		.match_val = match,
+		.data = data,
+	};
+
+	struct PMapPair pres = pmap_match_val(map->pmap, match_val_wrapper, &match_data);
+
+	res.key = pres.key;
+	res.val = pres.val ? *(size_t*)pres.val : 0;
+
+	return res;
+}
+
 const struct SMapIIt *smapi_it(const struct SMapI* const map) {
 	return map ? it_init(pmap_it(map->pmap)) : NULL;
 }
 
-const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_smapi match, const void* const data) {
+const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_str_size_t match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
-	struct SMapIItMatchData *match_data = calloc(1, sizeof(struct SMapIItMatchData));
-	match_data->match = match;
+	struct SMapIMatchData *match_data = calloc(1, sizeof(struct SMapIMatchData));
+	match_data->match_key_val = match;
 	match_data->data = data;
 
 	struct SMapIIt *it = it_init(pmap_match_it(map->pmap, match_key_val_wrapper, match_data));
+
+	if (it) {
+		it->st->match_data = match_data;
+		return it;
+	} else {
+		free(match_data);
+		return NULL;
+	}
+}
+
+const struct SMapIIt *smapi_match_val_it(const struct SMapI* const map, fn_match_size_t match, const void* const data) {
+	if (!map || !match)
+		return NULL;
+
+	struct SMapIMatchData *match_data = calloc(1, sizeof(struct SMapIMatchData));
+	match_data->match_val = match;
+	match_data->data = data;
+
+	struct SMapIIt *it = it_init(pmap_match_val_it(map->pmap, match_val_wrapper, match_data));
 
 	if (it) {
 		it->st->match_data = match_data;
@@ -233,6 +283,24 @@ bool smapi_equal(const struct SMapI* const a, const struct SMapI* const b) {
 
 struct SList *smapi_keys_slist_deep(const struct SMapI* const map) {
 	return map ? pmap_keys_slist_deep(map->pmap) : NULL;
+}
+
+const struct SSet *smapi_keys_sset(const struct SMapI* const map) {
+	if (!map)
+		return NULL;
+
+	const struct SSetParams params = {
+		.case_insensitive = map->params.case_insensitive_key,
+		.initial = MAX(pmap_size(map->pmap), map->params.initial),
+		.grow = map->params.grow,
+	};
+	const struct SSet *set = sset_init_with(params);
+
+	for (const struct SMapIIt *it = smapi_it(map); it; it = smapi_it_next(it)) {
+		sset_add(set, it->key);
+	}
+
+	return set;
 }
 
 char *smapi_str(const struct SMapI* const map) {

@@ -2,6 +2,7 @@
 #define FN_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 //
 // a is generally the value from the collection, b generally user supplied or the value from the other collection
@@ -34,9 +35,21 @@ bool less_than_strcasecmp(const char* const a, const char* const b);
 //
 // match against supplied data
 //
-typedef bool (*fn_match_val)(const void* const val, const void* const data);
+typedef bool (*fn_match_ptr)(const void* const val, const void* const data);
 
-typedef bool (*fn_match_key_val)(const void* const key, const void* const val, const void* const data);
+typedef bool (*fn_match_str)(const char* const val, const void* const data);
+
+typedef bool (*fn_match_size_t)(const size_t val, const void* const data);
+
+typedef bool (*fn_match_ptr_ptr)(const void* const key, const void* const val, const void* const data);
+
+typedef bool (*fn_match_str_ptr)(const char* const key, const void* const val, const void* const data);
+
+typedef bool (*fn_match_str_str)(const char * const key, const char* const val, const void* const data);
+
+typedef bool (*fn_match_str_size_t)(const char * const key, const size_t val, const void* const data);
+
+typedef bool (*fn_match_size_t_ptr)(const size_t key, const void* const val, const void* const data);
 
 //
 // arbitrary test

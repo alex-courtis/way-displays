@@ -51,7 +51,7 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output
 	return output;
 }
 
-bool output_matches_name(const size_t key, const struct Output* const output, const void* const name) {
+bool output_matches_name(const struct Output* const output, const void* const name) {
 	return name && output && output->name && strcmp(output->name, name) == 0;
 }
 

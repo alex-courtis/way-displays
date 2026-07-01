@@ -90,7 +90,7 @@ static bool mode_equal_res_hz(const struct WlrMode* const a, const struct WlrMod
 		mhz_to_hz_rounded(a->refresh_mhz) == mhz_to_hz_rounded(b->refresh_mhz);
 }
 
-static bool mode_equal_user_mode_res_hz(const void* const key, const struct WlrMode* const wlr_mode, const struct UserMode* const user_mode) {
+static bool mode_equal_user_mode_res_hz(const struct WlrMode* const wlr_mode, const struct UserMode* const user_mode) {
 	if (!wlr_mode || !user_mode) {
 		return false;
 	}
@@ -191,7 +191,7 @@ const struct WlrMode *mode_user_mode(const struct PMap* const wlr_modes, struct 
 	struct SList *i, *j;
 
 	// exact res and refresh
-	const struct WlrMode *wlr_mode_exact = pmap_match(wlr_modes, (fn_match_key_val)mode_equal_user_mode_res_hz, user_mode).val;
+	const struct WlrMode *wlr_mode_exact = pmap_match_val(wlr_modes, (fn_match_ptr)mode_equal_user_mode_res_hz, user_mode).val;
 	if (wlr_mode_exact && !slist_find_equal_val(wlr_modes_failed, NULL, wlr_mode_exact)) {
 		return wlr_mode_exact;
 	}

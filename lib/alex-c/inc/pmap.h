@@ -85,14 +85,23 @@ const void *pmap_get(const struct PMap* const map, const void* const key);
 // true if key is present [equal_key]
 bool pmap_contains_key(const struct PMap* const map, const void* const key);
 
-// find the first match, {NULL,NULL} when no matches or NULL match
-struct PMapPair pmap_match(const struct PMap* const map, fn_match_key_val match, const void* const data);
+// true if val is present [equal_val]
+bool pmap_contains_val(const struct PMap* const map, const void* const val);
+
+// find the first key/val match, {NULL,NULL} when no matches or NULL match
+struct PMapPair pmap_match(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data);
+
+// find the first val match, {NULL,NULL} when no matches or NULL match
+struct PMapPair pmap_match_val(const struct PMap* const map, fn_match_ptr match, const void* const data);
 
 // create an iterator, caller must pmap_it_free or invoke pmap_next until NULL
 const struct PMapIt *pmap_it(const struct PMap* const map);
 
-// create an iterator filtering by match, return NULL when no matches or NULL match
-const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_key_val match, const void* const data);
+// create an iterator filtering by key/val match, return NULL when no matches or NULL match
+const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data);
+
+// create an iterator filtering by val match, return NULL when no matches or NULL match
+const struct PMapIt *pmap_match_val_it(const struct PMap* const map, fn_match_ptr match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct PMapIt *pmap_it_next(const struct PMapIt* const it);
@@ -127,17 +136,23 @@ bool pmap_equal(const struct PMap* const a, const struct PMap* const b);
  * Conversion
  */
 
-// ordered keys, caller frees list only
+// map ordered keys, caller frees list only
 struct SList *pmap_keys_slist_shallow(const struct PMap* const map);
 
-// ordered keys, caller frees list list and vals, empty when NULL alloc_key [alloc_key]
+// map ordered keys, caller frees list list and vals, empty when NULL alloc_key [alloc_key]
 struct SList *pmap_keys_slist_deep(const struct PMap* const map);
 
-// ordered vals, caller frees list only
+// map ordered keys, same parameters, shallow when alloc_key is NULL
+const struct PSet *pmap_keys_pset(const struct PMap* const map);
+
+// map ordered vals, caller frees list only
 struct SList *pmap_vals_slist_shallow(const struct PMap* const map);
 
-// ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
+// map ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
 struct SList *pmap_vals_slist_deep(const struct PMap* const map);
+
+// map ordered vals, same parameters, shallow when alloc_val is NULL
+const struct PSet *pmap_vals_pset(const struct PMap* const map);
 
 /*
  * Info

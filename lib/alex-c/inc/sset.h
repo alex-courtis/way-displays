@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "fn.h"
+
 /*
  * `PSet` with string values
  * Values are memory managed.
@@ -27,8 +29,6 @@ struct SSetParams {
 	const size_t initial;        // 10
 	const size_t grow;           // 10
 };
-
-typedef bool (*fn_match_sset)(const char* const val, const void* const data);
 
 /*
  * Lifecycle
@@ -57,13 +57,13 @@ void sset_it_free(const struct SSetIt* const it);
 bool sset_contains(const struct SSet* const set, const char* const val);
 
 // find the first match, NULL when no match or NULL match
-const void *sset_match(const struct SSet* const set, fn_match_sset match, const void* const data);
+const void *sset_match(const struct SSet* const set, fn_match_str match, const void* const data);
 
 // create an iterator, caller must sset_it_free or invoke pset_next until NULL
 const struct SSetIt *sset_it(const struct SSet* const set);
 
 // create an iterator filtering by match, return NULL when no matches or NULL match
-const struct SSetIt *sset_match_it(const struct SSet* const set, fn_match_sset match, const void* const data);
+const struct SSetIt *sset_match_it(const struct SSet* const set, fn_match_str match, const void* const data);
 
 // next iterator value, NULL at end of set
 const struct SSetIt *sset_it_next(const struct SSetIt* const it);
@@ -92,7 +92,7 @@ bool sset_equal(const struct SSet* const a, const struct SSet* const b);
  * Conversion
  */
 
-// ordered vals, caller frees list and vals
+// set ordered vals, caller frees list and vals
 struct SList *sset_slist_deep(const struct SSet* const set);
 
 /*

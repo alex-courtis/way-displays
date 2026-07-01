@@ -13,14 +13,15 @@ struct IMap {
 	const struct PMap *pmap;
 };
 
-struct IMapItMatchData {
-	fn_match_imap match;
+struct IMapMatchData {
+	fn_match_size_t_ptr match_key_val;
+	fn_match_ptr match_val;
 	const void *data;
 };
 
 struct IMapItState {
 	const struct PMapIt *pit;
-	const struct IMapItMatchData *match_data;
+	const struct IMapMatchData *match_data;
 };
 
 static bool equal_key_size_t(const void* const a, const void* const b) {
@@ -42,8 +43,13 @@ static char *str_key_size_t(const void* const val) {
 }
 
 static bool match_key_val_wrapper(const void* const key, const void* const val, const void* const data) {
-	const struct IMapItMatchData* const matcher = data;
-	return matcher->match(*(size_t*)key, val, matcher->data);
+	const struct IMapMatchData* const matcher = data;
+	return matcher->match_key_val(*(size_t*)key, val, matcher->data);
+}
+
+static bool match_val_wrapper(const void* const val, const void* const data) {
+	const struct IMapMatchData* const matcher = data;
+	return matcher->match_val(val, matcher->data);
 }
 
 static const struct IMap *clone(const struct IMap* const from, bool deep) {
@@ -148,14 +154,18 @@ bool imap_contains_key(const struct IMap* const map, const size_t key) {
 	return map ? pmap_contains_key(map->pmap, &key) : false;
 }
 
-struct IMapPair imap_match(const struct IMap* const map, fn_match_imap match, const void* const data) {
+bool imap_contains_val(const struct IMap* const map, const void* const val) {
+	return map ? pmap_contains_val(map->pmap, val) : false;
+}
+
+struct IMapPair imap_match(const struct IMap* const map, fn_match_size_t_ptr match, const void* const data) {
 	struct IMapPair res = { 0 };
 
 	if (!map || !match)
 		return res;
 
-	struct IMapItMatchData match_data = {
-		.match = match,
+	struct IMapMatchData match_data = {
+		.match_key_val = match,
 		.data = data,
 	};
 
@@ -167,19 +177,57 @@ struct IMapPair imap_match(const struct IMap* const map, fn_match_imap match, co
 	return res;
 }
 
+struct IMapPair imap_match_val(const struct IMap* const map, fn_match_ptr match, const void* const data) {
+	struct IMapPair res = { 0 };
+
+	if (!map || !match)
+		return res;
+
+	struct IMapMatchData match_data = {
+		.match_val = match,
+		.data = data,
+	};
+
+	struct PMapPair pres = pmap_match_val(map->pmap, match_val_wrapper, &match_data);
+
+	res.key = pres.key ? *(size_t*)pres.key : 0;
+	res.val = pres.val;
+
+	return res;
+}
+
 const struct IMapIt *imap_it(const struct IMap* const map) {
 	return map ? it_init(pmap_it(map->pmap)) : NULL;
 }
 
-const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_imap match, const void* const data) {
+const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_size_t_ptr match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
-	struct IMapItMatchData *match_data = calloc(1, sizeof(struct IMapItMatchData));
-	match_data->match = match;
+	struct IMapMatchData *match_data = calloc(1, sizeof(struct IMapMatchData));
+	match_data->match_key_val = match;
 	match_data->data = data;
 
 	struct IMapIt *it = it_init(pmap_match_it(map->pmap, match_key_val_wrapper, match_data));
+
+	if (it) {
+		it->st->match_data = match_data;
+		return it;
+	} else {
+		free(match_data);
+		return NULL;
+	}
+}
+
+const struct IMapIt *imap_match_val_it(const struct IMap* const map, fn_match_ptr match, const void* const data) {
+	if (!map || !match)
+		return NULL;
+
+	struct IMapMatchData *match_data = calloc(1, sizeof(struct IMapMatchData));
+	match_data->match_val = match;
+	match_data->data = data;
+
+	struct IMapIt *it = it_init(pmap_match_val_it(map->pmap, match_val_wrapper, match_data));
 
 	if (it) {
 		it->st->match_data = match_data;
@@ -243,6 +291,10 @@ struct SList *imap_vals_slist_shallow(const struct IMap* const map) {
 
 struct SList *imap_vals_slist_deep(const struct IMap* const map) {
 	return map ? pmap_vals_slist_deep(map->pmap) : NULL;
+}
+
+const struct PSet *imap_vals_pset(const struct IMap* const map) {
+	return map ? pmap_vals_pset(map->pmap) : NULL;
 }
 
 char *imap_str(const struct IMap* const map) {

@@ -255,7 +255,7 @@ void head_set_scaled_dimensions(struct Head * const head) {
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	if (pset_match(cfg->disableds, (fn_match_val)head_disabled_matches_head, head)) {
+	if (pset_match(cfg->disableds, (fn_match_ptr)head_disabled_matches_head, head)) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);
@@ -286,7 +286,7 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 	const struct WlrMode *wlr_mode = NULL;
 
 	// maybe a user mode
-	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, (fn_match_smap)head_name_desc_v_matches_head, head).val;
+	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, (fn_match_str_ptr)head_name_desc_v_matches_head, head).val;
 	if (user_mode) {
 		wlr_mode = mode_user_mode(head->wlr_modes, head->wlr_modes_failed, user_mode);
 		if (!wlr_mode && !user_mode->warned_no_mode) {
@@ -451,23 +451,18 @@ void heads_reapply(struct SList *heads) {
 	}
 }
 
-// TODO map_contains_val or generify
-static bool fn_match_val_ptr(const void* const key, const void* const val, const void* const data) {
-	return val && data && val == data;
-}
-
 void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	if (head->current.wlr_mode && !pmap_match(head->wlr_modes, fn_match_val_ptr, head->current.wlr_mode).val) {
+	if (head->current.wlr_mode && !pmap_contains_val(head->wlr_modes, head->current.wlr_mode)) {
 		wlr_mode_free((struct WlrMode*)head->current.wlr_mode);
 		if (head->desired.wlr_mode == head->current.wlr_mode) {
 			head->desired.wlr_mode = NULL;
 		}
 	}
-	if (head->desired.wlr_mode && !pmap_match(head->wlr_modes, fn_match_val_ptr, head->desired.wlr_mode).val) {
-			wlr_mode_free((struct WlrMode*)head->desired.wlr_mode);
+	if (head->desired.wlr_mode && !pmap_contains_val(head->wlr_modes, head->desired.wlr_mode)) {
+		wlr_mode_free((struct WlrMode*)head->desired.wlr_mode);
 	}
 
 	slist_free(&head->wlr_modes_failed);

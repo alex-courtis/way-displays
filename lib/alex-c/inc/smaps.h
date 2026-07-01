@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "fn.h"
+
 /*
  * `PMap` with string keys and vals.
  * Keys and values are memory managed.
@@ -40,11 +42,6 @@ struct SMapSPair {
 };
 
 /*
- * match against supplied data
- */
-typedef bool (*fn_match_smaps)(const char * const key, const char* const val, const void* const data);
-
-/*
  * Lifecycle
  */
 
@@ -73,14 +70,23 @@ const char *smaps_get(const struct SMapS* const map, const char* const key);
 // true if key is present
 bool smaps_contains_key(const struct SMapS* const map, const char* const key);
 
-// find the first match, {NULL,NULL} when no matches or NULL match
-struct SMapSPair smaps_match(const struct SMapS* const map, fn_match_smaps match, const void* const data);
+// true if val is present
+bool smaps_contains_val(const struct SMapS* const map, const char* const val);
+
+// find the first key/val match, {NULL,NULL} when no matches or NULL match
+struct SMapSPair smaps_match(const struct SMapS* const map, fn_match_str_str match, const void* const data);
+
+// find the first val match, {NULL,NULL} when no matches or NULL match
+struct SMapSPair smaps_match_val(const struct SMapS* const map, fn_match_str match, const void* const data);
 
 // create an iterator, caller must smaps_it_free or invoke smaps_next until NULL
 const struct SMapSIt *smaps_it(const struct SMapS* const map);
 
-// create an iterator filtering by match, return NULL when no matches or NULL match
-const struct SMapSIt *smaps_match_it(const struct SMapS* const map, fn_match_smaps match, const void* const data);
+// create an iterator filtering by key/val match, return NULL when no matches or NULL match
+const struct SMapSIt *smaps_match_it(const struct SMapS* const map, fn_match_str_str match, const void* const data);
+
+// create an iterator filtering by val match, return NULL when no matches or NULL match
+const struct SMapSIt *smaps_match_val_it(const struct SMapS* const map, fn_match_str match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct SMapSIt *smaps_it_next(const struct SMapSIt* const it);
@@ -109,11 +115,17 @@ bool smaps_equal(const struct SMapS* const a, const struct SMapS* const b);
  * Conversion
  */
 
-// ordered vals, caller frees list and vals
+// map ordered vals, caller frees list and vals
 struct SList *smaps_keys_slist_deep(const struct SMapS* const map);
 
-// ordered vals, caller frees list and vals
+// map ordered keys, same parameters
+const struct SSet *smaps_keys_sset(const struct SMapS* const map);
+
+// map ordered vals, caller frees list and vals
 struct SList *smaps_vals_slist_deep(const struct SMapS* const map);
+
+// map ordered vals, same parameters
+const struct SSet *smaps_vals_sset(const struct SMapS* const map);
 
 /*
  * Info

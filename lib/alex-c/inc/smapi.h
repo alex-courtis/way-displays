@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "fn.h"
+
 /*
  * `PMap` with string keys and size_t vals.
  * Keys are memory managed.
@@ -38,11 +40,6 @@ struct SMapIPair {
 };
 
 /*
- * match against supplied data
- */
-typedef bool (*fn_match_smapi)(const char * const key, const size_t val, const void* const data);
-
-/*
  * Lifecycle
  */
 
@@ -74,14 +71,23 @@ bool smapi_getp(size_t* val, const struct SMapI* const map, const char* const ke
 // true if key is present
 bool smapi_contains_key(const struct SMapI* const map, const char* const key);
 
-// find the first match, {NULL,NULL} when no matches or NULL match
-struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_smapi match, const void* const data);
+// true if val is present
+bool smapi_contains_val(const struct SMapI* const map, const size_t val);
+
+// find the first key/val match, {NULL,0} when no matches or NULL match
+struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_str_size_t match, const void* const data);
+
+// find the first val match, {NULL,0} when no matches or NULL match
+struct SMapIPair smapi_match_val(const struct SMapI* const map, fn_match_size_t match, const void* const data);
 
 // create an iterator, caller must smapi_it_free or invoke smapi_next until NULL
 const struct SMapIIt *smapi_it(const struct SMapI* const map);
 
-// create an iterator filtering by match, return NULL when no matches or NULL match
-const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_smapi match, const void* const data);
+// create an iterator filtering by key/val match, return NULL when no matches or NULL match
+const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_str_size_t match, const void* const data);
+
+// create an iterator filtering by val match, return NULL when no matches or NULL match
+const struct SMapIIt *smapi_match_val_it(const struct SMapI* const map, fn_match_size_t match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct SMapIIt *smapi_it_next(const struct SMapIIt* const it);
@@ -110,8 +116,11 @@ bool smapi_equal(const struct SMapI* const a, const struct SMapI* const b);
  * Conversion
  */
 
-// ordered vals, caller frees list and vals
+// map ordered vals, caller frees list and vals
 struct SList *smapi_keys_slist_deep(const struct SMapI* const map);
+
+// map ordered keys, same parameters
+const struct SSet *smapi_keys_sset(const struct SMapI* const map);
 
 /*
  * Info

@@ -1,9 +1,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "fn.h"
 #include "pmap.h"
+#include "sset.h"
 
 #include "smap.h"
 
@@ -117,13 +119,31 @@ bool smap_contains_key(const struct SMap* const map, const char* const key) {
 	return map ? pmap_contains_key(map->pmap, key) : false;
 }
 
-struct SMapPair smap_match(const struct SMap* const map, fn_match_smap match, const void* const data) {
+bool smap_contains_val(const struct SMap* const map, const void* const val) {
+	return map ? pmap_contains_val(map->pmap, val) : false;
+}
+
+struct SMapPair smap_match(const struct SMap* const map, fn_match_str_ptr match, const void* const data) {
 	struct SMapPair res = { 0 };
 
 	if (!map)
 		return res;
 
-	struct PMapPair pres = pmap_match(map->pmap, (fn_match_key_val)match, data);
+	struct PMapPair pres = pmap_match(map->pmap, (fn_match_ptr_ptr)match, data);
+
+	res.key = pres.key;
+	res.val = pres.val;
+
+	return res;
+}
+
+struct SMapPair smap_match_val(const struct SMap* const map, fn_match_ptr match, const void* const data) {
+	struct SMapPair res = { 0 };
+
+	if (!map)
+		return res;
+
+	struct PMapPair pres = pmap_match_val(map->pmap, match, data);
 
 	res.key = pres.key;
 	res.val = pres.val;
@@ -135,8 +155,12 @@ const struct SMapIt *smap_it(const struct SMap* const map) {
 	return map ? it_init(pmap_it(map->pmap)) : NULL;
 }
 
-const struct SMapIt *smap_match_it(const struct SMap* const map, fn_match_smap match, const void* const data) {
-	return map ? it_init(pmap_match_it(map->pmap, (fn_match_key_val)match, data)) : NULL;
+const struct SMapIt *smap_match_it(const struct SMap* const map, fn_match_str_ptr match, const void* const data) {
+	return map ? it_init(pmap_match_it(map->pmap, (fn_match_ptr_ptr)match, data)) : NULL;
+}
+
+const struct SMapIt *smap_match_val_it(const struct SMap* const map, fn_match_ptr match, const void* const data) {
+	return map ? it_init(pmap_match_val_it(map->pmap, match, data)) : NULL;
 }
 
 const struct SMapIt *smap_it_next(const struct SMapIt* const it) {
@@ -190,12 +214,34 @@ struct SList *smap_keys_slist_deep(const struct SMap* const map) {
 	return map ? pmap_keys_slist_deep(map->pmap) : NULL;
 }
 
+const struct SSet *smap_keys_sset(const struct SMap* const map) {
+	if (!map)
+		return NULL;
+
+	const struct SSetParams params = {
+		.case_insensitive = map->params.case_insensitive,
+		.initial = MAX(pmap_size(map->pmap), map->params.initial),
+		.grow = map->params.grow,
+	};
+	const struct SSet *set = sset_init_with(params);
+
+	for (const struct SMapIt *it = smap_it(map); it; it = smap_it_next(it)) {
+		sset_add(set, it->key);
+	}
+
+	return set;
+}
+
 struct SList *smap_vals_slist_shallow(const struct SMap* const map) {
 	return map ? pmap_vals_slist_shallow(map->pmap) : NULL;
 }
 
 struct SList *smap_vals_slist_deep(const struct SMap* const map) {
 	return map ? pmap_vals_slist_deep(map->pmap) : NULL;
+}
+
+const struct PSet *smap_vals_pset(const struct SMap* const map) {
+	return map ? pmap_vals_pset(map->pmap) : NULL;
 }
 
 char *smap_str(const struct SMap* const map) {

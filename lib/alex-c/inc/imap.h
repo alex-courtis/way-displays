@@ -44,11 +44,6 @@ struct IMapParams {
 };
 
 /*
- * match against supplied data
- */
-typedef bool (*fn_match_imap)(const size_t key, const void* const val, const void* const data);
-
-/*
  * Lifecycle
  */
 
@@ -83,14 +78,23 @@ const void *imap_get(const struct IMap* const map, const size_t key);
 // true if key is present
 bool imap_contains_key(const struct IMap* const map, const size_t key);
 
-// find the first match, {0,NULL} when no matches or NULL match
-struct IMapPair imap_match(const struct IMap* const map, fn_match_imap match, const void* const data);
+// true if val is present [equal_val]
+bool imap_contains_val(const struct IMap* const map, const void* const val);
+
+// find the first key/val match, {0,NULL} when no matches or NULL match
+struct IMapPair imap_match(const struct IMap* const map, fn_match_size_t_ptr match, const void* const data);
+
+// find the first val match, {0,NULL} when no matches or NULL match
+struct IMapPair imap_match_val(const struct IMap* const map, fn_match_ptr match, const void* const data);
 
 // create an iterator, caller must imap_it_free or invoke imap_next until NULL
 const struct IMapIt *imap_it(const struct IMap* const map);
 
-// create an iterator filtering by match, return NULL when no matches or NULL match
-const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_imap match, const void* const data);
+// create an iterator filtering by key/val match, return NULL when no matches or NULL match
+const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_size_t_ptr match, const void* const data);
+
+// create an iterator filtering by val match, return NULL when no matches or NULL match
+const struct IMapIt *imap_match_val_it(const struct IMap* const map, fn_match_ptr match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct IMapIt *imap_it_next(const struct IMapIt* const it);
@@ -125,11 +129,14 @@ bool imap_equal(const struct IMap* const a, const struct IMap* const b);
  * Conversion
  */
 
-// ordered vals, caller frees list only
+// map ordered vals, caller frees list only
 struct SList *imap_vals_slist_shallow(const struct IMap* const map);
 
-// ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
+// map ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
 struct SList *imap_vals_slist_deep(const struct IMap* const map);
+
+// map ordered vals, same parameters, shallow when alloc_val is NULL
+const struct PSet *imap_vals_pset(const struct IMap* const map);
 
 /*
  * Info

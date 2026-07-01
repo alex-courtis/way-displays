@@ -69,13 +69,13 @@ void pset_it_free(const struct PSetIt* const it);
 bool pset_contains(const struct PSet* const set, const void* const val);
 
 // find the first match, NULL when no match or NULL match
-const void *pset_match(const struct PSet* const set, fn_match_val match, const void* const data);
+const void *pset_match(const struct PSet* const set, fn_match_ptr match, const void* const data);
 
 // create an iterator, caller must pset_it_free or invoke pset_next until NULL
 const struct PSetIt *pset_it(const struct PSet* const set);
 
 // create an iterator filtering by match, return NULL when no matches or NULL match
-const struct PSetIt *pset_match_it(const struct PSet* const set, fn_match_val match, const void* const data);
+const struct PSetIt *pset_match_it(const struct PSet* const set, fn_match_ptr match, const void* const data);
 
 // next iterator value, NULL at end of set
 const struct PSetIt *pset_it_next(const struct PSetIt* const it);
@@ -107,10 +107,10 @@ bool pset_equal(const struct PSet* const a, const struct PSet* const b);
  * Conversion
  */
 
-// ordered vals, caller frees list only
+// set ordered vals, caller frees list only
 struct SList *pset_slist_shallow(const struct PSet* const set);
 
-// ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
+// set ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
 struct SList *pset_slist_deep(const struct PSet* const set);
 
 /*

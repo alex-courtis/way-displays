@@ -249,7 +249,7 @@ void validate_fix(struct Cfg *cfg) {
 
 	const char *name_desc;
 
-	while ((name_desc = smap_match(cfg->user_modes, (fn_match_smap)user_mode_invalid, NULL).key)) {
+	while ((name_desc = smap_match(cfg->user_modes, (fn_match_str_ptr)user_mode_invalid, NULL).key)) {
 		smap_remove_free(cfg->user_modes, name_desc);
 	}
 }

@@ -16,14 +16,28 @@ bool mock_less_than(const void* const a, const void* const b) {
 	return mock_type(bool);
 }
 
-bool mock_match_val(const void* const val, const void* const data) {
+bool mock_match_ptr(const void* const val, const void* const data) {
 	check_expected_ptr(val);
 	check_expected_ptr(data);
 
 	return mock_type(bool);
 }
 
-bool mock_match_key_val(const void* const key, const void* const val, const void* const data) {
+bool mock_match_str(const char* const val, const void* const data) {
+	check_expected_ptr(val);
+	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
+bool mock_match_size_t(const size_t val, const void* const data) {
+	check_expected_int(val);
+	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
+bool mock_match_ptr_ptr(const void* const key, const void* const val, const void* const data) {
 	check_expected_ptr(key);
 	check_expected_ptr(val);
 	check_expected_ptr(data);
@@ -31,7 +45,7 @@ bool mock_match_key_val(const void* const key, const void* const val, const void
 	return mock_type(bool);
 }
 
-bool mock_match_smap(const char *key, const void* const val, const void* const data) {
+bool mock_match_str_ptr(const char* const key, const void* const val, const void* const data) {
 	check_expected_ptr(key);
 	check_expected_ptr(val);
 	check_expected_ptr(data);
@@ -39,7 +53,7 @@ bool mock_match_smap(const char *key, const void* const val, const void* const d
 	return mock_type(bool);
 }
 
-bool mock_match_smaps(const char *key, const char* const val, const void* const data) {
+bool mock_match_str_str(const char* const key, const char* const val, const void* const data) {
 	check_expected_ptr(key);
 	check_expected_ptr(val);
 	check_expected_ptr(data);
@@ -47,7 +61,7 @@ bool mock_match_smaps(const char *key, const char* const val, const void* const 
 	return mock_type(bool);
 }
 
-bool mock_match_smapi(const char *key, const size_t val, const void* const data) {
+bool mock_match_str_size_t(const char *key, const size_t val, const void* const data) {
 	check_expected_ptr(key);
 	check_expected_int(val);
 	check_expected_ptr(data);
@@ -55,14 +69,7 @@ bool mock_match_smapi(const char *key, const size_t val, const void* const data)
 	return mock_type(bool);
 }
 
-bool mock_match_sset(const char* const val, const void* const data) {
-	check_expected_ptr(val);
-	check_expected_ptr(data);
-
-	return mock_type(bool);
-}
-
-bool mock_match_imap(const size_t key, const void* const val, const void* const data) {
+bool mock_match_size_t_ptr(const size_t key, const void* const val, const void* const data) {
 	check_expected_int(key);
 	check_expected_ptr(val);
 	check_expected_ptr(data);

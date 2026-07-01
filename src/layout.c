@@ -164,7 +164,7 @@ void desire_enabled(struct Head *head) {
 	enabled |= slist_length(g_heads) == 1;
 
 	// iterate over all matching NAME_DESC's and evaluate their conditions
-	for (const struct PSetIt *it = pset_match_it(g_cfg->disableds, (fn_match_val)head_disabled_matches_head, head); it; it = pset_it_next(it)) {
+	for (const struct PSetIt *it = pset_match_it(g_cfg->disableds, (fn_match_ptr)head_disabled_matches_head, head); it; it = pset_it_next(it)) {
 		enabled &= !condition_set_evaluate(((struct Disabled*)it->val)->conditions);
 	}
 
@@ -220,7 +220,7 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	const struct SMapIPair pair = smapi_match(g_cfg->scales, (fn_match_smapi)head_name_desc_i_matches_head, head);
+	const struct SMapIPair pair = smapi_match(g_cfg->scales, (fn_match_str_size_t)head_name_desc_i_matches_head, head);
 	if (pair.key) {
 		head->desired.scale = head_get_fixed_scale((double)pair.val / 1000);
 		return;
@@ -241,7 +241,7 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	enum wl_output_transform transform = smapi_match(g_cfg->transforms, (fn_match_smapi)head_name_desc_i_matches_head, head).val;
+	enum wl_output_transform transform = smapi_match(g_cfg->transforms, (fn_match_str_size_t)head_name_desc_i_matches_head, head).val;
 	if (transform) {
 		head->desired.transform = transform;
 		return;
@@ -260,7 +260,7 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (sset_match(g_cfg->adaptive_sync_off, (fn_match_sset)head_name_desc_matches_head, head)) {
+	if (sset_match(g_cfg->adaptive_sync_off, (fn_match_str)head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;

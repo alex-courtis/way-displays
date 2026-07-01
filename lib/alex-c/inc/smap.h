@@ -46,11 +46,6 @@ struct SMapPair {
 };
 
 /*
- * match against supplied data
- */
-typedef bool (*fn_match_smap)(const char* const key, const void* const val, const void* const data);
-
-/*
  * Lifecycle
  */
 
@@ -85,14 +80,23 @@ const void *smap_get(const struct SMap* const map, const char* const key);
 // true if key is present
 bool smap_contains_key(const struct SMap* const map, const char* const key);
 
-// find the first match, {NULL,NULL} when no matches or NULL match
-struct SMapPair smap_match(const struct SMap* const map, fn_match_smap match, const void* const data);
+// true if val is present [equal_val]
+bool smap_contains_val(const struct SMap* const map, const void* const val);
+
+// find the first key/val match, {NULL,NULL} when no matches or NULL match
+struct SMapPair smap_match(const struct SMap* const map, fn_match_str_ptr match, const void* const data);
+
+// find the first val match, {NULL,NULL} when no matches or NULL match
+struct SMapPair smap_match_val(const struct SMap* const map, fn_match_ptr match, const void* const data);
 
 // create an iterator, caller must smap_it_free or invoke smap_next until NULL
 const struct SMapIt *smap_it(const struct SMap* const map);
 
-// create an iterator filtering by match, return NULL when no matches or NULL match
-const struct SMapIt *smap_match_it(const struct SMap* const map, fn_match_smap match, const void* const data);
+// create an iterator filtering by key/val match, return NULL when no matches or NULL match
+const struct SMapIt *smap_match_it(const struct SMap* const map, fn_match_str_ptr match, const void* const data);
+
+// create an iterator filtering by val match, return NULL when no matches or NULL match
+const struct SMapIt *smap_match_val_it(const struct SMap* const map, fn_match_ptr match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct SMapIt *smap_it_next(const struct SMapIt* const it);
@@ -127,14 +131,20 @@ bool smap_equal(const struct SMap* const a, const struct SMap* const b);
  * Conversion
  */
 
-// ordered keys, caller frees list and vals
+// map ordered keys, caller frees list and vals
 struct SList *smap_keys_slist_deep(const struct SMap* const map);
 
-// ordered vals, caller frees list only
+// map ordered keys, same parameters
+const struct SSet *smap_keys_sset(const struct SMap* const map);
+
+// map ordered vals, caller frees list only
 struct SList *smap_vals_slist_shallow(const struct SMap* const map);
 
-// ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
+// map ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
 struct SList *smap_vals_slist_deep(const struct SMap* const map);
+
+// map ordered vals, same parameters, shallow when alloc_val is NULL
+const struct PSet *smap_vals_pset(const struct SMap* const map);
 
 /*
  * Info

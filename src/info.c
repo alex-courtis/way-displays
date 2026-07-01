@@ -334,7 +334,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	if (head->current.enabled) {
 		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.wlr_mode));
 
-		const struct Output *output = imap_match(g_outputs, (fn_match_imap)output_matches_name, head->name).val;
+		const struct Output *output = imap_match_val(g_outputs, (fn_match_ptr)output_matches_name, head->name).val;
 		if (output) {
 			log_(t, "    size:      %dx%d", output->logical_width, output->logical_height);
 			log_(t, "    position:  %d,%d", output->logical_x, output->logical_y);

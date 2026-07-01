@@ -2,7 +2,6 @@
 #define OUTPUT_H
 
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 
@@ -32,7 +31,7 @@ struct Output {
 struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output_name, struct zxdg_output_manager_v1 *zxdg_output_manager);
 
 // output matching (head) name
-bool output_matches_name(const size_t key, const struct Output* const output, const void* const name);
+bool output_matches_name(const struct Output* const output, const void* const name);
 
 // destroy all outputs, clearing outputs
 void output_destroy_all(void);
