@@ -220,7 +220,7 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	const struct SMapIPair pair = smapi_match(g_cfg->scales, (fn_match_str_size_t)head_name_desc_i_matches_head, head);
+	const struct SMapIPair pair = smapi_match_key(g_cfg->scales, (fn_match_str)head_name_desc_matches_head, head);
 	if (pair.key) {
 		head->desired.scale = head_get_fixed_scale((double)pair.val / 1000);
 		return;
@@ -241,7 +241,7 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	enum wl_output_transform transform = smapi_match(g_cfg->transforms, (fn_match_str_size_t)head_name_desc_i_matches_head, head).val;
+	enum wl_output_transform transform = smapi_match_key(g_cfg->transforms, (fn_match_str)head_name_desc_matches_head, head).val;
 	if (transform) {
 		head->desired.transform = transform;
 		return;

@@ -87,7 +87,7 @@ bool smap_contains_val(const struct SMap* const map, const void* const val);
 struct SMapPair smap_match(const struct SMap* const map, fn_match_str_ptr match, const void* const data);
 
 // find the first key match, {NULL,NULL} when no matches or NULL match
-struct SMapPair smap_match_key(const struct SMap* const map, fn_match_ptr match, const void* const data);
+struct SMapPair smap_match_key(const struct SMap* const map, fn_match_str match, const void* const data);
 
 // find the first val match, {NULL,NULL} when no matches or NULL match
 struct SMapPair smap_match_val(const struct SMap* const map, fn_match_ptr match, const void* const data);

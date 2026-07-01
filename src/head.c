@@ -141,14 +141,6 @@ bool head_matches_name_desc(const struct Head * const head, const char * const n
 		head_matches_name_desc_fuzzy(head, name_desc);
 }
 
-static bool head_name_desc_v_matches_head(const char * const name_desc, const void * const v, const struct Head * const head) {
-	return head_matches_name_desc(head, name_desc);
-}
-
-bool head_name_desc_i_matches_head(const char * const name_desc, const size_t i, const struct Head * const head) {
-	return head_matches_name_desc(head, name_desc);
-}
-
 bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head) {
 	return head_matches_name_desc(head, name_desc);
 }
@@ -286,7 +278,7 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 	const struct WlrMode *wlr_mode = NULL;
 
 	// maybe a user mode
-	struct UserMode *user_mode = (struct UserMode*)smap_match(g_cfg->user_modes, (fn_match_str_ptr)head_name_desc_v_matches_head, head).val;
+	struct UserMode *user_mode = (struct UserMode*)smap_match_key(g_cfg->user_modes, (fn_match_str)head_name_desc_matches_head, head).val;
 	if (user_mode) {
 		wlr_mode = mode_user_mode(head->wlr_modes, head->wlr_modes_failed, user_mode);
 		if (!wlr_mode && !user_mode->warned_no_mode) {
