@@ -52,6 +52,8 @@ struct WlrMode *wlr_mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwl
 
 const struct PMap *wlr_mode_pmap_init(void);
 
+bool wlr_mode_matches_preferred(const struct WlrMode *wlr_mode, const void* const data);
+
 void wlr_mode_free(struct WlrMode *wlr_mode);
 
 void mode_res_refresh_free(struct ModesResRefresh *mrr);

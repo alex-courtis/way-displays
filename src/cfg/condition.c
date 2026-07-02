@@ -88,15 +88,13 @@ bool condition_evaluate(const struct Condition *condition) {
 	return true;
 }
 
-bool condition_set_evaluate(const struct PSet* const conditions) {
-	for (const struct PSetIt *it = pset_it(conditions); it; it = pset_it_next(it)) {
-		if (!condition_evaluate(it->val)) {
-			pset_it_free(it);
-			return false;
-		}
-	}
+// TODO this could be boiled away further
+static bool condition_match_no_evaluate(const struct Condition *condition, const void* const data) {
+	return !condition_evaluate(condition);
+}
 
-	return true;
+bool condition_set_evaluate(const struct PSet* const conditions) {
+	return pset_match(conditions, (fn_match_ptr)condition_match_no_evaluate, NULL) == NULL;
 }
 
 void condition_free(struct Condition *condition) {

@@ -235,6 +235,11 @@ const struct PMap *wlr_mode_pmap_init(void) {
 	return pmap_init_with(params);
 }
 
+// TODO this could just be a fn_test
+bool wlr_mode_matches_preferred(const struct WlrMode *wlr_mode, const void* const data) {
+	return wlr_mode && wlr_mode->preferred;
+}
+
 void wlr_mode_free(struct WlrMode *wlr_mode) {
 	if (!wlr_mode)
 		return;

@@ -49,16 +49,7 @@ const char *head_human(const struct Head * const head) {
 }
 
 static bool head_is_max_preferred_refresh(const struct Head * const head) {
-	if (!head)
-		return false;
-
-	for (const struct SSetIt *it = sset_it(g_cfg->max_preferred_refresh); it; it = sset_it_next(it)) {
-		if (head_matches_name_desc(head, it->val)) {
-			sset_it_free(it);
-			return true;
-		}
-	}
-	return false;
+	return head && sset_match(g_cfg->max_preferred_refresh, (fn_match_str)head_name_desc_matches_head, head);
 }
 
 const struct WlrMode *head_max_wlr_mode(const struct Head * const head) {
@@ -334,21 +325,7 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 }
 
 const struct WlrMode *head_preferred_wlr_mode(const struct Head * const head) {
-	if (!head || !head->wlr_modes)
-		return NULL;
-
-	// TODO write a matcher
-	const struct WlrMode *preferred = NULL;
-
-	for (const struct PMapIt *it = pmap_it(head->wlr_modes); it; it = pmap_it_next(it)) {
-		if (((struct WlrMode*)it->val)->preferred) {
-			preferred = it->val;
-			pmap_it_free(it);
-			break;
-		}
-	}
-
-	return preferred;
+	return head ? pmap_match_val(head->wlr_modes, (fn_match_ptr)wlr_mode_matches_preferred, NULL).val : NULL;
 }
 
 bool head_current_not_desired(const struct Head * const head) {
