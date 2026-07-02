@@ -5,6 +5,7 @@
 
 #include "listeners.h"
 
+#include "fn.h"
 #include "head.h"
 #include "mode.h"
 #include "pset.h"

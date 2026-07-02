@@ -334,6 +334,24 @@ static void position_heads__row_bottom(void **state) {
 	assert_logs_empty();
 }
 
+static void desire_enabled__disabled(void **state) {
+	struct Head *head = head_init();
+	head->name = strdup("head0");
+	head->desired.enabled = true;
+	slist_append(&g_heads, head);
+
+	expect_str(__wrap_lid_is_closed, name, "head0");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	pset_add(g_cfg->disableds, disabled_init_name_desc("head0"));
+
+	desire_enabled(head);
+
+	assert_false(head->desired.enabled);
+
+	assert_logs_empty();
+}
+
 static void desire_enabled__lid_closed_many(void **state) {
 	struct Head *head0 = head_init_name("head0");
 	slist_append(&g_heads, head0);
@@ -950,6 +968,7 @@ int main(void) {
 		TEST_BA(position_heads__row_mid),
 		TEST_BA(position_heads__row_bottom),
 
+		TEST_BA(desire_enabled__disabled),
 		TEST_BA(desire_enabled__lid_closed_many),
 		TEST_BA(desire_enabled__lid_closed_one_disabled),
 		TEST_BA(desire_enabled__lid_closed_one),

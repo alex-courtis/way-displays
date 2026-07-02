@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-#include "pset.h"
-
 enum ConditionLid {
 	LID_CLOSED = 1,
 	LID_OPEN,
@@ -25,12 +23,7 @@ struct Condition *condition_clone(const struct Condition* const from);
 
 // evaluates a condition.
 // NULL condition is always evaluated to be true.
-bool condition_evaluate(const struct Condition *condition);
-
-// evaluates a list of conditions.
-// the result is equal to OR of all conditions in list.
-// empty set (NULL) is always evaluated to be true.
-bool condition_set_evaluate(const struct PSet* const conditions);
+bool condition_true(const struct Condition *condition, const void* const unused);
 
 void condition_free(struct Condition *condition);
 

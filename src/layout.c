@@ -7,7 +7,6 @@
 #include "layout.h"
 
 #include "cfg.h"
-#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "convert.h"
 #include "displ.h"
@@ -163,10 +162,8 @@ void desire_enabled(struct Head *head) {
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
 	enabled |= slist_length(g_heads) == 1;
 
-	// iterate over all matching NAME_DESC's and evaluate their conditions
-	for (const struct PSetIt *it = pset_match_it(g_cfg->disableds, (fn_match_ptr)head_disabled_matches_head, head); it; it = pset_it_next(it)) {
-		enabled &= !condition_set_evaluate(((struct Disabled*)it->val)->conditions);
-	}
+	// name_desc matches and (if present) any condition is true
+	enabled &= pset_match(g_cfg->disableds, (fn_match_ptr)disabled_matches_head, head) == NULL;
 
 	// reset manual override when it matches the auto-state
 	if (head->overrided_enabled != NoOverride) {

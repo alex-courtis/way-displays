@@ -139,10 +139,6 @@ bool head_matches_name_desc_exact(const struct Head * const head, const char * c
 		 (head->description && strcmp(head->description, name_desc) == 0));
 }
 
-bool head_disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head) {
-	return disabled && head && head_matches_name_desc(head, disabled->name_desc);
-}
-
 // wl_fixed_t, used by the wlr-output-management protocol, uses scales in multiples of 1/256.
 // Meanwhile, the fractional-scale-v1 protocol deals with scales in multiples of 1/120,
 // and there are observed differences in behavior between compositors, see !138.
@@ -235,7 +231,7 @@ void head_set_scaled_dimensions(struct Head * const head) {
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	if (pset_match(cfg->disableds, (fn_match_ptr)head_disabled_matches_head, head)) {
+	if (pset_match(cfg->disableds, (fn_match_ptr)disabled_name_desc_matches_head, head)) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);

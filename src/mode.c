@@ -238,7 +238,7 @@ bool wlr_mode_match_preferred(const struct WlrMode *wlr_mode, const void* const 
 	return wlr_mode && wlr_mode->preferred;
 }
 
-bool wlr_mode_match_zwlr_mode(const struct WlrMode *wlr_mode, struct zwlr_output_mode_v1 *zwlr_mode) {
+bool wlr_mode_match_zwlr_mode(const struct WlrMode *wlr_mode, const struct zwlr_output_mode_v1 *zwlr_mode) {
 	return wlr_mode ? wlr_mode->zwlr_mode == zwlr_mode : false;
 }
 

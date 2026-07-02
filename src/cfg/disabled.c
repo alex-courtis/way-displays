@@ -6,6 +6,7 @@
 
 #include "cfg/condition.h"
 #include "fn.h"
+#include "head.h"
 #include "pset.h"
 
 static bool disabled_equal(const struct Disabled* const a, const struct Disabled* const b) {
@@ -76,3 +77,16 @@ void disabled_free(struct Disabled *disabled) {
 
 	free(disabled);
 }
+
+bool disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head) {
+	return
+		// name_desc must match
+		disabled_name_desc_matches_head(disabled, head) &&
+		// all conditions must be false
+		pset_match(disabled->conditions, (fn_match_ptr)condition_true, NULL) == NULL;
+}
+
+bool disabled_name_desc_matches_head(const struct Disabled * const disabled, const struct Head * const head) {
+	return disabled && head && head_matches_name_desc(head, disabled->name_desc);
+}
+
