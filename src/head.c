@@ -56,12 +56,10 @@ const struct WlrMode *head_max_wlr_mode(const struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	const struct WlrMode *wlr_mode = NULL;
 	const struct WlrMode *wlr_mode_max = NULL;
+
 	for (const struct PMapIt *it = pmap_it(head->wlr_modes); it; it = pmap_it_next(it)) {
-		if (!it->val)
-			continue;
-		wlr_mode = it->val;
+		const struct WlrMode *wlr_mode = it->val;
 
 		if (slist_find_equal(head->wlr_modes_failed, NULL, wlr_mode)) {
 			continue;

@@ -11,6 +11,7 @@
 #include "fn.h"
 #include "head.h"
 #include "pmap.h"
+#include "pset.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -158,14 +159,12 @@ double mode_scale(const struct WlrMode* const wlr_mode) {
 struct SList *modes_res_refresh(const struct PMap* const wlr_modes) {
 	struct SList *mrrs = NULL;
 
-	// TODO add sorting to map or key/vals to set
-	struct SList *unsorted = pmap_vals_slist_shallow(wlr_modes);
-	struct SList *sorted = slist_sort(unsorted, (fn_less_than)mode_greater_than_res_refresh);
+	const struct PSet *wlr_modes_sorted = pmap_vals_pset(wlr_modes);
+	pset_sort(wlr_modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
 
 	struct ModesResRefresh *mrr = NULL;
-	struct WlrMode *wlr_mode = NULL;
-	for (struct SList *i = sorted; i; i = i->nex) {
-		wlr_mode = i->val;
+	for (const struct PSetIt *it = pset_it(wlr_modes_sorted); it; it = pset_it_next(it)) {
+		struct WlrMode *wlr_mode = (struct WlrMode*)it->val;
 
 		if (!mrr || !mode_equal_res_hz(wlr_mode, mrr->wlr_modes->val)) {
 			mrr = calloc(1, sizeof(struct ModesResRefresh));
@@ -178,8 +177,7 @@ struct SList *modes_res_refresh(const struct PMap* const wlr_modes) {
 		slist_append(&mrr->wlr_modes, wlr_mode);
 	}
 
-	slist_free(&unsorted);
-	slist_free(&sorted);
+	pset_free(wlr_modes_sorted);
 
 	return mrrs;
 }
