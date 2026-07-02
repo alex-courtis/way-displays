@@ -234,8 +234,12 @@ const struct PSet *wlr_mode_pset_init(void) {
 }
 
 // TODO this could just be a fn_test; add them to map/set
-bool wlr_mode_matches_preferred(const struct WlrMode *wlr_mode, const void* const data) {
+bool wlr_mode_match_preferred(const struct WlrMode *wlr_mode, const void* const data) {
 	return wlr_mode && wlr_mode->preferred;
+}
+
+bool wlr_mode_match_zwlr_mode(const struct WlrMode *wlr_mode, struct zwlr_output_mode_v1 *zwlr_mode) {
+	return wlr_mode ? wlr_mode->zwlr_mode == zwlr_mode : false;
 }
 
 void wlr_mode_free(struct WlrMode *wlr_mode) {

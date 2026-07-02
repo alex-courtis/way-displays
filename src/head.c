@@ -322,7 +322,7 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 }
 
 const struct WlrMode *head_preferred_wlr_mode(const struct Head * const head) {
-	return head ? pset_match(head->wlr_modes, (fn_match_ptr)wlr_mode_matches_preferred, NULL) : NULL;
+	return head ? pset_match(head->wlr_modes, (fn_match_ptr)wlr_mode_match_preferred, NULL) : NULL;
 }
 
 bool head_current_not_desired(const struct Head * const head) {

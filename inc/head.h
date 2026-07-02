@@ -126,6 +126,7 @@ void heads_reapply(struct SList *heads);
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
 
+// remove a mode from the head, including current/desired, freeing it
 void head_release_mode(struct WlrMode *wlr_mode);
 
 void head_free(struct Head *head);

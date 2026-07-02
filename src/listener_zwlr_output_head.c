@@ -59,16 +59,16 @@ static void enabled(void *data,
 	head->current.enabled = enabled;
 }
 
-// TODO no unit tests, needs conversion to set
 static void current_mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	// struct Head *head = data;
-	//
-	// const struct WlrMode *m = pmap_get(head->wlr_modes_map, zwlr_output_mode_v1);
-	// if (m) {
-	// 	head->current.wlr_mode = m;
-	// }
+	struct Head *head = data;
+
+	const struct WlrMode *wlr_mode = pset_match(head->wlr_modes, (fn_match_ptr)wlr_mode_match_zwlr_mode, zwlr_output_mode_v1);
+
+	if (wlr_mode) {
+		head->current.wlr_mode = wlr_mode;
+	}
 }
 
 static void position(void *data,

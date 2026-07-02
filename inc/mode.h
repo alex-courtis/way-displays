@@ -52,7 +52,9 @@ struct WlrMode *wlr_mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwl
 
 const struct PSet *wlr_mode_pset_init(void);
 
-bool wlr_mode_matches_preferred(const struct WlrMode *wlr_mode, const void* const data);
+bool wlr_mode_match_preferred(const struct WlrMode *wlr_mode, const void* const data);
+
+bool wlr_mode_match_zwlr_mode(const struct WlrMode *wlr_mode, struct zwlr_output_mode_v1 *zwlr_output_mode_v1);
 
 void wlr_mode_free(struct WlrMode *wlr_mode);
 
