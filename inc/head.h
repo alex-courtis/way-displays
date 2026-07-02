@@ -43,8 +43,6 @@ struct Head {
 
 	// TODO this should be a set; there is no value in a map
 	const struct PMap* wlr_modes;
-	// TODO remove in favour of wlr_modes
-	struct SList *modes;
 
 	char *name;
 	char *description;
