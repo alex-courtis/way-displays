@@ -47,49 +47,54 @@ struct Condition *condition_clone(const struct Condition* const from) {
 	return to;
 }
 
-bool condition_true(const struct Condition *condition, const void* const data) {
+bool condition_evaluate(const struct Condition *condition) {
 	if (!condition)
-		return false;
+		return true;
 
 	for (const struct SSetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
 		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) == NULL) {
 			sset_it_free(it);
-			return true;
+			return false;
 		}
 	}
 
 	for (const struct SSetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
 		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) != NULL) {
 			sset_it_free(it);
-			return true;
+			return false;
 		}
 	}
 
 	switch (condition->lid) {
 		case LID_CLOSED:
 			if (!g_lid || !g_lid->closed) {
-				return true;
+				return false;
 			}
 			break;
 		case LID_OPEN:
 			if (!g_lid || g_lid->closed) {
-				return true;
+				return false;
 			}
 			break;
 		case LID_NOT_PRESENT:
 			if (g_lid) {
-				return true;
+				return false;
 			}
 			break;
 		default:
 			break;
 	}
 
-	return false;
+	return true;
 }
 
-bool conditions_true(const struct PSet* const conditions) {
-	return pset_match(conditions, (fn_match_ptr)condition_true, NULL) == NULL;
+// TODO this could be boiled away further
+static bool condition_match_no_evaluate(const struct Condition *condition, const void* const data) {
+	return !condition_evaluate(condition);
+}
+
+bool condition_set_evaluate(const struct PSet* const conditions) {
+	return pset_match(conditions, (fn_match_ptr)condition_match_no_evaluate, NULL) == NULL;
 }
 
 void condition_free(struct Condition *condition) {
