@@ -35,6 +35,8 @@ static int after_all(void **state) {
 }
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	g_cfg = cfg_default();
 
 	return 0;

@@ -1,3 +1,4 @@
+Removing duplicate MODE max_override
 Ignoring invalid MODE invalid_width WIDTH wid
 Ignoring invalid MODE invalid_height HEIGHT hei
 Ignoring invalid MODE invalid_hz HZ hzz

@@ -70,19 +70,19 @@ genhtml \
 	--dark-mode \
 	--num-spaces 4 \
 	--flat \
-	--rc genhtml_hi_limit=100 \
+	--rc genhtml_hi_limit=85 \
 	--rc genhtml_med_limit=60 \
 	--output-directory "${REP_PATH}" \
 	${INFO_PATH}
 
-# clear .gnco for next (non-coverage) run
-make clean
-
-ONLY_HTML="${REP_PATH}/${SRC_PATH}/${1}.c.gcov.html"
+ONLY_HTML=$(find "${REP_PATH}" -name "${1}.c.gcov.html")
 
 if [ $# -eq 1 ] && [ -f "${ONLY_HTML}" ]; then
 	xdg-open "${ONLY_HTML}"
 else
 	xdg-open "${REP_PATH}/index.html"
 fi
+
+# clear .gnco for next (non-coverage) run
+make clean all
 

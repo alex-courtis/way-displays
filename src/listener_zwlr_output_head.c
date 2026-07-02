@@ -1,13 +1,15 @@
+#include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 #include <wayland-util.h>
 
 #include "listeners.h"
 
+#include "fn.h"
 #include "head.h"
-#include "slist.h"
 #include "mode.h"
+#include "pset.h"
+#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Head data
@@ -43,13 +45,11 @@ static void mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	struct Mode *mode = calloc(1, sizeof(struct Mode));
-	mode->head = head;
-	mode->zwlr_mode = zwlr_output_mode_v1;
+	struct WlrMode *wlr_mode = wlr_mode_init(head, zwlr_output_mode_v1, 0, 0, 0, false);
 
-	slist_append(&head->modes, mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
-	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), mode);
+	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), wlr_mode);
 }
 
 static void enabled(void *data,
@@ -65,13 +65,10 @@ static void current_mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	struct Mode *m = NULL;
-	for (struct SList *i = head->modes; i; i = i->nex) {
-		m = i->val;
-		if (m && m->zwlr_mode == zwlr_output_mode_v1) {
-			head->current.mode = m;
-			break;
-		}
+	const struct WlrMode *wlr_mode = pset_match(head->wlr_modes, (fn_match_ptr)wlr_mode_match_zwlr_mode, zwlr_output_mode_v1);
+
+	if (wlr_mode) {
+		head->current.wlr_mode = wlr_mode;
 	}
 }
 
@@ -135,10 +132,10 @@ static void adaptive_sync(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
-	const struct Head *head = data;
+	struct Head *head = data;
 
 	// dummy Head, just for printing
-	struct Head *head_departed = calloc(1, sizeof(struct Head));
+	struct Head *head_departed = head_init();
 	head_departed->name = strdup(head->name);
 	head_departed->description = strdup(head->description);
 	slist_append(&g_heads_departed, head_departed);

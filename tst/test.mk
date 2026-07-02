@@ -10,7 +10,7 @@ CFLAGS += -Wno-unused-function
 # remove libinput as it is 64-bit only and not used by tests
 LDLIBS := $(filter-out -linput,$(LDLIBS))
 
-$(TST_O): $(INC_H) $(TST_H) $(PRO_H) config.mk GNUmakefile tst/test.mk
+$(TST_O): $(INC_H) $(TST_H) $(PRO_H) tst/yaml/data.c config.mk GNUmakefile tst/test.mk
 
 # test executables exclude:
 #   main
@@ -21,6 +21,7 @@ $(TST_E): $(filter-out src/main.o src/lid.o,$(SRC_O)) $(PRO_O) $(LIB_O) $(filter
 # test-x builds tst/tst-x and executes it
 test: $(patsubst tst/tst%,test%,$(TST_E))
 test-%: tst/tst-%
+	rm -f actual.* expected.* unexpected.*
 	./$(^)
 
 # test-x-vg builds tst/tst-x and executes it with valgrind
@@ -69,7 +70,7 @@ tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=call_back
 
 tst/tst-layout: LDFLAGS += -Wl,$\
-	--wrap=head_find_mode,$\
+	--wrap=head_find_wlr_mode,$\
 	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,$\
 	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,--wrap=call_back_mode_fail,$\
 	--wrap=head_auto_scale

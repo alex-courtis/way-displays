@@ -2,6 +2,9 @@ SCALE:
   - NAME_DESC: three
     SCALE: 3
 
+  - NAME_DESC: three
+    SCALE: 5
+
   - NAME_DESC: invalid
     SCALE: foobar
 
@@ -18,3 +21,9 @@ SCALE:
     - bar
   - NAME_DESC: missing_scale
   - SCALE: 99
+
+  - NAME_DESC: neg
+    SCALE: -1
+
+  - NAME_DESC: zero
+    SCALE: 0

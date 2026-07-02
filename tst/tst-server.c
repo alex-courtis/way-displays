@@ -13,9 +13,8 @@
 
 #include "cfg.h"
 #include "log.h"
-#include "slist.h"
+#include "sset.h"
 #include "yaml/unmarshal.h"
-
 
 void load_cfg(void);
 void reload_cfg(void);
@@ -37,13 +36,15 @@ bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 }
 
 // cppcheck-suppress staticFunction
-void *__wrap_yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
+void *__wrap_yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 	check_expected_ptr(path);
 
 	return mock_ptr_type_checked(struct Cfg*);
 }
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	cfg_destroy();
 
 	return 0;
@@ -155,7 +156,7 @@ static void load_cfg__missing_defaults(void **state) {
 	_dir_path = strdup("dir_path");
 
 	struct Cfg *cfg_read = cfg_init();
-	slist_append(&cfg_read->order_name_desc, strdup("first head"));
+	sset_add(cfg_read->order_name_desc, "first head");
 	cfg_read->align = BOTTOM;
 	cfg_read->auto_scale = OFF;
 	cfg_read->scale_round_to = 2;
@@ -171,7 +172,7 @@ static void load_cfg__missing_defaults(void **state) {
 	assert_ptr_equal(g_cfg, cfg_read);
 
 	struct Cfg *cfg_expected = cfg_default();
-	slist_append(&cfg_expected->order_name_desc, strdup("first head"));
+	sset_add(cfg_expected->order_name_desc, "first head");
 	cfg_expected->align = BOTTOM;
 	cfg_expected->auto_scale = OFF;
 	cfg_expected->scale_round_to = 2;

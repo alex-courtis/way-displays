@@ -39,7 +39,7 @@ static void log_error_yaml(const char *yaml) {
 		log_error("========================================\n%s\n----------------------------------------", yaml);
 }
 
-void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn) {
+void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 	if (!path) {
 		return NULL;
 	}
@@ -97,7 +97,7 @@ end:
 	return out;
 }
 
-void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human) {
+void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to_type fn, char *human) {
 	if (!yaml || !human)
 		return NULL;
 
@@ -163,8 +163,8 @@ void yaml_unmarshal_log_ctx_top(struct UC *c, const char *top) {
 	strncpy(c->top, top ? top : "", sizeof(c->top) - 1);
 }
 
-void yaml_unmarshal_log_valid_values_fn(struct UC *c, enum_names_fn fn) {
-	c->valid_names_fn = fn;
+void yaml_unmarshal_log_enum_names(struct UC *c, fn_enum_names fn) {
+	c->enum_names = fn;
 }
 
 static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_node_type_t type_expected, const yaml_node_type_t type_actual) {
@@ -186,8 +186,8 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 		msg = sprintf_append(msg, " expected %s, got %s", yaml_node_type_str(type_expected), yaml_node_type_str(type_actual));
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
-	if (c->valid_names_fn) {
-		char *valids = c->valid_names_fn();
+	if (c->enum_names) {
+		char *valids = c->enum_names();
 		if (valids) {
 			msg = sprintf_append(msg, ", valid values: %s", valids);
 			free(valids);
@@ -196,10 +196,8 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 	if (*c->def)
 		msg = sprintf_append(msg, ", using default %s", c->def);
 
-	if (msg) {
-		log_(c->t, "%s", msg);
-		free(msg);
-	}
+	log_(c->t, "%s", msg);
+	free(msg);
 }
 
 static void yaml_log_misssing(struct UC *c) {
@@ -227,11 +225,26 @@ void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value) {
 	yaml_log_invalid(c, value, YAML_NO_NODE, YAML_NO_NODE);
 }
 
-bool yaml_check_node_type(struct UC *c, const yaml_node_t *node, const yaml_node_type_t expected) {
-	if (node && node->type == expected)
+void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value) {
+	char *msg = strdup("Removing duplicate");
+
+	if (*c->top)
+		msg = sprintf_append(msg, " %s", c->top);
+
+	if (value)
+		msg = sprintf_append(msg, " %s", value);
+
+	if (msg) {
+		log_(c->t, "%s", msg);
+		free(msg);
+	}
+}
+
+bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected) {
+	if (node_actual && node_actual->type == expected)
 		return true;
 
-	yaml_log_invalid(c, NULL, expected, node ? node->type : YAML_NO_NODE);
+	yaml_log_invalid(c, NULL, expected, node_actual ? node_actual->type : YAML_NO_NODE);
 
 	return false;
 }

@@ -4,10 +4,11 @@
 #include <stdbool.h>
 
 #include "cfg.h"
+#include "cfg/user-mode.h"
 #include "head.h"
-#include "slist.h"
 #include "log.h"
 #include "mode.h"
+#include "slist.h"
 
 #define CALLBACK_MSG_LEN 1024 * 64
 
@@ -24,19 +25,23 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 void print_head(const enum LogThreshold t, const enum InfoEvent event, const struct Head * const head);
 
+void print_head_current(const enum LogThreshold t, const struct Head * const head);
+
+void print_head_desired(const enum LogThreshold t, const struct Head * const head);
+
 void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct SList * const heads);
 
 void print_list(const enum LogThreshold t, const struct SList * const heads);
 
 void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
-void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
+void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const wlr_mode);
 
 // consumer frees
 char *info_user_mode_string(const struct UserMode * const user_mode);
 
 // consumer frees
-char *info_mode_string(const struct Mode * const mode);
+char *info_wlr_mode_string(const struct WlrMode * const wlr_mode);
 
 // consumer frees
 char *delta_human(const struct SList * const heads);
@@ -59,7 +64,7 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
 // maybe execute CALLBACK_CMD
-void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
+void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const wlr_mode);
 
 #endif // INFO_H
 

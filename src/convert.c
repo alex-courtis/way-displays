@@ -5,7 +5,7 @@
 #include "convert.h"
 
 #include "cfg.h"
-#include "conditions.h"
+#include "cfg/condition.h"
 #include "displ.h"
 #include "ipc.h"
 #include "log.h"
@@ -35,6 +35,8 @@ static struct NameVal cfg_elements[] = {
 	{ .val = TRANSFORM,             .name = "TRANSFORM",             },
 	{ .val = LOG_THRESHOLD,         .name = "LOG_THRESHOLD",         },
 	{ .val = DISABLED,              .name = "DISABLED",              },
+	{ .val = PLUGGED,               .name = "PLUGGED",               },
+	{ .val = UNPLUGGED,             .name = "UNPLUGGED",             },
 	{ .val = ARRANGE_ALIGN,         .name = "ARRANGE_ALIGN",         },
 	{ .val = AUTO_SCALE_DPI,        .name = "AUTO_SCALE_DPI",        },
 	{ .val = AUTO_SCALE_MIN,        .name = "AUTO_SCALE_MIN",        },

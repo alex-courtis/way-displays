@@ -48,7 +48,7 @@ way-displays: $(SRC_O) $(PRO_O) $(LIB_O)
 $(PRO_H): $(PRO_X)
 	wayland-scanner client-header $(@:.h=.xml) $@
 
-$(PRO_C): $(PRO_X)
+$(PRO_C): $(PRO_X) $(PRO_H)
 	wayland-scanner private-code $(@:.c=.xml) $@
 
 #
@@ -96,9 +96,11 @@ iwyu: clean $(SRC_O) $(LIB_O) $(TST_O) $(EXAMPLE_O)
 # cppcheck
 #
 cppcheck: INCS += -Ilib/alex-c/tst
-cppcheck: $(SRC_C) $(LIB_C) $(INC_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
+cppcheck: $(SRC_C) $(LIB_C) $(INC_H) $(PRO_H) $(EXAMPLE_C) $(TST_H) $(TST_C)
 	cppcheck $(^) \
-		--enable=warning,unusedFunction,performance,portability,style \
+		--enable=all \
+		--disable=information \
+		--inconclusive \
 		--check-level=exhaustive \
 		--inline-suppr \
 		--suppressions-list=bld/cppcheck.supp \

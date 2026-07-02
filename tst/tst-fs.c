@@ -23,6 +23,8 @@ static void clean_dirs(void) {
 }
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	clean_dirs();
 	return 0;
 }

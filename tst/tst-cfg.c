@@ -10,9 +10,15 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
-#include "conditions.h"
+#include "cfg/condition.h"
+#include "cfg/disabled.h"
+#include "cfg/user-mode.h"
 #include "log.h"
+#include "pset.h"
 #include "slist.h"
+#include "smap.h"
+#include "smapi.h"
+#include "sset.h"
 
 #include "cfg.h"
 
@@ -30,6 +36,8 @@ struct State {
 };
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	struct State *s = calloc(1, sizeof(struct State));
 
 	slist_free_vals(&cfg_file_paths, NULL);
@@ -91,10 +99,10 @@ static void merge_set__align(void **state) {
 static void merge_set__order(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->order_name_desc, strdup("A"));
-	slist_append(&s->from->order_name_desc, strdup("X"));
+	sset_add(s->to->order_name_desc, "A");
+	sset_add(s->from->order_name_desc, "X");
 
-	slist_append(&s->expected->order_name_desc, strdup("X"));
+	sset_add(s->expected->order_name_desc, "X");
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -150,18 +158,18 @@ static void merge_set__scale_round_strategy(void **state) {
 	assert_logs_empty();
 }
 
-static void merge_set__user_scale(void **state) {
+static void merge_set__scale(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_scales, cfg_user_scale_init("to", 1));
-	slist_append(&s->to->user_scales, cfg_user_scale_init("both", 2));
+	smapi_put(s->to->scales, "to", 1000);
+	smapi_put(s->to->scales, "both", 2000);
 
-	slist_append(&s->from->user_scales, cfg_user_scale_init("from", 3));
-	slist_append(&s->from->user_scales, cfg_user_scale_init("both", 4));
+	smapi_put(s->from->scales, "from", 3000);
+	smapi_put(s->from->scales, "both", 4000);
 
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("to", 1));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("both", 4));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("from", 3));
+	smapi_put(s->expected->scales, "to", 1000);
+	smapi_put(s->expected->scales, "both", 4000);
+	smapi_put(s->expected->scales, "from", 3000);
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -172,18 +180,18 @@ static void merge_set__user_scale(void **state) {
 	assert_logs_empty();
 }
 
-static void merge_set__user_transform(void **state) {
+static void merge_set__transform(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_transforms, cfg_user_transform_init("to", 1));
-	slist_append(&s->to->user_transforms, cfg_user_transform_init("both", 2));
+	smapi_put(s->to->transforms, "to", 1000);
+	smapi_put(s->to->transforms, "both", 2000);
 
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("from", 3));
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("both", 4));
+	smapi_put(s->from->transforms, "from", 3000);
+	smapi_put(s->from->transforms, "both", 4000);
 
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("to", 1));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("both", 4));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("from", 3));
+	smapi_put(s->expected->transforms, "to", 1000);
+	smapi_put(s->expected->transforms, "both", 4000);
+	smapi_put(s->expected->transforms, "from", 3000);
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -197,15 +205,15 @@ static void merge_set__user_transform(void **state) {
 static void merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_modes, cfg_user_mode_init("to", false, 1, 2, 3, false));
-	slist_append(&s->to->user_modes, cfg_user_mode_init("both", false, 4, 5, 6, false));
+	smap_put(s->to->user_modes, "to", user_mode_init(false, 1, 2, 3, false));
+	smap_put(s->to->user_modes, "both", user_mode_init(false, 4, 5, 6, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("from", false, 7, 8, 9, true));
-	slist_append(&s->from->user_modes, cfg_user_mode_init("both", false, 10, 11, 12, true));
+	smap_put(s->from->user_modes, "from", user_mode_init(false, 7, 8, 9, true));
+	smap_put(s->from->user_modes, "both", user_mode_init(false, 10, 11, 12, true));
 
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("to", false, 1, 2, 3, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("both", false, 10, 11, 12, true));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("from", false, 7, 8, 9, true));
+	smap_put(s->expected->user_modes, "to", user_mode_init(false, 1, 2, 3, false));
+	smap_put(s->expected->user_modes, "both", user_mode_init(false, 10, 11, 12, true));
+	smap_put(s->expected->user_modes, "from", user_mode_init(false, 7, 8, 9, true));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -219,15 +227,15 @@ static void merge_set__mode(void **state) {
 static void merge_set__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("to"));
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("both"));
+	sset_add(s->to->adaptive_sync_off, "to");
+	sset_add(s->to->adaptive_sync_off, "both");
 
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("from"));
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("both"));
+	sset_add(s->from->adaptive_sync_off, "from");
+	sset_add(s->from->adaptive_sync_off, "both");
 
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("to"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("both"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("from"));
+	sset_add(s->expected->adaptive_sync_off, "to");
+	sset_add(s->expected->adaptive_sync_off, "both");
+	sset_add(s->expected->adaptive_sync_off, "from");
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -241,35 +249,35 @@ static void merge_set__adaptive_sync_off(void **state) {
 static void merge_set__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Disabled *disabled1 = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled1 = disabled_init();
 	disabled1->name_desc = strdup("cond");
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("display"));
-	slist_append(&disabled1->conditions, cond);
-	cond = calloc(1, sizeof(struct Condition));
+	struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "display");
+	pset_add(disabled1->conditions, cond);
+	cond = condition_init();
 	cond->lid = LID_NOT_PRESENT;
-	slist_append(&disabled1->conditions, cond);
+	pset_add(disabled1->conditions, cond);
 
-	struct Disabled *disabled2 = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled2 = disabled_init();
 	disabled2->name_desc = strdup("twelve");
 
-	cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("FOUR"));
-	slist_append(&disabled1->conditions, cond);
+	cond = condition_init();
+	sset_add(cond->plugged, "FOUR");
+	pset_add(disabled1->conditions, cond);
 
-	slist_append(&s->to->disabled, cfg_disabled_always("to"));
-	slist_append(&s->to->disabled, cfg_disabled_always("both"));
+	assert_true(pset_add(s->to->disableds, disabled_init_name_desc("to")));
+	assert_true(pset_add(s->to->disableds, disabled_init_name_desc("both")));
 
-	slist_append(&s->from->disabled, cfg_disabled_always("from"));
-	slist_append(&s->from->disabled, cfg_disabled_always("both"));
-	slist_append(&s->from->disabled, fn_clone_cfg_disabled(disabled1));
-	slist_append(&s->from->disabled, fn_clone_cfg_disabled(disabled2));
+	assert_true(pset_add(s->from->disableds, disabled_init_name_desc("from")));
+	assert_true(pset_add(s->from->disableds, disabled_init_name_desc("both")));
+	assert_true(pset_add(s->from->disableds, disabled_clone(disabled1)));
+	assert_true(pset_add(s->from->disableds, disabled_clone(disabled2)));
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("to"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("both"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("from"));
-	slist_append(&s->expected->disabled, disabled1);
-	slist_append(&s->expected->disabled, disabled2);
+	assert_true(pset_add(s->expected->disableds, disabled_init_name_desc("to")));
+	assert_true(pset_add(s->expected->disableds, disabled_init_name_desc("both")));
+	assert_true(pset_add(s->expected->disableds, disabled_init_name_desc("from")));
+	assert_true(pset_add(s->expected->disableds, disabled1));
+	assert_true(pset_add(s->expected->disableds, disabled2));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -304,13 +312,13 @@ static void merge_set__callback_cmd(void **state) {
 static void merge_del__scale(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_scales, cfg_user_scale_init("1", 1));
-	slist_append(&s->to->user_scales, cfg_user_scale_init("2", 2));
+	smapi_put(s->to->scales, "1", 1000);
+	smapi_put(s->to->scales, "2", 2000);
 
-	slist_append(&s->from->user_scales, cfg_user_scale_init("2", 3));
-	slist_append(&s->from->user_scales, cfg_user_scale_init("3", 4));
+	smapi_put(s->from->scales, "2", 3000);
+	smapi_put(s->from->scales, "3", 4000);
 
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("1", 1));
+	smapi_put(s->expected->scales, "1", 1000);
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -324,13 +332,13 @@ static void merge_del__scale(void **state) {
 static void merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_modes, cfg_user_mode_init("1", false, 1, 1, 1, false));
-	slist_append(&s->to->user_modes, cfg_user_mode_init("2", false, 2, 2, 2, false));
+	smap_put(s->to->user_modes, "1", user_mode_init(false, 1, 1, 1, false));
+	smap_put(s->to->user_modes, "2", user_mode_init(false, 2, 2, 2, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("2", false, 2, 2, 2, false));
-	slist_append(&s->from->user_modes, cfg_user_mode_init("3", false, 3, 3, 3, false));
+	smap_put(s->from->user_modes, "2", user_mode_init(false, 2, 2, 2, false));
+	smap_put(s->from->user_modes, "3", user_mode_init(false, 3, 3, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("1", false, 1, 1, 1, false));
+	smap_put(s->from->user_modes, "1", user_mode_init(false, 1, 1, 1, false));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -344,13 +352,13 @@ static void merge_del__mode(void **state) {
 static void merge_del__transform(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->user_transforms, cfg_user_transform_init("to", 1));
-	slist_append(&s->to->user_transforms, cfg_user_transform_init("both", 2));
+	smapi_put(s->to->transforms, "to", 1);
+	smapi_put(s->to->transforms, "both", 2);
 
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("from", 3));
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("both", 4));
+	smapi_put(s->from->transforms, "from", 3);
+	smapi_put(s->from->transforms, "both", 4);
 
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("to", 1));
+	smapi_put(s->expected->transforms, "to", 1);
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -364,13 +372,13 @@ static void merge_del__transform(void **state) {
 static void merge_del__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("1"));
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("2"));
+	sset_add(s->to->adaptive_sync_off, "1");
+	sset_add(s->to->adaptive_sync_off, "2");
 
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("2"));
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("3"));
+	sset_add(s->from->adaptive_sync_off, "2");
+	sset_add(s->from->adaptive_sync_off, "3");
 
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("1"));
+	sset_add(s->expected->adaptive_sync_off, "1");
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -384,13 +392,13 @@ static void merge_del__adaptive_sync_off(void **state) {
 static void merge_del__disabled(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->to->disabled, cfg_disabled_always("1"));
-	slist_append(&s->to->disabled, cfg_disabled_always("2"));
+	pset_add(s->to->disableds, disabled_init_name_desc("1"));
+	pset_add(s->to->disableds, disabled_init_name_desc("2"));
 
-	slist_append(&s->from->disabled, cfg_disabled_always("2"));
-	slist_append(&s->from->disabled, cfg_disabled_always("3"));
+	pset_add(s->from->disableds, disabled_init_name_desc("2"));
+	pset_add(s->from->disableds, disabled_init_name_desc("3"));
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("1"));
+	pset_add(s->expected->disableds, disabled_init_name_desc("1"));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -466,14 +474,14 @@ static void merge_toggle__adaptive_sync_off(void **state) {
 	s->from->auto_scale = false;
 	s->from->scaling = false;
 
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("display1"));
-	slist_append(&s->to->adaptive_sync_off_name_desc, strdup("display2"));
+	sset_add(s->to->adaptive_sync_off, "display1");
+	sset_add(s->to->adaptive_sync_off, "display2");
 
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("display2"));
-	slist_append(&s->from->adaptive_sync_off_name_desc, strdup("display3"));
+	sset_add(s->from->adaptive_sync_off, "display2");
+	sset_add(s->from->adaptive_sync_off, "display3");
 
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("display1"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("display3"));
+	sset_add(s->expected->adaptive_sync_off, "display1");
+	sset_add(s->expected->adaptive_sync_off, "display3");
 
 	struct Cfg *merged = merge_toggle(s->to, s->from);
 
@@ -518,50 +526,21 @@ static void validate_fix__row(void **state) {
 	assert_cfg_equal(s->from, s->expected);
 }
 
-static void validate_fix__user_scale(void **state) {
-	struct State *s = *state;
-
-	slist_append(&s->from->user_scales, cfg_user_scale_init("ok", 1));
-
-	slist_append(&s->from->user_scales, cfg_user_scale_init("neg", -1));
-
-	slist_append(&s->from->user_scales, cfg_user_scale_init("zero", 0));
-
-	slist_append(&s->from->user_scales, cfg_user_scale_init("dup", 2));
-	slist_append(&s->from->user_scales, cfg_user_scale_init("dup", 3));
-
-	validate_fix(s->from);
-
-	char *expected_log = read_file("tst/cfg/validate-fix-user-scale.log");
-	assert_log(WARNING, expected_log);
-	assert_logs_empty();
-
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("ok", 1));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("dup", 3));
-
-	assert_cfg_equal(s->from, s->expected);
-
-	free(expected_log);
-}
-
 static void validate_fix__user_mode(void **state) {
 	struct State *s = *state;
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
-	slist_append(&s->from->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
+	smap_put(s->from->user_modes, "ok", user_mode_init(false, 1, 2, 3, false));
+	smap_put(s->from->user_modes, "max", user_mode_init(true, -1, -1, -1, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("negative width", false, -99, 2, 3, false));
+	smap_put(s->from->user_modes, "negative width", user_mode_init(false, -99, 2, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("negative height", false, 1, -99, 3, false));
+	smap_put(s->from->user_modes, "negative height", user_mode_init(false, 1, -99, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("negative hz", false, 1, 2, -12340, false));
+	smap_put(s->from->user_modes, "negative hz", user_mode_init(false, 1, 2, -12340, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("missing width", false, -1, 2, 3, false));
+	smap_put(s->from->user_modes, "missing width", user_mode_init(false, -1, 2, 3, false));
 
-	slist_append(&s->from->user_modes, cfg_user_mode_init("missing height", false, 1, -1, 3, false));
-
-	slist_append(&s->from->user_modes, cfg_user_mode_init("dup", false, 1, 2, 3, false));
-	slist_append(&s->from->user_modes, cfg_user_mode_init("dup", true, 10, 20, 30, false));
+	smap_put(s->from->user_modes, "missing height", user_mode_init(false, 1, -1, 3, false));
 
 	validate_fix(s->from);
 
@@ -569,30 +548,8 @@ static void validate_fix__user_mode(void **state) {
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("ok", false, 1, 2, 3, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("max", true, -1, -1, -1, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("dup", true, 10, 20, 30, false));
-
-	assert_cfg_equal(s->from, s->expected);
-
-	free(expected_log);
-}
-
-static void validate_fix__user_transform(void **state) {
-	struct State *s = *state;
-
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("one", 1));
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("dup", 2));
-	slist_append(&s->from->user_transforms, cfg_user_transform_init("dup", 3));
-
-	validate_fix(s->from);
-
-	char *expected_log = read_file("tst/cfg/validate-fix-user-transform.log");
-	assert_log(WARNING, expected_log);
-	assert_logs_empty();
-
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("one", 1));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("dup", 3));
+	smap_put(s->expected->user_modes, "ok", user_mode_init(false, 1, 2, 3, false));
+	smap_put(s->expected->user_modes, "max", user_mode_init(true, -1, -1, -1, false));
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -615,46 +572,46 @@ static void validate_fix__auto_scale_dpi(void **state) {
 }
 
 static void validate_warn__(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("sss", 1));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("ssssssss", 2));
-	slist_append(&s->expected->user_scales, cfg_user_scale_init("DP-1", 3));
+	smapi_put(s->expected->scales, "sss", 1000);
+	smapi_put(s->expected->scales, "ssssssss", 2000);
+	smapi_put(s->expected->scales, "DP-1", 3000);
 
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmm", false, 1, 1, 1, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("mmmmmmmm", false, 1, 1, 1, false));
-	slist_append(&s->expected->user_modes, cfg_user_mode_init("DP-1", false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "mmm", user_mode_init(false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "mmmmmmmm", user_mode_init(false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "DP-1", user_mode_init(false, 1, 1, 1, false));
 
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("ttt", WL_OUTPUT_TRANSFORM_180));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("tttttttttt", WL_OUTPUT_TRANSFORM_270));
-	slist_append(&s->expected->user_transforms, cfg_user_transform_init("DP-1", WL_OUTPUT_TRANSFORM_270));
+	smapi_put(s->expected->transforms, "ttt", WL_OUTPUT_TRANSFORM_180);
+	smapi_put(s->expected->transforms, "tttttttttt", WL_OUTPUT_TRANSFORM_270);
+	smapi_put(s->expected->transforms, "DP-1", WL_OUTPUT_TRANSFORM_270);
 
-	slist_append(&s->expected->order_name_desc, strdup("ooo"));
-	slist_append(&s->expected->order_name_desc, strdup("oooooooooo"));
-	slist_append(&s->expected->order_name_desc, strdup("DP-1"));
+	sset_add(s->expected->order_name_desc, "ooo");
+	sset_add(s->expected->order_name_desc, "oooooooooo");
+	sset_add(s->expected->order_name_desc, "DP-1");
 
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvv"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("vvvvvvvvvv"));
-	slist_append(&s->expected->adaptive_sync_off_name_desc, strdup("DP-1"));
+	sset_add(s->expected->adaptive_sync_off, "vvv");
+	sset_add(s->expected->adaptive_sync_off, "vvvvvvvvvv");
+	sset_add(s->expected->adaptive_sync_off, "DP-1");
 
-	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("ppp"));
-	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("pppppppppp"));
-	slist_append(&s->expected->max_preferred_refresh_name_desc, strdup("DP-1"));
+	sset_add(s->expected->max_preferred_refresh, "ppp");
+	sset_add(s->expected->max_preferred_refresh, "pppppppppp");
+	sset_add(s->expected->max_preferred_refresh, "DP-1");
 
-	slist_append(&s->expected->disabled, cfg_disabled_always("ddd"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("dddddddddd"));
-	slist_append(&s->expected->disabled, cfg_disabled_always("DP-1"));
+	pset_add(s->expected->disableds, disabled_init_name_desc("ddd"));
+	pset_add(s->expected->disableds, disabled_init_name_desc("dddddddddd"));
+	pset_add(s->expected->disableds, disabled_init_name_desc("DP-1"));
 
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("cond");
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("ppp"));
-	slist_append(&cond->plugged, strdup("DP-1"));
-	slist_append(&cond->unplugged, strdup("uuu"));
-	slist_append(&cond->unplugged, strdup("DP-1"));
-	slist_append(&disabled->conditions, cond);
+	const struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "ppp");
+	sset_add(cond->plugged, "DP-1");
+	sset_add(cond->unplugged, "uuu");
+	sset_add(cond->unplugged, "DP-1");
+	pset_add(disabled->conditions, cond);
 
-	slist_append(&s->expected->disabled, disabled);
+	pset_add(s->expected->disableds, disabled);
 
 	validate_warn(s->expected);
 
@@ -673,8 +630,8 @@ int main(void) {
 		TEST_BA(merge_set__auto_scale),
 		TEST_BA(merge_set__scale_round_to),
 		TEST_BA(merge_set__scale_round_strategy),
-		TEST_BA(merge_set__user_scale),
-		TEST_BA(merge_set__user_transform),
+		TEST_BA(merge_set__scale),
+		TEST_BA(merge_set__transform),
 		TEST_BA(merge_set__mode),
 		TEST_BA(merge_set__adaptive_sync_off),
 		TEST_BA(merge_set__disabled),
@@ -693,9 +650,7 @@ int main(void) {
 
 		TEST_BA(validate_fix__col),
 		TEST_BA(validate_fix__row),
-		TEST_BA(validate_fix__user_scale),
 		TEST_BA(validate_fix__user_mode),
-		TEST_BA(validate_fix__user_transform),
 		TEST_BA(validate_fix__auto_scale_dpi),
 
 		TEST_BA(validate_warn__),

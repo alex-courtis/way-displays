@@ -1,8 +1,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "fn.h"
+#include "pset.h"
 #include "slist.h"
 #include "str.h"
 
@@ -19,78 +21,97 @@ struct PMap {
 	size_t size;
 };
 
-struct PMapIterState {
-	const struct PMap *tab;
+struct PMapItState {
+	const struct PMap *map;
 	size_t position;
-	fn_equal equal_key;
-	fn_equal equal_val;
+	fn_match_ptr_ptr match_key_val;
+	fn_match_ptr match_val;
 	const void *data;
 };
 
 // grow to capacity + grow
-static void grow(struct PMap *tab) {
-	size_t new_capacity = tab->capacity + (tab->params.grow ? tab->params.grow : PMAP_DEFAULT_GROW);
+static void grow(struct PMap *map) {
+	size_t new_capacity = map->capacity + (map->params.grow ? map->params.grow : PMAP_DEFAULT_GROW);
 
 	// grow new arrays
 	const void **new_keys = calloc(new_capacity, sizeof(void*));
 	const void **new_vals = calloc(new_capacity, sizeof(void*));
 
 	// copy old arrays
-	memcpy(new_keys, tab->keys, tab->capacity * sizeof(void*));
-	memcpy(new_vals, tab->vals, tab->capacity * sizeof(void*));
+	memcpy(new_keys, map->keys, map->capacity * sizeof(void*));
+	memcpy(new_vals, map->vals, map->capacity * sizeof(void*));
 
 	// free old arrays
-	free(tab->keys);
-	free(tab->vals);
+	free(map->keys);
+	free(map->vals);
 
 	// lock in new
-	tab->keys = new_keys;
-	tab->vals = new_vals;
-	tab->capacity = new_capacity;
+	map->keys = new_keys;
+	map->vals = new_vals;
+	map->capacity = new_capacity;
 }
 
-static const void *put(const struct PMap* const ctab, const void* const key, const void* const val, fn_clone clone_val) {
+static const struct PMapIt *it_init(const struct PMap *map) {
+	if (!map || map->size == 0)
+		return NULL;
+
+	struct PMapIt *it = calloc(1, sizeof(struct PMapIt));
+	it->st = calloc(1, sizeof(struct PMapItState));
+	it->st->map = map;
+
+	return it;
+}
+
+static const void *put(const struct PMap* const map, const void* const key, const void* const val, fn_alloc alloc_val) {
 	if (!key)
 		return NULL;
 
-	struct PMap *tab = (struct PMap*)ctab;
+	if (!val && !map->params.allow_null_val)
+		return NULL;
 
 	const void **k;
 	const void **v;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
 
 		// overwrite existing values
-		if (tab->params.equal_key ? tab->params.equal_key(*k, key) : *k == key) {
+		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			const void *val_old = *v;
-			if (val && clone_val) {
-				*v = clone_val(val);
-			} else {
-				*v = val;
+
+			const void *val_new = val && alloc_val ? alloc_val(val) : val;
+			if (!val_new && !map->params.allow_null_val) {
+				return NULL;
 			}
+
+			*v = val_new;
 			return val_old;
 		}
 	}
 
+	// alloc new key, never null
+	const void *key_new = map->params.alloc_key ? map->params.alloc_key(key) : key;
+	if (!key_new)
+		return NULL;
+
+	// alloc new val, maybe null
+	const void *val_new = val && alloc_val ? alloc_val(val) : val;
+	if (!val_new && !map->params.allow_null_val) {
+		return NULL;
+	}
+
+	struct PMap *map_m = (struct PMap*)map;
+
 	// grow for new entry
-	if (tab->size >= tab->capacity) {
-		grow(tab);
-		k = &tab->keys[tab->size];
-		v = &tab->vals[tab->size];
+	if (map->size >= map->capacity) {
+		grow(map_m);
+		k = &map->keys[map->size];
+		v = &map->vals[map->size];
 	}
 
 	// new
-	if (tab->params.clone_key) {
-		*k = tab->params.clone_key(key);
-	} else {
-		*k = key;
-	}
-	if (val && clone_val) {
-		*v = clone_val(val);
-	} else {
-		*v = val;
-	}
+	*k = key_new;
+	*v = val_new;
 
-	tab->size++;
+	map_m->size++;
 
 	return NULL;
 }
@@ -107,11 +128,11 @@ static const struct PMap *clone(const struct PMap* const from, fn_clone clone_va
 	return to;
 }
 
-static struct SList *keys_slist(const struct PMap* const tab, fn_clone clone_key) {
+static struct SList *keys_slist(const struct PMap* const map, fn_clone clone_key) {
 	struct SList *list = NULL;
 
 	const void **k;
-	for (k = tab->keys; k < tab->keys + tab->size; k++) {
+	for (k = map->keys; k < map->keys + map->size; k++) {
 		if (clone_key) {
 			slist_append(&list, (void*)clone_key(*k));
 		} else {
@@ -122,12 +143,12 @@ static struct SList *keys_slist(const struct PMap* const tab, fn_clone clone_key
 	return list;
 }
 
-static struct SList *vals_slist(const struct PMap* const tab, fn_clone clone_val) {
+static struct SList *vals_slist(const struct PMap* const map, fn_clone clone_val) {
 	struct SList *list = NULL;
 
 	const void **k;
 	const void **v;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
 		if (*v && clone_val) {
 			slist_append(&list, (void*)clone_val(*v));
 		} else {
@@ -144,15 +165,15 @@ const struct PMap *pmap_init(void) {
 }
 
 const struct PMap *pmap_init_with(const struct PMapParams params) {
-	struct PMap *tab = calloc(1, sizeof(struct PMap));
+	struct PMap *map = calloc(1, sizeof(struct PMap));
 
-	tab->capacity = params.initial ? params.initial : PMAP_DEFAULT_INITIAL;
-	tab->keys = calloc(tab->capacity, sizeof(void*));
-	tab->vals = calloc(tab->capacity, sizeof(void*));
+	map->capacity = params.initial ? params.initial : PMAP_DEFAULT_INITIAL;
+	map->keys = calloc(map->capacity, sizeof(void*));
+	map->vals = calloc(map->capacity, sizeof(void*));
 
-	memcpy((void*)&tab->params, &params, sizeof(struct PMapParams));
+	memcpy((void*)&map->params, &params, sizeof(struct PMapParams));
 
-	return tab;
+	return map;
 }
 
 const struct PMap *pmap_clone_shallow(const struct PMap* const from) {
@@ -160,63 +181,66 @@ const struct PMap *pmap_clone_shallow(const struct PMap* const from) {
 }
 
 const struct PMap *pmap_clone_deep(const struct PMap* const from) {
-	if (!from || !from->params.clone_val)
+	if (!from)
 		return NULL;
 
-	return clone(from, from->params.clone_val);
+	if (from->params.clone_val)
+		return clone(from, from->params.clone_val);
+	else
+		return pmap_init_with(from->params);
 }
 
-void pmap_free(const struct PMap* const tab) {
-	if (!tab)
+void pmap_free(const struct PMap* const map) {
+	if (!map)
 		return;
 
-	if (tab->params.free_key) {
-		for (const void **k = tab->keys; k < tab->keys + tab->size; k++) {
-			tab->params.free_key(*k);
+	if (map->params.free_key) {
+		for (const void **k = map->keys; k < map->keys + map->size; k++) {
+			map->params.free_key(*k);
 		}
 	}
 
-	free(tab->keys);
-	free(tab->vals);
+	free(map->keys);
+	free(map->vals);
 
-	free((void*)tab);
+	free((void*)map);
 }
 
-void pmap_free_vals(const struct PMap* const tab) {
-	if (!tab)
+void pmap_free_vals(const struct PMap* const map) {
+	if (!map)
 		return;
 
-	for (const void **v = tab->vals; v < tab->vals + tab->size; v++) {
+	for (const void **v = map->vals; v < map->vals + map->size; v++) {
 		if (*v) {
-			if (tab->params.free_val) {
-				tab->params.free_val(*v);
+			if (map->params.free_val) {
+				map->params.free_val(*v);
 			} else {
 				free((void*)*v);
 			}
 		}
 	}
 
-	pmap_free(tab);
+	pmap_free(map);
 }
 
-void pmap_iter_free(const struct PMapIter* const iter) {
-	if (!iter)
+void pmap_it_free(const struct PMapIt* const it) {
+	if (!it)
 		return;
 
-	free(iter->st);
-	free((void*)iter);
+	free(it->st);
+	free((void*)it);
 }
 
-const void *pmap_get(const struct PMap* const tab, const void* const key) {
-	if (!tab || !key)
+const void *pmap_get(const struct PMap* const map, const void* const key) {
+	if (!map || !key)
 		return NULL;
 
 	const void **k;
 	const void **v;
-	for (k = tab->keys, v = tab->vals;
-			k < tab->keys + tab->size;
+	for (k = map->keys, v = map->vals;
+			k < map->keys + map->size;
 			k++, v++) {
-		if (tab->params.equal_key ? tab->params.equal_key(*k, key) : *k == key) {
+		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			return *v;
 		}
 	}
@@ -224,15 +248,15 @@ const void *pmap_get(const struct PMap* const tab, const void* const key) {
 	return NULL;
 }
 
-bool pmap_contains_key(const struct PMap* const tab, const void* const key) {
-	if (!tab || !key)
+bool pmap_contains_key(const struct PMap* const map, const void* const key) {
+	if (!map || !key)
 		return false;
 
 	const void **k;
-	for (k = tab->keys;
-			k < tab->keys + tab->size;
+	for (k = map->keys;
+			k < map->keys + map->size;
 			k++) {
-		if (tab->params.equal_key ? tab->params.equal_key(*k, key) : *k == key) {
+		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			return true;
 		}
 	}
@@ -240,86 +264,179 @@ bool pmap_contains_key(const struct PMap* const tab, const void* const key) {
 	return false;
 }
 
-const struct PMapIter *pmap_iter(const struct PMap* const tab) {
-	return pmap_filter_iter(tab, NULL, NULL, NULL);
+bool pmap_contains_val(const struct PMap* const map, const void* const val) {
+	if (!map || !val)
+		return false;
+
+	const void **v;
+	for (v = map->vals;
+			v < map->vals + map->size;
+			v++) {
+		if (map->params.equal_val ? map->params.equal_val(*v, val) : *v == val) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
-const struct PMapIter *pmap_filter_iter(const struct PMap* const tab, fn_equal equal_key, fn_equal equal_val, const void* const data) {
-	if (!tab || tab->size == 0)
+struct PMapPair pmap_match(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data) {
+	struct PMapPair res = { 0 };
+
+	if (!map || !match)
+		return res;
+
+	const void **k;
+	const void **v;
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+		if (match(*k, *v, data)) {
+			res.key = *k;
+			res.val = *v;
+			break;
+		}
+	}
+
+	return res;
+}
+
+struct PMapPair pmap_match_key(const struct PMap* const map, fn_match_ptr match, const void* const data) {
+	struct PMapPair res = { 0 };
+
+	if (!map || !match)
+		return res;
+
+	const void **k;
+	const void **v;
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+		if (match(*k, data)) {
+			res.key = *k;
+			res.val = *v;
+			break;
+		}
+	}
+
+	return res;
+}
+
+struct PMapPair pmap_match_val(const struct PMap* const map, fn_match_ptr match, const void* const data) {
+	struct PMapPair res = { 0 };
+
+	if (!map || !match)
+		return res;
+
+	const void **k;
+	const void **v;
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+		if (match(*v, data)) {
+			res.key = *k;
+			res.val = *v;
+			break;
+		}
+	}
+
+	return res;
+}
+
+const struct PMapIt *pmap_it(const struct PMap* const map) {
+	const struct PMapIt *it = it_init(map);
+
+	if (!it)
 		return NULL;
 
-	struct PMapIter *it = calloc(1, sizeof(struct PMapIter));
-	it->st = calloc(1, sizeof(struct PMapIterState));
-	it->st->tab = tab;
-	it->st->equal_key = equal_key;
-	it->st->equal_val = equal_val;
+	return pmap_it_next(it);
+}
+
+const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data) {
+	if (!match)
+		return NULL;
+
+	const struct PMapIt *it = it_init(map);
+	if (!it)
+		return NULL;
+
+	it->st->match_key_val = match;
 	it->st->data = data;
 
-	return pmap_iter_next(it);
+	return pmap_it_next(it);
 }
 
-const struct PMapIter *pmap_iter_next(const struct PMapIter* const citer) {
-	if (!citer)
+const struct PMapIt *pmap_match_val_it(const struct PMap* const map, fn_match_ptr match, const void* const data) {
+	if (!match)
 		return NULL;
 
-	struct PMapIter *iter = (struct PMapIter*)citer;
-	struct PMapIterState *st = iter->st;
+	const struct PMapIt *it = it_init(map);
+	if (!it)
+		return NULL;
 
-	if (!iter->st) {
-		pmap_iter_free(iter);
+	it->st->match_val = match;
+	it->st->data = data;
+
+	return pmap_it_next(it);
+}
+
+const struct PMapIt *pmap_it_next(const struct PMapIt* const it) {
+	if (!it)
+		return NULL;
+
+	struct PMapItState *st = it->st;
+
+	if (!it->st) {
+		pmap_it_free(it);
 		return NULL;
 	}
 
 	// null key indicates first use, start at the beginning
-	if (iter->key) {
+	if (it->key) {
 		st->position++;
 	}
 
-	for ( ; st->position < st->tab->size; st->position++) {
+	for ( ; st->position < st->map->size; st->position++) {
 
-		iter->key = *(st->tab->keys + st->position);
-		iter->val = *(st->tab->vals + st->position);
+		struct PMapIt *it_m = (struct PMapIt*)it;
 
-		if (st->equal_key && !st->equal_key(iter->key, st->data)) {
+		it_m->key = *(st->map->keys + st->position);
+		it_m->val = *(st->map->vals + st->position);
+
+		if (st->match_key_val && !st->match_key_val(it->key, it->val, st->data)) {
 			continue;
 		}
-		if (st->equal_val && !st->equal_val(iter->val, st->data)) {
+		if (st->match_val && !st->match_val(it->val, st->data)) {
 			continue;
 		}
 
-		return iter;
+		return it;
 	}
 
-	pmap_iter_free(iter);
+	pmap_it_free(it);
 	return NULL;
 }
 
 
-const void *pmap_put(const struct PMap* const tab, const void* const key, const void* const val) {
-	return tab ? put(tab, key, val, tab->params.clone_val) : NULL;
+const void *pmap_put(const struct PMap* const map, const void* const key, const void* const val) {
+	return map ? put(map, key, val, map->params.alloc_val) : NULL;
 }
 
-const void *pmap_put_if_absent(const struct PMap* const tab, const void* const key, const void* const val) {
-	if (!tab || !key)
+const void *pmap_put_if_absent(const struct PMap* const map, const void* const key, const void* const val) {
+	if (!map || !key)
 		return NULL;
 
-	if (pmap_contains_key(tab, key)) {
-		return pmap_get(tab, key);
+	if (pmap_contains_key(map, key)) {
+		return pmap_get(map, key);
 	} else {
-		put(tab, key, val, tab->params.clone_val);
+		put(map, key, val, map->params.alloc_val);
 		return NULL;
 	}
 }
 
-bool pmap_put_free(const struct PMap* const tab, const void* const key, const void* const val) {
-	if (!tab)
+bool pmap_put_free(const struct PMap* const map, const void* const key, const void* const val) {
+	if (!map)
 		return false;
 
-	const void *val_old = put(tab, key, val, tab->params.clone_val);
+	const void *val_old = put(map, key, val, map->params.alloc_val);
 
 	if (val_old) {
-		if (tab->params.free_val) {
-			tab->params.free_val(val_old);
+		if (map->params.free_val) {
+			map->params.free_val(val_old);
 		} else {
 			free((void*)val_old);
 		}
@@ -329,29 +446,30 @@ bool pmap_put_free(const struct PMap* const tab, const void* const key, const vo
 	}
 }
 
-const void *pmap_remove(const struct PMap* const ctab, const void* const key) {
-	if (!ctab || !key)
+const void *pmap_remove(const struct PMap* const map, const void* const key) {
+	if (!map || !key)
 		return NULL;
 
-	struct PMap *tab = (struct PMap*)ctab;
 
 	const void **k;
 	const void **v;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
 
-		if (tab->params.equal_key ? tab->params.equal_key(*k, key) : *k == key) {
-			if (tab->params.free_key) {
-				tab->params.free_key((void*)*k);
+		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
+			struct PMap *map_m = (struct PMap*)map;
+
+			if (map->params.free_key) {
+				map->params.free_key((void*)*k);
 			}
 			*k = NULL;
 			const void* val_old = *v;
 			*v = NULL;
-			tab->size--;
+			map_m->size--;
 
 			// shift down over removed
 			const void **mk;
 			const void **mv;
-			for (mk = k, mv = v; mk < tab->keys + tab->size; mk++, mv++) {
+			for (mk = k, mv = v; mk < map->keys + map->size; mk++, mv++) {
 				*mk = *(mk + 1);
 				*mv = *(mv + 1);
 			}
@@ -365,12 +483,12 @@ const void *pmap_remove(const struct PMap* const ctab, const void* const key) {
 	return NULL;
 }
 
-bool pmap_remove_free(const struct PMap* const tab, const void* const key) {
-	if (pmap_contains_key(tab, key)) {
-		const void *removed = pmap_remove(tab, key);
+bool pmap_remove_free(const struct PMap* const map, const void* const key) {
+	if (pmap_contains_key(map, key)) {
+		const void *removed = pmap_remove(map, key);
 		if (removed) {
-			if (tab->params.free_val) {
-				tab->params.free_val(removed);
+			if (map->params.free_val) {
+				map->params.free_val(removed);
 			} else {
 				free((void*)removed);
 			}
@@ -410,41 +528,87 @@ bool pmap_equal(const struct PMap* const a, const struct PMap* const b) {
 	return true;
 }
 
-struct SList *pmap_keys_slist_shallow(const struct PMap* const tab) {
-	return tab ? keys_slist(tab, NULL) : NULL;
+struct SList *pmap_keys_slist_shallow(const struct PMap* const map) {
+	return map ? keys_slist(map, NULL) : NULL;
 }
 
-struct SList *pmap_keys_slist_deep(const struct PMap* const tab) {
-	if (!tab || !tab->params.clone_key)
+struct SList *pmap_keys_slist_deep(const struct PMap* const map) {
+	if (!map || !map->params.alloc_key)
 		return NULL;
 
-	return keys_slist(tab, tab->params.clone_key);
+	return keys_slist(map, map->params.alloc_key);
 }
 
-struct SList *pmap_vals_slist_shallow(const struct PMap* const tab) {
-	return tab ? vals_slist(tab, NULL) : NULL;
-}
-
-struct SList *pmap_vals_slist_deep(const struct PMap* const tab) {
-	if (!tab || !tab->params.clone_val)
+const struct PSet *pmap_keys_pset(const struct PMap* const map) {
+	if (!map)
 		return NULL;
 
-	return vals_slist(tab, tab->params.clone_val);
+	const struct PSetParams params = {
+		.equal_val = map->params.equal_key,
+		.alloc_val = map->params.alloc_key,
+		.free_val = map->params.free_key,
+		.clone_val = map->params.alloc_key,
+		.str_val = map->params.str_key,
+		.initial = MAX(map->size, map->params.initial),
+		.grow  = map->params.grow,
+	};
+	const struct PSet *set = pset_init_with(params);
+
+	const void **k;
+	for (k = map->keys; k < map->keys + map->size; k++) {
+		pset_add(set, *k);
+	}
+
+	return set;
 }
 
-char *pmap_str(const struct PMap* const tab) {
-	if (!tab)
+struct SList *pmap_vals_slist_shallow(const struct PMap* const map) {
+	return map ? vals_slist(map, NULL) : NULL;
+}
+
+struct SList *pmap_vals_slist_deep(const struct PMap* const map) {
+	if (!map || !map->params.clone_val)
+		return NULL;
+
+	return vals_slist(map, map->params.clone_val);
+}
+
+const struct PSet *pmap_vals_pset(const struct PMap* const map) {
+	if (!map)
+		return NULL;
+
+	const struct PSetParams params = {
+		.equal_val = map->params.equal_val,
+		.alloc_val = map->params.alloc_val,
+		.free_val = map->params.free_val,
+		.clone_val = map->params.clone_val,
+		.str_val = map->params.str_val,
+		.initial = MAX(map->size, map->params.initial),
+		.grow  = map->params.grow,
+	};
+	const struct PSet *set = pset_init_with(params);
+
+	const void **v;
+	for (v = map->vals; v < map->vals + map->size; v++) {
+		pset_add(set, *v);
+	}
+
+	return set;
+}
+
+char *pmap_str(const struct PMap* const map) {
+	if (!map)
 		return NULL;
 
 	char *out = strdup("");
 
 	const void **k;
 	const void **v;
-	for (k = tab->keys, v = tab->vals; k < tab->keys + tab->size; k++, v++) {
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
 
 		if (*k) {
-			if (tab->params.str_key) {
-				char *key_old = tab->params.str_key(*k);
+			if (map->params.str_key) {
+				char *key_old = map->params.str_key(*k);
 				out = sprintf_append(out, "%s = ", key_old);
 				free(key_old);
 			} else {
@@ -455,8 +619,8 @@ char *pmap_str(const struct PMap* const tab) {
 		}
 
 		if (*v) {
-			if (tab->params.str_val) {
-				char *val_old = tab->params.str_val(*v);
+			if (map->params.str_val) {
+				char *val_old = map->params.str_val(*v);
 				out = sprintf_append(out, "%s\n", val_old);
 				free(val_old);
 			} else {
@@ -470,6 +634,6 @@ char *pmap_str(const struct PMap* const tab) {
 	return out;
 }
 
-size_t pmap_size(const struct PMap* const tab) {
-	return tab ? tab->size : 0;
+size_t pmap_size(const struct PMap* const map) {
+	return map ? map->size : 0;
 }

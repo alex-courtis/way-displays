@@ -32,7 +32,7 @@ int write_handler(void *data, unsigned char *buffer, size_t size) {
 	return 1;
 }
 
-static char *yaml_document_to_string(struct MC *c, const char *name) {
+static char *yaml_doc_to_string(struct MC *c, const char *name) {
 	char *yaml = NULL;
 
 	yaml_emitter_t emitter;
@@ -74,7 +74,7 @@ end:
 	return yaml;
 }
 
-char *yaml_marshal(const void *data, yaml_doc_fn fn, const char *human) {
+char *yaml_marshal(const void *data, fn_yaml_type_to_root fn, const char *human) {
 	if (!data)
 		return NULL;
 
@@ -90,7 +90,7 @@ char *yaml_marshal(const void *data, yaml_doc_fn fn, const char *human) {
 	if (!fn(&c, data))
 		goto end;
 
-	yaml = yaml_document_to_string(&c, human);
+	yaml = yaml_doc_to_string(&c, human);
 
 end:
 	yaml_document_delete(&c.d);

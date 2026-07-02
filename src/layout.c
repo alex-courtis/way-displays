@@ -7,23 +7,27 @@
 #include "layout.h"
 
 #include "cfg.h"
-#include "conditions.h"
+#include "cfg/disabled.h"
 #include "convert.h"
 #include "displ.h"
+#include "fn.h"
 #include "head.h"
 #include "info.h"
 #include "lid.h"
-#include "slist.h"
 #include "listeners.h"
 #include "log.h"
 #include "mode.h"
 #include "process.h"
+#include "pset.h"
+#include "slist.h"
+#include "smapi.h"
+#include "sset.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #define MAX_CANCELLATION_RETRIES 5
 
-static int cancellation_retries = 0;
-
+int g_cancellation_retries = 0;
 
 void handle_failure(void);
 
@@ -34,7 +38,7 @@ void position_heads(struct SList *heads) {
 	// find tallest/widest
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
-		if (!head || !head->desired.mode || !head->desired.enabled) {
+		if (!head || !head->desired.wlr_mode || !head->desired.enabled) {
 			continue;
 		}
 		if (head->scaled.height > tallest) {
@@ -48,7 +52,7 @@ void position_heads(struct SList *heads) {
 	// arrange each in the predefined order
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
-		if (!head || !head->desired.mode || !head->desired.enabled) {
+		if (!head || !head->desired.wlr_mode || !head->desired.enabled) {
 			continue;
 		}
 
@@ -96,11 +100,11 @@ void position_heads(struct SList *heads) {
 	}
 }
 
-struct SList *order_heads(const struct SList *order_name_desc, struct SList *heads) {
+struct SList *order_heads(const struct SSet * const order_name_desc, struct SList *heads) {
 	if (!heads)
 		return NULL;
 
-	unsigned long n_order = slist_length(order_name_desc);
+	unsigned long n_order = sset_size(order_name_desc);
 	unsigned long i;
 	struct SList *sorting = slist_clone(heads, NULL);
 
@@ -109,22 +113,22 @@ struct SList *order_heads(const struct SList *order_name_desc, struct SList *hea
 
 	// exact match
 	i = 0;
-	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, head_matches_name_desc_exact, o->val);
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, it->val);
 		i++;
 	}
 
 	// regex
 	i = 0;
-	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, head_matches_name_desc_regex, o->val);
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, it->val);
 		i++;
 	}
 
 	// fuzzy
 	i = 0;
-	for (const struct SList *o = order_name_desc; o; o = o->nex) {
-		slist_move(&order_heads[i], &sorting, head_matches_name_desc_fuzzy, o->val);
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, it->val);
 		i++;
 	}
 
@@ -158,16 +162,8 @@ void desire_enabled(struct Head *head) {
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
 	enabled |= slist_length(g_heads) == 1;
 
-	// iterate over all matching NAME_DESC's and evaluate their conditions
-	struct SList *d = g_cfg->disabled;
-	while ((d = slist_find_equal(d, head_disabled_matches_head, head)) != NULL) {
-		const struct Disabled *disabled_if = (struct Disabled*)d->val;
-		enabled &= !condition_list_evaluate(disabled_if->conditions);
-
-		if (!enabled) break;
-
-		d = d->nex;
-	}
+	// name_desc matches and (if present) any condition is true
+	enabled &= pset_match(g_cfg->disableds, (fn_match_ptr)disabled_matches_head, head) == NULL;
 
 	// reset manual override when it matches the auto-state
 	if (head->overrided_enabled != NoOverride) {
@@ -196,10 +192,10 @@ void desire_mode(struct Head *head) {
 	}
 
 	// attempt to find a mode, will log and call back on failure to find a mode
-	struct Mode *mode = head_find_mode(head);
+	const struct WlrMode *wlr_mode = head_find_wlr_mode(head);
 
-	if (mode) {
-		head->desired.mode = mode;
+	if (wlr_mode) {
+		head->desired.wlr_mode = wlr_mode;
 	} else {
 
 		if (!head->warned_no_mode) {
@@ -221,12 +217,10 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	for (struct SList *i = g_cfg->user_scales; i; i = i->nex) {
-		const struct UserScale *user_scale = (struct UserScale*)i->val;
-		if (head_matches_name_desc(head, user_scale->name_desc)) {
-			head->desired.scale = head_get_fixed_scale(user_scale->scale);
-			return;
-		}
+	const struct SMapIPair pair = smapi_match_key(g_cfg->scales, (fn_match_str)head_name_desc_matches_head, head);
+	if (pair.key) {
+		head->desired.scale = head_get_fixed_scale((double)pair.val / 1000);
+		return;
 	}
 
 	// auto or 1
@@ -244,13 +238,10 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	const struct UserTransform *user_transform;
-	for (struct SList *i = g_cfg->user_transforms; i; i = i->nex) {
-		user_transform = (struct UserTransform*)i->val;
-		if (head_matches_name_desc(head, user_transform->name_desc)) {
-			head->desired.transform = user_transform->transform;
-			return;
-		}
+	enum wl_output_transform transform = smapi_match_key(g_cfg->transforms, (fn_match_str)head_name_desc_matches_head, head).val;
+	if (transform) {
+		head->desired.transform = transform;
+		return;
 	}
 
 	// normal if not specified
@@ -266,7 +257,7 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (slist_find_equal(g_cfg->adaptive_sync_off_name_desc, head_name_desc_matches_head, head)) {
+	if (sset_match(g_cfg->adaptive_sync_off, (fn_match_str)head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -310,7 +301,7 @@ static void apply(void) {
 
 	// determine whether changes are needed before initiating output configuration
 	struct SList *i = g_heads;
-	while ((i = slist_find(i, head_current_not_desired))) {
+	while ((i = slist_find(i, (fn_test)head_current_not_desired))) {
 		slist_append(&heads_changing, i->val);
 		i = i->nex;
 	}
@@ -323,7 +314,7 @@ static void apply(void) {
 
 	struct Head *head;
 
-	if ((head = slist_find_val(g_heads, head_reapply_required))) {
+	if ((head = slist_find_val(g_heads, (fn_test)head_reapply_required))) {
 		displ_delta_init(0, head);
 
 		print_head(INFO, DELTA, head);
@@ -334,7 +325,7 @@ static void apply(void) {
 
 		head->reapply_required = false;
 
-	} else if ((head = slist_find_val(g_heads, head_current_mode_not_desired))) {
+	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_mode_not_desired))) {
 		log_debug("APPLY mode");
 
 		displ_delta_init(MODE, head);
@@ -343,11 +334,11 @@ static void apply(void) {
 
 		// mode change in its own operation; mode change desire is always enabled
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
+		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.wlr_mode->zwlr_mode);
 
 		g_displ->delta.human = delta_human_mode(head);
 
-	} else if ((head = slist_find_val(g_heads, head_current_adaptive_sync_not_desired))) {
+	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_adaptive_sync_not_desired))) {
 		log_debug("APPLY vrr");
 
 		displ_delta_init(VRR_OFF, head);
@@ -392,12 +383,12 @@ static void apply(void) {
 }
 
 void handle_success(void) {
-	cancellation_retries = 0;
+	g_cancellation_retries = 0;
 
 	switch(g_displ->delta.element) {
 		case MODE:
 			// successful mode change is not always reported
-			g_displ->delta.head->current.mode = g_displ->delta.head->desired.mode;
+			g_displ->delta.head->current.wlr_mode = g_displ->delta.head->desired.wlr_mode;
 			break;
 
 		case VRR_OFF:
@@ -419,31 +410,39 @@ void handle_success(void) {
 	displ_delta_destroy();
 }
 
-static bool handle_cancelled(void) {
-	cancellation_retries++;
-	if (cancellation_retries <= MAX_CANCELLATION_RETRIES) {
-		log_warn(NULL);
-		log_warn("Changes cancelled, retrying (attempt %i)", cancellation_retries);
-		return true;
+bool handle_cancelled(void) {
+	char *msg;
+	bool ret = false;
+
+	if (++g_cancellation_retries <= MAX_CANCELLATION_RETRIES) {
+		msg = sprintf_alloc("Changes cancelled, retrying (attempt %i)", g_cancellation_retries);
+		ret = true;
 	} else {
-		log_warn(NULL);
-		log_warn("Changes cancelled, max number of retry attempts exceeded");
-		return false;
+		msg = sprintf_alloc("Changes cancelled after %i retries", MAX_CANCELLATION_RETRIES);
+		ret = false;
 	}
+
+	log_warn(NULL);
+	log_warn("%s", msg);
+	call_back(WARNING, msg, NULL);
+
+	free(msg);
+
+	return ret;
 }
 
 void handle_failure(void) {
 	switch(g_displ->delta.element) {
 		case MODE:
 
-			print_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.mode);
-			call_back_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.mode);
+			print_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.wlr_mode);
+			call_back_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.wlr_mode);
 
 			// mode setting failure, try again
-			slist_append(&g_displ->delta.head->modes_failed, g_displ->delta.head->desired.mode);
+			slist_append(&g_displ->delta.head->wlr_modes_failed, (void*)g_displ->delta.head->desired.wlr_mode);
 
 			// current mode may be misreported
-			g_displ->delta.head->current.mode = NULL;
+			g_displ->delta.head->current.wlr_mode = NULL;
 
 			break;
 
@@ -475,7 +474,7 @@ void layout(void) {
 	slist_free(&g_heads_arrived);
 
 	print_heads(INFO, DEPARTED, g_heads_departed);
-	slist_free_vals(&g_heads_departed, head_free);
+	slist_free_vals(&g_heads_departed, (fn_free)head_free);
 
 	log_debug("LAYOUT %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 

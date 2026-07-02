@@ -3,6 +3,7 @@
   { "symbol": ["PMap", "public", '"pmap.h"', "public"] },
   { "symbol": ["IMap", "public", '"imap.h"', "public"] },
   { "symbol": ["SMap", "public", '"smap.h"', "public"] },
+  { "symbol": ["SMapI", "public", '"smapi.h"', "public"] },
   { "symbol": ["SMapS", "public", '"smaps.h"', "public"] },
   { "symbol": ["PSet", "public", '"pset.h"', "public"] },
   { "symbol": ["SSet", "public", '"sset.h"', "public"] },

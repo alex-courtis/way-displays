@@ -41,7 +41,7 @@ jobs:
 
       - name: install arch packages
         shell: sh -e {0}
-        run: bld/docker-install-arch.sh
+        run: sh bld/docker-packages/base-install.sh
 
       - run: make          clean
       - run: make CC=gcc   all
@@ -56,19 +56,23 @@ jobs:
       - run: make CC=clang test-vg
 
       - name: build and install 32-bit libyaml
-        run: bld/docker-install-libyaml-32.sh
+        run: sh bld/docker-packages/libyaml-32-build-install.sh
         shell: sh -e {0}
 
       - run: make                      clean
       - run: make CC=gcc   MFLAGS=-m32 test
       - run: make CC=gcc   MFLAGS=-m32 test-vg
 
-      - run: make                      clean
-      - run: make CC=clang MFLAGS=-m32 test
-      - run: make CC=clang MFLAGS=-m32 test-vg
+      # Temporarily remove 32 bit clang tests:
+      # /usr/bin/ld: cannot find -lgcc_s: No such file or directory
+      # /usr/lib32/libgcc_s_asneeded.so and libgcc_s.so are missing from 16.1.1+r346+g4e03491b401d-1
+      # They are present at 16.1.1+r12+g301eb08fa2c5-1
+      # - run: make                      clean
+      # - run: make CC=clang MFLAGS=-m32 test
+      # - run: make CC=clang MFLAGS=-m32 test-vg
 
       - name: build and install include-what-you-use
-        run: bld/docker-install-iwyu.sh
+        run: sh bld/docker-packages/iwyu-build-install.sh
         shell: sh -e {0}
 
       - run: make clean iwyu

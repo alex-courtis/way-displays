@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stdlib.h>
 
 #include "listeners.h"
 
@@ -16,7 +15,9 @@ static void head(void *data,
 
 	const struct Displ *displ = data;
 
-	struct Head *head = calloc(1, sizeof(struct Head));
+	struct Head *head = head_init();
+
+	// TODO this can be an IMap key
 	head->zwlr_head = zwlr_output_head_v1;
 
 	slist_append(&g_heads, head);

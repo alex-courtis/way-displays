@@ -53,6 +53,8 @@ struct IpcResponse {
 	struct SList *log_cap_lines;
 };
 
+void ipc_operation_update_rc(struct IpcOperation *ipc_operation);
+
 void ipc_send_request(struct IpcRequest *request);
 
 void ipc_send_operation(struct IpcOperation *operation);
@@ -65,7 +67,7 @@ struct SList *ipc_receive_responses(int socket_client, char **yaml);
 
 void ipc_request_free(struct IpcRequest *request);
 
-void ipc_response_free(const void *response);
+void ipc_response_free(struct IpcResponse *response);
 
 void ipc_operation_free(struct IpcOperation *operation);
 

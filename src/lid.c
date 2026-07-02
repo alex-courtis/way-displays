@@ -167,11 +167,9 @@ void lid_destroy(void) {
 	g_lid = NULL;
 }
 
-void lid_free(void *data) {
-	if (!data)
+void lid_free(struct Lid *lid) {
+	if (!lid)
 		return;
-
-	struct Lid *lid = data;
 
 	free(lid->device_path);
 

@@ -19,7 +19,7 @@ struct UC {
 	char key[64];
 	char name_desc[64];
 	char top[64];
-	enum_names_fn valid_names_fn;
+	fn_enum_names enum_names;
 };
 
 /*
@@ -27,30 +27,33 @@ struct UC {
  * Returns NULL and logs on failure
  */
 
-typedef void *(*yaml_root_to_type_fn)(struct UC *c, const yaml_node_t *root);
+typedef void *(*fn_yaml_root_to_type)(struct UC *c, const yaml_node_t *root);
 
 // Unmarshal a yaml string, human is arbitrary and used for logging
-void *yaml_unmarshal_str(const char *yaml, yaml_root_to_type_fn fn, char *human);
+void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to_type fn, char *human);
 
 // Unmarshal a yaml file
-void *yaml_unmarshal_file(const char *path, yaml_root_to_type_fn fn);
+void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn);
 
 /*
  * Controls logging for all unmarshalling failures
  * Context info is optional and added when available
  */
-void yaml_unmarshal_log_prefix         (struct UC *c, const char *prefix); // message prefix
-void yaml_unmarshal_log_def            (struct UC *c, const char *def); // default value
-void yaml_unmarshal_log_ctx_key        (struct UC *c, const char *key); // failed key name
-void yaml_unmarshal_log_ctx_name_desc  (struct UC *c, const char *name_desc); // NAME_DESC for context
-void yaml_unmarshal_log_ctx_top        (struct UC *c, const char *top); // root map key
-void yaml_unmarshal_log_valid_values_fn(struct UC *c, enum_names_fn fn); // all valid enum values
+void yaml_unmarshal_log_prefix       (struct UC *c, const char *prefix); // message prefix
+void yaml_unmarshal_log_def          (struct UC *c, const char *def); // default value
+void yaml_unmarshal_log_ctx_key      (struct UC *c, const char *key); // failed key name
+void yaml_unmarshal_log_ctx_name_desc(struct UC *c, const char *name_desc); // NAME_DESC for context
+void yaml_unmarshal_log_ctx_top      (struct UC *c, const char *top); // root map key
+void yaml_unmarshal_log_enum_names   (struct UC *c, fn_enum_names fn); // all valid enum values
 
 // explicitly log a value as invalid
 void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value);
 
+// explicitly log a removed duplicate
+void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value);
+
 // validate actual is of type expected, returning false and logging a warning if not
-bool yaml_check_node_type(struct UC *c, const yaml_node_t *actual, const yaml_node_type_t expected);
+bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected);
 
 // assert that node is not null
 bool yaml_check_mandatory(struct UC *c, const yaml_node_t *node);

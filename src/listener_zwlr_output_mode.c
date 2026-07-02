@@ -16,36 +16,36 @@ static void size(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t width,
 		int32_t height) {
-	struct Mode *mode = data;
+	struct WlrMode *wlr_mode = data;
 
-	mode->width = width;
-	mode->height = height;
+	wlr_mode->width = width;
+	wlr_mode->height = height;
 }
 
 static void refresh(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t refresh) {
-	struct Mode *mode = data;
+	struct WlrMode *wlr_mode = data;
 
-	mode->refresh_mhz = refresh;
+	wlr_mode->refresh_mhz = refresh;
 }
 
 static void preferred(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Mode *mode = data;
+	struct WlrMode *wlr_mode = data;
 
 	// some heads may advertise multiple preferred modes; ignore subsequent
-	if (mode->head) {
-		struct Mode *mode_pref;
-		if ((mode_pref = head_preferred_mode(mode->head))) {
+	if (wlr_mode->head) {
+		const struct WlrMode *wlr_mode_pref;
+		if ((wlr_mode_pref = head_preferred_wlr_mode(wlr_mode->head))) {
 
-			char *mode_preferred_str = info_mode_string(mode_pref);
+			char *mode_preferred_str = info_wlr_mode_string(wlr_mode_pref);
 
-			char *mode_str = info_mode_string(mode);
+			char *mode_str = info_wlr_mode_string(wlr_mode);
 
-			if (mode_pref->head && mode_pref->head->name) {
+			if (wlr_mode_pref->head && wlr_mode_pref->head->name) {
 				log_info(NULL);
-				log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_pref->head->name, mode_preferred_str, mode_str);
+				log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", wlr_mode_pref->head->name, mode_preferred_str, mode_str);
 			} else {
 				log_info(NULL);
 				log_info("???: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred_str, mode_str);
@@ -58,15 +58,14 @@ static void preferred(void *data,
 		}
 	}
 
-	mode->preferred = true;
+	wlr_mode->preferred = true;
 }
 
 static void finished(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Mode *mode = data;
+	struct WlrMode *wlr_mode = data;
 
-	head_release_mode(mode->head, mode);
-	mode_free(mode);
+	head_release_mode(wlr_mode);
 
 	zwlr_output_mode_v1_destroy(zwlr_output_mode_v1);
 }

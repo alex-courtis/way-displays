@@ -6,19 +6,20 @@
 #include "ipc.h"
 
 #include "cfg.h"
+#include "fn.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"
 #include "slist.h"
 #include "sockets.h"
-#include "yaml/marshal.h"
 #include "yaml/marshal-types.h"
-#include "yaml/unmarshal.h"
+#include "yaml/marshal.h"
 #include "yaml/unmarshal-types.h"
+#include "yaml/unmarshal.h"
 
 void ipc_send_request(struct IpcRequest *request) {
 
-	char *yaml = yaml_marshal(request, yaml_doc_ipc_request, "ipc request");
+	char *yaml = yaml_marshal(request, (fn_yaml_type_to_root)yaml_ipc_request_to_root, "ipc request");
 	if (!yaml) {
 		goto end;
 	}
@@ -38,8 +39,24 @@ end:
 	}
 }
 
+void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
+	if (!ipc_operation)
+		return;
+
+	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
+		const struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+
+		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
+			ipc_operation->rc = IPC_RC_WARN;
+		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
+			ipc_operation->rc = IPC_RC_ERROR;
+	}
+}
+
 void ipc_send_operation(struct IpcOperation *operation) {
-	char *yaml = yaml_marshal(operation, yaml_doc_ipc_operation, "ipc response");
+	ipc_operation_update_rc(operation);
+
+	char *yaml = yaml_marshal(operation, (fn_yaml_type_to_root)yaml_ipc_operation_to_root, "ipc response");
 
 	log_cap_lines_free(&operation->log_cap_lines);
 
@@ -114,16 +131,10 @@ void ipc_request_free(struct IpcRequest *request) {
 	free(request);
 }
 
-void ipc_response_free(const void *vresponse) {
-	if (!vresponse) {
-		return;
-	}
-
-	struct IpcResponse *response = (struct IpcResponse*)vresponse;
-
+void ipc_response_free(struct IpcResponse *response) {
 	cfg_free(response->cfg);
 	lid_free(response->lid);
-	slist_free_vals(&response->heads, head_free);
+	slist_free_vals(&response->heads, (fn_free)head_free);
 
 	log_cap_lines_free(&response->log_cap_lines);
 

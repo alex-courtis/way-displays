@@ -1,3 +1,4 @@
+Removing duplicate TRANSFORM one
 Ignoring invalid TRANSFORM invalid TRANSFORM foobar, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 Ignoring invalid TRANSFORM NAME_DESC regex '(transform': Unmatched ( or \(
 Ignoring invalid TRANSFORM NAME_DESC expected scalar, got sequence

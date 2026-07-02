@@ -2,8 +2,8 @@
 
 #include "assert-log.h"
 #include "asserts.h"
-#include "expects.h"
 #include "expect-smaps.h"
+#include "expects.h"
 #include "util-file.h"
 
 #include <cmocka.h>
@@ -13,13 +13,22 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
-#include "conditions.h"
+#include "cfg/condition.h"
+#include "cfg/disabled.h"
+#include "cfg/user-mode.h"
 #include "displ.h"
+#include "fn.h"
 #include "head.h"
+#include "imap.h"
 #include "log.h"
 #include "mode.h"
+#include "output.h"
+#include "pset.h"
 #include "slist.h"
+#include "smap.h"
+#include "smapi.h"
 #include "smaps.h"
+#include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -32,22 +41,25 @@ struct State {
 };
 
 int before_each(void **state) {
+	assert_logs_empty_before();
+
 	struct State *s = calloc(1, sizeof(struct State));
 
 	g_displ = calloc(1, sizeof(struct Displ));
 
 	g_cfg = cfg_default();
 
-	s->head1 = calloc(1, sizeof(struct Head));
+	s->head1 = head_init();
 
-	struct Mode *mode_cur = mode_init(s->head1, NULL, 100, 200, 30000, true);
-	struct Mode *mode_des = mode_init(s->head1, NULL, 400, 500, 60000, false);
-	struct Mode *mode_failed = mode_init(s->head1, NULL, 700, 800, 90000, false);
+	const struct WlrMode *wlr_mode_cur = wlr_mode_init(s->head1, NULL, 100, 200, 30000, true);
+	const struct WlrMode *wlr_mode_des = wlr_mode_init(s->head1, NULL, 400, 500, 60000, false);
+	const struct WlrMode *wlr_mode_failed = wlr_mode_init(s->head1, NULL, 700, 800, 90000, false);
 
-	slist_append(&s->head1->modes, mode_cur);
-	slist_append(&s->head1->modes, mode_des);
-	slist_append(&s->head1->modes, mode_failed);
-	slist_append(&s->head1->modes_failed, mode_failed);
+	pset_add(s->head1->wlr_modes, wlr_mode_cur);
+	pset_add(s->head1->wlr_modes, wlr_mode_des);
+	pset_add(s->head1->wlr_modes, wlr_mode_failed);
+
+	slist_append(&s->head1->wlr_modes_failed, (void*)wlr_mode_failed);
 
 	s->head1->name = strdup("name1");
 	s->head1->description = strdup("description1");
@@ -57,7 +69,7 @@ int before_each(void **state) {
 	s->head1->model = strdup("model1");
 	s->head1->serial_number = strdup("serial_number1");
 
-	s->head1->current.mode = mode_cur;
+	s->head1->current.wlr_mode = wlr_mode_cur;
 	s->head1->current.scale = 512;
 	s->head1->current.enabled = true;
 	s->head1->current.x = 700;
@@ -65,7 +77,7 @@ int before_each(void **state) {
 	s->head1->current.transform = WL_OUTPUT_TRANSFORM_180;
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	s->head1->desired.mode = mode_des;
+	s->head1->desired.wlr_mode = wlr_mode_des;
 	s->head1->desired.scale = 1024;
 	s->head1->desired.enabled = true;
 	s->head1->desired.x = 900;
@@ -76,16 +88,17 @@ int before_each(void **state) {
 	slist_append(&s->heads, s->head1);
 
 
-	s->head2 = calloc(1, sizeof(struct Head));
+	s->head2 = head_init();
 
-	mode_cur = mode_init(s->head2, NULL, 1100, 1200, 130000, true);
-	mode_des = mode_init(s->head2, NULL, 1400, 1500, 160000, false);
-	mode_failed = mode_init(s->head2, NULL, 1700, 1800, 190000, false);
+	wlr_mode_cur = wlr_mode_init(s->head2, NULL, 1100, 1200, 130000, true);
+	wlr_mode_des = wlr_mode_init(s->head2, NULL, 1400, 1500, 160000, false);
+	wlr_mode_failed = wlr_mode_init(s->head2, NULL, 1700, 1800, 190000, false);
 
-	slist_append(&s->head2->modes, mode_cur);
-	slist_append(&s->head2->modes, mode_des);
-	slist_append(&s->head2->modes, mode_failed);
-	slist_append(&s->head2->modes_failed, mode_failed);
+	pset_add(s->head2->wlr_modes, wlr_mode_cur);
+	pset_add(s->head2->wlr_modes, wlr_mode_des);
+	pset_add(s->head2->wlr_modes, wlr_mode_failed);
+
+	slist_append(&s->head2->wlr_modes_failed, (void*)wlr_mode_failed);
 
 	s->head2->name = strdup("name2");
 	s->head2->width_mm = 3;
@@ -94,7 +107,7 @@ int before_each(void **state) {
 	s->head2->model = strdup("model2");
 	s->head2->serial_number = strdup("serial_number2");
 
-	s->head2->current.mode = mode_cur;
+	s->head2->current.wlr_mode = wlr_mode_cur;
 	s->head2->current.scale = 2048;
 	s->head2->current.enabled = true;
 	s->head2->current.x = 1700;
@@ -102,7 +115,7 @@ int before_each(void **state) {
 	s->head2->current.transform = WL_OUTPUT_TRANSFORM_270;
 	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
-	s->head2->desired.mode = mode_des;
+	s->head2->desired.wlr_mode = wlr_mode_des;
 	s->head2->desired.scale = 4096;
 	s->head2->desired.enabled = true;
 	s->head2->desired.x = 1900;
@@ -112,6 +125,8 @@ int before_each(void **state) {
 
 	slist_append(&s->heads, s->head2);
 
+	g_outputs = imap_init();
+
 	*state = s;
 	return 0;
 }
@@ -119,12 +134,15 @@ int before_each(void **state) {
 int after_each(void **state) {
 	struct State *s = *state;
 
-	slist_free_vals(&s->heads, head_free);
+	slist_free_vals(&s->heads, (fn_free)head_free);
 
 	free(s);
 
 	displ_delta_destroy();
 	free(g_displ);
+
+	imap_free_vals(g_outputs);
+	g_outputs = NULL;
 
 	cfg_destroy();
 
@@ -134,27 +152,27 @@ int after_each(void **state) {
 static void print_cfg__all(void **state) {
 	struct Cfg *c = cfg_default();
 
-	slist_append(&c->order_name_desc, strdup("first"));
-	slist_append(&c->order_name_desc, strdup("last"));
+	sset_add(c->order_name_desc, "first");
+	sset_add(c->order_name_desc, "last");
 
-	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
-	slist_append(&c->user_scales, cfg_user_scale_init("four", 4));
+	smapi_put(c->scales, "three", 3000);
+	smapi_put(c->scales, "four", 4000);
 
-	slist_append(&c->disabled, cfg_disabled_always("disabled always"));
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	pset_add(c->disableds, disabled_init_name_desc("disabled always"));
+	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("disabled conditionally");
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("ONE"));
-	slist_append(&disabled->conditions, cond);
-	slist_append(&c->disabled, disabled);
+	const struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "ONE");
+	pset_add(disabled->conditions, cond);
+	pset_add(c->disableds, disabled);
 
-	slist_append(&c->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
+	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
+	smap_put(c->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
-	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
-	slist_append(&c->max_preferred_refresh_name_desc, strdup("legacy"));
+	sset_add(c->max_preferred_refresh, "legacy");
 
 	c->laptop_display_prefix = strdup("lappy");
 
@@ -175,15 +193,15 @@ static void print_cfg__all(void **state) {
 static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
-	slist_append(&c->user_scales, cfg_user_scale_init("three", 3));
-	slist_append(&c->user_scales, cfg_user_scale_init("four", 4));
+	smapi_put(c->scales, "three", 3000);
+	smapi_put(c->scales, "four", 4000);
 
-	slist_append(&c->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
+	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
+	smap_put(c->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
-	slist_append(&c->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
-	slist_append(&c->user_transforms, cfg_user_transform_init("thirteen", WL_OUTPUT_TRANSFORM_FLIPPED));
+	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put(c->transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	print_cfg(INFO, c, true);
 
@@ -275,28 +293,28 @@ static void print_cfg_commands__ok(void **state) {
 	c->arrange = COL;
 	c->align = RIGHT;
 
-	slist_append(&c->order_name_desc, strdup("one"));
-	slist_append(&c->order_name_desc, strdup("two"));
-	slist_append(&c->order_name_desc, strdup("three"));
+	sset_add(c->order_name_desc, "one");
+	sset_add(c->order_name_desc, "two");
+	sset_add(c->order_name_desc, "three");
 
 	c->scaling = OFF;
 
 	c->auto_scale = OFF;
 
-	slist_append(&c->user_scales, cfg_user_scale_init("one", 1));
-	slist_append(&c->user_scales, cfg_user_scale_init("two", 2.3456));
+	smapi_put(c->scales, "one", 1000);
+	smapi_put(c->scales, "two", 2345);
 
-	slist_append(&c->user_modes, cfg_user_mode_init("all", false, 1, 2, 12340, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("res", false, 4, 5, -1, false));
-	slist_append(&c->user_modes, cfg_user_mode_init("max", true, 7, 8, 9, false));
+	smap_put(c->user_modes, "all", user_mode_init(false, 1, 2, 12340, false));
+	smap_put(c->user_modes, "res", user_mode_init(false, 4, 5, -1, false));
+	smap_put(c->user_modes, "max", user_mode_init(true, 7, 8, 9, false));
 
-	slist_append(&c->user_transforms, cfg_user_transform_init("seven", WL_OUTPUT_TRANSFORM_FLIPPED_90));
+	smapi_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 
-	slist_append(&c->disabled, cfg_disabled_always("three"));
-	slist_append(&c->disabled, cfg_disabled_always("four"));
+	pset_add(c->disableds, disabled_init_name_desc("three"));
+	pset_add(c->disableds, disabled_init_name_desc("four"));
 
-	slist_append(&c->adaptive_sync_off_name_desc, strdup("five"));
-	slist_append(&c->adaptive_sync_off_name_desc, strdup("six"));
+	sset_add(c->adaptive_sync_off, "five");
+	sset_add(c->adaptive_sync_off, "six");
 
 	print_cfg_commands(INFO, c);
 
@@ -314,6 +332,18 @@ static void print_head_arrived__all(void **state) {
 	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return_int(__wrap_lid_is_closed, false);
 
+	struct Output *outputX = calloc(1, sizeof(struct Output));
+	outputX->name = "inexistent"; // we don't call output destroy, just free
+	imap_put(g_outputs, 888, outputX);
+
+	struct Output *output1 = calloc(1, sizeof(struct Output));
+	output1->name = "name1";
+	output1->logical_width = 4000;
+	output1->logical_height = 2000;
+	output1->logical_x = 400;
+	output1->logical_y = 200;
+	imap_put(g_outputs, 999, output1);
+
 	print_head(INFO, ARRIVED, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-arrived-all.log");
@@ -323,7 +353,7 @@ static void print_head_arrived__all(void **state) {
 }
 
 static void print_head_arrived__min(void **state) {
-	const struct Head *head = calloc(1, sizeof(struct Head));
+	struct Head *head = head_init();
 
 	expect_str(__wrap_lid_is_closed, name, NULL);
 	will_return_int(__wrap_lid_is_closed, false);
@@ -367,7 +397,7 @@ static void print_head_deltas__vrr(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head1->desired.mode = s->head1->current.mode;
+	s->head1->desired.wlr_mode = s->head1->current.wlr_mode;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -383,7 +413,7 @@ static void print_head_deltas__vrr(void **state) {
 static void print_head_deltas__other(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.mode = s->head1->current.mode;
+	s->head1->desired.wlr_mode = s->head1->current.wlr_mode;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -448,6 +478,153 @@ static void print_head_deltas__reapply(void **state) {
 	free(expected_log);
 }
 
+static void print_head_current__disabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = false;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-disabled.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
+static void print_head_current__disabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = false;
+	head.overrided_enabled = OverrideFalse;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-disabled-override.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
+static void print_head_current__enabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = true;
+	head.overrided_enabled = OverrideTrue;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-enabled-override.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
+static void print_head_current__lid_closed(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+
+	expect_str(__wrap_lid_is_closed, name, "name1");
+	will_return_int(__wrap_lid_is_closed, true);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-lid-closed.log");
+	assert_log(INFO, expected_log);
+	assert_logs_empty();
+	free(expected_log);
+}
+
+static void print_head_desired__disabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.desired.enabled = false;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    (disabled)\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__disabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.desired.enabled = false;
+	head.overrided_enabled = OverrideFalse;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    (manually disabled)\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__enabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = false;
+	head.desired.enabled = true;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (enabled)\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__enabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.current.enabled = false;
+	head.desired.enabled = true;
+	head.overrided_enabled = OverrideTrue;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (manually enabled)\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__transform_270(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	memcpy(&head.desired, &head.current, sizeof(struct HeadState));
+	head.desired.transform = WL_OUTPUT_TRANSFORM_270;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    transform: 270\n");
+	assert_logs_empty();
+}
+
+static void print_head_desired__transform_none(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	memcpy(&head.desired, &head.current, sizeof(struct HeadState));
+	head.desired.transform = 0;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    transform: none\n");
+	assert_logs_empty();
+}
+
 static void print_active__empty(void **state) {
 	print_list(INFO, NULL);
 
@@ -473,9 +650,11 @@ static void print_adaptive_sync_fail__nulls(void **state) {
 }
 
 static void print_adaptive_sync_fail__head(void **state) {
-	const struct Head head = { .name = "head0", .model = "model0", };
+	struct Head *head = head_init();
+	head->name = strdup("head0");
+	head->model = strdup("model0");
 
-	print_adaptive_sync_fail(WARNING, &head);
+	print_adaptive_sync_fail(WARNING, head);
 
 	assert_log(WARNING, "\nhead0:\n"
 			"  Cannot enable VRR: this display or compositor may not support it.\n"
@@ -483,6 +662,8 @@ static void print_adaptive_sync_fail__head(void **state) {
 			"  VRR_OFF:\n"
 			"    - 'model0'\n");
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void print_mode_fail__nulls(void **state) {
@@ -494,18 +675,22 @@ static void print_mode_fail__nulls(void **state) {
 }
 
 static void print_mode_fail__head(void **state) {
-	const struct Head head = { .name = "head0", .model = "model0", };
+	struct Head *head = head_init();
+	head->name = strdup("head0");
+	head->model = strdup("model0");
 
-	print_mode_fail(WARNING, &head, NULL);
+	print_mode_fail(WARNING, head, NULL);
 
 	assert_log(WARNING, "\nChanges failed\n  head0:\n    (no mode)\n");
 	assert_logs_empty();
+
+	head_free(head);
 }
 
 static void delta_human_mode__to_no(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.mode = NULL;
+	s->head1->desired.wlr_mode = NULL;
 
 	char *deltas = delta_human_mode(s->head1);
 
@@ -524,7 +709,7 @@ static void delta_human_mode__to_no(void **state) {
 static void delta_human_mode__from_no(void **state) {
 	struct State *s = *state;
 
-	s->head2->current.mode = NULL;
+	s->head2->current.wlr_mode = NULL;
 
 	char *deltas = delta_human_mode(s->head2);
 
@@ -754,7 +939,7 @@ static void call_back_mode_fail__(void **state) {
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
 
-	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
+	call_back_mode_fail(INFO, s->head1, s->head1->desired.wlr_mode);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 
@@ -768,9 +953,12 @@ static void call_back_mode_fail__(void **state) {
 }
 
 static void call_back_adaptive_sync_fail__(void **state) {
-	struct Head head = { .name = "name1", .model = "model1", .description = "description1", };
+	struct Head *head = head_init();
+	head->name = strdup("name1");
+	head->model = strdup("model1");
+	head->description = strdup("description1");
 
-	g_displ->delta.head = &head;
+	g_displ->delta.head = head;
 
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
@@ -800,6 +988,7 @@ static void call_back_adaptive_sync_fail__(void **state) {
 	assert_logs_empty();
 
 	smaps_free(expected);
+	head_free(head);
 }
 
 int main(void) {
@@ -824,6 +1013,20 @@ int main(void) {
 		TEST_BA(print_head_deltas__disable),
 		TEST_BA(print_head_deltas__enable),
 		TEST_BA(print_head_deltas__reapply),
+
+		TEST_BA(print_head_current__disabled),
+		TEST_BA(print_head_current__disabled_override),
+		TEST_BA(print_head_current__enabled_override),
+
+		TEST_BA(print_head_current__lid_closed),
+
+		TEST_BA(print_head_desired__disabled),
+		TEST_BA(print_head_desired__disabled_override),
+		TEST_BA(print_head_desired__enabled),
+		TEST_BA(print_head_desired__enabled_override),
+
+		TEST_BA(print_head_desired__transform_270),
+		TEST_BA(print_head_desired__transform_none),
 
 		TEST_BA(print_active__empty),
 		TEST_BA(print_active__many),

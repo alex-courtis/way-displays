@@ -1,10 +1,14 @@
 #ifndef YAML_UNMARSHAL_TYPES_H
 #define YAML_UNMARSHAL_TYPES_H
 
-#include <stdbool.h>
 #include <yaml.h>
 
 #include "head.h"
+#include "pset.h"
+#include "slist.h"
+#include "smap.h"
+#include "smapi.h"
+#include "sset.h"
 #include "yaml/unmarshal.h"
 
 /*
@@ -12,28 +16,29 @@
  * Returns NULL or false and logs on failure
  */
 
-// yaml_root_to_type_fn: create a struct from the document root
+// fn_yaml_root_to_type: create a struct from the document root
 void *yaml_root_to_cfg              (struct UC *c, const yaml_node_t *root); // Cfg
 void *yaml_root_to_ipc_request      (struct UC *c, const yaml_node_t *root); // IpcRequest
 void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root); // list of IpcResponse
 
-// yaml_node_to_type_fn: create a struct from a node
-void *yaml_map_to_cfg           (struct UC *c, const yaml_node_t *map);  // Cfg
-void *yaml_map_to_ipc_response  (struct UC *c, const yaml_node_t *map);  // IpcResponse
-void *yaml_map_to_condition     (struct UC *c, const yaml_node_t *map);  // Condition
-void *yaml_map_to_user_scale    (struct UC *c, const yaml_node_t *map);  // UserScale
-void *yaml_map_to_user_mode     (struct UC *c, const yaml_node_t *map);  // UserMode
-void *yaml_map_to_user_transform(struct UC *c, const yaml_node_t *map);  // UserTransform
-void *yaml_map_to_lid           (struct UC *c, const yaml_node_t *map);  // Lid
-void *yaml_map_to_mode          (struct UC *c, const yaml_node_t *map);  // Mode
-void *yaml_map_to_head          (struct UC *c, const yaml_node_t *map);  // Head
-void *yaml_node_to_disabled     (struct UC *c, const yaml_node_t *node); // Disabled
+// create a struct from a map
+struct Cfg     *yaml_map_to_cfg     (struct UC *c, const yaml_node_t *map);  // Cfg
+struct Lid     *yaml_map_to_lid     (struct UC *c, const yaml_node_t *map);  // Lid
+struct WlrMode *yaml_map_to_wlr_mode(struct UC *c, const yaml_node_t *map);  // WlrMode
 
-// into HeadState
-bool yaml_map_to_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map);
+// fn_yaml_node_into_col: create a struct and add to collection
+void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses,         const yaml_node_t *map);
+void yaml_map_into_heads        (struct UC *c, struct SList **heads,                 const yaml_node_t *map);
+void yaml_map_into_wlr_modes    (struct UC *c, const struct PSet *wlr_modes,         const yaml_node_t *map);
+void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines,         const yaml_node_t *map);
+void yaml_map_into_conditions   (struct UC *c, const struct PSet* const conditions,  const yaml_node_t *map);
+void yaml_map_into_scales       (struct UC *c, const struct SMapI* const scales,     const yaml_node_t *map);
+void yaml_map_into_user_modes   (struct UC *c, const struct SMap* const user_modes,  const yaml_node_t *map);
+void yaml_map_into_transforms   (struct UC *c, const struct SMapI* const transforms, const yaml_node_t *map);
+void yaml_node_into_disableds   (struct UC *c, const struct PSet* const disableds,   const yaml_node_t *node); // scalar or map
 
-// create LogCapLine list
-struct SList *yaml_seq_to_log_cap_lines(struct UC *c, const yaml_node_t *seq);
+// into an existing HeadState struct
+void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map);
 
 // unmarshal a scalar to a name_desc, validating regex
 char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar);
@@ -42,7 +47,7 @@ char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar);
 unsigned int yaml_scalar_to_scale_round_to(struct UC *c, const yaml_node_t *scalar);
 
 // unmarshal a sequence of valid name_desc, removing duplicates and validating regex
-struct SList *yaml_seq_to_name_desc_list(struct UC *c, const yaml_node_t *seq);
+void yaml_seq_into_name_desc_sset(struct UC *c, const struct SSet *sset, const yaml_node_t *seq);
 
 #endif // YAML_UNMARSHAL_TYPES_H
 

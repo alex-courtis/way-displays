@@ -123,7 +123,7 @@ void spawn_sh_cmd(const char * const command, const struct SMapS * const env) {
 		sa.sa_handler = SIG_DFL;
 		sigaction(SIGCHLD, &sa, NULL);
 
-		for (const struct SMapSIter *i = smaps_iter(env); i; i = smaps_iter_next(i)) {
+		for (const struct SMapSIt  *i = smaps_it(env); i; i = smaps_it_next(i)) {
 
 			// experiments show that environment variable length tops out at 128k: variable itself plus contents
 			char value[1024 * 120];

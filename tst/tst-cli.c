@@ -12,18 +12,30 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
+#include "cfg/disabled.h"
+#include "cfg/user-mode.h"
 #include "ipc.h"
 #include "log.h"
-#include "slist.h"
+#include "pset.h"
+#include "smap.h"
+#include "smapi.h"
+#include "sset.h"
 
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
 struct IpcRequest *parse_write(int argc, char **argv);
 struct IpcRequest *parse_reapply(int argc, char **argv);
 struct IpcRequest *parse_set(int argc, char **argv);
+struct IpcRequest *parse_get(int argc, char **argv);
+struct IpcRequest *parse_list(int argc, char **argv);
 struct IpcRequest *parse_del(int argc, char **argv);
 struct IpcRequest *parse_toggle(int argc, char **argv);
 enum LogThreshold parse_log_threshold(char *optarg);
 
+static int before_each(void **state) {
+	assert_logs_empty_before();
+
+	return 0;
+}
 
 static void parse_element__arrange_align_invalid_arrange(void **state) {
 	optind = 0;
@@ -55,14 +67,14 @@ static void parse_element__arrange_align_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv);
 
-	struct Cfg expected = {
-		.arrange = ROW,
-		.align = LEFT,
-	};
+	struct Cfg *expected = cfg_init();
+	expected->arrange = ROW;
+	expected->align = LEFT;
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -79,19 +91,82 @@ static void parse_element__auto_scale_invalid(void **state) {
 	assert_logs_empty();
 }
 
-static void parse_element__auto_scale_ok(void **state) {
+static void parse_element__auto_scale_set(void **state) {
 	optind = 0;
 	char *argv[] = { "ON", };
 
 	struct Cfg *actual = parse_element(CFG_SET, AUTO_SCALE, 1, argv);
 
-	struct Cfg expected = {
-		.auto_scale = ON,
-	};
+	struct Cfg *expected = cfg_init();
+	expected->auto_scale = ON;
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__auto_scale_toggle(void **state) {
+	optind = 0;
+	char *argv[] = { 0 };
+
+	struct Cfg *actual = parse_element(CFG_TOGGLE, AUTO_SCALE, 0, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->auto_scale = ON;
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__scaling_invalid(void **state) {
+	optind = 0;
+	char *argv[] = { "INVALID", };
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_element(CFG_SET, SCALING, 1, argv));
+
+	assert_log(FATAL, "invalid SCALING INVALID\n");
+	assert_logs_empty();
+}
+
+static void parse_element__scaling_set(void **state) {
+	optind = 0;
+	char *argv[] = { "OFF", };
+
+	struct Cfg *actual = parse_element(CFG_SET, SCALING, 1, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->scaling = OFF;
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__scaling_toggle(void **state) {
+	optind = 0;
+	char *argv[] = { 0 };
+
+	struct Cfg *actual = parse_element(CFG_TOGGLE, SCALING, 1, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->scaling = ON;
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -115,7 +190,7 @@ static void parse_element__transform_ok(void **state) {
 	struct Cfg *actual = parse_element(CFG_SET, TRANSFORM, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_transforms, cfg_user_transform_init("displ", WL_OUTPUT_TRANSFORM_FLIPPED_270));
+	smapi_put(expected->transforms, "displ", WL_OUTPUT_TRANSFORM_FLIPPED_270);
 
 	assert_cfg_equal(actual, expected);
 
@@ -131,18 +206,13 @@ static void parse_element__transform_del_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_DEL, TRANSFORM, 1, argv);
 
-	struct UserTransform expectedUserTransform = {
-		.name_desc = "DISPL",
-		.transform = WL_OUTPUT_TRANSFORM_90,
-	};
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_transforms, &expectedUserTransform);
+	struct Cfg *expected = cfg_init();
+	smapi_put(expected->transforms, "DISPL", WL_OUTPUT_TRANSFORM_90);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_transforms);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -165,20 +235,13 @@ static void parse_element__scale_set_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, SCALE, 2, argv);
 
-	struct UserScale expectedUserScale = {
-		.name_desc = "DISPL",
-		.scale = 1234.5,
-	};
-	struct Cfg expected = {
-		.user_scales = NULL,
-	};
-	slist_append(&expected.user_scales, &expectedUserScale);
+	struct Cfg *expected = cfg_init();
+	smapi_put(expected->scales, "DISPL", 1234500);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_scales);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -189,18 +252,13 @@ static void parse_element__scale_del_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_DEL, SCALE, 1, argv);
 
-	struct UserScale expectedUserScale = {
-		.name_desc = "DISPL",
-		.scale = 1,
-	};
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_scales, &expectedUserScale);
+	struct Cfg *expected = cfg_init();
+	smapi_put(expected->scales, "DISPL", 1);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_scales);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -247,19 +305,16 @@ static void parse_element__mode_set_max(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 2, argv);
 
-	struct UserMode *expectedUserMode = cfg_user_mode_default();
-	expectedUserMode->name_desc = strdup("DISPL");
+	struct UserMode *expectedUserMode = user_mode_init_default();
 	expectedUserMode->max = true;
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_modes, expectedUserMode);
+	struct Cfg *expected = cfg_init();
+	smap_put(expected->user_modes, "DISPL", expectedUserMode);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_modes);
-	cfg_user_mode_free(expectedUserMode);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -270,21 +325,18 @@ static void parse_element__mode_set_res(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 3, argv);
 
-	struct UserMode *expectedUserMode = cfg_user_mode_default();
-	expectedUserMode->name_desc = strdup("DISPL");
+	struct UserMode *expectedUserMode = user_mode_init_default();
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
 	expectedUserMode->height = 2;
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_modes, expectedUserMode);
+	struct Cfg *expected = cfg_init();
+	smap_put(expected->user_modes, "DISPL", expectedUserMode);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_modes);
-	cfg_user_mode_free(expectedUserMode);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -295,22 +347,53 @@ static void parse_element__mode_set_res_refresh(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 4, argv);
 
-	struct UserMode *expectedUserMode = cfg_user_mode_default();
-	expectedUserMode->name_desc = strdup("DISPL");
+	struct UserMode *expectedUserMode = user_mode_init_default();
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
 	expectedUserMode->height = 2;
 	expectedUserMode->refresh_mhz = 12346;
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_modes, expectedUserMode);
+	struct Cfg *expected = cfg_init();
+	smap_put(expected->user_modes, "DISPL", expectedUserMode);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
+	cfg_free(expected);
 
-	slist_free(&expected.user_modes);
-	cfg_user_mode_free(expectedUserMode);
+	assert_logs_empty();
+}
+
+static void parse_element__callback_cmd_set_ok(void **state) {
+	optind = 0;
+	char *argv[] = { "foo bar\nbaz", };
+
+	struct Cfg *actual = parse_element(CFG_SET, CALLBACK_CMD, 2, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->callback_cmd = strdup(argv[0]);
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void parse_element__callback_cmd_del_ok(void **state) {
+	optind = 0;
+	char *argv[] = { 0 };
+
+	struct Cfg *actual = parse_element(CFG_DEL, CALLBACK_CMD, 0, argv);
+
+	struct Cfg *expected = cfg_init();
+	expected->callback_cmd = strdup("");
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(actual);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -321,19 +404,16 @@ static void parse_element__mode_del_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_DEL, MODE, 1, argv);
 
-	struct UserMode *expectedUserMode = cfg_user_mode_default();
-	expectedUserMode->name_desc = strdup("DISPL");
+	struct UserMode *expectedUserMode = user_mode_init_default();
 	expectedUserMode->max = true;
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.user_modes, expectedUserMode);
+	struct Cfg *expected = cfg_init();
+	smap_put(expected->user_modes, "DISPL", expectedUserMode);
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.user_modes);
-	cfg_user_mode_free(expectedUserMode);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -344,15 +424,14 @@ static void parse_element__adaptive_sync_off_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, VRR_OFF, 2, argv);
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.adaptive_sync_off_name_desc, "ONE");
-	slist_append(&expected.adaptive_sync_off_name_desc, "TWO");
+	struct Cfg *expected = cfg_init();
+	sset_add(expected->adaptive_sync_off, "ONE");
+	sset_add(expected->adaptive_sync_off, "TWO");
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.adaptive_sync_off_name_desc);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -363,15 +442,14 @@ static void parse_element__disabled_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, DISABLED, 2, argv);
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.disabled, cfg_disabled_always("ONE"));
-	slist_append(&expected.disabled, cfg_disabled_always("TWO"));
+	struct Cfg *expected = cfg_init();
+	pset_add(expected->disableds, disabled_init_name_desc("ONE"));
+	pset_add(expected->disableds, disabled_init_name_desc("TWO"));
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free_vals(&expected.disabled, cfg_disabled_free);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -382,15 +460,14 @@ static void parse_element__order_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, ORDER, 2, argv);
 
-	struct Cfg expected = { 0 };
-	slist_append(&expected.order_name_desc, "ONE");
-	slist_append(&expected.order_name_desc, "TWO");
+	struct Cfg *expected = cfg_init();
+	sset_add(expected->order_name_desc, "ONE");
+	sset_add(expected->order_name_desc, "TWO");
 
-	assert_cfg_equal(actual, &expected);
+	assert_cfg_equal(actual, expected);
 
 	cfg_free(actual);
-
-	slist_free(&expected.order_name_desc);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -414,6 +491,56 @@ static void parse_write__ok(void **state) {
 
 	assert_non_nul(request);
 	assert_int_equal(request->command, CFG_WRITE);
+
+	ipc_request_free(request);
+
+	assert_logs_empty();
+}
+
+static void parse_get__nargs(void **state) {
+	optind = 0;
+	optarg = "INVALID";
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_get(1, NULL));
+
+	assert_log(FATAL, "--get takes no arguments\n");
+	assert_logs_empty();
+}
+
+static void parse_get__ok(void **state) {
+	optind = 0;
+
+	struct IpcRequest *request = parse_get(0, NULL);
+
+	assert_non_nul(request);
+	assert_int_equal(request->command, GET);
+
+	ipc_request_free(request);
+
+	assert_logs_empty();
+}
+
+static void parse_list__nargs(void **state) {
+	optind = 0;
+	optarg = "INVALID";
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_list(1, NULL));
+
+	assert_log(FATAL, "--list takes no arguments\n");
+	assert_logs_empty();
+}
+
+static void parse_list__ok(void **state) {
+	optind = 0;
+
+	struct IpcRequest *request = parse_list(0, NULL);
+
+	assert_non_nul(request);
+	assert_int_equal(request->command, LIST);
 
 	ipc_request_free(request);
 
@@ -453,14 +580,14 @@ static void parse_set__mode_nargs(void **state) {
 
 	assert_nul(parse_set(1, NULL));
 
-	assert_log(FATAL, "MODE requires two to four arguments\n");
+	assert_log(FATAL, "--set MODE requires two to four arguments\n");
 	assert_logs_empty();
 
 	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(parse_set(5, NULL));
 
-	assert_log(FATAL, "MODE requires two to four arguments\n");
+	assert_log(FATAL, "--set MODE requires two to four arguments\n");
 	assert_logs_empty();
 }
 
@@ -472,7 +599,7 @@ static void parse_set__arrange_align_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "ARRANGE_ALIGN requires two arguments\n");
+	assert_log(FATAL, "--set ARRANGE_ALIGN requires two arguments\n");
 	assert_logs_empty();
 }
 
@@ -484,7 +611,7 @@ static void parse_set__scale_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "SCALE requires two arguments\n");
+	assert_log(FATAL, "--set SCALE requires two arguments\n");
 	assert_logs_empty();
 }
 
@@ -496,7 +623,7 @@ static void parse_set__transform_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "TRANSFORM requires two arguments\n");
+	assert_log(FATAL, "--set TRANSFORM requires two arguments\n");
 	assert_logs_empty();
 }
 
@@ -508,7 +635,7 @@ static void parse_set__auto_scale_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "AUTO_SCALE requires one argument\n");
+	assert_log(FATAL, "--set AUTO_SCALE requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -520,7 +647,7 @@ static void parse_set__disabled_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "DISABLED requires one argument\n");
+	assert_log(FATAL, "--set DISABLED requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -532,7 +659,7 @@ static void parse_set__adaptive_sync_off_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "VRR_OFF requires one argument\n");
+	assert_log(FATAL, "--set VRR_OFF requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -544,7 +671,7 @@ static void parse_set__order_nargs(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "ORDER requires at least one argument\n");
+	assert_log(FATAL, "--set ORDER requires at least one argument\n");
 	assert_logs_empty();
 }
 
@@ -556,7 +683,7 @@ static void parse_set__invalid(void **state) {
 
 	assert_nul(parse_set(0, NULL));
 
-	assert_log(FATAL, "invalid set: INVALID\n");
+	assert_log(FATAL, "invalid --set: INVALID\n");
 	assert_logs_empty();
 }
 
@@ -584,7 +711,7 @@ static void parse_del__mode_nargs(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "MODE requires one argument\n");
+	assert_log(FATAL, "--delete MODE requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -596,7 +723,7 @@ static void parse_del__scale_nargs(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "SCALE requires one argument\n");
+	assert_log(FATAL, "--delete SCALE requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -608,7 +735,7 @@ static void parse_del__disabled_nargs(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "DISABLED requires one argument\n");
+	assert_log(FATAL, "--delete DISABLED requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -620,7 +747,19 @@ static void parse_del__adaptive_sync_off_nargs(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "VRR_OFF requires one argument\n");
+	assert_log(FATAL, "--delete VRR_OFF requires one argument\n");
+	assert_logs_empty();
+}
+
+static void parse_del__callback_cmd_nargs(void **state) {
+	optind = 0;
+	optarg = "CALLBACK_CMD";
+
+	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
+
+	assert_nul(parse_del(1, NULL));
+
+	assert_log(FATAL, "--delete CALLBACK_CMD takes no arguments\n");
 	assert_logs_empty();
 }
 
@@ -632,7 +771,7 @@ static void parse_del__invalid(void **state) {
 
 	assert_nul(parse_del(0, NULL));
 
-	assert_log(FATAL, "invalid delete: INVALID\n");
+	assert_log(FATAL, "invalid --delete: INVALID\n");
 	assert_logs_empty();
 }
 
@@ -660,7 +799,7 @@ static void parse_toggle__scaling_nargs(void **state) {
 
 	assert_nul(parse_toggle(1, NULL));
 
-	assert_log(FATAL, "SCALING takes no arguments\n");
+	assert_log(FATAL, "--toggle SCALING takes no arguments\n");
 	assert_logs_empty();
 }
 
@@ -672,7 +811,7 @@ static void parse_toggle__auto_scale_nargs(void **state) {
 
 	assert_nul(parse_toggle(1, NULL));
 
-	assert_log(FATAL, "AUTO_SCALE takes no arguments\n");
+	assert_log(FATAL, "--toggle AUTO_SCALE takes no arguments\n");
 	assert_logs_empty();
 }
 
@@ -684,7 +823,7 @@ static void parse_toggle__vrr_off_nargs(void **state) {
 
 	assert_nul(parse_toggle(0, NULL));
 
-	assert_log(FATAL, "VRR_OFF requires one argument\n");
+	assert_log(FATAL, "--toggle VRR_OFF requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -696,7 +835,7 @@ static void parse_toggle__disabled_nargs(void **state) {
 
 	assert_nul(parse_toggle(0, NULL));
 
-	assert_log(FATAL, "DISABLED requires one argument\n");
+	assert_log(FATAL, "--toggle DISABLED requires one argument\n");
 	assert_logs_empty();
 }
 
@@ -708,7 +847,7 @@ static void parse_toggle__invalid(void **state) {
 
 	assert_nul(parse_toggle(0, NULL));
 
-	assert_log(FATAL, "invalid toggle: INVALID\n");
+	assert_log(FATAL, "invalid --toggle: INVALID\n");
 	assert_logs_empty();
 }
 
@@ -742,68 +881,83 @@ static void parse_log_threshold__ok(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST(parse_element__arrange_align_invalid_arrange),
-		TEST(parse_element__arrange_align_invalid_align),
-		TEST(parse_element__arrange_align_ok),
+		TEST_B(parse_element__arrange_align_invalid_arrange),
+		TEST_B(parse_element__arrange_align_invalid_align),
+		TEST_B(parse_element__arrange_align_ok),
 
-		TEST(parse_element__auto_scale_invalid),
-		TEST(parse_element__auto_scale_ok),
+		TEST_B(parse_element__auto_scale_invalid),
+		TEST_B(parse_element__auto_scale_set),
+		TEST_B(parse_element__auto_scale_toggle),
 
-		TEST(parse_element__transform_invalid),
-		TEST(parse_element__transform_ok),
-		TEST(parse_element__transform_del_ok),
+		TEST_B(parse_element__scaling_invalid),
+		TEST_B(parse_element__scaling_set),
+		TEST_B(parse_element__scaling_toggle),
 
-		TEST(parse_element__scale_set_invalid),
-		TEST(parse_element__scale_set_ok),
-		TEST(parse_element__scale_del_ok),
+		TEST_B(parse_element__transform_invalid),
+		TEST_B(parse_element__transform_ok),
+		TEST_B(parse_element__transform_del_ok),
 
-		TEST(parse_element__mode_set_invalid_width),
-		TEST(parse_element__mode_set_invalid_height),
-		TEST(parse_element__mode_set_invalid_refresh),
-		TEST(parse_element__mode_set_max),
-		TEST(parse_element__mode_set_res),
-		TEST(parse_element__mode_set_res_refresh),
-		TEST(parse_element__mode_del_ok),
+		TEST_B(parse_element__scale_set_invalid),
+		TEST_B(parse_element__scale_set_ok),
+		TEST_B(parse_element__scale_del_ok),
 
-		TEST(parse_element__adaptive_sync_off_ok),
+		TEST_B(parse_element__mode_set_invalid_width),
+		TEST_B(parse_element__mode_set_invalid_height),
+		TEST_B(parse_element__mode_set_invalid_refresh),
+		TEST_B(parse_element__mode_set_max),
+		TEST_B(parse_element__mode_set_res),
+		TEST_B(parse_element__mode_set_res_refresh),
+		TEST_B(parse_element__mode_del_ok),
 
-		TEST(parse_element__disabled_ok),
+		TEST_B(parse_element__callback_cmd_set_ok),
+		TEST_B(parse_element__callback_cmd_del_ok),
 
-		TEST(parse_element__order_ok),
+		TEST_B(parse_element__adaptive_sync_off_ok),
 
-		TEST(parse_write__nargs),
-		TEST(parse_write__ok),
+		TEST_B(parse_element__disabled_ok),
 
-		TEST(parse_reapply__nargs),
-		TEST(parse_reapply__ok),
+		TEST_B(parse_element__order_ok),
 
-		TEST(parse_set__mode_nargs),
-		TEST(parse_set__arrange_align_nargs),
-		TEST(parse_set__scale_nargs),
-		TEST(parse_set__transform_nargs),
-		TEST(parse_set__auto_scale_nargs),
-		TEST(parse_set__disabled_nargs),
-		TEST(parse_set__adaptive_sync_off_nargs),
-		TEST(parse_set__order_nargs),
-		TEST(parse_set__invalid),
-		TEST(parse_set__ok),
+		TEST_B(parse_write__nargs),
+		TEST_B(parse_write__ok),
 
-		TEST(parse_del__mode_nargs),
-		TEST(parse_del__scale_nargs),
-		TEST(parse_del__disabled_nargs),
-		TEST(parse_del__adaptive_sync_off_nargs),
-		TEST(parse_del__invalid),
-		TEST(parse_del__ok),
+		TEST_B(parse_get__nargs),
+		TEST_B(parse_get__ok),
 
-		TEST(parse_toggle__scaling_nargs),
-		TEST(parse_toggle__auto_scale_nargs),
-		TEST(parse_toggle__vrr_off_nargs),
-		TEST(parse_toggle__disabled_nargs),
-		TEST(parse_toggle__invalid),
-		TEST(parse_toggle__ok),
+		TEST_B(parse_list__nargs),
+		TEST_B(parse_list__ok),
 
-		TEST(parse_log_threshold__invalid),
-		TEST(parse_log_threshold__ok),
+		TEST_B(parse_reapply__nargs),
+		TEST_B(parse_reapply__ok),
+
+		TEST_B(parse_set__mode_nargs),
+		TEST_B(parse_set__arrange_align_nargs),
+		TEST_B(parse_set__scale_nargs),
+		TEST_B(parse_set__transform_nargs),
+		TEST_B(parse_set__auto_scale_nargs),
+		TEST_B(parse_set__disabled_nargs),
+		TEST_B(parse_set__adaptive_sync_off_nargs),
+		TEST_B(parse_set__order_nargs),
+		TEST_B(parse_set__invalid),
+		TEST_B(parse_set__ok),
+
+		TEST_B(parse_del__mode_nargs),
+		TEST_B(parse_del__scale_nargs),
+		TEST_B(parse_del__disabled_nargs),
+		TEST_B(parse_del__adaptive_sync_off_nargs),
+		TEST_B(parse_del__callback_cmd_nargs),
+		TEST_B(parse_del__invalid),
+		TEST_B(parse_del__ok),
+
+		TEST_B(parse_toggle__scaling_nargs),
+		TEST_B(parse_toggle__auto_scale_nargs),
+		TEST_B(parse_toggle__vrr_off_nargs),
+		TEST_B(parse_toggle__disabled_nargs),
+		TEST_B(parse_toggle__invalid),
+		TEST_B(parse_toggle__ok),
+
+		TEST_B(parse_log_threshold__invalid),
+		TEST_B(parse_log_threshold__ok),
 	};
 
 	return RUN(tests);

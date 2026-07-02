@@ -26,7 +26,7 @@ char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 
 // cppcheck-suppress staticFunction
-char *__wrap_yaml_marshal(const void *data, yaml_doc_fn fn, const char *human) {
+char *__wrap_yaml_marshal(const void *data, fn_yaml_type_to_root fn, const char *human) {
 	check_expected_ptr(data);
 	check_expected_ptr(human);
 
@@ -91,6 +91,8 @@ static int after_all(void **state) {
 }
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	slist_free_vals(&cfg_file_paths, NULL);
 
 	clean_files();

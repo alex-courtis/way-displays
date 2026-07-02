@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,11 +6,11 @@
 
 #include "output.h"
 
-#include "listeners.h"
 #include "imap.h"
+#include "listeners.h"
 #include "xdg-output-unstable-v1.h"
 
-const struct IMap *outputs; // by wl_output_name
+const struct IMap *g_outputs; // by wl_output_name
 
 static void destroy(const void *o) {
 	if (!o)
@@ -39,39 +40,26 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output
 	output->wl_output_name = wl_output_name;
 	output->zxdg_output = zxdg_output;
 
-	if (!outputs) {
+	if (!g_outputs) {
 		const struct IMapParams params = { .free_val = destroy, };
-		outputs = imap_init_with(params);
+		g_outputs = imap_init_with(params);
 	}
-	imap_put(outputs, wl_output_name, output);
+	imap_put(g_outputs, wl_output_name, output);
 
 	zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
 
 	return output;
 }
 
-const struct Output *output_for_name(const char *name) {
-	const struct Output *output = NULL;
-
-	const struct IMapIter *i = NULL;
-	for (i = imap_iter(outputs); i; i = imap_iter_next(i)) {
-		output = i->val;
-		if (output && output->name && strcmp(output->name, name) == 0) {
-			break;
-		} else {
-			output = NULL;
-		}
-	}
-	imap_iter_free(i);
-
-	return output;
+bool output_matches_name(const struct Output* const output, const void* const name) {
+	return name && output && output->name && strcmp(output->name, name) == 0;
 }
 
 void output_destroy_all(void) {
-	imap_free_vals(outputs);
+	imap_free_vals(g_outputs);
 }
 
 void output_destroy_by_wl_output_name(const uint32_t wl_output_name) {
-	destroy(imap_remove(outputs, wl_output_name));
+	destroy(imap_remove(g_outputs, wl_output_name));
 }
 

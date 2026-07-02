@@ -13,23 +13,32 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
-#include "conditions.h"
+#include "cfg/condition.h"
+#include "cfg/disabled.h"
+#include "cfg/user-mode.h"
+#include "fn.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
+#include "smap.h"
+#include "smapi.h"
+#include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "wrap-libyaml.h"
-
 #include "yaml/unmarshal-types.h"
+
 #include "yaml/unmarshal.h"
 
 #include "yaml/data.c"
 
 static int before_each(void **state) {
+	assert_logs_empty_before();
+
 	reset_yaml_fails();
 
 	return 0;
@@ -44,11 +53,11 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 
 	if (log_path) {
 		char *expected_log = read_file(log_path);
-		_assert_log(WARNING, expected_log, file, line);
+		_assert_log(true, WARNING, expected_log, file, line);
 		free(expected_log);
 	}
 
-	_assert_logs_empty(file, line);
+	_assert_logs_empty(true, false, file, line);
 
 	cfg_free(actual);
 	cfg_free(expected);
@@ -57,6 +66,13 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 
 static void yaml_root_to_cfg__ok(void **state) {
 	check_unmarshalled_cfg("tst/yaml/cfg-all.yaml", cfg_all(), NULL);
+}
+
+static void yaml_root_to_cfg__unknown(void **state) {
+	struct Cfg *expected = cfg_init();
+	expected->arrange = COL;
+
+	check_unmarshalled_cfg("tst/yaml/cfg-unknown.yaml", expected, NULL);
 }
 
 static void yaml_root_to_cfg__empty(void **state) {
@@ -79,7 +95,7 @@ static void yaml_root_to_cfg__missing(void **state) {
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
-	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
 }
@@ -92,8 +108,8 @@ static void yaml_root_to_cfg__legacy(void **state) {
 	expected->callback_cmd = strdup("foo");
 
 	// MAX_PREFERRED_REFRESH
-	slist_append(&expected->max_preferred_refresh_name_desc, strdup("fifteen"));
-	slist_append(&expected->max_preferred_refresh_name_desc, strdup("!sixteen"));
+	sset_add(expected->max_preferred_refresh, "fifteen");
+	sset_add(expected->max_preferred_refresh, "!sixteen");
 
 	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
 }
@@ -111,63 +127,64 @@ static void yaml_root_to_cfg__root_mistyped(void **state) {
 
 static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_transforms, cfg_user_transform_init("one", WL_OUTPUT_TRANSFORM_FLIPPED));
+	smapi_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-transform.yaml", expected, "tst/yaml/cfg-transform.log");
 }
 
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_scales, cfg_user_scale_init("three", 3));
+	smapi_put(expected->scales, "three", 3000);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
 }
 
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->user_modes, cfg_user_mode_init("max_override", true, 1920, 1080, 12340, false));
-	slist_append(&expected->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&expected->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+
+	smap_put(expected->user_modes, "max_override", user_mode_init(true, 1920, 1080, 12340, false));
+	smap_put(expected->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
+	smap_put(expected->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
 }
 
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
-	slist_append(&expected->disabled, cfg_disabled_always("eight"));
-	slist_append(&expected->disabled, cfg_disabled_always("EIGHT"));
-	slist_append(&expected->disabled, cfg_disabled_always("nine"));
+	pset_add(expected->disableds, disabled_init_name_desc("eight"));
+	pset_add(expected->disableds, disabled_init_name_desc("EIGHT"));
+	pset_add(expected->disableds, disabled_init_name_desc("nine"));
 
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("ONE"));
-	slist_append(&cond->plugged, strdup("TWO"));
-	slist_append(&disabled->conditions, cond);
+	const struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "ONE");
+	sset_add(cond->plugged, "TWO");
+	pset_add(disabled->conditions, cond);
 
-	cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->unplugged, strdup("THREE"));
-	slist_append(&disabled->conditions, cond);
+	cond = condition_init();
+	sset_add(cond->unplugged, "THREE");
+	pset_add(disabled->conditions, cond);
 
-	slist_append(&expected->disabled, disabled);
+	pset_add(expected->disableds, disabled);
 
-	disabled = calloc(1, sizeof(struct Disabled));
+	disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
-	cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("FOUR"));
-	slist_append(&disabled->conditions, cond);
+	cond = condition_init();
+	sset_add(cond->plugged, "FOUR");
+	pset_add(disabled->conditions, cond);
 
-	slist_append(&expected->disabled, disabled);
+	pset_add(expected->disableds, disabled);
 
-	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_IF_SCALAR"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_IF_MAP"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_UN_PLUGGED_SCALAR"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_UN_PLUGGED_MAP"));
-	slist_append(&expected->disabled, cfg_disabled_always("MISTYPED_LID_MAP"));
-	slist_append(&expected->disabled, cfg_disabled_always("NO_VALID_CONDITIONS"));
+	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_IF_SCALAR"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_IF_MAP"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_UN_PLUGGED_SCALAR"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_UN_PLUGGED_MAP"));
+	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_LID_MAP"));
+	pset_add(expected->disableds, disabled_init_name_desc("NO_VALID_CONDITIONS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
 }
@@ -263,7 +280,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected = cfg_default();
-	slist_append(&expected->disabled, cfg_disabled_always("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 
@@ -412,34 +429,40 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(head->desired.y, 9);
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
-	struct Mode *mode_current = head->current.mode;
-	assert_non_nul(mode_current);
-	assert_int_equal(mode_current->width, 10);
-	assert_int_equal(mode_current->height, 11);
-	assert_int_equal(mode_current->refresh_mhz, 12);
-	assert_true(mode_current->preferred);
+	const struct WlrMode *wlr_mode_current = head->current.wlr_mode;
+	assert_non_nul(wlr_mode_current);
+	assert_int_equal(wlr_mode_current->width, 10);
+	assert_int_equal(wlr_mode_current->height, 11);
+	assert_int_equal(wlr_mode_current->refresh_mhz, 12);
+	assert_true(wlr_mode_current->preferred);
 
-	struct Mode *mode_desired = head->desired.mode;
-	assert_non_nul(mode_desired);
-	assert_int_equal(mode_desired->width, 13);
-	assert_int_equal(mode_desired->height, 14);
-	assert_int_equal(mode_desired->refresh_mhz, 15);
-	assert_false(mode_desired->preferred);
+	const struct WlrMode *wlr_mode_desired = head->desired.wlr_mode;
+	assert_non_nul(wlr_mode_desired);
+	assert_int_equal(wlr_mode_desired->width, 13);
+	assert_int_equal(wlr_mode_desired->height, 14);
+	assert_int_equal(wlr_mode_desired->refresh_mhz, 15);
+	assert_false(wlr_mode_desired->preferred);
 
-	assert_int_equal(slist_length(head->modes), 2);
-	struct Mode *mode1 = slist_at(head->modes, 0);
-	assert_non_nul(mode1);
-	assert_int_equal(mode1->width, 10);
-	assert_int_equal(mode1->height, 11);
-	assert_int_equal(mode1->refresh_mhz, 12);
-	assert_true(mode1->preferred);
+	assert_int_equal(pset_size(head->wlr_modes), 2);
+	const struct PSetIt *it = pset_it(head->wlr_modes);
 
-	struct Mode *mode2 = slist_at(head->modes, 1);
-	assert_non_nul(mode2);
-	assert_int_equal(mode2->width, 13);
-	assert_int_equal(mode2->height, 14);
-	assert_int_equal(mode2->refresh_mhz, 15);
-	assert_false(mode2->preferred);
+	const struct WlrMode *wlr_mode1 = it->val;
+	assert_non_nul(wlr_mode1);
+	assert_int_equal(wlr_mode1->width, 10);
+	assert_int_equal(wlr_mode1->height, 11);
+	assert_int_equal(wlr_mode1->refresh_mhz, 12);
+	assert_true(wlr_mode1->preferred);
+
+	it = pset_it_next(it);
+
+	const struct WlrMode *wlr_mode2 = it->val;
+	assert_non_nul(wlr_mode2);
+	assert_int_equal(wlr_mode2->width, 13);
+	assert_int_equal(wlr_mode2->height, 14);
+	assert_int_equal(wlr_mode2->refresh_mhz, 15);
+	assert_false(wlr_mode2->preferred);
+
+	pset_it_next(it);
 
 	assert_int_equal(head->current.transform, 3);
 	assert_int_equal(head->desired.transform, 4);
@@ -463,7 +486,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
-	slist_free_vals(&responses, ipc_response_free);
+	slist_free_vals(&responses, (fn_free)ipc_response_free);
 	cfg_free(expected_cfg);
 	free(yaml);
 
@@ -477,9 +500,8 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 
 	struct SList *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
-	struct Cfg cfg_expected = {
-		.arrange = COL
-	};
+	struct Cfg *cfg_expected = cfg_init();
+	cfg_expected->arrange = COL;
 
 	assert_non_nul(responses);
 	assert_int_equal(slist_length(responses), 3);
@@ -492,7 +514,7 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 
 	const struct Cfg *cfg_actual = response->cfg;
 	assert_non_nul(cfg_actual);
-	assert_cfg_equal(cfg_actual, &cfg_expected);
+	assert_cfg_equal(cfg_actual, cfg_expected);
 
 	const struct Lid *lid = response->lid;
 	assert_non_nul(lid);
@@ -542,8 +564,9 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_nul(response->heads);
 	assert_nul(response->log_cap_lines);
 
-	slist_free_vals(&responses, ipc_response_free);
+	slist_free_vals(&responses, (fn_free)ipc_response_free);
 	free(yaml);
+	cfg_free(cfg_expected);
 
 	assert_logs_empty();
 }
@@ -607,6 +630,7 @@ int main(void) {
 
 	const struct CMUnitTest tests[] = {
 		TEST_B(yaml_root_to_cfg__ok),
+		TEST_B(yaml_root_to_cfg__unknown),
 		TEST_B(yaml_root_to_cfg__empty),
 		TEST_B(yaml_root_to_cfg__missing),
 		TEST_B(yaml_root_to_cfg__invalid),

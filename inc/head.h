@@ -24,7 +24,7 @@ enum ManualOverride {
 };
 
 struct HeadState {
-	struct Mode *mode;
+	const struct WlrMode *wlr_mode;
 	wl_fixed_t scale;
 	bool enabled;
 	// layout coords
@@ -40,7 +40,7 @@ struct Head {
 
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
-	struct SList *modes;
+	const struct PSet* wlr_modes;
 
 	char *name;
 	char *description;
@@ -56,7 +56,7 @@ struct Head {
 	struct HeadState desired;
 	bool reapply_required;
 
-	struct SList *modes_failed;
+	struct SList *wlr_modes_failed;
 	bool adaptive_sync_failed;
 
 	struct {
@@ -68,22 +68,20 @@ struct Head {
 	bool warned_no_mode;
 };
 
+struct Head *head_init(void);
+
 // description, name, "???"
 const char *head_human(const struct Head * const head);
 
-bool head_matches_name_desc_exact(const void * const head, const void * const name_desc);
+bool head_matches_name_desc_exact(const struct Head * const head, const char * const name_desc);
 
-bool head_matches_name_desc_regex(const void * const head, const void * const name_desc);
+bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc);
 
-bool head_matches_name_desc_fuzzy(const void * const h, const void * const name_desc);
+bool head_matches_name_desc_fuzzy(const struct Head * const head, const char * const name_desc);
 
-bool head_matches_name_desc_partial(const void * const head, const void * const name_desc);
+bool head_matches_name_desc(const struct Head * const head, const char * const name_desc);
 
-bool head_matches_name_desc(const void * const head, const void * const name_desc);
-
-bool head_name_desc_matches_head(const void * const name_desc, const void * const head);
-
-bool head_disabled_matches_head(const void * const d, const void * const h);
+bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head);
 
 // calculate fixed scale correctly quantized for fractional scaling, obeying scale_round_to and scale_round_strategy
 wl_fixed_t head_get_fixed_scale(const double scale);
@@ -94,26 +92,28 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 void head_set_scaled_dimensions(struct Head * const head);
 
 // applies extra toggles that should change head state directly
-void head_apply_toggles(struct Head * const head, struct Cfg *cfg);
+void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
 
 // finds a mode and logs/calls back on
 //  no mode:           error
 //  invalid user mode: warning
 //  no preferred:      info
 // maybe sets warned_no_preferred
-struct Mode *head_find_mode(struct Head * const head);
+const struct WlrMode *head_find_wlr_mode(struct Head * const head);
 
-struct Mode *head_preferred_mode(const struct Head * const head);
+const struct WlrMode *head_max_wlr_mode(const struct Head * const head);
 
-bool head_current_not_desired(const void * const head);
+const struct WlrMode *head_preferred_wlr_mode(const struct Head * const head);
+
+bool head_current_not_desired(const struct Head * const head);
 
 size_t head_num_current_not_desired(struct SList * const heads);
 
-bool head_reapply_required(const void * const head);
+bool head_reapply_required(const struct Head * const head);
 
-bool head_current_mode_not_desired(const void * const head);
+bool head_current_mode_not_desired(const struct Head * const head);
 
-bool head_current_adaptive_sync_not_desired(const void * const head);
+bool head_current_adaptive_sync_not_desired(const struct Head * const head);
 
 // clear current and failed modes, flag for reapply
 void heads_reapply(struct SList *heads);
@@ -121,9 +121,10 @@ void heads_reapply(struct SList *heads);
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
 
-void head_release_mode(struct Head * const head, const struct Mode * const mode);
+// remove a mode from the head, including current/desired, freeing it
+void head_release_mode(struct WlrMode *wlr_mode);
 
-void head_free(const void * const head);
+void head_free(struct Head *head);
 
 void heads_release_head(const struct Head * const head);
 

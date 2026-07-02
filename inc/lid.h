@@ -22,7 +22,7 @@ bool lid_is_closed(char *name);
 
 void lid_destroy(void);
 
-void lid_free(void *lid);
+void lid_free(struct Lid *lid);
 
 #endif // LID_H
 

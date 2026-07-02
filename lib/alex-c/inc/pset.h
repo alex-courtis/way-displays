@@ -17,10 +17,10 @@ struct PSet; // IWYU pragma: keep
 /*
  * Entry iterator.
  */
-struct PSetIterState; // IWYU pragma: keep
-struct PSetIter {
+struct PSetItState; // IWYU pragma: keep
+struct PSetIt {
 	const void* val;
-	struct PSetIterState *st;
+	struct PSetItState *st;
 };
 
 /*
@@ -28,8 +28,9 @@ struct PSetIter {
  */
 struct PSetParams {
 	const fn_equal equal_val; // compare val pointers
-	const fn_clone clone_val; // use key pointer
+	const fn_alloc alloc_val; // use key pointer
 	const fn_free free_val;   // free
+	const fn_clone clone_val; // use key pointer
 	const fn_str str_val;     // %p
 	const size_t initial;     // 10
 	const size_t grow;        // 10
@@ -48,7 +49,7 @@ const struct PSet *pset_init_with(const struct PSetParams params);
 // clone, setting val pointers
 const struct PSet *pset_clone_shallow(const struct PSet* const from);
 
-// clone, NOP when NULL clone_val [clone_val]
+// clone, empty when NULL clone_val [clone_val]
 const struct PSet *pset_clone_deep(const struct PSet* const from);
 
 // free set
@@ -57,8 +58,8 @@ void pset_free(const struct PSet* const set);
 // free set and vals [free_val]
 void pset_free_vals(const struct PSet* const set);
 
-// free iter
-void pset_iter_free(const struct PSetIter* const iter);
+// free iterator
+void pset_it_free(const struct PSetIt* const it);
 
 /*
  * Access
@@ -67,26 +68,29 @@ void pset_iter_free(const struct PSetIter* const iter);
 // true if this set contains the specified element [equal_val]
 bool pset_contains(const struct PSet* const set, const void* const val);
 
-// create an iterator, caller must pset_iter_free or invoke pset_next until NULL
-const struct PSetIter *pset_iter(const struct PSet* const set);
+// find the first match, NULL when no match or NULL match
+const void *pset_match(const struct PSet* const set, fn_match_ptr match, const void* const data);
 
-// create an iterator filtering by equal_val, NULL equal_val matches all
-const struct PSetIter *pset_filter_iter(const struct PSet* const set, fn_equal equal_val, const void* const data);
+// create an iterator, caller must pset_it_free or invoke pset_next until NULL
+const struct PSetIt *pset_it(const struct PSet* const set);
+
+// create an iterator filtering by match, return NULL when no matches or NULL match
+const struct PSetIt *pset_match_it(const struct PSet* const set, fn_match_ptr match, const void* const data);
 
 // next iterator value, NULL at end of set
-const struct PSetIter *pset_iter_next(const struct PSetIter* const iter);
+const struct PSetIt *pset_it_next(const struct PSetIt* const it);
 
 /*
  * Mutate
  */
 
-// add if the set does not contain val, return true if added [equal_val, clone_val]
+// add if the set does not contain val, return true if added [equal_val, alloc_val]
 bool pset_add(const struct PSet* const set, const void* const val);
 
-// if the set contains val, remove it and return true [equal_val, clone_val]
+// if the set contains val, remove it and return true [equal_val, alloc_val]
 bool pset_remove(const struct PSet* const set, const void* const val);
 
-// if the set contains val, remove it, free it and return true [equal_val, clone_val, free_val]
+// if the set contains val, remove it, free it and return true [equal_val, alloc_val, free_val]
 bool pset_remove_free(const struct PSet* const set, const void* const val);
 
 // shell sort in place, NULL less_than_val NOP
@@ -103,10 +107,10 @@ bool pset_equal(const struct PSet* const a, const struct PSet* const b);
  * Conversion
  */
 
-// ordered vals, caller frees list only
+// set ordered vals, caller frees list only
 struct SList *pset_slist_shallow(const struct PSet* const set);
 
-// ordered vals, caller frees list and vals, NOP when NULL clone_val [clone_val]
+// set ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
 struct SList *pset_slist_deep(const struct PSet* const set);
 
 /*

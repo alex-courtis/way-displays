@@ -5,13 +5,18 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
-#include "conditions.h"
+#include "cfg/condition.h"
+#include "cfg/disabled.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "pset.h"
 #include "slist.h"
+#include "smap.h"
+#include "smapi.h"
+#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 static void lcl(enum LogThreshold threshold, const char *line, struct SList **log_cap_lines) {
@@ -44,43 +49,43 @@ struct Cfg *cfg_all(void) {
 	cfg->laptop_display_prefix = strdup("ldp");
 	cfg->laptop_lid_monitor = OFF;
 
-	slist_append(&cfg->order_name_desc, strdup("one"));
-	slist_append(&cfg->order_name_desc, strdup("ONE"));
-	slist_append(&cfg->order_name_desc, strdup("!two"));
+	sset_add(cfg->order_name_desc, "one");
+	sset_add(cfg->order_name_desc, "ONE");
+	sset_add(cfg->order_name_desc, "!two");
 
-	slist_append(&cfg->user_scales, cfg_user_scale_init("three", 3));
-	slist_append(&cfg->user_scales, cfg_user_scale_init("four", 4));
+	smapi_put(cfg->scales, "three", 3000);
+	smapi_put(cfg->scales, "four", 4000);
 
-	slist_append(&cfg->user_modes, cfg_user_mode_init("five", false, 1920, 1080, 12340, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("six", false, 2560, 1440, -1, false));
-	slist_append(&cfg->user_modes, cfg_user_mode_init("seven", true, -1, -1, -1, false));
+	smap_put(cfg->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
+	smap_put(cfg->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
+	smap_put(cfg->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
 
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ten"));
-	slist_append(&cfg->adaptive_sync_off_name_desc, strdup("ELEVEN"));
+	sset_add(cfg->adaptive_sync_off, "ten");
+	sset_add(cfg->adaptive_sync_off, "ELEVEN");
 
-	slist_append(&cfg->disabled, cfg_disabled_always("eight"));
-	slist_append(&cfg->disabled, cfg_disabled_always("EIGHT"));
-	slist_append(&cfg->disabled, cfg_disabled_always("nine"));
+	pset_add(cfg->disableds, disabled_init_name_desc("eight"));
+	pset_add(cfg->disableds, disabled_init_name_desc("EIGHT"));
+	pset_add(cfg->disableds, disabled_init_name_desc("nine"));
 
-	struct Disabled *disabled = calloc(1, sizeof(struct Disabled));
+	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
-	struct Condition *cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->plugged, strdup("ONE"));
-	slist_append(&cond->plugged, strdup("TWO"));
-	slist_append(&disabled->conditions, cond);
+	struct Condition *cond = condition_init();
+	sset_add(cond->plugged, "ONE");
+	sset_add(cond->plugged, "TWO");
+	pset_add(disabled->conditions, cond);
 
-	cond = calloc(1, sizeof(struct Condition));
-	slist_append(&cond->unplugged, strdup("THREE"));
-	slist_append(&disabled->conditions, cond);
+	cond = condition_init();
+	sset_add(cond->unplugged, "THREE");
+	pset_add(disabled->conditions, cond);
 
-	cond = calloc(1, sizeof(struct Condition));
+	cond = condition_init();
 	cond->lid = LID_CLOSED;
-	slist_append(&disabled->conditions, cond);
+	pset_add(disabled->conditions, cond);
 
-	slist_append(&cfg->disabled, disabled);
+	pset_add(cfg->disableds, disabled);
 
-	slist_append(&cfg->user_transforms, cfg_user_transform_init("twelve", WL_OUTPUT_TRANSFORM_FLIPPED));
+	smapi_put(cfg->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	return cfg;
 }
@@ -94,7 +99,7 @@ struct IpcOperation *ipc_response(void) {
 	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
 	ipc_operation->request = ipc_request;
 	ipc_operation->done = true;
-	ipc_operation->rc = 1;
+	ipc_operation->rc = 0;
 	ipc_operation->send_state = true;
 
 	g_cfg = cfg_all();
@@ -106,10 +111,10 @@ struct IpcOperation *ipc_response(void) {
 	lcl(DEBUG, "dbg", &ipc_operation->log_cap_lines);
 	lcl(INFO, "inf", &ipc_operation->log_cap_lines);
 	lcl(WARNING, "war", &ipc_operation->log_cap_lines);
-	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
-	lcl(FATAL, "fat", &ipc_operation->log_cap_lines);
 
-	struct Head *head0 = calloc(1, sizeof(struct Head));
+	ipc_operation_update_rc(ipc_operation);
+
+	struct Head *head0 = head_init();
 
 	head0->name = strdup("name");
 	head0->description = strdup("desc");
@@ -127,8 +132,8 @@ struct IpcOperation *ipc_response(void) {
 	head0->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head0->current.transform = WL_OUTPUT_TRANSFORM_270;
 
-	head0->current.mode = mode_init(NULL, NULL, 10, 11, 12, true);
-	slist_append(&head0->modes, head0->current.mode);
+	head0->current.wlr_mode = wlr_mode_init(NULL, NULL, 10, 11, 12, true);
+	pset_add(head0->wlr_modes, head0->current.wlr_mode);
 
 	head0->desired.scale = wl_fixed_from_double(7.0);
 	head0->desired.enabled = true;
@@ -137,8 +142,8 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head0->desired.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
 
-	head0->desired.mode = mode_init(NULL, NULL, 13, 14, 15, false);;
-	slist_append(&head0->modes, head0->desired.mode);
+	head0->desired.wlr_mode = wlr_mode_init(NULL, NULL, 13, 14, 15, false);;
+	pset_add(head0->wlr_modes, head0->desired.wlr_mode);
 
 	slist_append(&g_heads, head0);
 
