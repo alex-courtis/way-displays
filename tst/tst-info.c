@@ -23,7 +23,6 @@
 #include "log.h"
 #include "mode.h"
 #include "output.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -56,9 +55,9 @@ int before_each(void **state) {
 	const struct WlrMode *wlr_mode_des = wlr_mode_init(s->head1, NULL, 400, 500, 60000, false);
 	const struct WlrMode *wlr_mode_failed = wlr_mode_init(s->head1, NULL, 700, 800, 90000, false);
 
-	pmap_put(s->head1->wlr_modes, wlr_mode_cur, wlr_mode_cur);
-	pmap_put(s->head1->wlr_modes, wlr_mode_des, wlr_mode_des);
-	pmap_put(s->head1->wlr_modes, wlr_mode_failed, wlr_mode_failed);
+	pset_add(s->head1->wlr_modes, wlr_mode_cur);
+	pset_add(s->head1->wlr_modes, wlr_mode_des);
+	pset_add(s->head1->wlr_modes, wlr_mode_failed);
 
 	slist_append(&s->head1->wlr_modes_failed, (void*)wlr_mode_failed);
 
@@ -95,9 +94,9 @@ int before_each(void **state) {
 	wlr_mode_des = wlr_mode_init(s->head2, NULL, 1400, 1500, 160000, false);
 	wlr_mode_failed = wlr_mode_init(s->head2, NULL, 1700, 1800, 190000, false);
 
-	pmap_put(s->head2->wlr_modes, wlr_mode_cur, wlr_mode_cur);
-	pmap_put(s->head2->wlr_modes, wlr_mode_des, wlr_mode_des);
-	pmap_put(s->head2->wlr_modes, wlr_mode_failed, wlr_mode_failed);
+	pset_add(s->head2->wlr_modes, wlr_mode_cur);
+	pset_add(s->head2->wlr_modes, wlr_mode_des);
+	pset_add(s->head2->wlr_modes, wlr_mode_failed);
 
 	slist_append(&s->head2->wlr_modes_failed, (void*)wlr_mode_failed);
 

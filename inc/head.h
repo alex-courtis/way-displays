@@ -41,8 +41,7 @@ struct Head {
 
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
-	// TODO this should be a set; there is no value in a map
-	const struct PMap* wlr_modes;
+	const struct PSet* wlr_modes;
 
 	char *name;
 	char *description;

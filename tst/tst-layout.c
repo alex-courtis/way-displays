@@ -20,7 +20,6 @@
 #include "fn.h"
 #include "head.h"
 #include "log.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smapi.h"
@@ -78,7 +77,7 @@ static int before_each(void **state) {
 		head->desired.enabled = true;
 		const struct WlrMode *wlr_mode = wlr_mode_init_empty();
 		head->desired.wlr_mode = wlr_mode;
-		pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+		pset_add(head->wlr_modes, wlr_mode);
 		slist_append(&s->heads, head);
 	}
 
@@ -454,7 +453,7 @@ static void desire_mode__disabled(void **state) {
 
 	head->desired.enabled = false;
 	head->desired.wlr_mode = wlr_mode;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	desire_mode(head);
 
@@ -473,7 +472,7 @@ static void desire_mode__no_mode(void **state) {
 
 	head->desired.enabled = true;
 	head->desired.wlr_mode = wlr_mode;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	expect_ptr(__wrap_head_find_wlr_mode, head, head);
 	will_return_ptr_type(__wrap_head_find_wlr_mode, NULL, struct WlrMode*);
@@ -496,7 +495,7 @@ static void desire_mode__no_mode_warned(void **state) {
 	head->desired.enabled = true;
 	head->desired.wlr_mode = wlr_mode;
 	head->warned_no_mode = true;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	expect_ptr(__wrap_head_find_wlr_mode, head, head);
 	will_return_ptr_type(__wrap_head_find_wlr_mode, NULL, struct WlrMode*);
@@ -518,10 +517,10 @@ static void desire_mode__ok(void **state) {
 
 	head->desired.enabled = true;
 	head->desired.wlr_mode = wlr_mode0;
-	pmap_put(head->wlr_modes, wlr_mode0, wlr_mode0);
+	pset_add(head->wlr_modes, wlr_mode0);
 
 	struct WlrMode *wlr_mode1 = wlr_mode_init_head(head);
-	pmap_put(head->wlr_modes, wlr_mode1, wlr_mode1);
+	pset_add(head->wlr_modes, wlr_mode1);
 
 	expect_ptr(__wrap_head_find_wlr_mode, head, head);
 	will_return_ptr_type(__wrap_head_find_wlr_mode, wlr_mode1, struct WlrMode*);
@@ -801,7 +800,7 @@ static void handle_success__head_changing_mode(void **state) {
 	struct Head *head = head_init_name("head");
 	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
 	head->desired.wlr_mode = wlr_mode;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
@@ -841,8 +840,8 @@ static void handle_failure__mode(void **state) {
 	head->current.wlr_mode = wlr_mode_cur;
 	head->desired.wlr_mode = wlr_mode_des;
 
-	pmap_put(head->wlr_modes, wlr_mode_cur, wlr_mode_cur);
-	pmap_put(head->wlr_modes, wlr_mode_des, wlr_mode_des);
+	pset_add(head->wlr_modes, wlr_mode_cur);
+	pset_add(head->wlr_modes, wlr_mode_des);
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;

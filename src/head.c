@@ -15,7 +15,6 @@
 #include "info.h"
 #include "log.h"
 #include "mode.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -29,7 +28,7 @@ struct SList *g_heads_departed = NULL;
 struct Head *head_init(void) {
 	struct Head *head = calloc(1, sizeof(struct Head));
 
-	head->wlr_modes = wlr_mode_pmap_init();
+	head->wlr_modes = wlr_mode_pset_init();
 
 	return head;
 }
@@ -58,7 +57,7 @@ const struct WlrMode *head_max_wlr_mode(const struct Head * const head) {
 
 	const struct WlrMode *wlr_mode_max = NULL;
 
-	for (const struct PMapIt *it = pmap_it(head->wlr_modes); it; it = pmap_it_next(it)) {
+	for (const struct PSetIt *it = pset_it(head->wlr_modes); it; it = pset_it_next(it)) {
 		const struct WlrMode *wlr_mode = it->val;
 
 		if (slist_find_equal(head->wlr_modes_failed, NULL, wlr_mode)) {
@@ -257,7 +256,7 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	if (pmap_size(head->wlr_modes) == slist_length(head->wlr_modes_failed)) {
+	if (pset_size(head->wlr_modes) == slist_length(head->wlr_modes_failed)) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head->name);
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
@@ -323,7 +322,7 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 }
 
 const struct WlrMode *head_preferred_wlr_mode(const struct Head * const head) {
-	return head ? pmap_match_val(head->wlr_modes, (fn_match_ptr)wlr_mode_matches_preferred, NULL).val : NULL;
+	return head ? pset_match(head->wlr_modes, (fn_match_ptr)wlr_mode_matches_preferred, NULL) : NULL;
 }
 
 bool head_current_not_desired(const struct Head * const head) {
@@ -422,19 +421,19 @@ void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	if (head->current.wlr_mode && !pmap_contains_val(head->wlr_modes, head->current.wlr_mode)) {
+	if (head->current.wlr_mode && !pset_contains(head->wlr_modes, head->current.wlr_mode)) {
 		wlr_mode_free((struct WlrMode*)head->current.wlr_mode);
 		if (head->desired.wlr_mode == head->current.wlr_mode) {
 			head->desired.wlr_mode = NULL;
 		}
 	}
-	if (head->desired.wlr_mode && !pmap_contains_val(head->wlr_modes, head->desired.wlr_mode)) {
+	if (head->desired.wlr_mode && !pset_contains(head->wlr_modes, head->desired.wlr_mode)) {
 		wlr_mode_free((struct WlrMode*)head->desired.wlr_mode);
 	}
 
 	slist_free(&head->wlr_modes_failed);
 
-	pmap_free_vals(head->wlr_modes);
+	pset_free_vals(head->wlr_modes);
 
 	free(head->name);
 	free(head->description);
@@ -459,8 +458,7 @@ void head_release_mode(struct WlrMode *wlr_mode) {
 			head->current.wlr_mode = NULL;
 		}
 
-		// TODO this is just ugly, maybe return a pair for matches
-		if (!pmap_remove_free(head->wlr_modes, pmap_match_val(head->wlr_modes, equal_ptr, wlr_mode).key)) {
+		if (!pset_remove_free(head->wlr_modes, wlr_mode)) {
 			wlr_mode_free(wlr_mode);
 		}
 	} else {

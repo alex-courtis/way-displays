@@ -4,7 +4,6 @@
 #include <yaml.h>
 
 #include "head.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -30,7 +29,7 @@ struct WlrMode *yaml_map_to_wlr_mode(struct UC *c, const yaml_node_t *map);  // 
 // fn_yaml_node_into_col: create a struct and add to collection
 void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses,         const yaml_node_t *map);
 void yaml_map_into_heads        (struct UC *c, struct SList **heads,                 const yaml_node_t *map);
-void yaml_map_into_wlr_modes    (struct UC *c, const struct PMap *wlr_modes,         const yaml_node_t *map);
+void yaml_map_into_wlr_modes    (struct UC *c, const struct PSet *wlr_modes,         const yaml_node_t *map);
 void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines,         const yaml_node_t *map);
 void yaml_map_into_conditions   (struct UC *c, const struct PSet* const conditions,  const yaml_node_t *map);
 void yaml_map_into_scales       (struct UC *c, const struct SMapI* const scales,     const yaml_node_t *map);

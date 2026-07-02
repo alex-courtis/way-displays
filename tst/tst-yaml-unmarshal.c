@@ -22,7 +22,6 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -444,8 +443,8 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(wlr_mode_desired->refresh_mhz, 15);
 	assert_false(wlr_mode_desired->preferred);
 
-	assert_int_equal(pmap_size(head->wlr_modes), 2);
-	const struct PMapIt *it = pmap_it(head->wlr_modes);
+	assert_int_equal(pset_size(head->wlr_modes), 2);
+	const struct PSetIt *it = pset_it(head->wlr_modes);
 
 	const struct WlrMode *wlr_mode1 = it->val;
 	assert_non_nul(wlr_mode1);
@@ -454,7 +453,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(wlr_mode1->refresh_mhz, 12);
 	assert_true(wlr_mode1->preferred);
 
-	it = pmap_it_next(it);
+	it = pset_it_next(it);
 
 	const struct WlrMode *wlr_mode2 = it->val;
 	assert_non_nul(wlr_mode2);
@@ -463,7 +462,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(wlr_mode2->refresh_mhz, 15);
 	assert_false(wlr_mode2->preferred);
 
-	pmap_it_next(it);
+	pset_it_next(it);
 
 	assert_int_equal(head->current.transform, 3);
 	assert_int_equal(head->desired.transform, 4);

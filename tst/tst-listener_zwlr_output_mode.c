@@ -10,7 +10,7 @@
 #include "head.h"
 #include "log.h"
 #include "mode.h"
-#include "pmap.h"
+#include "pset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "listeners.h"
@@ -26,8 +26,8 @@ static void preferred__first(void **state) {
 	struct WlrMode *wlr_mode_existing = wlr_mode_init(head, NULL, 3840, 2160, 60000, false);
 	struct WlrMode *wlr_mode_pref = wlr_mode_init(head, NULL, 2560, 1440, 30000, false);
 
-	pmap_put(head->wlr_modes, wlr_mode_existing, wlr_mode_existing);
-	pmap_put(head->wlr_modes, wlr_mode_pref, wlr_mode_pref);
+	pset_add(head->wlr_modes, wlr_mode_existing);
+	pset_add(head->wlr_modes, wlr_mode_pref);
 
 	zwlr_output_mode_listener()->preferred(wlr_mode_pref, NULL);
 
@@ -44,8 +44,8 @@ static void preferred__subsequent(void **state) {
 	struct WlrMode *wlr_mode_existing = wlr_mode_init(head, NULL, 3840, 2160, 60000, true);
 	struct WlrMode *wlr_mode_subsequent = wlr_mode_init(head, NULL, 2560, 1440, 30000, false);
 
-	pmap_put(head->wlr_modes, wlr_mode_existing, wlr_mode_existing);
-	pmap_put(head->wlr_modes, wlr_mode_subsequent, wlr_mode_subsequent);
+	pset_add(head->wlr_modes, wlr_mode_existing);
+	pset_add(head->wlr_modes, wlr_mode_subsequent);
 
 	zwlr_output_mode_listener()->preferred(wlr_mode_subsequent, NULL);
 

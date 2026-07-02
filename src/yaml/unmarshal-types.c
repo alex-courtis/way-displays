@@ -19,7 +19,6 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -493,7 +492,7 @@ struct WlrMode *yaml_map_to_wlr_mode(struct UC *c, const yaml_node_t *map) {
 	return wlr_mode;
 }
 
-void yaml_map_into_wlr_modes(struct UC *c, const struct PMap *wlr_modes, const yaml_node_t *map) {
+void yaml_map_into_wlr_modes(struct UC *c, const struct PSet *wlr_modes, const yaml_node_t *map) {
 	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!wlr_modes)
 		return;
@@ -501,8 +500,7 @@ void yaml_map_into_wlr_modes(struct UC *c, const struct PMap *wlr_modes, const y
 	const struct WlrMode *wlr_mode = yaml_map_to_wlr_mode(c, map);
 
 	if (wlr_mode) {
-		// we use the mode pointer as the dummy key, as we are not dealing a "real" head/modes
-		pmap_put(wlr_modes, wlr_mode, wlr_mode);
+		pset_add(wlr_modes, wlr_mode);
 	}
 
 	smap_free(nodes);

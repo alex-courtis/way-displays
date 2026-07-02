@@ -20,22 +20,12 @@
 #include "fn.h"
 #include "log.h"
 #include "mode.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
 #include "sset.h"
 
 #include "head.h"
-
-static int keys[7] = { 10, 11, 12, 13, 14, 15, 16, };
-static void *K0 = &keys[0];
-static void *K1 = &keys[1];
-static void *K2 = &keys[2];
-static void *K3 = &keys[3];
-static void *K4 = &keys[4];
-static void *K5 = &keys[5];
-static void *K6 = &keys[6];
 
 // cppcheck-suppress staticFunction
 double __wrap_mode_dpi(const struct WlrMode* const wlr_mode) {
@@ -44,7 +34,7 @@ double __wrap_mode_dpi(const struct WlrMode* const wlr_mode) {
 }
 
 // cppcheck-suppress staticFunction
-const struct WlrMode *__wrap_mode_user_mode(const struct PMap* const wlr_modes, struct SList *wlr_modes_failed, const struct UserMode *user_mode) {
+const struct WlrMode *__wrap_mode_user_mode(const struct PSet* const wlr_modes, struct SList *wlr_modes_failed, const struct UserMode *user_mode) {
 	check_expected_ptr(wlr_modes);
 	check_expected_ptr(wlr_modes_failed);
 	check_expected_ptr(user_mode);
@@ -52,7 +42,7 @@ const struct WlrMode *__wrap_mode_user_mode(const struct PMap* const wlr_modes, 
 }
 
 // cppcheck-suppress staticFunction
-const struct WlrMode *__wrap_mode_max_preferred(const struct PMap* wlr_modes, struct SList *wlr_modes_failed) {
+const struct WlrMode *__wrap_mode_max_preferred(const struct PSet* wlr_modes, struct SList *wlr_modes_failed) {
 	check_expected_ptr(wlr_modes);
 	check_expected_ptr(wlr_modes_failed);
 	return mock_ptr_type_checked(struct WlrMode*);
@@ -151,7 +141,7 @@ static void head_auto_scale__mode(void **state) {
 
 	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
 	head->desired.wlr_mode = wlr_mode;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	// dpi 0 defaults to 96
 	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
@@ -183,7 +173,7 @@ static void head_auto_scale__range(void **state) {
 
 	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
 	head->desired.wlr_mode = wlr_mode;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	// scale under 1.0 is clamped to 1.0 with default settings
 	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
@@ -241,7 +231,7 @@ static void head_set_scaled_dimensions__default(void **state) {
 	// no scale
 	const struct WlrMode *wlr_mode = wlr_mode_init(head, NULL, 200, 100, 0, false);
 	head->desired.wlr_mode = wlr_mode;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	head_set_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1);
@@ -257,7 +247,7 @@ static void head_set_scaled_dimensions__transform(void **state) {
 
 	const struct WlrMode *wlr_mode = wlr_mode_init(head, NULL, 200, 100, 0, false);
 	head->desired.wlr_mode = wlr_mode;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	// double, not rotated
 	head->desired.scale = wl_fixed_from_double(0.5);
@@ -285,7 +275,7 @@ static void head_set_scaled_dimensions__dimensions(void **state) {
 
 	const struct WlrMode *wlr_mode = wlr_mode_init(head, NULL, 3840, 2160, 0, false);
 	head->desired.wlr_mode = wlr_mode;
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	head->desired.scale = head_get_fixed_scale(1.0);
 	head_set_scaled_dimensions(head);
@@ -328,7 +318,7 @@ static void head_set_scaled_dimensions__dimensions(void **state) {
 static void head_find_mode__all_failed(void **state) {
 	struct Head *head = head_init_name("head0");
 	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	// all modes failed
 	slist_append(&head->wlr_modes_failed, wlr_mode);
@@ -347,7 +337,7 @@ static void head_find_mode__all_failed(void **state) {
 static void head_find_mode__user_available(void **state) {
 	struct Head *head = head_init();
 	const struct WlrMode *wlr_mode = wlr_mode_init_head(head);
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	// user preferred head
 	struct UserMode *user_mode = user_mode_init_default();
@@ -356,7 +346,7 @@ static void head_find_mode__user_available(void **state) {
 
 	// mode matched to user
 	const struct WlrMode *expected = wlr_mode_init_head(head);
-	pmap_put(head->wlr_modes, expected, expected);
+	pset_add(head->wlr_modes, expected);
 
 	expect_ptr(__wrap_mode_user_mode, wlr_modes, head->wlr_modes);
 	expect_ptr(__wrap_mode_user_mode, wlr_modes_failed, head->wlr_modes_failed);
@@ -373,7 +363,7 @@ static void head_find_mode__user_available(void **state) {
 static void head_find_mode__user_failed(void **state) {
 	struct Head *head = head_init();
 	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	// user preferred head
 	struct UserMode *user_mode = user_mode_init_default();
@@ -422,7 +412,7 @@ static void head_find_mode__preferred(void **state) {
 	struct WlrMode *wlr_mode = wlr_mode_init_empty();
 	wlr_mode->preferred = true;
 
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	assert_ptr_equal(head_find_wlr_mode(head), wlr_mode);
 
@@ -437,7 +427,7 @@ static void head_find_mode__max_preferred_refresh(void **state) {
 
 	sset_add(g_cfg->max_preferred_refresh, "!nam.*");
 
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	expect_ptr(__wrap_mode_max_preferred, wlr_modes, head->wlr_modes);
 	expect_ptr(__wrap_mode_max_preferred, wlr_modes_failed, head->wlr_modes_failed);
@@ -454,7 +444,7 @@ static void head_find_mode__max(void **state) {
 	struct Head *head = head_init_name("name");
 
 	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
-	pmap_put(head->wlr_modes, wlr_mode, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "name\n  No preferred mode, falling back to maximum available");
@@ -499,15 +489,17 @@ static void head_max_mode__max(void **state) {
 	struct WlrMode *wlr_mode_failed = wlr_mode_init_head(head);
 	slist_append(&head->wlr_modes_failed, wlr_mode_failed);
 
-	pmap_put(head->wlr_modes, K0, wlr_mode_failed);
-	pmap_put(head->wlr_modes, K1, wlr_mode_init(NULL, NULL, 1000, 1000, 1000, false));
-	pmap_put(head->wlr_modes, K2, wlr_mode_init(NULL, NULL, 500, 500, 1000, false));
-	pmap_put(head->wlr_modes, K3, wlr_mode_init(NULL, NULL, 1000, 1000, 500, false));
-	pmap_put(head->wlr_modes, K4, wlr_mode_init(NULL, NULL, 2000, 2000, 1000, false));
-	pmap_put(head->wlr_modes, K5, wlr_mode_init(NULL, NULL, 2000, 2000, 2000, false)); // highest
-	pmap_put(head->wlr_modes, K6, wlr_mode_init(NULL, NULL, 1000, 1000, 1000, false));
 
-	assert_ptr_equal(head_max_wlr_mode(head), pmap_get(head->wlr_modes, K5));
+	pset_add(head->wlr_modes, wlr_mode_failed);
+	pset_add(head->wlr_modes, wlr_mode_init(NULL, NULL, 1000, 1000, 1000, false));
+	pset_add(head->wlr_modes, wlr_mode_init(NULL, NULL, 500, 500, 1000, false));
+	pset_add(head->wlr_modes, wlr_mode_init(NULL, NULL, 1000, 1000, 500, false));
+	pset_add(head->wlr_modes, wlr_mode_init(NULL, NULL, 2000, 2000, 1000, false));
+	struct WlrMode *wlr_mode_expected = wlr_mode_init(NULL, NULL, 2000, 2000, 2000, false);
+	pset_add(head->wlr_modes, wlr_mode_expected);
+	pset_add(head->wlr_modes, wlr_mode_init(NULL, NULL, 1000, 1000, 1000, false));
+
+	assert_ptr_equal(head_max_wlr_mode(head), wlr_mode_expected);
 
 	head_free(head);
 }
@@ -649,11 +641,11 @@ static void heads_reapply__(void **state) {
 	struct Head *head_disabled = head_init_name("DP-7");
 	head_disabled->current.enabled = false;
 
-	pmap_put(head_disabled->wlr_modes, K0, wlr_mode_init(NULL, NULL, 3440, 1440, 59999, true));
-	pmap_put(head_disabled->wlr_modes, K1, wlr_mode_init(NULL, NULL, 3840, 2160, 30000, false));
-	pmap_put(head_disabled->wlr_modes, K2, wlr_mode_init(NULL, NULL, 3840, 2160, 29970, false));
+	pset_add(head_disabled->wlr_modes, wlr_mode_init(NULL, NULL, 3440, 1440, 59999, true));
+	pset_add(head_disabled->wlr_modes, wlr_mode_init(NULL, NULL, 3840, 2160, 30000, false));
+	pset_add(head_disabled->wlr_modes, wlr_mode_init(NULL, NULL, 3840, 2160, 29970, false));
 
-	head_disabled->wlr_modes_failed = pmap_vals_slist_shallow(head_disabled->wlr_modes);
+	head_disabled->wlr_modes_failed = pset_slist_shallow(head_disabled->wlr_modes);
 
 	slist_append(&heads, head_disabled);
 
@@ -661,9 +653,8 @@ static void heads_reapply__(void **state) {
 	struct Head *head_enabled = head_init_name("eDP-1");
 	head_enabled->current.enabled = true;
 
-	pmap_put(head_enabled->wlr_modes, K0, wlr_mode_init(NULL, NULL, 2256, 1504, 59999, true));
-
-	head_enabled->current.wlr_mode = pmap_get(head_enabled->wlr_modes, K0);
+	head_enabled->current.wlr_mode = wlr_mode_init(NULL, NULL, 2256, 1504, 59999, true);;
+	pset_add(head_enabled->wlr_modes, head_enabled->current.wlr_mode);
 
 	slist_append(&heads, head_enabled);
 
@@ -680,7 +671,7 @@ static void heads_reapply__(void **state) {
 	slist_free_vals(&heads, (fn_free)head_free);
 }
 
-void head_release_mode__nulls(void **state) {
+static void head_release_mode__nulls(void **state) {
 	head_release_mode(NULL);
 
 	struct WlrMode *wlr_mode_releasing = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
@@ -688,51 +679,51 @@ void head_release_mode__nulls(void **state) {
 	head_release_mode(wlr_mode_releasing);
 }
 
-void head_release_mode__other(void **state) {
+static void head_release_mode__other(void **state) {
 	struct Head *head = head_init();
 
 	struct WlrMode *wlr_mode_releasing = wlr_mode_init(head, NULL, 0, 0, 0, false);
-	pmap_put(head->wlr_modes, wlr_mode_releasing, wlr_mode_releasing);
+	pset_add(head->wlr_modes, wlr_mode_releasing);
 
 	struct WlrMode *wlr_mode_current = wlr_mode_init(head, NULL, 0, 0, 0, false);
-	pmap_put(head->wlr_modes, wlr_mode_current, wlr_mode_current);
+	pset_add(head->wlr_modes, wlr_mode_current);
 	head->current.wlr_mode = wlr_mode_current;
 
 	struct WlrMode *wlr_mode_desired = wlr_mode_init(head, NULL, 0, 0, 0, false);
-	pmap_put(head->wlr_modes, wlr_mode_desired, wlr_mode_desired);
+	pset_add(head->wlr_modes, wlr_mode_desired);
 	head->desired.wlr_mode = wlr_mode_desired;
 
-	assert_int_equal(pmap_size(head->wlr_modes), 3);
+	assert_int_equal(pset_size(head->wlr_modes), 3);
 
 	head_release_mode(wlr_mode_releasing);
 
-	assert_int_equal(pmap_size(head->wlr_modes), 2);
+	assert_int_equal(pset_size(head->wlr_modes), 2);
 
-	assert_false(pmap_contains_val(head->wlr_modes, wlr_mode_releasing));
+	assert_false(pset_contains(head->wlr_modes, wlr_mode_releasing));
 
 	assert_ptr_equal(head->current.wlr_mode, wlr_mode_current);
-	assert_true(pmap_contains_val(head->wlr_modes, wlr_mode_current));
+	assert_true(pset_contains(head->wlr_modes, wlr_mode_current));
 
 	assert_ptr_equal(head->desired.wlr_mode, wlr_mode_desired);
-	assert_true(pmap_contains_val(head->wlr_modes, wlr_mode_desired));
+	assert_true(pset_contains(head->wlr_modes, wlr_mode_desired));
 
 	head_free(head);
 }
 
-void head_release_mode__cur_des(void **state) {
+static void head_release_mode__cur_des(void **state) {
 	struct Head *head = head_init();
 
 	struct WlrMode *wlr_mode_releasing = wlr_mode_init(head, NULL, 0, 0, 0, false);
-	pmap_put(head->wlr_modes, wlr_mode_releasing, wlr_mode_releasing);
+	pset_add(head->wlr_modes, wlr_mode_releasing);
 
 	head->current.wlr_mode = wlr_mode_releasing;
 	head->desired.wlr_mode = wlr_mode_releasing;
 
 	head_release_mode(wlr_mode_releasing);
 
-	assert_int_equal(pmap_size(head->wlr_modes), 0);
+	assert_int_equal(pset_size(head->wlr_modes), 0);
 
-	assert_false(pmap_contains_val(head->wlr_modes, wlr_mode_releasing));
+	assert_false(pset_contains(head->wlr_modes, wlr_mode_releasing));
 
 	assert_nul(head->current.wlr_mode);
 	assert_nul(head->desired.wlr_mode);
@@ -740,7 +731,7 @@ void head_release_mode__cur_des(void **state) {
 	head_free(head);
 }
 
-void head_release_mode__orphan(void **state) {
+static void head_release_mode__orphan(void **state) {
 	struct Head *head = head_init();
 
 	struct WlrMode *wlr_mode_releasing = wlr_mode_init(head, NULL, 0, 0, 0, false);

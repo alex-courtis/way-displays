@@ -7,7 +7,6 @@
 
 #include "cfg.h"
 #include "convert.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -137,25 +136,6 @@ void yaml_map_add_pset(struct MC *c, const char *key, const struct PSet *pset, f
 
 	for (const struct PSetIt *it = pset_it(pset); it; it = pset_it_next(it)) {
 		int n = fn(c, it->val);
-		if (n)
-			yaml_document_append_sequence_item(&c->d, seq, n);
-	}
-
-	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
-}
-
-void yaml_map_add_pmap(struct MC *c, const void *key, const struct PMap* const pmap, fn_yaml_kv_to_node fn, int mapping) {
-	if (!key || pmap_size(pmap) == 0)
-		return;
-
-	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-	int seq = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-
-	if (!k || !seq)
-		return;
-
-	for (const struct PMapIt *it = pmap_it(pmap); it; it = pmap_it_next(it)) {
-		int n = fn(c, it->key, it->val);
 		if (n)
 			yaml_document_append_sequence_item(&c->d, seq, n);
 	}

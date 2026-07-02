@@ -145,13 +145,13 @@ int yaml_head_state_to_map(struct MC *c, const struct HeadState* const head_stat
 
 	bool adaptive_sync_enabled = head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
-	yaml_map_add_float_nz(c, "SCALE",     wl_fixed_to_double(head_state->scale),           map);
-	yaml_map_add_bool    (c, "ENABLED",   head_state->enabled,                             map);
-	yaml_map_add_int     (c, "X",         head_state->x,                                   map);
-	yaml_map_add_int     (c, "Y",         head_state->y,                                   map);
-	yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                           map);
-	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,           map);
-	yaml_map_add_node    (c, "MODE",      yaml_wlr_mode_to_map(c, NULL, head_state->wlr_mode), map);
+	yaml_map_add_float_nz(c, "SCALE",     wl_fixed_to_double(head_state->scale),         map);
+	yaml_map_add_bool    (c, "ENABLED",   head_state->enabled,                           map);
+	yaml_map_add_int     (c, "X",         head_state->x,                                 map);
+	yaml_map_add_int     (c, "Y",         head_state->y,                                 map);
+	yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                         map);
+	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,         map);
+	yaml_map_add_node    (c, "MODE",      yaml_wlr_mode_to_map(c, head_state->wlr_mode), map);
 
 	return map;
 }
@@ -299,7 +299,7 @@ int yaml_disabled_to_node(struct MC *c, const struct Disabled* const disabled) {
 	}
 }
 
-int yaml_wlr_mode_to_map (struct MC *c, const void* const unused, const struct WlrMode* const wlr_mode) {
+int yaml_wlr_mode_to_map(struct MC *c, const struct WlrMode* const wlr_mode) {
 	if (!wlr_mode)
 		return 0;
 
@@ -332,7 +332,7 @@ int yaml_head_to_map(struct MC *c, const struct Head* const head) {
 	yaml_map_add_node(c, "DESIRED",   yaml_head_state_to_map(c, &head->desired), map);
 	yaml_map_add_node(c, "OVERRIDES", yaml_head_overrides_to_map(c, head),       map);
 
-	yaml_map_add_pmap(c, "MODES", head->wlr_modes, (fn_yaml_kv_to_node)yaml_wlr_mode_to_map, map);
+	yaml_map_add_pset(c, "MODES", head->wlr_modes, (fn_yaml_v_to_node)yaml_wlr_mode_to_map, map);
 
 	return map;
 }

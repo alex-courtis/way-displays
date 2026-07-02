@@ -7,7 +7,7 @@
 
 #include "head.h"
 #include "mode.h"
-#include "pmap.h"
+#include "pset.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -46,7 +46,7 @@ static void mode(void *data,
 
 	struct WlrMode *wlr_mode = wlr_mode_init(head, zwlr_output_mode_v1, 0, 0, 0, false);
 
-	pmap_put(head->wlr_modes, zwlr_output_mode_v1, wlr_mode);
+	pset_add(head->wlr_modes, wlr_mode);
 
 	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), wlr_mode);
 }
@@ -59,15 +59,16 @@ static void enabled(void *data,
 	head->current.enabled = enabled;
 }
 
+// TODO no unit tests, needs conversion to set
 static void current_mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Head *head = data;
-
-	const struct WlrMode *m = pmap_get(head->wlr_modes, zwlr_output_mode_v1);
-	if (m) {
-		head->current.wlr_mode = m;
-	}
+	// struct Head *head = data;
+	//
+	// const struct WlrMode *m = pmap_get(head->wlr_modes_map, zwlr_output_mode_v1);
+	// if (m) {
+	// 	head->current.wlr_mode = m;
+	// }
 }
 
 static void position(void *data,

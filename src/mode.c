@@ -10,31 +10,31 @@
 #include "cfg/user-mode.h"
 #include "fn.h"
 #include "head.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // TODO name by wlrmode/usermode
 
-const struct WlrMode *mode_preferred(const struct PMap* const wlr_modes, struct SList *wlr_modes_failed) {
+const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, struct SList *wlr_modes_failed) {
+	const struct WlrMode *wlr_mode_preferred = NULL;
 
-	const struct PMapIt *it;
+	const struct PSetIt *it;
 
-	for (it = pmap_it(wlr_modes); it; it = pmap_it_next(it)) {
+	for (it = pset_it(wlr_modes); it; it = pset_it_next(it)) {
 		const struct WlrMode *wlr_mode = it->val;
 
 		if (wlr_mode->preferred && !slist_find_equal(wlr_modes_failed, NULL, wlr_mode)) {
-			pmap_it_free(it);
-			return wlr_mode;
+			wlr_mode_preferred = wlr_mode;
+			break;
 		}
 	}
 
-	pmap_it_free(it);
-	return NULL;
+	pset_it_free(it);
+	return wlr_mode_preferred;
 }
 
-const struct WlrMode *mode_max_preferred(const struct PMap* wlr_modes, struct SList *wlr_modes_failed) {
+const struct WlrMode *mode_max_preferred(const struct PSet* wlr_modes, struct SList *wlr_modes_failed) {
 	const struct WlrMode *preferred = mode_preferred(wlr_modes, wlr_modes_failed);
 
 	if (!preferred)
@@ -43,7 +43,7 @@ const struct WlrMode *mode_max_preferred(const struct PMap* wlr_modes, struct SL
 	const struct WlrMode *wlr_mode = NULL;
 	const struct WlrMode *wlr_mode_max = NULL;
 
-	for (const struct PMapIt *it = pmap_it(wlr_modes); it; it = pmap_it_next(it)) {
+	for (const struct PSetIt *it = pset_it(wlr_modes); it; it = pset_it_next(it)) {
 		wlr_mode = it->val;
 
 		if (slist_find_equal(wlr_modes_failed, NULL, wlr_mode)) {
@@ -156,10 +156,10 @@ double mode_scale(const struct WlrMode* const wlr_mode) {
 	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
 }
 
-struct SList *modes_res_refresh(const struct PMap* const wlr_modes) {
+struct SList *modes_res_refresh(const struct PSet* const wlr_modes) {
 	struct SList *mrrs = NULL;
 
-	const struct PSet *wlr_modes_sorted = pmap_vals_pset(wlr_modes);
+	const struct PSet *wlr_modes_sorted = pset_clone_shallow(wlr_modes);
 	pset_sort(wlr_modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
 
 	struct ModesResRefresh *mrr = NULL;
@@ -182,14 +182,14 @@ struct SList *modes_res_refresh(const struct PMap* const wlr_modes) {
 	return mrrs;
 }
 
-const struct WlrMode *mode_user_mode(const struct PMap* const wlr_modes, struct SList *wlr_modes_failed, const struct UserMode *user_mode) {
+const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, struct SList *wlr_modes_failed, const struct UserMode *user_mode) {
 	if (!wlr_modes || !user_mode)
 		return NULL;
 
 	struct SList *i, *j;
 
 	// exact res and refresh
-	const struct WlrMode *wlr_mode_exact = pmap_match_val(wlr_modes, (fn_match_ptr)mode_equal_user_mode_res_hz, user_mode).val;
+	const struct WlrMode *wlr_mode_exact = pset_match(wlr_modes, (fn_match_ptr)mode_equal_user_mode_res_hz, user_mode);
 	if (wlr_mode_exact && !slist_find_equal_val(wlr_modes_failed, NULL, wlr_mode_exact)) {
 		return wlr_mode_exact;
 	}
@@ -226,14 +226,14 @@ struct WlrMode *wlr_mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwl
 	return wlr_mode;
 }
 
-const struct PMap *wlr_mode_pmap_init(void) {
-	const struct PMapParams params = {
+const struct PSet *wlr_mode_pset_init(void) {
+	const struct PSetParams params = {
 		.free_val = (fn_free)wlr_mode_free,
 	};
-	return pmap_init_with(params);
+	return pset_init_with(params);
 }
 
-// TODO this could just be a fn_test
+// TODO this could just be a fn_test; add them to map/set
 bool wlr_mode_matches_preferred(const struct WlrMode *wlr_mode, const void* const data) {
 	return wlr_mode && wlr_mode->preferred;
 }

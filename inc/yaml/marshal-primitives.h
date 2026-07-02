@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include "convert.h"
-#include "pmap.h"
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
@@ -43,7 +42,6 @@ void yaml_map_add_enum    (struct MC *c, const char *key, const int     val,  fn
 void yaml_map_add_sset (struct MC *c, const char *key, const struct SSet*  const sset,                         int mapping);
 void yaml_map_add_pset (struct MC *c, const char *key, const struct PSet*  const pset,  fn_yaml_v_to_node fn,  int mapping);
 void yaml_map_add_list (struct MC *c, const char *key, const struct SList* const list,  fn_yaml_v_to_node fn,  int mapping);
-void yaml_map_add_pmap (struct MC *c, const void *key, const struct PMap*  const pmap,  fn_yaml_kv_to_node fn, int mapping);
 void yaml_map_add_smap (struct MC *c, const char *key, const struct SMap*  const smap,  fn_yaml_kv_to_node fn, int mapping);
 void yaml_map_add_smapi(struct MC *c, const char *key, const struct SMapI* const smapi, fn_yaml_ki_to_node fn, int mapping);
 
