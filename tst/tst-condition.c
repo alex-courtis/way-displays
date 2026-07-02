@@ -57,26 +57,26 @@ static void condition__plugged(void **state) {
 	const struct State *s = *state;
 
 	sset_add(s->condition->plugged, "DP-1");
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	sset_add(s->condition->plugged, "DP-2");
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	sset_add(s->condition->plugged, "DP-3");
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	sset_add(s->condition->plugged, "DP-4");
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_true(s->condition, NULL));
 }
 
 static void condition__unplugged(void **state) {
 	const struct State *s = *state;
 
 	sset_add(s->condition->unplugged, "DP-4");
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	sset_add(s->condition->unplugged, "DP-1");
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_true(s->condition, NULL));
 }
 
 static void condition__lid_closed(void **state) {
@@ -84,17 +84,17 @@ static void condition__lid_closed(void **state) {
 
 	s->condition->lid = LID_CLOSED;
 
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_true(s->condition, NULL));
 
 	g_lid = calloc(1, sizeof(struct Lid));
 
 	g_lid->closed = true;
 
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	g_lid->closed = false;
 
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_true(s->condition, NULL));
 }
 
 static void condition__lid_open(void **state) {
@@ -102,17 +102,17 @@ static void condition__lid_open(void **state) {
 
 	s->condition->lid = LID_OPEN;
 
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_true(s->condition, NULL));
 
 	g_lid = calloc(1, sizeof(struct Lid));
 
 	g_lid->closed = false;
 
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	g_lid->closed = true;
 
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_true(s->condition, NULL));
 }
 
 static void condition__lid_not_present(void **state) {
@@ -120,27 +120,27 @@ static void condition__lid_not_present(void **state) {
 
 	s->condition->lid = LID_NOT_PRESENT;
 
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	g_lid = calloc(1, sizeof(struct Lid));
 
-	assert_false(condition_evaluate(s->condition));
+	assert_true(condition_true(s->condition, NULL));
 }
 
 static void condition__complex(void **state) {
 	struct State *s = *state;
 
 	sset_add(s->condition->plugged, "DP-1");
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	sset_add(s->condition->unplugged, "DP-4");
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 
 	s->condition->lid = LID_CLOSED;
 	g_lid = calloc(1, sizeof(struct Lid));
 	g_lid->closed = true;
 
-	assert_true(condition_evaluate(s->condition));
+	assert_false(condition_true(s->condition, NULL));
 }
 
 static void condition_set_evaluate__many(void **state) {
@@ -160,11 +160,11 @@ static void condition_set_evaluate__many(void **state) {
 	sset_add(unplugged->unplugged, "DP-99");
 	pset_add(conditions, unplugged);
 
-	assert_true(condition_set_evaluate(conditions));
+	assert_true(conditions_true(conditions));
 
 	lid->lid = LID_OPEN;
 
-	assert_false(condition_set_evaluate(conditions));
+	assert_false(conditions_true(conditions));
 
 	pset_free_vals(conditions);
 
