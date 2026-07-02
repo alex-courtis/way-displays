@@ -63,10 +63,12 @@ static void preferred(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
+	if (!data)
+		return;
+
 	struct WlrMode *wlr_mode = data;
 
-	head_release_mode(wlr_mode->head, wlr_mode);
-	wlr_mode_free(wlr_mode);
+	head_release_mode(wlr_mode);
 
 	zwlr_output_mode_v1_destroy(zwlr_output_mode_v1);
 }

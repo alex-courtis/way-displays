@@ -680,6 +680,76 @@ static void heads_reapply__(void **state) {
 	slist_free_vals(&heads, (fn_free)head_free);
 }
 
+void head_release_mode__nulls(void **state) {
+	head_release_mode(NULL);
+
+	struct WlrMode *wlr_mode_releasing = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
+
+	head_release_mode(wlr_mode_releasing);
+}
+
+void head_release_mode__other(void **state) {
+	struct Head *head = head_init();
+
+	struct WlrMode *wlr_mode_releasing = wlr_mode_init(head, NULL, 0, 0, 0, false);
+	pmap_put(head->wlr_modes, wlr_mode_releasing, wlr_mode_releasing);
+
+	struct WlrMode *wlr_mode_current = wlr_mode_init(head, NULL, 0, 0, 0, false);
+	pmap_put(head->wlr_modes, wlr_mode_current, wlr_mode_current);
+	head->current.wlr_mode = wlr_mode_current;
+
+	struct WlrMode *wlr_mode_desired = wlr_mode_init(head, NULL, 0, 0, 0, false);
+	pmap_put(head->wlr_modes, wlr_mode_desired, wlr_mode_desired);
+	head->desired.wlr_mode = wlr_mode_desired;
+
+	assert_int_equal(pmap_size(head->wlr_modes), 3);
+
+	head_release_mode(wlr_mode_releasing);
+
+	assert_int_equal(pmap_size(head->wlr_modes), 2);
+
+	assert_false(pmap_contains_val(head->wlr_modes, wlr_mode_releasing));
+
+	assert_ptr_equal(head->current.wlr_mode, wlr_mode_current);
+	assert_true(pmap_contains_val(head->wlr_modes, wlr_mode_current));
+
+	assert_ptr_equal(head->desired.wlr_mode, wlr_mode_desired);
+	assert_true(pmap_contains_val(head->wlr_modes, wlr_mode_desired));
+
+	head_free(head);
+}
+
+void head_release_mode__cur_des(void **state) {
+	struct Head *head = head_init();
+
+	struct WlrMode *wlr_mode_releasing = wlr_mode_init(head, NULL, 0, 0, 0, false);
+	pmap_put(head->wlr_modes, wlr_mode_releasing, wlr_mode_releasing);
+
+	head->current.wlr_mode = wlr_mode_releasing;
+	head->desired.wlr_mode = wlr_mode_releasing;
+
+	head_release_mode(wlr_mode_releasing);
+
+	assert_int_equal(pmap_size(head->wlr_modes), 0);
+
+	assert_false(pmap_contains_val(head->wlr_modes, wlr_mode_releasing));
+
+	assert_nul(head->current.wlr_mode);
+	assert_nul(head->desired.wlr_mode);
+
+	head_free(head);
+}
+
+void head_release_mode__orphan(void **state) {
+	struct Head *head = head_init();
+
+	struct WlrMode *wlr_mode_releasing = wlr_mode_init(head, NULL, 0, 0, 0, false);
+
+	head_release_mode(wlr_mode_releasing);
+
+	head_free(head);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(head_get_fixed_scale__rounding_nearest),
@@ -718,6 +788,11 @@ int main(void) {
 		TEST_BA(head_set_description__null_input),
 
 		TEST_BA(heads_reapply__),
+
+		TEST_BA(head_release_mode__nulls),
+		TEST_BA(head_release_mode__other),
+		TEST_BA(head_release_mode__cur_des),
+		TEST_BA(head_release_mode__orphan),
 	};
 
 	return RUN(tests);

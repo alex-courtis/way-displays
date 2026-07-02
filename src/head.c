@@ -433,7 +433,6 @@ void head_free(struct Head *head) {
 	}
 
 	slist_free(&head->wlr_modes_failed);
-	slist_free_vals(&head->modes, (fn_free)wlr_mode_free);
 
 	pmap_free_vals(head->wlr_modes);
 
@@ -446,18 +445,27 @@ void head_free(struct Head *head) {
 	free(head);
 }
 
-void head_release_mode(struct Head * const head, const struct WlrMode * const wlr_mode) {
-	if (!head || !wlr_mode)
+void head_release_mode(struct WlrMode *wlr_mode) {
+	if (!wlr_mode)
 		return;
 
-	if (head->desired.wlr_mode == wlr_mode) {
-		head->desired.wlr_mode = NULL;
-	}
-	if (head->current.wlr_mode == wlr_mode) {
-		head->current.wlr_mode = NULL;
-	}
+	struct Head *head = wlr_mode->head;
 
-	slist_remove_all(&head->modes, NULL, wlr_mode);
+	if (head) {
+		if (head->desired.wlr_mode == wlr_mode) {
+			head->desired.wlr_mode = NULL;
+		}
+		if (head->current.wlr_mode == wlr_mode) {
+			head->current.wlr_mode = NULL;
+		}
+
+		// TODO this is just ugly, maybe return a pair for matches
+		if (!pmap_remove_free(head->wlr_modes, pmap_match_val(head->wlr_modes, equal_ptr, wlr_mode).key)) {
+			wlr_mode_free(wlr_mode);
+		}
+	} else {
+		wlr_mode_free(wlr_mode);
+	}
 }
 
 void heads_release_head(const struct Head * const head) {

@@ -41,7 +41,9 @@ struct Head {
 
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
+	// TODO this should be a set; there is no value in a map
 	const struct PMap* wlr_modes;
+	// TODO remove in favour of wlr_modes
 	struct SList *modes;
 
 	char *name;
@@ -127,7 +129,7 @@ void heads_reapply(struct SList *heads);
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
 
-void head_release_mode(struct Head * const head, const struct WlrMode * const wlr_mode);
+void head_release_mode(struct WlrMode *wlr_mode);
 
 void head_free(struct Head *head);
 
