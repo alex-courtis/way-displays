@@ -48,6 +48,7 @@ char *info_user_mode_string(const struct UserMode * const user_mode) {
 	}
 }
 
+// TODO move to mode
 char *info_wlr_mode_string(const struct WlrMode * const wlr_mode) {
 	if (!wlr_mode)
 		return NULL;

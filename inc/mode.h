@@ -19,6 +19,7 @@ struct WlrMode {
 	bool preferred;
 };
 
+// TODO can this just be a WlrMode?
 struct ModesResRefresh {
 	int32_t width;
 	int32_t height;
