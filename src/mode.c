@@ -195,8 +195,7 @@ const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, const s
 	const struct PSet *mrrs = modes_res_refresh(wlr_modes);
 	for (const struct PSetIt *mrr_it = pset_it(mrrs); mrr_it; mrr_it = pset_it_next(mrr_it)) {
 		const struct ModesResRefresh *mrr = mrr_it->val;
-		if (mrr && mrr_satisfies_user_mode(mrr, user_mode)) {
-
+		if (mrr_satisfies_user_mode(mrr, user_mode)) {
 			for (const struct PSetIt *wlr_mode_it = pset_it(mrr->wlr_modes); wlr_mode_it; wlr_mode_it = pset_it_next(wlr_mode_it)) {
 				const struct WlrMode *wlr_mode = wlr_mode_it->val;
 				if (!pset_contains(wlr_modes_failed, wlr_mode)) {

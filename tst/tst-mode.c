@@ -196,6 +196,17 @@ static void mode_user_mode__height_failed(void **state) {
 	assert_nul(actual);
 }
 
+static void mode_user_mode__all_matches_failed(void **state) {
+	user_mode = user_mode_init(false, 200, 100, 60499, false);
+
+	pset_add(wlr_modes_failed, mode0);
+	pset_add(wlr_modes_failed, mode1);
+
+	const struct WlrMode *actual = mode_user_mode(wlr_modes, wlr_modes_failed, user_mode);
+
+	assert_nul(actual);
+}
+
 static void mode_dpi__(void **state) {
 	struct Head *head = head_init();
 	head->width_mm = 1000;
@@ -331,6 +342,7 @@ int main(void) {
 		TEST_BA(mode_user_mode__exact_hz_failed),
 		TEST_BA(mode_user_mode__width_failed),
 		TEST_BA(mode_user_mode__height_failed),
+		TEST_BA(mode_user_mode__all_matches_failed),
 
 		TEST_BA(mode_dpi__),
 
