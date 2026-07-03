@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include <stddef.h>
+#include <stdlib.h>
 #include <wayland-util.h>
 #include <yaml.h>
 
@@ -17,6 +17,7 @@
 #include "mode.h"
 #include "pset.h"
 #include "slist.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal-primitives.h"
 #include "yaml/marshal.h"
@@ -251,7 +252,9 @@ int yaml_user_mode_to_map(struct MC *c, const char* const name_desc, const struc
 		yaml_map_add_int(c, "WIDTH", user_mode->width, map);
 		yaml_map_add_int(c, "HEIGHT", user_mode->height, map);
 		if (user_mode->refresh_mhz != -1) {
-			yaml_map_add_str(c, "HZ", mhz_to_hz_str(user_mode->refresh_mhz), map);
+			char *hz = sprintf_alloc("%g", ((float)user_mode->refresh_mhz) / 1000);
+			yaml_map_add_str(c, "HZ", hz, map);
+			free(hz);
 		}
 	}
 

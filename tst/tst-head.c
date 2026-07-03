@@ -28,13 +28,13 @@
 #include "head.h"
 
 // cppcheck-suppress staticFunction
-double __wrap_mode_dpi(const struct WlrMode* const wlr_mode) {
+double __wrap_wlr_mode_dpi(const struct WlrMode* const wlr_mode) {
 	check_expected_ptr(wlr_mode);
 	return mock_type(double);
 }
 
 // cppcheck-suppress staticFunction
-const struct WlrMode *__wrap_mode_user_mode(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed, const struct UserMode *user_mode) {
+const struct WlrMode *__wrap_wlr_mode_for_user_mode(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed, const struct UserMode *user_mode) {
 	check_expected_ptr(wlr_modes);
 	check_expected_ptr(wlr_modes_failed);
 	check_expected_ptr(user_mode);
@@ -42,13 +42,14 @@ const struct WlrMode *__wrap_mode_user_mode(const struct PSet* const wlr_modes, 
 }
 
 // cppcheck-suppress staticFunction
-const struct WlrMode *__wrap_mode_max_preferred(const struct PSet* wlr_modes, const struct PSet* const wlr_modes_failed) {
+const struct WlrMode *__wrap_wlr_mode_max_preferred(const struct PSet* wlr_modes, const struct PSet* const wlr_modes_failed) {
 	check_expected_ptr(wlr_modes);
 	check_expected_ptr(wlr_modes_failed);
 	return mock_ptr_type_checked(struct WlrMode*);
 }
 
 static int before_each(void **state) {
+	// TODO
 	// assert_logs_empty_before();
 
 	g_cfg = cfg_default();
@@ -144,23 +145,23 @@ static void head_auto_scale__mode(void **state) {
 	pset_add(head->wlr_modes, wlr_mode);
 
 	// dpi 0 defaults to 96
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 0);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 0);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 1);
 
 	// even 144
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 144);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 144);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 144.0 / 96);
 
 	// rounded down to 156
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 161);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 161);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 156.0 / 96);
 
 	// rounded up to 168
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 162);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 162);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 168.0 / 96);
 
 	assert_logs_empty();
@@ -176,38 +177,38 @@ static void head_auto_scale__range(void **state) {
 	pset_add(head->wlr_modes, wlr_mode);
 
 	// scale under 1.0 is clamped to 1.0 with default settings
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 72);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 72);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 1);
 
 	// clamping to some other minimum value works too
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 12);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 12);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 0.125f, -1.0f), 0.125f);
 
 	// the minimum value is always positive (quantized to 1/8)
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 1);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 1);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, -1.0f, -1.0f), 0.125f);
 
 	// clamping to maximum value works
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 384);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, 2.5f), 2.5f);
 
 	// maximum values under 1.0 are ignored
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 384);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, 0.9f), 4.0f);
 
 	// the configured maximum is respected even with quantization
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 384);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 0.63f, 1.49f), 1.375f);
 
 	// the configured minimum is respected even with quantization
-	expect_ptr(__wrap_mode_dpi, wlr_mode, wlr_mode);
-	will_return_int(__wrap_mode_dpi, 12);
+	expect_ptr(__wrap_wlr_mode_dpi, wlr_mode, wlr_mode);
+	will_return_int(__wrap_wlr_mode_dpi, 12);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 0.63f, -1.0f), 0.75f);
 
 	assert_logs_empty();
@@ -348,10 +349,10 @@ static void head_find_mode__user_available(void **state) {
 	const struct WlrMode *expected = wlr_mode_init_head(head);
 	pset_add(head->wlr_modes, expected);
 
-	expect_ptr(__wrap_mode_user_mode, wlr_modes, head->wlr_modes);
-	expect_ptr(__wrap_mode_user_mode, wlr_modes_failed, head->wlr_modes_failed);
-	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_user_mode, expected, struct WlrMode*);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, wlr_modes, head->wlr_modes);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, wlr_modes_failed, head->wlr_modes_failed);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, user_mode, user_mode);
+	will_return_ptr_type(__wrap_wlr_mode_for_user_mode, expected, struct WlrMode*);
 
 	assert_ptr_equal(head_find_wlr_mode(head), expected);
 
@@ -371,10 +372,10 @@ static void head_find_mode__user_failed(void **state) {
 	head->name = strdup("HEAD");
 
 	// mode not matched to user
-	expect_ptr(__wrap_mode_user_mode, wlr_modes, head->wlr_modes);
-	expect_ptr(__wrap_mode_user_mode, wlr_modes_failed, head->wlr_modes_failed);
-	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_user_mode, NULL, struct WlrMode*);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, wlr_modes, head->wlr_modes);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, wlr_modes_failed, head->wlr_modes_failed);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, user_mode, user_mode);
+	will_return_ptr_type(__wrap_wlr_mode_for_user_mode, NULL, struct WlrMode*);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
@@ -393,10 +394,10 @@ static void head_find_mode__user_failed(void **state) {
 	assert_logs_empty();
 
 	// same test again
-	expect_ptr(__wrap_mode_user_mode, wlr_modes, head->wlr_modes);
-	expect_ptr(__wrap_mode_user_mode, wlr_modes_failed, head->wlr_modes_failed);
-	expect_ptr(__wrap_mode_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_user_mode, NULL, struct WlrMode*);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, wlr_modes, head->wlr_modes);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, wlr_modes_failed, head->wlr_modes_failed);
+	expect_ptr(__wrap_wlr_mode_for_user_mode, user_mode, user_mode);
+	will_return_ptr_type(__wrap_wlr_mode_for_user_mode, NULL, struct WlrMode*);
 
 	// marked failures avoided
 	assert_ptr_equal(head_find_wlr_mode(head), wlr_mode);
@@ -429,9 +430,9 @@ static void head_find_mode__max_preferred_refresh(void **state) {
 
 	pset_add(head->wlr_modes, wlr_mode);
 
-	expect_ptr(__wrap_mode_max_preferred, wlr_modes, head->wlr_modes);
-	expect_ptr(__wrap_mode_max_preferred, wlr_modes_failed, head->wlr_modes_failed);
-	will_return_ptr_type(__wrap_mode_max_preferred, &wlr_mode, struct WlrMode*);
+	expect_ptr(__wrap_wlr_mode_max_preferred, wlr_modes, head->wlr_modes);
+	expect_ptr(__wrap_wlr_mode_max_preferred, wlr_modes_failed, head->wlr_modes_failed);
+	will_return_ptr_type(__wrap_wlr_mode_max_preferred, &wlr_mode, struct WlrMode*);
 
 	assert_ptr_equal(head_find_wlr_mode(head), &wlr_mode);
 

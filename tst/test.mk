@@ -64,9 +64,9 @@ LDFLAGS += -Wl,$\
 # test specific mocks
 #
 tst/tst-head: LDFLAGS += -Wl,$\
-	--wrap=mode_dpi,$\
-	--wrap=mode_user_mode,$\
-	--wrap=mode_max_preferred,$\
+	--wrap=wlr_mode_dpi,$\
+	--wrap=wlr_mode_for_user_mode,$\
+	--wrap=wlr_mode_max_preferred,$\
 	--wrap=call_back
 
 tst/tst-layout: LDFLAGS += -Wl,$\

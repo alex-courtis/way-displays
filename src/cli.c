@@ -14,7 +14,6 @@
 #include "convert.h"
 #include "ipc.h"
 #include "log.h"
-#include "mode.h"
 #include "process.h"
 #include "pset.h"
 #include "smap.h"
@@ -136,7 +135,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 							parsed = parsed && ((user_mode->height = atoi(argv[optind + 2])) > 0);
 						}
 						if (optind + 3 < argc) {
-							parsed = parsed && ((user_mode->refresh_mhz = hz_str_to_mhz(argv[optind + 3])) > 0);
+							parsed = parsed && ((user_mode->refresh_mhz = lround(atof(argv[optind + 3]) * 1000)) > 0);
 						}
 					}
 					smap_put(cfg->user_modes, argv[optind], user_mode);

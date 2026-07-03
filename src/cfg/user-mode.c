@@ -6,7 +6,6 @@
 
 #include "fn.h"
 #include "log.h"
-#include "mode.h"
 #include "smap.h"
 #include "str.h"
 
@@ -66,10 +65,10 @@ char *user_mode_str(const struct UserMode * const user_mode) {
 	if (user_mode->max) {
 		return sprintf_alloc("MAX");
 	} else if (user_mode->refresh_mhz != -1) {
-		return sprintf_alloc("%dx%d@%sHz",
+		return sprintf_alloc("%dx%d@%gHz",
 				user_mode->width,
 				user_mode->height,
-				mhz_to_hz_str(user_mode->refresh_mhz)
+				((float)user_mode->refresh_mhz) / 1000
 				);
 	} else {
 		return sprintf_alloc("%dx%d",
@@ -95,7 +94,7 @@ bool user_mode_invalid(const char* const name_desc, const struct UserMode* const
 	}
 	if (user_mode->refresh_mhz != -1 && user_mode->refresh_mhz <= 0) {
 		log_warn(NULL);
-		log_warn("Ignoring non-positive MODE %s HZ %s", name_desc, mhz_to_hz_str(user_mode->refresh_mhz));
+		log_warn("Ignoring non-positive MODE %s HZ %g", name_desc, ((float)user_mode->refresh_mhz) / 1000);
 		return true;
 	}
 

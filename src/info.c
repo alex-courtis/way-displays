@@ -74,25 +74,15 @@ static void print_disabled(const enum LogThreshold t, const struct Disabled * co
 	}
 }
 
-static bool mode_equal_res_hz(const struct WlrMode* const a, const struct WlrMode* const b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	return a->width == b->width &&
-		a->height == b->height &&
-		mhz_to_hz_rounded(a->refresh_mhz) == mhz_to_hz_rounded(b->refresh_mhz);
-}
-
 static void print_modes_res_refresh(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 
-	const struct WlrMode *wlr_mode_preferred = head_preferred_wlr_mode(head);
+	const struct WlrMode *wlr_mode_pref = head_preferred_wlr_mode(head);
 
 	// show from the top down
 	const struct PSet *wlr_modes_sorted = pset_clone_shallow(head->wlr_modes);
-	pset_sort(wlr_modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
+	pset_sort(wlr_modes_sorted, (fn_less_than)wlr_mode_greater_than_res_refresh);
 	const struct PSetIt *it = pset_it(wlr_modes_sorted);
 	while (it) {
 
@@ -102,13 +92,13 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 
 		// append all modes matching the line
 		const struct WlrMode *wlr_mode_minor = wlr_mode_major;
-		while (wlr_mode_minor && mode_equal_res_hz(wlr_mode_major, wlr_mode_minor)) {
+		while (wlr_mode_minor && wlr_mode_equal_res_hz(wlr_mode_major, wlr_mode_minor)) {
 
 			// append mHz
 			msg = sprintf_append(msg, "%4d,%03d mHz", wlr_mode_minor->refresh_mhz / 1000, wlr_mode_minor->refresh_mhz % 1000);
 
 			// append preferred
-			if (wlr_mode_minor == wlr_mode_preferred) {
+			if (wlr_mode_minor == wlr_mode_pref) {
 				msg = sprintf_append(msg, " (preferred)");
 			}
 
@@ -274,7 +264,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 		if (user_mode->max) {
 			msg = sprintf_alloc("MAX");
 		} else if (user_mode->refresh_mhz != -1) {
-			msg = sprintf_alloc("%d %d %s", user_mode->width, user_mode->height, mhz_to_hz_str(user_mode->refresh_mhz));
+			msg = sprintf_alloc("%d %d %g", user_mode->width, user_mode->height, ((float)user_mode->refresh_mhz) / 1000);
 		} else {
 			msg = sprintf_alloc("%d %d", user_mode->width, user_mode->height);
 		}
@@ -318,7 +308,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 		return;
 
 	if (head->current.enabled) {
-		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.wlr_mode));
+		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), wlr_mode_scale(head->current.wlr_mode));
 
 		const struct Output *output = imap_match_val(g_outputs, (fn_match_ptr)output_matches_name, head->name).val;
 		if (output) {
@@ -429,7 +419,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 				log_(t, "    width:     %dmm", head->width_mm);
 				log_(t, "    height:    %dmm", head->height_mm);
 				if (preferred_mode) {
-					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(preferred_mode), preferred_mode->width, preferred_mode->height);
+					log_(t, "    dpi:       %.2f @ %dx%d", wlr_mode_dpi(preferred_mode), preferred_mode->width, preferred_mode->height);
 				}
 			} else {
 				log_(t, "    width:     (not specified)");
