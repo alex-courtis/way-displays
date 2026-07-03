@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "cfg.h"
-#include "cfg/user-mode.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"
@@ -36,12 +35,6 @@ void print_list(const enum LogThreshold t, const struct SList * const heads);
 void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const wlr_mode);
-
-// consumer frees
-char *info_user_mode_string(const struct UserMode * const user_mode);
-
-// consumer frees
-char *info_wlr_mode_string(const struct WlrMode * const wlr_mode);
 
 // consumer frees
 char *delta_human(const struct SList * const heads);

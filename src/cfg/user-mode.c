@@ -8,6 +8,7 @@
 #include "log.h"
 #include "mode.h"
 #include "smap.h"
+#include "str.h"
 
 // compare all except for warning
 static bool user_mode_equal(const struct UserMode* const a, const struct UserMode* const b) {
@@ -56,6 +57,26 @@ struct UserMode *user_mode_clone(const struct UserMode * const from) {
 	*to = *from;
 
 	return to;
+}
+
+char *user_mode_str(const struct UserMode * const user_mode) {
+	if (!user_mode)
+		return NULL;
+
+	if (user_mode->max) {
+		return sprintf_alloc("MAX");
+	} else if (user_mode->refresh_mhz != -1) {
+		return sprintf_alloc("%dx%d@%sHz",
+				user_mode->width,
+				user_mode->height,
+				mhz_to_hz_str(user_mode->refresh_mhz)
+				);
+	} else {
+		return sprintf_alloc("%dx%d",
+				user_mode->width,
+				user_mode->height
+				);
+	}
 }
 
 bool user_mode_invalid(const char* const name_desc, const struct UserMode* const user_mode, const void* const data) {

@@ -269,16 +269,16 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 		if (!wlr_mode && !user_mode->warned_no_mode) {
 			user_mode->warned_no_mode = true;
 
-			char *user_mode_str = info_user_mode_string(user_mode);
+			char *um = user_mode_str(user_mode);
 
 			log_warn(NULL);
-			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, user_mode_str);
+			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, um);
 
-			char *human = sprintf_alloc("%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), user_mode_str);
+			char *human = sprintf_alloc("%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), um);
 
 			call_back(WARNING, human, NULL);
 
-			free(user_mode_str);
+			free(um);
 			free(human);
 		}
 	}
@@ -390,7 +390,7 @@ void heads_reapply(struct SList *heads) {
 			log_info("    %d: Clear failed modes:", step++);
 
 			for (const struct PSetIt *it = pset_it(head->wlr_modes_failed); it; it = pset_it_next(it)) {
-				char *mode_str = info_wlr_mode_string(it->val);
+				char *mode_str = wlr_mode_str(it->val);
 				log_info("      %s", mode_str);
 				free(mode_str);
 			}
@@ -400,7 +400,7 @@ void heads_reapply(struct SList *heads) {
 		}
 
 		if (head->current.enabled) {
-			char *mode_str = info_wlr_mode_string(head->current.wlr_mode);
+			char *mode_str = wlr_mode_str(head->current.wlr_mode);
 			log_info("    %d: Enable with mode:", step++);
 			log_info("      %s", mode_str);
 			free(mode_str);

@@ -20,6 +20,8 @@ const struct SMap *user_mode_smap_init(void);
 
 struct UserMode *user_mode_clone(const struct UserMode * const from);
 
+char *user_mode_str(const struct UserMode * const user_mode);
+
 bool user_mode_invalid(const char* const name_desc, const struct UserMode* const user_mode, const void* const data);
 
 #endif // CFG_USER_MODE_H

@@ -5,7 +5,6 @@
 #include "listeners.h"
 
 #include "head.h"
-#include "info.h"
 #include "log.h"
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -39,9 +38,9 @@ static void preferred(void *data,
 		const struct WlrMode *wlr_mode_pref;
 		if ((wlr_mode_pref = head_preferred_wlr_mode(wlr_mode->head))) {
 
-			char *mode_preferred_str = info_wlr_mode_string(wlr_mode_pref);
+			char *mode_preferred_str = wlr_mode_str(wlr_mode_pref);
 
-			char *mode_str = info_wlr_mode_string(wlr_mode);
+			char *mode_str = wlr_mode_str(wlr_mode);
 
 			if (wlr_mode_pref->head && wlr_mode_pref->head->name) {
 				log_info(NULL);

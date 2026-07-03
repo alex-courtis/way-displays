@@ -28,41 +28,6 @@
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-char *info_user_mode_string(const struct UserMode * const user_mode) {
-	if (!user_mode)
-		return NULL;
-
-	if (user_mode->max) {
-		return sprintf_alloc("MAX");
-	} else if (user_mode->refresh_mhz != -1) {
-		return sprintf_alloc("%dx%d@%sHz",
-				user_mode->width,
-				user_mode->height,
-				mhz_to_hz_str(user_mode->refresh_mhz)
-				);
-	} else {
-		return sprintf_alloc("%dx%d",
-				user_mode->width,
-				user_mode->height
-				);
-	}
-}
-
-// TODO move to mode
-char *info_wlr_mode_string(const struct WlrMode * const wlr_mode) {
-	if (!wlr_mode)
-		return NULL;
-
-	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
-			wlr_mode->width,
-			wlr_mode->height,
-			mhz_to_hz_rounded(wlr_mode->refresh_mhz),
-			wlr_mode->refresh_mhz / 1000,
-			wlr_mode->refresh_mhz % 1000,
-			wlr_mode->preferred ? " (preferred)" : ""
-			);
-}
-
 static void print_user_mode(const enum LogThreshold t, const char * name_desc, const struct UserMode * const user_mode, const bool del) {
 	if (!user_mode)
 		return;
@@ -70,7 +35,7 @@ static void print_user_mode(const enum LogThreshold t, const char * name_desc, c
 	if (del) {
 		log_(t, "    %s", name_desc);
 	} else {
-		char *um_str = info_user_mode_string(user_mode);
+		char *um_str = user_mode_str(user_mode);
 		log_(t, "    %s: %s", name_desc, um_str);
 		free(um_str);
 	}
@@ -79,7 +44,7 @@ static void print_user_mode(const enum LogThreshold t, const char * name_desc, c
 static void print_wlr_mode(const enum LogThreshold t, const struct WlrMode * const wlr_mode) {
 
 	if (wlr_mode) {
-		char *mode_str = info_wlr_mode_string(wlr_mode);
+		char *mode_str = wlr_mode_str(wlr_mode);
 		log_(t, "    mode:      %s", mode_str);
 		free(mode_str);
 	} else {
@@ -114,6 +79,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		return;
 
 	const struct PSet *mrrs = modes_res_refresh(head->wlr_modes);
+	fprintf(stderr, "mrrs:\n%s", pset_str(mrrs));
 	const struct WlrMode *wlr_mode_preferred = head_preferred_wlr_mode(head);
 
 	const struct ModesResRefresh *mrr = NULL;
@@ -687,7 +653,7 @@ void call_back_mode_fail(const enum LogThreshold t, const struct Head * const he
 		return;
 	}
 
-	char *mode_str = info_wlr_mode_string(wlr_mode);
+	char *mode_str = wlr_mode_str(wlr_mode);
 
 	char *human = sprintf_alloc(
 			"%s\n"

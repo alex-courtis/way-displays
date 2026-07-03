@@ -12,7 +12,6 @@
 #include "head.h"
 #include "str.h"
 #include "pset.h"
-#include "info.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // TODO split by wlrmode/usermode/mrr
@@ -46,10 +45,24 @@ static char *mrr_str(const struct ModesResRefresh* const mrr) {
 	return out;
 }
 
+char *wlr_mode_str(const struct WlrMode * const wlr_mode) {
+	if (!wlr_mode)
+		return NULL;
+
+	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
+			wlr_mode->width,
+			wlr_mode->height,
+			mhz_to_hz_rounded(wlr_mode->refresh_mhz),
+			wlr_mode->refresh_mhz / 1000,
+			wlr_mode->refresh_mhz % 1000,
+			wlr_mode->preferred ? " (preferred)" : ""
+			);
+}
+
 const struct PSet *wlr_mode_pset_init(void) {
 	const struct PSetParams params = {
 		.free_val = (fn_free)wlr_mode_free,
-		.str_val = (fn_str)info_wlr_mode_string,
+		.str_val = (fn_str)wlr_mode_str,
 	};
 	return pset_init_with(params);
 }

@@ -33,6 +33,8 @@ const struct WlrMode *mode_max_preferred(const struct PSet* wlr_modes, const str
 
 bool mode_greater_than_res_refresh(const struct WlrMode* const a, const struct WlrMode* const b);
 
+char *wlr_mode_str(const struct WlrMode * const wlr_mode);
+
 // up to 3 d.p.
 const char *mhz_to_hz_str(int32_t mhz);
 
