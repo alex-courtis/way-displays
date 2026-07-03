@@ -90,10 +90,10 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	if (!head)
 		return;
 
-	if (head->wlr_modes_failed) {
+	if (pset_size(head->wlr_modes_failed) > 0) {
 		log_(t, "  failed:");
-		for (const struct SList *i = head->wlr_modes_failed; i; i = i->nex) {
-			print_wlr_mode(t, i->val);
+		for (const struct PSetIt *it = pset_it(head->wlr_modes_failed); it; it = pset_it_next(it)) {
+			print_wlr_mode(t, it->val);
 		}
 	}
 }

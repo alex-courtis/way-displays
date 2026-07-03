@@ -1,6 +1,7 @@
 #include "tst.h"
 
 #include "assert-log.h"
+#include "assert-pset.h"
 #include "asserts.h"
 
 #include <cmocka.h>
@@ -17,7 +18,7 @@
 
 struct UserMode *user_mode = NULL;
 const struct PSet *wlr_modes = NULL;
-struct SList *wlr_modes_failed = NULL;
+const struct PSet *wlr_modes_failed = NULL;
 
 struct WlrMode *mode0, *mode1, *mode2, *mode3, *mode4, *mode5;
 
@@ -32,6 +33,7 @@ static int before_each(void **state) {
 	mode5 = wlr_mode_init(NULL, NULL, 800, 400, 144000, false);
 
 	wlr_modes = wlr_mode_pset_init();
+	wlr_modes_failed = wlr_mode_pset_init();
 
 	pset_add(wlr_modes, mode0);
 	pset_add(wlr_modes, mode1);
@@ -47,31 +49,39 @@ static int after_each(void **state) {
 	free(user_mode);
 	user_mode = NULL;
 
-	slist_free(&wlr_modes_failed);
 	pset_free_vals(wlr_modes);
+	pset_free(wlr_modes_failed);
 
 	return 0;
 }
 
 static void mode__sort(void **state) {
-	struct SList *unsorted = NULL;
+	const struct WlrMode *mode0 = wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false);
+	const struct WlrMode *mode1 = wlr_mode_init(NULL, NULL, 1000, 9999, 3000, false);
+	const struct WlrMode *mode2 = wlr_mode_init(NULL, NULL, 1000, 2000, 9999, false);
+	const struct WlrMode *mode3 = wlr_mode_init(NULL, NULL, 9999, 2000, 3000, false);
+	const struct WlrMode *mode4 = wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false);
 
-	slist_append(&unsorted, wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false)); // 0
-	slist_append(&unsorted, wlr_mode_init(NULL, NULL, 1000, 9999, 3000, false)); // 1
-	slist_append(&unsorted, wlr_mode_init(NULL, NULL, 1000, 2000, 9999, false)); // 2
-	slist_append(&unsorted, wlr_mode_init(NULL, NULL, 9999, 2000, 3000, false)); // 3
-	slist_append(&unsorted, wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false)); // 4
+	const struct PSet *expected = wlr_mode_pset_init();
+	pset_add(expected, mode3);
+	pset_add(expected, mode1);
+	pset_add(expected, mode2);
+	pset_add(expected, mode0);
+	pset_add(expected, mode4);
 
-	struct SList *sorted = slist_sort(unsorted, (fn_less_than)mode_greater_than_res_refresh);
+	const struct PSet *actual = wlr_mode_pset_init();
+	pset_add(actual, mode0);
+	pset_add(actual, mode1);
+	pset_add(actual, mode2);
+	pset_add(actual, mode3);
+	pset_add(actual, mode4);
 
-	assert_ptr_equal(slist_at(sorted, 0), slist_at(unsorted, 3));
-	assert_ptr_equal(slist_at(sorted, 1), slist_at(unsorted, 1));
-	assert_ptr_equal(slist_at(sorted, 2), slist_at(unsorted, 2));
-	assert_ptr_equal(slist_at(sorted, 3), slist_at(unsorted, 0));
-	assert_ptr_equal(slist_at(sorted, 4), slist_at(unsorted, 4));
+	pset_sort(actual, (fn_less_than)mode_greater_than_res_refresh);
 
-	slist_free_vals(&unsorted, NULL);
-	slist_free(&sorted);
+	assert_pset_equal(actual, expected);
+
+	pset_free_vals(expected);
+	pset_free(actual);
 }
 
 static void mode_mhz_to_hz_str__(void **state) {
@@ -146,7 +156,7 @@ static void mode_user_mode__even_hz_rounded_up(void **state) {
 static void mode_user_mode__failed(void **state) {
 	user_mode = user_mode_init(false, 200, 100, 60000, false);
 
-	slist_append(&wlr_modes_failed, (void*)mode1);
+	pset_add(wlr_modes_failed, mode1);
 
 	const struct WlrMode *actual = mode_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -164,7 +174,7 @@ static void mode_user_mode__exact_hz_match(void **state) {
 static void mode_user_mode__exact_hz_failed(void **state) {
 	user_mode = user_mode_init(false, 200, 100, 60499, false);
 
-	slist_append(&wlr_modes_failed, (void*)mode1);
+	pset_add(wlr_modes_failed, mode1);
 
 	const struct WlrMode *actual = mode_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -224,7 +234,7 @@ static void mode_preferred__preferred_failed(void **state) {
 	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
 	pset_add(wlr_modes, expected);
 
-	slist_append(&wlr_modes_failed, expected);
+	pset_add(wlr_modes_failed, expected);
 
 	const struct WlrMode *actual = mode_preferred(wlr_modes, wlr_modes_failed);
 
@@ -289,7 +299,7 @@ static void mode_max_preferred__earlier_higher_refresh(void **state) {
 static void mode_max_preferred__failed(void **state) {
 	struct WlrMode *failed = wlr_mode_init(NULL, NULL, 111, 222, 2000, false);
 	pset_add(wlr_modes, failed);
-	slist_append(&wlr_modes_failed, failed);
+	pset_add(wlr_modes_failed, failed);
 
 	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
 	pset_add(wlr_modes, preferred);

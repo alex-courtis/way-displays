@@ -877,9 +877,7 @@ static void handle_failure__mode(void **state) {
 	assert_nul(head->current.wlr_mode);
 	assert_ptr_equal(head->desired.wlr_mode, wlr_mode_des);
 
-	assert_ptr_equal(slist_find_equal_val(head->wlr_modes_failed, NULL, wlr_mode_des), wlr_mode_des);
-
-	slist_free(&head->wlr_modes_failed);
+	assert_true(pset_contains(head->wlr_modes_failed, wlr_mode_des));
 
 	assert_logs_empty();
 

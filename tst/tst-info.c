@@ -59,7 +59,7 @@ int before_each(void **state) {
 	pset_add(s->head1->wlr_modes, wlr_mode_des);
 	pset_add(s->head1->wlr_modes, wlr_mode_failed);
 
-	slist_append(&s->head1->wlr_modes_failed, (void*)wlr_mode_failed);
+	pset_add(s->head1->wlr_modes_failed, wlr_mode_failed);
 
 	s->head1->name = strdup("name1");
 	s->head1->description = strdup("description1");
@@ -98,7 +98,7 @@ int before_each(void **state) {
 	pset_add(s->head2->wlr_modes, wlr_mode_des);
 	pset_add(s->head2->wlr_modes, wlr_mode_failed);
 
-	slist_append(&s->head2->wlr_modes_failed, (void*)wlr_mode_failed);
+	pset_add(s->head2->wlr_modes_failed, wlr_mode_failed);
 
 	s->head2->name = strdup("name2");
 	s->head2->width_mm = 3;

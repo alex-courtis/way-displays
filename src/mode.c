@@ -16,7 +16,7 @@
 
 // TODO name by wlrmode/usermode
 
-const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, struct SList *wlr_modes_failed) {
+const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed) {
 	const struct WlrMode *wlr_mode_preferred = NULL;
 
 	const struct PSetIt *it;
@@ -24,7 +24,7 @@ const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, struct 
 	for (it = pset_it(wlr_modes); it; it = pset_it_next(it)) {
 		const struct WlrMode *wlr_mode = it->val;
 
-		if (wlr_mode->preferred && !slist_find_equal(wlr_modes_failed, NULL, wlr_mode)) {
+		if (wlr_mode->preferred && !pset_contains(wlr_modes_failed, wlr_mode)) {
 			wlr_mode_preferred = wlr_mode;
 			break;
 		}
@@ -34,7 +34,7 @@ const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, struct 
 	return wlr_mode_preferred;
 }
 
-const struct WlrMode *mode_max_preferred(const struct PSet* wlr_modes, struct SList *wlr_modes_failed) {
+const struct WlrMode *mode_max_preferred(const struct PSet* wlr_modes, const struct PSet* const wlr_modes_failed) {
 	const struct WlrMode *preferred = mode_preferred(wlr_modes, wlr_modes_failed);
 
 	if (!preferred)
@@ -46,7 +46,7 @@ const struct WlrMode *mode_max_preferred(const struct PSet* wlr_modes, struct SL
 	for (const struct PSetIt *it = pset_it(wlr_modes); it; it = pset_it_next(it)) {
 		wlr_mode = it->val;
 
-		if (slist_find_equal(wlr_modes_failed, NULL, wlr_mode)) {
+		if (pset_contains(wlr_modes_failed, wlr_mode)) {
 			continue;
 		}
 
@@ -182,7 +182,7 @@ struct SList *modes_res_refresh(const struct PSet* const wlr_modes) {
 	return mrrs;
 }
 
-const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, struct SList *wlr_modes_failed, const struct UserMode *user_mode) {
+const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed, const struct UserMode *user_mode) {
 	if (!wlr_modes || !user_mode)
 		return NULL;
 
@@ -190,7 +190,7 @@ const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, struct 
 
 	// exact res and refresh
 	const struct WlrMode *wlr_mode_exact = pset_match(wlr_modes, (fn_match_ptr)mode_equal_user_mode_res_hz, user_mode);
-	if (wlr_mode_exact && !slist_find_equal_val(wlr_modes_failed, NULL, wlr_mode_exact)) {
+	if (wlr_mode_exact && !pset_contains(wlr_modes_failed, wlr_mode_exact)) {
 		return wlr_mode_exact;
 	}
 
@@ -201,7 +201,7 @@ const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, struct 
 		if (mrr && mrr_satisfies_user_mode(mrr, user_mode)) {
 			for (j = mrr->wlr_modes; j; j = j->nex) {
 				struct WlrMode *wlr_mode = j->val;
-				if (!slist_find_equal(wlr_modes_failed, NULL, wlr_mode)) {
+				if (!pset_contains(wlr_modes_failed, wlr_mode)) {
 					slist_free_vals(&mrrs, (fn_free)mode_res_refresh_free);
 					return wlr_mode;
 				}

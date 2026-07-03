@@ -27,9 +27,9 @@ struct ModesResRefresh {
 	struct SList *wlr_modes;
 };
 
-const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, struct SList *wlr_modes_failed);
+const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed);
 
-const struct WlrMode *mode_max_preferred(const struct PSet* wlr_modes, struct SList *wlr_modes_failed);
+const struct WlrMode *mode_max_preferred(const struct PSet* wlr_modes, const struct PSet* const wlr_modes_failed);
 
 bool mode_greater_than_res_refresh(const struct WlrMode* const a, const struct WlrMode* const b);
 
@@ -60,7 +60,7 @@ void wlr_mode_free(struct WlrMode *wlr_mode);
 
 void mode_res_refresh_free(struct ModesResRefresh *mrr);
 
-const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, struct SList *wlr_modes_failed, const struct UserMode *user_mode);
+const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed, const struct UserMode *user_mode);
 
 #endif // MODE_H
 

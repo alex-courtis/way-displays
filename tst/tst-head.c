@@ -34,7 +34,7 @@ double __wrap_mode_dpi(const struct WlrMode* const wlr_mode) {
 }
 
 // cppcheck-suppress staticFunction
-const struct WlrMode *__wrap_mode_user_mode(const struct PSet* const wlr_modes, struct SList *wlr_modes_failed, const struct UserMode *user_mode) {
+const struct WlrMode *__wrap_mode_user_mode(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed, const struct UserMode *user_mode) {
 	check_expected_ptr(wlr_modes);
 	check_expected_ptr(wlr_modes_failed);
 	check_expected_ptr(user_mode);
@@ -42,7 +42,7 @@ const struct WlrMode *__wrap_mode_user_mode(const struct PSet* const wlr_modes, 
 }
 
 // cppcheck-suppress staticFunction
-const struct WlrMode *__wrap_mode_max_preferred(const struct PSet* wlr_modes, struct SList *wlr_modes_failed) {
+const struct WlrMode *__wrap_mode_max_preferred(const struct PSet* wlr_modes, const struct PSet* const wlr_modes_failed) {
 	check_expected_ptr(wlr_modes);
 	check_expected_ptr(wlr_modes_failed);
 	return mock_ptr_type_checked(struct WlrMode*);
@@ -321,7 +321,7 @@ static void head_find_mode__all_failed(void **state) {
 	pset_add(head->wlr_modes, wlr_mode);
 
 	// all modes failed
-	slist_append(&head->wlr_modes_failed, wlr_mode);
+	pset_add(head->wlr_modes_failed, wlr_mode);
 
 	expect_int_value(__wrap_call_back, t, ERROR);
 	expect_str(__wrap_call_back, msg1, "head0");
@@ -467,7 +467,7 @@ static void head_find_mode__none(void **state) {
 	struct WlrMode *wlr_mode_failed = wlr_mode_init_head(head);
 
 	// force to pass the first check and skip preferred messages
-	slist_append(&head->wlr_modes_failed, wlr_mode_failed);
+	pset_add(head->wlr_modes_failed, wlr_mode_failed);
 	head->warned_no_preferred = true;
 
 	expect_int_value(__wrap_call_back, t, ERROR);
@@ -487,7 +487,7 @@ static void head_max_mode__max(void **state) {
 	struct Head *head = head_init();
 
 	struct WlrMode *wlr_mode_failed = wlr_mode_init_head(head);
-	slist_append(&head->wlr_modes_failed, wlr_mode_failed);
+	pset_add(head->wlr_modes_failed, wlr_mode_failed);
 
 
 	pset_add(head->wlr_modes, wlr_mode_failed);
@@ -645,7 +645,8 @@ static void heads_reapply__(void **state) {
 	pset_add(head_disabled->wlr_modes, wlr_mode_init(NULL, NULL, 3840, 2160, 30000, false));
 	pset_add(head_disabled->wlr_modes, wlr_mode_init(NULL, NULL, 3840, 2160, 29970, false));
 
-	head_disabled->wlr_modes_failed = pset_slist_shallow(head_disabled->wlr_modes);
+	pset_free(head_disabled->wlr_modes_failed);
+	head_disabled->wlr_modes_failed = pset_clone_shallow(head_disabled->wlr_modes);
 
 	slist_append(&heads, head_disabled);
 

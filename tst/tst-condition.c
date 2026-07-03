@@ -144,7 +144,6 @@ static void condition__complex(void **state) {
 	assert_false(condition_true(s->condition, NULL));
 }
 
-// TODO move to tst-disabled
 static void disabled_matches_head__name_desc_conditions(void **state) {
 	const struct State *s = *state;
 
@@ -200,6 +199,7 @@ int main(void) {
 		TEST_BA(condition__lid_open),
 		TEST_BA(condition__lid_not_present),
 		TEST_BA(condition__complex),
+
 		TEST_BA(disabled_matches_head__name_desc_conditions),
 		TEST_BA(disabled_matches_head__name_desc_only),
 	};

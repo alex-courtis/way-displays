@@ -29,6 +29,7 @@ struct Head *head_init(void) {
 	struct Head *head = calloc(1, sizeof(struct Head));
 
 	head->wlr_modes = wlr_mode_pset_init();
+	head->wlr_modes_failed = wlr_mode_pset_init();
 
 	return head;
 }
@@ -60,7 +61,7 @@ const struct WlrMode *head_max_wlr_mode(const struct Head * const head) {
 	for (const struct PSetIt *it = pset_it(head->wlr_modes); it; it = pset_it_next(it)) {
 		const struct WlrMode *wlr_mode = it->val;
 
-		if (slist_find_equal(head->wlr_modes_failed, NULL, wlr_mode)) {
+		if (pset_contains(head->wlr_modes_failed, wlr_mode)) {
 			continue;
 		}
 
@@ -252,7 +253,7 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	if (pset_size(head->wlr_modes) == slist_length(head->wlr_modes_failed)) {
+	if (pset_size(head->wlr_modes) == pset_size(head->wlr_modes_failed)) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head->name);
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
@@ -385,18 +386,17 @@ void heads_reapply(struct SList *heads) {
 		log_info("    %d: Clear current mode", step++);
 		log_info("    %d: Disable", step++);
 
-		if (head->wlr_modes_failed) {
+		if (pset_size(head->wlr_modes_failed) > 0) {
 			log_info("    %d: Clear failed modes:", step++);
 
-			for (struct SList *j = head->wlr_modes_failed; j; j = j->nex) {
-				const struct WlrMode *wlr_mode = (struct WlrMode*)j->val;
-
-				char *mode_str = info_wlr_mode_string(wlr_mode);
+			for (const struct PSetIt *it = pset_it(head->wlr_modes_failed); it; it = pset_it_next(it)) {
+				char *mode_str = info_wlr_mode_string(it->val);
 				log_info("      %s", mode_str);
 				free(mode_str);
 			}
 
-			slist_free(&head->wlr_modes_failed);
+			pset_free(head->wlr_modes_failed);
+			head->wlr_modes_failed = wlr_mode_pset_init();
 		}
 
 		if (head->current.enabled) {
@@ -427,9 +427,8 @@ void head_free(struct Head *head) {
 		wlr_mode_free((struct WlrMode*)head->desired.wlr_mode);
 	}
 
-	slist_free(&head->wlr_modes_failed);
-
 	pset_free_vals(head->wlr_modes);
+	pset_free(head->wlr_modes_failed);
 
 	free(head->name);
 	free(head->description);

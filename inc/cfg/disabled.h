@@ -20,7 +20,7 @@ const struct Disabled *disabled_clone(const struct Disabled * const from);
 
 void disabled_free(struct Disabled *disabled);
 
-// name_desc and any conditions evaluate
+// name_desc must match, if conditions are present at least one must be true
 bool disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head);
 
 // name_desc only

@@ -385,22 +385,26 @@ static void apply(void) {
 void handle_success(void) {
 	g_cancellation_retries = 0;
 
-	switch(g_displ->delta.element) {
-		case MODE:
-			// successful mode change is not always reported
-			g_displ->delta.head->current.wlr_mode = g_displ->delta.head->desired.wlr_mode;
-			break;
+	struct Head *head = g_displ->delta.head;
 
-		case VRR_OFF:
-			// sway reports adaptive sync failure as success
-			if (head_current_adaptive_sync_not_desired(g_displ->delta.head)) {
-				handle_failure();
-				return;
-			}
-			break;
+	if (head) {
+		switch(g_displ->delta.element) {
+			case MODE:
+				// successful mode change is not always reported
+				head->current.wlr_mode = head->desired.wlr_mode;
+				break;
 
-		default:
-			break;
+			case VRR_OFF:
+				// sway reports adaptive sync failure as success
+				if (head_current_adaptive_sync_not_desired(head)) {
+					handle_failure();
+					return;
+				}
+				break;
+
+			default:
+				break;
+		}
 	}
 
 	log_info(NULL);
@@ -432,28 +436,33 @@ bool handle_cancelled(void) {
 }
 
 void handle_failure(void) {
+	struct Head *head = g_displ->delta.head;
+
 	switch(g_displ->delta.element) {
 		case MODE:
+			if (head) {
+				print_mode_fail(ERROR, head, head->desired.wlr_mode);
+				call_back_mode_fail(ERROR, head, head->desired.wlr_mode);
 
-			print_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.wlr_mode);
-			call_back_mode_fail(ERROR, g_displ->delta.head, g_displ->delta.head->desired.wlr_mode);
+				// mode setting failure, try again with another mode
+				pset_add(head->wlr_modes_failed, head->desired.wlr_mode);
 
-			// mode setting failure, try again
-			slist_append(&g_displ->delta.head->wlr_modes_failed, (void*)g_displ->delta.head->desired.wlr_mode);
-
-			// current mode may be misreported
-			g_displ->delta.head->current.wlr_mode = NULL;
+				// current mode may be misreported
+				head->current.wlr_mode = NULL;
+			}
 
 			break;
 
 		case VRR_OFF:
-			// river reports adaptive sync failure as failure
-			if (head_current_adaptive_sync_not_desired(g_displ->delta.head)) {
+			if (head) {
+				// river reports adaptive sync failure as failure
+				if (head_current_adaptive_sync_not_desired(head)) {
 
-				print_adaptive_sync_fail(WARNING, g_displ->delta.head);
-				call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
+					print_adaptive_sync_fail(WARNING, head);
+					call_back_adaptive_sync_fail(WARNING, head);
 
-				g_displ->delta.head->adaptive_sync_failed = true;
+					head->adaptive_sync_failed = true;
+				}
 			}
 
 			break;

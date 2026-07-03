@@ -56,7 +56,7 @@ struct Head {
 	struct HeadState desired;
 	bool reapply_required;
 
-	struct SList *wlr_modes_failed;
+	const struct PSet *wlr_modes_failed; // references to wlr_modes
 	bool adaptive_sync_failed;
 
 	struct {
