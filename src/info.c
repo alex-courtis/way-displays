@@ -79,7 +79,6 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		return;
 
 	const struct PSet *mrrs = modes_res_refresh(head->wlr_modes);
-	fprintf(stderr, "mrrs:\n%s", pset_str(mrrs));
 	const struct WlrMode *wlr_mode_preferred = head_preferred_wlr_mode(head);
 
 	const struct ModesResRefresh *mrr = NULL;
