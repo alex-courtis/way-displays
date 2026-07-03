@@ -23,7 +23,7 @@ struct ModesResRefresh {
 	int32_t width;
 	int32_t height;
 	int32_t refresh_mhz;
-	struct SList *wlr_modes;
+	const struct PSet *wlr_modes;
 };
 
 const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed);

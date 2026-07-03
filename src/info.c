@@ -118,13 +118,13 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	const struct ModesResRefresh *mrr = NULL;
 	const struct WlrMode *wlr_mode = NULL;
 
-	for (const struct PSetIt *it = pset_it(mrrs); it; it = pset_it_next(it)) {
-		mrr = it->val;
+	for (const struct PSetIt *mrrs_it = pset_it(mrrs); mrrs_it; mrrs_it = pset_it_next(mrrs_it)) {
+		mrr = mrrs_it->val;
 
 		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
-		for (const struct SList *j = mrr->wlr_modes; j; j = j->nex) {
-			wlr_mode = j->val;
+		for (const struct PSetIt *wlr_modes_it = pset_it(mrr->wlr_modes); wlr_modes_it; wlr_modes_it = pset_it_next(wlr_modes_it)) {
+			wlr_mode = wlr_modes_it->val;
 			msg = sprintf_append(msg, "%4d,%03d mHz", wlr_mode->refresh_mhz / 1000, wlr_mode->refresh_mhz % 1000);
 			if (wlr_mode == wlr_mode_preferred) {
 				msg = sprintf_append(msg, " (preferred)");
