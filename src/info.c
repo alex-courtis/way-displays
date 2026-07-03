@@ -93,38 +93,29 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	// show from the top down
 	const struct PSet *wlr_modes_sorted = pset_clone_shallow(head->wlr_modes);
 	pset_sort(wlr_modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
+	const struct PSetIt *it = pset_it(wlr_modes_sorted);
+	while (it) {
 
-	char *msg = NULL;
+		// res/refresh/hz line
+		const struct WlrMode *wlr_mode_major = it->val;
+		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", wlr_mode_major->width, wlr_mode_major->height, mhz_to_hz_rounded(wlr_mode_major->refresh_mhz));
 
-	const struct WlrMode *wlr_mode_prev = NULL;
-	for (const struct PSetIt *it = pset_it(wlr_modes_sorted); it; it = pset_it_next(it)) {
-		const struct WlrMode *wlr_mode = it->val;
+		// append all modes matching the line
+		const struct WlrMode *wlr_mode_minor = wlr_mode_major;
+		while (wlr_mode_minor && mode_equal_res_hz(wlr_mode_major, wlr_mode_minor)) {
 
-		// write the previous line
-		if (wlr_mode_prev && !mode_equal_res_hz(wlr_mode, wlr_mode_prev)) {
-			log_(t,"%s", msg);
-			free(msg);
-			msg = NULL;
+			// append mHz
+			msg = sprintf_append(msg, "%4d,%03d mHz", wlr_mode_minor->refresh_mhz / 1000, wlr_mode_minor->refresh_mhz % 1000);
+
+			// append preferred
+			if (wlr_mode_minor == wlr_mode_preferred) {
+				msg = sprintf_append(msg, " (preferred)");
+			}
+
+			it = pset_it_next(it);
+			wlr_mode_minor = it ? it->val : NULL;
 		}
 
-		// start a new line with res/hz
-		if (!wlr_mode_prev || !mode_equal_res_hz(wlr_mode, wlr_mode_prev)) {
-			msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", wlr_mode->width, wlr_mode->height, mhz_to_hz_rounded(wlr_mode->refresh_mhz));
-		}
-
-		// append milliHz
-		msg = sprintf_append(msg, "%4d,%03d mHz", wlr_mode->refresh_mhz / 1000, wlr_mode->refresh_mhz % 1000);
-
-		// append preferred
-		if (wlr_mode == wlr_mode_preferred) {
-			msg = sprintf_append(msg, " (preferred)");
-		}
-
-		wlr_mode_prev = wlr_mode;
-	}
-
-	// write the last line
-	if (msg) {
 		log_(t,"%s", msg);
 		free(msg);
 	}
