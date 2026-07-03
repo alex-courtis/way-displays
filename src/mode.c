@@ -14,7 +14,33 @@
 #include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
-// TODO name by wlrmode/usermode
+// TODO split by wlrmode/usermode/mrr
+
+void wlr_mode_free(struct WlrMode *wlr_mode) {
+	free(wlr_mode);
+}
+
+static void mode_res_refresh_free(struct ModesResRefresh *mrr) {
+	if (!mrr)
+		return;
+
+	slist_free(&mrr->wlr_modes);
+	free(mrr);
+}
+
+const struct PSet *wlr_mode_pset_init(void) {
+	const struct PSetParams params = {
+		.free_val = (fn_free)wlr_mode_free,
+	};
+	return pset_init_with(params);
+}
+
+static const struct PSet *modes_res_refresh_pset_init(void) {
+	const struct PSetParams params = {
+		.free_val = (fn_free)mode_res_refresh_free,
+	};
+	return pset_init_with(params);
+}
 
 const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed) {
 	const struct WlrMode *wlr_mode_preferred = NULL;
@@ -156,8 +182,8 @@ double mode_scale(const struct WlrMode* const wlr_mode) {
 	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
 }
 
-struct SList *modes_res_refresh(const struct PSet* const wlr_modes) {
-	struct SList *mrrs = NULL;
+const struct PSet *modes_res_refresh(const struct PSet* const wlr_modes) {
+	const struct PSet *mrrs = modes_res_refresh_pset_init();
 
 	const struct PSet *wlr_modes_sorted = pset_clone_shallow(wlr_modes);
 	pset_sort(wlr_modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
@@ -171,7 +197,7 @@ struct SList *modes_res_refresh(const struct PSet* const wlr_modes) {
 			mrr->width = wlr_mode->width;
 			mrr->height = wlr_mode->height;
 			mrr->refresh_mhz = wlr_mode->refresh_mhz;
-			slist_append(&mrrs, mrr);
+			pset_add(mrrs, mrr);
 		}
 
 		slist_append(&mrr->wlr_modes, wlr_mode);
@@ -186,7 +212,7 @@ const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, const s
 	if (!wlr_modes || !user_mode)
 		return NULL;
 
-	struct SList *i, *j;
+	struct SList *j;
 
 	// exact res and refresh
 	const struct WlrMode *wlr_mode_exact = pset_match(wlr_modes, (fn_match_ptr)mode_equal_user_mode_res_hz, user_mode);
@@ -195,20 +221,21 @@ const struct WlrMode *mode_user_mode(const struct PSet* const wlr_modes, const s
 	}
 
 	// highest mode matching the user mode
-	struct SList *mrrs = modes_res_refresh(wlr_modes);
-	for (i = mrrs; i; i = i->nex) {
-		struct ModesResRefresh *mrr = i->val;
+	const struct PSet *mrrs = modes_res_refresh(wlr_modes);
+	for (const struct PSetIt *it = pset_it(mrrs); it; it = pset_it_next(it)) {
+		const struct ModesResRefresh *mrr = it->val;
 		if (mrr && mrr_satisfies_user_mode(mrr, user_mode)) {
 			for (j = mrr->wlr_modes; j; j = j->nex) {
 				struct WlrMode *wlr_mode = j->val;
 				if (!pset_contains(wlr_modes_failed, wlr_mode)) {
-					slist_free_vals(&mrrs, (fn_free)mode_res_refresh_free);
+					pset_it_free(it);
+					pset_free_vals(mrrs);
 					return wlr_mode;
 				}
 			}
 		}
 	}
-	slist_free_vals(&mrrs, (fn_free)mode_res_refresh_free);
+	pset_free_vals(mrrs);
 
 	return NULL;
 }
@@ -226,13 +253,6 @@ struct WlrMode *wlr_mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwl
 	return wlr_mode;
 }
 
-const struct PSet *wlr_mode_pset_init(void) {
-	const struct PSetParams params = {
-		.free_val = (fn_free)wlr_mode_free,
-	};
-	return pset_init_with(params);
-}
-
 // TODO this could just be a fn_test; add them to map/set
 bool wlr_mode_match_preferred(const struct WlrMode *wlr_mode, const void* const data) {
 	return wlr_mode && wlr_mode->preferred;
@@ -240,17 +260,5 @@ bool wlr_mode_match_preferred(const struct WlrMode *wlr_mode, const void* const 
 
 bool wlr_mode_match_zwlr_mode(const struct WlrMode *wlr_mode, const struct zwlr_output_mode_v1 *zwlr_mode) {
 	return wlr_mode ? wlr_mode->zwlr_mode == zwlr_mode : false;
-}
-
-void wlr_mode_free(struct WlrMode *wlr_mode) {
-	free(wlr_mode);
-}
-
-void mode_res_refresh_free(struct ModesResRefresh *mrr) {
-	if (!mrr)
-		return;
-
-	slist_free(&mrr->wlr_modes);
-	free(mrr);
 }
 

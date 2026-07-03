@@ -12,7 +12,6 @@
 #include "fn.h"
 #include "head.h"
 #include "pset.h"
-#include "slist.h"
 
 #include "mode.h"
 
@@ -56,25 +55,25 @@ static int after_each(void **state) {
 }
 
 static void mode__sort(void **state) {
-	const struct WlrMode *mode0 = wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false);
-	const struct WlrMode *mode1 = wlr_mode_init(NULL, NULL, 1000, 9999, 3000, false);
-	const struct WlrMode *mode2 = wlr_mode_init(NULL, NULL, 1000, 2000, 9999, false);
-	const struct WlrMode *mode3 = wlr_mode_init(NULL, NULL, 9999, 2000, 3000, false);
-	const struct WlrMode *mode4 = wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false);
+	const struct WlrMode *mode00 = wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false);
+	const struct WlrMode *mode01 = wlr_mode_init(NULL, NULL, 1000, 9999, 3000, false);
+	const struct WlrMode *mode02 = wlr_mode_init(NULL, NULL, 1000, 2000, 9999, false);
+	const struct WlrMode *mode03 = wlr_mode_init(NULL, NULL, 9999, 2000, 3000, false);
+	const struct WlrMode *mode04 = wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false);
 
 	const struct PSet *expected = wlr_mode_pset_init();
-	pset_add(expected, mode3);
-	pset_add(expected, mode1);
-	pset_add(expected, mode2);
-	pset_add(expected, mode0);
-	pset_add(expected, mode4);
+	pset_add(expected, mode03);
+	pset_add(expected, mode01);
+	pset_add(expected, mode02);
+	pset_add(expected, mode00);
+	pset_add(expected, mode04);
 
 	const struct PSet *actual = wlr_mode_pset_init();
-	pset_add(actual, mode0);
-	pset_add(actual, mode1);
-	pset_add(actual, mode2);
-	pset_add(actual, mode3);
-	pset_add(actual, mode4);
+	pset_add(actual, mode00);
+	pset_add(actual, mode01);
+	pset_add(actual, mode02);
+	pset_add(actual, mode03);
+	pset_add(actual, mode04);
 
 	pset_sort(actual, (fn_less_than)mode_greater_than_res_refresh);
 
@@ -231,7 +230,7 @@ static void mode_preferred__preferred(void **state) {
 }
 
 static void mode_preferred__preferred_failed(void **state) {
-	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
 	pset_add(wlr_modes, expected);
 
 	pset_add(wlr_modes_failed, expected);
@@ -297,7 +296,7 @@ static void mode_max_preferred__earlier_higher_refresh(void **state) {
 }
 
 static void mode_max_preferred__failed(void **state) {
-	struct WlrMode *failed = wlr_mode_init(NULL, NULL, 111, 222, 2000, false);
+	const struct WlrMode *failed = wlr_mode_init(NULL, NULL, 111, 222, 2000, false);
 	pset_add(wlr_modes, failed);
 	pset_add(wlr_modes_failed, failed);
 

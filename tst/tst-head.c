@@ -317,7 +317,7 @@ static void head_set_scaled_dimensions__dimensions(void **state) {
 
 static void head_find_mode__all_failed(void **state) {
 	struct Head *head = head_init_name("head0");
-	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
+	const struct WlrMode *wlr_mode = wlr_mode_init_head(head);
 	pset_add(head->wlr_modes, wlr_mode);
 
 	// all modes failed
@@ -486,7 +486,7 @@ static void head_find_mode__none(void **state) {
 static void head_max_mode__max(void **state) {
 	struct Head *head = head_init();
 
-	struct WlrMode *wlr_mode_failed = wlr_mode_init_head(head);
+	const struct WlrMode *wlr_mode_failed = wlr_mode_init_head(head);
 	pset_add(head->wlr_modes_failed, wlr_mode_failed);
 
 

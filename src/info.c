@@ -112,14 +112,14 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	if (!head)
 		return;
 
-	struct SList *mrrs = modes_res_refresh(head->wlr_modes);
+	const struct PSet *mrrs = modes_res_refresh(head->wlr_modes);
 	const struct WlrMode *wlr_mode_preferred = head_preferred_wlr_mode(head);
 
-	struct ModesResRefresh *mrr = NULL;
+	const struct ModesResRefresh *mrr = NULL;
 	const struct WlrMode *wlr_mode = NULL;
 
-	for (struct SList *i = mrrs; i; i = i->nex) {
-		mrr = i->val;
+	for (const struct PSetIt *it = pset_it(mrrs); it; it = pset_it_next(it)) {
+		mrr = it->val;
 
 		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
 
@@ -134,7 +134,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		free(msg);
 	}
 
-	slist_free_vals(&mrrs, (fn_free)mode_res_refresh_free);
+	pset_free_vals(mrrs);
 }
 
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del) {
