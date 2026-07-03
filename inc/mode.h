@@ -19,14 +19,6 @@ struct WlrMode {
 	bool preferred;
 };
 
-// TODO can this just be a WlrMode?
-struct ModesResRefresh {
-	int32_t width;
-	int32_t height;
-	int32_t refresh_mhz;
-	const struct PSet *wlr_modes;
-};
-
 const struct WlrMode *mode_preferred(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed);
 
 const struct WlrMode *mode_max_preferred(const struct PSet* wlr_modes, const struct PSet* const wlr_modes_failed);
@@ -47,8 +39,6 @@ int32_t mhz_to_hz_rounded(int32_t mhz);
 double mode_dpi(const struct WlrMode* const wlr_mode);
 
 double mode_scale(const struct WlrMode* const wlr_mode);
-
-const struct PSet *modes_res_refresh(const struct PSet* const wlr_modes);
 
 struct WlrMode *wlr_mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode, int32_t width, int32_t height, int32_t refresh_mhz, bool preferred);
 

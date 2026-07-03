@@ -51,13 +51,31 @@ int before_each(void **state) {
 
 	s->head1 = head_init();
 
+	const struct WlrMode *wlr_mode_cur_more = wlr_mode_init(s->head1, NULL, 100, 200, 30001, false);
 	const struct WlrMode *wlr_mode_cur = wlr_mode_init(s->head1, NULL, 100, 200, 30000, true);
+	const struct WlrMode *wlr_mode_cur_less = wlr_mode_init(s->head1, NULL, 100, 200, 29999, false);
 	const struct WlrMode *wlr_mode_des = wlr_mode_init(s->head1, NULL, 400, 500, 60000, false);
 	const struct WlrMode *wlr_mode_failed = wlr_mode_init(s->head1, NULL, 700, 800, 90000, false);
+	const struct WlrMode *wlr_mode_ungrouped_1 = wlr_mode_init(s->head1, NULL, 1000, 1000, 49499, false);
+	const struct WlrMode *wlr_mode_grouped_1 = wlr_mode_init(s->head1, NULL, 1000, 1000, 49500, false);
+	const struct WlrMode *wlr_mode_grouped_2 = wlr_mode_init(s->head1, NULL, 1000, 1000, 49999, false);
+	const struct WlrMode *wlr_mode_grouped_3 = wlr_mode_init(s->head1, NULL, 1000, 1000, 50000, false);
+	const struct WlrMode *wlr_mode_grouped_4 = wlr_mode_init(s->head1, NULL, 1000, 1000, 50100, false);
+	const struct WlrMode *wlr_mode_grouped_5 = wlr_mode_init(s->head1, NULL, 1000, 1000, 50499, false);
+	const struct WlrMode *wlr_mode_ungrouped_2 = wlr_mode_init(s->head1, NULL, 1000, 1000, 50500, false);
 
+	pset_add(s->head1->wlr_modes, wlr_mode_cur_more);
 	pset_add(s->head1->wlr_modes, wlr_mode_cur);
+	pset_add(s->head1->wlr_modes, wlr_mode_cur_less);
 	pset_add(s->head1->wlr_modes, wlr_mode_des);
 	pset_add(s->head1->wlr_modes, wlr_mode_failed);
+	pset_add(s->head1->wlr_modes, wlr_mode_ungrouped_1);
+	pset_add(s->head1->wlr_modes, wlr_mode_grouped_1);
+	pset_add(s->head1->wlr_modes, wlr_mode_grouped_2);
+	pset_add(s->head1->wlr_modes, wlr_mode_grouped_3);
+	pset_add(s->head1->wlr_modes, wlr_mode_grouped_4);
+	pset_add(s->head1->wlr_modes, wlr_mode_grouped_5);
+	pset_add(s->head1->wlr_modes, wlr_mode_ungrouped_2);
 
 	pset_add(s->head1->wlr_modes_failed, wlr_mode_failed);
 

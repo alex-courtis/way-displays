@@ -74,33 +74,62 @@ static void print_disabled(const enum LogThreshold t, const struct Disabled * co
 	}
 }
 
+static bool mode_equal_res_hz(const struct WlrMode* const a, const struct WlrMode* const b) {
+	if (!a || !b) {
+		return false;
+	}
+
+	return a->width == b->width &&
+		a->height == b->height &&
+		mhz_to_hz_rounded(a->refresh_mhz) == mhz_to_hz_rounded(b->refresh_mhz);
+}
+
 static void print_modes_res_refresh(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
 
-	const struct PSet *mrrs = modes_res_refresh(head->wlr_modes);
 	const struct WlrMode *wlr_mode_preferred = head_preferred_wlr_mode(head);
 
-	const struct ModesResRefresh *mrr = NULL;
-	const struct WlrMode *wlr_mode = NULL;
+	// show from the top down
+	const struct PSet *wlr_modes_sorted = pset_clone_shallow(head->wlr_modes);
+	pset_sort(wlr_modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
 
-	for (const struct PSetIt *mrrs_it = pset_it(mrrs); mrrs_it; mrrs_it = pset_it_next(mrrs_it)) {
-		mrr = mrrs_it->val;
+	char *msg = NULL;
 
-		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mrr->width, mrr->height, mhz_to_hz_rounded(mrr->refresh_mhz));
+	const struct WlrMode *wlr_mode_prev = NULL;
+	for (const struct PSetIt *it = pset_it(wlr_modes_sorted); it; it = pset_it_next(it)) {
+		const struct WlrMode *wlr_mode = it->val;
 
-		for (const struct PSetIt *wlr_modes_it = pset_it(mrr->wlr_modes); wlr_modes_it; wlr_modes_it = pset_it_next(wlr_modes_it)) {
-			wlr_mode = wlr_modes_it->val;
-			msg = sprintf_append(msg, "%4d,%03d mHz", wlr_mode->refresh_mhz / 1000, wlr_mode->refresh_mhz % 1000);
-			if (wlr_mode == wlr_mode_preferred) {
-				msg = sprintf_append(msg, " (preferred)");
-			}
+		// write the previous line
+		if (wlr_mode_prev && !mode_equal_res_hz(wlr_mode, wlr_mode_prev)) {
+			log_(t,"%s", msg);
+			free(msg);
+			msg = NULL;
 		}
+
+		// start a new line with res/hz
+		if (!wlr_mode_prev || !mode_equal_res_hz(wlr_mode, wlr_mode_prev)) {
+			msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", wlr_mode->width, wlr_mode->height, mhz_to_hz_rounded(wlr_mode->refresh_mhz));
+		}
+
+		// append milliHz
+		msg = sprintf_append(msg, "%4d,%03d mHz", wlr_mode->refresh_mhz / 1000, wlr_mode->refresh_mhz % 1000);
+
+		// append preferred
+		if (wlr_mode == wlr_mode_preferred) {
+			msg = sprintf_append(msg, " (preferred)");
+		}
+
+		wlr_mode_prev = wlr_mode;
+	}
+
+	// write the last line
+	if (msg) {
 		log_(t,"%s", msg);
 		free(msg);
 	}
 
-	pset_free_vals(mrrs);
+	pset_free(wlr_modes_sorted);
 }
 
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del) {
