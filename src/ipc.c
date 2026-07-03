@@ -132,6 +132,9 @@ void ipc_request_free(struct IpcRequest *request) {
 }
 
 void ipc_response_free(struct IpcResponse *response) {
+	if (!response)
+		return;
+
 	cfg_free(response->cfg);
 	lid_free(response->lid);
 	slist_free_vals(&response->heads, (fn_free)head_free);

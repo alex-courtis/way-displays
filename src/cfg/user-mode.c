@@ -9,24 +9,13 @@
 #include "mode.h"
 #include "smap.h"
 
+// compare all except for warning
 static bool user_mode_equal(const struct UserMode* const a, const struct UserMode* const b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	if (a->max != b->max) {
-		return false;
-	}
-
-	if (a->width != b->width || a->height != b->height) {
-		return false;
-	}
-
-	if ((a->refresh_mhz != -1 || b->refresh_mhz != -1) && a->refresh_mhz != b->refresh_mhz) {
-		return false;
-	}
-
-	return true;
+	return a && b &&
+		a->width == b->width &&
+		a->height == b->height &&
+		a->refresh_mhz == b->refresh_mhz &&
+		a->max == b->max;
 }
 
 static void user_mode_free(struct UserMode *user_mode) {

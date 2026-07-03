@@ -243,9 +243,6 @@ bool wlr_mode_match_zwlr_mode(const struct WlrMode *wlr_mode, const struct zwlr_
 }
 
 void wlr_mode_free(struct WlrMode *wlr_mode) {
-	if (!wlr_mode)
-		return;
-
 	free(wlr_mode);
 }
 
