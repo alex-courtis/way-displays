@@ -238,7 +238,6 @@ int yaml_map_from_scale(struct MC *c, const char* const name_desc, const size_t 
 	return map;
 }
 
-// TODO consolidate
 int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const struct Mode* const mode) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)

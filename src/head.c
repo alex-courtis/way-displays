@@ -317,7 +317,6 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	return mode;
 }
 
-// TODO boil this and mode_is_preferred away
 const struct Mode *head_preferred_mode(const struct Head * const head) {
 	return head ? pset_match(head->modes, (fn_match_ptr)mode_is_preferred, NULL) : NULL;
 }

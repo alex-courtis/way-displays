@@ -223,33 +223,23 @@ const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSe
 }
 
 const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed) {
-	if (!modes || !mode_target)
-		return NULL;
 
-	// TODO strip modes failed first
+	const struct PSet *candidates = pset_clone_shallow(modes);
 
-	const struct Mode *mode = NULL;
-
-	// exact res and refresh
-	const struct Mode *mode_exact = pset_match(modes, (fn_match_ptr)mode_equal_res_mhz, mode_target);
-	if (mode_exact && !pset_contains(modes_failed, mode_exact)) {
-		return mode_exact;
-	}
+	// remove failed modes
+	for (const struct PSetIt *it = pset_it(modes_failed); it; it = pset_it_next(it))
+		pset_remove(candidates, it->val);
 
 	// search from the top down
-	const struct PSet *modes_sorted = pset_clone_shallow(modes);
-	pset_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
+	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
 
-	// first matching the target mode
-	for (const struct PSetIt *it = pset_match_it(modes_sorted, (fn_match_ptr)mode_satisfies, mode_target); it; it = pset_it_next(it)) {
-		if (!pset_contains(modes_failed, it->val)) {
-			mode = it->val;
-			pset_it_free(it);
-			break;
-		}
-	}
+	// exact match first
+	const struct Mode *mode = pset_match(candidates, (fn_match_ptr)mode_equal_res_mhz, mode_target);
 
-	pset_free(modes_sorted);
+	// otherwise best match
+	mode = mode ? mode : pset_match(candidates, (fn_match_ptr)mode_satisfies, mode_target);
+
+	pset_free(candidates);
 
 	return mode;
 }

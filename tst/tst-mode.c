@@ -45,7 +45,7 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	free(mode_target);
+	mode_free(mode_target);
 	mode_target = NULL;
 
 	pset_free_vals(modes);
@@ -54,7 +54,7 @@ static int after_each(void **state) {
 	return 0;
 }
 
-static void mode__sort(void **state) {
+static void mode_greater_than_res_refresh__sort(void **state) {
 	const struct Mode *mode00 = mode_init_whr(1000, 2000, 3000);
 	const struct Mode *mode01 = mode_init_whr(1000, 9999, 3000);
 	const struct Mode *mode02 = mode_init_whr(1000, 2000, 9999);
@@ -84,13 +84,13 @@ static void mode__sort(void **state) {
 }
 
 static void mode_hz_rounded__(void **state) {
-	struct Mode *mode = mode_init();
+	mode_target = mode_init();
 
-	mode->refresh_mhz = 0;
-	assert_int_equal(mode_hz_rounded(mode), 0);
+	mode_target->refresh_mhz = 0;
+	assert_int_equal(mode_hz_rounded(mode_target), 0);
 
-	mode->refresh_mhz = 123567;
-	assert_int_equal(mode_hz_rounded(mode), 124);
+	mode_target->refresh_mhz = 123567;
+	assert_int_equal(mode_hz_rounded(mode_target), 124);
 }
 
 static void mode_best_satisfying__max(void **state) {
@@ -157,12 +157,15 @@ static void mode_best_satisfying__failed(void **state) {
 }
 
 static void mode_best_satisfying__exact_hz_match(void **state) {
-	mode_target = mode_init_whr(200, 100, 60499);
+	mode_target = mode_init_whr(200, 100, 60498);
+
+	const struct Mode *mode_exact = mode_init_whr(200, 100, 60498);
+	pset_add(modes, mode_exact);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
-	assert_mode_equal(actual, mode1);
-	assert_ptr_equal(actual, mode1);
+	assert_mode_equal(actual, mode_exact);
+	assert_ptr_equal(actual, mode_exact);
 }
 
 static void mode_best_satisfying__exact_hz_failed(void **state) {
@@ -322,7 +325,7 @@ static void mode_max_preferred__failed(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(mode__sort),
+		TEST_BA(mode_greater_than_res_refresh__sort),
 
 		TEST_BA(mode_hz_rounded__),
 
