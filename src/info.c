@@ -87,7 +87,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 
 		// res/refresh/hz line
 		const struct Mode *mode_major = it->val;
-		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mode_major->width, mode_major->height, mode_mhz_to_hz_rounded(mode_major->refresh_mhz));
+		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mode_major->width, mode_major->height, mode_hz_rounded(mode_major));
 
 		// append all modes matching the line
 		const struct Mode *mode_minor = mode_major;
@@ -476,7 +476,7 @@ void print_list(const enum LogThreshold t, const struct SList * const heads) {
 					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : "",
 					head->current.mode->width,
 					head->current.mode->height,
-					mode_mhz_to_hz_rounded(head->current.mode->refresh_mhz)
+					mode_hz_rounded(head->current.mode)
 				);
 		} else {
 			// no mode is considered disabled
@@ -586,7 +586,7 @@ char *delta_human_mode(const struct Head * const head) {
 		delta = sprintf_append(delta, "%dx%d@%dHz -> ",
 				head->current.mode->width,
 				head->current.mode->height,
-				mode_mhz_to_hz_rounded(head->current.mode->refresh_mhz)
+				mode_hz_rounded(head->current.mode)
 				);
 	} else {
 		delta = sprintf_append(delta, "(no mode) -> ");
@@ -596,7 +596,7 @@ char *delta_human_mode(const struct Head * const head) {
 		delta = sprintf_append(delta, "%dx%d@%dHz",
 				head->desired.mode->width,
 				head->desired.mode->height,
-				mode_mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
+				mode_hz_rounded(head->desired.mode)
 				);
 	} else {
 		delta = sprintf_append(delta, "(no mode)");

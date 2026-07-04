@@ -50,8 +50,6 @@ void mode_free(struct Mode *mode);
 
 bool mode_equal(const struct Mode* const a, const struct Mode* const b);
 
-bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b);
-
 bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b);
 
 /*
@@ -80,7 +78,7 @@ bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1
  * utility
  */
 
-int32_t mode_mhz_to_hz_rounded(int32_t mhz);
+int32_t mode_hz_rounded(const struct Mode* const mode);
 
 double mode_dpi(const struct Mode* const mode);
 

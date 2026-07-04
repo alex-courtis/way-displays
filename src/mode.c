@@ -64,10 +64,10 @@ bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
 	return a && b &&
 		a->width == b->width &&
 		a->height == b->height &&
-		mode_mhz_to_hz_rounded(a->refresh_mhz) == mode_mhz_to_hz_rounded(b->refresh_mhz);
+		mode_hz_rounded(a) == mode_hz_rounded(b);
 }
 
-bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b) {
+static bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b) {
 	return a && b &&
 		a->width == b->width &&
 		a->height == b->height &&
@@ -105,7 +105,7 @@ char *mode_str(const struct Mode * const mode) {
 	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
 			mode->width,
 			mode->height,
-			mode_mhz_to_hz_rounded(mode->refresh_mhz),
+			mode_hz_rounded(mode),
 			mode->refresh_mhz / 1000,
 			mode->refresh_mhz % 1000,
 			mode->preferred ? " (preferred)" : ""
@@ -140,19 +140,18 @@ bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1
 	return mode ? mode->zwlr_mode == zwlr_mode : false;
 }
 
-bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target) {
+static bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target) {
 	if (!mode || !mode_target)
 		return false;
 
 	return mode_target->max ||
 		(mode->width == mode_target->width &&
 		 mode->height == mode_target->height &&
-		 (mode_target->refresh_mhz == -1 || mode_mhz_to_hz_rounded(mode->refresh_mhz) == mode_mhz_to_hz_rounded(mode_target->refresh_mhz)));
+		 (mode_target->refresh_mhz == -1 || mode_hz_rounded(mode) == mode_hz_rounded(mode_target)));
 }
 
-// TODO take an actual mode
-int32_t mode_mhz_to_hz_rounded(int32_t mhz) {
-	return (mhz + 500) / 1000;
+int32_t mode_hz_rounded(const struct Mode* const mode) {
+	return mode ? (mode->refresh_mhz + 500) / 1000 : 0;
 }
 
 double mode_dpi(const struct Mode* const mode) {

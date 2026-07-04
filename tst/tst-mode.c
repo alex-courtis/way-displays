@@ -83,9 +83,14 @@ static void mode__sort(void **state) {
 	pset_free(actual);
 }
 
-static void mode_mhz_to_hz_rounded__(void **state) {
-	assert_int_equal(mode_mhz_to_hz_rounded(0), 0);
-	assert_int_equal(mode_mhz_to_hz_rounded(123567), 124);
+static void mode_hz_rounded__(void **state) {
+	struct Mode *mode = mode_init();
+
+	mode->refresh_mhz = 0;
+	assert_int_equal(mode_hz_rounded(mode), 0);
+
+	mode->refresh_mhz = 123567;
+	assert_int_equal(mode_hz_rounded(mode), 124);
 }
 
 static void mode_best_satisfying__max(void **state) {
@@ -319,7 +324,7 @@ int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(mode__sort),
 
-		TEST_BA(mode_mhz_to_hz_rounded__),
+		TEST_BA(mode_hz_rounded__),
 
 		TEST_BA(mode_best_satisfying__max),
 		TEST_BA(mode_best_satisfying__no_hz_no_match),
