@@ -38,7 +38,7 @@ void position_heads(struct SList *heads) {
 	// find tallest/widest
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
-		if (!head || !head->desired.wlr_mode || !head->desired.enabled) {
+		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
 		if (head->scaled.height > tallest) {
@@ -52,7 +52,7 @@ void position_heads(struct SList *heads) {
 	// arrange each in the predefined order
 	for (struct SList *i = heads; i; i = i->nex) {
 		head = i->val;
-		if (!head || !head->desired.wlr_mode || !head->desired.enabled) {
+		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
 
@@ -192,10 +192,10 @@ void desire_mode(struct Head *head) {
 	}
 
 	// attempt to find a mode, will log and call back on failure to find a mode
-	const struct WlrMode *wlr_mode = head_find_wlr_mode(head);
+	const struct Mode *mode = head_find_mode(head);
 
-	if (wlr_mode) {
-		head->desired.wlr_mode = wlr_mode;
+	if (mode) {
+		head->desired.mode = mode;
 	} else {
 
 		if (!head->warned_no_mode) {
@@ -334,7 +334,7 @@ static void apply(void) {
 
 		// mode change in its own operation; mode change desire is always enabled
 		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.wlr_mode->zwlr_mode);
+		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
 
 		g_displ->delta.human = delta_human_mode(head);
 
@@ -391,7 +391,7 @@ void handle_success(void) {
 		switch(g_displ->delta.element) {
 			case MODE:
 				// successful mode change is not always reported
-				head->current.wlr_mode = head->desired.wlr_mode;
+				head->current.mode = head->desired.mode;
 				break;
 
 			case VRR_OFF:
@@ -441,14 +441,14 @@ void handle_failure(void) {
 	switch(g_displ->delta.element) {
 		case MODE:
 			if (head) {
-				print_mode_fail(ERROR, head, head->desired.wlr_mode);
-				call_back_mode_fail(ERROR, head, head->desired.wlr_mode);
+				print_mode_fail(ERROR, head, head->desired.mode);
+				call_back_mode_fail(ERROR, head, head->desired.mode);
 
 				// mode setting failure, try again with another mode
-				pset_add(head->wlr_modes_failed, head->desired.wlr_mode);
+				pset_add(head->modes_failed, head->desired.mode);
 
 				// current mode may be misreported
-				head->current.wlr_mode = NULL;
+				head->current.mode = NULL;
 			}
 
 			break;

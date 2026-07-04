@@ -27,7 +27,7 @@
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-static void print_user_mode(const enum LogThreshold t, const char * name_desc, const struct WlrMode * const user_mode, const bool del) {
+static void print_user_mode(const enum LogThreshold t, const char * name_desc, const struct Mode * const user_mode, const bool del) {
 	if (!user_mode)
 		return;
 
@@ -40,12 +40,12 @@ static void print_user_mode(const enum LogThreshold t, const char * name_desc, c
 	}
 }
 
-static void print_wlr_mode(const enum LogThreshold t, const struct WlrMode * const wlr_mode) {
+static void print_mode(const enum LogThreshold t, const struct Mode * const mode) {
 
-	if (wlr_mode) {
-		char *mode_str = wlr_mode_str(wlr_mode);
-		log_(t, "    mode:      %s", mode_str);
-		free(mode_str);
+	if (mode) {
+		char *str = mode_str(mode);
+		log_(t, "    mode:      %s", str);
+		free(str);
 	} else {
 		log_(t, "    (no mode)");
 	}
@@ -55,10 +55,10 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	if (!head)
 		return;
 
-	if (pset_size(head->wlr_modes_failed) > 0) {
+	if (pset_size(head->modes_failed) > 0) {
 		log_(t, "  failed:");
-		for (const struct PSetIt *it = pset_it(head->wlr_modes_failed); it; it = pset_it_next(it)) {
-			print_wlr_mode(t, it->val);
+		for (const struct PSetIt *it = pset_it(head->modes_failed); it; it = pset_it_next(it)) {
+			print_mode(t, it->val);
 		}
 	}
 }
@@ -77,39 +77,39 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	if (!head)
 		return;
 
-	const struct WlrMode *wlr_mode_pref = head_preferred_wlr_mode(head);
+	const struct Mode *mode_pref = head_preferred_mode(head);
 
 	// show from the top down
-	const struct PSet *wlr_modes_sorted = pset_clone_shallow(head->wlr_modes);
-	pset_sort(wlr_modes_sorted, (fn_less_than)wlr_mode_greater_than_res_refresh);
-	const struct PSetIt *it = pset_it(wlr_modes_sorted);
+	const struct PSet *modes_sorted = pset_clone_shallow(head->modes);
+	pset_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
+	const struct PSetIt *it = pset_it(modes_sorted);
 	while (it) {
 
 		// res/refresh/hz line
-		const struct WlrMode *wlr_mode_major = it->val;
-		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", wlr_mode_major->width, wlr_mode_major->height, mhz_to_hz_rounded(wlr_mode_major->refresh_mhz));
+		const struct Mode *mode_major = it->val;
+		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mode_major->width, mode_major->height, mhz_to_hz_rounded(mode_major->refresh_mhz));
 
 		// append all modes matching the line
-		const struct WlrMode *wlr_mode_minor = wlr_mode_major;
-		while (wlr_mode_minor && wlr_mode_equal_res_hz(wlr_mode_major, wlr_mode_minor)) {
+		const struct Mode *mode_minor = mode_major;
+		while (mode_minor && mode_equal_res_hz(mode_major, mode_minor)) {
 
 			// append mHz
-			msg = sprintf_append(msg, "%4d,%03d mHz", wlr_mode_minor->refresh_mhz / 1000, wlr_mode_minor->refresh_mhz % 1000);
+			msg = sprintf_append(msg, "%4d,%03d mHz", mode_minor->refresh_mhz / 1000, mode_minor->refresh_mhz % 1000);
 
 			// append preferred
-			if (wlr_mode_minor == wlr_mode_pref) {
+			if (mode_minor == mode_pref) {
 				msg = sprintf_append(msg, " (preferred)");
 			}
 
 			it = pset_it_next(it);
-			wlr_mode_minor = it ? it->val : NULL;
+			mode_minor = it ? it->val : NULL;
 		}
 
 		log_(t,"%s", msg);
 		free(msg);
 	}
 
-	pset_free(wlr_modes_sorted);
+	pset_free(modes_sorted);
 }
 
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del) {
@@ -257,7 +257,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	newline = true;
 
 	for (const struct SMapIt *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
-		struct WlrMode *user_mode = (struct WlrMode*)it->val;
+		struct Mode *user_mode = (struct Mode*)it->val;
 
 		char *msg;
 		if (user_mode->max) {
@@ -307,7 +307,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 		return;
 
 	if (head->current.enabled) {
-		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), wlr_mode_scale(head->current.wlr_mode));
+		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.mode));
 
 		const struct Output *output = imap_match_val(g_outputs, (fn_match_ptr)output_matches_name, head->name).val;
 		if (output) {
@@ -322,7 +322,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 		}
 	}
 
-	print_wlr_mode(t, head->current.wlr_mode);
+	print_mode(t, head->current.mode);
 	log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 
 	if (head->current.enabled) {
@@ -349,8 +349,8 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 	if (head->desired.enabled) {
 		if (head_current_mode_not_desired(head)) {
 			// mode changes happen in their own operation
-			if (!head->current.enabled || head->current.wlr_mode != head->desired.wlr_mode) {
-				print_wlr_mode(t, head->desired.wlr_mode);
+			if (!head->current.enabled || head->current.mode != head->desired.mode) {
+				print_mode(t, head->desired.mode);
 			}
 		} else if (head_current_adaptive_sync_not_desired(head)) {
 			// adaptive sync changes happen in their own operation
@@ -396,7 +396,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 	if (!head)
 		return;
 
-	const struct WlrMode *preferred_mode = head_preferred_wlr_mode(head);
+	const struct Mode *preferred_mode = head_preferred_mode(head);
 
 	switch (event) {
 		case ARRIVED:
@@ -418,7 +418,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 				log_(t, "    width:     %dmm", head->width_mm);
 				log_(t, "    height:    %dmm", head->height_mm);
 				if (preferred_mode) {
-					log_(t, "    dpi:       %.2f @ %dx%d", wlr_mode_dpi(preferred_mode), preferred_mode->width, preferred_mode->height);
+					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(preferred_mode), preferred_mode->width, preferred_mode->height);
 				}
 			} else {
 				log_(t, "    width:     (not specified)");
@@ -468,15 +468,15 @@ void print_list(const enum LogThreshold t, const struct SList * const heads) {
 	for (const struct SList *i = heads; i; i = i->nex) {
 		struct Head *head = i->val;
 
-		if (head->current.enabled && head->current.wlr_mode) {
+		if (head->current.enabled && head->current.mode) {
 			// full info
 			log_(t, "%-*.*s %.3f %s %5d x%5d @%4d Hz",
 					(int)max_len_human, (int)max_len_human, head_human(head),
 					wl_fixed_to_double(head->current.scale),
 					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : "",
-					head->current.wlr_mode->width,
-					head->current.wlr_mode->height,
-					mhz_to_hz_rounded(head->current.wlr_mode->refresh_mhz)
+					head->current.mode->width,
+					head->current.mode->height,
+					mhz_to_hz_rounded(head->current.mode->refresh_mhz)
 				);
 		} else {
 			// no mode is considered disabled
@@ -500,7 +500,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
 }
 
-void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const wlr_mode) {
+void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
 	log_(t, NULL);
 	log_(t, "Changes failed");
 
@@ -509,7 +509,7 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	}
 
 	log_(t, "  %s:", head_human(head));
-	print_wlr_mode(t, wlr_mode);
+	print_mode(t, mode);
 }
 
 char *delta_human(const struct SList * const heads) {
@@ -582,21 +582,21 @@ char *delta_human_mode(const struct Head * const head) {
 			head_human(head)
 			);
 
-	if (head->current.wlr_mode) {
+	if (head->current.mode) {
 		delta = sprintf_append(delta, "%dx%d@%dHz -> ",
-				head->current.wlr_mode->width,
-				head->current.wlr_mode->height,
-				mhz_to_hz_rounded(head->current.wlr_mode->refresh_mhz)
+				head->current.mode->width,
+				head->current.mode->height,
+				mhz_to_hz_rounded(head->current.mode->refresh_mhz)
 				);
 	} else {
 		delta = sprintf_append(delta, "(no mode) -> ");
 	}
 
-	if (head->desired.wlr_mode) {
+	if (head->desired.mode) {
 		delta = sprintf_append(delta, "%dx%d@%dHz",
-				head->desired.wlr_mode->width,
-				head->desired.wlr_mode->height,
-				mhz_to_hz_rounded(head->desired.wlr_mode->refresh_mhz)
+				head->desired.mode->width,
+				head->desired.mode->height,
+				mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
 				);
 	} else {
 		delta = sprintf_append(delta, "(no mode)");
@@ -656,22 +656,22 @@ void call_back(const enum LogThreshold t, const char * const msg1, const char * 
 	free(buf);
 }
 
-void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct WlrMode * const wlr_mode) {
+void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
 	if (!head) {
 		return;
 	}
 
-	char *mode_str = wlr_mode_str(wlr_mode);
+	char *str = mode_str(mode);
 
 	char *human = sprintf_alloc(
 			"%s\n"
 			"  Unable to set mode %s, retrying",
 			head_human(head),
-			mode_str);
+			str);
 
 	call_back(t, human, NULL);
 
-	free(mode_str);
+	free(str);
 	free(human);
 }
 

@@ -5,9 +5,9 @@
 
 #include "mode.h"
 
-void _assert_mode_equal(const struct WlrMode* const a, const struct WlrMode* const b, const char * const file, const int line) {
-	if (!wlr_mode_equal(a, b)) {
-		cmocka_print_error("assert_mode_equal\n%s\n !=\n%s\n", wlr_mode_str(a), wlr_mode_str(b));
+void _assert_mode_equal(const struct Mode* const a, const struct Mode* const b, const char * const file, const int line) {
+	if (!mode_equal(a, b)) {
+		cmocka_print_error("assert_mode_equal\n%s\n !=\n%s\n", mode_str(a), mode_str(b));
 		_fail(file, line);
 	}
 }

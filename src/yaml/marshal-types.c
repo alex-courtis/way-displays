@@ -145,13 +145,13 @@ int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_st
 
 	bool adaptive_sync_enabled = head_state->adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
-	yaml_map_add_float_nz(c, "SCALE",     wl_fixed_to_double(head_state->scale),         map);
-	yaml_map_add_bool    (c, "ENABLED",   head_state->enabled,                           map);
-	yaml_map_add_int     (c, "X",         head_state->x,                                 map);
-	yaml_map_add_int     (c, "Y",         head_state->y,                                 map);
-	yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                         map);
-	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,         map);
-	yaml_map_add_node    (c, "MODE",      yaml_map_from_wlr_mode(c, head_state->wlr_mode), map);
+	yaml_map_add_float_nz(c, "SCALE",     wl_fixed_to_double(head_state->scale),   map);
+	yaml_map_add_bool    (c, "ENABLED",   head_state->enabled,                     map);
+	yaml_map_add_int     (c, "X",         head_state->x,                           map);
+	yaml_map_add_int     (c, "Y",         head_state->y,                           map);
+	yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                   map);
+	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,   map);
+	yaml_map_add_node    (c, "MODE",      yaml_map_from_mode(c, head_state->mode), map);
 
 	return map;
 }
@@ -238,7 +238,7 @@ int yaml_map_from_scale(struct MC *c, const char* const name_desc, const size_t 
 	return map;
 }
 
-int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct WlrMode* const user_mode) {
+int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct Mode* const user_mode) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -301,18 +301,18 @@ int yaml_node_from_disabled(struct MC *c, const struct Disabled* const disabled)
 	}
 }
 
-int yaml_map_from_wlr_mode(struct MC *c, const struct WlrMode* const wlr_mode) {
-	if (!wlr_mode)
+int yaml_map_from_mode(struct MC *c, const struct Mode* const mode) {
+	if (!mode)
 		return 0;
 
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
 
-	yaml_map_add_int (c, "WIDTH",       wlr_mode->width,       map);
-	yaml_map_add_int (c, "HEIGHT",      wlr_mode->height,      map);
-	yaml_map_add_int (c, "REFRESH_MHZ", wlr_mode->refresh_mhz, map);
-	yaml_map_add_bool(c, "PREFERRED",   wlr_mode->preferred,   map);
+	yaml_map_add_int (c, "WIDTH",       mode->width,       map);
+	yaml_map_add_int (c, "HEIGHT",      mode->height,      map);
+	yaml_map_add_int (c, "REFRESH_MHZ", mode->refresh_mhz, map);
+	yaml_map_add_bool(c, "PREFERRED",   mode->preferred,   map);
 
 	return map;
 }
@@ -334,7 +334,7 @@ int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	yaml_map_add_node(c, "DESIRED",   yaml_map_from_head_state(c, &head->desired), map);
 	yaml_map_add_node(c, "OVERRIDES", yaml_map_from_head_overrides(c, head),       map);
 
-	yaml_map_add_pset(c, "MODES", head->wlr_modes, (fn_yaml_node_from_type)yaml_map_from_wlr_mode, map);
+	yaml_map_add_pset(c, "MODES", head->modes, (fn_yaml_node_from_type)yaml_map_from_mode, map);
 
 	return map;
 }

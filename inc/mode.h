@@ -7,7 +7,14 @@
 #include "pset.h"
 #include "wlr-output-management-unstable-v1.h"
 
-struct WlrMode {
+/*
+ * Mode contexts:
+ * - Cfg: partial dimensions or max
+ * - State: dimensions and preferred
+ * - Head: dimensions, preferred and pointers
+ */
+
+struct Mode {
 	struct Head *head;
 
 	struct zwlr_output_mode_v1 *zwlr_mode;
@@ -26,48 +33,52 @@ struct WlrMode {
  * lifecycle
  */
 
-struct WlrMode *wlr_mode_init(void);
+struct Mode *mode_init(void);
 
-struct WlrMode *wlr_mode_clone(const struct WlrMode * const from);
+struct Mode *mode_clone(const struct Mode * const from);
 
-const struct PSet *wlr_mode_pset_init(void);
+const struct PSet *mode_pset_init(void);
 
-const struct SMap *wlr_mode_smap_init(void);
+const struct SMap *mode_smap_init(void);
 
-void wlr_mode_free(struct WlrMode *wlr_mode);
+void mode_free(struct Mode *mode);
 
 /*
  * equals
  */
-bool wlr_mode_equal(const struct WlrMode* const a, const struct WlrMode* const b);
 
-bool wlr_mode_equal_user_mode_res_mhz(const struct WlrMode* const wlr_mode, const struct WlrMode* const user_mode);
+bool mode_equal(const struct Mode* const a, const struct Mode* const b);
 
-bool wlr_mode_equal_res_hz(const struct WlrMode* const a, const struct WlrMode* const b);
+bool mode_equal_user_mode_res_mhz(const struct Mode* const mode, const struct Mode* const user_mode);
+
+bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b);
 
 /*
  * comparison
  */
-bool wlr_mode_greater_than_res_refresh(const struct WlrMode* const a, const struct WlrMode* const b);
+
+bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b);
 
 /*
  * rendering
  */
-char *wlr_mode_str(const struct WlrMode * const wlr_mode);
 
-// TODO normalise with wlr_mode_str or move to info
-char *user_mode_str(const struct WlrMode * const user_mode);
+char *mode_str(const struct Mode * const mode);
+
+// TODO normalise with mode_str or move to info
+char *user_mode_str(const struct Mode * const mode);
 
 /*
  * predicates
  */
-bool wlr_mode_is_preferred(const struct WlrMode *wlr_mode, const void* const unused);
 
-bool wlr_mode_is_zwlr_mode(const struct WlrMode *wlr_mode, const struct zwlr_output_mode_v1 *zwlr_mode);
+bool mode_is_preferred(const struct Mode *mode, const void* const unused);
 
-bool wlr_mode_satisfies_user_mode(const struct WlrMode* const wlr_mode, const struct WlrMode *user_mode);
+bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1 *zwlr_mode);
 
-bool user_mode_invalid(const char* const name_desc, const struct WlrMode* const user_mode, const void* const data);
+bool mode_satisfies_user_mode(const struct Mode* const mode, const struct Mode *user_mode);
+
+bool user_mode_invalid(const char* const name_desc, const struct Mode* const user_mode, const void* const data);
 
 /*
  * utility
@@ -75,18 +86,19 @@ bool user_mode_invalid(const char* const name_desc, const struct WlrMode* const 
 
 int32_t mhz_to_hz_rounded(int32_t mhz);
 
-double wlr_mode_dpi(const struct WlrMode* const wlr_mode);
+double mode_dpi(const struct Mode* const mode);
 
-double wlr_mode_scale(const struct WlrMode* const wlr_mode);
+double mode_scale(const struct Mode* const mode);
 
 /*
  * search
  */
-const struct WlrMode *wlr_mode_preferred(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed);
 
-const struct WlrMode *wlr_mode_max_preferred(const struct PSet* wlr_modes, const struct PSet* const wlr_modes_failed);
+const struct Mode *mode_preferred(const struct PSet* const modes, const struct PSet* const modes_failed);
 
-const struct WlrMode *wlr_mode_for_user_mode(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed, const struct WlrMode *user_mode);
+const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSet* const modes_failed);
+
+const struct Mode *mode_for_user_mode(const struct PSet* const modes, const struct PSet* const modes_failed, const struct Mode *user_mode);
 
 #endif // MODE_H
 

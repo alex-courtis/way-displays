@@ -23,16 +23,16 @@ static int before_each(void **state) {
 
 static void preferred__first(void **state) {
 	struct Head *head = head_init();
-	struct WlrMode *wlr_mode_existing = wlr_mode_init_h_whr(head, 3840, 2160, 60000);
-	struct WlrMode *wlr_mode_pref = wlr_mode_init_h_whr(head, 2560, 1440, 30000);
+	struct Mode *mode_existing = mode_init_h_whr(head, 3840, 2160, 60000);
+	struct Mode *mode_pref = mode_init_h_whr(head, 2560, 1440, 30000);
 
-	pset_add(head->wlr_modes, wlr_mode_existing);
-	pset_add(head->wlr_modes, wlr_mode_pref);
+	pset_add(head->modes, mode_existing);
+	pset_add(head->modes, mode_pref);
 
-	zwlr_output_mode_listener()->preferred(wlr_mode_pref, NULL);
+	zwlr_output_mode_listener()->preferred(mode_pref, NULL);
 
-	assert_false(wlr_mode_existing->preferred);
-	assert_true(wlr_mode_pref->preferred);
+	assert_false(mode_existing->preferred);
+	assert_true(mode_pref->preferred);
 
 	assert_logs_empty();
 
@@ -41,20 +41,20 @@ static void preferred__first(void **state) {
 
 static void preferred__subsequent(void **state) {
 	struct Head *head = head_init_name("NAM");
-	struct WlrMode *wlr_mode_existing = wlr_mode_init_h_whr(head, 3840, 2160, 60000);
-	wlr_mode_existing->preferred = true;
-	struct WlrMode *wlr_mode_subsequent = wlr_mode_init_h_whr(head, 2560, 1440, 30000);
+	struct Mode *mode_existing = mode_init_h_whr(head, 3840, 2160, 60000);
+	mode_existing->preferred = true;
+	struct Mode *mode_subsequent = mode_init_h_whr(head, 2560, 1440, 30000);
 
-	pset_add(head->wlr_modes, wlr_mode_existing);
-	pset_add(head->wlr_modes, wlr_mode_subsequent);
+	pset_add(head->modes, mode_existing);
+	pset_add(head->modes, mode_subsequent);
 
-	zwlr_output_mode_listener()->preferred(wlr_mode_subsequent, NULL);
+	zwlr_output_mode_listener()->preferred(mode_subsequent, NULL);
 
 	assert_log(INFO, "\nNAM: multiple preferred modes advertised: using initial 3840x2160@60Hz (60,000mHz) (preferred), ignoring 2560x1440@30Hz (30,000mHz)\n");
 	assert_logs_empty();
 
-	assert_true(wlr_mode_existing->preferred);
-	assert_false(wlr_mode_subsequent->preferred);
+	assert_true(mode_existing->preferred);
+	assert_false(mode_subsequent->preferred);
 
 	head_free(head);
 }

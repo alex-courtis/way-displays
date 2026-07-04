@@ -24,7 +24,7 @@ enum ManualOverride {
 };
 
 struct HeadState {
-	const struct WlrMode *wlr_mode;
+	const struct Mode *mode;
 	wl_fixed_t scale;
 	bool enabled;
 	// layout coords
@@ -40,7 +40,7 @@ struct Head {
 
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
-	const struct PSet* wlr_modes;
+	const struct PSet* modes;
 
 	char *name;
 	char *description;
@@ -56,7 +56,7 @@ struct Head {
 	struct HeadState desired;
 	bool reapply_required;
 
-	const struct PSet *wlr_modes_failed; // references to wlr_modes
+	const struct PSet *modes_failed; // references to modes
 	bool adaptive_sync_failed;
 
 	struct {
@@ -99,11 +99,11 @@ void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
 //  invalid user mode: warning
 //  no preferred:      info
 // maybe sets warned_no_preferred
-const struct WlrMode *head_find_wlr_mode(struct Head * const head);
+const struct Mode *head_find_mode(struct Head * const head);
 
-const struct WlrMode *head_max_wlr_mode(const struct Head * const head);
+const struct Mode *head_max_mode(const struct Head * const head);
 
-const struct WlrMode *head_preferred_wlr_mode(const struct Head * const head);
+const struct Mode *head_preferred_mode(const struct Head * const head);
 
 bool head_current_not_desired(const struct Head * const head);
 
@@ -122,7 +122,7 @@ void heads_reapply(struct SList *heads);
 void head_set_description(struct Head * const head, const char *description);
 
 // remove a mode from the head, including current/desired, freeing it
-void head_release_mode(struct WlrMode *wlr_mode);
+void head_release_mode(struct Mode *mode);
 
 void head_free(struct Head *head);
 

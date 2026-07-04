@@ -64,13 +64,13 @@ LDFLAGS += -Wl,$\
 # test specific mocks
 #
 tst/tst-head: LDFLAGS += -Wl,$\
-	--wrap=wlr_mode_dpi,$\
-	--wrap=wlr_mode_for_user_mode,$\
-	--wrap=wlr_mode_max_preferred,$\
+	--wrap=mode_dpi,$\
+	--wrap=mode_for_user_mode,$\
+	--wrap=mode_max_preferred,$\
 	--wrap=call_back
 
 tst/tst-layout: LDFLAGS += -Wl,$\
-	--wrap=head_find_wlr_mode,$\
+	--wrap=head_find_mode,$\
 	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,$\
 	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,--wrap=call_back_mode_fail,$\
 	--wrap=head_auto_scale

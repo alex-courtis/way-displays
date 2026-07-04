@@ -142,9 +142,9 @@ static void yaml_root_to_cfg__scale(void **state) {
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	smap_put(expected->user_modes, "max_override", wlr_mode_init_whr_max(1920, 1080, 12340));
-	smap_put(expected->user_modes, "five", wlr_mode_init_whr(1920, 1080, 12340));
-	smap_put(expected->user_modes, "seven", wlr_mode_init_whr_max(-1, -1, -1));
+	smap_put(expected->user_modes, "max_override", mode_init_whr_max(1920, 1080, 12340));
+	smap_put(expected->user_modes, "five", mode_init_whr(1920, 1080, 12340));
+	smap_put(expected->user_modes, "seven", mode_init_whr_max(-1, -1, -1));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
 }
@@ -429,38 +429,38 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(head->desired.y, 9);
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
-	const struct WlrMode *wlr_mode_current = head->current.wlr_mode;
-	assert_non_nul(wlr_mode_current);
-	assert_int_equal(wlr_mode_current->width, 10);
-	assert_int_equal(wlr_mode_current->height, 11);
-	assert_int_equal(wlr_mode_current->refresh_mhz, 12);
-	assert_true(wlr_mode_current->preferred);
+	const struct Mode *mode_current = head->current.mode;
+	assert_non_nul(mode_current);
+	assert_int_equal(mode_current->width, 10);
+	assert_int_equal(mode_current->height, 11);
+	assert_int_equal(mode_current->refresh_mhz, 12);
+	assert_true(mode_current->preferred);
 
-	const struct WlrMode *wlr_mode_desired = head->desired.wlr_mode;
-	assert_non_nul(wlr_mode_desired);
-	assert_int_equal(wlr_mode_desired->width, 13);
-	assert_int_equal(wlr_mode_desired->height, 14);
-	assert_int_equal(wlr_mode_desired->refresh_mhz, 15);
-	assert_false(wlr_mode_desired->preferred);
+	const struct Mode *mode_desired = head->desired.mode;
+	assert_non_nul(mode_desired);
+	assert_int_equal(mode_desired->width, 13);
+	assert_int_equal(mode_desired->height, 14);
+	assert_int_equal(mode_desired->refresh_mhz, 15);
+	assert_false(mode_desired->preferred);
 
-	assert_int_equal(pset_size(head->wlr_modes), 2);
-	const struct PSetIt *it = pset_it(head->wlr_modes);
+	assert_int_equal(pset_size(head->modes), 2);
+	const struct PSetIt *it = pset_it(head->modes);
 
-	const struct WlrMode *wlr_mode1 = it->val;
-	assert_non_nul(wlr_mode1);
-	assert_int_equal(wlr_mode1->width, 10);
-	assert_int_equal(wlr_mode1->height, 11);
-	assert_int_equal(wlr_mode1->refresh_mhz, 12);
-	assert_true(wlr_mode1->preferred);
+	const struct Mode *mode1 = it->val;
+	assert_non_nul(mode1);
+	assert_int_equal(mode1->width, 10);
+	assert_int_equal(mode1->height, 11);
+	assert_int_equal(mode1->refresh_mhz, 12);
+	assert_true(mode1->preferred);
 
 	it = pset_it_next(it);
 
-	const struct WlrMode *wlr_mode2 = it->val;
-	assert_non_nul(wlr_mode2);
-	assert_int_equal(wlr_mode2->width, 13);
-	assert_int_equal(wlr_mode2->height, 14);
-	assert_int_equal(wlr_mode2->refresh_mhz, 15);
-	assert_false(wlr_mode2->preferred);
+	const struct Mode *mode2 = it->val;
+	assert_non_nul(mode2);
+	assert_int_equal(mode2->width, 13);
+	assert_int_equal(mode2->height, 14);
+	assert_int_equal(mode2->refresh_mhz, 15);
+	assert_false(mode2->preferred);
 
 	pset_it_next(it);
 

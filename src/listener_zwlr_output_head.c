@@ -44,13 +44,13 @@ static void mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	struct WlrMode *wlr_mode = wlr_mode_init();
-	wlr_mode->head = head;
-	wlr_mode->zwlr_mode = zwlr_output_mode_v1;
+	struct Mode *mode = mode_init();
+	mode->head = head;
+	mode->zwlr_mode = zwlr_output_mode_v1;
 
-	pset_add(head->wlr_modes, wlr_mode);
+	pset_add(head->modes, mode);
 
-	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), wlr_mode);
+	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), mode);
 }
 
 static void enabled(void *data,
@@ -66,10 +66,10 @@ static void current_mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	const struct WlrMode *wlr_mode = pset_match(head->wlr_modes, (fn_match_ptr)wlr_mode_is_zwlr_mode, zwlr_output_mode_v1);
+	const struct Mode *mode = pset_match(head->modes, (fn_match_ptr)mode_is_zwlr_mode, zwlr_output_mode_v1);
 
-	if (wlr_mode) {
-		head->current.wlr_mode = wlr_mode;
+	if (mode) {
+		head->current.mode = mode;
 	}
 }
 

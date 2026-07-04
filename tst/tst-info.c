@@ -51,34 +51,34 @@ int before_each(void **state) {
 
 	s->head1 = head_init();
 
-	const struct WlrMode *wlr_mode_cur_more = wlr_mode_init_h_whr(s->head1, 100, 200, 30001);
-	struct WlrMode *wlr_mode_cur = wlr_mode_init_h_whr(s->head1, 100, 200, 30000);
-	wlr_mode_cur->preferred = true;
-	const struct WlrMode *wlr_mode_cur_less = wlr_mode_init_h_whr(s->head1, 100, 200, 29999);
-	const struct WlrMode *wlr_mode_des = wlr_mode_init_h_whr(s->head1, 400, 500, 60000);
-	const struct WlrMode *wlr_mode_failed = wlr_mode_init_h_whr(s->head1, 700, 800, 90000);
-	const struct WlrMode *wlr_mode_ungrouped_1 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 49499);
-	const struct WlrMode *wlr_mode_grouped_1 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 49500);
-	const struct WlrMode *wlr_mode_grouped_2 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 49999);
-	const struct WlrMode *wlr_mode_grouped_3 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 50000);
-	const struct WlrMode *wlr_mode_grouped_4 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 50100);
-	const struct WlrMode *wlr_mode_grouped_5 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 50499);
-	const struct WlrMode *wlr_mode_ungrouped_2 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 50500);
+	const struct Mode *mode_cur_more = mode_init_h_whr(s->head1, 100, 200, 30001);
+	struct Mode *mode_cur = mode_init_h_whr(s->head1, 100, 200, 30000);
+	mode_cur->preferred = true;
+	const struct Mode *mode_cur_less = mode_init_h_whr(s->head1, 100, 200, 29999);
+	const struct Mode *mode_des = mode_init_h_whr(s->head1, 400, 500, 60000);
+	const struct Mode *mode_failed = mode_init_h_whr(s->head1, 700, 800, 90000);
+	const struct Mode *mode_ungrouped_1 = mode_init_h_whr(s->head1, 1000, 1000, 49499);
+	const struct Mode *mode_grouped_1 = mode_init_h_whr(s->head1, 1000, 1000, 49500);
+	const struct Mode *mode_grouped_2 = mode_init_h_whr(s->head1, 1000, 1000, 49999);
+	const struct Mode *mode_grouped_3 = mode_init_h_whr(s->head1, 1000, 1000, 50000);
+	const struct Mode *mode_grouped_4 = mode_init_h_whr(s->head1, 1000, 1000, 50100);
+	const struct Mode *mode_grouped_5 = mode_init_h_whr(s->head1, 1000, 1000, 50499);
+	const struct Mode *mode_ungrouped_2 = mode_init_h_whr(s->head1, 1000, 1000, 50500);
 
-	pset_add(s->head1->wlr_modes, wlr_mode_cur_more);
-	pset_add(s->head1->wlr_modes, wlr_mode_cur);
-	pset_add(s->head1->wlr_modes, wlr_mode_cur_less);
-	pset_add(s->head1->wlr_modes, wlr_mode_des);
-	pset_add(s->head1->wlr_modes, wlr_mode_failed);
-	pset_add(s->head1->wlr_modes, wlr_mode_ungrouped_1);
-	pset_add(s->head1->wlr_modes, wlr_mode_grouped_1);
-	pset_add(s->head1->wlr_modes, wlr_mode_grouped_2);
-	pset_add(s->head1->wlr_modes, wlr_mode_grouped_3);
-	pset_add(s->head1->wlr_modes, wlr_mode_grouped_4);
-	pset_add(s->head1->wlr_modes, wlr_mode_grouped_5);
-	pset_add(s->head1->wlr_modes, wlr_mode_ungrouped_2);
+	pset_add(s->head1->modes, mode_cur_more);
+	pset_add(s->head1->modes, mode_cur);
+	pset_add(s->head1->modes, mode_cur_less);
+	pset_add(s->head1->modes, mode_des);
+	pset_add(s->head1->modes, mode_failed);
+	pset_add(s->head1->modes, mode_ungrouped_1);
+	pset_add(s->head1->modes, mode_grouped_1);
+	pset_add(s->head1->modes, mode_grouped_2);
+	pset_add(s->head1->modes, mode_grouped_3);
+	pset_add(s->head1->modes, mode_grouped_4);
+	pset_add(s->head1->modes, mode_grouped_5);
+	pset_add(s->head1->modes, mode_ungrouped_2);
 
-	pset_add(s->head1->wlr_modes_failed, wlr_mode_failed);
+	pset_add(s->head1->modes_failed, mode_failed);
 
 	s->head1->name = strdup("name1");
 	s->head1->description = strdup("description1");
@@ -88,7 +88,7 @@ int before_each(void **state) {
 	s->head1->model = strdup("model1");
 	s->head1->serial_number = strdup("serial_number1");
 
-	s->head1->current.wlr_mode = wlr_mode_cur;
+	s->head1->current.mode = mode_cur;
 	s->head1->current.scale = 512;
 	s->head1->current.enabled = true;
 	s->head1->current.x = 700;
@@ -96,7 +96,7 @@ int before_each(void **state) {
 	s->head1->current.transform = WL_OUTPUT_TRANSFORM_180;
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	s->head1->desired.wlr_mode = wlr_mode_des;
+	s->head1->desired.mode = mode_des;
 	s->head1->desired.scale = 1024;
 	s->head1->desired.enabled = true;
 	s->head1->desired.x = 900;
@@ -109,16 +109,16 @@ int before_each(void **state) {
 
 	s->head2 = head_init();
 
-	wlr_mode_cur = wlr_mode_init_h_whr(s->head2, 1100, 1200, 130000);
-	wlr_mode_cur->preferred = true;
-	wlr_mode_des = wlr_mode_init_h_whr(s->head2, 1400, 1500, 160000);
-	wlr_mode_failed = wlr_mode_init_h_whr(s->head2, 1700, 1800, 190000);
+	mode_cur = mode_init_h_whr(s->head2, 1100, 1200, 130000);
+	mode_cur->preferred = true;
+	mode_des = mode_init_h_whr(s->head2, 1400, 1500, 160000);
+	mode_failed = mode_init_h_whr(s->head2, 1700, 1800, 190000);
 
-	pset_add(s->head2->wlr_modes, wlr_mode_cur);
-	pset_add(s->head2->wlr_modes, wlr_mode_des);
-	pset_add(s->head2->wlr_modes, wlr_mode_failed);
+	pset_add(s->head2->modes, mode_cur);
+	pset_add(s->head2->modes, mode_des);
+	pset_add(s->head2->modes, mode_failed);
 
-	pset_add(s->head2->wlr_modes_failed, wlr_mode_failed);
+	pset_add(s->head2->modes_failed, mode_failed);
 
 	s->head2->name = strdup("name2");
 	s->head2->width_mm = 3;
@@ -127,7 +127,7 @@ int before_each(void **state) {
 	s->head2->model = strdup("model2");
 	s->head2->serial_number = strdup("serial_number2");
 
-	s->head2->current.wlr_mode = wlr_mode_cur;
+	s->head2->current.mode = mode_cur;
 	s->head2->current.scale = 2048;
 	s->head2->current.enabled = true;
 	s->head2->current.x = 1700;
@@ -135,7 +135,7 @@ int before_each(void **state) {
 	s->head2->current.transform = WL_OUTPUT_TRANSFORM_270;
 	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
-	s->head2->desired.wlr_mode = wlr_mode_des;
+	s->head2->desired.mode = mode_des;
 	s->head2->desired.scale = 4096;
 	s->head2->desired.enabled = true;
 	s->head2->desired.x = 1900;
@@ -186,9 +186,9 @@ static void print_cfg__all(void **state) {
 	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 
-	smap_put(c->user_modes, "five", wlr_mode_init_whr(1920, 1080, 12340));
-	smap_put(c->user_modes, "six", wlr_mode_init_whr(2560, 1440, -1));
-	smap_put(c->user_modes, "seven", wlr_mode_init_whr_max(-1, -1, -1));
+	smap_put(c->user_modes, "five", mode_init_whr(1920, 1080, 12340));
+	smap_put(c->user_modes, "six", mode_init_whr(2560, 1440, -1));
+	smap_put(c->user_modes, "seven", mode_init_whr_max(-1, -1, -1));
 
 	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
@@ -216,9 +216,9 @@ static void print_cfg__del(void **state) {
 	smapi_put(c->scales, "three", 3000);
 	smapi_put(c->scales, "four", 4000);
 
-	smap_put(c->user_modes, "five", wlr_mode_init_whr(1920, 1080, 12340));
-	smap_put(c->user_modes, "six", wlr_mode_init_whr(2560, 1440, -1));
-	smap_put(c->user_modes, "seven", wlr_mode_init_whr_max(-1, -1, -1));
+	smap_put(c->user_modes, "five", mode_init_whr(1920, 1080, 12340));
+	smap_put(c->user_modes, "six", mode_init_whr(2560, 1440, -1));
+	smap_put(c->user_modes, "seven", mode_init_whr_max(-1, -1, -1));
 
 	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 	smapi_put(c->transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
@@ -324,9 +324,9 @@ static void print_cfg_commands__ok(void **state) {
 	smapi_put(c->scales, "one", 1000);
 	smapi_put(c->scales, "two", 2345);
 
-	smap_put(c->user_modes, "all", wlr_mode_init_whr(1, 2, 12340));
-	smap_put(c->user_modes, "res", wlr_mode_init_whr(4, 5, -1));
-	smap_put(c->user_modes, "max", wlr_mode_init_whr_max(7, 8, 9));
+	smap_put(c->user_modes, "all", mode_init_whr(1, 2, 12340));
+	smap_put(c->user_modes, "res", mode_init_whr(4, 5, -1));
+	smap_put(c->user_modes, "max", mode_init_whr_max(7, 8, 9));
 
 	smapi_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 
@@ -417,7 +417,7 @@ static void print_head_deltas__vrr(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head1->desired.wlr_mode = s->head1->current.wlr_mode;
+	s->head1->desired.mode = s->head1->current.mode;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -433,7 +433,7 @@ static void print_head_deltas__vrr(void **state) {
 static void print_head_deltas__other(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.wlr_mode = s->head1->current.wlr_mode;
+	s->head1->desired.mode = s->head1->current.mode;
 
 	expect_str(__wrap_lid_is_closed, name, "name1");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -710,7 +710,7 @@ static void print_mode_fail__head(void **state) {
 static void delta_human_mode__to_no(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.wlr_mode = NULL;
+	s->head1->desired.mode = NULL;
 
 	char *deltas = delta_human_mode(s->head1);
 
@@ -729,7 +729,7 @@ static void delta_human_mode__to_no(void **state) {
 static void delta_human_mode__from_no(void **state) {
 	struct State *s = *state;
 
-	s->head2->current.wlr_mode = NULL;
+	s->head2->current.mode = NULL;
 
 	char *deltas = delta_human_mode(s->head2);
 
@@ -959,7 +959,7 @@ static void call_back_mode_fail__(void **state) {
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
 
-	call_back_mode_fail(INFO, s->head1, s->head1->desired.wlr_mode);
+	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
 
 	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
 

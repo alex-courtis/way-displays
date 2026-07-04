@@ -44,9 +44,9 @@ void handle_cancelled(void);
 
 
 // cppcheck-suppress staticFunction
-const struct WlrMode *__wrap_head_find_wlr_mode(struct Head * const head) {
+const struct Mode *__wrap_head_find_mode(struct Head * const head) {
 	check_expected_ptr(head);
-	return mock_ptr_type_checked(struct WlrMode*);
+	return mock_ptr_type_checked(struct Mode*);
 }
 
 // cppcheck-suppress staticFunction
@@ -77,9 +77,9 @@ static int before_each(void **state) {
 	for (int i = 0; i < 10; i++) {
 		struct Head *head = head_init();
 		head->desired.enabled = true;
-		const struct WlrMode *wlr_mode = wlr_mode_init_h_whr(head, i * 20, i * 10, 0);
-		head->desired.wlr_mode = wlr_mode;
-		pset_add(head->wlr_modes, wlr_mode);
+		const struct Mode *mode = mode_init_h_whr(head, i * 20, i * 10, 0);
+		head->desired.mode = mode;
+		pset_add(head->modes, mode);
 		slist_append(&s->heads, head);
 	}
 
@@ -469,17 +469,17 @@ static void desire_enabled__no_override(void **state) {
 
 static void desire_mode__disabled(void **state) {
 	struct Head *head = head_init_name("head");
-	struct WlrMode *wlr_mode = wlr_mode_init();
-	wlr_mode->head = head;
+	struct Mode *mode = mode_init();
+	mode->head = head;
 
 	head->desired.enabled = false;
-	head->desired.wlr_mode = wlr_mode;
-	pset_add(head->wlr_modes, wlr_mode);
+	head->desired.mode = mode;
+	pset_add(head->modes, mode);
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.wlr_mode, wlr_mode);
-	assert_ptr_equal(head->desired.wlr_mode, wlr_mode);
+	assert_mode_equal(head->desired.mode, mode);
+	assert_ptr_equal(head->desired.mode, mode);
 	assert_false(head->desired.enabled);
 	assert_false(head->warned_no_mode);
 
@@ -490,20 +490,20 @@ static void desire_mode__disabled(void **state) {
 
 static void desire_mode__no_mode(void **state) {
 	struct Head *head = head_init_name("head");
-	struct WlrMode *wlr_mode = wlr_mode_init();
-	wlr_mode->head = head;
+	struct Mode *mode = mode_init();
+	mode->head = head;
 
 	head->desired.enabled = true;
-	head->desired.wlr_mode = wlr_mode;
-	pset_add(head->wlr_modes, wlr_mode);
+	head->desired.mode = mode;
+	pset_add(head->modes, mode);
 
-	expect_ptr(__wrap_head_find_wlr_mode, head, head);
-	will_return_ptr_type(__wrap_head_find_wlr_mode, NULL, struct WlrMode*);
+	expect_ptr(__wrap_head_find_mode, head, head);
+	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.wlr_mode, wlr_mode);
-	assert_ptr_equal(head->desired.wlr_mode, wlr_mode);
+	assert_mode_equal(head->desired.mode, mode);
+	assert_ptr_equal(head->desired.mode, mode);
 	assert_false(head->desired.enabled);
 	assert_true(head->warned_no_mode);
 
@@ -514,21 +514,21 @@ static void desire_mode__no_mode(void **state) {
 
 static void desire_mode__no_mode_warned(void **state) {
 	struct Head *head = head_init_name("head");
-	struct WlrMode *wlr_mode = wlr_mode_init();
-	wlr_mode->head = head;
+	struct Mode *mode = mode_init();
+	mode->head = head;
 
 	head->desired.enabled = true;
-	head->desired.wlr_mode = wlr_mode;
+	head->desired.mode = mode;
 	head->warned_no_mode = true;
-	pset_add(head->wlr_modes, wlr_mode);
+	pset_add(head->modes, mode);
 
-	expect_ptr(__wrap_head_find_wlr_mode, head, head);
-	will_return_ptr_type(__wrap_head_find_wlr_mode, NULL, struct WlrMode*);
+	expect_ptr(__wrap_head_find_mode, head, head);
+	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.wlr_mode, wlr_mode);
-	assert_ptr_equal(head->desired.wlr_mode, wlr_mode);
+	assert_mode_equal(head->desired.mode, mode);
+	assert_ptr_equal(head->desired.mode, mode);
 	assert_false(head->desired.enabled);
 	assert_true(head->warned_no_mode);
 
@@ -539,22 +539,22 @@ static void desire_mode__no_mode_warned(void **state) {
 
 static void desire_mode__ok(void **state) {
 	struct Head *head = head_init_name("head");
-	const struct WlrMode *wlr_mode0 = wlr_mode_init_h_whr(head, 1, 2, 3);
+	const struct Mode *mode0 = mode_init_h_whr(head, 1, 2, 3);
 
 	head->desired.enabled = true;
-	head->desired.wlr_mode = wlr_mode0;
-	pset_add(head->wlr_modes, wlr_mode0);
+	head->desired.mode = mode0;
+	pset_add(head->modes, mode0);
 
-	struct WlrMode *wlr_mode1 = wlr_mode_init_h_whr(head, 4, 5, 6);
-	pset_add(head->wlr_modes, wlr_mode1);
+	struct Mode *mode1 = mode_init_h_whr(head, 4, 5, 6);
+	pset_add(head->modes, mode1);
 
-	expect_ptr(__wrap_head_find_wlr_mode, head, head);
-	will_return_ptr_type(__wrap_head_find_wlr_mode, wlr_mode1, struct WlrMode*);
+	expect_ptr(__wrap_head_find_mode, head, head);
+	will_return_ptr_type(__wrap_head_find_mode, mode1, struct Mode*);
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.wlr_mode, wlr_mode1);
-	assert_ptr_equal(head->desired.wlr_mode, wlr_mode1);
+	assert_mode_equal(head->desired.mode, mode1);
+	assert_ptr_equal(head->desired.mode, mode1);
 	assert_true(head->desired.enabled);
 	assert_false(head->warned_no_mode);
 
@@ -825,10 +825,10 @@ static void handle_success__head_changing_adaptive_sync_fail(void **state) {
 
 static void handle_success__head_changing_mode(void **state) {
 	struct Head *head = head_init_name("head");
-	struct WlrMode *wlr_mode = wlr_mode_init();
-	wlr_mode->head = head;
-	head->desired.wlr_mode = wlr_mode;
-	pset_add(head->wlr_modes, wlr_mode);
+	struct Mode *mode = mode_init();
+	mode->head = head;
+	head->desired.mode = mode;
+	pset_add(head->modes, mode);
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
@@ -842,8 +842,8 @@ static void handle_success__head_changing_mode(void **state) {
 	assert_log(INFO, "\nChanges successful\n");
 	assert_logs_empty();
 
-	assert_mode_equal(head->current.wlr_mode, wlr_mode);
-	assert_ptr_equal(head->current.wlr_mode, wlr_mode);
+	assert_mode_equal(head->current.mode, mode);
+	assert_ptr_equal(head->current.mode, mode);
 
 	head_free(head);
 }
@@ -863,34 +863,34 @@ static void handle_success__ok(void **state) {
 
 static void handle_failure__mode(void **state) {
 	struct Head *head = head_init_name("nam");
-	const struct WlrMode *wlr_mode_cur = wlr_mode_init_h_whr(head, 1, 2, 3);
-	const struct WlrMode *wlr_mode_des = wlr_mode_init_h_whr(head, 4, 5, 6);
+	const struct Mode *mode_cur = mode_init_h_whr(head, 1, 2, 3);
+	const struct Mode *mode_des = mode_init_h_whr(head, 4, 5, 6);
 
-	head->current.wlr_mode = wlr_mode_cur;
-	head->desired.wlr_mode = wlr_mode_des;
+	head->current.mode = mode_cur;
+	head->desired.mode = mode_des;
 
-	pset_add(head->wlr_modes, wlr_mode_cur);
-	pset_add(head->wlr_modes, wlr_mode_des);
+	pset_add(head->modes, mode_cur);
+	pset_add(head->modes, mode_des);
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
 
 	expect_int_value(__wrap_print_mode_fail, t, ERROR);
 	expect_ptr(__wrap_print_mode_fail, head, head);
-	expect_ptr(__wrap_print_mode_fail, wlr_mode, wlr_mode_des);
+	expect_ptr(__wrap_print_mode_fail, mode, mode_des);
 
 	expect_int_value(__wrap_call_back_mode_fail, t, ERROR);
 	expect_ptr(__wrap_call_back_mode_fail, head, head);
-	expect_ptr(__wrap_call_back_mode_fail, wlr_mode, wlr_mode_des);
+	expect_ptr(__wrap_call_back_mode_fail, mode, mode_des);
 
 	handle_failure();
 
-	assert_nul(head->current.wlr_mode);
+	assert_nul(head->current.mode);
 
-	assert_mode_equal(head->desired.wlr_mode, wlr_mode_des);
-	assert_ptr_equal(head->desired.wlr_mode, wlr_mode_des);
+	assert_mode_equal(head->desired.mode, mode_des);
+	assert_ptr_equal(head->desired.mode, mode_des);
 
-	assert_true(pset_contains(head->wlr_modes_failed, wlr_mode_des));
+	assert_true(pset_contains(head->modes_failed, mode_des));
 
 	assert_logs_empty();
 

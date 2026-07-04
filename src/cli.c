@@ -67,7 +67,7 @@ void usage(FILE *stream) {
 }
 
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
-	struct WlrMode *user_mode = NULL;
+	struct Mode *user_mode = NULL;
 	enum wl_output_transform wl_transform = 0;
 	float scale = 0;
 
@@ -125,7 +125,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 			switch (command) {
 				case CFG_SET:
 					// parse input value
-					user_mode = wlr_mode_init();
+					user_mode = mode_init();
 					if (strcasecmp(argv[optind + 1], "MAX") == 0) {
 						user_mode->max = true;
 						parsed = true;
@@ -142,7 +142,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 					break;
 				case CFG_DEL:
 					// dummy value
-					user_mode = wlr_mode_init();
+					user_mode = mode_init();
 					user_mode->max = true;
 					smap_put(cfg->user_modes, argv[optind], user_mode);
 					parsed = true;

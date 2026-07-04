@@ -129,7 +129,7 @@ struct Cfg *cfg_init(void) {
 	cfg->transforms = smapi_init();
 
 	cfg->disableds =  disabled_pset_init();
-	cfg->user_modes = wlr_mode_smap_init();
+	cfg->user_modes = mode_smap_init();
 
 	return cfg;
 }
@@ -348,7 +348,7 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 
 	// MODE
 	for (const struct SMapIt *it = smap_it(from->user_modes); it; it = smap_it_next(it)) {
-		smap_put_free(merged->user_modes, it->key, wlr_mode_clone(it->val));
+		smap_put_free(merged->user_modes, it->key, mode_clone(it->val));
 	}
 
 	// TRANSFORM
