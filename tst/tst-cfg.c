@@ -66,7 +66,7 @@ static int after_each(void **state) {
 }
 
 static void cfg_equal__mode(void **state) {
-	struct State *s = *state;
+	const struct State *s = *state;
 
 	smap_put(s->from->user_modes, "both", wlr_mode_init_whr(4, 5, 6));
 

@@ -7,7 +7,6 @@
 #include "util-init.h"
 
 #include <cmocka.h>
-#include <stdbool.h>
 #include <stdlib.h>
 
 #include "fn.h"

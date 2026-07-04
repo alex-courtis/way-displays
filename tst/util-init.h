@@ -1,6 +1,8 @@
 #ifndef UTIL_INIT_H
 #define UTIL_INIT_H
 
+#include <stdint.h>
+
 #include "head.h"
 
 struct Head *head_init_name(const char *name);

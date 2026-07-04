@@ -13,6 +13,7 @@
 #include "convert.h"
 #include "ipc.h"
 #include "log.h"
+#include "mode.h"
 #include "process.h"
 #include "pset.h"
 #include "smap.h"

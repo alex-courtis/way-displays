@@ -8,8 +8,9 @@
 #include "cfg.h"
 #include "fn.h"
 #include "head.h"
-#include "smap.h"
+#include "log.h"
 #include "pset.h"
+#include "smap.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 

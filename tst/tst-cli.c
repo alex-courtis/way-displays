@@ -15,6 +15,7 @@
 #include "cfg/disabled.h"
 #include "ipc.h"
 #include "log.h"
+#include "mode.h"
 #include "pset.h"
 #include "smap.h"
 #include "smapi.h"

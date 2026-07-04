@@ -1,7 +1,8 @@
 #ifndef ASSERT_CFG_H
 #define ASSERT_CFG_H
 
-#include <cmocka.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "cfg.h"
@@ -14,7 +15,7 @@ void _assert_cfg(const struct Cfg *a, const struct Cfg *b, bool equal, const cha
 	if (equal ? !cfg_equal(a, b) : cfg_equal(a, b)) {
 		char *yaml_a = yaml_marshal(a, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg a");
 		char *yaml_b = yaml_marshal(b, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg b");
-		char *err = sprintf_alloc("%s\nactual.cfg:\n%s %s\nexpected.cfg:\n%s\n", name, yaml_a, equal ? "!=" : "==", yaml_b);
+		const char *err = sprintf_alloc("%s\nactual.cfg:\n%s %s\nexpected.cfg:\n%s\n", name, yaml_a, equal ? "!=" : "==", yaml_b);
 		write_file("actual.cfg", yaml_a);
 		write_file("expected.cfg", yaml_b);
 		fprintf(stderr, "%s:%d: %s", file, line, err);
