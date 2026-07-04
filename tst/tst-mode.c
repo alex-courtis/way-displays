@@ -1,6 +1,7 @@
 #include "tst.h"
 
 #include "assert-log.h"
+#include "assert-mode.h"
 #include "assert-pset.h"
 #include "asserts.h"
 
@@ -93,7 +94,8 @@ static void mode_user_mode__max(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
-	assert_ptr_equal(actual,  mode5);
+	assert_mode_equal(actual, mode5);
+	assert_ptr_equal(actual, mode5);
 }
 
 static void mode_user_mode__no_hz_no_match(void **state) {
@@ -109,6 +111,7 @@ static void mode_user_mode__no_hz_match(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
+	assert_mode_equal(actual, mode3);
 	assert_ptr_equal(actual, mode3);
 }
 
@@ -125,6 +128,7 @@ static void mode_user_mode__even_hz_match(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
+	assert_mode_equal(actual, mode1);
 	assert_ptr_equal(actual, mode1);
 }
 
@@ -133,6 +137,7 @@ static void mode_user_mode__even_hz_rounded_up(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
+	assert_mode_equal(actual, mode4);
 	assert_ptr_equal(actual, mode4);
 }
 
@@ -143,6 +148,7 @@ static void mode_user_mode__failed(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
+	assert_mode_equal(actual, mode0);
 	assert_ptr_equal(actual, mode0);
 }
 
@@ -151,6 +157,7 @@ static void mode_user_mode__exact_hz_match(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
+	assert_mode_equal(actual, mode1);
 	assert_ptr_equal(actual, mode1);
 }
 
@@ -161,6 +168,7 @@ static void mode_user_mode__exact_hz_failed(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
+	assert_mode_equal(actual, mode0);
 	assert_ptr_equal(actual, mode0);
 }
 
@@ -221,6 +229,7 @@ static void mode_preferred__preferred(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_preferred(wlr_modes, NULL);
 
+	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 
@@ -247,7 +256,7 @@ static void mode_max_preferred__preferred_matches(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, NULL);
 
-	assert_non_nul(actual);
+	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 
@@ -260,7 +269,7 @@ static void mode_max_preferred__prior_matches(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, NULL);
 
-	assert_non_nul(actual);
+	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 
@@ -273,7 +282,7 @@ static void mode_max_preferred__later_higher_refresh(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, NULL);
 
-	assert_non_nul(actual);
+	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 
@@ -286,7 +295,7 @@ static void mode_max_preferred__earlier_higher_refresh(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, NULL);
 
-	assert_non_nul(actual);
+	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 
@@ -303,7 +312,7 @@ static void mode_max_preferred__failed(void **state) {
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, wlr_modes_failed);
 
-	assert_non_nul(actual);
+	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 

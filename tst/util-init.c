@@ -18,10 +18,6 @@ struct Head *head_init_description(const char *description) {
 	return head;
 }
 
-struct WlrMode *wlr_mode_init_empty(void) {
-	return wlr_mode_init(NULL, NULL, 0, 0, 0, false);
-}
-
 struct WlrMode *wlr_mode_init_head(struct Head *head) {
 	return wlr_mode_init(head, NULL, 0, 0, 0, false);
 }

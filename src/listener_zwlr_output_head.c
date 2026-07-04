@@ -65,7 +65,7 @@ static void current_mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	const struct WlrMode *wlr_mode = pset_match(head->wlr_modes, (fn_match_ptr)wlr_mode_match_zwlr_mode, zwlr_output_mode_v1);
+	const struct WlrMode *wlr_mode = pset_match(head->wlr_modes, (fn_match_ptr)wlr_mode_is_zwlr_mode, zwlr_output_mode_v1);
 
 	if (wlr_mode) {
 		head->current.wlr_mode = wlr_mode;
