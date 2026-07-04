@@ -512,7 +512,7 @@ void cfg_file_write(void) {
 
 	g_cfg->updated = false;
 
-	if (!(yaml = yaml_marshal(g_cfg, (fn_yaml_type_to_root)yaml_cfg_to_root, "cfg"))) {
+	if (!(yaml = yaml_marshal(g_cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"))) {
 		goto end;
 	}
 

@@ -74,7 +74,7 @@ end:
 	return yaml;
 }
 
-char *yaml_marshal(const void *data, fn_yaml_type_to_root fn, const char *human) {
+char *yaml_marshal(const void *data, fn_yaml_root_from_type fn, const char *human) {
 	if (!data)
 		return NULL;
 
