@@ -84,7 +84,7 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->order_name_desc =       sset_clone(from->order_name_desc);
 
 	to->disableds =  pset_clone_deep(from->disableds);
-	to->user_modes = smap_clone_deep(from->user_modes);
+	to->modes =      smap_clone_deep(from->modes);
 	to->scales =     smapi_clone(from->scales);
 	to->transforms = smapi_clone(from->transforms);
 
@@ -110,7 +110,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		a->scale_round_strategy == b->scale_round_strategy &&
 		a->scale_round_to == b->scale_round_to &&
 		a->scaling == b->scaling &&
-		smap_equal(a->user_modes, b->user_modes) &&
+		smap_equal(a->modes, b->modes) &&
 		smapi_equal(a->scales, b->scales) &&
 		smapi_equal(a->transforms, b->transforms);
 }
@@ -129,7 +129,7 @@ struct Cfg *cfg_init(void) {
 	cfg->transforms = smapi_init();
 
 	cfg->disableds =  disabled_pset_init();
-	cfg->user_modes = mode_smap_init();
+	cfg->modes = mode_smap_init();
 
 	return cfg;
 }
@@ -217,6 +217,42 @@ void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
 	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
 }
 
+static bool mode_is_invalid(const char* const name_desc, const struct Mode* const mode, const void* const unused) {
+	if (!mode || !name_desc) {
+		return true;
+	}
+	if (mode->width != -1 && mode->width <= 0) {
+		log_warn(NULL);
+		log_warn("Ignoring non-positive MODE %s WIDTH %d", name_desc, mode->width);
+		return true;
+	}
+	if (mode->height != -1 && mode->height <= 0) {
+		log_warn(NULL);
+		log_warn("Ignoring non-positive MODE %s HEIGHT %d", name_desc, mode->height);
+		return true;
+	}
+	if (mode->refresh_mhz != -1 && mode->refresh_mhz <= 0) {
+		log_warn(NULL);
+		log_warn("Ignoring non-positive MODE %s HZ %g", name_desc, ((float)mode->refresh_mhz) / 1000);
+		return true;
+	}
+
+	if (!mode->max) {
+		if (mode->width == -1) {
+			log_warn(NULL);
+			log_warn("Ignoring invalid MODE %s missing WIDTH", name_desc);
+			return true;
+		}
+		if (mode->height == -1) {
+			log_warn(NULL);
+			log_warn("Ignoring invalid MODE %s missing HEIGHT", name_desc);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void validate_fix(struct Cfg *cfg) {
 	if (!cfg) {
 		return;
@@ -249,8 +285,8 @@ void validate_fix(struct Cfg *cfg) {
 
 	const char *name_desc;
 
-	while ((name_desc = smap_match(cfg->user_modes, (fn_match_str_ptr)user_mode_invalid, NULL).key)) {
-		smap_remove_free(cfg->user_modes, name_desc);
+	while ((name_desc = smap_match(cfg->modes, (fn_match_str_ptr)mode_is_invalid, NULL).key)) {
+		smap_remove_free(cfg->modes, name_desc);
 	}
 }
 
@@ -277,7 +313,7 @@ void validate_warn(const struct Cfg * const cfg) {
 		return;
 
 	warn_ambiguous_name_desc_smapi(cfg->scales, SCALE);
-	warn_ambiguous_name_desc_smap(cfg->user_modes, MODE);
+	warn_ambiguous_name_desc_smap(cfg->modes, MODE);
 
 	warn_ambiguous_name_desc_smapi(cfg->transforms, TRANSFORM);
 
@@ -347,8 +383,8 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// MODE
-	for (const struct SMapIt *it = smap_it(from->user_modes); it; it = smap_it_next(it)) {
-		smap_put_free(merged->user_modes, it->key, mode_clone(it->val));
+	for (const struct SMapIt *it = smap_it(from->modes); it; it = smap_it_next(it)) {
+		smap_put_free(merged->modes, it->key, mode_clone(it->val));
 	}
 
 	// TRANSFORM
@@ -393,8 +429,8 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// MODE
-	for (const struct SMapIt *it = smap_it(from->user_modes); it; it = smap_it_next(it)) {
-		smap_remove_free(merged->user_modes, it->key);
+	for (const struct SMapIt *it = smap_it(from->modes); it; it = smap_it_next(it)) {
+		smap_remove_free(merged->modes, it->key);
 	}
 
 	// TRANSFORM
@@ -579,7 +615,7 @@ void cfg_free(struct Cfg *cfg) {
 	free(cfg->callback_cmd);
 	free(cfg->laptop_display_prefix);
 	pset_free_vals(cfg->disableds);
-	smap_free_vals(cfg->user_modes);
+	smap_free_vals(cfg->modes);
 	smapi_free(cfg->scales);
 	smapi_free(cfg->transforms);
 	sset_free(cfg->adaptive_sync_off);

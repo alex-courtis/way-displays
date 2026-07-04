@@ -22,6 +22,7 @@ struct Mode {
 	int32_t width;
 	int32_t height;
 	int32_t refresh_mhz;
+
 	bool max;
 
 	bool preferred;
@@ -49,7 +50,7 @@ void mode_free(struct Mode *mode);
 
 bool mode_equal(const struct Mode* const a, const struct Mode* const b);
 
-bool mode_equal_user_mode_res_mhz(const struct Mode* const mode, const struct Mode* const user_mode);
+bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b);
 
 bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b);
 
@@ -65,8 +66,7 @@ bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode
 
 char *mode_str(const struct Mode * const mode);
 
-// TODO normalise with mode_str or move to info
-char *user_mode_str(const struct Mode * const mode);
+char *mode_str_brief(const struct Mode * const mode);
 
 /*
  * predicates
@@ -76,15 +76,11 @@ bool mode_is_preferred(const struct Mode *mode, const void* const unused);
 
 bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1 *zwlr_mode);
 
-bool mode_satisfies_user_mode(const struct Mode* const mode, const struct Mode *user_mode);
-
-bool user_mode_invalid(const char* const name_desc, const struct Mode* const user_mode, const void* const data);
-
 /*
  * utility
  */
 
-int32_t mhz_to_hz_rounded(int32_t mhz);
+int32_t mode_mhz_to_hz_rounded(int32_t mhz);
 
 double mode_dpi(const struct Mode* const mode);
 
@@ -98,7 +94,7 @@ const struct Mode *mode_preferred(const struct PSet* const modes, const struct P
 
 const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSet* const modes_failed);
 
-const struct Mode *mode_for_user_mode(const struct PSet* const modes, const struct PSet* const modes_failed, const struct Mode *user_mode);
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed);
 
 #endif // MODE_H
 

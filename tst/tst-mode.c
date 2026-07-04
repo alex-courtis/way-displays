@@ -15,7 +15,7 @@
 
 #include "mode.h"
 
-struct Mode *user_mode = NULL;
+struct Mode *mode_target = NULL;
 const struct PSet *modes = NULL;
 const struct PSet *modes_failed = NULL;
 
@@ -45,8 +45,8 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	free(user_mode);
-	user_mode = NULL;
+	free(mode_target);
+	mode_target = NULL;
 
 	pset_free_vals(modes);
 	pset_free(modes_failed);
@@ -84,116 +84,116 @@ static void mode__sort(void **state) {
 }
 
 static void mode_mhz_to_hz_rounded__(void **state) {
-	assert_int_equal(mhz_to_hz_rounded(0), 0);
-	assert_int_equal(mhz_to_hz_rounded(123567), 124);
+	assert_int_equal(mode_mhz_to_hz_rounded(0), 0);
+	assert_int_equal(mode_mhz_to_hz_rounded(123567), 124);
 }
 
-static void mode_user_mode__max(void **state) {
-	user_mode = mode_init_whr_max(-1, -1, -1);
+static void mode_best_satisfying__max(void **state) {
+	mode_target = mode_init_whr_max(-1, -1, -1);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_mode_equal(actual, mode5);
 	assert_ptr_equal(actual, mode5);
 }
 
-static void mode_user_mode__no_hz_no_match(void **state) {
-	user_mode = mode_init_whr(999, 999, -1);
+static void mode_best_satisfying__no_hz_no_match(void **state) {
+	mode_target = mode_init_whr(999, 999, -1);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_nul(actual);
 }
 
-static void mode_user_mode__no_hz_match(void **state) {
-	user_mode = mode_init_whr(400, 200, -1);
+static void mode_best_satisfying__no_hz_match(void **state) {
+	mode_target = mode_init_whr(400, 200, -1);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_mode_equal(actual, mode3);
 	assert_ptr_equal(actual, mode3);
 }
 
-static void mode_user_mode__even_hz_no_match(void **state) {
-	user_mode = mode_init_whr(200, 100, 144000);
+static void mode_best_satisfying__even_hz_no_match(void **state) {
+	mode_target = mode_init_whr(200, 100, 144000);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_nul(actual);
 }
 
-static void mode_user_mode__even_hz_match(void **state) {
-	user_mode = mode_init_whr(200, 100, 60000);
+static void mode_best_satisfying__even_hz_match(void **state) {
+	mode_target = mode_init_whr(200, 100, 60000);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_mode_equal(actual, mode1);
 	assert_ptr_equal(actual, mode1);
 }
 
-static void mode_user_mode__even_hz_rounded_up(void **state) {
-	user_mode = mode_init_whr(600, 300, 165000);
+static void mode_best_satisfying__even_hz_rounded_up(void **state) {
+	mode_target = mode_init_whr(600, 300, 165000);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_mode_equal(actual, mode4);
 	assert_ptr_equal(actual, mode4);
 }
 
-static void mode_user_mode__failed(void **state) {
-	user_mode = mode_init_whr(200, 100, 60000);
+static void mode_best_satisfying__failed(void **state) {
+	mode_target = mode_init_whr(200, 100, 60000);
 
 	pset_add(modes_failed, mode1);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_mode_equal(actual, mode0);
 	assert_ptr_equal(actual, mode0);
 }
 
-static void mode_user_mode__exact_hz_match(void **state) {
-	user_mode = mode_init_whr(200, 100, 60499);
+static void mode_best_satisfying__exact_hz_match(void **state) {
+	mode_target = mode_init_whr(200, 100, 60499);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_mode_equal(actual, mode1);
 	assert_ptr_equal(actual, mode1);
 }
 
-static void mode_user_mode__exact_hz_failed(void **state) {
-	user_mode = mode_init_whr(200, 100, 60499);
+static void mode_best_satisfying__exact_hz_failed(void **state) {
+	mode_target = mode_init_whr(200, 100, 60499);
 
 	pset_add(modes_failed, mode1);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_mode_equal(actual, mode0);
 	assert_ptr_equal(actual, mode0);
 }
 
-static void mode_user_mode__width_failed(void **state) {
-	user_mode = mode_init_whr(1000, 100, 60499);
+static void mode_best_satisfying__width_failed(void **state) {
+	mode_target = mode_init_whr(1000, 100, 60499);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
-
-	assert_nul(actual);
-}
-
-static void mode_user_mode__height_failed(void **state) {
-	user_mode = mode_init_whr(200, 9999999, 60499);
-
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_nul(actual);
 }
 
-static void mode_user_mode__all_matches_failed(void **state) {
-	user_mode = mode_init_whr(200, 100, 60499);
+static void mode_best_satisfying__height_failed(void **state) {
+	mode_target = mode_init_whr(200, 9999999, 60499);
+
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
+
+	assert_nul(actual);
+}
+
+static void mode_best_satisfying__all_matches_failed(void **state) {
+	mode_target = mode_init_whr(200, 100, 60499);
 
 	pset_add(modes_failed, mode0);
 	pset_add(modes_failed, mode1);
 
-	const struct Mode *actual = mode_for_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(mode_target, modes, modes_failed);
 
 	assert_nul(actual);
 }
@@ -321,18 +321,18 @@ int main(void) {
 
 		TEST_BA(mode_mhz_to_hz_rounded__),
 
-		TEST_BA(mode_user_mode__max),
-		TEST_BA(mode_user_mode__no_hz_no_match),
-		TEST_BA(mode_user_mode__no_hz_match),
-		TEST_BA(mode_user_mode__even_hz_no_match),
-		TEST_BA(mode_user_mode__even_hz_match),
-		TEST_BA(mode_user_mode__even_hz_rounded_up),
-		TEST_BA(mode_user_mode__failed),
-		TEST_BA(mode_user_mode__exact_hz_match),
-		TEST_BA(mode_user_mode__exact_hz_failed),
-		TEST_BA(mode_user_mode__width_failed),
-		TEST_BA(mode_user_mode__height_failed),
-		TEST_BA(mode_user_mode__all_matches_failed),
+		TEST_BA(mode_best_satisfying__max),
+		TEST_BA(mode_best_satisfying__no_hz_no_match),
+		TEST_BA(mode_best_satisfying__no_hz_match),
+		TEST_BA(mode_best_satisfying__even_hz_no_match),
+		TEST_BA(mode_best_satisfying__even_hz_match),
+		TEST_BA(mode_best_satisfying__even_hz_rounded_up),
+		TEST_BA(mode_best_satisfying__failed),
+		TEST_BA(mode_best_satisfying__exact_hz_match),
+		TEST_BA(mode_best_satisfying__exact_hz_failed),
+		TEST_BA(mode_best_satisfying__width_failed),
+		TEST_BA(mode_best_satisfying__height_failed),
+		TEST_BA(mode_best_satisfying__all_matches_failed),
 
 		TEST_BA(mode_dpi__),
 

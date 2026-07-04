@@ -27,14 +27,14 @@
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-static void print_user_mode(const enum LogThreshold t, const char * name_desc, const struct Mode * const user_mode, const bool del) {
-	if (!user_mode)
+static void print_mode_cfg(const enum LogThreshold t, const char * name_desc, const struct Mode * const mode, const bool del) {
+	if (!mode)
 		return;
 
 	if (del) {
 		log_(t, "    %s", name_desc);
 	} else {
-		char *um_str = user_mode_str(user_mode);
+		char *um_str = mode_str_brief(mode);
 		log_(t, "    %s: %s", name_desc, um_str);
 		free(um_str);
 	}
@@ -87,7 +87,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 
 		// res/refresh/hz line
 		const struct Mode *mode_major = it->val;
-		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mode_major->width, mode_major->height, mhz_to_hz_rounded(mode_major->refresh_mhz));
+		char *msg = sprintf_alloc("    mode:     %5d x%5d @%4d Hz ", mode_major->width, mode_major->height, mode_mhz_to_hz_rounded(mode_major->refresh_mhz));
 
 		// append all modes matching the line
 		const struct Mode *mode_minor = mode_major;
@@ -160,10 +160,10 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (smap_size(cfg->user_modes) > 0) {
+	if (smap_size(cfg->modes) > 0) {
 		log_(t, "  Mode:");
-		for (const struct SMapIt *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
-			print_user_mode(t, it->key, it->val, del);
+		for (const struct SMapIt *it = smap_it(cfg->modes); it; it = smap_it_next(it)) {
+			print_mode_cfg(t, it->key, it->val, del);
 		}
 	}
 
@@ -256,16 +256,16 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 	newline = true;
 
-	for (const struct SMapIt *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
-		struct Mode *user_mode = (struct Mode*)it->val;
+	for (const struct SMapIt *it = smap_it(cfg->modes); it; it = smap_it_next(it)) {
+		struct Mode *mode = (struct Mode*)it->val;
 
 		char *msg;
-		if (user_mode->max) {
+		if (mode->max) {
 			msg = sprintf_alloc("MAX");
-		} else if (user_mode->refresh_mhz != -1) {
-			msg = sprintf_alloc("%d %d %g", user_mode->width, user_mode->height, ((float)user_mode->refresh_mhz) / 1000);
+		} else if (mode->refresh_mhz != -1) {
+			msg = sprintf_alloc("%d %d %g", mode->width, mode->height, ((float)mode->refresh_mhz) / 1000);
 		} else {
-			msg = sprintf_alloc("%d %d", user_mode->width, user_mode->height);
+			msg = sprintf_alloc("%d %d", mode->width, mode->height);
 		}
 
 		print_newline(t, &newline);
@@ -476,7 +476,7 @@ void print_list(const enum LogThreshold t, const struct SList * const heads) {
 					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : "",
 					head->current.mode->width,
 					head->current.mode->height,
-					mhz_to_hz_rounded(head->current.mode->refresh_mhz)
+					mode_mhz_to_hz_rounded(head->current.mode->refresh_mhz)
 				);
 		} else {
 			// no mode is considered disabled
@@ -586,7 +586,7 @@ char *delta_human_mode(const struct Head * const head) {
 		delta = sprintf_append(delta, "%dx%d@%dHz -> ",
 				head->current.mode->width,
 				head->current.mode->height,
-				mhz_to_hz_rounded(head->current.mode->refresh_mhz)
+				mode_mhz_to_hz_rounded(head->current.mode->refresh_mhz)
 				);
 	} else {
 		delta = sprintf_append(delta, "(no mode) -> ");
@@ -596,7 +596,7 @@ char *delta_human_mode(const struct Head * const head) {
 		delta = sprintf_append(delta, "%dx%d@%dHz",
 				head->desired.mode->width,
 				head->desired.mode->height,
-				mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
+				mode_mhz_to_hz_rounded(head->desired.mode->refresh_mhz)
 				);
 	} else {
 		delta = sprintf_append(delta, "(no mode)");

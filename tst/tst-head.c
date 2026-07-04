@@ -34,10 +34,10 @@ double __wrap_mode_dpi(const struct Mode* const mode) {
 }
 
 // cppcheck-suppress staticFunction
-const struct Mode *__wrap_mode_for_user_mode(const struct PSet* const modes, const struct PSet* const modes_failed, const struct Mode *user_mode) {
+const struct Mode *__wrap_mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed) {
+	check_expected_ptr(mode_target);
 	check_expected_ptr(modes);
 	check_expected_ptr(modes_failed);
-	check_expected_ptr(user_mode);
 	return mock_ptr_type_checked(struct Mode*);
 }
 
@@ -343,18 +343,18 @@ static void head_find_mode__user_available(void **state) {
 	pset_add(head->modes, mode);
 
 	// user preferred head
-	struct Mode *user_mode = mode_init();
-	smap_put(g_cfg->user_modes, "!.*EAD", user_mode);
+	struct Mode *mode_target = mode_init();
+	smap_put(g_cfg->modes, "!.*EAD", mode_target);
 	head->name = strdup("HEAD");
 
 	// mode matched to user
 	const struct Mode *expected = mode_init_h_whr(head, 4, 5, 6);
 	pset_add(head->modes, expected);
 
-	expect_ptr(__wrap_mode_for_user_mode, modes, head->modes);
-	expect_ptr(__wrap_mode_for_user_mode, modes_failed, head->modes_failed);
-	expect_ptr(__wrap_mode_for_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_for_user_mode, expected, struct Mode*);
+	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
+	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
+	expect_ptr(__wrap_mode_best_satisfying, modes_failed, head->modes_failed);
+	will_return_ptr_type(__wrap_mode_best_satisfying, expected, struct Mode*);
 
 	const struct Mode *actual = head_find_mode(head);
 
@@ -373,15 +373,15 @@ static void head_find_mode__user_failed(void **state) {
 	pset_add(head->modes, mode);
 
 	// user preferred head
-	struct Mode *user_mode = mode_init();
-	smap_put(g_cfg->user_modes, "!HEA.*", user_mode);
+	struct Mode *mode_target = mode_init();
+	smap_put(g_cfg->modes, "!HEA.*", mode_target);
 	head->name = strdup("HEAD");
 
 	// mode not matched to user
-	expect_ptr(__wrap_mode_for_user_mode, modes, head->modes);
-	expect_ptr(__wrap_mode_for_user_mode, modes_failed, head->modes_failed);
-	expect_ptr(__wrap_mode_for_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_for_user_mode, NULL, struct Mode*);
+	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
+	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
+	expect_ptr(__wrap_mode_best_satisfying, modes_failed, head->modes_failed);
+	will_return_ptr_type(__wrap_mode_best_satisfying, NULL, struct Mode*);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
@@ -403,10 +403,10 @@ static void head_find_mode__user_failed(void **state) {
 	assert_logs_empty();
 
 	// same test again
-	expect_ptr(__wrap_mode_for_user_mode, modes, head->modes);
-	expect_ptr(__wrap_mode_for_user_mode, modes_failed, head->modes_failed);
-	expect_ptr(__wrap_mode_for_user_mode, user_mode, user_mode);
-	will_return_ptr_type(__wrap_mode_for_user_mode, NULL, struct Mode*);
+	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
+	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
+	expect_ptr(__wrap_mode_best_satisfying, modes_failed, head->modes_failed);
+	will_return_ptr_type(__wrap_mode_best_satisfying, NULL, struct Mode*);
 
 	// marked failures avoided
 	actual = head_find_mode(head);

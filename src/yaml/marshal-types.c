@@ -73,25 +73,25 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 		return 0;
 
 	// order is important
-	yaml_map_add_enum    (c, cfg_element_name(ARRANGE),               cfg->arrange,               arrange_name,                                        map);
-	yaml_map_add_enum    (c, cfg_element_name(ALIGN),                 cfg->align,                 align_name,                                          map);
-	yaml_map_add_sset    (c, cfg_element_name(ORDER),                 cfg->order_name_desc,                                                            map);
-	yaml_map_add_enum    (c, cfg_element_name(SCALING),               cfg->scaling,               on_off_name,                                         map);
-	yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_TO),        cfg->scale_round_to,        scale_round_to_name,                                 map);
-	yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_STRATEGY),  cfg->scale_round_strategy,  scale_round_strategy_name,                           map);
-	yaml_map_add_enum    (c, cfg_element_name(AUTO_SCALE),            cfg->auto_scale,            on_off_name,                                         map);
-	yaml_map_add_int_nz  (c, cfg_element_name(AUTO_SCALE_DPI),        cfg->auto_scale_dpi,                                                             map);
-	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                             map);
-	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                             map);
-	yaml_map_add_smapi   (c, cfg_element_name(SCALE),                 cfg->scales,                yaml_map_from_scale,                                 map);
-	yaml_map_add_smap    (c, cfg_element_name(MODE),                  cfg->user_modes,            (fn_yaml_node_from_key_type)yaml_map_from_user_mode, map);
-	yaml_map_add_smapi   (c, cfg_element_name(TRANSFORM),             cfg->transforms,            yaml_map_from_transform,                             map);
-	yaml_map_add_sset    (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,                                                          map);
-	yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                               map);
-	yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                      map);
-	yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                                         map);
-	yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,                                  map);
-	yaml_map_add_pset    (c, cfg_element_name(DISABLED),              cfg->disableds,             (fn_yaml_node_from_type)yaml_node_from_disabled,     map);
+	yaml_map_add_enum    (c, cfg_element_name(ARRANGE),               cfg->arrange,               arrange_name,                                         map);
+	yaml_map_add_enum    (c, cfg_element_name(ALIGN),                 cfg->align,                 align_name,                                           map);
+	yaml_map_add_sset    (c, cfg_element_name(ORDER),                 cfg->order_name_desc,                                                             map);
+	yaml_map_add_enum    (c, cfg_element_name(SCALING),               cfg->scaling,               on_off_name,                                          map);
+	yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_TO),        cfg->scale_round_to,        scale_round_to_name,                                  map);
+	yaml_map_add_enum    (c, cfg_element_name(SCALE_ROUND_STRATEGY),  cfg->scale_round_strategy,  scale_round_strategy_name,                            map);
+	yaml_map_add_enum    (c, cfg_element_name(AUTO_SCALE),            cfg->auto_scale,            on_off_name,                                          map);
+	yaml_map_add_int_nz  (c, cfg_element_name(AUTO_SCALE_DPI),        cfg->auto_scale_dpi,                                                              map);
+	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                              map);
+	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                              map);
+	yaml_map_add_smapi   (c, cfg_element_name(SCALE),                 cfg->scales,                yaml_map_from_scale,                                  map);
+	yaml_map_add_smap    (c, cfg_element_name(MODE),                  cfg->modes,                 (fn_yaml_node_from_key_type)yaml_map_from_named_mode, map);
+	yaml_map_add_smapi   (c, cfg_element_name(TRANSFORM),             cfg->transforms,            yaml_map_from_transform,                              map);
+	yaml_map_add_sset    (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,                                                           map);
+	yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                                map);
+	yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                       map);
+	yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                                          map);
+	yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,                                   map);
+	yaml_map_add_pset    (c, cfg_element_name(DISABLED),              cfg->disableds,             (fn_yaml_node_from_type)yaml_node_from_disabled,      map);
 
 	return map;
 }
@@ -238,20 +238,21 @@ int yaml_map_from_scale(struct MC *c, const char* const name_desc, const size_t 
 	return map;
 }
 
-int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct Mode* const user_mode) {
+// TODO consolidate
+int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const struct Mode* const mode) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
 
 	yaml_map_add_str(c, "NAME_DESC", name_desc, map);
 
-	if (user_mode->max) {
-		yaml_map_add_bool(c, "MAX", user_mode->max, map);
+	if (mode->max) {
+		yaml_map_add_bool(c, "MAX", mode->max, map);
 	} else {
-		yaml_map_add_int(c, "WIDTH", user_mode->width, map);
-		yaml_map_add_int(c, "HEIGHT", user_mode->height, map);
-		if (user_mode->refresh_mhz != -1) {
-			char *hz = sprintf_alloc("%g", ((float)user_mode->refresh_mhz) / 1000);
+		yaml_map_add_int(c, "WIDTH", mode->width, map);
+		yaml_map_add_int(c, "HEIGHT", mode->height, map);
+		if (mode->refresh_mhz != -1) {
+			char *hz = sprintf_alloc("%g", ((float)mode->refresh_mhz) / 1000);
 			yaml_map_add_str(c, "HZ", hz, map);
 			free(hz);
 		}

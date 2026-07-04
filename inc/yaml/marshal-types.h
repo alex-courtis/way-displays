@@ -43,7 +43,7 @@ int yaml_map_from_mode     (struct MC *c, const struct Mode*      const mode);
 int yaml_map_from_head(struct MC *c, const struct Head* const head);
 
 // yaml_map_add_smap: fn_yaml_node_from_key_type
-int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct Mode* const user_mode);
+int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const struct Mode* const mode);
 
 // yaml_map_add_smapi: fn_node_from_yaml_key_size_t
 int yaml_map_from_scale    (struct MC *c, const char* const name_desc, const size_t scale);

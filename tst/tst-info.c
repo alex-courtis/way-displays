@@ -186,9 +186,9 @@ static void print_cfg__all(void **state) {
 	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 
-	smap_put(c->user_modes, "five", mode_init_whr(1920, 1080, 12340));
-	smap_put(c->user_modes, "six", mode_init_whr(2560, 1440, -1));
-	smap_put(c->user_modes, "seven", mode_init_whr_max(-1, -1, -1));
+	smap_put(c->modes, "five", mode_init_whr(1920, 1080, 12340));
+	smap_put(c->modes, "six", mode_init_whr(2560, 1440, -1));
+	smap_put(c->modes, "seven", mode_init_whr_max(-1, -1, -1));
 
 	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
@@ -216,9 +216,9 @@ static void print_cfg__del(void **state) {
 	smapi_put(c->scales, "three", 3000);
 	smapi_put(c->scales, "four", 4000);
 
-	smap_put(c->user_modes, "five", mode_init_whr(1920, 1080, 12340));
-	smap_put(c->user_modes, "six", mode_init_whr(2560, 1440, -1));
-	smap_put(c->user_modes, "seven", mode_init_whr_max(-1, -1, -1));
+	smap_put(c->modes, "five", mode_init_whr(1920, 1080, 12340));
+	smap_put(c->modes, "six", mode_init_whr(2560, 1440, -1));
+	smap_put(c->modes, "seven", mode_init_whr_max(-1, -1, -1));
 
 	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 	smapi_put(c->transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
@@ -324,9 +324,9 @@ static void print_cfg_commands__ok(void **state) {
 	smapi_put(c->scales, "one", 1000);
 	smapi_put(c->scales, "two", 2345);
 
-	smap_put(c->user_modes, "all", mode_init_whr(1, 2, 12340));
-	smap_put(c->user_modes, "res", mode_init_whr(4, 5, -1));
-	smap_put(c->user_modes, "max", mode_init_whr_max(7, 8, 9));
+	smap_put(c->modes, "all", mode_init_whr(1, 2, 12340));
+	smap_put(c->modes, "res", mode_init_whr(4, 5, -1));
+	smap_put(c->modes, "max", mode_init_whr_max(7, 8, 9));
 
 	smapi_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 

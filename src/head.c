@@ -261,14 +261,14 @@ const struct Mode *head_find_mode(struct Head * const head) {
 
 	const struct Mode *mode = NULL;
 
-	// maybe a user mode
-	struct Mode *user_mode = (struct Mode*)smap_match_key(g_cfg->user_modes, (fn_match_str)head_name_desc_matches_head, head).val;
-	if (user_mode) {
-		mode = mode_for_user_mode(head->modes, head->modes_failed, user_mode);
-		if (!mode && !user_mode->warned_no_mode) {
-			user_mode->warned_no_mode = true;
+	// maybe a cfg mode
+	struct Mode *mode_cfg = (struct Mode*)smap_match_key(g_cfg->modes, (fn_match_str)head_name_desc_matches_head, head).val;
+	if (mode_cfg) {
+		mode = mode_best_satisfying(mode_cfg, head->modes, head->modes_failed);
+		if (!mode && !mode_cfg->warned_no_mode) {
+			mode_cfg->warned_no_mode = true;
 
-			char *um = user_mode_str(user_mode);
+			char *um = mode_str_brief(mode_cfg);
 
 			log_warn(NULL);
 			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, um);

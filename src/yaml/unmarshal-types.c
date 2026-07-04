@@ -167,7 +167,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->scale_round_strategy = yaml_scalar_to_enum_def(c, SCALE_ROUND_STRATEGY_DEFAULT, value, scale_round_strategy_val, scale_round_strategy_name, scale_round_strategy_names);
 				break;
 			case MODE:
-				yaml_seq_into_col(c, value, cfg->user_modes, (fn_yaml_node_into_col)yaml_map_into_user_modes);
+				yaml_seq_into_col(c, value, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_named_modes);
 				break;
 			case TRANSFORM:
 				yaml_seq_into_col(c, value, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms);
@@ -365,15 +365,15 @@ end:
 	return;
 }
 
-void yaml_map_into_user_modes(struct UC *c, const struct SMap* const user_modes, const yaml_node_t *map) {
-	if (!user_modes)
+void yaml_map_into_named_modes(struct UC *c, const struct SMap* const modes, const yaml_node_t *map) {
+	if (!modes)
 		return;
 
 	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
 
-	struct Mode *user_mode = mode_init();
+	struct Mode *mode = mode_init();
 
 	char *name_desc = NULL;
 
@@ -386,12 +386,12 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap* const user_modes,
 
 	yaml_unmarshal_log_ctx_key(c, "WIDTH");
 	scalar = smap_get(nodes, "WIDTH");
-	if (scalar && !yaml_scalar_to_int(c, &user_mode->width, scalar))
+	if (scalar && !yaml_scalar_to_int(c, &mode->width, scalar))
 		goto err;
 
 	yaml_unmarshal_log_ctx_key(c, "HEIGHT");
 	scalar = smap_get(nodes, "HEIGHT");
-	if (scalar && !yaml_scalar_to_int(c, &user_mode->height, scalar))
+	if (scalar && !yaml_scalar_to_int(c, &mode->height, scalar))
 		goto err;
 
 	yaml_unmarshal_log_ctx_key(c, "HZ");
@@ -400,15 +400,15 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap* const user_modes,
 		float hz = 0;
 		if (!yaml_scalar_to_float(c, &hz, scalar))
 			goto err;
-		user_mode->refresh_mhz = lround(hz * 1000);
+		mode->refresh_mhz = lround(hz * 1000);
 	}
 
 	yaml_unmarshal_log_ctx_key(c, "MAX");
 	scalar = smap_get(nodes, "MAX");
-	if (scalar && !yaml_scalar_to_boolean(c, &user_mode->max, scalar))
+	if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
 		goto err;
 
-	if (smap_put_if_absent(user_modes, name_desc, user_mode)) {
+	if (smap_put_if_absent(modes, name_desc, mode)) {
 		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
 		goto err;
 	}
@@ -416,7 +416,7 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap* const user_modes,
 	goto end;
 
 err:
-	free(user_mode);
+	free(mode);
 
 end:
 	free(name_desc);

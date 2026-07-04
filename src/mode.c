@@ -8,7 +8,6 @@
 #include "cfg.h"
 #include "fn.h"
 #include "head.h"
-#include "log.h"
 #include "pset.h"
 #include "smap.h"
 #include "str.h"
@@ -30,7 +29,7 @@ struct Mode *mode_clone(const struct Mode * const from) {
 
 	struct Mode *to = (struct Mode*)calloc(1, sizeof(struct Mode));
 
-	*to = *from;
+	memcpy(to, from, sizeof(struct Mode));
 
 	return to;
 }
@@ -65,18 +64,14 @@ bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
 	return a && b &&
 		a->width == b->width &&
 		a->height == b->height &&
-		mhz_to_hz_rounded(a->refresh_mhz) == mhz_to_hz_rounded(b->refresh_mhz);
+		mode_mhz_to_hz_rounded(a->refresh_mhz) == mode_mhz_to_hz_rounded(b->refresh_mhz);
 }
 
-// TODO inline
-bool mode_equal_user_mode_res_mhz(const struct Mode* const mode, const struct Mode* const user_mode) {
-	if (!mode || !user_mode) {
-		return false;
-	}
-
-	return mode->width == user_mode->width &&
-		mode->height == user_mode->height &&
-		mode->refresh_mhz == user_mode->refresh_mhz;
+bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b) {
+	return a && b &&
+		a->width == b->width &&
+		a->height == b->height &&
+		a->refresh_mhz == b->refresh_mhz;
 }
 
 bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b) {
@@ -110,14 +105,14 @@ char *mode_str(const struct Mode * const mode) {
 	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
 			mode->width,
 			mode->height,
-			mhz_to_hz_rounded(mode->refresh_mhz),
+			mode_mhz_to_hz_rounded(mode->refresh_mhz),
 			mode->refresh_mhz / 1000,
 			mode->refresh_mhz % 1000,
 			mode->preferred ? " (preferred)" : ""
 			);
 }
 
-char *user_mode_str(const struct Mode * const mode) {
+char *mode_str_brief(const struct Mode * const mode) {
 	if (!mode)
 		return NULL;
 
@@ -145,54 +140,18 @@ bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1
 	return mode ? mode->zwlr_mode == zwlr_mode : false;
 }
 
-// TODO inline
-bool mode_satisfies_user_mode(const struct Mode* const mode, const struct Mode *user_mode) {
-	if (!mode || !user_mode)
+bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target) {
+	if (!mode || !mode_target)
 		return false;
 
-	return user_mode->max ||
-		(mode->width == user_mode->width &&
-		 mode->height == user_mode->height &&
-		 (user_mode->refresh_mhz == -1 || mhz_to_hz_rounded(mode->refresh_mhz) == mhz_to_hz_rounded(user_mode->refresh_mhz)));
+	return mode_target->max ||
+		(mode->width == mode_target->width &&
+		 mode->height == mode_target->height &&
+		 (mode_target->refresh_mhz == -1 || mode_mhz_to_hz_rounded(mode->refresh_mhz) == mode_mhz_to_hz_rounded(mode_target->refresh_mhz)));
 }
 
-bool user_mode_invalid(const char* const name_desc, const struct Mode* const user_mode, const void* const data) {
-	if (!user_mode || !name_desc) {
-		return true;
-	}
-	if (user_mode->width != -1 && user_mode->width <= 0) {
-		log_warn(NULL);
-		log_warn("Ignoring non-positive MODE %s WIDTH %d", name_desc, user_mode->width);
-		return true;
-	}
-	if (user_mode->height != -1 && user_mode->height <= 0) {
-		log_warn(NULL);
-		log_warn("Ignoring non-positive MODE %s HEIGHT %d", name_desc, user_mode->height);
-		return true;
-	}
-	if (user_mode->refresh_mhz != -1 && user_mode->refresh_mhz <= 0) {
-		log_warn(NULL);
-		log_warn("Ignoring non-positive MODE %s HZ %g", name_desc, ((float)user_mode->refresh_mhz) / 1000);
-		return true;
-	}
-
-	if (!user_mode->max) {
-		if (user_mode->width == -1) {
-			log_warn(NULL);
-			log_warn("Ignoring invalid MODE %s missing WIDTH", name_desc);
-			return true;
-		}
-		if (user_mode->height == -1) {
-			log_warn(NULL);
-			log_warn("Ignoring invalid MODE %s missing HEIGHT", name_desc);
-			return true;
-		}
-	}
-
-	return false;
-}
-
-int32_t mhz_to_hz_rounded(int32_t mhz) {
+// TODO take an actual mode
+int32_t mode_mhz_to_hz_rounded(int32_t mhz) {
 	return (mhz + 500) / 1000;
 }
 
@@ -264,8 +223,8 @@ const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSe
 	return mode_max;
 }
 
-const struct Mode *mode_for_user_mode(const struct PSet* const modes, const struct PSet* const modes_failed, const struct Mode *user_mode) {
-	if (!modes || !user_mode)
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed) {
+	if (!modes || !mode_target)
 		return NULL;
 
 	// TODO strip modes failed first
@@ -273,7 +232,7 @@ const struct Mode *mode_for_user_mode(const struct PSet* const modes, const stru
 	const struct Mode *mode = NULL;
 
 	// exact res and refresh
-	const struct Mode *mode_exact = pset_match(modes, (fn_match_ptr)mode_equal_user_mode_res_mhz, user_mode);
+	const struct Mode *mode_exact = pset_match(modes, (fn_match_ptr)mode_equal_res_mhz, mode_target);
 	if (mode_exact && !pset_contains(modes_failed, mode_exact)) {
 		return mode_exact;
 	}
@@ -282,8 +241,8 @@ const struct Mode *mode_for_user_mode(const struct PSet* const modes, const stru
 	const struct PSet *modes_sorted = pset_clone_shallow(modes);
 	pset_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
 
-	// first matching the user mode
-	for (const struct PSetIt *it = pset_match_it(modes_sorted, (fn_match_ptr)mode_satisfies_user_mode, user_mode); it; it = pset_it_next(it)) {
+	// first matching the target mode
+	for (const struct PSetIt *it = pset_match_it(modes_sorted, (fn_match_ptr)mode_satisfies, mode_target); it; it = pset_it_next(it)) {
 		if (!pset_contains(modes_failed, it->val)) {
 			mode = it->val;
 			pset_it_free(it);
