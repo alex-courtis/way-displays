@@ -45,7 +45,9 @@ static void mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	struct WlrMode *wlr_mode = wlr_mode_init(head, zwlr_output_mode_v1, 0, 0, 0, false);
+	struct WlrMode *wlr_mode = wlr_mode_init();
+	wlr_mode->head = head;
+	wlr_mode->zwlr_mode = zwlr_output_mode_v1;
 
 	pset_add(head->wlr_modes, wlr_mode);
 

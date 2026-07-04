@@ -5,6 +5,7 @@
 #include "expect-smaps.h"
 #include "expects.h"
 #include "util-file.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -15,7 +16,6 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
@@ -51,18 +51,19 @@ int before_each(void **state) {
 
 	s->head1 = head_init();
 
-	const struct WlrMode *wlr_mode_cur_more = wlr_mode_init(s->head1, NULL, 100, 200, 30001, false);
-	const struct WlrMode *wlr_mode_cur = wlr_mode_init(s->head1, NULL, 100, 200, 30000, true);
-	const struct WlrMode *wlr_mode_cur_less = wlr_mode_init(s->head1, NULL, 100, 200, 29999, false);
-	const struct WlrMode *wlr_mode_des = wlr_mode_init(s->head1, NULL, 400, 500, 60000, false);
-	const struct WlrMode *wlr_mode_failed = wlr_mode_init(s->head1, NULL, 700, 800, 90000, false);
-	const struct WlrMode *wlr_mode_ungrouped_1 = wlr_mode_init(s->head1, NULL, 1000, 1000, 49499, false);
-	const struct WlrMode *wlr_mode_grouped_1 = wlr_mode_init(s->head1, NULL, 1000, 1000, 49500, false);
-	const struct WlrMode *wlr_mode_grouped_2 = wlr_mode_init(s->head1, NULL, 1000, 1000, 49999, false);
-	const struct WlrMode *wlr_mode_grouped_3 = wlr_mode_init(s->head1, NULL, 1000, 1000, 50000, false);
-	const struct WlrMode *wlr_mode_grouped_4 = wlr_mode_init(s->head1, NULL, 1000, 1000, 50100, false);
-	const struct WlrMode *wlr_mode_grouped_5 = wlr_mode_init(s->head1, NULL, 1000, 1000, 50499, false);
-	const struct WlrMode *wlr_mode_ungrouped_2 = wlr_mode_init(s->head1, NULL, 1000, 1000, 50500, false);
+	const struct WlrMode *wlr_mode_cur_more = wlr_mode_init_h_whr(s->head1, 100, 200, 30001);
+	struct WlrMode *wlr_mode_cur = wlr_mode_init_h_whr(s->head1, 100, 200, 30000);
+	wlr_mode_cur->preferred = true;
+	const struct WlrMode *wlr_mode_cur_less = wlr_mode_init_h_whr(s->head1, 100, 200, 29999);
+	const struct WlrMode *wlr_mode_des = wlr_mode_init_h_whr(s->head1, 400, 500, 60000);
+	const struct WlrMode *wlr_mode_failed = wlr_mode_init_h_whr(s->head1, 700, 800, 90000);
+	const struct WlrMode *wlr_mode_ungrouped_1 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 49499);
+	const struct WlrMode *wlr_mode_grouped_1 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 49500);
+	const struct WlrMode *wlr_mode_grouped_2 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 49999);
+	const struct WlrMode *wlr_mode_grouped_3 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 50000);
+	const struct WlrMode *wlr_mode_grouped_4 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 50100);
+	const struct WlrMode *wlr_mode_grouped_5 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 50499);
+	const struct WlrMode *wlr_mode_ungrouped_2 = wlr_mode_init_h_whr(s->head1, 1000, 1000, 50500);
 
 	pset_add(s->head1->wlr_modes, wlr_mode_cur_more);
 	pset_add(s->head1->wlr_modes, wlr_mode_cur);
@@ -108,9 +109,10 @@ int before_each(void **state) {
 
 	s->head2 = head_init();
 
-	wlr_mode_cur = wlr_mode_init(s->head2, NULL, 1100, 1200, 130000, true);
-	wlr_mode_des = wlr_mode_init(s->head2, NULL, 1400, 1500, 160000, false);
-	wlr_mode_failed = wlr_mode_init(s->head2, NULL, 1700, 1800, 190000, false);
+	wlr_mode_cur = wlr_mode_init_h_whr(s->head2, 1100, 1200, 130000);
+	wlr_mode_cur->preferred = true;
+	wlr_mode_des = wlr_mode_init_h_whr(s->head2, 1400, 1500, 160000);
+	wlr_mode_failed = wlr_mode_init_h_whr(s->head2, 1700, 1800, 190000);
 
 	pset_add(s->head2->wlr_modes, wlr_mode_cur);
 	pset_add(s->head2->wlr_modes, wlr_mode_des);
@@ -184,9 +186,9 @@ static void print_cfg__all(void **state) {
 	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 
-	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
-	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
-	smap_put(c->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
+	smap_put(c->user_modes, "five", wlr_mode_init_whr(1920, 1080, 12340));
+	smap_put(c->user_modes, "six", wlr_mode_init_whr(2560, 1440, -1));
+	smap_put(c->user_modes, "seven", wlr_mode_init_whr_max(-1, -1, -1));
 
 	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
@@ -214,9 +216,9 @@ static void print_cfg__del(void **state) {
 	smapi_put(c->scales, "three", 3000);
 	smapi_put(c->scales, "four", 4000);
 
-	smap_put(c->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
-	smap_put(c->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
-	smap_put(c->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
+	smap_put(c->user_modes, "five", wlr_mode_init_whr(1920, 1080, 12340));
+	smap_put(c->user_modes, "six", wlr_mode_init_whr(2560, 1440, -1));
+	smap_put(c->user_modes, "seven", wlr_mode_init_whr_max(-1, -1, -1));
 
 	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 	smapi_put(c->transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
@@ -322,9 +324,9 @@ static void print_cfg_commands__ok(void **state) {
 	smapi_put(c->scales, "one", 1000);
 	smapi_put(c->scales, "two", 2345);
 
-	smap_put(c->user_modes, "all", user_mode_init(false, 1, 2, 12340, false));
-	smap_put(c->user_modes, "res", user_mode_init(false, 4, 5, -1, false));
-	smap_put(c->user_modes, "max", user_mode_init(true, 7, 8, 9, false));
+	smap_put(c->user_modes, "all", wlr_mode_init_whr(1, 2, 12340));
+	smap_put(c->user_modes, "res", wlr_mode_init_whr(4, 5, -1));
+	smap_put(c->user_modes, "max", wlr_mode_init_whr_max(7, 8, 9));
 
 	smapi_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 

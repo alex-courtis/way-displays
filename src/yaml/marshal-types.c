@@ -8,7 +8,6 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "convert.h"
 #include "head.h"
 #include "ipc.h"
@@ -239,7 +238,7 @@ int yaml_map_from_scale(struct MC *c, const char* const name_desc, const size_t 
 	return map;
 }
 
-int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode) {
+int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct WlrMode* const user_mode) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;

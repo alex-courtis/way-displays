@@ -77,7 +77,7 @@ static int before_each(void **state) {
 	for (int i = 0; i < 10; i++) {
 		struct Head *head = head_init();
 		head->desired.enabled = true;
-		const struct WlrMode *wlr_mode = wlr_mode_init(head, NULL, i * 20, i * 10, 0, false);
+		const struct WlrMode *wlr_mode = wlr_mode_init_h_whr(head, i * 20, i * 10, 0);
 		head->desired.wlr_mode = wlr_mode;
 		pset_add(head->wlr_modes, wlr_mode);
 		slist_append(&s->heads, head);
@@ -469,7 +469,8 @@ static void desire_enabled__no_override(void **state) {
 
 static void desire_mode__disabled(void **state) {
 	struct Head *head = head_init_name("head");
-	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
+	struct WlrMode *wlr_mode = wlr_mode_init();
+	wlr_mode->head = head;
 
 	head->desired.enabled = false;
 	head->desired.wlr_mode = wlr_mode;
@@ -489,7 +490,8 @@ static void desire_mode__disabled(void **state) {
 
 static void desire_mode__no_mode(void **state) {
 	struct Head *head = head_init_name("head");
-	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
+	struct WlrMode *wlr_mode = wlr_mode_init();
+	wlr_mode->head = head;
 
 	head->desired.enabled = true;
 	head->desired.wlr_mode = wlr_mode;
@@ -512,7 +514,8 @@ static void desire_mode__no_mode(void **state) {
 
 static void desire_mode__no_mode_warned(void **state) {
 	struct Head *head = head_init_name("head");
-	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
+	struct WlrMode *wlr_mode = wlr_mode_init();
+	wlr_mode->head = head;
 
 	head->desired.enabled = true;
 	head->desired.wlr_mode = wlr_mode;
@@ -536,13 +539,13 @@ static void desire_mode__no_mode_warned(void **state) {
 
 static void desire_mode__ok(void **state) {
 	struct Head *head = head_init_name("head");
-	const struct WlrMode *wlr_mode0 = wlr_mode_init(head, NULL, 1, 2, 3, false);
+	const struct WlrMode *wlr_mode0 = wlr_mode_init_h_whr(head, 1, 2, 3);
 
 	head->desired.enabled = true;
 	head->desired.wlr_mode = wlr_mode0;
 	pset_add(head->wlr_modes, wlr_mode0);
 
-	struct WlrMode *wlr_mode1 = wlr_mode_init(head, NULL, 4, 5, 6, false);
+	struct WlrMode *wlr_mode1 = wlr_mode_init_h_whr(head, 4, 5, 6);
 	pset_add(head->wlr_modes, wlr_mode1);
 
 	expect_ptr(__wrap_head_find_wlr_mode, head, head);
@@ -822,7 +825,8 @@ static void handle_success__head_changing_adaptive_sync_fail(void **state) {
 
 static void handle_success__head_changing_mode(void **state) {
 	struct Head *head = head_init_name("head");
-	struct WlrMode *wlr_mode = wlr_mode_init_head(head);
+	struct WlrMode *wlr_mode = wlr_mode_init();
+	wlr_mode->head = head;
 	head->desired.wlr_mode = wlr_mode;
 	pset_add(head->wlr_modes, wlr_mode);
 
@@ -859,8 +863,8 @@ static void handle_success__ok(void **state) {
 
 static void handle_failure__mode(void **state) {
 	struct Head *head = head_init_name("nam");
-	const struct WlrMode *wlr_mode_cur = wlr_mode_init(head, NULL, 1, 2, 3, false);
-	const struct WlrMode *wlr_mode_des = wlr_mode_init(head, NULL, 4, 5, 6, false);
+	const struct WlrMode *wlr_mode_cur = wlr_mode_init_h_whr(head, 1, 2, 3);
+	const struct WlrMode *wlr_mode_des = wlr_mode_init_h_whr(head, 4, 5, 6);
 
 	head->current.wlr_mode = wlr_mode_cur;
 	head->desired.wlr_mode = wlr_mode_des;

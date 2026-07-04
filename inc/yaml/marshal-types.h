@@ -7,7 +7,6 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -44,7 +43,7 @@ int yaml_map_from_wlr_mode (struct MC *c, const struct WlrMode*   const wlr_mode
 int yaml_map_from_head(struct MC *c, const struct Head* const head);
 
 // yaml_map_add_smap: fn_yaml_node_from_key_type
-int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct UserMode* const user_mode);
+int yaml_map_from_user_mode(struct MC *c, const char* const name_desc, const struct WlrMode* const user_mode);
 
 // yaml_map_add_smapi: fn_node_from_yaml_key_size_t
 int yaml_map_from_scale    (struct MC *c, const char* const name_desc, const size_t scale);

@@ -3,6 +3,7 @@
 #include "assert-cfg.h"
 #include "assert-log.h"
 #include "util-file.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -12,7 +13,6 @@
 
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "log.h"
 #include "pset.h"
 #include "slist.h"
@@ -65,6 +65,17 @@ static int after_each(void **state) {
 	return 0;
 }
 
+static void cfg_equal__mode(void **state) {
+	struct State *s = *state;
+
+	smap_put(s->from->user_modes, "both", wlr_mode_init_whr(4, 5, 6));
+
+	smap_put(s->to->user_modes, "both", wlr_mode_init_whr(10, 11, 12));
+
+	assert_cfg_not_equal(s->from, s->to);
+
+	assert_logs_empty();
+}
 
 static void merge_set__arrange(void **state) {
 	struct State *s = *state;
@@ -205,15 +216,15 @@ static void merge_set__transform(void **state) {
 static void merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_modes, "to", user_mode_init(false, 1, 2, 3, false));
-	smap_put(s->to->user_modes, "both", user_mode_init(false, 4, 5, 6, false));
+	smap_put(s->to->user_modes, "to", wlr_mode_init_whr(1, 2, 3));
+	smap_put(s->to->user_modes, "both", wlr_mode_init_whr(4, 5, 6));
 
-	smap_put(s->from->user_modes, "from", user_mode_init(false, 7, 8, 9, true));
-	smap_put(s->from->user_modes, "both", user_mode_init(false, 10, 11, 12, true));
+	smap_put(s->from->user_modes, "from", wlr_mode_init_whr(7, 8, 9));
+	smap_put(s->from->user_modes, "both", wlr_mode_init_whr(10, 11, 12));
 
-	smap_put(s->expected->user_modes, "to", user_mode_init(false, 1, 2, 3, false));
-	smap_put(s->expected->user_modes, "both", user_mode_init(false, 10, 11, 12, true));
-	smap_put(s->expected->user_modes, "from", user_mode_init(false, 7, 8, 9, true));
+	smap_put(s->expected->user_modes, "to", wlr_mode_init_whr(1, 2, 3));
+	smap_put(s->expected->user_modes, "both", wlr_mode_init_whr(10, 11, 12));
+	smap_put(s->expected->user_modes, "from", wlr_mode_init_whr(7, 8, 9));
 
 	struct Cfg *merged = merge_set(s->to, s->from);
 
@@ -332,13 +343,13 @@ static void merge_del__scale(void **state) {
 static void merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->user_modes, "1", user_mode_init(false, 1, 1, 1, false));
-	smap_put(s->to->user_modes, "2", user_mode_init(false, 2, 2, 2, false));
+	smap_put(s->to->user_modes, "1", wlr_mode_init_whr(1, 1, 1));
+	smap_put(s->to->user_modes, "2", wlr_mode_init_whr(2, 2, 2));
 
-	smap_put(s->from->user_modes, "2", user_mode_init(false, 2, 2, 2, false));
-	smap_put(s->from->user_modes, "3", user_mode_init(false, 3, 3, 3, false));
+	smap_put(s->from->user_modes, "2", wlr_mode_init_whr(2, 2, 2));
+	smap_put(s->from->user_modes, "3", wlr_mode_init_whr(3, 3, 3));
 
-	smap_put(s->from->user_modes, "1", user_mode_init(false, 1, 1, 1, false));
+	smap_put(s->from->user_modes, "1", wlr_mode_init_whr(1, 1, 1));
 
 	struct Cfg *merged = merge_del(s->to, s->from);
 
@@ -529,18 +540,18 @@ static void validate_fix__row(void **state) {
 static void validate_fix__user_mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->from->user_modes, "ok", user_mode_init(false, 1, 2, 3, false));
-	smap_put(s->from->user_modes, "max", user_mode_init(true, -1, -1, -1, false));
+	smap_put(s->from->user_modes, "ok", wlr_mode_init_whr(1, 2, 3));
+	smap_put(s->from->user_modes, "max", wlr_mode_init_whr_max(-1, -1, -1));
 
-	smap_put(s->from->user_modes, "negative width", user_mode_init(false, -99, 2, 3, false));
+	smap_put(s->from->user_modes, "negative width", wlr_mode_init_whr(-99, 2, 3));
 
-	smap_put(s->from->user_modes, "negative height", user_mode_init(false, 1, -99, 3, false));
+	smap_put(s->from->user_modes, "negative height", wlr_mode_init_whr(1, -99, 3));
 
-	smap_put(s->from->user_modes, "negative hz", user_mode_init(false, 1, 2, -12340, false));
+	smap_put(s->from->user_modes, "negative hz", wlr_mode_init_whr(1, 2, -12340));
 
-	smap_put(s->from->user_modes, "missing width", user_mode_init(false, -1, 2, 3, false));
+	smap_put(s->from->user_modes, "missing width", wlr_mode_init_whr(-1, 2, 3));
 
-	smap_put(s->from->user_modes, "missing height", user_mode_init(false, 1, -1, 3, false));
+	smap_put(s->from->user_modes, "missing height", wlr_mode_init_whr(1, -1, 3));
 
 	validate_fix(s->from);
 
@@ -548,8 +559,8 @@ static void validate_fix__user_mode(void **state) {
 	assert_log(WARNING, expected_log);
 	assert_logs_empty();
 
-	smap_put(s->expected->user_modes, "ok", user_mode_init(false, 1, 2, 3, false));
-	smap_put(s->expected->user_modes, "max", user_mode_init(true, -1, -1, -1, false));
+	smap_put(s->expected->user_modes, "ok", wlr_mode_init_whr(1, 2, 3));
+	smap_put(s->expected->user_modes, "max", wlr_mode_init_whr_max(-1, -1, -1));
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -578,9 +589,9 @@ static void validate_warn__(void **state) {
 	smapi_put(s->expected->scales, "ssssssss", 2000);
 	smapi_put(s->expected->scales, "DP-1", 3000);
 
-	smap_put(s->expected->user_modes, "mmm", user_mode_init(false, 1, 1, 1, false));
-	smap_put(s->expected->user_modes, "mmmmmmmm", user_mode_init(false, 1, 1, 1, false));
-	smap_put(s->expected->user_modes, "DP-1", user_mode_init(false, 1, 1, 1, false));
+	smap_put(s->expected->user_modes, "mmm", wlr_mode_init_whr(1, 1, 1));
+	smap_put(s->expected->user_modes, "mmmmmmmm", wlr_mode_init_whr(1, 1, 1));
+	smap_put(s->expected->user_modes, "DP-1", wlr_mode_init_whr(1, 1, 1));
 
 	smapi_put(s->expected->transforms, "ttt", WL_OUTPUT_TRANSFORM_180);
 	smapi_put(s->expected->transforms, "tttttttttt", WL_OUTPUT_TRANSFORM_270);
@@ -624,6 +635,8 @@ static void validate_warn__(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST_BA(cfg_equal__mode),
+
 		TEST_BA(merge_set__arrange),
 		TEST_BA(merge_set__align),
 		TEST_BA(merge_set__order),

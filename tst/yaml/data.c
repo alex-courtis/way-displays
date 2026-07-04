@@ -4,6 +4,8 @@
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
+#include "../util-init.h"
+
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
@@ -56,9 +58,9 @@ struct Cfg *cfg_all(void) {
 	smapi_put(cfg->scales, "three", 3000);
 	smapi_put(cfg->scales, "four", 4000);
 
-	smap_put(cfg->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
-	smap_put(cfg->user_modes, "six", user_mode_init(false, 2560, 1440, -1, false));
-	smap_put(cfg->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
+	smap_put(cfg->user_modes, "five", wlr_mode_init_whr(1920, 1080, 12340));
+	smap_put(cfg->user_modes, "six", wlr_mode_init_whr(2560, 1440, -1));
+	smap_put(cfg->user_modes, "seven", wlr_mode_init_whr_max(-1, -1, -1));
 
 	sset_add(cfg->adaptive_sync_off, "ten");
 	sset_add(cfg->adaptive_sync_off, "ELEVEN");
@@ -132,7 +134,9 @@ struct IpcOperation *ipc_response(void) {
 	head0->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head0->current.transform = WL_OUTPUT_TRANSFORM_270;
 
-	head0->current.wlr_mode = wlr_mode_init(NULL, NULL, 10, 11, 12, true);
+	struct WlrMode *wlr_mode_cur = wlr_mode_init_whr(10, 11, 12);
+	wlr_mode_cur->preferred = true;
+	head0->current.wlr_mode = wlr_mode_cur;
 	pset_add(head0->wlr_modes, head0->current.wlr_mode);
 
 	head0->desired.scale = wl_fixed_from_double(7.0);
@@ -142,7 +146,7 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head0->desired.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
 
-	head0->desired.wlr_mode = wlr_mode_init(NULL, NULL, 13, 14, 15, false);;
+	head0->desired.wlr_mode = wlr_mode_init_whr(13, 14, 15);
 	pset_add(head0->wlr_modes, head0->desired.wlr_mode);
 
 	slist_append(&g_heads, head0);

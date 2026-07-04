@@ -11,7 +11,6 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "convert.h"
 #include "fn.h"
 #include "head.h"
@@ -374,7 +373,7 @@ void yaml_map_into_user_modes(struct UC *c, const struct SMap* const user_modes,
 	if (!nodes)
 		return;
 
-	struct UserMode *user_mode = user_mode_init_default();
+	struct WlrMode *user_mode = wlr_mode_init();
 
 	char *name_desc = NULL;
 
@@ -480,7 +479,7 @@ struct WlrMode *yaml_map_to_wlr_mode(struct UC *c, const yaml_node_t *map) {
 	if (!nodes)
 		return NULL;
 
-	struct WlrMode *wlr_mode = wlr_mode_init(NULL, NULL, 0, 0, 0, false);
+	struct WlrMode *wlr_mode = wlr_mode_init();
 
 	yaml_scalar_to_int(c, &wlr_mode->width, smap_get(nodes, "WIDTH"));
 	yaml_scalar_to_int(c, &wlr_mode->height, smap_get(nodes, "HEIGHT"));

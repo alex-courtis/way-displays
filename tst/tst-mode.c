@@ -4,19 +4,19 @@
 #include "assert-mode.h"
 #include "assert-pset.h"
 #include "asserts.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "cfg/user-mode.h"
 #include "fn.h"
 #include "head.h"
 #include "pset.h"
 
 #include "mode.h"
 
-struct UserMode *user_mode = NULL;
+struct WlrMode *user_mode = NULL;
 const struct PSet *wlr_modes = NULL;
 const struct PSet *wlr_modes_failed = NULL;
 
@@ -25,12 +25,12 @@ struct WlrMode *mode0, *mode1, *mode2, *mode3, *mode4, *mode5;
 static int before_each(void **state) {
 	assert_logs_empty_before();
 
-	mode0 = wlr_mode_init(NULL, NULL, 200, 100, 59999, false);
-	mode1 = wlr_mode_init(NULL, NULL, 200, 100, 60499, false);
-	mode2 = wlr_mode_init(NULL, NULL, 200, 100, 60500, false);
-	mode3 = wlr_mode_init(NULL, NULL, 400, 200, 120000, false);
-	mode4 = wlr_mode_init(NULL, NULL, 600, 300, 164999, false);
-	mode5 = wlr_mode_init(NULL, NULL, 800, 400, 144000, false);
+	mode0 = wlr_mode_init_whr(200, 100, 59999);
+	mode1 = wlr_mode_init_whr(200, 100, 60499);
+	mode2 = wlr_mode_init_whr(200, 100, 60500);
+	mode3 = wlr_mode_init_whr(400, 200, 120000);
+	mode4 = wlr_mode_init_whr(600, 300, 164999);
+	mode5 = wlr_mode_init_whr(800, 400, 144000);
 
 	wlr_modes = wlr_mode_pset_init();
 	wlr_modes_failed = wlr_mode_pset_init();
@@ -56,11 +56,11 @@ static int after_each(void **state) {
 }
 
 static void mode__sort(void **state) {
-	const struct WlrMode *mode00 = wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false);
-	const struct WlrMode *mode01 = wlr_mode_init(NULL, NULL, 1000, 9999, 3000, false);
-	const struct WlrMode *mode02 = wlr_mode_init(NULL, NULL, 1000, 2000, 9999, false);
-	const struct WlrMode *mode03 = wlr_mode_init(NULL, NULL, 9999, 2000, 3000, false);
-	const struct WlrMode *mode04 = wlr_mode_init(NULL, NULL, 1000, 2000, 3000, false);
+	const struct WlrMode *mode00 = wlr_mode_init_whr(1000, 2000, 3000);
+	const struct WlrMode *mode01 = wlr_mode_init_whr(1000, 9999, 3000);
+	const struct WlrMode *mode02 = wlr_mode_init_whr(1000, 2000, 9999);
+	const struct WlrMode *mode03 = wlr_mode_init_whr(9999, 2000, 3000);
+	const struct WlrMode *mode04 = wlr_mode_init_whr(1000, 2000, 3000);
 
 	const struct PSet *expected = wlr_mode_pset_init();
 	pset_add(expected, mode03);
@@ -90,7 +90,7 @@ static void mode_mhz_to_hz_rounded__(void **state) {
 }
 
 static void mode_user_mode__max(void **state) {
-	user_mode = user_mode_init(true, -1, -1, -1, false);
+	user_mode = wlr_mode_init_whr_max(-1, -1, -1);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -99,7 +99,7 @@ static void mode_user_mode__max(void **state) {
 }
 
 static void mode_user_mode__no_hz_no_match(void **state) {
-	user_mode = user_mode_init(false, 999, 999, -1, false);
+	user_mode = wlr_mode_init_whr(999, 999, -1);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -107,7 +107,7 @@ static void mode_user_mode__no_hz_no_match(void **state) {
 }
 
 static void mode_user_mode__no_hz_match(void **state) {
-	user_mode = user_mode_init(false, 400, 200, -1, false);
+	user_mode = wlr_mode_init_whr(400, 200, -1);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -116,7 +116,7 @@ static void mode_user_mode__no_hz_match(void **state) {
 }
 
 static void mode_user_mode__even_hz_no_match(void **state) {
-	user_mode = user_mode_init(false, 200, 100, 144000, false);
+	user_mode = wlr_mode_init_whr(200, 100, 144000);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -124,7 +124,7 @@ static void mode_user_mode__even_hz_no_match(void **state) {
 }
 
 static void mode_user_mode__even_hz_match(void **state) {
-	user_mode = user_mode_init(false, 200, 100, 60000, false);
+	user_mode = wlr_mode_init_whr(200, 100, 60000);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -133,7 +133,7 @@ static void mode_user_mode__even_hz_match(void **state) {
 }
 
 static void mode_user_mode__even_hz_rounded_up(void **state) {
-	user_mode = user_mode_init(false, 600, 300, 165000, false);
+	user_mode = wlr_mode_init_whr(600, 300, 165000);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -142,7 +142,7 @@ static void mode_user_mode__even_hz_rounded_up(void **state) {
 }
 
 static void mode_user_mode__failed(void **state) {
-	user_mode = user_mode_init(false, 200, 100, 60000, false);
+	user_mode = wlr_mode_init_whr(200, 100, 60000);
 
 	pset_add(wlr_modes_failed, mode1);
 
@@ -153,7 +153,7 @@ static void mode_user_mode__failed(void **state) {
 }
 
 static void mode_user_mode__exact_hz_match(void **state) {
-	user_mode = user_mode_init(false, 200, 100, 60499, false);
+	user_mode = wlr_mode_init_whr(200, 100, 60499);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -162,7 +162,7 @@ static void mode_user_mode__exact_hz_match(void **state) {
 }
 
 static void mode_user_mode__exact_hz_failed(void **state) {
-	user_mode = user_mode_init(false, 200, 100, 60499, false);
+	user_mode = wlr_mode_init_whr(200, 100, 60499);
 
 	pset_add(wlr_modes_failed, mode1);
 
@@ -173,7 +173,7 @@ static void mode_user_mode__exact_hz_failed(void **state) {
 }
 
 static void mode_user_mode__width_failed(void **state) {
-	user_mode = user_mode_init(false, 1000, 100, 60499, false);
+	user_mode = wlr_mode_init_whr(1000, 100, 60499);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -181,7 +181,7 @@ static void mode_user_mode__width_failed(void **state) {
 }
 
 static void mode_user_mode__height_failed(void **state) {
-	user_mode = user_mode_init(false, 200, 9999999, 60499, false);
+	user_mode = wlr_mode_init_whr(200, 9999999, 60499);
 
 	const struct WlrMode *actual = wlr_mode_for_user_mode(wlr_modes, wlr_modes_failed, user_mode);
 
@@ -189,7 +189,7 @@ static void mode_user_mode__height_failed(void **state) {
 }
 
 static void mode_user_mode__all_matches_failed(void **state) {
-	user_mode = user_mode_init(false, 200, 100, 60499, false);
+	user_mode = wlr_mode_init_whr(200, 100, 60499);
 
 	pset_add(wlr_modes_failed, mode0);
 	pset_add(wlr_modes_failed, mode1);
@@ -204,7 +204,7 @@ static void mode_dpi__(void **state) {
 	head->width_mm = 1000;
 	head->height_mm = 500;
 
-	const struct WlrMode *wlr_mode = wlr_mode_init(head, NULL, 2000, 1000, 0, false);
+	const struct WlrMode *wlr_mode = wlr_mode_init_h_whr(head, 2000, 1000, 0);
 	pset_add(head->wlr_modes, wlr_mode);
 
 	// nice roundish number to prevent odd test fails
@@ -224,7 +224,7 @@ static void mode_preferred__no_preferred(void **state) {
 }
 
 static void mode_preferred__preferred(void **state) {
-	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	struct WlrMode *expected = wlr_mode_init_whr_pref(111, 222, 333);
 	pset_add(wlr_modes, expected);
 
 	const struct WlrMode *actual = wlr_mode_preferred(wlr_modes, NULL);
@@ -234,7 +234,7 @@ static void mode_preferred__preferred(void **state) {
 }
 
 static void mode_preferred__preferred_failed(void **state) {
-	const struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *expected = wlr_mode_init_whr_pref(111, 222, 333);
 	pset_add(wlr_modes, expected);
 
 	pset_add(wlr_modes_failed, expected);
@@ -251,7 +251,7 @@ static void mode_max_preferred__no_preferred(void **state) {
 }
 
 static void mode_max_preferred__preferred_matches(void **state) {
-	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	struct WlrMode *expected = wlr_mode_init_whr_pref(111, 222, 333);
 	pset_add(wlr_modes, expected);
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, NULL);
@@ -261,10 +261,10 @@ static void mode_max_preferred__preferred_matches(void **state) {
 }
 
 static void mode_max_preferred__prior_matches(void **state) {
-	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 333, false);
+	struct WlrMode *expected = wlr_mode_init_whr(111, 222, 333);
 	pset_add(wlr_modes, expected);
 
-	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *preferred = wlr_mode_init_whr_pref(111, 222, 333);
 	pset_add(wlr_modes, preferred);
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, NULL);
@@ -274,10 +274,10 @@ static void mode_max_preferred__prior_matches(void **state) {
 }
 
 static void mode_max_preferred__later_higher_refresh(void **state) {
-	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *preferred = wlr_mode_init_whr_pref(111, 222, 333);
 	pset_add(wlr_modes, preferred);
 
-	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 999999, false);
+	struct WlrMode *expected = wlr_mode_init_whr(111, 222, 999999);
 	pset_add(wlr_modes, expected);
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, NULL);
@@ -287,10 +287,10 @@ static void mode_max_preferred__later_higher_refresh(void **state) {
 }
 
 static void mode_max_preferred__earlier_higher_refresh(void **state) {
-	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 999999, false);
+	struct WlrMode *expected = wlr_mode_init_whr(111, 222, 999999);
 	pset_add(wlr_modes, expected);
 
-	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *preferred = wlr_mode_init_whr_pref(111, 222, 333);
 	pset_add(wlr_modes, preferred);
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, NULL);
@@ -300,14 +300,14 @@ static void mode_max_preferred__earlier_higher_refresh(void **state) {
 }
 
 static void mode_max_preferred__failed(void **state) {
-	const struct WlrMode *failed = wlr_mode_init(NULL, NULL, 111, 222, 2000, false);
+	const struct WlrMode *failed = wlr_mode_init_whr(111, 222, 2000);
 	pset_add(wlr_modes, failed);
 	pset_add(wlr_modes_failed, failed);
 
-	const struct WlrMode *preferred = wlr_mode_init(NULL, NULL, 111, 222, 333, true);
+	const struct WlrMode *preferred = wlr_mode_init_whr_pref(111, 222, 333);
 	pset_add(wlr_modes, preferred);
 
-	struct WlrMode *expected = wlr_mode_init(NULL, NULL, 111, 222, 1000, false);
+	struct WlrMode *expected = wlr_mode_init_whr(111, 222, 1000);
 	pset_add(wlr_modes, expected);
 
 	const struct WlrMode *actual = wlr_mode_max_preferred(wlr_modes, wlr_modes_failed);

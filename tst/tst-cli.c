@@ -13,7 +13,6 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "ipc.h"
 #include "log.h"
 #include "pset.h"
@@ -305,7 +304,7 @@ static void parse_element__mode_set_max(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 2, argv);
 
-	struct UserMode *expectedUserMode = user_mode_init_default();
+	struct WlrMode *expectedUserMode = wlr_mode_init();
 	expectedUserMode->max = true;
 
 	struct Cfg *expected = cfg_init();
@@ -325,7 +324,7 @@ static void parse_element__mode_set_res(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 3, argv);
 
-	struct UserMode *expectedUserMode = user_mode_init_default();
+	struct WlrMode *expectedUserMode = wlr_mode_init();
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
 	expectedUserMode->height = 2;
@@ -347,7 +346,7 @@ static void parse_element__mode_set_res_refresh(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_SET, MODE, 4, argv);
 
-	struct UserMode *expectedUserMode = user_mode_init_default();
+	struct WlrMode *expectedUserMode = wlr_mode_init();
 	expectedUserMode->max = false;
 	expectedUserMode->width = 1;
 	expectedUserMode->height = 2;
@@ -404,7 +403,7 @@ static void parse_element__mode_del_ok(void **state) {
 
 	struct Cfg *actual = parse_element(CFG_DEL, MODE, 1, argv);
 
-	struct UserMode *expectedUserMode = user_mode_init_default();
+	struct WlrMode *expectedUserMode = wlr_mode_init();
 	expectedUserMode->max = true;
 
 	struct Cfg *expected = cfg_init();

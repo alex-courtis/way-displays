@@ -10,7 +10,6 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "fn.h"
 #include "info.h"
 #include "log.h"
@@ -263,7 +262,7 @@ const struct WlrMode *head_find_wlr_mode(struct Head * const head) {
 	const struct WlrMode *wlr_mode = NULL;
 
 	// maybe a user mode
-	struct UserMode *user_mode = (struct UserMode*)smap_match_key(g_cfg->user_modes, (fn_match_str)head_name_desc_matches_head, head).val;
+	struct WlrMode *user_mode = (struct WlrMode*)smap_match_key(g_cfg->user_modes, (fn_match_str)head_name_desc_matches_head, head).val;
 	if (user_mode) {
 		wlr_mode = wlr_mode_for_user_mode(head->wlr_modes, head->wlr_modes_failed, user_mode);
 		if (!wlr_mode && !user_mode->warned_no_mode) {

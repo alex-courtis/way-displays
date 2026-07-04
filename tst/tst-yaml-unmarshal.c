@@ -4,6 +4,7 @@
 #include "assert-log.h"
 #include "asserts.h"
 #include "util-file.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -15,7 +16,6 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "fn.h"
 #include "head.h"
 #include "ipc.h"
@@ -49,7 +49,7 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 	struct Cfg *actual = yaml_unmarshal_file(yaml_path, yaml_root_to_cfg);
 	_assert_non_nul(actual, "actual", file, line);
 
-	_assert_cfg_equal(actual, expected, file, line);
+	_assert_cfg(actual, expected, true, "assert_cfg_equal", file, line);
 
 	if (log_path) {
 		char *expected_log = read_file(log_path);
@@ -142,9 +142,9 @@ static void yaml_root_to_cfg__scale(void **state) {
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	smap_put(expected->user_modes, "max_override", user_mode_init(true, 1920, 1080, 12340, false));
-	smap_put(expected->user_modes, "five", user_mode_init(false, 1920, 1080, 12340, false));
-	smap_put(expected->user_modes, "seven", user_mode_init(true, -1, -1, -1, false));
+	smap_put(expected->user_modes, "max_override", wlr_mode_init_whr_max(1920, 1080, 12340));
+	smap_put(expected->user_modes, "five", wlr_mode_init_whr(1920, 1080, 12340));
+	smap_put(expected->user_modes, "seven", wlr_mode_init_whr_max(-1, -1, -1));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
 }

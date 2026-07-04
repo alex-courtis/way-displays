@@ -9,7 +9,6 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
-#include "cfg/user-mode.h"
 #include "convert.h"
 #include "fn.h"
 #include "head.h"
@@ -28,7 +27,7 @@
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-static void print_user_mode(const enum LogThreshold t, const char * name_desc, const struct UserMode * const user_mode, const bool del) {
+static void print_user_mode(const enum LogThreshold t, const char * name_desc, const struct WlrMode * const user_mode, const bool del) {
 	if (!user_mode)
 		return;
 
@@ -258,7 +257,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	newline = true;
 
 	for (const struct SMapIt *it = smap_it(cfg->user_modes); it; it = smap_it_next(it)) {
-		struct UserMode *user_mode = (struct UserMode*)it->val;
+		struct WlrMode *user_mode = (struct WlrMode*)it->val;
 
 		char *msg;
 		if (user_mode->max) {

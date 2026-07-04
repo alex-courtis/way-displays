@@ -1,28 +1,47 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mode.h"
 
 #include "cfg.h"
-#include "cfg/user-mode.h"
 #include "fn.h"
 #include "head.h"
-#include "str.h"
+#include "smap.h"
 #include "pset.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-struct WlrMode *wlr_mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode, int32_t width, int32_t height, int32_t refresh_mhz, bool preferred) {
+struct WlrMode *wlr_mode_init(void) {
 	struct WlrMode *wlr_mode = calloc(1, sizeof(struct WlrMode));
 
-	wlr_mode->head = head;
-	wlr_mode->zwlr_mode = zwlr_mode;
-	wlr_mode->width = width;
-	wlr_mode->height = height;
-	wlr_mode->refresh_mhz = refresh_mhz;
-	wlr_mode->preferred = preferred;
+	wlr_mode->width = -1;
+	wlr_mode->height = -1;
+	wlr_mode->refresh_mhz = -1;
 
 	return wlr_mode;
+}
+
+struct WlrMode *wlr_mode_clone(const struct WlrMode * const from) {
+	if (!from)
+		return NULL;
+
+	struct WlrMode *to = (struct WlrMode*)calloc(1, sizeof(struct WlrMode));
+
+	*to = *from;
+
+	return to;
+}
+
+const struct SMap *wlr_mode_smap_init(void) {
+	const struct SMapParams params = {
+		.equal_val = (fn_equal)wlr_mode_equal,
+		.free_val = (fn_free)wlr_mode_free,
+		.str_val = (fn_str)wlr_mode_str,
+		.clone_val = (fn_clone)wlr_mode_clone,
+	};
+	return smap_init_with(params);
 }
 
 const struct PSet *wlr_mode_pset_init(void) {
@@ -38,13 +57,7 @@ void wlr_mode_free(struct WlrMode *wlr_mode) {
 }
 
 bool wlr_mode_equal(const struct WlrMode* const a, const struct WlrMode* const b) {
-	return a && b &&
-		a->head == b->head &&
-		a->zwlr_mode == b->zwlr_mode &&
-		a->width == b->width &&
-		a->height == b->height &&
-		a->refresh_mhz == b->refresh_mhz &&
-		a->preferred == b->preferred;
+	return a && b && memcmp(a, b, sizeof(struct WlrMode)) == 0;
 }
 
 bool wlr_mode_equal_res_hz(const struct WlrMode* const a, const struct WlrMode* const b) {
@@ -55,7 +68,7 @@ bool wlr_mode_equal_res_hz(const struct WlrMode* const a, const struct WlrMode* 
 }
 
 // TODO inline
-bool wlr_mode_equal_user_mode_res_mhz(const struct WlrMode* const wlr_mode, const struct UserMode* const user_mode) {
+bool wlr_mode_equal_user_mode_res_mhz(const struct WlrMode* const wlr_mode, const struct WlrMode* const user_mode) {
 	if (!wlr_mode || !user_mode) {
 		return false;
 	}
@@ -103,6 +116,26 @@ char *wlr_mode_str(const struct WlrMode * const wlr_mode) {
 			);
 }
 
+char *user_mode_str(const struct WlrMode * const user_mode) {
+	if (!user_mode)
+		return NULL;
+
+	if (user_mode->max) {
+		return sprintf_alloc("MAX");
+	} else if (user_mode->refresh_mhz != -1) {
+		return sprintf_alloc("%dx%d@%gHz",
+				user_mode->width,
+				user_mode->height,
+				((float)user_mode->refresh_mhz) / 1000
+				);
+	} else {
+		return sprintf_alloc("%dx%d",
+				user_mode->width,
+				user_mode->height
+				);
+	}
+}
+
 bool wlr_mode_is_preferred(const struct WlrMode *wlr_mode, const void* const unused) {
 	return wlr_mode && wlr_mode->preferred;
 }
@@ -112,7 +145,7 @@ bool wlr_mode_is_zwlr_mode(const struct WlrMode *wlr_mode, const struct zwlr_out
 }
 
 // TODO inline
-bool wlr_mode_satisfies_user_mode(const struct WlrMode* const wlr_mode, const struct UserMode *user_mode) {
+bool wlr_mode_satisfies_user_mode(const struct WlrMode* const wlr_mode, const struct WlrMode *user_mode) {
 	if (!wlr_mode || !user_mode)
 		return false;
 
@@ -120,6 +153,42 @@ bool wlr_mode_satisfies_user_mode(const struct WlrMode* const wlr_mode, const st
 		(wlr_mode->width == user_mode->width &&
 		 wlr_mode->height == user_mode->height &&
 		 (user_mode->refresh_mhz == -1 || mhz_to_hz_rounded(wlr_mode->refresh_mhz) == mhz_to_hz_rounded(user_mode->refresh_mhz)));
+}
+
+bool user_mode_invalid(const char* const name_desc, const struct WlrMode* const user_mode, const void* const data) {
+	if (!user_mode || !name_desc) {
+		return true;
+	}
+	if (user_mode->width != -1 && user_mode->width <= 0) {
+		log_warn(NULL);
+		log_warn("Ignoring non-positive MODE %s WIDTH %d", name_desc, user_mode->width);
+		return true;
+	}
+	if (user_mode->height != -1 && user_mode->height <= 0) {
+		log_warn(NULL);
+		log_warn("Ignoring non-positive MODE %s HEIGHT %d", name_desc, user_mode->height);
+		return true;
+	}
+	if (user_mode->refresh_mhz != -1 && user_mode->refresh_mhz <= 0) {
+		log_warn(NULL);
+		log_warn("Ignoring non-positive MODE %s HZ %g", name_desc, ((float)user_mode->refresh_mhz) / 1000);
+		return true;
+	}
+
+	if (!user_mode->max) {
+		if (user_mode->width == -1) {
+			log_warn(NULL);
+			log_warn("Ignoring invalid MODE %s missing WIDTH", name_desc);
+			return true;
+		}
+		if (user_mode->height == -1) {
+			log_warn(NULL);
+			log_warn("Ignoring invalid MODE %s missing HEIGHT", name_desc);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 int32_t mhz_to_hz_rounded(int32_t mhz) {
@@ -194,7 +263,7 @@ const struct WlrMode *wlr_mode_max_preferred(const struct PSet* wlr_modes, const
 	return wlr_mode_max;
 }
 
-const struct WlrMode *wlr_mode_for_user_mode(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed, const struct UserMode *user_mode) {
+const struct WlrMode *wlr_mode_for_user_mode(const struct PSet* const wlr_modes, const struct PSet* const wlr_modes_failed, const struct WlrMode *user_mode) {
 	if (!wlr_modes || !user_mode)
 		return NULL;
 

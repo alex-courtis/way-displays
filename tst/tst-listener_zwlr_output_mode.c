@@ -23,8 +23,8 @@ static int before_each(void **state) {
 
 static void preferred__first(void **state) {
 	struct Head *head = head_init();
-	struct WlrMode *wlr_mode_existing = wlr_mode_init(head, NULL, 3840, 2160, 60000, false);
-	struct WlrMode *wlr_mode_pref = wlr_mode_init(head, NULL, 2560, 1440, 30000, false);
+	struct WlrMode *wlr_mode_existing = wlr_mode_init_h_whr(head, 3840, 2160, 60000);
+	struct WlrMode *wlr_mode_pref = wlr_mode_init_h_whr(head, 2560, 1440, 30000);
 
 	pset_add(head->wlr_modes, wlr_mode_existing);
 	pset_add(head->wlr_modes, wlr_mode_pref);
@@ -41,8 +41,9 @@ static void preferred__first(void **state) {
 
 static void preferred__subsequent(void **state) {
 	struct Head *head = head_init_name("NAM");
-	struct WlrMode *wlr_mode_existing = wlr_mode_init(head, NULL, 3840, 2160, 60000, true);
-	struct WlrMode *wlr_mode_subsequent = wlr_mode_init(head, NULL, 2560, 1440, 30000, false);
+	struct WlrMode *wlr_mode_existing = wlr_mode_init_h_whr(head, 3840, 2160, 60000);
+	wlr_mode_existing->preferred = true;
+	struct WlrMode *wlr_mode_subsequent = wlr_mode_init_h_whr(head, 2560, 1440, 30000);
 
 	pset_add(head->wlr_modes, wlr_mode_existing);
 	pset_add(head->wlr_modes, wlr_mode_subsequent);
