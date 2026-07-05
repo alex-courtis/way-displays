@@ -2,6 +2,7 @@
 
 #include "assert-log.h"
 #include "assert-mode.h"
+#include "assert-pset.h"
 #include "assert-wl.h"
 #include "asserts.h"
 #include "expects.h"
@@ -34,18 +35,16 @@ double __wrap_mode_dpi(const struct Mode* const mode) {
 }
 
 // cppcheck-suppress staticFunction
-const struct Mode *__wrap_mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed) {
+const struct Mode *__wrap_mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes) {
 	check_expected_ptr(mode_target);
 	check_expected_ptr(modes);
-	check_expected_ptr(modes_failed);
 	return mock_ptr_type_checked(struct Mode*);
 }
 
 // cppcheck-suppress staticFunction
-const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes, const struct PSet* const modes_failed) {
+const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes) {
 	check_expected_ptr(mode_target);
 	check_expected_ptr(modes);
-	check_expected_ptr(modes_failed);
 	return mock_ptr_type_checked(struct Mode*);
 }
 
@@ -318,11 +317,24 @@ static void head_set_scaled_dimensions__dimensions(void **state) {
 	head_free(head);
 }
 
+static void head_find_mode__no_modes(void **state) {
+	struct Head *head = head_init_name("head0");
+
+	expect_int_value(__wrap_call_back, t, ERROR);
+	expect_str(__wrap_call_back, msg1, "head0");
+	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
+
+	assert_nul(head_find_mode(head));
+
+	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
+
+	head_free(head);
+}
+
 static void head_find_mode__all_failed(void **state) {
 	struct Head *head = head_init_name("head0");
 	struct Mode *mode = mode_init();
 	mode->head = head;
-	pset_add(head->modes, mode);
 
 	// all modes failed
 	pset_add(head->modes_failed, mode);
@@ -354,7 +366,6 @@ static void head_find_mode__user_available(void **state) {
 
 	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
 	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
-	expect_ptr(__wrap_mode_best_satisfying, modes_failed, head->modes_failed);
 	will_return_ptr_type(__wrap_mode_best_satisfying, expected, struct Mode*);
 
 	const struct Mode *actual = head_find_mode(head);
@@ -381,7 +392,6 @@ static void head_find_mode__user_failed(void **state) {
 	// mode not matched to user
 	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
 	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
-	expect_ptr(__wrap_mode_best_satisfying, modes_failed, head->modes_failed);
 	will_return_ptr_type(__wrap_mode_best_satisfying, NULL, struct Mode*);
 
 	expect_int_value(__wrap_call_back, t, WARNING);
@@ -406,7 +416,6 @@ static void head_find_mode__user_failed(void **state) {
 	// same test again
 	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
 	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
-	expect_ptr(__wrap_mode_best_satisfying, modes_failed, head->modes_failed);
 	will_return_ptr_type(__wrap_mode_best_satisfying, NULL, struct Mode*);
 
 	// marked failures avoided
@@ -451,7 +460,6 @@ static void head_find_mode__mode_max_refresh(void **state) {
 
 	expect_ptr(__wrap_mode_max_refresh, mode_target, mode);
 	expect_ptr(__wrap_mode_max_refresh, modes, head->modes);
-	expect_ptr(__wrap_mode_max_refresh, modes_failed, head->modes_failed);
 	will_return_ptr_type(__wrap_mode_max_refresh, mode, struct Mode*);
 
 	const struct Mode *actual = head_find_mode(head);
@@ -513,7 +521,6 @@ static void head_find_mode__none(void **state) {
 	assert_logs_empty();
 
 	head_free(head);
-	free(mode_failed);
 }
 
 static void head_max_mode__max(void **state) {
@@ -523,7 +530,6 @@ static void head_max_mode__max(void **state) {
 	mode_failed->head = head;
 	pset_add(head->modes_failed, mode_failed);
 
-	pset_add(head->modes, mode_failed);
 	pset_add(head->modes, mode_init_whr(1000, 1000, 1000));
 	pset_add(head->modes, mode_init_whr(500, 500, 1000));
 	pset_add(head->modes, mode_init_whr(1000, 1000, 500));
@@ -677,13 +683,15 @@ static void heads_reapply__(void **state) {
 	struct Head *head_disabled = head_init_name("DP-7");
 	head_disabled->current.enabled = false;
 
+	const struct PSet *modes_once_failed = mode_pset_init();
+
 	head_disabled->mode_preferred = mode_init_h_whr(head_disabled, 3440, 1440, 59999);
-	pset_add(head_disabled->modes, head_disabled->mode_preferred);
-	pset_add(head_disabled->modes, mode_init_h_whr(head_disabled, 3840, 2160, 30000));
-	pset_add(head_disabled->modes, mode_init_h_whr(head_disabled, 3840, 2160, 29970));
+	pset_add(modes_once_failed, head_disabled->mode_preferred);
+	pset_add(modes_once_failed, mode_init_h_whr(head_disabled, 3840, 2160, 30000));
+	pset_add(modes_once_failed, mode_init_h_whr(head_disabled, 3840, 2160, 29970));
 
 	pset_free(head_disabled->modes_failed);
-	head_disabled->modes_failed = pset_clone_shallow(head_disabled->modes);
+	head_disabled->modes_failed = pset_clone_shallow(modes_once_failed);
 
 	slist_append(&heads, head_disabled);
 
@@ -701,13 +709,16 @@ static void heads_reapply__(void **state) {
 	heads_reapply(heads);
 
 
+	assert_pset_equal(head_disabled->modes, modes_once_failed);
+	assert_int_equal(pset_size(head_disabled->modes_failed), 0);
+
 	char *expected_log = read_file("tst/head/reapply.log");
 	assert_log(INFO, expected_log);
 	assert_logs_empty();
 	free(expected_log);
 
-
 	slist_free_vals(&heads, (fn_free)head_free);
+	pset_free(modes_once_failed);
 }
 
 static void head_release_mode__nulls(void **state) {
@@ -798,6 +809,7 @@ int main(void) {
 		TEST_BA(head_set_scaled_dimensions__transform),
 		TEST_BA(head_set_scaled_dimensions__dimensions),
 
+		TEST_BA(head_find_mode__no_modes),
 		TEST_BA(head_find_mode__all_failed),
 		TEST_BA(head_find_mode__user_available),
 		TEST_BA(head_find_mode__user_failed),

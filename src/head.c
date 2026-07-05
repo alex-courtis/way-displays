@@ -252,7 +252,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	if (pset_size(head->modes) == pset_size(head->modes_failed)) {
+	if (pset_size(head->modes) == 0) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head->name);
 		call_back(ERROR, head_human(head), "\n  No mode, disabling");
@@ -264,7 +264,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	// maybe a cfg mode
 	struct Mode *mode_cfg = (struct Mode*)smap_match_key(g_cfg->modes, (fn_match_str)head_name_desc_matches_head, head).val;
 	if (mode_cfg) {
-		mode = mode_best_satisfying(mode_cfg, head->modes, head->modes_failed);
+		mode = mode_best_satisfying(mode_cfg, head->modes);
 		if (!mode && !mode_cfg->warned_no_mode) {
 			mode_cfg->warned_no_mode = true;
 
@@ -285,7 +285,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	// always try preferred
 	if (!mode) {
 		if (head_is_max_preferred_refresh(head)) {
-			mode = mode_max_refresh(head->mode_preferred, head->modes, head->modes_failed);
+			mode = mode_max_refresh(head->mode_preferred, head->modes);
 		} else {
 			mode = head->mode_preferred;
 		}
@@ -385,11 +385,16 @@ void heads_reapply(struct SList *heads) {
 			log_info("    %d: Clear failed modes:", step++);
 
 			for (const struct PSetIt *it = pset_it(head->modes_failed); it; it = pset_it_next(it)) {
+
+				// add all failed back to modes
+				pset_add(head->modes, it->val);
+
 				char *str = mode_str(it->val);
 				log_info("      %s", str);
 				free(str);
 			}
 
+			// clear failed
 			pset_free(head->modes_failed);
 			head->modes_failed = mode_pset_init();
 		}
@@ -412,18 +417,18 @@ void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	if (head->current.mode && !pset_contains(head->modes, head->current.mode)) {
+	if (head->current.mode && !pset_contains(head->modes, head->current.mode) && !pset_contains(head->modes_failed, head->current.mode)) {
 		mode_free((struct Mode*)head->current.mode);
 		if (head->desired.mode == head->current.mode) {
 			head->desired.mode = NULL;
 		}
 	}
-	if (head->desired.mode && !pset_contains(head->modes, head->desired.mode)) {
+	if (head->desired.mode && !pset_contains(head->modes, head->desired.mode) && !pset_contains(head->modes_failed, head->desired.mode)) {
 		mode_free((struct Mode*)head->desired.mode);
 	}
 
 	pset_free_vals(head->modes);
-	pset_free(head->modes_failed);
+	pset_free_vals(head->modes_failed);
 
 	free(head->name);
 	free(head->description);

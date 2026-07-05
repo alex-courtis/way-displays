@@ -58,6 +58,8 @@ int before_each(void **state) {
 	const struct Mode *mode_cur_less = mode_init_h_whr(s->head1, 100, 200, 29999);
 	const struct Mode *mode_des = mode_init_h_whr(s->head1, 400, 500, 60000);
 	const struct Mode *mode_failed = mode_init_h_whr(s->head1, 700, 800, 90000);
+	const struct Mode *mode_not_failed_1 = mode_init_h_whr(s->head1, 700, 800, 89999);
+	const struct Mode *mode_not_failed_2 = mode_init_h_whr(s->head1, 700, 800, 90001);
 	const struct Mode *mode_ungrouped_1 = mode_init_h_whr(s->head1, 1000, 1000, 49499);
 	const struct Mode *mode_grouped_1 = mode_init_h_whr(s->head1, 1000, 1000, 49500);
 	const struct Mode *mode_grouped_2 = mode_init_h_whr(s->head1, 1000, 1000, 49999);
@@ -70,7 +72,8 @@ int before_each(void **state) {
 	pset_add(s->head1->modes, mode_cur);
 	pset_add(s->head1->modes, mode_cur_less);
 	pset_add(s->head1->modes, mode_des);
-	pset_add(s->head1->modes, mode_failed);
+	pset_add(s->head1->modes, mode_not_failed_1);
+	pset_add(s->head1->modes, mode_not_failed_2);
 	pset_add(s->head1->modes, mode_ungrouped_1);
 	pset_add(s->head1->modes, mode_grouped_1);
 	pset_add(s->head1->modes, mode_grouped_2);
@@ -116,7 +119,6 @@ int before_each(void **state) {
 
 	pset_add(s->head2->modes, mode_cur);
 	pset_add(s->head2->modes, mode_des);
-	pset_add(s->head2->modes, mode_failed);
 
 	pset_add(s->head2->modes_failed, mode_failed);
 

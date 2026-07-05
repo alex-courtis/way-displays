@@ -9,6 +9,9 @@ staticFunction:yaml/unmarshal-types.c
 # unused are implemented for completeness
 unusedFunction:src/convert.c
 
+# TODO remove following refactor
+staticFunction:src/mode.c
+
 # many library functions are not used
 unusedFunction:lib/alex-c
 staticFunction:lib/alex-c

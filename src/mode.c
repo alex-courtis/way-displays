@@ -179,31 +179,27 @@ double mode_scale(const struct Mode* const mode) {
 	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
 }
 
-const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes, const struct PSet* const modes_failed) {
-	if (!mode_target)
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes) {
+	if (!mode_target || !modes)
 		return NULL;
 
 	const struct PSet *candidates = pset_clone_shallow(modes);
-
-	// remove failed modes
-	for (const struct PSetIt *it = pset_it(modes_failed); it; it = pset_it_next(it))
-		pset_remove(candidates, it->val);
 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
 
-	return pset_match(candidates, (fn_match_ptr)mode_equal_res, mode_target);
+	const struct Mode *mode = pset_match(candidates, (fn_match_ptr)mode_equal_res, mode_target);
+
+	pset_free(candidates);
+
+	return mode;
 }
 
-const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed) {
-	if (!mode_target)
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes) {
+	if (!mode_target || !modes)
 		return NULL;
 
 	const struct PSet *candidates = pset_clone_shallow(modes);
-
-	// remove failed modes
-	for (const struct PSetIt *it = pset_it(modes_failed); it; it = pset_it_next(it))
-		pset_remove(candidates, it->val);
 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);

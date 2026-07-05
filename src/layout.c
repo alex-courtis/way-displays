@@ -446,6 +446,7 @@ void handle_failure(void) {
 
 				// mode setting failure, try again with another mode
 				pset_add(head->modes_failed, head->desired.mode);
+				pset_remove(head->modes, head->desired.mode);
 
 				// current mode may be misreported
 				head->current.mode = NULL;

@@ -12,7 +12,7 @@ name1 Arrived:
     mode:      1000 x 1000 @  51 Hz   50,500 mHz
     mode:      1000 x 1000 @  50 Hz   50,499 mHz  50,100 mHz  50,000 mHz  49,999 mHz  49,500 mHz
     mode:      1000 x 1000 @  49 Hz   49,499 mHz
-    mode:       700 x  800 @  90 Hz   90,000 mHz
+    mode:       700 x  800 @  90 Hz   90,001 mHz  89,999 mHz
     mode:       400 x  500 @  60 Hz   60,000 mHz
     mode:       100 x  200 @  30 Hz   30,001 mHz  30,000 mHz (preferred)  29,999 mHz
   failed:

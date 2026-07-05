@@ -890,6 +890,10 @@ static void handle_failure__mode(void **state) {
 	assert_mode_equal(head->desired.mode, mode_des);
 	assert_ptr_equal(head->desired.mode, mode_des);
 
+	assert_int_equal(pset_size(head->modes), 1);
+	assert_true(pset_contains(head->modes, mode_cur));
+
+	assert_int_equal(pset_size(head->modes_failed), 1);
 	assert_true(pset_contains(head->modes_failed, mode_des));
 
 	assert_logs_empty();
