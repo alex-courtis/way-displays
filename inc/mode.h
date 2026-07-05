@@ -103,7 +103,7 @@ double mode_scale(const struct Mode* const mode);
 // highest refresh matching target resolution, NULL when no target
 const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes, const struct PSet* const modes_failed);
 
-// mode exactly matching target otherwise mode_satisfies
+// mode exactly matching target otherwise mode_satisfies, NULL when no target
 const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed);
 
 #endif // MODE_H

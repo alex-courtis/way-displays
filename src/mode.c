@@ -61,6 +61,12 @@ bool mode_equal(const struct Mode* const a, const struct Mode* const b) {
 	return a && b && memcmp(a, b, sizeof(struct Mode)) == 0;
 }
 
+bool mode_equal_res(const struct Mode* const a, const struct Mode* const b) {
+	return a && b &&
+		a->width == b->width &&
+		a->height == b->height;
+}
+
 bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
 	return a && b &&
 		a->width == b->width &&
@@ -177,33 +183,21 @@ const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const 
 	if (!mode_target)
 		return NULL;
 
-	const struct Mode *mode = NULL;
-	const struct Mode *mode_max = NULL;
+	const struct PSet *candidates = pset_clone_shallow(modes);
 
-	// TODO could we use a sorted set?
+	// remove failed modes
+	for (const struct PSetIt *it = pset_it(modes_failed); it; it = pset_it_next(it))
+		pset_remove(candidates, it->val);
 
-	for (const struct PSetIt *it = pset_it(modes); it; it = pset_it_next(it)) {
-		mode = it->val;
+	// search from the top down
+	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
 
-		if (pset_contains(modes_failed, mode)) {
-			continue;
-		}
-
-		if (mode->width != mode_target->width || mode->height != mode_target->height) {
-			continue;
-		}
-
-		if (!mode_max) {
-			mode_max = mode;
-		} else if (mode->refresh_mhz > mode_max->refresh_mhz) {
-			mode_max = mode;
-		}
-	}
-
-	return mode_max;
+	return pset_match(candidates, (fn_match_ptr)mode_equal_res, mode_target);
 }
 
 const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed) {
+	if (!mode_target)
+		return NULL;
 
 	const struct PSet *candidates = pset_clone_shallow(modes);
 
