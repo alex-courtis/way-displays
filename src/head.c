@@ -402,6 +402,35 @@ void head_set_current_mode(struct Head * const head, const struct zwlr_output_mo
 	}
 }
 
+void head_set_mode_preferred(const struct Mode * const mode) {
+	if (!mode || !mode->head)
+		return;
+
+	struct Head *head = mode->head;
+
+	if (head->mode_preferred && head->mode_preferred != mode) {
+
+		char *existing_str = mode_str(head->mode_preferred);
+		char *new_str = mode_str(mode);
+
+		if (head->name) {
+			log_info(NULL);
+			log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", head->name, existing_str, new_str);
+		} else {
+			log_info(NULL);
+			log_info("???: multiple preferred modes advertised: using initial %s, ignoring %s", existing_str, new_str);
+		}
+
+		free(existing_str);
+		free(new_str);
+
+		return;
+	}
+
+	// set new preferred
+	mode->head->mode_preferred = mode;
+}
+
 void head_release(struct Head * const head) {
 	if (!head)
 		return;

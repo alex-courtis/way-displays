@@ -132,6 +132,9 @@ struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1 
 // set current.mode, does nothing on NULL inputs or zwlr_mode not present
 void head_set_current_mode(struct Head * const head, const struct zwlr_output_mode_v1 *zwlr_mode);
 
+// set preferred mode, NOP and warning if preferred mode already set
+void head_set_mode_preferred(const struct Mode * const mode);
+
 // free a head, creating a dummy in g_heads_departed
 void head_release(struct Head * const head);
 

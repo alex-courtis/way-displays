@@ -1,10 +1,8 @@
 #include <stdint.h>
-#include <stdlib.h>
 
 #include "listeners.h"
 
 #include "head.h"
-#include "log.h"
 #include "mode.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -30,35 +28,8 @@ static void refresh(void *data,
 
 static void preferred(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Mode *mode = data;
 
-	// TODO move to head and simplify
-
-	// some heads may advertise multiple preferred modes; ignore subsequent
-	if (mode->head) {
-		const struct Mode *mode_preferred = mode->head->mode_preferred;
-		if (mode_preferred) {
-
-			char *mode_preferred_str = mode_str(mode_preferred);
-
-			char *str = mode_str(mode);
-
-			if (mode_preferred->head && mode_preferred->head->name) {
-				log_info(NULL);
-				log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred->head->name, mode_preferred_str, str);
-			} else {
-				log_info(NULL);
-				log_info("???: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred_str, str);
-			}
-
-			free(mode_preferred_str);
-			free(str);
-
-			return;
-		} else {
-			mode->head->mode_preferred = mode;
-		}
-	}
+	head_set_mode_preferred(data);
 }
 
 static void finished(void *data,
