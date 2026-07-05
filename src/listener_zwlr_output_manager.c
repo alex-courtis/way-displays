@@ -15,6 +15,8 @@ static void head(void *data,
 
 	const struct Displ *displ = data;
 
+	// TODO move to head
+
 	struct Head *head = head_init();
 
 	head->zwlr_head = zwlr_output_head_v1;

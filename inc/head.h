@@ -40,7 +40,7 @@ struct Head {
 
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
-	const struct PSet* modes;
+	const struct PSet* modes; // pointers equal, not mode_equal
 
 	char *name;
 	char *description;
@@ -56,7 +56,8 @@ struct Head {
 	struct HeadState desired;
 	bool reapply_required;
 
-	const struct PSet *modes_failed; // references to modes
+	// TODO this could be marked on the mode OR moved from modes
+	const struct PSet *modes_failed; // pointers to modes
 	bool adaptive_sync_failed;
 
 	struct {

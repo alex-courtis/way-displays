@@ -44,6 +44,8 @@ static void mode_(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
+	// TODO move to head and rename function to mode
+
 	struct Mode *mode = mode_init();
 	mode->head = head;
 	mode->zwlr_mode = zwlr_output_mode_v1;
@@ -65,6 +67,8 @@ static void current_mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
+
+	// TODO move to head
 
 	const struct Mode *mode = pset_match(head->modes, (fn_match_ptr)mode_is_zwlr_mode, zwlr_output_mode_v1);
 
@@ -134,6 +138,8 @@ static void adaptive_sync(void *data,
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 	struct Head *head = data;
+
+	// TODO move to head
 
 	// dummy Head, just for printing
 	struct Head *head_departed = head_init();

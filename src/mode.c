@@ -34,6 +34,15 @@ struct Mode *mode_clone(const struct Mode * const from) {
 	return to;
 }
 
+const struct PSet *mode_pset_init(void) {
+	const struct PSetParams params = {
+		.free_val = (fn_free)mode_free,
+		.str_val = (fn_str)mode_str,
+		.clone_val = (fn_clone)mode_clone,
+	};
+	return pset_init_with(params);
+}
+
 const struct SMap *mode_smap_init(void) {
 	const struct SMapParams params = {
 		.equal_val = (fn_equal)mode_equal,
@@ -42,14 +51,6 @@ const struct SMap *mode_smap_init(void) {
 		.clone_val = (fn_clone)mode_clone,
 	};
 	return smap_init_with(params);
-}
-
-const struct PSet *mode_pset_init(void) {
-	const struct PSetParams params = {
-		.free_val = (fn_free)mode_free,
-		.str_val = (fn_str)mode_str,
-	};
-	return pset_init_with(params);
 }
 
 void mode_free(struct Mode *mode) {
@@ -67,7 +68,7 @@ bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
 		mode_hz_rounded(a) == mode_hz_rounded(b);
 }
 
-static bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b) {
+bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b) {
 	return a && b &&
 		a->width == b->width &&
 		a->height == b->height &&
@@ -140,7 +141,7 @@ bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1
 	return mode ? mode->zwlr_mode == zwlr_mode : false;
 }
 
-static bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target) {
+bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target) {
 	if (!mode || !mode_target)
 		return false;
 
@@ -179,11 +180,9 @@ const struct Mode *mode_preferred(const struct PSet* const modes, const struct P
 
 	const struct PSetIt *it;
 
-	for (it = pset_it(modes); it; it = pset_it_next(it)) {
-		const struct Mode *mode = it->val;
-
-		if (mode->preferred && !pset_contains(modes_failed, mode)) {
-			mode_preferred = mode;
+	for (it = pset_match_it(modes, (fn_match_ptr)mode_is_preferred, NULL); it; it = pset_it_next(it)) {
+		if (!pset_contains(modes_failed, it->val)) {
+			mode_preferred = it->val;
 			break;
 		}
 	}
@@ -193,6 +192,7 @@ const struct Mode *mode_preferred(const struct PSet* const modes, const struct P
 }
 
 const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSet* const modes_failed) {
+	// TODO could the head store preferred as a pointer?
 	const struct Mode *preferred = mode_preferred(modes, modes_failed);
 
 	if (!preferred)
@@ -200,6 +200,8 @@ const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSe
 
 	const struct Mode *mode = NULL;
 	const struct Mode *mode_max = NULL;
+
+	// TODO could we use a sorted set?
 
 	for (const struct PSetIt *it = pset_it(modes); it; it = pset_it_next(it)) {
 		mode = it->val;

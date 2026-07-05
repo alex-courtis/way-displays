@@ -282,7 +282,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 		}
 	}
 
-	// always preferred
+	// always try preferred
 	if (!mode) {
 		if (head_is_max_preferred_refresh(head)) {
 			mode = mode_max_preferred(head->modes, head->modes_failed);

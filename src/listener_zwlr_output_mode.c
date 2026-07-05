@@ -33,6 +33,8 @@ static void preferred(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Mode *mode = data;
 
+	// TODO move to head
+
 	// some heads may advertise multiple preferred modes; ignore subsequent
 	if (mode->head) {
 		const struct Mode *mode_pref;

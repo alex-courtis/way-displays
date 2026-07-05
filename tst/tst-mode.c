@@ -91,6 +91,9 @@ static void mode_hz_rounded__(void **state) {
 
 	mode_target->refresh_mhz = 123567;
 	assert_int_equal(mode_hz_rounded(mode_target), 124);
+
+	mode_target->refresh_mhz = 123500;
+	assert_int_equal(mode_hz_rounded(mode_target), 124);
 }
 
 static void mode_best_satisfying__max(void **state) {
