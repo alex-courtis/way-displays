@@ -60,10 +60,6 @@ const struct Mode *head_max_mode(const struct Head * const head) {
 	for (const struct PSetIt *it = pset_it(head->modes); it; it = pset_it_next(it)) {
 		const struct Mode *mode = it->val;
 
-		if (pset_contains(head->modes_failed, mode)) {
-			continue;
-		}
-
 		if (!mode_max) {
 			mode_max = mode;
 			continue;

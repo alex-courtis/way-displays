@@ -504,13 +504,6 @@ static void head_find_mode__max(void **state) {
 static void head_find_mode__none(void **state) {
 	struct Head *head = head_init_name("head0");
 
-	struct Mode *mode_failed = mode_init();
-	mode_failed->head = head;
-
-	// force to pass the first check and skip preferred messages
-	pset_add(head->modes_failed, mode_failed);
-	head->warned_no_preferred = true;
-
 	expect_int_value(__wrap_call_back, t, ERROR);
 	expect_str(__wrap_call_back, msg1, "head0");
 	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
@@ -525,10 +518,6 @@ static void head_find_mode__none(void **state) {
 
 static void head_max_mode__max(void **state) {
 	struct Head *head = head_init();
-
-	struct Mode *mode_failed = mode_init();
-	mode_failed->head = head;
-	pset_add(head->modes_failed, mode_failed);
 
 	pset_add(head->modes, mode_init_whr(1000, 1000, 1000));
 	pset_add(head->modes, mode_init_whr(500, 500, 1000));

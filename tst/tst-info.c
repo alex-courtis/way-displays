@@ -115,12 +115,9 @@ int before_each(void **state) {
 
 	mode_cur = mode_init_h_whr(s->head2, 1100, 1200, 130000);
 	mode_des = mode_init_h_whr(s->head2, 1400, 1500, 160000);
-	mode_failed = mode_init_h_whr(s->head2, 1700, 1800, 190000);
 
 	pset_add(s->head2->modes, mode_cur);
 	pset_add(s->head2->modes, mode_des);
-
-	pset_add(s->head2->modes_failed, mode_failed);
 
 	s->head2->name = strdup("name2");
 	s->head2->width_mm = 3;
