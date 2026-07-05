@@ -19,10 +19,24 @@
 #include "smap.h"
 #include "sset.h"
 #include "str.h"
+#include "wlr-output-management-unstable-v1.h"
 
 struct SList *g_heads = NULL;
 struct SList *g_heads_arrived = NULL;
 struct SList *g_heads_departed = NULL;
+
+struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head) {
+	if (!zwlr_head)
+		return NULL;
+
+	struct Head *head = head_init();
+	head->zwlr_head = zwlr_head;
+
+	slist_append(&g_heads, head);
+	slist_append(&g_heads_arrived, head);
+
+	return head;
+}
 
 struct Head *head_init(void) {
 	struct Head *head = calloc(1, sizeof(struct Head));
@@ -364,6 +378,47 @@ void head_set_description(struct Head * const head, const char *description) {
 	}
 }
 
+struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1 *zwlr_mode) {
+	if (!head || !zwlr_mode)
+		return NULL;
+
+	struct Mode *mode = mode_init();
+	mode->head = head;
+	mode->zwlr_mode = zwlr_mode;
+
+	pset_add(head->modes, mode);
+
+	return mode;
+}
+
+void head_set_current_mode(struct Head * const head, const struct zwlr_output_mode_v1 *zwlr_mode) {
+	if (!head || !zwlr_mode)
+		return;
+
+	const struct Mode *mode = pset_match(head->modes, (fn_match_ptr)mode_is_zwlr_mode, zwlr_mode);
+
+	if (mode) {
+		head->current.mode = mode;
+	}
+}
+
+void head_release(struct Head * const head) {
+	if (!head)
+		return;
+
+	// dummy Head, just for printing
+	struct Head *head_departed = head_init();
+	head_departed->name = strdup(head->name);
+	head_departed->description = strdup(head->description);
+	slist_append(&g_heads_departed, head_departed);
+
+	slist_remove_all(&g_heads_arrived, NULL, head);
+	slist_remove_all(&g_heads_departed, NULL, head);
+	slist_remove_all(&g_heads, NULL, head);
+
+	head_free(head);
+}
+
 void heads_reapply(struct SList *heads) {
 	log_info(NULL);
 	log_info("Reapply:");
@@ -455,12 +510,6 @@ void head_release_mode(struct Mode *mode) {
 	} else {
 		mode_free(mode);
 	}
-}
-
-void heads_release_head(const struct Head * const head) {
-	slist_remove_all(&g_heads_arrived, NULL, head);
-	slist_remove_all(&g_heads_departed, NULL, head);
-	slist_remove_all(&g_heads, NULL, head);
 }
 
 void heads_destroy(void) {

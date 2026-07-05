@@ -70,6 +70,9 @@ struct Head {
 	bool warned_no_mode;
 };
 
+// init a head, adding it to g_heads and g_heads_arrived
+struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head);
+
 struct Head *head_init(void);
 
 // description, name, "???"
@@ -123,12 +126,19 @@ void heads_reapply(struct SList *heads);
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
 
+// add a new entry to modes and return it, NULL on any NULL input
+struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1 *zwlr_mode);
+
+// set current.mode, does nothing on NULL inputs or zwlr_mode not present
+void head_set_current_mode(struct Head * const head, const struct zwlr_output_mode_v1 *zwlr_mode);
+
+// free a head, creating a dummy in g_heads_departed
+void head_release(struct Head * const head);
+
 // remove a mode from the head, including current/desired, freeing it
 void head_release_mode(struct Mode *mode);
 
 void head_free(struct Head *head);
-
-void heads_release_head(const struct Head * const head);
 
 void heads_destroy(void);
 

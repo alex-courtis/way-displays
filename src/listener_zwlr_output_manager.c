@@ -4,7 +4,6 @@
 
 #include "displ.h"
 #include "head.h"
-#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Displ data
@@ -13,17 +12,14 @@ static void head(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 
+	struct Head *head = head_introduce(zwlr_output_head_v1);
+
+	if (!head)
+		return;
+
 	const struct Displ *displ = data;
 
-	// TODO move to head
-
-	struct Head *head = head_init();
-
-	head->zwlr_head = zwlr_output_head_v1;
-
-	slist_append(&g_heads, head);
-	slist_append(&g_heads_arrived, head);
-
+	// TODO bump this minimum version
 	if (displ->zwlr_output_manager_version == ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
 		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, zwlr_output_head_listener_min(), head);
 	} else {

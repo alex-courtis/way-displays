@@ -4,11 +4,7 @@
 
 #include "listeners.h"
 
-#include "fn.h"
 #include "head.h"
-#include "mode.h"
-#include "pset.h"
-#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Head data
@@ -24,9 +20,8 @@ static void name(void *data,
 static void description(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *description) {
-	struct Head *head = data;
 
-	head_set_description(head, description);
+	head_set_description(data, description);
 }
 
 static void physical_size(void *data,
@@ -42,17 +37,11 @@ static void physical_size(void *data,
 static void mode_(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Head *head = data;
 
-	// TODO move to head and rename function to mode
+	struct Mode *mode = head_add_mode(data, zwlr_output_mode_v1);
 
-	struct Mode *mode = mode_init();
-	mode->head = head;
-	mode->zwlr_mode = zwlr_output_mode_v1;
-
-	pset_add(head->modes, mode);
-
-	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), mode);
+	if (mode)
+		zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), mode);
 }
 
 static void enabled(void *data,
@@ -66,15 +55,8 @@ static void enabled(void *data,
 static void current_mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Head *head = data;
 
-	// TODO move to head
-
-	const struct Mode *mode = pset_match(head->modes, (fn_match_ptr)mode_is_zwlr_mode, zwlr_output_mode_v1);
-
-	if (mode) {
-		head->current.mode = mode;
-	}
+	head_set_current_mode(data, zwlr_output_mode_v1);
 }
 
 static void position(void *data,
@@ -137,18 +119,8 @@ static void adaptive_sync(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
-	struct Head *head = data;
 
-	// TODO move to head
-
-	// dummy Head, just for printing
-	struct Head *head_departed = head_init();
-	head_departed->name = strdup(head->name);
-	head_departed->description = strdup(head->description);
-	slist_append(&g_heads_departed, head_departed);
-
-	heads_release_head(head);
-	head_free(head);
+	head_release(data);
 
 	zwlr_output_head_v1_destroy(zwlr_output_head_v1);
 }
