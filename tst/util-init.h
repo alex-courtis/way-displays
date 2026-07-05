@@ -13,8 +13,6 @@ struct Mode *mode_init_whr(int32_t width, int32_t height, int32_t refresh_mhz);
 
 struct Mode *mode_init_h_whr(struct Head* const head, int32_t width, int32_t height, int32_t refresh_mhz);
 
-struct Mode *mode_init_whr_pref(int32_t width, int32_t height, int32_t refresh_mhz);
-
 struct Mode *mode_init_whr_max(int32_t width, int32_t height, int32_t refresh_mhz);
 
 #endif // UTIL_INIT_H

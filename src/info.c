@@ -77,8 +77,6 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	if (!head)
 		return;
 
-	const struct Mode *mode_pref = head_preferred_mode(head);
-
 	// show from the top down
 	const struct PSet *modes_sorted = pset_clone_shallow(head->modes);
 	pset_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
@@ -97,7 +95,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 			msg = sprintf_append(msg, "%4d,%03d mHz", mode_minor->refresh_mhz / 1000, mode_minor->refresh_mhz % 1000);
 
 			// append preferred
-			if (mode_minor == mode_pref) {
+			if (mode_minor == head->mode_preferred) {
 				msg = sprintf_append(msg, " (preferred)");
 			}
 
@@ -396,8 +394,6 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 	if (!head)
 		return;
 
-	const struct Mode *preferred_mode = head_preferred_mode(head);
-
 	switch (event) {
 		case ARRIVED:
 		case NONE:
@@ -417,8 +413,8 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 			if (head->width_mm && head->height_mm) {
 				log_(t, "    width:     %dmm", head->width_mm);
 				log_(t, "    height:    %dmm", head->height_mm);
-				if (preferred_mode) {
-					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(preferred_mode), preferred_mode->width, preferred_mode->height);
+				if (head->mode_preferred) {
+					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(head->mode_preferred), head->mode_preferred->width, head->mode_preferred->height);
 				}
 			} else {
 				log_(t, "    width:     (not specified)");

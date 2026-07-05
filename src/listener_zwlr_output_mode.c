@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -33,20 +32,20 @@ static void preferred(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Mode *mode = data;
 
-	// TODO move to head
+	// TODO move to head and simplify
 
 	// some heads may advertise multiple preferred modes; ignore subsequent
 	if (mode->head) {
-		const struct Mode *mode_pref;
-		if ((mode_pref = head_preferred_mode(mode->head))) {
+		const struct Mode *mode_preferred = mode->head->mode_preferred;
+		if (mode_preferred) {
 
-			char *mode_preferred_str = mode_str(mode_pref);
+			char *mode_preferred_str = mode_str(mode_preferred);
 
 			char *str = mode_str(mode);
 
-			if (mode_pref->head && mode_pref->head->name) {
+			if (mode_preferred->head && mode_preferred->head->name) {
 				log_info(NULL);
-				log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_pref->head->name, mode_preferred_str, str);
+				log_info("%s: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred->head->name, mode_preferred_str, str);
 			} else {
 				log_info(NULL);
 				log_info("???: multiple preferred modes advertised: using initial %s, ignoring %s", mode_preferred_str, str);
@@ -56,10 +55,10 @@ static void preferred(void *data,
 			free(str);
 
 			return;
+		} else {
+			mode->head->mode_preferred = mode;
 		}
 	}
-
-	mode->preferred = true;
 }
 
 static void finished(void *data,

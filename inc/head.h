@@ -41,6 +41,7 @@ struct Head {
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
 	const struct PSet* modes; // pointers equal, not mode_equal
+	const struct Mode *mode_preferred; // pointer into modes
 
 	char *name;
 	char *description;

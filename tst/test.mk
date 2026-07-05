@@ -66,7 +66,7 @@ LDFLAGS += -Wl,$\
 tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=mode_dpi,$\
 	--wrap=mode_best_satisfying,$\
-	--wrap=mode_max_preferred,$\
+	--wrap=mode_max_refresh,$\
 	--wrap=call_back
 
 tst/tst-layout: LDFLAGS += -Wl,$\

@@ -227,100 +227,73 @@ static void mode_dpi__(void **state) {
 	head_free(head);
 }
 
-static void mode_preferred__no_preferred(void **state) {
-	const struct Mode *actual = mode_preferred(modes, NULL);
+static void mode_max_refresh__no_target(void **state) {
+	const struct Mode *actual = mode_max_refresh(NULL, modes, NULL);
 
 	assert_nul(actual);
 }
 
-static void mode_preferred__preferred(void **state) {
-	struct Mode *expected = mode_init_whr_pref(111, 222, 333);
-	pset_add(modes, expected);
-
-	const struct Mode *actual = mode_preferred(modes, NULL);
-
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
-}
-
-static void mode_preferred__preferred_failed(void **state) {
-	const struct Mode *expected = mode_init_whr_pref(111, 222, 333);
-	pset_add(modes, expected);
-
-	pset_add(modes_failed, expected);
-
-	const struct Mode *actual = mode_preferred(modes, modes_failed);
-
-	assert_nul(actual);
-}
-
-static void mode_max_preferred__no_preferred(void **state) {
-	const struct Mode *actual = mode_max_preferred(modes, NULL);
-
-	assert_nul(actual);
-}
-
-static void mode_max_preferred__preferred_matches(void **state) {
-	struct Mode *expected = mode_init_whr_pref(111, 222, 333);
-	pset_add(modes, expected);
-
-	const struct Mode *actual = mode_max_preferred(modes, NULL);
-
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
-}
-
-static void mode_max_preferred__prior_matches(void **state) {
+static void mode_max_refresh__target_matches(void **state) {
 	struct Mode *expected = mode_init_whr(111, 222, 333);
 	pset_add(modes, expected);
 
-	const struct Mode *preferred = mode_init_whr_pref(111, 222, 333);
-	pset_add(modes, preferred);
-
-	const struct Mode *actual = mode_max_preferred(modes, NULL);
+	const struct Mode *actual = mode_max_refresh(expected, modes, NULL);
 
 	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 
-static void mode_max_preferred__later_higher_refresh(void **state) {
-	const struct Mode *preferred = mode_init_whr_pref(111, 222, 333);
-	pset_add(modes, preferred);
+static void mode_max_refresh__prior_matches(void **state) {
+	struct Mode *expected = mode_init_whr(111, 222, 333);
+	pset_add(modes, expected);
+
+	const struct Mode *target = mode_init_whr(111, 222, 333);
+	pset_add(modes, target);
+
+	const struct Mode *actual = mode_max_refresh(target, modes, NULL);
+
+	assert_mode_equal(actual, expected);
+	assert_ptr_equal(actual, expected);
+}
+
+static void mode_max_refresh__later_higher_refresh(void **state) {
+	const struct Mode *target = mode_init_whr(111, 222, 333);
+	pset_add(modes, target);
 
 	struct Mode *expected = mode_init_whr(111, 222, 999999);
 	pset_add(modes, expected);
 
-	const struct Mode *actual = mode_max_preferred(modes, NULL);
+	const struct Mode *actual = mode_max_refresh(target, modes, NULL);
 
 	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 
-static void mode_max_preferred__earlier_higher_refresh(void **state) {
+static void mode_max_refresh__earlier_higher_refresh(void **state) {
 	struct Mode *expected = mode_init_whr(111, 222, 999999);
 	pset_add(modes, expected);
 
-	const struct Mode *preferred = mode_init_whr_pref(111, 222, 333);
-	pset_add(modes, preferred);
+	const struct Mode *target = mode_init_whr(111, 222, 333);
+	pset_add(modes, target);
 
-	const struct Mode *actual = mode_max_preferred(modes, NULL);
+	const struct Mode *actual = mode_max_refresh(target, modes, NULL);
 
 	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
 }
 
-static void mode_max_preferred__failed(void **state) {
+static void mode_max_refresh__failed(void **state) {
 	const struct Mode *failed = mode_init_whr(111, 222, 2000);
 	pset_add(modes, failed);
 	pset_add(modes_failed, failed);
 
-	const struct Mode *preferred = mode_init_whr_pref(111, 222, 333);
+	const struct Mode *preferred = mode_init_whr(111, 222, 333);
 	pset_add(modes, preferred);
 
 	struct Mode *expected = mode_init_whr(111, 222, 1000);
 	pset_add(modes, expected);
 
-	const struct Mode *actual = mode_max_preferred(modes, modes_failed);
+	const struct Mode *actual = mode_max_refresh(expected, modes, modes_failed);
 
 	assert_mode_equal(actual, expected);
 	assert_ptr_equal(actual, expected);
@@ -347,16 +320,12 @@ int main(void) {
 
 		TEST_BA(mode_dpi__),
 
-		TEST_BA(mode_preferred__no_preferred),
-		TEST_BA(mode_preferred__preferred),
-		TEST_BA(mode_preferred__preferred_failed),
-
-		TEST_BA(mode_max_preferred__no_preferred),
-		TEST_BA(mode_max_preferred__preferred_matches),
-		TEST_BA(mode_max_preferred__prior_matches),
-		TEST_BA(mode_max_preferred__later_higher_refresh),
-		TEST_BA(mode_max_preferred__earlier_higher_refresh),
-		TEST_BA(mode_max_preferred__failed),
+		TEST_BA(mode_max_refresh__no_target),
+		TEST_BA(mode_max_refresh__target_matches),
+		TEST_BA(mode_max_refresh__prior_matches),
+		TEST_BA(mode_max_refresh__later_higher_refresh),
+		TEST_BA(mode_max_refresh__earlier_higher_refresh),
+		TEST_BA(mode_max_refresh__failed),
 	};
 
 	return RUN(tests);

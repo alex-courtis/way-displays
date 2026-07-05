@@ -103,13 +103,15 @@ char *mode_str(const struct Mode * const mode) {
 	if (!mode)
 		return NULL;
 
+	bool preferred = mode->head ? mode->head->mode_preferred == mode : false;
+
 	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
 			mode->width,
 			mode->height,
 			mode_hz_rounded(mode),
 			mode->refresh_mhz / 1000,
 			mode->refresh_mhz % 1000,
-			mode->preferred ? " (preferred)" : ""
+			preferred ? " (preferred)" : ""
 			);
 }
 
@@ -131,10 +133,6 @@ char *mode_str_brief(const struct Mode * const mode) {
 				mode->height
 				);
 	}
-}
-
-bool mode_is_preferred(const struct Mode *mode, const void* const unused) {
-	return mode && mode->preferred;
 }
 
 bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1 *zwlr_mode) {
@@ -175,27 +173,8 @@ double mode_scale(const struct Mode* const mode) {
 	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
 }
 
-const struct Mode *mode_preferred(const struct PSet* const modes, const struct PSet* const modes_failed) {
-	const struct Mode *mode_preferred = NULL;
-
-	const struct PSetIt *it;
-
-	for (it = pset_match_it(modes, (fn_match_ptr)mode_is_preferred, NULL); it; it = pset_it_next(it)) {
-		if (!pset_contains(modes_failed, it->val)) {
-			mode_preferred = it->val;
-			break;
-		}
-	}
-
-	pset_it_free(it);
-	return mode_preferred;
-}
-
-const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSet* const modes_failed) {
-	// TODO could the head store preferred as a pointer?
-	const struct Mode *preferred = mode_preferred(modes, modes_failed);
-
-	if (!preferred)
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes, const struct PSet* const modes_failed) {
+	if (!mode_target)
 		return NULL;
 
 	const struct Mode *mode = NULL;
@@ -210,7 +189,7 @@ const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSe
 			continue;
 		}
 
-		if (mode->width != preferred->width || mode->height != preferred->height) {
+		if (mode->width != mode_target->width || mode->height != mode_target->height) {
 			continue;
 		}
 

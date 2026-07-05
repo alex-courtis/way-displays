@@ -9,9 +9,9 @@
 
 /*
  * Mode contexts:
- * - Cfg: partial dimensions or max
- * - State: dimensions and preferred
- * - Head: dimensions, preferred and pointers
+ * - Cfg: partial res/refresh or max
+ * - State: res/refresh
+ * - Head: res/refresh and pointers
  */
 
 struct Mode {
@@ -24,8 +24,6 @@ struct Mode {
 	int32_t refresh_mhz;
 
 	bool max;
-
-	bool preferred;
 
 	bool warned_no_mode;
 };
@@ -63,11 +61,11 @@ bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b);
  * comparison
  */
 
-// w greater, h greater when w equal, r greater than when w/h equal
+// w greater, h greater when w equal, refresh greater than when w/h equal
 bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b);
 
 /*
- * rendering
+ * to string
  */
 
 // WxH@Hz (mHz) (preferred)
@@ -79,8 +77,6 @@ char *mode_str_brief(const struct Mode * const mode);
 /*
  * predicates
  */
-
-bool mode_is_preferred(const struct Mode *mode, const void* const unused);
 
 bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1 *zwlr_mode);
 
@@ -104,11 +100,8 @@ double mode_scale(const struct Mode* const mode);
  * search
  */
 
-// first preferred mode, if available
-const struct Mode *mode_preferred(const struct PSet* const modes, const struct PSet* const modes_failed);
-
-// highest refresh matching preferred res, NULL when no preferred available
-const struct Mode *mode_max_preferred(const struct PSet* modes, const struct PSet* const modes_failed);
+// highest refresh matching target resolution, NULL when no target
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes, const struct PSet* const modes_failed);
 
 // mode exactly matching target otherwise mode_satisfies
 const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes, const struct PSet* const modes_failed);

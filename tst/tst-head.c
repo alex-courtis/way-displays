@@ -42,7 +42,8 @@ const struct Mode *__wrap_mode_best_satisfying(const struct Mode * const mode_ta
 }
 
 // cppcheck-suppress staticFunction
-const struct Mode *__wrap_mode_max_preferred(const struct PSet* modes, const struct PSet* const modes_failed) {
+const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes, const struct PSet* const modes_failed) {
+	check_expected_ptr(mode_target);
 	check_expected_ptr(modes);
 	check_expected_ptr(modes_failed);
 	return mock_ptr_type_checked(struct Mode*);
@@ -424,7 +425,7 @@ static void head_find_mode__preferred(void **state) {
 	struct Head *head = head_init_name("name");
 	struct Mode *mode = mode_init();
 	mode->head = head;
-	mode->preferred = true;
+	head->mode_preferred = mode;
 
 	pset_add(head->modes, mode);
 
@@ -438,18 +439,20 @@ static void head_find_mode__preferred(void **state) {
 	assert_logs_empty();
 }
 
-static void head_find_mode__max_preferred_refresh(void **state) {
+static void head_find_mode__mode_max_refresh(void **state) {
 	struct Head *head = head_init_name("name");
 	struct Mode *mode = mode_init();
 	mode->head = head;
+	head->mode_preferred = mode;
 
 	sset_add(g_cfg->max_preferred_refresh, "!nam.*");
 
 	pset_add(head->modes, mode);
 
-	expect_ptr(__wrap_mode_max_preferred, modes, head->modes);
-	expect_ptr(__wrap_mode_max_preferred, modes_failed, head->modes_failed);
-	will_return_ptr_type(__wrap_mode_max_preferred, mode, struct Mode*);
+	expect_ptr(__wrap_mode_max_refresh, mode_target, mode);
+	expect_ptr(__wrap_mode_max_refresh, modes, head->modes);
+	expect_ptr(__wrap_mode_max_refresh, modes_failed, head->modes_failed);
+	will_return_ptr_type(__wrap_mode_max_refresh, mode, struct Mode*);
 
 	const struct Mode *actual = head_find_mode(head);
 
@@ -674,9 +677,10 @@ static void heads_reapply__(void **state) {
 	struct Head *head_disabled = head_init_name("DP-7");
 	head_disabled->current.enabled = false;
 
-	pset_add(head_disabled->modes, mode_init_whr_pref(3440, 1440, 59999));
-	pset_add(head_disabled->modes, mode_init_whr(3840, 2160, 30000));
-	pset_add(head_disabled->modes, mode_init_whr(3840, 2160, 29970));
+	head_disabled->mode_preferred = mode_init_h_whr(head_disabled, 3440, 1440, 59999);
+	pset_add(head_disabled->modes, head_disabled->mode_preferred);
+	pset_add(head_disabled->modes, mode_init_h_whr(head_disabled, 3840, 2160, 30000));
+	pset_add(head_disabled->modes, mode_init_h_whr(head_disabled, 3840, 2160, 29970));
 
 	pset_free(head_disabled->modes_failed);
 	head_disabled->modes_failed = pset_clone_shallow(head_disabled->modes);
@@ -687,7 +691,8 @@ static void heads_reapply__(void **state) {
 	struct Head *head_enabled = head_init_name("eDP-1");
 	head_enabled->current.enabled = true;
 
-	head_enabled->current.mode = mode_init_whr_pref(2256, 1504, 59999);
+	head_enabled->current.mode = mode_init_h_whr(head_enabled, 2256, 1504, 59999);
+	head_enabled->mode_preferred = head_enabled->current.mode;
 	pset_add(head_enabled->modes, head_enabled->current.mode);
 
 	slist_append(&heads, head_enabled);
@@ -797,7 +802,7 @@ int main(void) {
 		TEST_BA(head_find_mode__user_available),
 		TEST_BA(head_find_mode__user_failed),
 		TEST_BA(head_find_mode__preferred),
-		TEST_BA(head_find_mode__max_preferred_refresh),
+		TEST_BA(head_find_mode__mode_max_refresh),
 		TEST_BA(head_find_mode__max),
 		TEST_BA(head_find_mode__none),
 

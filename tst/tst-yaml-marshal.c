@@ -7,6 +7,7 @@
 
 #include <cmocka.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,6 +18,7 @@
 #include "lid.h"
 #include "log.h"
 #include "slist.h"
+#include "str.h"
 
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
@@ -48,11 +50,12 @@ static void _check_marshalled(char *actual, const char *expected_path, const cha
 	char *expected = read_file(expected_path);
 
 	if (strcmp(actual, expected) != 0) {
+		const char *err = sprintf_alloc("check_marshalled\nactual.yaml:\n%s !=\nexpected.yaml:\n%s\n", actual, expected);
 		write_file("actual.yaml", actual);
 		write_file("expected.yaml", expected);
+		fprintf(stderr, "%s:%d: %s", file, line, err);
+		exit(1);
 	}
-
-	_assert_str_equal(actual, "actual", expected, "expected", file, line);
 
 	free(actual);
 	free(expected);

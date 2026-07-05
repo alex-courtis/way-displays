@@ -309,10 +309,12 @@ int yaml_map_from_mode(struct MC *c, const struct Mode* const mode) {
 	if (!map)
 		return 0;
 
+	bool preferred = mode->head && mode->head->mode_preferred == mode;
+
 	yaml_map_add_int (c, "WIDTH",       mode->width,       map);
 	yaml_map_add_int (c, "HEIGHT",      mode->height,      map);
 	yaml_map_add_int (c, "REFRESH_MHZ", mode->refresh_mhz, map);
-	yaml_map_add_bool(c, "PREFERRED",   mode->preferred,   map);
+	yaml_map_add_bool(c, "PREFERRED",   preferred,         map);
 
 	return map;
 }

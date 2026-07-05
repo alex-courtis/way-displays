@@ -21,7 +21,6 @@
 #include "head.h"
 #include "imap.h"
 #include "log.h"
-#include "mode.h"
 #include "output.h"
 #include "pset.h"
 #include "slist.h"
@@ -52,8 +51,10 @@ int before_each(void **state) {
 	s->head1 = head_init();
 
 	const struct Mode *mode_cur_more = mode_init_h_whr(s->head1, 100, 200, 30001);
-	struct Mode *mode_cur = mode_init_h_whr(s->head1, 100, 200, 30000);
-	mode_cur->preferred = true;
+
+	const struct Mode *mode_cur = mode_init_h_whr(s->head1, 100, 200, 30000);
+	s->head1->mode_preferred = mode_cur;
+
 	const struct Mode *mode_cur_less = mode_init_h_whr(s->head1, 100, 200, 29999);
 	const struct Mode *mode_des = mode_init_h_whr(s->head1, 400, 500, 60000);
 	const struct Mode *mode_failed = mode_init_h_whr(s->head1, 700, 800, 90000);
@@ -110,7 +111,6 @@ int before_each(void **state) {
 	s->head2 = head_init();
 
 	mode_cur = mode_init_h_whr(s->head2, 1100, 1200, 130000);
-	mode_cur->preferred = true;
 	mode_des = mode_init_h_whr(s->head2, 1400, 1500, 160000);
 	mode_failed = mode_init_h_whr(s->head2, 1700, 1800, 190000);
 

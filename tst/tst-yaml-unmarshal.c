@@ -434,14 +434,12 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(mode_current->width, 10);
 	assert_int_equal(mode_current->height, 11);
 	assert_int_equal(mode_current->refresh_mhz, 12);
-	assert_true(mode_current->preferred);
 
 	const struct Mode *mode_desired = head->desired.mode;
 	assert_non_nul(mode_desired);
 	assert_int_equal(mode_desired->width, 13);
 	assert_int_equal(mode_desired->height, 14);
 	assert_int_equal(mode_desired->refresh_mhz, 15);
-	assert_false(mode_desired->preferred);
 
 	assert_int_equal(pset_size(head->modes), 2);
 	const struct PSetIt *it = pset_it(head->modes);
@@ -451,7 +449,6 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(mode1->width, 10);
 	assert_int_equal(mode1->height, 11);
 	assert_int_equal(mode1->refresh_mhz, 12);
-	assert_true(mode1->preferred);
 
 	it = pset_it_next(it);
 
@@ -460,7 +457,6 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(mode2->width, 13);
 	assert_int_equal(mode2->height, 14);
 	assert_int_equal(mode2->refresh_mhz, 15);
-	assert_false(mode2->preferred);
 
 	pset_it_next(it);
 

@@ -484,7 +484,6 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
 	yaml_scalar_to_int(c, &mode->width, smap_get(nodes, "WIDTH"));
 	yaml_scalar_to_int(c, &mode->height, smap_get(nodes, "HEIGHT"));
 	yaml_scalar_to_int(c, &mode->refresh_mhz, smap_get(nodes, "REFRESH_MHZ"));
-	yaml_scalar_to_boolean(c, &mode->preferred, smap_get(nodes, "PREFERRED"));
 
 	smap_free(nodes);
 

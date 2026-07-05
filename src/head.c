@@ -285,9 +285,9 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	// always try preferred
 	if (!mode) {
 		if (head_is_max_preferred_refresh(head)) {
-			mode = mode_max_preferred(head->modes, head->modes_failed);
+			mode = mode_max_refresh(head->mode_preferred, head->modes, head->modes_failed);
 		} else {
-			mode = mode_preferred(head->modes, head->modes_failed);
+			mode = head->mode_preferred;
 		}
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
@@ -315,10 +315,6 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	}
 
 	return mode;
-}
-
-const struct Mode *head_preferred_mode(const struct Head * const head) {
-	return head ? pset_match(head->modes, (fn_match_ptr)mode_is_preferred, NULL) : NULL;
 }
 
 bool head_current_not_desired(const struct Head * const head) {
