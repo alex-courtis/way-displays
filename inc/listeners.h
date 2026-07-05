@@ -1,8 +1,7 @@
 #ifndef LISTENERS_H
 #define LISTENERS_H
 
-#define ZWLR_OUTPUT_MANAGER_V1_VERSION 4
-#define ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN 2
+#define ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN 4
 
 const struct wl_registry_listener *registry_listener(void);
 

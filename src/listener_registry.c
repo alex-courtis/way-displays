@@ -19,6 +19,12 @@ static void bind_zwlr_output_manager(struct Displ *displ,
 		const char *interface,
 		uint32_t version) {
 
+	if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
+		log_fatal(NULL);
+		log_fatal("This compositor provides WLR Output Management protocol version %u. The minimum required version is %u.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN);
+		wd_exit(EXIT_FAILURE);
+	}
+
 	displ->zwlr_output_manager_name = name;
 	displ->zwlr_output_manager_version = version;
 	displ->zwlr_output_manager_interface = strdup(interface);

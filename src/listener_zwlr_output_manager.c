@@ -17,14 +17,7 @@ static void head(void *data,
 	if (!head)
 		return;
 
-	const struct Displ *displ = data;
-
-	// TODO bump this minimum version
-	if (displ->zwlr_output_manager_version == ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
-		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, zwlr_output_head_listener_min(), head);
-	} else {
-		zwlr_output_head_v1_add_listener(zwlr_output_head_v1, zwlr_output_head_listener(), head);
-	}
+	zwlr_output_head_v1_add_listener(zwlr_output_head_v1, zwlr_output_head_listener(), head);
 }
 
 static void done(void *data,

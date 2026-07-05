@@ -22,7 +22,7 @@ See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/C
 
 ## Requirements
 
-A wlroots based compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol version 4+.
 
 way-displays is blessed for the [sway](https://swaywm.org/), [river](https://codeberg.org/river/river) and [river-classic](https://codeberg.org/river/river-classic) compositors. It may work on others; please tell me of your experiences!
 

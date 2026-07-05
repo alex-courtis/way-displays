@@ -125,23 +125,6 @@ static void finished(void *data,
 	zwlr_output_head_v1_destroy(zwlr_output_head_v1);
 }
 
-static const struct zwlr_output_head_v1_listener listener_min = {
-	.name = name,
-	.description = description,
-	.physical_size = physical_size,
-	.mode = mode_,
-	.enabled = enabled,
-	.current_mode = current_mode,
-	.position = position,
-	.transform = transform,
-	.scale = scale,
-	.serial_number = serial_number,
-	.model = model,
-	.make = make,
-	.adaptive_sync = adaptive_sync,
-	.finished = finished,
-};
-
 static const struct zwlr_output_head_v1_listener listener = {
 	.name = name,
 	.description = description,
@@ -155,13 +138,9 @@ static const struct zwlr_output_head_v1_listener listener = {
 	.serial_number = serial_number,
 	.model = model,
 	.make = make,
-	.finished = finished,
 	.adaptive_sync = adaptive_sync,
+	.finished = finished,
 };
-
-const struct zwlr_output_head_v1_listener *zwlr_output_head_listener_min(void) {
-	return &listener_min;
-}
 
 const struct zwlr_output_head_v1_listener *zwlr_output_head_listener(void) {
 	return &listener;
