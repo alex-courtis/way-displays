@@ -70,58 +70,35 @@ struct Head {
 	bool warned_no_mode;
 };
 
-// init a head, adding it to g_heads and g_heads_arrived
-struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head);
+/*
+ * lifecycle
+ */
 
 struct Head *head_init(void);
 
-// description, name, "???"
-const char *head_human(const struct Head * const head);
+// init a head, adding it to g_heads and g_heads_arrived
+struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head);
 
-bool head_matches_name_desc_exact(const struct Head * const head, const char * const name_desc);
+void head_free(struct Head *head);
 
-bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc);
+// free a head, creating a dummy in g_heads_departed
+void head_release(struct Head * const head);
 
-bool head_matches_name_desc_fuzzy(const struct Head * const head, const char * const name_desc);
+// remove a mode from the head, including current/desired, freeing it
+void head_release_mode(struct Mode *mode);
 
-bool head_matches_name_desc(const struct Head * const head, const char * const name_desc);
+// free all g_heads
+void heads_destroy(void);
 
-bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head);
-
-// calculate fixed scale correctly quantized for fractional scaling, obeying scale_round_to and scale_round_strategy
-wl_fixed_t head_get_fixed_scale(const double scale);
-
-wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);
+/*
+ * mutation
+ */
 
 // sets scaled.height/width
 void head_set_scaled_dimensions(struct Head * const head);
 
 // applies extra toggles that should change head state directly
 void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
-
-// finds a mode and logs/calls back on
-//  no mode:           error
-//  invalid user mode: warning
-//  no preferred:      info
-// maybe sets warned_no_preferred
-const struct Mode *head_find_mode(struct Head * const head);
-
-const struct Mode *head_max_mode(const struct Head * const head);
-
-const struct Mode *head_preferred_mode(const struct Head * const head);
-
-bool head_current_not_desired(const struct Head * const head);
-
-size_t head_num_current_not_desired(struct SList * const heads);
-
-bool head_reapply_required(const struct Head * const head);
-
-bool head_current_mode_not_desired(const struct Head * const head);
-
-bool head_current_adaptive_sync_not_desired(const struct Head * const head);
-
-// clear current and failed modes, flag for reapply
-void heads_reapply(struct SList *heads);
 
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
@@ -135,15 +112,77 @@ void head_set_current_mode(struct Head * const head, const struct zwlr_output_mo
 // set preferred mode, NOP and warning if preferred mode already set
 void head_set_mode_preferred(const struct Mode * const mode);
 
-// free a head, creating a dummy in g_heads_departed
-void head_release(struct Head * const head);
+// clear current and failed modes, flag for reapply
+void heads_reapply(struct SList *heads);
 
-// remove a mode from the head, including current/desired, freeing it
-void head_release_mode(struct Mode *mode);
+/*
+ * string rendering
+ */
 
-void head_free(struct Head *head);
+// description, name, "???"
+const char *head_human(const struct Head * const head);
 
-void heads_destroy(void);
+/*
+ * predicates
+ */
+
+// exact name or description
+bool head_matches_name_desc_exact(const struct Head * const head, const char * const name_desc);
+
+// regex match on name or description
+bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc);
+
+// partial case insensitive name or description, regexes excluded
+bool head_matches_name_desc_fuzzy(const struct Head * const head, const char * const name_desc);
+
+// exact, regex or fuzzy
+bool head_matches_name_desc(const struct Head * const head, const char * const name_desc);
+
+// exact, regex or fuzzy
+bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head);
+
+/*
+ * tests
+ */
+
+// current and desired differ in any way
+bool head_current_not_desired(const struct Head * const head);
+
+// current mode is not desired
+bool head_current_mode_not_desired(const struct Head * const head);
+
+// current adaptive sync is not desired
+bool head_current_adaptive_sync_not_desired(const struct Head * const head);
+
+// full reapply next layout
+bool head_reapply_required(const struct Head * const head);
+
+/*
+ * utility
+ */
+
+// calculate fixed scale correctly quantized for fractional scaling, obeying scale_round_to and scale_round_strategy
+wl_fixed_t head_get_fixed_scale(const double scale);
+
+// auto scale at the desired mode, 1 when no desired or mode_dpi unavailable
+wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);
+
+// number of heads with head_current_not_desired
+size_t head_num_current_not_desired(struct SList * const heads);
+
+/*
+ * search
+ */
+
+// finds a mode and logs/calls back on
+//  no mode:           error
+//  invalid user mode: warning
+//  no preferred:      info
+// maybe sets warned_no_preferred
+const struct Mode *head_find_mode(struct Head * const head);
+
+// highest resolution at its highest refresh
+const struct Mode *head_max_mode(const struct Head * const head);
 
 #endif // HEAD_H
 
