@@ -29,128 +29,31 @@
 
 int g_cancellation_retries = 0;
 
-void handle_failure(void);
+// cppcheck-suppress staticFunction
+void desire(void) {
 
-void position_heads(struct SList *heads) {
-	struct Head *head;
-	int32_t tallest = 0, widest = 0, x = 0, y = 0;
+	for (struct SList *i = g_heads; i; i = i->nex) {
+		struct Head *head = (struct Head*)i->val;
 
-	// find tallest/widest
-	for (struct SList *i = heads; i; i = i->nex) {
-		head = i->val;
-		if (!head || !head->desired.mode || !head->desired.enabled) {
-			continue;
-		}
-		if (head->scaled.height > tallest) {
-			tallest = head->scaled.height;
-		}
-		if (head->scaled.width > widest) {
-			widest = head->scaled.width;
-		}
+		memcpy(&head->desired, &head->current, sizeof(struct HeadState));
+
+		desire_enabled(head);
+		desire_mode(head);
+		desire_scale(head);
+		desire_transform(head);
+		desire_adaptive_sync(head);
+
+		// TODO this is a desire
+		head_set_scaled_dimensions(head);
+
+		desire_reapply(head);
 	}
 
-	// arrange each in the predefined order
-	for (struct SList *i = heads; i; i = i->nex) {
-		head = i->val;
-		if (!head || !head->desired.mode || !head->desired.enabled) {
-			continue;
-		}
+	struct SList *heads_ordered = desire_order(g_cfg->order_name_desc, g_heads);
 
-		switch (g_cfg->arrange) {
-			case COL:
-				// position
-				head->desired.y = y;
-				y += head->scaled.height;
+	desire_positions(heads_ordered);
 
-				// align
-				switch (g_cfg->align) {
-					case RIGHT:
-						head->desired.x = widest - head->scaled.width;
-						break;
-					case MIDDLE:
-						head->desired.x = (widest - head->scaled.width) / 2.0 + 0.5;
-						break;
-					case LEFT:
-					default:
-						head->desired.x = 0;
-						break;
-				}
-				break;
-			case ROW:
-			default:
-				// position
-				head->desired.x = x;
-				x += head->scaled.width;
-
-				// align
-				switch (g_cfg->align) {
-					case BOTTOM:
-						head->desired.y = tallest - head->scaled.height;
-						break;
-					case MIDDLE:
-						head->desired.y = (tallest - head->scaled.height) / 2.0 + 0.5;
-						break;
-					case TOP:
-					default:
-						head->desired.y = 0;
-						break;
-				}
-				break;
-		}
-	}
-}
-
-struct SList *order_heads(const struct SSet * const order_name_desc, struct SList *heads) {
-	if (!heads)
-		return NULL;
-
-	unsigned long n_order = sset_size(order_name_desc);
-	unsigned long i;
-	struct SList *sorting = slist_clone(heads, NULL);
-
-	// array of order to list of heads matched
-	struct SList **order_heads = calloc(n_order, sizeof(struct SList*));
-
-	// exact match
-	i = 0;
-	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, it->val);
-		i++;
-	}
-
-	// regex
-	i = 0;
-	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, it->val);
-		i++;
-	}
-
-	// fuzzy
-	i = 0;
-	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, it->val);
-		i++;
-	}
-
-	// marshal the ordered
-	struct SList *sorted = NULL;
-	for (i = 0; i < n_order; i++) {
-		struct SList *order_list = (struct SList*)order_heads[i];
-		for (struct SList *h = order_list; h; h = h->nex) {
-			slist_append(&sorted, h->val);
-		}
-		slist_free(&order_list);
-	}
-
-	// remaing in discovered order
-	for (struct SList *h = sorting; h; h = h->nex) {
-		slist_append(&sorted, h->val);
-	}
-
-	slist_free(&sorting);
-	free(order_heads);
-
-	return sorted;
+	slist_free(&heads_ordered);
 }
 
 void desire_enabled(struct Head *head) {
@@ -269,117 +172,126 @@ void desire_reapply(struct Head *head) {
 		head->desired.enabled = false;
 }
 
-static void desire(void) {
+struct SList *desire_order(const struct SSet * const order_name_desc, struct SList *heads) {
+	if (!heads)
+		return NULL;
 
-	for (struct SList *i = g_heads; i; i = i->nex) {
-		struct Head *head = (struct Head*)i->val;
+	unsigned long n_order = sset_size(order_name_desc);
+	unsigned long i;
+	struct SList *sorting = slist_clone(heads, NULL);
 
-		memcpy(&head->desired, &head->current, sizeof(struct HeadState));
+	// array of order to list of heads matched
+	struct SList **order_heads = calloc(n_order, sizeof(struct SList*));
 
-		desire_enabled(head);
-		desire_mode(head);
-		desire_scale(head);
-		desire_transform(head);
-		desire_adaptive_sync(head);
-
-		head_set_scaled_dimensions(head);
-
-		desire_reapply(head);
+	// exact match
+	i = 0;
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, it->val);
+		i++;
 	}
 
-	struct SList *heads_ordered = order_heads(g_cfg->order_name_desc, g_heads);
+	// regex
+	i = 0;
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, it->val);
+		i++;
+	}
 
-	position_heads(heads_ordered);
+	// fuzzy
+	i = 0;
+	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, it->val);
+		i++;
+	}
 
-	slist_free(&heads_ordered);
+	// marshal the ordered
+	struct SList *sorted = NULL;
+	for (i = 0; i < n_order; i++) {
+		struct SList *order_list = (struct SList*)order_heads[i];
+		for (struct SList *h = order_list; h; h = h->nex) {
+			slist_append(&sorted, h->val);
+		}
+		slist_free(&order_list);
+	}
+
+	// remaing in discovered order
+	for (struct SList *h = sorting; h; h = h->nex) {
+		slist_append(&sorted, h->val);
+	}
+
+	slist_free(&sorting);
+	free(order_heads);
+
+	return sorted;
 }
 
-static void apply(void) {
-	struct SList *heads_changing = NULL;
-
-	displ_delta_destroy();
-
-	// determine whether changes are needed before initiating output configuration
-	struct SList *i = g_heads;
-	while ((i = slist_find(i, (fn_test)head_current_not_desired))) {
-		slist_append(&heads_changing, i->val);
-		i = i->nex;
-	}
-	if (!heads_changing)
-		return;
-
-	// passed into our configuration listener
-	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(g_displ->zwlr_output_manager, g_displ->zwlr_output_manager_serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), g_displ);
-
+void desire_positions(struct SList *heads) {
 	struct Head *head;
+	int32_t tallest = 0, widest = 0, x = 0, y = 0;
 
-	if ((head = slist_find_val(g_heads, (fn_test)head_reapply_required))) {
-		displ_delta_init(0, head);
+	// find tallest/widest
+	for (struct SList *i = heads; i; i = i->nex) {
+		head = i->val;
+		if (!head || !head->desired.mode || !head->desired.enabled) {
+			continue;
+		}
+		if (head->scaled.height > tallest) {
+			tallest = head->scaled.height;
+		}
+		if (head->scaled.width > widest) {
+			widest = head->scaled.width;
+		}
+	}
 
-		print_head(INFO, DELTA, head);
-
-		zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
-
-		g_displ->delta.human = delta_human_reapply(head);
-
-		head->reapply_required = false;
-
-	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_mode_not_desired))) {
-		log_debug("APPLY mode");
-
-		displ_delta_init(MODE, head);
-
-		print_head(INFO, DELTA, head);
-
-		// mode change in its own operation; mode change desire is always enabled
-		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
-
-		g_displ->delta.human = delta_human_mode(head);
-
-	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_adaptive_sync_not_desired))) {
-		log_debug("APPLY vrr");
-
-		displ_delta_init(VRR_OFF, head);
-
-		print_head(INFO, DELTA, head);
-
-		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
-		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
-
-		g_displ->delta.human = delta_human_adaptive_sync(head);
-
-	} else {
-		log_debug("APPLY remainder");
-
-		displ_delta_init(0, NULL);
-
-		print_heads(INFO, DELTA, g_heads);
-
-		// all other changes
-		for (i = heads_changing; i; i = i->nex) {
-			head = (struct Head*)i->val;
-
-			if (head->desired.enabled) {
-				head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-				zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
-				zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
-				zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
-			} else {
-				zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
-			}
+	// arrange each in the predefined order
+	for (struct SList *i = heads; i; i = i->nex) {
+		head = i->val;
+		if (!head || !head->desired.mode || !head->desired.enabled) {
+			continue;
 		}
 
-		g_displ->delta.human = delta_human(heads_changing);
+		switch (g_cfg->arrange) {
+			case COL:
+				// position
+				head->desired.y = y;
+				y += head->scaled.height;
+
+				// align
+				switch (g_cfg->align) {
+					case RIGHT:
+						head->desired.x = widest - head->scaled.width;
+						break;
+					case MIDDLE:
+						head->desired.x = (widest - head->scaled.width) / 2.0 + 0.5;
+						break;
+					case LEFT:
+					default:
+						head->desired.x = 0;
+						break;
+				}
+				break;
+			case ROW:
+			default:
+				// position
+				head->desired.x = x;
+				x += head->scaled.width;
+
+				// align
+				switch (g_cfg->align) {
+					case BOTTOM:
+						head->desired.y = tallest - head->scaled.height;
+						break;
+					case MIDDLE:
+						head->desired.y = (tallest - head->scaled.height) / 2.0 + 0.5;
+						break;
+					case TOP:
+					default:
+						head->desired.y = 0;
+						break;
+				}
+				break;
+		}
 	}
-
-	zwlr_output_configuration_v1_apply(zwlr_config);
-
-	g_displ->state = OUTSTANDING;
-
-	slist_free(&heads_changing);
 }
 
 void handle_success(void) {
@@ -477,6 +389,94 @@ void handle_failure(void) {
 	}
 
 	displ_delta_destroy();
+}
+
+static void apply(void) {
+	struct SList *heads_changing = NULL;
+
+	displ_delta_destroy();
+
+	// determine whether changes are needed before initiating output configuration
+	struct SList *i = g_heads;
+	while ((i = slist_find(i, (fn_test)head_current_not_desired))) {
+		slist_append(&heads_changing, i->val);
+		i = i->nex;
+	}
+	if (!heads_changing)
+		return;
+
+	// passed into our configuration listener
+	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(g_displ->zwlr_output_manager, g_displ->zwlr_output_manager_serial);
+	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), g_displ);
+
+	struct Head *head;
+
+	if ((head = slist_find_val(g_heads, (fn_test)head_reapply_required))) {
+		displ_delta_init(0, head);
+
+		print_head(INFO, DELTA, head);
+
+		zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+
+		g_displ->delta.human = delta_human_reapply(head);
+
+		head->reapply_required = false;
+
+	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_mode_not_desired))) {
+		log_debug("APPLY mode");
+
+		displ_delta_init(MODE, head);
+
+		print_head(INFO, DELTA, head);
+
+		// mode change in its own operation; mode change desire is always enabled
+		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
+
+		g_displ->delta.human = delta_human_mode(head);
+
+	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_adaptive_sync_not_desired))) {
+		log_debug("APPLY vrr");
+
+		displ_delta_init(VRR_OFF, head);
+
+		print_head(INFO, DELTA, head);
+
+		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
+		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
+
+		g_displ->delta.human = delta_human_adaptive_sync(head);
+
+	} else {
+		log_debug("APPLY remainder");
+
+		displ_delta_init(0, NULL);
+
+		print_heads(INFO, DELTA, g_heads);
+
+		// all other changes
+		for (i = heads_changing; i; i = i->nex) {
+			head = (struct Head*)i->val;
+
+			if (head->desired.enabled) {
+				head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+				zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
+				zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
+				zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
+			} else {
+				zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+			}
+		}
+
+		g_displ->delta.human = delta_human(heads_changing);
+	}
+
+	zwlr_output_configuration_v1_apply(zwlr_config);
+
+	g_displ->state = OUTSTANDING;
+
+	slist_free(&heads_changing);
 }
 
 void layout(void) {

@@ -28,21 +28,9 @@
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
+#include "layout.h"
+
 extern int g_cancellation_retries;
-
-// TODO consider moving to header
-struct SList *order_heads(const struct SSet * const order_name_desc, struct SList *heads);
-void position_heads(struct SList *heads);
-void desire_enabled(struct Head *head);
-void desire_mode(struct Head *head);
-void desire_scale(struct Head *head);
-void desire_transform(struct Head *head);
-void desire_adaptive_sync(struct Head *head);
-void desire_reapply(struct Head *head);
-void handle_success(void);
-void handle_failure(void);
-void handle_cancelled(void);
-
 
 // cppcheck-suppress staticFunction
 const struct Mode *__wrap_head_find_mode(struct Head * const head) {
@@ -144,7 +132,7 @@ static void order_heads__exact_partial_regex(void **state) {
 	slist_append(&expected, not_specified_1);
 	slist_append(&expected, not_specified_2);
 
-	struct SList *heads_ordered = order_heads(order_name_desc, heads);
+	struct SList *heads_ordered = desire_order(order_name_desc, heads);
 
 	assert_heads_order(heads_ordered, expected);
 
@@ -189,7 +177,7 @@ static void order_heads__exact_regex_catchall(void **state) {
 	slist_append(&expected, not_specified_2);
 	slist_append(&expected, exact9);
 
-	struct SList *heads_ordered = order_heads(order_name_desc, heads);
+	struct SList *heads_ordered = desire_order(order_name_desc, heads);
 
 	assert_heads_order(heads_ordered, expected);
 
@@ -208,7 +196,7 @@ static void order_heads__no_order(void **state) {
 	slist_append(&heads, head);
 
 	// null/empty order
-	struct SList *heads_ordered = order_heads(NULL, heads);
+	struct SList *heads_ordered = desire_order(NULL, heads);
 	assert_heads_order(heads_ordered, heads);
 
 	slist_free(&heads_ordered);
@@ -228,7 +216,7 @@ static void position_heads__col_left(void **state) {
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
 	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
-	position_heads(s->heads);
+	desire_positions(s->heads);
 
 	head = slist_at(s->heads, 0); assert_head_position(head, 0, 0);
 	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
@@ -248,7 +236,7 @@ static void position_heads__col_mid(void **state) {
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
 	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
-	position_heads(s->heads);
+	desire_positions(s->heads);
 
 	head = slist_at(s->heads, 0); assert_head_position(head, 2, 0);
 	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
@@ -268,7 +256,7 @@ static void position_heads__col_right(void **state) {
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
 	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
-	position_heads(s->heads);
+	desire_positions(s->heads);
 
 	head = slist_at(s->heads, 0); assert_head_position(head, 3, 0);
 	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
@@ -288,7 +276,7 @@ static void position_heads__row_top(void **state) {
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
 	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
-	position_heads(s->heads);
+	desire_positions(s->heads);
 
 	head = slist_at(s->heads, 0); assert_head_position(head, 0, 0);
 	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
@@ -308,7 +296,7 @@ static void position_heads__row_mid(void **state) {
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
 	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
-	position_heads(s->heads);
+	desire_positions(s->heads);
 
 	head = slist_at(s->heads, 0); assert_head_position(head, 0, 2);
 	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
@@ -328,7 +316,7 @@ static void position_heads__row_bottom(void **state) {
 	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
 	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
-	position_heads(s->heads);
+	desire_positions(s->heads);
 
 	head = slist_at(s->heads, 0); assert_head_position(head, 0, 3);
 	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
