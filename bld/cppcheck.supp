@@ -19,8 +19,8 @@ unusedFunction:tst/wrap-*.c
 # this is just not practical
 nullPointerOutOfMemory
 
-# questionable value and requires much casting
-constParameterCallback
+# requires too much function pointer casting
+constParameterCallback:listener*c
 
 # does not identify correctly
 unusedStructMember

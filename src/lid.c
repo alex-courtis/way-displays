@@ -22,7 +22,7 @@ static const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
 
 static bool warned_permission_fail = false;
 
-static int libinput_open_restricted(const char *path, int flags, void *data) {
+static int libinput_open_restricted(const char* const path, const int flags, const void* const data) {
 
 	// user permissions are sufficient for input devices, no need for systemd
 	int fd = open(path, flags);
@@ -48,7 +48,7 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 	return fd;
 }
 
-static void libinput_close_restricted(int fd, void *data) {
+static void libinput_close_restricted(const int fd, const void* const data) {
 
 	if (close(fd) != 0) {
 		log_warn(NULL);
@@ -57,8 +57,8 @@ static void libinput_close_restricted(int fd, void *data) {
 }
 
 static const struct libinput_interface libinput_impl = {
-	.open_restricted = libinput_open_restricted,
-	.close_restricted = libinput_close_restricted
+	.open_restricted = (int(*)(const char*, int, void*))libinput_open_restricted,
+	.close_restricted = (void(*)(int, void*))libinput_close_restricted
 };
 
 static struct libinput *create_libinput_discovery(void) {
