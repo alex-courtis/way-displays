@@ -34,17 +34,5 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
 
-// consumer frees
-char *delta_human(const struct SList * const heads);
-
-// consumer frees
-char *delta_human_mode(const struct Head * const head);
-
-// consumer frees
-char *delta_human_adaptive_sync(const struct Head * const head);
-
-// consumer frees
-char *delta_human_reapply(const struct Head * const head);
-
 #endif // INFO_H
 

@@ -1,7 +1,6 @@
 #include "tst.h"
 
 #include "assert-log.h"
-#include "asserts.h"
 #include "expects.h"
 #include "util-file.h"
 #include "util-init.h"
@@ -15,7 +14,6 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "displ.h"
 #include "fn.h"
 #include "head.h"
 #include "imap.h"
@@ -40,8 +38,6 @@ int before_each(void **state) {
 	assert_logs_empty_before();
 
 	struct State *s = calloc(1, sizeof(struct State));
-
-	g_displ = calloc(1, sizeof(struct Displ));
 
 	g_cfg = cfg_default();
 
@@ -153,9 +149,6 @@ int after_each(void **state) {
 	slist_free_vals(&s->heads, (fn_free)head_free);
 
 	free(s);
-
-	displ_delta_destroy();
-	free(g_displ);
 
 	imap_free_vals(g_outputs);
 	g_outputs = NULL;
@@ -703,171 +696,6 @@ static void print_mode_fail__head(void **state) {
 	head_free(head);
 }
 
-static void delta_human_mode__to_no(void **state) {
-	struct State *s = *state;
-
-	s->head1->desired.mode = NULL;
-
-	char *deltas = delta_human_mode(s->head1);
-
-	assert_str_equal(deltas, ""
-			"description1\n"
-			"  100x200@30Hz -> (no mode)"
-			);
-
-	slist_free(&g_heads);
-
-	free(deltas);
-
-	assert_logs_empty();
-}
-
-static void delta_human_mode__from_no(void **state) {
-	struct State *s = *state;
-
-	s->head2->current.mode = NULL;
-
-	char *deltas = delta_human_mode(s->head2);
-
-	assert_str_equal(deltas, ""
-			"name2\n"
-			"  (no mode) -> 1400x1500@160Hz"
-			);
-
-	slist_free(&g_heads);
-
-	free(deltas);
-
-	assert_logs_empty();
-}
-
-static void delta_human_adaptive_sync__on(void **state) {
-	struct State *s = *state;
-
-	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-
-	char *deltas = delta_human_adaptive_sync(s->head1);
-
-	assert_str_equal(deltas, ""
-			"description1\n"
-			"  VRR on"
-			);
-
-	slist_free(&g_heads);
-
-	free(deltas);
-
-	assert_logs_empty();
-}
-
-static void delta_human_adaptive_sync__off(void **state) {
-	struct State *s = *state;
-
-	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-
-	char *deltas = delta_human_adaptive_sync(s->head2);
-
-	assert_str_equal(deltas, ""
-			"name2\n"
-			"  VRR off"
-			);
-
-	slist_free(&g_heads);
-
-	free(deltas);
-
-	assert_logs_empty();
-}
-
-static void delta_human_reapply__(void **state) {
-	const struct State *s = *state;
-
-	char *deltas = delta_human_reapply(s->head2);
-
-	assert_str_equal(deltas, ""
-			"name2\n"
-			"  disabled\n"
-			"  modes reset"
-			);
-
-	slist_free(&g_heads);
-
-	free(deltas);
-
-	assert_logs_empty();
-}
-
-static void delta_human__all(void **state) {
-	const struct State *s = *state;
-
-	char *deltas = delta_human(s->heads);
-
-	assert_str_equal(deltas, ""
-			"description1\n"
-			"  scale:     2.000 -> 4.000\n"
-			"  transform: 180 -> 90\n"
-			"  position:  700,800 -> 900,1000\n"
-			"name2\n"
-			"  scale:     8.000 -> 16.000\n"
-			"  transform: 270 -> none\n"
-			"  position:  1700,1800 -> 1900,11000"
-			);
-
-	slist_free(&g_heads);
-
-	free(deltas);
-
-	assert_logs_empty();
-}
-
-static void delta_human__enabled(void **state) {
-	struct State *s = *state;
-
-	s->head1->current.enabled = false;
-	s->head1->desired.enabled = true;
-
-	s->head2->current.enabled = false;
-	s->head2->desired.enabled = true;
-
-	char *deltas = delta_human(s->heads);
-
-	assert_str_equal(deltas, ""
-			"description1\n  enabled\n"
-			"name2\n  enabled"
-			);
-
-	slist_free(&g_heads);
-
-	free(deltas);
-
-	assert_logs_empty();
-}
-
-static void delta_human__disabled(void **state) {
-	struct State *s = *state;
-
-	s->head1->current.enabled = true;
-	s->head1->desired.enabled = false;
-
-	s->head2->current.enabled = true;
-	s->head2->desired.enabled = false;
-
-	char *deltas = delta_human(s->heads);
-
-	assert_str_equal(deltas, ""
-			"description1\n  disabled\n"
-			"name2\n  disabled"
-			);
-
-	slist_free(&g_heads);
-
-	free(deltas);
-
-	assert_logs_empty();
-}
-
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(print_cfg__all),
@@ -913,18 +741,6 @@ int main(void) {
 
 		TEST_BA(print_mode_fail__nulls),
 		TEST_BA(print_mode_fail__head),
-
-		TEST_BA(delta_human_mode__to_no),
-		TEST_BA(delta_human_mode__from_no),
-
-		TEST_BA(delta_human_adaptive_sync__on),
-		TEST_BA(delta_human_adaptive_sync__off),
-
-		TEST_BA(delta_human_reapply__),
-
-		TEST_BA(delta_human__all),
-		TEST_BA(delta_human__enabled),
-		TEST_BA(delta_human__disabled),
 	};
 
 	return RUN(tests);

@@ -11,6 +11,7 @@
 #include "head.h"
 #include "info.h"
 #include "info/callback.h"
+#include "info/delta.h"
 #include "listeners.h"
 #include "log.h"
 #include "mode.h"
