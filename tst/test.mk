@@ -67,11 +67,11 @@ tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=mode_dpi,$\
 	--wrap=mode_best_satisfying,$\
 	--wrap=mode_max_refresh,$\
-	--wrap=call_back
+	--wrap=callback
 
 tst/tst-act: LDFLAGS += -Wl,$\
 	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,$\
-	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,--wrap=call_back_mode_fail
+	--wrap=callback,--wrap=callback_adaptive_sync_fail,--wrap=callback_mode_fail
 
 tst/tst-desire: LDFLAGS += -Wl,$\
 	--wrap=head_find_mode,$\

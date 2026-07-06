@@ -218,9 +218,9 @@ static void head_auto_scale__range(void **state) {
 static void head_find_mode__no_modes(void **state) {
 	struct Head *head = head_init_name("head0");
 
-	expect_int_value(__wrap_call_back, t, ERROR);
-	expect_str(__wrap_call_back, msg1, "head0");
-	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
+	expect_int_value(__wrap_callback, t, ERROR);
+	expect_str(__wrap_callback, msg1, "head0");
+	expect_str(__wrap_callback, msg2, "\n  No mode, disabling");
 
 	assert_nul(head_find_mode(head));
 
@@ -237,9 +237,9 @@ static void head_find_mode__all_failed(void **state) {
 	// all modes failed
 	pset_add(head->modes_failed, mode);
 
-	expect_int_value(__wrap_call_back, t, ERROR);
-	expect_str(__wrap_call_back, msg1, "head0");
-	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
+	expect_int_value(__wrap_callback, t, ERROR);
+	expect_str(__wrap_callback, msg1, "head0");
+	expect_str(__wrap_callback, msg2, "\n  No mode, disabling");
 
 	assert_nul(head_find_mode(head));
 
@@ -292,13 +292,13 @@ static void head_find_mode__user_failed(void **state) {
 	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
 	will_return_ptr_type(__wrap_mode_best_satisfying, NULL, struct Mode*);
 
-	expect_int_value(__wrap_call_back, t, WARNING);
-	expect_str(__wrap_call_back, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
-	expect_str(__wrap_call_back, msg2, NULL);
+	expect_int_value(__wrap_callback, t, WARNING);
+	expect_str(__wrap_callback, msg1, "HEAD\n  No available mode for user MODE -1x-1, falling back to preferred");
+	expect_str(__wrap_callback, msg2, NULL);
 
-	expect_int_value(__wrap_call_back, t, WARNING);
-	expect_str(__wrap_call_back, msg1, "HEAD\n  No preferred mode, falling back to maximum available");
-	expect_str(__wrap_call_back, msg2, NULL);
+	expect_int_value(__wrap_callback, t, WARNING);
+	expect_str(__wrap_callback, msg1, "HEAD\n  No preferred mode, falling back to maximum available");
+	expect_str(__wrap_callback, msg2, NULL);
 
 	// user failed, fall back to max
 	const struct Mode *actual = head_find_mode(head);
@@ -377,9 +377,9 @@ static void head_find_mode__max(void **state) {
 	mode->head = head;
 	pset_add(head->modes, mode);
 
-	expect_int_value(__wrap_call_back, t, WARNING);
-	expect_str(__wrap_call_back, msg1, "name\n  No preferred mode, falling back to maximum available");
-	expect_str(__wrap_call_back, msg2, NULL);
+	expect_int_value(__wrap_callback, t, WARNING);
+	expect_str(__wrap_callback, msg1, "name\n  No preferred mode, falling back to maximum available");
+	expect_str(__wrap_callback, msg2, NULL);
 
 	// one and only notice
 	const struct Mode *actual = head_find_mode(head);
@@ -402,9 +402,9 @@ static void head_find_mode__max(void **state) {
 static void head_find_mode__none(void **state) {
 	struct Head *head = head_init_name("head0");
 
-	expect_int_value(__wrap_call_back, t, ERROR);
-	expect_str(__wrap_call_back, msg1, "head0");
-	expect_str(__wrap_call_back, msg2, "\n  No mode, disabling");
+	expect_int_value(__wrap_callback, t, ERROR);
+	expect_str(__wrap_callback, msg1, "head0");
+	expect_str(__wrap_callback, msg2, "\n  No mode, disabling");
 
 	assert_nul(head_find_mode(head));
 

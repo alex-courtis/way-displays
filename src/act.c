@@ -5,12 +5,13 @@
 
 #include "cfg.h"
 #include "convert.h"
+#include "desire.h"
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
 #include "info.h"
+#include "info/callback.h"
 #include "listeners.h"
-#include "desire.h"
 #include "log.h"
 #include "mode.h"
 #include "process.h"
@@ -50,7 +51,7 @@ void act_handle_success(void) {
 
 	log_info(NULL);
 	log_info("Changes successful");
-	call_back(INFO, g_displ->delta.human ? g_displ->delta.human : "Changes successful", NULL);
+	callback(INFO, g_displ->delta.human ? g_displ->delta.human : "Changes successful", NULL);
 
 	displ_delta_destroy();
 }
@@ -69,7 +70,7 @@ bool act_handle_cancelled(void) {
 
 	log_warn(NULL);
 	log_warn("%s", msg);
-	call_back(WARNING, msg, NULL);
+	callback(WARNING, msg, NULL);
 
 	free(msg);
 
@@ -83,7 +84,7 @@ void act_handle_failure(void) {
 		case MODE:
 			if (head) {
 				print_mode_fail(ERROR, head, head->desired.mode);
-				call_back_mode_fail(ERROR, head, head->desired.mode);
+				callback_mode_fail(ERROR, head, head->desired.mode);
 
 				// mode setting failure, try again with another mode
 				pset_add(head->modes_failed, head->desired.mode);
@@ -101,7 +102,7 @@ void act_handle_failure(void) {
 				if (head_current_adaptive_sync_not_desired(head)) {
 
 					print_adaptive_sync_fail(WARNING, head);
-					call_back_adaptive_sync_fail(WARNING, head);
+					callback_adaptive_sync_fail(WARNING, head);
 
 					head->adaptive_sync_failed = true;
 				}
@@ -111,7 +112,7 @@ void act_handle_failure(void) {
 		default:
 			log_fatal(NULL);
 			log_fatal("Changes failed, exiting");
-			call_back(FATAL, g_displ->delta.human, "\nChanges failed, exiting");
+			callback(FATAL, g_displ->delta.human, "\nChanges failed, exiting");
 
 			wd_exit_message(EXIT_FAILURE);
 			break;

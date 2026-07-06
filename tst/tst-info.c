@@ -2,7 +2,6 @@
 
 #include "assert-log.h"
 #include "asserts.h"
-#include "expect-smaps.h"
 #include "expects.h"
 #include "util-file.h"
 #include "util-init.h"
@@ -26,9 +25,7 @@
 #include "slist.h"
 #include "smap.h"
 #include "smapi.h"
-#include "smaps.h"
 #include "sset.h"
-#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info.h"
@@ -871,145 +868,6 @@ static void delta_human__disabled(void **state) {
 	assert_logs_empty();
 }
 
-static void call_back__no_callback(void **state) {
-	free(g_cfg->callback_cmd);
-	g_cfg->callback_cmd = NULL;
-
-	call_back(INFO, "msg1", NULL);
-
-	assert_logs_empty();
-}
-
-static void call_back__below_threshold(void **state) {
-	will_return_int(__wrap_log_get_threshold, WARNING);
-	call_back(INFO, "msg1", NULL);
-
-	assert_logs_empty();
-}
-
-static void call_back__one(void **state) {
-	const struct SMapS *expected = smaps_init();
-	smaps_put_if_absent(expected, "CALLBACK_MSG", "msg1");
-	smaps_put_if_absent(expected, "CALLBACK_LEVEL", "INFO");
-
-	free(g_cfg->callback_cmd);
-	g_cfg->callback_cmd = strdup("command");
-
-	will_return_int(__wrap_log_get_threshold, INFO);
-
-	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
-
-	call_back(INFO, "msg1", NULL);
-
-	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
-
-	char *env_str = sprintf_append(smaps_str(expected), "%s", "\n");
-	assert_log(DEBUG, env_str);
-	free(env_str);
-
-	assert_logs_empty();
-
-	smaps_free(expected);
-}
-
-static void call_back__two(void **state) {
-	const struct SMapS *expected = smaps_init();
-	smaps_put_if_absent(expected, "CALLBACK_MSG", "msg1msg2");
-	smaps_put_if_absent(expected, "CALLBACK_LEVEL", "FATAL");
-
-	free(g_cfg->callback_cmd);
-	g_cfg->callback_cmd = strdup("command");
-
-	g_displ->delta.human = strdup("not successful");
-
-	will_return_int(__wrap_log_get_threshold, INFO);
-
-	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
-
-	call_back(FATAL, "msg1", "msg2");
-
-	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
-
-	char *env_str = sprintf_append(smaps_str(expected), "%s", "\n");
-	assert_log(DEBUG, env_str);
-	free(env_str);
-
-	assert_logs_empty();
-
-	smaps_free(expected);
-}
-
-static void call_back_mode_fail__(void **state) {
-	const struct State *s = *state;
-
-	free(g_cfg->callback_cmd);
-	g_cfg->callback_cmd = strdup("command");
-
-	const struct SMapS *expected = smaps_init();
-	smaps_put_if_absent(expected, "CALLBACK_MSG",
-			"description1\n"
-			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
-	smaps_put_if_absent(expected, "CALLBACK_LEVEL", "INFO");
-
-	will_return_int(__wrap_log_get_threshold, INFO);
-
-	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
-
-	call_back_mode_fail(INFO, s->head1, s->head1->desired.mode);
-
-	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
-
-	char *env_str = sprintf_append(smaps_str(expected), "%s", "\n");
-	assert_log(DEBUG, env_str);
-	free(env_str);
-
-	assert_logs_empty();
-
-	smaps_free(expected);
-}
-
-static void call_back_adaptive_sync_fail__(void **state) {
-	struct Head *head = head_init();
-	head->name = strdup("name1");
-	head->model = strdup("model1");
-	head->description = strdup("description1");
-
-	g_displ->delta.head = head;
-
-	free(g_cfg->callback_cmd);
-	g_cfg->callback_cmd = strdup("command");
-
-	const struct SMapS *expected = smaps_init();
-	smaps_put_if_absent(expected, "CALLBACK_MSG",
-			"description1\n"
-			"  Cannot enable VRR.\n"
-			"  You can disable VRR for this display in cfg.yaml\n"
-			"VRR_OFF:\n"
-			"  - 'model1'");
-	smaps_put_if_absent(expected, "CALLBACK_LEVEL", "WARNING");
-
-	will_return_int(__wrap_log_get_threshold, INFO);
-
-	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_smaps(__wrap_spawn_sh_cmd, env, expected);
-
-	call_back_adaptive_sync_fail(WARNING, g_displ->delta.head);
-
-	assert_log(INFO, "\nExecuting CALLBACK_CMD:\n  command\n");
-
-	char *env_str = sprintf_append(smaps_str(expected), "%s", "\n");
-	assert_log(DEBUG, env_str);
-	free(env_str);
-
-	assert_logs_empty();
-
-	smaps_free(expected);
-	head_free(head);
-}
-
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(print_cfg__all),
@@ -1067,15 +925,6 @@ int main(void) {
 		TEST_BA(delta_human__all),
 		TEST_BA(delta_human__enabled),
 		TEST_BA(delta_human__disabled),
-
-		TEST_BA(call_back__no_callback),
-		TEST_BA(call_back__below_threshold),
-		TEST_BA(call_back__one),
-		TEST_BA(call_back__two),
-
-		TEST_BA(call_back_mode_fail__),
-
-		TEST_BA(call_back_adaptive_sync_fail__),
 	};
 
 	return RUN(tests);

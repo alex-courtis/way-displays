@@ -9,8 +9,6 @@
 #include "mode.h"
 #include "slist.h"
 
-#define CALLBACK_MSG_LEN 1024 * 64
-
 enum InfoEvent {
 	ARRIVED,
 	DEPARTED,
@@ -47,17 +45,6 @@ char *delta_human_adaptive_sync(const struct Head * const head);
 
 // consumer frees
 char *delta_human_reapply(const struct Head * const head);
-
-// maybe execute CALLBACK_CMD
-// set CALLBACK_MSG to msg1..msg2
-// set CALLBACK_LEVEL to log name
-void call_back(const enum LogThreshold t, const char * const msg1, const char * const msg2);
-
-// maybe execute CALLBACK_CMD
-void call_back_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
-
-// maybe execute CALLBACK_CMD
-void call_back_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
 
 #endif // INFO_H
 

@@ -54,9 +54,9 @@ static void act_handle_success__head_changing_adaptive_sync(void **state) {
 	g_displ->delta.element = VRR_OFF;
 	g_displ->delta.head = head;
 
-	expect_int_value(__wrap_call_back, t, INFO);
-	expect_str(__wrap_call_back, msg1, "Changes successful");
-	expect_str(__wrap_call_back, msg2, NULL);
+	expect_int_value(__wrap_callback, t, INFO);
+	expect_str(__wrap_callback, msg1, "Changes successful");
+	expect_str(__wrap_callback, msg2, NULL);
 
 	act_handle_success();
 
@@ -80,8 +80,8 @@ static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
 	expect_int_value(__wrap_print_adaptive_sync_fail, t, WARNING);
 	expect_ptr(__wrap_print_adaptive_sync_fail, head, head);
 
-	expect_int_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
-	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, head);
+	expect_int_value(__wrap_callback_adaptive_sync_fail, t, WARNING);
+	expect_ptr(__wrap_callback_adaptive_sync_fail, head, head);
 
 	act_handle_success();
 
@@ -102,9 +102,9 @@ static void act_handle_success__head_changing_mode(void **state) {
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
 
-	expect_int_value(__wrap_call_back, t, INFO);
-	expect_str(__wrap_call_back, msg1, "Changes successful");
-	expect_str(__wrap_call_back, msg2, NULL);
+	expect_int_value(__wrap_callback, t, INFO);
+	expect_str(__wrap_callback, msg1, "Changes successful");
+	expect_str(__wrap_callback, msg2, NULL);
 
 	act_handle_success();
 
@@ -120,9 +120,9 @@ static void act_handle_success__head_changing_mode(void **state) {
 static void act_handle_success__ok(void **state) {
 	g_displ->delta.human = strdup("human");
 
-	expect_int_value(__wrap_call_back, t, INFO);
-	expect_str(__wrap_call_back, msg1, "human");
-	expect_str(__wrap_call_back, msg2, NULL);
+	expect_int_value(__wrap_callback, t, INFO);
+	expect_str(__wrap_callback, msg1, "human");
+	expect_str(__wrap_callback, msg2, NULL);
 
 	act_handle_success();
 
@@ -148,9 +148,9 @@ static void act_handle_failure__mode(void **state) {
 	expect_ptr(__wrap_print_mode_fail, head, head);
 	expect_ptr(__wrap_print_mode_fail, mode, mode_des);
 
-	expect_int_value(__wrap_call_back_mode_fail, t, ERROR);
-	expect_ptr(__wrap_call_back_mode_fail, head, head);
-	expect_ptr(__wrap_call_back_mode_fail, mode, mode_des);
+	expect_int_value(__wrap_callback_mode_fail, t, ERROR);
+	expect_ptr(__wrap_callback_mode_fail, head, head);
+	expect_ptr(__wrap_callback_mode_fail, mode, mode_des);
 
 	act_handle_failure();
 
@@ -182,8 +182,8 @@ static void act_handle_failure__adaptive_sync(void **state) {
 	expect_int_value(__wrap_print_adaptive_sync_fail, t, WARNING);
 	expect_ptr(__wrap_print_adaptive_sync_fail, head, head);
 
-	expect_int_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
-	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, head);
+	expect_int_value(__wrap_callback_adaptive_sync_fail, t, WARNING);
+	expect_ptr(__wrap_callback_adaptive_sync_fail, head, head);
 
 	act_handle_failure();
 
@@ -197,9 +197,9 @@ static void act_handle_failure__adaptive_sync(void **state) {
 static void act_handle_failure__unspecified(void **state) {
 	g_displ->delta.human = strdup("human");
 
-	expect_int_value(__wrap_call_back, t, FATAL);
-	expect_str(__wrap_call_back, msg1, "human");
-	expect_str(__wrap_call_back, msg2, "\nChanges failed, exiting");
+	expect_int_value(__wrap_callback, t, FATAL);
+	expect_str(__wrap_callback, msg1, "human");
+	expect_str(__wrap_callback, msg2, "\nChanges failed, exiting");
 
 	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
@@ -212,9 +212,9 @@ static void act_handle_failure__unspecified(void **state) {
 static void act_handle_cancelled__retrying(void **state) {
 	g_cancellation_retries = 4;
 
-	expect_int_value(__wrap_call_back, t, WARNING);
-	expect_str(__wrap_call_back, msg1, "Changes cancelled, retrying (attempt 5)");
-	expect_nul(__wrap_call_back, msg2);
+	expect_int_value(__wrap_callback, t, WARNING);
+	expect_str(__wrap_callback, msg1, "Changes cancelled, retrying (attempt 5)");
+	expect_nul(__wrap_callback, msg2);
 
 	act_handle_cancelled();
 
@@ -227,9 +227,9 @@ static void act_handle_cancelled__retrying(void **state) {
 static void act_handle_cancelled__over_max(void **state) {
 	g_cancellation_retries = 5;
 
-	expect_int_value(__wrap_call_back, t, WARNING);
-	expect_str(__wrap_call_back, msg1, "Changes cancelled after 5 retries");
-	expect_nul(__wrap_call_back, msg2);
+	expect_int_value(__wrap_callback, t, WARNING);
+	expect_str(__wrap_callback, msg1, "Changes cancelled after 5 retries");
+	expect_nul(__wrap_callback, msg2);
 
 	act_handle_cancelled();
 

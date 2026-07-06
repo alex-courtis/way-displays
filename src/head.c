@@ -11,7 +11,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "fn.h"
-#include "info.h"
+#include "info/callback.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
@@ -423,7 +423,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	if (pset_size(head->modes) == 0) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head->name);
-		call_back(ERROR, head_human(head), "\n  No mode, disabling");
+		callback(ERROR, head_human(head), "\n  No mode, disabling");
 		return NULL;
 	}
 
@@ -443,7 +443,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 
 			char *human = sprintf_alloc("%s\n  No available mode for user MODE %s, falling back to preferred", head_human(head), um);
 
-			call_back(WARNING, human, NULL);
+			callback(WARNING, human, NULL);
 
 			free(um);
 			free(human);
@@ -465,7 +465,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 
 			char *human = sprintf_alloc("%s\n  No preferred mode, falling back to maximum available", head_human(head));
 
-			call_back(WARNING, human, NULL);
+			callback(WARNING, human, NULL);
 
 			free(human);
 		}
@@ -479,7 +479,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	if (!mode) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head_human(head));
-		call_back(ERROR, head_human(head), "\n  No mode, disabling");
+		callback(ERROR, head_human(head), "\n  No mode, disabling");
 	}
 
 	return mode;
