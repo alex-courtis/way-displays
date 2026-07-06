@@ -47,31 +47,22 @@ struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head) {
 	return head;
 }
 
+// add mode to modes_orphaned if it's not present in modes or failed modes
+static void add_orphaned_mode(const struct PSet *modes_orphaned, const struct Head *head, const struct Mode *mode) {
+	if (mode && !pset_contains(head->modes, mode) && !pset_contains(head->modes_failed, mode)) {
+		pset_add(modes_orphaned, mode);
+	}
+}
+
 void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	// TODO orphan set
-
-	if (head->mode_preferred && !pset_contains(head->modes, head->mode_preferred) && !pset_contains(head->modes_failed, head->mode_preferred)) {
-		mode_free((struct Mode*)head->mode_preferred);
-		if (head->desired.mode == head->mode_preferred) {
-			head->desired.mode = NULL;
-		}
-		if (head->current.mode == head->mode_preferred) {
-			head->current.mode = NULL;
-		}
-	}
-
-	if (head->current.mode && !pset_contains(head->modes, head->current.mode) && !pset_contains(head->modes_failed, head->current.mode)) {
-		mode_free((struct Mode*)head->current.mode);
-		if (head->desired.mode == head->current.mode) {
-			head->desired.mode = NULL;
-		}
-	}
-	if (head->desired.mode && !pset_contains(head->modes, head->desired.mode) && !pset_contains(head->modes_failed, head->desired.mode)) {
-		mode_free((struct Mode*)head->desired.mode);
-	}
+	const struct PSet *modes_orphaned = mode_pset_init();
+	add_orphaned_mode(modes_orphaned, head, head->mode_preferred);
+	add_orphaned_mode(modes_orphaned, head, head->current.mode);
+	add_orphaned_mode(modes_orphaned, head, head->desired.mode);
+	pset_free_vals(modes_orphaned);
 
 	pset_free_vals(head->modes);
 	pset_free_vals(head->modes_failed);
