@@ -16,10 +16,7 @@
 #include "sset.h"
 #include "yaml/unmarshal.h"
 
-// TODO consider moving to header
-void load_cfg(void);
-void reload_cfg(void);
-
+#include "server.h"
 
 char *_dir_path = NULL;
 char *_file_name = NULL;
@@ -64,11 +61,11 @@ static int after_each(void **state) {
 	return 0;
 }
 
-static void load_cfg__no_file(void **state) {
+static void server_load_cfg__no_file(void **state) {
 	expect_any(__wrap_cfg_resolve_file_path, cfg);
 	will_return_int(__wrap_cfg_resolve_file_path, false);
 
-	load_cfg();
+	server_load_cfg();
 
 	struct Cfg *cfg_expected = cfg_default();
 
@@ -85,7 +82,7 @@ static void load_cfg__no_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void load_cfg__valid_file(void **state) {
+static void server_load_cfg__valid_file(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
@@ -101,7 +98,7 @@ static void load_cfg__valid_file(void **state) {
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
-	load_cfg();
+	server_load_cfg();
 
 	assert_ptr_equal(g_cfg, cfg_read);
 
@@ -123,7 +120,7 @@ static void load_cfg__valid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void load_cfg__invalid_file(void **state) {
+static void server_load_cfg__invalid_file(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
@@ -134,7 +131,7 @@ static void load_cfg__invalid_file(void **state) {
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
 
-	load_cfg();
+	server_load_cfg();
 
 	struct Cfg *cfg_expected = cfg_default();
 
@@ -151,7 +148,7 @@ static void load_cfg__invalid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void load_cfg__missing_defaults(void **state) {
+static void server_load_cfg__missing_defaults(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
@@ -168,7 +165,7 @@ static void load_cfg__missing_defaults(void **state) {
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
-	load_cfg();
+	server_load_cfg();
 
 	assert_ptr_equal(g_cfg, cfg_read);
 
@@ -191,20 +188,20 @@ static void load_cfg__missing_defaults(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void reload_cfg__no_file(void **state) {
+static void server_reload_cfg__no_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 
 	// no mock calls expected
 
-	reload_cfg();
+	server_reload_cfg();
 
 	assert_ptr_equal(g_cfg, cfg_orig);
 
 	assert_logs_empty();
 }
 
-static void reload_cfg__invalid_file(void **state) {
+static void server_reload_cfg__invalid_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 	g_cfg->auto_scale_max = 111;
@@ -216,7 +213,7 @@ static void reload_cfg__invalid_file(void **state) {
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
 
-	reload_cfg();
+	server_reload_cfg();
 
 	assert_ptr_equal(g_cfg, cfg_orig);
 
@@ -236,7 +233,7 @@ static void reload_cfg__invalid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void reload_cfg__valid_file(void **state) {
+static void server_reload_cfg__valid_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 	g_cfg->auto_scale_max = 222;
@@ -256,7 +253,7 @@ static void reload_cfg__valid_file(void **state) {
 	expect_int_value(__wrap_log_set_threshold, threshold, FATAL);
 	expect_int_value(__wrap_log_set_threshold, cli, false);
 
-	reload_cfg();
+	server_reload_cfg();
 
 	assert_ptr_not_equal(g_cfg, cfg_orig);
 	assert_ptr_equal(g_cfg, cfg_read);
@@ -280,14 +277,14 @@ static void reload_cfg__valid_file(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(load_cfg__no_file),
-		TEST_BA(load_cfg__valid_file),
-		TEST_BA(load_cfg__invalid_file),
-		TEST_BA(load_cfg__missing_defaults),
+		TEST_BA(server_load_cfg__no_file),
+		TEST_BA(server_load_cfg__valid_file),
+		TEST_BA(server_load_cfg__invalid_file),
+		TEST_BA(server_load_cfg__missing_defaults),
 
-		TEST_BA(reload_cfg__no_file),
-		TEST_BA(reload_cfg__invalid_file),
-		TEST_BA(reload_cfg__valid_file),
+		TEST_BA(server_reload_cfg__no_file),
+		TEST_BA(server_reload_cfg__invalid_file),
+		TEST_BA(server_reload_cfg__valid_file),
 	};
 
 	return RUN(tests);

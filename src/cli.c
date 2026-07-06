@@ -23,7 +23,7 @@
 
 #include "cli.h"
 
-void usage(FILE *stream) {
+void cli_usage(FILE *stream) {
 	const char mesg[] =
 		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
 		"  Runs the server when no COMMAND specified.\n"
@@ -66,7 +66,7 @@ void usage(FILE *stream) {
 	fprintf(stream, "%s", mesg);
 }
 
-struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
+struct Cfg *cli_parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
 	struct Mode *mode = NULL;
 	enum wl_output_transform wl_transform = 0;
 	float scale = 0;
@@ -220,7 +220,7 @@ struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int 
 	return cfg;
 }
 
-struct IpcRequest *parse_list(int argc, char **argv) {
+struct IpcRequest *cli_parse_list(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--list takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -233,7 +233,7 @@ struct IpcRequest *parse_list(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *parse_get(int argc, char **argv) {
+struct IpcRequest *cli_parse_get(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--get takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -246,7 +246,7 @@ struct IpcRequest *parse_get(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *parse_write(int argc, char **argv) {
+struct IpcRequest *cli_parse_write(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--write takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -259,7 +259,7 @@ struct IpcRequest *parse_write(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *parse_reapply(int argc, char **argv) {
+struct IpcRequest *cli_parse_reapply(int argc, char **argv) {
 	if (optind != argc) {
 		log_fatal("--reapply takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -272,7 +272,7 @@ struct IpcRequest *parse_reapply(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *parse_set(int argc, char **argv) {
+struct IpcRequest *cli_parse_set(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case MODE:
@@ -317,12 +317,12 @@ struct IpcRequest *parse_set(int argc, char **argv) {
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
 	request->command = CFG_SET;
-	request->cfg = parse_element(CFG_SET, element, argc, argv);
+	request->cfg = cli_parse_element(CFG_SET, element, argc, argv);
 
 	return request;
 }
 
-struct IpcRequest *parse_del(int argc, char **argv) {
+struct IpcRequest *cli_parse_del(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case MODE:
@@ -351,12 +351,12 @@ struct IpcRequest *parse_del(int argc, char **argv) {
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
 	request->command = CFG_DEL;
-	request->cfg = parse_element(CFG_DEL, element, argc, argv);
+	request->cfg = cli_parse_element(CFG_DEL, element, argc, argv);
 
 	return request;
 }
 
-struct IpcRequest *parse_toggle(int argc, char **argv) {
+struct IpcRequest *cli_parse_toggle(int argc, char **argv) {
 	enum CfgElement element = cfg_element_val(optarg);
 	switch (element) {
 		case SCALING:
@@ -383,12 +383,12 @@ struct IpcRequest *parse_toggle(int argc, char **argv) {
 
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
 	request->command = CFG_TOGGLE;
-	request->cfg = parse_element(CFG_TOGGLE, element, argc, argv);
+	request->cfg = cli_parse_element(CFG_TOGGLE, element, argc, argv);
 
 	return request;
 }
 
-enum LogThreshold parse_log_threshold(char *optarg) {
+enum LogThreshold cli_parse_log_threshold(char *optarg) {
 	enum LogThreshold threshold = log_threshold_val(optarg);
 
 	if (!threshold) {
@@ -399,7 +399,7 @@ enum LogThreshold parse_log_threshold(char *optarg) {
 	return threshold;
 }
 
-void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
+void cli_parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
 	static struct option long_options[] = {
 		{ "config",        required_argument, 0, 'c' },
 		{ "delete",        required_argument, 0, 'd' },
@@ -427,13 +427,13 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 			break;
 		switch (c) {
 			case 'L':
-				if (!(threshold = parse_log_threshold(optarg))) {
+				if (!(threshold = cli_parse_log_threshold(optarg))) {
 					wd_exit(EXIT_FAILURE);
 					return;
 				}
 				break;
 			case 'h':
-				usage(stdout);
+				cli_usage(stdout);
 				wd_exit(EXIT_SUCCESS);
 				return;
 			case 'c':
@@ -448,29 +448,29 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				yaml = true;
 				break;
 			case 'l':
-				*ipc_request = parse_list(argc, argv);
+				*ipc_request = cli_parse_list(argc, argv);
 				break;
 			case 'g':
-				*ipc_request = parse_get(argc, argv);
+				*ipc_request = cli_parse_get(argc, argv);
 				break;
 			case 's':
-				*ipc_request = parse_set(argc, argv);
+				*ipc_request = cli_parse_set(argc, argv);
 				break;
 			case 'd':
-				*ipc_request = parse_del(argc, argv);
+				*ipc_request = cli_parse_del(argc, argv);
 				break;
 			case 't':
-				*ipc_request = parse_toggle(argc, argv);
+				*ipc_request = cli_parse_toggle(argc, argv);
 				break;
 			case 'w':
-				*ipc_request = parse_write(argc, argv);
+				*ipc_request = cli_parse_write(argc, argv);
 				break;
 			case 'r':
-				*ipc_request = parse_reapply(argc, argv);
+				*ipc_request = cli_parse_reapply(argc, argv);
 				break;
 			case '?':
 			default:
-				usage(stderr);
+				cli_usage(stderr);
 				wd_exit(EXIT_FAILURE);
 				return;
 		}

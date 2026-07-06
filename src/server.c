@@ -166,7 +166,7 @@ send:
 	notify_ipc_operation();
 }
 
-void load_cfg(void) {
+void server_load_cfg(void) {
 	struct Cfg *cfg_resolved = cfg_init();
 
 	bool resolved = cfg_resolve_file_path(cfg_resolved);
@@ -200,7 +200,7 @@ void load_cfg(void) {
 	cfg_free(cfg_resolved);
 }
 
-void reload_cfg(void) {
+void server_reload_cfg(void) {
 	if (!g_cfg || !g_cfg->file_path)
 		return;
 
@@ -297,7 +297,7 @@ static int loop(void) {
 					g_cfg->updated = false;
 				} else {
 					log_debug("LOOP cfg_file_reload");
-					reload_cfg();
+					server_reload_cfg();
 				}
 			}
 		}
@@ -367,7 +367,7 @@ server(char *cfg_path) {
 	cfg_file_paths_init(cfg_path);
 
 	// maybe default, never exits
-	load_cfg();
+	server_load_cfg();
 	free(cfg_path);
 
 	// play back captured logs from cfg parse

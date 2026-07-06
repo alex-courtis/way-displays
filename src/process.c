@@ -50,7 +50,7 @@ void pid_file_create(void) {
 	pid_t pid = pid_active_server(pid_path);
 	if (pid) {
 		log_fatal("another instance %d is running, exiting\n", pid);
-		usage(stderr);
+		cli_usage(stderr);
 		wd_exit(EXIT_FAILURE);
 		return;
 	}
