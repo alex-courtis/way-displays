@@ -29,23 +29,9 @@
 
 extern int g_cancellation_retries;
 
-// cppcheck-suppress staticFunction
-const struct Mode *__wrap_head_find_mode(struct Head * const head) {
-	check_expected_ptr(head);
-	return mock_ptr_type_checked(struct Mode*);
-}
-
-// cppcheck-suppress staticFunction
-wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
-	check_expected_ptr(head);
-	return mock_type(wl_fixed_t);
-}
-
-
 struct State {
 	struct SList *heads;
 };
-
 
 static int before_each(void **state) {
 	assert_logs_empty_before();

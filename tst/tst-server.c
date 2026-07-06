@@ -14,7 +14,6 @@
 #include "cfg.h"
 #include "log.h"
 #include "sset.h"
-#include "yaml/unmarshal.h"
 
 #include "server.h"
 
@@ -31,13 +30,6 @@ bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 	cfg->file_path = _file_path ? strdup(_file_path) : NULL;
 
 	return mock_type(bool);
-}
-
-// cppcheck-suppress staticFunction
-void *__wrap_yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
-	check_expected_ptr(path);
-
-	return mock_ptr_type_checked(struct Cfg*);
 }
 
 static int before_each(void **state) {

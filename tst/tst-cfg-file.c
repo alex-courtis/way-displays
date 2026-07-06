@@ -11,12 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include "log.h"
 #include "slist.h"
-#include "yaml/marshal.h"
 
 #include "cfg.h"
 
@@ -24,39 +22,6 @@ extern struct SList *g_cfg_file_paths;
 
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
-
-// cppcheck-suppress staticFunction
-char *__wrap_yaml_marshal(const void *data, fn_yaml_root_from_type fn, const char *human) {
-	check_expected_ptr(data);
-	check_expected_ptr(human);
-
-	return mock_ptr_type_checked(char*);
-}
-
-// cppcheck-suppress staticFunction
-bool __wrap_file_write(const char *path, const char *contents, const char *mode) {
-	check_expected_ptr(path);
-	check_expected_ptr(contents);
-	check_expected_ptr(mode);
-	return mock_type(bool);
-}
-
-// cppcheck-suppress staticFunction
-bool __wrap_mkdir_p(char *path, mode_t mode) {
-	check_expected_ptr(path);
-	check_expected_int(mode);
-	return mock_type(bool);
-}
-
-// cppcheck-suppress staticFunction
-void __wrap_fd_wd_cfg_dir_create(void) {
-	function_called();
-}
-
-// cppcheck-suppress staticFunction
-void __wrap_fd_wd_cfg_dir_destroy(void) {
-	function_called();
-}
 
 static void clean_files(void) {
 	remove("tst/tmp/write-existing-cfg.yaml");
