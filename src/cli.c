@@ -440,7 +440,7 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				*cfg_path = strdup(optarg);
 				break;
 			case 'v':
-				log_info("way-displays version %s", VERSION);
+				log_info("way-displays version %s %s", VERSION, COMMIT);
 				wd_exit(EXIT_SUCCESS);
 				break;
 			case 'y':

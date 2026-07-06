@@ -361,7 +361,7 @@ server(char *cfg_path) {
 	log_cap_lines_start(&log_cap_lines);
 	log_suppress_start();
 
-	log_info("way-displays version %s", VERSION);
+	log_info("way-displays version %s %s", VERSION, COMMIT);
 
 	// all cfg paths
 	cfg_file_paths_init(cfg_path);
