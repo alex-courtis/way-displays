@@ -57,3 +57,12 @@
    fun:has_leftover_values*
    ...
 }
+
+{
+   - has_mock, maybe list_find
+   Memcheck:Cond
+   ...
+   fun:_has_mock
+   fun:__wrap*
+   ...
+}

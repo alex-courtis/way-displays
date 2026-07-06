@@ -4,6 +4,8 @@
 
 #include "lid.h"
 
+// complete replacement for lid
+
 struct Lid *g_lid = NULL;
 
 void __wrap_lid_init(void) {
