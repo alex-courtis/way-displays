@@ -20,12 +20,12 @@ unusedFunction:tst/wrap-*.c
 nullPointerOutOfMemory
 
 # requires too much function pointer casting
-constParameterCallback:listener*c
+constParameterCallback:listener/*c
 
 # does not identify correctly
 unusedStructMember
  
-# not sure why this doesn't work
+# not sure why this doesn't work; iwyu takes care of it
 missingIncludeSystem
 
 # this does not handle function pointer types
