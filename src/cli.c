@@ -220,7 +220,7 @@ struct Cfg *cli_parse_element(enum IpcCommand command, enum CfgElement element, 
 	return cfg;
 }
 
-struct IpcRequest *cli_parse_list(int argc, char **argv) {
+struct IpcRequest *cli_parse_list(int argc) {
 	if (optind != argc) {
 		log_fatal("--list takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -233,7 +233,7 @@ struct IpcRequest *cli_parse_list(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *cli_parse_get(int argc, char **argv) {
+struct IpcRequest *cli_parse_get(int argc) {
 	if (optind != argc) {
 		log_fatal("--get takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -246,7 +246,7 @@ struct IpcRequest *cli_parse_get(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *cli_parse_write(int argc, char **argv) {
+struct IpcRequest *cli_parse_write(int argc) {
 	if (optind != argc) {
 		log_fatal("--write takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -259,7 +259,7 @@ struct IpcRequest *cli_parse_write(int argc, char **argv) {
 	return request;
 }
 
-struct IpcRequest *cli_parse_reapply(int argc, char **argv) {
+struct IpcRequest *cli_parse_reapply(int argc) {
 	if (optind != argc) {
 		log_fatal("--reapply takes no arguments");
 		wd_exit(EXIT_FAILURE);
@@ -448,10 +448,10 @@ void cli_parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char
 				yaml = true;
 				break;
 			case 'l':
-				*ipc_request = cli_parse_list(argc, argv);
+				*ipc_request = cli_parse_list(argc);
 				break;
 			case 'g':
-				*ipc_request = cli_parse_get(argc, argv);
+				*ipc_request = cli_parse_get(argc);
 				break;
 			case 's':
 				*ipc_request = cli_parse_set(argc, argv);
@@ -463,10 +463,10 @@ void cli_parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char
 				*ipc_request = cli_parse_toggle(argc, argv);
 				break;
 			case 'w':
-				*ipc_request = cli_parse_write(argc, argv);
+				*ipc_request = cli_parse_write(argc);
 				break;
 			case 'r':
-				*ipc_request = cli_parse_reapply(argc, argv);
+				*ipc_request = cli_parse_reapply(argc);
 				break;
 			case '?':
 			default:

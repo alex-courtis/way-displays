@@ -470,7 +470,7 @@ static void cli_parse_write__nargs(void **state) {
 
 	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_nul(cli_parse_write(1, NULL));
+	assert_nul(cli_parse_write(1));
 
 	assert_log(FATAL, "--write takes no arguments\n");
 	assert_logs_empty();
@@ -479,7 +479,7 @@ static void cli_parse_write__nargs(void **state) {
 static void cli_parse_write__ok(void **state) {
 	optind = 0;
 
-	struct IpcRequest *request = cli_parse_write(0, NULL);
+	struct IpcRequest *request = cli_parse_write(0);
 
 	assert_non_nul(request);
 	assert_int_equal(request->command, CFG_WRITE);
@@ -495,7 +495,7 @@ static void cli_parse_get__nargs(void **state) {
 
 	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_nul(cli_parse_get(1, NULL));
+	assert_nul(cli_parse_get(1));
 
 	assert_log(FATAL, "--get takes no arguments\n");
 	assert_logs_empty();
@@ -504,7 +504,7 @@ static void cli_parse_get__nargs(void **state) {
 static void cli_parse_get__ok(void **state) {
 	optind = 0;
 
-	struct IpcRequest *request = cli_parse_get(0, NULL);
+	struct IpcRequest *request = cli_parse_get(0);
 
 	assert_non_nul(request);
 	assert_int_equal(request->command, GET);
@@ -520,7 +520,7 @@ static void cli_parse_list__nargs(void **state) {
 
 	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_nul(cli_parse_list(1, NULL));
+	assert_nul(cli_parse_list(1));
 
 	assert_log(FATAL, "--list takes no arguments\n");
 	assert_logs_empty();
@@ -529,7 +529,7 @@ static void cli_parse_list__nargs(void **state) {
 static void cli_parse_list__ok(void **state) {
 	optind = 0;
 
-	struct IpcRequest *request = cli_parse_list(0, NULL);
+	struct IpcRequest *request = cli_parse_list(0);
 
 	assert_non_nul(request);
 	assert_int_equal(request->command, LIST);
@@ -545,7 +545,7 @@ static void cli_parse_reapply__nargs(void **state) {
 
 	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
-	assert_nul(cli_parse_reapply(1, NULL));
+	assert_nul(cli_parse_reapply(1));
 
 	assert_log(FATAL, "--reapply takes no arguments\n");
 	assert_logs_empty();
@@ -554,7 +554,7 @@ static void cli_parse_reapply__nargs(void **state) {
 static void cli_parse_reapply__ok(void **state) {
 	optind = 0;
 
-	struct IpcRequest *request = cli_parse_reapply(0, NULL);
+	struct IpcRequest *request = cli_parse_reapply(0);
 
 	assert_non_nul(request);
 	assert_int_equal(request->command, REAPPLY);

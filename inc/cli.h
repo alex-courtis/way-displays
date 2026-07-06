@@ -17,11 +17,11 @@ void cli_parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char
 struct Cfg *cli_parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
 
 // parse a specific CLI command into a new IpcRequest, NULL on failure
-struct IpcRequest *cli_parse_write(int argc, char **argv);
-struct IpcRequest *cli_parse_reapply(int argc, char **argv);
+struct IpcRequest *cli_parse_write(int argc);
+struct IpcRequest *cli_parse_reapply(int argc);
 struct IpcRequest *cli_parse_set(int argc, char **argv);
-struct IpcRequest *cli_parse_get(int argc, char **argv);
-struct IpcRequest *cli_parse_list(int argc, char **argv);
+struct IpcRequest *cli_parse_get(int argc);
+struct IpcRequest *cli_parse_list(int argc);
 struct IpcRequest *cli_parse_del(int argc, char **argv);
 struct IpcRequest *cli_parse_toggle(int argc, char **argv);
 
