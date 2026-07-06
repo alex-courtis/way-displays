@@ -69,7 +69,7 @@ tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=mode_max_refresh,$\
 	--wrap=call_back
 
-tst/tst-layout: LDFLAGS += -Wl,$\
+tst/tst-act: LDFLAGS += -Wl,$\
 	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,$\
 	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,--wrap=call_back_mode_fail
 

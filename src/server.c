@@ -17,7 +17,7 @@
 #include "head.h"
 #include "info.h"
 #include "ipc.h"
-#include "layout.h"
+#include "act.h"
 #include "lid.h"
 #include "log.h"
 #include "process.h"
@@ -320,7 +320,7 @@ static int loop(void) {
 
 		// maybe make some changes
 		log_debug("LOOP layout");
-		layout();
+		act();
 
 
 		// inform the client

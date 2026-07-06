@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "layout.h"
+#include "act.h"
 
 #include "cfg.h"
 #include "convert.h"
@@ -23,7 +23,7 @@
 
 int g_cancellation_retries = 0;
 
-void handle_success(void) {
+void act_handle_success(void) {
 	g_cancellation_retries = 0;
 
 	struct Head *head = g_displ->delta.head;
@@ -38,7 +38,7 @@ void handle_success(void) {
 			case VRR_OFF:
 				// sway reports adaptive sync failure as success
 				if (head_current_adaptive_sync_not_desired(head)) {
-					handle_failure();
+					act_handle_failure();
 					return;
 				}
 				break;
@@ -55,7 +55,7 @@ void handle_success(void) {
 	displ_delta_destroy();
 }
 
-bool handle_cancelled(void) {
+bool act_handle_cancelled(void) {
 	char *msg;
 	bool ret = false;
 
@@ -76,7 +76,7 @@ bool handle_cancelled(void) {
 	return ret;
 }
 
-void handle_failure(void) {
+void act_handle_failure(void) {
 	struct Head *head = g_displ->delta.head;
 
 	switch(g_displ->delta.element) {
@@ -120,7 +120,7 @@ void handle_failure(void) {
 	displ_delta_destroy();
 }
 
-void apply(void) {
+void act_apply(void) {
 	struct SList *heads_changing = NULL;
 
 	displ_delta_destroy();
@@ -208,7 +208,7 @@ void apply(void) {
 	slist_free(&heads_changing);
 }
 
-void layout(void) {
+void act(void) {
 	print_heads(INFO, ARRIVED, g_heads_arrived);
 	slist_free(&g_heads_arrived);
 
@@ -219,7 +219,7 @@ void layout(void) {
 
 	switch (g_displ->state) {
 		case SUCCEEDED:
-			handle_success();
+			act_handle_success();
 			g_displ->state = IDLE;
 			break;
 
@@ -228,14 +228,14 @@ void layout(void) {
 			return;
 
 		case FAILED:
-			handle_failure();
+			act_handle_failure();
 			g_displ->state = IDLE;
 			break;
 
 		case CANCELLED:
 			g_displ->state = IDLE;
 			// whether to keep retrying
-			if (handle_cancelled()) {
+			if (act_handle_cancelled()) {
 				break;
 			} else {
 				return;
@@ -249,7 +249,7 @@ void layout(void) {
 	desire();
 	log_debug("LAYOUT desired %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 
-	apply();
+	act_apply();
 	log_debug("LAYOUT applied %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
 }
 

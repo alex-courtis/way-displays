@@ -19,7 +19,7 @@
 #include "pset.h"
 #include "wlr-output-management-unstable-v1.h"
 
-#include "layout.h"
+#include "act.h"
 
 extern int g_cancellation_retries;
 
@@ -41,11 +41,11 @@ static int after_each(void **state) {
 	return 0;
 }
 
-static void apply__nothing(void **state) {
-	apply();
+static void act_apply__nothing(void **state) {
+	act_apply();
 }
 
-static void handle_success__head_changing_adaptive_sync(void **state) {
+static void act_handle_success__head_changing_adaptive_sync(void **state) {
 	struct Head *head = head_init_name("head");
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -58,7 +58,7 @@ static void handle_success__head_changing_adaptive_sync(void **state) {
 	expect_str(__wrap_call_back, msg1, "Changes successful");
 	expect_str(__wrap_call_back, msg2, NULL);
 
-	handle_success();
+	act_handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
 	assert_logs_empty();
@@ -68,7 +68,7 @@ static void handle_success__head_changing_adaptive_sync(void **state) {
 	head_free(head);
 }
 
-static void handle_success__head_changing_adaptive_sync_fail(void **state) {
+static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
 	struct Head *head = head_init_name("head");
 	head->model = NULL;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -83,7 +83,7 @@ static void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	expect_int_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
 	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, head);
 
-	handle_success();
+	act_handle_success();
 
 	assert_true(head->adaptive_sync_failed);
 
@@ -92,7 +92,7 @@ static void handle_success__head_changing_adaptive_sync_fail(void **state) {
 	head_free(head);
 }
 
-static void handle_success__head_changing_mode(void **state) {
+static void act_handle_success__head_changing_mode(void **state) {
 	struct Head *head = head_init_name("head");
 	struct Mode *mode = mode_init();
 	mode->head = head;
@@ -106,7 +106,7 @@ static void handle_success__head_changing_mode(void **state) {
 	expect_str(__wrap_call_back, msg1, "Changes successful");
 	expect_str(__wrap_call_back, msg2, NULL);
 
-	handle_success();
+	act_handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
 	assert_logs_empty();
@@ -117,20 +117,20 @@ static void handle_success__head_changing_mode(void **state) {
 	head_free(head);
 }
 
-static void handle_success__ok(void **state) {
+static void act_handle_success__ok(void **state) {
 	g_displ->delta.human = strdup("human");
 
 	expect_int_value(__wrap_call_back, t, INFO);
 	expect_str(__wrap_call_back, msg1, "human");
 	expect_str(__wrap_call_back, msg2, NULL);
 
-	handle_success();
+	act_handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
 	assert_logs_empty();
 }
 
-static void handle_failure__mode(void **state) {
+static void act_handle_failure__mode(void **state) {
 	struct Head *head = head_init_name("nam");
 	const struct Mode *mode_cur = mode_init_h_whr(head, 1, 2, 3);
 	const struct Mode *mode_des = mode_init_h_whr(head, 4, 5, 6);
@@ -152,7 +152,7 @@ static void handle_failure__mode(void **state) {
 	expect_ptr(__wrap_call_back_mode_fail, head, head);
 	expect_ptr(__wrap_call_back_mode_fail, mode, mode_des);
 
-	handle_failure();
+	act_handle_failure();
 
 	assert_nul(head->current.mode);
 
@@ -170,7 +170,7 @@ static void handle_failure__mode(void **state) {
 	head_free(head);
 }
 
-static void handle_failure__adaptive_sync(void **state) {
+static void act_handle_failure__adaptive_sync(void **state) {
 	struct Head *head = head_init_name("nam");
 	head->model = strdup("mod");
 	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
@@ -185,7 +185,7 @@ static void handle_failure__adaptive_sync(void **state) {
 	expect_int_value(__wrap_call_back_adaptive_sync_fail, t, WARNING);
 	expect_ptr(__wrap_call_back_adaptive_sync_fail, head, head);
 
-	handle_failure();
+	act_handle_failure();
 
 	assert_true(head->adaptive_sync_failed);
 
@@ -194,7 +194,7 @@ static void handle_failure__adaptive_sync(void **state) {
 	head_free(head);
 }
 
-static void handle_failure__unspecified(void **state) {
+static void act_handle_failure__unspecified(void **state) {
 	g_displ->delta.human = strdup("human");
 
 	expect_int_value(__wrap_call_back, t, FATAL);
@@ -203,20 +203,20 @@ static void handle_failure__unspecified(void **state) {
 
 	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
-	handle_failure();
+	act_handle_failure();
 
 	assert_log(FATAL, "\nChanges failed, exiting\n");
 	assert_logs_empty();
 }
 
-static void handle_cancelled__retrying(void **state) {
+static void act_handle_cancelled__retrying(void **state) {
 	g_cancellation_retries = 4;
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "Changes cancelled, retrying (attempt 5)");
 	expect_nul(__wrap_call_back, msg2);
 
-	handle_cancelled();
+	act_handle_cancelled();
 
 	assert_log(WARNING, "\nChanges cancelled, retrying (attempt 5)\n");
 	assert_logs_empty();
@@ -224,14 +224,14 @@ static void handle_cancelled__retrying(void **state) {
 	assert_int_equal(g_cancellation_retries, 5);
 }
 
-static void handle_cancelled__over_max(void **state) {
+static void act_handle_cancelled__over_max(void **state) {
 	g_cancellation_retries = 5;
 
 	expect_int_value(__wrap_call_back, t, WARNING);
 	expect_str(__wrap_call_back, msg1, "Changes cancelled after 5 retries");
 	expect_nul(__wrap_call_back, msg2);
 
-	handle_cancelled();
+	act_handle_cancelled();
 
 	assert_log(WARNING, "\nChanges cancelled after 5 retries\n");
 	assert_logs_empty();
@@ -241,19 +241,19 @@ static void handle_cancelled__over_max(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(apply__nothing),
+		TEST_BA(act_apply__nothing),
 
-		TEST_BA(handle_success__head_changing_adaptive_sync),
-		TEST_BA(handle_success__head_changing_adaptive_sync_fail),
-		TEST_BA(handle_success__head_changing_mode),
-		TEST_BA(handle_success__ok),
+		TEST_BA(act_handle_success__head_changing_adaptive_sync),
+		TEST_BA(act_handle_success__head_changing_adaptive_sync_fail),
+		TEST_BA(act_handle_success__head_changing_mode),
+		TEST_BA(act_handle_success__ok),
 
-		TEST_BA(handle_failure__mode),
-		TEST_BA(handle_failure__adaptive_sync),
-		TEST_BA(handle_failure__unspecified),
+		TEST_BA(act_handle_failure__mode),
+		TEST_BA(act_handle_failure__adaptive_sync),
+		TEST_BA(act_handle_failure__unspecified),
 
-		TEST_BA(handle_cancelled__retrying),
-		TEST_BA(handle_cancelled__over_max),
+		TEST_BA(act_handle_cancelled__retrying),
+		TEST_BA(act_handle_cancelled__over_max),
 	};
 
 	return RUN(tests);
