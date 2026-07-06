@@ -13,8 +13,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wayland-client-protocol.h>
-#include <wayland-util.h>
 
 #include "cfg.h"
 #include "cfg/disabled.h"
@@ -212,106 +210,6 @@ static void head_auto_scale__range(void **state) {
 	will_return_int(__wrap_mode_dpi, 12);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 0.63f, -1.0f), 0.75f);
 
-	assert_logs_empty();
-
-	head_free(head);
-}
-
-static void head_set_scaled_dimensions__default(void **state) {
-	struct Head *head = head_init();
-	head->scaled.width = 1;
-	head->scaled.height = 1;
-
-	// no head
-	head_set_scaled_dimensions(NULL);
-
-	// no mode
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 1);
-	assert_int_equal(head->scaled.height, 1);
-
-	// no scale
-	const struct Mode *mode = mode_init_h_whr(head, 200, 100, 0);
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
-
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 1);
-	assert_int_equal(head->scaled.height, 1);
-
-	assert_logs_empty();
-
-	head_free(head);
-}
-
-static void head_set_scaled_dimensions__transform(void **state) {
-	struct Head *head = head_init();
-
-	const struct Mode *mode = mode_init_h_whr(head, 200, 100, 0);
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
-
-	// double, not rotated
-	head->desired.scale = wl_fixed_from_double(0.5);
-	head->desired.transform = WL_OUTPUT_TRANSFORM_180;
-
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 400);
-	assert_int_equal(head->scaled.height, 200);
-
-	// one third, rotated
-	head->desired.scale = wl_fixed_from_double(3);
-	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
-
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 33);
-	assert_int_equal(head->scaled.height, 66); // wayland truncates when calculating size
-
-	assert_logs_empty();
-
-	head_free(head);
-}
-
-static void head_set_scaled_dimensions__dimensions(void **state) {
-	struct Head *head = head_init();
-
-	const struct Mode *mode = mode_init_h_whr(head, 3840, 2160, 0);
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
-
-	head->desired.scale = head_get_fixed_scale(1.0);
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 3840);
-	assert_int_equal(head->scaled.height, 2160);
-	assert_logs_empty();
-
-	head->desired.scale = head_get_fixed_scale(2.0);
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 1920);
-	assert_int_equal(head->scaled.height, 1080);
-	assert_logs_empty();
-
-	head->desired.scale = head_get_fixed_scale(1.7);
-	// actual scale will be 1.75
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 2194);
-	assert_int_equal(head->scaled.height, 1234);
-	assert_logs_empty();
-
-	head->desired.scale = head_get_fixed_scale(1.9);
-	// actual scale will be 1.875
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 2048);
-	assert_int_equal(head->scaled.height, 1152);
-	assert_logs_empty();
-
-	head->name = strdup("name");
-
-	head->desired.scale = head_get_fixed_scale(2.01);
-	// actual scale will be 2.0
-	head_set_scaled_dimensions(head);
-	assert_int_equal(head->scaled.width, 1920);
-	assert_int_equal(head->scaled.height, 1080);
 	assert_logs_empty();
 
 	head_free(head);
@@ -844,10 +742,6 @@ int main(void) {
 		TEST_BA(head_auto_scale__default),
 		TEST_BA(head_auto_scale__mode),
 		TEST_BA(head_auto_scale__range),
-
-		TEST_BA(head_set_scaled_dimensions__default),
-		TEST_BA(head_set_scaled_dimensions__transform),
-		TEST_BA(head_set_scaled_dimensions__dimensions),
 
 		TEST_BA(head_find_mode__no_modes),
 		TEST_BA(head_find_mode__all_failed),

@@ -94,9 +94,6 @@ void heads_destroy(void);
  * mutation
  */
 
-// sets scaled.height/width
-void head_set_scaled_dimensions(struct Head * const head);
-
 // applies extra toggles that should change head state directly
 void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
 

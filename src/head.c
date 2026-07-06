@@ -25,17 +25,6 @@ struct SList *g_heads = NULL;
 struct SList *g_heads_arrived = NULL;
 struct SList *g_heads_departed = NULL;
 
-static int32_t head_desired_scaled_length(const struct Head * const head, const int32_t length) {
-	// scales a (pixel) length by fixed_scale
-
-	int32_t b = g_cfg->scale_round_to ? g_cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
-
-	wl_fixed_t f = (double)head->desired.scale / 256 * b + 0.5;
-
-	// wayland truncates when calculating size
-	return floor((double)length * b / f);
-}
-
 struct Head *head_init(void) {
 	struct Head *head = calloc(1, sizeof(struct Head));
 
@@ -129,23 +118,6 @@ void heads_destroy(void) {
 	slist_free_vals(&g_heads_departed, (fn_free)head_free);
 
 	slist_free(&g_heads_arrived);
-}
-
-void head_set_scaled_dimensions(struct Head * const head) {
-	if (!head || !head->desired.mode || !head->desired.scale) {
-		return;
-	}
-
-	if (head->desired.transform % 2 == 0) {
-		head->scaled.width = head->desired.mode->width;
-		head->scaled.height = head->desired.mode->height;
-	} else {
-		head->scaled.width = head->desired.mode->height;
-		head->scaled.height = head->desired.mode->width;
-	}
-
-	head->scaled.height = head_desired_scaled_length(head, head->scaled.height);
-	head->scaled.width = head_desired_scaled_length(head, head->scaled.width);
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {

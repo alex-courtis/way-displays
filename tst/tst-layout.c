@@ -13,61 +13,31 @@
 
 #include "cfg.h"
 #include "displ.h"
-#include "fn.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "slist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "layout.h"
 
 extern int g_cancellation_retries;
 
-struct State {
-	struct SList *heads;
-};
-
-
 static int before_each(void **state) {
 	assert_logs_empty_before();
 
 	g_cfg = cfg_default();
 
-	// only set this when we specifically want to test it
-	free(g_cfg->callback_cmd);
-	g_cfg->callback_cmd = NULL;
-
 	g_displ = calloc(1, sizeof(struct Displ));
 
-	struct State *s = calloc(1, sizeof(struct State));
-
-	for (int i = 0; i < 10; i++) {
-		struct Head *head = head_init();
-		head->desired.enabled = true;
-		const struct Mode *mode = mode_init_h_whr(head, i * 20, i * 10, 0);
-		head->desired.mode = mode;
-		pset_add(head->modes, mode);
-		slist_append(&s->heads, head);
-	}
-
-	*state = s;
 	return 0;
 }
 
 static int after_each(void **state) {
-	slist_free_vals(&g_heads, (fn_free)head_free);
-
 	free(g_displ);
 
 	cfg_destroy();
 
-	struct State *s = *state;
-
-	slist_free_vals(&s->heads, (fn_free)head_free);
-
-	free(s);
 	return 0;
 }
 

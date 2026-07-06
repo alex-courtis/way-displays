@@ -16,7 +16,6 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
-#include "displ.h"
 #include "fn.h"
 #include "head.h"
 #include "mode.h"
@@ -53,12 +52,6 @@ static int before_each(void **state) {
 
 	g_cfg = cfg_default();
 
-	// only set this when we specifically want to test it
-	free(g_cfg->callback_cmd);
-	g_cfg->callback_cmd = NULL;
-
-	g_displ = calloc(1, sizeof(struct Displ));
-
 	struct State *s = calloc(1, sizeof(struct State));
 
 	for (int i = 0; i < 10; i++) {
@@ -77,8 +70,6 @@ static int before_each(void **state) {
 static int after_each(void **state) {
 	slist_free_vals(&g_heads, (fn_free)head_free);
 
-	free(g_displ);
-
 	cfg_destroy();
 
 	struct State *s = *state;
@@ -89,8 +80,11 @@ static int after_each(void **state) {
 	return 0;
 }
 
+static void desire__nothing(void **state) {
+	desire();
+}
 
-static void order_heads__exact_partial_regex(void **state) {
+static void desire_order__exact_partial_regex(void **state) {
 	const struct SSet *order_name_desc = sset_init();
 	struct SList *heads = NULL;
 	struct SList *expected = NULL;
@@ -142,7 +136,7 @@ static void order_heads__exact_partial_regex(void **state) {
 	assert_logs_empty();
 }
 
-static void order_heads__exact_regex_catchall(void **state) {
+static void desire_order__exact_regex_catchall(void **state) {
 	const struct SSet *order_name_desc = sset_init();
 	struct SList *heads = NULL;
 	struct SList *expected = NULL;
@@ -187,7 +181,7 @@ static void order_heads__exact_regex_catchall(void **state) {
 	assert_logs_empty();
 }
 
-static void order_heads__no_order(void **state) {
+static void desire_order__no_order(void **state) {
 	struct SList *heads = NULL;
 	struct Head *head = head_init_name("head");
 
@@ -203,7 +197,7 @@ static void order_heads__no_order(void **state) {
 	assert_logs_empty();
 }
 
-static void position_heads__col_left(void **state) {
+static void desire_position__col_left(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -223,7 +217,7 @@ static void position_heads__col_left(void **state) {
 	assert_logs_empty();
 }
 
-static void position_heads__col_mid(void **state) {
+static void desire_position__col_mid(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -243,7 +237,7 @@ static void position_heads__col_mid(void **state) {
 	assert_logs_empty();
 }
 
-static void position_heads__col_right(void **state) {
+static void desire_position__col_right(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -263,7 +257,7 @@ static void position_heads__col_right(void **state) {
 	assert_logs_empty();
 }
 
-static void position_heads__row_top(void **state) {
+static void desire_position__row_top(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -283,7 +277,7 @@ static void position_heads__row_top(void **state) {
 	assert_logs_empty();
 }
 
-static void position_heads__row_mid(void **state) {
+static void desire_position__row_mid(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -303,7 +297,7 @@ static void position_heads__row_mid(void **state) {
 	assert_logs_empty();
 }
 
-static void position_heads__row_bottom(void **state) {
+static void desire_position__row_bottom(void **state) {
 	struct State *s = *state;
 	struct Head *head;
 
@@ -735,6 +729,107 @@ static void desire_adaptive_sync__enabled(void **state) {
 	head_free(head);
 }
 
+static void desire_scaled_dimensions__default(void **state) {
+	struct Head *head = head_init();
+	head->scaled.width = 1;
+	head->scaled.height = 1;
+
+	// no head
+	desire_scaled_dimensions(NULL);
+
+	// no mode
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 1);
+	assert_int_equal(head->scaled.height, 1);
+
+	// no scale
+	const struct Mode *mode = mode_init_h_whr(head, 200, 100, 0);
+	head->desired.mode = mode;
+	pset_add(head->modes, mode);
+
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 1);
+	assert_int_equal(head->scaled.height, 1);
+
+	assert_logs_empty();
+
+	head_free(head);
+}
+
+static void desire_scaled_dimensions__transform(void **state) {
+	struct Head *head = head_init();
+
+	const struct Mode *mode = mode_init_h_whr(head, 200, 100, 0);
+	head->desired.mode = mode;
+	pset_add(head->modes, mode);
+
+	// double, not rotated
+	head->desired.scale = wl_fixed_from_double(0.5);
+	head->desired.transform = WL_OUTPUT_TRANSFORM_180;
+
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 400);
+	assert_int_equal(head->scaled.height, 200);
+
+	// one third, rotated
+	head->desired.scale = wl_fixed_from_double(3);
+	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
+
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 33);
+	assert_int_equal(head->scaled.height, 66); // wayland truncates when calculating size
+
+	assert_logs_empty();
+
+	head_free(head);
+}
+
+static void desire_scaled_dimensions__dimensions(void **state) {
+	struct Head *head = head_init();
+
+	const struct Mode *mode = mode_init_h_whr(head, 3840, 2160, 0);
+	head->desired.mode = mode;
+	pset_add(head->modes, mode);
+
+	head->desired.scale = head_get_fixed_scale(1.0);
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 3840);
+	assert_int_equal(head->scaled.height, 2160);
+	assert_logs_empty();
+
+	head->desired.scale = head_get_fixed_scale(2.0);
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 1920);
+	assert_int_equal(head->scaled.height, 1080);
+	assert_logs_empty();
+
+	head->desired.scale = head_get_fixed_scale(1.7);
+	// actual scale will be 1.75
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 2194);
+	assert_int_equal(head->scaled.height, 1234);
+	assert_logs_empty();
+
+	head->desired.scale = head_get_fixed_scale(1.9);
+	// actual scale will be 1.875
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 2048);
+	assert_int_equal(head->scaled.height, 1152);
+	assert_logs_empty();
+
+	head->name = strdup("name");
+
+	head->desired.scale = head_get_fixed_scale(2.01);
+	// actual scale will be 2.0
+	desire_scaled_dimensions(head);
+	assert_int_equal(head->scaled.width, 1920);
+	assert_int_equal(head->scaled.height, 1080);
+	assert_logs_empty();
+
+	head_free(head);
+}
+
+
 static void desire_reapply__required(void **state) {
 	struct Head *head = head_init_name("head");
 	head->desired.enabled = true;
@@ -765,16 +860,18 @@ static void desire_reapply__not_required(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(order_heads__exact_partial_regex),
-		TEST_BA(order_heads__exact_regex_catchall),
-		TEST_BA(order_heads__no_order),
+		TEST_BA(desire__nothing),
 
-		TEST_BA(position_heads__col_left),
-		TEST_BA(position_heads__col_mid),
-		TEST_BA(position_heads__col_right),
-		TEST_BA(position_heads__row_top),
-		TEST_BA(position_heads__row_mid),
-		TEST_BA(position_heads__row_bottom),
+		TEST_BA(desire_order__exact_partial_regex),
+		TEST_BA(desire_order__exact_regex_catchall),
+		TEST_BA(desire_order__no_order),
+
+		TEST_BA(desire_position__col_left),
+		TEST_BA(desire_position__col_mid),
+		TEST_BA(desire_position__col_right),
+		TEST_BA(desire_position__row_top),
+		TEST_BA(desire_position__row_mid),
+		TEST_BA(desire_position__row_bottom),
 
 		TEST_BA(desire_enabled__disabled),
 		TEST_BA(desire_enabled__lid_closed_many),
@@ -803,6 +900,10 @@ int main(void) {
 		TEST_BA(desire_adaptive_sync__failed),
 		TEST_BA(desire_adaptive_sync__disabled),
 		TEST_BA(desire_adaptive_sync__enabled),
+
+		TEST_BA(desire_scaled_dimensions__default),
+		TEST_BA(desire_scaled_dimensions__transform),
+		TEST_BA(desire_scaled_dimensions__dimensions),
 
 		TEST_BA(desire_reapply__required),
 		TEST_BA(desire_reapply__not_required),

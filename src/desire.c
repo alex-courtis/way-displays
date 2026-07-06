@@ -1,8 +1,10 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
+#include <wayland-util.h>
 
 #include "desire.h"
 
@@ -11,13 +13,13 @@
 #include "fn.h"
 #include "head.h"
 #include "lid.h"
+#include "mode.h"
 #include "pset.h"
 #include "slist.h"
 #include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
-// cppcheck-suppress staticFunction
 void desire(void) {
 
 	for (struct SList *i = g_heads; i; i = i->nex) {
@@ -30,10 +32,7 @@ void desire(void) {
 		desire_scale(head);
 		desire_transform(head);
 		desire_adaptive_sync(head);
-
-		// TODO this is a desire
-		head_set_scaled_dimensions(head);
-
+		desire_scaled_dimensions(head);
 		desire_reapply(head);
 	}
 
@@ -153,6 +152,34 @@ void desire_adaptive_sync(struct Head *head) {
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	}
+}
+
+static int32_t desired_scaled_length(const struct Head * const head, const int32_t length) {
+	// scales a (pixel) length by fixed_scale
+
+	int32_t b = g_cfg->scale_round_to ? g_cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
+
+	wl_fixed_t f = (double)head->desired.scale / 256 * b + 0.5;
+
+	// wayland truncates when calculating size
+	return floor((double)length * b / f);
+}
+
+void desire_scaled_dimensions(struct Head * const head) {
+	if (!head || !head->desired.mode || !head->desired.scale) {
+		return;
+	}
+
+	if (head->desired.transform % 2 == 0) {
+		head->scaled.width = head->desired.mode->width;
+		head->scaled.height = head->desired.mode->height;
+	} else {
+		head->scaled.width = head->desired.mode->height;
+		head->scaled.height = head->desired.mode->width;
+	}
+
+	head->scaled.height = desired_scaled_length(head, head->scaled.height);
+	head->scaled.width = desired_scaled_length(head, head->scaled.width);
 }
 
 void desire_reapply(struct Head *head) {
