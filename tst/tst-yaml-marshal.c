@@ -26,9 +26,6 @@
 #include "yaml/data.c"
 
 
-// TODO consider moving to header
-int write_handler(void *data, unsigned char *buffer, size_t size);
-
 static int before_each(void **state) {
 	assert_logs_empty_before();
 
@@ -63,7 +60,7 @@ static void _check_marshalled(char *actual, const char *expected_path, const cha
 }
 #define check_marshalled(actual, expected_path) _check_marshalled(actual, expected_path, __FILE__, __LINE__)
 
-static void yaml_cfg_to_root__ok(void **state) {
+static void yaml_root_from_cfg__ok(void **state) {
 	struct Cfg *cfg = cfg_all();
 
 	check_marshalled(yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"), "tst/yaml/cfg-all.yaml");
@@ -73,7 +70,7 @@ static void yaml_cfg_to_root__ok(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_cfg_to_root__default(void **state) {
+static void yaml_root_from_cfg__default(void **state) {
 	struct Cfg *cfg = cfg_default();
 
 	check_marshalled(yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"), "tst/yaml/cfg-default.yaml");
@@ -83,7 +80,7 @@ static void yaml_cfg_to_root__default(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_cfg_to_root__empty(void **state) {
+static void yaml_root_from_cfg__empty(void **state) {
 	struct Cfg *cfg = cfg_init();
 
 	check_marshalled(yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"), "tst/yaml/empty.yaml");
@@ -94,7 +91,7 @@ static void yaml_cfg_to_root__empty(void **state) {
 }
 
 
-static void yaml_ipc_request_to_root__no_op(void **state) {
+static void yaml_root_from_ipc_request__no_op(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 
 	assert_nul(yaml_marshal(ipc_request, (fn_yaml_root_from_type)yaml_root_from_ipc_request, "ipc request"));
@@ -106,7 +103,7 @@ static void yaml_ipc_request_to_root__no_op(void **state) {
 	ipc_request_free(ipc_request);
 }
 
-static void yaml_ipc_request_to_root__cfg_set(void **state) {
+static void yaml_root_from_ipc_request__cfg_set(void **state) {
 	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
 	ipc_request->command = CFG_SET;
 	ipc_request->log_threshold = ERROR;
@@ -120,7 +117,7 @@ static void yaml_ipc_request_to_root__cfg_set(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_ipc_operation_to_root__map(void **state) {
+static void yaml_root_from_ipc_operation__map(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 
 	lcl(ERROR, "err", &ipc_operation->log_cap_lines);
@@ -136,7 +133,7 @@ static void yaml_ipc_operation_to_root__map(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_ipc_operation_to_root__seq(void **state) {
+static void yaml_root_from_ipc_operation__seq(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 	ipc_operation->request->command = LIST;
 
@@ -230,13 +227,13 @@ static void yaml_marshal__yaml_emitter_close_fail(void **state) {
 	assert_logs_empty();
 }
 
-static void write_handler__empty(void **state) {
+static void yaml_write_handler__empty(void **state) {
 	char *data = NULL;
 
 	char *buffer = strdup("1234");
 	size_t size = 2;
 
-	assert_int_equal(write_handler(&data, (unsigned char *)buffer, size), 1);
+	assert_int_equal(yaml_write_handler(&data, (unsigned char *)buffer, size), 1);
 
 	assert_str_equal(data, "12");
 
@@ -246,13 +243,13 @@ static void write_handler__empty(void **state) {
 	assert_logs_empty();
 }
 
-static void write_handler__append(void **state) {
+static void yaml_write_handler__append(void **state) {
 	char *data = strdup("foo");
 
 	char *buffer = strdup("1234");
 	size_t size = 2;
 
-	assert_int_equal(write_handler(&data, (unsigned char *)buffer, size), 1);
+	assert_int_equal(yaml_write_handler(&data, (unsigned char *)buffer, size), 1);
 
 	assert_str_equal(data, "foo12");
 
@@ -262,11 +259,11 @@ static void write_handler__append(void **state) {
 	assert_logs_empty();
 }
 
-static void write_handler__no_data(void **state) {
+static void yaml_write_handler__no_data(void **state) {
 	char *buffer = strdup("1234");
 	size_t size = 2;
 
-	assert_int_equal(write_handler(NULL, (unsigned char *)buffer, size), 0);
+	assert_int_equal(yaml_write_handler(NULL, (unsigned char *)buffer, size), 0);
 
 	free(buffer);
 
@@ -276,15 +273,15 @@ static void write_handler__no_data(void **state) {
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
-		TEST_BA(yaml_cfg_to_root__ok),
-		TEST_BA(yaml_cfg_to_root__default),
-		TEST_BA(yaml_cfg_to_root__empty),
+		TEST_BA(yaml_root_from_cfg__ok),
+		TEST_BA(yaml_root_from_cfg__default),
+		TEST_BA(yaml_root_from_cfg__empty),
 
-		TEST_BA(yaml_ipc_request_to_root__no_op),
-		TEST_BA(yaml_ipc_request_to_root__cfg_set),
+		TEST_BA(yaml_root_from_ipc_request__no_op),
+		TEST_BA(yaml_root_from_ipc_request__cfg_set),
 
-		TEST_BA(yaml_ipc_operation_to_root__map),
-		TEST_BA(yaml_ipc_operation_to_root__seq),
+		TEST_BA(yaml_root_from_ipc_operation__map),
+		TEST_BA(yaml_root_from_ipc_operation__seq),
 
 		TEST_BA(yaml_marshal__yaml_document_initialize_fail),
 		TEST_BA(yaml_marshal__yaml_emitter_initialize_fail),
@@ -292,9 +289,9 @@ int main(void) {
 		TEST_BA(yaml_marshal__yaml_emitter_dump_fail),
 		TEST_BA(yaml_marshal__yaml_emitter_close_fail),
 
-		TEST_BA(write_handler__empty),
-		TEST_BA(write_handler__append),
-		TEST_BA(write_handler__no_data),
+		TEST_BA(yaml_write_handler__empty),
+		TEST_BA(yaml_write_handler__append),
+		TEST_BA(yaml_write_handler__no_data),
 	};
 
 	return RUN(tests);
