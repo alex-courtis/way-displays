@@ -191,11 +191,11 @@ void load_cfg(void) {
 	cfg_apply_defaults(g_cfg);
 	cfg_copy_file_path(g_cfg, cfg_resolved);
 
-	validate_fix(g_cfg);
+	cfg_validate_fix(g_cfg);
 	log_info(NULL);
 	log_info("Active configuration:");
 	print_cfg(INFO, g_cfg, false);
-	validate_warn(g_cfg);
+	cfg_validate_warn(g_cfg);
 
 	cfg_free(cfg_resolved);
 }
@@ -217,11 +217,11 @@ void reload_cfg(void) {
 		g_cfg = cfg_loaded;
 
 		log_set_threshold(g_cfg->log_threshold, false);
-		validate_fix(g_cfg);
+		cfg_validate_fix(g_cfg);
 		log_info(NULL);
 		log_info("New configuration:");
 		print_cfg(INFO, g_cfg, false);
-		validate_warn(g_cfg);
+		cfg_validate_warn(g_cfg);
 
 	} else {
 		log_info(NULL);

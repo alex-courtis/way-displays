@@ -28,10 +28,32 @@
 struct Cfg *g_cfg = NULL;
 
 // one-shot singleton set via cfg_file_paths_init
-struct SList *cfg_file_paths = NULL;
+struct SList *g_cfg_file_paths = NULL;
 
-static enum OnOff on_off_invert(enum OnOff val) {
-	return (val == ON) ? OFF : ON;
+static struct Cfg *clone_cfg(struct Cfg *from) {
+	if (!from)
+		return NULL;
+
+	struct Cfg *to = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+
+	memcpy(to, from, sizeof(struct Cfg));
+
+	to->callback_cmd =          from->callback_cmd ?          strdup(from->callback_cmd) :          NULL;
+	to->dir_path =              from->dir_path ?              strdup(from->dir_path) :              NULL;
+	to->file_name =             from->file_name ?             strdup(from->file_name) :             NULL;
+	to->file_path =             from->file_path ?             strdup(from->file_path) :             NULL;
+	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
+
+	to->adaptive_sync_off =     sset_clone(from->adaptive_sync_off);
+	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
+	to->order_name_desc =       sset_clone(from->order_name_desc);
+
+	to->disableds =  pset_clone_deep(from->disableds);
+	to->modes =      smap_clone_deep(from->modes);
+	to->scales =     smapi_clone(from->scales);
+	to->transforms = smapi_clone(from->transforms);
+
+	return to;
 }
 
 static void cfg_paths_free(struct Cfg *cfg) {
@@ -65,156 +87,22 @@ static void warn_ambiguous_name_desc(const char *name_desc, const enum CfgElemen
 	}
 }
 
-static struct Cfg *clone_cfg(struct Cfg *from) {
-	if (!from)
-		return NULL;
-
-	struct Cfg *to = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-
-	memcpy(to, from, sizeof(struct Cfg));
-
-	to->callback_cmd =          from->callback_cmd ?          strdup(from->callback_cmd) :          NULL;
-	to->dir_path =              from->dir_path ?              strdup(from->dir_path) :              NULL;
-	to->file_name =             from->file_name ?             strdup(from->file_name) :             NULL;
-	to->file_path =             from->file_path ?             strdup(from->file_path) :             NULL;
-	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
-
-	to->adaptive_sync_off =     sset_clone(from->adaptive_sync_off);
-	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
-	to->order_name_desc =       sset_clone(from->order_name_desc);
-
-	to->disableds =  pset_clone_deep(from->disableds);
-	to->modes =      smap_clone_deep(from->modes);
-	to->scales =     smapi_clone(from->scales);
-	to->transforms = smapi_clone(from->transforms);
-
-	return to;
-}
-
-bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
-	return a && b &&
-		sset_equal(a->adaptive_sync_off, b->adaptive_sync_off) &&
-		a->align == b->align &&
-		a->arrange == b->arrange &&
-		a->auto_scale == b->auto_scale &&
-		a->auto_scale_dpi == b->auto_scale_dpi &&
-		a->auto_scale_max == b->auto_scale_max &&
-		a->auto_scale_min == b->auto_scale_min &&
-		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
-		pset_equal(a->disableds, b->disableds) &&
-		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
-		a->laptop_lid_monitor == b->laptop_lid_monitor &&
-		a->log_threshold == b->log_threshold &&
-		sset_equal(a->max_preferred_refresh, b->max_preferred_refresh) &&
-		sset_equal(a->order_name_desc, b->order_name_desc) &&
-		a->scale_round_strategy == b->scale_round_strategy &&
-		a->scale_round_to == b->scale_round_to &&
-		a->scaling == b->scaling &&
-		smap_equal(a->modes, b->modes) &&
-		smapi_equal(a->scales, b->scales) &&
-		smapi_equal(a->transforms, b->transforms);
-}
-
-//
-// init functions
-//
-struct Cfg *cfg_init(void) {
-	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-
-	cfg->adaptive_sync_off =     sset_init();
-	cfg->max_preferred_refresh = sset_init();
-	cfg->order_name_desc =       sset_init();
-
-	cfg->scales =     smapi_init();
-	cfg->transforms = smapi_init();
-
-	cfg->disableds =  disabled_pset_init();
-	cfg->modes = mode_smap_init();
-
-	return cfg;
-}
-
-struct Cfg *cfg_default(void) {
-	struct Cfg *def = cfg_init();
-
-	cfg_apply_defaults(def);
-
-	return def;
-}
-
-void cfg_apply_defaults(struct Cfg *cfg) {
-	if (!cfg->arrange)              cfg->arrange =              ARRANGE_DEFAULT;
-	if (!cfg->align)                cfg->align =                ALIGN_DEFAULT;
-	if (!cfg->scaling)              cfg->scaling =              SCALING_DEFAULT;
-	if (!cfg->auto_scale)           cfg->auto_scale =           AUTO_SCALE_DEFAULT;
-	if (!cfg->scale_round_to)       cfg->scale_round_to =       SCALE_ROUND_TO_DEFAULT;
-	if (!cfg->scale_round_strategy) cfg->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
-	if (!cfg->auto_scale_dpi)       cfg->auto_scale_dpi =       AUTO_SCALE_DPI_DEFAULT;
-	if (!cfg->auto_scale_min)       cfg->auto_scale_min =       AUTO_SCALE_MIN_DEFAULT;
-	if (!cfg->auto_scale_max)       cfg->auto_scale_max =       AUTO_SCALE_MAX_DEFAULT;
-	if (!cfg->callback_cmd)         cfg->callback_cmd =         strdup(CALLBACK_CMD_DEFAULT);
-	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor =   LAPTOP_LID_MONITOR_DEFAULT;
-}
-
-static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
-	static char path[PATH_MAX];
-
-	cfg->resolved_from = resolved_from;
-
-	cfg->file_path = strdup(file_path);
-
-	// dirname modifies path
-	strncpy(path, cfg->file_path, PATH_MAX - 1);
-	free(cfg->dir_path);
-	cfg->dir_path = strdup(dirname(path));
-
-	// basename modifies path
-	strncpy(path, cfg->file_path, PATH_MAX - 1);
-	free(cfg->file_name);
-	cfg->file_name = strdup(basename(path));
-}
-
-bool cfg_resolve_file_path(struct Cfg *to) {
-	if (!to)
-		return false;
-
-	cfg_paths_free(to);
-
-	for (struct SList *i = cfg_file_paths; i; i = i->nex) {
-		if (access(i->val, R_OK) == 0) {
-
-			char *file_path = realpath(i->val, NULL);
-
-			if (!file_path) {
-				continue;
-			}
-			if (access(file_path, R_OK) != 0) {
-				free(file_path);
-				continue;
-			}
-
-			set_paths(to, i->val, file_path);
-
-			free(file_path);
-
-			return true;
-		}
+static void warn_ambiguous_name_desc_smap(const struct SMap *name_descs, const enum CfgElement element) {
+	for (const struct SMapIt *it = smap_it(name_descs); it; it = smap_it_next(it)) {
+		warn_ambiguous_name_desc(it->key, element);
 	}
-
-	return false;
 }
 
-void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
-	if (!from || !to)
-		return;
+static void warn_ambiguous_name_desc_smapi(const struct SMapI *name_descs, const enum CfgElement element) {
+	for (const struct SMapIIt *it = smapi_it(name_descs); it; it = smapi_it_next(it)) {
+		warn_ambiguous_name_desc(it->key, element);
+	}
+}
 
-	free(to->dir_path);
-	free(to->file_path);
-	free(to->file_name);
-
-	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
-	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
-	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
+static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const enum CfgElement element) {
+	for (const struct SSetIt *it = sset_it(name_descs); it; it = sset_it_next(it)) {
+		warn_ambiguous_name_desc(it->val, element);
+	}
 }
 
 static bool mode_is_invalid(const char* const name_desc, const struct Mode* const mode, const void* const unused) {
@@ -253,87 +141,172 @@ static bool mode_is_invalid(const char* const name_desc, const struct Mode* cons
 	return false;
 }
 
-void validate_fix(struct Cfg *cfg) {
-	if (!cfg) {
-		return;
-	}
-	enum Align align = cfg->align;
-	enum Arrange arrange = cfg->arrange;
-	switch(arrange) {
-		case COL:
-			if (align != LEFT && align != MIDDLE && align != RIGHT) {
-				log_warn(NULL);
-				log_warn("Ignoring invalid ALIGN %s for %s arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.", align_name(align), arrange_name(arrange));
-				cfg->align = LEFT;
-			}
-			break;
-		case ROW:
-		default:
-			if (align != TOP && align != MIDDLE && align != BOTTOM) {
-				log_warn(NULL);
-				log_warn("Ignoring invalid ALIGN %s for %s arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.", align_name(align), arrange_name(arrange));
-				cfg->align = TOP;
-			}
-			break;
-	}
-
-	if (cfg->auto_scale_dpi <= AUTO_SCALE_DPI_MIN) {
-		log_warn(NULL);
-		log_warn("Ignoring AUTO_SCALE_DPI %d < %d. Using default %d.", cfg->auto_scale_dpi, AUTO_SCALE_DPI_MIN, AUTO_SCALE_DPI_DEFAULT);
-		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
-	}
-
-	const char *name_desc;
-
-	while ((name_desc = smap_match(cfg->modes, (fn_match_str_ptr)mode_is_invalid, NULL).key)) {
-		smap_remove_free(cfg->modes, name_desc);
-	}
+static bool cfg_file_write_content(const char * const yaml) {
+	return
+		file_write(g_cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
+		file_write(g_cfg->file_path, yaml, "a");
 }
 
-static void warn_ambiguous_name_desc_smap(const struct SMap *name_descs, const enum CfgElement element) {
-	for (const struct SMapIt *it = smap_it(name_descs); it; it = smap_it_next(it)) {
-		warn_ambiguous_name_desc(it->key, element);
-	}
+static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
+	static char path[PATH_MAX];
+
+	cfg->resolved_from = resolved_from;
+
+	cfg->file_path = strdup(file_path);
+
+	// dirname modifies path
+	strncpy(path, cfg->file_path, PATH_MAX - 1);
+	free(cfg->dir_path);
+	cfg->dir_path = strdup(dirname(path));
+
+	// basename modifies path
+	strncpy(path, cfg->file_path, PATH_MAX - 1);
+	free(cfg->file_name);
+	cfg->file_name = strdup(basename(path));
 }
 
-static void warn_ambiguous_name_desc_smapi(const struct SMapI *name_descs, const enum CfgElement element) {
-	for (const struct SMapIIt *it = smapi_it(name_descs); it; it = smapi_it_next(it)) {
-		warn_ambiguous_name_desc(it->key, element);
-	}
+struct Cfg *cfg_init(void) {
+	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+
+	cfg->adaptive_sync_off =     sset_init();
+	cfg->max_preferred_refresh = sset_init();
+	cfg->order_name_desc =       sset_init();
+
+	cfg->scales =     smapi_init();
+	cfg->transforms = smapi_init();
+
+	cfg->disableds =  disabled_pset_init();
+	cfg->modes = mode_smap_init();
+
+	return cfg;
 }
 
-static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const enum CfgElement element) {
-	for (const struct SSetIt *it = sset_it(name_descs); it; it = sset_it_next(it)) {
-		warn_ambiguous_name_desc(it->val, element);
-	}
+struct Cfg *cfg_default(void) {
+	struct Cfg *def = cfg_init();
+
+	cfg_apply_defaults(def);
+
+	return def;
 }
 
-void validate_warn(const struct Cfg * const cfg) {
+void cfg_free(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
-	warn_ambiguous_name_desc_smapi(cfg->scales, SCALE);
-	warn_ambiguous_name_desc_smap(cfg->modes, MODE);
+	cfg_paths_free(cfg);
 
-	warn_ambiguous_name_desc_smapi(cfg->transforms, TRANSFORM);
+	free(cfg->callback_cmd);
+	free(cfg->laptop_display_prefix);
+	pset_free_vals(cfg->disableds);
+	smap_free_vals(cfg->modes);
+	smapi_free(cfg->scales);
+	smapi_free(cfg->transforms);
+	sset_free(cfg->adaptive_sync_off);
+	sset_free(cfg->max_preferred_refresh);
+	sset_free(cfg->order_name_desc);
 
-	warn_ambiguous_name_desc_sset(cfg->order_name_desc, ORDER);
-	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, VRR_OFF);
-	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh, MAX_PREFERRED_REFRESH);
-
-	for (const struct PSetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
-		const struct Disabled *disabled = (struct Disabled*)dit->val;
-		warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
-
-		for (const struct PSetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
-			const struct Condition *condition = (struct Condition*)cit->val;
-			warn_ambiguous_name_desc_sset(condition->plugged, PLUGGED);
-			warn_ambiguous_name_desc_sset(condition->unplugged, UNPLUGGED);
-		}
-	}
+	free(cfg);
 }
 
-struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
+void cfg_destroy(void) {
+	cfg_free(g_cfg);
+	g_cfg = NULL;
+}
+
+void cfg_file_paths_init(const char *user_path) {
+	char path[PATH_MAX];
+
+	// maybe user
+	if (user_path && access(user_path, R_OK) == 0) {
+		slist_append(&g_cfg_file_paths, strdup(user_path));
+	}
+
+	if (getenv("XDG_CONFIG_HOME") != NULL) {
+		// maybe XDG_CONFIG_HOME
+		snprintf(path, PATH_MAX - 1, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
+		slist_append(&g_cfg_file_paths, strdup(path));
+	} else if (getenv("HOME") != NULL) {
+		// ~/.config
+		snprintf(path, PATH_MAX - 1, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
+		slist_append(&g_cfg_file_paths, strdup(path));
+	}
+
+	// etc
+	slist_append(&g_cfg_file_paths, strdup("/usr/local/etc/way-displays/cfg.yaml"));
+	slist_append(&g_cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
+}
+
+void cfg_file_paths_destroy(void) {
+	slist_free_vals(&g_cfg_file_paths, NULL);
+}
+
+bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
+	return a && b &&
+		sset_equal(a->adaptive_sync_off, b->adaptive_sync_off) &&
+		a->align == b->align &&
+		a->arrange == b->arrange &&
+		a->auto_scale == b->auto_scale &&
+		a->auto_scale_dpi == b->auto_scale_dpi &&
+		a->auto_scale_max == b->auto_scale_max &&
+		a->auto_scale_min == b->auto_scale_min &&
+		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
+		pset_equal(a->disableds, b->disableds) &&
+		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
+		a->laptop_lid_monitor == b->laptop_lid_monitor &&
+		a->log_threshold == b->log_threshold &&
+		sset_equal(a->max_preferred_refresh, b->max_preferred_refresh) &&
+		sset_equal(a->order_name_desc, b->order_name_desc) &&
+		a->scale_round_strategy == b->scale_round_strategy &&
+		a->scale_round_to == b->scale_round_to &&
+		a->scaling == b->scaling &&
+		smap_equal(a->modes, b->modes) &&
+		smapi_equal(a->scales, b->scales) &&
+		smapi_equal(a->transforms, b->transforms);
+}
+
+void cfg_apply_defaults(struct Cfg *cfg) {
+	if (!cfg->arrange)              cfg->arrange =              ARRANGE_DEFAULT;
+	if (!cfg->align)                cfg->align =                ALIGN_DEFAULT;
+	if (!cfg->scaling)              cfg->scaling =              SCALING_DEFAULT;
+	if (!cfg->auto_scale)           cfg->auto_scale =           AUTO_SCALE_DEFAULT;
+	if (!cfg->scale_round_to)       cfg->scale_round_to =       SCALE_ROUND_TO_DEFAULT;
+	if (!cfg->scale_round_strategy) cfg->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
+	if (!cfg->auto_scale_dpi)       cfg->auto_scale_dpi =       AUTO_SCALE_DPI_DEFAULT;
+	if (!cfg->auto_scale_min)       cfg->auto_scale_min =       AUTO_SCALE_MIN_DEFAULT;
+	if (!cfg->auto_scale_max)       cfg->auto_scale_max =       AUTO_SCALE_MAX_DEFAULT;
+	if (!cfg->callback_cmd)         cfg->callback_cmd =         strdup(CALLBACK_CMD_DEFAULT);
+	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor =   LAPTOP_LID_MONITOR_DEFAULT;
+}
+
+struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {
+	if (!to || !from) {
+		return NULL;
+	}
+
+	struct Cfg *merged = NULL;
+
+	if (command == CFG_DEL) {
+		merged = cfg_merge_del(to, from);
+	} else if (command == CFG_TOGGLE) {
+		merged = cfg_merge_toggle(to, from);
+	} else {
+		merged = cfg_merge_set(to, from);
+	}
+
+	if (merged) {
+		cfg_validate_fix(merged);
+		cfg_validate_warn(merged);
+
+		if (cfg_equal(merged, to)) {
+			cfg_free(merged);
+			merged = NULL;
+		}
+	}
+
+	return merged;
+}
+
+struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -416,7 +389,7 @@ struct Cfg *merge_set(struct Cfg *to, const struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
+struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -457,7 +430,11 @@ struct Cfg *merge_del(struct Cfg *to, const struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *merge_toggle(struct Cfg *to, const struct Cfg *from) {
+static enum OnOff on_off_invert(enum OnOff val) {
+	return (val == ON) ? OFF : ON;
+}
+
+struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	if (!to || !from) {
 		return NULL;
 	}
@@ -484,61 +461,66 @@ struct Cfg *merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	return merged;
 }
 
-struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {
-	if (!to || !from) {
-		return NULL;
-	}
+void cfg_validate_warn(const struct Cfg * const cfg) {
+	if (!cfg)
+		return;
 
-	struct Cfg *merged = NULL;
+	warn_ambiguous_name_desc_smapi(cfg->scales, SCALE);
+	warn_ambiguous_name_desc_smap(cfg->modes, MODE);
 
-	if (command == CFG_DEL) {
-		merged = merge_del(to, from);
-	} else if (command == CFG_TOGGLE) {
-		merged = merge_toggle(to, from);
-	} else {
-		merged = merge_set(to, from);
-	}
+	warn_ambiguous_name_desc_smapi(cfg->transforms, TRANSFORM);
 
-	if (merged) {
-		validate_fix(merged);
-		validate_warn(merged);
+	warn_ambiguous_name_desc_sset(cfg->order_name_desc, ORDER);
+	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, VRR_OFF);
+	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh, MAX_PREFERRED_REFRESH);
 
-		if (cfg_equal(merged, to)) {
-			cfg_free(merged);
-			merged = NULL;
+	for (const struct PSetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
+		const struct Disabled *disabled = (struct Disabled*)dit->val;
+		warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
+
+		for (const struct PSetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
+			const struct Condition *condition = (struct Condition*)cit->val;
+			warn_ambiguous_name_desc_sset(condition->plugged, PLUGGED);
+			warn_ambiguous_name_desc_sset(condition->unplugged, UNPLUGGED);
 		}
 	}
-
-	return merged;
 }
 
-void cfg_file_paths_init(const char *user_path) {
-	char path[PATH_MAX];
-
-	// maybe user
-	if (user_path && access(user_path, R_OK) == 0) {
-		slist_append(&cfg_file_paths, strdup(user_path));
+void cfg_validate_fix(struct Cfg *cfg) {
+	if (!cfg) {
+		return;
+	}
+	enum Align align = cfg->align;
+	enum Arrange arrange = cfg->arrange;
+	switch(arrange) {
+		case COL:
+			if (align != LEFT && align != MIDDLE && align != RIGHT) {
+				log_warn(NULL);
+				log_warn("Ignoring invalid ALIGN %s for %s arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.", align_name(align), arrange_name(arrange));
+				cfg->align = LEFT;
+			}
+			break;
+		case ROW:
+		default:
+			if (align != TOP && align != MIDDLE && align != BOTTOM) {
+				log_warn(NULL);
+				log_warn("Ignoring invalid ALIGN %s for %s arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.", align_name(align), arrange_name(arrange));
+				cfg->align = TOP;
+			}
+			break;
 	}
 
-	if (getenv("XDG_CONFIG_HOME") != NULL) {
-		// maybe XDG_CONFIG_HOME
-		snprintf(path, PATH_MAX - 1, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
-		slist_append(&cfg_file_paths, strdup(path));
-	} else if (getenv("HOME") != NULL) {
-		// ~/.config
-		snprintf(path, PATH_MAX - 1, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
-		slist_append(&cfg_file_paths, strdup(path));
+	if (cfg->auto_scale_dpi <= AUTO_SCALE_DPI_MIN) {
+		log_warn(NULL);
+		log_warn("Ignoring AUTO_SCALE_DPI %d < %d. Using default %d.", cfg->auto_scale_dpi, AUTO_SCALE_DPI_MIN, AUTO_SCALE_DPI_DEFAULT);
+		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
 	}
 
-	// etc
-	slist_append(&cfg_file_paths, strdup("/usr/local/etc/way-displays/cfg.yaml"));
-	slist_append(&cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
-}
+	const char *name_desc;
 
-static bool cfg_file_write_content(const char * const yaml) {
-	return
-		file_write(g_cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
-		file_write(g_cfg->file_path, yaml, "a");
+	while ((name_desc = smap_match(cfg->modes, (fn_match_str_ptr)mode_is_invalid, NULL).key)) {
+		smap_remove_free(cfg->modes, name_desc);
+	}
 }
 
 void cfg_file_write(void) {
@@ -564,7 +546,7 @@ void cfg_file_write(void) {
 		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
-		for (struct SList *i = cfg_file_paths; i; i = i->nex) {
+		for (struct SList *i = g_cfg_file_paths; i; i = i->nex) {
 
 			// skip previously resolved
 			if (resolved_from == i->val) {
@@ -594,34 +576,46 @@ end:
 	}
 }
 
-void cfg_destroy(void) {
-	cfg_free(g_cfg);
-	g_cfg = NULL;
+bool cfg_resolve_file_path(struct Cfg *to) {
+	if (!to)
+		return false;
+
+	cfg_paths_free(to);
+
+	for (struct SList *i = g_cfg_file_paths; i; i = i->nex) {
+		if (access(i->val, R_OK) == 0) {
+
+			char *file_path = realpath(i->val, NULL);
+
+			if (!file_path) {
+				continue;
+			}
+			if (access(file_path, R_OK) != 0) {
+				free(file_path);
+				continue;
+			}
+
+			set_paths(to, i->val, file_path);
+
+			free(file_path);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
-void cfg_file_paths_destroy(void) {
-	slist_free_vals(&cfg_file_paths, NULL);
-}
-
-//
-// freeing functions
-//
-void cfg_free(struct Cfg *cfg) {
-	if (!cfg)
+void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
+	if (!from || !to)
 		return;
 
-	cfg_paths_free(cfg);
+	free(to->dir_path);
+	free(to->file_path);
+	free(to->file_name);
 
-	free(cfg->callback_cmd);
-	free(cfg->laptop_display_prefix);
-	pset_free_vals(cfg->disableds);
-	smap_free_vals(cfg->modes);
-	smapi_free(cfg->scales);
-	smapi_free(cfg->transforms);
-	sset_free(cfg->adaptive_sync_off);
-	sset_free(cfg->max_preferred_refresh);
-	sset_free(cfg->order_name_desc);
-
-	free(cfg);
+	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
+	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
+	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
 }
 

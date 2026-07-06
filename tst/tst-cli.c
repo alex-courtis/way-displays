@@ -21,6 +21,7 @@
 #include "smapi.h"
 #include "sset.h"
 
+// TODO consider moving to header
 struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv);
 struct IpcRequest *parse_write(int argc, char **argv);
 struct IpcRequest *parse_reapply(int argc, char **argv);

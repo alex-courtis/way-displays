@@ -26,6 +26,7 @@
 #include "yaml/data.c"
 
 
+// TODO consider moving to header
 int write_handler(void *data, unsigned char *buffer, size_t size);
 
 static int before_each(void **state) {

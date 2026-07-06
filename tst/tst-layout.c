@@ -30,6 +30,7 @@
 
 extern int g_cancellation_retries;
 
+// TODO consider moving to header
 struct SList *order_heads(const struct SSet * const order_name_desc, struct SList *heads);
 void position_heads(struct SList *heads);
 void desire_enabled(struct Head *head);

@@ -16,6 +16,7 @@
 #include "sset.h"
 #include "yaml/unmarshal.h"
 
+// TODO consider moving to header
 void load_cfg(void);
 void reload_cfg(void);
 
