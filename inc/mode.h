@@ -51,6 +51,9 @@ void mode_free(struct Mode *mode);
 // exact pointers and values - memcmp
 bool mode_equal(const struct Mode* const a, const struct Mode* const b);
 
+// w/h
+bool mode_equal_res(const struct Mode* const a, const struct Mode* const b);
+
 // w/h and rounded refresh
 bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b);
 
