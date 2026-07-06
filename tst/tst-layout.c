@@ -41,6 +41,10 @@ static int after_each(void **state) {
 	return 0;
 }
 
+static void apply__nothing(void **state) {
+	apply();
+}
+
 static void handle_success__head_changing_adaptive_sync(void **state) {
 	struct Head *head = head_init_name("head");
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -237,6 +241,8 @@ static void handle_cancelled__over_max(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST_BA(apply__nothing),
+
 		TEST_BA(handle_success__head_changing_adaptive_sync),
 		TEST_BA(handle_success__head_changing_adaptive_sync_fail),
 		TEST_BA(handle_success__head_changing_mode),

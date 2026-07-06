@@ -54,6 +54,37 @@ static int after_each(void **state) {
 	return 0;
 }
 
+static void mode_equal__all(void **state) {
+	struct Mode *modea = mode_init_whr(1000, 1000, 1000);
+	struct Mode *modeb0 = mode_init_whr(1000, 2000, 3000);
+	struct Mode *modeb1 = mode_init_whr(1000, 2000, 4000);
+	struct Mode *modeb2 = mode_init_whr(1000, 2000, 4100);
+
+	assert_false(mode_equal_res(modea, modeb0));
+	assert_true(mode_equal_res(modeb0, modeb1));
+
+	assert_false(mode_equal_res_hz(modeb0, modeb1));
+	assert_true(mode_equal_res_hz(modeb1, modeb2));
+
+	assert_false(mode_equal_res_mhz(modeb0, modeb1));
+	assert_false(mode_equal_res_mhz(modeb1, modeb2));
+	assert_true(mode_equal_res_mhz(modeb2, modeb2));
+
+	assert_false(mode_equal(modeb1, modeb2));
+	assert_true(mode_equal(modeb2, modeb2));
+
+	mode_free(modea);
+	mode_free(modeb0);
+	mode_free(modeb1);
+	mode_free(modeb2);
+}
+
+static void mode_satisfies__null(void **state) {
+	assert_false(mode_satisfies(NULL, NULL));
+	assert_false(mode_satisfies(mode1, NULL));
+	assert_false(mode_satisfies(NULL, mode1));
+}
+
 static void mode_greater_than_res_refresh__sort(void **state) {
 	const struct Mode *mode00 = mode_init_whr(1000, 2000, 3000);
 	const struct Mode *mode01 = mode_init_whr(1000, 9999, 3000);
@@ -251,6 +282,9 @@ static void mode_max_refresh__earlier_higher_refresh(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST_BA(mode_equal__all),
+		TEST_BA(mode_satisfies__null),
+
 		TEST_BA(mode_greater_than_res_refresh__sort),
 
 		TEST_BA(mode_hz_rounded__),

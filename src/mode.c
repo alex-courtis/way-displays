@@ -61,7 +61,6 @@ bool mode_equal(const struct Mode* const a, const struct Mode* const b) {
 	return a && b && memcmp(a, b, sizeof(struct Mode)) == 0;
 }
 
-// cppcheck-suppress staticFunction
 bool mode_equal_res(const struct Mode* const a, const struct Mode* const b) {
 	return a && b &&
 		a->width == b->width &&
@@ -73,7 +72,6 @@ bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
 		mode_hz_rounded(a) == mode_hz_rounded(b);
 }
 
-// cppcheck-suppress staticFunction
 bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b) {
 	return mode_equal_res(a, b) &&
 		a->refresh_mhz == b->refresh_mhz;
@@ -143,7 +141,6 @@ bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1
 	return mode ? mode->zwlr_mode == zwlr_mode : false;
 }
 
-// cppcheck-suppress staticFunction
 bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target) {
 	if (!mode || !mode_target)
 		return false;

@@ -7,7 +7,7 @@
 void layout(void);
 
 // incrementally apply any deltas between head.desired and head.current: enabled, mode, vrr, remainder
-static void apply(void);
+void apply(void);
 
 // zwlr_output_configuration_v1.succeeded
 void handle_success(void);
