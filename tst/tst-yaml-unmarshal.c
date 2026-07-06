@@ -29,7 +29,6 @@
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "wrap-libyaml.h"
 #include "yaml/unmarshal-types.h"
 
 #include "yaml/unmarshal.h"
@@ -38,8 +37,6 @@
 
 static int before_each(void **state) {
 	assert_logs_empty_before();
-
-	reset_yaml_fails();
 
 	return 0;
 }
@@ -586,7 +583,7 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 
 static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
 
-	yaml_parser_initialize__fail = true;
+	will_return_int(__wrap_yaml_parser_initialize, 0);
 
 	assert_nul(yaml_unmarshal_str("", yaml_root_to_cfg, "foo"));
 
@@ -621,7 +618,7 @@ static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
 }
 
 static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
-	yaml_parser_initialize__fail = true;
+	will_return_int(__wrap_yaml_parser_initialize, 0);
 
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
 

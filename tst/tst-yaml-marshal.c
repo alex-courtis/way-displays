@@ -3,10 +3,8 @@
 #include "assert-log.h"
 #include "asserts.h"
 #include "util-file.h"
-#include "wrap-libyaml.h"
 
 #include <cmocka.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,8 +26,6 @@
 
 static int before_each(void **state) {
 	assert_logs_empty_before();
-
-	reset_yaml_fails();
 
 	return 0;
 }
@@ -150,7 +146,7 @@ static void yaml_marshal__yaml_document_initialize_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
-	yaml_document_initialize__fail = true;
+	will_return_int(__wrap_yaml_document_initialize, 0);
 
 	const char *actual = yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg");
 
@@ -166,7 +162,7 @@ static void yaml_marshal__yaml_emitter_initialize_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
-	yaml_emitter_initialize__fail = true;
+	will_return_int(__wrap_yaml_emitter_initialize, 0);
 
 	const char *actual = yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg");
 
@@ -182,7 +178,7 @@ static void yaml_marshal__yaml_emitter_open_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
-	yaml_emitter_open__fail = true;
+	will_return_int(__wrap_yaml_emitter_open, 0);
 
 	const char *actual = yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg");
 
@@ -199,7 +195,7 @@ static void yaml_marshal__yaml_emitter_dump_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
-	yaml_emitter_dump__fail = true;
+	will_return_int(__wrap_yaml_emitter_dump, 0);
 
 	const char *actual = yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg");
 
@@ -215,7 +211,7 @@ static void yaml_marshal__yaml_emitter_close_fail(void **state) {
 
 	struct Cfg *cfg = cfg_all();
 
-	yaml_emitter_close__fail = true;
+	will_return_int(__wrap_yaml_emitter_close, 0);
 
 	const char *actual = yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg");
 

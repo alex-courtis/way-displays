@@ -14,7 +14,7 @@ unusedFunction:lib/alex-c
 staticFunction:lib/alex-c
 
 # wraps are dynamically invoked at runtime only
-unusedFunction:tst/wrap-*.c
+unusedFunction:tst/wrap*.c
 
 # this is just not practical
 nullPointerOutOfMemory
