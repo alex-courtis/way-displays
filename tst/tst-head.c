@@ -804,6 +804,7 @@ static void head_set_mode_preferred__first(void **state) {
 static void head_set_mode_preferred__current(void **state) {
 	struct Head *head = head_init();
 	head->mode_preferred = mode_init_h_whr(head, 2560, 1440, 30000);
+	pset_add(head->modes, head->mode_preferred);
 
 	head_set_mode_preferred(head->mode_preferred);
 
@@ -879,9 +880,9 @@ int main(void) {
 		TEST_BA(head_release_mode__cur_des),
 		TEST_BA(head_release_mode__orphan),
 
-		TEST_B(head_set_mode_preferred__first),
-		TEST_B(head_set_mode_preferred__current),
-		TEST_B(head_set_mode_preferred__subsequent)
+		TEST_BA(head_set_mode_preferred__first),
+		TEST_BA(head_set_mode_preferred__current),
+		TEST_BA(head_set_mode_preferred__subsequent)
 	};
 
 	return RUN(tests);
