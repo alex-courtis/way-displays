@@ -1,5 +1,5 @@
-#ifndef INFO_H
-#define INFO_H
+#ifndef PRINT_H
+#define PRINT_H
 
 #include <stdbool.h>
 
@@ -34,5 +34,5 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode);
 
-#endif // INFO_H
+#endif // PRINT_H
 

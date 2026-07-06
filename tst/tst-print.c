@@ -26,7 +26,7 @@
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
-#include "info.h"
+#include "info/print.h"
 
 struct State {
 	struct Head *head1;

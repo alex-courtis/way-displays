@@ -15,7 +15,7 @@
 #include "displ.h"
 #include "fds.h"
 #include "head.h"
-#include "info.h"
+#include "info/print.h"
 #include "ipc.h"
 #include "act.h"
 #include "lid.h"

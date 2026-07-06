@@ -9,7 +9,7 @@
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
-#include "info.h"
+#include "info/print.h"
 #include "info/callback.h"
 #include "info/delta.h"
 #include "listeners.h"

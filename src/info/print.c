@@ -4,7 +4,7 @@
 #include <sys/param.h>
 #include <wayland-util.h>
 
-#include "info.h"
+#include "info/print.h"
 
 #include "cfg.h"
 #include "cfg/disabled.h"

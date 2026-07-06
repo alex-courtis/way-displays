@@ -8,7 +8,7 @@
 
 #include "convert.h"
 #include "fn.h"
-#include "info.h"
+#include "info/print.h"
 #include "ipc.h"
 #include "log.h"
 #include "process.h"
