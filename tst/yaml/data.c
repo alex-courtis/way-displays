@@ -149,6 +149,8 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.mode = mode_init_h_whr(head0, 13, 14, 15);
 	pset_add(head0->modes, head0->desired.mode);
 
+	pset_add(head0->modes_failed, mode_init_h_whr(head0, 16, 17, 18));
+
 	slist_append(&g_heads, head0);
 
 	return ipc_operation;

@@ -458,10 +458,27 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(mode2->height, 14);
 	assert_int_equal(mode2->refresh_mhz, 15);
 
-	pset_it_next(it);
+	assert_nul(pset_it_next(it));
+
+	const struct Mode *mode_preferred = head->mode_preferred;
+	assert_non_nul(mode_preferred);
+	assert_int_equal(mode_preferred->width, 10);
+	assert_int_equal(mode_preferred->height, 11);
+	assert_int_equal(mode_preferred->refresh_mhz, 12);
+
+	assert_int_equal(pset_size(head->modes_failed), 1);
+	it = pset_it(head->modes_failed);
+
+	const struct Mode *mode_failed = it->val;
+	assert_non_nul(mode_failed);
+	assert_int_equal(mode_failed->width, 16);
+	assert_int_equal(mode_failed->height, 17);
+	assert_int_equal(mode_failed->refresh_mhz, 18);
 
 	assert_int_equal(head->current.transform, 3);
 	assert_int_equal(head->desired.transform, 4);
+
+	assert_nul(pset_it_next(it));
 
 	assert_int_equal(slist_length(response->log_cap_lines), 3);
 

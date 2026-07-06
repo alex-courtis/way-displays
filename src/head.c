@@ -51,6 +51,18 @@ void head_free(struct Head *head) {
 	if (!head)
 		return;
 
+	// TODO orphan set
+
+	if (head->mode_preferred && !pset_contains(head->modes, head->mode_preferred) && !pset_contains(head->modes_failed, head->mode_preferred)) {
+		mode_free((struct Mode*)head->mode_preferred);
+		if (head->desired.mode == head->mode_preferred) {
+			head->desired.mode = NULL;
+		}
+		if (head->current.mode == head->mode_preferred) {
+			head->current.mode = NULL;
+		}
+	}
+
 	if (head->current.mode && !pset_contains(head->modes, head->current.mode) && !pset_contains(head->modes_failed, head->current.mode)) {
 		mode_free((struct Mode*)head->current.mode);
 		if (head->desired.mode == head->current.mode) {

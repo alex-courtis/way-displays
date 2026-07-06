@@ -519,10 +519,13 @@ void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *
 	yaml_scalar_to_int(c, &head->width_mm, smap_get(nodes, "WIDTH_MM"));
 	yaml_scalar_to_int(c, &head->height_mm, smap_get(nodes, "HEIGHT_MM"));
 
-	yaml_map_into_head_state(c, &head->current, smap_get(nodes,"CURRENT"));
-	yaml_map_into_head_state(c, &head->desired, smap_get(nodes,"DESIRED"));
+	yaml_map_into_head_state(c, &head->current, smap_get(nodes, "CURRENT"));
+	yaml_map_into_head_state(c, &head->desired, smap_get(nodes, "DESIRED"));
 
-	yaml_seq_into_col(c, smap_get(nodes, "MODES"), head->modes, (fn_yaml_node_into_col)yaml_map_into_modes);
+	head->mode_preferred = yaml_map_to_mode(c, smap_get(nodes, "MODE_PREFERRED"));
+
+	yaml_seq_into_col(c, smap_get(nodes, "MODES"),        head->modes,        (fn_yaml_node_into_col)yaml_map_into_modes);
+	yaml_seq_into_col(c, smap_get(nodes, "MODES_FAILED"), head->modes_failed, (fn_yaml_node_into_col)yaml_map_into_modes);
 
 	const struct SMap *nodes_overrides = yaml_map_to_smap(c, smap_get(nodes, "OVERRIDES"));
 	if (nodes_overrides) {
