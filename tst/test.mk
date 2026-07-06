@@ -70,9 +70,11 @@ tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=call_back
 
 tst/tst-layout: LDFLAGS += -Wl,$\
-	--wrap=head_find_mode,$\
 	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,$\
-	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,--wrap=call_back_mode_fail,$\
+	--wrap=call_back,--wrap=call_back_adaptive_sync_fail,--wrap=call_back_mode_fail
+
+tst/tst-desire: LDFLAGS += -Wl,$\
+	--wrap=head_find_mode,$\
 	--wrap=head_auto_scale
 
 tst/tst-cfg-file: LDFLAGS += -Wl,$\

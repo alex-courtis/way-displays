@@ -234,6 +234,7 @@ void server_reload_cfg(void) {
 static int loop(void) {
 
 	for (;;) {
+		// TODO these messages are not useful
 		log_debug("LOOP START");
 
 		log_debug("LOOP pfds_init");
