@@ -210,7 +210,13 @@ $defs:
         $ref: '#/$defs/head/state'
       OVERRIDES:
         $ref: '#/$defs/head/overrides'
+      MODE_PREFERRED:
+        $ref: '#/$defs/head/mode'
       MODES:
+        type: array
+        items:
+          $ref: '#/$defs/head/mode'
+      MODES_FAILED:
         type: array
         items:
           $ref: '#/$defs/head/mode'
@@ -244,8 +250,6 @@ $defs:
           type: integer
         REFRESH_MHZ:
           type: integer
-        PREFERRED:
-          type: boolean
       additionalProperties: false
 
     overrides:
