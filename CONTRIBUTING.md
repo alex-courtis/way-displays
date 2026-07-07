@@ -94,8 +94,6 @@ Testing requires 32-bit libs, libinput is excluded:
 ```sh
 make CC=gcc   MFLAGS=-m32 clean test
 make CC=gcc   MFLAGS=-m32 clean test-vg
-make CC=clang MFLAGS=-m32 clean test
-make CC=clang MFLAGS=-m32 clean test-vg
 ```
 
 ### Developing On The (CI) Arch Image
