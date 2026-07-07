@@ -24,52 +24,36 @@
 static char b[6][262144] = { 0 };
 static char *bp[6] = { 0 };
 
-void _assert_log(bool fatal, enum LogThreshold t, const char * s, const char * const file, const int line) {
+void _assert_log(enum LogThreshold t, const char * s, const char * const file, const int line) {
 	if (bp[t]) {
 		bp[t] = NULL;
 		if (strcmp(b[t], s) != 0) {
-			char *err = sprintf_alloc("assert_log\nactual.log:\n\"%s\"\nexpected.log:\n\"%s\"\n", b[t], s);
-			if (fatal) {
-				fprintf(stderr, "%s:%d: %s", file, line, err);
-			} else {
-				cmocka_print_error("%s", err);
-			}
+			const char *err = sprintf_alloc("assert_log\nactual.log:\n\"%s\"\nexpected.log:\n\"%s\"\n", b[t], s);
+			fprintf(stderr, "%s:%d: %s", file, line, err);
 			write_file("actual.log", b[t]);
 			write_file("expected.log", s);
-			if (fatal) {
-				exit(1);
-			} else {
-				_fail(file, line);
-			}
+			exit(1);
 		}
 	} else {
 		_assert_string_equal("", s, file, line);
 	}
 }
 
-void _assert_logs_empty(bool fatal, bool before, const char * const file, const int line) {
+void _assert_logs_empty(const char * const file, const int line) {
 	bool empty = true;
 	for (enum LogThreshold t = DEBUG; t <= FATAL; t++) {
 		if (bp[t]) {
 			bp[t] = NULL;
 			char *file_name = sprintf_alloc("unexpected.%s.log", log_threshold_name(t));
-			char *err = sprintf_alloc("%s%s:\n\"%s\"\n", before ? "Previous test left logs:\n" : "", file_name, b[t]);
-			if (fatal) {
-				fprintf(stderr, "%s:%d: %s", file, line, err);
-			} else {
-				cmocka_print_error("%s", err);
-			}
+			const char *err = sprintf_alloc("%s:\n\"%s\"\n", file_name, b[t]);
+			fprintf(stderr, "%s:%d: %s", file, line, err);
 			write_file(file_name, b[t]);
 			free(file_name);
 			empty = false;
 		}
 	}
 	if (!empty) {
-		if (fatal) {
-			exit(1);
-		} else {
-			_fail(file, line);
-		}
+		exit(1);
 	}
 }
 

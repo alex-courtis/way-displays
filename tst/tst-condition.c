@@ -21,8 +21,6 @@ struct State {
 };
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	struct State *s = calloc(1, sizeof(struct State));
 	s->condition = condition_init();
 
@@ -41,6 +39,8 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	struct State *s = *state;
 
 	condition_free(s->condition);

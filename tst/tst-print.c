@@ -37,8 +37,6 @@ struct State {
 };
 
 int before_each(void **state) {
-	assert_logs_empty_before();
-
 	struct State *s = calloc(1, sizeof(struct State));
 
 	g_cfg = cfg_default();
@@ -146,6 +144,8 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
+	assert_logs_empty();
+
 	struct State *s = *state;
 
 	slist_free_vals(&s->heads, (fn_free)head_free);
@@ -195,8 +195,6 @@ static void print_cfg__all(void **state) {
 	char *expected_log = read_file("tst/info/print-cfg-all.log");
 	assert_log(INFO, expected_log);
 
-	assert_logs_empty();
-
 	free(expected_log);
 	cfg_free(c);
 }
@@ -219,8 +217,6 @@ static void print_cfg__del(void **state) {
 	char *expected_log = read_file("tst/info/print-cfg-del.log");
 	assert_log(INFO, expected_log);
 
-	assert_logs_empty();
-
 	free(expected_log);
 	cfg_free(c);
 }
@@ -234,8 +230,6 @@ static void print_cfg__arrange_only(void **state) {
 	char *expected_log = read_file("tst/info/print-cfg-arrange-only.log");
 	assert_log(INFO, expected_log);
 
-	assert_logs_empty();
-
 	free(expected_log);
 	cfg_free(c);
 }
@@ -248,8 +242,6 @@ static void print_cfg__align_only(void **state) {
 
 	char *expected_log = read_file("tst/info/print-cfg-align-only.log");
 	assert_log(INFO, expected_log);
-
-	assert_logs_empty();
 
 	free(expected_log);
 	cfg_free(c);
@@ -267,8 +259,6 @@ static void print_cfg__auto_scale_max(void **state) {
 	char *expected_log = read_file("tst/info/print-cfg-auto-scale-max.log");
 	assert_log(INFO, expected_log);
 
-	assert_logs_empty();
-
 	free(expected_log);
 	cfg_free(c);
 }
@@ -282,8 +272,6 @@ static void print_cfg__lid_disabled(void **state) {
 	char *expected_log = read_file("tst/info/print-cfg-lid-disabled.log");
 	assert_log(INFO, expected_log);
 
-	assert_logs_empty();
-
 	free(expected_log);
 	cfg_free(c);
 }
@@ -294,8 +282,6 @@ static void print_cfg_commands__empty(void **state) {
 	print_cfg_commands(INFO, cfg);
 
 	cfg_free(cfg);
-
-	assert_logs_empty();
 }
 
 static void print_cfg_commands__ok(void **state) {
@@ -331,7 +317,6 @@ static void print_cfg_commands__ok(void **state) {
 
 	char *expected_log = read_file("tst/info/print-cfg-commands-ok.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 
 	cfg_free(c);
 	free(expected_log);
@@ -359,7 +344,6 @@ static void print_head_arrived__all(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-arrived-all.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -373,7 +357,6 @@ static void print_head_arrived__min(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-arrived-min.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 
 	head_free(head);
@@ -386,7 +369,6 @@ static void print_head_departed__ok(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-departed-ok.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -400,7 +382,6 @@ static void print_head_deltas__mode(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-mode.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -417,7 +398,6 @@ static void print_head_deltas__vrr(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-vrr.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -433,7 +413,6 @@ static void print_head_deltas__other(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-other.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -449,7 +428,6 @@ static void print_head_deltas__disable(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-disable.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -465,7 +443,6 @@ static void print_head_deltas__enable(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-enable.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -485,7 +462,6 @@ static void print_head_deltas__reapply(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-deltas-reapply.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -502,7 +478,6 @@ static void print_head_current__disabled(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-current-disabled.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -520,7 +495,6 @@ static void print_head_current__disabled_override(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-current-disabled-override.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -538,7 +512,6 @@ static void print_head_current__enabled_override(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-current-enabled-override.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -554,7 +527,6 @@ static void print_head_current__lid_closed(void **state) {
 
 	char *expected_log = read_file("tst/info/print-head-current-lid-closed.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
@@ -567,7 +539,6 @@ static void print_head_desired__disabled(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    (disabled)\n");
-	assert_logs_empty();
 }
 
 static void print_head_desired__disabled_override(void **state) {
@@ -580,7 +551,6 @@ static void print_head_desired__disabled_override(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    (manually disabled)\n");
-	assert_logs_empty();
 }
 
 static void print_head_desired__enabled(void **state) {
@@ -593,7 +563,6 @@ static void print_head_desired__enabled(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (enabled)\n");
-	assert_logs_empty();
 }
 
 static void print_head_desired__enabled_override(void **state) {
@@ -607,7 +576,6 @@ static void print_head_desired__enabled_override(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (manually enabled)\n");
-	assert_logs_empty();
 }
 
 static void print_head_desired__transform_270(void **state) {
@@ -620,7 +588,6 @@ static void print_head_desired__transform_270(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    transform: 270\n");
-	assert_logs_empty();
 }
 
 static void print_head_desired__transform_none(void **state) {
@@ -633,13 +600,10 @@ static void print_head_desired__transform_none(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    transform: none\n");
-	assert_logs_empty();
 }
 
 static void print_active__empty(void **state) {
 	print_list(INFO, NULL);
-
-	assert_logs_empty();
 }
 
 static void print_active__many(void **state) {
@@ -650,14 +614,11 @@ static void print_active__many(void **state) {
 
 	char *expected_log = read_file("tst/info/print-list.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 }
 
 static void print_adaptive_sync_fail__nulls(void **state) {
 	print_adaptive_sync_fail(ERROR, NULL);
-
-	assert_logs_empty();
 }
 
 static void print_adaptive_sync_fail__head(void **state) {
@@ -672,7 +633,6 @@ static void print_adaptive_sync_fail__head(void **state) {
 			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
 			"  VRR_OFF:\n"
 			"    - 'model0'\n");
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -682,7 +642,6 @@ static void print_mode_fail__nulls(void **state) {
 	print_mode_fail(WARNING, NULL, NULL);
 
 	assert_log(WARNING, "\nChanges failed\n");
-	assert_logs_empty();
 }
 
 static void print_mode_fail__head(void **state) {
@@ -693,7 +652,6 @@ static void print_mode_fail__head(void **state) {
 	print_mode_fail(WARNING, head, NULL);
 
 	assert_log(WARNING, "\nChanges failed\n  head0:\n    (no mode)\n");
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -761,19 +719,7 @@ static void print_heads_outstanding__many(void **state) {
 
 	assert_log(DEBUG, "foo IDLE queue re:reapply ; a:reapply ; mo:mode ; a:mode ; vr:vrr ; a:vrr ; di:disable en:enable sc:geometry x:geometry y:geometry tr:geometry a:enable a:geometry\n");
 
-	assert_logs_empty();
-
 	slist_free_vals(&heads, (fn_free)head_free);
-}
-
-static void print_heads_outstanding__below(void **state) {
-	const struct State *s = *state;
-
-	will_return_int(__wrap_log_get_threshold, WARNING);
-
-	print_head_queue(DEBUG, "foo", IDLE, s->heads);
-
-	assert_logs_empty();
 }
 
 static void print_heads_outstanding__none(void **state) {
@@ -783,8 +729,14 @@ static void print_heads_outstanding__none(void **state) {
 	print_head_queue(DEBUG, "foo", IDLE, NULL);
 
 	assert_log(DEBUG, "foo IDLE queue\n");
+}
 
-	assert_logs_empty();
+static void print_heads_outstanding__below_threshold(void **state) {
+	const struct State *s = *state;
+
+	will_return_int(__wrap_log_get_threshold, WARNING);
+
+	print_head_queue(DEBUG, "foo", IDLE, s->heads);
 }
 
 int main(void) {
@@ -834,8 +786,8 @@ int main(void) {
 		TEST_BA(print_mode_fail__head),
 
 		TEST_BA(print_heads_outstanding__many),
-		TEST_BA(print_heads_outstanding__below),
 		TEST_BA(print_heads_outstanding__none),
+		TEST_BA(print_heads_outstanding__below_threshold),
 	};
 
 	return RUN(tests);

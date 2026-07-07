@@ -33,14 +33,14 @@ bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
 }
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	cfg_destroy();
 
 	return 0;
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	cfg_destroy();
 
 	free(_dir_path);
@@ -68,7 +68,6 @@ static void server_load_cfg__no_file(void **state) {
 
 	char *log_expected = read_file("tst/server/load-no-file.log");
 	assert_log(INFO, log_expected);
-	assert_logs_empty();
 
 	free(log_expected);
 	cfg_free(cfg_expected);
@@ -106,7 +105,6 @@ static void server_load_cfg__valid_file(void **state) {
 
 	char *log_expected = read_file("tst/server/load-valid-file.log");
 	assert_log(INFO, log_expected);
-	assert_logs_empty();
 
 	free(log_expected);
 	cfg_free(cfg_expected);
@@ -134,7 +132,6 @@ static void server_load_cfg__invalid_file(void **state) {
 
 	char *log_expected = read_file("tst/server/load-invalid-file.log");
 	assert_log(INFO, log_expected);
-	assert_logs_empty();
 
 	free(log_expected);
 	cfg_free(cfg_expected);
@@ -174,7 +171,6 @@ static void server_load_cfg__missing_defaults(void **state) {
 
 	char *log_expected = read_file("tst/server/load-missing-defaults.log");
 	assert_log(INFO, log_expected);
-	assert_logs_empty();
 
 	free(log_expected);
 	cfg_free(cfg_expected);
@@ -189,8 +185,6 @@ static void server_reload_cfg__no_file(void **state) {
 	server_reload_cfg();
 
 	assert_ptr_equal(g_cfg, cfg_orig);
-
-	assert_logs_empty();
 }
 
 static void server_reload_cfg__invalid_file(void **state) {
@@ -219,7 +213,6 @@ static void server_reload_cfg__invalid_file(void **state) {
 
 	char *log_expected = read_file("tst/server/reload-invalid-file.log");
 	assert_log(INFO, log_expected);
-	assert_logs_empty();
 
 	free(log_expected);
 	cfg_free(cfg_expected);
@@ -261,7 +254,6 @@ static void server_reload_cfg__valid_file(void **state) {
 
 	char *log_expected = read_file("tst/server/reload-valid-file.log");
 	assert_log(INFO, log_expected);
-	assert_logs_empty();
 
 	free(log_expected);
 	cfg_free(cfg_expected);

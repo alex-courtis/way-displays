@@ -210,7 +210,7 @@ void act(void) {
 	print_heads(INFO, DEPARTED, g_heads_departed);
 	slist_free_vals(&g_heads_departed, (fn_free)head_free);
 
-	print_head_queue(DEBUG, "act: start:  ", g_displ->state, g_heads);
+	print_head_queue(DEBUG, "act started", g_displ->state, g_heads);
 
 	switch (g_displ->state) {
 		case SUCCEEDED:
@@ -242,9 +242,9 @@ void act(void) {
 	}
 
 	desire();
-	print_head_queue(DEBUG, "act: desired:", g_displ->state, g_heads);
+	print_head_queue(DEBUG, "act desired", g_displ->state, g_heads);
 
 	act_apply();
-	print_head_queue(DEBUG, "act: applied:", g_displ->state, g_heads);
+	print_head_queue(DEBUG, "act applied", g_displ->state, g_heads);
 }
 

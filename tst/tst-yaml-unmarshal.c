@@ -35,8 +35,8 @@
 
 #include "yaml/data.c"
 
-static int before_each(void **state) {
-	assert_logs_empty_before();
+static int after_each(void **state) {
+	assert_logs_empty();
 
 	return 0;
 }
@@ -50,11 +50,11 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 
 	if (log_path) {
 		char *expected_log = read_file(log_path);
-		_assert_log(true, WARNING, expected_log, file, line);
+		_assert_log(WARNING, expected_log, file, line);
 		free(expected_log);
 	}
 
-	_assert_logs_empty(true, false, file, line);
+	_assert_logs_empty(file, line);
 
 	cfg_free(actual);
 	cfg_free(expected);
@@ -77,16 +77,12 @@ static void yaml_root_to_cfg__empty(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
 
 	assert_log(ERROR, "\ntst/yaml/cfg-empty.yaml: no root node\n");
-
-	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__missing(void **state) {
 	assert_nul(yaml_unmarshal_file("foo/bar/baz.yaml", yaml_root_to_cfg));
 
 	assert_log(ERROR, "\nfoo/bar/baz.yaml: inexistent\n");
-
-	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__invalid(void **state) {
@@ -119,7 +115,6 @@ static void yaml_root_to_cfg__root_mistyped(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-root-mistyped.yaml", yaml_root_to_cfg));
 
 	assert_log(WARNING, "Ignoring invalid tst/yaml/cfg-root-mistyped.yaml expected map, got sequence\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__transform(void **state) {
@@ -210,7 +205,6 @@ static void yaml_root_to_ipc_request__empty(void **state) {
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__mistyped_root(void **state) {
@@ -225,7 +219,6 @@ static void yaml_root_to_ipc_request__mistyped_root(void **state) {
 			"========================================\n"
 			"- FOO\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__invalid_op(void **state) {
@@ -240,7 +233,6 @@ static void yaml_root_to_ipc_request__invalid_op(void **state) {
 			"========================================\n"
 			"OP: aoeu\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__mistyped_op(void **state) {
@@ -256,7 +248,6 @@ static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 			"OP:\n"
 			"  FOO: BAR\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 
@@ -272,7 +263,6 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 			"========================================\n"
 			"FOO: BAR\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
@@ -291,7 +281,6 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 
 	char *expected_log = read_file("tst/yaml/ipc-request-cfg-invalid.log");
 	assert_log(WARNING, expected_log);
-	assert_logs_empty();
 
 	free(yaml);
 	ipc_request_free(actual);
@@ -315,8 +304,6 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	ipc_request_free(actual);
 	cfg_free(expected);
 	free(yaml);
-
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__empty(void **state) {
@@ -327,7 +314,6 @@ static void yaml_root_to_ipc_response_list__empty(void **state) {
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
@@ -338,7 +324,6 @@ static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
 			"========================================\n"
 			"foo\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
@@ -349,7 +334,6 @@ static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
 			"========================================\n"
 			"-\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
@@ -362,7 +346,6 @@ static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
 			"========================================\n"
 			"- FOO: BAR\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
@@ -377,7 +360,6 @@ static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
 			"========================================\n"
 			"- DONE: TRUE\n"
 			"----------------------------------------\n");
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__map(void **state) {
@@ -499,8 +481,6 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	slist_free_vals(&responses, (fn_free)ipc_response_free);
 	cfg_free(expected_cfg);
 	free(yaml);
-
-	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__seq(void **state) {
@@ -577,8 +557,6 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	slist_free_vals(&responses, (fn_free)ipc_response_free);
 	free(yaml);
 	cfg_free(cfg_expected);
-
-	assert_logs_empty();
 }
 
 static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
@@ -588,7 +566,6 @@ static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
 	assert_nul(yaml_unmarshal_str("", yaml_root_to_cfg, "foo"));
 
 	assert_log(ERROR, "\nfoo: yaml_parser_initialize failed\n");
-	assert_logs_empty();
 }
 
 static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
@@ -612,7 +589,6 @@ static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
 			yaml);
 
 	assert_log(ERROR, err);
-	assert_logs_empty();
 
 	free(err);
 }
@@ -623,7 +599,6 @@ static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
 
 	assert_log(ERROR, "\ntst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
-	assert_logs_empty();
 }
 
 static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
@@ -633,47 +608,46 @@ static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/CQ3W.yaml", yaml_root_to_cfg));
 
 	assert_log(ERROR, "\ntst/yaml/CQ3W.yaml line 2: found unexpected end of stream (while scanning a quoted scalar)\n");
-	assert_logs_empty();
 }
 
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
-		TEST_B(yaml_root_to_cfg__ok),
-		TEST_B(yaml_root_to_cfg__unknown),
-		TEST_B(yaml_root_to_cfg__empty),
-		TEST_B(yaml_root_to_cfg__missing),
-		TEST_B(yaml_root_to_cfg__invalid),
-		TEST_B(yaml_root_to_cfg__legacy),
-		TEST_B(yaml_root_to_cfg__mistyped),
-		TEST_B(yaml_root_to_cfg__root_mistyped),
-		TEST_B(yaml_root_to_cfg__transform),
-		TEST_B(yaml_root_to_cfg__scale),
-		TEST_B(yaml_root_to_cfg__mode),
-		TEST_B(yaml_root_to_cfg__disabled),
-		TEST_B(yaml_root_to_cfg__scale_round_to_invalid),
-		TEST_B(yaml_root_to_cfg__scale_round_to_zero),
+		TEST_A(yaml_root_to_cfg__ok),
+		TEST_A(yaml_root_to_cfg__unknown),
+		TEST_A(yaml_root_to_cfg__empty),
+		TEST_A(yaml_root_to_cfg__missing),
+		TEST_A(yaml_root_to_cfg__invalid),
+		TEST_A(yaml_root_to_cfg__legacy),
+		TEST_A(yaml_root_to_cfg__mistyped),
+		TEST_A(yaml_root_to_cfg__root_mistyped),
+		TEST_A(yaml_root_to_cfg__transform),
+		TEST_A(yaml_root_to_cfg__scale),
+		TEST_A(yaml_root_to_cfg__mode),
+		TEST_A(yaml_root_to_cfg__disabled),
+		TEST_A(yaml_root_to_cfg__scale_round_to_invalid),
+		TEST_A(yaml_root_to_cfg__scale_round_to_zero),
 
-		TEST_B(yaml_root_to_ipc_request__empty),
-		TEST_B(yaml_root_to_ipc_request__mistyped_root),
-		TEST_B(yaml_root_to_ipc_request__invalid_op),
-		TEST_B(yaml_root_to_ipc_request__mistyped_op),
-		TEST_B(yaml_root_to_ipc_request__no_op),
-		TEST_B(yaml_root_to_ipc_request__invalid_cfg),
-		TEST_B(yaml_root_to_ipc_request__cfg_set),
+		TEST_A(yaml_root_to_ipc_request__empty),
+		TEST_A(yaml_root_to_ipc_request__mistyped_root),
+		TEST_A(yaml_root_to_ipc_request__invalid_op),
+		TEST_A(yaml_root_to_ipc_request__mistyped_op),
+		TEST_A(yaml_root_to_ipc_request__no_op),
+		TEST_A(yaml_root_to_ipc_request__invalid_cfg),
+		TEST_A(yaml_root_to_ipc_request__cfg_set),
 
-		TEST_B(yaml_root_to_ipc_response_list__empty),
-		TEST_B(yaml_root_to_ipc_response_list__mistyped_root),
-		TEST_B(yaml_root_to_ipc_response_list__seq_no_map),
-		TEST_B(yaml_root_to_ipc_response_list__seq_no_done),
-		TEST_B(yaml_root_to_ipc_response_list__seq_no_rc),
-		TEST_B(yaml_root_to_ipc_response_list__map),
-		TEST_B(yaml_root_to_ipc_response_list__seq),
+		TEST_A(yaml_root_to_ipc_response_list__empty),
+		TEST_A(yaml_root_to_ipc_response_list__mistyped_root),
+		TEST_A(yaml_root_to_ipc_response_list__seq_no_map),
+		TEST_A(yaml_root_to_ipc_response_list__seq_no_done),
+		TEST_A(yaml_root_to_ipc_response_list__seq_no_rc),
+		TEST_A(yaml_root_to_ipc_response_list__map),
+		TEST_A(yaml_root_to_ipc_response_list__seq),
 
-		TEST_B(yaml_unmarshal_str__yaml_document_initialize_fail),
-		TEST_B(yaml_unmarshal_str__yaml_parser_load_fail),
-		TEST_B(yaml_unmarshal_file__yaml_document_initialize_fail),
-		TEST_B(yaml_unmarshal_file__yaml_parser_load_fail),
+		TEST_A(yaml_unmarshal_str__yaml_document_initialize_fail),
+		TEST_A(yaml_unmarshal_str__yaml_parser_load_fail),
+		TEST_A(yaml_unmarshal_file__yaml_document_initialize_fail),
+		TEST_A(yaml_unmarshal_file__yaml_parser_load_fail),
 	};
 
 	return RUN(tests);

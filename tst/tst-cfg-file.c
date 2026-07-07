@@ -56,8 +56,6 @@ static int after_all(void **state) {
 }
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	slist_free_vals(&g_cfg_file_paths, NULL);
 
 	clean_files();
@@ -68,6 +66,8 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	if (env_xdg_config_home) {
 		setenv("XDG_CONFIG_HOME", env_xdg_config_home, 1);
 	} else {
@@ -98,8 +98,6 @@ static void cfg_file_write__bad_yaml(void **state) {
 	will_return_ptr_type(__wrap_yaml_marshal, NULL, char*);
 
 	cfg_file_write();
-
-	assert_logs_empty();
 }
 
 static void cfg_file_write__none(void **state) {
@@ -132,7 +130,6 @@ static void cfg_file_write__none(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/zero\n");
-	assert_logs_empty();
 
 	assert_str_equal(g_cfg->file_path, "/path/to/zero");
 	assert_str_equal(g_cfg->dir_path, "/path/to");
@@ -199,7 +196,6 @@ static void cfg_file_write__cannot_write_use_alternative(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/three\n");
-	assert_logs_empty();
 
 	assert_str_equal(g_cfg->file_path, "/path/to/three");
 	assert_str_equal(g_cfg->dir_path, "/path/to");
@@ -251,8 +247,6 @@ static void cfg_file_write__cannot_write_no_alternative(void **state) {
 	assert_int_equal(g_cfg->updated, false);
 
 	free(expected);
-
-	assert_logs_empty();
 }
 
 static void cfg_file_write__existing(void **state) {
@@ -283,7 +277,6 @@ static void cfg_file_write__existing(void **state) {
 	cfg_file_write();
 
 	assert_log(INFO, "\nWrote configuration file: tst/tmp/write-existing-cfg.yaml\n");
-	assert_logs_empty();
 
 	assert_int_equal(g_cfg->updated, true);
 
@@ -301,8 +294,6 @@ static void cfg_file_paths_init__min(void **state) {
 	assert_str_equal(slist_at(g_cfg_file_paths, 1), ROOT_ETC"/way-displays/cfg.yaml");
 
 	assert_int_equal(slist_length(g_cfg_file_paths), 2);
-
-	assert_logs_empty();
 }
 
 static void cfg_file_paths_init__xch(void **state) {
@@ -318,8 +309,6 @@ static void cfg_file_paths_init__xch(void **state) {
 	assert_str_equal(slist_at(g_cfg_file_paths, 2), ROOT_ETC"/way-displays/cfg.yaml");
 
 	assert_int_equal(slist_length(g_cfg_file_paths), 3);
-
-	assert_logs_empty();
 }
 
 static void cfg_file_paths_init__home(void **state) {
@@ -335,8 +324,6 @@ static void cfg_file_paths_init__home(void **state) {
 	assert_str_equal(slist_at(g_cfg_file_paths, 2), ROOT_ETC"/way-displays/cfg.yaml");
 
 	assert_int_equal(slist_length(g_cfg_file_paths), 3);
-
-	assert_logs_empty();
 }
 
 static void cfg_file_paths_init__user(void **state) {
@@ -354,8 +341,6 @@ static void cfg_file_paths_init__user(void **state) {
 	assert_str_equal(slist_at(g_cfg_file_paths, 3), ROOT_ETC"/way-displays/cfg.yaml");
 
 	assert_int_equal(slist_length(g_cfg_file_paths), 4);
-
-	assert_logs_empty();
 }
 
 static void cfg_resolve_file_path__not_found(void **state) {
@@ -374,8 +359,6 @@ static void cfg_resolve_file_path__not_found(void **state) {
 	assert_nul(g_cfg->dir_path);
 	assert_nul(g_cfg->file_name);
 	assert_nul(g_cfg->resolved_from);
-
-	assert_logs_empty();
 }
 
 static void cfg_resolve_file_path__direct(void **state) {
@@ -402,8 +385,6 @@ static void cfg_resolve_file_path__direct(void **state) {
 	assert_str_equal(g_cfg->file_name, "resolved.yaml");
 	assert_str_equal(g_cfg->resolved_from, file_path);
 	assert_ptr_equal(g_cfg->resolved_from, slist_at(g_cfg_file_paths, 0));
-
-	assert_logs_empty();
 }
 
 static void cfg_resolve_file_path__linked(void **state) {
@@ -435,8 +416,6 @@ static void cfg_resolve_file_path__linked(void **state) {
 	assert_str_equal(g_cfg->file_name, "resolved.yaml");
 	assert_str_equal(g_cfg->resolved_from, linked_path);
 	assert_ptr_equal(g_cfg->resolved_from, slist_at(g_cfg_file_paths, 0));
-
-	assert_logs_empty();
 }
 
 int main(void) {

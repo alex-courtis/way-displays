@@ -31,8 +31,6 @@ struct State {
 };
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	struct State *s = calloc(1, sizeof(struct State));
 
 	slist_free_vals(&g_cfg_file_paths, NULL);
@@ -46,6 +44,8 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	struct State *s = *state;
 
 	slist_free_vals(&g_cfg_file_paths, NULL);
@@ -68,8 +68,6 @@ static void cfg_equal__mode(void **state) {
 	smap_put(s->to->modes, "both", mode_init_whr(10, 11, 12));
 
 	assert_cfg_not_equal(s->from, s->to);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__arrange(void **state) {
@@ -83,8 +81,6 @@ static void cfg_merge_set__arrange(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__align(void **state) {
@@ -98,8 +94,6 @@ static void cfg_merge_set__align(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__order(void **state) {
@@ -115,8 +109,6 @@ static void cfg_merge_set__order(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__auto_scale(void **state) {
@@ -130,8 +122,6 @@ static void cfg_merge_set__auto_scale(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__scale_round_to(void **state) {
@@ -145,8 +135,6 @@ static void cfg_merge_set__scale_round_to(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__scale_round_strategy(void **state) {
@@ -160,8 +148,6 @@ static void cfg_merge_set__scale_round_strategy(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__scale(void **state) {
@@ -182,8 +168,6 @@ static void cfg_merge_set__scale(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__transform(void **state) {
@@ -204,8 +188,6 @@ static void cfg_merge_set__transform(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__mode(void **state) {
@@ -226,8 +208,6 @@ static void cfg_merge_set__mode(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__adaptive_sync_off(void **state) {
@@ -248,8 +228,6 @@ static void cfg_merge_set__adaptive_sync_off(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__disabled(void **state) {
@@ -290,8 +268,6 @@ static void cfg_merge_set__disabled(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_set__callback_cmd(void **state) {
@@ -311,8 +287,6 @@ static void cfg_merge_set__callback_cmd(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_del__scale(void **state) {
@@ -331,8 +305,6 @@ static void cfg_merge_del__scale(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_del__mode(void **state) {
@@ -351,8 +323,6 @@ static void cfg_merge_del__mode(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_del__transform(void **state) {
@@ -371,8 +341,6 @@ static void cfg_merge_del__transform(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_del__adaptive_sync_off(void **state) {
@@ -391,8 +359,6 @@ static void cfg_merge_del__adaptive_sync_off(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_del__disabled(void **state) {
@@ -411,8 +377,6 @@ static void cfg_merge_del__disabled(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_del__callback_cmd(void **state) {
@@ -432,8 +396,6 @@ static void cfg_merge_del__callback_cmd(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_toggle__scaling(void **state) {
@@ -451,8 +413,6 @@ static void cfg_merge_toggle__scaling(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_toggle__auto_scale(void **state) {
@@ -470,8 +430,6 @@ static void cfg_merge_toggle__auto_scale(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_merge_toggle__adaptive_sync_off(void **state) {
@@ -494,8 +452,6 @@ static void cfg_merge_toggle__adaptive_sync_off(void **state) {
 	assert_cfg_equal(merged, s->expected);
 
 	cfg_free(merged);
-
-	assert_logs_empty();
 }
 
 static void cfg_validate_fix__col(void **state) {
@@ -510,7 +466,6 @@ static void cfg_validate_fix__col(void **state) {
 	cfg_validate_fix(s->from);
 
 	assert_log(WARNING, "\nIgnoring invalid ALIGN TOP for COLUMN arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.\n");
-	assert_logs_empty();
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -527,7 +482,6 @@ static void cfg_validate_fix__row(void **state) {
 	cfg_validate_fix(s->from);
 
 	assert_log(WARNING, "\nIgnoring invalid ALIGN RIGHT for ROW arrange. Valid values are TOP, MIDDLE and BOTTOM. Using default TOP.\n");
-	assert_logs_empty();
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -552,7 +506,6 @@ static void cfg_validate_fix__mode_cfg(void **state) {
 
 	char *expected_log = read_file("tst/cfg/validate-fix-mode.log");
 	assert_log(WARNING, expected_log);
-	assert_logs_empty();
 
 	smap_put(s->expected->modes, "ok", mode_init_whr(1, 2, 3));
 	smap_put(s->expected->modes, "max", mode_init_whr_max(-1, -1, -1));
@@ -572,7 +525,6 @@ static void cfg_validate_fix__auto_scale_dpi(void **state) {
 	cfg_validate_fix(s->from);
 
 	assert_log(WARNING, "\nIgnoring AUTO_SCALE_DPI -1 < 8. Using default 96.\n");
-	assert_logs_empty();
 
 	assert_cfg_equal(s->from, s->expected);
 }
@@ -623,7 +575,6 @@ static void cfg_validate_warn__(void **state) {
 
 	char *expected_log = read_file("tst/cfg/validate-warn.log");
 	assert_log(WARNING, expected_log);
-	assert_logs_empty();
 
 	free(expected_log);
 }

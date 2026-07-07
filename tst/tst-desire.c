@@ -34,8 +34,6 @@ struct State {
 };
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	g_cfg = cfg_default();
 
 	struct State *s = calloc(1, sizeof(struct State));
@@ -54,6 +52,8 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	slist_free_vals(&g_heads, (fn_free)head_free);
 
 	cfg_destroy();
@@ -118,8 +118,6 @@ static void desire_order__exact_partial_regex(void **state) {
 	slist_free_vals(&heads, (fn_free)head_free);
 	slist_free(&expected);
 	slist_free(&heads_ordered);
-
-	assert_logs_empty();
 }
 
 static void desire_order__exact_regex_catchall(void **state) {
@@ -163,8 +161,6 @@ static void desire_order__exact_regex_catchall(void **state) {
 	slist_free_vals(&heads, (fn_free)head_free);
 	slist_free(&expected);
 	slist_free(&heads_ordered);
-
-	assert_logs_empty();
 }
 
 static void desire_order__no_order(void **state) {
@@ -179,8 +175,6 @@ static void desire_order__no_order(void **state) {
 
 	slist_free(&heads_ordered);
 	slist_free_vals(&heads, (fn_free)head_free);
-
-	assert_logs_empty();
 }
 
 static void desire_position__col_left(void **state) {
@@ -199,8 +193,6 @@ static void desire_position__col_left(void **state) {
 	head = slist_at(s->heads, 0); assert_head_position(head, 0, 0);
 	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
 	head = slist_at(s->heads, 2); assert_head_position(head, 0, 5);
-
-	assert_logs_empty();
 }
 
 static void desire_position__col_mid(void **state) {
@@ -219,8 +211,6 @@ static void desire_position__col_mid(void **state) {
 	head = slist_at(s->heads, 0); assert_head_position(head, 2, 0);
 	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
 	head = slist_at(s->heads, 2); assert_head_position(head, 3, 5);
-
-	assert_logs_empty();
 }
 
 static void desire_position__col_right(void **state) {
@@ -239,8 +229,6 @@ static void desire_position__col_right(void **state) {
 	head = slist_at(s->heads, 0); assert_head_position(head, 3, 0);
 	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
 	head = slist_at(s->heads, 2); assert_head_position(head, 5, 5);
-
-	assert_logs_empty();
 }
 
 static void desire_position__row_top(void **state) {
@@ -259,8 +247,6 @@ static void desire_position__row_top(void **state) {
 	head = slist_at(s->heads, 0); assert_head_position(head, 0, 0);
 	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
 	head = slist_at(s->heads, 2); assert_head_position(head, 11, 0);
-
-	assert_logs_empty();
 }
 
 static void desire_position__row_mid(void **state) {
@@ -279,8 +265,6 @@ static void desire_position__row_mid(void **state) {
 	head = slist_at(s->heads, 0); assert_head_position(head, 0, 2);
 	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
 	head = slist_at(s->heads, 2); assert_head_position(head, 11, 2);
-
-	assert_logs_empty();
 }
 
 static void desire_position__row_bottom(void **state) {
@@ -299,8 +283,6 @@ static void desire_position__row_bottom(void **state) {
 	head = slist_at(s->heads, 0); assert_head_position(head, 0, 3);
 	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
 	head = slist_at(s->heads, 2); assert_head_position(head, 11, 4);
-
-	assert_logs_empty();
 }
 
 static void desire_enabled__disabled(void **state) {
@@ -317,8 +299,6 @@ static void desire_enabled__disabled(void **state) {
 	desire_enabled(head);
 
 	assert_false(head->desired.enabled);
-
-	assert_logs_empty();
 }
 
 static void desire_enabled__lid_closed_many(void **state) {
@@ -338,8 +318,6 @@ static void desire_enabled__lid_closed_many(void **state) {
 	desire_enabled(head0);
 
 	assert_false(head0->desired.enabled);
-
-	assert_logs_empty();
 }
 
 static void desire_enabled__lid_closed_one(void **state) {
@@ -354,8 +332,6 @@ static void desire_enabled__lid_closed_one(void **state) {
 	desire_enabled(head);
 
 	assert_true(head->desired.enabled);
-
-	assert_logs_empty();
 }
 
 static void desire_enabled__lid_closed_one_disabled(void **state) {
@@ -372,8 +348,6 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 	desire_enabled(head);
 
 	assert_false(head->desired.enabled);
-
-	assert_logs_empty();
 }
 
 static void desire_enabled__override(void **state) {
@@ -392,8 +366,6 @@ static void desire_enabled__override(void **state) {
 
 	assert_true(head->desired.enabled);
 	assert_true(head->overrided_enabled == OverrideTrue);
-
-	assert_logs_empty();
 }
 
 static void desire_enabled__override_reset(void **state) {
@@ -412,8 +384,6 @@ static void desire_enabled__override_reset(void **state) {
 
 	assert_false(head->desired.enabled);
 	assert_true(head->overrided_enabled == NoOverride);
-
-	assert_logs_empty();
 }
 
 static void desire_enabled__no_override(void **state) {
@@ -430,8 +400,6 @@ static void desire_enabled__no_override(void **state) {
 
 	assert_false(head->desired.enabled);
 	assert_true(head->overrided_enabled == OverrideFalse);
-
-	assert_logs_empty();
 }
 
 static void desire_mode__disabled(void **state) {
@@ -449,8 +417,6 @@ static void desire_mode__disabled(void **state) {
 	assert_ptr_equal(head->desired.mode, mode);
 	assert_false(head->desired.enabled);
 	assert_false(head->warned_no_mode);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -474,8 +440,6 @@ static void desire_mode__no_mode(void **state) {
 	assert_false(head->desired.enabled);
 	assert_true(head->warned_no_mode);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -498,8 +462,6 @@ static void desire_mode__no_mode_warned(void **state) {
 	assert_ptr_equal(head->desired.mode, mode);
 	assert_false(head->desired.enabled);
 	assert_true(head->warned_no_mode);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -525,8 +487,6 @@ static void desire_mode__ok(void **state) {
 	assert_true(head->desired.enabled);
 	assert_false(head->warned_no_mode);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -535,8 +495,6 @@ static void desire_scale__disabled(void **state) {
 	head->desired.enabled = false;
 
 	desire_scale(head);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -551,8 +509,6 @@ static void desire_scale__no_scaling(void **state) {
 
 	assert_wl_fixed_t_equal_double(head->desired.scale, 1);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -565,8 +521,6 @@ static void desire_scale__no_auto(void **state) {
 	desire_scale(head);
 
 	assert_wl_fixed_t_equal_double(head->desired.scale, 1);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -585,8 +539,6 @@ static void desire_scale__auto(void **state) {
 
 	assert_wl_fixed_t_equal_double(head->desired.scale, 2.5);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -604,8 +556,6 @@ static void desire_scale__user(void **state) {
 
 	assert_wl_fixed_t_equal_double(head->desired.scale, 3.5);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -620,8 +570,6 @@ static void desire_transform__disabled(void **state) {
 
 	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_90);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -633,8 +581,6 @@ static void desire_transform__no_transform(void **state) {
 	desire_transform(head);
 
 	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_NORMAL);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -651,8 +597,6 @@ static void desire_transform__user(void **state) {
 
 	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_180);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -664,8 +608,6 @@ static void desire_adaptive_sync__head_disabled(void **state) {
 	desire_adaptive_sync(head);
 
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -679,8 +621,6 @@ static void desire_adaptive_sync__failed(void **state) {
 	desire_adaptive_sync(head);
 
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -696,8 +636,6 @@ static void desire_adaptive_sync__disabled(void **state) {
 
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -709,8 +647,6 @@ static void desire_adaptive_sync__enabled(void **state) {
 	desire_adaptive_sync(head);
 
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -736,8 +672,6 @@ static void desire_scaled_dimensions__default(void **state) {
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1);
 	assert_int_equal(head->scaled.height, 1);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -765,8 +699,6 @@ static void desire_scaled_dimensions__transform(void **state) {
 	assert_int_equal(head->scaled.width, 33);
 	assert_int_equal(head->scaled.height, 66); // wayland truncates when calculating size
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -781,27 +713,23 @@ static void desire_scaled_dimensions__dimensions(void **state) {
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 3840);
 	assert_int_equal(head->scaled.height, 2160);
-	assert_logs_empty();
 
 	head->desired.scale = head_get_fixed_scale(2.0);
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1920);
 	assert_int_equal(head->scaled.height, 1080);
-	assert_logs_empty();
 
 	head->desired.scale = head_get_fixed_scale(1.7);
 	// actual scale will be 1.75
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 2194);
 	assert_int_equal(head->scaled.height, 1234);
-	assert_logs_empty();
 
 	head->desired.scale = head_get_fixed_scale(1.9);
 	// actual scale will be 1.875
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 2048);
 	assert_int_equal(head->scaled.height, 1152);
-	assert_logs_empty();
 
 	head->name = strdup("name");
 
@@ -810,7 +738,6 @@ static void desire_scaled_dimensions__dimensions(void **state) {
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1920);
 	assert_int_equal(head->scaled.height, 1080);
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -825,8 +752,6 @@ static void desire_reapply__required(void **state) {
 
 	assert_false(head->desired.enabled);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -838,8 +763,6 @@ static void desire_reapply__not_required(void **state) {
 	desire_reapply(head);
 
 	assert_true(head->desired.enabled);
-
-	assert_logs_empty();
 
 	head_free(head);
 }

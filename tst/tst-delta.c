@@ -26,8 +26,6 @@ struct State {
 };
 
 int before_each(void **state) {
-	assert_logs_empty_before();
-
 	struct State *s = calloc(1, sizeof(struct State));
 
 	g_displ = calloc(1, sizeof(struct Displ));
@@ -84,6 +82,8 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
+	assert_logs_empty();
+
 	struct State *s = *state;
 
 	slist_free_vals(&s->heads, (fn_free)head_free);
@@ -111,8 +111,6 @@ static void delta_human_mode__to_no(void **state) {
 	slist_free(&g_heads);
 
 	free(deltas);
-
-	assert_logs_empty();
 }
 
 static void delta_human_mode__from_no(void **state) {
@@ -130,8 +128,6 @@ static void delta_human_mode__from_no(void **state) {
 	slist_free(&g_heads);
 
 	free(deltas);
-
-	assert_logs_empty();
 }
 
 static void delta_human_adaptive_sync__on(void **state) {
@@ -150,8 +146,6 @@ static void delta_human_adaptive_sync__on(void **state) {
 	slist_free(&g_heads);
 
 	free(deltas);
-
-	assert_logs_empty();
 }
 
 static void delta_human_adaptive_sync__off(void **state) {
@@ -170,8 +164,6 @@ static void delta_human_adaptive_sync__off(void **state) {
 	slist_free(&g_heads);
 
 	free(deltas);
-
-	assert_logs_empty();
 }
 
 static void delta_human_reapply__(void **state) {
@@ -188,8 +180,6 @@ static void delta_human_reapply__(void **state) {
 	slist_free(&g_heads);
 
 	free(deltas);
-
-	assert_logs_empty();
 }
 
 static void delta_human__all(void **state) {
@@ -211,8 +201,6 @@ static void delta_human__all(void **state) {
 	slist_free(&g_heads);
 
 	free(deltas);
-
-	assert_logs_empty();
 }
 
 static void delta_human__enabled(void **state) {
@@ -234,8 +222,6 @@ static void delta_human__enabled(void **state) {
 	slist_free(&g_heads);
 
 	free(deltas);
-
-	assert_logs_empty();
 }
 
 static void delta_human__disabled(void **state) {
@@ -257,8 +243,6 @@ static void delta_human__disabled(void **state) {
 	slist_free(&g_heads);
 
 	free(deltas);
-
-	assert_logs_empty();
 }
 
 int main(void) {

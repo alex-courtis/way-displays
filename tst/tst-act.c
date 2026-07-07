@@ -24,8 +24,6 @@
 extern int g_cancellation_retries;
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	g_cfg = cfg_default();
 
 	g_displ = calloc(1, sizeof(struct Displ));
@@ -34,6 +32,8 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	free(g_displ);
 
 	cfg_destroy();
@@ -61,7 +61,6 @@ static void act_handle_success__head_changing_adaptive_sync(void **state) {
 	act_handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
-	assert_logs_empty();
 
 	assert_false(head->adaptive_sync_failed);
 
@@ -87,8 +86,6 @@ static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
 
 	assert_true(head->adaptive_sync_failed);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -109,7 +106,6 @@ static void act_handle_success__head_changing_mode(void **state) {
 	act_handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
-	assert_logs_empty();
 
 	assert_mode_equal(head->current.mode, mode);
 	assert_ptr_equal(head->current.mode, mode);
@@ -127,7 +123,6 @@ static void act_handle_success__ok(void **state) {
 	act_handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
-	assert_logs_empty();
 }
 
 static void act_handle_failure__mode(void **state) {
@@ -165,8 +160,6 @@ static void act_handle_failure__mode(void **state) {
 	assert_int_equal(pset_size(head->modes_failed), 1);
 	assert_true(pset_contains(head->modes_failed, mode_des));
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -189,8 +182,6 @@ static void act_handle_failure__adaptive_sync(void **state) {
 
 	assert_true(head->adaptive_sync_failed);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -206,7 +197,6 @@ static void act_handle_failure__unspecified(void **state) {
 	act_handle_failure();
 
 	assert_log(FATAL, "\nChanges failed, exiting\n");
-	assert_logs_empty();
 }
 
 static void act_handle_cancelled__retrying(void **state) {
@@ -219,7 +209,6 @@ static void act_handle_cancelled__retrying(void **state) {
 	act_handle_cancelled();
 
 	assert_log(WARNING, "\nChanges cancelled, retrying (attempt 5)\n");
-	assert_logs_empty();
 
 	assert_int_equal(g_cancellation_retries, 5);
 }
@@ -234,7 +223,6 @@ static void act_handle_cancelled__over_max(void **state) {
 	act_handle_cancelled();
 
 	assert_log(WARNING, "\nChanges cancelled after 5 retries\n");
-	assert_logs_empty();
 
 	assert_int_equal(g_cancellation_retries, 6);
 }

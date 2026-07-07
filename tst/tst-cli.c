@@ -23,9 +23,8 @@
 
 #include "cli.h"
 
-static int before_each(void **state) {
-	assert_logs_empty_before();
-
+static int after_each(void **state) {
+	assert_logs_empty();
 	return 0;
 }
 
@@ -38,7 +37,6 @@ static void cli_parse_element__arrange_align_invalid_arrange(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
 
 	assert_log(FATAL, "invalid ARRANGE_ALIGN ROW INVALID\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__arrange_align_invalid_align(void **state) {
@@ -50,7 +48,6 @@ static void cli_parse_element__arrange_align_invalid_align(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, ARRANGE_ALIGN, 2, argv));
 
 	assert_log(FATAL, "invalid ARRANGE_ALIGN INVALID LEFT\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__arrange_align_ok(void **state) {
@@ -67,8 +64,6 @@ static void cli_parse_element__arrange_align_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__auto_scale_invalid(void **state) {
@@ -80,7 +75,6 @@ static void cli_parse_element__auto_scale_invalid(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, AUTO_SCALE, 1, argv));
 
 	assert_log(FATAL, "invalid AUTO_SCALE INVALID\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__auto_scale_set(void **state) {
@@ -96,8 +90,6 @@ static void cli_parse_element__auto_scale_set(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__auto_scale_toggle(void **state) {
@@ -113,8 +105,6 @@ static void cli_parse_element__auto_scale_toggle(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__scaling_invalid(void **state) {
@@ -126,7 +116,6 @@ static void cli_parse_element__scaling_invalid(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, SCALING, 1, argv));
 
 	assert_log(FATAL, "invalid SCALING INVALID\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__scaling_set(void **state) {
@@ -142,8 +131,6 @@ static void cli_parse_element__scaling_set(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__scaling_toggle(void **state) {
@@ -159,8 +146,6 @@ static void cli_parse_element__scaling_toggle(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__transform_invalid(void **state) {
@@ -172,7 +157,6 @@ static void cli_parse_element__transform_invalid(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, TRANSFORM, 2, argv));
 
 	assert_log(FATAL, "invalid TRANSFORM displ INVALID\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__transform_ok(void **state) {
@@ -188,8 +172,6 @@ static void cli_parse_element__transform_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__transform_del_ok(void **state) {
@@ -205,8 +187,6 @@ static void cli_parse_element__transform_del_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__scale_set_invalid(void **state) {
@@ -218,7 +198,6 @@ static void cli_parse_element__scale_set_invalid(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, SCALE, 2, argv));
 
 	assert_log(FATAL, "invalid SCALE DISPL NOTANUMBER\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__scale_set_ok(void **state) {
@@ -234,8 +213,6 @@ static void cli_parse_element__scale_set_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__scale_del_ok(void **state) {
@@ -251,8 +228,6 @@ static void cli_parse_element__scale_del_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__mode_set_invalid_width(void **state) {
@@ -264,7 +239,6 @@ static void cli_parse_element__mode_set_invalid_width(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, MODE, 4, argv));
 
 	assert_log(FATAL, "invalid MODE DISPL NAN 2 3\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__mode_set_invalid_height(void **state) {
@@ -276,7 +250,6 @@ static void cli_parse_element__mode_set_invalid_height(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, MODE, 4, argv));
 
 	assert_log(FATAL, "invalid MODE DISPL 1 NAN 3\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__mode_set_invalid_refresh(void **state) {
@@ -288,7 +261,6 @@ static void cli_parse_element__mode_set_invalid_refresh(void **state) {
 	assert_nul(cli_parse_element(CFG_SET, MODE, 4, argv));
 
 	assert_log(FATAL, "invalid MODE DISPL 1 2 NAN\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_element__mode_set_max(void **state) {
@@ -307,8 +279,6 @@ static void cli_parse_element__mode_set_max(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__mode_set_res(void **state) {
@@ -329,8 +299,6 @@ static void cli_parse_element__mode_set_res(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__mode_set_res_refresh(void **state) {
@@ -352,8 +320,6 @@ static void cli_parse_element__mode_set_res_refresh(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__callback_cmd_set_ok(void **state) {
@@ -369,8 +335,6 @@ static void cli_parse_element__callback_cmd_set_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__callback_cmd_del_ok(void **state) {
@@ -386,8 +350,6 @@ static void cli_parse_element__callback_cmd_del_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__mode_del_ok(void **state) {
@@ -406,8 +368,6 @@ static void cli_parse_element__mode_del_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__adaptive_sync_off_ok(void **state) {
@@ -424,8 +384,6 @@ static void cli_parse_element__adaptive_sync_off_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__disabled_ok(void **state) {
@@ -442,8 +400,6 @@ static void cli_parse_element__disabled_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_element__order_ok(void **state) {
@@ -460,8 +416,6 @@ static void cli_parse_element__order_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_write__nargs(void **state) {
@@ -473,7 +427,6 @@ static void cli_parse_write__nargs(void **state) {
 	assert_nul(cli_parse_write(1));
 
 	assert_log(FATAL, "--write takes no arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_write__ok(void **state) {
@@ -485,8 +438,6 @@ static void cli_parse_write__ok(void **state) {
 	assert_int_equal(request->command, CFG_WRITE);
 
 	ipc_request_free(request);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_get__nargs(void **state) {
@@ -498,7 +449,6 @@ static void cli_parse_get__nargs(void **state) {
 	assert_nul(cli_parse_get(1));
 
 	assert_log(FATAL, "--get takes no arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_get__ok(void **state) {
@@ -510,8 +460,6 @@ static void cli_parse_get__ok(void **state) {
 	assert_int_equal(request->command, GET);
 
 	ipc_request_free(request);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_list__nargs(void **state) {
@@ -523,7 +471,6 @@ static void cli_parse_list__nargs(void **state) {
 	assert_nul(cli_parse_list(1));
 
 	assert_log(FATAL, "--list takes no arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_list__ok(void **state) {
@@ -535,8 +482,6 @@ static void cli_parse_list__ok(void **state) {
 	assert_int_equal(request->command, LIST);
 
 	ipc_request_free(request);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_reapply__nargs(void **state) {
@@ -548,7 +493,6 @@ static void cli_parse_reapply__nargs(void **state) {
 	assert_nul(cli_parse_reapply(1));
 
 	assert_log(FATAL, "--reapply takes no arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_reapply__ok(void **state) {
@@ -560,8 +504,6 @@ static void cli_parse_reapply__ok(void **state) {
 	assert_int_equal(request->command, REAPPLY);
 
 	ipc_request_free(request);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_set__mode_nargs(void **state) {
@@ -573,14 +515,12 @@ static void cli_parse_set__mode_nargs(void **state) {
 	assert_nul(cli_parse_set(1, NULL));
 
 	assert_log(FATAL, "--set MODE requires two to four arguments\n");
-	assert_logs_empty();
 
 	expect_int_value(__wrap_wd_exit, __status, EXIT_FAILURE);
 
 	assert_nul(cli_parse_set(5, NULL));
 
 	assert_log(FATAL, "--set MODE requires two to four arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__arrange_align_nargs(void **state) {
@@ -592,7 +532,6 @@ static void cli_parse_set__arrange_align_nargs(void **state) {
 	assert_nul(cli_parse_set(0, NULL));
 
 	assert_log(FATAL, "--set ARRANGE_ALIGN requires two arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__scale_nargs(void **state) {
@@ -604,7 +543,6 @@ static void cli_parse_set__scale_nargs(void **state) {
 	assert_nul(cli_parse_set(0, NULL));
 
 	assert_log(FATAL, "--set SCALE requires two arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__transform_nargs(void **state) {
@@ -616,7 +554,6 @@ static void cli_parse_set__transform_nargs(void **state) {
 	assert_nul(cli_parse_set(0, NULL));
 
 	assert_log(FATAL, "--set TRANSFORM requires two arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__auto_scale_nargs(void **state) {
@@ -628,7 +565,6 @@ static void cli_parse_set__auto_scale_nargs(void **state) {
 	assert_nul(cli_parse_set(0, NULL));
 
 	assert_log(FATAL, "--set AUTO_SCALE requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__disabled_nargs(void **state) {
@@ -640,7 +576,6 @@ static void cli_parse_set__disabled_nargs(void **state) {
 	assert_nul(cli_parse_set(0, NULL));
 
 	assert_log(FATAL, "--set DISABLED requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__adaptive_sync_off_nargs(void **state) {
@@ -652,7 +587,6 @@ static void cli_parse_set__adaptive_sync_off_nargs(void **state) {
 	assert_nul(cli_parse_set(0, NULL));
 
 	assert_log(FATAL, "--set VRR_OFF requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__order_nargs(void **state) {
@@ -664,7 +598,6 @@ static void cli_parse_set__order_nargs(void **state) {
 	assert_nul(cli_parse_set(0, NULL));
 
 	assert_log(FATAL, "--set ORDER requires at least one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__invalid(void **state) {
@@ -676,7 +609,6 @@ static void cli_parse_set__invalid(void **state) {
 	assert_nul(cli_parse_set(0, NULL));
 
 	assert_log(FATAL, "invalid --set: INVALID\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_set__ok(void **state) {
@@ -691,8 +623,6 @@ static void cli_parse_set__ok(void **state) {
 	assert_int_equal(request->command, CFG_SET);
 
 	ipc_request_free(request);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_del__mode_nargs(void **state) {
@@ -704,7 +634,6 @@ static void cli_parse_del__mode_nargs(void **state) {
 	assert_nul(cli_parse_del(0, NULL));
 
 	assert_log(FATAL, "--delete MODE requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_del__scale_nargs(void **state) {
@@ -716,7 +645,6 @@ static void cli_parse_del__scale_nargs(void **state) {
 	assert_nul(cli_parse_del(0, NULL));
 
 	assert_log(FATAL, "--delete SCALE requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_del__disabled_nargs(void **state) {
@@ -728,7 +656,6 @@ static void cli_parse_del__disabled_nargs(void **state) {
 	assert_nul(cli_parse_del(0, NULL));
 
 	assert_log(FATAL, "--delete DISABLED requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_del__adaptive_sync_off_nargs(void **state) {
@@ -740,7 +667,6 @@ static void cli_parse_del__adaptive_sync_off_nargs(void **state) {
 	assert_nul(cli_parse_del(0, NULL));
 
 	assert_log(FATAL, "--delete VRR_OFF requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_del__callback_cmd_nargs(void **state) {
@@ -752,7 +678,6 @@ static void cli_parse_del__callback_cmd_nargs(void **state) {
 	assert_nul(cli_parse_del(1, NULL));
 
 	assert_log(FATAL, "--delete CALLBACK_CMD takes no arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_del__invalid(void **state) {
@@ -764,7 +689,6 @@ static void cli_parse_del__invalid(void **state) {
 	assert_nul(cli_parse_del(0, NULL));
 
 	assert_log(FATAL, "invalid --delete: INVALID\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_del__ok(void **state) {
@@ -779,8 +703,6 @@ static void cli_parse_del__ok(void **state) {
 	assert_int_equal(request->command, CFG_DEL);
 
 	ipc_request_free(request);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_toggle__scaling_nargs(void **state) {
@@ -792,7 +714,6 @@ static void cli_parse_toggle__scaling_nargs(void **state) {
 	assert_nul(cli_parse_toggle(1, NULL));
 
 	assert_log(FATAL, "--toggle SCALING takes no arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_toggle__auto_scale_nargs(void **state) {
@@ -804,7 +725,6 @@ static void cli_parse_toggle__auto_scale_nargs(void **state) {
 	assert_nul(cli_parse_toggle(1, NULL));
 
 	assert_log(FATAL, "--toggle AUTO_SCALE takes no arguments\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_toggle__vrr_off_nargs(void **state) {
@@ -816,7 +736,6 @@ static void cli_parse_toggle__vrr_off_nargs(void **state) {
 	assert_nul(cli_parse_toggle(0, NULL));
 
 	assert_log(FATAL, "--toggle VRR_OFF requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_toggle__disabled_nargs(void **state) {
@@ -828,7 +747,6 @@ static void cli_parse_toggle__disabled_nargs(void **state) {
 	assert_nul(cli_parse_toggle(0, NULL));
 
 	assert_log(FATAL, "--toggle DISABLED requires one argument\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_toggle__invalid(void **state) {
@@ -840,7 +758,6 @@ static void cli_parse_toggle__invalid(void **state) {
 	assert_nul(cli_parse_toggle(0, NULL));
 
 	assert_log(FATAL, "invalid --toggle: INVALID\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_toggle__ok(void **state) {
@@ -854,102 +771,97 @@ static void cli_parse_toggle__ok(void **state) {
 	assert_int_equal(request->command, CFG_TOGGLE);
 
 	ipc_request_free(request);
-
-	assert_logs_empty();
 }
 
 static void cli_parse_log_threshold__invalid(void **state) {
 	assert_int_equal(cli_parse_log_threshold("INVALID"), 0);
 
 	assert_log(FATAL, "invalid --log-threshold INVALID\n");
-	assert_logs_empty();
 }
 
 static void cli_parse_log_threshold__ok(void **state) {
 	assert_int_equal(cli_parse_log_threshold("WARNING"), WARNING);
-
-	assert_logs_empty();
 }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_B(cli_parse_element__arrange_align_invalid_arrange),
-		TEST_B(cli_parse_element__arrange_align_invalid_align),
-		TEST_B(cli_parse_element__arrange_align_ok),
+		TEST_A(cli_parse_element__arrange_align_invalid_arrange),
+		TEST_A(cli_parse_element__arrange_align_invalid_align),
+		TEST_A(cli_parse_element__arrange_align_ok),
 
-		TEST_B(cli_parse_element__auto_scale_invalid),
-		TEST_B(cli_parse_element__auto_scale_set),
-		TEST_B(cli_parse_element__auto_scale_toggle),
+		TEST_A(cli_parse_element__auto_scale_invalid),
+		TEST_A(cli_parse_element__auto_scale_set),
+		TEST_A(cli_parse_element__auto_scale_toggle),
 
-		TEST_B(cli_parse_element__scaling_invalid),
-		TEST_B(cli_parse_element__scaling_set),
-		TEST_B(cli_parse_element__scaling_toggle),
+		TEST_A(cli_parse_element__scaling_invalid),
+		TEST_A(cli_parse_element__scaling_set),
+		TEST_A(cli_parse_element__scaling_toggle),
 
-		TEST_B(cli_parse_element__transform_invalid),
-		TEST_B(cli_parse_element__transform_ok),
-		TEST_B(cli_parse_element__transform_del_ok),
+		TEST_A(cli_parse_element__transform_invalid),
+		TEST_A(cli_parse_element__transform_ok),
+		TEST_A(cli_parse_element__transform_del_ok),
 
-		TEST_B(cli_parse_element__scale_set_invalid),
-		TEST_B(cli_parse_element__scale_set_ok),
-		TEST_B(cli_parse_element__scale_del_ok),
+		TEST_A(cli_parse_element__scale_set_invalid),
+		TEST_A(cli_parse_element__scale_set_ok),
+		TEST_A(cli_parse_element__scale_del_ok),
 
-		TEST_B(cli_parse_element__mode_set_invalid_width),
-		TEST_B(cli_parse_element__mode_set_invalid_height),
-		TEST_B(cli_parse_element__mode_set_invalid_refresh),
-		TEST_B(cli_parse_element__mode_set_max),
-		TEST_B(cli_parse_element__mode_set_res),
-		TEST_B(cli_parse_element__mode_set_res_refresh),
-		TEST_B(cli_parse_element__mode_del_ok),
+		TEST_A(cli_parse_element__mode_set_invalid_width),
+		TEST_A(cli_parse_element__mode_set_invalid_height),
+		TEST_A(cli_parse_element__mode_set_invalid_refresh),
+		TEST_A(cli_parse_element__mode_set_max),
+		TEST_A(cli_parse_element__mode_set_res),
+		TEST_A(cli_parse_element__mode_set_res_refresh),
+		TEST_A(cli_parse_element__mode_del_ok),
 
-		TEST_B(cli_parse_element__callback_cmd_set_ok),
-		TEST_B(cli_parse_element__callback_cmd_del_ok),
+		TEST_A(cli_parse_element__callback_cmd_set_ok),
+		TEST_A(cli_parse_element__callback_cmd_del_ok),
 
-		TEST_B(cli_parse_element__adaptive_sync_off_ok),
+		TEST_A(cli_parse_element__adaptive_sync_off_ok),
 
-		TEST_B(cli_parse_element__disabled_ok),
+		TEST_A(cli_parse_element__disabled_ok),
 
-		TEST_B(cli_parse_element__order_ok),
+		TEST_A(cli_parse_element__order_ok),
 
-		TEST_B(cli_parse_write__nargs),
-		TEST_B(cli_parse_write__ok),
+		TEST_A(cli_parse_write__nargs),
+		TEST_A(cli_parse_write__ok),
 
-		TEST_B(cli_parse_get__nargs),
-		TEST_B(cli_parse_get__ok),
+		TEST_A(cli_parse_get__nargs),
+		TEST_A(cli_parse_get__ok),
 
-		TEST_B(cli_parse_list__nargs),
-		TEST_B(cli_parse_list__ok),
+		TEST_A(cli_parse_list__nargs),
+		TEST_A(cli_parse_list__ok),
 
-		TEST_B(cli_parse_reapply__nargs),
-		TEST_B(cli_parse_reapply__ok),
+		TEST_A(cli_parse_reapply__nargs),
+		TEST_A(cli_parse_reapply__ok),
 
-		TEST_B(cli_parse_set__mode_nargs),
-		TEST_B(cli_parse_set__arrange_align_nargs),
-		TEST_B(cli_parse_set__scale_nargs),
-		TEST_B(cli_parse_set__transform_nargs),
-		TEST_B(cli_parse_set__auto_scale_nargs),
-		TEST_B(cli_parse_set__disabled_nargs),
-		TEST_B(cli_parse_set__adaptive_sync_off_nargs),
-		TEST_B(cli_parse_set__order_nargs),
-		TEST_B(cli_parse_set__invalid),
-		TEST_B(cli_parse_set__ok),
+		TEST_A(cli_parse_set__mode_nargs),
+		TEST_A(cli_parse_set__arrange_align_nargs),
+		TEST_A(cli_parse_set__scale_nargs),
+		TEST_A(cli_parse_set__transform_nargs),
+		TEST_A(cli_parse_set__auto_scale_nargs),
+		TEST_A(cli_parse_set__disabled_nargs),
+		TEST_A(cli_parse_set__adaptive_sync_off_nargs),
+		TEST_A(cli_parse_set__order_nargs),
+		TEST_A(cli_parse_set__invalid),
+		TEST_A(cli_parse_set__ok),
 
-		TEST_B(cli_parse_del__mode_nargs),
-		TEST_B(cli_parse_del__scale_nargs),
-		TEST_B(cli_parse_del__disabled_nargs),
-		TEST_B(cli_parse_del__adaptive_sync_off_nargs),
-		TEST_B(cli_parse_del__callback_cmd_nargs),
-		TEST_B(cli_parse_del__invalid),
-		TEST_B(cli_parse_del__ok),
+		TEST_A(cli_parse_del__mode_nargs),
+		TEST_A(cli_parse_del__scale_nargs),
+		TEST_A(cli_parse_del__disabled_nargs),
+		TEST_A(cli_parse_del__adaptive_sync_off_nargs),
+		TEST_A(cli_parse_del__callback_cmd_nargs),
+		TEST_A(cli_parse_del__invalid),
+		TEST_A(cli_parse_del__ok),
 
-		TEST_B(cli_parse_toggle__scaling_nargs),
-		TEST_B(cli_parse_toggle__auto_scale_nargs),
-		TEST_B(cli_parse_toggle__vrr_off_nargs),
-		TEST_B(cli_parse_toggle__disabled_nargs),
-		TEST_B(cli_parse_toggle__invalid),
-		TEST_B(cli_parse_toggle__ok),
+		TEST_A(cli_parse_toggle__scaling_nargs),
+		TEST_A(cli_parse_toggle__auto_scale_nargs),
+		TEST_A(cli_parse_toggle__vrr_off_nargs),
+		TEST_A(cli_parse_toggle__disabled_nargs),
+		TEST_A(cli_parse_toggle__invalid),
+		TEST_A(cli_parse_toggle__ok),
 
-		TEST_B(cli_parse_log_threshold__invalid),
-		TEST_B(cli_parse_log_threshold__ok),
+		TEST_A(cli_parse_log_threshold__invalid),
+		TEST_A(cli_parse_log_threshold__ok),
 	};
 
 	return RUN(tests);

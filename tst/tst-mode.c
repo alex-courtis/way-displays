@@ -22,8 +22,6 @@ const struct PSet *modes_failed = NULL;
 struct Mode *mode0, *mode1, *mode2, *mode3, *mode4, *mode5;
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	mode0 = mode_init_whr(200, 100, 59999);
 	mode1 = mode_init_whr(200, 100, 60499);
 	mode2 = mode_init_whr(200, 100, 60500);
@@ -45,6 +43,8 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	mode_free(mode_target);
 	mode_target = NULL;
 

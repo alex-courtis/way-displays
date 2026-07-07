@@ -23,13 +23,13 @@ static void clean_dirs(void) {
 }
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	clean_dirs();
 	return 0;
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	clean_dirs();
 	return 0;
 }
@@ -41,7 +41,6 @@ static void mkdir_p__no_perm(void **state) {
 	assert_false(mkdir_p("tst/mkdir_p/foo/bar", 0755));
 
 	assert_log(ERROR, "\nCannot create directory tst/mkdir_p/foo/bar\n");
-	assert_logs_empty();
 
 	struct stat sb;
 	assert_int_equal(stat("tst/mkdir_p/foo/bar", &sb), -1);
@@ -53,8 +52,6 @@ static void mkdir_p__ok(void **state) {
 
 	struct stat sb;
 	assert_int_equal(stat("tst/mkdir_p/foo", &sb), 0);
-
-	assert_logs_empty();
 }
 
 static void mkdir_p__exists(void **state) {
@@ -68,8 +65,6 @@ static void mkdir_p__exists(void **state) {
 
 	struct stat sb;
 	assert_int_equal(stat("tst/mkdir_p/foo", &sb), 0);
-
-	assert_logs_empty();
 }
 
 

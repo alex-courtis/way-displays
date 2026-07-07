@@ -23,8 +23,6 @@ struct State {
 };
 
 int before_each(void **state) {
-	assert_logs_empty_before();
-
 	struct State *s = calloc(1, sizeof(struct State));
 
 	g_displ = calloc(1, sizeof(struct Displ));
@@ -43,6 +41,8 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
+	assert_logs_empty();
+
 	struct State *s = *state;
 
 	head_free(s->head1);
@@ -62,15 +62,11 @@ static void callback__no_callback(void **state) {
 	g_cfg->callback_cmd = NULL;
 
 	callback(INFO, "msg1", NULL);
-
-	assert_logs_empty();
 }
 
 static void callback__below_threshold(void **state) {
 	will_return_int(__wrap_log_get_threshold, WARNING);
 	callback(INFO, "msg1", NULL);
-
-	assert_logs_empty();
 }
 
 static void callback__one(void **state) {
@@ -92,8 +88,6 @@ static void callback__one(void **state) {
 	char *str_log = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", str_env);
 
 	assert_log(DEBUG, str_log);
-
-	assert_logs_empty();
 
 	free(str_env);
 	free(str_log);
@@ -121,8 +115,6 @@ static void callback__two(void **state) {
 	char *log_str = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", env_str);
 
 	assert_log(DEBUG, log_str);
-
-	assert_logs_empty();
 
 	free(env_str);
 	free(log_str);
@@ -152,8 +144,6 @@ static void callback_mode_fail__(void **state) {
 	char *log_str = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", env_str);
 
 	assert_log(DEBUG, log_str);
-
-	assert_logs_empty();
 
 	free(env_str);
 	free(log_str);
@@ -191,8 +181,6 @@ static void callback_adaptive_sync_fail__(void **state) {
 	char *log_str = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", env_str);
 
 	assert_log(DEBUG, log_str);
-
-	assert_logs_empty();
 
 	free(env_str);
 	free(log_str);

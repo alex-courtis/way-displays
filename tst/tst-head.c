@@ -27,13 +27,13 @@
 #include "head.h"
 
 static int before_each(void **state) {
-	assert_logs_empty_before();
-
 	g_cfg = cfg_default();
 	return 0;
 }
 
 static int after_each(void **state) {
+	assert_logs_empty();
+
 	cfg_destroy();
 	return 0;
 }
@@ -56,8 +56,6 @@ static void head_get_fixed_scale__rounding_nearest(void **state) {
 	// no rounding
 	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
-
-	assert_logs_empty();
 }
 
 static void head_get_fixed_scale__rounding_up(void **state) {
@@ -78,8 +76,6 @@ static void head_get_fixed_scale__rounding_up(void **state) {
 	// no rounding
 	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
-
-	assert_logs_empty();
 }
 
 static void head_get_fixed_scale__rounding_down(void **state) {
@@ -96,8 +92,6 @@ static void head_get_fixed_scale__rounding_down(void **state) {
 
 	g_cfg->scale_round_to = 1;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
-
-	assert_logs_empty();
 }
 
 static void head_auto_scale__default(void **state) {
@@ -108,8 +102,6 @@ static void head_auto_scale__default(void **state) {
 
 	// no desired mode
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 1);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -141,8 +133,6 @@ static void head_auto_scale__mode(void **state) {
 	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 162);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 168.0 / 96);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -189,8 +179,6 @@ static void head_auto_scale__range(void **state) {
 	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 12);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 0.63f, -1.0f), 0.75f);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -252,8 +240,6 @@ static void head_find_mode__user_available(void **state) {
 	assert_ptr_equal(actual, expected);
 
 	head_free(head);
-
-	assert_logs_empty();
 }
 
 static void head_find_mode__user_failed(void **state) {
@@ -289,7 +275,6 @@ static void head_find_mode__user_failed(void **state) {
 	// one and only notices: falling back to preferred then max
 	assert_log(WARNING, "\nHEAD: No available mode for user MODE -1x-1, falling back to preferred\n");
 	assert_log(INFO, "\nHEAD: No preferred mode, falling back to maximum available\n");
-	assert_logs_empty();
 
 	// same test again
 	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
@@ -303,7 +288,6 @@ static void head_find_mode__user_failed(void **state) {
 	assert_ptr_equal(actual, mode);
 
 	// no notices this time
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -322,8 +306,6 @@ static void head_find_mode__preferred(void **state) {
 	assert_ptr_equal(actual, mode);
 
 	head_free(head);
-
-	assert_logs_empty();
 }
 
 static void head_find_mode__mode_max_refresh(void **state) {
@@ -346,8 +328,6 @@ static void head_find_mode__mode_max_refresh(void **state) {
 	assert_ptr_equal(actual, mode);
 
 	head_free(head);
-
-	assert_logs_empty();
 }
 
 static void head_find_mode__max(void **state) {
@@ -368,7 +348,6 @@ static void head_find_mode__max(void **state) {
 	assert_ptr_equal(actual, mode);
 
 	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
-	assert_logs_empty();
 
 	// no notice
 	actual = head_find_mode(head);
@@ -389,7 +368,6 @@ static void head_find_mode__none(void **state) {
 	assert_nul(head_find_mode(head));
 
 	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -418,8 +396,6 @@ static void head_matches_name_desc_regex__name(void **state) {
 
 	assert_true(head_matches_name_desc_regex(head, "!nam"));
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -428,8 +404,6 @@ static void head_matches_name_desc_regex__desc(void **state) {
 	head->description = strdup("desc");
 
 	assert_true(head_matches_name_desc_regex(head, "!esc"));
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -440,7 +414,6 @@ static void head_matches_name_desc_regex__bad(void **state) {
 	assert_false(head_matches_name_desc_regex(head, "!(badregex"));
 
 	assert_log(DEBUG, "Could not compile Head NAME_DESC regex '(badregex': Unmatched ( or \\(\n");
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -455,8 +428,6 @@ static void head_apply_toggles__none(void **state) {
 
 	cfg_free(cfg);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -470,13 +441,11 @@ static void head_apply_toggles__disabled__enable(void **state) {
 
 	assert_true(head->overrided_enabled == OverrideTrue);
 	assert_log(INFO, "\nApplying \"DISABLED\" override for head0\n");
-	assert_logs_empty();
 
 	head_apply_toggles(head, cfg);
 
 	assert_true(head->overrided_enabled == NoOverride);
 	assert_log(INFO, "\nResetting \"DISABLED\" override for head0\n");
-	assert_logs_empty();
 
 	cfg_free(cfg);
 	head_free(head);
@@ -492,13 +461,11 @@ static void head_apply_toggles__disabled__disable(void **state) {
 
 	assert_true(head->overrided_enabled == OverrideFalse);
 	assert_log(INFO, "\nApplying \"DISABLED\" override for head0\n");
-	assert_logs_empty();
 
 	head_apply_toggles(head, cfg);
 
 	assert_true(head->overrided_enabled == NoOverride);
 	assert_log(INFO, "\nResetting \"DISABLED\" override for head0\n");
-	assert_logs_empty();
 
 	cfg_free(cfg);
 	head_free(head);
@@ -581,7 +548,6 @@ static void heads_reapply__(void **state) {
 
 	char *expected_log = read_file("tst/head/reapply.log");
 	assert_log(INFO, expected_log);
-	assert_logs_empty();
 	free(expected_log);
 
 	slist_free_vals(&heads, (fn_free)head_free);
@@ -674,8 +640,6 @@ static void head_set_mode_preferred__first(void **state) {
 
 	assert_ptr_equal(head->mode_preferred, mode_pref);
 
-	assert_logs_empty();
-
 	head_free(head);
 }
 
@@ -687,8 +651,6 @@ static void head_set_mode_preferred__current(void **state) {
 	head_set_mode_preferred(head->mode_preferred);
 
 	assert_ptr_equal(head->mode_preferred, head->mode_preferred);
-
-	assert_logs_empty();
 
 	head_free(head);
 }
@@ -706,7 +668,6 @@ static void head_set_mode_preferred__subsequent(void **state) {
 	head_set_mode_preferred(mode_subsequent);
 
 	assert_log(INFO, "\nNAM: multiple preferred modes advertised: using initial 3840x2160@60Hz (60,000mHz) (preferred), ignoring 2560x1440@30Hz (30,000mHz)\n");
-	assert_logs_empty();
 
 	assert_ptr_equal(head->mode_preferred, mode_existing);
 
