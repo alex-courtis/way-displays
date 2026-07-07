@@ -49,6 +49,19 @@ Valgrind test by appending `-vg` e.g.
 `make test-vg`
 `make test-cfg-vg`
 
+#### Coverage
+
+[lcov](https://github.com/linux-test-project/lcov) is used to generate code coverage reports.
+
+`bld/cov.sh` will build, execute and generate a coverage report at `/tmp/coverage-report/index.html`
+
+Execute with no argument to run all tests, or specify tests e.g.
+```sh
+bld/cov.sh test-cli test-cfg
+```
+
+Full coverage is not a goal, it is a tool to assist you when writing tests, ensuring they execute the intended lines/branches.
+
 ### Lint
 
 `make cppcheck`
