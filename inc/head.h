@@ -2,7 +2,6 @@
 #define HEAD_H
 
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
@@ -163,9 +162,6 @@ wl_fixed_t head_get_fixed_scale(const double scale);
 
 // auto scale at the desired mode, 1 when no desired or mode_dpi unavailable
 wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);
-
-// number of heads with head_current_not_desired
-size_t head_num_current_not_desired(struct SList * const heads);
 
 /*
  * search

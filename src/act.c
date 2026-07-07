@@ -4,7 +4,6 @@
 #include "act.h"
 
 #include "cfg.h"
-#include "convert.h"
 #include "desire.h"
 #include "displ.h"
 #include "fn.h"
@@ -154,8 +153,6 @@ void act_apply(void) {
 		head->reapply_required = false;
 
 	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_mode_not_desired))) {
-		log_debug("APPLY mode");
-
 		displ_delta_init(MODE, head);
 
 		print_head(INFO, DELTA, head);
@@ -167,8 +164,6 @@ void act_apply(void) {
 		g_displ->delta.human = delta_human_mode(head);
 
 	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_adaptive_sync_not_desired))) {
-		log_debug("APPLY vrr");
-
 		displ_delta_init(VRR_OFF, head);
 
 		print_head(INFO, DELTA, head);
@@ -180,8 +175,6 @@ void act_apply(void) {
 		g_displ->delta.human = delta_human_adaptive_sync(head);
 
 	} else {
-		log_debug("APPLY remainder");
-
 		displ_delta_init(0, NULL);
 
 		print_heads(INFO, DELTA, g_heads);
@@ -217,7 +210,7 @@ void act(void) {
 	print_heads(INFO, DEPARTED, g_heads_departed);
 	slist_free_vals(&g_heads_departed, (fn_free)head_free);
 
-	log_debug("LAYOUT %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
+	print_head_queue(DEBUG, "act: start:  ", g_displ->state, g_heads);
 
 	switch (g_displ->state) {
 		case SUCCEEDED:
@@ -249,9 +242,9 @@ void act(void) {
 	}
 
 	desire();
-	log_debug("LAYOUT desired %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
+	print_head_queue(DEBUG, "act: desired:", g_displ->state, g_heads);
 
 	act_apply();
-	log_debug("LAYOUT applied %s %zu", displ_state_name(g_displ->state), head_num_current_not_desired(g_heads));
+	print_head_queue(DEBUG, "act: applied:", g_displ->state, g_heads);
 }
 

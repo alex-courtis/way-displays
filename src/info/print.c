@@ -9,6 +9,7 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "convert.h"
+#include "displ.h"
 #include "fn.h"
 #include "head.h"
 #include "imap.h"
@@ -505,3 +506,50 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	print_mode(t, mode);
 }
 
+void print_head_queue(const enum LogThreshold t, const char *msg, enum DisplState displ_state, struct SList * const heads) {
+	if (log_get_threshold() > DEBUG)
+		return;
+
+	char *reapply = strdup("");
+	char *mode = strdup("");
+	char *vrr = strdup("");
+	char *remainder = strdup("");
+
+	for (struct SList *i = heads; i; i = i->nex) {
+		struct Head *head = i->val;
+
+		// granular reapplies first
+		if (head_reapply_required(head))
+			reapply = sprintf_append(reapply, " %s:reapply ;", head->name);
+
+		// granular mode
+		if (head_current_mode_not_desired(head))
+			mode = sprintf_append(mode, " %s:mode ;", head->name);
+
+		// granular vrr
+		if (head_current_adaptive_sync_not_desired(head))
+			vrr = sprintf_append(vrr, " %s:vrr ;", head->name);
+
+		// mass disable
+		if (head->current.enabled && !head->desired.enabled)
+			remainder = sprintf_append(remainder, " %s:disable", head->name);
+
+		// mass enable
+		if (!head->current.enabled && head->desired.enabled)
+			remainder = sprintf_append(remainder, " %s:enable", head->name);
+
+		// mass remainder
+		if (head->desired.scale != head->current.scale ||
+				head->desired.x != head->current.x ||
+				head->desired.y != head->current.y ||
+				head->desired.transform != head->current.transform )
+			remainder = sprintf_append(remainder, " %s:geometry", head->name);
+	}
+
+	log_(t, "%s %s queue%s%s%s%s", msg, displ_state_name(displ_state), reapply, mode, vrr, remainder);
+
+	free(reapply);
+	free(mode);
+	free(vrr);
+	free(remainder);
+}

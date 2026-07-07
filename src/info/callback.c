@@ -17,9 +17,9 @@ void callback(const enum LogThreshold t, const char * const msg1, const char * c
 		return;
 	}
 
-	log_info(NULL);
-	log_info("Executing CALLBACK_CMD:");
-	log_info("  %s", g_cfg->callback_cmd);
+	log_debug(NULL);
+	log_debug("Executing CALLBACK_CMD:");
+	log_debug("  %s", g_cfg->callback_cmd);
 
 	// decorate human message and optional log
 	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));

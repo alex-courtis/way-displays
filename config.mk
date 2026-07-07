@@ -11,8 +11,6 @@ INCS = -Iinc -Ipro -Ilib/alex-c/inc
 
 CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" -DCOMMIT=\"$(COMMIT)\" -DROOT_ETC=\"$(ROOT_ETC)\"
 
-# TODO run once without -Wno-unused-parameter as there are many legitimate ones
-
 OFLAGS = -O3
 WFLAGS = -pedantic \
 		 -Wall \

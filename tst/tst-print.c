@@ -14,10 +14,12 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
+#include "displ.h"
 #include "fn.h"
 #include "head.h"
 #include "imap.h"
 #include "log.h"
+#include "mode.h"
 #include "output.h"
 #include "pset.h"
 #include "slist.h"
@@ -696,6 +698,95 @@ static void print_mode_fail__head(void **state) {
 	head_free(head);
 }
 
+static void print_heads_outstanding__many(void **state) {
+	struct SList *heads = NULL;
+
+	will_return_int(__wrap_log_get_threshold, DEBUG);
+
+	struct Head *head_reapply = head_init_name("re");
+	head_reapply->reapply_required = true;
+	slist_append(&heads, head_reapply);
+
+	struct Head *head_mode = head_init_name("mo");
+	head_mode->desired.mode = mode_init();
+	slist_append(&heads, head_mode);
+
+	struct Head *head_disable = head_init_name("di");
+	head_disable->current.enabled = true;
+	head_disable->desired.enabled = false;
+	slist_append(&heads, head_disable);
+
+	struct Head *head_vrr = head_init_name("vr");
+	head_vrr->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head_vrr->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	slist_append(&heads, head_vrr);
+
+	struct Head *head_enable = head_init_name("en");
+	head_enable->current.enabled = false;
+	head_enable->desired.enabled = true;
+	slist_append(&heads, head_enable);
+
+	struct Head *head_scale = head_init_name("sc");
+	head_scale->current.scale = 1;
+	head_scale->desired.scale = 2;
+	slist_append(&heads, head_scale);
+
+	struct Head *head_x = head_init_name("x");
+	head_x->current.x = 1;
+	head_x->desired.x = 2;
+	slist_append(&heads, head_x);
+
+	struct Head *head_y = head_init_name("y");
+	head_y->current.y = 1;
+	head_y->desired.y = 2;
+	slist_append(&heads, head_y);
+
+	struct Head *head_transform = head_init_name("tr");
+	head_transform->current.transform = WL_OUTPUT_TRANSFORM_90;
+	head_transform->desired.transform = WL_OUTPUT_TRANSFORM_180;
+	slist_append(&heads, head_transform);
+
+	struct Head *head_all = head_init_name("a");
+	head_all->reapply_required = true;
+	head_all->desired.mode = mode_init();
+	head_all->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head_all->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head_all->current.x = 1;
+	head_all->desired.x = 2;
+	head_all->current.enabled = false;
+	head_all->desired.enabled = true;
+	slist_append(&heads, head_all);
+
+	print_head_queue(DEBUG, "foo", IDLE, heads);
+
+	assert_log(DEBUG, "foo IDLE queue re:reapply ; a:reapply ; mo:mode ; a:mode ; vr:vrr ; a:vrr ; di:disable en:enable sc:geometry x:geometry y:geometry tr:geometry a:enable a:geometry\n");
+
+	assert_logs_empty();
+
+	slist_free_vals(&heads, (fn_free)head_free);
+}
+
+static void print_heads_outstanding__below(void **state) {
+	const struct State *s = *state;
+
+	will_return_int(__wrap_log_get_threshold, WARNING);
+
+	print_head_queue(DEBUG, "foo", IDLE, s->heads);
+
+	assert_logs_empty();
+}
+
+static void print_heads_outstanding__none(void **state) {
+
+	will_return_int(__wrap_log_get_threshold, DEBUG);
+
+	print_head_queue(DEBUG, "foo", IDLE, NULL);
+
+	assert_log(DEBUG, "foo IDLE queue\n");
+
+	assert_logs_empty();
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(print_cfg__all),
@@ -741,6 +832,10 @@ int main(void) {
 
 		TEST_BA(print_mode_fail__nulls),
 		TEST_BA(print_mode_fail__head),
+
+		TEST_BA(print_heads_outstanding__many),
+		TEST_BA(print_heads_outstanding__below),
+		TEST_BA(print_heads_outstanding__none),
 	};
 
 	return RUN(tests);

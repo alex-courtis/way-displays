@@ -407,18 +407,6 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 	return head_get_fixed_scale(dpi_clamped / dpi_base);
 }
 
-size_t head_num_current_not_desired(struct SList * const heads) {
-	size_t n = 0;
-
-	struct SList *i = heads;
-	while ((i = slist_find(i, (fn_test)head_current_not_desired))) {
-		i = i->nex;
-		n++;
-	}
-
-	return n;
-}
-
 const struct Mode *head_find_mode(struct Head * const head) {
 	if (!head)
 		return NULL;

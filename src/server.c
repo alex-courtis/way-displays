@@ -234,25 +234,15 @@ void server_reload_cfg(void) {
 static int loop(void) {
 
 	for (;;) {
-		// TODO these messages are not useful
-		log_debug("LOOP START");
-
-		log_debug("LOOP pfds_init");
 		pfds_init();
 
 		// prepare for reading wayland events
-		log_debug("LOOP _wl_display_prepare_read");
 		while (_wl_display_prepare_read(g_displ->display, FL) != 0) {
-			log_debug("LOOP _wl_display_dispatch_pending__prepare_read");
 			_wl_display_dispatch_pending__prepare_read(g_displ->display, FL);
 		}
-
-		log_debug("LOOP _wl_display_flush");
 		_wl_display_flush(g_displ->display, FL);
 
-
 		// poll for all events
-		log_debug("LOOP poll");
 		if (poll(pfds, npfds, -1) < 0) {
 			log_fatal(NULL);
 			log_fatal_errno("poll failed, exiting");
@@ -260,13 +250,9 @@ static int loop(void) {
 			return EXIT_FAILURE;
 		}
 
-
 		// always read and dispatch wayland events; stop the file descriptor from getting stale
-		log_debug("LOOP _wl_display_read_events");
 		if (_wl_display_read_events(g_displ->display, FL) == -1)
 			return EXIT_SUCCESS;
-
-		log_debug("LOOP _wl_display_dispatch_pending__read_events");
 		_wl_display_dispatch_pending__read_events(g_displ->display, FL);
 
 		if (!g_displ->zwlr_output_manager) {
@@ -276,12 +262,11 @@ static int loop(void) {
 			return EXIT_SUCCESS;
 		}
 
-
 		// subscribed signals are mostly a clean exit
 		if (pfd_signal && pfd_signal->revents & pfd_signal->events) {
 			struct signalfd_siginfo fdsi;
 			if (read(fd_signal, &fdsi, sizeof(fdsi)) == sizeof(fdsi)) {
-				log_debug("LOOP signal %d: %s", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
+				log_debug("Received signal %d: %s", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
 				if (fdsi.ssi_signo != SIGPIPE) {
 					log_info(NULL);
 					log_info("Received signal %d: %s, exiting", fdsi.ssi_signo, strsignal(fdsi.ssi_signo));
@@ -290,51 +275,37 @@ static int loop(void) {
 			}
 		}
 
-
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
 			if (fd_cfg_dir_modified(g_cfg->file_name)) {
 				if (g_cfg->updated) {
 					g_cfg->updated = false;
 				} else {
-					log_debug("LOOP cfg_file_reload");
 					server_reload_cfg();
 				}
 			}
 		}
 
-
 		// libinput lid event
 		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
-			log_debug("LOOP lid_update");
 			lid_update();
 		}
 
-
 		// ipc client message
 		if (pfd_ipc && (pfd_ipc->revents & pfd_ipc->events)) {
-			log_debug("LOOP receive_ipc_request");
 			receive_ipc_request(fd_socket_server);
 		}
 
-
 		// maybe make some changes
-		log_debug("LOOP layout");
 		act();
-
 
 		// inform the client
 		if (ipc_operation) {
 			ipc_operation->done = g_displ->state == IDLE;
-			log_debug("LOOP notify_ipc_operation");
 			notify_ipc_operation();
 		};
 
-
-		log_debug("LOOP pfds_destroy");
 		pfds_destroy();
-
-		log_debug("LOOP END");
 	}
 }
 
