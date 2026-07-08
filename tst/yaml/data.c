@@ -56,9 +56,11 @@ struct Cfg *cfg_all(void) {
 	smapi_put(cfg->scales, "three", 3000);
 	smapi_put(cfg->scales, "four", 4000);
 
-	smap_put(cfg->modes, "five", mode_whr(1920, 1080, 12340));
-	smap_put(cfg->modes, "six", mode_whr(2560, 1440, -1));
-	smap_put(cfg->modes, "seven", mode_whr_max(-1, -1, -1));
+	smap_put_many_free(cfg->modes,
+			"five", mode_whr(1920, 1080, 12340),
+			"six", mode_whr(2560, 1440, -1),
+			"seven", mode_whr_max(-1, -1, -1),
+			NULL);
 
 	sset_add_many(cfg->adaptive_sync_off, "ten", "ELEVEN", NULL);
 

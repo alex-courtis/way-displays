@@ -194,15 +194,21 @@ static void cfg_merge_set__transform(void **state) {
 static void cfg_merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->modes, "to", mode_whr(1, 2, 3));
-	smap_put(s->to->modes, "both", mode_whr(4, 5, 6));
+	smap_put_many_free(s->to->modes,
+			"to", mode_whr(1, 2, 3),
+			"both", mode_whr(4, 5, 6),
+			NULL);
 
-	smap_put(s->from->modes, "from", mode_whr(7, 8, 9));
-	smap_put(s->from->modes, "both", mode_whr(10, 11, 12));
+	smap_put_many_free(s->from->modes,
+			"from", mode_whr(7, 8, 9),
+			"both", mode_whr(10, 11, 12),
+			NULL);
 
-	smap_put(s->expected->modes, "to", mode_whr(1, 2, 3));
-	smap_put(s->expected->modes, "both", mode_whr(10, 11, 12));
-	smap_put(s->expected->modes, "from", mode_whr(7, 8, 9));
+	smap_put_many_free(s->expected->modes,
+			"to", mode_whr(1, 2, 3),
+			"both", mode_whr(10, 11, 12),
+			"from", mode_whr(7, 8, 9),
+			NULL);
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -244,7 +250,6 @@ static void cfg_merge_set__disabled(void **state) {
 	sset_add(cond->plugged, "FOUR");
 	pset_add(disabled1->conditions, cond);
 
-	// TODO sets could be null terminated
 	pset_add_many(s->to->disableds,
 			disabled_nd("to"),
 			disabled_nd("both"),
@@ -310,13 +315,19 @@ static void cfg_merge_del__scale(void **state) {
 static void cfg_merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->modes, "1", mode_whr(1, 1, 1));
-	smap_put(s->to->modes, "2", mode_whr(2, 2, 2));
+	smap_put_many_free(s->to->modes,
+			"1", mode_whr(1, 1, 1),
+			"2", mode_whr(2, 2, 2),
+			NULL);
 
-	smap_put(s->from->modes, "2", mode_whr(2, 2, 2));
-	smap_put(s->from->modes, "3", mode_whr(3, 3, 3));
+	smap_put_many_free(s->from->modes,
+			"2", mode_whr(2, 2, 2),
+			"3", mode_whr(3, 3, 3),
+			NULL);
 
-	smap_put(s->from->modes, "1", mode_whr(1, 1, 1));
+	smap_put_many_free(s->from->modes,
+			"1", mode_whr(1, 1, 1),
+			NULL);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -490,26 +501,26 @@ static void cfg_validate_fix__row(void **state) {
 static void cfg_validate_fix__mode_cfg(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->from->modes, "ok", mode_whr(1, 2, 3));
-	smap_put(s->from->modes, "max", mode_whr_max(-1, -1, -1));
-
-	smap_put(s->from->modes, "negative width", mode_whr(-99, 2, 3));
-
-	smap_put(s->from->modes, "negative height", mode_whr(1, -99, 3));
-
-	smap_put(s->from->modes, "negative hz", mode_whr(1, 2, -12340));
-
-	smap_put(s->from->modes, "missing width", mode_whr(-1, 2, 3));
-
-	smap_put(s->from->modes, "missing height", mode_whr(1, -1, 3));
+	// TODO could this just be put_many ?
+	smap_put_many_free(s->from->modes,
+			"ok", mode_whr(1, 2, 3),
+			"max", mode_whr_max(-1, -1, -1),
+			"negative width", mode_whr(-99, 2, 3),
+			"negative height", mode_whr(1, -99, 3),
+			"negative hz", mode_whr(1, 2, -12340),
+			"missing width", mode_whr(-1, 2, 3),
+			"missing height", mode_whr(1, -1, 3),
+			NULL);
 
 	cfg_validate_fix(s->from);
 
 	char *expected_log = read_file("tst/cfg/validate-fix-mode.log");
 	assert_log(WARNING, expected_log);
 
-	smap_put(s->expected->modes, "ok", mode_whr(1, 2, 3));
-	smap_put(s->expected->modes, "max", mode_whr_max(-1, -1, -1));
+	smap_put_many_free(s->expected->modes,
+			"ok", mode_whr(1, 2, 3),
+			"max", mode_whr_max(-1, -1, -1),
+			NULL);
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -537,9 +548,11 @@ static void cfg_validate_warn__(void **state) {
 	smapi_put(s->expected->scales, "ssssssss", 2000);
 	smapi_put(s->expected->scales, "DP-1", 3000);
 
-	smap_put(s->expected->modes, "mmm", mode_whr(1, 1, 1));
-	smap_put(s->expected->modes, "mmmmmmmm", mode_whr(1, 1, 1));
-	smap_put(s->expected->modes, "DP-1", mode_whr(1, 1, 1));
+	smap_put_many_free(s->expected->modes,
+			"mmm", mode_whr(1, 1, 1),
+			"mmmmmmmm", mode_whr(1, 1, 1),
+			"DP-1", mode_whr(1, 1, 1),
+			NULL);
 
 	smapi_put(s->expected->transforms, "ttt", WL_OUTPUT_TRANSFORM_180);
 	smapi_put(s->expected->transforms, "tttttttttt", WL_OUTPUT_TRANSFORM_270);

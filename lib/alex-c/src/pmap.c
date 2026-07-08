@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -481,10 +482,45 @@ size_t pmap_put_all_free(const struct PMap* const map, const struct PMap* const 
 	return overwritten;
 }
 
+size_t pmap_put_many_free(const struct PMap* const map, ...) {
+	if (!map)
+		return 0;
+
+	va_list ap;
+	va_start(ap, map);
+
+	size_t added = pmap_put_many_free_v(map, ap);
+
+	va_end(ap);
+
+	return added;
+}
+
+size_t pmap_put_many_free_v(const struct PMap* const map, va_list __args) {
+	if (!map)
+		return 0;
+
+	size_t added = 0;
+
+	const void *key;
+
+	// NULL terminator is odd vararg: the key
+	while ((key = va_arg(__args, void*))) {
+
+		// trust that a value has been passed, NULL is valid
+		const void *val = va_arg(__args, void*);
+
+		if (pmap_put_free(map, key, val)) {
+			added++;
+		}
+	}
+
+	return added;
+}
+
 const void *pmap_remove(const struct PMap* const map, const void* const key) {
 	if (!map || !key)
 		return NULL;
-
 
 	const void **k;
 	const void **v;

@@ -1,6 +1,7 @@
 #ifndef PSET_H
 #define PSET_H
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -92,6 +93,9 @@ size_t pset_add_all(const struct PSet* const set, const struct PSet* const from)
 
 // add if the set does not contain each val, return number added, variadic args must be NULL terminated [equal_val, alloc_val]
 size_t pset_add_many(const struct PSet* const set, ... /* , NULL */ );
+
+// va_list variant of pmap_put_many_free
+size_t pset_add_many_v(const struct PSet* const set, va_list __args);
 
 // if the set contains val, remove it and return true [equal_val, alloc_val]
 bool pset_remove(const struct PSet* const set, const void* const val);

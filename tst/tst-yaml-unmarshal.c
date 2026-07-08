@@ -133,9 +133,11 @@ static void yaml_root_to_cfg__scale(void **state) {
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	smap_put(expected->modes, "max_override", mode_whr_max(1920, 1080, 12340));
-	smap_put(expected->modes, "five", mode_whr(1920, 1080, 12340));
-	smap_put(expected->modes, "seven", mode_whr_max(-1, -1, -1));
+	smap_put_many_free(expected->modes,
+			"max_override", mode_whr_max(1920, 1080, 12340),
+			"five", mode_whr(1920, 1080, 12340),
+			"seven", mode_whr_max(-1, -1, -1),
+			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
 }

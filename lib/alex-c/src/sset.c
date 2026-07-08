@@ -134,17 +134,10 @@ size_t sset_add_many(const struct SSet* const set, ...) {
 	if (!set)
 		return 0;
 
-	size_t added = 0;
-
 	va_list ap;
 	va_start(ap, set);
 
-	const void *val;
-	while ((val = va_arg(ap, void*))) {
-		if (sset_add(set, val)) {
-			added++;
-		}
-	}
+	size_t added = pset_add_many_v(set->pset, ap);
 
 	va_end(ap);
 

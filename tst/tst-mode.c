@@ -19,7 +19,7 @@ struct Mode *mode_target = NULL;
 const struct PSet *modes = NULL;
 const struct PSet *modes_failed = NULL;
 
-// TODO these could be an smap with meaningful names
+// TODO these could be an smap with meaningful names, we would need a map to set
 struct Mode *mode0, *mode1, *mode2, *mode3, *mode4, *mode5;
 
 static int before_each(void **state) {
