@@ -78,11 +78,6 @@ bool sset_add(const struct SSet* const set, const char* const val);
 // add from vals not contained in the set, return number added
 size_t sset_add_all(const struct SSet* const set, const struct SSet* const from);
 
-// add if the set does not contain each val, return number added, variadic args must be NULL terminated
-size_t sset_add_many(const struct SSet* const set, ... /* , NULL */ );
-
-// TODO maybe a va_list variant
-
 // if the set contains val, remove it, free it and return true
 bool sset_remove(const struct SSet* const set, const char* const val);
 

@@ -1,4 +1,3 @@
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -285,36 +284,6 @@ size_t pset_add_all(const struct PSet* const set, const struct PSet* const from)
 
 	for (const void **v = from->vals; v < from->vals + from->size; v++) {
 		if (add(set, *v, set->params.alloc_val)) {
-			added++;
-		}
-	}
-
-	return added;
-}
-
-size_t pset_add_many(const struct PSet* const set, ...) {
-	if (!set)
-		return 0;
-
-	va_list ap;
-	va_start(ap, set);
-
-	size_t added = pset_add_many_v(set, ap);
-
-	va_end(ap);
-
-	return added;
-}
-
-size_t pset_add_many_v(const struct PSet* const set, va_list __args) {
-	if (!set)
-		return 0;
-
-	size_t added = 0;
-
-	const void *val;
-	while ((val = va_arg(__args, void*))) {
-		if (add(set, val, set->params.alloc_val)) {
 			added++;
 		}
 	}

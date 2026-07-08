@@ -6,6 +6,7 @@
 #include "assert-wl.h"
 #include "asserts.h"
 #include "expects.h"
+#include "util-col.h"
 #include "util-file.h"
 #include "util-init.h"
 

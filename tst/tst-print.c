@@ -2,6 +2,7 @@
 
 #include "assert-log.h"
 #include "expects.h"
+#include "util-col.h"
 #include "util-file.h"
 #include "util-init.h"
 
@@ -23,8 +24,6 @@
 #include "output.h"
 #include "pset.h"
 #include "slist.h"
-#include "smap.h"
-#include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -167,7 +166,7 @@ static void print_cfg__all(void **state) {
 	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 
-	smap_put_many_free(c->modes,
+	smap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
 			"seven", mode_whr_max(-1, -1, -1),
@@ -201,7 +200,7 @@ static void print_cfg__del(void **state) {
 			"four", 4000,
 			NULL);
 
-	smap_put_many_free(c->modes,
+	smap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
 			"seven", mode_whr_max(-1, -1, -1),
@@ -305,7 +304,7 @@ static void print_cfg_commands__ok(void **state) {
 			"two", 2345,
 			NULL);
 
-	smap_put_many_free(c->modes,
+	smap_put_many(c->modes,
 			"all", mode_whr(1, 2, 12340),
 			"res", mode_whr(4, 5, -1),
 			"max", mode_whr_max(7, 8, 9),

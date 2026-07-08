@@ -2,6 +2,7 @@
 
 #include "assert-cfg.h"
 #include "assert-log.h"
+#include "util-col.h"
 #include "util-file.h"
 #include "util-init.h"
 
@@ -17,7 +18,6 @@
 #include "pset.h"
 #include "slist.h"
 #include "smap.h"
-#include "smapi.h"
 #include "sset.h"
 
 #include "cfg.h"
@@ -206,17 +206,17 @@ static void cfg_merge_set__transform(void **state) {
 static void cfg_merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put_many_free(s->to->modes,
+	smap_put_many(s->to->modes,
 			"to", mode_whr(1, 2, 3),
 			"both", mode_whr(4, 5, 6),
 			NULL);
 
-	smap_put_many_free(s->from->modes,
+	smap_put_many(s->from->modes,
 			"from", mode_whr(7, 8, 9),
 			"both", mode_whr(10, 11, 12),
 			NULL);
 
-	smap_put_many_free(s->expected->modes,
+	smap_put_many(s->expected->modes,
 			"to", mode_whr(1, 2, 3),
 			"both", mode_whr(10, 11, 12),
 			"from", mode_whr(7, 8, 9),
@@ -343,17 +343,17 @@ static void cfg_merge_del__scale(void **state) {
 static void cfg_merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put_many_free(s->to->modes,
+	smap_put_many(s->to->modes,
 			"1", mode_whr(1, 1, 1),
 			"2", mode_whr(2, 2, 2),
 			NULL);
 
-	smap_put_many_free(s->from->modes,
+	smap_put_many(s->from->modes,
 			"2", mode_whr(2, 2, 2),
 			"3", mode_whr(3, 3, 3),
 			NULL);
 
-	smap_put_many_free(s->from->modes,
+	smap_put_many(s->from->modes,
 			"1", mode_whr(1, 1, 1),
 			NULL);
 
@@ -553,7 +553,7 @@ static void cfg_validate_fix__mode_cfg(void **state) {
 	struct State *s = *state;
 
 	// TODO could this just be put_many ?
-	smap_put_many_free(s->from->modes,
+	smap_put_many(s->from->modes,
 			"ok", mode_whr(1, 2, 3),
 			"max", mode_whr_max(-1, -1, -1),
 			"negative width", mode_whr(-99, 2, 3),
@@ -568,7 +568,7 @@ static void cfg_validate_fix__mode_cfg(void **state) {
 	char *expected_log = read_file("tst/cfg/validate-fix-mode.log");
 	assert_log(WARNING, expected_log);
 
-	smap_put_many_free(s->expected->modes,
+	smap_put_many(s->expected->modes,
 			"ok", mode_whr(1, 2, 3),
 			"max", mode_whr_max(-1, -1, -1),
 			NULL);
@@ -601,7 +601,7 @@ static void cfg_validate_warn__(void **state) {
 			"DP-1", 3000,
 			NULL);
 
-	smap_put_many_free(s->expected->modes,
+	smap_put_many(s->expected->modes,
 			"mmm", mode_whr(1, 1, 1),
 			"mmmmmmmm", mode_whr(1, 1, 1),
 			"DP-1", mode_whr(1, 1, 1),

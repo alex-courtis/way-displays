@@ -123,11 +123,6 @@ bool smap_put_free(const struct SMap* const map, const  char* const key, const v
 // set all from key/val, freeing overwritten vals, returning number of overwritten [alloc_val, free_val]
 size_t smap_put_all_free(const struct SMap* const map, const struct SMap* const from);
 
-// set key/vals, free old vals, return number overwritten, variadic key/val pairs must be terminated with a NULL key [alloc_val, free_val]
-size_t smap_put_many_free(const struct SMap* const map, ... /* key, val, NULL */ );
-
-// TODO maybe a va_list variant
-
 // remove val, return old val if present
 const void *smap_remove(const struct SMap* const map, const char* const key);
 

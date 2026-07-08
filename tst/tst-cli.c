@@ -3,6 +3,7 @@
 #include "assert-cfg.h"
 #include "assert-log.h"
 #include "asserts.h"
+#include "util-col.h"
 #include "util-init.h"
 
 #include <cmocka.h>
@@ -16,10 +17,8 @@
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"
-#include "pset.h"
 #include "smap.h"
 #include "smapi.h"
-#include "sset.h"
 
 #include "cli.h"
 

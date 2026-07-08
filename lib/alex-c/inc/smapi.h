@@ -111,9 +111,6 @@ bool smapi_put_if_absent(const struct SMapI* const map, const char* const key, c
 // set all from key/val, returning number of overwritten
 size_t smapi_put_all(const struct SMapI* const map, const struct SMapI* const from);
 
-// set key/vals, return number overwritten, variadic key/val pairs must be terminated with a NULL key
-size_t smapi_put_many(const struct SMapI* const map, ... /* key, val, NULL */ );
-
 // remove val, return true if removed
 bool smapi_remove(const struct SMapI* const map, const char* const key);
 

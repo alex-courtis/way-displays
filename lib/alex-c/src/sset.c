@@ -1,4 +1,3 @@
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -128,20 +127,6 @@ bool sset_add(const struct SSet* const set, const char* const val) {
 
 size_t sset_add_all(const struct SSet* const set, const struct SSet* const from) {
 	return set && from ? pset_add_all(set->pset, from->pset) : 0;
-}
-
-size_t sset_add_many(const struct SSet* const set, ...) {
-	if (!set)
-		return 0;
-
-	va_list ap;
-	va_start(ap, set);
-
-	size_t added = pset_add_many_v(set->pset, ap);
-
-	va_end(ap);
-
-	return added;
 }
 
 bool sset_remove(const struct SSet* const set, const char* const val) {

@@ -5,6 +5,7 @@
 #include <wayland-util.h>
 
 #include "../util-init.h"
+#include "../../lib/alex-c/tst/util-col.h"
 
 #include "cfg.h"
 #include "cfg/condition.h"
@@ -62,7 +63,7 @@ struct Cfg *cfg_all(void) {
 			"four", 4000,
 			NULL);
 
-	smap_put_many_free(cfg->modes,
+	smap_put_many(cfg->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
 			"seven", mode_whr_max(-1, -1, -1),

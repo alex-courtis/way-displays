@@ -1,7 +1,6 @@
 #ifndef PMAP_H
 #define PMAP_H
 
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -125,13 +124,6 @@ const void *pmap_put_if_absent(const struct PMap* const map, const void* const k
 
 // set key/val, free old val, return true if overwritten [equal_key, alloc_key, alloc_val, free_key, free_val]
 bool pmap_put_free(const struct PMap* const map, const void* const key, const void* const val);
-
-// TODO test limits
-// set key/vals, free old vals, return number overwritten, variadic key/val pairs must be terminated with a NULL key [equal_key, alloc_key, alloc_val, free_key, free_val]
-size_t pmap_put_many_free(const struct PMap* const map, ... /* key, val, NULL */ );
-
-// va_list variant of pmap_put_many_free
-size_t pmap_put_many_free_v(const struct PMap* const map, va_list __args);
 
 // set all from key/val, freeing overwritten vals, returning number of overwritten [equal_key, alloc_key, alloc_val, free_key, free_val]
 size_t pmap_put_all_free(const struct PMap* const map, const struct PMap* const from);

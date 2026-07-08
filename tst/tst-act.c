@@ -4,6 +4,7 @@
 #include "assert-mode.h"
 #include "asserts.h"
 #include "expects.h"
+#include "util-col.h"
 #include "util-init.h"
 
 #include <cmocka.h>

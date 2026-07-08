@@ -110,9 +110,6 @@ bool smaps_put_if_absent(const struct SMapS* const map, const char* const key, c
 // set all from key/val, returning number of overwritten
 size_t smaps_put_all(const struct SMapS* const map, const struct SMapS* const from);
 
-// set key/vals, return number overwritten, variadic key/val pairs must be terminated with a NULL key
-size_t smaps_put_many(const struct SMapS* const map, ... /* key, val, NULL */ );
-
 // remove val, return true if removed
 bool smaps_remove(const struct SMapS* const map, const char* const key);
 

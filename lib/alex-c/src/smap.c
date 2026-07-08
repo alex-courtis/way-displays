@@ -1,4 +1,3 @@
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -219,20 +218,6 @@ bool smap_put_free(const struct SMap* const map, const char* const key, const vo
 
 size_t smap_put_all_free(const struct SMap* const map, const struct SMap* const from) {
 	return map && from ? pmap_put_all_free(map->pmap, from->pmap) : 0;
-}
-
-size_t smap_put_many_free(const struct SMap* const map, ...) {
-	if (!map)
-		return 0;
-
-	va_list ap;
-	va_start(ap, map);
-
-	size_t added = pmap_put_many_free_v(map->pmap, ap);
-
-	va_end(ap);
-
-	return added;
 }
 
 const void *smap_remove(const struct SMap* const map, const char* const key) {

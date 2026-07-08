@@ -3,6 +3,7 @@
 #include "assert-log.h"
 #include "expect-smaps.h"
 #include "expects.h"
+#include "util-col.h"
 #include "util-init.h"
 
 #include <cmocka.h>
