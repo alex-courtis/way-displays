@@ -101,7 +101,7 @@ static void yaml_root_to_cfg__legacy(void **state) {
 	expected->callback_cmd = strdup("foo");
 
 	// MAX_PREFERRED_REFRESH
-	sset_add_many(expected->max_preferred_refresh, "fifteen", "!sixteen", expected->max_preferred_refresh);
+	sset_add_many(expected->max_preferred_refresh, "fifteen", "!sixteen", NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
 }
@@ -145,10 +145,10 @@ static void yaml_root_to_cfg__disabled(void **state) {
 
 	struct Disabled *disabled_twelve_1 = disabled_init_name_desc("twelve");
 	const struct Condition *cond = condition_init();
-	sset_add_many(cond->plugged, "ONE", "TWO", cond->plugged);
+	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
 	pset_add(disabled_twelve_1->conditions, cond);
 	cond = condition_init();
-	sset_add_many(cond->unplugged, "THREE", cond->unplugged);
+	sset_add_many(cond->unplugged, "THREE", NULL);
 	pset_add(disabled_twelve_1->conditions, cond);
 
 	struct Disabled *disabled_twelve_2 = disabled_init_name_desc("twelve");
@@ -169,7 +169,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			disabled_init_name_desc("MISTYPED_UN_PLUGGED_MAP"),
 			disabled_init_name_desc("MISTYPED_LID_MAP"),
 			disabled_init_name_desc("NO_VALID_CONDITIONS"),
-			expected->disableds);
+			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
 }

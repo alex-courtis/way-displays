@@ -302,7 +302,7 @@ size_t pset_add_many(const struct PSet* const set, ...) {
 	va_start(ap, set);
 
 	const void *val;
-	while ((val = va_arg(ap, void*)) != set) {
+	while ((val = va_arg(ap, void*))) {
 		if (add(set, val, set->params.alloc_val)) {
 			added++;
 		}

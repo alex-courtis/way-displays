@@ -251,20 +251,20 @@ static void cfg_merge_set__disabled(void **state) {
 	pset_add_many(s->to->disableds,
 			disabled_init_name_desc("to"),
 			disabled_init_name_desc("both"),
-			s->to->disableds);
+			NULL);
 
 	pset_add_many(s->from->disableds,
 			disabled_init_name_desc("from"),
 			disabled_init_name_desc("both"),
 			disabled_clone(disabled1),
-			s->from->disableds);
+			NULL);
 
 	pset_add_many(s->expected->disableds,
 			disabled_init_name_desc("to"),
 			disabled_init_name_desc("both"),
 			disabled_init_name_desc("from"),
 			disabled1,
-			s->expected->disableds);
+			NULL);
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -547,16 +547,16 @@ static void cfg_validate_warn__(void **state) {
 	smapi_put(s->expected->transforms, "tttttttttt", WL_OUTPUT_TRANSFORM_270);
 	smapi_put(s->expected->transforms, "DP-1", WL_OUTPUT_TRANSFORM_270);
 
-	sset_add_many(s->expected->order_name_desc, "ooo", "oooooooooo", "DP-1", s->expected->order_name_desc);
+	sset_add_many(s->expected->order_name_desc, "ooo", "oooooooooo", "DP-1", NULL);
 
-	sset_add_many(s->expected->adaptive_sync_off, "vvv", "vvvvvvvvvv", "DP-1", s->expected->adaptive_sync_off);
+	sset_add_many(s->expected->adaptive_sync_off, "vvv", "vvvvvvvvvv", "DP-1", NULL);
 
-	sset_add_many(s->expected->max_preferred_refresh, "ppp", "pppppppppp", "DP-1", s->expected->max_preferred_refresh);
+	sset_add_many(s->expected->max_preferred_refresh, "ppp", "pppppppppp", "DP-1", NULL);
 
 	struct Disabled *disabled_cond = disabled_init_name_desc("cond1");
 	const struct Condition *cond = condition_init();
-	sset_add_many(cond->plugged, "ppp", "DP-1", cond->plugged);
-	sset_add_many(cond->unplugged, "uuu", "DP-1", cond->unplugged);
+	sset_add_many(cond->plugged, "ppp", "DP-1", NULL);
+	sset_add_many(cond->unplugged, "uuu", "DP-1", NULL);
 	pset_add(disabled_cond->conditions, cond);
 
 	pset_add_many(s->expected->disableds,
@@ -564,7 +564,7 @@ static void cfg_validate_warn__(void **state) {
 			disabled_init_name_desc("dddddddddd"),
 			disabled_init_name_desc("DP-1"),
 			disabled_cond,
-			s->expected->disableds);
+			NULL);
 
 	cfg_validate_warn(s->expected);
 

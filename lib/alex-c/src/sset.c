@@ -140,7 +140,7 @@ size_t sset_add_many(const struct SSet* const set, ...) {
 	va_start(ap, set);
 
 	const void *val;
-	while ((val = va_arg(ap, void*)) != set) {
+	while ((val = va_arg(ap, void*))) {
 		if (sset_add(set, val)) {
 			added++;
 		}

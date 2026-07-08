@@ -30,3 +30,6 @@ missingIncludeSystem
 
 # this does not handle function pointer types
 funcArgNamesDifferentUnnamed
+
+# this is explicitly OK
+varFuncNullUB

@@ -90,8 +90,8 @@ bool pset_add(const struct PSet* const set, const void* const val);
 // add from vals not contained in the set, return number added [equal_val, alloc_val]
 size_t pset_add_all(const struct PSet* const set, const struct PSet* const from);
 
-// add if the set does not contain each val, return number added, variadic args must be terminated with the set itself [equal_val, alloc_val]
-size_t pset_add_many(const struct PSet* const set, ... /* , set */ );
+// add if the set does not contain each val, return number added, variadic args must be NULL terminated [equal_val, alloc_val]
+size_t pset_add_many(const struct PSet* const set, ... /* , NULL */ );
 
 // if the set contains val, remove it and return true [equal_val, alloc_val]
 bool pset_remove(const struct PSet* const set, const void* const val);
