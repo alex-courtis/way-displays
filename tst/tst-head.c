@@ -196,7 +196,7 @@ static void head_find_mode__no_modes(void **state) {
 
 static void head_find_mode__all_failed(void **state) {
 	struct Head *head = head_n("head0");
-	struct Mode *mode = mode_h(head);
+	const struct Mode *mode = mode_h(head);
 
 	// all modes failed
 	pset_add(head->modes_failed, mode);

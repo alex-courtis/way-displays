@@ -154,15 +154,21 @@ static void cfg_merge_set__scale_round_strategy(void **state) {
 static void cfg_merge_set__scale(void **state) {
 	struct State *s = *state;
 
-	smapi_put(s->to->scales, "to", 1000);
-	smapi_put(s->to->scales, "both", 2000);
+	smapi_put_many(s->to->scales,
+			"to", 1000,
+			"both", 2000,
+			NULL);
 
-	smapi_put(s->from->scales, "from", 3000);
-	smapi_put(s->from->scales, "both", 4000);
+	smapi_put_many(s->from->scales,
+			"from", 3000,
+			"both", 4000,
+			NULL);
 
-	smapi_put(s->expected->scales, "to", 1000);
-	smapi_put(s->expected->scales, "both", 4000);
-	smapi_put(s->expected->scales, "from", 3000);
+	smapi_put_many(s->expected->scales,
+			"to", 1000,
+			"both", 4000,
+			"from", 3000,
+			NULL);
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -174,15 +180,21 @@ static void cfg_merge_set__scale(void **state) {
 static void cfg_merge_set__transform(void **state) {
 	struct State *s = *state;
 
-	smapi_put(s->to->transforms, "to", 1000);
-	smapi_put(s->to->transforms, "both", 2000);
+	smapi_put_many(s->to->transforms,
+			"to", 1000,
+			"both", 2000,
+			NULL);
 
-	smapi_put(s->from->transforms, "from", 3000);
-	smapi_put(s->from->transforms, "both", 4000);
+	smapi_put_many(s->from->transforms,
+			"from", 3000,
+			"both", 4000,
+			NULL);
 
-	smapi_put(s->expected->transforms, "to", 1000);
-	smapi_put(s->expected->transforms, "both", 4000);
-	smapi_put(s->expected->transforms, "from", 3000);
+	smapi_put_many(s->expected->transforms,
+			"to", 1000,
+			"both", 4000,
+			"from", 3000,
+			NULL);
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -220,11 +232,21 @@ static void cfg_merge_set__mode(void **state) {
 static void cfg_merge_set__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	sset_add_many(s->to->adaptive_sync_off, "to", "both", NULL);
+	sset_add_many(s->to->adaptive_sync_off,
+			"to",
+			"both",
+			NULL);
 
-	sset_add_many(s->from->adaptive_sync_off, "from", "both", NULL);
+	sset_add_many(s->from->adaptive_sync_off,
+			"from",
+			"both",
+			NULL);
 
-	sset_add_many(s->expected->adaptive_sync_off, "to", "both", "from", NULL);
+	sset_add_many(s->expected->adaptive_sync_off,
+			"to",
+			"both",
+			"from",
+			NULL);
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -297,13 +319,19 @@ static void cfg_merge_set__callback_cmd(void **state) {
 static void cfg_merge_del__scale(void **state) {
 	struct State *s = *state;
 
-	smapi_put(s->to->scales, "1", 1000);
-	smapi_put(s->to->scales, "2", 2000);
+	smapi_put_many(s->to->scales,
+			"1", 1000,
+			"2", 2000,
+			NULL);
 
-	smapi_put(s->from->scales, "2", 3000);
-	smapi_put(s->from->scales, "3", 4000);
+	smapi_put_many(s->from->scales,
+			"2", 3000,
+			"3", 4000,
+			NULL);
 
-	smapi_put(s->expected->scales, "1", 1000);
+	smapi_put_many(s->expected->scales,
+			"1", 1000,
+			NULL);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -339,13 +367,19 @@ static void cfg_merge_del__mode(void **state) {
 static void cfg_merge_del__transform(void **state) {
 	struct State *s = *state;
 
-	smapi_put(s->to->transforms, "to", 1);
-	smapi_put(s->to->transforms, "both", 2);
+	smapi_put_many(s->to->transforms,
+			"to", 1,
+			"both", 2,
+			NULL);
 
-	smapi_put(s->from->transforms, "from", 3);
-	smapi_put(s->from->transforms, "both", 4);
+	smapi_put_many(s->from->transforms,
+			"from", 3,
+			"both", 4,
+			NULL);
 
-	smapi_put(s->expected->transforms, "to", 1);
+	smapi_put_many(s->expected->transforms,
+			"to", 1,
+			NULL);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -357,11 +391,19 @@ static void cfg_merge_del__transform(void **state) {
 static void cfg_merge_del__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	sset_add_many(s->to->adaptive_sync_off, "1", "2", NULL);
+	sset_add_many(s->to->adaptive_sync_off,
+			"1",
+			"2",
+			NULL);
 
-	sset_add_many(s->from->adaptive_sync_off, "2", "3", NULL);
+	sset_add_many(s->from->adaptive_sync_off,
+			"2",
+			"3",
+			NULL);
 
-	sset_add_many(s->expected->adaptive_sync_off, "1", NULL);
+	sset_add_many(s->expected->adaptive_sync_off,
+			"1",
+			NULL);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -453,11 +495,20 @@ static void cfg_merge_toggle__adaptive_sync_off(void **state) {
 	s->from->auto_scale = false;
 	s->from->scaling = false;
 
-	sset_add_many(s->to->adaptive_sync_off, "display1", "display2", NULL);
+	sset_add_many(s->to->adaptive_sync_off,
+			"display1",
+			"display2",
+			NULL);
 
-	sset_add_many(s->from->adaptive_sync_off, "display2", "display3", NULL);
+	sset_add_many(s->from->adaptive_sync_off,
+			"display2",
+			"display3",
+			NULL);
 
-	sset_add_many(s->expected->adaptive_sync_off, "display1", "display3", NULL);
+	sset_add_many(s->expected->adaptive_sync_off,
+			"display1",
+			"display3",
+			NULL);
 
 	struct Cfg *merged = cfg_merge_toggle(s->to, s->from);
 
@@ -544,9 +595,11 @@ static void cfg_validate_fix__auto_scale_dpi(void **state) {
 static void cfg_validate_warn__(void **state) {
 	const struct State *s = *state;
 
-	smapi_put(s->expected->scales, "sss", 1000);
-	smapi_put(s->expected->scales, "ssssssss", 2000);
-	smapi_put(s->expected->scales, "DP-1", 3000);
+	smapi_put_many(s->expected->scales,
+			"sss", 1000,
+			"ssssssss", 2000,
+			"DP-1", 3000,
+			NULL);
 
 	smap_put_many_free(s->expected->modes,
 			"mmm", mode_whr(1, 1, 1),
@@ -554,15 +607,29 @@ static void cfg_validate_warn__(void **state) {
 			"DP-1", mode_whr(1, 1, 1),
 			NULL);
 
-	smapi_put(s->expected->transforms, "ttt", WL_OUTPUT_TRANSFORM_180);
-	smapi_put(s->expected->transforms, "tttttttttt", WL_OUTPUT_TRANSFORM_270);
-	smapi_put(s->expected->transforms, "DP-1", WL_OUTPUT_TRANSFORM_270);
+	smapi_put_many(s->expected->transforms,
+			"ttt", WL_OUTPUT_TRANSFORM_180,
+			"tttttttttt", WL_OUTPUT_TRANSFORM_270,
+			"DP-1", WL_OUTPUT_TRANSFORM_270,
+			NULL);
 
-	sset_add_many(s->expected->order_name_desc, "ooo", "oooooooooo", "DP-1", NULL);
+	sset_add_many(s->expected->order_name_desc,
+			"ooo",
+			"oooooooooo",
+			"DP-1",
+			NULL);
 
-	sset_add_many(s->expected->adaptive_sync_off, "vvv", "vvvvvvvvvv", "DP-1", NULL);
+	sset_add_many(s->expected->adaptive_sync_off,
+			"vvv",
+			"vvvvvvvvvv",
+			"DP-1",
+			NULL);
 
-	sset_add_many(s->expected->max_preferred_refresh, "ppp", "pppppppppp", "DP-1", NULL);
+	sset_add_many(s->expected->max_preferred_refresh,
+			"ppp",
+			"pppppppppp",
+			"DP-1",
+			NULL);
 
 	struct Disabled *disabled_cond = disabled_nd("cond1");
 	const struct Condition *cond = condition_init();

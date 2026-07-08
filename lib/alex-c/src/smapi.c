@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -319,6 +320,33 @@ bool smapi_put_if_absent(const struct SMapI* const map, const char* const key, c
 
 size_t smapi_put_all(const struct SMapI* const map, const struct SMapI* const from) {
 	return map && from ? pmap_put_all_free(map->pmap, from->pmap) : 0;
+}
+
+size_t smapi_put_many(const struct SMapI* const map, ...) {
+	if (!map)
+		return 0;
+
+	va_list ap;
+	va_start(ap, map);
+
+	size_t added = 0;
+
+	const void *key;
+
+	// NULL terminator is odd vararg: the key
+	while ((key = va_arg(ap, void*))) {
+
+		// trust that a value has been passed, NULL is valid
+		const size_t val = va_arg(ap, size_t);
+
+		if (smapi_put(map, key, val)) {
+			added++;
+		}
+	}
+
+	va_end(ap);
+
+	return added;
 }
 
 bool smapi_remove(const struct SMapI* const map, const char* const key) {

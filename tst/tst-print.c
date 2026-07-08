@@ -150,13 +150,18 @@ int after_each(void **state) {
 static void print_cfg__all(void **state) {
 	struct Cfg *c = cfg_default();
 
-	sset_add_many(c->order_name_desc, "first", "last", NULL);
+	sset_add_many(c->order_name_desc,
+			"first",
+			"last",
+			NULL);
 
-	smapi_put(c->scales, "three", 3000);
-	smapi_put(c->scales, "four", 4000);
+	smapi_put_many(c->scales,
+			"three", 3000,
+			"four", 4000,
+			NULL);
 
 	pset_add(c->disableds, disabled_nd("disabled always"));
-	struct Disabled *disabled = disabled_nd("disabled conditionally");
+	const struct Disabled *disabled = disabled_nd("disabled conditionally");
 	const struct Condition *cond = condition_init();
 	sset_add(cond->plugged, "ONE");
 	pset_add(disabled->conditions, cond);
@@ -168,7 +173,9 @@ static void print_cfg__all(void **state) {
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put_many(c->transforms,
+			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
+			NULL);
 
 	sset_add(c->max_preferred_refresh, "legacy");
 
@@ -189,8 +196,10 @@ static void print_cfg__all(void **state) {
 static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
-	smapi_put(c->scales, "three", 3000);
-	smapi_put(c->scales, "four", 4000);
+	smapi_put_many(c->scales,
+			"three", 3000,
+			"four", 4000,
+			NULL);
 
 	smap_put_many_free(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
@@ -198,8 +207,10 @@ static void print_cfg__del(void **state) {
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
-	smapi_put(c->transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put_many(c->transforms,
+			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
+			"thirteen", WL_OUTPUT_TRANSFORM_FLIPPED,
+			NULL);
 
 	print_cfg(INFO, c, true);
 
@@ -279,14 +290,20 @@ static void print_cfg_commands__ok(void **state) {
 	c->arrange = COL;
 	c->align = RIGHT;
 
-	sset_add_many(c->order_name_desc, "one" , "two", "three", NULL);
+	sset_add_many(c->order_name_desc,
+			"one",
+			"two",
+			"three",
+			NULL);
 
 	c->scaling = OFF;
 
 	c->auto_scale = OFF;
 
-	smapi_put(c->scales, "one", 1000);
-	smapi_put(c->scales, "two", 2345);
+	smapi_put_many(c->scales,
+			"one", 1000,
+			"two", 2345,
+			NULL);
 
 	smap_put_many_free(c->modes,
 			"all", mode_whr(1, 2, 12340),
@@ -294,11 +311,19 @@ static void print_cfg_commands__ok(void **state) {
 			"max", mode_whr_max(7, 8, 9),
 			NULL);
 
-	smapi_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
+	smapi_put_many(c->transforms,
+			"seven", WL_OUTPUT_TRANSFORM_FLIPPED_90,
+			NULL);
 
-	pset_add_many(c->disableds, disabled_nd("three"), disabled_nd("four"), NULL);
+	pset_add_many(c->disableds,
+			disabled_nd("three"),
+			disabled_nd("four"),
+			NULL);
 
-	sset_add_many(c->adaptive_sync_off, "five", "six", NULL);
+	sset_add_many(c->adaptive_sync_off,
+			"five",
+			"six",
+			NULL);
 
 	print_cfg_commands(INFO, c);
 

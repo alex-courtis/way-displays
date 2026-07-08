@@ -17,7 +17,6 @@
 #include "cfg.h"
 #include "fn.h"
 #include "head.h"
-#include "mode.h"
 #include "pset.h"
 #include "slist.h"
 #include "smapi.h"
@@ -127,7 +126,12 @@ static void desire_order__exact_regex_catchall(void **state) {
 	struct SList *expected = NULL;
 
 	// ORDER
-	sset_add_many(order_name_desc, "exact0", "!.*regex.*", "!.*$", "exact9", NULL);
+	sset_add_many(order_name_desc,
+			"exact0",
+			"!.*regex.*",
+			"!.*$",
+			"exact9",
+			NULL);
 
 	// heads
 	struct Head *exact9          = head_d("exact9");
@@ -544,8 +548,10 @@ static void desire_scale__user(void **state) {
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	smapi_put(g_cfg->scales, "![Hh]ea.*", 3500);
-	smapi_put(g_cfg->scales, "head1", 7500);
+	smapi_put_many(g_cfg->scales,
+			"![Hh]ea.*", 3500,
+			"head1", 7500,
+			NULL);
 
 	desire_scale(head);
 
@@ -585,8 +591,10 @@ static void desire_transform__user(void **state) {
 	head->desired.enabled = true;
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
-	smapi_put(g_cfg->transforms, "head9", WL_OUTPUT_TRANSFORM_270);
-	smapi_put(g_cfg->transforms, "head", WL_OUTPUT_TRANSFORM_180);
+	smapi_put_many(g_cfg->transforms,
+			"head9", WL_OUTPUT_TRANSFORM_270,
+			"head", WL_OUTPUT_TRANSFORM_180,
+			NULL);
 
 	desire_transform(head);
 

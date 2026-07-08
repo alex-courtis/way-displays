@@ -51,10 +51,16 @@ struct Cfg *cfg_all(void) {
 	cfg->laptop_display_prefix = strdup("ldp");
 	cfg->laptop_lid_monitor = OFF;
 
-	sset_add_many(cfg->order_name_desc, "one", "ONE" ,"!two", NULL);
+	sset_add_many(cfg->order_name_desc,
+			"one",
+			"ONE",
+			"!two",
+			NULL);
 
-	smapi_put(cfg->scales, "three", 3000);
-	smapi_put(cfg->scales, "four", 4000);
+	smapi_put_many(cfg->scales,
+			"three", 3000,
+			"four", 4000,
+			NULL);
 
 	smap_put_many_free(cfg->modes,
 			"five", mode_whr(1920, 1080, 12340),
@@ -62,9 +68,16 @@ struct Cfg *cfg_all(void) {
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	sset_add_many(cfg->adaptive_sync_off, "ten", "ELEVEN", NULL);
+	sset_add_many(cfg->adaptive_sync_off,
+			"ten",
+			"ELEVEN",
+			NULL);
 
-	pset_add_many(cfg->disableds, disabled_nd("eight"), disabled_nd("EIGHT"), disabled_nd("nine"), NULL);
+	pset_add_many(cfg->disableds,
+			disabled_nd("eight"),
+			disabled_nd("EIGHT"),
+			disabled_nd("nine"),
+			NULL);
 
 	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
@@ -83,7 +96,9 @@ struct Cfg *cfg_all(void) {
 
 	pset_add(cfg->disableds, disabled);
 
-	smapi_put(cfg->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
+	smapi_put_many(cfg->transforms,
+			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
+			NULL);
 
 	return cfg;
 }

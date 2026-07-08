@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -195,6 +196,20 @@ bool smaps_put_if_absent(const struct SMapS* const map, const char* const key, c
 
 size_t smaps_put_all(const struct SMapS* const map, const struct SMapS* const from) {
 	return map && from ? pmap_put_all_free(map->pmap, from->pmap) : 0;
+}
+
+size_t smaps_put_many(const struct SMapS* const map, ...) {
+	if (!map)
+		return 0;
+
+	va_list ap;
+	va_start(ap, map);
+
+	size_t added = pmap_put_many_free_v(map->pmap, ap);
+
+	va_end(ap);
+
+	return added;
 }
 
 bool smaps_remove(const struct SMapS* const map, const char* const key) {

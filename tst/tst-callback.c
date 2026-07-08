@@ -71,8 +71,10 @@ static void callback__below_threshold(void **state) {
 
 static void callback__one(void **state) {
 	const struct SMapS *env = smaps_init();
-	smaps_put_if_absent(env, "CALLBACK_MSG", "msg1");
-	smaps_put_if_absent(env, "CALLBACK_LEVEL", "INFO");
+	smaps_put_many(env,
+			"CALLBACK_MSG", "msg1",
+			"CALLBACK_LEVEL", "INFO",
+			NULL);
 
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
@@ -96,8 +98,10 @@ static void callback__one(void **state) {
 
 static void callback__two(void **state) {
 	const struct SMapS *expected_env = smaps_init();
-	smaps_put_if_absent(expected_env, "CALLBACK_MSG", "msg1msg2");
-	smaps_put_if_absent(expected_env, "CALLBACK_LEVEL", "FATAL");
+	smaps_put_many(expected_env,
+			"CALLBACK_MSG", "msg1msg2",
+			"CALLBACK_LEVEL", "FATAL",
+			NULL);
 
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
@@ -128,10 +132,12 @@ static void callback_mode_fail__(void **state) {
 	g_cfg->callback_cmd = strdup("command");
 
 	const struct SMapS *expected_env = smaps_init();
-	smaps_put_if_absent(expected_env, "CALLBACK_MSG",
-			"description1\n"
-			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying");
-	smaps_put_if_absent(expected_env, "CALLBACK_LEVEL", "INFO");
+	smaps_put_many(expected_env,
+			"CALLBACK_MSG", "description1\n"
+			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying",
+
+			"CALLBACK_LEVEL", "INFO",
+			NULL);
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
@@ -162,13 +168,15 @@ static void callback_adaptive_sync_fail__(void **state) {
 	g_cfg->callback_cmd = strdup("command");
 
 	const struct SMapS *expected_env = smaps_init();
-	smaps_put_if_absent(expected_env, "CALLBACK_MSG",
-			"description1\n"
+	smaps_put_many(expected_env,
+			"CALLBACK_MSG", "description1\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
-			"  - 'model1'");
-	smaps_put_if_absent(expected_env, "CALLBACK_LEVEL", "WARNING");
+			"  - 'model1'",
+
+			"CALLBACK_LEVEL", "WARNING",
+			NULL);
 
 	will_return_int(__wrap_log_get_threshold, INFO);
 
