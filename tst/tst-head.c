@@ -108,8 +108,7 @@ static void head_auto_scale__default(void **state) {
 static void head_auto_scale__mode(void **state) {
 	struct Head *head = head_init();
 
-	struct Mode *mode = mode_init();
-	mode->head = head;
+	struct Mode *mode = mode_h(head);
 	head->desired.mode = mode;
 	pset_add(head->modes, mode);
 
@@ -139,8 +138,7 @@ static void head_auto_scale__mode(void **state) {
 static void head_auto_scale__range(void **state) {
 	struct Head *head = head_init();
 
-	struct Mode *mode = mode_init();
-	mode->head = head;
+	struct Mode *mode = mode_h(head);
 	head->desired.mode = mode;
 	pset_add(head->modes, mode);
 
@@ -183,7 +181,7 @@ static void head_auto_scale__range(void **state) {
 }
 
 static void head_find_mode__no_modes(void **state) {
-	struct Head *head = head_init_name("head0");
+	struct Head *head = head_n("head0");
 
 	expect_int_value(__wrap_callback, t, ERROR);
 	expect_str(__wrap_callback, msg1, "head0");
@@ -197,9 +195,8 @@ static void head_find_mode__no_modes(void **state) {
 }
 
 static void head_find_mode__all_failed(void **state) {
-	struct Head *head = head_init_name("head0");
-	struct Mode *mode = mode_init();
-	mode->head = head;
+	struct Head *head = head_n("head0");
+	struct Mode *mode = mode_h(head);
 
 	// all modes failed
 	pset_add(head->modes_failed, mode);
@@ -217,7 +214,7 @@ static void head_find_mode__all_failed(void **state) {
 
 static void head_find_mode__user_available(void **state) {
 	struct Head *head = head_init();
-	const struct Mode *mode = mode_init_h_whr(head, 1, 2, 3);
+	const struct Mode *mode = mode_h_whr(head, 1, 2, 3);
 	pset_add(head->modes, mode);
 
 	// user preferred head
@@ -226,7 +223,7 @@ static void head_find_mode__user_available(void **state) {
 	head->name = strdup("HEAD");
 
 	// mode matched to user
-	const struct Mode *expected = mode_init_h_whr(head, 4, 5, 6);
+	const struct Mode *expected = mode_h_whr(head, 4, 5, 6);
 	pset_add(head->modes, expected);
 
 	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
@@ -243,9 +240,8 @@ static void head_find_mode__user_available(void **state) {
 
 static void head_find_mode__user_failed(void **state) {
 	struct Head *head = head_init();
-	struct Mode *mode = mode_init();
-	mode->head = head;
-	pset_add(head->modes, mode);
+	struct Mode *expected = mode_h(head);
+	pset_add(head->modes, expected);
 
 	// user preferred head
 	struct Mode *mode_target = mode_init();
@@ -268,8 +264,8 @@ static void head_find_mode__user_failed(void **state) {
 	// user failed, fall back to max
 	const struct Mode *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, mode);
-	assert_ptr_equal(actual, mode);
+	assert_mode_equal(actual, expected);
+	assert_ptr_equal(actual, expected);
 
 	// one and only notices: falling back to preferred then max
 	assert_log(WARNING, "\nHEAD: No available mode for user MODE -1x-1, falling back to preferred\n");
@@ -283,8 +279,8 @@ static void head_find_mode__user_failed(void **state) {
 	// marked failures avoided
 	actual = head_find_mode(head);
 
-	assert_mode_equal(actual, mode);
-	assert_ptr_equal(actual, mode);
+	assert_mode_equal(actual, expected);
+	assert_ptr_equal(actual, expected);
 
 	// no notices this time
 
@@ -292,49 +288,46 @@ static void head_find_mode__user_failed(void **state) {
 }
 
 static void head_find_mode__preferred(void **state) {
-	struct Head *head = head_init_name("name");
-	struct Mode *mode = mode_init();
-	mode->head = head;
-	head->mode_preferred = mode;
+	struct Head *head = head_n("name");
+	struct Mode *expected = mode_h(head);
+	head->mode_preferred = expected;
 
-	pset_add(head->modes, mode);
+	pset_add(head->modes, expected);
 
 	const struct Mode *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, mode);
-	assert_ptr_equal(actual, mode);
+	assert_mode_equal(actual, expected);
+	assert_ptr_equal(actual, expected);
 
 	head_free(head);
 }
 
 static void head_find_mode__mode_max_refresh(void **state) {
-	struct Head *head = head_init_name("name");
-	struct Mode *mode = mode_init();
-	mode->head = head;
-	head->mode_preferred = mode;
+	struct Head *head = head_n("name");
+	struct Mode *expected = mode_h(head);
+	head->mode_preferred = expected;
 
 	sset_add(g_cfg->max_preferred_refresh, "!nam.*");
 
-	pset_add(head->modes, mode);
+	pset_add(head->modes, expected);
 
-	expect_ptr(__wrap_mode_max_refresh, mode_target, mode);
+	expect_ptr(__wrap_mode_max_refresh, mode_target, expected);
 	expect_ptr(__wrap_mode_max_refresh, modes, head->modes);
-	will_return_ptr_type(__wrap_mode_max_refresh, mode, struct Mode*);
+	will_return_ptr_type(__wrap_mode_max_refresh, expected, struct Mode*);
 
 	const struct Mode *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, mode);
-	assert_ptr_equal(actual, mode);
+	assert_mode_equal(actual, expected);
+	assert_ptr_equal(actual, expected);
 
 	head_free(head);
 }
 
 static void head_find_mode__max(void **state) {
-	struct Head *head = head_init_name("name");
+	struct Head *head = head_n("name");
 
-	struct Mode *mode = mode_init();
-	mode->head = head;
-	pset_add(head->modes, mode);
+	struct Mode *expected = mode_h(head);
+	pset_add(head->modes, expected);
 
 	expect_int_value(__wrap_callback, t, WARNING);
 	expect_str(__wrap_callback, msg1, "name\n  No preferred mode, falling back to maximum available");
@@ -343,22 +336,22 @@ static void head_find_mode__max(void **state) {
 	// one and only notice
 	const struct Mode *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, mode);
-	assert_ptr_equal(actual, mode);
+	assert_mode_equal(actual, expected);
+	assert_ptr_equal(actual, expected);
 
 	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
 
 	// no notice
 	actual = head_find_mode(head);
 
-	assert_mode_equal(actual, mode);
-	assert_ptr_equal(actual, mode);
+	assert_mode_equal(actual, expected);
+	assert_ptr_equal(actual, expected);
 
 	head_free(head);
 }
 
 static void head_find_mode__none(void **state) {
-	struct Head *head = head_init_name("head0");
+	struct Head *head = head_n("head0");
 
 	expect_int_value(__wrap_callback, t, ERROR);
 	expect_str(__wrap_callback, msg1, "head0");
@@ -374,15 +367,15 @@ static void head_find_mode__none(void **state) {
 static void head_max_mode__max(void **state) {
 	struct Head *head = head_init();
 
-	struct Mode *mode_expected = mode_init_whr(2000, 2000, 2000);
+	struct Mode *mode_expected = mode_whr(2000, 2000, 2000);
 
 	pset_add_many(head->modes,
-			mode_init_whr(1000, 1000, 1000),
-			mode_init_whr(500, 500, 1000),
-			mode_init_whr(1000, 1000, 500),
-			mode_init_whr(2000, 2000, 1000),
+			mode_whr(1000, 1000, 1000),
+			mode_whr(500, 500, 1000),
+			mode_whr(1000, 1000, 500),
+			mode_whr(2000, 2000, 1000),
 			mode_expected,
-			mode_init_whr(1000, 1000, 1000),
+			mode_whr(1000, 1000, 1000),
 			NULL);
 
 	const struct Mode *actual = head_max_mode(head);
@@ -394,7 +387,7 @@ static void head_max_mode__max(void **state) {
 }
 
 static void head_matches_name_desc_regex__name(void **state) {
-	struct Head *head = head_init_name("name");
+	struct Head *head = head_n("name");
 
 	assert_true(head_matches_name_desc_regex(head, "!nam"));
 
@@ -402,7 +395,7 @@ static void head_matches_name_desc_regex__name(void **state) {
 }
 
 static void head_matches_name_desc_regex__desc(void **state) {
-	struct Head *head = head_init_name("name");
+	struct Head *head = head_n("name");
 	head->description = strdup("desc");
 
 	assert_true(head_matches_name_desc_regex(head, "!esc"));
@@ -411,7 +404,7 @@ static void head_matches_name_desc_regex__desc(void **state) {
 }
 
 static void head_matches_name_desc_regex__bad(void **state) {
-	struct Head *head = head_init_name("name");
+	struct Head *head = head_n("name");
 
 	assert_false(head_matches_name_desc_regex(head, "!(badregex"));
 
@@ -421,7 +414,7 @@ static void head_matches_name_desc_regex__bad(void **state) {
 }
 
 static void head_apply_toggles__none(void **state) {
-	struct Head *head = head_init_name("head0");
+	struct Head *head = head_n("head0");
 	struct Cfg *cfg = cfg_init();
 
 	head_apply_toggles(head, cfg);
@@ -434,10 +427,10 @@ static void head_apply_toggles__none(void **state) {
 }
 
 static void head_apply_toggles__disabled__enable(void **state) {
-	struct Head *head = head_init_name("head0");
+	struct Head *head = head_n("head0");
 	head->current.enabled = false;
 	struct Cfg *cfg = cfg_init();
-	pset_add(cfg->disableds, disabled_init_name_desc("head0"));
+	pset_add(cfg->disableds, disabled_nd("head0"));
 
 	head_apply_toggles(head, cfg);
 
@@ -454,10 +447,10 @@ static void head_apply_toggles__disabled__enable(void **state) {
 }
 
 static void head_apply_toggles__disabled__disable(void **state) {
-	struct Head *head = head_init_name("head0");
+	struct Head *head = head_n("head0");
 	head->current.enabled = true;
 	struct Cfg *cfg = cfg_init();
-	pset_add(cfg->disableds, disabled_init_name_desc("head0"));
+	pset_add(cfg->disableds, disabled_nd("head0"));
 
 	head_apply_toggles(head, cfg);
 
@@ -474,7 +467,7 @@ static void head_apply_toggles__disabled__disable(void **state) {
 }
 
 static void head_set_description__nulls(void **state) {
-	struct Head *head = head_init_description("orig");
+	struct Head *head = head_d("orig");
 
 	head_set_description(head, "(null) (null) (null) foo (null) bar baz");
 
@@ -484,7 +477,7 @@ static void head_set_description__nulls(void **state) {
 }
 
 static void head_set_description__no_nulls(void **state) {
-	struct Head *head = head_init_description("orig");
+	struct Head *head = head_d("orig");
 
 	head_set_description(head, "foo");
 
@@ -494,7 +487,7 @@ static void head_set_description__no_nulls(void **state) {
 }
 
 static void head_set_description__empty(void **state) {
-	struct Head *head = head_init_description("orig");
+	struct Head *head = head_d("orig");
 
 	head_set_description(head, "");
 
@@ -504,7 +497,7 @@ static void head_set_description__empty(void **state) {
 }
 
 static void head_set_description__null_input(void **state) {
-	struct Head *head = head_init_description("orig");
+	struct Head *head = head_d("orig");
 
 	head_set_description(head, NULL);
 
@@ -516,16 +509,16 @@ static void head_set_description__null_input(void **state) {
 static void heads_reapply__(void **state) {
 	struct SList *heads = NULL;
 
-	struct Head *head_disabled = head_init_name("DP-7");
+	struct Head *head_disabled = head_n("DP-7");
 	head_disabled->current.enabled = false;
 
-	head_disabled->mode_preferred = mode_init_h_whr(head_disabled, 3440, 1440, 59999);
+	head_disabled->mode_preferred = mode_h_whr(head_disabled, 3440, 1440, 59999);
 
 	const struct PSet *modes_once_failed = mode_pset_init();
 	pset_add_many(modes_once_failed,
 			head_disabled->mode_preferred,
-			mode_init_h_whr(head_disabled, 3840, 2160, 30000),
-			mode_init_h_whr(head_disabled, 3840, 2160, 29970),
+			mode_h_whr(head_disabled, 3840, 2160, 30000),
+			mode_h_whr(head_disabled, 3840, 2160, 29970),
 			NULL);
 
 	pset_free(head_disabled->modes_failed);
@@ -534,10 +527,10 @@ static void heads_reapply__(void **state) {
 	slist_append(&heads, head_disabled);
 
 
-	struct Head *head_enabled = head_init_name("eDP-1");
+	struct Head *head_enabled = head_n("eDP-1");
 	head_enabled->current.enabled = true;
 
-	head_enabled->current.mode = mode_init_h_whr(head_enabled, 2256, 1504, 59999);
+	head_enabled->current.mode = mode_h_whr(head_enabled, 2256, 1504, 59999);
 	head_enabled->mode_preferred = head_enabled->current.mode;
 	pset_add(head_enabled->modes, head_enabled->current.mode);
 
@@ -561,7 +554,7 @@ static void heads_reapply__(void **state) {
 static void head_release_mode__nulls(void **state) {
 	head_release_mode(NULL);
 
-	struct Mode *mode_releasing = mode_init_whr(0, 0, 0);
+	struct Mode *mode_releasing = mode_whr(0, 0, 0);
 
 	head_release_mode(mode_releasing);
 }
@@ -569,14 +562,14 @@ static void head_release_mode__nulls(void **state) {
 static void head_release_mode__other(void **state) {
 	struct Head *head = head_init();
 
-	struct Mode *mode_releasing = mode_init_h_whr(head, 10, 20, 0);
+	struct Mode *mode_releasing = mode_h_whr(head, 10, 20, 0);
 	pset_add(head->modes, mode_releasing);
 
-	struct Mode *mode_current = mode_init_h_whr(head, 30, 40, 0);
+	struct Mode *mode_current = mode_h_whr(head, 30, 40, 0);
 	pset_add(head->modes, mode_current);
 	head->current.mode = mode_current;
 
-	struct Mode *mode_desired = mode_init_h_whr(head, 50, 60, 0);
+	struct Mode *mode_desired = mode_h_whr(head, 50, 60, 0);
 	pset_add(head->modes, mode_desired);
 	head->desired.mode = mode_desired;
 
@@ -602,8 +595,7 @@ static void head_release_mode__other(void **state) {
 static void head_release_mode__cur_des(void **state) {
 	struct Head *head = head_init();
 
-	struct Mode *mode_releasing = mode_init();
-	mode_releasing->head = head;
+	struct Mode *mode_releasing = mode_h(head);
 	pset_add(head->modes, mode_releasing);
 
 	head->current.mode = mode_releasing;
@@ -624,8 +616,7 @@ static void head_release_mode__cur_des(void **state) {
 static void head_release_mode__orphan(void **state) {
 	struct Head *head = head_init();
 
-	struct Mode *mode_releasing = mode_init();
-	mode_releasing->head = head;
+	struct Mode *mode_releasing = mode_h(head);
 
 	head_release_mode(mode_releasing);
 
@@ -634,8 +625,8 @@ static void head_release_mode__orphan(void **state) {
 
 static void head_set_mode_preferred__first(void **state) {
 	struct Head *head = head_init();
-	const struct Mode *mode_existing = mode_init_h_whr(head, 3840, 2160, 60000);
-	struct Mode *mode_pref = mode_init_h_whr(head, 2560, 1440, 30000);
+	const struct Mode *mode_existing = mode_h_whr(head, 3840, 2160, 60000);
+	struct Mode *mode_pref = mode_h_whr(head, 2560, 1440, 30000);
 
 	pset_add(head->modes, mode_existing);
 	pset_add(head->modes, mode_pref);
@@ -649,7 +640,7 @@ static void head_set_mode_preferred__first(void **state) {
 
 static void head_set_mode_preferred__current(void **state) {
 	struct Head *head = head_init();
-	head->mode_preferred = mode_init_h_whr(head, 2560, 1440, 30000);
+	head->mode_preferred = mode_h_whr(head, 2560, 1440, 30000);
 	pset_add(head->modes, head->mode_preferred);
 
 	head_set_mode_preferred(head->mode_preferred);
@@ -660,9 +651,9 @@ static void head_set_mode_preferred__current(void **state) {
 }
 
 static void head_set_mode_preferred__subsequent(void **state) {
-	struct Head *head = head_init_name("NAM");
-	struct Mode *mode_existing = mode_init_h_whr(head, 3840, 2160, 60000);
-	const struct Mode *mode_subsequent = mode_init_h_whr(head, 2560, 1440, 30000);
+	struct Head *head = head_n("NAM");
+	struct Mode *mode_existing = mode_h_whr(head, 3840, 2160, 60000);
+	const struct Mode *mode_subsequent = mode_h_whr(head, 2560, 1440, 30000);
 
 	head->mode_preferred = mode_existing;
 

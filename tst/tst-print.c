@@ -43,29 +43,29 @@ int before_each(void **state) {
 
 	s->head1 = head_init();
 
-	s->head1->current.mode = mode_init_h_whr(s->head1, 100, 200, 30000);
+	s->head1->current.mode = mode_h_whr(s->head1, 100, 200, 30000);
 	s->head1->mode_preferred = s->head1->current.mode;
 
-	s->head1->desired.mode = mode_init_h_whr(s->head1, 400, 500, 60000);
+	s->head1->desired.mode = mode_h_whr(s->head1, 400, 500, 60000);
 
 	pset_add_many(s->head1->modes,
-			mode_init_h_whr(s->head1, 100, 200, 29999), // less than current
+			mode_h_whr(s->head1, 100, 200, 29999), // less than current
 			s->head1->current.mode,
-			mode_init_h_whr(s->head1, 100, 200, 30001), // more than current
+			mode_h_whr(s->head1, 100, 200, 30001), // more than current
 			s->head1->desired.mode,
-			mode_init_h_whr(s->head1, 700, 800, 89999), // group with failed
-			mode_init_h_whr(s->head1, 700, 800, 90001), // end
-			mode_init_h_whr(s->head1, 1000, 1000, 49499),
-			mode_init_h_whr(s->head1, 1000, 1000, 49500), // group start
-			mode_init_h_whr(s->head1, 1000, 1000, 49999), //
-			mode_init_h_whr(s->head1, 1000, 1000, 50000), //
-			mode_init_h_whr(s->head1, 1000, 1000, 50100), //
-			mode_init_h_whr(s->head1, 1000, 1000, 50499), // group
-			mode_init_h_whr(s->head1, 1000, 1000, 50500),
+			mode_h_whr(s->head1, 700, 800, 89999), // group with failed
+			mode_h_whr(s->head1, 700, 800, 90001), // end
+			mode_h_whr(s->head1, 1000, 1000, 49499),
+			mode_h_whr(s->head1, 1000, 1000, 49500), // group start
+			mode_h_whr(s->head1, 1000, 1000, 49999), //
+			mode_h_whr(s->head1, 1000, 1000, 50000), //
+			mode_h_whr(s->head1, 1000, 1000, 50100), //
+			mode_h_whr(s->head1, 1000, 1000, 50499), // group
+			mode_h_whr(s->head1, 1000, 1000, 50500),
 			NULL);
 
 	pset_add_many(s->head1->modes_failed,
-			mode_init_h_whr(s->head1, 700, 800, 90000),
+			mode_h_whr(s->head1, 700, 800, 90000),
 			NULL);
 
 	s->head1->name = strdup("name1");
@@ -95,8 +95,8 @@ int before_each(void **state) {
 
 	s->head2 = head_init();
 
-	s->head2->current.mode = mode_init_h_whr(s->head2, 1100, 1200, 130000);
-	s->head2->desired.mode = mode_init_h_whr(s->head2, 1400, 1500, 160000);
+	s->head2->current.mode = mode_h_whr(s->head2, 1100, 1200, 130000);
+	s->head2->desired.mode = mode_h_whr(s->head2, 1400, 1500, 160000);
 
 	pset_add(s->head2->modes, s->head2->current.mode);
 	pset_add(s->head2->modes, s->head2->desired.mode);
@@ -155,17 +155,16 @@ static void print_cfg__all(void **state) {
 	smapi_put(c->scales, "three", 3000);
 	smapi_put(c->scales, "four", 4000);
 
-	pset_add(c->disableds, disabled_init_name_desc("disabled always"));
-	struct Disabled *disabled = disabled_init();
-	disabled->name_desc = strdup("disabled conditionally");
+	pset_add(c->disableds, disabled_nd("disabled always"));
+	struct Disabled *disabled = disabled_nd("disabled conditionally");
 	const struct Condition *cond = condition_init();
 	sset_add(cond->plugged, "ONE");
 	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 
-	smap_put(c->modes, "five", mode_init_whr(1920, 1080, 12340));
-	smap_put(c->modes, "six", mode_init_whr(2560, 1440, -1));
-	smap_put(c->modes, "seven", mode_init_whr_max(-1, -1, -1));
+	smap_put(c->modes, "five", mode_whr(1920, 1080, 12340));
+	smap_put(c->modes, "six", mode_whr(2560, 1440, -1));
+	smap_put(c->modes, "seven", mode_whr_max(-1, -1, -1));
 
 	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
@@ -191,9 +190,9 @@ static void print_cfg__del(void **state) {
 	smapi_put(c->scales, "three", 3000);
 	smapi_put(c->scales, "four", 4000);
 
-	smap_put(c->modes, "five", mode_init_whr(1920, 1080, 12340));
-	smap_put(c->modes, "six", mode_init_whr(2560, 1440, -1));
-	smap_put(c->modes, "seven", mode_init_whr_max(-1, -1, -1));
+	smap_put(c->modes, "five", mode_whr(1920, 1080, 12340));
+	smap_put(c->modes, "six", mode_whr(2560, 1440, -1));
+	smap_put(c->modes, "seven", mode_whr_max(-1, -1, -1));
 
 	smapi_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 	smapi_put(c->transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
@@ -285,13 +284,13 @@ static void print_cfg_commands__ok(void **state) {
 	smapi_put(c->scales, "one", 1000);
 	smapi_put(c->scales, "two", 2345);
 
-	smap_put(c->modes, "all", mode_init_whr(1, 2, 12340));
-	smap_put(c->modes, "res", mode_init_whr(4, 5, -1));
-	smap_put(c->modes, "max", mode_init_whr_max(7, 8, 9));
+	smap_put(c->modes, "all", mode_whr(1, 2, 12340));
+	smap_put(c->modes, "res", mode_whr(4, 5, -1));
+	smap_put(c->modes, "max", mode_whr_max(7, 8, 9));
 
 	smapi_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 
-	pset_add_many(c->disableds, disabled_init_name_desc("three"), disabled_init_name_desc("four"), NULL);
+	pset_add_many(c->disableds, disabled_nd("three"), disabled_nd("four"), NULL);
 
 	sset_add_many(c->adaptive_sync_off, "five", "six", NULL);
 
@@ -643,50 +642,50 @@ static void print_heads_outstanding__many(void **state) {
 
 	will_return_int(__wrap_log_get_threshold, DEBUG);
 
-	struct Head *head_reapply = head_init_name("re");
+	struct Head *head_reapply = head_n("re");
 	head_reapply->reapply_required = true;
 	slist_append(&heads, head_reapply);
 
-	struct Head *head_mode = head_init_name("mo");
+	struct Head *head_mode = head_n("mo");
 	head_mode->desired.mode = mode_init();
 	slist_append(&heads, head_mode);
 
-	struct Head *head_disable = head_init_name("di");
+	struct Head *head_disable = head_n("di");
 	head_disable->current.enabled = true;
 	head_disable->desired.enabled = false;
 	slist_append(&heads, head_disable);
 
-	struct Head *head_vrr = head_init_name("vr");
+	struct Head *head_vrr = head_n("vr");
 	head_vrr->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head_vrr->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	slist_append(&heads, head_vrr);
 
-	struct Head *head_enable = head_init_name("en");
+	struct Head *head_enable = head_n("en");
 	head_enable->current.enabled = false;
 	head_enable->desired.enabled = true;
 	slist_append(&heads, head_enable);
 
-	struct Head *head_scale = head_init_name("sc");
+	struct Head *head_scale = head_n("sc");
 	head_scale->current.scale = 1;
 	head_scale->desired.scale = 2;
 	slist_append(&heads, head_scale);
 
-	struct Head *head_x = head_init_name("x");
+	struct Head *head_x = head_n("x");
 	head_x->current.x = 1;
 	head_x->desired.x = 2;
 	slist_append(&heads, head_x);
 
-	struct Head *head_y = head_init_name("y");
+	struct Head *head_y = head_n("y");
 	head_y->current.y = 1;
 	head_y->desired.y = 2;
 	slist_append(&heads, head_y);
 
-	struct Head *head_transform = head_init_name("tr");
+	struct Head *head_transform = head_n("tr");
 	head_transform->current.transform = WL_OUTPUT_TRANSFORM_90;
 	head_transform->desired.transform = WL_OUTPUT_TRANSFORM_180;
 	slist_append(&heads, head_transform);
 
-	struct Head *head_all = head_init_name("a");
+	struct Head *head_all = head_n("a");
 	head_all->reapply_required = true;
 	head_all->desired.mode = mode_init();
 	head_all->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;

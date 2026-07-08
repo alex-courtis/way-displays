@@ -88,7 +88,7 @@ static void yaml_root_to_cfg__missing(void **state) {
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
-	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_nd("BAD_DISABLED_IFS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
 }
@@ -133,9 +133,9 @@ static void yaml_root_to_cfg__scale(void **state) {
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	smap_put(expected->modes, "max_override", mode_init_whr_max(1920, 1080, 12340));
-	smap_put(expected->modes, "five", mode_init_whr(1920, 1080, 12340));
-	smap_put(expected->modes, "seven", mode_init_whr_max(-1, -1, -1));
+	smap_put(expected->modes, "max_override", mode_whr_max(1920, 1080, 12340));
+	smap_put(expected->modes, "five", mode_whr(1920, 1080, 12340));
+	smap_put(expected->modes, "seven", mode_whr_max(-1, -1, -1));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
 }
@@ -143,7 +143,7 @@ static void yaml_root_to_cfg__mode(void **state) {
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	struct Disabled *disabled_twelve_1 = disabled_init_name_desc("twelve");
+	struct Disabled *disabled_twelve_1 = disabled_nd("twelve");
 	const struct Condition *cond = condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
 	pset_add(disabled_twelve_1->conditions, cond);
@@ -151,24 +151,24 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	sset_add_many(cond->unplugged, "THREE", NULL);
 	pset_add(disabled_twelve_1->conditions, cond);
 
-	struct Disabled *disabled_twelve_2 = disabled_init_name_desc("twelve");
+	struct Disabled *disabled_twelve_2 = disabled_nd("twelve");
 	cond = condition_init();
 	sset_add(cond->plugged, "FOUR");
 	pset_add(disabled_twelve_2->conditions, cond);
 
 	pset_add_many(expected->disableds,
-			disabled_init_name_desc("eight"),
-			disabled_init_name_desc("EIGHT"),
-			disabled_init_name_desc("nine"),
+			disabled_nd("eight"),
+			disabled_nd("EIGHT"),
+			disabled_nd("nine"),
 			disabled_twelve_1,
 			disabled_twelve_2,
-			disabled_init_name_desc("BAD_DISABLED_IFS"),
-			disabled_init_name_desc("MISTYPED_IF_SCALAR"),
-			disabled_init_name_desc("MISTYPED_IF_MAP"),
-			disabled_init_name_desc("MISTYPED_UN_PLUGGED_SCALAR"),
-			disabled_init_name_desc("MISTYPED_UN_PLUGGED_MAP"),
-			disabled_init_name_desc("MISTYPED_LID_MAP"),
-			disabled_init_name_desc("NO_VALID_CONDITIONS"),
+			disabled_nd("BAD_DISABLED_IFS"),
+			disabled_nd("MISTYPED_IF_SCALAR"),
+			disabled_nd("MISTYPED_IF_MAP"),
+			disabled_nd("MISTYPED_UN_PLUGGED_SCALAR"),
+			disabled_nd("MISTYPED_UN_PLUGGED_MAP"),
+			disabled_nd("MISTYPED_LID_MAP"),
+			disabled_nd("NO_VALID_CONDITIONS"),
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
@@ -260,7 +260,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected = cfg_default();
-	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
+	pset_add(expected->disableds, disabled_nd("BAD_DISABLED_IFS"));
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 

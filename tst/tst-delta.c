@@ -31,7 +31,7 @@ int before_each(void **state) {
 	g_displ = calloc(1, sizeof(struct Displ));
 
 
-	s->head1 = head_init_name("name1");
+	s->head1 = head_n("name1");
 	s->head1->description = strdup("description1");
 
 	s->head1->current.scale = 512;
@@ -40,7 +40,7 @@ int before_each(void **state) {
 	s->head1->current.y = 800;
 	s->head1->current.transform = WL_OUTPUT_TRANSFORM_180;
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	s->head1->current.mode = mode_init_h_whr(s->head1, 100, 200, 30000);
+	s->head1->current.mode = mode_h_whr(s->head1, 100, 200, 30000);
 	pset_add(s->head1->modes, s->head1->current.mode);
 
 	s->head1->desired.scale = 1024;
@@ -49,13 +49,13 @@ int before_each(void **state) {
 	s->head1->desired.y = 1000;
 	s->head1->desired.transform = WL_OUTPUT_TRANSFORM_90;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	s->head1->desired.mode = mode_init_h_whr(s->head1, 400, 500, 60000);
+	s->head1->desired.mode = mode_h_whr(s->head1, 400, 500, 60000);
 	pset_add(s->head1->modes, s->head1->desired.mode);
 
 	slist_append(&s->heads, s->head1);
 
 
-	s->head2 = head_init_name("name2");
+	s->head2 = head_n("name2");
 
 	s->head2->current.scale = 2048;
 	s->head2->current.enabled = true;
@@ -63,7 +63,7 @@ int before_each(void **state) {
 	s->head2->current.y = 1800;
 	s->head2->current.transform = WL_OUTPUT_TRANSFORM_270;
 	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head2->current.mode = mode_init_h_whr(s->head2, 1100, 1200, 130000);
+	s->head2->current.mode = mode_h_whr(s->head2, 1100, 1200, 130000);
 	pset_add(s->head2->modes, s->head2->current.mode);
 
 	s->head2->desired.scale = 4096;
@@ -72,7 +72,7 @@ int before_each(void **state) {
 	s->head2->desired.y = 11000;
 	s->head2->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	s->head2->desired.mode = mode_init_h_whr(s->head2, 1400, 1500, 160000);
+	s->head2->desired.mode = mode_h_whr(s->head2, 1400, 1500, 160000);
 	pset_add(s->head2->modes, s->head2->desired.mode);
 
 	slist_append(&s->heads, s->head2);

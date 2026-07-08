@@ -63,9 +63,9 @@ static int after_each(void **state) {
 static void cfg_equal__mode(void **state) {
 	const struct State *s = *state;
 
-	smap_put(s->from->modes, "both", mode_init_whr(4, 5, 6));
+	smap_put(s->from->modes, "both", mode_whr(4, 5, 6));
 
-	smap_put(s->to->modes, "both", mode_init_whr(10, 11, 12));
+	smap_put(s->to->modes, "both", mode_whr(10, 11, 12));
 
 	assert_cfg_not_equal(s->from, s->to);
 }
@@ -194,15 +194,15 @@ static void cfg_merge_set__transform(void **state) {
 static void cfg_merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->modes, "to", mode_init_whr(1, 2, 3));
-	smap_put(s->to->modes, "both", mode_init_whr(4, 5, 6));
+	smap_put(s->to->modes, "to", mode_whr(1, 2, 3));
+	smap_put(s->to->modes, "both", mode_whr(4, 5, 6));
 
-	smap_put(s->from->modes, "from", mode_init_whr(7, 8, 9));
-	smap_put(s->from->modes, "both", mode_init_whr(10, 11, 12));
+	smap_put(s->from->modes, "from", mode_whr(7, 8, 9));
+	smap_put(s->from->modes, "both", mode_whr(10, 11, 12));
 
-	smap_put(s->expected->modes, "to", mode_init_whr(1, 2, 3));
-	smap_put(s->expected->modes, "both", mode_init_whr(10, 11, 12));
-	smap_put(s->expected->modes, "from", mode_init_whr(7, 8, 9));
+	smap_put(s->expected->modes, "to", mode_whr(1, 2, 3));
+	smap_put(s->expected->modes, "both", mode_whr(10, 11, 12));
+	smap_put(s->expected->modes, "from", mode_whr(7, 8, 9));
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -230,7 +230,7 @@ static void cfg_merge_set__adaptive_sync_off(void **state) {
 static void cfg_merge_set__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Disabled *disabled1 = disabled_init_name_desc("cond");
+	struct Disabled *disabled1 = disabled_nd("cond");
 
 	struct Condition *cond = condition_init();
 	sset_add(cond->plugged, "display");
@@ -246,20 +246,20 @@ static void cfg_merge_set__disabled(void **state) {
 
 	// TODO sets could be null terminated
 	pset_add_many(s->to->disableds,
-			disabled_init_name_desc("to"),
-			disabled_init_name_desc("both"),
+			disabled_nd("to"),
+			disabled_nd("both"),
 			NULL);
 
 	pset_add_many(s->from->disableds,
-			disabled_init_name_desc("from"),
-			disabled_init_name_desc("both"),
+			disabled_nd("from"),
+			disabled_nd("both"),
 			disabled_clone(disabled1),
 			NULL);
 
 	pset_add_many(s->expected->disableds,
-			disabled_init_name_desc("to"),
-			disabled_init_name_desc("both"),
-			disabled_init_name_desc("from"),
+			disabled_nd("to"),
+			disabled_nd("both"),
+			disabled_nd("from"),
 			disabled1,
 			NULL);
 
@@ -310,13 +310,13 @@ static void cfg_merge_del__scale(void **state) {
 static void cfg_merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->to->modes, "1", mode_init_whr(1, 1, 1));
-	smap_put(s->to->modes, "2", mode_init_whr(2, 2, 2));
+	smap_put(s->to->modes, "1", mode_whr(1, 1, 1));
+	smap_put(s->to->modes, "2", mode_whr(2, 2, 2));
 
-	smap_put(s->from->modes, "2", mode_init_whr(2, 2, 2));
-	smap_put(s->from->modes, "3", mode_init_whr(3, 3, 3));
+	smap_put(s->from->modes, "2", mode_whr(2, 2, 2));
+	smap_put(s->from->modes, "3", mode_whr(3, 3, 3));
 
-	smap_put(s->from->modes, "1", mode_init_whr(1, 1, 1));
+	smap_put(s->from->modes, "1", mode_whr(1, 1, 1));
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -363,17 +363,17 @@ static void cfg_merge_del__disabled(void **state) {
 	struct State *s = *state;
 
 	pset_add_many(s->to->disableds,
-			disabled_init_name_desc("1"),
-			disabled_init_name_desc("2"),
+			disabled_nd("1"),
+			disabled_nd("2"),
 			NULL);
 
 	pset_add_many(s->from->disableds,
-			disabled_init_name_desc("2"),
-			disabled_init_name_desc("3"),
+			disabled_nd("2"),
+			disabled_nd("3"),
 			NULL);
 
 	pset_add_many(s->expected->disableds,
-			disabled_init_name_desc("1"),
+			disabled_nd("1"),
 			NULL);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
@@ -490,26 +490,26 @@ static void cfg_validate_fix__row(void **state) {
 static void cfg_validate_fix__mode_cfg(void **state) {
 	struct State *s = *state;
 
-	smap_put(s->from->modes, "ok", mode_init_whr(1, 2, 3));
-	smap_put(s->from->modes, "max", mode_init_whr_max(-1, -1, -1));
+	smap_put(s->from->modes, "ok", mode_whr(1, 2, 3));
+	smap_put(s->from->modes, "max", mode_whr_max(-1, -1, -1));
 
-	smap_put(s->from->modes, "negative width", mode_init_whr(-99, 2, 3));
+	smap_put(s->from->modes, "negative width", mode_whr(-99, 2, 3));
 
-	smap_put(s->from->modes, "negative height", mode_init_whr(1, -99, 3));
+	smap_put(s->from->modes, "negative height", mode_whr(1, -99, 3));
 
-	smap_put(s->from->modes, "negative hz", mode_init_whr(1, 2, -12340));
+	smap_put(s->from->modes, "negative hz", mode_whr(1, 2, -12340));
 
-	smap_put(s->from->modes, "missing width", mode_init_whr(-1, 2, 3));
+	smap_put(s->from->modes, "missing width", mode_whr(-1, 2, 3));
 
-	smap_put(s->from->modes, "missing height", mode_init_whr(1, -1, 3));
+	smap_put(s->from->modes, "missing height", mode_whr(1, -1, 3));
 
 	cfg_validate_fix(s->from);
 
 	char *expected_log = read_file("tst/cfg/validate-fix-mode.log");
 	assert_log(WARNING, expected_log);
 
-	smap_put(s->expected->modes, "ok", mode_init_whr(1, 2, 3));
-	smap_put(s->expected->modes, "max", mode_init_whr_max(-1, -1, -1));
+	smap_put(s->expected->modes, "ok", mode_whr(1, 2, 3));
+	smap_put(s->expected->modes, "max", mode_whr_max(-1, -1, -1));
 
 	assert_cfg_equal(s->from, s->expected);
 
@@ -537,9 +537,9 @@ static void cfg_validate_warn__(void **state) {
 	smapi_put(s->expected->scales, "ssssssss", 2000);
 	smapi_put(s->expected->scales, "DP-1", 3000);
 
-	smap_put(s->expected->modes, "mmm", mode_init_whr(1, 1, 1));
-	smap_put(s->expected->modes, "mmmmmmmm", mode_init_whr(1, 1, 1));
-	smap_put(s->expected->modes, "DP-1", mode_init_whr(1, 1, 1));
+	smap_put(s->expected->modes, "mmm", mode_whr(1, 1, 1));
+	smap_put(s->expected->modes, "mmmmmmmm", mode_whr(1, 1, 1));
+	smap_put(s->expected->modes, "DP-1", mode_whr(1, 1, 1));
 
 	smapi_put(s->expected->transforms, "ttt", WL_OUTPUT_TRANSFORM_180);
 	smapi_put(s->expected->transforms, "tttttttttt", WL_OUTPUT_TRANSFORM_270);
@@ -551,16 +551,16 @@ static void cfg_validate_warn__(void **state) {
 
 	sset_add_many(s->expected->max_preferred_refresh, "ppp", "pppppppppp", "DP-1", NULL);
 
-	struct Disabled *disabled_cond = disabled_init_name_desc("cond1");
+	struct Disabled *disabled_cond = disabled_nd("cond1");
 	const struct Condition *cond = condition_init();
 	sset_add_many(cond->plugged, "ppp", "DP-1", NULL);
 	sset_add_many(cond->unplugged, "uuu", "DP-1", NULL);
 	pset_add(disabled_cond->conditions, cond);
 
 	pset_add_many(s->expected->disableds,
-			disabled_init_name_desc("ddd"),
-			disabled_init_name_desc("dddddddddd"),
-			disabled_init_name_desc("DP-1"),
+			disabled_nd("ddd"),
+			disabled_nd("dddddddddd"),
+			disabled_nd("DP-1"),
 			disabled_cond,
 			NULL);
 

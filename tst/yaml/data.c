@@ -56,13 +56,13 @@ struct Cfg *cfg_all(void) {
 	smapi_put(cfg->scales, "three", 3000);
 	smapi_put(cfg->scales, "four", 4000);
 
-	smap_put(cfg->modes, "five", mode_init_whr(1920, 1080, 12340));
-	smap_put(cfg->modes, "six", mode_init_whr(2560, 1440, -1));
-	smap_put(cfg->modes, "seven", mode_init_whr_max(-1, -1, -1));
+	smap_put(cfg->modes, "five", mode_whr(1920, 1080, 12340));
+	smap_put(cfg->modes, "six", mode_whr(2560, 1440, -1));
+	smap_put(cfg->modes, "seven", mode_whr_max(-1, -1, -1));
 
 	sset_add_many(cfg->adaptive_sync_off, "ten", "ELEVEN", NULL);
 
-	pset_add_many(cfg->disableds, disabled_init_name_desc("eight"), disabled_init_name_desc("EIGHT"), disabled_init_name_desc("nine"), NULL);
+	pset_add_many(cfg->disableds, disabled_nd("eight"), disabled_nd("EIGHT"), disabled_nd("nine"), NULL);
 
 	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
@@ -128,7 +128,7 @@ struct IpcOperation *ipc_response(void) {
 	head0->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head0->current.transform = WL_OUTPUT_TRANSFORM_270;
 
-	const struct Mode *mode_cur = mode_init_h_whr(head0, 10, 11, 12);
+	const struct Mode *mode_cur = mode_h_whr(head0, 10, 11, 12);
 	head0->mode_preferred = mode_cur;
 	head0->current.mode = mode_cur;
 	pset_add(head0->modes, head0->current.mode);
@@ -140,10 +140,10 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head0->desired.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
 
-	head0->desired.mode = mode_init_h_whr(head0, 13, 14, 15);
+	head0->desired.mode = mode_h_whr(head0, 13, 14, 15);
 	pset_add(head0->modes, head0->desired.mode);
 
-	pset_add(head0->modes_failed, mode_init_h_whr(head0, 16, 17, 18));
+	pset_add(head0->modes_failed, mode_h_whr(head0, 16, 17, 18));
 
 	slist_append(&g_heads, head0);
 

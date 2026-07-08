@@ -393,8 +393,8 @@ static void cli_parse_element__disabled_ok(void **state) {
 
 	struct Cfg *expected = cfg_init();
 	pset_add_many(expected->disableds,
-			disabled_init_name_desc("ONE"),
-			disabled_init_name_desc("TWO"),
+			disabled_nd("ONE"),
+			disabled_nd("TWO"),
 			NULL);
 
 	assert_cfg_equal(actual, expected);

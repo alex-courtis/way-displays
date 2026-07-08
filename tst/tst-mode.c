@@ -23,12 +23,12 @@ const struct PSet *modes_failed = NULL;
 struct Mode *mode0, *mode1, *mode2, *mode3, *mode4, *mode5;
 
 static int before_each(void **state) {
-	mode0 = mode_init_whr(200, 100, 59999);
-	mode1 = mode_init_whr(200, 100, 60499);
-	mode2 = mode_init_whr(200, 100, 60500);
-	mode3 = mode_init_whr(400, 200, 120000);
-	mode4 = mode_init_whr(600, 300, 164999);
-	mode5 = mode_init_whr(800, 400, 144000);
+	mode0 = mode_whr(200, 100, 59999);
+	mode1 = mode_whr(200, 100, 60499);
+	mode2 = mode_whr(200, 100, 60500);
+	mode3 = mode_whr(400, 200, 120000);
+	mode4 = mode_whr(600, 300, 164999);
+	mode5 = mode_whr(800, 400, 144000);
 
 	modes = mode_pset_init();
 	modes_failed = mode_pset_init();
@@ -56,10 +56,10 @@ static int after_each(void **state) {
 }
 
 static void mode_equal__all(void **state) {
-	struct Mode *modea = mode_init_whr(1000, 1000, 1000);
-	struct Mode *modeb0 = mode_init_whr(1000, 2000, 3000);
-	struct Mode *modeb1 = mode_init_whr(1000, 2000, 4000);
-	struct Mode *modeb2 = mode_init_whr(1000, 2000, 4100);
+	struct Mode *modea = mode_whr(1000, 1000, 1000);
+	struct Mode *modeb0 = mode_whr(1000, 2000, 3000);
+	struct Mode *modeb1 = mode_whr(1000, 2000, 4000);
+	struct Mode *modeb2 = mode_whr(1000, 2000, 4100);
 
 	assert_false(mode_equal_res(modea, modeb0));
 	assert_true(mode_equal_res(modeb0, modeb1));
@@ -87,11 +87,11 @@ static void mode_satisfies__null(void **state) {
 }
 
 static void mode_greater_than_res_refresh__sort(void **state) {
-	const struct Mode *mode00 = mode_init_whr(1000, 2000, 3000);
-	const struct Mode *mode01 = mode_init_whr(1000, 9999, 3000);
-	const struct Mode *mode02 = mode_init_whr(1000, 2000, 9999);
-	const struct Mode *mode03 = mode_init_whr(9999, 2000, 3000);
-	const struct Mode *mode04 = mode_init_whr(1000, 2000, 3000);
+	const struct Mode *mode00 = mode_whr(1000, 2000, 3000);
+	const struct Mode *mode01 = mode_whr(1000, 9999, 3000);
+	const struct Mode *mode02 = mode_whr(1000, 2000, 9999);
+	const struct Mode *mode03 = mode_whr(9999, 2000, 3000);
+	const struct Mode *mode04 = mode_whr(1000, 2000, 3000);
 
 	const struct PSet *expected = mode_pset_init();
 	pset_add_many(expected,
@@ -133,7 +133,7 @@ static void mode_hz_rounded__(void **state) {
 }
 
 static void mode_best_satisfying__max(void **state) {
-	mode_target = mode_init_whr_max(-1, -1, -1);
+	mode_target = mode_whr_max(-1, -1, -1);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
 
@@ -142,7 +142,7 @@ static void mode_best_satisfying__max(void **state) {
 }
 
 static void mode_best_satisfying__no_hz_no_match(void **state) {
-	mode_target = mode_init_whr(999, 999, -1);
+	mode_target = mode_whr(999, 999, -1);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
 
@@ -150,7 +150,7 @@ static void mode_best_satisfying__no_hz_no_match(void **state) {
 }
 
 static void mode_best_satisfying__no_hz_match(void **state) {
-	mode_target = mode_init_whr(400, 200, -1);
+	mode_target = mode_whr(400, 200, -1);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
 
@@ -159,7 +159,7 @@ static void mode_best_satisfying__no_hz_match(void **state) {
 }
 
 static void mode_best_satisfying__even_hz_no_match(void **state) {
-	mode_target = mode_init_whr(200, 100, 144000);
+	mode_target = mode_whr(200, 100, 144000);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
 
@@ -167,7 +167,7 @@ static void mode_best_satisfying__even_hz_no_match(void **state) {
 }
 
 static void mode_best_satisfying__even_hz_match(void **state) {
-	mode_target = mode_init_whr(200, 100, 60000);
+	mode_target = mode_whr(200, 100, 60000);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
 
@@ -176,7 +176,7 @@ static void mode_best_satisfying__even_hz_match(void **state) {
 }
 
 static void mode_best_satisfying__even_hz_rounded_up(void **state) {
-	mode_target = mode_init_whr(600, 300, 165000);
+	mode_target = mode_whr(600, 300, 165000);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
 
@@ -185,9 +185,9 @@ static void mode_best_satisfying__even_hz_rounded_up(void **state) {
 }
 
 static void mode_best_satisfying__exact_hz_match(void **state) {
-	mode_target = mode_init_whr(200, 100, 60498);
+	mode_target = mode_whr(200, 100, 60498);
 
-	const struct Mode *mode_exact = mode_init_whr(200, 100, 60498);
+	const struct Mode *mode_exact = mode_whr(200, 100, 60498);
 	pset_add(modes, mode_exact);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
@@ -197,7 +197,7 @@ static void mode_best_satisfying__exact_hz_match(void **state) {
 }
 
 static void mode_best_satisfying__width_failed(void **state) {
-	mode_target = mode_init_whr(1000, 100, 60499);
+	mode_target = mode_whr(1000, 100, 60499);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
 
@@ -205,7 +205,7 @@ static void mode_best_satisfying__width_failed(void **state) {
 }
 
 static void mode_best_satisfying__height_failed(void **state) {
-	mode_target = mode_init_whr(200, 9999999, 60499);
+	mode_target = mode_whr(200, 9999999, 60499);
 
 	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
 
@@ -217,7 +217,7 @@ static void mode_dpi__(void **state) {
 	head->width_mm = 1000;
 	head->height_mm = 500;
 
-	const struct Mode *mode = mode_init_h_whr(head, 2000, 1000, 0);
+	const struct Mode *mode = mode_h_whr(head, 2000, 1000, 0);
 	pset_add(head->modes, mode);
 
 	// nice roundish number to prevent odd test fails
@@ -237,7 +237,7 @@ static void mode_max_refresh__no_target(void **state) {
 }
 
 static void mode_max_refresh__target_matches(void **state) {
-	struct Mode *expected = mode_init_whr(111, 222, 333);
+	struct Mode *expected = mode_whr(111, 222, 333);
 	pset_add(modes, expected);
 
 	const struct Mode *actual = mode_max_refresh(expected, modes);
@@ -247,10 +247,10 @@ static void mode_max_refresh__target_matches(void **state) {
 }
 
 static void mode_max_refresh__prior_matches(void **state) {
-	struct Mode *expected = mode_init_whr(111, 222, 333);
+	struct Mode *expected = mode_whr(111, 222, 333);
 	pset_add(modes, expected);
 
-	const struct Mode *target = mode_init_whr(111, 222, 333);
+	const struct Mode *target = mode_whr(111, 222, 333);
 	pset_add(modes, target);
 
 	const struct Mode *actual = mode_max_refresh(target, modes);
@@ -260,10 +260,10 @@ static void mode_max_refresh__prior_matches(void **state) {
 }
 
 static void mode_max_refresh__later_higher_refresh(void **state) {
-	const struct Mode *target = mode_init_whr(111, 222, 333);
+	const struct Mode *target = mode_whr(111, 222, 333);
 	pset_add(modes, target);
 
-	struct Mode *expected = mode_init_whr(111, 222, 999999);
+	struct Mode *expected = mode_whr(111, 222, 999999);
 	pset_add(modes, expected);
 
 	const struct Mode *actual = mode_max_refresh(target, modes);
@@ -273,10 +273,10 @@ static void mode_max_refresh__later_higher_refresh(void **state) {
 }
 
 static void mode_max_refresh__earlier_higher_refresh(void **state) {
-	struct Mode *expected = mode_init_whr(111, 222, 999999);
+	struct Mode *expected = mode_whr(111, 222, 999999);
 	pset_add(modes, expected);
 
-	const struct Mode *target = mode_init_whr(111, 222, 333);
+	const struct Mode *target = mode_whr(111, 222, 333);
 	pset_add(modes, target);
 
 	const struct Mode *actual = mode_max_refresh(target, modes);

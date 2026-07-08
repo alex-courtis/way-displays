@@ -33,8 +33,8 @@ int before_each(void **state) {
 
 	s->head1->name = strdup("name1");
 	s->head1->description = strdup("description1");
-	s->head1->current.mode = mode_init_h_whr(s->head1, 100, 200, 30000);
-	s->head1->desired.mode = mode_init_h_whr(s->head1, 400, 500, 60000);
+	s->head1->current.mode = mode_h_whr(s->head1, 100, 200, 30000);
+	s->head1->desired.mode = mode_h_whr(s->head1, 400, 500, 60000);
 
 	*state = s;
 	return 0;

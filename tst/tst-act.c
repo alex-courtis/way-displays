@@ -46,7 +46,7 @@ static void act_apply__nothing(void **state) {
 }
 
 static void act_handle_success__head_changing_adaptive_sync(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head->adaptive_sync_failed = false;
@@ -68,7 +68,7 @@ static void act_handle_success__head_changing_adaptive_sync(void **state) {
 }
 
 static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->model = NULL;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
@@ -90,9 +90,8 @@ static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
 }
 
 static void act_handle_success__head_changing_mode(void **state) {
-	struct Head *head = head_init_name("head");
-	struct Mode *mode = mode_init();
-	mode->head = head;
+	struct Head *head = head_n("head");
+	struct Mode *mode = mode_h(head);
 	head->desired.mode = mode;
 	pset_add(head->modes, mode);
 
@@ -126,9 +125,9 @@ static void act_handle_success__ok(void **state) {
 }
 
 static void act_handle_failure__mode(void **state) {
-	struct Head *head = head_init_name("nam");
-	const struct Mode *mode_cur = mode_init_h_whr(head, 1, 2, 3);
-	const struct Mode *mode_des = mode_init_h_whr(head, 4, 5, 6);
+	struct Head *head = head_n("nam");
+	const struct Mode *mode_cur = mode_h_whr(head, 1, 2, 3);
+	const struct Mode *mode_des = mode_h_whr(head, 4, 5, 6);
 
 	head->current.mode = mode_cur;
 	head->desired.mode = mode_des;
@@ -163,7 +162,7 @@ static void act_handle_failure__mode(void **state) {
 }
 
 static void act_handle_failure__adaptive_sync(void **state) {
-	struct Head *head = head_init_name("nam");
+	struct Head *head = head_n("nam");
 	head->model = strdup("mod");
 	head->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;

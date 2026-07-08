@@ -40,7 +40,7 @@ static int before_each(void **state) {
 	for (int i = 0; i < 10; i++) {
 		struct Head *head = head_init();
 		head->desired.enabled = true;
-		const struct Mode *mode = mode_init_h_whr(head, i * 20, i * 10, 0);
+		const struct Mode *mode = mode_h_whr(head, i * 20, i * 10, 0);
 		head->desired.mode = mode;
 		pset_add(head->modes, mode);
 		slist_append(&s->heads, head);
@@ -84,14 +84,14 @@ static void desire_order__exact_partial_regex(void **state) {
 			NULL);
 
 	// heads
-	struct Head *not_specified_1 = head_init_description("not specified 1");
-	struct Head *exact0_partial  = head_init_description("not an exact0 exact match");
-	struct Head *partial         = head_init_description("a partial match");
-	struct Head *regex_match_1   = head_init_description("a regex match");
-	struct Head *exact1          = head_init_description("exact1");
-	struct Head *exact0          = head_init_description("exact0");
-	struct Head *regex_match_2   = head_init_description("another regex match");
-	struct Head *not_specified_2 = head_init_description("not specified 2");
+	struct Head *not_specified_1 = head_d("not specified 1");
+	struct Head *exact0_partial  = head_d("not an exact0 exact match");
+	struct Head *partial         = head_d("a partial match");
+	struct Head *regex_match_1   = head_d("a regex match");
+	struct Head *exact1          = head_d("exact1");
+	struct Head *exact0          = head_d("exact0");
+	struct Head *regex_match_2   = head_d("another regex match");
+	struct Head *not_specified_2 = head_d("not specified 2");
 	slist_append(&heads, not_specified_1);
 	slist_append(&heads, exact0_partial);
 	slist_append(&heads, partial);
@@ -130,12 +130,12 @@ static void desire_order__exact_regex_catchall(void **state) {
 	sset_add_many(order_name_desc, "exact0", "!.*regex.*", "!.*$", "exact9", NULL);
 
 	// heads
-	struct Head *exact9          = head_init_description("exact9");
-	struct Head *not_specified_1 = head_init_description("not specified 1");
-	struct Head *regex_match_1   = head_init_description("a regex match");
-	struct Head *exact0          = head_init_description("exact0");
-	struct Head *regex_match_2   = head_init_description("another regex match");
-	struct Head *not_specified_2 = head_init_description("not specified 2");
+	struct Head *exact9          = head_d("exact9");
+	struct Head *not_specified_1 = head_d("not specified 1");
+	struct Head *regex_match_1   = head_d("a regex match");
+	struct Head *exact0          = head_d("exact0");
+	struct Head *regex_match_2   = head_d("another regex match");
+	struct Head *not_specified_2 = head_d("not specified 2");
 	slist_append(&heads, not_specified_1);
 	slist_append(&heads, regex_match_1);
 	slist_append(&heads, exact0);
@@ -163,7 +163,7 @@ static void desire_order__exact_regex_catchall(void **state) {
 
 static void desire_order__no_order(void **state) {
 	struct SList *heads = NULL;
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 
 	slist_append(&heads, head);
 
@@ -292,7 +292,7 @@ static void desire_enabled__disabled(void **state) {
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
 
-	pset_add(g_cfg->disableds, disabled_init_name_desc("head0"));
+	pset_add(g_cfg->disableds, disabled_nd("head0"));
 
 	desire_enabled(head);
 
@@ -300,12 +300,12 @@ static void desire_enabled__disabled(void **state) {
 }
 
 static void desire_enabled__lid_closed_many(void **state) {
-	struct Head *head0 = head_init_name("head0");
+	struct Head *head0 = head_n("head0");
 	slist_append(&g_heads, head0);
 
 	head0->desired.enabled = true;
 
-	struct Head *head1 = head_init_name("head1");
+	struct Head *head1 = head_n("head1");
 	slist_append(&g_heads, head1);
 
 	head1->desired.enabled = true;
@@ -319,7 +319,7 @@ static void desire_enabled__lid_closed_many(void **state) {
 }
 
 static void desire_enabled__lid_closed_one(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	slist_append(&g_heads, head);
 
 	head->desired.enabled = true;
@@ -333,12 +333,12 @@ static void desire_enabled__lid_closed_one(void **state) {
 }
 
 static void desire_enabled__lid_closed_one_disabled(void **state) {
-	struct Head *head = head_init_name("head0");
+	struct Head *head = head_n("head0");
 	slist_append(&g_heads, head);
 
 	head->desired.enabled = true;
 
-	pset_add(g_cfg->disableds, disabled_init_name_desc("![hH]ead[0-9]"));
+	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, true);
@@ -349,13 +349,13 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 }
 
 static void desire_enabled__override(void **state) {
-	struct Head *head = head_init_name("head0");
+	struct Head *head = head_n("head0");
 	slist_append(&g_heads, head);
 
 	head->desired.enabled = false;
 	head->overrided_enabled = OverrideTrue;
 
-	pset_add(g_cfg->disableds, disabled_init_name_desc("![hH]ead[0-9]"));
+	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -367,13 +367,13 @@ static void desire_enabled__override(void **state) {
 }
 
 static void desire_enabled__override_reset(void **state) {
-	struct Head *head = head_init_name("head0");
+	struct Head *head = head_n("head0");
 	slist_append(&g_heads, head);
 
 	head->desired.enabled = true;
 	head->overrided_enabled = OverrideFalse;
 
-	pset_add(g_cfg->disableds, disabled_init_name_desc("![hH]ead[0-9]"));
+	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -385,7 +385,7 @@ static void desire_enabled__override_reset(void **state) {
 }
 
 static void desire_enabled__no_override(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	slist_append(&g_heads, head);
 
 	head->desired.enabled = false;
@@ -401,9 +401,8 @@ static void desire_enabled__no_override(void **state) {
 }
 
 static void desire_mode__disabled(void **state) {
-	struct Head *head = head_init_name("head");
-	struct Mode *mode = mode_init();
-	mode->head = head;
+	struct Head *head = head_n("head");
+	struct Mode *mode = mode_h(head);
 
 	head->desired.enabled = false;
 	head->desired.mode = mode;
@@ -420,9 +419,8 @@ static void desire_mode__disabled(void **state) {
 }
 
 static void desire_mode__no_mode(void **state) {
-	struct Head *head = head_init_name("head");
-	struct Mode *mode = mode_init();
-	mode->head = head;
+	struct Head *head = head_n("head");
+	struct Mode *mode = mode_h(head);
 
 	head->desired.enabled = true;
 	head->desired.mode = mode;
@@ -442,9 +440,8 @@ static void desire_mode__no_mode(void **state) {
 }
 
 static void desire_mode__no_mode_warned(void **state) {
-	struct Head *head = head_init_name("head");
-	struct Mode *mode = mode_init();
-	mode->head = head;
+	struct Head *head = head_n("head");
+	struct Mode *mode = mode_h(head);
 
 	head->desired.enabled = true;
 	head->desired.mode = mode;
@@ -465,14 +462,14 @@ static void desire_mode__no_mode_warned(void **state) {
 }
 
 static void desire_mode__ok(void **state) {
-	struct Head *head = head_init_name("head");
-	const struct Mode *mode0 = mode_init_h_whr(head, 1, 2, 3);
+	struct Head *head = head_n("head");
+	const struct Mode *mode0 = mode_h_whr(head, 1, 2, 3);
 
 	head->desired.enabled = true;
 	head->desired.mode = mode0;
 	pset_add(head->modes, mode0);
 
-	struct Mode *mode1 = mode_init_h_whr(head, 4, 5, 6);
+	struct Mode *mode1 = mode_h_whr(head, 4, 5, 6);
 	pset_add(head->modes, mode1);
 
 	expect_ptr(__wrap_head_find_mode, head, head);
@@ -489,7 +486,7 @@ static void desire_mode__ok(void **state) {
 }
 
 static void desire_scale__disabled(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = false;
 
 	desire_scale(head);
@@ -498,7 +495,7 @@ static void desire_scale__disabled(void **state) {
 }
 
 static void desire_scale__no_scaling(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 	g_cfg->scaling = OFF;
 	g_cfg->auto_scale = ON;
@@ -511,7 +508,7 @@ static void desire_scale__no_scaling(void **state) {
 }
 
 static void desire_scale__no_auto(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = OFF;
@@ -524,7 +521,7 @@ static void desire_scale__no_auto(void **state) {
 }
 
 static void desire_scale__auto(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 
 	g_cfg->scaling = ON;
@@ -541,7 +538,7 @@ static void desire_scale__auto(void **state) {
 }
 
 static void desire_scale__user(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 
 	g_cfg->scaling = ON;
@@ -558,7 +555,7 @@ static void desire_scale__user(void **state) {
 }
 
 static void desire_transform__disabled(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = false;
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
@@ -572,7 +569,7 @@ static void desire_transform__disabled(void **state) {
 }
 
 static void desire_transform__no_transform(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
@@ -584,7 +581,7 @@ static void desire_transform__no_transform(void **state) {
 }
 
 static void desire_transform__user(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
@@ -599,7 +596,7 @@ static void desire_transform__user(void **state) {
 }
 
 static void desire_adaptive_sync__head_disabled(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = false;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
@@ -611,7 +608,7 @@ static void desire_adaptive_sync__head_disabled(void **state) {
 }
 
 static void desire_adaptive_sync__failed(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head->adaptive_sync_failed = true;
@@ -624,7 +621,7 @@ static void desire_adaptive_sync__failed(void **state) {
 }
 
 static void desire_adaptive_sync__disabled(void **state) {
-	struct Head *head = head_init_name("some head");
+	struct Head *head = head_n("some head");
 	head->desired.enabled = true;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
@@ -638,7 +635,7 @@ static void desire_adaptive_sync__disabled(void **state) {
 }
 
 static void desire_adaptive_sync__enabled(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
@@ -663,7 +660,7 @@ static void desire_scaled_dimensions__default(void **state) {
 	assert_int_equal(head->scaled.height, 1);
 
 	// no scale
-	const struct Mode *mode = mode_init_h_whr(head, 200, 100, 0);
+	const struct Mode *mode = mode_h_whr(head, 200, 100, 0);
 	head->desired.mode = mode;
 	pset_add(head->modes, mode);
 
@@ -677,7 +674,7 @@ static void desire_scaled_dimensions__default(void **state) {
 static void desire_scaled_dimensions__transform(void **state) {
 	struct Head *head = head_init();
 
-	const struct Mode *mode = mode_init_h_whr(head, 200, 100, 0);
+	const struct Mode *mode = mode_h_whr(head, 200, 100, 0);
 	head->desired.mode = mode;
 	pset_add(head->modes, mode);
 
@@ -703,7 +700,7 @@ static void desire_scaled_dimensions__transform(void **state) {
 static void desire_scaled_dimensions__dimensions(void **state) {
 	struct Head *head = head_init();
 
-	const struct Mode *mode = mode_init_h_whr(head, 3840, 2160, 0);
+	const struct Mode *mode = mode_h_whr(head, 3840, 2160, 0);
 	head->desired.mode = mode;
 	pset_add(head->modes, mode);
 
@@ -742,7 +739,7 @@ static void desire_scaled_dimensions__dimensions(void **state) {
 
 
 static void desire_reapply__required(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 	head->reapply_required = true;
 
@@ -754,7 +751,7 @@ static void desire_reapply__required(void **state) {
 }
 
 static void desire_reapply__not_required(void **state) {
-	struct Head *head = head_init_name("head");
+	struct Head *head = head_n("head");
 	head->desired.enabled = true;
 	head->reapply_required = false;
 

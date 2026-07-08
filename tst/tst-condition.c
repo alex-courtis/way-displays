@@ -24,9 +24,9 @@ static int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 	s->condition = condition_init();
 
-	struct Head *h1 = head_init_name("DP-1");
-	struct Head *h2 = head_init_name("DP-2");
-	struct Head *h3 = head_init_name("DP-3");
+	struct Head *h1 = head_n("DP-1");
+	struct Head *h2 = head_n("DP-2");
+	struct Head *h3 = head_n("DP-3");
 
 	slist_append(&g_heads, h1);
 	slist_append(&g_heads, h2);
@@ -147,9 +147,9 @@ static void condition__complex(void **state) {
 static void disabled_matches_head__name_desc_conditions(void **state) {
 	const struct State *s = *state;
 
-	struct Head *head = head_init_name("DP-1");
+	struct Head *head = head_n("DP-1");
 
-	struct Disabled *disabled = disabled_init_name_desc("DP-1");
+	struct Disabled *disabled = disabled_nd("DP-1");
 
 	const struct Condition *condition_plugged = condition_clone(s->condition);
 	sset_add(condition_plugged->plugged, "DP-1");
@@ -175,13 +175,13 @@ static void disabled_matches_head__name_desc_conditions(void **state) {
 }
 
 static void disabled_matches_head__name_desc_only(void **state) {
-	struct Disabled *disabled = disabled_init_name_desc("DP-1");
+	struct Disabled *disabled = disabled_nd("DP-1");
 
-	struct Head *head_disabled = head_init_name("DP-1");
+	struct Head *head_disabled = head_n("DP-1");
 
 	assert_true(disabled_matches_head(disabled, head_disabled));
 
-	struct Head *head_enabled = head_init_name("DP-2");
+	struct Head *head_enabled = head_n("DP-2");
 
 	assert_false(disabled_matches_head(disabled, head_enabled));
 
