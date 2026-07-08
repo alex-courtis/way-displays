@@ -377,8 +377,7 @@ static void cli_parse_element__adaptive_sync_off_ok(void **state) {
 	struct Cfg *actual = cli_parse_element(CFG_SET, VRR_OFF, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	sset_add(expected->adaptive_sync_off, "ONE");
-	sset_add(expected->adaptive_sync_off, "TWO");
+	sset_add_many(expected->adaptive_sync_off, "ONE", "TWO", NULL);
 
 	assert_cfg_equal(actual, expected);
 
@@ -393,8 +392,10 @@ static void cli_parse_element__disabled_ok(void **state) {
 	struct Cfg *actual = cli_parse_element(CFG_SET, DISABLED, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	pset_add(expected->disableds, disabled_init_name_desc("ONE"));
-	pset_add(expected->disableds, disabled_init_name_desc("TWO"));
+	pset_add_many(expected->disableds,
+			disabled_init_name_desc("ONE"),
+			disabled_init_name_desc("TWO"),
+			NULL);
 
 	assert_cfg_equal(actual, expected);
 
@@ -409,8 +410,7 @@ static void cli_parse_element__order_ok(void **state) {
 	struct Cfg *actual = cli_parse_element(CFG_SET, ORDER, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	sset_add(expected->order_name_desc, "ONE");
-	sset_add(expected->order_name_desc, "TWO");
+	sset_add_many(expected->order_name_desc, "ONE", "TWO", NULL);
 
 	assert_cfg_equal(actual, expected);
 

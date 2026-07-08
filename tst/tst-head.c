@@ -374,13 +374,16 @@ static void head_find_mode__none(void **state) {
 static void head_max_mode__max(void **state) {
 	struct Head *head = head_init();
 
-	pset_add(head->modes, mode_init_whr(1000, 1000, 1000));
-	pset_add(head->modes, mode_init_whr(500, 500, 1000));
-	pset_add(head->modes, mode_init_whr(1000, 1000, 500));
-	pset_add(head->modes, mode_init_whr(2000, 2000, 1000));
 	struct Mode *mode_expected = mode_init_whr(2000, 2000, 2000);
-	pset_add(head->modes, mode_expected);
-	pset_add(head->modes, mode_init_whr(1000, 1000, 1000));
+
+	pset_add_many(head->modes,
+			mode_init_whr(1000, 1000, 1000),
+			mode_init_whr(500, 500, 1000),
+			mode_init_whr(1000, 1000, 500),
+			mode_init_whr(2000, 2000, 1000),
+			mode_expected,
+			mode_init_whr(1000, 1000, 1000),
+			NULL);
 
 	const struct Mode *actual = head_max_mode(head);
 
@@ -516,12 +519,14 @@ static void heads_reapply__(void **state) {
 	struct Head *head_disabled = head_init_name("DP-7");
 	head_disabled->current.enabled = false;
 
-	const struct PSet *modes_once_failed = mode_pset_init();
-
 	head_disabled->mode_preferred = mode_init_h_whr(head_disabled, 3440, 1440, 59999);
-	pset_add(modes_once_failed, head_disabled->mode_preferred);
-	pset_add(modes_once_failed, mode_init_h_whr(head_disabled, 3840, 2160, 30000));
-	pset_add(modes_once_failed, mode_init_h_whr(head_disabled, 3840, 2160, 29970));
+
+	const struct PSet *modes_once_failed = mode_pset_init();
+	pset_add_many(modes_once_failed,
+			head_disabled->mode_preferred,
+			mode_init_h_whr(head_disabled, 3840, 2160, 30000),
+			mode_init_h_whr(head_disabled, 3840, 2160, 29970),
+			NULL);
 
 	pset_free(head_disabled->modes_failed);
 	head_disabled->modes_failed = pset_clone_shallow(modes_once_failed);

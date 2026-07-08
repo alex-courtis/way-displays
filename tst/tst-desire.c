@@ -75,11 +75,13 @@ static void desire_order__exact_partial_regex(void **state) {
 	struct SList *expected = NULL;
 
 	// ORDER
-	sset_add(order_name_desc, "exact0");
-	sset_add(order_name_desc, "exact1");
-	sset_add(order_name_desc, "!.*regex.*");
-	sset_add(order_name_desc, "exact1"); // should not repeat
-	sset_add(order_name_desc, "partial");
+	sset_add_many(order_name_desc,
+			"exact0",
+			"exact1",
+			"!.*regex.*",
+			"exact1", // should not repeat
+			"partial",
+			NULL);
 
 	// heads
 	struct Head *not_specified_1 = head_init_description("not specified 1");
@@ -125,10 +127,7 @@ static void desire_order__exact_regex_catchall(void **state) {
 	struct SList *expected = NULL;
 
 	// ORDER
-	sset_add(order_name_desc, "exact0");
-	sset_add(order_name_desc, "!.*regex.*");
-	sset_add(order_name_desc, "!.*$");
-	sset_add(order_name_desc, "exact9");
+	sset_add_many(order_name_desc, "exact0", "!.*regex.*", "!.*$", "exact9", NULL);
 
 	// heads
 	struct Head *exact9          = head_init_description("exact9");

@@ -133,8 +133,7 @@ static void act_handle_failure__mode(void **state) {
 	head->current.mode = mode_cur;
 	head->desired.mode = mode_des;
 
-	pset_add(head->modes, mode_cur);
-	pset_add(head->modes, mode_des);
+	pset_add_many(head->modes, mode_cur, mode_des, NULL);
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;

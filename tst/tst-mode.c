@@ -19,6 +19,7 @@ struct Mode *mode_target = NULL;
 const struct PSet *modes = NULL;
 const struct PSet *modes_failed = NULL;
 
+// TODO these could be an smap with meaningful names
 struct Mode *mode0, *mode1, *mode2, *mode3, *mode4, *mode5;
 
 static int before_each(void **state) {
@@ -93,18 +94,22 @@ static void mode_greater_than_res_refresh__sort(void **state) {
 	const struct Mode *mode04 = mode_init_whr(1000, 2000, 3000);
 
 	const struct PSet *expected = mode_pset_init();
-	pset_add(expected, mode03);
-	pset_add(expected, mode01);
-	pset_add(expected, mode02);
-	pset_add(expected, mode00);
-	pset_add(expected, mode04);
+	pset_add_many(expected,
+			mode03,
+			mode01,
+			mode02,
+			mode00,
+			mode04,
+			NULL);
 
 	const struct PSet *actual = mode_pset_init();
-	pset_add(actual, mode00);
-	pset_add(actual, mode01);
-	pset_add(actual, mode02);
-	pset_add(actual, mode03);
-	pset_add(actual, mode04);
+	pset_add_many(actual,
+			mode00,
+			mode01,
+			mode02,
+			mode03,
+			mode04,
+			NULL);
 
 	pset_sort(actual, (fn_less_than)mode_greater_than_res_refresh);
 

@@ -51,9 +51,7 @@ struct Cfg *cfg_all(void) {
 	cfg->laptop_display_prefix = strdup("ldp");
 	cfg->laptop_lid_monitor = OFF;
 
-	sset_add(cfg->order_name_desc, "one");
-	sset_add(cfg->order_name_desc, "ONE");
-	sset_add(cfg->order_name_desc, "!two");
+	sset_add_many(cfg->order_name_desc, "one", "ONE" ,"!two", NULL);
 
 	smapi_put(cfg->scales, "three", 3000);
 	smapi_put(cfg->scales, "four", 4000);
@@ -62,23 +60,19 @@ struct Cfg *cfg_all(void) {
 	smap_put(cfg->modes, "six", mode_init_whr(2560, 1440, -1));
 	smap_put(cfg->modes, "seven", mode_init_whr_max(-1, -1, -1));
 
-	sset_add(cfg->adaptive_sync_off, "ten");
-	sset_add(cfg->adaptive_sync_off, "ELEVEN");
+	sset_add_many(cfg->adaptive_sync_off, "ten", "ELEVEN", NULL);
 
-	pset_add(cfg->disableds, disabled_init_name_desc("eight"));
-	pset_add(cfg->disableds, disabled_init_name_desc("EIGHT"));
-	pset_add(cfg->disableds, disabled_init_name_desc("nine"));
+	pset_add_many(cfg->disableds, disabled_init_name_desc("eight"), disabled_init_name_desc("EIGHT"), disabled_init_name_desc("nine"), NULL);
 
 	struct Disabled *disabled = disabled_init();
 	disabled->name_desc = strdup("twelve");
 
 	struct Condition *cond = condition_init();
-	sset_add(cond->plugged, "ONE");
-	sset_add(cond->plugged, "TWO");
+	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
 	pset_add(disabled->conditions, cond);
 
 	cond = condition_init();
-	sset_add(cond->unplugged, "THREE");
+	sset_add_many(cond->unplugged, "THREE", NULL);
 	pset_add(disabled->conditions, cond);
 
 	cond = condition_init();

@@ -100,6 +100,7 @@ static void cfg_merge_set__order(void **state) {
 	struct State *s = *state;
 
 	sset_add(s->to->order_name_desc, "A");
+
 	sset_add(s->from->order_name_desc, "X");
 
 	sset_add(s->expected->order_name_desc, "X");
@@ -213,15 +214,11 @@ static void cfg_merge_set__mode(void **state) {
 static void cfg_merge_set__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	sset_add(s->to->adaptive_sync_off, "to");
-	sset_add(s->to->adaptive_sync_off, "both");
+	sset_add_many(s->to->adaptive_sync_off, "to", "both", NULL);
 
-	sset_add(s->from->adaptive_sync_off, "from");
-	sset_add(s->from->adaptive_sync_off, "both");
+	sset_add_many(s->from->adaptive_sync_off, "from", "both", NULL);
 
-	sset_add(s->expected->adaptive_sync_off, "to");
-	sset_add(s->expected->adaptive_sync_off, "both");
-	sset_add(s->expected->adaptive_sync_off, "from");
+	sset_add_many(s->expected->adaptive_sync_off, "to", "both", "from", NULL);
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -349,13 +346,11 @@ static void cfg_merge_del__transform(void **state) {
 static void cfg_merge_del__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	sset_add(s->to->adaptive_sync_off, "1");
-	sset_add(s->to->adaptive_sync_off, "2");
+	sset_add_many(s->to->adaptive_sync_off, "1", "2", NULL);
 
-	sset_add(s->from->adaptive_sync_off, "2");
-	sset_add(s->from->adaptive_sync_off, "3");
+	sset_add_many(s->from->adaptive_sync_off, "2", "3", NULL);
 
-	sset_add(s->expected->adaptive_sync_off, "1");
+	sset_add_many(s->expected->adaptive_sync_off, "1", NULL);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -367,13 +362,19 @@ static void cfg_merge_del__adaptive_sync_off(void **state) {
 static void cfg_merge_del__disabled(void **state) {
 	struct State *s = *state;
 
-	pset_add(s->to->disableds, disabled_init_name_desc("1"));
-	pset_add(s->to->disableds, disabled_init_name_desc("2"));
+	pset_add_many(s->to->disableds,
+			disabled_init_name_desc("1"),
+			disabled_init_name_desc("2"),
+			NULL);
 
-	pset_add(s->from->disableds, disabled_init_name_desc("2"));
-	pset_add(s->from->disableds, disabled_init_name_desc("3"));
+	pset_add_many(s->from->disableds,
+			disabled_init_name_desc("2"),
+			disabled_init_name_desc("3"),
+			NULL);
 
-	pset_add(s->expected->disableds, disabled_init_name_desc("1"));
+	pset_add_many(s->expected->disableds,
+			disabled_init_name_desc("1"),
+			NULL);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -441,14 +442,11 @@ static void cfg_merge_toggle__adaptive_sync_off(void **state) {
 	s->from->auto_scale = false;
 	s->from->scaling = false;
 
-	sset_add(s->to->adaptive_sync_off, "display1");
-	sset_add(s->to->adaptive_sync_off, "display2");
+	sset_add_many(s->to->adaptive_sync_off, "display1", "display2", NULL);
 
-	sset_add(s->from->adaptive_sync_off, "display2");
-	sset_add(s->from->adaptive_sync_off, "display3");
+	sset_add_many(s->from->adaptive_sync_off, "display2", "display3", NULL);
 
-	sset_add(s->expected->adaptive_sync_off, "display1");
-	sset_add(s->expected->adaptive_sync_off, "display3");
+	sset_add_many(s->expected->adaptive_sync_off, "display1", "display3", NULL);
 
 	struct Cfg *merged = cfg_merge_toggle(s->to, s->from);
 
