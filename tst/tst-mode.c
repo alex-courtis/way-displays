@@ -18,9 +18,7 @@
 
 struct Mode *mode_target = NULL;
 const struct PSet *modes = NULL;
-const struct PSet *modes_failed = NULL;
 
-// TODO these could be an smap with meaningful names, we would need a map to set
 struct Mode *mode0, *mode1, *mode2, *mode3, *mode4, *mode5;
 
 static int before_each(void **state) {
@@ -32,14 +30,7 @@ static int before_each(void **state) {
 	mode5 = mode_whr(800, 400, 144000);
 
 	modes = mode_pset_init();
-	modes_failed = mode_pset_init();
-
-	pset_add(modes, mode0);
-	pset_add(modes, mode1);
-	pset_add(modes, mode2);
-	pset_add(modes, mode3);
-	pset_add(modes, mode4);
-	pset_add(modes, mode5);
+	pset_add_many(modes, mode0, mode1, mode2, mode3, mode4, mode5, NULL);
 
 	return 0;
 }
@@ -51,7 +42,6 @@ static int after_each(void **state) {
 	mode_target = NULL;
 
 	pset_free_vals(modes);
-	pset_free(modes_failed);
 
 	return 0;
 }
