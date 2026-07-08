@@ -313,57 +313,29 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = clone_cfg(to);
 
-	// ARRANGE
-	if (from->arrange) {
-		merged->arrange = from->arrange;
-	}
+	merged->align                = from->align                ? from->align                : merged->align;
+	merged->arrange              = from->arrange              ? from->arrange              : merged->arrange;
+	merged->auto_scale           = from->auto_scale           ? from->auto_scale           : merged->auto_scale;
+	merged->auto_scale_dpi       = from->auto_scale_dpi       ? from->auto_scale_dpi       : merged->auto_scale_dpi;
+	merged->auto_scale_max       = from->auto_scale_max       ? from->auto_scale_max       : merged->auto_scale_max;
+	merged->auto_scale_min       = from->auto_scale_min       ? from->auto_scale_min       : merged->auto_scale_min;
+	merged->scale_round_strategy = from->scale_round_strategy ? from->scale_round_strategy : merged->scale_round_strategy;
+	merged->scale_round_to       = from->scale_round_to       ? from->scale_round_to       : merged->scale_round_to;
+	merged->scaling              = from->scaling              ? from->scaling              : merged->scaling;
 
-	// ALIGN
-	if (from->align) {
-		merged->align = from->align;
-	}
+	smapi_put_all(merged->scales,            from->scales);
+	smapi_put_all(merged->transforms,        from->transforms);
+	sset_add_all (merged->adaptive_sync_off, from->adaptive_sync_off);
 
 	// ORDER, replace
 	sset_free(merged->order_name_desc);
 	merged->order_name_desc = sset_clone(from->order_name_desc);
-
-	// SCALING
-	if (from->scaling) {
-		merged->scaling = from->scaling;
-	}
-
-	// AUTO_SCALE
-	if (from->auto_scale) {
-		merged->auto_scale = from->auto_scale;
-		merged->auto_scale_dpi = from->auto_scale_dpi;
-		merged->auto_scale_min = from->auto_scale_min;
-		merged->auto_scale_max = from->auto_scale_max;
-	}
-
-	// SCALE_ROUND_TO
-	if (from->scale_round_to) {
-		merged->scale_round_to = from->scale_round_to;
-	}
-
-	// SCALE_ROUND_STRATEGY
-	if (from->scale_round_strategy) {
-		merged->scale_round_strategy = from->scale_round_strategy;
-	}
-
-	// SCALE
-	smapi_put_all(merged->scales, from->scales);
 
 	// TODO need a map_put_all_free_clone or map_put_all_free_deep/map_put_all_free_shallow
 	// MODE
 	for (const struct SMapIt *it = smap_it(from->modes); it; it = smap_it_next(it)) {
 		smap_put_free(merged->modes, it->key, mode_clone(it->val));
 	}
-
-	// TRANSFORM
-	smapi_put_all(merged->transforms, from->transforms);
-
-	// VRR_OFF
-	sset_add_all(merged->adaptive_sync_off, from->adaptive_sync_off);
 
 	// DISABLED
 	for (const struct PSetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
