@@ -351,24 +351,19 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// SCALE
-	for (const struct SMapIIt *it = smapi_it(from->scales); it; it = smapi_it_next(it)) {
-		smapi_put(merged->scales, it->key, it->val);
-	}
+	smapi_put_all(merged->scales, from->scales);
 
+	// TODO need a map_put_all_free_clone or map_put_all_free_deep/map_put_all_free_shallow
 	// MODE
 	for (const struct SMapIt *it = smap_it(from->modes); it; it = smap_it_next(it)) {
 		smap_put_free(merged->modes, it->key, mode_clone(it->val));
 	}
 
 	// TRANSFORM
-	for (const struct SMapIIt *it = smapi_it(from->transforms); it; it = smapi_it_next(it)) {
-		smapi_put(merged->transforms, it->key, it->val);
-	}
+	smapi_put_all(merged->transforms, from->transforms);
 
 	// VRR_OFF
-	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
-		sset_add(merged->adaptive_sync_off, it->val);
-	}
+	sset_add_all(merged->adaptive_sync_off, from->adaptive_sync_off);
 
 	// DISABLED
 	for (const struct PSetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {

@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -274,6 +275,42 @@ const struct PSetIt *pset_it_next(const struct PSetIt* const it) {
 
 bool pset_add(const struct PSet* const set, const void* const val) {
 	return set ? add(set, val, set->params.alloc_val) : false;
+}
+
+size_t pset_add_all(const struct PSet* const set, const struct PSet* const from) {
+	if (!set || !from)
+		return 0;
+
+	size_t added = 0;
+
+	for (const void **v = from->vals; v < from->vals + from->size; v++) {
+		if (add(set, *v, set->params.alloc_val)) {
+			added++;
+		}
+	}
+
+	return added;
+}
+
+size_t pset_add_many(const struct PSet* const set, ...) {
+	if (!set)
+		return 0;
+
+	size_t added = 0;
+
+	va_list ap;
+	va_start(ap, set);
+
+	const void *val;
+	while ((val = va_arg(ap, void*)) != set) {
+		if (add(set, val, set->params.alloc_val)) {
+			added++;
+		}
+	}
+
+	va_end(ap);
+
+	return added;
 }
 
 bool pset_remove(const struct PSet* const set, const void* const val) {

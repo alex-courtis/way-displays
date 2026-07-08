@@ -173,6 +173,10 @@ const struct SMapIt *smap_match_it(const struct SMap* const map, fn_match_str_pt
 	return map ? it_init(pmap_match_it(map->pmap, (fn_match_ptr_ptr)match, data)) : NULL;
 }
 
+const struct SMapIt *smap_match_key_it(const struct SMap* const map, fn_match_str match, const void* const data) {
+	return map ? it_init(pmap_match_key_it(map->pmap, (fn_match_ptr)match, data)) : NULL;
+}
+
 const struct SMapIt *smap_match_val_it(const struct SMap* const map, fn_match_ptr match, const void* const data) {
 	return map ? it_init(pmap_match_val_it(map->pmap, match, data)) : NULL;
 }
@@ -210,6 +214,10 @@ const void *smap_put_if_absent(const struct SMap* const map, const char* const k
 
 bool smap_put_free(const struct SMap* const map, const  char* const key, const void* const val) {
 	return map ? pmap_put_free(map->pmap, key, val) : false;
+}
+
+size_t smap_put_all_free(const struct SMap* const map, const struct SMap* const from) {
+	return map && from ? pmap_put_all_free(map->pmap, from->pmap) : 0;
 }
 
 const void *smap_remove(const struct SMap* const map, const char* const key) {

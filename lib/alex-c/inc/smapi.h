@@ -89,6 +89,9 @@ const struct SMapIIt *smapi_it(const struct SMapI* const map);
 // create an iterator filtering by key/val match, return NULL when no matches or NULL match
 const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_str_size_t match, const void* const data);
 
+// create an iterator filtering by key match, return NULL when no matches or NULL match
+const struct SMapIIt *smapi_match_key_it(const struct SMapI* const map, fn_match_str match, const void* const data);
+
 // create an iterator filtering by val match, return NULL when no matches or NULL match
 const struct SMapIIt *smapi_match_val_it(const struct SMapI* const map, fn_match_size_t match, const void* const data);
 
@@ -104,6 +107,9 @@ bool smapi_put(const struct SMapI* const map, const char* const key, const size_
 
 // set key/val if not present, return true if overwritten
 bool smapi_put_if_absent(const struct SMapI* const map, const char* const key, const size_t val);
+
+// set all from key/val, returning number of overwritten
+size_t smapi_put_all(const struct SMapI* const map, const struct SMapI* const from);
 
 // remove val, return true if removed
 bool smapi_remove(const struct SMapI* const map, const char* const key);
