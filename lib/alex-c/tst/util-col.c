@@ -95,6 +95,33 @@ size_t pmap_put_many(const struct PMap* const map, ...) {
 	return added;
 }
 
+size_t imap_put_many(const struct IMap* const map, ... /* key, val, NULL */ ) {
+	if (!map)
+		return 0;
+
+	va_list ap;
+	va_start(ap, map);
+
+	size_t added = 0;
+
+	size_t key;
+
+	// NULL terminator is odd vararg: the key
+	while ((key = va_arg(ap, size_t)) != 0) {
+
+		// trust that a value has been passed, NULL is valid
+		const void *val = va_arg(ap, void*);
+
+		if (imap_put_free(map, key, val)) {
+			added++;
+		}
+	}
+
+	va_end(ap);
+
+	return added;
+}
+
 struct SMap {
 	const struct SMapParams params;
 	const struct PMap *pmap;
