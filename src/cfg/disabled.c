@@ -33,16 +33,6 @@ struct Disabled *disabled_init(void) {
 	return d;
 }
 
-struct Disabled *disabled_init_name_desc(const char *name_desc) {
-	struct Disabled *d = disabled_init();
-
-	if (name_desc) {
-		d->name_desc = strdup(name_desc);
-	}
-
-	return d;
-}
-
 const struct PSet *disabled_pset_init(void) {
 	const struct PSetParams params = {
 		.equal_val = (fn_equal)disabled_equal,

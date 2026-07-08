@@ -101,8 +101,7 @@ static void yaml_root_to_cfg__legacy(void **state) {
 	expected->callback_cmd = strdup("foo");
 
 	// MAX_PREFERRED_REFRESH
-	sset_add(expected->max_preferred_refresh, "fifteen");
-	sset_add(expected->max_preferred_refresh, "!sixteen");
+	sset_add_many(expected->max_preferred_refresh, "fifteen", "!sixteen", expected->max_preferred_refresh);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
 }
@@ -143,40 +142,34 @@ static void yaml_root_to_cfg__mode(void **state) {
 
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
-	pset_add(expected->disableds, disabled_init_name_desc("eight"));
-	pset_add(expected->disableds, disabled_init_name_desc("EIGHT"));
-	pset_add(expected->disableds, disabled_init_name_desc("nine"));
 
-	struct Disabled *disabled = disabled_init();
-	disabled->name_desc = strdup("twelve");
-
+	struct Disabled *disabled_twelve_1 = disabled_init_name_desc("twelve");
 	const struct Condition *cond = condition_init();
-	sset_add(cond->plugged, "ONE");
-	sset_add(cond->plugged, "TWO");
-	pset_add(disabled->conditions, cond);
-
+	sset_add_many(cond->plugged, "ONE", "TWO", cond->plugged);
+	pset_add(disabled_twelve_1->conditions, cond);
 	cond = condition_init();
-	sset_add(cond->unplugged, "THREE");
-	pset_add(disabled->conditions, cond);
+	sset_add_many(cond->unplugged, "THREE", cond->unplugged);
+	pset_add(disabled_twelve_1->conditions, cond);
 
-	pset_add(expected->disableds, disabled);
-
-	disabled = disabled_init();
-	disabled->name_desc = strdup("twelve");
-
+	struct Disabled *disabled_twelve_2 = disabled_init_name_desc("twelve");
 	cond = condition_init();
 	sset_add(cond->plugged, "FOUR");
-	pset_add(disabled->conditions, cond);
+	pset_add(disabled_twelve_2->conditions, cond);
 
-	pset_add(expected->disableds, disabled);
-
-	pset_add(expected->disableds, disabled_init_name_desc("BAD_DISABLED_IFS"));
-	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_IF_SCALAR"));
-	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_IF_MAP"));
-	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_UN_PLUGGED_SCALAR"));
-	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_UN_PLUGGED_MAP"));
-	pset_add(expected->disableds, disabled_init_name_desc("MISTYPED_LID_MAP"));
-	pset_add(expected->disableds, disabled_init_name_desc("NO_VALID_CONDITIONS"));
+	pset_add_many(expected->disableds,
+			disabled_init_name_desc("eight"),
+			disabled_init_name_desc("EIGHT"),
+			disabled_init_name_desc("nine"),
+			disabled_twelve_1,
+			disabled_twelve_2,
+			disabled_init_name_desc("BAD_DISABLED_IFS"),
+			disabled_init_name_desc("MISTYPED_IF_SCALAR"),
+			disabled_init_name_desc("MISTYPED_IF_MAP"),
+			disabled_init_name_desc("MISTYPED_UN_PLUGGED_SCALAR"),
+			disabled_init_name_desc("MISTYPED_UN_PLUGGED_MAP"),
+			disabled_init_name_desc("MISTYPED_LID_MAP"),
+			disabled_init_name_desc("NO_VALID_CONDITIONS"),
+			expected->disableds);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
 }

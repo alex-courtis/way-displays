@@ -12,8 +12,6 @@ struct Disabled {
 
 struct Disabled *disabled_init(void);
 
-struct Disabled *disabled_init_name_desc(const char *name_desc);
-
 const struct PSet *disabled_pset_init(void);
 
 const struct Disabled *disabled_clone(const struct Disabled * const from);

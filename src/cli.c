@@ -175,7 +175,9 @@ struct Cfg *cli_parse_element(enum IpcCommand command, enum CfgElement element, 
 			break;
 		case DISABLED:
 			for (int i = optind; i < argc; i++) {
-				pset_add(cfg->disableds, disabled_init_name_desc(argv[i]));
+				struct Disabled *disabled = disabled_init();
+				disabled->name_desc = strdup(argv[i]);
+				pset_add(cfg->disableds, disabled);
 			}
 			parsed = true;
 			break;

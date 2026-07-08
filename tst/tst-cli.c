@@ -3,6 +3,7 @@
 #include "assert-cfg.h"
 #include "assert-log.h"
 #include "asserts.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -12,7 +13,6 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
-#include "cfg/disabled.h"
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"

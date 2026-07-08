@@ -15,7 +15,6 @@
 #include <string.h>
 
 #include "cfg.h"
-#include "cfg/disabled.h"
 #include "fn.h"
 #include "log.h"
 #include "mode.h"
