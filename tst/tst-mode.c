@@ -13,24 +13,35 @@
 #include "fn.h"
 #include "head.h"
 #include "pset.h"
+#include "smap.h"
 
 #include "mode.h"
 
-struct Mode *mode_target = NULL;
-const struct PSet *modes = NULL;
-
-struct Mode *mode0, *mode1, *mode2, *mode3, *mode4, *mode5;
+struct Mode *target = NULL;
+const struct PSet *mset = NULL;
+const struct SMap *mmap = NULL;
 
 static int before_each(void **state) {
-	mode0 = mode_whr(200, 100, 59999);
-	mode1 = mode_whr(200, 100, 60499);
-	mode2 = mode_whr(200, 100, 60500);
-	mode3 = mode_whr(400, 200, 120000);
-	mode4 = mode_whr(600, 300, 164999);
-	mode5 = mode_whr(800, 400, 144000);
 
-	modes = mode_pset_init();
-	pset_add_many(modes, mode0, mode1, mode2, mode3, mode4, mode5, NULL);
+	// set must inherit params as per mode_pset_init - no equals
+	const struct SMapParams params = {
+		.free_val = (fn_free)mode_free,
+		.str_val = (fn_str)mode_str,
+		.clone_val = (fn_clone)mode_clone,
+	};
+	mmap = smap_init_with(params);
+
+	smap_put_many(mmap,
+			"200x100x59999",  mode_whr(200, 100, 59999),
+			"200x100x60498",  mode_whr(200, 100, 60498),
+			"200x100x60499",  mode_whr(200, 100, 60499),
+			"200x100x60500",  mode_whr(200, 100, 60500),
+			"400x200x120000", mode_whr(400, 200, 120000),
+			"600x600x164999", mode_whr(600, 300, 164999),
+			"800x400x144000", mode_whr(800, 400, 144000),
+			NULL);
+
+	mset = smap_vals_pset(mmap);
 
 	return 0;
 }
@@ -38,10 +49,11 @@ static int before_each(void **state) {
 static int after_each(void **state) {
 	assert_logs_empty();
 
-	mode_free(mode_target);
-	mode_target = NULL;
+	mode_free(target);
+	target = NULL;
 
-	pset_free_vals(modes);
+	smap_free(mmap);
+	pset_free_vals(mset);
 
 	return 0;
 }
@@ -73,8 +85,8 @@ static void mode_equal__all(void **state) {
 
 static void mode_satisfies__null(void **state) {
 	assert_false(mode_satisfies(NULL, NULL));
-	assert_false(mode_satisfies(mode1, NULL));
-	assert_false(mode_satisfies(NULL, mode1));
+	assert_false(mode_satisfies(smap_get(mmap, "200x100x60499"), NULL));
+	assert_false(mode_satisfies(NULL, smap_get(mmap, "200x100x60499")));
 }
 
 static void mode_greater_than_res_refresh__sort(void **state) {
@@ -111,96 +123,72 @@ static void mode_greater_than_res_refresh__sort(void **state) {
 }
 
 static void mode_hz_rounded__(void **state) {
-	mode_target = mode_init();
+	target = mode_init();
 
-	mode_target->refresh_mhz = 0;
-	assert_int_equal(mode_hz_rounded(mode_target), 0);
+	target->refresh_mhz = 0;
+	assert_int_equal(mode_hz_rounded(target), 0);
 
-	mode_target->refresh_mhz = 123567;
-	assert_int_equal(mode_hz_rounded(mode_target), 124);
+	target->refresh_mhz = 123567;
+	assert_int_equal(mode_hz_rounded(target), 124);
 
-	mode_target->refresh_mhz = 123500;
-	assert_int_equal(mode_hz_rounded(mode_target), 124);
+	target->refresh_mhz = 123500;
+	assert_int_equal(mode_hz_rounded(target), 124);
 }
 
 static void mode_best_satisfying__max(void **state) {
-	mode_target = mode_whr_max(-1, -1, -1);
+	target = mode_whr_max(-1, -1, -1);
 
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
+	const struct Mode *actual = mode_best_satisfying(target, mset);
 
-	assert_mode_equal(actual, mode5);
-	assert_ptr_equal(actual, mode5);
+	assert_mode_equal(actual, smap_get(mmap, "800x400x144000"));
 }
 
 static void mode_best_satisfying__no_hz_no_match(void **state) {
-	mode_target = mode_whr(999, 999, -1);
+	target = mode_whr(999, 999, -1);
 
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
-
-	assert_nul(actual);
+	assert_nul(mode_best_satisfying(target, mset));
 }
 
 static void mode_best_satisfying__no_hz_match(void **state) {
-	mode_target = mode_whr(400, 200, -1);
+	target = mode_whr(400, 200, -1);
 
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
-
-	assert_mode_equal(actual, mode3);
-	assert_ptr_equal(actual, mode3);
+	assert_mode_equal(mode_best_satisfying(target, mset), smap_get(mmap, "400x200x120000"));
 }
 
 static void mode_best_satisfying__even_hz_no_match(void **state) {
-	mode_target = mode_whr(200, 100, 144000);
+	target = mode_whr(200, 100, 144000);
 
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
-
-	assert_nul(actual);
+	assert_nul(mode_best_satisfying(target, mset));
 }
 
 static void mode_best_satisfying__even_hz_match(void **state) {
-	mode_target = mode_whr(200, 100, 60000);
+	target = mode_whr(200, 100, 60000);
 
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
-
-	assert_mode_equal(actual, mode1);
-	assert_ptr_equal(actual, mode1);
+	assert_mode_equal(mode_best_satisfying(target, mset), smap_get(mmap, "200x100x60499"));
 }
 
 static void mode_best_satisfying__even_hz_rounded_up(void **state) {
-	mode_target = mode_whr(600, 300, 165000);
+	target = mode_whr(600, 300, 165000);
 
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
-
-	assert_mode_equal(actual, mode4);
-	assert_ptr_equal(actual, mode4);
+	assert_mode_equal(mode_best_satisfying(target, mset), smap_get(mmap, "600x600x164999"));
 }
 
 static void mode_best_satisfying__exact_hz_match(void **state) {
-	mode_target = mode_whr(200, 100, 60498);
+	target = mode_whr(200, 100, 60498);
 
-	const struct Mode *mode_exact = mode_whr(200, 100, 60498);
-	pset_add(modes, mode_exact);
-
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
-
-	assert_mode_equal(actual, mode_exact);
-	assert_ptr_equal(actual, mode_exact);
+	assert_mode_equal(mode_best_satisfying(target, mset), smap_get(mmap, "200x100x60498"));
 }
 
 static void mode_best_satisfying__width_failed(void **state) {
-	mode_target = mode_whr(1000, 100, 60499);
+	target = mode_whr(1000, 100, 60499);
 
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
-
-	assert_nul(actual);
+	assert_nul(mode_best_satisfying(target, mset));
 }
 
 static void mode_best_satisfying__height_failed(void **state) {
-	mode_target = mode_whr(200, 9999999, 60499);
+	target = mode_whr(200, 9999999, 60499);
 
-	const struct Mode *actual = mode_best_satisfying(mode_target, modes);
-
-	assert_nul(actual);
+	assert_nul(mode_best_satisfying(target, mset));
 }
 
 static void mode_dpi__(void **state) {
@@ -222,58 +210,46 @@ static void mode_dpi__(void **state) {
 }
 
 static void mode_max_refresh__no_target(void **state) {
-	const struct Mode *actual = mode_max_refresh(NULL, modes);
+	const struct Mode *actual = mode_max_refresh(NULL, mset);
 
 	assert_nul(actual);
 }
 
-static void mode_max_refresh__target_matches(void **state) {
-	struct Mode *expected = mode_whr(111, 222, 333);
-	pset_add(modes, expected);
+static void mode_max_refresh__first_matches(void **state) {
+	struct Mode *first = mode_whr(111, 222, 333);
+	pset_add(mset, first);
 
-	const struct Mode *actual = mode_max_refresh(expected, modes);
+	const struct Mode *second = mode_whr(111, 222, 333);
+	pset_add(mset, second);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
-}
+	target = mode_whr(111, 222, 333);
 
-static void mode_max_refresh__prior_matches(void **state) {
-	struct Mode *expected = mode_whr(111, 222, 333);
-	pset_add(modes, expected);
-
-	const struct Mode *target = mode_whr(111, 222, 333);
-	pset_add(modes, target);
-
-	const struct Mode *actual = mode_max_refresh(target, modes);
-
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	// ensure we get the first pointer, not just an equal mode
+	assert_ptr_equal(mode_max_refresh(target, mset), first);
 }
 
 static void mode_max_refresh__later_higher_refresh(void **state) {
-	const struct Mode *target = mode_whr(111, 222, 333);
-	pset_add(modes, target);
+	const struct Mode *lower = mode_whr(111, 222, 333);
+	pset_add(mset, lower);
 
-	struct Mode *expected = mode_whr(111, 222, 999999);
-	pset_add(modes, expected);
+	const struct Mode *higher = mode_whr(111, 222, 999999);
+	pset_add(mset, higher);
 
-	const struct Mode *actual = mode_max_refresh(target, modes);
+	target = mode_whr(111, 222, 333);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(mode_max_refresh(target, mset), higher);
 }
 
 static void mode_max_refresh__earlier_higher_refresh(void **state) {
-	struct Mode *expected = mode_whr(111, 222, 999999);
-	pset_add(modes, expected);
+	const struct Mode *higher = mode_whr(111, 222, 999999);
+	pset_add(mset, higher);
 
-	const struct Mode *target = mode_whr(111, 222, 333);
-	pset_add(modes, target);
+	const struct Mode *lower = mode_whr(111, 222, 333);
+	pset_add(mset, lower);
 
-	const struct Mode *actual = mode_max_refresh(target, modes);
+	target = mode_whr(111, 222, 333);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(mode_max_refresh(target, mset), higher);
 }
 
 int main(void) {
@@ -298,8 +274,7 @@ int main(void) {
 		TEST_BA(mode_dpi__),
 
 		TEST_BA(mode_max_refresh__no_target),
-		TEST_BA(mode_max_refresh__target_matches),
-		TEST_BA(mode_max_refresh__prior_matches),
+		TEST_BA(mode_max_refresh__first_matches),
 		TEST_BA(mode_max_refresh__later_higher_refresh),
 		TEST_BA(mode_max_refresh__earlier_higher_refresh),
 	};
