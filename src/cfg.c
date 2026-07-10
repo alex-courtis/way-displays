@@ -38,20 +38,19 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 
 	memcpy(to, from, sizeof(struct Cfg));
 
-	to->callback_cmd =          from->callback_cmd ?          strdup(from->callback_cmd) :          NULL;
-	to->dir_path =              from->dir_path ?              strdup(from->dir_path) :              NULL;
-	to->file_name =             from->file_name ?             strdup(from->file_name) :             NULL;
-	to->file_path =             from->file_path ?             strdup(from->file_path) :             NULL;
+	to->callback_cmd          = from->callback_cmd          ? strdup(from->callback_cmd)          : NULL;
+	to->dir_path              = from->dir_path              ? strdup(from->dir_path)              : NULL;
+	to->file_name             = from->file_name             ? strdup(from->file_name)             : NULL;
+	to->file_path             = from->file_path             ? strdup(from->file_path)             : NULL;
 	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
-	to->adaptive_sync_off =     sset_clone(from->adaptive_sync_off);
+	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
 	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
-	to->order_name_desc =       sset_clone(from->order_name_desc);
-
-	to->disableds =  pset_clone_deep(from->disableds);
-	to->modes =      smap_clone_deep(from->modes);
-	to->scales =     smapi_clone(from->scales);
-	to->transforms = smapi_clone(from->transforms);
+	to->order_name_desc       = sset_clone(from->order_name_desc);
+	to->disableds             = pset_clone_deep(from->disableds);
+	to->modes                 = smap_clone_deep(from->modes);
+	to->scales                = smapi_clone(from->scales);
+	to->transforms            = smapi_clone(from->transforms);
 
 	return to;
 }
@@ -168,15 +167,13 @@ static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_pat
 struct Cfg *cfg_init(void) {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
-	cfg->adaptive_sync_off =     sset_init();
+	cfg->adaptive_sync_off     = sset_init();
+	cfg->disableds             = disabled_pset_init();
 	cfg->max_preferred_refresh = sset_init();
-	cfg->order_name_desc =       sset_init();
-
-	cfg->scales =     smapi_init();
-	cfg->transforms = smapi_init();
-
-	cfg->disableds =  disabled_pset_init();
-	cfg->modes = mode_smap_init();
+	cfg->modes                 = mode_smap_equal_init();
+	cfg->order_name_desc       = sset_init();
+	cfg->scales                = smapi_init();
+	cfg->transforms            = smapi_init();
 
 	return cfg;
 }
@@ -240,42 +237,43 @@ void cfg_file_paths_destroy(void) {
 	slist_free_vals(&g_cfg_file_paths, NULL);
 }
 
+// TODO not all of this is tested
 bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	return a && b &&
-		sset_equal(a->adaptive_sync_off, b->adaptive_sync_off) &&
 		a->align == b->align &&
 		a->arrange == b->arrange &&
 		a->auto_scale == b->auto_scale &&
 		a->auto_scale_dpi == b->auto_scale_dpi &&
 		a->auto_scale_max == b->auto_scale_max &&
 		a->auto_scale_min == b->auto_scale_min &&
-		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
-		pset_equal(a->disableds, b->disableds) &&
-		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
 		a->laptop_lid_monitor == b->laptop_lid_monitor &&
 		a->log_threshold == b->log_threshold &&
-		sset_equal(a->max_preferred_refresh, b->max_preferred_refresh) &&
-		sset_equal(a->order_name_desc, b->order_name_desc) &&
 		a->scale_round_strategy == b->scale_round_strategy &&
 		a->scale_round_to == b->scale_round_to &&
 		a->scaling == b->scaling &&
+		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
+		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
+		pset_equal(a->disableds, b->disableds) &&
 		smap_equal(a->modes, b->modes) &&
 		smapi_equal(a->scales, b->scales) &&
-		smapi_equal(a->transforms, b->transforms);
+		smapi_equal(a->transforms, b->transforms) &&
+		sset_equal(a->adaptive_sync_off, b->adaptive_sync_off) &&
+		sset_equal(a->max_preferred_refresh, b->max_preferred_refresh) &&
+		sset_equal(a->order_name_desc, b->order_name_desc);
 }
 
 void cfg_apply_defaults(struct Cfg *cfg) {
-	if (!cfg->arrange)              cfg->arrange =              ARRANGE_DEFAULT;
-	if (!cfg->align)                cfg->align =                ALIGN_DEFAULT;
-	if (!cfg->scaling)              cfg->scaling =              SCALING_DEFAULT;
-	if (!cfg->auto_scale)           cfg->auto_scale =           AUTO_SCALE_DEFAULT;
-	if (!cfg->scale_round_to)       cfg->scale_round_to =       SCALE_ROUND_TO_DEFAULT;
+	if (!cfg->arrange)              cfg->arrange              = ARRANGE_DEFAULT;
+	if (!cfg->align)                cfg->align                = ALIGN_DEFAULT;
+	if (!cfg->scaling)              cfg->scaling              = SCALING_DEFAULT;
+	if (!cfg->auto_scale)           cfg->auto_scale           = AUTO_SCALE_DEFAULT;
+	if (!cfg->scale_round_to)       cfg->scale_round_to       = SCALE_ROUND_TO_DEFAULT;
 	if (!cfg->scale_round_strategy) cfg->scale_round_strategy = SCALE_ROUND_STRATEGY_DEFAULT;
-	if (!cfg->auto_scale_dpi)       cfg->auto_scale_dpi =       AUTO_SCALE_DPI_DEFAULT;
-	if (!cfg->auto_scale_min)       cfg->auto_scale_min =       AUTO_SCALE_MIN_DEFAULT;
-	if (!cfg->auto_scale_max)       cfg->auto_scale_max =       AUTO_SCALE_MAX_DEFAULT;
-	if (!cfg->callback_cmd)         cfg->callback_cmd =         strdup(CALLBACK_CMD_DEFAULT);
-	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor =   LAPTOP_LID_MONITOR_DEFAULT;
+	if (!cfg->auto_scale_dpi)       cfg->auto_scale_dpi       = AUTO_SCALE_DPI_DEFAULT;
+	if (!cfg->auto_scale_min)       cfg->auto_scale_min       = AUTO_SCALE_MIN_DEFAULT;
+	if (!cfg->auto_scale_max)       cfg->auto_scale_max       = AUTO_SCALE_MAX_DEFAULT;
+	if (!cfg->callback_cmd)         cfg->callback_cmd         = strdup(CALLBACK_CMD_DEFAULT);
+	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor   = LAPTOP_LID_MONITOR_DEFAULT;
 }
 
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {
@@ -313,6 +311,7 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = clone_cfg(to);
 
+	// upsert
 	merged->align                = from->align                ? from->align                : merged->align;
 	merged->arrange              = from->arrange              ? from->arrange              : merged->arrange;
 	merged->auto_scale           = from->auto_scale           ? from->auto_scale           : merged->auto_scale;
@@ -322,36 +321,21 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 	merged->scale_round_strategy = from->scale_round_strategy ? from->scale_round_strategy : merged->scale_round_strategy;
 	merged->scale_round_to       = from->scale_round_to       ? from->scale_round_to       : merged->scale_round_to;
 	merged->scaling              = from->scaling              ? from->scaling              : merged->scaling;
-
-	smapi_put_all(merged->scales,            from->scales);
-	smapi_put_all(merged->transforms,        from->transforms);
-	sset_add_all (merged->adaptive_sync_off, from->adaptive_sync_off);
-
-	// ORDER, replace
-	sset_free(merged->order_name_desc);
-	merged->order_name_desc = sset_clone(from->order_name_desc);
-
-	// TODO need a map_put_all_free_clone or map_put_all_free_deep/map_put_all_free_shallow
-	// MODE
-	for (const struct SMapIt *it = smap_it(from->modes); it; it = smap_it_next(it)) {
-		smap_put_free(merged->modes, it->key, mode_clone(it->val));
-	}
-
-	// DISABLED
-	for (const struct PSetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
-		const struct Disabled *d = disabled_clone(it->val);
-		if (!pset_add(merged->disableds, d)) {
-			disabled_free((struct Disabled*)d);
-		}
-	}
-
-	// CALLBACK_CMD
 	if (from->callback_cmd) {
 		if (merged->callback_cmd) {
 			free(merged->callback_cmd);
 		}
 		merged->callback_cmd = strdup(from->callback_cmd);
 	}
+	pset_add_all_clone     (merged->disableds,         from->disableds);
+	smap_put_all_clone_free(merged->modes,             from->modes);
+	smapi_put_all          (merged->scales,            from->scales);
+	smapi_put_all          (merged->transforms,        from->transforms);
+	sset_add_all           (merged->adaptive_sync_off, from->adaptive_sync_off);
+
+	// replace
+	sset_free(merged->order_name_desc);
+	merged->order_name_desc = sset_clone(from->order_name_desc);
 
 	return merged;
 }

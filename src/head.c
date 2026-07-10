@@ -28,8 +28,8 @@ struct SList *g_heads_departed = NULL;
 struct Head *head_init(void) {
 	struct Head *head = calloc(1, sizeof(struct Head));
 
-	head->modes = mode_pset_init();
-	head->modes_failed = mode_pset_init();
+	head->modes = mode_pset_ptr_init();
+	head->modes_failed = mode_pset_ptr_init();
 
 	return head;
 }
@@ -58,7 +58,7 @@ void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	const struct PSet *modes_orphaned = mode_pset_init();
+	const struct PSet *modes_orphaned = mode_pset_ptr_init();
 	add_orphaned_mode(modes_orphaned, head, head->mode_preferred);
 	add_orphaned_mode(modes_orphaned, head, head->current.mode);
 	add_orphaned_mode(modes_orphaned, head, head->desired.mode);
@@ -238,7 +238,7 @@ void heads_reapply(struct SList *heads) {
 
 			// clear failed
 			pset_free(head->modes_failed);
-			head->modes_failed = mode_pset_init();
+			head->modes_failed = mode_pset_ptr_init();
 		}
 
 		if (head->current.enabled) {

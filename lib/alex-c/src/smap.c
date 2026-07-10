@@ -216,16 +216,28 @@ bool smap_put_free(const struct SMap* const map, const char* const key, const vo
 	return map ? pmap_put_free(map->pmap, key, val) : false;
 }
 
-size_t smap_put_all_free(const struct SMap* const map, const struct SMap* const from) {
-	return map && from ? pmap_put_all_free(map->pmap, from->pmap) : 0;
-}
-
 const void *smap_remove(const struct SMap* const map, const char* const key) {
 	return map ? pmap_remove(map->pmap, key) : NULL;
 }
 
 bool smap_remove_free(const struct SMap* const map, const char* const key) {
 	return map ? pmap_remove_free(map->pmap, key) : false;
+}
+
+size_t smap_put_all(const struct SMap* const map, const struct SMap* const from) {
+	return map && from ? pmap_put_all(map->pmap, from->pmap) : 0;
+}
+
+size_t smap_put_all_free(const struct SMap* const map, const struct SMap* const from) {
+	return map && from ? pmap_put_all_free(map->pmap, from->pmap) : 0;
+}
+
+size_t smap_put_all_clone(const struct SMap* const map, const struct SMap* const from) {
+	return map && from ? pmap_put_all_clone(map->pmap, from->pmap) : 0;
+}
+
+size_t smap_put_all_clone_free(const struct SMap* const map, const struct SMap* const from) {
+	return map && from ? pmap_put_all_clone_free(map->pmap, from->pmap) : 0;
 }
 
 bool smap_equal(const struct SMap* const a, const struct SMap* const b) {

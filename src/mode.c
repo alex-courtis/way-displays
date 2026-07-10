@@ -34,7 +34,7 @@ struct Mode *mode_clone(const struct Mode * const from) {
 	return to;
 }
 
-const struct PSet *mode_pset_init(void) {
+const struct PSet *mode_pset_ptr_init(void) {
 	const struct PSetParams params = {
 		.free_val = (fn_free)mode_free,
 		.str_val = (fn_str)mode_str,
@@ -43,9 +43,18 @@ const struct PSet *mode_pset_init(void) {
 	return pset_init_with(params);
 }
 
-const struct SMap *mode_smap_init(void) {
+const struct SMap *mode_smap_equal_init(void) {
 	const struct SMapParams params = {
 		.equal_val = (fn_equal)mode_equal,
+		.free_val = (fn_free)mode_free,
+		.str_val = (fn_str)mode_str,
+		.clone_val = (fn_clone)mode_clone,
+	};
+	return smap_init_with(params);
+}
+
+const struct SMap *mode_smap_ptr_init(void) {
+	const struct SMapParams params = {
 		.free_val = (fn_free)mode_free,
 		.str_val = (fn_str)mode_str,
 		.clone_val = (fn_clone)mode_clone,

@@ -103,6 +103,18 @@ static bool remove(const struct PSet* const cset, const void* const val, fn_free
 	return false;
 }
 
+static size_t add_all(const struct PSet* const set, const struct PSet* const from, fn_alloc init_val) {
+	size_t added = 0;
+
+	for (const void **v = from->vals; v < from->vals + from->size; v++) {
+		if (add(set, *v, init_val)) {
+			added++;
+		}
+	}
+
+	return added;
+}
+
 static const struct PSet *clone(const struct PSet* const from, fn_clone clone_val) {
 	const struct PSet *to = pset_init_with(from->params);
 
@@ -277,18 +289,11 @@ bool pset_add(const struct PSet* const set, const void* const val) {
 }
 
 size_t pset_add_all(const struct PSet* const set, const struct PSet* const from) {
-	if (!set || !from)
-		return 0;
+	return set && from ? add_all(set, from, set->params.alloc_val) : 0;
+}
 
-	size_t added = 0;
-
-	for (const void **v = from->vals; v < from->vals + from->size; v++) {
-		if (add(set, *v, set->params.alloc_val)) {
-			added++;
-		}
-	}
-
-	return added;
+size_t pset_add_all_clone(const struct PSet* const set, const struct PSet* const from) {
+	return set && from && set->params.clone_val ? add_all(set, from, set->params.clone_val) : 0;
 }
 
 bool pset_remove(const struct PSet* const set, const void* const val) {

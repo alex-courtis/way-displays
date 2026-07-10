@@ -317,16 +317,28 @@ bool imap_put_free(const struct IMap* const map, const size_t key, const char* c
 	return map ? pmap_put_free(map->pmap, &key, val) : false;
 }
 
-size_t imap_put_all_free(const struct IMap* const map, const struct IMap* const from) {
-	return map && from ? pmap_put_all_free(map->pmap, from->pmap) : 0;
-}
-
 const void *imap_remove(const struct IMap* const map, const size_t key) {
 	return map ? pmap_remove(map->pmap, &key) : NULL;
 }
 
 bool imap_remove_free(const struct IMap* const map, const size_t key) {
 	return map ? pmap_remove_free(map->pmap, &key) : false;
+}
+
+size_t imap_put_all(const struct IMap* const map, const struct IMap* const from) {
+	return map && from ? pmap_put_all(map->pmap, from->pmap) : 0;
+}
+
+size_t imap_put_all_free(const struct IMap* const map, const struct IMap* const from) {
+	return map && from ? pmap_put_all_free(map->pmap, from->pmap) : 0;
+}
+
+size_t imap_put_all_clone(const struct IMap* const map, const struct IMap* const from) {
+	return map && from ? pmap_put_all_clone(map->pmap, from->pmap) : 0;
+}
+
+size_t imap_put_all_clone_free(const struct IMap* const map, const struct IMap* const from) {
+	return map && from ? pmap_put_all_clone_free(map->pmap, from->pmap) : 0;
 }
 
 bool imap_equal(const struct IMap* const a, const struct IMap* const b) {

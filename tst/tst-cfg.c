@@ -552,7 +552,6 @@ static void cfg_validate_fix__row(void **state) {
 static void cfg_validate_fix__mode_cfg(void **state) {
 	struct State *s = *state;
 
-	// TODO could this just be put_many ?
 	smap_put_many(s->from->modes,
 			"ok", mode_whr(1, 2, 3),
 			"max", mode_whr_max(-1, -1, -1),

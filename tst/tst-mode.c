@@ -22,15 +22,8 @@ const struct PSet *mset = NULL;
 const struct SMap *mmap = NULL;
 
 static int before_each(void **state) {
-
-	// set must inherit params as per mode_pset_init - no equals
-	const struct SMapParams params = {
-		.free_val = (fn_free)mode_free,
-		.str_val = (fn_str)mode_str,
-		.clone_val = (fn_clone)mode_clone,
-	};
-	mmap = smap_init_with(params);
-
+	// equal pointers, not vals, to match head->modes
+	mmap = mode_smap_ptr_init();
 	smap_put_many(mmap,
 			"200x100x59999",  mode_whr(200, 100, 59999),
 			"200x100x60498",  mode_whr(200, 100, 60498),
@@ -58,6 +51,9 @@ static int after_each(void **state) {
 	return 0;
 }
 
+// TODO test clone
+
+// TODO put these in mset
 static void mode_equal__all(void **state) {
 	struct Mode *modea = mode_whr(1000, 1000, 1000);
 	struct Mode *modeb0 = mode_whr(1000, 2000, 3000);
@@ -96,7 +92,7 @@ static void mode_greater_than_res_refresh__sort(void **state) {
 	const struct Mode *mode03 = mode_whr(9999, 2000, 3000);
 	const struct Mode *mode04 = mode_whr(1000, 2000, 3000);
 
-	const struct PSet *expected = mode_pset_init();
+	const struct PSet *expected = mode_pset_ptr_init();
 	pset_add_many(expected,
 			mode03,
 			mode01,
@@ -105,7 +101,7 @@ static void mode_greater_than_res_refresh__sort(void **state) {
 			mode04,
 			NULL);
 
-	const struct PSet *actual = mode_pset_init();
+	const struct PSet *actual = mode_pset_ptr_init();
 	pset_add_many(actual,
 			mode00,
 			mode01,

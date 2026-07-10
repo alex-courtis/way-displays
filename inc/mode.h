@@ -36,11 +36,14 @@ struct Mode *mode_init(void);
 
 struct Mode *mode_clone(const struct Mode * const from);
 
-// raw pointers
-const struct PSet *mode_pset_init(void);
+// raw pointers, for head modes
+const struct PSet *mode_pset_ptr_init(void);
 
-// mode_equal
-const struct SMap *mode_smap_init(void);
+// raw pointers, for head modes
+const struct SMap *mode_smap_ptr_init(void);
+
+// mode_equal, for cfg modes
+const struct SMap *mode_smap_equal_init(void);
 
 void mode_free(struct Mode *mode);
 

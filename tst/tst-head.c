@@ -515,7 +515,7 @@ static void heads_reapply__(void **state) {
 
 	head_disabled->mode_preferred = mode_h_whr(head_disabled, 3440, 1440, 59999);
 
-	const struct PSet *modes_once_failed = mode_pset_init();
+	const struct PSet *modes_once_failed = mode_pset_ptr_init();
 	pset_add_many(modes_once_failed,
 			head_disabled->mode_preferred,
 			mode_h_whr(head_disabled, 3840, 2160, 30000),

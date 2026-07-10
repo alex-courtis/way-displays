@@ -321,21 +321,21 @@ int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	if (!map)
 		return 0;
 
-	yaml_map_add_str(c, "NAME",          head->name,          map);
-	yaml_map_add_str(c, "DESCRIPTION",   head->description,   map);
-	yaml_map_add_str(c, "MAKE",          head->make,          map);
-	yaml_map_add_str(c, "MODEL",         head->model,         map);
-	yaml_map_add_str(c, "SERIAL_NUMBER", head->serial_number, map);
-	yaml_map_add_int(c, "WIDTH_MM",      head->width_mm,      map);
-	yaml_map_add_int(c, "HEIGHT_MM",     head->height_mm,     map);
+	yaml_map_add_str(c, "NAME",            head->name,                                                     map);
+	yaml_map_add_str(c, "DESCRIPTION",     head->description,                                              map);
+	yaml_map_add_str(c, "MAKE",            head->make,                                                     map);
+	yaml_map_add_str(c, "MODEL",           head->model,                                                    map);
+	yaml_map_add_str(c, "SERIAL_NUMBER",   head->serial_number,                                            map);
+	yaml_map_add_int(c, "WIDTH_MM",        head->width_mm,                                                 map);
+	yaml_map_add_int(c, "HEIGHT_MM",       head->height_mm,                                                map);
 
-	yaml_map_add_node(c, "CURRENT",        yaml_map_from_head_state(c, &head->current), map);
-	yaml_map_add_node(c, "DESIRED",        yaml_map_from_head_state(c, &head->desired), map);
-	yaml_map_add_node(c, "OVERRIDES",      yaml_map_from_head_overrides(c, head),       map);
-	yaml_map_add_node(c, "MODE_PREFERRED", yaml_map_from_mode(c, head->mode_preferred), map);
+	yaml_map_add_node(c, "CURRENT",        yaml_map_from_head_state(c, &head->current),                    map);
+	yaml_map_add_node(c, "DESIRED",        yaml_map_from_head_state(c, &head->desired),                    map);
+	yaml_map_add_node(c, "OVERRIDES",      yaml_map_from_head_overrides(c, head),                          map);
+	yaml_map_add_node(c, "MODE_PREFERRED", yaml_map_from_mode(c, head->mode_preferred),                    map);
 
-	yaml_map_add_pset(c, "MODES",        head->modes,        (fn_yaml_node_from_type)yaml_map_from_mode, map);
-	yaml_map_add_pset(c, "MODES_FAILED", head->modes_failed, (fn_yaml_node_from_type)yaml_map_from_mode, map);
+	yaml_map_add_pset(c, "MODES",          head->modes,        (fn_yaml_node_from_type)yaml_map_from_mode, map);
+	yaml_map_add_pset(c, "MODES_FAILED",   head->modes_failed, (fn_yaml_node_from_type)yaml_map_from_mode, map);
 
 	return map;
 }

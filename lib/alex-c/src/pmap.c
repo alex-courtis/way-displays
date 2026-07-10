@@ -53,7 +53,7 @@ static void grow(struct PMap *map) {
 }
 
 static const struct PMapIt *it_init(const struct PMap *map) {
-	if (!map || map->size == 0)
+	if (map->size == 0)
 		return NULL;
 
 	struct PMapIt *it = calloc(1, sizeof(struct PMapIt));
@@ -63,10 +63,7 @@ static const struct PMapIt *it_init(const struct PMap *map) {
 	return it;
 }
 
-static const void *put(const struct PMap* const map, const void* const key, const void* const val, fn_alloc alloc_val) {
-	if (!key)
-		return NULL;
-
+static const void *put(const struct PMap* const map, const void* const key, const void* const val, fn_alloc init_val) {
 	if (!val && !map->params.allow_null_val)
 		return NULL;
 
@@ -78,7 +75,7 @@ static const void *put(const struct PMap* const map, const void* const key, cons
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			const void *val_old = *v;
 
-			const void *val_new = val && alloc_val ? alloc_val(val) : val;
+			const void *val_new = val && init_val ? init_val(val) : val;
 			if (!val_new && !map->params.allow_null_val) {
 				return NULL;
 			}
@@ -94,7 +91,7 @@ static const void *put(const struct PMap* const map, const void* const key, cons
 		return NULL;
 
 	// alloc new val, maybe null
-	const void *val_new = val && alloc_val ? alloc_val(val) : val;
+	const void *val_new = val && init_val ? init_val(val) : val;
 	if (!val_new && !map->params.allow_null_val) {
 		return NULL;
 	}
@@ -115,6 +112,37 @@ static const void *put(const struct PMap* const map, const void* const key, cons
 	map_m->size++;
 
 	return NULL;
+}
+
+static bool put_free(const struct PMap* const map, const void* const key, const void* const val, fn_alloc init_val) {
+	const void *val_old = put(map, key, val, init_val);
+
+	if (val_old) {
+		map->params.free_val ? map->params.free_val(val_old) : free((void*)val_old);
+		return true;
+	} else {
+		return false;
+	}
+}
+
+static size_t put_all(const struct PMap* const map, const struct PMap* const from, fn_alloc init_val, bool do_free) {
+	size_t overwritten = 0;
+
+	const void **k;
+	const void **v;
+	for (k = from->keys, v = from->vals; k < from->keys + from->size; k++, v++) {
+		if (do_free) {
+			if (put_free(map, *k, *v, init_val)) {
+				overwritten++;
+			}
+		} else {
+			if (put(map, *k, *v, init_val) != NULL) {
+				overwritten++;
+			}
+		}
+	}
+
+	return overwritten;
 }
 
 static const struct PMap *clone(const struct PMap* const from, fn_clone clone_val) {
@@ -213,11 +241,7 @@ void pmap_free_vals(const struct PMap* const map) {
 
 	for (const void **v = map->vals; v < map->vals + map->size; v++) {
 		if (*v) {
-			if (map->params.free_val) {
-				map->params.free_val(*v);
-			} else {
-				free((void*)*v);
-			}
+			map->params.free_val ? map->params.free_val (*v) : free((void*)*v);
 		}
 	}
 
@@ -238,9 +262,7 @@ const void *pmap_get(const struct PMap* const map, const void* const key) {
 
 	const void **k;
 	const void **v;
-	for (k = map->keys, v = map->vals;
-			k < map->keys + map->size;
-			k++, v++) {
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			return *v;
 		}
@@ -254,9 +276,7 @@ bool pmap_contains_key(const struct PMap* const map, const void* const key) {
 		return false;
 
 	const void **k;
-	for (k = map->keys;
-			k < map->keys + map->size;
-			k++) {
+	for (k = map->keys; k < map->keys + map->size; k++) {
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			return true;
 		}
@@ -266,13 +286,11 @@ bool pmap_contains_key(const struct PMap* const map, const void* const key) {
 }
 
 bool pmap_contains_val(const struct PMap* const map, const void* const val) {
-	if (!map || !val)
+	if (!map)
 		return false;
 
 	const void **v;
-	for (v = map->vals;
-			v < map->vals + map->size;
-			v++) {
+	for (v = map->vals; v < map->vals + map->size; v++) {
 		if (map->params.equal_val ? map->params.equal_val(*v, val) : *v == val) {
 			return true;
 		}
@@ -339,6 +357,9 @@ struct PMapPair pmap_match_val(const struct PMap* const map, fn_match_ptr match,
 }
 
 const struct PMapIt *pmap_it(const struct PMap* const map) {
+	if (!map)
+		return NULL;
+
 	const struct PMapIt *it = it_init(map);
 
 	if (!it)
@@ -348,7 +369,7 @@ const struct PMapIt *pmap_it(const struct PMap* const map) {
 }
 
 const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data) {
-	if (!match)
+	if (!map || !match)
 		return NULL;
 
 	const struct PMapIt *it = it_init(map);
@@ -362,7 +383,7 @@ const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_ptr_pt
 }
 
 const struct PMapIt *pmap_match_key_it(const struct PMap* const map, fn_match_ptr match, const void* const data) {
-	if (!match)
+	if (!map || !match)
 		return NULL;
 
 	const struct PMapIt *it = it_init(map);
@@ -376,7 +397,7 @@ const struct PMapIt *pmap_match_key_it(const struct PMap* const map, fn_match_pt
 }
 
 const struct PMapIt *pmap_match_val_it(const struct PMap* const map, fn_match_ptr match, const void* const data) {
-	if (!match)
+	if (!map || !match)
 		return NULL;
 
 	const struct PMapIt *it = it_init(map);
@@ -447,38 +468,23 @@ const void *pmap_put_if_absent(const struct PMap* const map, const void* const k
 }
 
 bool pmap_put_free(const struct PMap* const map, const void* const key, const void* const val) {
-	if (!map)
-		return false;
+	return map ? put_free(map, key, val, map->params.alloc_val) : false;
+}
 
-	const void *val_old = put(map, key, val, map->params.alloc_val);
-
-	if (val_old) {
-		if (map->params.free_val) {
-			map->params.free_val(val_old);
-		} else {
-			free((void*)val_old);
-		}
-		return true;
-	} else {
-		return false;
-	}
+size_t pmap_put_all(const struct PMap* const map, const struct PMap* const from) {
+	return map && from ? put_all(map, from, map->params.alloc_val, false) : 0;
 }
 
 size_t pmap_put_all_free(const struct PMap* const map, const struct PMap* const from) {
-	if (!map || !from)
-		return 0;
+	return map && from ? put_all(map, from, map->params.alloc_val, true) : 0;
+}
 
-	size_t overwritten = 0;
+size_t pmap_put_all_clone(const struct PMap* const map, const struct PMap* const from) {
+	return map && from && map->params.clone_val ? put_all(map, from, map->params.clone_val, false) : 0;
+}
 
-	const void **k;
-	const void **v;
-	for (k = from->keys, v = from->vals; k < from->keys + from->size; k++, v++) {
-		if (pmap_put_free(map, *k, *v)) {
-			overwritten++;
-		}
-	}
-
-	return overwritten;
+size_t pmap_put_all_clone_free(const struct PMap* const map, const struct PMap* const from) {
+	return map && from && map->params.clone_val ? put_all(map, from, map->params.clone_val, true) : 0;
 }
 
 const void *pmap_remove(const struct PMap* const map, const void* const key) {
@@ -521,11 +527,7 @@ bool pmap_remove_free(const struct PMap* const map, const void* const key) {
 	if (pmap_contains_key(map, key)) {
 		const void *removed = pmap_remove(map, key);
 		if (removed) {
-			if (map->params.free_val) {
-				map->params.free_val(removed);
-			} else {
-				free((void*)removed);
-			}
+			map->params.free_val ? map->params.free_val(removed) : free((void*)removed);
 		}
 		return true;
 	} else {
@@ -540,9 +542,7 @@ bool pmap_equal(const struct PMap* const a, const struct PMap* const b) {
 	const void **ak, **bk;
 	const void **av, **bv;
 
-	for (ak = a->keys, bk = b->keys, av = a->vals, bv = b->vals;
-			ak < a->keys + a->size;
-			ak++, bk++, av++, bv++) {
+	for (ak = a->keys, bk = b->keys, av = a->vals, bv = b->vals; ak < a->keys + a->size; ak++, bk++, av++, bv++) {
 
 		// key
 		if (!(a->params.equal_key ? a->params.equal_key(*ak, *bk) : *ak == *bk)) {

@@ -146,7 +146,7 @@ const struct SMap *yaml_map_to_smap(struct UC *c, const yaml_node_t *map) {
 	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE))
 		return NULL;
 
-	const struct SMap *table = smap_init();
+	const struct SMap *nodes = smap_init();
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
@@ -163,10 +163,10 @@ const struct SMap *yaml_map_to_smap(struct UC *c, const yaml_node_t *map) {
 		const yaml_node_t *pair_value = yaml_document_get_node(&c->d, pair->value);
 
 		if (pair_value)
-			smap_put(table, key, pair_value);
+			smap_put(nodes, key, pair_value);
 
 		free(key);
 	}
 
-	return table;
+	return nodes;
 }

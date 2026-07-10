@@ -511,18 +511,17 @@ void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *
 
 	struct Head *head = head_init();
 
-	head->name = yaml_scalar_to_string(c, smap_get(nodes, "NAME"));
-	head->description = yaml_scalar_to_string(c, smap_get(nodes, "DESCRIPTION"));
-	head->make = yaml_scalar_to_string(c, smap_get(nodes, "MAKE"));
-	head->model = yaml_scalar_to_string(c, smap_get(nodes, "MODEL"));
-	head->serial_number = yaml_scalar_to_string(c, smap_get(nodes, "SERIAL_NUMBER"));
-	yaml_scalar_to_int(c, &head->width_mm, smap_get(nodes, "WIDTH_MM"));
-	yaml_scalar_to_int(c, &head->height_mm, smap_get(nodes, "HEIGHT_MM"));
+	head->name           = yaml_scalar_to_string(c, smap_get(nodes, "NAME"));
+	head->description    = yaml_scalar_to_string(c, smap_get(nodes, "DESCRIPTION"));
+	head->make           = yaml_scalar_to_string(c, smap_get(nodes, "MAKE"));
+	head->model          = yaml_scalar_to_string(c, smap_get(nodes, "MODEL"));
+	head->serial_number  = yaml_scalar_to_string(c, smap_get(nodes, "SERIAL_NUMBER"));
+	head->mode_preferred = yaml_map_to_mode     (c, smap_get(nodes, "MODE_PREFERRED"));
 
-	yaml_map_into_head_state(c, &head->current, smap_get(nodes, "CURRENT"));
-	yaml_map_into_head_state(c, &head->desired, smap_get(nodes, "DESIRED"));
-
-	head->mode_preferred = yaml_map_to_mode(c, smap_get(nodes, "MODE_PREFERRED"));
+	yaml_scalar_to_int      (c, &head->width_mm,    smap_get(nodes, "WIDTH_MM"));
+	yaml_scalar_to_int      (c, &head->height_mm,   smap_get(nodes, "HEIGHT_MM"));
+	yaml_map_into_head_state(c, &head->current,     smap_get(nodes, "CURRENT"));
+	yaml_map_into_head_state(c, &head->desired,     smap_get(nodes, "DESIRED"));
 
 	yaml_seq_into_col(c, smap_get(nodes, "MODES"),        head->modes,        (fn_yaml_node_into_col)yaml_map_into_modes);
 	yaml_seq_into_col(c, smap_get(nodes, "MODES_FAILED"), head->modes_failed, (fn_yaml_node_into_col)yaml_map_into_modes);

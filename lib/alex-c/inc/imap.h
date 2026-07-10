@@ -118,8 +118,17 @@ const void *imap_put_if_absent(const struct IMap* const map, const size_t key, c
 // set key/val, free old val, return true if overwritten [alloc_val, free_val]
 bool imap_put_free(const struct IMap* const map, const size_t key, const char* const val);
 
-// set all from key/val, freeing overwritten vals, returning number of overwritten [alloc_val, free_val]
+// set all from key/val, returning number overwritten [alloc_val]
+size_t imap_put_all(const struct IMap* const map, const struct IMap* const from);
+
+// set all from key/val, returning number overwritten, freeing overwritten vals [alloc_val, free_val]
 size_t imap_put_all_free(const struct IMap* const map, const struct IMap* const from);
+
+// set all from key/val, returning number overwritten, NOP when NULL clone_val  [clone_val]
+size_t imap_put_all_clone(const struct IMap* const map, const struct IMap* const from);
+
+// set all from key/val, returning number overwritten, freeing overwritten vals, NOP when NULL clone_val [free_val, clone_val]
+size_t imap_put_all_clone_free(const struct IMap* const map, const struct IMap* const from);
 
 // remove val, return old val if present
 const void *imap_remove(const struct IMap* const map, const size_t key);
