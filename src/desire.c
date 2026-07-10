@@ -187,6 +187,7 @@ void desire_reapply(struct Head *head) {
 		head->desired.enabled = false;
 }
 
+// TODO this can be simplified
 struct SList *desire_order(const struct SSet * const order_name_desc, struct SList *heads) {
 	if (!heads)
 		return NULL;

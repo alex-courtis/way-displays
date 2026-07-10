@@ -224,6 +224,14 @@ bool smap_remove_free(const struct SMap* const map, const char* const key) {
 	return map ? pmap_remove_free(map->pmap, key) : false;
 }
 
+size_t smap_remove_all(const struct SMap* const map, const struct SMap* const from) {
+	return map && from ? pmap_remove_all(map->pmap, from->pmap) : 0;
+}
+
+size_t smap_remove_all_free(const struct SMap* const map, const struct SMap* const from) {
+	return map && from ? pmap_remove_all_free(map->pmap, from->pmap) : 0;
+}
+
 size_t smap_put_all(const struct SMap* const map, const struct SMap* const from) {
 	return map && from ? pmap_put_all(map->pmap, from->pmap) : 0;
 }

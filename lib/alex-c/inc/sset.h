@@ -81,6 +81,9 @@ size_t sset_add_all(const struct SSet* const set, const struct SSet* const from)
 // if the set contains val, remove it, free it and return true
 bool sset_remove(const struct SSet* const set, const char* const val);
 
+// remove vals contained in from, return number removed
+size_t sset_remove_all(const struct SSet* const set, const struct SSet* const from);
+
 // shell sort in place
 void sset_sort(const struct SSet* const set);
 

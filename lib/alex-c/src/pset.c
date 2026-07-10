@@ -115,6 +115,18 @@ static size_t add_all(const struct PSet* const set, const struct PSet* const fro
 	return added;
 }
 
+static size_t remove_all(const struct PSet* const set, const struct PSet* const from, fn_free free_val) {
+	size_t removed = 0;
+
+	for (const void **v = from->vals; v < from->vals + from->size; v++) {
+		if (remove(set, *v, free_val)) {
+			removed++;
+		}
+	}
+
+	return removed;
+}
+
 static const struct PSet *clone(const struct PSet* const from, fn_clone clone_val) {
 	const struct PSet *to = pset_init_with(from->params);
 
@@ -296,6 +308,14 @@ bool pset_remove(const struct PSet* const set, const void* const val) {
 
 bool pset_remove_free(const struct PSet* const set, const void* const val) {
 	return set ? remove(set, val, set->params.free_val ? set->params.free_val : (fn_free)free) : false;
+}
+
+size_t pset_remove_all(const struct PSet* const set, const struct PSet* const from) {
+	return set && from ? remove_all(set, from, NULL) : 0;
+}
+
+size_t pset_remove_all_free(const struct PSet* const set, const struct PSet* const from) {
+	return set && from ? remove_all(set, from, set->params.free_val ? set->params.free_val : (fn_free)free) : 0;
 }
 
 void pset_sort(const struct PSet* const set, fn_less_than less_than_val) {

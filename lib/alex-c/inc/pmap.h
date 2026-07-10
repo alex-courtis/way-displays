@@ -6,6 +6,19 @@
 
 #include "fn.h"
 
+// TODO this is a PmapP
+// PmapPit
+// PmapP_It
+//
+// PmapP_ItState
+// PmapP_ItState
+//
+// PmapPpair
+// PmapP_Pair
+//
+// PmapPparams
+// PmapP_Params
+
 /*
  * Array backed pointer indexed map.
  * Entries preserve insertion order.
@@ -137,11 +150,17 @@ size_t pmap_put_all_clone(const struct PMap* const map, const struct PMap* const
 // set all from key/val, returning number overwritten, freeing overwritten vals, NOP when NULL clone_val [equal_key, alloc_key, free_val, clone_val]
 size_t pmap_put_all_clone_free(const struct PMap* const map, const struct PMap* const from);
 
-// remove val, return old val if present [equal_key, free_key]
+// remove entry, if removed return old val [equal_key, free_key]
 const void *pmap_remove(const struct PMap* const map, const void* const key);
 
-// remove val, if removed free val and return true [equal_key, free_key, free_val]
+// remove and free entry, if removed free it and return true [equal_key, free_key, free_val]
 bool pmap_remove_free(const struct PMap* const map, const void* const key);
+
+// remove entries matching from keys, return number removed [equal_key, free_key]
+size_t pmap_remove_all(const struct PMap* const map, const struct PMap* const from);
+
+// remove and free entries matching from keys, return number removed [equal_key, free_key, free_val]
+size_t pmap_remove_all_free(const struct PMap* const map, const struct PMap* const from);
 
 /*
  * Comparison

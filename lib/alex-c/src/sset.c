@@ -132,6 +132,10 @@ bool sset_remove(const struct SSet* const set, const char* const val) {
 	return set ? pset_remove_free(set->pset, val) : false;
 }
 
+size_t sset_remove_all(const struct SSet* const set, const struct SSet* const from) {
+	return set && from ? pset_remove_all_free(set->pset, from->pset) : false;
+}
+
 void sset_sort(const struct SSet* const set) {
 	if (set)
 		pset_sort(set->pset, set->params.case_insensitive ? (fn_equal)less_than_strcasecmp : (fn_equal)less_than_strcmp);

@@ -132,11 +132,17 @@ size_t smap_put_all_clone(const struct SMap* const map, const struct SMap* const
 // set all from key/val, returning number overwritten, freeing overwritten vals, NOP when NULL clone_val [free_val, clone_val]
 size_t smap_put_all_clone_free(const struct SMap* const map, const struct SMap* const from);
 
-// remove val, return old val if present
+// remove entry, if removed return old val
 const void *smap_remove(const struct SMap* const map, const char* const key);
 
-// remove val, if removed free val and return true [free_val]
+// remove and free entry, if removed free it and return true [free_val]
 bool smap_remove_free(const struct SMap* const map, const char* const key);
+
+// remove entries matching from keys, return number removed [equal_key]
+size_t smap_remove_all(const struct SMap* const map, const struct SMap* const from);
+
+// remove and free entries matching from keys, return number removed [equal_key, free_val]
+size_t smap_remove_all_free(const struct SMap* const map, const struct SMap* const from);
 
 /*
  * Comparison

@@ -99,11 +99,11 @@ bool pset_remove(const struct PSet* const set, const void* const val);
 // if the set contains val, remove it, free it and return true [equal_val, alloc_val, free_val]
 bool pset_remove_free(const struct PSet* const set, const void* const val);
 
-// TODO
-bool pset_remove_all(const struct PSet* const set, const struct PSet* const from);
+// remove vals contained in from, return number removed [equal_val]
+size_t pset_remove_all(const struct PSet* const set, const struct PSet* const from);
 
-// TODO
-bool pset_remove_all_free(const struct PSet* const set, const struct PSet* const from);
+// remove and free vals contained in from, return number removed [equal_val, free_val]
+size_t pset_remove_all_free(const struct PSet* const set, const struct PSet* const from);
 
 // shell sort in place, NULL less_than_val NOP
 void pset_sort(const struct PSet* const set, fn_less_than less_than_val);

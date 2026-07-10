@@ -306,6 +306,14 @@ bool imap_remove_free(const struct IMap* const map, const size_t key) {
 	return map ? pmap_remove_free(map->pmap, &key) : false;
 }
 
+size_t imap_remove_all(const struct IMap* const map, const struct IMap* const from) {
+	return map && from ? pmap_remove_all(map->pmap, from->pmap) : 0;
+}
+
+size_t imap_remove_all_free(const struct IMap* const map, const struct IMap* const from) {
+	return map && from ? pmap_remove_all_free(map->pmap, from->pmap) : 0;
+}
+
 size_t imap_put_all(const struct IMap* const map, const struct IMap* const from) {
 	return map && from ? pmap_put_all(map->pmap, from->pmap) : 0;
 }

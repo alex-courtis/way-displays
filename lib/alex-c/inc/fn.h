@@ -35,6 +35,8 @@ bool less_than_strcmp(const char* const a, const char* const b);
 // strcasecmp(a, b) < 0
 bool less_than_strcasecmp(const char* const a, const char* const b);
 
+// TODO these are predicates
+
 //
 // match against supplied data
 //

@@ -200,6 +200,10 @@ bool smaps_remove(const struct SMapS* const map, const char* const key) {
 	return map ? pmap_remove_free(map->pmap, key) : false;
 }
 
+size_t smaps_remove_all(const struct SMapS* const map, const struct SMapS* const from) {
+	return map && from ? pmap_remove_all_free(map->pmap, from->pmap) : false;
+}
+
 bool smaps_equal(const struct SMapS* const a, const struct SMapS* const b) {
 	return a && b ? pmap_equal(a->pmap, b->pmap) : false;
 }

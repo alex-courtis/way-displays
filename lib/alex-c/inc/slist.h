@@ -38,9 +38,11 @@ struct SList *slist_append(struct SList **head, void *val);
 // remove an item, returning the val
 void *slist_remove(struct SList **head, struct SList **item);
 
+// TODO predicate
 // remove items, NULL equal_val is val pointer comparison
 size_t slist_remove_all(struct SList **head, fn_equal equal_val, const void *b);
 
+// TODO predicate
 // remove items and free vals, NULL equal_val is val pointer comparison, NULL free_val calls free()
 size_t slist_remove_all_free(struct SList **head, fn_equal equal_val, const void *b, fn_free free_val);
 
@@ -54,15 +56,18 @@ void slist_xor_free(struct SList **head1, struct SList *head2, fn_equal equal_va
 // val at position
 void *slist_at(const struct SList *head, size_t index);
 
+// TODO these are predicates
 // find
 struct SList *slist_find(struct SList *head, fn_test test_val);
 
 // find a val
 void *slist_find_val(struct SList *head, fn_test test_val);
 
+// TODO predicate
 // find, NULL equal_val is val pointer comparison
 struct SList *slist_find_equal(struct SList *head, fn_equal equal_val, const void *b);
 
+// TODO predicate
 // find a val, NULL equal_val is val pointer comparison
 void *slist_find_equal_val(struct SList *head, fn_equal equal_val, const void *b);
 
@@ -80,6 +85,7 @@ bool slist_equal(struct SList *a, struct SList *b, fn_equal equal_val);
 // insertion sort into a new list
 struct SList *slist_sort(struct SList *head, fn_less_than less_than_val);
 
+// TODO predicate
 // move items between lists where from value equals b, NULL equal_val does nothing
 void slist_move(struct SList **to, struct SList **from, fn_equal equal_val, const void *b);
 

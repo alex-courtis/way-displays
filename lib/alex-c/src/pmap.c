@@ -534,6 +534,38 @@ bool pmap_remove_free(const struct PMap* const map, const void* const key) {
 	}
 }
 
+size_t pmap_remove_all(const struct PMap* const map, const struct PMap* const from) {
+	if (!map || !from)
+		return 0;
+
+	size_t removed = 0;
+
+	const void **k;
+	for (k = from->keys; k < from->keys + from->size; k++) {
+		if (pmap_remove(map, *k) != NULL) {
+			removed++;
+		}
+	}
+
+	return removed;
+}
+
+size_t pmap_remove_all_free(const struct PMap* const map, const struct PMap* const from) {
+	if (!map || !from)
+		return 0;
+
+	size_t removed = 0;
+
+	const void **k;
+	for (k = from->keys; k < from->keys + from->size; k++) {
+		if (pmap_remove_free(map, *k)) {
+			removed++;
+		}
+	}
+
+	return removed;
+}
+
 bool pmap_equal(const struct PMap* const a, const struct PMap* const b) {
 	if (!a || !b || a->size != b->size)
 		return false;

@@ -347,32 +347,13 @@ struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = clone_cfg(to);
 
-	// SCALE
-	for (const struct SMapIIt *it = smapi_it(from->scales); it; it = smapi_it_next(it)) {
-		smapi_remove(merged->scales, it->key);
-	}
+	pset_remove_all_free(merged->disableds,         from->disableds);
+	smap_remove_all_free(merged->modes,             from->modes);
+	smapi_remove_all    (merged->scales,            from->scales);
+	smapi_remove_all    (merged->transforms,        from->transforms);
+	sset_remove_all     (merged->adaptive_sync_off, from->adaptive_sync_off);
 
-	// MODE
-	for (const struct SMapIt *it = smap_it(from->modes); it; it = smap_it_next(it)) {
-		smap_remove_free(merged->modes, it->key);
-	}
-
-	// TRANSFORM
-	for (const struct SMapIIt *it = smapi_it(from->transforms); it; it = smapi_it_next(it)) {
-		smapi_remove(merged->transforms, it->key);
-	}
-
-	// VRR_OFF
-	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
-		sset_remove(merged->adaptive_sync_off, it->val);
-	}
-
-	// DISABLED
-	for (const struct PSetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
-		pset_remove_free(merged->disableds, it->val);
-	}
-
-	// CALLBACK_CMD
+	// empty string means no callback
 	if (from->callback_cmd && strlen(from->callback_cmd) == 0) {
 		free(merged->callback_cmd);
 		merged->callback_cmd = NULL;
