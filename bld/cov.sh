@@ -82,6 +82,8 @@ genhtml \
 	--output-directory "${REP_PATH}" \
 	${INFO_PATH}
 
+# TODO not finding the file
+
 ONLY_HTML=$(find "${REP_PATH}" -name "${1}.c.gcov.html")
 
 if [ $# -eq 1 ] && [ -f "${ONLY_HTML}" ]; then
