@@ -58,6 +58,8 @@ static int after_each(void **state) {
 }
 
 static void mode_clone__(void **state) {
+	assert_nul(mode_clone(NULL));
+
 	struct Head head = { 0 };
 	struct zwlr_output_mode_v1 *zwlr_mode = NULL;
 

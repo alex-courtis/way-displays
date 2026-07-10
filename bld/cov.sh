@@ -2,6 +2,9 @@
 
 set -e
 
+HI_LIMIT=85
+MED_LIMIT=60
+
 INFO_PATH="/tmp/coverage.info" 
 REP_PATH="/tmp/coverage-report"
 SRC_PATH="src"
@@ -77,14 +80,13 @@ genhtml \
 	--dark-mode \
 	--num-spaces 4 \
 	--flat \
-	--rc genhtml_hi_limit=85 \
-	--rc genhtml_med_limit=60 \
+	--rc genhtml_hi_limit="${HI_LIMIT}" \
+	--rc genhtml_med_limit="${MED_LIMIT}" \
 	--output-directory "${REP_PATH}" \
 	${INFO_PATH}
 
-# TODO not finding the file
-
-ONLY_HTML=$(find "${REP_PATH}" -name "${1}.c.gcov.html")
+TESTED_NAME="$(echo "${1}" | sed -E 's/test-(.*)/\1/g')"
+ONLY_HTML=$(find "${REP_PATH}" -name "${TESTED_NAME}.c.gcov.html")
 
 if [ $# -eq 1 ] && [ -f "${ONLY_HTML}" ]; then
 	xdg-open "${ONLY_HTML}"
