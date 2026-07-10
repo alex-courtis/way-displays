@@ -21,6 +21,9 @@ bool equal_strcasecmp(const char* const a, const char* const b);
 // true if both NULL or strstr(a, b)
 bool equal_strstr(const char* const a, const char* const b);
 
+// true if both present and equal value
+bool equal_size_t(const size_t* const a, const size_t* const b);
+
 //
 // a < b
 //
@@ -67,12 +70,10 @@ typedef void (*fn_free)(const void* const val);
 typedef void* (*fn_clone)(const void* const val);
 
 // copies a string using strdup, if val is NULL, returns NULL
-void *clone_strdup(const void* const val);
+void *clone_strdup(const char* const val);
 
-//
-// allocate a new val, must equal original
-//
-typedef void* (*fn_alloc)(const void* const val);
+// allocates and sets a size_t*, if val is NULL, returns NULL
+void *clone_size_t(const size_t* const val);
 
 //
 // to string, caller frees, may return NULL
@@ -81,5 +82,8 @@ typedef char* (*fn_str)(const void* const val);
 
 // val or "(null)"
 char *str_or_null(const char* const val);
+
+// %zu or "(null)"
+char *str_size_t(const size_t* const val);
 
 #endif // FN_H

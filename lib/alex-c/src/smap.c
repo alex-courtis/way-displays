@@ -24,7 +24,7 @@ static const struct SMap *clone(const struct SMap* const from, bool deep) {
 
 	struct SMap *to = calloc(1, sizeof(struct SMap));
 
-	to->pmap = deep ? pmap_clone_deep(from->pmap) : pmap_clone_shallow(from->pmap) ;
+	to->pmap = deep ? pmap_clone_deep(from->pmap) : pmap_clone(from->pmap) ;
 
 	memcpy((void*)&to->params, &from->params, sizeof(struct SMapParams));
 
@@ -54,7 +54,7 @@ const struct SMap *smap_init_with(const struct SMapParams params) {
 	const struct PMapParams pmap_params = {
 		.equal_key = params.case_insensitive ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
 		.equal_val = params.equal_val,
-		.alloc_key = clone_strdup,
+		.alloc_key = (fn_clone)clone_strdup,
 		.alloc_val = params.alloc_val,
 		.free_key = (fn_free)free,
 		.free_val = params.free_val,
@@ -73,7 +73,7 @@ const struct SMap *smap_init_with(const struct SMapParams params) {
 	return map;
 }
 
-const struct SMap *smap_clone_shallow(const struct SMap* const from) {
+const struct SMap *smap_clone(const struct SMap* const from) {
 	return clone(from, false);
 }
 
@@ -244,8 +244,8 @@ bool smap_equal(const struct SMap* const a, const struct SMap* const b) {
 	return a && b ? pmap_equal(a->pmap, b->pmap) : false;
 }
 
-struct SList *smap_keys_slist_deep(const struct SMap* const map) {
-	return map ? pmap_keys_slist_deep(map->pmap) : NULL;
+struct SList *smap_keys_slist(const struct SMap* const map) {
+	return map ? pmap_keys_slist(map->pmap) : NULL;
 }
 
 const struct SSet *smap_keys_sset(const struct SMap* const map) {
@@ -266,16 +266,20 @@ const struct SSet *smap_keys_sset(const struct SMap* const map) {
 	return set;
 }
 
-struct SList *smap_vals_slist_shallow(const struct SMap* const map) {
-	return map ? pmap_vals_slist_shallow(map->pmap) : NULL;
+struct SList *smap_vals_slist(const struct SMap* const map) {
+	return map ? pmap_vals_slist(map->pmap) : NULL;
 }
 
-struct SList *smap_vals_slist_deep(const struct SMap* const map) {
-	return map ? pmap_vals_slist_deep(map->pmap) : NULL;
+struct SList *smap_vals_slist_clone(const struct SMap* const map) {
+	return map ? pmap_vals_slist_clone(map->pmap) : NULL;
 }
 
 const struct PSet *smap_vals_pset(const struct SMap* const map) {
 	return map ? pmap_vals_pset(map->pmap) : NULL;
+}
+
+const struct PSet *smap_vals_pset_clone(const struct SMap* const map) {
+	return map ? pmap_vals_pset_clone(map->pmap) : NULL;
 }
 
 char *smap_str(const struct SMap* const map) {

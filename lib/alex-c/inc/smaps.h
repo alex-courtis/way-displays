@@ -51,7 +51,7 @@ const struct SMapS *smaps_init(void);
 // construct with params
 const struct SMapS *smaps_init_with(const struct SMapSParams params);
 
-// clone
+// same params
 const struct SMapS *smaps_clone(const struct SMapS* const from);
 
 // free map
@@ -124,16 +124,16 @@ bool smaps_equal(const struct SMapS* const a, const struct SMapS* const b);
  * Conversion
  */
 
-// map ordered vals, caller frees list and vals
-struct SList *smaps_keys_slist_deep(const struct SMapS* const map);
+// map ordered keys, caller frees list and contents
+struct SList *smaps_keys_slist(const struct SMapS* const map);
 
-// map ordered keys, same parameters
+// map ordered keys, same params
 const struct SSet *smaps_keys_sset(const struct SMapS* const map);
 
-// map ordered vals, caller frees list and vals
-struct SList *smaps_vals_slist_deep(const struct SMapS* const map);
+// map ordered vals, caller frees list and contents
+struct SList *smaps_vals_slist(const struct SMapS* const map);
 
-// map ordered vals, same parameters
+// map ordered vals, same params
 const struct SSet *smaps_vals_sset(const struct SMapS* const map);
 
 /*

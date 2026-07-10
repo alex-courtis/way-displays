@@ -47,6 +47,7 @@ struct Condition *condition_clone(const struct Condition* const from) {
 	return to;
 }
 
+// TODO change this to a match key or match val
 bool condition_true(const struct Condition *condition, const void* const unused) {
 	if (!condition)
 		return false;

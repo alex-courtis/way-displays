@@ -41,11 +41,10 @@ const struct SMapS *smaps_init_with(const struct SMapSParams params) {
 	const struct PMapParams pmap_params = {
 		.equal_key = params.case_insensitive_key ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
 		.equal_val = params.case_insensitive_val ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
-		.alloc_key = clone_strdup,
-		.alloc_val = clone_strdup,
+		.alloc_key = (fn_clone)clone_strdup,
+		.alloc_val = (fn_clone)clone_strdup,
 		.free_key = (fn_free)free,
 		.free_val = (fn_free)free,
-		.clone_val = clone_strdup,
 		.str_key = (fn_str)str_or_null,
 		.str_val = (fn_str)str_or_null,
 		.initial = params.initial,
@@ -65,7 +64,7 @@ const struct SMapS *smaps_clone(const struct SMapS* const from) {
 		return NULL;
 
 	struct SMapS *to = calloc(1, sizeof(struct SMapS));
-	to->pmap = pmap_clone_deep(from->pmap);
+	to->pmap = pmap_clone(from->pmap);
 	memcpy((void*)&to->params, &from->params, sizeof(struct SMapSParams));
 
 	return to;
@@ -205,8 +204,8 @@ bool smaps_equal(const struct SMapS* const a, const struct SMapS* const b) {
 	return a && b ? pmap_equal(a->pmap, b->pmap) : false;
 }
 
-struct SList *smaps_keys_slist_deep(const struct SMapS* const map) {
-	return map ? pmap_keys_slist_deep(map->pmap) : NULL;
+struct SList *smaps_keys_slist(const struct SMapS* const map) {
+	return map ? pmap_keys_slist(map->pmap) : NULL;
 }
 
 const struct SSet *smaps_keys_sset(const struct SMapS* const map) {
@@ -227,8 +226,8 @@ const struct SSet *smaps_keys_sset(const struct SMapS* const map) {
 	return set;
 }
 
-struct SList *smaps_vals_slist_deep(const struct SMapS* const map) {
-	return map ? pmap_vals_slist_deep(map->pmap) : NULL;
+struct SList *smaps_vals_slist(const struct SMapS* const map) {
+	return map ? pmap_vals_slist(map->pmap) : NULL;
 }
 
 const struct SSet *smaps_vals_sset(const struct SMapS* const map) {

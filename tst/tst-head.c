@@ -523,7 +523,7 @@ static void heads_reapply__(void **state) {
 			NULL);
 
 	pset_free(head_disabled->modes_failed);
-	head_disabled->modes_failed = pset_clone_shallow(modes_once_failed);
+	head_disabled->modes_failed = pset_clone(modes_once_failed);
 
 	slist_append(&heads, head_disabled);
 

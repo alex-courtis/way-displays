@@ -34,7 +34,7 @@ struct IMapPair {
  */
 struct IMapParams {
 	const fn_equal equal_val;  // compare key pointers
-	const fn_alloc alloc_val;  // assign key pointer
+	const fn_clone alloc_val;  // assign key pointer
 	const fn_free free_val;    // free
 	const fn_clone clone_val;  // NOP
 	const fn_str str_val;      // %p
@@ -53,10 +53,10 @@ const struct IMap *imap_init(void);
 // construct with params
 const struct IMap *imap_init_with(const struct IMapParams params);
 
-// clone, setting val pointers
-const struct IMap *imap_clone_shallow(const struct IMap* const from);
+// same params, caller frees vals when alloc_val present [alloc_val]
+const struct IMap *imap_clone(const struct IMap* const from);
 
-// clone, empty when NULL clone_val [clone_val]
+// same params, caller frees vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_key, alloc_val, clone_val]
 const struct IMap *imap_clone_deep(const struct IMap* const from);
 
 // free map
@@ -147,14 +147,17 @@ bool imap_equal(const struct IMap* const a, const struct IMap* const b);
  * Conversion
  */
 
-// map ordered vals, caller frees list only
-struct SList *imap_vals_slist_shallow(const struct IMap* const map);
+// map ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
+struct SList *imap_vals_slist(const struct IMap* const map);
 
-// map ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
-struct SList *imap_vals_slist_deep(const struct IMap* const map);
+// map ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
+struct SList *imap_vals_slist_clone(const struct IMap* const map);
 
-// map ordered vals, same parameters, shallow when alloc_val is NULL
+// map ordered vals, same params, caller frees set, caller frees vals when alloc_val present [alloc_val]
 const struct PSet *imap_vals_pset(const struct IMap* const map);
+
+// map ordered vals, same params, caller frees set and vals, NULL on NULL clone_val or both alloc_val and clone_val [clone_val]
+const struct PSet *imap_vals_pset_clone(const struct IMap* const map);
 
 /*
  * Info

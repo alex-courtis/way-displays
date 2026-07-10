@@ -32,16 +32,14 @@ struct PMapPair {
 	const void *val;
 };
 
-// TODO fn_alloc and fn_clone are the same, use fn_clone everywhere
-
 /*
  * Optional constructor params (default)
  */
 struct PMapParams {
 	const fn_equal equal_key;  // compare key pointers
 	const fn_equal equal_val;  // compare val pointers
-	const fn_alloc alloc_key;  // assign key pointer
-	const fn_alloc alloc_val;  // assign val pointer
+	const fn_clone alloc_key;  // assign key pointer
+	const fn_clone alloc_val;  // assign val pointer
 	const fn_free free_key;    // NOP
 	const fn_free free_val;    // free
 	const fn_clone clone_val;  // NOP
@@ -62,10 +60,10 @@ const struct PMap *pmap_init(void);
 // construct with params
 const struct PMap *pmap_init_with(const struct PMapParams params);
 
-// clone, setting val pointers [alloc_key]
-const struct PMap *pmap_clone_shallow(const struct PMap* const from);
+// same params, caller frees keys when alloc_key present and vals when alloc_val present [alloc_key, alloc_val]
+const struct PMap *pmap_clone(const struct PMap* const from);
 
-// clone, empty when NULL clone_val [alloc_key, clone_val]
+// same params, caller frees keys when alloc_key present, caller frees vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_key, alloc_val, clone_val]
 const struct PMap *pmap_clone_deep(const struct PMap* const from);
 
 // free map
@@ -156,28 +154,23 @@ bool pmap_equal(const struct PMap* const a, const struct PMap* const b);
  * Conversion
  */
 
-// TODO just a key clone with maybe alloc_val
+// map ordered keys, caller frees list, caller frees contents when alloc_key present [alloc_key]
+struct SList *pmap_keys_slist(const struct PMap* const map);
 
-// map ordered keys, caller frees list only
-struct SList *pmap_keys_slist_shallow(const struct PMap* const map);
-
-// map ordered keys, caller frees list list and vals, empty when NULL alloc_key [alloc_key]
-struct SList *pmap_keys_slist_deep(const struct PMap* const map);
-
-// map ordered keys, same parameters, shallow when alloc_key is NULL
+// map ordered keys, same params, caller frees contents when alloc_key present [alloc_key]
 const struct PSet *pmap_keys_pset(const struct PMap* const map);
 
-// TODO use put_all semantics instead of shallow/deep
+// map ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
+struct SList *pmap_vals_slist(const struct PMap* const map);
 
-// map ordered vals, caller frees list only
-struct SList *pmap_vals_slist_shallow(const struct PMap* const map);
+// map ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
+struct SList *pmap_vals_slist_clone(const struct PMap* const map);
 
-// map ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
-struct SList *pmap_vals_slist_deep(const struct PMap* const map);
-
-// TODO shallow vs deep using put_all semantics
-// map ordered vals, same parameters, shallow when alloc_val is NULL
+// map ordered vals, same params, caller frees set, caller frees vals when alloc_val present [alloc_val]
 const struct PSet *pmap_vals_pset(const struct PMap* const map);
+
+// map ordered vals, same params, caller frees set and vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_val, clone_val]
+const struct PSet *pmap_vals_pset_clone(const struct PMap* const map);
 
 /*
  * Info

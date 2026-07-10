@@ -28,7 +28,7 @@ struct PSetIt {
  */
 struct PSetParams {
 	const fn_equal equal_val; // compare val pointers
-	const fn_alloc alloc_val; // use key pointer
+	const fn_clone alloc_val; // use key pointer
 	const fn_free free_val;   // free
 	const fn_clone clone_val; // use key pointer
 	const fn_str str_val;     // %p
@@ -46,10 +46,10 @@ const struct PSet *pset_init(void);
 // construct with params
 const struct PSet *pset_init_with(const struct PSetParams params);
 
-// clone, setting val pointers
-const struct PSet *pset_clone_shallow(const struct PSet* const from);
+// same params, caller frees vals when alloc_val present [alloc_val]
+const struct PSet *pset_clone(const struct PSet* const from);
 
-// clone, empty when NULL clone_val [clone_val]
+// set ordered vals, caller frees vals, NULL when NULL clone_val [clone_val]
 const struct PSet *pset_clone_deep(const struct PSet* const from);
 
 // free set
@@ -99,6 +99,12 @@ bool pset_remove(const struct PSet* const set, const void* const val);
 // if the set contains val, remove it, free it and return true [equal_val, alloc_val, free_val]
 bool pset_remove_free(const struct PSet* const set, const void* const val);
 
+// TODO
+bool pset_remove_all(const struct PSet* const set, const struct PSet* const from);
+
+// TODO
+bool pset_remove_all_free(const struct PSet* const set, const struct PSet* const from);
+
 // shell sort in place, NULL less_than_val NOP
 void pset_sort(const struct PSet* const set, fn_less_than less_than_val);
 
@@ -113,11 +119,11 @@ bool pset_equal(const struct PSet* const a, const struct PSet* const b);
  * Conversion
  */
 
-// set ordered vals, caller frees list only
-struct SList *pset_slist_shallow(const struct PSet* const set);
+// set ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
+struct SList *pset_slist(const struct PSet* const set);
 
-// set ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
-struct SList *pset_slist_deep(const struct PSet* const set);
+// set ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
+struct SList *pset_slist_clone(const struct PSet* const set);
 
 /*
  * Info

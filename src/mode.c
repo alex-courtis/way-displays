@@ -188,7 +188,7 @@ const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const 
 	if (!mode_target || !modes)
 		return NULL;
 
-	const struct PSet *candidates = pset_clone_shallow(modes);
+	const struct PSet *candidates = pset_clone(modes);
 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
@@ -204,7 +204,7 @@ const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, c
 	if (!mode_target || !modes)
 		return NULL;
 
-	const struct PSet *candidates = pset_clone_shallow(modes);
+	const struct PSet *candidates = pset_clone(modes);
 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);

@@ -76,7 +76,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		return;
 
 	// show from the top down
-	const struct PSet *modes_sorted = pset_clone_shallow(head->modes);
+	const struct PSet *modes_sorted = pset_clone(head->modes);
 	pset_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
 	const struct PSetIt *it = pset_it(modes_sorted);
 	while (it) {

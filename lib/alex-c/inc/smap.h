@@ -28,7 +28,7 @@ struct SMapIt {
 struct SMapParams {
 	const bool case_insensitive; // false
 	const fn_equal equal_val;    // compare key pointers
-	const fn_alloc alloc_val;    // assign val pointer
+	const fn_clone alloc_val;    // assign val pointer
 	const fn_free free_val;      // free
 	const fn_clone clone_val;    // NOP
 	const fn_str str_val;        // %p
@@ -55,10 +55,10 @@ const struct SMap *smap_init(void);
 // construct with params
 const struct SMap *smap_init_with(const struct SMapParams params);
 
-// clone, setting val pointers
-const struct SMap *smap_clone_shallow(const struct SMap* const from);
+// same params, caller frees vals when alloc_val present [alloc_val]
+const struct SMap *smap_clone(const struct SMap* const from);
 
-// clone, empty when NULL clone_val [clone_val]
+// same params, caller frees vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_key, alloc_val, clone_val]
 const struct SMap *smap_clone_deep(const struct SMap* const from);
 
 // free map
@@ -149,20 +149,24 @@ bool smap_equal(const struct SMap* const a, const struct SMap* const b);
  * Conversion
  */
 
-// map ordered keys, caller frees list and vals
-struct SList *smap_keys_slist_deep(const struct SMap* const map);
+// map ordered keys, caller frees list and contents
+struct SList *smap_keys_slist(const struct SMap* const map);
 
-// map ordered keys, same parameters
+// map ordered keys, same params
 const struct SSet *smap_keys_sset(const struct SMap* const map);
 
-// map ordered vals, caller frees list only
-struct SList *smap_vals_slist_shallow(const struct SMap* const map);
+// map ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
+struct SList *smap_vals_slist(const struct SMap* const map);
 
-// map ordered vals, caller frees list and vals, empty when NULL clone_val [clone_val]
-struct SList *smap_vals_slist_deep(const struct SMap* const map);
+// map ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
+struct SList *smap_vals_slist_clone(const struct SMap* const map);
 
-// map ordered vals, same parameters, shallow when alloc_val is NULL
+// map ordered vals, same params, caller frees set, caller frees vals when alloc_val present [alloc_val]
 const struct PSet *smap_vals_pset(const struct SMap* const map);
+
+// map ordered vals, same params, caller frees set and vals, NULL on NULL clone_val or both alloc_val and clone_val [clone_val]
+const struct PSet *smap_vals_pset_clone(const struct SMap* const map);
+
 
 /*
  * Info

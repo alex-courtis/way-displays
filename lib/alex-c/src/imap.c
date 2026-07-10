@@ -4,7 +4,6 @@
 
 #include "fn.h"
 #include "pmap.h"
-#include "str.h"
 
 #include "imap.h"
 
@@ -24,24 +23,6 @@ struct IMapItState {
 	const struct PMapIt *pit;
 	const struct IMapMatchData *match_data;
 };
-
-static bool equal_key_size_t(const void* const a, const void* const b) {
-	if (!a || !b)
-		return false;
-
-	return *(size_t*)a == *(size_t*)b;
-}
-
-static void *alloc_key_size_t(const void* const val) {
-	size_t *out = calloc(1, sizeof(size_t));
-	*out = *(size_t*)val;
-
-	return out;
-}
-
-static char *str_key_size_t(const void* const val) {
-	return sprintf_alloc("%zu", *(size_t*)val);
-}
 
 static bool match_key_val_wrapper(const void* const key, const void* const val, const void* const data) {
 	const struct IMapMatchData* const matcher = data;
@@ -64,7 +45,7 @@ static const struct IMap *clone(const struct IMap* const from, bool deep) {
 
 	struct IMap *to = calloc(1, sizeof(struct IMap));
 
-	to->pmap = deep ? pmap_clone_deep(from->pmap) : pmap_clone_shallow(from->pmap);
+	to->pmap = deep ? pmap_clone_deep(from->pmap) : pmap_clone(from->pmap);
 
 	memcpy((void*)&to->params, &from->params, sizeof(struct IMapParams));
 
@@ -92,14 +73,14 @@ const struct IMap *imap_init(void) {
 
 const struct IMap *imap_init_with(const struct IMapParams params) {
 	const struct PMapParams pmap_params = {
-		.equal_key = equal_key_size_t,
+		.equal_key = (fn_equal)equal_size_t,
 		.equal_val = params.equal_val,
-		.alloc_key = alloc_key_size_t,
+		.alloc_key = (fn_clone)clone_size_t,
 		.alloc_val = params.alloc_val,
 		.free_key = (fn_free)free,
 		.free_val = params.free_val,
 		.clone_val = params.clone_val,
-		.str_key = str_key_size_t,
+		.str_key = (fn_str)str_size_t,
 		.str_val = params.str_val,
 		.allow_null_val = params.allow_null_val,
 		.initial = params.initial,
@@ -113,7 +94,7 @@ const struct IMap *imap_init_with(const struct IMapParams params) {
 	return map;
 }
 
-const struct IMap *imap_clone_shallow(const struct IMap* const from) {
+const struct IMap *imap_clone(const struct IMap* const from) {
 	return clone(from, false);
 }
 
@@ -345,16 +326,20 @@ bool imap_equal(const struct IMap* const a, const struct IMap* const b) {
 	return a && b ? pmap_equal(a->pmap, b->pmap) : false;
 }
 
-struct SList *imap_vals_slist_shallow(const struct IMap* const map) {
-	return map ? pmap_vals_slist_shallow(map->pmap) : NULL;
+struct SList *imap_vals_slist(const struct IMap* const map) {
+	return map ? pmap_vals_slist(map->pmap) : NULL;
 }
 
-struct SList *imap_vals_slist_deep(const struct IMap* const map) {
-	return map ? pmap_vals_slist_deep(map->pmap) : NULL;
+struct SList *imap_vals_slist_clone(const struct IMap* const map) {
+	return map ? pmap_vals_slist_clone(map->pmap) : NULL;
 }
 
 const struct PSet *imap_vals_pset(const struct IMap* const map) {
 	return map ? pmap_vals_pset(map->pmap) : NULL;
+}
+
+const struct PSet *imap_vals_pset_clone(const struct IMap* const map) {
+	return map ? pmap_vals_pset_clone(map->pmap) : NULL;
 }
 
 char *imap_str(const struct IMap* const map) {
