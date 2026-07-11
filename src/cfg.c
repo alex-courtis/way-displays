@@ -19,8 +19,8 @@
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smap.h"
-#include "smapi.h"
+#include "spmap.h"
+#include "simap.h"
 #include "sset.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
@@ -48,9 +48,9 @@ static struct Cfg *clone_cfg(struct Cfg *from) {
 	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
 	to->order_name_desc       = sset_clone(from->order_name_desc);
 	to->disableds             = pset_clone_deep(from->disableds);
-	to->modes                 = smap_clone_deep(from->modes);
-	to->scales                = smapi_clone(from->scales);
-	to->transforms            = smapi_clone(from->transforms);
+	to->modes                 = spmap_clone_deep(from->modes);
+	to->scales                = simap_clone(from->scales);
+	to->transforms            = simap_clone(from->transforms);
 
 	return to;
 }
@@ -86,20 +86,20 @@ static void warn_ambiguous_name_desc(const char *name_desc, const enum CfgElemen
 	}
 }
 
-static void warn_ambiguous_name_desc_smap(const struct SMap *name_descs, const enum CfgElement element) {
-	for (const struct SMapIt *it = smap_it(name_descs); it; it = smap_it_next(it)) {
+static void warn_ambiguous_name_desc_spmap(const struct SPmap *name_descs, const enum CfgElement element) {
+	for (const struct SPmapIt *it = spmap_it(name_descs); it; it = spmap_it_next(it)) {
 		warn_ambiguous_name_desc(it->key, element);
 	}
 }
 
-static void warn_ambiguous_name_desc_smapi(const struct SMapI *name_descs, const enum CfgElement element) {
-	for (const struct SMapIIt *it = smapi_it(name_descs); it; it = smapi_it_next(it)) {
+static void warn_ambiguous_name_desc_simap(const struct SImap *name_descs, const enum CfgElement element) {
+	for (const struct SImapIt *it = simap_it(name_descs); it; it = simap_it_next(it)) {
 		warn_ambiguous_name_desc(it->key, element);
 	}
 }
 
-static void warn_ambiguous_name_desc_sset(const struct SSet *name_descs, const enum CfgElement element) {
-	for (const struct SSetIt *it = sset_it(name_descs); it; it = sset_it_next(it)) {
+static void warn_ambiguous_name_desc_sset(const struct Sset *name_descs, const enum CfgElement element) {
+	for (const struct SsetIt *it = sset_it(name_descs); it; it = sset_it_next(it)) {
 		warn_ambiguous_name_desc(it->val, element);
 	}
 }
@@ -170,10 +170,10 @@ struct Cfg *cfg_init(void) {
 	cfg->adaptive_sync_off     = sset_init();
 	cfg->disableds             = disabled_pset_init();
 	cfg->max_preferred_refresh = sset_init();
-	cfg->modes                 = mode_smap_equal_init();
+	cfg->modes                 = mode_spmap_equal_init();
 	cfg->order_name_desc       = sset_init();
-	cfg->scales                = smapi_init();
-	cfg->transforms            = smapi_init();
+	cfg->scales                = simap_init();
+	cfg->transforms            = simap_init();
 
 	return cfg;
 }
@@ -195,9 +195,9 @@ void cfg_free(struct Cfg *cfg) {
 	free(cfg->callback_cmd);
 	free(cfg->laptop_display_prefix);
 	pset_free_vals(cfg->disableds);
-	smap_free_vals(cfg->modes);
-	smapi_free(cfg->scales);
-	smapi_free(cfg->transforms);
+	spmap_free_vals(cfg->modes);
+	simap_free(cfg->scales);
+	simap_free(cfg->transforms);
 	sset_free(cfg->adaptive_sync_off);
 	sset_free(cfg->max_preferred_refresh);
 	sset_free(cfg->order_name_desc);
@@ -254,9 +254,9 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
 		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
 		pset_equal(a->disableds, b->disableds) &&
-		smap_equal(a->modes, b->modes) &&
-		smapi_equal(a->scales, b->scales) &&
-		smapi_equal(a->transforms, b->transforms) &&
+		spmap_equal(a->modes, b->modes) &&
+		simap_equal(a->scales, b->scales) &&
+		simap_equal(a->transforms, b->transforms) &&
 		sset_equal(a->adaptive_sync_off, b->adaptive_sync_off) &&
 		sset_equal(a->max_preferred_refresh, b->max_preferred_refresh) &&
 		sset_equal(a->order_name_desc, b->order_name_desc);
@@ -328,9 +328,9 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 		merged->callback_cmd = strdup(from->callback_cmd);
 	}
 	pset_add_all_clone     (merged->disableds,         from->disableds);
-	smap_put_all_clone_free(merged->modes,             from->modes);
-	smapi_put_all          (merged->scales,            from->scales);
-	smapi_put_all          (merged->transforms,        from->transforms);
+	spmap_put_all_clone_free(merged->modes,             from->modes);
+	simap_put_all          (merged->scales,            from->scales);
+	simap_put_all          (merged->transforms,        from->transforms);
 	sset_add_all           (merged->adaptive_sync_off, from->adaptive_sync_off);
 
 	// replace
@@ -347,11 +347,11 @@ struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = clone_cfg(to);
 
-	pset_remove_all_free(merged->disableds,         from->disableds);
-	smap_remove_all_free(merged->modes,             from->modes);
-	smapi_remove_all    (merged->scales,            from->scales);
-	smapi_remove_all    (merged->transforms,        from->transforms);
-	sset_remove_all     (merged->adaptive_sync_off, from->adaptive_sync_off);
+	pset_remove_all_free (merged->disableds,         from->disableds);
+	spmap_remove_all_free(merged->modes,             from->modes);
+	simap_remove_all     (merged->scales,            from->scales);
+	simap_remove_all     (merged->transforms,        from->transforms);
+	sset_remove_all      (merged->adaptive_sync_off, from->adaptive_sync_off);
 
 	// empty string means no callback
 	if (from->callback_cmd && strlen(from->callback_cmd) == 0) {
@@ -384,7 +384,7 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// VRR_OFF
-	for (const struct SSetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
+	for (const struct SsetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
 		if (!sset_remove(merged->adaptive_sync_off, it->val)) {
 			sset_add(merged->adaptive_sync_off, it->val);
 		}
@@ -397,20 +397,20 @@ void cfg_validate_warn(const struct Cfg * const cfg) {
 	if (!cfg)
 		return;
 
-	warn_ambiguous_name_desc_smapi(cfg->scales, SCALE);
-	warn_ambiguous_name_desc_smap(cfg->modes, MODE);
+	warn_ambiguous_name_desc_simap(cfg->scales, SCALE);
+	warn_ambiguous_name_desc_spmap(cfg->modes, MODE);
 
-	warn_ambiguous_name_desc_smapi(cfg->transforms, TRANSFORM);
+	warn_ambiguous_name_desc_simap(cfg->transforms, TRANSFORM);
 
 	warn_ambiguous_name_desc_sset(cfg->order_name_desc, ORDER);
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, VRR_OFF);
 	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh, MAX_PREFERRED_REFRESH);
 
-	for (const struct PSetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
+	for (const struct PsetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
 		const struct Disabled *disabled = (struct Disabled*)dit->val;
 		warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
 
-		for (const struct PSetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
+		for (const struct PsetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
 			const struct Condition *condition = (struct Condition*)cit->val;
 			warn_ambiguous_name_desc_sset(condition->plugged, PLUGGED);
 			warn_ambiguous_name_desc_sset(condition->unplugged, UNPLUGGED);
@@ -450,8 +450,8 @@ void cfg_validate_fix(struct Cfg *cfg) {
 
 	const char *name_desc;
 
-	while ((name_desc = smap_match(cfg->modes, (fn_3pred_str_ptr)mode_is_invalid, NULL).key)) {
-		smap_remove_free(cfg->modes, name_desc);
+	while ((name_desc = spmap_match(cfg->modes, (fn_3pred_str_ptr)mode_is_invalid, NULL).key)) {
+		spmap_remove_free(cfg->modes, name_desc);
 	}
 }
 

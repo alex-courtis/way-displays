@@ -8,7 +8,7 @@
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "smaps.h"
+#include "ssmap.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal.h"
 
@@ -96,13 +96,13 @@ double __wrap_mode_dpi(const struct Mode* const mode) {
 	return mock_type(double);
 }
 
-const struct Mode *__wrap_mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes) {
+const struct Mode *__wrap_mode_best_satisfying(const struct Mode * const mode_target, const struct Pset* const modes) {
 	check_expected_ptr(mode_target);
 	check_expected_ptr(modes);
 	return mock_ptr_type_checked(struct Mode*);
 }
 
-const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes) {
+const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target, const struct Pset* modes) {
 	check_expected_ptr(mode_target);
 	check_expected_ptr(modes);
 	return mock_ptr_type_checked(struct Mode*);
@@ -112,7 +112,7 @@ const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target,
  * process
  */
 
-void __wrap_spawn_sh_cmd(const char * const command, const struct SMapS * const env) {
+void __wrap_spawn_sh_cmd(const char * const command, const struct SSmap * const env) {
 	check_expected_ptr(command);
 	check_expected_ptr(env);
 }

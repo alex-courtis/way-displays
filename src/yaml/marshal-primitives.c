@@ -9,8 +9,8 @@
 #include "convert.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smap.h"
-#include "smapi.h"
+#include "spmap.h"
+#include "simap.h"
 #include "sset.h"
 #include "yaml/marshal.h"
 
@@ -86,7 +86,7 @@ void yaml_map_add_enum(struct MC *c, const char *key, const int val, fn_enum_nam
 	yaml_map_add_str(c, key, str, mapping);
 }
 
-void yaml_map_add_list(struct MC *c, const char *key, const struct Pslist *list, fn_yaml_node_from_type fn, int mapping) {
+void yaml_map_add_pslist(struct MC *c, const char *key, const struct Pslist *list, fn_yaml_node_from_type fn, int mapping) {
 	if (!key || pslist_length(list) == 0)
 		return;
 
@@ -105,7 +105,7 @@ void yaml_map_add_list(struct MC *c, const char *key, const struct Pslist *list,
 	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-void yaml_map_add_sset(struct MC *c, const char *key, const struct SSet *sset, int mapping) {
+void yaml_map_add_sset(struct MC *c, const char *key, const struct Sset *sset, int mapping) {
 	if (!key || sset_size(sset) == 0)
 		return;
 
@@ -115,7 +115,7 @@ void yaml_map_add_sset(struct MC *c, const char *key, const struct SSet *sset, i
 	if (!k || !seq)
 		return;
 
-	for (const struct SSetIt *it = sset_it(sset); it; it = sset_it_next(it)) {
+	for (const struct SsetIt *it = sset_it(sset); it; it = sset_it_next(it)) {
 		int scalar = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)it->val, -1, YAML_PLAIN_SCALAR_STYLE);
 		if (scalar)
 			yaml_document_append_sequence_item(&c->d, seq, scalar);
@@ -124,7 +124,7 @@ void yaml_map_add_sset(struct MC *c, const char *key, const struct SSet *sset, i
 	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-void yaml_map_add_pset(struct MC *c, const char *key, const struct PSet *pset, fn_yaml_node_from_type fn, int mapping) {
+void yaml_map_add_pset(struct MC *c, const char *key, const struct Pset *pset, fn_yaml_node_from_type fn, int mapping) {
 	if (!key || pset_size(pset) == 0)
 		return;
 
@@ -134,7 +134,7 @@ void yaml_map_add_pset(struct MC *c, const char *key, const struct PSet *pset, f
 	if (!k || !seq)
 		return;
 
-	for (const struct PSetIt *it = pset_it(pset); it; it = pset_it_next(it)) {
+	for (const struct PsetIt *it = pset_it(pset); it; it = pset_it_next(it)) {
 		int n = fn(c, it->val);
 		if (n)
 			yaml_document_append_sequence_item(&c->d, seq, n);
@@ -143,8 +143,8 @@ void yaml_map_add_pset(struct MC *c, const char *key, const struct PSet *pset, f
 	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-void yaml_map_add_smap(struct MC *c, const char *key, const struct SMap* smap, fn_yaml_node_from_key_type fn, int mapping) {
-	if (!key || smap_size(smap) == 0)
+void yaml_map_add_spmap(struct MC *c, const char *key, const struct SPmap* spmap, fn_yaml_node_from_key_type fn, int mapping) {
+	if (!key || spmap_size(spmap) == 0)
 		return;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -153,7 +153,7 @@ void yaml_map_add_smap(struct MC *c, const char *key, const struct SMap* smap, f
 	if (!k || !seq)
 		return;
 
-	for (const struct SMapIt *it = smap_it(smap); it; it = smap_it_next(it)) {
+	for (const struct SPmapIt *it = spmap_it(spmap); it; it = spmap_it_next(it)) {
 		int n = fn(c, it->key, it->val);
 		if (n)
 			yaml_document_append_sequence_item(&c->d, seq, n);
@@ -162,8 +162,8 @@ void yaml_map_add_smap(struct MC *c, const char *key, const struct SMap* smap, f
 	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-void yaml_map_add_smapi(struct MC *c, const char *key, const struct SMapI* smapi, fn_node_from_yaml_key_size_t fn, int mapping) {
-	if (!key || smapi_size(smapi) == 0)
+void yaml_map_add_simap(struct MC *c, const char *key, const struct SImap* simap, fn_node_from_yaml_key_size_t fn, int mapping) {
+	if (!key || simap_size(simap) == 0)
 		return;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -172,7 +172,7 @@ void yaml_map_add_smapi(struct MC *c, const char *key, const struct SMapI* smapi
 	if (!k || !seq)
 		return;
 
-	for (const struct SMapIIt *it = smapi_it(smapi); it; it = smapi_it_next(it)) {
+	for (const struct SImapIt *it = simap_it(simap); it; it = simap_it_next(it)) {
 		int n = fn(c, it->key, it->val);
 		if (n)
 			yaml_document_append_sequence_item(&c->d, seq, n);

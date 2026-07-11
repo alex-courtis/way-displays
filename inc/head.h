@@ -39,8 +39,8 @@ struct Head {
 
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
-	const struct PSet* modes;          // pointers equal, not mode_equal
-	const struct PSet *modes_failed;   // moved from modes
+	const struct Pset* modes;          // mode_pset_ptr_init
+	const struct Pset *modes_failed;   // moved from modes
 
 	const struct Mode *mode_preferred; // pointer into modes
 

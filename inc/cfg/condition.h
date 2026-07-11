@@ -10,14 +10,14 @@ enum ConditionLid {
 };
 
 struct Condition {
-	const struct SSet *plugged;
-	const struct SSet *unplugged;
+	const struct Sset *plugged;
+	const struct Sset *unplugged;
 	enum ConditionLid lid;
 };
 
 struct Condition *condition_init(void);
 
-const struct PSet *condition_pset_init(void);
+const struct Pset *condition_pset_init(void);
 
 struct Condition *condition_clone(const struct Condition* const from);
 

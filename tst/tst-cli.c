@@ -17,8 +17,8 @@
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"
-#include "smap.h"
-#include "smapi.h"
+#include "spmap.h"
+#include "simap.h"
 
 #include "cli.h"
 
@@ -165,7 +165,7 @@ static void cli_parse_element__transform_ok(void **state) {
 	struct Cfg *actual = cli_parse_element(CFG_SET, TRANSFORM, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->transforms, "displ", WL_OUTPUT_TRANSFORM_FLIPPED_270);
+	simap_put(expected->transforms, "displ", WL_OUTPUT_TRANSFORM_FLIPPED_270);
 
 	assert_cfg_equal(actual, expected);
 
@@ -180,7 +180,7 @@ static void cli_parse_element__transform_del_ok(void **state) {
 	struct Cfg *actual = cli_parse_element(CFG_DEL, TRANSFORM, 1, argv);
 
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->transforms, "DISPL", WL_OUTPUT_TRANSFORM_90);
+	simap_put(expected->transforms, "DISPL", WL_OUTPUT_TRANSFORM_90);
 
 	assert_cfg_equal(actual, expected);
 
@@ -206,7 +206,7 @@ static void cli_parse_element__scale_set_ok(void **state) {
 	struct Cfg *actual = cli_parse_element(CFG_SET, SCALE, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->scales, "DISPL", 1234500);
+	simap_put(expected->scales, "DISPL", 1234500);
 
 	assert_cfg_equal(actual, expected);
 
@@ -221,7 +221,7 @@ static void cli_parse_element__scale_del_ok(void **state) {
 	struct Cfg *actual = cli_parse_element(CFG_DEL, SCALE, 1, argv);
 
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->scales, "DISPL", 1);
+	simap_put(expected->scales, "DISPL", 1);
 
 	assert_cfg_equal(actual, expected);
 
@@ -272,7 +272,7 @@ static void cli_parse_element__mode_set_max(void **state) {
 	expectedUserMode->max = true;
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->modes, "DISPL", expectedUserMode);
+	spmap_put(expected->modes, "DISPL", expectedUserMode);
 
 	assert_cfg_equal(actual, expected);
 
@@ -292,7 +292,7 @@ static void cli_parse_element__mode_set_res(void **state) {
 	expectedUserMode->height = 2;
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->modes, "DISPL", expectedUserMode);
+	spmap_put(expected->modes, "DISPL", expectedUserMode);
 
 	assert_cfg_equal(actual, expected);
 
@@ -313,7 +313,7 @@ static void cli_parse_element__mode_set_res_refresh(void **state) {
 	expectedUserMode->refresh_mhz = 12346;
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->modes, "DISPL", expectedUserMode);
+	spmap_put(expected->modes, "DISPL", expectedUserMode);
 
 	assert_cfg_equal(actual, expected);
 
@@ -361,7 +361,7 @@ static void cli_parse_element__mode_del_ok(void **state) {
 	expectedUserMode->max = true;
 
 	struct Cfg *expected = cfg_init();
-	smap_put(expected->modes, "DISPL", expectedUserMode);
+	spmap_put(expected->modes, "DISPL", expectedUserMode);
 
 	assert_cfg_equal(actual, expected);
 

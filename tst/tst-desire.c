@@ -20,7 +20,7 @@
 #include "head.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smapi.h"
+#include "simap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -70,7 +70,7 @@ static void desire__nothing(void **state) {
 }
 
 static void desire_order__exact_partial_regex(void **state) {
-	const struct SSet *order_name_desc = sset_init();
+	const struct Sset *order_name_desc = sset_init();
 	struct Pslist *heads = NULL;
 	struct Pslist *expected = NULL;
 
@@ -122,7 +122,7 @@ static void desire_order__exact_partial_regex(void **state) {
 }
 
 static void desire_order__exact_regex_catchall(void **state) {
-	const struct SSet *order_name_desc = sset_init();
+	const struct Sset *order_name_desc = sset_init();
 	struct Pslist *heads = NULL;
 	struct Pslist *expected = NULL;
 
@@ -549,7 +549,7 @@ static void desire_scale__user(void **state) {
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	smapi_put_many(g_cfg->scales,
+	simap_put_many(g_cfg->scales,
 			"![Hh]ea.*", 3500,
 			"head1", 7500,
 			NULL);
@@ -566,7 +566,7 @@ static void desire_transform__disabled(void **state) {
 	head->desired.enabled = false;
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
-	smapi_put(g_cfg->transforms, "head", WL_OUTPUT_TRANSFORM_180);
+	simap_put(g_cfg->transforms, "head", WL_OUTPUT_TRANSFORM_180);
 
 	desire_transform(head);
 
@@ -592,7 +592,7 @@ static void desire_transform__user(void **state) {
 	head->desired.enabled = true;
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
-	smapi_put_many(g_cfg->transforms,
+	simap_put_many(g_cfg->transforms,
 			"head9", WL_OUTPUT_TRANSFORM_270,
 			"head", WL_OUTPUT_TRANSFORM_180,
 			NULL);

@@ -25,8 +25,8 @@ struct Condition *condition_init(void) {
 	return condition;
 }
 
-const struct PSet *condition_pset_init(void) {
-	const struct PSetParams params = {
+const struct Pset *condition_pset_init(void) {
+	const struct PsetParams params = {
 		.equal_val = (fn_equal)condition_equal,
 		.free_val = (fn_free)condition_free,
 		.clone_val = (fn_clone)condition_clone,
@@ -52,14 +52,14 @@ bool condition_true(const struct Condition *condition, const void* const unused)
 	if (!condition)
 		return false;
 
-	for (const struct SSetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
+	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
 		if (pslist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) == NULL) {
 			sset_it_free(it);
 			return true;
 		}
 	}
 
-	for (const struct SSetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
+	for (const struct SsetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
 		if (pslist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) != NULL) {
 			sset_it_free(it);
 			return true;

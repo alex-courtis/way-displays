@@ -14,18 +14,18 @@
 #include "fn.h"
 #include "head.h"
 #include "pset.h"
-#include "smap.h"
+#include "spmap.h"
 
 #include "mode.h"
 
 struct Mode *target = NULL;
-const struct PSet *mset = NULL;
-const struct SMap *mmap = NULL;
+const struct Pset *mset = NULL;
+const struct SPmap *mmap = NULL;
 
 static int before_each(void **state) {
 	// equal pointers, not vals, to match head->modes
-	mmap = mode_smap_ptr_init();
-	smap_put_many(mmap,
+	mmap = mode_spmap_ptr_init();
+	spmap_put_many(mmap,
 			"200x100@59999",  mode_whr(200, 100, 59999),
 			"200x100@60498",  mode_whr(200, 100, 60498),
 			"200x100@60499",  mode_whr(200, 100, 60499),
@@ -40,7 +40,7 @@ static int before_each(void **state) {
 			"1x2@4100",       mode_whr(1, 2, 4100),
 			NULL);
 
-	mset = smap_vals_pset(mmap);
+	mset = spmap_vals_pset(mmap);
 
 	return 0;
 }
@@ -51,7 +51,7 @@ static int after_each(void **state) {
 	mode_free(target);
 	target = NULL;
 
-	smap_free(mmap);
+	spmap_free(mmap);
 	pset_free_vals(mset);
 
 	return 0;
@@ -87,32 +87,32 @@ static void mode_clone__(void **state) {
 }
 
 static void mode_equal__variants(void **state) {
-	assert_false(mode_equal_res(smap_get(mmap, "1x1@1000"), smap_get(mmap, "1x2@3000")));
-	assert_false(mode_equal_res(smap_get(mmap, "1x1@1000"), smap_get(mmap, "2x1@3000")));
+	assert_false(mode_equal_res(spmap_get(mmap, "1x1@1000"), spmap_get(mmap, "1x2@3000")));
+	assert_false(mode_equal_res(spmap_get(mmap, "1x1@1000"), spmap_get(mmap, "2x1@3000")));
 
-	assert_true (mode_equal_res(smap_get(mmap, "1x2@3000"), smap_get(mmap, "1x2@4000")));
-
-
-	assert_false(mode_equal_res_hz(smap_get(mmap, "1x2@3000"), smap_get(mmap, "1x2@4000")));
-
-	assert_true (mode_equal_res_hz(smap_get(mmap, "1x2@4000"), smap_get(mmap, "1x2@4100")));
+	assert_true (mode_equal_res(spmap_get(mmap, "1x2@3000"), spmap_get(mmap, "1x2@4000")));
 
 
-	assert_false(mode_equal_res_mhz(smap_get(mmap, "1x2@3000"), smap_get(mmap, "1x2@4000")));
-	assert_false(mode_equal_res_mhz(smap_get(mmap, "1x2@4000"), smap_get(mmap, "1x2@4100")));
+	assert_false(mode_equal_res_hz(spmap_get(mmap, "1x2@3000"), spmap_get(mmap, "1x2@4000")));
 
-	assert_true (mode_equal_res_mhz(smap_get(mmap, "1x2@4100"), smap_get(mmap, "1x2@4100")));
+	assert_true (mode_equal_res_hz(spmap_get(mmap, "1x2@4000"), spmap_get(mmap, "1x2@4100")));
 
 
-	assert_false(mode_equal(smap_get(mmap, "1x2@4000"), smap_get(mmap, "1x2@4100")));
+	assert_false(mode_equal_res_mhz(spmap_get(mmap, "1x2@3000"), spmap_get(mmap, "1x2@4000")));
+	assert_false(mode_equal_res_mhz(spmap_get(mmap, "1x2@4000"), spmap_get(mmap, "1x2@4100")));
 
-	assert_true (mode_equal(smap_get(mmap, "1x2@4100"), smap_get(mmap, "1x2@4100")));
+	assert_true (mode_equal_res_mhz(spmap_get(mmap, "1x2@4100"), spmap_get(mmap, "1x2@4100")));
+
+
+	assert_false(mode_equal(spmap_get(mmap, "1x2@4000"), spmap_get(mmap, "1x2@4100")));
+
+	assert_true (mode_equal(spmap_get(mmap, "1x2@4100"), spmap_get(mmap, "1x2@4100")));
 }
 
 static void mode_satisfies__null(void **state) {
 	assert_false(mode_satisfies(NULL, NULL));
-	assert_false(mode_satisfies(smap_get(mmap, "200x100@60499"), NULL));
-	assert_false(mode_satisfies(NULL, smap_get(mmap, "200x100@60499")));
+	assert_false(mode_satisfies(spmap_get(mmap, "200x100@60499"), NULL));
+	assert_false(mode_satisfies(NULL, spmap_get(mmap, "200x100@60499")));
 }
 
 static void mode_greater_than_res_refresh__sort(void **state) {
@@ -124,7 +124,7 @@ static void mode_greater_than_res_refresh__sort(void **state) {
 	const struct Mode *mode01 = mode_whr(1, 2, 9);
 	const struct Mode *mode00 = mode_whr(1, 2, 3);
 
-	const struct PSet *expected = mode_pset_ptr_init();
+	const struct Pset *expected = mode_pset_ptr_init();
 	pset_add_many(expected,
 			mode06,
 			mode05,
@@ -135,7 +135,7 @@ static void mode_greater_than_res_refresh__sort(void **state) {
 			mode00,
 			NULL);
 
-	const struct PSet *actual = mode_pset_ptr_init();
+	const struct Pset *actual = mode_pset_ptr_init();
 	pset_add_many(actual,
 			mode00,
 			mode01,
@@ -172,7 +172,7 @@ static void mode_best_satisfying__max(void **state) {
 
 	const struct Mode *actual = mode_best_satisfying(target, mset);
 
-	assert_mode_equal(actual, smap_get(mmap, "800x400@144000"));
+	assert_mode_equal(actual, spmap_get(mmap, "800x400@144000"));
 }
 
 static void mode_best_satisfying__no_hz_no_match(void **state) {
@@ -184,7 +184,7 @@ static void mode_best_satisfying__no_hz_no_match(void **state) {
 static void mode_best_satisfying__no_hz_match(void **state) {
 	target = mode_whr(400, 200, -1);
 
-	assert_mode_equal(mode_best_satisfying(target, mset), smap_get(mmap, "400x200@120000"));
+	assert_mode_equal(mode_best_satisfying(target, mset), spmap_get(mmap, "400x200@120000"));
 }
 
 static void mode_best_satisfying__even_hz_no_match(void **state) {
@@ -196,19 +196,19 @@ static void mode_best_satisfying__even_hz_no_match(void **state) {
 static void mode_best_satisfying__even_hz_match(void **state) {
 	target = mode_whr(200, 100, 60000);
 
-	assert_mode_equal(mode_best_satisfying(target, mset), smap_get(mmap, "200x100@60499"));
+	assert_mode_equal(mode_best_satisfying(target, mset), spmap_get(mmap, "200x100@60499"));
 }
 
 static void mode_best_satisfying__even_hz_rounded_up(void **state) {
 	target = mode_whr(600, 300, 165000);
 
-	assert_mode_equal(mode_best_satisfying(target, mset), smap_get(mmap, "600x600@164999"));
+	assert_mode_equal(mode_best_satisfying(target, mset), spmap_get(mmap, "600x600@164999"));
 }
 
 static void mode_best_satisfying__exact_hz_match(void **state) {
 	target = mode_whr(200, 100, 60498);
 
-	assert_mode_equal(mode_best_satisfying(target, mset), smap_get(mmap, "200x100@60498"));
+	assert_mode_equal(mode_best_satisfying(target, mset), spmap_get(mmap, "200x100@60498"));
 }
 
 static void mode_best_satisfying__width_failed(void **state) {

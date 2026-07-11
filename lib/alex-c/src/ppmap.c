@@ -8,21 +8,21 @@
 #include "pslist.h"
 #include "str.h"
 
-#include "pmap.h"
+#include "ppmap.h"
 
-#define PMAP_DEFAULT_INITIAL 10
-#define PMAP_DEFAULT_GROW 10
+#define PPMAP_DEFAULT_INITIAL 10
+#define PPMAP_DEFAULT_GROW 10
 
-struct PMap {
-	const struct PMapParams params;
+struct PPmap {
+	const struct PPmapParams params;
 	const void **keys;
 	const void **vals;
 	size_t capacity;
 	size_t size;
 };
 
-struct PMapItState {
-	const struct PMap *map;
+struct PPmapItState {
+	const struct PPmap *map;
 	size_t position;
 	fn_3pred match_key_val;
 	fn_2pred match_key;
@@ -31,8 +31,8 @@ struct PMapItState {
 };
 
 // grow to capacity + grow
-static void grow(struct PMap *map) {
-	size_t new_capacity = map->capacity + (map->params.grow ? map->params.grow : PMAP_DEFAULT_GROW);
+static void grow(struct PPmap *map) {
+	size_t new_capacity = map->capacity + (map->params.grow ? map->params.grow : PPMAP_DEFAULT_GROW);
 
 	// grow new arrays
 	const void **new_keys = calloc(new_capacity, sizeof(void*));
@@ -52,18 +52,18 @@ static void grow(struct PMap *map) {
 	map->capacity = new_capacity;
 }
 
-static const struct PMapIt *it_init(const struct PMap *map) {
+static const struct PPmapIt *it_init(const struct PPmap *map) {
 	if (map->size == 0)
 		return NULL;
 
-	struct PMapIt *it = calloc(1, sizeof(struct PMapIt));
-	it->st = calloc(1, sizeof(struct PMapItState));
+	struct PPmapIt *it = calloc(1, sizeof(struct PPmapIt));
+	it->st = calloc(1, sizeof(struct PPmapItState));
 	it->st->map = map;
 
 	return it;
 }
 
-static const void *put(const struct PMap* const map, const void* const key, const void* const val, fn_clone clone_val) {
+static const void *put(const struct PPmap* const map, const void* const key, const void* const val, fn_clone clone_val) {
 	if (!val && !map->params.allow_null_val)
 		return NULL;
 
@@ -96,7 +96,7 @@ static const void *put(const struct PMap* const map, const void* const key, cons
 		return NULL;
 	}
 
-	struct PMap *map_m = (struct PMap*)map;
+	struct PPmap *map_m = (struct PPmap*)map;
 
 	// grow for new entry
 	if (map->size >= map->capacity) {
@@ -114,7 +114,7 @@ static const void *put(const struct PMap* const map, const void* const key, cons
 	return NULL;
 }
 
-static bool put_free(const struct PMap* const map, const void* const key, const void* const val, fn_clone clone_val) {
+static bool put_free(const struct PPmap* const map, const void* const key, const void* const val, fn_clone clone_val) {
 	const void *val_old = put(map, key, val, clone_val);
 
 	if (val_old) {
@@ -125,7 +125,7 @@ static bool put_free(const struct PMap* const map, const void* const key, const 
 	}
 }
 
-static size_t put_all(const struct PMap* const map, const struct PMap* const from, fn_clone clone_val, bool do_free) {
+static size_t put_all(const struct PPmap* const map, const struct PPmap* const from, fn_clone clone_val, bool do_free) {
 	size_t overwritten = 0;
 
 	const void **k;
@@ -145,8 +145,8 @@ static size_t put_all(const struct PMap* const map, const struct PMap* const fro
 	return overwritten;
 }
 
-static const struct PMap *clone(const struct PMap* const from, fn_clone clone_val) {
-	const struct PMap *to =  pmap_init_with(from->params);
+static const struct PPmap *clone(const struct PPmap* const from, fn_clone clone_val) {
+	const struct PPmap *to =  ppmap_init_with(from->params);
 
 	const void **k;
 	const void **v;
@@ -157,8 +157,8 @@ static const struct PMap *clone(const struct PMap* const from, fn_clone clone_va
 	return to;
 }
 
-static const struct PSet *vals_pset(const struct PMap* const map, fn_clone clone_val) {
-	const struct PSetParams params = {
+static const struct Pset *vals_pset(const struct PPmap* const map, fn_clone clone_val) {
+	const struct PsetParams params = {
 		.equal_val = map->params.equal_val,
 		.alloc_val = map->params.alloc_val,
 		.free_val = map->params.free_val,
@@ -167,7 +167,7 @@ static const struct PSet *vals_pset(const struct PMap* const map, fn_clone clone
 		.initial = MAX(map->size, map->params.initial),
 		.grow  = map->params.grow,
 	};
-	const struct PSet *set = pset_init_with(params);
+	const struct Pset *set = pset_init_with(params);
 
 	const void **v;
 	for (v = map->vals; v < map->vals + map->size; v++) {
@@ -177,7 +177,7 @@ static const struct PSet *vals_pset(const struct PMap* const map, fn_clone clone
 	return set;
 }
 
-static struct Pslist *vals_pslist(const struct PMap* const map, fn_clone clone_val) {
+static struct Pslist *vals_pslist(const struct PPmap* const map, fn_clone clone_val) {
 	struct Pslist *list = NULL;
 
 	const void **k;
@@ -193,32 +193,32 @@ static struct Pslist *vals_pslist(const struct PMap* const map, fn_clone clone_v
 	return list;
 }
 
-const struct PMap *pmap_init(void) {
-	const struct PMapParams params = { 0 };
-	return pmap_init_with(params);
+const struct PPmap *ppmap_init(void) {
+	const struct PPmapParams params = { 0 };
+	return ppmap_init_with(params);
 }
 
-const struct PMap *pmap_init_with(const struct PMapParams params) {
-	struct PMap *map = calloc(1, sizeof(struct PMap));
+const struct PPmap *ppmap_init_with(const struct PPmapParams params) {
+	struct PPmap *map = calloc(1, sizeof(struct PPmap));
 
-	map->capacity = params.initial ? params.initial : PMAP_DEFAULT_INITIAL;
+	map->capacity = params.initial ? params.initial : PPMAP_DEFAULT_INITIAL;
 	map->keys = calloc(map->capacity, sizeof(void*));
 	map->vals = calloc(map->capacity, sizeof(void*));
 
-	memcpy((void*)&map->params, &params, sizeof(struct PMapParams));
+	memcpy((void*)&map->params, &params, sizeof(struct PPmapParams));
 
 	return map;
 }
 
-const struct PMap *pmap_clone(const struct PMap* const from) {
+const struct PPmap *ppmap_clone(const struct PPmap* const from) {
 	return from ? clone(from, from->params.alloc_val) : NULL;
 }
 
-const struct PMap *pmap_clone_deep(const struct PMap* const from) {
+const struct PPmap *ppmap_clone_deep(const struct PPmap* const from) {
 	return from && from->params.clone_val ? clone(from, from->params.alloc_val ? from->params.alloc_val : from->params.clone_val) : NULL;
 }
 
-void pmap_free(const struct PMap* const map) {
+void ppmap_free(const struct PPmap* const map) {
 	if (!map)
 		return;
 
@@ -234,7 +234,7 @@ void pmap_free(const struct PMap* const map) {
 	free((void*)map);
 }
 
-void pmap_free_vals(const struct PMap* const map) {
+void ppmap_free_vals(const struct PPmap* const map) {
 	if (!map)
 		return;
 
@@ -244,10 +244,10 @@ void pmap_free_vals(const struct PMap* const map) {
 		}
 	}
 
-	pmap_free(map);
+	ppmap_free(map);
 }
 
-void pmap_it_free(const struct PMapIt* const it) {
+void ppmap_it_free(const struct PPmapIt* const it) {
 	if (!it)
 		return;
 
@@ -255,7 +255,7 @@ void pmap_it_free(const struct PMapIt* const it) {
 	free((void*)it);
 }
 
-const void *pmap_get(const struct PMap* const map, const void* const key) {
+const void *ppmap_get(const struct PPmap* const map, const void* const key) {
 	if (!map || !key)
 		return NULL;
 
@@ -270,7 +270,7 @@ const void *pmap_get(const struct PMap* const map, const void* const key) {
 	return NULL;
 }
 
-bool pmap_contains_key(const struct PMap* const map, const void* const key) {
+bool ppmap_contains_key(const struct PPmap* const map, const void* const key) {
 	if (!map || !key)
 		return false;
 
@@ -284,7 +284,7 @@ bool pmap_contains_key(const struct PMap* const map, const void* const key) {
 	return false;
 }
 
-bool pmap_contains_val(const struct PMap* const map, const void* const val) {
+bool ppmap_contains_val(const struct PPmap* const map, const void* const val) {
 	if (!map)
 		return false;
 
@@ -298,8 +298,8 @@ bool pmap_contains_val(const struct PMap* const map, const void* const val) {
 	return false;
 }
 
-struct PMapPair pmap_match(const struct PMap* const map, fn_3pred match, const void* const data) {
-	struct PMapPair res = { 0 };
+struct PPmapPair ppmap_match(const struct PPmap* const map, fn_3pred match, const void* const data) {
+	struct PPmapPair res = { 0 };
 
 	if (!map || !match)
 		return res;
@@ -317,8 +317,8 @@ struct PMapPair pmap_match(const struct PMap* const map, fn_3pred match, const v
 	return res;
 }
 
-struct PMapPair pmap_match_key(const struct PMap* const map, fn_2pred match, const void* const data) {
-	struct PMapPair res = { 0 };
+struct PPmapPair ppmap_match_key(const struct PPmap* const map, fn_2pred match, const void* const data) {
+	struct PPmapPair res = { 0 };
 
 	if (!map || !match)
 		return res;
@@ -336,8 +336,8 @@ struct PMapPair pmap_match_key(const struct PMap* const map, fn_2pred match, con
 	return res;
 }
 
-struct PMapPair pmap_match_val(const struct PMap* const map, fn_2pred match, const void* const data) {
-	struct PMapPair res = { 0 };
+struct PPmapPair ppmap_match_val(const struct PPmap* const map, fn_2pred match, const void* const data) {
+	struct PPmapPair res = { 0 };
 
 	if (!map || !match)
 		return res;
@@ -355,68 +355,68 @@ struct PMapPair pmap_match_val(const struct PMap* const map, fn_2pred match, con
 	return res;
 }
 
-const struct PMapIt *pmap_it(const struct PMap* const map) {
+const struct PPmapIt *ppmap_it(const struct PPmap* const map) {
 	if (!map)
 		return NULL;
 
-	const struct PMapIt *it = it_init(map);
+	const struct PPmapIt *it = it_init(map);
 
 	if (!it)
 		return NULL;
 
-	return pmap_it_next(it);
+	return ppmap_it_next(it);
 }
 
-const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_3pred match, const void* const data) {
+const struct PPmapIt *ppmap_match_it(const struct PPmap* const map, fn_3pred match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
-	const struct PMapIt *it = it_init(map);
+	const struct PPmapIt *it = it_init(map);
 	if (!it)
 		return NULL;
 
 	it->st->match_key_val = match;
 	it->st->data = data;
 
-	return pmap_it_next(it);
+	return ppmap_it_next(it);
 }
 
-const struct PMapIt *pmap_match_key_it(const struct PMap* const map, fn_2pred match, const void* const data) {
+const struct PPmapIt *ppmap_match_key_it(const struct PPmap* const map, fn_2pred match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
-	const struct PMapIt *it = it_init(map);
+	const struct PPmapIt *it = it_init(map);
 	if (!it)
 		return NULL;
 
 	it->st->match_key = match;
 	it->st->data = data;
 
-	return pmap_it_next(it);
+	return ppmap_it_next(it);
 }
 
-const struct PMapIt *pmap_match_val_it(const struct PMap* const map, fn_2pred match, const void* const data) {
+const struct PPmapIt *ppmap_match_val_it(const struct PPmap* const map, fn_2pred match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
-	const struct PMapIt *it = it_init(map);
+	const struct PPmapIt *it = it_init(map);
 	if (!it)
 		return NULL;
 
 	it->st->match_val = match;
 	it->st->data = data;
 
-	return pmap_it_next(it);
+	return ppmap_it_next(it);
 }
 
-const struct PMapIt *pmap_it_next(const struct PMapIt* const it) {
+const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it) {
 	if (!it)
 		return NULL;
 
-	struct PMapItState *st = it->st;
+	struct PPmapItState *st = it->st;
 
 	if (!it->st) {
-		pmap_it_free(it);
+		ppmap_it_free(it);
 		return NULL;
 	}
 
@@ -427,7 +427,7 @@ const struct PMapIt *pmap_it_next(const struct PMapIt* const it) {
 
 	for ( ; st->position < st->map->size; st->position++) {
 
-		struct PMapIt *it_m = (struct PMapIt*)it;
+		struct PPmapIt *it_m = (struct PPmapIt*)it;
 
 		it_m->key = *(st->map->keys + st->position);
 		it_m->val = *(st->map->vals + st->position);
@@ -445,48 +445,48 @@ const struct PMapIt *pmap_it_next(const struct PMapIt* const it) {
 		return it;
 	}
 
-	pmap_it_free(it);
+	ppmap_it_free(it);
 	return NULL;
 }
 
 
-const void *pmap_put(const struct PMap* const map, const void* const key, const void* const val) {
+const void *ppmap_put(const struct PPmap* const map, const void* const key, const void* const val) {
 	return map ? put(map, key, val, map->params.alloc_val) : NULL;
 }
 
-const void *pmap_put_if_absent(const struct PMap* const map, const void* const key, const void* const val) {
+const void *ppmap_put_if_absent(const struct PPmap* const map, const void* const key, const void* const val) {
 	if (!map || !key)
 		return NULL;
 
-	if (pmap_contains_key(map, key)) {
-		return pmap_get(map, key);
+	if (ppmap_contains_key(map, key)) {
+		return ppmap_get(map, key);
 	} else {
 		put(map, key, val, map->params.alloc_val);
 		return NULL;
 	}
 }
 
-bool pmap_put_free(const struct PMap* const map, const void* const key, const void* const val) {
+bool ppmap_put_free(const struct PPmap* const map, const void* const key, const void* const val) {
 	return map ? put_free(map, key, val, map->params.alloc_val) : false;
 }
 
-size_t pmap_put_all(const struct PMap* const map, const struct PMap* const from) {
+size_t ppmap_put_all(const struct PPmap* const map, const struct PPmap* const from) {
 	return map && from ? put_all(map, from, map->params.alloc_val, false) : 0;
 }
 
-size_t pmap_put_all_free(const struct PMap* const map, const struct PMap* const from) {
+size_t ppmap_put_all_free(const struct PPmap* const map, const struct PPmap* const from) {
 	return map && from ? put_all(map, from, map->params.alloc_val, true) : 0;
 }
 
-size_t pmap_put_all_clone(const struct PMap* const map, const struct PMap* const from) {
+size_t ppmap_put_all_clone(const struct PPmap* const map, const struct PPmap* const from) {
 	return map && from && map->params.clone_val ? put_all(map, from, map->params.clone_val, false) : 0;
 }
 
-size_t pmap_put_all_clone_free(const struct PMap* const map, const struct PMap* const from) {
+size_t ppmap_put_all_clone_free(const struct PPmap* const map, const struct PPmap* const from) {
 	return map && from && map->params.clone_val ? put_all(map, from, map->params.clone_val, true) : 0;
 }
 
-const void *pmap_remove(const struct PMap* const map, const void* const key) {
+const void *ppmap_remove(const struct PPmap* const map, const void* const key) {
 	if (!map || !key)
 		return NULL;
 
@@ -495,7 +495,7 @@ const void *pmap_remove(const struct PMap* const map, const void* const key) {
 	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
 
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
-			struct PMap *map_m = (struct PMap*)map;
+			struct PPmap *map_m = (struct PPmap*)map;
 
 			if (map->params.free_key) {
 				map->params.free_key((void*)*k);
@@ -522,9 +522,9 @@ const void *pmap_remove(const struct PMap* const map, const void* const key) {
 	return NULL;
 }
 
-bool pmap_remove_free(const struct PMap* const map, const void* const key) {
-	if (pmap_contains_key(map, key)) {
-		const void *removed = pmap_remove(map, key);
+bool ppmap_remove_free(const struct PPmap* const map, const void* const key) {
+	if (ppmap_contains_key(map, key)) {
+		const void *removed = ppmap_remove(map, key);
 		if (removed) {
 			map->params.free_val ? map->params.free_val(removed) : free((void*)removed);
 		}
@@ -534,7 +534,7 @@ bool pmap_remove_free(const struct PMap* const map, const void* const key) {
 	}
 }
 
-size_t pmap_remove_all(const struct PMap* const map, const struct PMap* const from) {
+size_t ppmap_remove_all(const struct PPmap* const map, const struct PPmap* const from) {
 	if (!map || !from)
 		return 0;
 
@@ -542,7 +542,7 @@ size_t pmap_remove_all(const struct PMap* const map, const struct PMap* const fr
 
 	const void **k;
 	for (k = from->keys; k < from->keys + from->size; k++) {
-		if (pmap_remove(map, *k) != NULL) {
+		if (ppmap_remove(map, *k) != NULL) {
 			removed++;
 		}
 	}
@@ -550,7 +550,7 @@ size_t pmap_remove_all(const struct PMap* const map, const struct PMap* const fr
 	return removed;
 }
 
-size_t pmap_remove_all_free(const struct PMap* const map, const struct PMap* const from) {
+size_t ppmap_remove_all_free(const struct PPmap* const map, const struct PPmap* const from) {
 	if (!map || !from)
 		return 0;
 
@@ -558,7 +558,7 @@ size_t pmap_remove_all_free(const struct PMap* const map, const struct PMap* con
 
 	const void **k;
 	for (k = from->keys; k < from->keys + from->size; k++) {
-		if (pmap_remove_free(map, *k)) {
+		if (ppmap_remove_free(map, *k)) {
 			removed++;
 		}
 	}
@@ -566,7 +566,7 @@ size_t pmap_remove_all_free(const struct PMap* const map, const struct PMap* con
 	return removed;
 }
 
-bool pmap_equal(const struct PMap* const a, const struct PMap* const b) {
+bool ppmap_equal(const struct PPmap* const a, const struct PPmap* const b) {
 	if (!a || !b || a->size != b->size)
 		return false;
 
@@ -593,7 +593,7 @@ bool pmap_equal(const struct PMap* const a, const struct PMap* const b) {
 	return true;
 }
 
-struct Pslist *pmap_keys_pslist(const struct PMap* const map) {
+struct Pslist *ppmap_keys_pslist(const struct PPmap* const map) {
 	if (!map)
 		return NULL;
 
@@ -608,11 +608,11 @@ struct Pslist *pmap_keys_pslist(const struct PMap* const map) {
 	return list;
 }
 
-const struct PSet *pmap_keys_pset(const struct PMap* const map) {
+const struct Pset *ppmap_keys_pset(const struct PPmap* const map) {
 	if (!map)
 		return NULL;
 
-	const struct PSetParams params = {
+	const struct PsetParams params = {
 		.equal_val = map->params.equal_key,
 		.alloc_val = map->params.alloc_key,
 		.free_val = map->params.free_key,
@@ -621,7 +621,7 @@ const struct PSet *pmap_keys_pset(const struct PMap* const map) {
 		.initial = MAX(map->size, map->params.initial),
 		.grow  = map->params.grow,
 	};
-	const struct PSet *set = pset_init_with(params);
+	const struct Pset *set = pset_init_with(params);
 
 	const void **k;
 	for (k = map->keys; k < map->keys + map->size; k++) {
@@ -631,26 +631,26 @@ const struct PSet *pmap_keys_pset(const struct PMap* const map) {
 	return set;
 }
 
-struct Pslist *pmap_vals_pslist(const struct PMap* const map) {
+struct Pslist *ppmap_vals_pslist(const struct PPmap* const map) {
 	return map ? vals_pslist(map, map->params.alloc_val) : NULL;
 }
 
-struct Pslist *pmap_vals_pslist_clone(const struct PMap* const map) {
+struct Pslist *ppmap_vals_pslist_clone(const struct PPmap* const map) {
 	if (!map || !map->params.clone_val)
 		return NULL;
 
 	return vals_pslist(map, map->params.clone_val);
 }
 
-const struct PSet *pmap_vals_pset(const struct PMap* const map) {
+const struct Pset *ppmap_vals_pset(const struct PPmap* const map) {
 	return map ? vals_pset(map, NULL) : NULL;
 }
 
-const struct PSet *pmap_vals_pset_clone(const struct PMap* const map) {
+const struct Pset *ppmap_vals_pset_clone(const struct PPmap* const map) {
 	return map && map->params.clone_val ? vals_pset(map, map->params.clone_val) : NULL;
 }
 
-char *pmap_str(const struct PMap* const map) {
+char *ppmap_str(const struct PPmap* const map) {
 	if (!map)
 		return NULL;
 
@@ -688,6 +688,6 @@ char *pmap_str(const struct PMap* const map) {
 	return out;
 }
 
-size_t pmap_size(const struct PMap* const map) {
+size_t ppmap_size(const struct PPmap* const map) {
 	return map ? map->size : 0;
 }

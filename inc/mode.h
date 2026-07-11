@@ -37,13 +37,13 @@ struct Mode *mode_init(void);
 struct Mode *mode_clone(const struct Mode * const from);
 
 // raw pointers, for head modes
-const struct PSet *mode_pset_ptr_init(void);
+const struct Pset *mode_pset_ptr_init(void);
 
 // raw pointers, for head modes
-const struct SMap *mode_smap_ptr_init(void);
+const struct SPmap *mode_spmap_ptr_init(void);
 
 // mode_equal, for cfg modes
-const struct SMap *mode_smap_equal_init(void);
+const struct SPmap *mode_spmap_equal_init(void);
 
 void mode_free(struct Mode *mode);
 
@@ -107,10 +107,10 @@ double mode_scale(const struct Mode* const mode);
  */
 
 // highest refresh matching target resolution, NULL when no target
-const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes);
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct Pset* modes);
 
 // mode exactly matching target otherwise mode_satisfies, NULL when no target
-const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes);
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct Pset* const modes);
 
 #endif // MODE_H
 

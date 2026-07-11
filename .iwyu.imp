@@ -1,12 +1,12 @@
 [
   # always use the forward declarations from the lib headers
-  { "symbol": ["PMap", "public", '"pmap.h"', "public"] },
-  { "symbol": ["IMap", "public", '"imap.h"', "public"] },
-  { "symbol": ["SMap", "public", '"smap.h"', "public"] },
-  { "symbol": ["SMapI", "public", '"smapi.h"', "public"] },
-  { "symbol": ["SMapS", "public", '"smaps.h"', "public"] },
-  { "symbol": ["PSet", "public", '"pset.h"', "public"] },
-  { "symbol": ["SSet", "public", '"sset.h"', "public"] },
+  { "symbol": ["PPmap", "public", '"ppmap.h"', "public"] },
+  { "symbol": ["IPmap", "public", '"ipmap.h"', "public"] },
+  { "symbol": ["SPmap", "public", '"spmap.h"', "public"] },
+  { "symbol": ["SImap", "public", '"simap.h"', "public"] },
+  { "symbol": ["SSmap", "public", '"ssmap.h"', "public"] },
+  { "symbol": ["Pset",  "public", '"pset.h"',  "public"] },
+  { "symbol": ["Sset",  "public", '"sset.h"',  "public"] },
 
   # ensure these are sourced from wayland, not the forward declarations in river
   { "symbol": ["wl_buffer",              "public", "<wayland-client-protocol.h>", "public"] },

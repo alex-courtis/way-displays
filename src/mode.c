@@ -9,7 +9,7 @@
 #include "fn.h"
 #include "head.h"
 #include "pset.h"
-#include "smap.h"
+#include "spmap.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -34,8 +34,8 @@ struct Mode *mode_clone(const struct Mode * const from) {
 	return to;
 }
 
-const struct PSet *mode_pset_ptr_init(void) {
-	const struct PSetParams params = {
+const struct Pset *mode_pset_ptr_init(void) {
+	const struct PsetParams params = {
 		.free_val = (fn_free)mode_free,
 		.str_val = (fn_str)mode_str,
 		.clone_val = (fn_clone)mode_clone,
@@ -43,23 +43,23 @@ const struct PSet *mode_pset_ptr_init(void) {
 	return pset_init_with(params);
 }
 
-const struct SMap *mode_smap_equal_init(void) {
-	const struct SMapParams params = {
+const struct SPmap *mode_spmap_equal_init(void) {
+	const struct SPmapParams params = {
 		.equal_val = (fn_equal)mode_equal,
 		.free_val = (fn_free)mode_free,
 		.str_val = (fn_str)mode_str,
 		.clone_val = (fn_clone)mode_clone,
 	};
-	return smap_init_with(params);
+	return spmap_init_with(params);
 }
 
-const struct SMap *mode_smap_ptr_init(void) {
-	const struct SMapParams params = {
+const struct SPmap *mode_spmap_ptr_init(void) {
+	const struct SPmapParams params = {
 		.free_val = (fn_free)mode_free,
 		.str_val = (fn_str)mode_str,
 		.clone_val = (fn_clone)mode_clone,
 	};
-	return smap_init_with(params);
+	return spmap_init_with(params);
 }
 
 void mode_free(struct Mode *mode) {
@@ -184,11 +184,11 @@ double mode_scale(const struct Mode* const mode) {
 	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
 }
 
-const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PSet* modes) {
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct Pset* modes) {
 	if (!mode_target || !modes)
 		return NULL;
 
-	const struct PSet *candidates = pset_clone(modes);
+	const struct Pset *candidates = pset_clone(modes);
 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
@@ -200,11 +200,11 @@ const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const 
 	return mode;
 }
 
-const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PSet* const modes) {
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct Pset* const modes) {
 	if (!mode_target || !modes)
 		return NULL;
 
-	const struct PSet *candidates = pset_clone(modes);
+	const struct Pset *candidates = pset_clone(modes);
 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);

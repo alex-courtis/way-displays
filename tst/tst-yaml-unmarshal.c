@@ -25,7 +25,7 @@
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smapi.h"
+#include "simap.h"
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -121,14 +121,14 @@ static void yaml_root_to_cfg__root_mistyped(void **state) {
 
 static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
+	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-transform.yaml", expected, "tst/yaml/cfg-transform.log");
 }
 
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
-	smapi_put(expected->scales, "three", 3000);
+	simap_put(expected->scales, "three", 3000);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
 }
@@ -136,7 +136,7 @@ static void yaml_root_to_cfg__scale(void **state) {
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	smap_put_many(expected->modes,
+	spmap_put_many(expected->modes,
 			"max_override", mode_whr_max(1920, 1080, 12340),
 			"five", mode_whr(1920, 1080, 12340),
 			"seven", mode_whr_max(-1, -1, -1),
@@ -419,7 +419,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(mode_desired->refresh_mhz, 15);
 
 	assert_int_equal(pset_size(head->modes), 2);
-	const struct PSetIt *it = pset_it(head->modes);
+	const struct PsetIt *it = pset_it(head->modes);
 
 	const struct Mode *mode1 = it->val;
 	assert_non_nul(mode1);

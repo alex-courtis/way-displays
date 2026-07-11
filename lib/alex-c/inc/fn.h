@@ -47,6 +47,7 @@ typedef bool (*fn_2pred)    (const void* const ptr, const void* const data);
 
 typedef bool (*fn_2pred_str)(const char* const str, const void* const data);
 
+// TODO use i for consistency with imap
 typedef bool (*fn_2pred_szt)(const size_t n,        const void* const data);
 
 //

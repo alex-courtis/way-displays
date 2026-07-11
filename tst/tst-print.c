@@ -18,7 +18,7 @@
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
-#include "imap.h"
+#include "ipmap.h"
 #include "log.h"
 #include "mode.h"
 #include "output.h"
@@ -123,7 +123,7 @@ int before_each(void **state) {
 
 	pslist_append(&s->heads, s->head2);
 
-	g_outputs = imap_init();
+	g_outputs = ipmap_init();
 
 	*state = s;
 	return 0;
@@ -138,7 +138,7 @@ int after_each(void **state) {
 
 	free(s);
 
-	imap_free_vals(g_outputs);
+	ipmap_free_vals(g_outputs);
 	g_outputs = NULL;
 
 	cfg_destroy();
@@ -154,7 +154,7 @@ static void print_cfg__all(void **state) {
 			"last",
 			NULL);
 
-	smapi_put_many(c->scales,
+	simap_put_many(c->scales,
 			"three", 3000,
 			"four", 4000,
 			NULL);
@@ -166,13 +166,13 @@ static void print_cfg__all(void **state) {
 	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);
 
-	smap_put_many(c->modes,
+	spmap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	smapi_put_many(c->transforms,
+	simap_put_many(c->transforms,
 			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
 			NULL);
 
@@ -195,18 +195,18 @@ static void print_cfg__all(void **state) {
 static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
-	smapi_put_many(c->scales,
+	simap_put_many(c->scales,
 			"three", 3000,
 			"four", 4000,
 			NULL);
 
-	smap_put_many(c->modes,
+	spmap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	smapi_put_many(c->transforms,
+	simap_put_many(c->transforms,
 			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
 			"thirteen", WL_OUTPUT_TRANSFORM_FLIPPED,
 			NULL);
@@ -299,18 +299,18 @@ static void print_cfg_commands__ok(void **state) {
 
 	c->auto_scale = OFF;
 
-	smapi_put_many(c->scales,
+	simap_put_many(c->scales,
 			"one", 1000,
 			"two", 2345,
 			NULL);
 
-	smap_put_many(c->modes,
+	spmap_put_many(c->modes,
 			"all", mode_whr(1, 2, 12340),
 			"res", mode_whr(4, 5, -1),
 			"max", mode_whr_max(7, 8, 9),
 			NULL);
 
-	smapi_put_many(c->transforms,
+	simap_put_many(c->transforms,
 			"seven", WL_OUTPUT_TRANSFORM_FLIPPED_90,
 			NULL);
 
@@ -341,7 +341,7 @@ static void print_head_arrived__all(void **state) {
 
 	struct Output *outputX = calloc(1, sizeof(struct Output));
 	outputX->name = "inexistent"; // we don't call output destroy, just free
-	imap_put(g_outputs, 888, outputX);
+	ipmap_put(g_outputs, 888, outputX);
 
 	struct Output *output1 = calloc(1, sizeof(struct Output));
 	output1->name = "name1";
@@ -349,7 +349,7 @@ static void print_head_arrived__all(void **state) {
 	output1->logical_height = 2000;
 	output1->logical_x = 400;
 	output1->logical_y = 200;
-	imap_put(g_outputs, 999, output1);
+	ipmap_put(g_outputs, 999, output1);
 
 	print_head(INFO, ARRIVED, s->head1);
 

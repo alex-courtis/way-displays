@@ -7,7 +7,7 @@
 
 #include "sset.h"
 
-void _assert_sset_equal(const struct SSet *a, const struct SSet *b, const char * const file, const int line) {
+void _assert_sset_equal(const struct Sset *a, const struct Sset *b, const char * const file, const int line) {
 	if (!sset_equal(a, b)) {
 		write_file("actual.sset", sset_str(a));
 		write_file("expected.sset", sset_str(b));
@@ -17,7 +17,7 @@ void _assert_sset_equal(const struct SSet *a, const struct SSet *b, const char *
 }
 #define assert_sset_equal(a, b) _assert_sset_equal(a, b, __FILE__, __LINE__)
 
-void _assert_sset_not_equal(const struct SSet *a, const struct SSet *b, const char * const file, const int line) {
+void _assert_sset_not_equal(const struct Sset *a, const struct Sset *b, const char * const file, const int line) {
 	if (sset_equal(a, b)) {
 		write_file("actual.sset", sset_str(a));
 		write_file("expected.sset", sset_str(b));

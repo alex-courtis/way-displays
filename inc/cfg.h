@@ -64,17 +64,17 @@ struct Cfg {
 	char *callback_cmd;
 	char *laptop_display_prefix;
 	enum OnOff laptop_lid_monitor;
-	const struct SSet *order_name_desc;
+	const struct Sset *order_name_desc;
 	enum Arrange arrange;
 	enum Align align;
 	enum OnOff scaling;
 	enum OnOff auto_scale;
-	const struct SMapI *scales;               // milliscale
-	const struct SMap *modes;                 // mode_equal
-	const struct SSet *adaptive_sync_off;
-	const struct SSet *max_preferred_refresh;
-	const struct PSet *disableds;
-	const struct SMapI *transforms;           // wl_output_transform
+	const struct SImap *scales;                // milliscale
+	const struct SPmap *modes;                 // mode_spmap_equal_init
+	const struct Sset *adaptive_sync_off;
+	const struct Sset *max_preferred_refresh;
+	const struct Pset *disableds;
+	const struct SImap *transforms;            // wl_output_transform
 	enum LogThreshold log_threshold;
 
 	int32_t auto_scale_dpi;

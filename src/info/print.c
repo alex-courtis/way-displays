@@ -12,15 +12,15 @@
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
-#include "imap.h"
+#include "ipmap.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
 #include "output.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smap.h"
-#include "smapi.h"
+#include "spmap.h"
+#include "simap.h"
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -55,7 +55,7 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 
 	if (pset_size(head->modes_failed) > 0) {
 		log_(t, "  failed:");
-		for (const struct PSetIt *it = pset_it(head->modes_failed); it; it = pset_it_next(it)) {
+		for (const struct PsetIt *it = pset_it(head->modes_failed); it; it = pset_it_next(it)) {
 			print_mode(t, it->val);
 		}
 	}
@@ -76,9 +76,9 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		return;
 
 	// show from the top down
-	const struct PSet *modes_sorted = pset_clone(head->modes);
+	const struct Pset *modes_sorted = pset_clone(head->modes);
 	pset_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
-	const struct PSetIt *it = pset_it(modes_sorted);
+	const struct PsetIt *it = pset_it(modes_sorted);
 	while (it) {
 
 		// res/refresh/hz line
@@ -122,7 +122,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (sset_size(cfg->order_name_desc) > 0) {
 		log_(t, "  Order:");
-		for (const struct SSetIt *it = sset_it(cfg->order_name_desc); it; it = sset_it_next(it)) {
+		for (const struct SsetIt *it = sset_it(cfg->order_name_desc); it; it = sset_it_next(it)) {
 			log_(t, "    %s", it->val);
 		}
 	}
@@ -145,9 +145,9 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		log_(t, "  Round scales to: %s, %s", scale_round_to_name(cfg->scale_round_to), scale_round_strategy_name(cfg->scale_round_strategy));
 	}
 
-	if (smapi_size(cfg->scales) > 0) {
+	if (simap_size(cfg->scales) > 0) {
 		log_(t, "  Scale:");
-		for (const struct SMapIIt *it = smapi_it(cfg->scales); it; it = smapi_it_next(it)) {
+		for (const struct SImapIt *it = simap_it(cfg->scales); it; it = simap_it_next(it)) {
 			if (del) {
 				log_(t, "    %s", it->key);
 			} else {
@@ -156,16 +156,16 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (smap_size(cfg->modes) > 0) {
+	if (spmap_size(cfg->modes) > 0) {
 		log_(t, "  Mode:");
-		for (const struct SMapIt *it = smap_it(cfg->modes); it; it = smap_it_next(it)) {
+		for (const struct SPmapIt *it = spmap_it(cfg->modes); it; it = spmap_it_next(it)) {
 			print_mode_cfg(t, it->key, it->val, del);
 		}
 	}
 
-	if (smapi_size(cfg->transforms) > 0) {
+	if (simap_size(cfg->transforms) > 0) {
 		log_(t, "  Transform:");
-		for (const struct SMapIIt *it = smapi_it(cfg->transforms); it; it = smapi_it_next(it)) {
+		for (const struct SImapIt *it = simap_it(cfg->transforms); it; it = simap_it_next(it)) {
 			if (del) {
 				log_(t, "    %s", it->key);
 			} else {
@@ -176,14 +176,14 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (sset_size(cfg->max_preferred_refresh) > 0) {
 		log_(t, "  Max preferred refresh:");
-		for (const struct SSetIt *it = sset_it(cfg->max_preferred_refresh); it; it = sset_it_next(it)) {
+		for (const struct SsetIt *it = sset_it(cfg->max_preferred_refresh); it; it = sset_it_next(it)) {
 			log_(t, "    %s", it->val);
 		}
 	}
 
 	if (pset_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
-		for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
+		for (const struct PsetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 			print_disabled(t, it->val);
 		}
 	}
@@ -222,7 +222,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	if (sset_size(cfg->order_name_desc) > 0) {
 		char *msg = NULL;
 
-		for (const struct SSetIt *it = sset_it(cfg->order_name_desc); it; it = sset_it_next(it)) {
+		for (const struct SsetIt *it = sset_it(cfg->order_name_desc); it; it = sset_it_next(it)) {
 			msg = sprintf_append(msg, "'%s' ", it->val);
 		}
 
@@ -243,7 +243,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct SMapIIt *it = smapi_it(cfg->scales); it; it = smapi_it_next(it)) {
+	for (const struct SImapIt *it = simap_it(cfg->scales); it; it = simap_it_next(it)) {
 		char *msg = sprintf_alloc("%.3f", (double)it->val/1000);
 		print_newline(t, &newline);
 		log_(t, "way-displays -s SCALE '%s' %s", it->key, msg);
@@ -252,7 +252,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 	newline = true;
 
-	for (const struct SMapIt *it = smap_it(cfg->modes); it; it = smap_it_next(it)) {
+	for (const struct SPmapIt *it = spmap_it(cfg->modes); it; it = spmap_it_next(it)) {
 		struct Mode *mode = (struct Mode*)it->val;
 
 		char *msg;
@@ -270,13 +270,13 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct SMapIIt *it = smapi_it(cfg->transforms); it; it = smapi_it_next(it)) {
+	for (const struct SImapIt *it = simap_it(cfg->transforms); it; it = simap_it_next(it)) {
 		print_newline(t, &newline);
 		log_(t, "way-displays -s TRANSFORM '%s' %s", it->key, transform_name(it->val));
 	}
 
 	newline = true;
-	for (const struct PSetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
+	for (const struct PsetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
 		const struct Disabled* d = it->val;
 		if (pset_size(d->conditions) == 0) {
 			print_newline(t, &newline);
@@ -285,7 +285,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct SSetIt *it = sset_it(cfg->adaptive_sync_off); it; it = sset_it_next(it)) {
+	for (const struct SsetIt *it = sset_it(cfg->adaptive_sync_off); it; it = sset_it_next(it)) {
 		print_newline(t, &newline);
 		log_(t, "way-displays -s VRR_OFF '%s'", it->val);
 	}
@@ -305,7 +305,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	if (head->current.enabled) {
 		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.mode));
 
-		const struct Output *output = imap_match_val(g_outputs, (fn_2pred)output_matches_name, head->name).val;
+		const struct Output *output = ipmap_match_val(g_outputs, (fn_2pred)output_matches_name, head->name).val;
 		if (output) {
 			log_(t, "    size:      %dx%d", output->logical_width, output->logical_height);
 			log_(t, "    position:  %d,%d", output->logical_x, output->logical_y);

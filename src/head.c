@@ -16,7 +16,7 @@
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smap.h"
+#include "spmap.h"
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -48,7 +48,7 @@ struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head) {
 }
 
 // add mode to modes_orphaned if it's not present in modes or failed modes
-static void add_orphaned_mode(const struct PSet *modes_orphaned, const struct Head *head, const struct Mode *mode) {
+static void add_orphaned_mode(const struct Pset *modes_orphaned, const struct Head *head, const struct Mode *mode) {
 	if (mode && !pset_contains(head->modes, mode) && !pset_contains(head->modes_failed, mode)) {
 		pset_add(modes_orphaned, mode);
 	}
@@ -58,7 +58,7 @@ void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	const struct PSet *modes_orphaned = mode_pset_ptr_init();
+	const struct Pset *modes_orphaned = mode_pset_ptr_init();
 	add_orphaned_mode(modes_orphaned, head, head->mode_preferred);
 	add_orphaned_mode(modes_orphaned, head, head->current.mode);
 	add_orphaned_mode(modes_orphaned, head, head->desired.mode);
@@ -226,7 +226,7 @@ void heads_reapply(struct Pslist *heads) {
 		if (pset_size(head->modes_failed) > 0) {
 			log_info("    %d: Clear failed modes:", step++);
 
-			for (const struct PSetIt *it = pset_it(head->modes_failed); it; it = pset_it_next(it)) {
+			for (const struct PsetIt *it = pset_it(head->modes_failed); it; it = pset_it_next(it)) {
 
 				// add all failed back to modes
 				pset_add(head->modes, it->val);
@@ -421,7 +421,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	const struct Mode *mode = NULL;
 
 	// maybe a cfg mode
-	struct Mode *mode_cfg = (struct Mode*)smap_match_key(g_cfg->modes, (fn_2pred_str)head_name_desc_matches_head, head).val;
+	struct Mode *mode_cfg = (struct Mode*)spmap_match_key(g_cfg->modes, (fn_2pred_str)head_name_desc_matches_head, head).val;
 	if (mode_cfg) {
 		mode = mode_best_satisfying(mode_cfg, head->modes);
 		if (!mode && !mode_cfg->warned_no_mode) {
@@ -482,7 +482,7 @@ const struct Mode *head_max_mode(const struct Head * const head) {
 
 	const struct Mode *mode_max = NULL;
 
-	for (const struct PSetIt *it = pset_it(head->modes); it; it = pset_it_next(it)) {
+	for (const struct PsetIt *it = pset_it(head->modes); it; it = pset_it_next(it)) {
 		const struct Mode *mode = it->val;
 
 		if (!mode_max) {

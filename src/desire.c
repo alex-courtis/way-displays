@@ -16,7 +16,7 @@
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smapi.h"
+#include "simap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -107,7 +107,7 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	const struct SMapIPair pair = smapi_match_key(g_cfg->scales, (fn_2pred_str)head_name_desc_matches_head, head);
+	const struct SImapPair pair = simap_match_key(g_cfg->scales, (fn_2pred_str)head_name_desc_matches_head, head);
 	if (pair.key) {
 		head->desired.scale = head_get_fixed_scale((double)pair.val / 1000);
 		return;
@@ -128,7 +128,7 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	enum wl_output_transform transform = smapi_match_key(g_cfg->transforms, (fn_2pred_str)head_name_desc_matches_head, head).val;
+	enum wl_output_transform transform = simap_match_key(g_cfg->transforms, (fn_2pred_str)head_name_desc_matches_head, head).val;
 	if (transform) {
 		head->desired.transform = transform;
 		return;
@@ -188,7 +188,7 @@ void desire_reapply(struct Head *head) {
 }
 
 // TODO this can be simplified
-struct Pslist *desire_order(const struct SSet * const order_name_desc, struct Pslist *heads) {
+struct Pslist *desire_order(const struct Sset * const order_name_desc, struct Pslist *heads) {
 	if (!heads)
 		return NULL;
 
@@ -201,21 +201,21 @@ struct Pslist *desire_order(const struct SSet * const order_name_desc, struct Ps
 
 	// exact match
 	i = 0;
-	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
 		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, it->val);
 		i++;
 	}
 
 	// regex
 	i = 0;
-	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
 		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, it->val);
 		i++;
 	}
 
 	// fuzzy
 	i = 0;
-	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
+	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
 		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, it->val);
 		i++;
 	}

@@ -6,11 +6,11 @@
 
 #include "output.h"
 
-#include "imap.h"
+#include "ipmap.h"
 #include "listeners.h"
 #include "xdg-output-unstable-v1.h"
 
-const struct IMap *g_outputs; // by wl_output_name
+const struct IPmap *g_outputs; // by wl_output_name
 
 static void destroy(const void *o) {
 	if (!o)
@@ -41,10 +41,10 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output
 	output->zxdg_output = zxdg_output;
 
 	if (!g_outputs) {
-		const struct IMapParams params = { .free_val = destroy, };
-		g_outputs = imap_init_with(params);
+		const struct IPmapParams params = { .free_val = destroy, };
+		g_outputs = ipmap_init_with(params);
 	}
-	imap_put(g_outputs, wl_output_name, output);
+	ipmap_put(g_outputs, wl_output_name, output);
 
 	zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
 
@@ -56,10 +56,10 @@ bool output_matches_name(const struct Output* const output, const void* const na
 }
 
 void output_destroy_all(void) {
-	imap_free_vals(g_outputs);
+	ipmap_free_vals(g_outputs);
 }
 
 void output_destroy_by_wl_output_name(const uint32_t wl_output_name) {
-	destroy(imap_remove(g_outputs, wl_output_name));
+	destroy(ipmap_remove(g_outputs, wl_output_name));
 }
 

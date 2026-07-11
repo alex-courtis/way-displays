@@ -39,13 +39,13 @@ int yaml_map_from_condition(struct MC *c, const struct Condition* const conditio
 int yaml_node_from_disabled(struct MC *c, const struct Disabled*  const disabled);
 int yaml_map_from_mode     (struct MC *c, const struct Mode*      const mode);
 
-// yaml_map_add_list: fn_yaml_node_from_type
+// yaml_map_add_pslist: fn_yaml_node_from_type
 int yaml_map_from_head(struct MC *c, const struct Head* const head);
 
-// yaml_map_add_smap: fn_yaml_node_from_key_type
+// yaml_map_add_spmap: fn_yaml_node_from_key_type
 int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const struct Mode* const mode);
 
-// yaml_map_add_smapi: fn_node_from_yaml_key_size_t
+// yaml_map_add_simap: fn_node_from_yaml_key_size_t
 int yaml_map_from_scale    (struct MC *c, const char* const name_desc, const size_t scale);
 int yaml_map_from_transform(struct MC *c, const char* const name_desc, const size_t transform);
 

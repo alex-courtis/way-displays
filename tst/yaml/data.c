@@ -17,8 +17,8 @@
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smap.h"
-#include "smapi.h"
+#include "spmap.h"
+#include "simap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -58,12 +58,12 @@ struct Cfg *cfg_all(void) {
 			"!two",
 			NULL);
 
-	smapi_put_many(cfg->scales,
+	simap_put_many(cfg->scales,
 			"three", 3000,
 			"four", 4000,
 			NULL);
 
-	smap_put_many(cfg->modes,
+	spmap_put_many(cfg->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
 			"seven", mode_whr_max(-1, -1, -1),
@@ -97,7 +97,7 @@ struct Cfg *cfg_all(void) {
 
 	pset_add(cfg->disableds, disabled);
 
-	smapi_put_many(cfg->transforms,
+	simap_put_many(cfg->transforms,
 			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
 			NULL);
 

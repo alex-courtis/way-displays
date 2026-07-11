@@ -33,8 +33,8 @@ struct Disabled *disabled_init(void) {
 	return d;
 }
 
-const struct PSet *disabled_pset_init(void) {
-	const struct PSetParams params = {
+const struct Pset *disabled_pset_init(void) {
+	const struct PsetParams params = {
 		.equal_val = (fn_equal)disabled_equal,
 		.free_val = (fn_free)disabled_free,
 		.clone_val = (fn_clone)disabled_clone,

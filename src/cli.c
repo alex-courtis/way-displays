@@ -16,8 +16,8 @@
 #include "mode.h"
 #include "process.h"
 #include "pset.h"
-#include "smap.h"
-#include "smapi.h"
+#include "spmap.h"
+#include "simap.h"
 #include "sset.h"
 #include "str.h"
 
@@ -110,11 +110,11 @@ struct Cfg *cli_parse_element(enum IpcCommand command, enum CfgElement element, 
 				case CFG_SET:
 					// parse input value
 					parsed = ((scale = strtof(argv[optind + 1], NULL)) > 0);
-					smapi_put(cfg->scales, argv[optind], round(scale*1000));
+					simap_put(cfg->scales, argv[optind], round(scale*1000));
 					break;
 				case CFG_DEL:
 					// dummy value
-					smapi_put(cfg->scales, argv[optind], 1);
+					simap_put(cfg->scales, argv[optind], 1);
 					parsed = true;
 					break;
 				default:
@@ -138,13 +138,13 @@ struct Cfg *cli_parse_element(enum IpcCommand command, enum CfgElement element, 
 							parsed = parsed && ((mode->refresh_mhz = lround(atof(argv[optind + 3]) * 1000)) > 0);
 						}
 					}
-					smap_put(cfg->modes, argv[optind], mode);
+					spmap_put(cfg->modes, argv[optind], mode);
 					break;
 				case CFG_DEL:
 					// dummy value
 					mode = mode_init();
 					mode->max = true;
-					smap_put(cfg->modes, argv[optind], mode);
+					spmap_put(cfg->modes, argv[optind], mode);
 					parsed = true;
 					break;
 				default:
@@ -162,11 +162,11 @@ struct Cfg *cli_parse_element(enum IpcCommand command, enum CfgElement element, 
 				case CFG_SET:
 					// parse input value
 					parsed = (wl_transform = transform_val(argv[optind + 1]));
-					smapi_put(cfg->transforms, argv[optind], wl_transform);
+					simap_put(cfg->transforms, argv[optind], wl_transform);
 					break;
 				case CFG_DEL:
 					// dummy value
-					smapi_put(cfg->transforms, argv[optind], WL_OUTPUT_TRANSFORM_90);
+					simap_put(cfg->transforms, argv[optind], WL_OUTPUT_TRANSFORM_90);
 					parsed = true;
 					break;
 				default:

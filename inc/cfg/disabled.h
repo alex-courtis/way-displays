@@ -7,12 +7,12 @@
 
 struct Disabled {
 	char *name_desc;
-	const struct PSet *conditions;
+	const struct Pset *conditions;
 };
 
 struct Disabled *disabled_init(void);
 
-const struct PSet *disabled_pset_init(void);
+const struct Pset *disabled_pset_init(void);
 
 const struct Disabled *disabled_clone(const struct Disabled * const from);
 

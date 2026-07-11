@@ -17,7 +17,7 @@
 #include "log.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smap.h"
+#include "spmap.h"
 #include "sset.h"
 
 #include "cfg.h"
@@ -63,9 +63,9 @@ static int after_each(void **state) {
 static void cfg_equal__mode(void **state) {
 	const struct State *s = *state;
 
-	smap_put(s->from->modes, "both", mode_whr(4, 5, 6));
+	spmap_put(s->from->modes, "both", mode_whr(4, 5, 6));
 
-	smap_put(s->to->modes, "both", mode_whr(10, 11, 12));
+	spmap_put(s->to->modes, "both", mode_whr(10, 11, 12));
 
 	assert_cfg_not_equal(s->from, s->to);
 }
@@ -154,17 +154,17 @@ static void cfg_merge_set__scale_round_strategy(void **state) {
 static void cfg_merge_set__scale(void **state) {
 	struct State *s = *state;
 
-	smapi_put_many(s->to->scales,
+	simap_put_many(s->to->scales,
 			"to", 1000,
 			"both", 2000,
 			NULL);
 
-	smapi_put_many(s->from->scales,
+	simap_put_many(s->from->scales,
 			"from", 3000,
 			"both", 4000,
 			NULL);
 
-	smapi_put_many(s->expected->scales,
+	simap_put_many(s->expected->scales,
 			"to", 1000,
 			"both", 4000,
 			"from", 3000,
@@ -180,17 +180,17 @@ static void cfg_merge_set__scale(void **state) {
 static void cfg_merge_set__transform(void **state) {
 	struct State *s = *state;
 
-	smapi_put_many(s->to->transforms,
+	simap_put_many(s->to->transforms,
 			"to", 1000,
 			"both", 2000,
 			NULL);
 
-	smapi_put_many(s->from->transforms,
+	simap_put_many(s->from->transforms,
 			"from", 3000,
 			"both", 4000,
 			NULL);
 
-	smapi_put_many(s->expected->transforms,
+	simap_put_many(s->expected->transforms,
 			"to", 1000,
 			"both", 4000,
 			"from", 3000,
@@ -206,17 +206,17 @@ static void cfg_merge_set__transform(void **state) {
 static void cfg_merge_set__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put_many(s->to->modes,
+	spmap_put_many(s->to->modes,
 			"to", mode_whr(1, 2, 3),
 			"both", mode_whr(4, 5, 6),
 			NULL);
 
-	smap_put_many(s->from->modes,
+	spmap_put_many(s->from->modes,
 			"from", mode_whr(7, 8, 9),
 			"both", mode_whr(10, 11, 12),
 			NULL);
 
-	smap_put_many(s->expected->modes,
+	spmap_put_many(s->expected->modes,
 			"to", mode_whr(1, 2, 3),
 			"both", mode_whr(10, 11, 12),
 			"from", mode_whr(7, 8, 9),
@@ -319,17 +319,17 @@ static void cfg_merge_set__callback_cmd(void **state) {
 static void cfg_merge_del__scale(void **state) {
 	struct State *s = *state;
 
-	smapi_put_many(s->to->scales,
+	simap_put_many(s->to->scales,
 			"1", 1000,
 			"2", 2000,
 			NULL);
 
-	smapi_put_many(s->from->scales,
+	simap_put_many(s->from->scales,
 			"2", 3000,
 			"3", 4000,
 			NULL);
 
-	smapi_put_many(s->expected->scales,
+	simap_put_many(s->expected->scales,
 			"1", 1000,
 			NULL);
 
@@ -343,17 +343,17 @@ static void cfg_merge_del__scale(void **state) {
 static void cfg_merge_del__mode(void **state) {
 	struct State *s = *state;
 
-	smap_put_many(s->to->modes,
+	spmap_put_many(s->to->modes,
 			"1", mode_whr(1, 1, 1),
 			"2", mode_whr(2, 2, 2),
 			NULL);
 
-	smap_put_many(s->from->modes,
+	spmap_put_many(s->from->modes,
 			"2", mode_whr(2, 2, 2),
 			"3", mode_whr(3, 3, 3),
 			NULL);
 
-	smap_put_many(s->from->modes,
+	spmap_put_many(s->from->modes,
 			"1", mode_whr(1, 1, 1),
 			NULL);
 
@@ -367,17 +367,17 @@ static void cfg_merge_del__mode(void **state) {
 static void cfg_merge_del__transform(void **state) {
 	struct State *s = *state;
 
-	smapi_put_many(s->to->transforms,
+	simap_put_many(s->to->transforms,
 			"to", 1,
 			"both", 2,
 			NULL);
 
-	smapi_put_many(s->from->transforms,
+	simap_put_many(s->from->transforms,
 			"from", 3,
 			"both", 4,
 			NULL);
 
-	smapi_put_many(s->expected->transforms,
+	simap_put_many(s->expected->transforms,
 			"to", 1,
 			NULL);
 
@@ -552,7 +552,7 @@ static void cfg_validate_fix__row(void **state) {
 static void cfg_validate_fix__mode_cfg(void **state) {
 	struct State *s = *state;
 
-	smap_put_many(s->from->modes,
+	spmap_put_many(s->from->modes,
 			"ok", mode_whr(1, 2, 3),
 			"max", mode_whr_max(-1, -1, -1),
 			"negative width", mode_whr(-99, 2, 3),
@@ -567,7 +567,7 @@ static void cfg_validate_fix__mode_cfg(void **state) {
 	char *expected_log = read_file("tst/cfg/validate-fix-mode.log");
 	assert_log(WARNING, expected_log);
 
-	smap_put_many(s->expected->modes,
+	spmap_put_many(s->expected->modes,
 			"ok", mode_whr(1, 2, 3),
 			"max", mode_whr_max(-1, -1, -1),
 			NULL);
@@ -594,19 +594,19 @@ static void cfg_validate_fix__auto_scale_dpi(void **state) {
 static void cfg_validate_warn__(void **state) {
 	const struct State *s = *state;
 
-	smapi_put_many(s->expected->scales,
+	simap_put_many(s->expected->scales,
 			"sss", 1000,
 			"ssssssss", 2000,
 			"DP-1", 3000,
 			NULL);
 
-	smap_put_many(s->expected->modes,
+	spmap_put_many(s->expected->modes,
 			"mmm", mode_whr(1, 1, 1),
 			"mmmmmmmm", mode_whr(1, 1, 1),
 			"DP-1", mode_whr(1, 1, 1),
 			NULL);
 
-	smapi_put_many(s->expected->transforms,
+	simap_put_many(s->expected->transforms,
 			"ttt", WL_OUTPUT_TRANSFORM_180,
 			"tttttttttt", WL_OUTPUT_TRANSFORM_270,
 			"DP-1", WL_OUTPUT_TRANSFORM_270,

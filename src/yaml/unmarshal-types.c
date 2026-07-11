@@ -20,8 +20,8 @@
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smap.h"
-#include "smapi.h"
+#include "spmap.h"
+#include "simap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/unmarshal-primitives.h"
@@ -47,14 +47,14 @@ void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {
 	// log exceptions and fail for required fields
 	c->t = ERROR;
 
-	const struct SMap *nodes = yaml_map_to_smap(c, root);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, root);
 	if (!nodes)
 		return NULL;
 
 	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
 
 	yaml_unmarshal_log_ctx_top(c, "OP");
-	const yaml_node_t *op = smap_get(nodes, "OP");
+	const yaml_node_t *op = spmap_get(nodes, "OP");
 	if (!yaml_check_mandatory(c, op) || !(ipc_request->command = yaml_scalar_to_enum(c, op, ipc_command_val, ipc_command_names)))
 		goto err;
 
@@ -62,12 +62,12 @@ void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {
 	c->t = WARNING;
 
 	yaml_unmarshal_log_ctx_top(c, "LOG_THRESHOLD");
-	const yaml_node_t *log_threshold = smap_get(nodes, "LOG_THRESHOLD");
+	const yaml_node_t *log_threshold = spmap_get(nodes, "LOG_THRESHOLD");
 	if (log_threshold)
 		ipc_request->log_threshold = yaml_scalar_to_enum(c, log_threshold, log_threshold_val, log_threshold_names);
 
 	yaml_unmarshal_log_ctx_top(c, "CFG");
-	const yaml_node_t *cfg = smap_get(nodes, "CFG");
+	const yaml_node_t *cfg = spmap_get(nodes, "CFG");
 	if (cfg)
 		ipc_request->cfg = yaml_map_to_cfg(c, cfg);
 
@@ -78,7 +78,7 @@ err:
 	ipc_request = NULL;
 
 end:
-	smap_free(nodes);
+	spmap_free(nodes);
 
 	return ipc_request;
 }
@@ -220,19 +220,19 @@ void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses, co
 	// log exceptions and fail for required fields
 	c->t = ERROR;
 
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
 	struct IpcResponse *ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
 
 	yaml_unmarshal_log_ctx_top(c, "DONE");
-	const yaml_node_t *done = smap_get(nodes, "DONE");
+	const yaml_node_t *done = spmap_get(nodes, "DONE");
 	if (!yaml_check_mandatory(c, done) || !yaml_scalar_to_boolean(c, &ipc_response->status.done, done))
 		goto err;
 
 	yaml_unmarshal_log_ctx_top(c, "RC");
-	const yaml_node_t *rc = smap_get(nodes, "RC");
+	const yaml_node_t *rc = spmap_get(nodes, "RC");
 	if (!yaml_check_mandatory(c, rc) || !yaml_scalar_to_int(c, &ipc_response->status.rc, rc))
 		goto err;
 
@@ -240,26 +240,26 @@ void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses, co
 	c->t = 0;
 
 	yaml_unmarshal_log_ctx_top(c, "CFG");
-	const yaml_node_t *cfg = smap_get(nodes, "CFG");
+	const yaml_node_t *cfg = spmap_get(nodes, "CFG");
 	if (cfg)
 		ipc_response->cfg = yaml_map_to_cfg(c, cfg);
 
 	yaml_unmarshal_log_ctx_top(c, "STATE");
-	const yaml_node_t *state = smap_get(nodes, "STATE");
+	const yaml_node_t *state = spmap_get(nodes, "STATE");
 	if (state) {
-		const struct SMap *nodes_state = yaml_map_to_smap(c, state);
+		const struct SPmap *nodes_state = yaml_map_to_spmap(c, state);
 		if (nodes_state) {
 
-			ipc_response->lid =	yaml_map_to_lid(c, smap_get(nodes_state, "LID"));
+			ipc_response->lid =	yaml_map_to_lid(c, spmap_get(nodes_state, "LID"));
 
-			yaml_seq_into_col(c, smap_get(nodes_state, "HEADS"), &ipc_response->heads, (fn_yaml_node_into_col)yaml_map_into_heads);
+			yaml_seq_into_col(c, spmap_get(nodes_state, "HEADS"), &ipc_response->heads, (fn_yaml_node_into_col)yaml_map_into_heads);
 
-			smap_free(nodes_state);
+			spmap_free(nodes_state);
 		}
 	}
 
 	yaml_unmarshal_log_ctx_top(c, "MESSAGES");
-	const yaml_node_t *messages = smap_get(nodes, "MESSAGES");
+	const yaml_node_t *messages = spmap_get(nodes, "MESSAGES");
 	if (messages) {
 		yaml_seq_into_col(c, messages, &ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
 	}
@@ -273,21 +273,21 @@ err:
 	ipc_response = NULL;
 
 end:
-	smap_free(nodes);
+	spmap_free(nodes);
 }
 
-void yaml_map_into_conditions(struct UC *c, const struct PSet* const conditions, const yaml_node_t *map) {
+void yaml_map_into_conditions(struct UC *c, const struct Pset* const conditions, const yaml_node_t *map) {
 	if (!conditions)
 		return;
 
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
 	struct Condition *condition = condition_init();
 
 	yaml_unmarshal_log_ctx_key(c, "PLUGGED");
-	const yaml_node_t *node = smap_get(nodes, "PLUGGED");
+	const yaml_node_t *node = spmap_get(nodes, "PLUGGED");
 	if (node) {
 		yaml_seq_into_name_desc_sset(c, condition->plugged, node);
 		if (sset_size(condition->plugged) == 0) {
@@ -296,7 +296,7 @@ void yaml_map_into_conditions(struct UC *c, const struct PSet* const conditions,
 	}
 
 	yaml_unmarshal_log_ctx_key(c, "UNPLUGGED");
-	node = smap_get(nodes, "UNPLUGGED");
+	node = spmap_get(nodes, "UNPLUGGED");
 	if (node) {
 		yaml_seq_into_name_desc_sset(c, condition->unplugged, node);
 		if (sset_size(condition->unplugged) == 0) {
@@ -305,7 +305,7 @@ void yaml_map_into_conditions(struct UC *c, const struct PSet* const conditions,
 	}
 
 	yaml_unmarshal_log_ctx_key(c, "LID");
-	node = smap_get(nodes, "LID");
+	node = spmap_get(nodes, "LID");
 	if (node && !(condition->lid = yaml_scalar_to_enum(c, node, condition_lid_val, condition_lid_names)))
 		goto err;
 
@@ -321,28 +321,28 @@ err:
 
 end:
 	yaml_unmarshal_log_ctx_key(c, NULL);
-	smap_free(nodes);
+	spmap_free(nodes);
 }
 
-void yaml_map_into_scales(struct UC *c, const struct SMapI* const scales, const yaml_node_t *map) {
+void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
 	if (!scales)
 		return;
 
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
 	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-	const yaml_node_t *scalar = smap_get(nodes, "NAME_DESC");
+	const yaml_node_t *scalar = spmap_get(nodes, "NAME_DESC");
 	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto end;
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "SCALE");
-	scalar = smap_get(nodes, "SCALE");
+	scalar = spmap_get(nodes, "SCALE");
 	float scale;
 	if (!yaml_check_mandatory(c, scalar) || !yaml_scalar_to_float(c, &scale, scalar))
 		goto end;
@@ -352,24 +352,24 @@ void yaml_map_into_scales(struct UC *c, const struct SMapI* const scales, const 
 		goto end;
 	}
 
-	if (smapi_put_if_absent(scales, name_desc, round(scale*1000))) {
+	if (simap_put_if_absent(scales, name_desc, round(scale*1000))) {
 		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
 	}
 
 end:
 	free(name_desc);
-	smap_free(nodes);
+	spmap_free(nodes);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 
 	return;
 }
 
-void yaml_map_into_named_modes(struct UC *c, const struct SMap* const modes, const yaml_node_t *map) {
+void yaml_map_into_named_modes(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
 	if (!modes)
 		return;
 
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
@@ -378,24 +378,24 @@ void yaml_map_into_named_modes(struct UC *c, const struct SMap* const modes, con
 	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-	const yaml_node_t *scalar = smap_get(nodes, "NAME_DESC");
+	const yaml_node_t *scalar = spmap_get(nodes, "NAME_DESC");
 	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto err;
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "WIDTH");
-	scalar = smap_get(nodes, "WIDTH");
+	scalar = spmap_get(nodes, "WIDTH");
 	if (scalar && !yaml_scalar_to_int(c, &mode->width, scalar))
 		goto err;
 
 	yaml_unmarshal_log_ctx_key(c, "HEIGHT");
-	scalar = smap_get(nodes, "HEIGHT");
+	scalar = spmap_get(nodes, "HEIGHT");
 	if (scalar && !yaml_scalar_to_int(c, &mode->height, scalar))
 		goto err;
 
 	yaml_unmarshal_log_ctx_key(c, "HZ");
-	scalar = smap_get(nodes, "HZ");
+	scalar = spmap_get(nodes, "HZ");
 	if (scalar) {
 		float hz = 0;
 		if (!yaml_scalar_to_float(c, &hz, scalar))
@@ -404,11 +404,11 @@ void yaml_map_into_named_modes(struct UC *c, const struct SMap* const modes, con
 	}
 
 	yaml_unmarshal_log_ctx_key(c, "MAX");
-	scalar = smap_get(nodes, "MAX");
+	scalar = spmap_get(nodes, "MAX");
 	if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
 		goto err;
 
-	if (smap_put_if_absent(modes, name_desc, mode)) {
+	if (spmap_put_if_absent(modes, name_desc, mode)) {
 		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
 		goto err;
 	}
@@ -420,78 +420,78 @@ err:
 
 end:
 	free(name_desc);
-	smap_free(nodes);
+	spmap_free(nodes);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_map_into_transforms(struct UC *c, const struct SMapI* const transforms, const yaml_node_t *map) {
+void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
 	if (!transforms)
 		return;
 
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
 	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-	const yaml_node_t *scalar = smap_get(nodes, "NAME_DESC");
+	const yaml_node_t *scalar = spmap_get(nodes, "NAME_DESC");
 	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto end;
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
 	yaml_unmarshal_log_ctx_key(c, "TRANSFORM");
-	scalar = smap_get(nodes, "TRANSFORM");
+	scalar = spmap_get(nodes, "TRANSFORM");
 	enum wl_output_transform transform;
 	if (!yaml_check_mandatory(c, scalar) || !(transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names)))
 		goto end;
 
-	if (smapi_put_if_absent(transforms, name_desc, transform)) {
+	if (simap_put_if_absent(transforms, name_desc, transform)) {
 		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
 	}
 
 end:
 	free(name_desc);
-	smap_free(nodes);
+	spmap_free(nodes);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
 struct Lid *yaml_map_to_lid(struct UC *c, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return NULL;
 
 	struct Lid *lid = (struct Lid*)calloc(1, sizeof(struct Lid));
 
-	lid->device_path = yaml_scalar_to_string(c, smap_get(nodes, "DEVICE_PATH"));
-	yaml_scalar_to_boolean(c, &lid->closed, smap_get(nodes, "CLOSED"));
+	lid->device_path = yaml_scalar_to_string(c, spmap_get(nodes, "DEVICE_PATH"));
+	yaml_scalar_to_boolean(c, &lid->closed, spmap_get(nodes, "CLOSED"));
 
-	smap_free(nodes);
+	spmap_free(nodes);
 
 	return lid;
 }
 
 struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return NULL;
 
 	struct Mode *mode = mode_init();
 
-	yaml_scalar_to_int(c, &mode->width, smap_get(nodes, "WIDTH"));
-	yaml_scalar_to_int(c, &mode->height, smap_get(nodes, "HEIGHT"));
-	yaml_scalar_to_int(c, &mode->refresh_mhz, smap_get(nodes, "REFRESH_MHZ"));
+	yaml_scalar_to_int(c, &mode->width, spmap_get(nodes, "WIDTH"));
+	yaml_scalar_to_int(c, &mode->height, spmap_get(nodes, "HEIGHT"));
+	yaml_scalar_to_int(c, &mode->refresh_mhz, spmap_get(nodes, "REFRESH_MHZ"));
 
-	smap_free(nodes);
+	spmap_free(nodes);
 
 	return mode;
 }
 
-void yaml_map_into_modes(struct UC *c, const struct PSet *modes, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+void yaml_map_into_modes(struct UC *c, const struct Pset *modes, const yaml_node_t *map) {
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!modes)
 		return;
 
@@ -501,52 +501,52 @@ void yaml_map_into_modes(struct UC *c, const struct PSet *modes, const yaml_node
 		pset_add(modes, mode);
 	}
 
-	smap_free(nodes);
+	spmap_free(nodes);
 }
 
 void yaml_map_into_heads(struct UC *c, struct Pslist **heads, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!heads)
 		return;
 
 	struct Head *head = head_init();
 
-	head->name           = yaml_scalar_to_string(c, smap_get(nodes, "NAME"));
-	head->description    = yaml_scalar_to_string(c, smap_get(nodes, "DESCRIPTION"));
-	head->make           = yaml_scalar_to_string(c, smap_get(nodes, "MAKE"));
-	head->model          = yaml_scalar_to_string(c, smap_get(nodes, "MODEL"));
-	head->serial_number  = yaml_scalar_to_string(c, smap_get(nodes, "SERIAL_NUMBER"));
-	head->mode_preferred = yaml_map_to_mode     (c, smap_get(nodes, "MODE_PREFERRED"));
+	head->name           = yaml_scalar_to_string(c, spmap_get(nodes, "NAME"));
+	head->description    = yaml_scalar_to_string(c, spmap_get(nodes, "DESCRIPTION"));
+	head->make           = yaml_scalar_to_string(c, spmap_get(nodes, "MAKE"));
+	head->model          = yaml_scalar_to_string(c, spmap_get(nodes, "MODEL"));
+	head->serial_number  = yaml_scalar_to_string(c, spmap_get(nodes, "SERIAL_NUMBER"));
+	head->mode_preferred = yaml_map_to_mode     (c, spmap_get(nodes, "MODE_PREFERRED"));
 
-	yaml_scalar_to_int      (c, &head->width_mm,    smap_get(nodes, "WIDTH_MM"));
-	yaml_scalar_to_int      (c, &head->height_mm,   smap_get(nodes, "HEIGHT_MM"));
-	yaml_map_into_head_state(c, &head->current,     smap_get(nodes, "CURRENT"));
-	yaml_map_into_head_state(c, &head->desired,     smap_get(nodes, "DESIRED"));
+	yaml_scalar_to_int      (c, &head->width_mm,    spmap_get(nodes, "WIDTH_MM"));
+	yaml_scalar_to_int      (c, &head->height_mm,   spmap_get(nodes, "HEIGHT_MM"));
+	yaml_map_into_head_state(c, &head->current,     spmap_get(nodes, "CURRENT"));
+	yaml_map_into_head_state(c, &head->desired,     spmap_get(nodes, "DESIRED"));
 
-	yaml_seq_into_col(c, smap_get(nodes, "MODES"),        head->modes,        (fn_yaml_node_into_col)yaml_map_into_modes);
-	yaml_seq_into_col(c, smap_get(nodes, "MODES_FAILED"), head->modes_failed, (fn_yaml_node_into_col)yaml_map_into_modes);
+	yaml_seq_into_col(c, spmap_get(nodes, "MODES"),        head->modes,        (fn_yaml_node_into_col)yaml_map_into_modes);
+	yaml_seq_into_col(c, spmap_get(nodes, "MODES_FAILED"), head->modes_failed, (fn_yaml_node_into_col)yaml_map_into_modes);
 
-	const struct SMap *nodes_overrides = yaml_map_to_smap(c, smap_get(nodes, "OVERRIDES"));
+	const struct SPmap *nodes_overrides = yaml_map_to_spmap(c, spmap_get(nodes, "OVERRIDES"));
 	if (nodes_overrides) {
 		bool disabled;
-		if (yaml_scalar_to_boolean(c, &disabled, smap_get(nodes_overrides, "DISABLED"))) {
+		if (yaml_scalar_to_boolean(c, &disabled, spmap_get(nodes_overrides, "DISABLED"))) {
 			head->overrided_enabled = disabled ? OverrideFalse : OverrideTrue;
 		}
 	}
 
 	pslist_append(heads, head);
 
-	smap_free(nodes);
-	smap_free(nodes_overrides);
+	spmap_free(nodes);
+	spmap_free(nodes_overrides);
 }
 
-void yaml_node_into_disableds(struct UC *c, const struct PSet* const disableds, const yaml_node_t *node) {
+void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, const yaml_node_t *node) {
 	if (!disableds)
 		return;
 
 	struct Disabled *disabled = NULL;
 
-	const struct SMap *node_map = NULL;
+	const struct SPmap *node_map = NULL;
 
 	switch (node->type) {
 		case YAML_SCALAR_NODE:
@@ -562,20 +562,20 @@ void yaml_node_into_disableds(struct UC *c, const struct PSet* const disableds, 
 
 		case YAML_MAPPING_NODE:
 			{
-				if (!(node_map = yaml_map_to_smap(c, node)))
+				if (!(node_map = yaml_map_to_spmap(c, node)))
 					return;
 
 				disabled = disabled_init();
 
 				yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-				const yaml_node_t *scalar = smap_get(node_map, "NAME_DESC");
+				const yaml_node_t *scalar = spmap_get(node_map, "NAME_DESC");
 				if (!yaml_check_mandatory(c, scalar) || !(disabled->name_desc = yaml_scalar_to_name_desc(c, scalar)))
 					goto err;
 
 				yaml_unmarshal_log_ctx_name_desc(c, disabled->name_desc);
 
 				yaml_unmarshal_log_ctx_key(c, "IF");
-				const yaml_node_t *map = smap_get(node_map, "IF");
+				const yaml_node_t *map = spmap_get(node_map, "IF");
 				if (map)
 					yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 
@@ -596,45 +596,45 @@ err:
 	disabled_free(disabled);
 
 end:
-	smap_free(node_map);
+	spmap_free(node_map);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
 void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
-	yaml_scalar_to_boolean(c, &head_state->enabled, smap_get(nodes, "ENABLED"));
+	yaml_scalar_to_boolean(c, &head_state->enabled, spmap_get(nodes, "ENABLED"));
 
-	yaml_scalar_to_int(c, &head_state->x, smap_get(nodes, "X"));
-	yaml_scalar_to_int(c, &head_state->y, smap_get(nodes, "Y"));
+	yaml_scalar_to_int(c, &head_state->x, spmap_get(nodes, "X"));
+	yaml_scalar_to_int(c, &head_state->y, spmap_get(nodes, "Y"));
 
-	head_state->transform = yaml_scalar_to_enum(c, smap_get(nodes, "TRANSFORM"), transform_val, NULL);
+	head_state->transform = yaml_scalar_to_enum(c, spmap_get(nodes, "TRANSFORM"), transform_val, NULL);
 
 	float scale;
-	if (yaml_scalar_to_float(c, &scale, smap_get(nodes, "SCALE")))
+	if (yaml_scalar_to_float(c, &scale, spmap_get(nodes, "SCALE")))
 		head_state->scale = wl_fixed_from_double(scale);
 
 	bool vrr = false;
-	if (yaml_scalar_to_boolean(c, &vrr, smap_get(nodes, "VRR")))
+	if (yaml_scalar_to_boolean(c, &vrr, spmap_get(nodes, "VRR")))
 		head_state->adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	head_state->mode = yaml_map_to_mode(c, smap_get(nodes, "MODE"));
+	head_state->mode = yaml_map_to_mode(c, spmap_get(nodes, "MODE"));
 
-	smap_free(nodes);
+	spmap_free(nodes);
 
 	return;
 }
 
 void yaml_map_into_log_cap_lines(struct UC *c, struct Pslist **log_cap_lines, const yaml_node_t *map) {
-	const struct SMap *nodes = yaml_map_to_smap(c, map);
+	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
 	// unmarshal many pairs even though schema specifies exactly one
-	for (const struct SMapIt *i = smap_it(nodes); i; i = smap_it_next(i)) {
+	for (const struct SPmapIt *i = spmap_it(nodes); i; i = spmap_it_next(i)) {
 
 		enum LogThreshold threshold = log_threshold_val(i->key);
 		char *line = yaml_scalar_to_string(c, i->val);
@@ -650,7 +650,7 @@ void yaml_map_into_log_cap_lines(struct UC *c, struct Pslist **log_cap_lines, co
 		free(line);
 	}
 
-	smap_free(nodes);
+	spmap_free(nodes);
 }
 
 char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar) {
@@ -691,7 +691,7 @@ end:
 	return ret;
 }
 
-void yaml_seq_into_name_desc_sset(struct UC *c, const struct SSet *sset, const yaml_node_t *seq) {
+void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset *sset, const yaml_node_t *seq) {
 	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
 		return;
 

@@ -11,7 +11,7 @@
 
 #include "cli.h"
 #include "process.h"
-#include "smaps.h"
+#include "ssmap.h"
 
 #include "log.h"
 
@@ -102,7 +102,7 @@ void pid_file_create(void) {
 	}
 }
 
-void spawn_sh_cmd(const char * const command, const struct SMapS * const env) {
+void spawn_sh_cmd(const char * const command, const struct SSmap * const env) {
 	if (!command)
 		return;
 
@@ -123,7 +123,7 @@ void spawn_sh_cmd(const char * const command, const struct SMapS * const env) {
 		sa.sa_handler = SIG_DFL;
 		sigaction(SIGCHLD, &sa, NULL);
 
-		for (const struct SMapSIt  *i = smaps_it(env); i; i = smaps_it_next(i)) {
+		for (const struct SSmapIt *i = ssmap_it(env); i; i = ssmap_it_next(i)) {
 
 			// experiments show that environment variable length tops out at 128k: variable itself plus contents
 			char value[1024 * 120];

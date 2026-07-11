@@ -83,9 +83,9 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_int_nz  (c, cfg_element_name(AUTO_SCALE_DPI),        cfg->auto_scale_dpi,                                                              map);
 	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                              map);
 	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                              map);
-	yaml_map_add_smapi   (c, cfg_element_name(SCALE),                 cfg->scales,                yaml_map_from_scale,                                  map);
-	yaml_map_add_smap    (c, cfg_element_name(MODE),                  cfg->modes,                 (fn_yaml_node_from_key_type)yaml_map_from_named_mode, map);
-	yaml_map_add_smapi   (c, cfg_element_name(TRANSFORM),             cfg->transforms,            yaml_map_from_transform,                              map);
+	yaml_map_add_simap   (c, cfg_element_name(SCALE),                 cfg->scales,                yaml_map_from_scale,                                  map);
+	yaml_map_add_spmap   (c, cfg_element_name(MODE),                  cfg->modes,                 (fn_yaml_node_from_key_type)yaml_map_from_named_mode, map);
+	yaml_map_add_simap   (c, cfg_element_name(TRANSFORM),             cfg->transforms,            yaml_map_from_transform,                              map);
 	yaml_map_add_sset    (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,                                                           map);
 	yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                                map);
 	yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                       map);
@@ -222,7 +222,7 @@ int yaml_map_from_state(struct MC *c) {
 		yaml_map_add_node(c, "LID", yaml_map_from_lid(c, g_lid), map);
 
 	if (g_heads)
-		yaml_map_add_list(c, "HEADS", g_heads, (fn_yaml_node_from_type)yaml_map_from_head, map);
+		yaml_map_add_pslist(c, "HEADS", g_heads, (fn_yaml_node_from_type)yaml_map_from_head, map);
 
 	return map;
 }

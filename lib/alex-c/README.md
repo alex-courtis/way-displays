@@ -9,37 +9,37 @@ Not thread safe.
 * Containerless singly linked list.
 * NULL values permitted.
 
-### PSet
+### Pset
 
 * Array backed pointer set.
 * Entries preserve insertion order.
 * Operations linearly traverse values.
 * NULL not permitted.
 
-### SSet
+### Sset
 
-* `PSet` with string values
+* `Pset` with string values
 * Values are memory managed.
 
-### PMap
+### PPmap
 
 * Array backed pointer indexed map.
 * Entries preserve insertion order.
 * Operations linearly traverse keys.
 * NULL values permitted.
 
-### IMap
+### IPmap
 
-* `PMap` with `size_t` keys
+* `PPmap` with `size_t` keys
 
-### SMap
+### SPmap
 
-* `PMap` with string keys.
+* `PPmap` with string keys.
 * Keys are memory managed.
 
-### SMapS
+### SSmap
 
-* `PMap` with string keys and vals.
+* `PPmap` with string keys and vals.
 * Keys and values are memory managed.
 
 ## Strings

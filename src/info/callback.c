@@ -9,7 +9,7 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
-#include "smaps.h"
+#include "ssmap.h"
 #include "str.h"
 
 void callback(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
@@ -26,19 +26,19 @@ void callback(const enum LogThreshold t, const char * const msg1, const char * c
 	snprintf(buf, CALLBACK_MSG_LEN, "%s%s", msg1 ? msg1 : "", msg2 ? msg2 : "");
 
 	// pack environment variables
-	const struct SMapS *env = smaps_init();
+	const struct SSmap *env = ssmap_init();
 
-	smaps_put_if_absent(env, "CALLBACK_MSG", buf);
-	smaps_put_if_absent(env, "CALLBACK_LEVEL", log_threshold_name(t));
+	ssmap_put_if_absent(env, "CALLBACK_MSG", buf);
+	ssmap_put_if_absent(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
-	char *env_str = smaps_str(env);
+	char *env_str = ssmap_str(env);
 	log_debug("%s", env_str);
 	free(env_str);
 
 	// execute callback
 	spawn_sh_cmd(g_cfg->callback_cmd, env);
 
-	smaps_free(env);
+	ssmap_free(env);
 	free(buf);
 }
 

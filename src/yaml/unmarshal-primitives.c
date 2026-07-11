@@ -9,7 +9,7 @@
 
 #include "cfg.h"
 #include "convert.h"
-#include "smap.h"
+#include "spmap.h"
 #include "yaml/unmarshal.h"
 
 char *yaml_scalar_to_string(struct UC *c, const yaml_node_t *scalar) {
@@ -142,11 +142,11 @@ bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn
 	return true;
 }
 
-const struct SMap *yaml_map_to_smap(struct UC *c, const yaml_node_t *map) {
+const struct SPmap *yaml_map_to_spmap(struct UC *c, const yaml_node_t *map) {
 	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE))
 		return NULL;
 
-	const struct SMap *nodes = smap_init();
+	const struct SPmap *nodes = spmap_init();
 
 	for (const yaml_node_pair_t *pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; pair++) {
 		if (!pair->key || !pair->value)
@@ -163,7 +163,7 @@ const struct SMap *yaml_map_to_smap(struct UC *c, const yaml_node_t *map) {
 		const yaml_node_t *pair_value = yaml_document_get_node(&c->d, pair->value);
 
 		if (pair_value)
-			smap_put(nodes, key, pair_value);
+			spmap_put(nodes, key, pair_value);
 
 		free(key);
 	}

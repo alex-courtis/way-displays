@@ -21,7 +21,7 @@
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"
-#include "smap.h"
+#include "spmap.h"
 #include "sset.h"
 
 #include "head.h"
@@ -220,7 +220,7 @@ static void head_find_mode__user_available(void **state) {
 
 	// user preferred head
 	struct Mode *mode_target = mode_init();
-	smap_put(g_cfg->modes, "!.*EAD", mode_target);
+	spmap_put(g_cfg->modes, "!.*EAD", mode_target);
 	head->name = strdup("HEAD");
 
 	// mode matched to user
@@ -246,7 +246,7 @@ static void head_find_mode__user_failed(void **state) {
 
 	// user preferred head
 	struct Mode *mode_target = mode_init();
-	smap_put(g_cfg->modes, "!HEA.*", mode_target);
+	spmap_put(g_cfg->modes, "!HEA.*", mode_target);
 	head->name = strdup("HEAD");
 
 	// mode not matched to user
@@ -515,7 +515,7 @@ static void heads_reapply__(void **state) {
 
 	head_disabled->mode_preferred = mode_h_whr(head_disabled, 3440, 1440, 59999);
 
-	const struct PSet *modes_once_failed = mode_pset_ptr_init();
+	const struct Pset *modes_once_failed = mode_pset_ptr_init();
 	pset_add_many(modes_once_failed,
 			head_disabled->mode_preferred,
 			mode_h_whr(head_disabled, 3840, 2160, 30000),

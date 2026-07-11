@@ -8,7 +8,7 @@
 #include "xdg-output-unstable-v1.h"
 
 // global singleton
-extern const struct IMap *g_outputs;
+extern const struct IPmap *g_outputs;
 
 struct Output {
 	struct wl_output *wl_output;

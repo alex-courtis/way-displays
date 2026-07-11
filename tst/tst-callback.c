@@ -1,7 +1,7 @@
 #include "tst.h"
 
 #include "assert-log.h"
-#include "expect-smaps.h"
+#include "expect-ssmap.h"
 #include "expects.h"
 #include "util-col.h"
 #include "util-init.h"
@@ -14,7 +14,7 @@
 #include "displ.h"
 #include "head.h"
 #include "log.h"
-#include "smaps.h"
+#include "ssmap.h"
 #include "str.h"
 
 #include "info/callback.h"
@@ -71,8 +71,8 @@ static void callback__below_threshold(void **state) {
 }
 
 static void callback__one(void **state) {
-	const struct SMapS *env = smaps_init();
-	smaps_put_many(env,
+	const struct SSmap *env = ssmap_init();
+	ssmap_put_many(env,
 			"CALLBACK_MSG", "msg1",
 			"CALLBACK_LEVEL", "INFO",
 			NULL);
@@ -83,23 +83,23 @@ static void callback__one(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_smaps(__wrap_spawn_sh_cmd, env, env);
+	expect_ssmap(__wrap_spawn_sh_cmd, env, env);
 
 	callback(INFO, "msg1", NULL);
 
-	char *str_env = smaps_str(env);
+	char *str_env = ssmap_str(env);
 	char *str_log = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", str_env);
 
 	assert_log(DEBUG, str_log);
 
 	free(str_env);
 	free(str_log);
-	smaps_free(env);
+	ssmap_free(env);
 }
 
 static void callback__two(void **state) {
-	const struct SMapS *expected_env = smaps_init();
-	smaps_put_many(expected_env,
+	const struct SSmap *expected_env = ssmap_init();
+	ssmap_put_many(expected_env,
 			"CALLBACK_MSG", "msg1msg2",
 			"CALLBACK_LEVEL", "FATAL",
 			NULL);
@@ -112,18 +112,18 @@ static void callback__two(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_smaps(__wrap_spawn_sh_cmd, env, expected_env);
+	expect_ssmap(__wrap_spawn_sh_cmd, env, expected_env);
 
 	callback(FATAL, "msg1", "msg2");
 
-	char *env_str = smaps_str(expected_env);
+	char *env_str = ssmap_str(expected_env);
 	char *log_str = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", env_str);
 
 	assert_log(DEBUG, log_str);
 
 	free(env_str);
 	free(log_str);
-	smaps_free(expected_env);
+	ssmap_free(expected_env);
 }
 
 static void callback_mode_fail__(void **state) {
@@ -132,8 +132,8 @@ static void callback_mode_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	const struct SMapS *expected_env = smaps_init();
-	smaps_put_many(expected_env,
+	const struct SSmap *expected_env = ssmap_init();
+	ssmap_put_many(expected_env,
 			"CALLBACK_MSG", "description1\n"
 			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying",
 
@@ -143,18 +143,18 @@ static void callback_mode_fail__(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_smaps(__wrap_spawn_sh_cmd, env, expected_env);
+	expect_ssmap(__wrap_spawn_sh_cmd, env, expected_env);
 
 	callback_mode_fail(INFO, s->head1, s->head1->desired.mode);
 
-	char *env_str = smaps_str(expected_env);
+	char *env_str = ssmap_str(expected_env);
 	char *log_str = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", env_str);
 
 	assert_log(DEBUG, log_str);
 
 	free(env_str);
 	free(log_str);
-	smaps_free(expected_env);
+	ssmap_free(expected_env);
 }
 
 static void callback_adaptive_sync_fail__(void **state) {
@@ -168,8 +168,8 @@ static void callback_adaptive_sync_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	const struct SMapS *expected_env = smaps_init();
-	smaps_put_many(expected_env,
+	const struct SSmap *expected_env = ssmap_init();
+	ssmap_put_many(expected_env,
 			"CALLBACK_MSG", "description1\n"
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
@@ -182,18 +182,18 @@ static void callback_adaptive_sync_fail__(void **state) {
 	will_return_int(__wrap_log_get_threshold, INFO);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
-	expect_smaps(__wrap_spawn_sh_cmd, env, expected_env);
+	expect_ssmap(__wrap_spawn_sh_cmd, env, expected_env);
 
 	callback_adaptive_sync_fail(WARNING, g_displ->delta.head);
 
-	char *env_str = smaps_str(expected_env);
+	char *env_str = ssmap_str(expected_env);
 	char *log_str = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", env_str);
 
 	assert_log(DEBUG, log_str);
 
 	free(env_str);
 	free(log_str);
-	smaps_free(expected_env);
+	ssmap_free(expected_env);
 	head_free(head);
 }
 

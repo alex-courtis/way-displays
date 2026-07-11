@@ -7,21 +7,21 @@
 
 #include "sset.h"
 
-struct SSet {
-	const struct SSetParams params;
-	const struct PSet *pset;
+struct Sset {
+	const struct SsetParams params;
+	const struct Pset *pset;
 };
 
-struct SSetItState {
-	const struct PSetIt *pit;
+struct SsetItState {
+	const struct PsetIt *pit;
 };
 
-static const struct SSetIt *it_init(const struct PSetIt *pit) {
+static const struct SsetIt *it_init(const struct PsetIt *pit) {
 	if (!pit)
 		return NULL;
 
-	struct SSetIt *it = calloc(1, sizeof(struct SSetIt));
-	it->st = calloc(1, sizeof(struct SSetItState));
+	struct SsetIt *it = calloc(1, sizeof(struct SsetIt));
+	it->st = calloc(1, sizeof(struct SsetItState));
 
 	it->st->pit = pit;
 	it->val = pit->val;
@@ -29,13 +29,13 @@ static const struct SSetIt *it_init(const struct PSetIt *pit) {
 	return it;
 }
 
-const struct SSet *sset_init(void) {
-	const struct SSetParams params = { 0 };
+const struct Sset *sset_init(void) {
+	const struct SsetParams params = { 0 };
 	return sset_init_with(params);
 }
 
-const struct SSet *sset_init_with(const struct SSetParams params) {
-	const struct PSetParams pset_params = {
+const struct Sset *sset_init_with(const struct SsetParams params) {
+	const struct PsetParams pset_params = {
 		.equal_val = params.case_insensitive ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
 		.alloc_val = (fn_clone)clone_strdup,
 		.free_val = (fn_free)free,
@@ -44,25 +44,25 @@ const struct SSet *sset_init_with(const struct SSetParams params) {
 		.grow = params.grow,
 	};
 
-	struct SSet *set = calloc(1, sizeof(struct SSet));
+	struct Sset *set = calloc(1, sizeof(struct Sset));
 	set->pset = pset_init_with(pset_params);;
-	memcpy((void*)&set->params, &params, sizeof(struct SSetParams));
+	memcpy((void*)&set->params, &params, sizeof(struct SsetParams));
 
 	return set;
 }
 
-const struct SSet *sset_clone(const struct SSet* const from) {
+const struct Sset *sset_clone(const struct Sset* const from) {
 	if (!from)
 		return NULL;
 
-	struct SSet *to = calloc(1, sizeof(struct SSet));
+	struct Sset *to = calloc(1, sizeof(struct Sset));
 	to->pset = pset_clone(from->pset);
-	memcpy((void*)&to->params, &from->params, sizeof(struct SSetParams));
+	memcpy((void*)&to->params, &from->params, sizeof(struct SsetParams));
 
 	return to;
 }
 
-void sset_free(const struct SSet* const set) {
+void sset_free(const struct Sset* const set) {
 	if (!set)
 		return;
 
@@ -71,7 +71,7 @@ void sset_free(const struct SSet* const set) {
 	free((void*)set);
 }
 
-void sset_it_free(const struct SSetIt* const it) {
+void sset_it_free(const struct SsetIt* const it) {
 	if (!it)
 		return;
 
@@ -82,23 +82,23 @@ void sset_it_free(const struct SSetIt* const it) {
 	free((void*)it);
 }
 
-bool sset_contains(const struct SSet* const set, const char* const val) {
+bool sset_contains(const struct Sset* const set, const char* const val) {
 	return set ? pset_contains(set->pset, val) : false;
 }
 
-const void *sset_match(const struct SSet* const set, fn_2pred_str match, const void* const data) {
+const void *sset_match(const struct Sset* const set, fn_2pred_str match, const void* const data) {
 	return set ? pset_match(set->pset, (fn_2pred)match, data) : NULL;
 }
 
-const struct SSetIt *sset_it(const struct SSet* const set) {
+const struct SsetIt *sset_it(const struct Sset* const set) {
 	return set ? it_init(pset_it(set->pset)) : NULL;
 }
 
-const struct SSetIt *sset_match_it(const struct SSet* const set, fn_2pred_str match, const void* const data) {
+const struct SsetIt *sset_match_it(const struct Sset* const set, fn_2pred_str match, const void* const data) {
 	return set ? it_init(pset_match_it(set->pset, (fn_2pred)match, data)) : NULL;
 }
 
-const struct SSetIt *sset_it_next(const struct SSetIt* const it) {
+const struct SsetIt *sset_it_next(const struct SsetIt* const it) {
 	if (!it)
 		return NULL;
 
@@ -111,7 +111,7 @@ const struct SSetIt *sset_it_next(const struct SSetIt* const it) {
 	it->st->pit = pset_it_next(it->st->pit);
 
 	if (it->st->pit) {
-		struct SSetIt *it_m = (struct SSetIt*)it;
+		struct SsetIt *it_m = (struct SsetIt*)it;
 		it_m->val = it->st->pit->val;
 		return it;
 	} else {
@@ -120,39 +120,39 @@ const struct SSetIt *sset_it_next(const struct SSetIt* const it) {
 	}
 }
 
-bool sset_add(const struct SSet* const set, const char* const val) {
+bool sset_add(const struct Sset* const set, const char* const val) {
 	return set ? pset_add(set->pset, val) : false;
 }
 
-size_t sset_add_all(const struct SSet* const set, const struct SSet* const from) {
+size_t sset_add_all(const struct Sset* const set, const struct Sset* const from) {
 	return set && from ? pset_add_all(set->pset, from->pset) : 0;
 }
 
-bool sset_remove(const struct SSet* const set, const char* const val) {
+bool sset_remove(const struct Sset* const set, const char* const val) {
 	return set ? pset_remove_free(set->pset, val) : false;
 }
 
-size_t sset_remove_all(const struct SSet* const set, const struct SSet* const from) {
+size_t sset_remove_all(const struct Sset* const set, const struct Sset* const from) {
 	return set && from ? pset_remove_all_free(set->pset, from->pset) : false;
 }
 
-void sset_sort(const struct SSet* const set) {
+void sset_sort(const struct Sset* const set) {
 	if (set)
 		pset_sort(set->pset, set->params.case_insensitive ? (fn_2pred)less_than_strcasecmp : (fn_2pred)less_than_strcmp);
 }
 
-bool sset_equal(const struct SSet* const a, const struct SSet* const b) {
+bool sset_equal(const struct Sset* const a, const struct Sset* const b) {
 	return a && b ? pset_equal(a->pset, b->pset) : false;
 }
 
-struct Pslist *sset_pslist(const struct SSet* const set) {
+struct Pslist *sset_pslist(const struct Sset* const set) {
 	return set ? pset_pslist(set->pset) : NULL;
 }
 
-char *sset_str(const struct SSet* const set) {
+char *sset_str(const struct Sset* const set) {
 	return set ? pset_str(set->pset) : NULL;
 }
 
-size_t sset_size(const struct SSet* const set) {
+size_t sset_size(const struct Sset* const set) {
 	return set ? pset_size(set->pset) : 0;
 }
