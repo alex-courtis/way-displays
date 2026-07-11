@@ -91,7 +91,7 @@ static bool remove(const struct Pset* const cset, const void* const val, fn_free
 
 			// shift down over removed
 			const void **m;
-			for (m = v; m < v + set->size; m++) {
+			for (m = v; m < set->vals + set->size; m++) {
 				*m = *(m + 1);
 			}
 			*m = NULL;

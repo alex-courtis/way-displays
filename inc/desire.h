@@ -15,7 +15,7 @@ void desire_scale(struct Head *head);
 void desire_transform(struct Head *head);
 void desire_adaptive_sync(struct Head *head);
 void desire_reapply(struct Head *head);
-struct Pslist *desire_order(const struct Sset * const order_name_desc, struct Pslist *heads);
+struct Pslist *desire_order(const struct Sset * const order_name_desc, const struct Pslist *heads);
 void desire_scaled_dimensions(struct Head * const head);
 void desire_positions(struct Pslist *heads);
 

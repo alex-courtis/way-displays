@@ -17,6 +17,7 @@
 #include "pset.h"
 #include "pslist.h"
 #include "simap.h"
+#include "spmap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -187,58 +188,51 @@ void desire_reapply(struct Head *head) {
 		head->desired.enabled = false;
 }
 
-// TODO this can be simplified
-struct Pslist *desire_order(const struct Sset * const order_name_desc, struct Pslist *heads) {
-	if (!heads)
-		return NULL;
+struct Pslist *desire_order(const struct Sset * const order_name_desc, const struct Pslist *heads) {
+	const struct SPmapIt *bit;
+	const struct PsetIt *sit;
 
-	unsigned long n_order = sset_size(order_name_desc);
-	unsigned long i;
-	struct Pslist *sorting = pslist_clone(heads, NULL);
+	// buckets for each order_name_desc
+	const struct SPmapParams params = { .free_val = (fn_free)pset_free, };
+	const struct SPmap *buckets = spmap_init_with(params);
+	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it))
+		spmap_put(buckets, it->val, pset_init());
 
-	// array of order to list of heads matched
-	struct Pslist **order_heads = calloc(n_order, sizeof(struct Pslist*));
+	// all candidates to be placed in buckets
+	const struct Pset *candidates = pset_init();
+	for (const struct Pslist *e = heads; e; e = e->nex)
+		pset_add(candidates, e->val);
 
-	// exact match
-	i = 0;
-	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, it->val);
-		i++;
-	}
+	// 1 - exact match
+	for (bit = spmap_it(buckets); bit; bit = spmap_it_next(bit))
+		for (sit = pset_filter_it(candidates, (fn_2pred)head_matches_name_desc_exact, bit->key); sit; sit = pset_it_next(sit))
+			pset_add(bit->val, sit->val);
 
-	// regex
-	i = 0;
-	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, it->val);
-		i++;
-	}
+	// 2 - regex
+	for (bit = spmap_it(buckets); bit; bit = spmap_it_next(bit))
+		for (sit = pset_filter_it(candidates, (fn_2pred)head_matches_name_desc_regex, bit->key); sit; sit = pset_it_next(sit))
+			pset_add(bit->val, sit->val);
 
-	// fuzzy
-	i = 0;
-	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, it->val);
-		i++;
-	}
+	// 3 - fuzzy
+	for (bit = spmap_it(buckets); bit; bit = spmap_it_next(bit))
+		for (sit = pset_filter_it(candidates, (fn_2pred)head_matches_name_desc_fuzzy, bit->key); sit; sit = pset_it_next(sit))
+			pset_add(bit->val, sit->val);
 
-	// marshal the ordered
-	struct Pslist *sorted = NULL;
-	for (i = 0; i < n_order; i++) {
-		struct Pslist *order_list = (struct Pslist*)order_heads[i];
-		for (struct Pslist *h = order_list; h; h = h->nex) {
-			pslist_append(&sorted, h->val);
-		}
-		pslist_free(&order_list);
-	}
+	// marshal buckets in name_desc order
+	const struct Pset *sorted = pset_init();
+	for (const struct SPmapIt *it = spmap_it(buckets); it; it = spmap_it_next(it))
+		pset_add_all(sorted, it->val);
 
-	// remaing in discovered order
-	for (struct Pslist *h = sorting; h; h = h->nex) {
-		pslist_append(&sorted, h->val);
-	}
+	// 4 - remainder, no match
+	pset_add_all(sorted, candidates);
 
-	pslist_free(&sorting);
-	free(order_heads);
+	struct Pslist *sorted_list = pset_pslist(sorted);
 
-	return sorted;
+	pset_free(candidates);
+	spmap_free_vals(buckets);
+	pset_free(sorted);
+
+	return sorted_list;
 }
 
 void desire_positions(struct Pslist *heads) {
