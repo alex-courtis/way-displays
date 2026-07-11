@@ -193,7 +193,7 @@ const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
 
-	const struct Mode *mode = pset_match(candidates, (fn_match_ptr)mode_equal_res, mode_target);
+	const struct Mode *mode = pset_match(candidates, (fn_2pred)mode_equal_res, mode_target);
 
 	pset_free(candidates);
 
@@ -210,10 +210,10 @@ const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, c
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
 
 	// exact match first
-	const struct Mode *mode = pset_match(candidates, (fn_match_ptr)mode_equal_res_mhz, mode_target);
+	const struct Mode *mode = pset_match(candidates, (fn_2pred)mode_equal_res_mhz, mode_target);
 
 	// otherwise best match
-	mode = mode ? mode : pset_match(candidates, (fn_match_ptr)mode_satisfies, mode_target);
+	mode = mode ? mode : pset_match(candidates, (fn_2pred)mode_satisfies, mode_target);
 
 	pset_free(candidates);
 

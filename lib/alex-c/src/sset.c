@@ -86,16 +86,16 @@ bool sset_contains(const struct SSet* const set, const char* const val) {
 	return set ? pset_contains(set->pset, val) : false;
 }
 
-const void *sset_match(const struct SSet* const set, fn_match_str match, const void* const data) {
-	return set ? pset_match(set->pset, (fn_match_ptr)match, data) : NULL;
+const void *sset_match(const struct SSet* const set, fn_2pred_str match, const void* const data) {
+	return set ? pset_match(set->pset, (fn_2pred)match, data) : NULL;
 }
 
 const struct SSetIt *sset_it(const struct SSet* const set) {
 	return set ? it_init(pset_it(set->pset)) : NULL;
 }
 
-const struct SSetIt *sset_match_it(const struct SSet* const set, fn_match_str match, const void* const data) {
-	return set ? it_init(pset_match_it(set->pset, (fn_match_ptr)match, data)) : NULL;
+const struct SSetIt *sset_match_it(const struct SSet* const set, fn_2pred_str match, const void* const data) {
+	return set ? it_init(pset_match_it(set->pset, (fn_2pred)match, data)) : NULL;
 }
 
 const struct SSetIt *sset_it_next(const struct SSetIt* const it) {
@@ -138,7 +138,7 @@ size_t sset_remove_all(const struct SSet* const set, const struct SSet* const fr
 
 void sset_sort(const struct SSet* const set) {
 	if (set)
-		pset_sort(set->pset, set->params.case_insensitive ? (fn_equal)less_than_strcasecmp : (fn_equal)less_than_strcmp);
+		pset_sort(set->pset, set->params.case_insensitive ? (fn_2pred)less_than_strcasecmp : (fn_2pred)less_than_strcmp);
 }
 
 bool sset_equal(const struct SSet* const a, const struct SSet* const b) {

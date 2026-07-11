@@ -128,7 +128,7 @@ void act_apply(void) {
 
 	// determine whether changes are needed before initiating output configuration
 	struct SList *i = g_heads;
-	while ((i = slist_find(i, (fn_test)head_current_not_desired))) {
+	while ((i = slist_find(i, (fn_pred)head_current_not_desired))) {
 		slist_append(&heads_changing, i->val);
 		i = i->nex;
 	}
@@ -141,7 +141,7 @@ void act_apply(void) {
 
 	struct Head *head;
 
-	if ((head = slist_find_val(g_heads, (fn_test)head_reapply_required))) {
+	if ((head = slist_find_val(g_heads, (fn_pred)head_reapply_required))) {
 		displ_delta_init(0, head);
 
 		print_head(INFO, DELTA, head);
@@ -152,7 +152,7 @@ void act_apply(void) {
 
 		head->reapply_required = false;
 
-	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_mode_not_desired))) {
+	} else if ((head = slist_find_val(g_heads, (fn_pred)head_current_mode_not_desired))) {
 		displ_delta_init(MODE, head);
 
 		print_head(INFO, DELTA, head);
@@ -163,7 +163,7 @@ void act_apply(void) {
 
 		g_displ->delta.human = delta_human_mode(head);
 
-	} else if ((head = slist_find_val(g_heads, (fn_test)head_current_adaptive_sync_not_desired))) {
+	} else if ((head = slist_find_val(g_heads, (fn_pred)head_current_adaptive_sync_not_desired))) {
 		displ_delta_init(VRR_OFF, head);
 
 		print_head(INFO, DELTA, head);

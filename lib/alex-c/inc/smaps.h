@@ -74,25 +74,25 @@ bool smaps_contains_key(const struct SMapS* const map, const char* const key);
 bool smaps_contains_val(const struct SMapS* const map, const char* const val);
 
 // find the first key/val match, {NULL,NULL} when no matches or NULL match
-struct SMapSPair smaps_match(const struct SMapS* const map, fn_match_str_str match, const void* const data);
+struct SMapSPair smaps_match(const struct SMapS* const map, fn_3pred_str_str match, const void* const data);
 
 // find the first key match, {NULL,NULL} when no matches or NULL match
-struct SMapSPair smaps_match_key(const struct SMapS* const map, fn_match_str match, const void* const data);
+struct SMapSPair smaps_match_key(const struct SMapS* const map, fn_2pred_str match, const void* const data);
 
 // find the first val match, {NULL,NULL} when no matches or NULL match
-struct SMapSPair smaps_match_val(const struct SMapS* const map, fn_match_str match, const void* const data);
+struct SMapSPair smaps_match_val(const struct SMapS* const map, fn_2pred_str match, const void* const data);
 
 // create an iterator, caller must smaps_it_free or invoke smaps_next until NULL
 const struct SMapSIt *smaps_it(const struct SMapS* const map);
 
 // create an iterator filtering by key/val match, return NULL when no matches or NULL match
-const struct SMapSIt *smaps_match_it(const struct SMapS* const map, fn_match_str_str match, const void* const data);
+const struct SMapSIt *smaps_match_it(const struct SMapS* const map, fn_3pred_str_str match, const void* const data);
 
 // create an iterator filtering by key match, return NULL when no matches or NULL match
-const struct SMapSIt *smaps_match_key_it(const struct SMapS* const map, fn_match_str match, const void* const data);
+const struct SMapSIt *smaps_match_key_it(const struct SMapS* const map, fn_2pred_str match, const void* const data);
 
 // create an iterator filtering by val match, return NULL when no matches or NULL match
-const struct SMapSIt *smaps_match_val_it(const struct SMapS* const map, fn_match_str match, const void* const data);
+const struct SMapSIt *smaps_match_val_it(const struct SMapS* const map, fn_2pred_str match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct SMapSIt *smaps_it_next(const struct SMapSIt* const it);

@@ -123,13 +123,13 @@ bool smap_contains_val(const struct SMap* const map, const void* const val) {
 	return map ? pmap_contains_val(map->pmap, val) : false;
 }
 
-struct SMapPair smap_match(const struct SMap* const map, fn_match_str_ptr match, const void* const data) {
+struct SMapPair smap_match(const struct SMap* const map, fn_3pred_str_ptr match, const void* const data) {
 	struct SMapPair res = { 0 };
 
 	if (!map)
 		return res;
 
-	struct PMapPair pres = pmap_match(map->pmap, (fn_match_ptr_ptr)match, data);
+	struct PMapPair pres = pmap_match(map->pmap, (fn_3pred)match, data);
 
 	res.key = pres.key;
 	res.val = pres.val;
@@ -137,13 +137,13 @@ struct SMapPair smap_match(const struct SMap* const map, fn_match_str_ptr match,
 	return res;
 }
 
-struct SMapPair smap_match_key(const struct SMap* const map, fn_match_str match, const void* const data) {
+struct SMapPair smap_match_key(const struct SMap* const map, fn_2pred_str match, const void* const data) {
 	struct SMapPair res = { 0 };
 
 	if (!map)
 		return res;
 
-	struct PMapPair pres = pmap_match_key(map->pmap, (fn_match_ptr)match, data);
+	struct PMapPair pres = pmap_match_key(map->pmap, (fn_2pred)match, data);
 
 	res.key = pres.key;
 	res.val = pres.val;
@@ -151,7 +151,7 @@ struct SMapPair smap_match_key(const struct SMap* const map, fn_match_str match,
 	return res;
 }
 
-struct SMapPair smap_match_val(const struct SMap* const map, fn_match_ptr match, const void* const data) {
+struct SMapPair smap_match_val(const struct SMap* const map, fn_2pred match, const void* const data) {
 	struct SMapPair res = { 0 };
 
 	if (!map)
@@ -169,15 +169,15 @@ const struct SMapIt *smap_it(const struct SMap* const map) {
 	return map ? it_init(pmap_it(map->pmap)) : NULL;
 }
 
-const struct SMapIt *smap_match_it(const struct SMap* const map, fn_match_str_ptr match, const void* const data) {
-	return map ? it_init(pmap_match_it(map->pmap, (fn_match_ptr_ptr)match, data)) : NULL;
+const struct SMapIt *smap_match_it(const struct SMap* const map, fn_3pred_str_ptr match, const void* const data) {
+	return map ? it_init(pmap_match_it(map->pmap, (fn_3pred)match, data)) : NULL;
 }
 
-const struct SMapIt *smap_match_key_it(const struct SMap* const map, fn_match_str match, const void* const data) {
-	return map ? it_init(pmap_match_key_it(map->pmap, (fn_match_ptr)match, data)) : NULL;
+const struct SMapIt *smap_match_key_it(const struct SMap* const map, fn_2pred_str match, const void* const data) {
+	return map ? it_init(pmap_match_key_it(map->pmap, (fn_2pred)match, data)) : NULL;
 }
 
-const struct SMapIt *smap_match_val_it(const struct SMap* const map, fn_match_ptr match, const void* const data) {
+const struct SMapIt *smap_match_val_it(const struct SMap* const map, fn_2pred match, const void* const data) {
 	return map ? it_init(pmap_match_val_it(map->pmap, match, data)) : NULL;
 }
 

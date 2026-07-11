@@ -450,7 +450,7 @@ void cfg_validate_fix(struct Cfg *cfg) {
 
 	const char *name_desc;
 
-	while ((name_desc = smap_match(cfg->modes, (fn_match_str_ptr)mode_is_invalid, NULL).key)) {
+	while ((name_desc = smap_match(cfg->modes, (fn_3pred_str_ptr)mode_is_invalid, NULL).key)) {
 		smap_remove_free(cfg->modes, name_desc);
 	}
 }

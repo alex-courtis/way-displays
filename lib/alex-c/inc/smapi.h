@@ -65,8 +65,8 @@ void smapi_it_free(const struct SMapIIt* const it);
 // return val, will return 0 if not present
 size_t smapi_get(const struct SMapI* const map, const char* const key);
 
-// populate *val with val if present, set *val to 0 return false if not present
-bool smapi_getp(size_t* val, const struct SMapI* const map, const char* const key);
+// populate np with val if present, 0 and return false if not present
+bool smapi_get_ptr(size_t* np, const struct SMapI* const map, const char* const key);
 
 // true if key is present
 bool smapi_contains_key(const struct SMapI* const map, const char* const key);
@@ -75,25 +75,25 @@ bool smapi_contains_key(const struct SMapI* const map, const char* const key);
 bool smapi_contains_val(const struct SMapI* const map, const size_t val);
 
 // find the first key/val match, {NULL,0} when no matches or NULL match
-struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_str_size_t match, const void* const data);
+struct SMapIPair smapi_match(const struct SMapI* const map, fn_3pred_str_szt match, const void* const data);
 
 // find the first key match, {NULL,0} when no matches or NULL match
-struct SMapIPair smapi_match_key(const struct SMapI* const map, fn_match_str match, const void* const data);
+struct SMapIPair smapi_match_key(const struct SMapI* const map, fn_2pred_str match, const void* const data);
 
 // find the first val match, {NULL,0} when no matches or NULL match
-struct SMapIPair smapi_match_val(const struct SMapI* const map, fn_match_size_t match, const void* const data);
+struct SMapIPair smapi_match_val(const struct SMapI* const map, fn_2pred_szt match, const void* const data);
 
 // create an iterator, caller must smapi_it_free or invoke smapi_next until NULL
 const struct SMapIIt *smapi_it(const struct SMapI* const map);
 
 // create an iterator filtering by key/val match, return NULL when no matches or NULL match
-const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_str_size_t match, const void* const data);
+const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_3pred_str_szt match, const void* const data);
 
 // create an iterator filtering by key match, return NULL when no matches or NULL match
-const struct SMapIIt *smapi_match_key_it(const struct SMapI* const map, fn_match_str match, const void* const data);
+const struct SMapIIt *smapi_match_key_it(const struct SMapI* const map, fn_2pred_str match, const void* const data);
 
 // create an iterator filtering by val match, return NULL when no matches or NULL match
-const struct SMapIIt *smapi_match_val_it(const struct SMapI* const map, fn_match_size_t match, const void* const data);
+const struct SMapIIt *smapi_match_val_it(const struct SMapI* const map, fn_2pred_szt match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct SMapIIt *smapi_it_next(const struct SMapIIt* const it);

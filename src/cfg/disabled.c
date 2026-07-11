@@ -73,7 +73,7 @@ bool disabled_matches_head(const struct Disabled * const disabled, const struct 
 		// name_desc must match
 		disabled_name_desc_matches_head(disabled, head) &&
 		// all conditions must be false
-		pset_match(disabled->conditions, (fn_match_ptr)condition_true, NULL) == NULL;
+		pset_match(disabled->conditions, (fn_2pred)condition_true, NULL) == NULL;
 }
 
 bool disabled_name_desc_matches_head(const struct Disabled * const disabled, const struct Head * const head) {

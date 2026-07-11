@@ -24,9 +24,9 @@ struct PMap {
 struct PMapItState {
 	const struct PMap *map;
 	size_t position;
-	fn_match_ptr_ptr match_key_val;
-	fn_match_ptr match_key;
-	fn_match_ptr match_val;
+	fn_3pred match_key_val;
+	fn_2pred match_key;
+	fn_2pred match_val;
 	const void *data;
 };
 
@@ -298,7 +298,7 @@ bool pmap_contains_val(const struct PMap* const map, const void* const val) {
 	return false;
 }
 
-struct PMapPair pmap_match(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data) {
+struct PMapPair pmap_match(const struct PMap* const map, fn_3pred match, const void* const data) {
 	struct PMapPair res = { 0 };
 
 	if (!map || !match)
@@ -317,7 +317,7 @@ struct PMapPair pmap_match(const struct PMap* const map, fn_match_ptr_ptr match,
 	return res;
 }
 
-struct PMapPair pmap_match_key(const struct PMap* const map, fn_match_ptr match, const void* const data) {
+struct PMapPair pmap_match_key(const struct PMap* const map, fn_2pred match, const void* const data) {
 	struct PMapPair res = { 0 };
 
 	if (!map || !match)
@@ -336,7 +336,7 @@ struct PMapPair pmap_match_key(const struct PMap* const map, fn_match_ptr match,
 	return res;
 }
 
-struct PMapPair pmap_match_val(const struct PMap* const map, fn_match_ptr match, const void* const data) {
+struct PMapPair pmap_match_val(const struct PMap* const map, fn_2pred match, const void* const data) {
 	struct PMapPair res = { 0 };
 
 	if (!map || !match)
@@ -367,7 +367,7 @@ const struct PMapIt *pmap_it(const struct PMap* const map) {
 	return pmap_it_next(it);
 }
 
-const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data) {
+const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_3pred match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
@@ -381,7 +381,7 @@ const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_ptr_pt
 	return pmap_it_next(it);
 }
 
-const struct PMapIt *pmap_match_key_it(const struct PMap* const map, fn_match_ptr match, const void* const data) {
+const struct PMapIt *pmap_match_key_it(const struct PMap* const map, fn_2pred match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
@@ -395,7 +395,7 @@ const struct PMapIt *pmap_match_key_it(const struct PMap* const map, fn_match_pt
 	return pmap_it_next(it);
 }
 
-const struct PMapIt *pmap_match_val_it(const struct PMap* const map, fn_match_ptr match, const void* const data) {
+const struct PMapIt *pmap_match_val_it(const struct PMap* const map, fn_2pred match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 

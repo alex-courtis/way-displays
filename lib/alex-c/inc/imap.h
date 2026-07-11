@@ -82,25 +82,25 @@ bool imap_contains_key(const struct IMap* const map, const size_t key);
 bool imap_contains_val(const struct IMap* const map, const void* const val);
 
 // find the first key/val match, {0,NULL} when no matches or NULL match
-struct IMapPair imap_match(const struct IMap* const map, fn_match_size_t_ptr match, const void* const data);
+struct IMapPair imap_match(const struct IMap* const map, fn_3pred_szt_ptr match, const void* const data);
 
 // find the first key match, {0,NULL} when no matches or NULL match
-struct IMapPair imap_match_key(const struct IMap* const map, fn_match_size_t match, const void* const data);
+struct IMapPair imap_match_key(const struct IMap* const map, fn_2pred_szt match, const void* const data);
 
 // find the first val match, {0,NULL} when no matches or NULL match
-struct IMapPair imap_match_val(const struct IMap* const map, fn_match_ptr match, const void* const data);
+struct IMapPair imap_match_val(const struct IMap* const map, fn_2pred match, const void* const data);
 
 // create an iterator, caller must imap_it_free or invoke imap_next until NULL
 const struct IMapIt *imap_it(const struct IMap* const map);
 
 // create an iterator filtering by key/val match, return NULL when no matches or NULL match
-const struct IMapIt *imap_match_it(const struct IMap* const map, fn_match_size_t_ptr match, const void* const data);
+const struct IMapIt *imap_match_it(const struct IMap* const map, fn_3pred_szt_ptr match, const void* const data);
 
 // create an iterator filtering by key match, return NULL when no matches or NULL match
-const struct IMapIt *imap_match_key_it(const struct IMap* const map, fn_match_size_t match, const void* const data);
+const struct IMapIt *imap_match_key_it(const struct IMap* const map, fn_2pred_szt match, const void* const data);
 
 // create an iterator filtering by val match, return NULL when no matches or NULL match
-const struct IMapIt *imap_match_val_it(const struct IMap* const map, fn_match_ptr match, const void* const data);
+const struct IMapIt *imap_match_val_it(const struct IMap* const map, fn_2pred match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct IMapIt *imap_it_next(const struct IMapIt* const it);

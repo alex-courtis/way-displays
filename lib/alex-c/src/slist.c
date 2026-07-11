@@ -95,11 +95,11 @@ void *slist_remove(struct SList **head, struct SList **item) {
 	return removed;
 }
 
-size_t slist_remove_all(struct SList **head, fn_equal equal_val, const void *b) {
+size_t slist_remove_all(struct SList **head, fn_2pred match_val, const void *data) {
 	struct SList *i;
 	size_t removed = 0;
 
-	while ((i = slist_find_equal(*head, equal_val, b))) {
+	while ((i = slist_find_equal(*head, match_val, data))) {
 		slist_remove(head, &i);
 		removed++;
 	}
@@ -107,11 +107,11 @@ size_t slist_remove_all(struct SList **head, fn_equal equal_val, const void *b) 
 	return removed;
 }
 
-size_t slist_remove_all_free(struct SList **head, fn_equal equal_val, const void *b, fn_free free_val) {
+size_t slist_remove_all_free(struct SList **head, fn_2pred match_val, const void *data, fn_free free_val) {
 	struct SList *i;
 	size_t removed = 0;
 
-	while ((i = slist_find_equal(*head, equal_val, b))) {
+	while ((i = slist_find_equal(*head, match_val, data))) {
 		if (free_val) {
 			free_val(i->val);
 		} else {
@@ -124,11 +124,11 @@ size_t slist_remove_all_free(struct SList **head, fn_equal equal_val, const void
 	return removed;
 }
 
-void slist_xor_free(struct SList **head1, struct SList *head2, fn_equal equal_val, fn_free free_val, fn_clone clone_val) {
+void slist_xor_free(struct SList **head1, struct SList *head2, fn_2pred match_val, fn_free free_val, fn_clone clone_val) {
 	struct SList *i = head2;
 
 	while (i) {
-		if (!slist_remove_all_free(head1, equal_val, i->val, free_val)) {
+		if (!slist_remove_all_free(head1, match_val, i->val, free_val)) {
 			if (clone_val) {
 				slist_append(head1, clone_val(i->val));
 			} else {
@@ -151,14 +151,14 @@ void *slist_at(const struct SList *head, size_t index) {
 	return NULL;
 }
 
-struct SList *slist_find(struct SList *head, fn_test test_val) {
+struct SList *slist_find(struct SList *head, fn_pred pred_val) {
 	struct SList *i;
 
-	if (!test_val)
+	if (!pred_val)
 		return NULL;
 
 	for (i = head; i; i = i->nex) {
-		if (test_val(i->val)) {
+		if (pred_val(i->val)) {
 			return i;
 		}
 	}
@@ -166,20 +166,20 @@ struct SList *slist_find(struct SList *head, fn_test test_val) {
 	return NULL;
 }
 
-void *slist_find_val(struct SList *head, fn_test test_val) {
-	const struct SList *f = slist_find(head, test_val);
+void *slist_find_val(struct SList *head, fn_pred pred_val) {
+	const struct SList *f = slist_find(head, pred_val);
 	if (f)
 		return f->val;
 	else
 		return NULL;
 }
 
-struct SList *slist_find_equal(struct SList *head, fn_equal equal_val, const void *b) {
+struct SList *slist_find_equal(struct SList *head, fn_2pred match_val, const void *b) {
 	struct SList *i;
 
 	for (i = head; i; i = i->nex) {
-		if (equal_val) {
-			if (equal_val(i->val, b)) {
+		if (match_val) {
+			if (match_val(i->val, b)) {
 				return i;
 			}
 		} else if (i->val == b) {
@@ -190,20 +190,20 @@ struct SList *slist_find_equal(struct SList *head, fn_equal equal_val, const voi
 	return NULL;
 }
 
-void *slist_find_equal_val(struct SList *head, fn_equal equal_val, const void *b) {
-	const struct SList *f = slist_find_equal(head, equal_val, b);
+void *slist_find_equal_val(struct SList *head, fn_2pred match_val, const void *b) {
+	const struct SList *f = slist_find_equal(head, match_val, b);
 	if (f)
 		return f->val;
 	else
 		return NULL;
 }
 
-bool slist_equal(struct SList *a, struct SList *b, fn_equal equal_val) {
+bool slist_equal(struct SList *a, struct SList *b, fn_2pred match_val) {
 	struct SList *ai, *bi;
 
 	for (ai = a, bi = b; ai && bi; ai = ai->nex, bi = bi->nex) {
-		if (equal_val) {
-			if (!equal_val(ai->val, bi->val)) {
+		if (match_val) {
+			if (!match_val(ai->val, bi->val)) {
 				return false;
 			}
 		} else if (ai->val != bi->val) {
@@ -263,8 +263,8 @@ struct SList *slist_sort(struct SList *head, fn_less_than less_than_val) {
 	return sorted;
 }
 
-void slist_move(struct SList **to, struct SList **from, fn_equal equal_val, const void *b) {
-	if (!to || !from || !equal_val)
+void slist_move(struct SList **to, struct SList **from, fn_2pred match_val, const void *data) {
+	if (!to || !from || !match_val)
 		return;
 
 	struct SList *f = *from;
@@ -272,7 +272,7 @@ void slist_move(struct SList **to, struct SList **from, fn_equal equal_val, cons
 		struct SList *r = f;
 		void *val = f->val;
 		f = f->nex;
-		if (equal_val(val, b)) {
+		if (match_val(val, data)) {
 			slist_append(to, val);
 			slist_remove(from, &r);
 		}

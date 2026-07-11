@@ -15,9 +15,9 @@ struct SMapI {
 };
 
 struct SMapIMatchData {
-	fn_match_str_size_t match_key_val;
-	fn_match_str match_key;
-	fn_match_size_t match_val;
+	fn_3pred_str_szt match_key_val;
+	fn_2pred_str match_key;
+	fn_2pred_szt match_val;
 	const void *data;
 };
 
@@ -63,13 +63,13 @@ const struct SMapI *smapi_init(void) {
 const struct SMapI *smapi_init_with(const struct SMapIParams params) {
 	const struct PMapParams pmap_params = {
 		.equal_key = params.case_insensitive_key ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
-		.equal_val = (fn_equal)equal_size_t,
+		.equal_val = (fn_equal)equal_stp,
 		.alloc_key = (fn_clone)clone_strdup,
-		.alloc_val = (fn_clone)clone_size_t,
+		.alloc_val = (fn_clone)clone_size_t_ptr,
 		.free_key = (fn_free)free,
 		.free_val = (fn_free)free,
 		.str_key = (fn_str)str_or_null,
-		.str_val = (fn_str)str_size_t,
+		.str_val = (fn_str)str_size_t_ptr,
 		.allow_null_val = false,
 		.initial = params.initial,
 		.grow = params.grow,
@@ -128,17 +128,17 @@ size_t smapi_get(const struct SMapI* const map, const char* const key) {
 	}
 }
 
-bool smapi_getp(size_t* val, const struct SMapI* const map, const char* const key) {
-	if (!map || !val)
+bool smapi_get_ptr(size_t* np, const struct SMapI* const map, const char* const key) {
+	if (!map || !np)
 		return false;
 
-	const size_t *val_p = pmap_get(map->pmap, key);
+	const size_t *vp = pmap_get(map->pmap, key);
 
-	if (val_p) {
-		*val = *val_p;
+	if (vp) {
+		*np = *vp;
 		return true;
 	} else {
-		*val = 0;
+		*np = 0;
 		return false;
 	}
 }
@@ -151,7 +151,7 @@ bool smapi_contains_val(const struct SMapI* const map, const size_t val) {
 	return map ? pmap_contains_val(map->pmap, &val) : false;
 }
 
-struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_str_size_t match, const void* const data) {
+struct SMapIPair smapi_match(const struct SMapI* const map, fn_3pred_str_szt match, const void* const data) {
 	struct SMapIPair res = { 0 };
 
 	if (!map || !match)
@@ -170,7 +170,7 @@ struct SMapIPair smapi_match(const struct SMapI* const map, fn_match_str_size_t 
 	return res;
 }
 
-struct SMapIPair smapi_match_key(const struct SMapI* const map, fn_match_str match, const void* const data) {
+struct SMapIPair smapi_match_key(const struct SMapI* const map, fn_2pred_str match, const void* const data) {
 	struct SMapIPair res = { 0 };
 
 	if (!map || !match)
@@ -189,7 +189,7 @@ struct SMapIPair smapi_match_key(const struct SMapI* const map, fn_match_str mat
 	return res;
 }
 
-struct SMapIPair smapi_match_val(const struct SMapI* const map, fn_match_size_t match, const void* const data) {
+struct SMapIPair smapi_match_val(const struct SMapI* const map, fn_2pred_szt match, const void* const data) {
 	struct SMapIPair res = { 0 };
 
 	if (!map || !match)
@@ -212,7 +212,7 @@ const struct SMapIIt *smapi_it(const struct SMapI* const map) {
 	return map ? it_init(pmap_it(map->pmap)) : NULL;
 }
 
-const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_str_size_t match, const void* const data) {
+const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_3pred_str_szt match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
@@ -231,7 +231,7 @@ const struct SMapIIt *smapi_match_it(const struct SMapI* const map, fn_match_str
 	}
 }
 
-const struct SMapIIt *smapi_match_key_it(const struct SMapI* const map, fn_match_str match, const void* const data) {
+const struct SMapIIt *smapi_match_key_it(const struct SMapI* const map, fn_2pred_str match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 
@@ -250,7 +250,7 @@ const struct SMapIIt *smapi_match_key_it(const struct SMapI* const map, fn_match
 	}
 }
 
-const struct SMapIIt *smapi_match_val_it(const struct SMapI* const map, fn_match_size_t match, const void* const data) {
+const struct SMapIIt *smapi_match_val_it(const struct SMapI* const map, fn_2pred_szt match, const void* const data) {
 	if (!map || !match)
 		return NULL;
 

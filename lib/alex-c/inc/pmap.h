@@ -102,25 +102,25 @@ bool pmap_contains_key(const struct PMap* const map, const void* const key);
 bool pmap_contains_val(const struct PMap* const map, const void* const val);
 
 // find the first key/val match, {NULL,NULL} when no matches or NULL match
-struct PMapPair pmap_match(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data);
+struct PMapPair pmap_match(const struct PMap* const map, fn_3pred match, const void* const data);
 
 // find the first key match, {NULL,NULL} when no matches or NULL match
-struct PMapPair pmap_match_key(const struct PMap* const map, fn_match_ptr match, const void* const data);
+struct PMapPair pmap_match_key(const struct PMap* const map, fn_2pred match, const void* const data);
 
 // find the first val match, {NULL,NULL} when no matches or NULL match
-struct PMapPair pmap_match_val(const struct PMap* const map, fn_match_ptr match, const void* const data);
+struct PMapPair pmap_match_val(const struct PMap* const map, fn_2pred match, const void* const data);
 
 // create an iterator, caller must pmap_it_free or invoke pmap_next until NULL
 const struct PMapIt *pmap_it(const struct PMap* const map);
 
 // create an iterator filtering by key/val match, return NULL when no matches or NULL match
-const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_match_ptr_ptr match, const void* const data);
+const struct PMapIt *pmap_match_it(const struct PMap* const map, fn_3pred match, const void* const data);
 
 // create an iterator filtering by key match, return NULL when no matches or NULL match
-const struct PMapIt *pmap_match_key_it(const struct PMap* const map, fn_match_ptr match, const void* const data);
+const struct PMapIt *pmap_match_key_it(const struct PMap* const map, fn_2pred match, const void* const data);
 
 // create an iterator filtering by val match, return NULL when no matches or NULL match
-const struct PMapIt *pmap_match_val_it(const struct PMap* const map, fn_match_ptr match, const void* const data);
+const struct PMapIt *pmap_match_val_it(const struct PMap* const map, fn_2pred match, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct PMapIt *pmap_it_next(const struct PMapIt* const it);
