@@ -15,7 +15,7 @@
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
-#include "slist.h"
+#include "pslist.h"
 #include "str.h"
 
 #include "yaml/marshal-types.h"
@@ -111,7 +111,7 @@ static void yaml_root_from_ipc_operation__map(void **state) {
 
 	ipc_operation_free(ipc_operation);
 
-	slist_free_vals(&g_heads, (fn_free)head_free);
+	pslist_free_vals(&g_heads, (fn_free)head_free);
 }
 
 static void yaml_root_from_ipc_operation__seq(void **state) {
@@ -122,7 +122,7 @@ static void yaml_root_from_ipc_operation__seq(void **state) {
 
 	ipc_operation_free(ipc_operation);
 
-	slist_free_vals(&g_heads, (fn_free)head_free);
+	pslist_free_vals(&g_heads, (fn_free)head_free);
 }
 
 static void yaml_marshal__yaml_document_initialize_fail(void **state) {

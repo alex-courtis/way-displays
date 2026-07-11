@@ -20,7 +20,7 @@
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "sset.h"
 
@@ -508,7 +508,7 @@ static void head_set_description__null_input(void **state) {
 }
 
 static void heads_reapply__(void **state) {
-	struct SList *heads = NULL;
+	struct Pslist *heads = NULL;
 
 	struct Head *head_disabled = head_n("DP-7");
 	head_disabled->current.enabled = false;
@@ -525,7 +525,7 @@ static void heads_reapply__(void **state) {
 	pset_free(head_disabled->modes_failed);
 	head_disabled->modes_failed = pset_clone(modes_once_failed);
 
-	slist_append(&heads, head_disabled);
+	pslist_append(&heads, head_disabled);
 
 
 	struct Head *head_enabled = head_n("eDP-1");
@@ -535,7 +535,7 @@ static void heads_reapply__(void **state) {
 	head_enabled->mode_preferred = head_enabled->current.mode;
 	pset_add(head_enabled->modes, head_enabled->current.mode);
 
-	slist_append(&heads, head_enabled);
+	pslist_append(&heads, head_enabled);
 
 
 	heads_reapply(heads);
@@ -548,7 +548,7 @@ static void heads_reapply__(void **state) {
 	assert_log(INFO, expected_log);
 	free(expected_log);
 
-	slist_free_vals(&heads, (fn_free)head_free);
+	pslist_free_vals(&heads, (fn_free)head_free);
 	pset_free(modes_once_failed);
 }
 

@@ -8,7 +8,7 @@
 #include "head.h"
 #include "ipc.h"
 #include "log.h"
-#include "slist.h"
+#include "pslist.h"
 
 /*
  * Execute a CFG_SET scaling off and unpack the responses
@@ -16,7 +16,7 @@
 int
 main(int argc, char **argv) {
 	char *yaml;
-	struct SList *responses = NULL;
+	struct Pslist *responses = NULL;
 	struct IpcResponse *response = NULL;
 
 	// request CFG_SET
@@ -45,7 +45,7 @@ main(int argc, char **argv) {
 		}
 
 		// parse one to many responses
-		for (struct SList *i = responses; i; i = i->nex) {
+		for (struct Pslist *i = responses; i; i = i->nex) {
 			response = i->val;
 			log_info("--------------------------------");
 
@@ -56,7 +56,7 @@ main(int argc, char **argv) {
 			log_info("scaling is %s", on_off_name(response->cfg->scaling));
 
 			// inspect head state
-			for (struct SList *j = response->heads; j; j = j->nex) {
+			for (struct Pslist *j = response->heads; j; j = j->nex) {
 				struct Head *head = j->val;
 				float scale_current = wl_fixed_to_double(head->current.scale);
 				float scale_desired = wl_fixed_to_double(head->desired.scale);
@@ -70,7 +70,7 @@ main(int argc, char **argv) {
 			}
 		}
 
-		slist_free_vals(&responses, (fn_free)ipc_response_free);
+		pslist_free_vals(&responses, (fn_free)ipc_response_free);
 		free(yaml);
 	}
 

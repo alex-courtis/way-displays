@@ -11,7 +11,7 @@
 #include "head.h"
 #include "lid.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "sset.h"
 
 #include "cfg/condition.h"
@@ -28,9 +28,9 @@ static int before_each(void **state) {
 	struct Head *h2 = head_n("DP-2");
 	struct Head *h3 = head_n("DP-3");
 
-	slist_append(&g_heads, h1);
-	slist_append(&g_heads, h2);
-	slist_append(&g_heads, h3);
+	pslist_append(&g_heads, h1);
+	pslist_append(&g_heads, h2);
+	pslist_append(&g_heads, h3);
 
 	g_lid = NULL;
 
@@ -44,7 +44,7 @@ static int after_each(void **state) {
 	struct State *s = *state;
 
 	condition_free(s->condition);
-	slist_free_vals(&g_heads, (fn_free)head_free);
+	pslist_free_vals(&g_heads, (fn_free)head_free);
 
 	free(g_lid);
 	g_lid = NULL;

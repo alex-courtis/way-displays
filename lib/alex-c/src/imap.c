@@ -334,12 +334,12 @@ bool imap_equal(const struct IMap* const a, const struct IMap* const b) {
 	return a && b ? pmap_equal(a->pmap, b->pmap) : false;
 }
 
-struct SList *imap_vals_slist(const struct IMap* const map) {
-	return map ? pmap_vals_slist(map->pmap) : NULL;
+struct Pslist *imap_vals_pslist(const struct IMap* const map) {
+	return map ? pmap_vals_pslist(map->pmap) : NULL;
 }
 
-struct SList *imap_vals_slist_clone(const struct IMap* const map) {
-	return map ? pmap_vals_slist_clone(map->pmap) : NULL;
+struct Pslist *imap_vals_pslist_clone(const struct IMap* const map) {
+	return map ? pmap_vals_pslist_clone(map->pmap) : NULL;
 }
 
 const struct PSet *imap_vals_pset(const struct IMap* const map) {

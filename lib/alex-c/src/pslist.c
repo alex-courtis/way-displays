@@ -5,27 +5,27 @@
 #include "fn.h"
 #include "str.h"
 
-#include "slist.h"
+#include "pslist.h"
 
-struct SList *slist_clone(struct SList *head, fn_clone clone_val) {
-	struct SList *c, *i;
+struct Pslist *pslist_clone(struct Pslist *head, fn_clone clone_val) {
+	struct Pslist *c, *i;
 
 	c = NULL;
 	for (i = head; i; i = i->nex) {
 		if (clone_val) {
-			slist_append(&c, clone_val(i->val));
+			pslist_append(&c, clone_val(i->val));
 		} else {
-			slist_append(&c, i->val);
+			pslist_append(&c, i->val);
 		}
 	}
 
 	return c;
 }
 
-void slist_free(struct SList **head) {
-	struct SList *i = *head;
+void pslist_free(struct Pslist **head) {
+	struct Pslist *i = *head;
 	while (i) {
-		struct SList *f = i;
+		struct Pslist *f = i;
 		i = i->nex;
 		free(f);
 	}
@@ -33,8 +33,8 @@ void slist_free(struct SList **head) {
 	*head = NULL;
 }
 
-void slist_free_vals(struct SList **head, fn_free free_val) {
-	struct SList *i;
+void pslist_free_vals(struct Pslist **head, fn_free free_val) {
+	struct Pslist *i;
 
 	for (i = *head; i; i = i->nex) {
 		if (free_val) {
@@ -44,13 +44,13 @@ void slist_free_vals(struct SList **head, fn_free free_val) {
 		}
 	}
 
-	slist_free(head);
+	pslist_free(head);
 }
 
-struct SList *slist_append(struct SList **head, void *val) {
-	struct SList *i, *l;
+struct Pslist *pslist_append(struct Pslist **head, void *val) {
+	struct Pslist *i, *l;
 
-	i = calloc(1, sizeof(struct SList));
+	i = calloc(1, sizeof(struct Pslist));
 	i->val = val;
 
 	if (*head) {
@@ -63,11 +63,11 @@ struct SList *slist_append(struct SList **head, void *val) {
 	return i;
 }
 
-void *slist_remove(struct SList **head, struct SList **item) {
+void *pslist_remove(struct Pslist **head, struct Pslist **item) {
 	if (!item)
 		return NULL;
 
-	struct SList *i, *f, *p;
+	struct Pslist *i, *f, *p;
 	void *removed = NULL;
 
 	p = NULL;
@@ -95,44 +95,44 @@ void *slist_remove(struct SList **head, struct SList **item) {
 	return removed;
 }
 
-size_t slist_remove_all(struct SList **head, fn_2pred match_val, const void *data) {
-	struct SList *i;
+size_t pslist_remove_all(struct Pslist **head, fn_2pred match_val, const void *data) {
+	struct Pslist *i;
 	size_t removed = 0;
 
-	while ((i = slist_find_equal(*head, match_val, data))) {
-		slist_remove(head, &i);
+	while ((i = pslist_find_equal(*head, match_val, data))) {
+		pslist_remove(head, &i);
 		removed++;
 	}
 
 	return removed;
 }
 
-size_t slist_remove_all_free(struct SList **head, fn_2pred match_val, const void *data, fn_free free_val) {
-	struct SList *i;
+size_t pslist_remove_all_free(struct Pslist **head, fn_2pred match_val, const void *data, fn_free free_val) {
+	struct Pslist *i;
 	size_t removed = 0;
 
-	while ((i = slist_find_equal(*head, match_val, data))) {
+	while ((i = pslist_find_equal(*head, match_val, data))) {
 		if (free_val) {
 			free_val(i->val);
 		} else {
 			free(i->val);
 		}
-		slist_remove(head, &i);
+		pslist_remove(head, &i);
 		removed++;
 	}
 
 	return removed;
 }
 
-void slist_xor_free(struct SList **head1, struct SList *head2, fn_2pred match_val, fn_free free_val, fn_clone clone_val) {
-	struct SList *i = head2;
+void pslist_xor_free(struct Pslist **head1, struct Pslist *head2, fn_2pred match_val, fn_free free_val, fn_clone clone_val) {
+	struct Pslist *i = head2;
 
 	while (i) {
-		if (!slist_remove_all_free(head1, match_val, i->val, free_val)) {
+		if (!pslist_remove_all_free(head1, match_val, i->val, free_val)) {
 			if (clone_val) {
-				slist_append(head1, clone_val(i->val));
+				pslist_append(head1, clone_val(i->val));
 			} else {
-				slist_append(head1, i->val);
+				pslist_append(head1, i->val);
 			}
 		}
 
@@ -140,9 +140,9 @@ void slist_xor_free(struct SList **head1, struct SList *head2, fn_2pred match_va
 	}
 }
 
-void *slist_at(const struct SList *head, size_t index) {
+void *pslist_at(const struct Pslist *head, size_t index) {
 	size_t c = 0;
-	for (const struct SList *i = head; i; i = i->nex, c++) {
+	for (const struct Pslist *i = head; i; i = i->nex, c++) {
 		if (c == index) {
 			return i->val;
 		}
@@ -151,8 +151,8 @@ void *slist_at(const struct SList *head, size_t index) {
 	return NULL;
 }
 
-struct SList *slist_find(struct SList *head, fn_pred pred_val) {
-	struct SList *i;
+struct Pslist *pslist_find(struct Pslist *head, fn_pred pred_val) {
+	struct Pslist *i;
 
 	if (!pred_val)
 		return NULL;
@@ -166,16 +166,16 @@ struct SList *slist_find(struct SList *head, fn_pred pred_val) {
 	return NULL;
 }
 
-void *slist_find_val(struct SList *head, fn_pred pred_val) {
-	const struct SList *f = slist_find(head, pred_val);
+void *pslist_find_val(struct Pslist *head, fn_pred pred_val) {
+	const struct Pslist *f = pslist_find(head, pred_val);
 	if (f)
 		return f->val;
 	else
 		return NULL;
 }
 
-struct SList *slist_find_equal(struct SList *head, fn_2pred match_val, const void *b) {
-	struct SList *i;
+struct Pslist *pslist_find_equal(struct Pslist *head, fn_2pred match_val, const void *b) {
+	struct Pslist *i;
 
 	for (i = head; i; i = i->nex) {
 		if (match_val) {
@@ -190,16 +190,16 @@ struct SList *slist_find_equal(struct SList *head, fn_2pred match_val, const voi
 	return NULL;
 }
 
-void *slist_find_equal_val(struct SList *head, fn_2pred match_val, const void *b) {
-	const struct SList *f = slist_find_equal(head, match_val, b);
+void *pslist_find_equal_val(struct Pslist *head, fn_2pred match_val, const void *b) {
+	const struct Pslist *f = pslist_find_equal(head, match_val, b);
 	if (f)
 		return f->val;
 	else
 		return NULL;
 }
 
-bool slist_equal(struct SList *a, struct SList *b, fn_2pred match_val) {
-	struct SList *ai, *bi;
+bool pslist_equal(struct Pslist *a, struct Pslist *b, fn_2pred match_val) {
+	struct Pslist *ai, *bi;
 
 	for (ai = a, bi = b; ai && bi; ai = ai->nex, bi = bi->nex) {
 		if (match_val) {
@@ -218,34 +218,34 @@ bool slist_equal(struct SList *a, struct SList *b, fn_2pred match_val) {
 	return true;
 }
 
-size_t slist_length(const struct SList *head) {
+size_t pslist_length(const struct Pslist *head) {
 	size_t length = 0;
 
-	for (const struct SList *i = head; i; i = i->nex) {
+	for (const struct Pslist *i = head; i; i = i->nex) {
 		length++;
 	}
 
 	return length;
 }
 
-struct SList *slist_sort(struct SList *head, fn_less_than less_than_val) {
-	struct SList *sorted = NULL;
+struct Pslist *pslist_sort(struct Pslist *head, fn_less_than less_than_val) {
+	struct Pslist *sorted = NULL;
 
 	if (!head || !less_than_val) {
 		return sorted;
 	}
 
 	if (!head->nex) {
-		slist_append(&sorted, head->val);
+		pslist_append(&sorted, head->val);
 		return sorted;
 	}
 
-	struct SList *sorting = slist_clone(head, NULL);
+	struct Pslist *sorting = pslist_clone(head, NULL);
 
-	struct SList *sorting_head;
+	struct Pslist *sorting_head;
 
 	while (sorting != NULL) {
-		struct SList **sorted_trail = &sorted;
+		struct Pslist **sorted_trail = &sorted;
 
 		sorting_head = sorting;
 
@@ -259,33 +259,33 @@ struct SList *slist_sort(struct SList *head, fn_less_than less_than_val) {
 		*sorted_trail = sorting_head;
 	}
 
-	slist_free(&sorting);
+	pslist_free(&sorting);
 	return sorted;
 }
 
-void slist_move(struct SList **to, struct SList **from, fn_2pred match_val, const void *data) {
+void pslist_move(struct Pslist **to, struct Pslist **from, fn_2pred match_val, const void *data) {
 	if (!to || !from || !match_val)
 		return;
 
-	struct SList *f = *from;
+	struct Pslist *f = *from;
 	while (f) {
-		struct SList *r = f;
+		struct Pslist *r = f;
 		void *val = f->val;
 		f = f->nex;
 		if (match_val(val, data)) {
-			slist_append(to, val);
-			slist_remove(from, &r);
+			pslist_append(to, val);
+			pslist_remove(from, &r);
 		}
 	}
 }
 
-char *slist_str(const struct SList *head, fn_str str_val) {
+char *pslist_str(const struct Pslist *head, fn_str str_val) {
 	if (!head)
 		return NULL;
 
 	char *out = strdup("");
 
-	for (const struct SList *i = head; i; i = i->nex) {
+	for (const struct Pslist *i = head; i; i = i->nex) {
 		if (i->val) {
 			if (str_val) {
 				char *val_str = str_val(i->val);

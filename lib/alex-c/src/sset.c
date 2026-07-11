@@ -145,8 +145,8 @@ bool sset_equal(const struct SSet* const a, const struct SSet* const b) {
 	return a && b ? pset_equal(a->pset, b->pset) : false;
 }
 
-struct SList *sset_slist(const struct SSet* const set) {
-	return set ? pset_slist(set->pset) : NULL;
+struct Pslist *sset_pslist(const struct SSet* const set) {
+	return set ? pset_pslist(set->pset) : NULL;
 }
 
 char *sset_str(const struct SSet* const set) {

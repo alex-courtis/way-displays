@@ -8,7 +8,7 @@
 #include "cfg.h"
 #include "convert.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "smapi.h"
 #include "sset.h"
@@ -86,8 +86,8 @@ void yaml_map_add_enum(struct MC *c, const char *key, const int val, fn_enum_nam
 	yaml_map_add_str(c, key, str, mapping);
 }
 
-void yaml_map_add_list(struct MC *c, const char *key, const struct SList *list, fn_yaml_node_from_type fn, int mapping) {
-	if (!key || slist_length(list) == 0)
+void yaml_map_add_list(struct MC *c, const char *key, const struct Pslist *list, fn_yaml_node_from_type fn, int mapping) {
+	if (!key || pslist_length(list) == 0)
 		return;
 
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
@@ -96,7 +96,7 @@ void yaml_map_add_list(struct MC *c, const char *key, const struct SList *list, 
 	if (!k || !seq)
 		return;
 
-	for (const struct SList *i = list; i; i = i->nex) {
+	for (const struct Pslist *i = list; i; i = i->nex) {
 		int n = fn(c, i->val);
 		if (n)
 			yaml_document_append_sequence_item(&c->d, seq, n);

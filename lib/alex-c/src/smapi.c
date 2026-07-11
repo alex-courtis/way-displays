@@ -316,8 +316,8 @@ bool smapi_equal(const struct SMapI* const a, const struct SMapI* const b) {
 	return a && b ? pmap_equal(a->pmap, b->pmap) : false;
 }
 
-struct SList *smapi_keys_slist(const struct SMapI* const map) {
-	return map ? pmap_keys_slist(map->pmap) : NULL;
+struct Pslist *smapi_keys_pslist(const struct SMapI* const map) {
+	return map ? pmap_keys_pslist(map->pmap) : NULL;
 }
 
 const struct SSet *smapi_keys_sset(const struct SMapI* const map) {

@@ -16,19 +16,19 @@
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
-static void lcl(enum LogThreshold threshold, const char *line, struct SList **log_cap_lines) {
+static void lcl(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
 	lcl->threshold = threshold;
 	lcl->line = strdup(line);
 
-	slist_append(log_cap_lines, lcl);
+	pslist_append(log_cap_lines, lcl);
 }
 
 // cfg-all.yaml
@@ -163,7 +163,7 @@ struct IpcOperation *ipc_response(void) {
 
 	pset_add(head0->modes_failed, mode_h_whr(head0, 16, 17, 18));
 
-	slist_append(&g_heads, head0);
+	pslist_append(&g_heads, head0);
 
 	return ipc_operation;
 }

@@ -16,7 +16,7 @@
 #include "mode.h"
 #include "process.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -122,14 +122,14 @@ void act_handle_failure(void) {
 }
 
 void act_apply(void) {
-	struct SList *heads_changing = NULL;
+	struct Pslist *heads_changing = NULL;
 
 	displ_delta_destroy();
 
 	// determine whether changes are needed before initiating output configuration
-	struct SList *i = g_heads;
-	while ((i = slist_find(i, (fn_pred)head_current_not_desired))) {
-		slist_append(&heads_changing, i->val);
+	struct Pslist *i = g_heads;
+	while ((i = pslist_find(i, (fn_pred)head_current_not_desired))) {
+		pslist_append(&heads_changing, i->val);
 		i = i->nex;
 	}
 	if (!heads_changing)
@@ -141,7 +141,7 @@ void act_apply(void) {
 
 	struct Head *head;
 
-	if ((head = slist_find_val(g_heads, (fn_pred)head_reapply_required))) {
+	if ((head = pslist_find_val(g_heads, (fn_pred)head_reapply_required))) {
 		displ_delta_init(0, head);
 
 		print_head(INFO, DELTA, head);
@@ -152,7 +152,7 @@ void act_apply(void) {
 
 		head->reapply_required = false;
 
-	} else if ((head = slist_find_val(g_heads, (fn_pred)head_current_mode_not_desired))) {
+	} else if ((head = pslist_find_val(g_heads, (fn_pred)head_current_mode_not_desired))) {
 		displ_delta_init(MODE, head);
 
 		print_head(INFO, DELTA, head);
@@ -163,7 +163,7 @@ void act_apply(void) {
 
 		g_displ->delta.human = delta_human_mode(head);
 
-	} else if ((head = slist_find_val(g_heads, (fn_pred)head_current_adaptive_sync_not_desired))) {
+	} else if ((head = pslist_find_val(g_heads, (fn_pred)head_current_adaptive_sync_not_desired))) {
 		displ_delta_init(VRR_OFF, head);
 
 		print_head(INFO, DELTA, head);
@@ -200,15 +200,15 @@ void act_apply(void) {
 
 	g_displ->state = OUTSTANDING;
 
-	slist_free(&heads_changing);
+	pslist_free(&heads_changing);
 }
 
 void act(void) {
 	print_heads(INFO, ARRIVED, g_heads_arrived);
-	slist_free(&g_heads_arrived);
+	pslist_free(&g_heads_arrived);
 
 	print_heads(INFO, DEPARTED, g_heads_departed);
-	slist_free_vals(&g_heads_departed, (fn_free)head_free);
+	pslist_free_vals(&g_heads_departed, (fn_free)head_free);
 
 	print_head_queue(DEBUG, "act started", g_displ->state, g_heads);
 

@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "slist.h"
+#include "pslist.h"
 
 enum LogThreshold {
 	DEBUG = 1,
@@ -53,13 +53,13 @@ void log_suppress_stop(void);
 
 
 // caller must call stop and free lines
-void log_cap_lines_start(struct SList **log_cap_lines);
+void log_cap_lines_start(struct Pslist **log_cap_lines);
 
-void log_cap_lines_stop(struct SList **log_cap_lines);
+void log_cap_lines_stop(struct Pslist **log_cap_lines);
 
-void log_cap_lines_free(struct SList **log_cap_lines);
+void log_cap_lines_free(struct Pslist **log_cap_lines);
 
-void log_cap_lines_playback(const struct SList *log_cap_lines);
+void log_cap_lines_playback(const struct Pslist *log_cap_lines);
 
 
 #endif // LOG_H

@@ -4,7 +4,7 @@
 
 Not thread safe.
 
-### SList
+### Pslist
 
 * Containerless singly linked list.
 * NULL values permitted.

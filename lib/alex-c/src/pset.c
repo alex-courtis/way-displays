@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "fn.h"
-#include "slist.h"
+#include "pslist.h"
 #include "str.h"
 
 #include "pset.h"
@@ -137,14 +137,14 @@ static const struct PSet *clone(const struct PSet* const from, fn_clone clone_va
 	return to;
 }
 
-static struct SList *slist(const struct PSet* const set, fn_clone clone_val) {
-	struct SList *list = NULL;
+static struct Pslist *slist(const struct PSet* const set, fn_clone clone_val) {
+	struct Pslist *list = NULL;
 
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (clone_val) {
-			slist_append(&list, (void*)clone_val(*v));
+			pslist_append(&list, (void*)clone_val(*v));
 		} else {
-			slist_append(&list, (void*)*v);
+			pslist_append(&list, (void*)*v);
 		}
 	}
 
@@ -353,11 +353,11 @@ bool pset_equal(const struct PSet* const a, const struct PSet* const b) {
 	return true;
 }
 
-struct SList *pset_slist(const struct PSet* const set) {
+struct Pslist *pset_pslist(const struct PSet* const set) {
 	return set ? slist(set, set->params.alloc_val) : NULL;
 }
 
-struct SList *pset_slist_clone(const struct PSet* const set) {
+struct Pslist *pset_pslist_clone(const struct PSet* const set) {
 	if (!set || !set->params.clone_val)
 		return NULL;
 

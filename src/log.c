@@ -10,7 +10,7 @@
 #include "log.h"
 #include "str.h"
 
-#include "slist.h"
+#include "pslist.h"
 
 #define MAX_LINE_LEN 65536
 
@@ -27,7 +27,7 @@ static struct LogActive active = {
 	.suppressing = false,
 };
 
-static struct SList *log_cap_lines_active = NULL;
+static struct Pslist *log_cap_lines_active = NULL;
 
 // all thresholds, start of line
 static const char threshold_char[] = {
@@ -61,12 +61,12 @@ static const char *threshold_colours[] = {
 static const char reset_colour[] = "\x1B[0m";
 
 static void capture_line(enum LogThreshold threshold, const char *l) {
-	for (struct SList *i = log_cap_lines_active; i; i = i->nex) {
+	for (struct Pslist *i = log_cap_lines_active; i; i = i->nex) {
 		struct LogCapLine *line = calloc(1, sizeof(struct LogCapLine));
 		line->line = strdup(l);
 		line->threshold = threshold;
 
-		slist_append(i->val, line);
+		pslist_append(i->val, line);
 	}
 }
 
@@ -246,11 +246,11 @@ static void log_cap_line_free(const void *data) {
 	free((struct LogCapLine*)line);
 }
 
-void log_cap_lines_playback(const struct SList *log_cap_lines) {
+void log_cap_lines_playback(const struct Pslist *log_cap_lines) {
 	if (!log_cap_lines)
 		return;
 
-	for (const struct SList *i = log_cap_lines; i; i = i->nex) {
+	for (const struct Pslist *i = log_cap_lines; i; i = i->nex) {
 		const struct LogCapLine *line = i->val;
 		if (!line)
 			continue;
@@ -259,14 +259,14 @@ void log_cap_lines_playback(const struct SList *log_cap_lines) {
 	}
 }
 
-void log_cap_lines_start(struct SList **log_cap_lines) {
-	slist_append(&log_cap_lines_active, log_cap_lines);
+void log_cap_lines_start(struct Pslist **log_cap_lines) {
+	pslist_append(&log_cap_lines_active, log_cap_lines);
 }
 
-void log_cap_lines_stop(struct SList **log_cap_lines) {
-	slist_remove_all(&log_cap_lines_active, NULL, log_cap_lines);
+void log_cap_lines_stop(struct Pslist **log_cap_lines) {
+	pslist_remove_all(&log_cap_lines_active, NULL, log_cap_lines);
 }
 
-void log_cap_lines_free(struct SList **log_cap_lines) {
-	slist_free_vals(log_cap_lines, log_cap_line_free);
+void log_cap_lines_free(struct Pslist **log_cap_lines) {
+	pslist_free_vals(log_cap_lines, log_cap_line_free);
 }

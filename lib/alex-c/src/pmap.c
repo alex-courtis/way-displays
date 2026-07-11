@@ -5,7 +5,7 @@
 
 #include "fn.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "str.h"
 
 #include "pmap.h"
@@ -177,16 +177,16 @@ static const struct PSet *vals_pset(const struct PMap* const map, fn_clone clone
 	return set;
 }
 
-static struct SList *vals_slist(const struct PMap* const map, fn_clone clone_val) {
-	struct SList *list = NULL;
+static struct Pslist *vals_pslist(const struct PMap* const map, fn_clone clone_val) {
+	struct Pslist *list = NULL;
 
 	const void **k;
 	const void **v;
 	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
 		if (*v && clone_val) {
-			slist_append(&list, (void*)clone_val(*v));
+			pslist_append(&list, (void*)clone_val(*v));
 		} else {
-			slist_append(&list, (void*)*v);
+			pslist_append(&list, (void*)*v);
 		}
 	}
 
@@ -593,16 +593,16 @@ bool pmap_equal(const struct PMap* const a, const struct PMap* const b) {
 	return true;
 }
 
-struct SList *pmap_keys_slist(const struct PMap* const map) {
+struct Pslist *pmap_keys_pslist(const struct PMap* const map) {
 	if (!map)
 		return NULL;
 
-	struct SList *list = NULL;
+	struct Pslist *list = NULL;
 
 	const void **k;
 	for (k = map->keys; k < map->keys + map->size; k++) {
 		const void *key = map->params.alloc_key ? map->params.alloc_key(*k) : *k;
-		slist_append(&list, (void*)key);
+		pslist_append(&list, (void*)key);
 	}
 
 	return list;
@@ -631,15 +631,15 @@ const struct PSet *pmap_keys_pset(const struct PMap* const map) {
 	return set;
 }
 
-struct SList *pmap_vals_slist(const struct PMap* const map) {
-	return map ? vals_slist(map, map->params.alloc_val) : NULL;
+struct Pslist *pmap_vals_pslist(const struct PMap* const map) {
+	return map ? vals_pslist(map, map->params.alloc_val) : NULL;
 }
 
-struct SList *pmap_vals_slist_clone(const struct PMap* const map) {
+struct Pslist *pmap_vals_pslist_clone(const struct PMap* const map) {
 	if (!map || !map->params.clone_val)
 		return NULL;
 
-	return vals_slist(map, map->params.clone_val);
+	return vals_pslist(map, map->params.clone_val);
 }
 
 const struct PSet *pmap_vals_pset(const struct PMap* const map) {

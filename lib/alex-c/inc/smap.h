@@ -156,16 +156,16 @@ bool smap_equal(const struct SMap* const a, const struct SMap* const b);
  */
 
 // map ordered keys, caller frees list and contents
-struct SList *smap_keys_slist(const struct SMap* const map);
+struct Pslist *smap_keys_pslist(const struct SMap* const map);
 
 // map ordered keys, same params
 const struct SSet *smap_keys_sset(const struct SMap* const map);
 
 // map ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
-struct SList *smap_vals_slist(const struct SMap* const map);
+struct Pslist *smap_vals_pslist(const struct SMap* const map);
 
 // map ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
-struct SList *smap_vals_slist_clone(const struct SMap* const map);
+struct Pslist *smap_vals_pslist_clone(const struct SMap* const map);
 
 // map ordered vals, same params, caller frees set, caller frees vals when alloc_val present [alloc_val]
 const struct PSet *smap_vals_pset(const struct SMap* const map);

@@ -14,11 +14,11 @@
 #include <unistd.h>
 
 #include "log.h"
-#include "slist.h"
+#include "pslist.h"
 
 #include "cfg.h"
 
-extern struct SList *g_cfg_file_paths;
+extern struct Pslist *g_cfg_file_paths;
 
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
@@ -56,7 +56,7 @@ static int after_all(void **state) {
 }
 
 static int before_each(void **state) {
-	slist_free_vals(&g_cfg_file_paths, NULL);
+	pslist_free_vals(&g_cfg_file_paths, NULL);
 
 	clean_files();
 
@@ -80,7 +80,7 @@ static int after_each(void **state) {
 		unsetenv("HOME");
 	}
 
-	slist_free_vals(&g_cfg_file_paths, NULL);
+	pslist_free_vals(&g_cfg_file_paths, NULL);
 
 	clean_files();
 
@@ -101,7 +101,7 @@ static void cfg_file_write__bad_yaml(void **state) {
 }
 
 static void cfg_file_write__none(void **state) {
-	slist_append(&g_cfg_file_paths, strdup("/path/to/zero"));
+	pslist_append(&g_cfg_file_paths, strdup("/path/to/zero"));
 
 	char *expected = strdup("XXXX");
 
@@ -135,21 +135,21 @@ static void cfg_file_write__none(void **state) {
 	assert_str_equal(g_cfg->dir_path, "/path/to");
 	assert_str_equal(g_cfg->file_name, "zero");
 	assert_str_equal(g_cfg->resolved_from, "/path/to/zero");
-	assert_ptr_equal(g_cfg->resolved_from, slist_at(g_cfg_file_paths, 0));
+	assert_ptr_equal(g_cfg->resolved_from, pslist_at(g_cfg_file_paths, 0));
 	assert_int_equal(g_cfg->updated, false);
 }
 
 static void cfg_file_write__cannot_write_use_alternative(void **state) {
-	slist_append(&g_cfg_file_paths, strdup("/path/to/zero"));
-	slist_append(&g_cfg_file_paths, strdup("/path/to/one"));
-	slist_append(&g_cfg_file_paths, strdup("/path/to/two"));
-	slist_append(&g_cfg_file_paths, strdup("/path/to/three"));
-	slist_append(&g_cfg_file_paths, strdup("/path/to/four"));
+	pslist_append(&g_cfg_file_paths, strdup("/path/to/zero"));
+	pslist_append(&g_cfg_file_paths, strdup("/path/to/one"));
+	pslist_append(&g_cfg_file_paths, strdup("/path/to/two"));
+	pslist_append(&g_cfg_file_paths, strdup("/path/to/three"));
+	pslist_append(&g_cfg_file_paths, strdup("/path/to/four"));
 
 	g_cfg->file_path = strdup("/path/to/two");
 	g_cfg->dir_path = strdup("nothing");
 	g_cfg->file_name = strdup("missing");
-	g_cfg->resolved_from = slist_at(g_cfg_file_paths, 2);
+	g_cfg->resolved_from = pslist_at(g_cfg_file_paths, 2);
 
 	char *expected = strdup("XXXXxxxX");
 
@@ -201,20 +201,20 @@ static void cfg_file_write__cannot_write_use_alternative(void **state) {
 	assert_str_equal(g_cfg->dir_path, "/path/to");
 	assert_str_equal(g_cfg->file_name, "three");
 	assert_str_equal(g_cfg->resolved_from, "/path/to/three");
-	assert_ptr_equal(g_cfg->resolved_from, slist_at(g_cfg_file_paths, 3));
+	assert_ptr_equal(g_cfg->resolved_from, pslist_at(g_cfg_file_paths, 3));
 	assert_int_equal(g_cfg->updated, false);
 
 	free(expected);
 }
 
 static void cfg_file_write__cannot_write_no_alternative(void **state) {
-	slist_append(&g_cfg_file_paths, strdup("/path/to/zero"));
-	slist_append(&g_cfg_file_paths, strdup("/path/to/one"));
+	pslist_append(&g_cfg_file_paths, strdup("/path/to/zero"));
+	pslist_append(&g_cfg_file_paths, strdup("/path/to/one"));
 
 	g_cfg->file_path = strdup("/path/to/zero");
 	g_cfg->dir_path = strdup("/path/to");
 	g_cfg->file_name = strdup("one");
-	g_cfg->resolved_from = slist_at(g_cfg_file_paths, 0);
+	g_cfg->resolved_from = pslist_at(g_cfg_file_paths, 0);
 
 	char *expected = strdup("XXXX");
 
@@ -289,11 +289,11 @@ static void cfg_file_paths_init__min(void **state) {
 
 	cfg_file_paths_init("inexistent");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 0), "/usr/local/etc/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 0), "/usr/local/etc/way-displays/cfg.yaml");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 1), ROOT_ETC"/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 1), ROOT_ETC"/way-displays/cfg.yaml");
 
-	assert_int_equal(slist_length(g_cfg_file_paths), 2);
+	assert_int_equal(pslist_length(g_cfg_file_paths), 2);
 }
 
 static void cfg_file_paths_init__xch(void **state) {
@@ -302,13 +302,13 @@ static void cfg_file_paths_init__xch(void **state) {
 
 	cfg_file_paths_init(NULL);
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 0), "xch/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 0), "xch/way-displays/cfg.yaml");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 1), "/usr/local/etc/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 1), "/usr/local/etc/way-displays/cfg.yaml");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 2), ROOT_ETC"/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 2), ROOT_ETC"/way-displays/cfg.yaml");
 
-	assert_int_equal(slist_length(g_cfg_file_paths), 3);
+	assert_int_equal(pslist_length(g_cfg_file_paths), 3);
 }
 
 static void cfg_file_paths_init__home(void **state) {
@@ -317,13 +317,13 @@ static void cfg_file_paths_init__home(void **state) {
 
 	cfg_file_paths_init(NULL);
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 0), "hom/.config/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 0), "hom/.config/way-displays/cfg.yaml");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 1), "/usr/local/etc/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 1), "/usr/local/etc/way-displays/cfg.yaml");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 2), ROOT_ETC"/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 2), ROOT_ETC"/way-displays/cfg.yaml");
 
-	assert_int_equal(slist_length(g_cfg_file_paths), 3);
+	assert_int_equal(pslist_length(g_cfg_file_paths), 3);
 }
 
 static void cfg_file_paths_init__user(void **state) {
@@ -332,15 +332,15 @@ static void cfg_file_paths_init__user(void **state) {
 
 	cfg_file_paths_init(".");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 0), ".");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 0), ".");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 1), "xch/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 1), "xch/way-displays/cfg.yaml");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 2), "/usr/local/etc/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 2), "/usr/local/etc/way-displays/cfg.yaml");
 
-	assert_str_equal(slist_at(g_cfg_file_paths, 3), ROOT_ETC"/way-displays/cfg.yaml");
+	assert_str_equal(pslist_at(g_cfg_file_paths, 3), ROOT_ETC"/way-displays/cfg.yaml");
 
-	assert_int_equal(slist_length(g_cfg_file_paths), 4);
+	assert_int_equal(pslist_length(g_cfg_file_paths), 4);
 }
 
 static void cfg_resolve_file_path__not_found(void **state) {
@@ -351,7 +351,7 @@ static void cfg_resolve_file_path__not_found(void **state) {
 
 	snprintf(file_path, sizeof(file_path), "%s/inexistent.yaml", cwd);
 
-	slist_append(&g_cfg_file_paths, strdup(file_path));
+	pslist_append(&g_cfg_file_paths, strdup(file_path));
 
 	assert_false(cfg_resolve_file_path(g_cfg));
 
@@ -370,7 +370,7 @@ static void cfg_resolve_file_path__direct(void **state) {
 
 	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
 	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
-	slist_append(&g_cfg_file_paths, strdup(file_path));
+	pslist_append(&g_cfg_file_paths, strdup(file_path));
 
 	FILE *f = fopen(file_path, "w");
 	assert_non_nul(f);
@@ -384,7 +384,7 @@ static void cfg_resolve_file_path__direct(void **state) {
 	assert_str_equal(g_cfg->dir_path, dir_path);
 	assert_str_equal(g_cfg->file_name, "resolved.yaml");
 	assert_str_equal(g_cfg->resolved_from, file_path);
-	assert_ptr_equal(g_cfg->resolved_from, slist_at(g_cfg_file_paths, 0));
+	assert_ptr_equal(g_cfg->resolved_from, pslist_at(g_cfg_file_paths, 0));
 }
 
 static void cfg_resolve_file_path__linked(void **state) {
@@ -400,7 +400,7 @@ static void cfg_resolve_file_path__linked(void **state) {
 	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
 	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
 	snprintf(linked_path, sizeof(linked_path), "%s/tst/tmp/resolve/link.yaml", cwd);
-	slist_append(&g_cfg_file_paths, strdup(linked_path));
+	pslist_append(&g_cfg_file_paths, strdup(linked_path));
 
 	FILE *f = fopen(file_path, "w");
 	assert_non_nul(f);
@@ -415,7 +415,7 @@ static void cfg_resolve_file_path__linked(void **state) {
 	assert_str_equal(g_cfg->dir_path, dir_path);
 	assert_str_equal(g_cfg->file_name, "resolved.yaml");
 	assert_str_equal(g_cfg->resolved_from, linked_path);
-	assert_ptr_equal(g_cfg->resolved_from, slist_at(g_cfg_file_paths, 0));
+	assert_ptr_equal(g_cfg->resolved_from, pslist_at(g_cfg_file_paths, 0));
 }
 
 int main(void) {

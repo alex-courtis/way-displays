@@ -6,18 +6,18 @@
 #include "convert.h"
 #include "head.h"
 #include "mode.h"
-#include "slist.h"
+#include "pslist.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-char *delta_human(const struct SList * const heads) {
+char *delta_human(const struct Pslist * const heads) {
 	if (!heads) {
 		return NULL;
 	}
 
 	char *delta = NULL;
 
-	for (const struct SList *i = heads; i; i = i->nex) {
+	for (const struct Pslist *i = heads; i; i = i->nex) {
 		const struct Head * head = i->val;
 
 		// disable in own operation

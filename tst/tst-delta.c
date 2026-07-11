@@ -14,7 +14,7 @@
 #include "fn.h"
 #include "head.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/delta.h"
@@ -22,7 +22,7 @@
 struct State {
 	struct Head *head1;
 	struct Head *head2;
-	struct SList *heads;
+	struct Pslist *heads;
 };
 
 int before_each(void **state) {
@@ -52,7 +52,7 @@ int before_each(void **state) {
 	s->head1->desired.mode = mode_h_whr(s->head1, 400, 500, 60000);
 	pset_add(s->head1->modes, s->head1->desired.mode);
 
-	slist_append(&s->heads, s->head1);
+	pslist_append(&s->heads, s->head1);
 
 
 	s->head2 = head_n("name2");
@@ -75,7 +75,7 @@ int before_each(void **state) {
 	s->head2->desired.mode = mode_h_whr(s->head2, 1400, 1500, 160000);
 	pset_add(s->head2->modes, s->head2->desired.mode);
 
-	slist_append(&s->heads, s->head2);
+	pslist_append(&s->heads, s->head2);
 
 	*state = s;
 	return 0;
@@ -86,7 +86,7 @@ int after_each(void **state) {
 
 	struct State *s = *state;
 
-	slist_free_vals(&s->heads, (fn_free)head_free);
+	pslist_free_vals(&s->heads, (fn_free)head_free);
 
 	free(s);
 
@@ -108,7 +108,7 @@ static void delta_human_mode__to_no(void **state) {
 			"  100x200@30Hz -> (no mode)"
 			);
 
-	slist_free(&g_heads);
+	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -125,7 +125,7 @@ static void delta_human_mode__from_no(void **state) {
 			"  (no mode) -> 1400x1500@160Hz"
 			);
 
-	slist_free(&g_heads);
+	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -143,7 +143,7 @@ static void delta_human_adaptive_sync__on(void **state) {
 			"  VRR on"
 			);
 
-	slist_free(&g_heads);
+	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -161,7 +161,7 @@ static void delta_human_adaptive_sync__off(void **state) {
 			"  VRR off"
 			);
 
-	slist_free(&g_heads);
+	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -177,7 +177,7 @@ static void delta_human_reapply__(void **state) {
 			"  modes reset"
 			);
 
-	slist_free(&g_heads);
+	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -198,7 +198,7 @@ static void delta_human__all(void **state) {
 			"  position:  1700,1800 -> 1900,11000"
 			);
 
-	slist_free(&g_heads);
+	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -219,7 +219,7 @@ static void delta_human__enabled(void **state) {
 			"name2\n  enabled"
 			);
 
-	slist_free(&g_heads);
+	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -240,7 +240,7 @@ static void delta_human__disabled(void **state) {
 			"name2\n  disabled"
 			);
 
-	slist_free(&g_heads);
+	pslist_free(&g_heads);
 
 	free(deltas);
 }

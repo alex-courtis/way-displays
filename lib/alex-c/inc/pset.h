@@ -120,10 +120,10 @@ bool pset_equal(const struct PSet* const a, const struct PSet* const b);
  */
 
 // set ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
-struct SList *pset_slist(const struct PSet* const set);
+struct Pslist *pset_pslist(const struct PSet* const set);
 
 // set ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
-struct SList *pset_slist_clone(const struct PSet* const set);
+struct Pslist *pset_pslist_clone(const struct PSet* const set);
 
 /*
  * Info

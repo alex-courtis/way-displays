@@ -18,7 +18,7 @@
 #include "mode.h"
 #include "output.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "smapi.h"
 #include "sset.h"
@@ -444,22 +444,22 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 	}
 }
 
-void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct SList * const heads) {
-	for (const struct SList *i = heads; i; i = i->nex) {
+void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct Pslist * const heads) {
+	for (const struct Pslist *i = heads; i; i = i->nex) {
 		print_head(t, event, i->val);
 	}
 }
 
-void print_list(const enum LogThreshold t, const struct SList * const heads) {
+void print_list(const enum LogThreshold t, const struct Pslist * const heads) {
 	if (!heads)
 		return;
 
 	size_t max_len_human = 0;
-	for (const struct SList *i = heads; i; i = i->nex) {
+	for (const struct Pslist *i = heads; i; i = i->nex) {
 		max_len_human = MAX(strlen(head_human(i->val)), max_len_human);
 	}
 
-	for (const struct SList *i = heads; i; i = i->nex) {
+	for (const struct Pslist *i = heads; i; i = i->nex) {
 		struct Head *head = i->val;
 
 		if (head->current.enabled && head->current.mode) {
@@ -506,7 +506,7 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	print_mode(t, mode);
 }
 
-void print_head_queue(const enum LogThreshold t, const char *msg, enum DisplState displ_state, struct SList * const heads) {
+void print_head_queue(const enum LogThreshold t, const char *msg, enum DisplState displ_state, struct Pslist * const heads) {
 	if (log_get_threshold() > DEBUG)
 		return;
 
@@ -515,7 +515,7 @@ void print_head_queue(const enum LogThreshold t, const char *msg, enum DisplStat
 	char *vrr = strdup("");
 	char *remainder = strdup("");
 
-	for (struct SList *i = heads; i; i = i->nex) {
+	for (struct Pslist *i = heads; i; i = i->nex) {
 		struct Head *head = i->val;
 
 		// granular reapplies first

@@ -5,7 +5,7 @@
 
 #include "head.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "smapi.h"
 #include "sset.h"
@@ -27,10 +27,10 @@ struct Lid  *yaml_map_to_lid (struct UC *c, const yaml_node_t *map);  // Lid
 struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
 
 // fn_yaml_node_into_col: create a struct and add to collection
-void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses,         const yaml_node_t *map);
-void yaml_map_into_heads        (struct UC *c, struct SList **heads,                 const yaml_node_t *map);
+void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses,         const yaml_node_t *map);
+void yaml_map_into_heads        (struct UC *c, struct Pslist **heads,                 const yaml_node_t *map);
 void yaml_map_into_modes        (struct UC *c, const struct PSet *modes,             const yaml_node_t *map);
-void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines,         const yaml_node_t *map);
+void yaml_map_into_log_cap_lines(struct UC *c, struct Pslist **log_cap_lines,         const yaml_node_t *map);
 void yaml_map_into_conditions   (struct UC *c, const struct PSet* const conditions,  const yaml_node_t *map);
 void yaml_map_into_scales       (struct UC *c, const struct SMapI* const scales,     const yaml_node_t *map);
 void yaml_map_into_named_modes  (struct UC *c, const struct SMap* const modes,       const yaml_node_t *map);

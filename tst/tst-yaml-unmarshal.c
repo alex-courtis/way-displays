@@ -24,7 +24,7 @@
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smapi.h"
 #include "sset.h"
 #include "str.h"
@@ -349,7 +349,7 @@ static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
 static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
 	expect_function_call(__wrap_lid_free);
 
-	const struct SList *actual = yaml_unmarshal_str( "- DONE: TRUE", yaml_root_to_ipc_response_list, "ipc response");
+	const struct Pslist *actual = yaml_unmarshal_str( "- DONE: TRUE", yaml_root_to_ipc_response_list, "ipc response");
 
 	assert_nul(actual);
 
@@ -365,12 +365,12 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	expect_function_call(__wrap_lid_free);
 
-	struct SList *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
+	struct Pslist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	assert_non_nul(responses);
-	assert_int_equal(slist_length(responses), 1);
+	assert_int_equal(pslist_length(responses), 1);
 
-	struct IpcResponse *response = slist_at(responses, 0);
+	struct IpcResponse *response = pslist_at(responses, 0);
 
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
@@ -383,8 +383,8 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	struct Cfg *expected_cfg = cfg_all();
 	assert_cfg_equal(response->cfg, expected_cfg);
 
-	assert_int_equal(slist_length(response->heads), 1);
-	struct Head *head = slist_at(response->heads, 0);
+	assert_int_equal(pslist_length(response->heads), 1);
+	struct Head *head = pslist_at(response->heads, 0);
 
 	assert_str_equal(head->name, "name");
 	assert_str_equal(head->description, "desc");
@@ -457,26 +457,26 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	assert_nul(pset_it_next(it));
 
-	assert_int_equal(slist_length(response->log_cap_lines), 3);
+	assert_int_equal(pslist_length(response->log_cap_lines), 3);
 
-	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
+	struct LogCapLine *line = pslist_at(response->log_cap_lines, 0);
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, WARNING);
 	assert_str_equal(line->line, "war");
 
-	line = slist_at(response->log_cap_lines, 1);
+	line = pslist_at(response->log_cap_lines, 1);
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err");
 
-	line = slist_at(response->log_cap_lines, 2);
+	line = pslist_at(response->log_cap_lines, 2);
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, FATAL);
 	assert_str_equal(line->line, "fat");
 
 	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
-	slist_free_vals(&responses, (fn_free)ipc_response_free);
+	pslist_free_vals(&responses, (fn_free)ipc_response_free);
 	cfg_free(expected_cfg);
 	free(yaml);
 }
@@ -486,16 +486,16 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 
 	expect_function_calls(__wrap_lid_free, 3);
 
-	struct SList *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
+	struct Pslist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	struct Cfg *cfg_expected = cfg_init();
 	cfg_expected->arrange = COL;
 
 	assert_non_nul(responses);
-	assert_int_equal(slist_length(responses), 3);
+	assert_int_equal(pslist_length(responses), 3);
 
 	// 0
-	struct IpcResponse *response = slist_at(responses, 0);
+	struct IpcResponse *response = pslist_at(responses, 0);
 	assert_non_nul(response);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 0);
@@ -509,26 +509,26 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_str_equal(lid->device_path, "/path/to/lid");
 
 	assert_non_nul(response->heads);
-	assert_int_equal(slist_length(response->heads), 2);
+	assert_int_equal(pslist_length(response->heads), 2);
 
-	struct Head *head0 = slist_at(response->heads, 0);
+	struct Head *head0 = pslist_at(response->heads, 0);
 	assert_non_nul(head0);
 	assert_str_equal(head0->name, "name0");
 	assert_int_equal(head0->overrided_enabled, NoOverride);
 
-	struct Head *head1 = slist_at(response->heads, 1);
+	struct Head *head1 = pslist_at(response->heads, 1);
 	assert_non_nul(head1);
 	assert_str_equal(head1->name, "name1");
 	assert_int_equal(head1->overrided_enabled, NoOverride);
 
-	assert_int_equal(slist_length(response->log_cap_lines), 4);
-	struct LogCapLine *line = slist_at(response->log_cap_lines, 0);
+	assert_int_equal(pslist_length(response->log_cap_lines), 4);
+	struct LogCapLine *line = pslist_at(response->log_cap_lines, 0);
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, DEBUG);
 	assert_str_equal(line->line, "dbg0");
 
 	// 1
-	response = slist_at(responses, 1);
+	response = pslist_at(responses, 1);
 	assert_non_nul(response);
 	assert_false(response->status.done);
 	assert_int_equal(response->status.rc, 1);
@@ -536,14 +536,14 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_nul(response->lid);
 	assert_nul(response->heads);
 
-	assert_int_equal(slist_length(response->log_cap_lines), 4);
-	line = slist_at(response->log_cap_lines, 0);
+	assert_int_equal(pslist_length(response->log_cap_lines), 4);
+	line = pslist_at(response->log_cap_lines, 0);
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, DEBUG);
 	assert_str_equal(line->line, "dbg1");
 
 	// 2
-	response = slist_at(responses, 2);
+	response = pslist_at(responses, 2);
 	assert_non_nul(response);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
@@ -552,7 +552,7 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_nul(response->heads);
 	assert_nul(response->log_cap_lines);
 
-	slist_free_vals(&responses, (fn_free)ipc_response_free);
+	pslist_free_vals(&responses, (fn_free)ipc_response_free);
 	free(yaml);
 	cfg_free(cfg_expected);
 }

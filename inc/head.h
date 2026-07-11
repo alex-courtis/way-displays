@@ -8,13 +8,13 @@
 
 #include "cfg.h"
 #include "mode.h"
-#include "slist.h"
+#include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // global singletons
-extern struct SList *g_heads;
-extern struct SList *g_heads_arrived;
-extern struct SList *g_heads_departed;
+extern struct Pslist *g_heads;
+extern struct Pslist *g_heads_arrived;
+extern struct Pslist *g_heads_departed;
 
 enum ManualOverride {
 	NoOverride = 0,
@@ -109,7 +109,7 @@ void head_set_current_mode(struct Head * const head, const struct zwlr_output_mo
 void head_set_mode_preferred(const struct Mode * const mode);
 
 // clear current and failed modes, flag for reapply
-void heads_reapply(struct SList *heads);
+void heads_reapply(struct Pslist *heads);
 
 /*
  * string rendering

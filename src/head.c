@@ -15,15 +15,15 @@
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-struct SList *g_heads = NULL;
-struct SList *g_heads_arrived = NULL;
-struct SList *g_heads_departed = NULL;
+struct Pslist *g_heads = NULL;
+struct Pslist *g_heads_arrived = NULL;
+struct Pslist *g_heads_departed = NULL;
 
 struct Head *head_init(void) {
 	struct Head *head = calloc(1, sizeof(struct Head));
@@ -41,8 +41,8 @@ struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head) {
 	struct Head *head = head_init();
 	head->zwlr_head = zwlr_head;
 
-	slist_append(&g_heads, head);
-	slist_append(&g_heads_arrived, head);
+	pslist_append(&g_heads, head);
+	pslist_append(&g_heads_arrived, head);
 
 	return head;
 }
@@ -84,11 +84,11 @@ void head_release(struct Head * const head) {
 	struct Head *head_departed = head_init();
 	head_departed->name = strdup(head->name);
 	head_departed->description = strdup(head->description);
-	slist_append(&g_heads_departed, head_departed);
+	pslist_append(&g_heads_departed, head_departed);
 
-	slist_remove_all(&g_heads_arrived, NULL, head);
-	slist_remove_all(&g_heads_departed, NULL, head);
-	slist_remove_all(&g_heads, NULL, head);
+	pslist_remove_all(&g_heads_arrived, NULL, head);
+	pslist_remove_all(&g_heads_departed, NULL, head);
+	pslist_remove_all(&g_heads, NULL, head);
 
 	head_free(head);
 }
@@ -117,10 +117,10 @@ void head_release_mode(struct Mode *mode) {
 
 void heads_destroy(void) {
 
-	slist_free_vals(&g_heads, (fn_free)head_free);
-	slist_free_vals(&g_heads_departed, (fn_free)head_free);
+	pslist_free_vals(&g_heads, (fn_free)head_free);
+	pslist_free_vals(&g_heads_departed, (fn_free)head_free);
 
-	slist_free(&g_heads_arrived);
+	pslist_free(&g_heads_arrived);
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
@@ -210,11 +210,11 @@ void head_set_mode_preferred(const struct Mode * const mode) {
 	mode->head->mode_preferred = mode;
 }
 
-void heads_reapply(struct SList *heads) {
+void heads_reapply(struct Pslist *heads) {
 	log_info(NULL);
 	log_info("Reapply:");
 
-	for (struct SList *i = heads; i; i = i->nex) {
+	for (struct Pslist *i = heads; i; i = i->nex) {
 		struct Head *head = (struct Head*)i->val;
 
 		int step = 1;

@@ -18,7 +18,7 @@
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "smapi.h"
 #include "sset.h"
@@ -28,7 +28,7 @@
 struct Cfg *g_cfg = NULL;
 
 // one-shot singleton set via cfg_file_paths_init
-struct SList *g_cfg_file_paths = NULL;
+struct Pslist *g_cfg_file_paths = NULL;
 
 static struct Cfg *clone_cfg(struct Cfg *from) {
 	if (!from)
@@ -215,26 +215,26 @@ void cfg_file_paths_init(const char *user_path) {
 
 	// maybe user
 	if (user_path && access(user_path, R_OK) == 0) {
-		slist_append(&g_cfg_file_paths, strdup(user_path));
+		pslist_append(&g_cfg_file_paths, strdup(user_path));
 	}
 
 	if (getenv("XDG_CONFIG_HOME") != NULL) {
 		// maybe XDG_CONFIG_HOME
 		snprintf(path, PATH_MAX - 1, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
-		slist_append(&g_cfg_file_paths, strdup(path));
+		pslist_append(&g_cfg_file_paths, strdup(path));
 	} else if (getenv("HOME") != NULL) {
 		// ~/.config
 		snprintf(path, PATH_MAX - 1, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
-		slist_append(&g_cfg_file_paths, strdup(path));
+		pslist_append(&g_cfg_file_paths, strdup(path));
 	}
 
 	// etc
-	slist_append(&g_cfg_file_paths, strdup("/usr/local/etc/way-displays/cfg.yaml"));
-	slist_append(&g_cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
+	pslist_append(&g_cfg_file_paths, strdup("/usr/local/etc/way-displays/cfg.yaml"));
+	pslist_append(&g_cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
 }
 
 void cfg_file_paths_destroy(void) {
-	slist_free_vals(&g_cfg_file_paths, NULL);
+	pslist_free_vals(&g_cfg_file_paths, NULL);
 }
 
 // TODO not all of this is tested
@@ -478,7 +478,7 @@ void cfg_file_write(void) {
 		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
-		for (struct SList *i = g_cfg_file_paths; i; i = i->nex) {
+		for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
 
 			// skip previously resolved
 			if (resolved_from == i->val) {
@@ -514,7 +514,7 @@ bool cfg_resolve_file_path(struct Cfg *to) {
 
 	cfg_paths_free(to);
 
-	for (struct SList *i = g_cfg_file_paths; i; i = i->nex) {
+	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
 
 			char *file_path = realpath(i->val, NULL);

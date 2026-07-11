@@ -154,10 +154,10 @@ bool imap_equal(const struct IMap* const a, const struct IMap* const b);
  */
 
 // map ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
-struct SList *imap_vals_slist(const struct IMap* const map);
+struct Pslist *imap_vals_pslist(const struct IMap* const map);
 
 // map ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
-struct SList *imap_vals_slist_clone(const struct IMap* const map);
+struct Pslist *imap_vals_pslist_clone(const struct IMap* const map);
 
 // map ordered vals, same params, caller frees set, caller frees vals when alloc_val present [alloc_val]
 const struct PSet *imap_vals_pset(const struct IMap* const map);

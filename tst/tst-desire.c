@@ -19,7 +19,7 @@
 #include "fn.h"
 #include "head.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -29,7 +29,7 @@
 extern int g_cancellation_retries;
 
 struct State {
-	struct SList *heads;
+	struct Pslist *heads;
 };
 
 static int before_each(void **state) {
@@ -43,7 +43,7 @@ static int before_each(void **state) {
 		const struct Mode *mode = mode_h_whr(head, i * 20, i * 10, 0);
 		head->desired.mode = mode;
 		pset_add(head->modes, mode);
-		slist_append(&s->heads, head);
+		pslist_append(&s->heads, head);
 	}
 
 	*state = s;
@@ -53,13 +53,13 @@ static int before_each(void **state) {
 static int after_each(void **state) {
 	assert_logs_empty();
 
-	slist_free_vals(&g_heads, (fn_free)head_free);
+	pslist_free_vals(&g_heads, (fn_free)head_free);
 
 	cfg_destroy();
 
 	struct State *s = *state;
 
-	slist_free_vals(&s->heads, (fn_free)head_free);
+	pslist_free_vals(&s->heads, (fn_free)head_free);
 
 	free(s);
 	return 0;
@@ -71,8 +71,8 @@ static void desire__nothing(void **state) {
 
 static void desire_order__exact_partial_regex(void **state) {
 	const struct SSet *order_name_desc = sset_init();
-	struct SList *heads = NULL;
-	struct SList *expected = NULL;
+	struct Pslist *heads = NULL;
+	struct Pslist *expected = NULL;
 
 	// ORDER
 	sset_add_many(order_name_desc,
@@ -92,39 +92,39 @@ static void desire_order__exact_partial_regex(void **state) {
 	struct Head *exact0          = head_d("exact0");
 	struct Head *regex_match_2   = head_d("another regex match");
 	struct Head *not_specified_2 = head_d("not specified 2");
-	slist_append(&heads, not_specified_1);
-	slist_append(&heads, exact0_partial);
-	slist_append(&heads, partial);
-	slist_append(&heads, regex_match_1);
-	slist_append(&heads, exact1);
-	slist_append(&heads, exact0);
-	slist_append(&heads, regex_match_2);
-	slist_append(&heads, not_specified_2);
+	pslist_append(&heads, not_specified_1);
+	pslist_append(&heads, exact0_partial);
+	pslist_append(&heads, partial);
+	pslist_append(&heads, regex_match_1);
+	pslist_append(&heads, exact1);
+	pslist_append(&heads, exact0);
+	pslist_append(&heads, regex_match_2);
+	pslist_append(&heads, not_specified_2);
 
 	// expected
-	slist_append(&expected, exact0);
-	slist_append(&expected, exact0_partial);
-	slist_append(&expected, exact1);
-	slist_append(&expected, regex_match_1);
-	slist_append(&expected, regex_match_2);
-	slist_append(&expected, partial);
-	slist_append(&expected, not_specified_1);
-	slist_append(&expected, not_specified_2);
+	pslist_append(&expected, exact0);
+	pslist_append(&expected, exact0_partial);
+	pslist_append(&expected, exact1);
+	pslist_append(&expected, regex_match_1);
+	pslist_append(&expected, regex_match_2);
+	pslist_append(&expected, partial);
+	pslist_append(&expected, not_specified_1);
+	pslist_append(&expected, not_specified_2);
 
-	struct SList *heads_ordered = desire_order(order_name_desc, heads);
+	struct Pslist *heads_ordered = desire_order(order_name_desc, heads);
 
 	assert_heads_order(heads_ordered, expected);
 
 	sset_free(order_name_desc);
-	slist_free_vals(&heads, (fn_free)head_free);
-	slist_free(&expected);
-	slist_free(&heads_ordered);
+	pslist_free_vals(&heads, (fn_free)head_free);
+	pslist_free(&expected);
+	pslist_free(&heads_ordered);
 }
 
 static void desire_order__exact_regex_catchall(void **state) {
 	const struct SSet *order_name_desc = sset_init();
-	struct SList *heads = NULL;
-	struct SList *expected = NULL;
+	struct Pslist *heads = NULL;
+	struct Pslist *expected = NULL;
 
 	// ORDER
 	sset_add_many(order_name_desc,
@@ -141,43 +141,43 @@ static void desire_order__exact_regex_catchall(void **state) {
 	struct Head *exact0          = head_d("exact0");
 	struct Head *regex_match_2   = head_d("another regex match");
 	struct Head *not_specified_2 = head_d("not specified 2");
-	slist_append(&heads, not_specified_1);
-	slist_append(&heads, regex_match_1);
-	slist_append(&heads, exact0);
-	slist_append(&heads, regex_match_2);
-	slist_append(&heads, not_specified_2);
-	slist_append(&heads, exact9);
+	pslist_append(&heads, not_specified_1);
+	pslist_append(&heads, regex_match_1);
+	pslist_append(&heads, exact0);
+	pslist_append(&heads, regex_match_2);
+	pslist_append(&heads, not_specified_2);
+	pslist_append(&heads, exact9);
 
 	// expected
-	slist_append(&expected, exact0);
-	slist_append(&expected, regex_match_1);
-	slist_append(&expected, regex_match_2);
-	slist_append(&expected, not_specified_1);
-	slist_append(&expected, not_specified_2);
-	slist_append(&expected, exact9);
+	pslist_append(&expected, exact0);
+	pslist_append(&expected, regex_match_1);
+	pslist_append(&expected, regex_match_2);
+	pslist_append(&expected, not_specified_1);
+	pslist_append(&expected, not_specified_2);
+	pslist_append(&expected, exact9);
 
-	struct SList *heads_ordered = desire_order(order_name_desc, heads);
+	struct Pslist *heads_ordered = desire_order(order_name_desc, heads);
 
 	assert_heads_order(heads_ordered, expected);
 
 	sset_free(order_name_desc);
-	slist_free_vals(&heads, (fn_free)head_free);
-	slist_free(&expected);
-	slist_free(&heads_ordered);
+	pslist_free_vals(&heads, (fn_free)head_free);
+	pslist_free(&expected);
+	pslist_free(&heads_ordered);
 }
 
 static void desire_order__no_order(void **state) {
-	struct SList *heads = NULL;
+	struct Pslist *heads = NULL;
 	struct Head *head = head_n("head");
 
-	slist_append(&heads, head);
+	pslist_append(&heads, head);
 
 	// null/empty order
-	struct SList *heads_ordered = desire_order(NULL, heads);
+	struct Pslist *heads_ordered = desire_order(NULL, heads);
 	assert_heads_order(heads_ordered, heads);
 
-	slist_free(&heads_ordered);
-	slist_free_vals(&heads, (fn_free)head_free);
+	pslist_free(&heads_ordered);
+	pslist_free_vals(&heads, (fn_free)head_free);
 }
 
 static void desire_position__col_left(void **state) {
@@ -187,15 +187,15 @@ static void desire_position__col_left(void **state) {
 	g_cfg->arrange = COL;
 	g_cfg->align = LEFT;
 
-	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
-	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
-	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+	head = pslist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = pslist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
+	head = pslist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
 	desire_positions(s->heads);
 
-	head = slist_at(s->heads, 0); assert_head_position(head, 0, 0);
-	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
-	head = slist_at(s->heads, 2); assert_head_position(head, 0, 5);
+	head = pslist_at(s->heads, 0); assert_head_position(head, 0, 0);
+	head = pslist_at(s->heads, 1); assert_head_position(head, 0, 2);
+	head = pslist_at(s->heads, 2); assert_head_position(head, 0, 5);
 }
 
 static void desire_position__col_mid(void **state) {
@@ -205,15 +205,15 @@ static void desire_position__col_mid(void **state) {
 	g_cfg->arrange = COL;
 	g_cfg->align = MIDDLE;
 
-	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
-	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
-	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+	head = pslist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = pslist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
+	head = pslist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
 	desire_positions(s->heads);
 
-	head = slist_at(s->heads, 0); assert_head_position(head, 2, 0);
-	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
-	head = slist_at(s->heads, 2); assert_head_position(head, 3, 5);
+	head = pslist_at(s->heads, 0); assert_head_position(head, 2, 0);
+	head = pslist_at(s->heads, 1); assert_head_position(head, 0, 2);
+	head = pslist_at(s->heads, 2); assert_head_position(head, 3, 5);
 }
 
 static void desire_position__col_right(void **state) {
@@ -223,15 +223,15 @@ static void desire_position__col_right(void **state) {
 	g_cfg->arrange = COL;
 	g_cfg->align = RIGHT;
 
-	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
-	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
-	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+	head = pslist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = pslist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 3;
+	head = pslist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
 	desire_positions(s->heads);
 
-	head = slist_at(s->heads, 0); assert_head_position(head, 3, 0);
-	head = slist_at(s->heads, 1); assert_head_position(head, 0, 2);
-	head = slist_at(s->heads, 2); assert_head_position(head, 5, 5);
+	head = pslist_at(s->heads, 0); assert_head_position(head, 3, 0);
+	head = pslist_at(s->heads, 1); assert_head_position(head, 0, 2);
+	head = pslist_at(s->heads, 2); assert_head_position(head, 5, 5);
 }
 
 static void desire_position__row_top(void **state) {
@@ -241,15 +241,15 @@ static void desire_position__row_top(void **state) {
 	g_cfg->arrange = ROW;
 	g_cfg->align = TOP;
 
-	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
-	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
-	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+	head = pslist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = pslist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
+	head = pslist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
 	desire_positions(s->heads);
 
-	head = slist_at(s->heads, 0); assert_head_position(head, 0, 0);
-	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
-	head = slist_at(s->heads, 2); assert_head_position(head, 11, 0);
+	head = pslist_at(s->heads, 0); assert_head_position(head, 0, 0);
+	head = pslist_at(s->heads, 1); assert_head_position(head, 4, 0);
+	head = pslist_at(s->heads, 2); assert_head_position(head, 11, 0);
 }
 
 static void desire_position__row_mid(void **state) {
@@ -259,15 +259,15 @@ static void desire_position__row_mid(void **state) {
 	g_cfg->arrange = ROW;
 	g_cfg->align = MIDDLE;
 
-	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
-	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
-	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+	head = pslist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = pslist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
+	head = pslist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
 	desire_positions(s->heads);
 
-	head = slist_at(s->heads, 0); assert_head_position(head, 0, 2);
-	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
-	head = slist_at(s->heads, 2); assert_head_position(head, 11, 2);
+	head = pslist_at(s->heads, 0); assert_head_position(head, 0, 2);
+	head = pslist_at(s->heads, 1); assert_head_position(head, 4, 0);
+	head = pslist_at(s->heads, 2); assert_head_position(head, 11, 2);
 }
 
 static void desire_position__row_bottom(void **state) {
@@ -277,22 +277,22 @@ static void desire_position__row_bottom(void **state) {
 	g_cfg->arrange = ROW;
 	g_cfg->align = BOTTOM;
 
-	head = slist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
-	head = slist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
-	head = slist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
+	head = pslist_at(s->heads, 0); head->scaled.width = 4; head->scaled.height = 2;
+	head = pslist_at(s->heads, 1); head->scaled.width = 7; head->scaled.height = 5;
+	head = pslist_at(s->heads, 2); head->scaled.width = 2; head->scaled.height = 1;
 
 	desire_positions(s->heads);
 
-	head = slist_at(s->heads, 0); assert_head_position(head, 0, 3);
-	head = slist_at(s->heads, 1); assert_head_position(head, 4, 0);
-	head = slist_at(s->heads, 2); assert_head_position(head, 11, 4);
+	head = pslist_at(s->heads, 0); assert_head_position(head, 0, 3);
+	head = pslist_at(s->heads, 1); assert_head_position(head, 4, 0);
+	head = pslist_at(s->heads, 2); assert_head_position(head, 11, 4);
 }
 
 static void desire_enabled__disabled(void **state) {
 	struct Head *head = head_init();
 	head->name = strdup("head0");
 	head->desired.enabled = true;
-	slist_append(&g_heads, head);
+	pslist_append(&g_heads, head);
 
 	expect_str(__wrap_lid_is_closed, name, "head0");
 	will_return_int(__wrap_lid_is_closed, false);
@@ -306,12 +306,12 @@ static void desire_enabled__disabled(void **state) {
 
 static void desire_enabled__lid_closed_many(void **state) {
 	struct Head *head0 = head_n("head0");
-	slist_append(&g_heads, head0);
+	pslist_append(&g_heads, head0);
 
 	head0->desired.enabled = true;
 
 	struct Head *head1 = head_n("head1");
-	slist_append(&g_heads, head1);
+	pslist_append(&g_heads, head1);
 
 	head1->desired.enabled = true;
 
@@ -325,7 +325,7 @@ static void desire_enabled__lid_closed_many(void **state) {
 
 static void desire_enabled__lid_closed_one(void **state) {
 	struct Head *head = head_n("head");
-	slist_append(&g_heads, head);
+	pslist_append(&g_heads, head);
 
 	head->desired.enabled = true;
 
@@ -339,7 +339,7 @@ static void desire_enabled__lid_closed_one(void **state) {
 
 static void desire_enabled__lid_closed_one_disabled(void **state) {
 	struct Head *head = head_n("head0");
-	slist_append(&g_heads, head);
+	pslist_append(&g_heads, head);
 
 	head->desired.enabled = true;
 
@@ -355,7 +355,7 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 
 static void desire_enabled__override(void **state) {
 	struct Head *head = head_n("head0");
-	slist_append(&g_heads, head);
+	pslist_append(&g_heads, head);
 
 	head->desired.enabled = false;
 	head->overrided_enabled = OverrideTrue;
@@ -373,7 +373,7 @@ static void desire_enabled__override(void **state) {
 
 static void desire_enabled__override_reset(void **state) {
 	struct Head *head = head_n("head0");
-	slist_append(&g_heads, head);
+	pslist_append(&g_heads, head);
 
 	head->desired.enabled = true;
 	head->overrided_enabled = OverrideFalse;
@@ -391,7 +391,7 @@ static void desire_enabled__override_reset(void **state) {
 
 static void desire_enabled__no_override(void **state) {
 	struct Head *head = head_n("head");
-	slist_append(&g_heads, head);
+	pslist_append(&g_heads, head);
 
 	head->desired.enabled = false;
 	head->overrided_enabled = OverrideFalse;

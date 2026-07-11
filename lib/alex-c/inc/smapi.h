@@ -129,7 +129,7 @@ bool smapi_equal(const struct SMapI* const a, const struct SMapI* const b);
  */
 
 // map ordered keys, caller frees list and contents
-struct SList *smapi_keys_slist(const struct SMapI* const map);
+struct Pslist *smapi_keys_pslist(const struct SMapI* const map);
 
 // map ordered keys, same params
 const struct SSet *smapi_keys_sset(const struct SMapI* const map);

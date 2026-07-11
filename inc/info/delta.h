@@ -2,10 +2,10 @@
 #define DELTA_H
 
 #include "head.h"
-#include "slist.h"
+#include "pslist.h"
 
 // all changes between desired and current
-char *delta_human(const struct SList * const heads);
+char *delta_human(const struct Pslist * const heads);
 
 // mode changes
 char *delta_human_mode(const struct Head * const head);

@@ -21,7 +21,7 @@
 #include "lid.h"
 #include "log.h"
 #include "process.h"
-#include "slist.h"
+#include "pslist.h"
 #include "yaml/unmarshal.h"
 #include "yaml/unmarshal-types.h"
 
@@ -104,7 +104,7 @@ static void receive_ipc_request(int server_socket) {
 
 	// handle extra toggles
 	if (ipc_request->command == CFG_TOGGLE) {
-		for (struct SList *i = g_heads; i; i = i->nex) {
+		for (struct Pslist *i = g_heads; i; i = i->nex) {
 			head_apply_toggles(i->val, ipc_request->cfg);
 		}
 	}
@@ -329,7 +329,7 @@ server(char *cfg_path) {
 	setup_signal_handlers();
 
 	// don't log anything until cfg log level is known
-	struct SList *log_cap_lines = NULL;
+	struct Pslist *log_cap_lines = NULL;
 	log_cap_lines_start(&log_cap_lines);
 	log_suppress_start();
 

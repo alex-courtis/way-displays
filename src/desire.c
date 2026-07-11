@@ -15,14 +15,14 @@
 #include "lid.h"
 #include "mode.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smapi.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 void desire(void) {
 
-	for (struct SList *i = g_heads; i; i = i->nex) {
+	for (struct Pslist *i = g_heads; i; i = i->nex) {
 		struct Head *head = (struct Head*)i->val;
 
 		memcpy(&head->desired, &head->current, sizeof(struct HeadState));
@@ -36,11 +36,11 @@ void desire(void) {
 		desire_reapply(head);
 	}
 
-	struct SList *heads_ordered = desire_order(g_cfg->order_name_desc, g_heads);
+	struct Pslist *heads_ordered = desire_order(g_cfg->order_name_desc, g_heads);
 
 	desire_positions(heads_ordered);
 
-	slist_free(&heads_ordered);
+	pslist_free(&heads_ordered);
 }
 
 void desire_enabled(struct Head *head) {
@@ -50,7 +50,7 @@ void desire_enabled(struct Head *head) {
 	enabled = !lid_is_closed(head->name);
 
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
-	enabled |= slist_length(g_heads) == 1;
+	enabled |= pslist_length(g_heads) == 1;
 
 	// name_desc matches and (if present) any condition is true
 	enabled &= pset_match(g_cfg->disableds, (fn_2pred)disabled_matches_head, head) == NULL;
@@ -188,65 +188,65 @@ void desire_reapply(struct Head *head) {
 }
 
 // TODO this can be simplified
-struct SList *desire_order(const struct SSet * const order_name_desc, struct SList *heads) {
+struct Pslist *desire_order(const struct SSet * const order_name_desc, struct Pslist *heads) {
 	if (!heads)
 		return NULL;
 
 	unsigned long n_order = sset_size(order_name_desc);
 	unsigned long i;
-	struct SList *sorting = slist_clone(heads, NULL);
+	struct Pslist *sorting = pslist_clone(heads, NULL);
 
 	// array of order to list of heads matched
-	struct SList **order_heads = calloc(n_order, sizeof(struct SList*));
+	struct Pslist **order_heads = calloc(n_order, sizeof(struct Pslist*));
 
 	// exact match
 	i = 0;
 	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, it->val);
+		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_exact, it->val);
 		i++;
 	}
 
 	// regex
 	i = 0;
 	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, it->val);
+		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_regex, it->val);
 		i++;
 	}
 
 	// fuzzy
 	i = 0;
 	for (const struct SSetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		slist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, it->val);
+		pslist_move(&order_heads[i], &sorting, (fn_equal)head_matches_name_desc_fuzzy, it->val);
 		i++;
 	}
 
 	// marshal the ordered
-	struct SList *sorted = NULL;
+	struct Pslist *sorted = NULL;
 	for (i = 0; i < n_order; i++) {
-		struct SList *order_list = (struct SList*)order_heads[i];
-		for (struct SList *h = order_list; h; h = h->nex) {
-			slist_append(&sorted, h->val);
+		struct Pslist *order_list = (struct Pslist*)order_heads[i];
+		for (struct Pslist *h = order_list; h; h = h->nex) {
+			pslist_append(&sorted, h->val);
 		}
-		slist_free(&order_list);
+		pslist_free(&order_list);
 	}
 
 	// remaing in discovered order
-	for (struct SList *h = sorting; h; h = h->nex) {
-		slist_append(&sorted, h->val);
+	for (struct Pslist *h = sorting; h; h = h->nex) {
+		pslist_append(&sorted, h->val);
 	}
 
-	slist_free(&sorting);
+	pslist_free(&sorting);
 	free(order_heads);
 
 	return sorted;
 }
 
-void desire_positions(struct SList *heads) {
+void desire_positions(struct Pslist *heads) {
 	struct Head *head;
 	int32_t tallest = 0, widest = 0, x = 0, y = 0;
 
 	// find tallest/widest
-	for (struct SList *i = heads; i; i = i->nex) {
+	for (struct Pslist *i = heads; i; i = i->nex) {
 		head = i->val;
 		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;
@@ -260,7 +260,7 @@ void desire_positions(struct SList *heads) {
 	}
 
 	// arrange each in the predefined order
-	for (struct SList *i = heads; i; i = i->nex) {
+	for (struct Pslist *i = heads; i; i = i->nex) {
 		head = i->val;
 		if (!head || !head->desired.mode || !head->desired.enabled) {
 			continue;

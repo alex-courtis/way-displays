@@ -19,7 +19,7 @@
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "smapi.h"
 #include "sset.h"
@@ -87,7 +87,7 @@ void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root) {
 	if (!root)
 		return NULL;
 
-	struct SList *ipc_responses = NULL;
+	struct Pslist *ipc_responses = NULL;
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
 		log_error(NULL);
@@ -106,7 +106,7 @@ void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root) {
 	goto end;
 
 err:
-	slist_free_vals(&ipc_responses, (fn_free)ipc_response_free);
+	pslist_free_vals(&ipc_responses, (fn_free)ipc_response_free);
 	ipc_responses = NULL;
 
 end:
@@ -213,7 +213,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 	return cfg;
 }
 
-void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses, const yaml_node_t *map) {
+void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses, const yaml_node_t *map) {
 	if (!ipc_responses)
 		return;
 
@@ -264,7 +264,7 @@ void yaml_map_into_ipc_responses(struct UC *c, struct SList **ipc_responses, con
 		yaml_seq_into_col(c, messages, &ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
 	}
 
-	slist_append((struct SList**)ipc_responses, ipc_response);
+	pslist_append((struct Pslist**)ipc_responses, ipc_response);
 
 	goto end;
 
@@ -504,7 +504,7 @@ void yaml_map_into_modes(struct UC *c, const struct PSet *modes, const yaml_node
 	smap_free(nodes);
 }
 
-void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *map) {
+void yaml_map_into_heads(struct UC *c, struct Pslist **heads, const yaml_node_t *map) {
 	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!heads)
 		return;
@@ -534,7 +534,7 @@ void yaml_map_into_heads(struct UC *c, struct SList **heads, const yaml_node_t *
 		}
 	}
 
-	slist_append(heads, head);
+	pslist_append(heads, head);
 
 	smap_free(nodes);
 	smap_free(nodes_overrides);
@@ -628,7 +628,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	return;
 }
 
-void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines, const yaml_node_t *map) {
+void yaml_map_into_log_cap_lines(struct UC *c, struct Pslist **log_cap_lines, const yaml_node_t *map) {
 	const struct SMap *nodes = yaml_map_to_smap(c, map);
 	if (!nodes)
 		return;
@@ -643,7 +643,7 @@ void yaml_map_into_log_cap_lines(struct UC *c, struct SList **log_cap_lines, con
 			struct LogCapLine *log_cap_line = (struct LogCapLine*)calloc(1, sizeof(struct LogCapLine));
 			log_cap_line->threshold = threshold;
 			log_cap_line->line = strdup(line);
-			slist_append(log_cap_lines, log_cap_line);
+			pslist_append(log_cap_lines, log_cap_line);
 
 		}
 

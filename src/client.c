@@ -12,12 +12,12 @@
 #include "ipc.h"
 #include "log.h"
 #include "process.h"
-#include "slist.h"
+#include "pslist.h"
 
 static int handle_responses(const struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
-	struct SList *responses = NULL;
+	struct Pslist *responses = NULL;
 	struct IpcResponse *response = NULL;
 	bool done = false;
 
@@ -26,7 +26,7 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 		responses = ipc_receive_responses(ipc_request->socket_client, &yaml);
 
 		if (responses) {
-			for (struct SList *i = responses; i; i = i->nex) {
+			for (struct Pslist *i = responses; i; i = i->nex) {
 				if (!(response = i->val)) {
 					continue;
 				}
@@ -46,7 +46,7 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 					log_cap_lines_playback(response->log_cap_lines);
 				}
 			}
-			slist_free_vals(&responses, (fn_free)ipc_response_free);
+			pslist_free_vals(&responses, (fn_free)ipc_response_free);
 		} else {
 			rc = IPC_RC_BAD_RESPONSE;
 			done = true;

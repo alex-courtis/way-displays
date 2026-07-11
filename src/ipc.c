@@ -10,7 +10,7 @@
 #include "head.h"
 #include "lid.h"
 #include "log.h"
-#include "slist.h"
+#include "pslist.h"
 #include "sockets.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
@@ -43,7 +43,7 @@ void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
 	if (!ipc_operation)
 		return;
 
-	for (struct SList *i = ipc_operation->log_cap_lines; i; i = i->nex) {
+	for (struct Pslist *i = ipc_operation->log_cap_lines; i; i = i->nex) {
 		const struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 
 		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
@@ -111,12 +111,12 @@ struct IpcRequest *ipc_receive_request(int socket_server) {
 	return request;
 }
 
-struct SList *ipc_receive_responses(int socket_client, char **yaml) {
+struct Pslist *ipc_receive_responses(int socket_client, char **yaml) {
 	if (!(*yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
 
-	struct SList *responses = yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_list, "ipc response");
+	struct Pslist *responses = yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_list, "ipc response");
 
 	return responses;
 }
@@ -137,7 +137,7 @@ void ipc_response_free(struct IpcResponse *response) {
 
 	cfg_free(response->cfg);
 	lid_free(response->lid);
-	slist_free_vals(&response->heads, (fn_free)head_free);
+	pslist_free_vals(&response->heads, (fn_free)head_free);
 
 	log_cap_lines_free(&response->log_cap_lines);
 

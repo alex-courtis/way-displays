@@ -3,7 +3,7 @@
 #include "listeners.h"
 
 #include "displ.h"
-#include "slist.h"
+#include "pslist.h"
 #include "head.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -13,7 +13,7 @@ static void cleanup(struct Displ *displ,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1,
 		enum DisplState state) {
 
-	for (struct SList *i = g_heads; i; i = i->nex) {
+	for (struct Pslist *i = g_heads; i; i = i->nex) {
 		struct Head *head = i->val;
 		if (head->zwlr_config_head) {
 			zwlr_output_configuration_head_v1_destroy(head->zwlr_config_head);

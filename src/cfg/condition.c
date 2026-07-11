@@ -4,7 +4,7 @@
 #include "cfg/condition.h"
 
 #include "lid.h"
-#include "slist.h"
+#include "pslist.h"
 #include "pset.h"
 #include "sset.h"
 #include "fn.h"
@@ -53,14 +53,14 @@ bool condition_true(const struct Condition *condition, const void* const unused)
 		return false;
 
 	for (const struct SSetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
-		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) == NULL) {
+		if (pslist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) == NULL) {
 			sset_it_free(it);
 			return true;
 		}
 	}
 
 	for (const struct SSetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
-		if (slist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) != NULL) {
+		if (pslist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) != NULL) {
 			sset_it_free(it);
 			return true;
 		}

@@ -16,13 +16,13 @@
 #include "cfg/disabled.h"
 #include "log.h"
 #include "pset.h"
-#include "slist.h"
+#include "pslist.h"
 #include "smap.h"
 #include "sset.h"
 
 #include "cfg.h"
 
-extern struct SList *g_cfg_file_paths;
+extern struct Pslist *g_cfg_file_paths;
 
 struct State {
 	struct Cfg *from;
@@ -33,7 +33,7 @@ struct State {
 static int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 
-	slist_free_vals(&g_cfg_file_paths, NULL);
+	pslist_free_vals(&g_cfg_file_paths, NULL);
 
 	s->from = cfg_default();
 	s->to = cfg_default();
@@ -48,7 +48,7 @@ static int after_each(void **state) {
 
 	struct State *s = *state;
 
-	slist_free_vals(&g_cfg_file_paths, NULL);
+	pslist_free_vals(&g_cfg_file_paths, NULL);
 
 	cfg_destroy();
 
