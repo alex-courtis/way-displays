@@ -187,9 +187,16 @@ void desire_reapply(struct Head *head) {
 		head->desired.enabled = false;
 }
 
+static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *candidates, fn_2pred pred) {
+	for (const struct SPmapIt *bit = spmap_it(buckets); bit; bit = spmap_it_next(bit)) {
+		for (const struct PsetIt *cit = pset_filter_it(candidates, pred, bit->key); cit; cit = pset_it_next(cit)) {
+			pset_add(bit->val, cit->val);
+			pset_it_remove(cit);
+		}
+	}
+}
+
 struct Pslist *desire_order(const struct Sset * const order_name_desc, const struct Pslist *heads) {
-	const struct SPmapIt *bit;
-	const struct PsetIt *sit;
 
 	// buckets for each order_name_desc
 	const struct SPmapParams params = { .free_val = (fn_free)pset_free, };
@@ -197,32 +204,22 @@ struct Pslist *desire_order(const struct Sset * const order_name_desc, const str
 	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it))
 		spmap_put(buckets, it->val, pset_init());
 
-	// all candidates to be placed in buckets
+	// all candidates to be moved into buckets
 	const struct Pset *candidates = pset_init();
 	for (const struct Pslist *e = heads; e; e = e->nex)
 		pset_add(candidates, e->val);
 
-	// 1 - exact match
-	for (bit = spmap_it(buckets); bit; bit = spmap_it_next(bit))
-		for (sit = pset_filter_it(candidates, (fn_2pred)head_matches_name_desc_exact, bit->key); sit; sit = pset_it_next(sit))
-			pset_add(bit->val, sit->val);
+	// fill buckets in preferential order
+	fill_order_buckets(buckets, candidates, (fn_2pred)head_matches_name_desc_exact);
+	fill_order_buckets(buckets, candidates, (fn_2pred)head_matches_name_desc_regex);
+	fill_order_buckets(buckets, candidates, (fn_2pred)head_matches_name_desc_fuzzy);
 
-	// 2 - regex
-	for (bit = spmap_it(buckets); bit; bit = spmap_it_next(bit))
-		for (sit = pset_filter_it(candidates, (fn_2pred)head_matches_name_desc_regex, bit->key); sit; sit = pset_it_next(sit))
-			pset_add(bit->val, sit->val);
-
-	// 3 - fuzzy
-	for (bit = spmap_it(buckets); bit; bit = spmap_it_next(bit))
-		for (sit = pset_filter_it(candidates, (fn_2pred)head_matches_name_desc_fuzzy, bit->key); sit; sit = pset_it_next(sit))
-			pset_add(bit->val, sit->val);
-
-	// marshal buckets in name_desc order
+	// marshal buckets in final order
 	const struct Pset *sorted = pset_init();
 	for (const struct SPmapIt *it = spmap_it(buckets); it; it = spmap_it_next(it))
 		pset_add_all(sorted, it->val);
 
-	// 4 - remainder, no match
+	// add the remainder that didn't match
 	pset_add_all(sorted, candidates);
 
 	struct Pslist *sorted_list = pset_pslist(sorted);

@@ -77,7 +77,7 @@ const struct PsetIt *pset_it(const struct Pset* const set);
 // create an iterator filtering by pred, return NULL when no matches or NULL match
 const struct PsetIt *pset_filter_it(const struct Pset* const set, fn_2pred pred_val, const void* const data);
 
-// next iterator value, NULL at end of set
+// next iterator val, NULL at end of set
 const struct PsetIt *pset_it_next(const struct PsetIt* const it);
 
 /*
@@ -104,6 +104,12 @@ size_t pset_remove_all(const struct Pset* const set, const struct Pset* const fr
 
 // remove and free vals contained in from, return number removed [equal_val, free_val]
 size_t pset_remove_all_free(const struct Pset* const set, const struct Pset* const from);
+
+// remove the it.val, it is unusable, pset_it_next must be called
+void pset_it_remove(const struct PsetIt* const it);
+
+// remove and free the it.val, it is unusable, pset_it_next must be called
+void pset_it_remove_free(const struct PsetIt* const it);
 
 // shell sort in place, NULL less_than_val NOP
 void pset_sort(const struct Pset* const set, fn_less_than less_than_val);

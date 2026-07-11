@@ -21,6 +21,7 @@ struct Pset {
 struct PsetItState {
 	const struct Pset *set;
 	size_t pos;
+	bool attached;
 	fn_2pred pred_val;
 	const void *data;
 };
@@ -101,6 +102,27 @@ static bool remove(const struct Pset* const cset, const void* const val, fn_free
 	}
 
 	return false;
+}
+
+static void it_remove(const struct PsetIt* const it, bool do_free) {
+	if (!it)
+		return;
+
+	struct PsetItState *st = it->st;
+	if (!st) {
+		pset_it_free(it);
+		return;
+	}
+
+	remove(st->set, it->val, do_free ? st->set->params.free_val: NULL);
+
+	if (st->pos > 0) {
+		st->pos--;
+	} else {
+		st->attached = false;
+	}
+
+	((struct PsetIt*)it)->val = NULL;
 }
 
 static size_t add_all(const struct Pset* const set, const struct Pset* const from, fn_clone clone_val) {
@@ -269,10 +291,12 @@ const struct PsetIt *pset_it_next(const struct PsetIt* const it) {
 		return NULL;
 	}
 
-	// null val indicates first use, start at the beginning
-	if (it->val) {
+	if (st->attached) {
 		st->pos++;
+	} else {
+		st->pos = 0;
 	}
+	st->attached = true;
 
 	for ( ; st->pos < st->set->size; st->pos++) {
 
@@ -316,6 +340,14 @@ size_t pset_remove_all(const struct Pset* const set, const struct Pset* const fr
 
 size_t pset_remove_all_free(const struct Pset* const set, const struct Pset* const from) {
 	return set && from ? remove_all(set, from, set->params.free_val ? set->params.free_val : (fn_free)free) : 0;
+}
+
+void pset_it_remove(const struct PsetIt* const it) {
+	it_remove(it, false);
+}
+
+void pset_it_remove_free(const struct PsetIt* const it) {
+	it_remove(it, true);
 }
 
 void pset_sort(const struct Pset* const set, fn_less_than less_than_val) {

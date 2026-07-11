@@ -65,7 +65,7 @@ const struct SsetIt *sset_it(const struct Sset* const set);
 // create an iterator filtering by pred, return NULL when no matches or NULL match
 const struct SsetIt *sset_filter_it(const struct Sset* const set, fn_2pred_str pred_val, const void* const data);
 
-// next iterator value, NULL at end of set
+// next iterator val, NULL at end of set
 const struct SsetIt *sset_it_next(const struct SsetIt* const it);
 
 /*
