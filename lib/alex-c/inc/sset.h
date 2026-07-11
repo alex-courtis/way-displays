@@ -84,6 +84,9 @@ bool sset_remove(const struct Sset* const set, const char* const val);
 // remove vals contained in from, return number removed
 size_t sset_remove_all(const struct Sset* const set, const struct Sset* const from);
 
+// remove the it.val, it is unusable, sset_it_next must be called
+void sset_it_remove(const struct SsetIt* const it);
+
 // shell sort in place
 void sset_sort(const struct Sset* const set);
 

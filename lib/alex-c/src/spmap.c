@@ -45,6 +45,25 @@ static const struct SPmapIt *it_init(const struct PPmapIt *pit) {
 	return it;
 }
 
+void it_remove(const struct SPmapIt* const it, bool do_free) {
+	if (!it)
+		return;
+
+	if (!it->st) {
+		spmap_it_free(it);
+		return;
+	}
+
+	if (do_free) {
+		ppmap_it_remove_free(it->st->pit);
+	} else {
+		ppmap_it_remove(it->st->pit);
+	}
+
+	((struct SPmapIt*)it)->key = NULL;
+	((struct SPmapIt*)it)->val = NULL;
+}
+
 const struct SPmap *spmap_init(void) {
 	const struct SPmapParams params = { 0 };
 	return spmap_init_with(params);
@@ -230,6 +249,14 @@ size_t spmap_remove_all(const struct SPmap* const map, const struct SPmap* const
 
 size_t spmap_remove_all_free(const struct SPmap* const map, const struct SPmap* const from) {
 	return map && from ? ppmap_remove_all_free(map->ppmap, from->ppmap) : 0;
+}
+
+void spmap_it_remove(const struct SPmapIt* const it) {
+	it_remove(it, false);
+}
+
+void spmap_it_remove_free(const struct SPmapIt* const it) {
+	it_remove(it, true);
 }
 
 size_t spmap_put_all(const struct SPmap* const map, const struct SPmap* const from) {

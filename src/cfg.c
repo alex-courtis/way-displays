@@ -448,10 +448,8 @@ void cfg_validate_fix(struct Cfg *cfg) {
 		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
 	}
 
-	const char *name_desc;
-
-	while ((name_desc = spmap_find(cfg->modes, (fn_3pred_str_ptr)mode_is_invalid, NULL).key)) {
-		spmap_remove_free(cfg->modes, name_desc);
+	for (const struct SPmapIt *it = spmap_filter_it(cfg->modes, (fn_3pred_str_ptr)mode_is_invalid, NULL); it; it = spmap_it_next(it)) {
+		spmap_it_remove_free(it);
 	}
 }
 

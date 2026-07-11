@@ -108,7 +108,7 @@ size_t pset_remove_all_free(const struct Pset* const set, const struct Pset* con
 // remove the it.val, it is unusable, pset_it_next must be called
 void pset_it_remove(const struct PsetIt* const it);
 
-// remove and free the it.val, it is unusable, pset_it_next must be called
+// remove and free the it.val, it is unusable, pset_it_next must be called [free_val]
 void pset_it_remove_free(const struct PsetIt* const it);
 
 // shell sort in place, NULL less_than_val NOP

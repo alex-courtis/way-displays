@@ -20,7 +20,7 @@ struct Pset {
 
 struct PsetItState {
 	const struct Pset *set;
-	size_t pos;
+	size_t position;
 	bool attached;
 	fn_2pred pred_val;
 	const void *data;
@@ -116,8 +116,8 @@ static void it_remove(const struct PsetIt* const it, bool do_free) {
 
 	remove(st->set, it->val, do_free ? st->set->params.free_val: NULL);
 
-	if (st->pos > 0) {
-		st->pos--;
+	if (st->position > 0) {
+		st->position--;
 	} else {
 		st->attached = false;
 	}
@@ -292,16 +292,16 @@ const struct PsetIt *pset_it_next(const struct PsetIt* const it) {
 	}
 
 	if (st->attached) {
-		st->pos++;
+		st->position++;
 	} else {
-		st->pos = 0;
+		st->position = 0;
 	}
 	st->attached = true;
 
-	for ( ; st->pos < st->set->size; st->pos++) {
+	for ( ; st->position < st->set->size; st->position++) {
 
 		struct PsetIt *it_m = (struct PsetIt*)it;
-		it_m->val = *(st->set->vals + st->pos);
+		it_m->val = *(st->set->vals + st->position);
 
 		if ((st->pred_val && !st->pred_val(it->val, st->data))) {
 			continue;

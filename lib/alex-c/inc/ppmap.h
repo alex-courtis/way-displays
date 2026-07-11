@@ -149,6 +149,12 @@ size_t ppmap_remove_all(const struct PPmap* const map, const struct PPmap* const
 // remove and free entries matching from keys, return number removed [equal_key, free_key, free_val]
 size_t ppmap_remove_all_free(const struct PPmap* const map, const struct PPmap* const from);
 
+// remove the entry, it is unusable, ppmap_it_next must be called [free_key]
+void ppmap_it_remove(const struct PPmapIt* const it);
+
+// remove and entry, free the val, it is unusable, ppmap_it_next must be called [free_key, free_val]
+void ppmap_it_remove_free(const struct PPmapIt* const it);
+
 /*
  * Comparison
  */

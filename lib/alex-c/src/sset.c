@@ -102,7 +102,6 @@ const struct SsetIt *sset_it_next(const struct SsetIt* const it) {
 	if (!it)
 		return NULL;
 
-
 	if (!it->st) {
 		sset_it_free(it);
 		return NULL;
@@ -134,6 +133,20 @@ bool sset_remove(const struct Sset* const set, const char* const val) {
 
 size_t sset_remove_all(const struct Sset* const set, const struct Sset* const from) {
 	return set && from ? pset_remove_all_free(set->pset, from->pset) : false;
+}
+
+void sset_it_remove(const struct SsetIt* const it) {
+	if (!it)
+		return;
+
+	if (!it->st) {
+		sset_it_free(it);
+		return;
+	}
+
+	pset_it_remove_free(it->st->pit);
+
+	((struct SsetIt*)it)->val = NULL;
 }
 
 void sset_sort(const struct Sset* const set) {
