@@ -47,8 +47,7 @@ typedef bool (*fn_2pred)    (const void* const ptr, const void* const data);
 
 typedef bool (*fn_2pred_str)(const char* const str, const void* const data);
 
-// TODO use i for consistency with imap
-typedef bool (*fn_2pred_szt)(const size_t n,        const void* const data);
+typedef bool (*fn_2pred_szt)(const size_t i,        const void* const data);
 
 //
 // tri-predicate against user data, generally map key/val
@@ -59,9 +58,9 @@ typedef bool (*fn_3pred_str_ptr)(const char* const str,  const void* const ptr, 
 
 typedef bool (*fn_3pred_str_str)(const char* const str1, const char* const str2, const void* const data);
 
-typedef bool (*fn_3pred_str_szt)(const char* const str,  const size_t n,         const void* const data);
+typedef bool (*fn_3pred_str_szt)(const char* const str,  const size_t i,         const void* const data);
 
-typedef bool (*fn_3pred_szt_ptr)(const size_t n,         const void* const ptr,  const void* const data);
+typedef bool (*fn_3pred_szt_ptr)(const size_t i,         const void* const ptr,  const void* const data);
 
 //
 // free
@@ -88,6 +87,6 @@ typedef char* (*fn_str)(const void* const ptr);
 char *str_or_null(const char* const str);
 
 // %zu or "(null)"
-char *str_size_t_ptr(const size_t* const np);
+char *str_size_t_ptr(const size_t* const pi);
 
 #endif // FN_H

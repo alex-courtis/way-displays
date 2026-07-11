@@ -56,7 +56,7 @@ const struct IPmap *ipmap_init_with(const struct IPmapParams params);
 // same params, caller frees vals when alloc_val present [alloc_val]
 const struct IPmap *ipmap_clone(const struct IPmap* const from);
 
-// same params, caller frees vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_key, alloc_val, clone_val]
+// same params, caller frees vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_val, clone_val]
 const struct IPmap *ipmap_clone_deep(const struct IPmap* const from);
 
 // free map

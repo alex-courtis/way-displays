@@ -88,9 +88,9 @@ char *str_or_null(const char* const str) {
 	return sprintf_alloc("%s", str ? str : "(null)");
 }
 
-char *str_size_t_ptr(const size_t* const np) {
-	if (np)
-		return sprintf_alloc("%zu", *np);
+char *str_size_t_ptr(const size_t* const pi) {
+	if (pi)
+		return sprintf_alloc("%zu", *pi);
 	else
 		return strdup("(null)");
 }

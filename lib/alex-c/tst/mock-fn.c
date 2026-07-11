@@ -30,8 +30,8 @@ bool mock_2pred_str(const char* const str, const void* const data) {
 	return mock_type(bool);
 }
 
-bool mock_2pred_szt(const size_t n, const void* const data) {
-	check_expected_int(n);
+bool mock_2pred_szt(const size_t i, const void* const data) {
+	check_expected_int(i);
 	check_expected_ptr(data);
 
 	return mock_type(bool);
@@ -61,16 +61,16 @@ bool mock_3pred_str_str(const char* const str1, const char* const str2, const vo
 	return mock_type(bool);
 }
 
-bool mock_3pred_str_szt(const char *str, const size_t n, const void* const data) {
+bool mock_3pred_str_szt(const char *str, const size_t i, const void* const data) {
 	check_expected_ptr(str);
-	check_expected_int(n);
+	check_expected_int(i);
 	check_expected_ptr(data);
 
 	return mock_type(bool);
 }
 
-bool mock_3pred_szt_ptr(const size_t n, const void* const ptr, const void* const data) {
-	check_expected_int(n);
+bool mock_3pred_szt_ptr(const size_t i, const void* const ptr, const void* const data) {
+	check_expected_int(i);
 	check_expected_ptr(ptr);
 	check_expected_ptr(data);
 
