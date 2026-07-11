@@ -73,26 +73,26 @@ bool ssmap_contains_key(const struct SSmap* const map, const char* const key);
 // true if val is present
 bool ssmap_contains_val(const struct SSmap* const map, const char* const val);
 
-// find the first key/val match, {NULL,NULL} when no matches or NULL match
-struct SSmapPair ssmap_match(const struct SSmap* const map, fn_3pred_str_str match, const void* const data);
+// find the first key/val pred, {NULL,NULL} when no matches or NULL match
+struct SSmapPair ssmap_find(const struct SSmap* const map, fn_3pred_str_str pred_key_val, const void* const data);
 
-// find the first key match, {NULL,NULL} when no matches or NULL match
-struct SSmapPair ssmap_match_key(const struct SSmap* const map, fn_2pred_str match, const void* const data);
+// find the first key pred, {NULL,NULL} when no matches or NULL match
+struct SSmapPair ssmap_find_key(const struct SSmap* const map, fn_2pred_str pred_key, const void* const data);
 
-// find the first val match, {NULL,NULL} when no matches or NULL match
-struct SSmapPair ssmap_match_val(const struct SSmap* const map, fn_2pred_str match, const void* const data);
+// find the first val pred, {NULL,NULL} when no matches or NULL match
+struct SSmapPair ssmap_find_val(const struct SSmap* const map, fn_2pred_str pred_val, const void* const data);
 
 // create an iterator, caller must ssmap_it_free or invoke ssmap_next until NULL
 const struct SSmapIt *ssmap_it(const struct SSmap* const map);
 
-// create an iterator filtering by key/val match, return NULL when no matches or NULL match
-const struct SSmapIt *ssmap_match_it(const struct SSmap* const map, fn_3pred_str_str match, const void* const data);
+// create an iterator filtering by key/val pred, return NULL when no matches or NULL match
+const struct SSmapIt *ssmap_filter_it(const struct SSmap* const map, fn_3pred_str_str pred_key_val, const void* const data);
 
-// create an iterator filtering by key match, return NULL when no matches or NULL match
-const struct SSmapIt *ssmap_match_key_it(const struct SSmap* const map, fn_2pred_str match, const void* const data);
+// create an iterator filtering by key pred, return NULL when no matches or NULL match
+const struct SSmapIt *ssmap_key_filter_it(const struct SSmap* const map, fn_2pred_str pred_key, const void* const data);
 
-// create an iterator filtering by val match, return NULL when no matches or NULL match
-const struct SSmapIt *ssmap_match_val_it(const struct SSmap* const map, fn_2pred_str match, const void* const data);
+// create an iterator filtering by val pred, return NULL when no matches or NULL match
+const struct SSmapIt *ssmap_val_filter_it(const struct SSmap* const map, fn_2pred_str pred_val, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct SSmapIt *ssmap_it_next(const struct SSmapIt* const it);

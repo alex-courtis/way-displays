@@ -124,7 +124,7 @@ void heads_destroy(void) {
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	if (pset_match(cfg->disableds, (fn_2pred)disabled_name_desc_matches_head, head)) {
+	if (pset_find(cfg->disableds, (fn_2pred)disabled_name_desc_matches_head, head)) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);
@@ -174,7 +174,7 @@ void head_set_current_mode(struct Head * const head, const struct zwlr_output_mo
 	if (!head || !zwlr_mode)
 		return;
 
-	const struct Mode *mode = pset_match(head->modes, (fn_2pred)mode_is_zwlr_mode, zwlr_mode);
+	const struct Mode *mode = pset_find(head->modes, (fn_2pred)mode_is_zwlr_mode, zwlr_mode);
 
 	if (mode) {
 		head->current.mode = mode;
@@ -421,7 +421,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	const struct Mode *mode = NULL;
 
 	// maybe a cfg mode
-	struct Mode *mode_cfg = (struct Mode*)spmap_match_key(g_cfg->modes, (fn_2pred_str)head_name_desc_matches_head, head).val;
+	struct Mode *mode_cfg = (struct Mode*)spmap_find_key(g_cfg->modes, (fn_2pred_str)head_name_desc_matches_head, head).val;
 	if (mode_cfg) {
 		mode = mode_best_satisfying(mode_cfg, head->modes);
 		if (!mode && !mode_cfg->warned_no_mode) {
@@ -443,7 +443,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 
 	// always try preferred
 	if (!mode) {
-		if (sset_match(g_cfg->max_preferred_refresh, (fn_2pred_str)head_name_desc_matches_head, head)) {
+		if (sset_find(g_cfg->max_preferred_refresh, (fn_2pred_str)head_name_desc_matches_head, head)) {
 			mode = mode_max_refresh(head->mode_preferred, head->modes);
 		} else {
 			mode = head->mode_preferred;

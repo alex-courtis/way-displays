@@ -88,26 +88,26 @@ bool ppmap_contains_key(const struct PPmap* const map, const void* const key);
 // true if val is present [equal_val]
 bool ppmap_contains_val(const struct PPmap* const map, const void* const val);
 
-// find the first key/val match, {NULL,NULL} when no matches or NULL match
-struct PPmapPair ppmap_match(const struct PPmap* const map, fn_3pred match, const void* const data);
+// find the first key/val pred, {NULL,NULL} when no matches or NULL match
+struct PPmapPair ppmap_find(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data);
 
-// find the first key match, {NULL,NULL} when no matches or NULL match
-struct PPmapPair ppmap_match_key(const struct PPmap* const map, fn_2pred match, const void* const data);
+// find the first key pred, {NULL,NULL} when no matches or NULL match
+struct PPmapPair ppmap_find_key(const struct PPmap* const map, fn_2pred pred_key, const void* const data);
 
-// find the first val match, {NULL,NULL} when no matches or NULL match
-struct PPmapPair ppmap_match_val(const struct PPmap* const map, fn_2pred match, const void* const data);
+// find the first val pred, {NULL,NULL} when no matches or NULL match
+struct PPmapPair ppmap_find_val(const struct PPmap* const map, fn_2pred pred_val, const void* const data);
 
 // create an iterator, caller must ppmap_it_free or invoke ppmap_next until NULL
 const struct PPmapIt *ppmap_it(const struct PPmap* const map);
 
-// create an iterator filtering by key/val match, return NULL when no matches or NULL match
-const struct PPmapIt *ppmap_match_it(const struct PPmap* const map, fn_3pred match, const void* const data);
+// create an iterator filtering by key/val pred, return NULL when no matches or NULL match
+const struct PPmapIt *ppmap_filter_it(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data);
 
-// create an iterator filtering by key match, return NULL when no matches or NULL match
-const struct PPmapIt *ppmap_match_key_it(const struct PPmap* const map, fn_2pred match, const void* const data);
+// create an iterator filtering by key pred, return NULL when no matches or NULL match
+const struct PPmapIt *ppmap_key_filter_it(const struct PPmap* const map, fn_2pred pred_key, const void* const data);
 
-// create an iterator filtering by val match, return NULL when no matches or NULL match
-const struct PPmapIt *ppmap_match_val_it(const struct PPmap* const map, fn_2pred match, const void* const data);
+// create an iterator filtering by val pred, return NULL when no matches or NULL match
+const struct PPmapIt *ppmap_val_filter_it(const struct PPmap* const map, fn_2pred pred_val, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it);

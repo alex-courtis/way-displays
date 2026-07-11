@@ -21,7 +21,7 @@ struct Pset {
 struct PsetItState {
 	const struct Pset *set;
 	size_t pos;
-	fn_2pred match;
+	fn_2pred pred_val;
 	const void *data;
 };
 
@@ -222,12 +222,12 @@ bool pset_contains(const struct Pset* const set, const void* const val) {
 	return false;
 }
 
-const void *pset_match(const struct Pset* const set, fn_2pred match, const void* const data) {
-	if (!set || !match)
+const void *pset_find(const struct Pset* const set, fn_2pred pred_val, const void* const data) {
+	if (!set || !pred_val)
 		return NULL;
 
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
-		if (match(*v, data)) {
+		if (pred_val(*v, data)) {
 			return *v;
 		}
 	}
@@ -246,14 +246,14 @@ const struct PsetIt *pset_it(const struct Pset* const set) {
 	return pset_it_next(it);
 }
 
-const struct PsetIt *pset_match_it(const struct Pset* const set, fn_2pred match, const void* const data) {
-	if (!set || !match || set->size == 0)
+const struct PsetIt *pset_filter_it(const struct Pset* const set, fn_2pred pred_val, const void* const data) {
+	if (!set || !pred_val || set->size == 0)
 		return NULL;
 
 	struct PsetIt *it = calloc(1, sizeof(struct PsetIt));
 	it->st = calloc(1, sizeof(struct PsetItState));
 	it->st->set = set;
-	it->st->match = match;
+	it->st->pred_val = pred_val;
 	it->st->data = data;
 
 	return pset_it_next(it);
@@ -279,7 +279,7 @@ const struct PsetIt *pset_it_next(const struct PsetIt* const it) {
 		struct PsetIt *it_m = (struct PsetIt*)it;
 		it_m->val = *(st->set->vals + st->pos);
 
-		if ((st->match && !st->match(it->val, st->data))) {
+		if ((st->pred_val && !st->pred_val(it->val, st->data))) {
 			continue;
 		}
 

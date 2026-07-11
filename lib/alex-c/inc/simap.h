@@ -74,26 +74,26 @@ bool simap_contains_key(const struct SImap* const map, const char* const key);
 // true if val is present
 bool simap_contains_val(const struct SImap* const map, const size_t val);
 
-// find the first key/val match, {NULL,0} when no matches or NULL match
-struct SImapPair simap_match(const struct SImap* const map, fn_3pred_str_szt match, const void* const data);
+// find the first key/val pred, {NULL,0} when no matches or NULL match
+struct SImapPair simap_find(const struct SImap* const map, fn_3pred_str_szt pred_key_val, const void* const data);
 
-// find the first key match, {NULL,0} when no matches or NULL match
-struct SImapPair simap_match_key(const struct SImap* const map, fn_2pred_str match, const void* const data);
+// find the first key pred, {NULL,0} when no matches or NULL match
+struct SImapPair simap_find_key(const struct SImap* const map, fn_2pred_str pred_key, const void* const data);
 
-// find the first val match, {NULL,0} when no matches or NULL match
-struct SImapPair simap_match_val(const struct SImap* const map, fn_2pred_szt match, const void* const data);
+// find the first val pred, {NULL,0} when no matches or NULL match
+struct SImapPair simap_find_val(const struct SImap* const map, fn_2pred_szt pred_val, const void* const data);
 
 // create an iterator, caller must simap_it_free or invoke simap_next until NULL
 const struct SImapIt *simap_it(const struct SImap* const map);
 
-// create an iterator filtering by key/val match, return NULL when no matches or NULL match
-const struct SImapIt *simap_match_it(const struct SImap* const map, fn_3pred_str_szt match, const void* const data);
+// create an iterator filtering by key/val pred, return NULL when no matches or NULL match
+const struct SImapIt *simap_filter_it(const struct SImap* const map, fn_3pred_str_szt pred_key_val, const void* const data);
 
-// create an iterator filtering by key match, return NULL when no matches or NULL match
-const struct SImapIt *simap_match_key_it(const struct SImap* const map, fn_2pred_str match, const void* const data);
+// create an iterator filtering by key pred, return NULL when no matches or NULL match
+const struct SImapIt *simap_key_filter_it(const struct SImap* const map, fn_2pred_str pred_key, const void* const data);
 
-// create an iterator filtering by val match, return NULL when no matches or NULL match
-const struct SImapIt *simap_match_val_it(const struct SImap* const map, fn_2pred_szt match, const void* const data);
+// create an iterator filtering by val pred, return NULL when no matches or NULL match
+const struct SImapIt *simap_val_filter_it(const struct SImap* const map, fn_2pred_szt pred_val, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct SImapIt *simap_it_next(const struct SImapIt* const it);

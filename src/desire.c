@@ -53,7 +53,7 @@ void desire_enabled(struct Head *head) {
 	enabled |= pslist_length(g_heads) == 1;
 
 	// name_desc matches and (if present) any condition is true
-	enabled &= pset_match(g_cfg->disableds, (fn_2pred)disabled_matches_head, head) == NULL;
+	enabled &= pset_find(g_cfg->disableds, (fn_2pred)disabled_matches_head, head) == NULL;
 
 	// reset manual override when it matches the auto-state
 	if (head->overrided_enabled != NoOverride) {
@@ -107,7 +107,7 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	const struct SImapPair pair = simap_match_key(g_cfg->scales, (fn_2pred_str)head_name_desc_matches_head, head);
+	const struct SImapPair pair = simap_find_key(g_cfg->scales, (fn_2pred_str)head_name_desc_matches_head, head);
 	if (pair.key) {
 		head->desired.scale = head_get_fixed_scale((double)pair.val / 1000);
 		return;
@@ -128,7 +128,7 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	enum wl_output_transform transform = simap_match_key(g_cfg->transforms, (fn_2pred_str)head_name_desc_matches_head, head).val;
+	enum wl_output_transform transform = simap_find_key(g_cfg->transforms, (fn_2pred_str)head_name_desc_matches_head, head).val;
 	if (transform) {
 		head->desired.transform = transform;
 		return;
@@ -147,7 +147,7 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (sset_match(g_cfg->adaptive_sync_off, (fn_2pred_str)head_name_desc_matches_head, head)) {
+	if (sset_find(g_cfg->adaptive_sync_off, (fn_2pred_str)head_name_desc_matches_head, head)) {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;

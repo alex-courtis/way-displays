@@ -57,13 +57,13 @@ void sset_it_free(const struct SsetIt* const it);
 bool sset_contains(const struct Sset* const set, const char* const val);
 
 // find the first match, NULL when no match or NULL match
-const void *sset_match(const struct Sset* const set, fn_2pred_str match, const void* const data);
+const void *sset_find(const struct Sset* const set, fn_2pred_str pred_val, const void* const data);
 
 // create an iterator, caller must sset_it_free or invoke pset_next until NULL
 const struct SsetIt *sset_it(const struct Sset* const set);
 
-// create an iterator filtering by match, return NULL when no matches or NULL match
-const struct SsetIt *sset_match_it(const struct Sset* const set, fn_2pred_str match, const void* const data);
+// create an iterator filtering by pred, return NULL when no matches or NULL match
+const struct SsetIt *sset_filter_it(const struct Sset* const set, fn_2pred_str pred_val, const void* const data);
 
 // next iterator value, NULL at end of set
 const struct SsetIt *sset_it_next(const struct SsetIt* const it);

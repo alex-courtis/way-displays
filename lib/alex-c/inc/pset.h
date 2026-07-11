@@ -68,14 +68,14 @@ void pset_it_free(const struct PsetIt* const it);
 // true if this set contains the specified element [equal_val]
 bool pset_contains(const struct Pset* const set, const void* const val);
 
-// find the first match, NULL when no match or NULL match
-const void *pset_match(const struct Pset* const set, fn_2pred match, const void* const data);
+// find the first, NULL when no match or NULL match
+const void *pset_find(const struct Pset* const set, fn_2pred pred_val, const void* const data);
 
 // create an iterator, caller must pset_it_free or invoke pset_next until NULL
 const struct PsetIt *pset_it(const struct Pset* const set);
 
-// create an iterator filtering by match, return NULL when no matches or NULL match
-const struct PsetIt *pset_match_it(const struct Pset* const set, fn_2pred match, const void* const data);
+// create an iterator filtering by pred, return NULL when no matches or NULL match
+const struct PsetIt *pset_filter_it(const struct Pset* const set, fn_2pred pred_val, const void* const data);
 
 // next iterator value, NULL at end of set
 const struct PsetIt *pset_it_next(const struct PsetIt* const it);

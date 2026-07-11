@@ -81,26 +81,26 @@ bool ipmap_contains_key(const struct IPmap* const map, const size_t key);
 // true if val is present [equal_val]
 bool ipmap_contains_val(const struct IPmap* const map, const void* const val);
 
-// find the first key/val match, {0,NULL} when no matches or NULL match
-struct IPmapPair ipmap_match(const struct IPmap* const map, fn_3pred_szt_ptr match, const void* const data);
+// find the first key/val pred, {0,NULL} when no matches or NULL match
+struct IPmapPair ipmap_find(const struct IPmap* const map, fn_3pred_szt_ptr pred_key_val, const void* const data);
 
-// find the first key match, {0,NULL} when no matches or NULL match
-struct IPmapPair ipmap_match_key(const struct IPmap* const map, fn_2pred_szt match, const void* const data);
+// find the first key pred, {0,NULL} when no matches or NULL match
+struct IPmapPair ipmap_find_key(const struct IPmap* const map, fn_2pred_szt pred_key, const void* const data);
 
-// find the first val match, {0,NULL} when no matches or NULL match
-struct IPmapPair ipmap_match_val(const struct IPmap* const map, fn_2pred match, const void* const data);
+// find the first val pred, {0,NULL} when no matches or NULL match
+struct IPmapPair ipmap_find_val(const struct IPmap* const map, fn_2pred pred_val, const void* const data);
 
 // create an iterator, caller must ipmap_it_free or invoke ipmap_next until NULL
 const struct IPmapIt *ipmap_it(const struct IPmap* const map);
 
-// create an iterator filtering by key/val match, return NULL when no matches or NULL match
-const struct IPmapIt *ipmap_match_it(const struct IPmap* const map, fn_3pred_szt_ptr match, const void* const data);
+// create an iterator filtering by key/val pred, return NULL when no matches or NULL match
+const struct IPmapIt *ipmap_filter_it(const struct IPmap* const map, fn_3pred_szt_ptr pred_key_val, const void* const data);
 
-// create an iterator filtering by key match, return NULL when no matches or NULL match
-const struct IPmapIt *ipmap_match_key_it(const struct IPmap* const map, fn_2pred_szt match, const void* const data);
+// create an iterator filtering by key pred, return NULL when no matches or NULL match
+const struct IPmapIt *ipmap_key_filter_it(const struct IPmap* const map, fn_2pred_szt pred_key, const void* const data);
 
-// create an iterator filtering by val match, return NULL when no matches or NULL match
-const struct IPmapIt *ipmap_match_val_it(const struct IPmap* const map, fn_2pred match, const void* const data);
+// create an iterator filtering by val pred, return NULL when no matches or NULL match
+const struct IPmapIt *ipmap_val_filter_it(const struct IPmap* const map, fn_2pred pred_val, const void* const data);
 
 // next iterator entry, NULL at end of map
 const struct IPmapIt *ipmap_it_next(const struct IPmapIt* const it);

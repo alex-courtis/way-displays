@@ -24,9 +24,9 @@ struct PPmap {
 struct PPmapItState {
 	const struct PPmap *map;
 	size_t position;
-	fn_3pred match_key_val;
-	fn_2pred match_key;
-	fn_2pred match_val;
+	fn_3pred pred_key_val;
+	fn_2pred pred_key;
+	fn_2pred pred_val;
 	const void *data;
 };
 
@@ -298,16 +298,16 @@ bool ppmap_contains_val(const struct PPmap* const map, const void* const val) {
 	return false;
 }
 
-struct PPmapPair ppmap_match(const struct PPmap* const map, fn_3pred match, const void* const data) {
+struct PPmapPair ppmap_find(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data) {
 	struct PPmapPair res = { 0 };
 
-	if (!map || !match)
+	if (!map || !pred_key_val)
 		return res;
 
 	const void **k;
 	const void **v;
 	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
-		if (match(*k, *v, data)) {
+		if (pred_key_val(*k, *v, data)) {
 			res.key = *k;
 			res.val = *v;
 			break;
@@ -317,16 +317,16 @@ struct PPmapPair ppmap_match(const struct PPmap* const map, fn_3pred match, cons
 	return res;
 }
 
-struct PPmapPair ppmap_match_key(const struct PPmap* const map, fn_2pred match, const void* const data) {
+struct PPmapPair ppmap_find_key(const struct PPmap* const map, fn_2pred pred_key, const void* const data) {
 	struct PPmapPair res = { 0 };
 
-	if (!map || !match)
+	if (!map || !pred_key)
 		return res;
 
 	const void **k;
 	const void **v;
 	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
-		if (match(*k, data)) {
+		if (pred_key(*k, data)) {
 			res.key = *k;
 			res.val = *v;
 			break;
@@ -336,16 +336,16 @@ struct PPmapPair ppmap_match_key(const struct PPmap* const map, fn_2pred match, 
 	return res;
 }
 
-struct PPmapPair ppmap_match_val(const struct PPmap* const map, fn_2pred match, const void* const data) {
+struct PPmapPair ppmap_find_val(const struct PPmap* const map, fn_2pred pred_val, const void* const data) {
 	struct PPmapPair res = { 0 };
 
-	if (!map || !match)
+	if (!map || !pred_val)
 		return res;
 
 	const void **k;
 	const void **v;
 	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
-		if (match(*v, data)) {
+		if (pred_val(*v, data)) {
 			res.key = *k;
 			res.val = *v;
 			break;
@@ -367,43 +367,43 @@ const struct PPmapIt *ppmap_it(const struct PPmap* const map) {
 	return ppmap_it_next(it);
 }
 
-const struct PPmapIt *ppmap_match_it(const struct PPmap* const map, fn_3pred match, const void* const data) {
-	if (!map || !match)
+const struct PPmapIt *ppmap_filter_it(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data) {
+	if (!map || !pred_key_val)
 		return NULL;
 
 	const struct PPmapIt *it = it_init(map);
 	if (!it)
 		return NULL;
 
-	it->st->match_key_val = match;
+	it->st->pred_key_val = pred_key_val;
 	it->st->data = data;
 
 	return ppmap_it_next(it);
 }
 
-const struct PPmapIt *ppmap_match_key_it(const struct PPmap* const map, fn_2pred match, const void* const data) {
-	if (!map || !match)
+const struct PPmapIt *ppmap_key_filter_it(const struct PPmap* const map, fn_2pred pred_key, const void* const data) {
+	if (!map || !pred_key)
 		return NULL;
 
 	const struct PPmapIt *it = it_init(map);
 	if (!it)
 		return NULL;
 
-	it->st->match_key = match;
+	it->st->pred_key = pred_key;
 	it->st->data = data;
 
 	return ppmap_it_next(it);
 }
 
-const struct PPmapIt *ppmap_match_val_it(const struct PPmap* const map, fn_2pred match, const void* const data) {
-	if (!map || !match)
+const struct PPmapIt *ppmap_val_filter_it(const struct PPmap* const map, fn_2pred pred_val, const void* const data) {
+	if (!map || !pred_val)
 		return NULL;
 
 	const struct PPmapIt *it = it_init(map);
 	if (!it)
 		return NULL;
 
-	it->st->match_val = match;
+	it->st->pred_val = pred_val;
 	it->st->data = data;
 
 	return ppmap_it_next(it);
@@ -432,13 +432,13 @@ const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it) {
 		it_m->key = *(st->map->keys + st->position);
 		it_m->val = *(st->map->vals + st->position);
 
-		if (st->match_key_val && !st->match_key_val(it->key, it->val, st->data)) {
+		if (st->pred_key_val && !st->pred_key_val(it->key, it->val, st->data)) {
 			continue;
 		}
-		if (st->match_key && !st->match_key(it->key, st->data)) {
+		if (st->pred_key && !st->pred_key(it->key, st->data)) {
 			continue;
 		}
-		if (st->match_val && !st->match_val(it->val, st->data)) {
+		if (st->pred_val && !st->pred_val(it->val, st->data)) {
 			continue;
 		}
 
