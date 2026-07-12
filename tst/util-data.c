@@ -6,7 +6,6 @@
 
 #include "util-init.h"
 #include "util-col.h"
-#include "wrap-log.h"
 
 #include "cfg.h"
 #include "cfg/condition.h"
@@ -20,6 +19,15 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #include "util-data.h"
+
+void log_cap_line_append(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines) {
+	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
+
+	lcl->threshold = threshold;
+	lcl->line = strdup(line);
+
+	pslist_append(log_cap_lines, lcl);
+}
 
 // cfg-all.yaml
 struct Cfg *cfg_all(void) {
@@ -112,9 +120,9 @@ struct IpcOperation *ipc_response(void) {
 	g_lid->closed = true;
 	g_lid->device_path = "/path/to/lid";
 
-	log_cap_line(DEBUG, "dbg", &ipc_operation->log_cap_lines);
-	log_cap_line(INFO, "inf", &ipc_operation->log_cap_lines);
-	log_cap_line(WARNING, "war", &ipc_operation->log_cap_lines);
+	log_cap_line_append(DEBUG, "dbg", &ipc_operation->log_cap_lines);
+	log_cap_line_append(INFO, "inf", &ipc_operation->log_cap_lines);
+	log_cap_line_append(WARNING, "war", &ipc_operation->log_cap_lines);
 
 	ipc_operation_update_rc(ipc_operation);
 

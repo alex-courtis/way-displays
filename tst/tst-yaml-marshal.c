@@ -4,7 +4,6 @@
 #include "asserts.h"
 #include "util-data.h"
 #include "util-file.h"
-#include "wrap-log.h"
 
 #include <cmocka.h>
 #include <stdio.h>
@@ -103,8 +102,8 @@ static void yaml_root_from_ipc_request__cfg_set(void **state) {
 static void yaml_root_from_ipc_operation__map(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 
-	log_cap_line(ERROR, "err", &ipc_operation->log_cap_lines);
-	log_cap_line(FATAL, "fat", &ipc_operation->log_cap_lines);
+	log_cap_line_append(ERROR, "err", &ipc_operation->log_cap_lines);
+	log_cap_line_append(FATAL, "fat", &ipc_operation->log_cap_lines);
 	ipc_operation_update_rc(ipc_operation);
 
 	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-map.yaml");

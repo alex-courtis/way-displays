@@ -10,8 +10,6 @@
 #include "str.h"
 #include "util-file.h"
 
-#include "wrap-log.h"
-
 /*
  * replaces all of log except for cap lines
  */
@@ -23,15 +21,6 @@
 // 0 unused, 1 DEBUG, 5 FATAL
 static char b[6][262144] = { 0 };
 static char *bp[6] = { 0 };
-
-void log_cap_line(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines) {
-	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
-
-	lcl->threshold = threshold;
-	lcl->line = strdup(line);
-
-	pslist_append(log_cap_lines, lcl);
-}
 
 void _assert_log(enum LogThreshold t, const char * s, const char * const file, const int line) {
 	if (bp[t]) {
@@ -67,22 +56,15 @@ void _assert_logs_empty(const char * const file, const int line) {
 }
 
 static void _log(enum LogThreshold t, const char *__restrict __format, va_list __args) {
-	const char *printed;
 
 	if (!bp[t]) {
 		bp[t] = b[t];
 	}
 
-	printed = bp[t];
-
 	if (__format) {
 		bp[t] += vsnprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), __format, __args);
 	} else {
 		bp[t] += snprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), "%s", "");
-	}
-
-	if (LOG_PRINT) {
-		fprintf(stderr, "%s\n", printed);
 	}
 
 	bp[t] += snprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), "\n");
