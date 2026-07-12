@@ -30,31 +30,7 @@ struct Cfg *g_cfg = NULL;
 // one-shot singleton set via cfg_file_paths_init
 struct Pslist *g_cfg_file_paths = NULL;
 
-static struct Cfg *clone_cfg(struct Cfg *from) {
-	if (!from)
-		return NULL;
-
-	struct Cfg *to = (struct Cfg*)calloc(1, sizeof(struct Cfg));
-
-	memcpy(to, from, sizeof(struct Cfg));
-
-	to->callback_cmd          = from->callback_cmd          ? strdup(from->callback_cmd)          : NULL;
-	to->dir_path              = from->dir_path              ? strdup(from->dir_path)              : NULL;
-	to->file_name             = from->file_name             ? strdup(from->file_name)             : NULL;
-	to->file_path             = from->file_path             ? strdup(from->file_path)             : NULL;
-	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
-
-	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
-	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
-	to->order_name_desc       = sset_clone(from->order_name_desc);
-	to->disableds             = pset_clone_deep(from->disableds);
-	to->modes                 = spmap_clone_deep(from->modes);
-	to->scales                = simap_clone(from->scales);
-	to->transforms            = simap_clone(from->transforms);
-
-	return to;
-}
-
+// TODO explicit test
 static void cfg_paths_free(struct Cfg *cfg) {
 	if (!cfg)
 		return;
@@ -72,9 +48,6 @@ static void cfg_paths_free(struct Cfg *cfg) {
 }
 
 static void warn_ambiguous_name_desc(const char *name_desc, const enum CfgElement element) {
-	if (!name_desc)
-		return;
-
 	if (strlen(name_desc) < 4) {
 		log_warn(NULL);
 		log_warn("%s '%s' is less than 4 characters, which may result in some unwanted matches.", cfg_element_name(element), name_desc);
@@ -105,9 +78,6 @@ static void warn_ambiguous_name_desc_sset(const struct Sset *name_descs, const e
 }
 
 static bool mode_is_invalid(const char* const name_desc, const struct Mode* const mode, const void* const unused) {
-	if (!mode || !name_desc) {
-		return true;
-	}
 	if (mode->width != -1 && mode->width <= 0) {
 		log_warn(NULL);
 		log_warn("Ignoring non-positive MODE %s WIDTH %d", name_desc, mode->width);
@@ -140,6 +110,7 @@ static bool mode_is_invalid(const char* const name_desc, const struct Mode* cons
 	return false;
 }
 
+// TODO explicit test or move to correct module
 static bool cfg_file_write_content(const char * const yaml) {
 	return
 		file_write(g_cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
@@ -186,6 +157,31 @@ struct Cfg *cfg_default(void) {
 	return def;
 }
 
+struct Cfg *cfg_clone(struct Cfg *from) {
+	if (!from)
+		return NULL;
+
+	struct Cfg *to = (struct Cfg*)calloc(1, sizeof(struct Cfg));
+
+	memcpy(to, from, sizeof(struct Cfg));
+
+	to->callback_cmd          = from->callback_cmd          ? strdup(from->callback_cmd)          : NULL;
+	to->dir_path              = from->dir_path              ? strdup(from->dir_path)              : NULL;
+	to->file_name             = from->file_name             ? strdup(from->file_name)             : NULL;
+	to->file_path             = from->file_path             ? strdup(from->file_path)             : NULL;
+	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
+
+	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
+	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
+	to->order_name_desc       = sset_clone(from->order_name_desc);
+	to->disableds             = pset_clone_deep(from->disableds);
+	to->modes                 = spmap_clone_deep(from->modes);
+	to->scales                = simap_clone(from->scales);
+	to->transforms            = simap_clone(from->transforms);
+
+	return to;
+}
+
 void cfg_free(struct Cfg *cfg) {
 	if (!cfg)
 		return;
@@ -210,6 +206,7 @@ void cfg_destroy(void) {
 	g_cfg = NULL;
 }
 
+// TODO explicit test or move to correct module
 void cfg_file_paths_init(const char *user_path) {
 	char path[PATH_MAX];
 
@@ -275,6 +272,7 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor   = LAPTOP_LID_MONITOR_DEFAULT;
 }
 
+// TODO maybe test
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {
 	if (!to || !from) {
 		return NULL;
@@ -308,17 +306,12 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 		return NULL;
 	}
 
-	struct Cfg *merged = clone_cfg(to);
+	struct Cfg *merged = cfg_clone(to);
 
 	// upsert
 	merged->align                = from->align                ? from->align                : merged->align;
 	merged->arrange              = from->arrange              ? from->arrange              : merged->arrange;
 	merged->auto_scale           = from->auto_scale           ? from->auto_scale           : merged->auto_scale;
-	merged->auto_scale_dpi       = from->auto_scale_dpi       ? from->auto_scale_dpi       : merged->auto_scale_dpi;
-	merged->auto_scale_max       = from->auto_scale_max       ? from->auto_scale_max       : merged->auto_scale_max;
-	merged->auto_scale_min       = from->auto_scale_min       ? from->auto_scale_min       : merged->auto_scale_min;
-	merged->scale_round_strategy = from->scale_round_strategy ? from->scale_round_strategy : merged->scale_round_strategy;
-	merged->scale_round_to       = from->scale_round_to       ? from->scale_round_to       : merged->scale_round_to;
 	merged->scaling              = from->scaling              ? from->scaling              : merged->scaling;
 	if (from->callback_cmd) {
 		if (merged->callback_cmd) {
@@ -344,16 +337,17 @@ struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 		return NULL;
 	}
 
-	struct Cfg *merged = clone_cfg(to);
+	struct Cfg *merged = cfg_clone(to);
 
+	// TODO ensure that toggle is not removed
 	pset_remove_all_free (merged->disableds,         from->disableds);
 	spmap_remove_all_free(merged->modes,             from->modes);
 	simap_remove_all     (merged->scales,            from->scales);
 	simap_remove_all     (merged->transforms,        from->transforms);
 	sset_remove_all      (merged->adaptive_sync_off, from->adaptive_sync_off);
 
-	// empty string means no callback
-	if (from->callback_cmd && strlen(from->callback_cmd) == 0) {
+	// any string means no callback
+	if (from->callback_cmd) {
 		free(merged->callback_cmd);
 		merged->callback_cmd = NULL;
 	}
@@ -370,7 +364,9 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 		return NULL;
 	}
 
-	struct Cfg *merged = clone_cfg(to);
+	struct Cfg *merged = cfg_clone(to);
+
+	// TODO this does not toggle off
 
 	// SCALE
 	if (from->scaling == ON) {
@@ -452,6 +448,7 @@ void cfg_validate_fix(struct Cfg *cfg) {
 	}
 }
 
+// TODO explicit test or move to correct module
 void cfg_file_write(void) {
 	char *yaml = NULL;
 	const char *resolved_from = g_cfg->resolved_from;

@@ -121,6 +121,8 @@ struct Cfg *cfg_init(void);
 // init and cfg_apply_defaults
 struct Cfg *cfg_default(void);
 
+struct Cfg *cfg_clone(struct Cfg *from);
+
 void cfg_free(struct Cfg *cfg);
 
 // free and set g_cfg to NULL
@@ -149,7 +151,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 // apply default only for unset values
 void cfg_apply_defaults(struct Cfg *cfg);
 
-// merge from into to for command
+// merge from into to for command, only Ipc settable fields are merged
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command);
 struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from);
 struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from);
