@@ -6,10 +6,10 @@
 #include "cfg.h"
 
 /*
- * lifecycle - Cfg
+ * lifecycle - CfgFile
  */
 
-void cfg_paths_free(struct Cfg *cfg);
+void cfg_file_free(struct CfgFile *cfg_file);
 
 /*
  * lifecycle - g_cfg_file_paths
@@ -32,10 +32,10 @@ void cfg_file_write(void);
  * update
  */
 
-// if a file is found in g_cfg_file_paths, return true and set them in to
-bool cfg_resolve_file_path(struct Cfg *to);
+// if a file is found in g_cfg_file_paths, return true and set them
+bool cfg_file_resolve(struct CfgFile *cfg_file);
 
 // duplicate paths
-void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from);
+void cfg_file_merge(struct CfgFile *to, const struct CfgFile *from);
 
 #endif // CFG_FILE_H

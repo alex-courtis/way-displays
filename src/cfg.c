@@ -133,7 +133,7 @@ void cfg_free(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
-	cfg_paths_free(cfg);
+	cfg_file_free(&cfg->file);
 
 	free(cfg->callback_cmd);
 	free(cfg->laptop_display_prefix);

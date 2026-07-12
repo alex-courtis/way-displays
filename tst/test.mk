@@ -85,6 +85,6 @@ tst/tst-cfg-file: LDFLAGS += -Wl,$\
 	--wrap=fd_wd_cfg_dir_create
 
 tst/tst-server: LDFLAGS += -Wl,$\
-	--wrap=cfg_resolve_file_path,$\
+	--wrap=cfg_file_resolve,$\
 	--wrap=yaml_unmarshal_file
 

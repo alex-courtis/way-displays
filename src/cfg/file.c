@@ -19,22 +19,22 @@
 // one-shot singleton set via cfg_file_paths_init
 struct Pslist *g_cfg_file_paths = NULL;
 
-static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
+static void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_path) {
 	static char path[PATH_MAX];
 
-	cfg->file.resolved_from = resolved_from;
+	cfg_file->resolved_from = resolved_from;
 
-	cfg->file.file_path = strdup(file_path);
+	cfg_file->file_path = strdup(file_path);
 
 	// dirname modifies path
-	strncpy(path, cfg->file.file_path, PATH_MAX - 1);
-	free(cfg->file.dir_path);
-	cfg->file.dir_path = strdup(dirname(path));
+	strncpy(path, cfg_file->file_path, PATH_MAX - 1);
+	free(cfg_file->dir_path);
+	cfg_file->dir_path = strdup(dirname(path));
 
 	// basename modifies path
-	strncpy(path, cfg->file.file_path, PATH_MAX - 1);
-	free(cfg->file.file_name);
-	cfg->file.file_name = strdup(basename(path));
+	strncpy(path, cfg_file->file_path, PATH_MAX - 1);
+	free(cfg_file->file_name);
+	cfg_file->file_name = strdup(basename(path));
 }
 
 // TODO explicit test or move to correct module
@@ -71,17 +71,17 @@ void cfg_file_paths_destroy(void) {
 	pslist_free_vals(&g_cfg_file_paths, NULL);
 }
 
-void cfg_paths_free(struct Cfg *cfg) {
-	free(cfg->file.dir_path);
-	cfg->file.dir_path = NULL;
+void cfg_file_free(struct CfgFile *cfg_file) {
+	free(cfg_file->dir_path);
+	cfg_file->dir_path = NULL;
 
-	free(cfg->file.file_path);
-	cfg->file.file_path = NULL;
+	free(cfg_file->file_path);
+	cfg_file->file_path = NULL;
 
-	free(cfg->file.file_name);
-	cfg->file.file_name = NULL;
+	free(cfg_file->file_name);
+	cfg_file->file_name = NULL;
 
-	cfg->file.resolved_from = NULL;
+	cfg_file->resolved_from = NULL;
 }
 
 // TODO explicit test or move to correct module
@@ -104,7 +104,7 @@ void cfg_file_write(void) {
 	if (!written) {
 
 		// kill that cfg file
-		cfg_paths_free(g_cfg);
+		cfg_file_free(&g_cfg->file);
 		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
@@ -115,7 +115,7 @@ void cfg_file_write(void) {
 				continue;
 			}
 
-			set_paths(g_cfg, i->val, i->val);
+			set_paths(&g_cfg->file, i->val, i->val);
 
 			// attempt to write
 			if (mkdir_p(g_cfg->file.dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
@@ -125,7 +125,7 @@ void cfg_file_write(void) {
 				goto end;
 			}
 
-			cfg_paths_free(g_cfg);
+			cfg_file_free(&g_cfg->file);
 		}
 	}
 
@@ -138,11 +138,11 @@ end:
 	}
 }
 
-bool cfg_resolve_file_path(struct Cfg *to) {
-	if (!to)
+bool cfg_file_resolve(struct CfgFile *cfg_file) {
+	if (!cfg_file)
 		return false;
 
-	cfg_paths_free(to);
+	cfg_file_free(cfg_file);
 
 	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
@@ -157,7 +157,7 @@ bool cfg_resolve_file_path(struct Cfg *to) {
 				continue;
 			}
 
-			set_paths(to, i->val, file_path);
+			set_paths(cfg_file, i->val, file_path);
 
 			free(file_path);
 
@@ -168,15 +168,15 @@ bool cfg_resolve_file_path(struct Cfg *to) {
 	return false;
 }
 
-void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
+void cfg_file_merge(struct CfgFile *to, const struct CfgFile *from) {
 	if (!from || !to)
 		return;
 
-	free(to->file.dir_path);
-	free(to->file.file_path);
-	free(to->file.file_name);
+	free(to->dir_path);
+	free(to->file_path);
+	free(to->file_name);
 
-	to->file.dir_path = from->file.dir_path ? strdup(from->file.dir_path) : NULL;
-	to->file.file_path = from->file.file_path ? strdup(from->file.file_path) : NULL;
-	to->file.file_name = from->file.file_name ? strdup(from->file.file_name) : NULL;
+	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
+	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
+	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
 }

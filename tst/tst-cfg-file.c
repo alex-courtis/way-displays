@@ -344,7 +344,7 @@ static void cfg_file_paths_init__user(void **state) {
 	assert_int_equal(pslist_length(g_cfg_file_paths), 4);
 }
 
-static void cfg_resolve_file_path__not_found(void **state) {
+static void cfg_file_resolve__not_found(void **state) {
 	char cwd[PATH_MAX];
 	char file_path[PATH_MAX + 20];
 
@@ -354,7 +354,7 @@ static void cfg_resolve_file_path__not_found(void **state) {
 
 	pslist_append(&g_cfg_file_paths, strdup(file_path));
 
-	assert_false(cfg_resolve_file_path(g_cfg));
+	assert_false(cfg_file_resolve(&g_cfg->file));
 
 	assert_nul(g_cfg->file.file_path);
 	assert_nul(g_cfg->file.dir_path);
@@ -362,7 +362,7 @@ static void cfg_resolve_file_path__not_found(void **state) {
 	assert_nul(g_cfg->file.resolved_from);
 }
 
-static void cfg_resolve_file_path__direct(void **state) {
+static void cfg_file_resolve__direct(void **state) {
 	char cwd[PATH_MAX];
 	char dir_path[PATH_MAX + 20];
 	char file_path[PATH_MAX + 40];
@@ -379,7 +379,7 @@ static void cfg_resolve_file_path__direct(void **state) {
 		fclose(f);
 	}
 
-	assert_true(cfg_resolve_file_path(g_cfg));
+	assert_true(cfg_file_resolve(&g_cfg->file));
 
 	assert_str_equal(g_cfg->file.file_path, file_path);
 	assert_str_equal(g_cfg->file.dir_path, dir_path);
@@ -388,7 +388,7 @@ static void cfg_resolve_file_path__direct(void **state) {
 	assert_ptr_equal(g_cfg->file.resolved_from, pslist_at(g_cfg_file_paths, 0));
 }
 
-static void cfg_resolve_file_path__linked(void **state) {
+static void cfg_file_resolve__linked(void **state) {
 	char cwd[PATH_MAX];
 	char dir_path[PATH_MAX + 20];
 	char file_path[PATH_MAX + 40];
@@ -410,7 +410,7 @@ static void cfg_resolve_file_path__linked(void **state) {
 	}
 	assert_int_equal(symlink(file_path, linked_path), 0);
 
-	assert_true(cfg_resolve_file_path(g_cfg));
+	assert_true(cfg_file_resolve(&g_cfg->file));
 
 	assert_str_equal(g_cfg->file.file_path, file_path);
 	assert_str_equal(g_cfg->file.dir_path, dir_path);
@@ -432,9 +432,9 @@ int main(void) {
 		TEST_BA(cfg_file_paths_init__xch),
 		TEST_BA(cfg_file_paths_init__user),
 
-		TEST_BA(cfg_resolve_file_path__not_found),
-		TEST_BA(cfg_resolve_file_path__direct),
-		TEST_BA(cfg_resolve_file_path__linked),
+		TEST_BA(cfg_file_resolve__not_found),
+		TEST_BA(cfg_file_resolve__direct),
+		TEST_BA(cfg_file_resolve__linked),
 	};
 
 	return RUN_BA(tests);

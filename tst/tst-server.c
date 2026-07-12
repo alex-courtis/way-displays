@@ -22,12 +22,12 @@ char *_file_name = NULL;
 char *_file_path = NULL;
 
 // cppcheck-suppress staticFunction
-bool __wrap_cfg_resolve_file_path(struct Cfg *cfg) {
-	check_expected_ptr(cfg);
+bool __wrap_cfg_file_resolve(struct CfgFile *cfg_file) {
+	check_expected_ptr(cfg_file);
 
-	cfg->file.dir_path = _dir_path ? strdup(_dir_path) : NULL;
-	cfg->file.file_name = _file_name ? strdup(_file_name) : NULL;
-	cfg->file.file_path = _file_path ? strdup(_file_path) : NULL;
+	cfg_file->dir_path = _dir_path ? strdup(_dir_path) : NULL;
+	cfg_file->file_name = _file_name ? strdup(_file_name) : NULL;
+	cfg_file->file_path = _file_path ? strdup(_file_path) : NULL;
 
 	return mock_type(bool);
 }
@@ -54,8 +54,8 @@ static int after_each(void **state) {
 }
 
 static void server_load_cfg__no_file(void **state) {
-	expect_any(__wrap_cfg_resolve_file_path, cfg);
-	will_return_int(__wrap_cfg_resolve_file_path, false);
+	expect_any(__wrap_cfg_file_resolve, cfg_file);
+	will_return_int(__wrap_cfg_file_resolve, false);
 
 	server_load_cfg();
 
@@ -83,8 +83,8 @@ static void server_load_cfg__valid_file(void **state) {
 	cfg_read->log_threshold = FATAL;
 	cfg_read->scale_round_to = 4;
 
-	expect_any(__wrap_cfg_resolve_file_path, cfg);
-	will_return_int(__wrap_cfg_resolve_file_path, true);
+	expect_any(__wrap_cfg_file_resolve, cfg_file);
+	will_return_int(__wrap_cfg_file_resolve, true);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
@@ -115,8 +115,8 @@ static void server_load_cfg__invalid_file(void **state) {
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
 
-	expect_any(__wrap_cfg_resolve_file_path, cfg);
-	will_return_int(__wrap_cfg_resolve_file_path, true);
+	expect_any(__wrap_cfg_file_resolve, cfg_file);
+	will_return_int(__wrap_cfg_file_resolve, true);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
@@ -148,8 +148,8 @@ static void server_load_cfg__missing_defaults(void **state) {
 	cfg_read->auto_scale = OFF;
 	cfg_read->scale_round_to = 2;
 
-	expect_any(__wrap_cfg_resolve_file_path, cfg);
-	will_return_int(__wrap_cfg_resolve_file_path, true);
+	expect_any(__wrap_cfg_file_resolve, cfg_file);
+	will_return_int(__wrap_cfg_file_resolve, true);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);

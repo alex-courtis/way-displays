@@ -170,7 +170,7 @@ send:
 void server_load_cfg(void) {
 	struct Cfg *cfg_resolved = cfg_init();
 
-	bool resolved = cfg_resolve_file_path(cfg_resolved);
+	bool resolved = cfg_file_resolve(&cfg_resolved->file);
 
 	if (resolved) {
 		log_info(NULL);
@@ -190,7 +190,7 @@ void server_load_cfg(void) {
 	}
 
 	cfg_apply_defaults(g_cfg);
-	cfg_copy_file_path(g_cfg, cfg_resolved);
+	cfg_file_merge(&g_cfg->file, &cfg_resolved->file);
 
 	cfg_validate_fix(g_cfg);
 	log_info(NULL);
@@ -212,7 +212,7 @@ void server_reload_cfg(void) {
 
 	if (cfg_loaded) {
 		cfg_apply_defaults(cfg_loaded);
-		cfg_copy_file_path(cfg_loaded, g_cfg);
+		cfg_file_merge(&cfg_loaded->file, &g_cfg->file);
 
 		cfg_free(g_cfg);
 		g_cfg = cfg_loaded;
