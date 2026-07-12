@@ -38,6 +38,8 @@ static int after_all(void **state) {
 static int before_each(void **state) {
 	g_cfg = cfg_default();
 
+	cfg_file_init_global();
+
 	return 0;
 }
 
@@ -45,6 +47,8 @@ static int after_each(void **state) {
 	assert_logs_empty();
 
 	cfg_destroy();
+
+	cfg_file_destroy_global();
 
 	fd_cfg_dir = -1;
 	wd_cfg_dir = -1;
@@ -60,7 +64,7 @@ static void fd_wd_cfg_dir_create__no_dir(void **state) {
 }
 
 static void fd_wd_cfg_dir_create__bad_dir(void **state) {
-	g_cfg->cfg_file->dir_path = strdup("/inexistent");
+	g_cfg_file->dir_path = strdup("/inexistent");
 
 	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
@@ -73,7 +77,7 @@ static void fd_wd_cfg_dir_create__bad_dir(void **state) {
 }
 
 static void fd_wd_cfg_dir_create__ok(void **state) {
-	g_cfg->cfg_file->dir_path = strdup(DIR_TMP);
+	g_cfg_file->dir_path = strdup(DIR_TMP);
 
 	fd_wd_cfg_dir_create();
 

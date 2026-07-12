@@ -88,8 +88,6 @@ struct Cfg {
 	const struct Pset *disableds;                 // DISABLED
 
 	const struct Sset *max_preferred_refresh;     // MAX_PREFERRED_REFRESH
-
-	struct CfgFile *cfg_file;
 };
 
 enum CfgElement {

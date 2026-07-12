@@ -16,19 +16,15 @@
 
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "cfg/file.h"
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
-#include "pslist.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
 
 #include "cfg.h"
-
-extern struct Pslist *g_cfg_file_paths;
 
 struct State {
 	struct Cfg *from;
@@ -38,8 +34,6 @@ struct State {
 
 static int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
-
-	pslist_free_vals(&g_cfg_file_paths, NULL);
 
 	s->from = cfg_init();
 	s->to = cfg_init();
@@ -53,8 +47,6 @@ static int after_each(void **state) {
 	assert_logs_empty();
 
 	struct State *s = *state;
-
-	pslist_free_vals(&g_cfg_file_paths, NULL);
 
 	cfg_destroy();
 
@@ -210,30 +202,6 @@ static void cfg_clone__empty(void **state) {
 
 	cfg_free(expected);
 	cfg_free(actual);
-}
-
-// TODO these should move to file
-static void cfg_clone__paths(void **state) {
-	char *resolved_from = strdup("only pointer set");
-
-	struct Cfg *expected = cfg_init();
-	expected->cfg_file->dir_path = strdup("dp");
-	expected->cfg_file->file_name = strdup("fn");
-	expected->cfg_file->file_path = strdup("fp");
-	expected->cfg_file->resolved_from = resolved_from;
-
-	struct Cfg *actual = cfg_clone(expected);
-
-	assert_cfg_equal(actual, expected);
-
-	assert_str_equal(actual->cfg_file->dir_path, "dp");
-	assert_str_equal(actual->cfg_file->file_name, "fn");
-	assert_str_equal(actual->cfg_file->file_path, "fp");
-	assert_ptr_equal(actual->cfg_file->resolved_from, resolved_from);
-
-	cfg_free(expected);
-	cfg_free(actual);
-	free(resolved_from);
 }
 
 static void cfg_clone__default(void **state) {
@@ -1013,7 +981,6 @@ int main(void) {
 
 		TEST_BA(cfg_clone__null),
 		TEST_BA(cfg_clone__empty),
-		TEST_BA(cfg_clone__paths),
 		TEST_BA(cfg_clone__default),
 		TEST_BA(cfg_clone__all),
 

@@ -23,8 +23,6 @@
 #include "log.h"
 #include "process.h"
 #include "pslist.h"
-#include "yaml/unmarshal.h"
-#include "yaml/unmarshal-types.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;
@@ -167,80 +165,6 @@ send:
 	notify_ipc_operation();
 }
 
-// TODO move into cfg/file
-
-void server_load_cfg(void) {
-	struct Cfg *cfg_resolved = cfg_init();
-
-	bool resolved = cfg_file_resolve(cfg_resolved->cfg_file);
-
-	if (resolved) {
-		log_info(NULL);
-		log_info("Found configuration file: %s", cfg_resolved->cfg_file->file_path);
-
-		g_cfg = yaml_unmarshal_file(cfg_resolved->cfg_file->file_path, yaml_root_to_cfg);
-
-		if (!g_cfg) {
-			log_info(NULL);
-			log_info("Using default configuration:");
-			g_cfg = cfg_init();
-		}
-	} else {
-		log_info(NULL);
-		log_info("No configuration file found, using defaults:");
-		g_cfg = cfg_init();
-	}
-
-	cfg_apply_defaults(g_cfg);
-	cfg_file_free(g_cfg->cfg_file);
-	g_cfg->cfg_file = cfg_file_clone(cfg_resolved->cfg_file);
-
-	cfg_validate_fix(g_cfg);
-	log_info(NULL);
-	log_info("Active configuration:");
-	print_cfg(INFO, g_cfg, false);
-	cfg_validate_warn(g_cfg);
-
-	cfg_free(cfg_resolved);
-}
-
-// TODO move into cfg/file
-
-void server_reload_cfg(void) {
-	if (!g_cfg || !g_cfg->cfg_file)
-		return;
-
-	char *path = g_cfg->cfg_file->file_path;
-	if (!path)
-		return;
-
-	log_info(NULL);
-	log_info("Reloading configuration file: %s", path);
-
-	struct Cfg *cfg_loaded = yaml_unmarshal_file(path, yaml_root_to_cfg);
-
-	if (cfg_loaded) {
-		cfg_apply_defaults(cfg_loaded);
-		cfg_file_free(cfg_loaded->cfg_file);
-		cfg_loaded->cfg_file = cfg_file_clone(g_cfg->cfg_file);
-
-		cfg_free(g_cfg);
-		g_cfg = cfg_loaded;
-
-		log_set_threshold(g_cfg->log_threshold, false);
-		cfg_validate_fix(g_cfg);
-		log_info(NULL);
-		log_info("New configuration:");
-		print_cfg(INFO, g_cfg, false);
-		cfg_validate_warn(g_cfg);
-
-	} else {
-		log_info(NULL);
-		log_info("Configuration unchanged:");
-		print_cfg(INFO, g_cfg, false);
-	}
-}
-
 // see Wayland Protocol docs Appendix B wl_display_prepare_read_queue
 static int loop(void) {
 
@@ -288,11 +212,11 @@ static int loop(void) {
 
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (fd_cfg_dir_modified(g_cfg->cfg_file->file_name)) {
-				if (g_cfg->cfg_file->modified) {
-					g_cfg->cfg_file->modified = false;
+			if (fd_cfg_dir_modified(g_cfg_file->file_name)) {
+				if (g_cfg_file->modified) {
+					g_cfg_file->modified = false;
 				} else {
-					server_reload_cfg();
+					cfg_file_reload();
 				}
 			}
 		}
@@ -348,9 +272,10 @@ server(char *cfg_path) {
 
 	// all cfg paths
 	cfg_file_paths_init(cfg_path);
+	cfg_file_init_global();
 
 	// maybe default, never exits
-	server_load_cfg();
+	cfg_file_read();
 	free(cfg_path);
 
 	// play back captured logs from cfg parse
@@ -374,9 +299,40 @@ server(char *cfg_path) {
 	heads_destroy();
 	lid_destroy();
 	cfg_file_paths_destroy();
+	cfg_file_destroy_global();
 	cfg_destroy();
 	displ_destroy();
 
 	return sig;
 }
 
+// TODO move somewhere wrappable, cfg/file-resolve.c
+bool cfg_file_resolve(void) {
+	if (!g_cfg_file)
+		return false;
+
+	cfg_file_init_global();
+
+	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
+		if (access(i->val, R_OK) == 0) {
+
+			char *file_path = realpath(i->val, NULL);
+
+			if (!file_path) {
+				continue;
+			}
+			if (access(file_path, R_OK) != 0) {
+				free(file_path);
+				continue;
+			}
+
+			set_paths(g_cfg_file, i->val, file_path);
+
+			free(file_path);
+
+			return true;
+		}
+	}
+
+	return false;
+}

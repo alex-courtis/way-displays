@@ -11,18 +11,23 @@
 #include "cfg.h"
 #include "fds.h"
 #include "fs.h"
+#include "info/print.h"
 #include "log.h"
 #include "pslist.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
+#include "yaml/unmarshal-types.h"
+#include "yaml/unmarshal.h"
 
 // one-shot singleton set via cfg_file_paths_init
 struct Pslist *g_cfg_file_paths = NULL;
 
-static void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_path) {
+struct CfgFile *g_cfg_file = NULL;
+
+void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_path) {
 	static char path[PATH_MAX];
 
-	cfg_file->resolved_from = resolved_from;
+	cfg_file->resolved_path = resolved_from;
 
 	cfg_file->file_path = strdup(file_path);
 
@@ -37,47 +42,19 @@ static void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char 
 	cfg_file->file_name = strdup(basename(path));
 }
 
-// TODO explicit test or move to correct module
-static bool cfg_file_write_content(const char * const yaml) {
-	return
-		file_write(g_cfg->cfg_file->file_path, COMMENT_YAML_SCHEMA, "w") &&
-		file_write(g_cfg->cfg_file->file_path, yaml, "a");
+void cfg_file_init_global(void) {
+	cfg_file_destroy_global();
+	g_cfg_file = calloc(1, sizeof(struct CfgFile));
 }
 
-static void cfg_file_clear(struct CfgFile *cfg_file) {
-	if (!cfg_file)
-		return;
-
-	free(cfg_file->dir_path);
-	cfg_file->dir_path = NULL;
-
-	free(cfg_file->file_path);
-	cfg_file->file_path = NULL;
-
-	free(cfg_file->file_name);
-	cfg_file->file_name = NULL;
-
-	cfg_file->resolved_from = NULL;
-}
-
-struct CfgFile *cfg_file_init(void) {
-	struct CfgFile *cfg_file = calloc(1, sizeof(struct CfgFile));
-
-	return cfg_file;
-}
-
-struct CfgFile *cfg_file_clone(const struct CfgFile *from) {
-	if (!from)
-		return NULL;
-
-	struct CfgFile *to = cfg_file_init();
-
-	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
-	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
-	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
-	to->resolved_from = from->resolved_from;
-
-	return to;
+void cfg_file_destroy_global(void) {
+	if (g_cfg_file) {
+		free(g_cfg_file->dir_path);
+		free(g_cfg_file->file_path);
+		free(g_cfg_file->file_name);
+		free(g_cfg_file);
+	}
+	g_cfg_file = NULL;
 }
 
 void cfg_file_paths_init(const char *user_path) {
@@ -107,37 +84,32 @@ void cfg_file_paths_destroy(void) {
 	pslist_free_vals(&g_cfg_file_paths, NULL);
 }
 
-void cfg_file_free(struct CfgFile *cfg_file) {
-	if (!cfg_file)
-		return;
-
-	cfg_file_clear(cfg_file);
-
-	free(cfg_file);
+static bool cfg_file_write_content(const char * const yaml) {
+	return
+		file_write(g_cfg_file->file_path, COMMENT_YAML_SCHEMA, "w") &&
+		file_write(g_cfg_file->file_path, yaml, "a");
 }
 
-// TODO explicit test or move to correct module
-// or g_cfg_file_write
 void cfg_file_write(void) {
 	char *yaml = NULL;
-	const char *resolved_from = g_cfg->cfg_file->resolved_from;
+	const char *resolved_from = g_cfg_file->resolved_path;
 	bool written = false;
 
-	g_cfg->cfg_file->modified = false;
+	g_cfg_file->modified = false;
 
 	if (!(yaml = yaml_marshal(g_cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"))) {
 		goto end;
 	}
 
-	if (g_cfg->cfg_file->file_path && (written = cfg_file_write_content(yaml))) {
-		g_cfg->cfg_file->modified = true;
+	if (g_cfg_file->file_path && (written = cfg_file_write_content(yaml))) {
+		g_cfg_file->modified = true;
 		goto end;
 	}
 
 	if (!written) {
 
 		// kill that cfg file
-		cfg_file_clear(g_cfg->cfg_file);
+		cfg_file_init_global();
 		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
@@ -148,17 +120,17 @@ void cfg_file_write(void) {
 				continue;
 			}
 
-			set_paths(g_cfg->cfg_file, i->val, i->val);
+			set_paths(g_cfg_file, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(g_cfg->cfg_file->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
+			if (mkdir_p(g_cfg_file->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
 				goto end;
 			}
 
-			cfg_file_clear(g_cfg->cfg_file);
+			cfg_file_init_global();
 		}
 	}
 
@@ -167,36 +139,72 @@ end:
 
 	if (written) {
 		log_info(NULL);
-		log_info("Wrote configuration file: %s", g_cfg->cfg_file->file_path);
+		log_info("Wrote configuration file: %s", g_cfg_file->file_path);
 	}
 }
 
-bool cfg_file_resolve(struct CfgFile *cfg_file) {
-	if (!cfg_file)
-		return false;
+void cfg_file_read(void) {
+	struct Cfg *cfg_resolved = cfg_init();
 
-	cfg_file_clear(cfg_file);
+	bool resolved = cfg_file_resolve();
 
-	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
-		if (access(i->val, R_OK) == 0) {
+	if (resolved) {
+		log_info(NULL);
+		log_info("Found configuration file: %s", g_cfg_file->file_path);
 
-			char *file_path = realpath(i->val, NULL);
+		g_cfg = yaml_unmarshal_file(g_cfg_file->file_path, yaml_root_to_cfg);
 
-			if (!file_path) {
-				continue;
-			}
-			if (access(file_path, R_OK) != 0) {
-				free(file_path);
-				continue;
-			}
-
-			set_paths(cfg_file, i->val, file_path);
-
-			free(file_path);
-
-			return true;
+		if (!g_cfg) {
+			log_info(NULL);
+			log_info("Using default configuration:");
+			g_cfg = cfg_init();
 		}
+	} else {
+		log_info(NULL);
+		log_info("No configuration file found, using defaults:");
+		g_cfg = cfg_init();
 	}
 
-	return false;
+	cfg_apply_defaults(g_cfg);
+
+	cfg_validate_fix(g_cfg);
+	log_info(NULL);
+	log_info("Active configuration:");
+	print_cfg(INFO, g_cfg, false);
+	cfg_validate_warn(g_cfg);
+
+	cfg_free(cfg_resolved);
+}
+
+void cfg_file_reload(void) {
+	if (!g_cfg || !g_cfg_file)
+		return;
+
+	char *path = g_cfg_file->file_path;
+	if (!path)
+		return;
+
+	log_info(NULL);
+	log_info("Reloading configuration file: %s", path);
+
+	struct Cfg *cfg_loaded = yaml_unmarshal_file(path, yaml_root_to_cfg);
+
+	if (cfg_loaded) {
+		cfg_apply_defaults(cfg_loaded);
+
+		cfg_free(g_cfg);
+		g_cfg = cfg_loaded;
+
+		log_set_threshold(g_cfg->log_threshold, false);
+		cfg_validate_fix(g_cfg);
+		log_info(NULL);
+		log_info("New configuration:");
+		print_cfg(INFO, g_cfg, false);
+		cfg_validate_warn(g_cfg);
+
+	} else {
+		log_info(NULL);
+		log_info("Configuration unchanged:");
+		print_cfg(INFO, g_cfg, false);
+	}
 }
