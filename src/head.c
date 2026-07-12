@@ -115,7 +115,7 @@ void head_release_mode(struct Mode *mode) {
 	}
 }
 
-void heads_destroy(void) {
+void g_heads_destroy(void) {
 
 	pslist_free_vals(&g_heads, (fn_free)head_free);
 	pslist_free_vals(&g_heads_departed, (fn_free)head_free);

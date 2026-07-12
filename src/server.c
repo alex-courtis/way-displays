@@ -290,18 +290,18 @@ server(char *cfg_path) {
 	g_lid_update();
 
 	// discover the output manager; it will call back
-	displ_init();
+	g_displ_init();
 
 	// only stops when signalled or display goes away
 	int sig = loop();
 
 	// release what resources we can
-	heads_destroy();
+	g_heads_destroy();
 	g_lid_destroy();
 	g_cfg_file_paths_destroy();
 	g_cfg_file_destroy();
 	g_cfg_destroy();
-	displ_destroy();
+	g_displ_destroy();
 
 	return sig;
 }

@@ -87,7 +87,7 @@ void head_release(struct Head * const head);
 void head_release_mode(struct Mode *mode);
 
 // free all g_heads
-void heads_destroy(void);
+void g_heads_destroy(void);
 
 /*
  * mutation

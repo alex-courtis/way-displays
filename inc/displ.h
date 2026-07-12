@@ -48,12 +48,12 @@ struct Displ {
 	struct DisplDelta delta;
 };
 
-void displ_init(void);
+void g_displ_init(void);
 
 void displ_delta_init(enum CfgElement element, struct Head *head);
 
 void displ_delta_destroy(void);
 
-void displ_destroy(void);
+void g_displ_destroy(void);
 
 #endif // DISPL_H

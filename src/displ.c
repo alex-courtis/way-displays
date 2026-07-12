@@ -15,7 +15,7 @@
 
 struct Displ *g_displ = NULL;
 
-void displ_init(void) {
+void g_displ_init(void) {
 
 	g_displ = calloc(1, sizeof(struct Displ));
 
@@ -63,9 +63,9 @@ void displ_delta_destroy(void) {
 	g_displ->delta.human = NULL;
 }
 
-void displ_destroy(void) {
+void g_displ_destroy(void) {
 
-	output_destroy_all();
+	g_outputs_destroy();
 
 	if (g_displ->zwlr_output_manager) {
 		zwlr_output_manager_v1_destroy(g_displ->zwlr_output_manager);

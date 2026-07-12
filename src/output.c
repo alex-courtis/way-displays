@@ -55,7 +55,7 @@ bool output_matches_name(const struct Output* const output, const void* const na
 	return name && output && output->name && strcmp(output->name, name) == 0;
 }
 
-void output_destroy_all(void) {
+void g_outputs_destroy(void) {
 	ipmap_free_vals(g_outputs);
 }
 
