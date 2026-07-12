@@ -43,8 +43,8 @@ const struct SSmap *ssmap_init_with(const struct SSmapParams params) {
 		.equal_val = params.case_insensitive_val ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
 		.alloc_key = (fn_clone)clone_strdup,
 		.alloc_val = (fn_clone)clone_strdup,
-		.free_key = (fn_free)free,
-		.free_val = (fn_free)free,
+		.free_key = free,
+		.free_val = free,
 		.str_key = (fn_str)str_or_null,
 		.str_val = (fn_str)str_or_null,
 		.initial = params.initial,
@@ -202,6 +202,21 @@ bool ssmap_remove(const struct SSmap* const map, const char* const key) {
 
 size_t ssmap_remove_all(const struct SSmap* const map, const struct SSmap* const from) {
 	return map && from ? ppmap_remove_all_free(map->ppmap, from->ppmap) : false;
+}
+
+void ssmap_it_remove(const struct SSmapIt* const it) {
+	if (!it)
+		return;
+
+	if (!it->st) {
+		ssmap_it_free(it);
+		return;
+	}
+
+	ppmap_it_remove_free(it->st->pit);
+
+	((struct SSmapIt*)it)->key = NULL;
+	((struct SSmapIt*)it)->val = NULL;
 }
 
 bool ssmap_equal(const struct SSmap* const a, const struct SSmap* const b) {

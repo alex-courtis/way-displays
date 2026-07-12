@@ -95,7 +95,7 @@ void *mock_alloc(const void* const ptr) {
 	return mock_ptr_type_checked(void*);
 }
 
-void mock_free(const void* const ptr) {
+void mock_free(void *ptr) {
 	check_expected_ptr(ptr);
 }
 

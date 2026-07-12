@@ -36,7 +36,4 @@ bool output_matches_name(const struct Output* const output, const void* const na
 // destroy all outputs, clearing outputs
 void output_destroy_all(void);
 
-// destroy an output matching name, removing from outputs
-void output_destroy_by_wl_output_name(const uint32_t wl_output_name);
-
 #endif // OUTPUT_H

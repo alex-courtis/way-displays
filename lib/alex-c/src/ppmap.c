@@ -119,7 +119,7 @@ static bool put_free(const struct PPmap* const map, const void* const key, const
 	const void *val_old = put(map, key, val, clone_val);
 
 	if (val_old) {
-		map->params.free_val ? map->params.free_val(val_old) : free((void*)val_old);
+		map->params.free_val ? map->params.free_val((void*)val_old) : free((void*)val_old);
 		return true;
 	} else {
 		return false;
@@ -252,7 +252,7 @@ void ppmap_free(const struct PPmap* const map) {
 
 	if (map->params.free_key) {
 		for (const void **k = map->keys; k < map->keys + map->size; k++) {
-			map->params.free_key(*k);
+			map->params.free_key((void*)*k);
 		}
 	}
 
@@ -268,7 +268,7 @@ void ppmap_free_vals(const struct PPmap* const map) {
 
 	for (const void **v = map->vals; v < map->vals + map->size; v++) {
 		if (*v) {
-			map->params.free_val ? map->params.free_val (*v) : free((void*)*v);
+			map->params.free_val ? map->params.free_val((void*)*v) : free((void*)*v);
 		}
 	}
 
@@ -556,7 +556,7 @@ bool ppmap_remove_free(const struct PPmap* const map, const void* const key) {
 	if (ppmap_contains_key(map, key)) {
 		const void *removed = ppmap_remove(map, key);
 		if (removed) {
-			map->params.free_val ? map->params.free_val(removed) : free((void*)removed);
+			map->params.free_val ? map->params.free_val((void*)removed) : free((void*)removed);
 		}
 		return true;
 	} else {

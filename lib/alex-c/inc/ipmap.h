@@ -7,7 +7,7 @@
 #include "fn.h"
 
 /*
- * `PPmap` with `size_t` keys
+ * `IPmap` with `size_t` keys
  */
 struct IPmap; // IWYU pragma: keep
 
@@ -141,6 +141,12 @@ size_t ipmap_remove_all(const struct IPmap* const map, const struct IPmap* const
 
 // remove and free entries matching from keys, return number removed [free_val]
 size_t ipmap_remove_all_free(const struct IPmap* const map, const struct IPmap* const from);
+
+// remove the entry, it is unusable, ipmap_it_next must be called
+void ipmap_it_remove(const struct IPmapIt* const it);
+
+// remove and entry, free the val, it is unusable, ipmap_it_next must be called [free_val]
+void ipmap_it_remove_free(const struct IPmapIt* const it);
 
 /*
  * Comparison

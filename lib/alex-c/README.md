@@ -45,3 +45,5 @@ Not thread safe.
 ## Strings
 
 libc string helpers 
+
+TODO: doxygen

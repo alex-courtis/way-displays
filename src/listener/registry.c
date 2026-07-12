@@ -1,3 +1,5 @@
+#include <assert.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,11 +9,12 @@
 #include "listeners.h"
 
 #include "displ.h"
+#include "ipmap.h"
 #include "log.h"
 #include "output.h"
 #include "process.h"
-#include "xdg-output-unstable-v1.h"
 #include "wlr-output-management-unstable-v1.h"
+#include "xdg-output-unstable-v1.h"
 
 static void bind_zwlr_output_manager(struct Displ *displ,
 		struct wl_registry *wl_registry,
@@ -80,7 +83,9 @@ static void global_remove(void *data,
 		uint32_t name) {
 	const struct Displ *displ = data;
 
-	output_destroy_by_wl_output_name(name);
+	// TODO ensure this is tested and valgrinded
+	assert(false);
+	ipmap_remove(g_outputs, name);
 
 	// a "who cares?" situation in the WLR examples
 	if (displ && displ->zwlr_output_manager_name == name) {

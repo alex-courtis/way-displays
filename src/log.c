@@ -232,8 +232,8 @@ void log_suppress_stop(void) {
 	active.suppressing = false;
 }
 
-static void log_cap_line_free(const void *data) {
-	const struct LogCapLine *line = data;
+static void log_cap_line_free(void *data) {
+	struct LogCapLine *line = data;
 
 	if (!line) {
 		return;
@@ -243,7 +243,7 @@ static void log_cap_line_free(const void *data) {
 		free(line->line);
 	}
 
-	free((struct LogCapLine*)line);
+	free(line);
 }
 
 void log_cap_lines_playback(const struct Pslist *log_cap_lines) {

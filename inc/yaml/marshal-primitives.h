@@ -45,6 +45,4 @@ void yaml_map_add_pslist(struct MC *c, const char *key, const struct Pslist* con
 void yaml_map_add_spmap (struct MC *c, const char *key, const struct SPmap*  const spmap, fn_yaml_node_from_key_type fn,   int mapping);
 void yaml_map_add_simap (struct MC *c, const char *key, const struct SImap*  const simap, fn_node_from_yaml_key_size_t fn, int mapping);
 
-// TODO rename collection params
-
 #endif // YAML_MARSHAL_PRIMITIVES_H

@@ -12,11 +12,11 @@
 
 const struct IPmap *g_outputs; // by wl_output_name
 
-static void destroy(const void *o) {
+static void destroy(void *o) {
 	if (!o)
 		return;
 
-	struct Output *output = (struct Output*)o;
+	struct Output *output = o;
 
 	zxdg_output_v1_destroy(output->zxdg_output);
 	wl_output_destroy(output->wl_output);
@@ -57,9 +57,5 @@ bool output_matches_name(const struct Output* const output, const void* const na
 
 void output_destroy_all(void) {
 	ipmap_free_vals(g_outputs);
-}
-
-void output_destroy_by_wl_output_name(const uint32_t wl_output_name) {
-	destroy(ipmap_remove(g_outputs, wl_output_name));
 }
 

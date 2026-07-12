@@ -84,7 +84,7 @@ static bool remove(const struct Pset* const cset, const void* const val, fn_free
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (set->params.equal_val ? set->params.equal_val(*v, val) : *v == val) {
 			if (free_val) {
-				free_val(*v);
+				free_val((void*)*v);
 			}
 
 			*v = NULL;
@@ -213,7 +213,7 @@ void pset_free_vals(const struct Pset* const set) {
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (*v) {
 			if (set->params.free_val) {
-				set->params.free_val(*v);
+				set->params.free_val((void*)*v);
 			} else {
 				free((void*)*v);
 			}
@@ -331,7 +331,7 @@ bool pset_remove(const struct Pset* const set, const void* const val) {
 }
 
 bool pset_remove_free(const struct Pset* const set, const void* const val) {
-	return set ? remove(set, val, set->params.free_val ? set->params.free_val : (fn_free)free) : false;
+	return set ? remove(set, val, set->params.free_val ? set->params.free_val : free) : false;
 }
 
 size_t pset_remove_all(const struct Pset* const set, const struct Pset* const from) {
@@ -339,7 +339,7 @@ size_t pset_remove_all(const struct Pset* const set, const struct Pset* const fr
 }
 
 size_t pset_remove_all_free(const struct Pset* const set, const struct Pset* const from) {
-	return set && from ? remove_all(set, from, set->params.free_val ? set->params.free_val : (fn_free)free) : 0;
+	return set && from ? remove_all(set, from, set->params.free_val ? set->params.free_val : free) : 0;
 }
 
 void pset_it_remove(const struct PsetIt* const it) {

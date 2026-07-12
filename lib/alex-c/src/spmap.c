@@ -45,7 +45,7 @@ static const struct SPmapIt *it_init(const struct PPmapIt *pit) {
 	return it;
 }
 
-void it_remove(const struct SPmapIt* const it, bool do_free) {
+static void it_remove(const struct SPmapIt* const it, bool do_free) {
 	if (!it)
 		return;
 
@@ -75,7 +75,7 @@ const struct SPmap *spmap_init_with(const struct SPmapParams params) {
 		.equal_val = params.equal_val,
 		.alloc_key = (fn_clone)clone_strdup,
 		.alloc_val = params.alloc_val,
-		.free_key = (fn_free)free,
+		.free_key = free,
 		.free_val = params.free_val,
 		.clone_val = params.clone_val,
 		.str_key = (fn_str)str_or_null,

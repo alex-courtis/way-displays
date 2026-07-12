@@ -38,7 +38,7 @@ const struct Sset *sset_init_with(const struct SsetParams params) {
 	const struct PsetParams pset_params = {
 		.equal_val = params.case_insensitive ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
 		.alloc_val = (fn_clone)clone_strdup,
-		.free_val = (fn_free)free,
+		.free_val = free,
 		.str_val = (fn_str)str_or_null,
 		.initial = params.initial,
 		.grow = params.grow,

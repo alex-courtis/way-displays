@@ -117,6 +117,9 @@ bool simap_remove(const struct SImap* const map, const char* const key);
 // remove entries matching from keys, return number removed
 size_t simap_remove_all(const struct SImap* const map, const struct SImap* const from);
 
+// remove the entry, it is unusable, simap_it_next must be called
+void simap_it_remove(const struct SImapIt* const it);
+
 /*
  * Comparison
  */

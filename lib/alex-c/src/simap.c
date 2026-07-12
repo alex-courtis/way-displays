@@ -66,8 +66,8 @@ const struct SImap *simap_init_with(const struct SImapParams params) {
 		.equal_val = (fn_equal)equal_stp,
 		.alloc_key = (fn_clone)clone_strdup,
 		.alloc_val = (fn_clone)clone_size_t_ptr,
-		.free_key = (fn_free)free,
-		.free_val = (fn_free)free,
+		.free_key = free,
+		.free_val = free,
 		.str_key = (fn_str)str_or_null,
 		.str_val = (fn_str)str_size_t_ptr,
 		.allow_null_val = false,
@@ -310,6 +310,21 @@ bool simap_remove(const struct SImap* const map, const char* const key) {
 
 size_t simap_remove_all(const struct SImap* const map, const struct SImap* const from) {
 	return map && from ? ppmap_remove_all_free(map->ppmap, from->ppmap) : false;
+}
+
+void simap_it_remove(const struct SImapIt* const it) {
+	if (!it)
+		return;
+
+	if (!it->st) {
+		simap_it_free(it);
+		return;
+	}
+
+	ppmap_it_remove_free(it->st->pit);
+
+	((struct SImapIt*)it)->key = NULL;
+	((struct SImapIt*)it)->val = 0;
 }
 
 bool simap_equal(const struct SImap* const a, const struct SImap* const b) {

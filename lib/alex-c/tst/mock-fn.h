@@ -30,7 +30,7 @@ void *mock_clone(const void* const ptr);
 
 void *mock_alloc(const void* const ptr);
 
-void mock_free(const void* const ptr);
+void mock_free(void *ptr);
 
 char* mock_str(const void* const ptr);
 

@@ -65,8 +65,7 @@ typedef bool (*fn_3pred_szt_ptr)(const size_t i,         const void* const ptr, 
 //
 // free
 //
-// TODO remove const
-typedef void (*fn_free)(const void* const ptr);
+typedef void (*fn_free)(void *ptr);
 
 //
 // clone
