@@ -3,7 +3,14 @@
 
 #include <stdbool.h>
 
-#include "cfg.h"
+struct CfgFile {
+	char *dir_path;
+	char *file_path;
+	char *file_name;
+	char *resolved_from;
+
+	bool modified;                           // pfd_cfg_dir
+};
 
 /*
  * lifecycle - CfgFile

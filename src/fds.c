@@ -12,6 +12,7 @@
 #include "fds.h"
 
 #include "cfg.h"
+#include "cfg/file.h"
 #include "displ.h"
 #include "lid.h"
 #include "log.h"

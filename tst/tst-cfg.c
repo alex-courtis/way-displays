@@ -16,6 +16,7 @@
 
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
+#include "cfg/file.h"
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"
@@ -211,6 +212,7 @@ static void cfg_clone__empty(void **state) {
 	cfg_free(actual);
 }
 
+// TODO these should move to file
 static void cfg_clone__paths(void **state) {
 	char *resolved_from = strdup("only pointer set");
 

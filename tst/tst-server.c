@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "cfg.h"
+#include "cfg/file.h"
 #include "log.h"
 #include "sset.h"
 

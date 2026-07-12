@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "cfg/file.h"
 #include "log.h"
 #include "ipc.h"
 
@@ -54,15 +55,6 @@ enum ScaleRoundStrategy {
 #define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_LEVEL}\" \"${CALLBACK_MSG}\""
 
 #define COMMENT_YAML_SCHEMA "# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml"
-
-struct CfgFile {
-	char *dir_path;
-	char *file_path;
-	char *file_name;
-	char *resolved_from;
-
-	bool modified;                           // pfd_cfg_dir
-};
 
 struct Cfg {
 	enum Arrange arrange;	                      // ARRANGE

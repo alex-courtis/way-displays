@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include "cfg.h"
+#include "cfg/file.h"
 #include "log.h"
 
 #include "fds.h"
