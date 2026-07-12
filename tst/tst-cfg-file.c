@@ -89,7 +89,7 @@ static int after_each(void **state) {
 
 	clean_files();
 
-	cfg_destroy();
+	g_cfg_destroy();
 
 	return 0;
 }

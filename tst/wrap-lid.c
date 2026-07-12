@@ -8,20 +8,20 @@
 
 struct Lid *g_lid = NULL;
 
-void __wrap_lid_init(void) {
+void __wrap_g_lid_init(void) {
 	function_called();
 }
 
-void __wrap_lid_update(void) {
+void __wrap_g_lid_update(void) {
 	function_called();
 }
 
-bool __wrap_lid_is_closed(char *name) {
+bool __wrap_g_lid_is_closed(char *name) {
 	check_expected_ptr(name);
 	return mock_type(bool);
 }
 
-void __wrap_lid_destroy(void) {
+void __wrap_g_lid_destroy(void) {
 	function_called();
 }
 

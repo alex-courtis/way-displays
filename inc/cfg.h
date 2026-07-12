@@ -132,7 +132,7 @@ struct Cfg *cfg_clone(struct Cfg *from);
 void cfg_free(struct Cfg *cfg);
 
 // free and set g_cfg to NULL
-void cfg_destroy(void);
+void g_cfg_destroy(void);
 
 /*
  * equality

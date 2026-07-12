@@ -142,7 +142,7 @@ void cfg_free(struct Cfg *cfg) {
 	free(cfg);
 }
 
-void cfg_destroy(void) {
+void g_cfg_destroy(void) {
 	cfg_free(g_cfg);
 	g_cfg = NULL;
 }

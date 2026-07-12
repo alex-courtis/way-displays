@@ -141,7 +141,7 @@ int after_each(void **state) {
 	ipmap_free_vals(g_outputs);
 	g_outputs = NULL;
 
-	cfg_destroy();
+	g_cfg_destroy();
 
 	return 0;
 }
@@ -336,8 +336,8 @@ static void print_cfg_commands__ok(void **state) {
 static void print_head_arrived__all(void **state) {
 	const struct State *s = *state;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	struct Output *outputX = calloc(1, sizeof(struct Output));
 	outputX->name = "inexistent"; // we don't call output destroy, just free
@@ -361,8 +361,8 @@ static void print_head_arrived__all(void **state) {
 static void print_head_arrived__min(void **state) {
 	struct Head *head = head_init();
 
-	expect_str(__wrap_lid_is_closed, name, NULL);
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, NULL);
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, ARRIVED, head);
 
@@ -386,8 +386,8 @@ static void print_head_departed__ok(void **state) {
 static void print_head_deltas__mode(void **state) {
 	const struct State *s = *state;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -402,8 +402,8 @@ static void print_head_deltas__vrr(void **state) {
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	s->head1->desired.mode = s->head1->current.mode;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -417,8 +417,8 @@ static void print_head_deltas__other(void **state) {
 
 	s->head1->desired.mode = s->head1->current.mode;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -432,8 +432,8 @@ static void print_head_deltas__disable(void **state) {
 
 	s->head1->desired.enabled = false;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -447,8 +447,8 @@ static void print_head_deltas__enable(void **state) {
 
 	s->head1->current.enabled = false;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -466,8 +466,8 @@ static void print_head_deltas__reapply(void **state) {
 	head.desired.enabled = false;
 	head.reapply_required = true;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, DELTA, &head);
 
@@ -482,8 +482,8 @@ static void print_head_current__disabled(void **state) {
 	struct Head head = *s->head1;
 	head.current.enabled = false;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head_current(INFO, &head);
 
@@ -499,8 +499,8 @@ static void print_head_current__disabled_override(void **state) {
 	head.current.enabled = false;
 	head.overrided_enabled = OverrideFalse;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head_current(INFO, &head);
 
@@ -516,8 +516,8 @@ static void print_head_current__enabled_override(void **state) {
 	head.current.enabled = true;
 	head.overrided_enabled = OverrideTrue;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, false);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head_current(INFO, &head);
 
@@ -531,8 +531,8 @@ static void print_head_current__lid_closed(void **state) {
 
 	struct Head head = *s->head1;
 
-	expect_str(__wrap_lid_is_closed, name, "name1");
-	will_return_int(__wrap_lid_is_closed, true);
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, true);
 
 	print_head_current(INFO, &head);
 

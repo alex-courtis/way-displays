@@ -48,7 +48,7 @@ static int after_each(void **state) {
 
 	struct State *s = *state;
 
-	cfg_destroy();
+	g_cfg_destroy();
 
 	cfg_free(s->from);
 	cfg_free(s->to);

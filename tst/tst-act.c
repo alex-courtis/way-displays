@@ -36,7 +36,7 @@ static int after_each(void **state) {
 
 	free(g_displ);
 
-	cfg_destroy();
+	g_cfg_destroy();
 
 	return 0;
 }

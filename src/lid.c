@@ -156,7 +156,7 @@ static void destroy_libinput_monitor(struct libinput* libinput) {
 	libinput_unref(libinput);
 }
 
-void lid_destroy(void) {
+void g_lid_destroy(void) {
 	if (!g_lid)
 		return;
 
@@ -176,7 +176,7 @@ void lid_free(struct Lid *lid) {
 	free(lid);
 }
 
-void lid_update(void) {
+void g_lid_update(void) {
 	if (!g_lid || !g_lid->libinput_monitor)
 		return;
 
@@ -205,7 +205,7 @@ void lid_update(void) {
 	}
 }
 
-void lid_init(void) {
+void g_lid_init(void) {
 	g_lid = NULL;
 
 	if (g_cfg->laptop_lid_monitor == OFF)
@@ -245,7 +245,7 @@ void lid_init(void) {
 	g_lid->libinput_monitor = libinput_monitor;
 }
 
-bool lid_is_closed(char *name) {
+bool g_lid_is_closed(char *name) {
 	if (!name)
 		return false;
 

@@ -53,7 +53,7 @@ int after_each(void **state) {
 	displ_delta_destroy();
 	free(g_displ);
 
-	cfg_destroy();
+	g_cfg_destroy();
 
 	return 0;
 }

@@ -47,7 +47,7 @@ void desire_enabled(struct Head *head) {
 	bool enabled = false;
 
 	// lid closed
-	enabled = !lid_is_closed(head->name);
+	enabled = !g_lid_is_closed(head->name);
 
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
 	enabled |= pslist_length(g_heads) == 1;

@@ -333,7 +333,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 		}
 	}
 
-	if (lid_is_closed(head->name)) {
+	if (g_lid_is_closed(head->name)) {
 		log_(t, "    (lid closed)");
 	}
 }

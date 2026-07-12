@@ -34,7 +34,7 @@ static int before_each(void **state) {
 static int after_each(void **state) {
 	assert_logs_empty();
 
-	cfg_destroy();
+	g_cfg_destroy();
 	return 0;
 }
 

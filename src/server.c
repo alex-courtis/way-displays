@@ -10,6 +10,7 @@
 
 #include "server.h"
 
+#include "act.h"
 #include "cfg.h"
 #include "cfg/file.h"
 #include "convert.h"
@@ -18,7 +19,6 @@
 #include "head.h"
 #include "info/print.h"
 #include "ipc.h"
-#include "act.h"
 #include "lid.h"
 #include "log.h"
 #include "process.h"
@@ -223,7 +223,7 @@ static int loop(void) {
 
 		// libinput lid event
 		if (pfd_lid && pfd_lid->revents & pfd_lid->events) {
-			lid_update();
+			g_lid_update();
 		}
 
 		// ipc client message
@@ -286,8 +286,8 @@ server(char *cfg_path) {
 	log_cap_lines_free(&log_cap_lines);
 
 	// discover the lid state immediately
-	lid_init();
-	lid_update();
+	g_lid_init();
+	g_lid_update();
 
 	// discover the output manager; it will call back
 	displ_init();
@@ -297,10 +297,10 @@ server(char *cfg_path) {
 
 	// release what resources we can
 	heads_destroy();
-	lid_destroy();
+	g_lid_destroy();
 	cfg_file_paths_destroy();
 	cfg_file_destroy_global();
-	cfg_destroy();
+	g_cfg_destroy();
 	displ_destroy();
 
 	return sig;

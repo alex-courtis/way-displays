@@ -32,7 +32,7 @@ bool __wrap_cfg_file_resolve(void) {
 }
 
 static int before_each(void **state) {
-	cfg_destroy();
+	g_cfg_destroy();
 
 	cfg_file_init_global();
 
@@ -42,7 +42,7 @@ static int before_each(void **state) {
 static int after_each(void **state) {
 	// assert_logs_empty();
 
-	cfg_destroy();
+	g_cfg_destroy();
 
 	cfg_file_destroy_global();
 

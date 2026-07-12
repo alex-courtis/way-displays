@@ -50,9 +50,9 @@ LDFLAGS += -Wl,$\
 
 # lid
 LDFLAGS += -Wl,$\
-		   --wrap=lid_init,$\
-		   --wrap=lid_free,--wrap=lid_destroy,$\
-		   --wrap=lid_is_closed,--wrap=lid_update
+		   --wrap=g_lid_init,$\
+		   --wrap=lid_free,--wrap=g_lid_destroy,$\
+		   --wrap=g_lid_is_closed,--wrap=g_lid_update
 
 # yaml
 LDFLAGS += -Wl,$\
