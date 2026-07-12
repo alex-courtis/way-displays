@@ -11,6 +11,8 @@
 #include "log.h"
 #include "pslist.h"
 
+#include "fs.h"
+
 bool mkdir_p(char *path, mode_t mode) {
 	bool rc = false;
 	char *dir_path = NULL;
@@ -72,6 +74,26 @@ bool file_write(const char *path, const char *contents, const char *mode) {
 	return true;
 }
 
+char *canonical_path(char *path) {
+	if (!path)
+		return NULL;
+
+	if (access(path, R_OK) != 0)
+		return NULL;
+
+	char *real_path = realpath(path, NULL);
+
+	if (!real_path)
+		return NULL;
+
+	if (access(real_path, R_OK) != 0) {
+		free(real_path);
+		return NULL;
+	}
+
+	return real_path;
+}
+
 bool g_cfg_file_resolve(void) {
 	if (!g_cfg_file)
 		return false;
@@ -101,3 +123,21 @@ bool g_cfg_file_resolve(void) {
 
 	return false;
 }
+bool g_cfg_file_resolve1(void) {
+	if (!g_cfg_file)
+		return false;
+
+	g_cfg_file_init();
+
+	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
+		char *path = canonical_path(i->val);
+		if (path) {
+			set_paths(g_cfg_file, i->val, path);
+			free(path);
+			return true;
+		}
+	}
+
+	return false;
+}
+

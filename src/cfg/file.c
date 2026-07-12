@@ -19,6 +19,7 @@
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"
 
+// TODO maybe g_cfg_file_known_paths
 // one-shot singleton set via g_cfg_file_paths_init
 struct Pslist *g_cfg_file_paths = NULL;
 
@@ -57,6 +58,7 @@ void g_cfg_file_destroy(void) {
 	g_cfg_file = NULL;
 }
 
+// TODO maybe move into fs
 void g_cfg_file_paths_init(const char *user_path) {
 	char path[PATH_MAX];
 
