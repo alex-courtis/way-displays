@@ -16,8 +16,10 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "log.h"
+#include "mode.h"
 #include "pset.h"
 #include "pslist.h"
+#include "simap.h"
 #include "spmap.h"
 #include "sset.h"
 
@@ -142,7 +144,7 @@ static void cfg_equal__all(void **state) {
 	a->laptop_display_prefix = strdup(b->laptop_display_prefix);
 	assert_cfg_equal(a, b);
 
-	struct Disabled *disabled = disabled_nd("foo");
+	const struct Disabled *disabled = disabled_nd("foo");
 	pset_add(a->disableds, disabled);
 	assert_cfg_not_equal(a, b);
 	pset_remove_free(a->disableds, disabled);
