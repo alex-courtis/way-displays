@@ -13,10 +13,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "cfg.h"
 #include "log.h"
 #include "pslist.h"
 
-#include "cfg.h"
+#include "cfg/file.h"
 
 extern struct Pslist *g_cfg_file_paths;
 

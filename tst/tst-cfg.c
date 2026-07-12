@@ -16,6 +16,7 @@
 
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
+#include "ipc.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"

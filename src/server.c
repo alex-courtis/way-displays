@@ -11,6 +11,7 @@
 #include "server.h"
 
 #include "cfg.h"
+#include "cfg/file.h"
 #include "convert.h"
 #include "displ.h"
 #include "fds.h"

@@ -146,16 +146,6 @@ void cfg_free(struct Cfg *cfg);
 void cfg_destroy(void);
 
 /*
- * lifecycle - paths
- */
-
-// populate g_cfg_file_paths, one shot
-void cfg_file_paths_init(const char *user_path);
-
-// free all cfg_file_paths
-void cfg_file_paths_destroy(void);
-
-/*
  * equality
  */
 
@@ -168,7 +158,10 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 // apply default only for unset values
 void cfg_apply_defaults(struct Cfg *cfg);
 
-// merge from into to for command, only Ipc settable fields are merged
+
+/*
+ * merge from into to for command, only Ipc settable fields are merged
+ */
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command);
 struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from);
 struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from);
@@ -183,18 +176,5 @@ void cfg_validate_warn(const struct Cfg * const cfg);
 
 // validate some elements, changing them and logging warnings
 void cfg_validate_fix(struct Cfg *cfg);
-
-/*
- * paths and files
- */
-
-// write g_cfg to the appropriate file path
-void cfg_file_write(void);
-
-// if a file is found in g_cfg_file_paths, return true and set them in to
-bool cfg_resolve_file_path(struct Cfg *to);
-
-// duplicate paths
-void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from);
 
 #endif // CFG_H
