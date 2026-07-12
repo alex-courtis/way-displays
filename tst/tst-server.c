@@ -23,7 +23,7 @@ char *_file_name = NULL;
 char *_file_path = NULL;
 
 // cppcheck-suppress staticFunction
-bool __wrap_cfg_file_resolve(void) {
+bool __wrap_g_cfg_file_resolve(void) {
 	g_cfg_file->dir_path = _dir_path ? strdup(_dir_path) : NULL;
 	g_cfg_file->file_name = _file_name ? strdup(_file_name) : NULL;
 	g_cfg_file->file_path = _file_path ? strdup(_file_path) : NULL;
@@ -34,7 +34,7 @@ bool __wrap_cfg_file_resolve(void) {
 static int before_each(void **state) {
 	g_cfg_destroy();
 
-	cfg_file_init_global();
+	g_cfg_file_init();
 
 	return 0;
 }
@@ -44,7 +44,7 @@ static int after_each(void **state) {
 
 	g_cfg_destroy();
 
-	cfg_file_destroy_global();
+	g_cfg_file_destroy();
 
 	free(_dir_path);
 	_dir_path = NULL;
@@ -56,10 +56,10 @@ static int after_each(void **state) {
 	return 0;
 }
 
-static void cfg_file_read__no_file(void **state) {
-	will_return_int(__wrap_cfg_file_resolve, false);
+static void g_cfg_file_read__no_file(void **state) {
+	will_return_int(__wrap_g_cfg_file_resolve, false);
 
-	cfg_file_read();
+	g_cfg_file_read();
 
 	struct Cfg *cfg_expected = cfg_default();
 
@@ -75,7 +75,7 @@ static void cfg_file_read__no_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void cfg_file_read__valid_file(void **state) {
+static void g_cfg_file_read__valid_file(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
@@ -85,12 +85,12 @@ static void cfg_file_read__valid_file(void **state) {
 	cfg_read->log_threshold = FATAL;
 	cfg_read->scale_round_to = 4;
 
-	will_return_int(__wrap_cfg_file_resolve, true);
+	will_return_int(__wrap_g_cfg_file_resolve, true);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
-	cfg_file_read();
+	g_cfg_file_read();
 
 	assert_ptr_equal(g_cfg, cfg_read);
 
@@ -111,17 +111,17 @@ static void cfg_file_read__valid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void cfg_file_read__invalid_file(void **state) {
+static void g_cfg_file_read__invalid_file(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
 
-	will_return_int(__wrap_cfg_file_resolve, true);
+	will_return_int(__wrap_g_cfg_file_resolve, true);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
 
-	cfg_file_read();
+	g_cfg_file_read();
 
 	struct Cfg *cfg_expected = cfg_default();
 
@@ -137,7 +137,7 @@ static void cfg_file_read__invalid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void cfg_file_read__missing_defaults(void **state) {
+static void g_cfg_file_read__missing_defaults(void **state) {
 	_file_path = strdup("file_path");
 	_file_name = strdup("file_name");
 	_dir_path = strdup("dir_path");
@@ -148,12 +148,12 @@ static void cfg_file_read__missing_defaults(void **state) {
 	cfg_read->auto_scale = OFF;
 	cfg_read->scale_round_to = 2;
 
-	will_return_int(__wrap_cfg_file_resolve, true);
+	will_return_int(__wrap_g_cfg_file_resolve, true);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
-	cfg_file_read();
+	g_cfg_file_read();
 
 	assert_ptr_equal(g_cfg, cfg_read);
 
@@ -175,18 +175,18 @@ static void cfg_file_read__missing_defaults(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void cfg_file_reload__no_file(void **state) {
+static void g_cfg_file_reload__no_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 
 	// no mock calls expected
 
-	cfg_file_reload();
+	g_cfg_file_reload();
 
 	assert_ptr_equal(g_cfg, cfg_orig);
 }
 
-static void cfg_file_reload__invalid_file(void **state) {
+static void g_cfg_file_reload__invalid_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 	g_cfg->auto_scale_max = 111;
@@ -198,7 +198,7 @@ static void cfg_file_reload__invalid_file(void **state) {
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
 
-	cfg_file_reload();
+	g_cfg_file_reload();
 
 	assert_ptr_equal(g_cfg, cfg_orig);
 
@@ -217,7 +217,7 @@ static void cfg_file_reload__invalid_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
-static void cfg_file_reload__valid_file(void **state) {
+static void g_cfg_file_reload__valid_file(void **state) {
 	struct Cfg *cfg_orig = cfg_default();
 	g_cfg = cfg_orig;
 	g_cfg->auto_scale_max = 222;
@@ -237,7 +237,7 @@ static void cfg_file_reload__valid_file(void **state) {
 	expect_int_value(__wrap_log_set_threshold, threshold, FATAL);
 	expect_int_value(__wrap_log_set_threshold, cli, false);
 
-	cfg_file_reload();
+	g_cfg_file_reload();
 
 	assert_ptr_not_equal(g_cfg, cfg_orig);
 	assert_ptr_equal(g_cfg, cfg_read);
@@ -260,14 +260,14 @@ static void cfg_file_reload__valid_file(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(cfg_file_read__no_file),
-		TEST_BA(cfg_file_read__valid_file),
-		TEST_BA(cfg_file_read__invalid_file),
-		TEST_BA(cfg_file_read__missing_defaults),
+		TEST_BA(g_cfg_file_read__no_file),
+		TEST_BA(g_cfg_file_read__valid_file),
+		TEST_BA(g_cfg_file_read__invalid_file),
+		TEST_BA(g_cfg_file_read__missing_defaults),
 
-		TEST_BA(cfg_file_reload__no_file),
-		TEST_BA(cfg_file_reload__invalid_file),
-		TEST_BA(cfg_file_reload__valid_file),
+		TEST_BA(g_cfg_file_reload__no_file),
+		TEST_BA(g_cfg_file_reload__invalid_file),
+		TEST_BA(g_cfg_file_reload__valid_file),
 	};
 
 	return RUN(tests);

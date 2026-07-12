@@ -38,7 +38,7 @@ static int after_all(void **state) {
 static int before_each(void **state) {
 	g_cfg = cfg_default();
 
-	cfg_file_init_global();
+	g_cfg_file_init();
 
 	return 0;
 }
@@ -48,7 +48,7 @@ static int after_each(void **state) {
 
 	g_cfg_destroy();
 
-	cfg_file_destroy_global();
+	g_cfg_file_destroy();
 
 	fd_cfg_dir = -1;
 	wd_cfg_dir = -1;

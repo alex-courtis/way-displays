@@ -18,46 +18,44 @@ extern struct Pslist *g_cfg_file_paths;
 extern struct CfgFile *g_cfg_file;
 void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_path);
 
-// TODO name these all consistently, maybe g_cfg_file_init
-
 /*
- * lifecycle - g_cfg
+ * lifecycle - file
  */
 
 // instantiate g_cfg_file, destroying if present
-void cfg_file_init_global(void);
+void g_cfg_file_init(void);
 
 // free and set g_cfg_file to NULL
-void cfg_file_destroy_global(void);
+void g_cfg_file_destroy(void);
 
 /*
- * lifecycle - g_cfg_file_paths
+ * lifecycle - paths
  */
 
 // populate g_cfg_file_paths, one shot
-void cfg_file_paths_init(const char *user_path);
+void g_cfg_file_paths_init(const char *user_path);
 
 // free all g_cfg_file_paths
-void cfg_file_paths_destroy(void);
+void g_cfg_file_paths_destroy(void);
 
 /*
  * read/write - g_cfg, g_cfg_file
  */
 
 // write g_cfg to the g_cfg_file
-void cfg_file_write(void);
+void g_cfg_file_write(void);
 
 // find and read a config file into g_cfg, setting g_cfg_file
-void cfg_file_read(void);
+void g_cfg_file_read(void);
 
 // reload g_cfg from g_cfg_file
-void cfg_file_reload(void);
+void g_cfg_file_reload(void);
 
 /*
  * update
  */
 
 // if a file is found in g_cfg_file_paths, return true and set them
-bool cfg_file_resolve(void);
+bool g_cfg_file_resolve(void);
 
 #endif // CFG_FILE_H

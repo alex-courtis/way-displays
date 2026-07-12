@@ -19,7 +19,7 @@
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"
 
-// one-shot singleton set via cfg_file_paths_init
+// one-shot singleton set via g_cfg_file_paths_init
 struct Pslist *g_cfg_file_paths = NULL;
 
 struct CfgFile *g_cfg_file = NULL;
@@ -42,12 +42,12 @@ void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_p
 	cfg_file->file_name = strdup(basename(path));
 }
 
-void cfg_file_init_global(void) {
-	cfg_file_destroy_global();
+void g_cfg_file_init(void) {
+	g_cfg_file_destroy();
 	g_cfg_file = calloc(1, sizeof(struct CfgFile));
 }
 
-void cfg_file_destroy_global(void) {
+void g_cfg_file_destroy(void) {
 	if (g_cfg_file) {
 		free(g_cfg_file->dir_path);
 		free(g_cfg_file->file_path);
@@ -57,7 +57,7 @@ void cfg_file_destroy_global(void) {
 	g_cfg_file = NULL;
 }
 
-void cfg_file_paths_init(const char *user_path) {
+void g_cfg_file_paths_init(const char *user_path) {
 	char path[PATH_MAX];
 
 	// maybe user
@@ -80,17 +80,17 @@ void cfg_file_paths_init(const char *user_path) {
 	pslist_append(&g_cfg_file_paths, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
 }
 
-void cfg_file_paths_destroy(void) {
+void g_cfg_file_paths_destroy(void) {
 	pslist_free_vals(&g_cfg_file_paths, NULL);
 }
 
-static bool cfg_file_write_content(const char * const yaml) {
+static bool g_cfg_file_write_content(const char * const yaml) {
 	return
 		file_write(g_cfg_file->file_path, COMMENT_YAML_SCHEMA, "w") &&
 		file_write(g_cfg_file->file_path, yaml, "a");
 }
 
-void cfg_file_write(void) {
+void g_cfg_file_write(void) {
 	char *yaml = NULL;
 	const char *resolved_from = g_cfg_file->resolved_path;
 	bool written = false;
@@ -101,7 +101,7 @@ void cfg_file_write(void) {
 		goto end;
 	}
 
-	if (g_cfg_file->file_path && (written = cfg_file_write_content(yaml))) {
+	if (g_cfg_file->file_path && (written = g_cfg_file_write_content(yaml))) {
 		g_cfg_file->modified = true;
 		goto end;
 	}
@@ -109,7 +109,7 @@ void cfg_file_write(void) {
 	if (!written) {
 
 		// kill that cfg file
-		cfg_file_init_global();
+		g_cfg_file_init();
 		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
@@ -123,14 +123,14 @@ void cfg_file_write(void) {
 			set_paths(g_cfg_file, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(g_cfg_file->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
+			if (mkdir_p(g_cfg_file->dir_path, 0755) && (written = g_cfg_file_write_content(yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
 				goto end;
 			}
 
-			cfg_file_init_global();
+			g_cfg_file_init();
 		}
 	}
 
@@ -143,10 +143,10 @@ end:
 	}
 }
 
-void cfg_file_read(void) {
+void g_cfg_file_read(void) {
 	struct Cfg *cfg_resolved = cfg_init();
 
-	bool resolved = cfg_file_resolve();
+	bool resolved = g_cfg_file_resolve();
 
 	if (resolved) {
 		log_info(NULL);
@@ -176,7 +176,7 @@ void cfg_file_read(void) {
 	cfg_free(cfg_resolved);
 }
 
-void cfg_file_reload(void) {
+void g_cfg_file_reload(void) {
 	if (!g_cfg || !g_cfg_file)
 		return;
 

@@ -132,7 +132,7 @@ static void receive_ipc_request(int server_socket) {
 		case CFG_WRITE:
 			{
 				// complete
-				cfg_file_write();
+				g_cfg_file_write();
 				break;
 			}
 		case LIST:
@@ -216,7 +216,7 @@ static int loop(void) {
 				if (g_cfg_file->modified) {
 					g_cfg_file->modified = false;
 				} else {
-					cfg_file_reload();
+					g_cfg_file_reload();
 				}
 			}
 		}
@@ -271,11 +271,11 @@ server(char *cfg_path) {
 	log_info("way-displays version %s %s", VERSION, COMMIT);
 
 	// all cfg paths
-	cfg_file_paths_init(cfg_path);
-	cfg_file_init_global();
+	g_cfg_file_paths_init(cfg_path);
+	g_cfg_file_init();
 
 	// maybe default, never exits
-	cfg_file_read();
+	g_cfg_file_read();
 	free(cfg_path);
 
 	// play back captured logs from cfg parse
@@ -298,8 +298,8 @@ server(char *cfg_path) {
 	// release what resources we can
 	heads_destroy();
 	g_lid_destroy();
-	cfg_file_paths_destroy();
-	cfg_file_destroy_global();
+	g_cfg_file_paths_destroy();
+	g_cfg_file_destroy();
 	g_cfg_destroy();
 	displ_destroy();
 
@@ -307,11 +307,11 @@ server(char *cfg_path) {
 }
 
 // TODO move somewhere wrappable, cfg/file-resolve.c
-bool cfg_file_resolve(void) {
+bool g_cfg_file_resolve(void) {
 	if (!g_cfg_file)
 		return false;
 
-	cfg_file_init_global();
+	g_cfg_file_init();
 
 	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
