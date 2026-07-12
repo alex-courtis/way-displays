@@ -10,6 +10,8 @@
 // global singleton
 extern struct Cfg *g_cfg;
 
+// TODO maybe an enum-default.h
+
 #define AUTO_SCALE_DPI_DEFAULT 96
 #define AUTO_SCALE_DPI_MIN SCALE_ROUND_TO_DEFAULT
 
@@ -53,35 +55,50 @@ enum ScaleRoundStrategy {
 
 #define COMMENT_YAML_SCHEMA "# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml"
 
-struct Cfg {
+struct CfgFile {
 	char *dir_path;
 	char *file_path;
 	char *file_name;
 	char *resolved_from;
 
-	bool updated;
+	bool modified;                           // pfd_cfg_dir
+};
 
-	char *callback_cmd;
-	char *laptop_display_prefix;
-	enum OnOff laptop_lid_monitor;
-	const struct Sset *order_name_desc;
-	enum Arrange arrange;
-	enum Align align;
-	enum OnOff scaling;
-	enum OnOff auto_scale;
-	const struct SImap *scales;                // milliscale
-	const struct SPmap *modes;                 // mode_spmap_equal_init
-	const struct Sset *adaptive_sync_off;
-	const struct Sset *max_preferred_refresh;
-	const struct Pset *disableds;
-	const struct SImap *transforms;            // wl_output_transform
-	enum LogThreshold log_threshold;
+struct Cfg {
+	enum Arrange arrange;	                      // ARRANGE
+	enum Align align;                             // ALIGN
 
-	int32_t auto_scale_dpi;
-	float auto_scale_min;
-	float auto_scale_max;
-	enum ScaleRoundStrategy scale_round_strategy;
-	unsigned int scale_round_to;
+	const struct Sset *order_name_desc;           // ORDER
+
+	enum OnOff scaling;                           // SCALING
+	enum ScaleRoundStrategy scale_round_strategy; // SCALE_ROUND_STRATEGY
+	unsigned int scale_round_to;                  // SCALE_ROUND_TO
+
+	enum OnOff auto_scale;                        // AUTO_SCALE
+	int32_t auto_scale_dpi;                       // AUTO_SCALE_DPI
+	float auto_scale_min;                         // AUTO_SCALE_MIN
+	float auto_scale_max;                         // AUTO_SCALE_MAX
+
+	const struct SImap *scales;                   // SCALE               milliscale
+
+	const struct SPmap *modes;                    // MODE                mode_spmap_equal_init
+
+	const struct SImap *transforms;               // TRANSFORM           wl_output_transform
+
+	const struct Sset *adaptive_sync_off;         // VRR_OFF
+
+	char *callback_cmd;                           // CALLBACK_CMD
+
+	char *laptop_display_prefix;                  // LAPTOP_DISPLAY_PREFIX
+	enum OnOff laptop_lid_monitor;                // LAPTOP_LID_MONITOR
+
+	enum LogThreshold log_threshold;              // LOG_THRESHOLD
+
+	const struct Pset *disableds;                 // DISABLED
+
+	const struct Sset *max_preferred_refresh;     // MAX_PREFERRED_REFRESH
+
+	struct CfgFile file;
 };
 
 enum CfgElement {

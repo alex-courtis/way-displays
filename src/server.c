@@ -173,9 +173,9 @@ void server_load_cfg(void) {
 
 	if (resolved) {
 		log_info(NULL);
-		log_info("Found configuration file: %s", cfg_resolved->file_path);
+		log_info("Found configuration file: %s", cfg_resolved->file.file_path);
 
-		g_cfg = yaml_unmarshal_file(cfg_resolved->file_path, yaml_root_to_cfg);
+		g_cfg = yaml_unmarshal_file(cfg_resolved->file.file_path, yaml_root_to_cfg);
 
 		if (!g_cfg) {
 			log_info(NULL);
@@ -201,13 +201,13 @@ void server_load_cfg(void) {
 }
 
 void server_reload_cfg(void) {
-	if (!g_cfg || !g_cfg->file_path)
+	if (!g_cfg || !g_cfg->file.file_path)
 		return;
 
 	log_info(NULL);
-	log_info("Reloading configuration file: %s", g_cfg->file_path);
+	log_info("Reloading configuration file: %s", g_cfg->file.file_path);
 
-	struct Cfg *cfg_loaded = yaml_unmarshal_file(g_cfg->file_path, yaml_root_to_cfg);
+	struct Cfg *cfg_loaded = yaml_unmarshal_file(g_cfg->file.file_path, yaml_root_to_cfg);
 
 	if (cfg_loaded) {
 		cfg_apply_defaults(cfg_loaded);
@@ -277,9 +277,9 @@ static int loop(void) {
 
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (fd_cfg_dir_modified(g_cfg->file_name)) {
-				if (g_cfg->updated) {
-					g_cfg->updated = false;
+			if (fd_cfg_dir_modified(g_cfg->file.file_name)) {
+				if (g_cfg->file.modified) {
+					g_cfg->file.modified = false;
 				} else {
 					server_reload_cfg();
 				}

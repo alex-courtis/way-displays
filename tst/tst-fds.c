@@ -59,7 +59,7 @@ static void fd_wd_cfg_dir_create__no_dir(void **state) {
 }
 
 static void fd_wd_cfg_dir_create__bad_dir(void **state) {
-	g_cfg->dir_path = strdup("/inexistent");
+	g_cfg->file.dir_path = strdup("/inexistent");
 
 	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
@@ -72,7 +72,7 @@ static void fd_wd_cfg_dir_create__bad_dir(void **state) {
 }
 
 static void fd_wd_cfg_dir_create__ok(void **state) {
-	g_cfg->dir_path = strdup(DIR_TMP);
+	g_cfg->file.dir_path = strdup(DIR_TMP);
 
 	fd_wd_cfg_dir_create();
 

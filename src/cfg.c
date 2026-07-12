@@ -35,16 +35,16 @@ static void cfg_paths_free(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
-	free(cfg->dir_path);
-	cfg->dir_path = NULL;
+	free(cfg->file.dir_path);
+	cfg->file.dir_path = NULL;
 
-	free(cfg->file_path);
-	cfg->file_path = NULL;
+	free(cfg->file.file_path);
+	cfg->file.file_path = NULL;
 
-	free(cfg->file_name);
-	cfg->file_name = NULL;
+	free(cfg->file.file_name);
+	cfg->file.file_name = NULL;
 
-	cfg->resolved_from = NULL;
+	cfg->file.resolved_from = NULL;
 }
 
 static void warn_ambiguous_name_desc(const char *name_desc, const enum CfgElement element) {
@@ -113,26 +113,26 @@ static bool mode_is_invalid(const char* const name_desc, const struct Mode* cons
 // TODO explicit test or move to correct module
 static bool cfg_file_write_content(const char * const yaml) {
 	return
-		file_write(g_cfg->file_path, COMMENT_YAML_SCHEMA, "w") &&
-		file_write(g_cfg->file_path, yaml, "a");
+		file_write(g_cfg->file.file_path, COMMENT_YAML_SCHEMA, "w") &&
+		file_write(g_cfg->file.file_path, yaml, "a");
 }
 
 static void set_paths(struct Cfg *cfg, char *resolved_from, const char *file_path) {
 	static char path[PATH_MAX];
 
-	cfg->resolved_from = resolved_from;
+	cfg->file.resolved_from = resolved_from;
 
-	cfg->file_path = strdup(file_path);
+	cfg->file.file_path = strdup(file_path);
 
 	// dirname modifies path
-	strncpy(path, cfg->file_path, PATH_MAX - 1);
-	free(cfg->dir_path);
-	cfg->dir_path = strdup(dirname(path));
+	strncpy(path, cfg->file.file_path, PATH_MAX - 1);
+	free(cfg->file.dir_path);
+	cfg->file.dir_path = strdup(dirname(path));
 
 	// basename modifies path
-	strncpy(path, cfg->file_path, PATH_MAX - 1);
-	free(cfg->file_name);
-	cfg->file_name = strdup(basename(path));
+	strncpy(path, cfg->file.file_path, PATH_MAX - 1);
+	free(cfg->file.file_name);
+	cfg->file.file_name = strdup(basename(path));
 }
 
 struct Cfg *cfg_init(void) {
@@ -166,9 +166,9 @@ struct Cfg *cfg_clone(struct Cfg *from) {
 	memcpy(to, from, sizeof(struct Cfg));
 
 	to->callback_cmd          = from->callback_cmd          ? strdup(from->callback_cmd)          : NULL;
-	to->dir_path              = from->dir_path              ? strdup(from->dir_path)              : NULL;
-	to->file_name             = from->file_name             ? strdup(from->file_name)             : NULL;
-	to->file_path             = from->file_path             ? strdup(from->file_path)             : NULL;
+	to->file.dir_path         = from->file.dir_path         ? strdup(from->file.dir_path)         : NULL;
+	to->file.file_name        = from->file.file_name        ? strdup(from->file.file_name)        : NULL;
+	to->file.file_path        = from->file.file_path        ? strdup(from->file.file_path)        : NULL;
 	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
 	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
@@ -451,17 +451,17 @@ void cfg_validate_fix(struct Cfg *cfg) {
 // TODO explicit test or move to correct module
 void cfg_file_write(void) {
 	char *yaml = NULL;
-	const char *resolved_from = g_cfg->resolved_from;
+	const char *resolved_from = g_cfg->file.resolved_from;
 	bool written = false;
 
-	g_cfg->updated = false;
+	g_cfg->file.modified = false;
 
 	if (!(yaml = yaml_marshal(g_cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"))) {
 		goto end;
 	}
 
-	if (g_cfg->file_path && (written = cfg_file_write_content(yaml))) {
-		g_cfg->updated = true;
+	if (g_cfg->file.file_path && (written = cfg_file_write_content(yaml))) {
+		g_cfg->file.modified = true;
 		goto end;
 	}
 
@@ -482,7 +482,7 @@ void cfg_file_write(void) {
 			set_paths(g_cfg, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(g_cfg->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
+			if (mkdir_p(g_cfg->file.dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
@@ -498,7 +498,7 @@ end:
 
 	if (written) {
 		log_info(NULL);
-		log_info("Wrote configuration file: %s", g_cfg->file_path);
+		log_info("Wrote configuration file: %s", g_cfg->file.file_path);
 	}
 }
 
@@ -536,12 +536,12 @@ void cfg_copy_file_path(struct Cfg *to, const struct Cfg *from) {
 	if (!from || !to)
 		return;
 
-	free(to->dir_path);
-	free(to->file_path);
-	free(to->file_name);
+	free(to->file.dir_path);
+	free(to->file.file_path);
+	free(to->file.file_name);
 
-	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
-	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
-	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
+	to->file.dir_path = from->file.dir_path ? strdup(from->file.dir_path) : NULL;
+	to->file.file_path = from->file.file_path ? strdup(from->file.file_path) : NULL;
+	to->file.file_name = from->file.file_name ? strdup(from->file.file_name) : NULL;
 }
 
