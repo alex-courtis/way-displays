@@ -237,7 +237,6 @@ void cfg_file_paths_destroy(void) {
 	pslist_free_vals(&g_cfg_file_paths, NULL);
 }
 
-// TODO not all of this is tested
 bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 	return a && b &&
 		a->align == b->align &&

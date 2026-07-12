@@ -3,6 +3,7 @@
 #include "assert-cfg.h"
 #include "assert-log.h"
 #include "util-col.h"
+#include "util-data.h"
 #include "util-file.h"
 #include "util-init.h"
 
@@ -58,6 +59,127 @@ static int after_each(void **state) {
 
 	free(s);
 	return 0;
+}
+
+static void cfg_equal__all(void **state) {
+	struct Cfg *a = cfg_all();
+	struct Cfg *b = cfg_all();
+
+	assert_cfg_not_equal(a, NULL);
+	assert_cfg_not_equal(NULL, b);
+
+	a->align = MIDDLE;
+	assert_cfg_not_equal(a, b);
+	a->align = b->align;
+	assert_cfg_equal(a, b);
+
+	a->arrange = ROW;
+	assert_cfg_not_equal(a, b);
+	a->arrange = b->arrange;
+	assert_cfg_equal(a, b);
+
+	a->auto_scale = !a->auto_scale;
+	assert_cfg_not_equal(a, b);
+	a->auto_scale = b->auto_scale;
+	assert_cfg_equal(a, b);
+
+	a->auto_scale_dpi = !a->auto_scale_dpi;
+	assert_cfg_not_equal(a, b);
+	a->auto_scale_dpi = b->auto_scale_dpi;
+	assert_cfg_equal(a, b);
+
+	a->auto_scale_max = a->auto_scale_max + 1;
+	assert_cfg_not_equal(a, b);
+	a->auto_scale_max = b->auto_scale_max;
+	assert_cfg_equal(a, b);
+
+	a->auto_scale_min = a->auto_scale_min + 1;
+	assert_cfg_not_equal(a, b);
+	a->auto_scale_min = b->auto_scale_min;
+	assert_cfg_equal(a, b);
+
+	a->auto_scale_dpi = a->auto_scale_dpi + 1;
+	assert_cfg_not_equal(a, b);
+	a->auto_scale_dpi = b->auto_scale_dpi;
+	assert_cfg_equal(a, b);
+
+	a->laptop_lid_monitor = !a->laptop_lid_monitor;
+	assert_cfg_not_equal(a, b);
+	a->laptop_lid_monitor = b->laptop_lid_monitor;
+	assert_cfg_equal(a, b);
+
+	a->log_threshold = a->log_threshold + 1;
+	assert_cfg_not_equal(a, b);
+	a->log_threshold = b->log_threshold;
+	assert_cfg_equal(a, b);
+
+	a->scale_round_strategy = DOWN;
+	assert_cfg_not_equal(a, b);
+	a->scale_round_strategy = b->scale_round_strategy;
+	assert_cfg_equal(a, b);
+
+	a->scale_round_to = a->scale_round_to + 1;
+	assert_cfg_not_equal(a, b);
+	a->scale_round_to = b->scale_round_to;
+	assert_cfg_equal(a, b);
+
+	a->scaling = !a->scaling;
+	assert_cfg_not_equal(a, b);
+	a->scaling = b->scaling;
+	assert_cfg_equal(a, b);
+
+	free(a->callback_cmd);
+	a->callback_cmd = strdup("foo");
+	assert_cfg_not_equal(a, b);
+	free(a->callback_cmd);
+	a->callback_cmd = strdup(b->callback_cmd);
+	assert_cfg_equal(a, b);
+
+	free(a->laptop_display_prefix);
+	a->laptop_display_prefix = strdup("foo");
+	assert_cfg_not_equal(a, b);
+	free(a->laptop_display_prefix);
+	a->laptop_display_prefix = strdup(b->laptop_display_prefix);
+	assert_cfg_equal(a, b);
+
+	struct Disabled *disabled = disabled_nd("foo");
+	pset_add(a->disableds, disabled);
+	assert_cfg_not_equal(a, b);
+	pset_remove_free(a->disableds, disabled);
+	assert_cfg_equal(a, b);
+
+	((struct Mode*)spmap_get(a->modes, "five"))->height = 9999999;
+	assert_cfg_not_equal(a, b);
+	((struct Mode*)spmap_get(a->modes, "five"))->height = 1080;
+	assert_cfg_equal(a, b);
+
+	simap_put(a->scales, "three", 999999);
+	assert_cfg_not_equal(a, b);
+	simap_put(a->scales, "three", 3000);
+	assert_cfg_equal(a, b);
+
+	simap_put(a->transforms, "twelve", WL_OUTPUT_TRANSFORM_180);
+	assert_cfg_not_equal(a, b);
+	simap_put(a->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
+	assert_cfg_equal(a, b);
+
+	sset_add(a->adaptive_sync_off, "foo");
+	assert_cfg_not_equal(a, b);
+	sset_remove(a->adaptive_sync_off, "foo");
+	assert_cfg_equal(a, b);
+
+	sset_add(a->max_preferred_refresh, "foo");
+	assert_cfg_not_equal(a, b);
+	sset_remove(a->max_preferred_refresh, "foo");
+	assert_cfg_equal(a, b);
+
+	sset_add(a->order_name_desc, "foo");
+	assert_cfg_not_equal(a, b);
+	sset_remove(a->order_name_desc, "foo");
+	assert_cfg_equal(a, b);
+
+	cfg_free(a);
+	cfg_free(b);
 }
 
 static void cfg_equal__mode(void **state) {
@@ -653,6 +775,7 @@ static void cfg_validate_warn__(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		TEST_BA(cfg_equal__all),
 		TEST_BA(cfg_equal__mode),
 
 		TEST_BA(cfg_merge_set__arrange),
