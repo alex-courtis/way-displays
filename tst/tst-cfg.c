@@ -217,19 +217,19 @@ static void cfg_clone__paths(void **state) {
 	char *resolved_from = strdup("only pointer set");
 
 	struct Cfg *expected = cfg_init();
-	expected->file.dir_path = strdup("dp");
-	expected->file.file_name = strdup("fn");
-	expected->file.file_path = strdup("fp");
-	expected->file.resolved_from = resolved_from;
+	expected->cfg_file->dir_path = strdup("dp");
+	expected->cfg_file->file_name = strdup("fn");
+	expected->cfg_file->file_path = strdup("fp");
+	expected->cfg_file->resolved_from = resolved_from;
 
 	struct Cfg *actual = cfg_clone(expected);
 
 	assert_cfg_equal(actual, expected);
 
-	assert_str_equal(actual->file.dir_path, "dp");
-	assert_str_equal(actual->file.file_name, "fn");
-	assert_str_equal(actual->file.file_path, "fp");
-	assert_ptr_equal(expected->file.resolved_from, resolved_from);
+	assert_str_equal(actual->cfg_file->dir_path, "dp");
+	assert_str_equal(actual->cfg_file->file_name, "fn");
+	assert_str_equal(actual->cfg_file->file_path, "fp");
+	assert_ptr_equal(actual->cfg_file->resolved_from, resolved_from);
 
 	cfg_free(expected);
 	cfg_free(actual);

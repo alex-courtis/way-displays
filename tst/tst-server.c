@@ -63,9 +63,9 @@ static void server_load_cfg__no_file(void **state) {
 	struct Cfg *cfg_expected = cfg_default();
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_nul(g_cfg->file.file_name);
-	assert_nul(g_cfg->file.file_path);
-	assert_nul(g_cfg->file.dir_path);
+	assert_nul(g_cfg->cfg_file->file_name);
+	assert_nul(g_cfg->cfg_file->file_path);
+	assert_nul(g_cfg->cfg_file->dir_path);
 
 	char *log_expected = read_file("tst/server/load-no-file.log");
 	assert_log(INFO, log_expected);
@@ -100,9 +100,9 @@ static void server_load_cfg__valid_file(void **state) {
 	cfg_expected->scale_round_to = 4;
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg->file.file_path, "file_path");
-	assert_str_equal(g_cfg->file.file_name, "file_name");
-	assert_str_equal(g_cfg->file.dir_path, "dir_path");
+	assert_str_equal(g_cfg->cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg->cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg->cfg_file->dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/load-valid-file.log");
 	assert_log(INFO, log_expected);
@@ -127,9 +127,9 @@ static void server_load_cfg__invalid_file(void **state) {
 	struct Cfg *cfg_expected = cfg_default();
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg->file.file_path, "file_path");
-	assert_str_equal(g_cfg->file.file_name, "file_name");
-	assert_str_equal(g_cfg->file.dir_path, "dir_path");
+	assert_str_equal(g_cfg->cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg->cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg->cfg_file->dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/load-invalid-file.log");
 	assert_log(INFO, log_expected);
@@ -166,9 +166,9 @@ static void server_load_cfg__missing_defaults(void **state) {
 	cfg_expected->scale_round_to = 2;
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg->file.file_path, "file_path");
-	assert_str_equal(g_cfg->file.file_name, "file_name");
-	assert_str_equal(g_cfg->file.dir_path, "dir_path");
+	assert_str_equal(g_cfg->cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg->cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg->cfg_file->dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/load-missing-defaults.log");
 	assert_log(INFO, log_expected);
@@ -193,9 +193,9 @@ static void server_reload_cfg__invalid_file(void **state) {
 	g_cfg = cfg_orig;
 	g_cfg->auto_scale_max = 111;
 
-	g_cfg->file.file_path = strdup("file_path");
-	g_cfg->file.file_name = strdup("file_name");
-	g_cfg->file.dir_path = strdup("dir_path");
+	g_cfg->cfg_file->file_path = strdup("file_path");
+	g_cfg->cfg_file->file_name = strdup("file_name");
+	g_cfg->cfg_file->dir_path = strdup("dir_path");
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
@@ -208,9 +208,9 @@ static void server_reload_cfg__invalid_file(void **state) {
 	cfg_expected->auto_scale_max = 111;
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg->file.file_path, "file_path");
-	assert_str_equal(g_cfg->file.file_name, "file_name");
-	assert_str_equal(g_cfg->file.dir_path, "dir_path");
+	assert_str_equal(g_cfg->cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg->cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg->cfg_file->dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/reload-invalid-file.log");
 	assert_log(INFO, log_expected);
@@ -229,9 +229,9 @@ static void server_reload_cfg__valid_file(void **state) {
 	cfg_read->auto_scale_max = 888;
 	cfg_read->log_threshold = FATAL;
 
-	g_cfg->file.file_path = strdup("file_path");
-	g_cfg->file.file_name = strdup("file_name");
-	g_cfg->file.dir_path = strdup("dir_path");
+	g_cfg->cfg_file->file_path = strdup("file_path");
+	g_cfg->cfg_file->file_name = strdup("file_name");
+	g_cfg->cfg_file->dir_path = strdup("dir_path");
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
@@ -249,9 +249,9 @@ static void server_reload_cfg__valid_file(void **state) {
 	cfg_expected->log_threshold = FATAL;
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg->file.file_path, "file_path");
-	assert_str_equal(g_cfg->file.file_name, "file_name");
-	assert_str_equal(g_cfg->file.dir_path, "dir_path");
+	assert_str_equal(g_cfg->cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg->cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg->cfg_file->dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/reload-valid-file.log");
 	assert_log(INFO, log_expected);

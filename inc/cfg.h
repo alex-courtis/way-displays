@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "cfg/file.h"
 #include "log.h"
 #include "ipc.h"
 
@@ -90,7 +89,7 @@ struct Cfg {
 
 	const struct Sset *max_preferred_refresh;     // MAX_PREFERRED_REFRESH
 
-	struct CfgFile file;
+	struct CfgFile *cfg_file;
 };
 
 enum CfgElement {

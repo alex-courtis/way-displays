@@ -40,8 +40,44 @@ static void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char 
 // TODO explicit test or move to correct module
 static bool cfg_file_write_content(const char * const yaml) {
 	return
-		file_write(g_cfg->file.file_path, COMMENT_YAML_SCHEMA, "w") &&
-		file_write(g_cfg->file.file_path, yaml, "a");
+		file_write(g_cfg->cfg_file->file_path, COMMENT_YAML_SCHEMA, "w") &&
+		file_write(g_cfg->cfg_file->file_path, yaml, "a");
+}
+
+static void cfg_file_clear(struct CfgFile *cfg_file) {
+	if (!cfg_file)
+		return;
+
+	free(cfg_file->dir_path);
+	cfg_file->dir_path = NULL;
+
+	free(cfg_file->file_path);
+	cfg_file->file_path = NULL;
+
+	free(cfg_file->file_name);
+	cfg_file->file_name = NULL;
+
+	cfg_file->resolved_from = NULL;
+}
+
+struct CfgFile *cfg_file_init(void) {
+	struct CfgFile *cfg_file = calloc(1, sizeof(struct CfgFile));
+
+	return cfg_file;
+}
+
+struct CfgFile *cfg_file_clone(const struct CfgFile *from) {
+	if (!from)
+		return NULL;
+
+	struct CfgFile *to = cfg_file_init();
+
+	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
+	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
+	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
+	to->resolved_from = from->resolved_from;
+
+	return to;
 }
 
 void cfg_file_paths_init(const char *user_path) {
@@ -72,39 +108,36 @@ void cfg_file_paths_destroy(void) {
 }
 
 void cfg_file_free(struct CfgFile *cfg_file) {
-	free(cfg_file->dir_path);
-	cfg_file->dir_path = NULL;
+	if (!cfg_file)
+		return;
 
-	free(cfg_file->file_path);
-	cfg_file->file_path = NULL;
+	cfg_file_clear(cfg_file);
 
-	free(cfg_file->file_name);
-	cfg_file->file_name = NULL;
-
-	cfg_file->resolved_from = NULL;
+	free(cfg_file);
 }
 
 // TODO explicit test or move to correct module
+// or g_cfg_file_write
 void cfg_file_write(void) {
 	char *yaml = NULL;
-	const char *resolved_from = g_cfg->file.resolved_from;
+	const char *resolved_from = g_cfg->cfg_file->resolved_from;
 	bool written = false;
 
-	g_cfg->file.modified = false;
+	g_cfg->cfg_file->modified = false;
 
 	if (!(yaml = yaml_marshal(g_cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"))) {
 		goto end;
 	}
 
-	if (g_cfg->file.file_path && (written = cfg_file_write_content(yaml))) {
-		g_cfg->file.modified = true;
+	if (g_cfg->cfg_file->file_path && (written = cfg_file_write_content(yaml))) {
+		g_cfg->cfg_file->modified = true;
 		goto end;
 	}
 
 	if (!written) {
 
 		// kill that cfg file
-		cfg_file_free(&g_cfg->file);
+		cfg_file_clear(g_cfg->cfg_file);
 		fd_wd_cfg_dir_destroy();
 
 		// write preferred alternatives
@@ -115,17 +148,17 @@ void cfg_file_write(void) {
 				continue;
 			}
 
-			set_paths(&g_cfg->file, i->val, i->val);
+			set_paths(g_cfg->cfg_file, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(g_cfg->file.dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
+			if (mkdir_p(g_cfg->cfg_file->dir_path, 0755) && (written = cfg_file_write_content(yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
 				goto end;
 			}
 
-			cfg_file_free(&g_cfg->file);
+			cfg_file_clear(g_cfg->cfg_file);
 		}
 	}
 
@@ -134,7 +167,7 @@ end:
 
 	if (written) {
 		log_info(NULL);
-		log_info("Wrote configuration file: %s", g_cfg->file.file_path);
+		log_info("Wrote configuration file: %s", g_cfg->cfg_file->file_path);
 	}
 }
 
@@ -142,7 +175,7 @@ bool cfg_file_resolve(struct CfgFile *cfg_file) {
 	if (!cfg_file)
 		return false;
 
-	cfg_file_free(cfg_file);
+	cfg_file_clear(cfg_file);
 
 	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
 		if (access(i->val, R_OK) == 0) {
@@ -166,17 +199,4 @@ bool cfg_file_resolve(struct CfgFile *cfg_file) {
 	}
 
 	return false;
-}
-
-void cfg_file_merge(struct CfgFile *to, const struct CfgFile *from) {
-	if (!from || !to)
-		return;
-
-	free(to->dir_path);
-	free(to->file_path);
-	free(to->file_name);
-
-	to->dir_path = from->dir_path ? strdup(from->dir_path) : NULL;
-	to->file_path = from->file_path ? strdup(from->file_path) : NULL;
-	to->file_name = from->file_name ? strdup(from->file_name) : NULL;
 }

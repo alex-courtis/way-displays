@@ -92,6 +92,7 @@ struct Cfg *cfg_init(void) {
 	cfg->order_name_desc       = sset_init();
 	cfg->scales                = simap_init();
 	cfg->transforms            = simap_init();
+	cfg->cfg_file          = cfg_file_init();
 
 	return cfg;
 }
@@ -113,9 +114,6 @@ struct Cfg *cfg_clone(struct Cfg *from) {
 	memcpy(to, from, sizeof(struct Cfg));
 
 	to->callback_cmd          = from->callback_cmd          ? strdup(from->callback_cmd)          : NULL;
-	to->file.dir_path         = from->file.dir_path         ? strdup(from->file.dir_path)         : NULL;
-	to->file.file_name        = from->file.file_name        ? strdup(from->file.file_name)        : NULL;
-	to->file.file_path        = from->file.file_path        ? strdup(from->file.file_path)        : NULL;
 	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
 	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
@@ -126,6 +124,8 @@ struct Cfg *cfg_clone(struct Cfg *from) {
 	to->scales                = simap_clone(from->scales);
 	to->transforms            = simap_clone(from->transforms);
 
+	to->cfg_file = cfg_file_clone(from->cfg_file);
+
 	return to;
 }
 
@@ -133,7 +133,7 @@ void cfg_free(struct Cfg *cfg) {
 	if (!cfg)
 		return;
 
-	cfg_file_free(&cfg->file);
+	cfg_file_free(cfg->cfg_file);
 
 	free(cfg->callback_cmd);
 	free(cfg->laptop_display_prefix);

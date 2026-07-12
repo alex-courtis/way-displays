@@ -167,16 +167,18 @@ send:
 	notify_ipc_operation();
 }
 
+// TODO move into cfg/file
+
 void server_load_cfg(void) {
 	struct Cfg *cfg_resolved = cfg_init();
 
-	bool resolved = cfg_file_resolve(&cfg_resolved->file);
+	bool resolved = cfg_file_resolve(cfg_resolved->cfg_file);
 
 	if (resolved) {
 		log_info(NULL);
-		log_info("Found configuration file: %s", cfg_resolved->file.file_path);
+		log_info("Found configuration file: %s", cfg_resolved->cfg_file->file_path);
 
-		g_cfg = yaml_unmarshal_file(cfg_resolved->file.file_path, yaml_root_to_cfg);
+		g_cfg = yaml_unmarshal_file(cfg_resolved->cfg_file->file_path, yaml_root_to_cfg);
 
 		if (!g_cfg) {
 			log_info(NULL);
@@ -190,7 +192,8 @@ void server_load_cfg(void) {
 	}
 
 	cfg_apply_defaults(g_cfg);
-	cfg_file_merge(&g_cfg->file, &cfg_resolved->file);
+	cfg_file_free(g_cfg->cfg_file);
+	g_cfg->cfg_file = cfg_file_clone(cfg_resolved->cfg_file);
 
 	cfg_validate_fix(g_cfg);
 	log_info(NULL);
@@ -201,18 +204,25 @@ void server_load_cfg(void) {
 	cfg_free(cfg_resolved);
 }
 
+// TODO move into cfg/file
+
 void server_reload_cfg(void) {
-	if (!g_cfg || !g_cfg->file.file_path)
+	if (!g_cfg || !g_cfg->cfg_file)
+		return;
+
+	char *path = g_cfg->cfg_file->file_path;
+	if (!path)
 		return;
 
 	log_info(NULL);
-	log_info("Reloading configuration file: %s", g_cfg->file.file_path);
+	log_info("Reloading configuration file: %s", path);
 
-	struct Cfg *cfg_loaded = yaml_unmarshal_file(g_cfg->file.file_path, yaml_root_to_cfg);
+	struct Cfg *cfg_loaded = yaml_unmarshal_file(path, yaml_root_to_cfg);
 
 	if (cfg_loaded) {
 		cfg_apply_defaults(cfg_loaded);
-		cfg_file_merge(&cfg_loaded->file, &g_cfg->file);
+		cfg_file_free(cfg_loaded->cfg_file);
+		cfg_loaded->cfg_file = cfg_file_clone(g_cfg->cfg_file);
 
 		cfg_free(g_cfg);
 		g_cfg = cfg_loaded;
@@ -278,9 +288,9 @@ static int loop(void) {
 
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (fd_cfg_dir_modified(g_cfg->file.file_name)) {
-				if (g_cfg->file.modified) {
-					g_cfg->file.modified = false;
+			if (fd_cfg_dir_modified(g_cfg->cfg_file->file_name)) {
+				if (g_cfg->cfg_file->modified) {
+					g_cfg->cfg_file->modified = false;
 				} else {
 					server_reload_cfg();
 				}

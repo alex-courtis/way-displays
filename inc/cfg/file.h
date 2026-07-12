@@ -9,14 +9,19 @@ struct CfgFile {
 	char *file_name;
 	char *resolved_from;
 
-	bool modified;                           // pfd_cfg_dir
+	bool modified; // pfd_cfg_dir
 };
 
 /*
  * lifecycle - CfgFile
  */
 
+struct CfgFile *cfg_file_init(void);
+
 void cfg_file_free(struct CfgFile *cfg_file);
+
+// clones paths, sets resolved from pointer
+struct CfgFile *cfg_file_clone(const struct CfgFile *from);
 
 /*
  * lifecycle - g_cfg_file_paths
@@ -41,8 +46,5 @@ void cfg_file_write(void);
 
 // if a file is found in g_cfg_file_paths, return true and set them
 bool cfg_file_resolve(struct CfgFile *cfg_file);
-
-// duplicate paths
-void cfg_file_merge(struct CfgFile *to, const struct CfgFile *from);
 
 #endif // CFG_FILE_H
