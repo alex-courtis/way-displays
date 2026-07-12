@@ -5,8 +5,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
+#include "cfg/file.h"
 #include "log.h"
+#include "pslist.h"
 
 bool mkdir_p(char *path, mode_t mode) {
 	bool rc = false;
@@ -69,3 +72,32 @@ bool file_write(const char *path, const char *contents, const char *mode) {
 	return true;
 }
 
+bool g_cfg_file_resolve(void) {
+	if (!g_cfg_file)
+		return false;
+
+	g_cfg_file_init();
+
+	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
+		if (access(i->val, R_OK) == 0) {
+
+			char *file_path = realpath(i->val, NULL);
+
+			if (!file_path) {
+				continue;
+			}
+			if (access(file_path, R_OK) != 0) {
+				free(file_path);
+				continue;
+			}
+
+			set_paths(g_cfg_file, i->val, file_path);
+
+			free(file_path);
+
+			return true;
+		}
+	}
+
+	return false;
+}

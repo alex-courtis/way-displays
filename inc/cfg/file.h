@@ -51,11 +51,4 @@ void g_cfg_file_read(void);
 // reload g_cfg from g_cfg_file
 void g_cfg_file_reload(void);
 
-/*
- * update
- */
-
-// if a file is found in g_cfg_file_paths, return true and set them
-bool g_cfg_file_resolve(void);
-
 #endif // CFG_FILE_H

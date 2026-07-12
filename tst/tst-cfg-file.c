@@ -1,11 +1,12 @@
 #include "tst.h"
 
+#include "assert-cfg.h"
 #include "assert-log.h"
 #include "asserts.h"
 #include "expects.h"
+#include "util-file.h"
 
 #include <cmocka.h>
-#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,7 @@
 #include "cfg.h"
 #include "log.h"
 #include "pslist.h"
+#include "sset.h"
 
 #include "cfg/file.h"
 
@@ -24,11 +26,21 @@ extern struct Pslist *g_cfg_file_paths;
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 
+char *_dir_path = NULL;
+char *_file_name = NULL;
+char *_file_path = NULL;
+
+// cppcheck-suppress staticFunction
+bool __wrap_g_cfg_file_resolve(void) {
+	g_cfg_file->dir_path = _dir_path ? strdup(_dir_path) : NULL;
+	g_cfg_file->file_name = _file_name ? strdup(_file_name) : NULL;
+	g_cfg_file->file_path = _file_path ? strdup(_file_path) : NULL;
+
+	return mock_type(bool);
+}
+
 static void clean_files(void) {
 	remove("tst/tmp/write-existing-cfg.yaml");
-	remove("tst/tmp/resolved.yaml");
-	remove("tst/tmp/resolve/link.yaml");
-	rmdir("tst/tmp/resolve");
 }
 
 static int before_all(void **state) {
@@ -61,8 +73,6 @@ static int before_each(void **state) {
 
 	clean_files();
 
-	g_cfg = cfg_default();
-
 	g_cfg_file_init();
 
 	return 0;
@@ -87,9 +97,16 @@ static int after_each(void **state) {
 
 	g_cfg_file_destroy();
 
-	clean_files();
+	// clean_files();
 
 	g_cfg_destroy();
+
+	free(_dir_path);
+	_dir_path = NULL;
+	free(_file_name);
+	_file_name = NULL;
+	free(_file_path);
+	_file_path = NULL;
 
 	return 0;
 }
@@ -349,79 +366,206 @@ static void g_cfg_file_paths_init__user(void **state) {
 	assert_int_equal(pslist_length(g_cfg_file_paths), 4);
 }
 
-static void g_cfg_file_resolve__not_found(void **state) {
-	char cwd[PATH_MAX];
-	char file_path[PATH_MAX + 20];
+static void g_cfg_file_read__no_file(void **state) {
+	will_return_int(__wrap_g_cfg_file_resolve, false);
 
-	assert_non_nul(getcwd(cwd, PATH_MAX));
+	g_cfg_file_read();
 
-	snprintf(file_path, sizeof(file_path), "%s/inexistent.yaml", cwd);
+	struct Cfg *cfg_expected = cfg_default();
 
-	pslist_append(&g_cfg_file_paths, strdup(file_path));
-
-	assert_false(g_cfg_file_resolve());
-
+	assert_cfg_equal(g_cfg, cfg_expected);
+	assert_nul(g_cfg_file->file_name);
 	assert_nul(g_cfg_file->file_path);
 	assert_nul(g_cfg_file->dir_path);
-	assert_nul(g_cfg_file->file_name);
-	assert_nul(g_cfg_file->resolved_path);
+
+	char *log_expected = read_file("tst/server/load-no-file.log");
+	assert_log(INFO, log_expected);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
 }
 
-static void g_cfg_file_resolve__direct(void **state) {
-	char cwd[PATH_MAX];
-	char dir_path[PATH_MAX + 20];
-	char file_path[PATH_MAX + 40];
+static void g_cfg_file_read__valid_file(void **state) {
+	_file_path = strdup("file_path");
+	_file_name = strdup("file_name");
+	_dir_path = strdup("dir_path");
 
-	assert_non_nul(getcwd(cwd, PATH_MAX));
+	struct Cfg *cfg_read = cfg_default();
+	cfg_read->auto_scale_max = 888;
+	cfg_read->log_threshold = FATAL;
+	cfg_read->scale_round_to = 4;
 
-	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
-	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
-	pslist_append(&g_cfg_file_paths, strdup(file_path));
+	will_return_int(__wrap_g_cfg_file_resolve, true);
 
-	FILE *f = fopen(file_path, "w");
-	assert_non_nul(f);
-	if (f) {
-		fclose(f);
-	}
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
-	assert_true(g_cfg_file_resolve());
+	g_cfg_file_read();
 
-	assert_str_equal(g_cfg_file->file_path, file_path);
-	assert_str_equal(g_cfg_file->dir_path, dir_path);
-	assert_str_equal(g_cfg_file->file_name, "resolved.yaml");
-	assert_str_equal(g_cfg_file->resolved_path, file_path);
-	assert_ptr_equal(g_cfg_file->resolved_path, pslist_at(g_cfg_file_paths, 0));
+	assert_ptr_equal(g_cfg, cfg_read);
+
+	struct Cfg *cfg_expected = cfg_default();
+	cfg_expected->auto_scale_max = 888;
+	cfg_expected->log_threshold = FATAL;
+	cfg_expected->scale_round_to = 4;
+
+	assert_cfg_equal(g_cfg, cfg_expected);
+	assert_str_equal(g_cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg_file->dir_path, "dir_path");
+
+	char *log_expected = read_file("tst/server/load-valid-file.log");
+	assert_log(INFO, log_expected);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
 }
 
-static void g_cfg_file_resolve__linked(void **state) {
-	char cwd[PATH_MAX];
-	char dir_path[PATH_MAX + 20];
-	char file_path[PATH_MAX + 40];
-	char linked_path[PATH_MAX + 50];
+static void g_cfg_file_read__invalid_file(void **state) {
+	_file_path = strdup("file_path");
+	_file_name = strdup("file_name");
+	_dir_path = strdup("dir_path");
 
-	assert_non_nul(getcwd(cwd, PATH_MAX));
+	will_return_int(__wrap_g_cfg_file_resolve, true);
 
-	assert_int_equal(mkdir("tst/tmp/resolve", 0755), 0);
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
 
-	snprintf(dir_path, sizeof(dir_path), "%s/tst/tmp", cwd);
-	snprintf(file_path, sizeof(file_path), "%s/resolved.yaml", dir_path);
-	snprintf(linked_path, sizeof(linked_path), "%s/tst/tmp/resolve/link.yaml", cwd);
-	pslist_append(&g_cfg_file_paths, strdup(linked_path));
+	g_cfg_file_read();
 
-	FILE *f = fopen(file_path, "w");
-	assert_non_nul(f);
-	if (f) {
-		fclose(f);
-	}
-	assert_int_equal(symlink(file_path, linked_path), 0);
+	struct Cfg *cfg_expected = cfg_default();
 
-	assert_true(g_cfg_file_resolve());
+	assert_cfg_equal(g_cfg, cfg_expected);
+	assert_str_equal(g_cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg_file->dir_path, "dir_path");
 
-	assert_str_equal(g_cfg_file->file_path, file_path);
-	assert_str_equal(g_cfg_file->dir_path, dir_path);
-	assert_str_equal(g_cfg_file->file_name, "resolved.yaml");
-	assert_str_equal(g_cfg_file->resolved_path, linked_path);
-	assert_ptr_equal(g_cfg_file->resolved_path, pslist_at(g_cfg_file_paths, 0));
+	char *log_expected = read_file("tst/server/load-invalid-file.log");
+	assert_log(INFO, log_expected);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
+}
+
+static void g_cfg_file_read__missing_defaults(void **state) {
+	_file_path = strdup("file_path");
+	_file_name = strdup("file_name");
+	_dir_path = strdup("dir_path");
+
+	struct Cfg *cfg_read = cfg_init();
+	sset_add(cfg_read->order_name_desc, "first head");
+	cfg_read->align = BOTTOM;
+	cfg_read->auto_scale = OFF;
+	cfg_read->scale_round_to = 2;
+
+	will_return_int(__wrap_g_cfg_file_resolve, true);
+
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
+
+	g_cfg_file_read();
+
+	assert_ptr_equal(g_cfg, cfg_read);
+
+	struct Cfg *cfg_expected = cfg_default();
+	sset_add(cfg_expected->order_name_desc, "first head");
+	cfg_expected->align = BOTTOM;
+	cfg_expected->auto_scale = OFF;
+	cfg_expected->scale_round_to = 2;
+
+	assert_cfg_equal(g_cfg, cfg_expected);
+	assert_str_equal(g_cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg_file->dir_path, "dir_path");
+
+	char *log_expected = read_file("tst/server/load-missing-defaults.log");
+	assert_log(INFO, log_expected);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
+}
+
+static void g_cfg_file_reload__no_file(void **state) {
+	struct Cfg *cfg_orig = cfg_default();
+	g_cfg = cfg_orig;
+
+	// no mock calls expected
+
+	g_cfg_file_reload();
+
+	assert_ptr_equal(g_cfg, cfg_orig);
+}
+
+static void g_cfg_file_reload__invalid_file(void **state) {
+	struct Cfg *cfg_orig = cfg_default();
+	g_cfg = cfg_orig;
+	g_cfg->auto_scale_max = 111;
+
+	g_cfg_file->file_path = strdup("file_path");
+	g_cfg_file->file_name = strdup("file_name");
+	g_cfg_file->dir_path = strdup("dir_path");
+
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
+
+	g_cfg_file_reload();
+
+	assert_ptr_equal(g_cfg, cfg_orig);
+
+	struct Cfg *cfg_expected = cfg_default();
+	cfg_expected->auto_scale_max = 111;
+
+	assert_cfg_equal(g_cfg, cfg_expected);
+	assert_str_equal(g_cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg_file->dir_path, "dir_path");
+
+	char *log_expected = read_file("tst/server/reload-invalid-file.log");
+	assert_log(INFO, log_expected);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
+}
+
+static void g_cfg_file_reload__valid_file(void **state) {
+	struct Cfg *cfg_orig = cfg_default();
+	g_cfg = cfg_orig;
+	g_cfg->auto_scale_max = 222;
+	g_cfg->log_threshold = INFO;
+
+	struct Cfg *cfg_read = cfg_default();
+	cfg_read->auto_scale_max = 888;
+	cfg_read->log_threshold = FATAL;
+
+	g_cfg_file->file_path = strdup("file_path");
+	g_cfg_file->file_name = strdup("file_name");
+	g_cfg_file->dir_path = strdup("dir_path");
+
+	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
+
+	expect_int_value(__wrap_log_set_threshold, threshold, FATAL);
+	expect_int_value(__wrap_log_set_threshold, cli, false);
+
+	g_cfg_file_reload();
+
+	assert_ptr_not_equal(g_cfg, cfg_orig);
+	assert_ptr_equal(g_cfg, cfg_read);
+
+	struct Cfg *cfg_expected = cfg_default();
+	cfg_expected->auto_scale_max = 888;
+	cfg_expected->log_threshold = FATAL;
+
+	assert_cfg_equal(g_cfg, cfg_expected);
+	assert_str_equal(g_cfg_file->file_path, "file_path");
+	assert_str_equal(g_cfg_file->file_name, "file_name");
+	assert_str_equal(g_cfg_file->dir_path, "dir_path");
+
+	char *log_expected = read_file("tst/server/reload-valid-file.log");
+	assert_log(INFO, log_expected);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
 }
 
 int main(void) {
@@ -437,9 +581,14 @@ int main(void) {
 		TEST_BA(g_cfg_file_paths_init__xch),
 		TEST_BA(g_cfg_file_paths_init__user),
 
-		TEST_BA(g_cfg_file_resolve__not_found),
-		TEST_BA(g_cfg_file_resolve__direct),
-		TEST_BA(g_cfg_file_resolve__linked),
+		TEST_BA(g_cfg_file_read__no_file),
+		TEST_BA(g_cfg_file_read__valid_file),
+		TEST_BA(g_cfg_file_read__invalid_file),
+		TEST_BA(g_cfg_file_read__missing_defaults),
+
+		TEST_BA(g_cfg_file_reload__no_file),
+		TEST_BA(g_cfg_file_reload__invalid_file),
+		TEST_BA(g_cfg_file_reload__valid_file),
 	};
 
 	return RUN_BA(tests);
