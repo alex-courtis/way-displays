@@ -24,6 +24,15 @@
 static char b[6][262144] = { 0 };
 static char *bp[6] = { 0 };
 
+void log_cap_line(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines) {
+	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
+
+	lcl->threshold = threshold;
+	lcl->line = strdup(line);
+
+	pslist_append(log_cap_lines, lcl);
+}
+
 void _assert_log(enum LogThreshold t, const char * s, const char * const file, const int line) {
 	if (bp[t]) {
 		bp[t] = NULL;

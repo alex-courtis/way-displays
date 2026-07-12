@@ -4,6 +4,7 @@
 #include "assert-log.h"
 #include "asserts.h"
 #include "util-col.h"
+#include "util-data.h"
 #include "util-file.h"
 #include "util-init.h"
 
@@ -32,8 +33,6 @@
 #include "yaml/unmarshal-types.h"
 
 #include "yaml/unmarshal.h"
-
-#include "yaml/data.c"
 
 static int after_each(void **state) {
 	assert_logs_empty();
