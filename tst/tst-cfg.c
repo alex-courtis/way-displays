@@ -268,6 +268,70 @@ static void cfg_apply_defaults__nop(void **state) {
 	cfg_free(actual);
 }
 
+static void cfg_merge__bad_op(void **state) {
+	struct Cfg *to = cfg_default();
+	struct Cfg *from = cfg_all();
+
+	assert_nul(cfg_merge(to, from, REAPPLY));
+
+	cfg_free(to);
+	cfg_free(from);
+}
+
+static void cfg_merge__nop_set(void **state) {
+	struct Cfg *to = cfg_default();
+	struct Cfg *from = cfg_default();
+
+	assert_nul(cfg_merge(to, NULL, CFG_SET));
+	assert_nul(cfg_merge(NULL, from, CFG_SET));
+
+	assert_nul(cfg_merge(to, from, CFG_SET));
+
+	cfg_free(to);
+	cfg_free(from);
+}
+
+static void cfg_merge__nop_toggle(void **state) {
+	struct Cfg *to = cfg_default();
+	struct Cfg *from = cfg_init();
+
+	assert_nul(cfg_merge(to, from, CFG_TOGGLE));
+
+	cfg_free(to);
+	cfg_free(from);
+}
+
+static void cfg_merge__nop_del(void **state) {
+	struct Cfg *to = cfg_default();
+	struct Cfg *from = cfg_init();
+
+	assert_nul(cfg_merge(to, from, CFG_DEL));
+
+	cfg_free(to);
+	cfg_free(from);
+}
+
+static void cfg_merge__fix_set(void **state) {
+	struct Cfg *to = cfg_default();
+	struct Cfg *from = cfg_default();
+	from->arrange = COL;
+	from->align = TOP;
+
+	struct Cfg *actual = cfg_merge(to, from, CFG_SET);
+
+	assert_log(WARNING, "\nIgnoring invalid ALIGN TOP for COLUMN arrange. Valid values are LEFT, MIDDLE and RIGHT. Using default LEFT.\n");
+
+	assert_cfg_not_equal(actual, from);
+	assert_cfg_not_equal(actual, to);
+
+	assert_int_equal(actual->arrange, COL);
+	assert_int_equal(actual->align, LEFT);
+
+	cfg_free(actual);
+	cfg_free(to);
+	cfg_free(from);
+}
+
 static void cfg_merge_set__nulls(void **state) {
 	struct State *s = *state;
 
@@ -951,6 +1015,12 @@ int main(void) {
 		TEST_BA(cfg_clone__all),
 
 		TEST_BA(cfg_apply_defaults__nop),
+
+		TEST_BA(cfg_merge__bad_op),
+		TEST_BA(cfg_merge__nop_set),
+		TEST_BA(cfg_merge__nop_toggle),
+		TEST_BA(cfg_merge__nop_del),
+		TEST_BA(cfg_merge__fix_set),
 
 		TEST_BA(cfg_merge_set__nulls),
 		TEST_BA(cfg_merge_set__arrange),

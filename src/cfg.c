@@ -30,11 +30,7 @@ struct Cfg *g_cfg = NULL;
 // one-shot singleton set via cfg_file_paths_init
 struct Pslist *g_cfg_file_paths = NULL;
 
-// TODO explicit test
 static void cfg_paths_free(struct Cfg *cfg) {
-	if (!cfg)
-		return;
-
 	free(cfg->file.dir_path);
 	cfg->file.dir_path = NULL;
 
@@ -272,7 +268,6 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor   = LAPTOP_LID_MONITOR_DEFAULT;
 }
 
-// TODO maybe test
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {
 	if (!to || !from) {
 		return NULL;
@@ -280,12 +275,18 @@ struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcComm
 
 	struct Cfg *merged = NULL;
 
-	if (command == CFG_DEL) {
-		merged = cfg_merge_del(to, from);
-	} else if (command == CFG_TOGGLE) {
-		merged = cfg_merge_toggle(to, from);
-	} else {
-		merged = cfg_merge_set(to, from);
+	switch (command) {
+		case CFG_DEL:
+			merged = cfg_merge_del(to, from);
+			break;
+		case CFG_TOGGLE:
+			merged = cfg_merge_toggle(to, from);
+			break;
+		case CFG_SET:
+			merged = cfg_merge_set(to, from);
+			break;
+		default:
+			break;
 	}
 
 	if (merged) {
