@@ -14,37 +14,14 @@ struct CfgFile {
 
 extern struct CfgFile *g_cfg_file;
 
-/*
- * lifecycle - file
- */
+// init g_cfg_file and read a file into g_cfg, preferring user_path, default when no file
+void g_cfg_file_init_read(const char *user_path);
 
-// instantiate g_cfg_file, destroying if present
-void g_cfg_file_init(void);
-
-// free and set g_cfg_file to NULL
+// release g_cfg_file
 void g_cfg_file_destroy(void);
-
-/*
- * lifecycle - paths
- */
-
-// TODO consolidate with g_cfg_file_init
-
-// populate g_cfg_file_paths with known paths and user_path if exists
-void g_cfg_file_paths_init(const char *user_path);
-
-// free all g_cfg_file_paths
-void g_cfg_file_paths_destroy(void);
-
-/*
- * read/write - g_cfg, g_cfg_file
- */
 
 // write g_cfg to the g_cfg_file
 void g_cfg_file_write(void);
-
-// find and read a config file into g_cfg, setting g_cfg_file
-void g_cfg_file_read(void);
 
 // reload g_cfg from g_cfg_file
 void g_cfg_file_reload(void);

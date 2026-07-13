@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "cfg/file.h"
 #include "log.h"
 #include "str.h"
 
@@ -53,8 +52,6 @@ static int before_each(void **state) {
 	clean_files();
 	create_dirs();
 
-	g_cfg_file_init();
-
 	return 0;
 }
 
@@ -63,8 +60,6 @@ static int after_each(void **state) {
 
 	clean_files();
 	clean_dirs();
-
-	g_cfg_file_destroy();
 
 	return 0;
 }

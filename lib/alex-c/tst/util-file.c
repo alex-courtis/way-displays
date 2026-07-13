@@ -27,7 +27,7 @@ char *read_file(const char *path) {
 	return out;
 }
 
-// TODO replace with fs_write_file and move fs to lib
+// TODO replace with fs_file_write and move fs to lib
 void write_file(const char *path, const char *content) {
 	FILE *f = fopen(path, "w");
 	if (!f) {

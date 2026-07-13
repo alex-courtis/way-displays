@@ -48,7 +48,7 @@ static int create_fd_signal(void) {
 
 // TODO this could take a path, maybe move to file
 void fd_wd_cfg_dir_create(void) {
-	if (!g_cfg_file->dir_path)
+	if (!g_cfg_file || !g_cfg_file->dir_path)
 		return;
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);

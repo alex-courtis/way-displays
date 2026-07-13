@@ -38,7 +38,7 @@ static int after_all(void **state) {
 static int before_each(void **state) {
 	g_cfg = cfg_default();
 
-	g_cfg_file_init();
+	g_cfg_file = calloc(1, sizeof(struct CfgFile));
 
 	return 0;
 }
@@ -48,7 +48,8 @@ static int after_each(void **state) {
 
 	g_cfg_destroy();
 
-	g_cfg_file_destroy();
+	free(g_cfg_file->dir_path);
+	free(g_cfg_file);
 
 	fd_cfg_dir = -1;
 	wd_cfg_dir = -1;

@@ -16,7 +16,7 @@
  * fs
  */
 
-bool __wrap_fs_write_file(const char *path, const char *contents, const char *mode) {
+bool __wrap_fs_file_write(const char *path, const char *contents, const char *mode) {
 	check_expected_ptr(path);
 	check_expected_ptr(contents);
 	check_expected_ptr(mode);

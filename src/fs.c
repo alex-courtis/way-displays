@@ -44,7 +44,7 @@ end:
 	return rc;
 }
 
-bool fs_write_file(const char *path, const char *contents, const char *mode) {
+bool fs_file_write(const char *path, const char *contents, const char *mode) {
 	if (!path || !mode) {
 		return false;
 	}

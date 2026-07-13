@@ -270,12 +270,8 @@ server(char *cfg_path) {
 
 	log_info("way-displays version %s %s", VERSION, COMMIT);
 
-	// --config and all known paths
-	g_cfg_file_paths_init(cfg_path);
-	g_cfg_file_init();
-
 	// maybe default, never exits
-	g_cfg_file_read();
+	g_cfg_file_init_read(cfg_path);
 	free(cfg_path);
 
 	// play back captured logs from cfg parse
@@ -298,7 +294,6 @@ server(char *cfg_path) {
 	// release what resources we can
 	g_heads_destroy();
 	g_lid_destroy();
-	g_cfg_file_paths_destroy();
 	g_cfg_file_destroy();
 	g_cfg_destroy();
 	g_displ_destroy();
