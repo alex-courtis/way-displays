@@ -4,12 +4,14 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-bool mkdir_p(char *path, mode_t mode);
+// mkdir -p for path with mode applied to all created
+bool fs_mkdir_p(char *path, mode_t mode);
 
-bool file_write(const char *path, const char *contents, const char *mode);
+// write a file to path with mode
+bool fs_write_file(const char *path, const char *contents, const char *mode);
 
-// return real path (delink) if it exists and is readable, user frees
-char *resolve_canonical_path(char *path);
+// return realpath if it exists and is readable, following links, user frees
+char *fs_canonical_path(char *path);
 
 #endif // FS_H
 

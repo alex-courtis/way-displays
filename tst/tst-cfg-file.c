@@ -98,19 +98,19 @@ static void g_cfg_file_write__none(void **state) {
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
-	expect_str(__wrap_mkdir_p, path, "/path/to");
-	expect_int_value(__wrap_mkdir_p, mode, 0755);
-	will_return_int(__wrap_mkdir_p, true);
+	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
+	will_return_int(__wrap_fs_mkdir_p, true);
 
-	expect_str(__wrap_file_write, path, "/path/to/zero");
-	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
-	expect_str(__wrap_file_write, mode, "w");
-	will_return_int(__wrap_file_write, true);
+	expect_str(__wrap_fs_write_file, path, "/path/to/zero");
+	expect_str(__wrap_fs_write_file, contents, COMMENT_YAML_SCHEMA);
+	expect_str(__wrap_fs_write_file, mode, "w");
+	will_return_int(__wrap_fs_write_file, true);
 
-	expect_str(__wrap_file_write, path, "/path/to/zero");
-	expect_str(__wrap_file_write, contents, expected);
-	expect_str(__wrap_file_write, mode, "a");
-	will_return_int(__wrap_file_write, true);
+	expect_str(__wrap_fs_write_file, path, "/path/to/zero");
+	expect_str(__wrap_fs_write_file, contents, expected);
+	expect_str(__wrap_fs_write_file, mode, "a");
+	will_return_int(__wrap_fs_write_file, true);
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_create);
 
@@ -146,37 +146,37 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
-	expect_str(__wrap_file_write, path, "/path/to/two");
-	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
-	expect_str(__wrap_file_write, mode, "w");
-	will_return_int(__wrap_file_write, false);
+	expect_str(__wrap_fs_write_file, path, "/path/to/two");
+	expect_str(__wrap_fs_write_file, contents, COMMENT_YAML_SCHEMA);
+	expect_str(__wrap_fs_write_file, mode, "w");
+	will_return_int(__wrap_fs_write_file, false);
 
-	expect_str(__wrap_mkdir_p, path, "/path/to");
-	expect_int_value(__wrap_mkdir_p, mode, 0755);
-	will_return_int(__wrap_mkdir_p, true);
+	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
+	will_return_int(__wrap_fs_mkdir_p, true);
 
-	expect_str(__wrap_file_write, path, "/path/to/zero");
-	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
-	expect_str(__wrap_file_write, mode, "w");
-	will_return_int(__wrap_file_write, false);
+	expect_str(__wrap_fs_write_file, path, "/path/to/zero");
+	expect_str(__wrap_fs_write_file, contents, COMMENT_YAML_SCHEMA);
+	expect_str(__wrap_fs_write_file, mode, "w");
+	will_return_int(__wrap_fs_write_file, false);
 
-	expect_str(__wrap_mkdir_p, path, "/path/to");
-	expect_int_value(__wrap_mkdir_p, mode, 0755);
-	will_return_int(__wrap_mkdir_p, false);
+	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
+	will_return_int(__wrap_fs_mkdir_p, false);
 
-	expect_str(__wrap_mkdir_p, path, "/path/to");
-	expect_int_value(__wrap_mkdir_p, mode, 0755);
-	will_return_int(__wrap_mkdir_p, true);
+	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
+	will_return_int(__wrap_fs_mkdir_p, true);
 
-	expect_str(__wrap_file_write, path, "/path/to/three");
-	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
-	expect_str(__wrap_file_write, mode, "w");
-	will_return_int(__wrap_file_write, true);
+	expect_str(__wrap_fs_write_file, path, "/path/to/three");
+	expect_str(__wrap_fs_write_file, contents, COMMENT_YAML_SCHEMA);
+	expect_str(__wrap_fs_write_file, mode, "w");
+	will_return_int(__wrap_fs_write_file, true);
 
-	expect_str(__wrap_file_write, path, "/path/to/three");
-	expect_str(__wrap_file_write, contents, expected);
-	expect_str(__wrap_file_write, mode, "a");
-	will_return_int(__wrap_file_write, true);
+	expect_str(__wrap_fs_write_file, path, "/path/to/three");
+	expect_str(__wrap_fs_write_file, contents, expected);
+	expect_str(__wrap_fs_write_file, mode, "a");
+	will_return_int(__wrap_fs_write_file, true);
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_create);
 
@@ -211,19 +211,19 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
-	expect_str(__wrap_file_write, path, "/path/to/zero");
-	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
-	expect_str(__wrap_file_write, mode, "w");
-	will_return_int(__wrap_file_write, false);
+	expect_str(__wrap_fs_write_file, path, "/path/to/zero");
+	expect_str(__wrap_fs_write_file, contents, COMMENT_YAML_SCHEMA);
+	expect_str(__wrap_fs_write_file, mode, "w");
+	will_return_int(__wrap_fs_write_file, false);
 
-	expect_str(__wrap_mkdir_p, path, "/path/to");
-	expect_int_value(__wrap_mkdir_p, mode, 0755);
-	will_return_int(__wrap_mkdir_p, true);
+	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
+	will_return_int(__wrap_fs_mkdir_p, true);
 
-	expect_str(__wrap_file_write, path, "/path/to/one");
-	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
-	expect_str(__wrap_file_write, mode, "w");
-	will_return_int(__wrap_file_write, false);
+	expect_str(__wrap_fs_write_file, path, "/path/to/one");
+	expect_str(__wrap_fs_write_file, contents, COMMENT_YAML_SCHEMA);
+	expect_str(__wrap_fs_write_file, mode, "w");
+	will_return_int(__wrap_fs_write_file, false);
 
 	g_cfg_file_write();
 
@@ -245,15 +245,15 @@ static void g_cfg_file_write__existing(void **state) {
 	expect_str(__wrap_yaml_marshal, human, "cfg");
 	will_return_ptr_type(__wrap_yaml_marshal, strdup(expected), char*);
 
-	expect_str(__wrap_file_write, path, g_cfg_file->file_path);
-	expect_str(__wrap_file_write, contents, COMMENT_YAML_SCHEMA);
-	expect_str(__wrap_file_write, mode, "w");
-	will_return_int(__wrap_file_write, true);
+	expect_str(__wrap_fs_write_file, path, g_cfg_file->file_path);
+	expect_str(__wrap_fs_write_file, contents, COMMENT_YAML_SCHEMA);
+	expect_str(__wrap_fs_write_file, mode, "w");
+	will_return_int(__wrap_fs_write_file, true);
 
-	expect_str(__wrap_file_write, path, g_cfg_file->file_path);
-	expect_str(__wrap_file_write, contents, expected);
-	expect_str(__wrap_file_write, mode, "a");
-	will_return_int(__wrap_file_write, true);
+	expect_str(__wrap_fs_write_file, path, g_cfg_file->file_path);
+	expect_str(__wrap_fs_write_file, contents, expected);
+	expect_str(__wrap_fs_write_file, mode, "a");
+	will_return_int(__wrap_fs_write_file, true);
 
 	g_cfg_file_write();
 
@@ -346,8 +346,8 @@ static void g_cfg_file_read__valid_file(void **state) {
 	cfg_read->log_threshold = FATAL;
 	cfg_read->scale_round_to = 4;
 
-	expect_str(__wrap_resolve_canonical_path, path, "known-path");
-	will_return_ptr_type(__wrap_resolve_canonical_path, strdup("canonical-path"), char*);
+	expect_str(__wrap_fs_canonical_path, path, "known-path");
+	will_return_ptr_type(__wrap_fs_canonical_path, strdup("canonical-path"), char*);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "canonical-path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
@@ -373,8 +373,8 @@ static void g_cfg_file_read__valid_file(void **state) {
 static void g_cfg_file_read__invalid_file(void **state) {
 	pslist_append(&g_cfg_file_paths, strdup("known-path"));
 
-	expect_str(__wrap_resolve_canonical_path, path, "known-path");
-	will_return_ptr_type(__wrap_resolve_canonical_path, strdup("invalid-cfg.yaml"), char*);
+	expect_str(__wrap_fs_canonical_path, path, "known-path");
+	will_return_ptr_type(__wrap_fs_canonical_path, strdup("invalid-cfg.yaml"), char*);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "invalid-cfg.yaml");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
@@ -395,8 +395,8 @@ static void g_cfg_file_read__invalid_file(void **state) {
 static void g_cfg_file_read__missing_defaults(void **state) {
 	pslist_append(&g_cfg_file_paths, strdup("known-path"));
 
-	expect_str(__wrap_resolve_canonical_path, path, "known-path");
-	will_return_ptr_type(__wrap_resolve_canonical_path, strdup("file_path"), char*);
+	expect_str(__wrap_fs_canonical_path, path, "known-path");
+	will_return_ptr_type(__wrap_fs_canonical_path, strdup("file_path"), char*);
 
 	struct Cfg *cfg_read = cfg_init();
 	sset_add(cfg_read->order_name_desc, "first head");

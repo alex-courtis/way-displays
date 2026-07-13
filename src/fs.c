@@ -11,7 +11,7 @@
 
 #include "fs.h"
 
-bool mkdir_p(char *path, mode_t mode) {
+bool fs_mkdir_p(char *path, mode_t mode) {
 	bool rc = false;
 	char *dir_path = NULL;
 
@@ -26,7 +26,7 @@ bool mkdir_p(char *path, mode_t mode) {
 	}
 
 	dir_path = strdup(path);
-	if (!mkdir_p(dirname(dir_path), mode)) {
+	if (!fs_mkdir_p(dirname(dir_path), mode)) {
 		goto end;
 	}
 
@@ -44,7 +44,7 @@ end:
 	return rc;
 }
 
-bool file_write(const char *path, const char *contents, const char *mode) {
+bool fs_write_file(const char *path, const char *contents, const char *mode) {
 	if (!path || !mode) {
 		return false;
 	}
@@ -72,7 +72,7 @@ bool file_write(const char *path, const char *contents, const char *mode) {
 	return true;
 }
 
-char *resolve_canonical_path(char *path) {
+char *fs_canonical_path(char *path) {
 	if (!path)
 		return NULL;
 

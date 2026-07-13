@@ -19,9 +19,9 @@
 #include "fs.h"
 
 static void clean_dirs(void) {
-	rmdir("tst/mkdir_p/foo/bar");
-	rmdir("tst/mkdir_p/foo");
-	rmdir("tst/mkdir_p");
+	rmdir("tst/fs_mkdir_p/foo/bar");
+	rmdir("tst/fs_mkdir_p/foo");
+	rmdir("tst/fs_mkdir_p");
 
 	chmod("tst/resolve/noperms", 0755);
 	rmdir("tst/resolve/noperms");
@@ -29,7 +29,7 @@ static void clean_dirs(void) {
 	rmdir("tst/resolve");
 
 	struct stat sb;
-	assert_int_equal(stat("tst/mkdir_p", &sb), -1);
+	assert_int_equal(stat("tst/fs_mkdir_p", &sb), -1);
 	assert_int_equal(errno, ENOENT);
 }
 
@@ -69,52 +69,52 @@ static int after_each(void **state) {
 	return 0;
 }
 
-static void mkdir_p__no_perm(void **state) {
-	assert_true(mkdir_p("tst/mkdir_p", 0755));
-	assert_true(mkdir_p("tst/mkdir_p/foo", 0555));
+static void fs_mkdir_p__no_perm(void **state) {
+	assert_true(fs_mkdir_p("tst/fs_mkdir_p", 0755));
+	assert_true(fs_mkdir_p("tst/fs_mkdir_p/foo", 0555));
 
-	assert_false(mkdir_p("tst/mkdir_p/foo/bar", 0755));
+	assert_false(fs_mkdir_p("tst/fs_mkdir_p/foo/bar", 0755));
 
-	assert_log(ERROR, "\nCannot create directory tst/mkdir_p/foo/bar\n");
+	assert_log(ERROR, "\nCannot create directory tst/fs_mkdir_p/foo/bar\n");
 
 	struct stat sb;
-	assert_int_equal(stat("tst/mkdir_p/foo/bar", &sb), -1);
+	assert_int_equal(stat("tst/fs_mkdir_p/foo/bar", &sb), -1);
 	assert_int_equal(errno, ENOENT);
 }
 
-static void mkdir_p__ok(void **state) {
-	assert_true(mkdir_p("tst/mkdir_p/foo", 0755));
+static void fs_mkdir_p__ok(void **state) {
+	assert_true(fs_mkdir_p("tst/fs_mkdir_p/foo", 0755));
 
 	struct stat sb;
-	assert_int_equal(stat("tst/mkdir_p/foo", &sb), 0);
+	assert_int_equal(stat("tst/fs_mkdir_p/foo", &sb), 0);
 }
 
-static void mkdir_p__exists(void **state) {
+static void fs_mkdir_p__exists(void **state) {
 	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR;
 	mode |=       S_IRGRP | S_IXGRP;
 	mode |=       S_IROTH | S_IXOTH;
 
-	assert_true(mkdir_p("tst/mkdir_p/foo", mode));
+	assert_true(fs_mkdir_p("tst/fs_mkdir_p/foo", mode));
 
-	assert_true(mkdir_p("tst/mkdir_p/foo", mode));
+	assert_true(fs_mkdir_p("tst/fs_mkdir_p/foo", mode));
 
 	struct stat sb;
-	assert_int_equal(stat("tst/mkdir_p/foo", &sb), 0);
+	assert_int_equal(stat("tst/fs_mkdir_p/foo", &sb), 0);
 }
 
-static void resolve_canonical_path__not_found(void **state) {
+static void fs_canonical_path__not_found(void **state) {
 	char cwd[PATH_MAX];
 
 	assert_non_nul(getcwd(cwd, PATH_MAX));
 
 	char *file_path = sprintf_alloc("%s/tst/resolve/inexistent.yaml", cwd);
 
-	assert_nul(resolve_canonical_path(file_path));
+	assert_nul(fs_canonical_path(file_path));
 
 	free(file_path);
 }
 
-static void resolve_canonical_path__direct(void **state) {
+static void fs_canonical_path__direct(void **state) {
 	char cwd[PATH_MAX];
 
 	assert_non_nul(getcwd(cwd, PATH_MAX));
@@ -126,7 +126,7 @@ static void resolve_canonical_path__direct(void **state) {
 	if (f)
 		fclose(f);
 
-	char *actual = resolve_canonical_path(file_path);
+	char *actual = fs_canonical_path(file_path);
 
 	assert_str_equal(actual, file_path);
 
@@ -134,7 +134,7 @@ static void resolve_canonical_path__direct(void **state) {
 	free(file_path);
 }
 
-static void resolve_canonical_path__linked(void **state) {
+static void fs_canonical_path__linked(void **state) {
 	char cwd[PATH_MAX];
 
 	assert_non_nul(getcwd(cwd, PATH_MAX));
@@ -149,7 +149,7 @@ static void resolve_canonical_path__linked(void **state) {
 
 	assert_int_equal(symlink(file_path, link_path), 0);
 
-	char *actual = resolve_canonical_path(link_path);
+	char *actual = fs_canonical_path(link_path);
 
 	assert_str_equal(actual, file_path);
 
@@ -158,7 +158,7 @@ static void resolve_canonical_path__linked(void **state) {
 	free(link_path);
 }
 
-static void resolve_canonical_path__link_broken(void **state) {
+static void fs_canonical_path__link_broken(void **state) {
 	char cwd[PATH_MAX];
 
 	assert_non_nul(getcwd(cwd, PATH_MAX));
@@ -175,13 +175,13 @@ static void resolve_canonical_path__link_broken(void **state) {
 
 	remove(file_path);
 
-	assert_nul(resolve_canonical_path(link_path));
+	assert_nul(fs_canonical_path(link_path));
 
 	free(file_path);
 	free(link_path);
 }
 
-static void resolve_canonical_path__no_dir_perms(void **state) {
+static void fs_canonical_path__no_dir_perms(void **state) {
 	char cwd[PATH_MAX];
 
 	assert_non_nul(getcwd(cwd, PATH_MAX));
@@ -196,7 +196,7 @@ static void resolve_canonical_path__no_dir_perms(void **state) {
 
 	assert_int_equal(chmod(dir_path, 0444), 0);
 
-	assert_nul(resolve_canonical_path(file_path));
+	assert_nul(fs_canonical_path(file_path));
 
 	free(file_path);
 	free(dir_path);
@@ -204,15 +204,15 @@ static void resolve_canonical_path__no_dir_perms(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(mkdir_p__no_perm),
-		TEST_BA(mkdir_p__ok),
-		TEST_BA(mkdir_p__exists),
+		TEST_BA(fs_mkdir_p__no_perm),
+		TEST_BA(fs_mkdir_p__ok),
+		TEST_BA(fs_mkdir_p__exists),
 
-		TEST_BA(resolve_canonical_path__not_found),
-		TEST_BA(resolve_canonical_path__direct),
-		TEST_BA(resolve_canonical_path__linked),
-		TEST_BA(resolve_canonical_path__link_broken),
-		TEST_BA(resolve_canonical_path__no_dir_perms),
+		TEST_BA(fs_canonical_path__not_found),
+		TEST_BA(fs_canonical_path__direct),
+		TEST_BA(fs_canonical_path__linked),
+		TEST_BA(fs_canonical_path__link_broken),
+		TEST_BA(fs_canonical_path__no_dir_perms),
 	};
 
 	return RUN(tests);

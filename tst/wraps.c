@@ -13,21 +13,30 @@
 #include "yaml/unmarshal.h"
 
 /*
- * fds
+ * fs
  */
 
-bool __wrap_file_write(const char *path, const char *contents, const char *mode) {
+bool __wrap_fs_write_file(const char *path, const char *contents, const char *mode) {
 	check_expected_ptr(path);
 	check_expected_ptr(contents);
 	check_expected_ptr(mode);
 	return mock_type(bool);
 }
 
-bool __wrap_mkdir_p(char *path, mode_t mode) {
+bool __wrap_fs_mkdir_p(char *path, mode_t mode) {
 	check_expected_ptr(path);
 	check_expected_int(mode);
 	return mock_type(bool);
 }
+
+char *__wrap_fs_canonical_path(char *path) {
+	check_expected_ptr(path);
+	return mock_ptr_type_checked(char*);
+}
+
+/*
+ * fds
+ */
 
 void __wrap_fd_wd_cfg_dir_create(void) {
 	function_called();
@@ -128,11 +137,6 @@ void __wrap_wd_exit_message(const int __status) {
 /*
  * fs
  */
-
-char *__wrap_resolve_canonical_path(char *path) {
-	check_expected_ptr(path);
-	return mock_ptr_type_checked(char*);
-}
 
 /*
  * yaml-(un)marshal

@@ -79,10 +79,10 @@ tst/tst-desire: LDFLAGS += -Wl,$\
 
 tst/tst-cfg-file: LDFLAGS += -Wl,$\
 	--wrap=yaml_marshal,$\
-	--wrap=file_write,$\
-	--wrap=mkdir_p,$\
+	--wrap=fs_write_file,$\
+	--wrap=fs_mkdir_p,$\
+	--wrap=fs_canonical_path,$\
 	--wrap=fd_wd_cfg_dir_destroy,$\
 	--wrap=fd_wd_cfg_dir_create,$\
-	--wrap=resolve_canonical_path,$\
 	--wrap=yaml_unmarshal_file
 

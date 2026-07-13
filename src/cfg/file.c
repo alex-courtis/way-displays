@@ -50,7 +50,7 @@ static bool g_cfg_file_resolve(void) {
 	g_cfg_file_init();
 
 	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
-		char *path = resolve_canonical_path(i->val);
+		char *path = fs_canonical_path(i->val);
 		if (path) {
 			set_paths(g_cfg_file, i->val, path);
 			free(path);
@@ -105,8 +105,8 @@ void g_cfg_file_paths_destroy(void) {
 
 static bool g_cfg_file_write_content(const char * const yaml) {
 	return
-		file_write(g_cfg_file->file_path, COMMENT_YAML_SCHEMA, "w") &&
-		file_write(g_cfg_file->file_path, yaml, "a");
+		fs_write_file(g_cfg_file->file_path, COMMENT_YAML_SCHEMA, "w") &&
+		fs_write_file(g_cfg_file->file_path, yaml, "a");
 }
 
 void g_cfg_file_write(void) {
@@ -142,7 +142,7 @@ void g_cfg_file_write(void) {
 			set_paths(g_cfg_file, i->val, i->val);
 
 			// attempt to write
-			if (mkdir_p(g_cfg_file->dir_path, 0755) && (written = g_cfg_file_write_content(yaml))) {
+			if (fs_mkdir_p(g_cfg_file->dir_path, 0755) && (written = g_cfg_file_write_content(yaml))) {
 
 				// watch the new
 				fd_wd_cfg_dir_create();
