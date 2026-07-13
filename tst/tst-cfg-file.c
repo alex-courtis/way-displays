@@ -348,6 +348,25 @@ static void g_cfg_file_init_read__no_file(void **state) {
 	cfg_free(cfg_expected);
 }
 
+static void g_cfg_file_init_read__file_not_resolved(void **state) {
+	pslist_append(&g_cfg_file_paths, strdup("known-path"));
+
+	expect_str(__wrap_fs_canonical_path, path, "known-path");
+	will_return_ptr_type(__wrap_fs_canonical_path, NULL, char*);
+
+	g_cfg_file_init_read(NULL);
+
+	struct Cfg *cfg_expected = cfg_default();
+
+	assert_cfg_equal(g_cfg, cfg_expected);
+
+	char *log_expected = read_file("tst/server/load-no-file.log");
+	assert_log(INFO, log_expected);
+
+	free(log_expected);
+	cfg_free(cfg_expected);
+}
+
 static void g_cfg_file_init_read__valid_file(void **state) {
 	pslist_append(&g_cfg_file_paths, strdup("known-path"));
 
@@ -535,6 +554,7 @@ int main(void) {
 		TEST_BA(g_cfg_file_paths_init__user),
 
 		TEST_BA(g_cfg_file_init_read__no_file),
+		TEST_BA(g_cfg_file_init_read__file_not_resolved),
 		TEST_BA(g_cfg_file_init_read__valid_file),
 		TEST_BA(g_cfg_file_init_read__invalid_file),
 		TEST_BA(g_cfg_file_init_read__missing_defaults),
