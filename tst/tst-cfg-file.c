@@ -123,9 +123,9 @@ static void g_cfg_file_write__none(void **state) {
 	assert_str_equal(g_cfg_file.file_path, "/path/to/zero");
 	assert_str_equal(g_cfg_file.dir_path, "/path/to");
 	assert_str_equal(g_cfg_file.file_name, "zero");
-	assert_str_equal(g_cfg_file.resolved_from, "/path/to/zero");
-	assert_ptr_equal(g_cfg_file.resolved_from, pslist_at(g_cfg_file_paths, 0));
-	assert_false(g_cfg_file.modified);
+	assert_str_equal(g_cfg_file.file_path_resolved, "/path/to/zero");
+	assert_ptr_equal(g_cfg_file.file_path_resolved, pslist_at(g_cfg_file_paths, 0));
+	assert_false(g_cfg_file.written);
 }
 
 static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
@@ -138,7 +138,7 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 	strncpy(g_cfg_file.file_path, "/path/to/two", PATH_MAX - 1);
 	strncpy(g_cfg_file.dir_path, "nothing", PATH_MAX - 1);
 	strncpy(g_cfg_file.file_name, "missing", PATH_MAX - 1);
-	g_cfg_file.resolved_from = pslist_at(g_cfg_file_paths, 2);
+	g_cfg_file.file_path_resolved = pslist_at(g_cfg_file_paths, 2);
 
 	char *expected = strdup("XXXXxxxX");
 
@@ -189,9 +189,9 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 	assert_str_equal(g_cfg_file.file_path, "/path/to/three");
 	assert_str_equal(g_cfg_file.dir_path, "/path/to");
 	assert_str_equal(g_cfg_file.file_name, "three");
-	assert_str_equal(g_cfg_file.resolved_from, "/path/to/three");
-	assert_ptr_equal(g_cfg_file.resolved_from, pslist_at(g_cfg_file_paths, 3));
-	assert_false(g_cfg_file.modified);
+	assert_str_equal(g_cfg_file.file_path_resolved, "/path/to/three");
+	assert_ptr_equal(g_cfg_file.file_path_resolved, pslist_at(g_cfg_file_paths, 3));
+	assert_false(g_cfg_file.written);
 
 	free(expected);
 }
@@ -203,7 +203,7 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 	strncpy(g_cfg_file.file_path, "/path/to/zero", PATH_MAX - 1);
 	strncpy(g_cfg_file.dir_path, "/path/to", PATH_MAX - 1);
 	strncpy(g_cfg_file.file_name, "one", PATH_MAX - 1);
-	g_cfg_file.resolved_from = pslist_at(g_cfg_file_paths, 0);
+	g_cfg_file.file_path_resolved = pslist_at(g_cfg_file_paths, 0);
 
 	char *expected = strdup("XXXX");
 
@@ -237,8 +237,8 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 	assert_str_equal(g_cfg_file.file_path, "");
 	assert_str_equal(g_cfg_file.dir_path, "");
 	assert_str_equal(g_cfg_file.file_name, "");
-	assert_nul(g_cfg_file.resolved_from);
-	assert_false(g_cfg_file.modified);
+	assert_nul(g_cfg_file.file_path_resolved);
+	assert_false(g_cfg_file.written);
 
 	free(expected);
 }
@@ -266,7 +266,7 @@ static void g_cfg_file_write__existing(void **state) {
 
 	assert_log(INFO, "\nWrote configuration file: tst/tmp/write-existing-cfg.yaml\n");
 
-	assert_true(g_cfg_file.modified);
+	assert_true(g_cfg_file.written);
 
 	free(expected);
 }

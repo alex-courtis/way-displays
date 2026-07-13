@@ -26,7 +26,7 @@ struct CfgFile g_cfg_file = { 0 };
 static void cfg_file_populate(char *resolved_from, const char *paths) {
 	static char tmp[PATH_MAX];
 
-	g_cfg_file.resolved_from = resolved_from;
+	g_cfg_file.file_path_resolved = resolved_from;
 
 	strncpy(g_cfg_file.file_path, paths, PATH_MAX - 1);
 
@@ -89,16 +89,16 @@ void g_cfg_file_write(void) {
 	char *yaml = NULL;
 	bool written = false;
 
-	const char *resolved_from_prev = g_cfg_file.resolved_from;
+	const char *resolved_from_prev = g_cfg_file.file_path_resolved;
 
-	g_cfg_file.modified = false;
+	g_cfg_file.written = false;
 
 	if (!(yaml = yaml_marshal(g_cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"))) {
 		goto end;
 	}
 
 	if (strlen(g_cfg_file.file_path) > 0 && (written = g_cfg_file_write_content(yaml))) {
-		g_cfg_file.modified = true;
+		g_cfg_file.written = true;
 		goto end;
 	}
 
@@ -146,6 +146,8 @@ void g_cfg_file_init_read(const char *user_path) {
 	if (!g_cfg_file_paths) {
 		g_cfg_file_paths_init(user_path);
 	}
+
+	cfg_free(g_cfg);
 
 	bool resolved = g_cfg_file_resolve();
 

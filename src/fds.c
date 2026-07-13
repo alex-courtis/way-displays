@@ -46,7 +46,6 @@ static int create_fd_signal(void) {
 	return signalfd(-1, &mask, 0);
 }
 
-// TODO this could take a path, maybe move to file
 void fd_wd_cfg_dir_create(void) {
 	if (strlen(g_cfg_file.dir_path) == 0)
 		return;
@@ -149,13 +148,10 @@ void pfds_destroy(void) {
 	}
 }
 
-// TODO this can read g_cfg_file or we take g_cfg_file out of fd_wd_cfg_dir_create
-
 // see man 7 inotify
-bool fd_cfg_dir_modified(const char *file_name) {
-	if (!file_name) {
+bool fd_cfg_file_modified(void) {
+	if (strlen(g_cfg_file.file_name) == 0)
 		return false;
-	}
 
 	char buf[4096] __attribute__ ((aligned(__alignof__(struct inotify_event))));
 	const struct inotify_event *event;
@@ -164,7 +160,7 @@ bool fd_cfg_dir_modified(const char *file_name) {
 	while ((len = read(fd_cfg_dir, buf, sizeof(buf))) > 0) {
 		for (char *ptr = buf; ptr < buf + len; ptr += sizeof(struct inotify_event) + event->len) {
 			event = (const struct inotify_event *) ptr;
-			if (event->mask & IN_CLOSE_WRITE && event->len && strcmp(file_name, event->name) == 0) {
+			if (event->mask & IN_CLOSE_WRITE && event->len && strcmp(g_cfg_file.file_name, event->name) == 0) {
 				return true;
 			}
 		}

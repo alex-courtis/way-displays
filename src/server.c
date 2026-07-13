@@ -212,9 +212,9 @@ static int loop(void) {
 
 		// cfg directory change
 		if (pfd_cfg_dir && pfd_cfg_dir->revents & pfd_cfg_dir->events) {
-			if (fd_cfg_dir_modified(g_cfg_file.file_name)) {
-				if (g_cfg_file.modified) {
-					g_cfg_file.modified = false;
+			if (fd_cfg_file_modified()) {
+				if (g_cfg_file.written) {
+					g_cfg_file.written = false;
 				} else {
 					g_cfg_file_reload();
 				}

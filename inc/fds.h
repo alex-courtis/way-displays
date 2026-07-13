@@ -26,7 +26,7 @@ void fd_wd_cfg_dir_create(void);
 
 void fd_wd_cfg_dir_destroy(void);
 
-bool fd_cfg_dir_modified(const char *file_name);
+bool fd_cfg_file_modified(void);
 
 #endif // FDS_H
 
