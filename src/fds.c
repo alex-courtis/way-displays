@@ -48,15 +48,15 @@ static int create_fd_signal(void) {
 
 // TODO this could take a path, maybe move to file
 void fd_wd_cfg_dir_create(void) {
-	if (!g_cfg_file || !g_cfg_file->dir_path)
+	if (strlen(g_cfg_file.dir_path) == 0)
 		return;
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
-	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, g_cfg_file->dir_path, IN_CLOSE_WRITE)) == -1) {
+	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, g_cfg_file.dir_path, IN_CLOSE_WRITE)) == -1) {
 		close(fd_cfg_dir);
 		fd_cfg_dir = -1;
 		log_fatal(NULL);
-		log_fatal_errno("unable to create config directory watch for %s, exiting", g_cfg_file->dir_path);
+		log_fatal_errno("unable to create config directory watch for %s, exiting", g_cfg_file.dir_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
@@ -148,6 +148,8 @@ void pfds_destroy(void) {
 		pfds[i].revents = 0;
 	}
 }
+
+// TODO this can read g_cfg_file or we take g_cfg_file out of fd_wd_cfg_dir_create
 
 // see man 7 inotify
 bool fd_cfg_dir_modified(const char *file_name) {

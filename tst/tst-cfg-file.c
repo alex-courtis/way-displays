@@ -7,6 +7,7 @@
 #include "util-file.h"
 
 #include <cmocka.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,7 +50,7 @@ static int after_all(void **state) {
 static int before_each(void **state) {
 	pslist_free_vals(&g_cfg_file_paths, NULL);
 
-	g_cfg_file = calloc(1, sizeof(struct CfgFile));
+	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 
 	return 0;
 }
@@ -71,13 +72,7 @@ static int after_each(void **state) {
 
 	pslist_free_vals(&g_cfg_file_paths, NULL);
 
-	if (g_cfg_file) {
-		free(g_cfg_file->dir_path);
-		free(g_cfg_file->file_path);
-		free(g_cfg_file->file_name);
-		free(g_cfg_file);
-	}
-	g_cfg_file = NULL;
+	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 
 	g_cfg_destroy();
 
@@ -85,8 +80,7 @@ static int after_each(void **state) {
 }
 
 static void g_cfg_file_write__bad_yaml(void **state) {
-	free(g_cfg_file->file_path);
-	g_cfg_file->file_path = strdup("something");
+	strncpy(g_cfg_file.file_path, "something", PATH_MAX);
 
 	expect_ptr(__wrap_yaml_marshal, data, g_cfg);
 	expect_str(__wrap_yaml_marshal, human, "cfg");
@@ -126,12 +120,12 @@ static void g_cfg_file_write__none(void **state) {
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/zero\n");
 
-	assert_str_equal(g_cfg_file->file_path, "/path/to/zero");
-	assert_str_equal(g_cfg_file->dir_path, "/path/to");
-	assert_str_equal(g_cfg_file->file_name, "zero");
-	assert_str_equal(g_cfg_file->resolved_path, "/path/to/zero");
-	assert_ptr_equal(g_cfg_file->resolved_path, pslist_at(g_cfg_file_paths, 0));
-	assert_int_equal(g_cfg_file->modified, false);
+	assert_str_equal(g_cfg_file.file_path, "/path/to/zero");
+	assert_str_equal(g_cfg_file.dir_path, "/path/to");
+	assert_str_equal(g_cfg_file.file_name, "zero");
+	assert_str_equal(g_cfg_file.resolved_from, "/path/to/zero");
+	assert_ptr_equal(g_cfg_file.resolved_from, pslist_at(g_cfg_file_paths, 0));
+	assert_false(g_cfg_file.modified);
 }
 
 static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
@@ -141,10 +135,10 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 	pslist_append(&g_cfg_file_paths, strdup("/path/to/three"));
 	pslist_append(&g_cfg_file_paths, strdup("/path/to/four"));
 
-	g_cfg_file->file_path = strdup("/path/to/two");
-	g_cfg_file->dir_path = strdup("nothing");
-	g_cfg_file->file_name = strdup("missing");
-	g_cfg_file->resolved_path = pslist_at(g_cfg_file_paths, 2);
+	strncpy(g_cfg_file.file_path, "/path/to/two", PATH_MAX - 1);
+	strncpy(g_cfg_file.dir_path, "nothing", PATH_MAX - 1);
+	strncpy(g_cfg_file.file_name, "missing", PATH_MAX - 1);
+	g_cfg_file.resolved_from = pslist_at(g_cfg_file_paths, 2);
 
 	char *expected = strdup("XXXXxxxX");
 
@@ -192,12 +186,12 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 
 	assert_log(INFO, "\nWrote configuration file: /path/to/three\n");
 
-	assert_str_equal(g_cfg_file->file_path, "/path/to/three");
-	assert_str_equal(g_cfg_file->dir_path, "/path/to");
-	assert_str_equal(g_cfg_file->file_name, "three");
-	assert_str_equal(g_cfg_file->resolved_path, "/path/to/three");
-	assert_ptr_equal(g_cfg_file->resolved_path, pslist_at(g_cfg_file_paths, 3));
-	assert_int_equal(g_cfg_file->modified, false);
+	assert_str_equal(g_cfg_file.file_path, "/path/to/three");
+	assert_str_equal(g_cfg_file.dir_path, "/path/to");
+	assert_str_equal(g_cfg_file.file_name, "three");
+	assert_str_equal(g_cfg_file.resolved_from, "/path/to/three");
+	assert_ptr_equal(g_cfg_file.resolved_from, pslist_at(g_cfg_file_paths, 3));
+	assert_false(g_cfg_file.modified);
 
 	free(expected);
 }
@@ -206,10 +200,10 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 	pslist_append(&g_cfg_file_paths, strdup("/path/to/zero"));
 	pslist_append(&g_cfg_file_paths, strdup("/path/to/one"));
 
-	g_cfg_file->file_path = strdup("/path/to/zero");
-	g_cfg_file->dir_path = strdup("/path/to");
-	g_cfg_file->file_name = strdup("one");
-	g_cfg_file->resolved_path = pslist_at(g_cfg_file_paths, 0);
+	strncpy(g_cfg_file.file_path, "/path/to/zero", PATH_MAX - 1);
+	strncpy(g_cfg_file.dir_path, "/path/to", PATH_MAX - 1);
+	strncpy(g_cfg_file.file_name, "one", PATH_MAX - 1);
+	g_cfg_file.resolved_from = pslist_at(g_cfg_file_paths, 0);
 
 	char *expected = strdup("XXXX");
 
@@ -240,17 +234,17 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 
 	g_cfg_file_write();
 
-	assert_nul(g_cfg_file->file_path);
-	assert_nul(g_cfg_file->dir_path);
-	assert_nul(g_cfg_file->file_name);
-	assert_nul(g_cfg_file->resolved_path);
-	assert_int_equal(g_cfg_file->modified, false);
+	assert_str_equal(g_cfg_file.file_path, "");
+	assert_str_equal(g_cfg_file.dir_path, "");
+	assert_str_equal(g_cfg_file.file_name, "");
+	assert_nul(g_cfg_file.resolved_from);
+	assert_false(g_cfg_file.modified);
 
 	free(expected);
 }
 
 static void g_cfg_file_write__existing(void **state) {
-	g_cfg_file->file_path = strdup("tst/tmp/write-existing-cfg.yaml");
+	strncpy(g_cfg_file.file_path, "tst/tmp/write-existing-cfg.yaml", PATH_MAX - 1);
 
 	char *expected = strdup("XXXX");
 
@@ -258,12 +252,12 @@ static void g_cfg_file_write__existing(void **state) {
 	expect_str(__wrap_yaml_marshal, human, "cfg");
 	will_return_ptr_type(__wrap_yaml_marshal, strdup(expected), char*);
 
-	expect_str(__wrap_fs_file_write, path, g_cfg_file->file_path);
+	expect_str(__wrap_fs_file_write, path, g_cfg_file.file_path);
 	expect_str(__wrap_fs_file_write, contents, COMMENT_YAML_SCHEMA);
 	expect_str(__wrap_fs_file_write, mode, "w");
 	will_return_int(__wrap_fs_file_write, true);
 
-	expect_str(__wrap_fs_file_write, path, g_cfg_file->file_path);
+	expect_str(__wrap_fs_file_write, path, g_cfg_file.file_path);
 	expect_str(__wrap_fs_file_write, contents, expected);
 	expect_str(__wrap_fs_file_write, mode, "a");
 	will_return_int(__wrap_fs_file_write, true);
@@ -272,7 +266,7 @@ static void g_cfg_file_write__existing(void **state) {
 
 	assert_log(INFO, "\nWrote configuration file: tst/tmp/write-existing-cfg.yaml\n");
 
-	assert_int_equal(g_cfg_file->modified, true);
+	assert_true(g_cfg_file.modified);
 
 	free(expected);
 }
@@ -420,7 +414,7 @@ static void g_cfg_file_init_read__missing_defaults(void **state) {
 	cfg_read->auto_scale = OFF;
 	cfg_read->scale_round_to = 2;
 
-	g_cfg_file->file_path = strdup("file_path");
+	strncpy(g_cfg_file.file_path, "file_path", PATH_MAX - 1);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
@@ -460,9 +454,9 @@ static void g_cfg_file_reload__invalid_file(void **state) {
 	g_cfg = cfg_orig;
 	g_cfg->auto_scale_max = 111;
 
-	g_cfg_file->file_path = strdup("file_path");
-	g_cfg_file->file_name = strdup("file_name");
-	g_cfg_file->dir_path = strdup("dir_path");
+	strncpy(g_cfg_file.file_path, "file_path", PATH_MAX - 1);
+	strncpy(g_cfg_file.file_name, "file_name", PATH_MAX - 1);
+	strncpy(g_cfg_file.dir_path, "dir_path", PATH_MAX - 1);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
@@ -475,9 +469,9 @@ static void g_cfg_file_reload__invalid_file(void **state) {
 	cfg_expected->auto_scale_max = 111;
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg_file->file_path, "file_path");
-	assert_str_equal(g_cfg_file->file_name, "file_name");
-	assert_str_equal(g_cfg_file->dir_path, "dir_path");
+	assert_str_equal(g_cfg_file.file_path, "file_path");
+	assert_str_equal(g_cfg_file.file_name, "file_name");
+	assert_str_equal(g_cfg_file.dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/reload-invalid-file.log");
 	assert_log(INFO, log_expected);
@@ -496,9 +490,9 @@ static void g_cfg_file_reload__valid_file(void **state) {
 	cfg_read->auto_scale_max = 888;
 	cfg_read->log_threshold = FATAL;
 
-	g_cfg_file->file_path = strdup("file_path");
-	g_cfg_file->file_name = strdup("file_name");
-	g_cfg_file->dir_path = strdup("dir_path");
+	strncpy(g_cfg_file.file_path, "file_path", PATH_MAX - 1);
+	strncpy(g_cfg_file.file_name, "file_name", PATH_MAX - 1);
+	strncpy(g_cfg_file.dir_path, "dir_path", PATH_MAX - 1);
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
@@ -516,9 +510,9 @@ static void g_cfg_file_reload__valid_file(void **state) {
 	cfg_expected->log_threshold = FATAL;
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg_file->file_path, "file_path");
-	assert_str_equal(g_cfg_file->file_name, "file_name");
-	assert_str_equal(g_cfg_file->dir_path, "dir_path");
+	assert_str_equal(g_cfg_file.file_path, "file_path");
+	assert_str_equal(g_cfg_file.file_name, "file_name");
+	assert_str_equal(g_cfg_file.dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/reload-valid-file.log");
 	assert_log(INFO, log_expected);

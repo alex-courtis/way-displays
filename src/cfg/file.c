@@ -21,48 +21,33 @@
 
 struct Pslist *g_cfg_file_paths = NULL;
 
-struct CfgFile *g_cfg_file = NULL;
+struct CfgFile g_cfg_file = { 0 };
 
-static void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_path) {
-	static char path[PATH_MAX];
+static void cfg_file_populate(char *resolved_from, const char *paths) {
+	static char tmp[PATH_MAX];
 
-	cfg_file->resolved_path = resolved_from;
+	g_cfg_file.resolved_from = resolved_from;
 
-	cfg_file->file_path = strdup(file_path);
+	strncpy(g_cfg_file.file_path, paths, PATH_MAX - 1);
 
 	// dirname modifies path
-	strncpy(path, cfg_file->file_path, PATH_MAX - 1);
-	free(cfg_file->dir_path);
-	cfg_file->dir_path = strdup(dirname(path));
+	strncpy(tmp, g_cfg_file.file_path, PATH_MAX - 1);
+	strncpy(g_cfg_file.dir_path, dirname(tmp), PATH_MAX - 1);
 
 	// basename modifies path
-	strncpy(path, cfg_file->file_path, PATH_MAX - 1);
-	free(cfg_file->file_name);
-	cfg_file->file_name = strdup(basename(path));
-}
-
-static void cfg_file_free(struct CfgFile *cfg_file) {
-	if (cfg_file) {
-		free(cfg_file->dir_path);
-		free(cfg_file->file_path);
-		free(cfg_file->file_name);
-		free(cfg_file);
-	}
+	strncpy(tmp, g_cfg_file.file_path, PATH_MAX - 1);
+	strncpy(g_cfg_file.file_name, basename(tmp), PATH_MAX - 1);
 }
 
 static bool g_cfg_file_resolve(void) {
-	if (!g_cfg_file)
-		return false;
-
-	cfg_file_free(g_cfg_file);
-	g_cfg_file = calloc(1, sizeof(struct CfgFile));
+	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 
 	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
 		if (!i->val)
 			continue;
 		char *path = fs_canonical_path(i->val);
 		if (path) {
-			set_paths(g_cfg_file, i->val, path);
+			cfg_file_populate(i->val, path);
 			free(path);
 			return true;
 		}
@@ -96,52 +81,53 @@ void g_cfg_file_paths_init(const char *user_path) {
 
 static bool g_cfg_file_write_content(const char * const yaml) {
 	return
-		fs_file_write(g_cfg_file->file_path, COMMENT_YAML_SCHEMA, "w") &&
-		fs_file_write(g_cfg_file->file_path, yaml, "a");
+		fs_file_write(g_cfg_file.file_path, COMMENT_YAML_SCHEMA, "w") &&
+		fs_file_write(g_cfg_file.file_path, yaml, "a");
 }
 
 void g_cfg_file_write(void) {
 	char *yaml = NULL;
-	const char *resolved_from = g_cfg_file->resolved_path;
 	bool written = false;
 
-	g_cfg_file->modified = false;
+	const char *resolved_from_prev = g_cfg_file.resolved_from;
+
+	g_cfg_file.modified = false;
 
 	if (!(yaml = yaml_marshal(g_cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"))) {
 		goto end;
 	}
 
-	if (g_cfg_file->file_path && (written = g_cfg_file_write_content(yaml))) {
-		g_cfg_file->modified = true;
+	if (strlen(g_cfg_file.file_path) > 0 && (written = g_cfg_file_write_content(yaml))) {
+		g_cfg_file.modified = true;
 		goto end;
 	}
 
 	// kill that cfg file
-	cfg_file_free(g_cfg_file);
-	g_cfg_file = calloc(1, sizeof(struct CfgFile));
+	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 
 	fd_wd_cfg_dir_destroy();
 
 	// write preferred alternatives
-	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
+	for (const struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
 
 		// skip previously resolved
-		if (resolved_from == i->val) {
+		if (resolved_from_prev == i->val) {
 			continue;
 		}
 
-		set_paths(g_cfg_file, i->val, i->val);
+		// optimistically populate
+		cfg_file_populate(i->val, i->val);
 
 		// attempt to write
-		if (fs_mkdir_p(g_cfg_file->dir_path, 0755) && (written = g_cfg_file_write_content(yaml))) {
+		if (fs_mkdir_p(g_cfg_file.dir_path, 0755) && (written = g_cfg_file_write_content(yaml))) {
 
 			// watch the new
 			fd_wd_cfg_dir_create();
 			goto end;
 		}
 
-		cfg_file_free(g_cfg_file);
-		g_cfg_file = calloc(1, sizeof(struct CfgFile));
+		// clear on failure
+		memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 	}
 
 end:
@@ -149,13 +135,14 @@ end:
 
 	if (written) {
 		log_info(NULL);
-		log_info("Wrote configuration file: %s", g_cfg_file->file_path);
+		log_info("Wrote configuration file: %s", g_cfg_file.file_path);
 	}
 }
 
 void g_cfg_file_init_read(const char *user_path) {
 	struct Cfg *cfg_resolved = cfg_init();
 
+	// one shot
 	if (!g_cfg_file_paths) {
 		g_cfg_file_paths_init(user_path);
 	}
@@ -164,9 +151,9 @@ void g_cfg_file_init_read(const char *user_path) {
 
 	if (resolved) {
 		log_info(NULL);
-		log_info("Found configuration file: %s", g_cfg_file->file_path);
+		log_info("Found configuration file: %s", g_cfg_file.file_path);
 
-		g_cfg = yaml_unmarshal_file(g_cfg_file->file_path, yaml_root_to_cfg);
+		g_cfg = yaml_unmarshal_file(g_cfg_file.file_path, yaml_root_to_cfg);
 
 		if (!g_cfg) {
 			log_info(NULL);
@@ -191,17 +178,13 @@ void g_cfg_file_init_read(const char *user_path) {
 }
 
 void g_cfg_file_reload(void) {
-	if (!g_cfg || !g_cfg_file)
-		return;
-
-	char *path = g_cfg_file->file_path;
-	if (!path)
+	if (strlen(g_cfg_file.file_path) == 0)
 		return;
 
 	log_info(NULL);
-	log_info("Reloading configuration file: %s", path);
+	log_info("Reloading configuration file: %s", g_cfg_file.file_path);
 
-	struct Cfg *cfg_loaded = yaml_unmarshal_file(path, yaml_root_to_cfg);
+	struct Cfg *cfg_loaded = yaml_unmarshal_file(g_cfg_file.file_path, yaml_root_to_cfg);
 
 	if (cfg_loaded) {
 		cfg_apply_defaults(cfg_loaded);

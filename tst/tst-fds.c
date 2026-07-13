@@ -38,7 +38,7 @@ static int after_all(void **state) {
 static int before_each(void **state) {
 	g_cfg = cfg_default();
 
-	g_cfg_file = calloc(1, sizeof(struct CfgFile));
+	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 
 	return 0;
 }
@@ -47,9 +47,6 @@ static int after_each(void **state) {
 	assert_logs_empty();
 
 	g_cfg_destroy();
-
-	free(g_cfg_file->dir_path);
-	free(g_cfg_file);
 
 	fd_cfg_dir = -1;
 	wd_cfg_dir = -1;
@@ -65,7 +62,7 @@ static void fd_wd_cfg_dir_create__no_dir(void **state) {
 }
 
 static void fd_wd_cfg_dir_create__bad_dir(void **state) {
-	g_cfg_file->dir_path = strdup("/inexistent");
+	strncpy(g_cfg_file.dir_path, "/inexistent", PATH_MAX - 1);
 
 	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
@@ -78,7 +75,7 @@ static void fd_wd_cfg_dir_create__bad_dir(void **state) {
 }
 
 static void fd_wd_cfg_dir_create__ok(void **state) {
-	g_cfg_file->dir_path = strdup(DIR_TMP);
+	strncpy(g_cfg_file.dir_path, DIR_TMP, PATH_MAX - 1);
 
 	fd_wd_cfg_dir_create();
 
