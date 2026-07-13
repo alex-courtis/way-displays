@@ -80,10 +80,12 @@ void head_release(struct Head * const head) {
 	if (!head)
 		return;
 
+	static const char *unknown = "???";
+
 	// dummy Head, just for printing
 	struct Head *head_departed = head_init();
-	head_departed->name = strdup(head->name);
-	head_departed->description = strdup(head->description);
+	head_departed->name = strdup(head->name ? head->name : unknown);
+	head_departed->description = strdup(head->description ? head->description : unknown);
 	pslist_append(&g_heads_departed, head_departed);
 
 	pslist_remove_all(&g_heads_arrived, NULL, head);

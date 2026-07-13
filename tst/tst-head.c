@@ -414,6 +414,14 @@ static void head_matches_name_desc_regex__bad(void **state) {
 	head_free(head);
 }
 
+static void head_matches_name_desc_regex__no_regex(void **state) {
+	struct Head *head = head_n("name");
+
+	assert_false(head_matches_name_desc_regex(head, "name"));
+
+	head_free(head);
+}
+
 static void head_apply_toggles__none(void **state) {
 	struct Head *head = head_n("head0");
 	struct Cfg *cfg = cfg_init();
@@ -624,6 +632,66 @@ static void head_release_mode__orphan(void **state) {
 	head_free(head);
 }
 
+static void head_release__present(void **state) {
+	struct Head *departed = head_init();
+	departed->name = strdup("nam");
+	departed->description = strdup("desc");
+
+	struct Head *other = head_init();
+
+	pslist_append(&g_heads, departed);
+	pslist_append(&g_heads, other);
+	pslist_append(&g_heads_arrived, departed);
+	pslist_append(&g_heads_arrived, other);
+	pslist_append(&g_heads_departed, departed);
+	pslist_append(&g_heads_departed, other);
+
+	head_release(departed);
+
+	assert_int_equal(pslist_length(g_heads), 1);
+	assert_ptr_equal(pslist_at(g_heads, 0), other);
+	assert_int_equal(pslist_length(g_heads_arrived), 1);
+	assert_ptr_equal(pslist_at(g_heads_arrived, 0), other);
+	assert_int_equal(pslist_length(g_heads_departed), 2);
+	assert_ptr_equal(pslist_at(g_heads_departed, 0), other);
+
+	struct Head *dummy = pslist_at(g_heads_departed, 1);
+	assert_non_nul(dummy);
+	assert_ptr_not_equal(dummy, departed);
+
+	assert_string_equal(dummy->name, "nam");
+	assert_string_equal(dummy->description, "desc");
+
+	head_free(other);
+	head_free(dummy);
+	pslist_free(&g_heads);
+	pslist_free(&g_heads_arrived);
+	pslist_free(&g_heads_departed);
+}
+
+static void head_release__unnamed_orphan(void **state) {
+	struct Head *departed = head_init();
+
+	head_release(departed);
+
+	assert_int_equal(pslist_length(g_heads_departed), 1);
+	struct Head *dummy = pslist_at(g_heads_departed, 0);
+	assert_non_nul(dummy);
+	assert_ptr_not_equal(dummy, departed);
+
+	assert_string_equal(dummy->name, "???");
+	assert_string_equal(dummy->description, "???");
+
+	head_free(dummy);
+	pslist_free(&g_heads_departed);
+}
+
+static void head_release__null(void **state) {
+	head_release(NULL);
+
+	assert_int_equal(pslist_length(g_heads_departed), 0);
+}
+
 static void head_set_mode_preferred__first(void **state) {
 	struct Head *head = head_init();
 	const struct Mode *mode_existing = mode_h_whr(head, 3840, 2160, 60000);
@@ -670,6 +738,111 @@ static void head_set_mode_preferred__subsequent(void **state) {
 	head_free(head);
 }
 
+static void head_add_mode__ok(void **state) {
+	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
+
+	struct Head *head = head_n("NAM");
+	struct Mode *expected_mode = mode_h(head);
+	expected_mode->zwlr_mode = zwlr_mode;
+
+	head_add_mode(head, zwlr_mode);
+
+	assert_int_equal(pset_size(head->modes), 1);
+
+	const struct PsetIt *it = pset_it(head->modes);
+	assert_non_nul(it);
+	assert_mode_equal(it->val, expected_mode);
+	assert_nul(pset_it_next(it));
+
+	mode_free(expected_mode);
+	head_free(head);
+}
+
+static void head_add_mode__nulls(void **state) {
+	struct Head *head = head_n("NAM");
+	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
+
+	head_add_mode(NULL, zwlr_mode);
+
+	head_add_mode(head, NULL);
+
+	assert_int_equal(pset_size(head->modes), 0);
+
+	head_free(head);
+}
+
+static void head_set_current_mode__ok(void **state) {
+	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
+
+	struct Head *head = head_n("NAM");
+	struct Mode *mode = mode_h(head);
+	mode->zwlr_mode = zwlr_mode;
+
+	pset_add(head->modes, mode);
+
+	head_set_current_mode(head, zwlr_mode);
+
+	assert_ptr_equal(head->current.mode, mode);
+
+	head_free(head);
+}
+
+static void head_set_current_mode__not_present(void **state) {
+	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
+
+	struct Head *head = head_n("NAM");
+	struct Mode *mode = mode_h(head);
+
+	pset_add(head->modes, mode);
+
+	head_set_current_mode(head, zwlr_mode);
+
+	assert_nul(head->current.mode);
+
+	head_free(head);
+}
+
+static void head_set_current_mode__nulls(void **state) {
+	struct Head *head = head_n("NAM");
+	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
+
+	head_add_mode(NULL, zwlr_mode);
+
+	head_set_current_mode(head, NULL);
+
+	assert_int_equal(pset_size(head->modes), 0);
+	assert_nul(head->current.mode);
+
+	head_free(head);
+}
+
+static void head_introduce__ok(void **state) {
+	struct zwlr_output_head_v1 *zwlr_head = (struct zwlr_output_head_v1*)"dummy";
+
+	head_introduce(zwlr_head);
+
+	assert_int_equal(pslist_length(g_heads), 1);
+	assert_int_equal(pslist_length(g_heads_arrived), 1);
+	assert_int_equal(pslist_length(g_heads_departed), 0);
+
+	assert_ptr_equal(pslist_at(g_heads, 0), pslist_at(g_heads_arrived, 0));
+
+	struct Head *head = pslist_at(g_heads, 0);
+	assert_ptr_equal(head->zwlr_head, zwlr_head);
+
+	head_free(head);
+	pslist_free(&g_heads);
+	pslist_free(&g_heads_arrived);
+}
+
+static void head_introduce__null(void **state) {
+	head_introduce(NULL);
+
+	assert_int_equal(pslist_length(g_heads), 0);
+	assert_int_equal(pslist_length(g_heads_arrived), 0);
+	assert_int_equal(pslist_length(g_heads_departed), 0);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(head_get_fixed_scale__rounding_nearest),
@@ -694,6 +867,7 @@ int main(void) {
 		TEST_BA(head_matches_name_desc_regex__name),
 		TEST_BA(head_matches_name_desc_regex__desc),
 		TEST_BA(head_matches_name_desc_regex__bad),
+		TEST_BA(head_matches_name_desc_regex__no_regex),
 
 		TEST_BA(head_apply_toggles__none),
 		TEST_BA(head_apply_toggles__disabled__enable),
@@ -711,9 +885,23 @@ int main(void) {
 		TEST_BA(head_release_mode__cur_des),
 		TEST_BA(head_release_mode__orphan),
 
+		TEST_BA(head_release__present),
+		TEST_BA(head_release__unnamed_orphan),
+		TEST_BA(head_release__null),
+
 		TEST_BA(head_set_mode_preferred__first),
 		TEST_BA(head_set_mode_preferred__current),
-		TEST_BA(head_set_mode_preferred__subsequent)
+		TEST_BA(head_set_mode_preferred__subsequent),
+
+		TEST_BA(head_add_mode__ok),
+		TEST_BA(head_add_mode__nulls),
+
+		TEST_BA(head_set_current_mode__ok),
+		TEST_BA(head_set_current_mode__not_present),
+		TEST_BA(head_set_current_mode__nulls),
+
+		TEST_BA(head_introduce__ok),
+		TEST_BA(head_introduce__null),
 	};
 
 	return RUN(tests);

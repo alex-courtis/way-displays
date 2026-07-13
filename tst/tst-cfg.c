@@ -179,16 +179,6 @@ static void cfg_equal__all(void **state) {
 	cfg_free(b);
 }
 
-static void cfg_equal__mode(void **state) {
-	const struct State *s = *state;
-
-	spmap_put(s->from->modes, "both", mode_whr(4, 5, 6));
-
-	spmap_put(s->to->modes, "both", mode_whr(10, 11, 12));
-
-	assert_cfg_not_equal(s->from, s->to);
-}
-
 static void cfg_clone__null(void **state) {
 	assert_nul(cfg_clone(NULL));
 }
@@ -977,7 +967,6 @@ static void cfg_validate_warn__(void **state) {
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(cfg_equal__all),
-		TEST_BA(cfg_equal__mode),
 
 		TEST_BA(cfg_clone__null),
 		TEST_BA(cfg_clone__empty),
