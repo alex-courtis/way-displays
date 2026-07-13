@@ -5,7 +5,6 @@
 
 #include <cmocka.h>
 #include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/inotify.h>
@@ -15,15 +14,16 @@
 #include "cfg.h"
 #include "cfg/file.h"
 #include "log.h"
+#include "str.h"
 
 #include "fds.h"
 
-char DIR_TMP[PATH_MAX + 20];
+char *DIR_TMP = NULL;
 
 static int before_all(void **state) {
 	char cwd[PATH_MAX];
 	assert_non_nul(getcwd(cwd, PATH_MAX));
-	snprintf(DIR_TMP, sizeof(DIR_TMP), "%s/tst/tmp", cwd);
+	DIR_TMP = snprintf_alloc(PATH_MAX, "%s/tst/tmp", cwd);
 	mkdir(DIR_TMP, 0755);
 
 	return 0;
@@ -31,6 +31,7 @@ static int before_all(void **state) {
 
 static int after_all(void **state) {
 	rmdir(DIR_TMP);
+	free(DIR_TMP);
 
 	return 0;
 }
