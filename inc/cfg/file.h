@@ -12,11 +12,7 @@ struct CfgFile {
 	bool modified; // pfd_cfg_dir
 };
 
-
-// TODO remove or move
-extern struct Pslist *g_cfg_file_paths;
 extern struct CfgFile *g_cfg_file;
-void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_path);
 
 /*
  * lifecycle - file
@@ -32,7 +28,9 @@ void g_cfg_file_destroy(void);
  * lifecycle - paths
  */
 
-// populate g_cfg_file_paths, one shot
+// TODO consolidate with g_cfg_file_init
+
+// populate g_cfg_file_paths with known paths and user_path if exists
 void g_cfg_file_paths_init(const char *user_path);
 
 // free all g_cfg_file_paths

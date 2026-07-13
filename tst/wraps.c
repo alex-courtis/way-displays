@@ -126,6 +126,15 @@ void __wrap_wd_exit_message(const int __status) {
 }
 
 /*
+ * fs
+ */
+
+char *__wrap_resolve_canonical_path(char *path) {
+	check_expected_ptr(path);
+	return mock_ptr_type_checked(char*);
+}
+
+/*
  * yaml-(un)marshal
  */
 char *__wrap_yaml_marshal(const void *data, fn_yaml_root_from_type fn, const char *human) {

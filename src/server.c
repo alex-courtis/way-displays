@@ -270,7 +270,7 @@ server(char *cfg_path) {
 
 	log_info("way-displays version %s %s", VERSION, COMMIT);
 
-	// all cfg paths
+	// --config and all known paths
 	g_cfg_file_paths_init(cfg_path);
 	g_cfg_file_init();
 

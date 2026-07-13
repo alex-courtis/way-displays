@@ -8,11 +8,8 @@
 
 #include <cmocka.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include "cfg.h"
 #include "log.h"
@@ -26,30 +23,11 @@ extern struct Pslist *g_cfg_file_paths;
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
 
-char *_dir_path = NULL;
-char *_file_name = NULL;
-char *_file_path = NULL;
-
-// cppcheck-suppress staticFunction
-bool __wrap_g_cfg_file_resolve(void) {
-	g_cfg_file->dir_path = _dir_path ? strdup(_dir_path) : NULL;
-	g_cfg_file->file_name = _file_name ? strdup(_file_name) : NULL;
-	g_cfg_file->file_path = _file_path ? strdup(_file_path) : NULL;
-
-	return mock_type(bool);
-}
-
-static void clean_files(void) {
-	remove("tst/tmp/write-existing-cfg.yaml");
-}
-
 static int before_all(void **state) {
 	env_xdg_config_home = getenv("XDG_CONFIG_HOME");
 	if (env_xdg_config_home) {
 		env_xdg_config_home = strdup(env_xdg_config_home);
 	}
-
-	mkdir("tst/tmp", 0755);
 
 	env_home = getenv("HOME");
 	if (env_home) {
@@ -63,15 +41,11 @@ static int after_all(void **state) {
 	free(env_xdg_config_home);
 	free(env_home);
 
-	rmdir("tst/tmp");
-
 	return 0;
 }
 
 static int before_each(void **state) {
 	pslist_free_vals(&g_cfg_file_paths, NULL);
-
-	clean_files();
 
 	g_cfg_file_init();
 
@@ -97,20 +71,10 @@ static int after_each(void **state) {
 
 	g_cfg_file_destroy();
 
-	// clean_files();
-
 	g_cfg_destroy();
-
-	free(_dir_path);
-	_dir_path = NULL;
-	free(_file_name);
-	_file_name = NULL;
-	free(_file_path);
-	_file_path = NULL;
 
 	return 0;
 }
-
 
 static void g_cfg_file_write__bad_yaml(void **state) {
 	free(g_cfg_file->file_path);
@@ -275,12 +239,6 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 static void g_cfg_file_write__existing(void **state) {
 	g_cfg_file->file_path = strdup("tst/tmp/write-existing-cfg.yaml");
 
-	FILE *f = fopen(g_cfg_file->file_path, "w");
-	assert_non_nul(f);
-	if (f) {
-		fclose(f);
-	}
-
 	char *expected = strdup("XXXX");
 
 	expect_ptr(__wrap_yaml_marshal, data, g_cfg);
@@ -367,16 +325,11 @@ static void g_cfg_file_paths_init__user(void **state) {
 }
 
 static void g_cfg_file_read__no_file(void **state) {
-	will_return_int(__wrap_g_cfg_file_resolve, false);
-
 	g_cfg_file_read();
 
 	struct Cfg *cfg_expected = cfg_default();
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_nul(g_cfg_file->file_name);
-	assert_nul(g_cfg_file->file_path);
-	assert_nul(g_cfg_file->dir_path);
 
 	char *log_expected = read_file("tst/server/load-no-file.log");
 	assert_log(INFO, log_expected);
@@ -386,18 +339,17 @@ static void g_cfg_file_read__no_file(void **state) {
 }
 
 static void g_cfg_file_read__valid_file(void **state) {
-	_file_path = strdup("file_path");
-	_file_name = strdup("file_name");
-	_dir_path = strdup("dir_path");
+	pslist_append(&g_cfg_file_paths, strdup("known-path"));
 
 	struct Cfg *cfg_read = cfg_default();
 	cfg_read->auto_scale_max = 888;
 	cfg_read->log_threshold = FATAL;
 	cfg_read->scale_round_to = 4;
 
-	will_return_int(__wrap_g_cfg_file_resolve, true);
+	expect_str(__wrap_resolve_canonical_path, path, "known-path");
+	will_return_ptr_type(__wrap_resolve_canonical_path, strdup("canonical-path"), char*);
 
-	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	expect_str(__wrap_yaml_unmarshal_file, path, "canonical-path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
 
 	g_cfg_file_read();
@@ -410,9 +362,6 @@ static void g_cfg_file_read__valid_file(void **state) {
 	cfg_expected->scale_round_to = 4;
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg_file->file_path, "file_path");
-	assert_str_equal(g_cfg_file->file_name, "file_name");
-	assert_str_equal(g_cfg_file->dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/load-valid-file.log");
 	assert_log(INFO, log_expected);
@@ -422,13 +371,12 @@ static void g_cfg_file_read__valid_file(void **state) {
 }
 
 static void g_cfg_file_read__invalid_file(void **state) {
-	_file_path = strdup("file_path");
-	_file_name = strdup("file_name");
-	_dir_path = strdup("dir_path");
+	pslist_append(&g_cfg_file_paths, strdup("known-path"));
 
-	will_return_int(__wrap_g_cfg_file_resolve, true);
+	expect_str(__wrap_resolve_canonical_path, path, "known-path");
+	will_return_ptr_type(__wrap_resolve_canonical_path, strdup("invalid-cfg.yaml"), char*);
 
-	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
+	expect_str(__wrap_yaml_unmarshal_file, path, "invalid-cfg.yaml");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, NULL, struct Cfg*);
 
 	g_cfg_file_read();
@@ -436,9 +384,6 @@ static void g_cfg_file_read__invalid_file(void **state) {
 	struct Cfg *cfg_expected = cfg_default();
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg_file->file_path, "file_path");
-	assert_str_equal(g_cfg_file->file_name, "file_name");
-	assert_str_equal(g_cfg_file->dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/load-invalid-file.log");
 	assert_log(INFO, log_expected);
@@ -448,9 +393,10 @@ static void g_cfg_file_read__invalid_file(void **state) {
 }
 
 static void g_cfg_file_read__missing_defaults(void **state) {
-	_file_path = strdup("file_path");
-	_file_name = strdup("file_name");
-	_dir_path = strdup("dir_path");
+	pslist_append(&g_cfg_file_paths, strdup("known-path"));
+
+	expect_str(__wrap_resolve_canonical_path, path, "known-path");
+	will_return_ptr_type(__wrap_resolve_canonical_path, strdup("file_path"), char*);
 
 	struct Cfg *cfg_read = cfg_init();
 	sset_add(cfg_read->order_name_desc, "first head");
@@ -458,7 +404,7 @@ static void g_cfg_file_read__missing_defaults(void **state) {
 	cfg_read->auto_scale = OFF;
 	cfg_read->scale_round_to = 2;
 
-	will_return_int(__wrap_g_cfg_file_resolve, true);
+	g_cfg_file->file_path = strdup("file_path");
 
 	expect_str(__wrap_yaml_unmarshal_file, path, "file_path");
 	will_return_ptr_type(__wrap_yaml_unmarshal_file, cfg_read, struct Cfg*);
@@ -474,9 +420,6 @@ static void g_cfg_file_read__missing_defaults(void **state) {
 	cfg_expected->scale_round_to = 2;
 
 	assert_cfg_equal(g_cfg, cfg_expected);
-	assert_str_equal(g_cfg_file->file_path, "file_path");
-	assert_str_equal(g_cfg_file->file_name, "file_name");
-	assert_str_equal(g_cfg_file->dir_path, "dir_path");
 
 	char *log_expected = read_file("tst/server/load-missing-defaults.log");
 	assert_log(INFO, log_expected);

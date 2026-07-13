@@ -25,7 +25,7 @@ struct Pslist *g_cfg_file_paths = NULL;
 
 struct CfgFile *g_cfg_file = NULL;
 
-void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_path) {
+static void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_path) {
 	static char path[PATH_MAX];
 
 	cfg_file->resolved_path = resolved_from;
@@ -43,6 +43,24 @@ void set_paths(struct CfgFile *cfg_file, char *resolved_from, const char *file_p
 	cfg_file->file_name = strdup(basename(path));
 }
 
+static bool g_cfg_file_resolve(void) {
+	if (!g_cfg_file)
+		return false;
+
+	g_cfg_file_init();
+
+	for (struct Pslist *i = g_cfg_file_paths; i; i = i->nex) {
+		char *path = resolve_canonical_path(i->val);
+		if (path) {
+			set_paths(g_cfg_file, i->val, path);
+			free(path);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void g_cfg_file_init(void) {
 	g_cfg_file_destroy();
 	g_cfg_file = calloc(1, sizeof(struct CfgFile));
@@ -58,7 +76,6 @@ void g_cfg_file_destroy(void) {
 	g_cfg_file = NULL;
 }
 
-// TODO maybe move into fs
 void g_cfg_file_paths_init(const char *user_path) {
 	char path[PATH_MAX];
 

@@ -83,6 +83,6 @@ tst/tst-cfg-file: LDFLAGS += -Wl,$\
 	--wrap=mkdir_p,$\
 	--wrap=fd_wd_cfg_dir_destroy,$\
 	--wrap=fd_wd_cfg_dir_create,$\
-	--wrap=g_cfg_file_resolve,$\
+	--wrap=resolve_canonical_path,$\
 	--wrap=yaml_unmarshal_file
 
