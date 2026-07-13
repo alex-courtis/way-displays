@@ -788,10 +788,10 @@ static void head_set_current_mode__ok(void **state) {
 }
 
 static void head_set_current_mode__not_present(void **state) {
-	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
+	const struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
 
 	struct Head *head = head_n("NAM");
-	struct Mode *mode = mode_h(head);
+	const struct Mode *mode = mode_h(head);
 
 	pset_add(head->modes, mode);
 

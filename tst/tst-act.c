@@ -11,12 +11,17 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
 
 #include "cfg.h"
 #include "displ.h"
+#include "fn.h"
 #include "head.h"
+#include "info/print.h"
 #include "log.h"
+#include "mode.h"
 #include "pset.h"
+#include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "act.h"
@@ -34,6 +39,8 @@ static int before_each(void **state) {
 static int after_each(void **state) {
 	assert_logs_empty();
 
+	pslist_free_vals(&g_heads, (fn_free)head_free);
+
 	free(g_displ);
 
 	g_cfg_destroy();
@@ -41,8 +48,202 @@ static int after_each(void **state) {
 	return 0;
 }
 
-static void act_apply__nothing(void **state) {
+static void act_apply__no_heads(void **state) {
 	act_apply();
+}
+
+static void act_apply__no_changes(void **state) {
+
+	pslist_append(&g_heads, head_init());
+
+	act_apply();
+
+	assert_int_equal(g_displ->delta.element, 0);
+	assert_nul(g_displ->delta.head);
+	assert_nul(g_displ->delta.human);
+	assert_int_equal(g_displ->state, IDLE);
+}
+
+static void act_apply__reapply(void **state) {
+	struct zwlr_output_head_v1 *zwlr_head = (struct zwlr_output_head_v1*)"dummy";
+	struct zwlr_output_configuration_v1 *zwlr_config = (struct zwlr_output_configuration_v1*)"dummy";
+
+	struct Head *head = head_init();
+	head->zwlr_head = zwlr_head;
+	head->reapply_required = true;
+	pslist_append(&g_heads, head);
+
+	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
+
+	expect_int_value(__wrap_print_head, t, INFO);
+	expect_int_value(__wrap_print_head, event, DELTA);
+	expect_ptr(__wrap_print_head, head, head);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, zwlr_output_configuration_v1, zwlr_config);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, zwlr_head);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zwlr_config);
+
+	act_apply();
+
+	assert_int_equal(g_displ->delta.element, 0);
+	assert_ptr_equal(g_displ->delta.head, head);
+	assert_non_nul(g_displ->delta.human);
+	assert_int_equal(g_displ->state, OUTSTANDING);
+
+	displ_delta_destroy();
+}
+
+static void act_apply__mode(void **state) {
+	struct zwlr_output_head_v1 *zwlr_head = (struct zwlr_output_head_v1*)"dummy1";
+	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy2";
+	struct zwlr_output_configuration_v1 *zwlr_config = (struct zwlr_output_configuration_v1*)"dummy3";
+	struct zwlr_output_configuration_head_v1 *zwlr_config_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
+
+	struct Head *head = head_init();
+	head->zwlr_head = zwlr_head;
+	pslist_append(&g_heads, head);
+
+	struct Mode *mode = mode_h(head);
+	head->desired.mode = mode;
+	mode->zwlr_mode = zwlr_mode;
+
+	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
+
+	expect_int_value(__wrap_print_head, t, INFO);
+	expect_int_value(__wrap_print_head, event, DELTA);
+	expect_ptr(__wrap_print_head, head, head);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zwlr_config);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, head->zwlr_head);
+	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_config_head, struct zwlr_output_configuration_head_v1*);
+
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, zwlr_output_configuration_head_v1, zwlr_config_head);
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, mode, head->desired.mode->zwlr_mode);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zwlr_config);
+
+	act_apply();
+
+	assert_int_equal(g_displ->delta.element, MODE);
+	assert_ptr_equal(g_displ->delta.head, head);
+	assert_non_nul(g_displ->delta.human);
+	assert_int_equal(g_displ->state, OUTSTANDING);
+
+	displ_delta_destroy();
+}
+
+static void act_apply__vrr(void **state) {
+	struct zwlr_output_head_v1 *zwlr_head = (struct zwlr_output_head_v1*)"dummy1";
+	struct zwlr_output_configuration_v1 *zwlr_config = (struct zwlr_output_configuration_v1*)"dummy3";
+	struct zwlr_output_configuration_head_v1 *zwlr_config_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
+
+	struct Head *head = head_init();
+	head->zwlr_head = zwlr_head;
+	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	pslist_append(&g_heads, head);
+
+	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
+
+	expect_int_value(__wrap_print_head, t, INFO);
+	expect_int_value(__wrap_print_head, event, DELTA);
+	expect_ptr(__wrap_print_head, head, head);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zwlr_config);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, head->zwlr_head);
+	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_config_head, struct zwlr_output_configuration_head_v1*);
+
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_adaptive_sync, zwlr_output_configuration_head_v1, zwlr_config_head);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_adaptive_sync, state, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zwlr_config);
+
+	act_apply();
+
+	assert_int_equal(g_displ->delta.element, VRR_OFF);
+	assert_ptr_equal(g_displ->delta.head, head);
+	assert_non_nul(g_displ->delta.human);
+	assert_int_equal(g_displ->state, OUTSTANDING);
+
+	displ_delta_destroy();
+}
+
+static void act_apply__disable(void **state) {
+	struct zwlr_output_head_v1 *zwlr_head = (struct zwlr_output_head_v1*)"dummy1";
+	struct zwlr_output_configuration_v1 *zwlr_config = (struct zwlr_output_configuration_v1*)"dummy3";
+
+	struct Head *head = head_init();
+	head->zwlr_head = zwlr_head;
+	head->current.enabled = true;
+	head->desired.enabled = false;
+	pslist_append(&g_heads, head);
+
+	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
+
+	expect_int_value(__wrap_print_heads, t, INFO);
+	expect_int_value(__wrap_print_heads, event, DELTA);
+	expect_ptr(__wrap_print_heads, heads, g_heads);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, zwlr_output_configuration_v1, zwlr_config);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, head->zwlr_head);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zwlr_config);
+
+	act_apply();
+
+	assert_int_equal(g_displ->delta.element, 0);
+	assert_nul(g_displ->delta.head);
+	assert_non_nul(g_displ->delta.human);
+	assert_int_equal(g_displ->state, OUTSTANDING);
+
+	displ_delta_destroy();
+}
+
+static void act_apply__remainder(void **state) {
+	struct zwlr_output_head_v1 *zwlr_head = (struct zwlr_output_head_v1*)"dummy1";
+	struct zwlr_output_configuration_v1 *zwlr_config = (struct zwlr_output_configuration_v1*)"dummy3";
+	struct zwlr_output_configuration_head_v1 *zwlr_config_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
+
+	struct Head *head = head_init();
+	head->zwlr_head = zwlr_head;
+	head->current.enabled = true;
+	head->desired.enabled = true;
+	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
+	head->desired.scale = 1;
+	head->desired.x = 2;
+	head->desired.y = 3;
+	pslist_append(&g_heads, head);
+
+	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
+
+	expect_int_value(__wrap_print_heads, t, INFO);
+	expect_int_value(__wrap_print_heads, event, DELTA);
+	expect_ptr(__wrap_print_heads, heads, g_heads);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zwlr_config);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, head->zwlr_head);
+	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_config_head, struct zwlr_output_configuration_head_v1*);
+
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_transform, zwlr_output_configuration_head_v1, zwlr_config_head);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_transform, transform, WL_OUTPUT_TRANSFORM_90);
+
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_scale, zwlr_output_configuration_head_v1, zwlr_config_head);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_scale, scale, 1);
+
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_position, zwlr_output_configuration_head_v1, zwlr_config_head);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_position, x, 2);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_position, y, 3);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zwlr_config);
+
+	act_apply();
+
+	assert_int_equal(g_displ->delta.element, 0);
+	assert_nul(g_displ->delta.head);
+	assert_non_nul(g_displ->delta.human);
+	assert_int_equal(g_displ->state, OUTSTANDING);
+
+	displ_delta_destroy();
 }
 
 static void act_handle_success__head_changing_adaptive_sync(void **state) {
@@ -230,7 +431,13 @@ static void act_handle_cancelled__over_max(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(act_apply__nothing),
+		TEST_BA(act_apply__no_heads),
+		TEST_BA(act_apply__no_changes),
+		TEST_BA(act_apply__reapply),
+		TEST_BA(act_apply__mode),
+		TEST_BA(act_apply__vrr),
+		TEST_BA(act_apply__disable),
+		TEST_BA(act_apply__remainder),
 
 		TEST_BA(act_handle_success__head_changing_adaptive_sync),
 		TEST_BA(act_handle_success__head_changing_adaptive_sync_fail),

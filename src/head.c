@@ -325,7 +325,8 @@ bool head_name_desc_matches_head(const char * const name_desc, const struct Head
 
 bool head_current_not_desired(const struct Head * const head) {
 	return (head &&
-			(head->desired.mode != head->current.mode ||
+			(head->reapply_required ||
+			 head->desired.mode != head->current.mode ||
 			 head->desired.scale != head->current.scale ||
 			 head->desired.enabled != head->current.enabled ||
 			 head->desired.x != head->current.x ||

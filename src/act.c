@@ -8,17 +8,16 @@
 #include "displ.h"
 #include "fn.h"
 #include "head.h"
-#include "info/print.h"
 #include "info/callback.h"
 #include "info/delta.h"
-#include "listeners.h"
+#include "info/print.h"
 #include "log.h"
 #include "mode.h"
 #include "process.h"
 #include "pset.h"
 #include "pslist.h"
 #include "str.h"
-#include "wlr-output-management-unstable-v1.h"
+#include "wl_wrappers.h"
 
 #define MAX_CANCELLATION_RETRIES 5
 
@@ -135,9 +134,8 @@ void act_apply(void) {
 	if (!heads_changing)
 		return;
 
-	// passed into our configuration listener
-	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(g_displ->zwlr_output_manager, g_displ->zwlr_output_manager_serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), g_displ);
+	// create and start the listener
+	struct zwlr_output_configuration_v1 *zwlr_config = create_zwlr_output_config_listener();
 
 	struct Head *head;
 
@@ -146,7 +144,7 @@ void act_apply(void) {
 
 		print_head(INFO, DELTA, head);
 
-		zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+		_zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 
 		g_displ->delta.human = delta_human_reapply(head);
 
@@ -158,8 +156,8 @@ void act_apply(void) {
 		print_head(INFO, DELTA, head);
 
 		// mode change in its own operation; mode change desire is always enabled
-		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
+		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+		_zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
 
 		g_displ->delta.human = delta_human_mode(head);
 
@@ -169,8 +167,8 @@ void act_apply(void) {
 		print_head(INFO, DELTA, head);
 
 		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
-		head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-		zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
+		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+		_zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
 
 		g_displ->delta.human = delta_human_adaptive_sync(head);
 
@@ -184,19 +182,19 @@ void act_apply(void) {
 			head = (struct Head*)i->val;
 
 			if (head->desired.enabled) {
-				head->zwlr_config_head = zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
-				zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
-				zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
-				zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
+				head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+				_zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
+				_zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
+				_zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
 			} else {
-				zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+				_zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
 			}
 		}
 
 		g_displ->delta.human = delta_human(heads_changing);
 	}
 
-	zwlr_output_configuration_v1_apply(zwlr_config);
+	_zwlr_output_configuration_v1_apply(zwlr_config);
 
 	g_displ->state = OUTSTANDING;
 

@@ -1,14 +1,18 @@
 #include <cmocka.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <wayland-util.h>
 #include <yaml.h>
 
 #include "head.h"
+#include "info/print.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
+#include "pslist.h"
 #include "ssmap.h"
+#include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal.h"
 
@@ -75,6 +79,18 @@ void __wrap_print_adaptive_sync_fail(const enum LogThreshold t, const struct Hea
 	check_expected_ptr(head);
 }
 
+void __wrap_print_head(const enum LogThreshold t, const enum InfoEvent event, const struct Head * const head) {
+	check_expected_int(t);
+	check_expected_int(event);
+	check_expected_ptr(head);
+}
+
+void __wrap_print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct Pslist * const heads) {
+	check_expected_int(t);
+	check_expected_int(event);
+	check_expected_ptr(heads);
+}
+
 /*
  * callback
  */
@@ -135,8 +151,53 @@ void __wrap_wd_exit_message(const int __status) {
 }
 
 /*
- * fs
+ * wl_wrappers
  */
+
+struct zwlr_output_configuration_v1 *__wrap_create_zwlr_output_config_listener(void) {
+	return mock_ptr_type_checked(struct zwlr_output_configuration_v1*);
+}
+
+struct zwlr_output_configuration_head_v1 * __wrap__zwlr_output_configuration_v1_enable_head(struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1, struct zwlr_output_head_v1 *head) {
+	check_expected_ptr(zwlr_output_configuration_v1);
+	check_expected_ptr(head);
+	return mock_ptr_type_checked(struct zwlr_output_configuration_head_v1*);
+}
+
+void __wrap__zwlr_output_configuration_v1_disable_head(struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1, struct zwlr_output_head_v1 *head) {
+	check_expected_ptr(zwlr_output_configuration_v1);
+	check_expected_ptr(head);
+}
+
+void __wrap__zwlr_output_configuration_v1_apply(struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
+	check_expected_ptr(zwlr_output_configuration_v1);
+}
+
+void __wrap__zwlr_output_configuration_head_v1_set_mode(struct zwlr_output_configuration_head_v1 *zwlr_output_configuration_head_v1, struct zwlr_output_mode_v1 *mode) {
+	check_expected_ptr(zwlr_output_configuration_head_v1);
+	check_expected_ptr(mode);
+}
+
+void __wrap__zwlr_output_configuration_head_v1_set_transform(struct zwlr_output_configuration_head_v1 *zwlr_output_configuration_head_v1, int32_t transform) {
+	check_expected_ptr(zwlr_output_configuration_head_v1);
+	check_expected_int(transform);
+}
+
+void __wrap__zwlr_output_configuration_head_v1_set_scale(struct zwlr_output_configuration_head_v1 *zwlr_output_configuration_head_v1, int32_t scale) {
+	check_expected_ptr(zwlr_output_configuration_head_v1);
+	check_expected_int(scale);
+}
+
+void __wrap__zwlr_output_configuration_head_v1_set_position(struct zwlr_output_configuration_head_v1 *zwlr_output_configuration_head_v1, int32_t x, int32_t y) {
+	check_expected_ptr(zwlr_output_configuration_head_v1);
+	check_expected_int(x);
+	check_expected_int(y);
+}
+
+void __wrap__zwlr_output_configuration_head_v1_set_adaptive_sync(struct zwlr_output_configuration_head_v1 *zwlr_output_configuration_head_v1, uint32_t state) {
+	check_expected_ptr(zwlr_output_configuration_head_v1);
+	check_expected_int(state);
+}
 
 /*
  * yaml-(un)marshal
@@ -206,3 +267,4 @@ int __wrap_yaml_parser_initialize(yaml_parser_t *parser) {
 	else
 		return __real_yaml_parser_initialize(parser);
 }
+

@@ -70,8 +70,17 @@ tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=callback
 
 tst/tst-act: LDFLAGS += -Wl,$\
-	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,$\
-	--wrap=callback,--wrap=callback_adaptive_sync_fail,--wrap=callback_mode_fail
+	--wrap=print_mode_fail,--wrap=print_adaptive_sync_fail,--wrap=print_head,--wrap=print_heads,$\
+	--wrap=callback,--wrap=callback_adaptive_sync_fail,--wrap=callback_mode_fail,$\
+	--wrap=create_zwlr_output_config_listener,$\
+	--wrap=_zwlr_output_configuration_v1_enable_head,$\
+	--wrap=_zwlr_output_configuration_v1_disable_head,$\
+	--wrap=_zwlr_output_configuration_v1_apply,$\
+	--wrap=_zwlr_output_configuration_head_v1_set_mode,$\
+	--wrap=_zwlr_output_configuration_head_v1_set_transform,$\
+	--wrap=_zwlr_output_configuration_head_v1_set_scale,$\
+	--wrap=_zwlr_output_configuration_head_v1_set_position,$\
+	--wrap=_zwlr_output_configuration_head_v1_set_adaptive_sync
 
 tst/tst-desire: LDFLAGS += -Wl,$\
 	--wrap=head_find_mode,$\
