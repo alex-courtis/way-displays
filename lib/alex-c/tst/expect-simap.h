@@ -4,7 +4,7 @@
 #include <cmocka.h>
 #include <stdbool.h>
 
-#include "util-file.h"
+#include "fs.h"
 
 #include "simap.h"
 
@@ -16,8 +16,8 @@ static int check_simap_equal(CMockaValueData value, CMockaValueData check_data) 
 	if (simap_equal(actual, expected)) {
 		return true;
 	} else {
-		write_file("actual.simap", simap_str(actual));
-		write_file("expected.simap", simap_str(expected));
+		fs_file_write("actual.simap", simap_str(actual), "w");
+		fs_file_write("expected.simap", simap_str(expected), "w");
 		cmocka_print_error("\n%s != \n%s", simap_str(actual), simap_str(expected));
 		return false;
 	}

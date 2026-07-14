@@ -16,18 +16,6 @@
 #include "yaml/unmarshal.h"
 
 /*
- * libc
- */
-
-int __real_fclose (FILE *__stream);
-int __wrap_fclose (FILE *__stream) {
-	if (has_mock())
-		return mock_int();
-	else
-		return __real_fclose(__stream);
-}
-
-/*
  * fs
  */
 

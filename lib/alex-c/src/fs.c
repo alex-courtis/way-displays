@@ -9,8 +9,6 @@
 
 #include "fs.h"
 
-// TODO move to lib
-
 bool fs_mkdir_p(char *path, mode_t mode) {
 	bool rc = false;
 	char *dir_path = NULL;

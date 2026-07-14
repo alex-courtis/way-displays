@@ -3,14 +3,14 @@
 
 #include <cmocka.h>
 
-#include "util-file.h"
+#include "fs.h"
 
 #include "simap.h"
 
 void _assert_simap_equal(const struct SImap *a, const struct SImap *b, const char * const file, const int line) {
 	if (!simap_equal(a, b)) {
-		write_file("actual.simap", simap_str(a));
-		write_file("expected.simap", simap_str(b));
+		fs_file_write("actual.simap", simap_str(a), "w");
+		fs_file_write("expected.simap", simap_str(b), "w");
 		cmocka_print_error("\n%s != \n%s", simap_str(a), simap_str(b));
 		_fail(file, line);
 	}
@@ -19,8 +19,8 @@ void _assert_simap_equal(const struct SImap *a, const struct SImap *b, const cha
 
 void _assert_simap_not_equal(const struct SImap *a, const struct SImap *b, const char * const file, const int line) {
 	if (simap_equal(a, b)) {
-		write_file("actual.simap", simap_str(a));
-		write_file("expected.simap", simap_str(b));
+		fs_file_write("actual.simap", simap_str(a), "w");
+		fs_file_write("expected.simap", simap_str(b), "w");
 		cmocka_print_error("\n%s == \n%s", simap_str(a), simap_str(b));
 		_fail(file, line);
 	}

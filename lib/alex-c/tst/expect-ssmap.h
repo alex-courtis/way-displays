@@ -4,7 +4,7 @@
 #include <cmocka.h>
 #include <stdbool.h>
 
-#include "util-file.h"
+#include "fs.h"
 
 #include "ssmap.h"
 
@@ -16,8 +16,8 @@ static int check_ssmap_equal(CMockaValueData value, CMockaValueData check_data) 
 	if (ssmap_equal(actual, expected)) {
 		return true;
 	} else {
-		write_file("actual.ssmap", ssmap_str(actual));
-		write_file("expected.ssmap", ssmap_str(expected));
+		fs_file_write("actual.ssmap", ssmap_str(actual), "w");
+		fs_file_write("expected.ssmap", ssmap_str(expected), "w");
 		cmocka_print_error("\n%s != \n%s", ssmap_str(actual), ssmap_str(expected));
 		return false;
 	}

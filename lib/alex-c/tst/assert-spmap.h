@@ -3,14 +3,14 @@
 
 #include <cmocka.h>
 
-#include "util-file.h"
+#include "fs.h"
 
 #include "spmap.h"
 
 void _assert_spmap_equal(const struct SPmap *a, const struct SPmap *b, const char * const file, const int line) {
 	if (!spmap_equal(a, b)) {
-		write_file("actual.spmap", spmap_str(a));
-		write_file("expected.spmap", spmap_str(b));
+		fs_file_write("actual.spmap", spmap_str(a), "w");
+		fs_file_write("expected.spmap", spmap_str(b), "w");
 		cmocka_print_error("\n%s != \n%s", spmap_str(a), spmap_str(b));
 		_fail(file, line);
 	}
@@ -19,8 +19,8 @@ void _assert_spmap_equal(const struct SPmap *a, const struct SPmap *b, const cha
 
 void _assert_spmap_not_equal(const struct SPmap *a, const struct SPmap *b, const char * const file, const int line) {
 	if (spmap_equal(a, b)) {
-		write_file("actual.spmap", spmap_str(a));
-		write_file("expected.spmap", spmap_str(b));
+		fs_file_write("actual.spmap", spmap_str(a), "w");
+		fs_file_write("expected.spmap", spmap_str(b), "w");
 		cmocka_print_error("\n%s == \n%s", spmap_str(a), spmap_str(b));
 		_fail(file, line);
 	}

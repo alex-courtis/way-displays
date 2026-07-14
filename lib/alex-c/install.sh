@@ -11,5 +11,7 @@ cp "${FROM}/inc/"*h "${TO}/inc"
 cp "${FROM}/src/"*c "${TO}/src"
 cp "${FROM}/tst/"*[ch] "${TO}/tst"
 
+rm "${TO}/tst/wrap"*[ch]
+
 rm "${TO}/tst/tst-"*
 

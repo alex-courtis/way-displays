@@ -3,14 +3,14 @@
 
 #include <cmocka.h>
 
-#include "util-file.h"
+#include "fs.h"
 
 #include "ipmap.h"
 
 void _assert_ipmap_equal(const struct IPmap *a, const struct IPmap *b, const char * const file, const int line) {
 	if (!ipmap_equal(a, b)) {
-		write_file("actual.ipmap", ipmap_str(a));
-		write_file("expected.ipmap", ipmap_str(b));
+		fs_file_write("actual.ipmap", ipmap_str(a), "w");
+		fs_file_write("expected.ipmap", ipmap_str(b), "w");
 		cmocka_print_error("\n%s != \n%s", ipmap_str(a), ipmap_str(b));
 		_fail(file, line);
 	}
@@ -19,8 +19,8 @@ void _assert_ipmap_equal(const struct IPmap *a, const struct IPmap *b, const cha
 
 void _assert_ipmap_not_equal(const struct IPmap *a, const struct IPmap *b, const char * const file, const int line) {
 	if (ipmap_equal(a, b)) {
-		write_file("actual.ipmap", ipmap_str(a));
-		write_file("expected.ipmap", ipmap_str(b));
+		fs_file_write("actual.ipmap", ipmap_str(a), "w");
+		fs_file_write("expected.ipmap", ipmap_str(b), "w");
 		cmocka_print_error("\n%s == \n%s", ipmap_str(a), ipmap_str(b));
 		_fail(file, line);
 	}
