@@ -13,7 +13,7 @@
 #include "lid.h"
 
 #include "cfg.h"
-#include "convert.h"
+#include "enum.h"
 #include "log.h"
 
 struct Lid *g_lid = NULL;

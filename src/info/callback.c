@@ -4,7 +4,7 @@
 #include "info/callback.h"
 
 #include "cfg.h"
-#include "convert.h"
+#include "enum.h"
 #include "head.h"
 #include "log.h"
 #include "mode.h"

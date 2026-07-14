@@ -6,7 +6,7 @@
 
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "convert.h"
+#include "enum.h"
 #include "fn.h"
 #include "ipc.h"
 #include "log.h"

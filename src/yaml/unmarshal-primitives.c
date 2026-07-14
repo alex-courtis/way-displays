@@ -8,7 +8,7 @@
 #include "yaml/unmarshal-primitives.h"
 
 #include "cfg.h"
-#include "convert.h"
+#include "enum.h"
 #include "spmap.h"
 #include "yaml/unmarshal.h"
 

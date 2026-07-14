@@ -2,7 +2,7 @@
 #include <strings.h>
 #include <wayland-client-protocol.h>
 
-#include "convert.h"
+#include "enum.h"
 
 #include "cfg.h"
 #include "cfg/condition.h"

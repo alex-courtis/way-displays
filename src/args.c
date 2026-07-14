@@ -8,14 +8,14 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
-#include "convert.h"
+#include "enum.h"
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"
 #include "process.h"
 #include "pset.h"
-#include "spmap.h"
 #include "simap.h"
+#include "spmap.h"
 #include "sset.h"
 #include "str.h"
 

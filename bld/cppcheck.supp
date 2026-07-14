@@ -7,7 +7,7 @@ staticFunction:yaml/unmarshal.c
 staticFunction:yaml/unmarshal-types.c
 
 # unused are implemented for completeness
-unusedFunction:src/convert.c
+unusedFunction:src/enum.c
 
 # many library functions are not used
 unusedFunction:lib/alex-c

@@ -8,7 +8,7 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "convert.h"
+#include "enum.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"

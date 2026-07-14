@@ -3,7 +3,7 @@
 
 #include "info/delta.h"
 
-#include "convert.h"
+#include "enum.h"
 #include "head.h"
 #include "mode.h"
 #include "pslist.h"
