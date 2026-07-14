@@ -6,8 +6,8 @@
 #include <string.h>
 
 #include "enum.h"
+#include "fs.h"
 #include "str.h"
-#include "util-file.h"
 
 /*
  * replaces all of log except for cap lines
@@ -27,8 +27,8 @@ void _assert_log(enum LogThreshold t, const char * s, const char * const file, c
 		if (strcmp(b[t], s) != 0) {
 			const char *err = sprintf_alloc("assert_log\nactual.log:\n\"%s\"\nexpected.log:\n\"%s\"\n", b[t], s);
 			fprintf(stderr, "%s:%d: %s", file, line, err);
-			write_file("actual.log", b[t]);
-			write_file("expected.log", s);
+			fs_file_write("actual.log", b[t], "w");
+			fs_file_write("expected.log", s, "w");
 			exit(1);
 		}
 	} else {
@@ -44,7 +44,7 @@ void _assert_logs_empty(const char * const file, const int line) {
 			char *file_name = sprintf_alloc("unexpected.%s.log", log_threshold_name(t));
 			const char *err = sprintf_alloc("%s:\n\"%s\"\n", file_name, b[t]);
 			fprintf(stderr, "%s:%d: %s", file, line, err);
-			write_file(file_name, b[t]);
+			fs_file_write(file_name, b[t], "w");
 			free(file_name);
 			empty = false;
 		}

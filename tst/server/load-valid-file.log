@@ -8,4 +8,3 @@ Active configuration:
   Round scales to: 0.25, NEAREST
   Change success command:
     notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
-

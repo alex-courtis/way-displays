@@ -19,7 +19,7 @@ char *read_file(const char *path) {
 	char *out = calloc(len + 1, sizeof(char));
 
 	if (len > 0) {
-		memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len - 1);
+		memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len);
 	}
 
 	close(fd);

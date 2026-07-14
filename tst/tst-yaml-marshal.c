@@ -13,6 +13,7 @@
 #include "cfg/cfg.h"
 #include "enum.h"
 #include "fn.h"
+#include "fs.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -39,8 +40,8 @@ static void _check_marshalled(char *actual, const char *expected_path, const cha
 
 	if (strcmp(actual, expected) != 0) {
 		const char *err = sprintf_alloc("check_marshalled\nactual.yaml:\n%s !=\nexpected.yaml:\n%s\n", actual, expected);
-		write_file("actual.yaml", actual);
-		write_file("expected.yaml", expected);
+		fs_file_write("actual.yaml", actual, "w");
+		fs_file_write("expected.yaml", expected, "w");
 		fprintf(stderr, "%s:%d: %s", file, line, err);
 		exit(1);
 	}

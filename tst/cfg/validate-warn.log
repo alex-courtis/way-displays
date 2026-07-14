@@ -34,4 +34,3 @@ PLUGGED 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exac
 UNPLUGGED 'uuu' is less than 4 characters, which may result in some unwanted matches.
 
 UNPLUGGED 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
-

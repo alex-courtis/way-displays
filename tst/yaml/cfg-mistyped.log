@@ -19,4 +19,3 @@ Ignoring invalid LOG_THRESHOLD expected scalar, got sequence, valid values: DEBU
 Ignoring invalid DISABLED expected sequence, got scalar
 Ignoring invalid CHANGE_SUCCESS_CMD expected scalar, got sequence, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 Ignoring invalid MAX_PREFERRED_REFRESH expected sequence, got scalar
-

@@ -24,4 +24,3 @@ name1 Arrived:
     transform: 180
     mode:      100x200@30Hz (30,000mHz) (preferred)
     VRR:       off
-

@@ -54,7 +54,7 @@ bool fs_file_write(const char *path, const char *contents, const char *mode) {
 	}
 
 	if (contents) {
-		fprintf(f, "%s\n", contents);
+		fprintf(f, "%s", contents);
 	}
 
 	fflush(f);

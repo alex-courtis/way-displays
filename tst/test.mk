@@ -60,6 +60,10 @@ LDFLAGS += -Wl,$\
 		   --wrap=yaml_parser_initialize,$\
 		   --wrap=yaml_emitter_initialize,--wrap=yaml_emitter_open,--wrap=yaml_emitter_dump,--wrap=yaml_emitter_close
 
+# libc
+LDFLAGS += -Wl,$\
+		   --wrap=fclose
+
 #
 # test specific mocks
 #

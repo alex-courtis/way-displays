@@ -12,4 +12,3 @@ Ignoring invalid DISABLED MISTYPED_UN_PLUGGED_MAP UNPLUGGED expected sequence, g
 Ignoring invalid DISABLED MISTYPED_LID_MAP LID expected scalar, got sequence, valid values: OPEN|CLOSED|NOT_PRESENT
 Ignoring invalid DISABLED expected scalar or map, got sequence
 DISABLED: Ignoring missing NAME_DESC
-

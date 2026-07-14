@@ -6,4 +6,3 @@ Ignoring invalid TRANSFORM mistyped TRANSFORM expected scalar, got sequence, val
 Ignoring invalid TRANSFORM expected map, got sequence
 TRANSFORM: Ignoring missing TRANSFORM for 'missing_transform'
 TRANSFORM: Ignoring missing NAME_DESC
-

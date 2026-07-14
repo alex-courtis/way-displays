@@ -359,6 +359,7 @@ static void g_cfg_file_init_read__no_file(void **state) {
 
 	assert_cfg_equal(g_cfg, cfg_expected);
 
+	// TODO rename to cfg-file
 	char *log_expected = read_file("tst/server/load-no-file.log");
 	assert_log(INFO, log_expected);
 
