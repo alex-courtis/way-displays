@@ -11,11 +11,8 @@ extern struct Displ *g_displ;
 
 struct DisplDelta {
 	enum CfgElement element; // 0 for many changes, VRR_OFF indicates toggle
-
-	// only when element set
-	struct Head *head;
-
-	char *human;
+	struct Head *head;       // only when element set
+	char *human;             // collected for callbacks
 };
 
 struct Displ {

@@ -5,6 +5,7 @@
 
 #include "head.h"
 
+// TODO call these CfgDisabled
 struct Disabled {
 	char *name_desc;
 	const struct Pset *conditions;

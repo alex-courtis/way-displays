@@ -9,21 +9,6 @@
 // global singleton
 extern struct Cfg *g_cfg;
 
-// TODO maybe an enum-default.h
-
-#define AUTO_SCALE_DPI_DEFAULT 96
-#define AUTO_SCALE_DPI_MIN SCALE_ROUND_TO_DEFAULT
-
-#define AUTO_SCALE_MIN_DEFAULT 1.0f
-
-#define AUTO_SCALE_MAX_DEFAULT -1.0f
-
-#define SCALE_ROUND_TO_DEFAULT 8
-
-#define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_LEVEL}\" \"${CALLBACK_MSG}\""
-
-#define COMMENT_YAML_SCHEMA "# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml"
-
 struct Cfg {
 	enum Arrange arrange;	                      // ARRANGE
 	enum Align align;                             // ALIGN

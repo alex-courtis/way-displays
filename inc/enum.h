@@ -80,6 +80,14 @@ const char *condition_lid_name(enum ConditionLid condition_lid);
 char *condition_lid_names(void);
 
 /*
+ * Cfg - scaling
+ */
+#define AUTO_SCALE_DPI_DEFAULT 96
+#define AUTO_SCALE_DPI_MIN SCALE_ROUND_TO_DEFAULT
+#define AUTO_SCALE_MIN_DEFAULT 1.0f
+#define AUTO_SCALE_MAX_DEFAULT -1.0f
+
+/*
  * Cfg - ScaleRoundStrategy
  */
 enum ScaleRoundStrategy {
@@ -93,9 +101,15 @@ const char *scale_round_strategy_name(enum ScaleRoundStrategy scale_round_strate
 char *scale_round_strategy_names(void);
 
 // not an enum however follows most semantics
+#define SCALE_ROUND_TO_DEFAULT 8
 unsigned int scale_round_to_val(const float scale_round_to);
 const char *scale_round_to_name(const unsigned int scale_round_to);
 char *scale_round_to_names(void);
+
+/*
+ * Cfg - CALLBACK_CMD
+ */
+#define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_LEVEL}\" \"${CALLBACK_MSG}\""
 
 /*
  * Cfg - CfgElement

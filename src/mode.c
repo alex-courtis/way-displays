@@ -6,6 +6,7 @@
 #include "mode.h"
 
 #include "cfg.h"
+#include "enum.h"
 #include "fn.h"
 #include "head.h"
 #include "pset.h"

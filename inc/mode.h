@@ -11,7 +11,7 @@
  * Mode contexts:
  * - Cfg: partial res/refresh or max
  * - State: res/refresh
- * - Head: res/refresh and pointers
+ * - Head: res/refresh, pointers and warned
  */
 
 struct Mode {

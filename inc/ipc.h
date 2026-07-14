@@ -5,6 +5,7 @@
 
 #include "enum.h"
 
+// TODO could this be an enum?
 #define IPC_RC_SUCCESS 0
 #define IPC_RC_WARN 1
 #define IPC_RC_ERROR 2

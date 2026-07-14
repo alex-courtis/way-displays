@@ -1,5 +1,5 @@
-#ifndef CONDITIONS_H
-#define CONDITIONS_H
+#ifndef CFG_CONDITION_H
+#define CFG_CONDITION_H
 
 #include <stdbool.h>
 
@@ -23,4 +23,4 @@ bool condition_true(const struct Condition *condition, const void* const unused)
 
 void condition_free(struct Condition *condition);
 
-#endif // CONDITIONS_H
+#endif // CFG_CONDITION_H

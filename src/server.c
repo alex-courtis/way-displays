@@ -172,10 +172,10 @@ static int loop(void) {
 		pfds_init();
 
 		// prepare for reading wayland events
-		while (_wl_display_prepare_read(g_displ->display, FL) != 0) {
-			_wl_display_dispatch_pending__prepare_read(g_displ->display, FL);
+		while (_wl_display_prepare_read(g_displ->display, __FILE__, __LINE__) != 0) {
+			_wl_display_dispatch_pending__prepare_read(g_displ->display, __FILE__, __LINE__);
 		}
-		_wl_display_flush(g_displ->display, FL);
+		_wl_display_flush(g_displ->display, __FILE__, __LINE__);
 
 		// poll for all events
 		if (poll(pfds, npfds, -1) < 0) {
@@ -186,9 +186,9 @@ static int loop(void) {
 		}
 
 		// always read and dispatch wayland events; stop the file descriptor from getting stale
-		if (_wl_display_read_events(g_displ->display, FL) == -1)
+		if (_wl_display_read_events(g_displ->display, __FILE__, __LINE__) == -1)
 			return EXIT_SUCCESS;
-		_wl_display_dispatch_pending__read_events(g_displ->display, FL);
+		_wl_display_dispatch_pending__read_events(g_displ->display, __FILE__, __LINE__);
 
 		if (!g_displ->zwlr_output_manager) {
 			log_info(NULL);

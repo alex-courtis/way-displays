@@ -1,12 +1,10 @@
-#ifndef WL_WRAPPERS
-#define WL_WRAPPERS
+#ifndef WL_WRAPPERS_H
+#define WL_WRAPPERS_H
 
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 
 #include "wlr-output-management-unstable-v1.h"
-
-#define FL __FILE__, __LINE__
 
 // use multiple wrappers to disambiguate stacks
 int _wl_display_dispatch_pending__read_events(struct wl_display *display, char *file, int line);
@@ -38,5 +36,5 @@ void _zwlr_output_configuration_head_v1_set_position(struct zwlr_output_configur
 
 void _zwlr_output_configuration_head_v1_set_adaptive_sync(struct zwlr_output_configuration_head_v1 *zwlr_output_configuration_head_v1, uint32_t state);
 
-#endif // WL_WRAPPERS
+#endif // WL_WRAPPERS_H
 
