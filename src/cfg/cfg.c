@@ -257,6 +257,7 @@ struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 	struct Cfg *merged = cfg_clone(to);
 
 	// TODO ensure that disabled toggle is still not removed
+	// https://github.com/alex-courtis/way-displays/issues/220
 	pset_remove_all_free (merged->disableds,         from->disableds);
 	spmap_remove_all_free(merged->modes,             from->modes);
 	simap_remove_all     (merged->scales,            from->scales);
@@ -283,7 +284,7 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = cfg_clone(to);
 
-	// TODO this does not toggle off
+	// the IpcRequest passes ON for CFG_TOGGLE
 
 	// SCALE
 	if (from->scaling == ON) {

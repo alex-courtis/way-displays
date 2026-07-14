@@ -35,7 +35,7 @@ struct Cfg *args_cfg(enum IpcCommand command, enum CfgElement element, int argc,
 		case SCALING:
 			switch (command) {
 				case CFG_TOGGLE:
-					cfg->scaling = ON;
+					cfg->scaling = ON; // ON is interpreted as a toggle
 					parsed = true;
 					break;
 				case CFG_SET:
@@ -48,7 +48,7 @@ struct Cfg *args_cfg(enum IpcCommand command, enum CfgElement element, int argc,
 		case AUTO_SCALE:
 			switch (command) {
 				case CFG_TOGGLE:
-					cfg->auto_scale = ON;
+					cfg->auto_scale = ON; // ON is interpreted as a toggle
 					parsed = true;
 					break;
 				case CFG_SET:
