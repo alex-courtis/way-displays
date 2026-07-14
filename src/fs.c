@@ -78,9 +78,6 @@ char *fs_canonical_path(char *path) {
 	if (!path)
 		return NULL;
 
-	if (access(path, R_OK) != 0)
-		return NULL;
-
 	char *real_path = realpath(path, NULL);
 
 	if (!real_path)
