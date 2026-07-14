@@ -9,7 +9,6 @@
 struct NameVal {
 	unsigned int val;
 	char *name;
-	char *friendly; // TODO get rid of this, only used in one place
 };
 
 static struct NameVal cfg_elements[] = {
@@ -66,14 +65,14 @@ static struct NameVal on_offs[] = {
 };
 
 static struct NameVal ipc_commands[] = {
-	{ .val = GET,        .name = "GET",        .friendly = "get",     },
-	{ .val = LIST,       .name = "LIST",       .friendly = "list",    },
-	{ .val = REAPPLY,    .name = "REAPPLY",    .friendly = "reapply", },
-	{ .val = CFG_SET,    .name = "CFG_SET",    .friendly = "set",     },
-	{ .val = CFG_DEL,    .name = "CFG_DEL",    .friendly = "delete",  },
-	{ .val = CFG_WRITE,  .name = "CFG_WRITE",  .friendly = "write",   },
-	{ .val = CFG_TOGGLE, .name = "CFG_TOGGLE", .friendly = "toggle",  },
-	{ .val = 0,          .name = NULL,         .friendly = NULL,      },
+	{ .val = GET,        .name = "GET",        },
+	{ .val = LIST,       .name = "LIST",       },
+	{ .val = REAPPLY,    .name = "REAPPLY",    },
+	{ .val = CFG_SET,    .name = "CFG_SET",    },
+	{ .val = CFG_DEL,    .name = "CFG_DEL",    },
+	{ .val = CFG_WRITE,  .name = "CFG_WRITE",  },
+	{ .val = CFG_TOGGLE, .name = "CFG_TOGGLE", },
+	{ .val = 0,          .name = NULL,         },
 };
 
 static struct NameVal transforms[] = {
@@ -165,22 +164,6 @@ static const char *_name(struct NameVal *name_vals, unsigned int val) {
 	return NULL;
 }
 
-static const char *friendly(struct NameVal *name_vals, unsigned int val) {
-	if (!name_vals) {
-		return NULL;
-	}
-	for (int i = 0; name_vals[i].name; i++) {
-		if (val == name_vals[i].val) {
-			if (name_vals[i].friendly) {
-				return name_vals[i].friendly;
-			} else {
-				return name_vals[i].name;
-			}
-		}
-	}
-	return NULL;
-}
-
 static char *names(struct NameVal *name_vals) {
 	if (!name_vals) {
 		return NULL;
@@ -246,10 +229,6 @@ const char *ipc_command_name(enum IpcCommand ipc_command) {
 
 char *ipc_command_names(void) {
 	return names(ipc_commands);
-}
-
-const char *ipc_command_friendly(enum IpcCommand ipc_command) {
-	return friendly(ipc_commands, ipc_command);
 }
 
 enum wl_output_transform transform_val(const char *name) {

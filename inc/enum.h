@@ -7,10 +7,9 @@
  * enum conversions enum value <-> enum key/name
  * _name matches via strcasecmp
  * _val_start matches strcasestr
- * _friendly returns a human string instead of key
  */
 
-// value from key
+// value from key, 0 when not found or NULL name
 typedef unsigned int (*fn_enum_val)(const char *name);
 
 // key from value, static string
@@ -159,7 +158,6 @@ enum IpcCommand {
 enum IpcCommand ipc_command_val(const char *name);
 const char *ipc_command_name(enum IpcCommand ipc_command);
 char *ipc_command_names(void);
-const char *ipc_command_friendly(enum IpcCommand ipc_command);
 
 /*
  * IPC - IpcRC

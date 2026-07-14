@@ -8,6 +8,7 @@
 #include "head.h"
 #include "pslist.h"
 
+// TODO replace with set/map
 void _assert_heads_order(struct Pslist *a, struct Pslist *b, const char * const file, const int line) {
 	if (!pslist_equal(a, b, NULL)) {
 		char actual[2048];
