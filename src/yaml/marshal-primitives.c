@@ -6,7 +6,6 @@
 #include "yaml/marshal-primitives.h"
 
 #include "enum.h"
-#include "enums.h"
 #include "pset.h"
 #include "pslist.h"
 #include "simap.h"

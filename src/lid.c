@@ -14,7 +14,6 @@
 
 #include "cfg.h"
 #include "enum.h"
-#include "enums.h"
 #include "log.h"
 
 struct Lid *g_lid = NULL;

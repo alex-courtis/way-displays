@@ -9,7 +9,6 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "enum.h"
-#include "enums.h"
 #include "fn.h"
 #include "head.h"
 #include "ipmap.h"

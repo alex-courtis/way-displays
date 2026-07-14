@@ -16,7 +16,7 @@
 
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
-#include "enums.h"
+#include "enum.h"
 #include "mode.h"
 #include "pset.h"
 #include "simap.h"

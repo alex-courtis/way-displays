@@ -4,13 +4,12 @@
 
 #include "enum.h"
 
-#include "enums.h"
 #include "str.h"
 
 struct NameVal {
 	unsigned int val;
 	char *name;
-	char *friendly;
+	char *friendly; // TODO get rid of this, only used in one place
 };
 
 static struct NameVal cfg_elements[] = {

@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "enum.h"
-#include "enums.h"
 #include "str.h"
 #include "util-file.h"
 

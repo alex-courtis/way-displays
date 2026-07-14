@@ -15,7 +15,7 @@
 
 #include "cfg.h"
 #include "displ.h"
-#include "enums.h"
+#include "enum.h"
 #include "fn.h"
 #include "head.h"
 #include "mode.h"

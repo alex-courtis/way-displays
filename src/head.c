@@ -10,7 +10,7 @@
 
 #include "cfg.h"
 #include "cfg/disabled.h"
-#include "enums.h"
+#include "enum.h"
 #include "fn.h"
 #include "info/callback.h"
 #include "log.h"

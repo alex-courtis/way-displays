@@ -1,7 +1,7 @@
 #ifndef UTIL_DATA_H
 #define UTIL_DATA_H
 
-#include "enums.h"
+#include "enum.h"
 #include "pslist.h"
 
 struct Cfg *cfg_all(void);

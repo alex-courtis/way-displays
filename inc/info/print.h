@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "cfg.h"
-#include "enums.h"
+#include "enum.h"
 #include "head.h"
 #include "mode.h"
 #include "pslist.h"

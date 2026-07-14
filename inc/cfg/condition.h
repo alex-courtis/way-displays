@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "enums.h"
+#include "enum.h"
 
 struct Condition {
 	const struct Sset *plugged;

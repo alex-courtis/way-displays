@@ -9,7 +9,7 @@
 
 #include "log.h"
 
-#include "enums.h"
+#include "enum.h"
 #include "pslist.h"
 #include "str.h"
 

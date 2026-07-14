@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #include "args.h"
-#include "enums.h"
+#include "enum.h"
 #include "ipc.h"
 #include "log.h"
 #include "process.h"

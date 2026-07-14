@@ -9,7 +9,6 @@
 #include "cfg.h"
 #include "cfg/disabled.h"
 #include "enum.h"
-#include "enums.h"
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"

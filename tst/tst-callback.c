@@ -12,7 +12,7 @@
 
 #include "cfg.h"
 #include "displ.h"
-#include "enums.h"
+#include "enum.h"
 #include "head.h"
 #include "ssmap.h"
 #include "str.h"

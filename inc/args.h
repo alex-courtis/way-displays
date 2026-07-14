@@ -1,7 +1,7 @@
 #ifndef ARGS_H
 #define ARGS_H
 
-#include "enums.h"
+#include "enum.h"
 
 // parse a complete CLI command into a new Cfg, exits on failure
 struct Cfg *args_cfg(enum IpcCommand command, enum CfgElement element, int argc, char **argv);

@@ -3,7 +3,7 @@
 #include "listeners.h"
 
 #include "displ.h"
-#include "enums.h"
+#include "enum.h"
 #include "head.h"
 #include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"

@@ -7,7 +7,6 @@
 #include "client.h"
 
 #include "enum.h"
-#include "enums.h"
 #include "fn.h"
 #include "info/print.h"
 #include "ipc.h"

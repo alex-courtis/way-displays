@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "enums.h"
+#include "enum.h"
 
 #define IPC_RC_SUCCESS 0
 #define IPC_RC_WARN 1

@@ -14,7 +14,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg.h"
-#include "enums.h"
+#include "enum.h"
 #include "ipc.h"
 #include "mode.h"
 #include "spmap.h"

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "enums.h"
+#include "enum.h"
 
 // global singleton
 extern struct Cfg *g_cfg;

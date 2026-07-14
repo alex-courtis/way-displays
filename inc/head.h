@@ -7,7 +7,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
-#include "enums.h"
+#include "enum.h"
 #include "mode.h"
 #include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
