@@ -5,7 +5,7 @@
 
 #include "yaml/marshal-types.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "enum.h"
@@ -271,7 +271,7 @@ int yaml_map_from_transform(struct MC *c, const char* const name_desc, const siz
 	return map;
 }
 
-int yaml_map_from_condition(struct MC *c, const struct Condition* const condition) {
+int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condition) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
 		return 0;
@@ -283,7 +283,7 @@ int yaml_map_from_condition(struct MC *c, const struct Condition* const conditio
 	return map;
 }
 
-int yaml_node_from_disabled(struct MC *c, const struct Disabled* const disabled) {
+int yaml_node_from_disabled(struct MC *c, const struct CfgDisabled* const disabled) {
 	if (!disabled || !disabled->name_desc)
 		return 0;
 

@@ -8,7 +8,7 @@
 
 #include "cfg/file.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "enum.h"
 #include "fds.h"
 #include "fs.h"

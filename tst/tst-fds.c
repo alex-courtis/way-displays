@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/file.h"
 #include "enum.h"
 #include "str.h"

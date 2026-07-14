@@ -15,7 +15,7 @@
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "enum.h"
 #include "fn.h"
 #include "head.h"

@@ -5,22 +5,22 @@
 
 #include "enum.h"
 
-struct Condition {
+struct CfgCondition {
 	const struct Sset *plugged;
 	const struct Sset *unplugged;
 	enum ConditionLid lid;
 };
 
-struct Condition *condition_init(void);
+struct CfgCondition *cfg_condition_init(void);
 
-const struct Pset *condition_pset_init(void);
+const struct Pset *cfg_condition_pset_init(void);
 
-struct Condition *condition_clone(const struct Condition* const from);
+struct CfgCondition *cfg_condition_clone(const struct CfgCondition* const from);
 
 // evaluates a condition.
 // NULL condition is always evaluated to be false.
-bool condition_true(const struct Condition *condition, const void* const unused);
+bool cfg_condition_true(const struct CfgCondition *condition, const void* const unused);
 
-void condition_free(struct Condition *condition);
+void cfg_condition_free(struct CfgCondition *condition);
 
 #endif // CFG_CONDITION_H

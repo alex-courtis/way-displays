@@ -6,7 +6,7 @@
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "enum.h"
 #include "mode.h"
 #include "pslist.h"

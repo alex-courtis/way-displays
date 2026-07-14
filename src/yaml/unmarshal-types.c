@@ -8,7 +8,7 @@
 
 #include "yaml/unmarshal-types.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "enum.h"
@@ -284,7 +284,7 @@ void yaml_map_into_conditions(struct UC *c, const struct Pset* const conditions,
 	if (!nodes)
 		return;
 
-	struct Condition *condition = condition_init();
+	struct CfgCondition *condition = cfg_condition_init();
 
 	yaml_unmarshal_log_ctx_key(c, "PLUGGED");
 	const yaml_node_t *node = spmap_get(nodes, "PLUGGED");
@@ -317,7 +317,7 @@ void yaml_map_into_conditions(struct UC *c, const struct Pset* const conditions,
 	goto end;
 
 err:
-	condition_free(condition);
+	cfg_condition_free(condition);
 
 end:
 	yaml_unmarshal_log_ctx_key(c, NULL);
@@ -544,14 +544,14 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 	if (!disableds)
 		return;
 
-	struct Disabled *disabled = NULL;
+	struct CfgDisabled *disabled = NULL;
 
 	const struct SPmap *node_map = NULL;
 
 	switch (node->type) {
 		case YAML_SCALAR_NODE:
 			{
-				disabled = disabled_init();
+				disabled = cfg_disabled_init();
 				if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
 					goto err;
 
@@ -565,7 +565,7 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 				if (!(node_map = yaml_map_to_spmap(c, node)))
 					return;
 
-				disabled = disabled_init();
+				disabled = cfg_disabled_init();
 
 				yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 				const yaml_node_t *scalar = spmap_get(node_map, "NAME_DESC");
@@ -593,7 +593,7 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 	goto end;
 
 err:
-	disabled_free(disabled);
+	cfg_disabled_free(disabled);
 
 end:
 	spmap_free(node_map);

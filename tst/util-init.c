@@ -19,8 +19,8 @@ struct Head *head_d(const char *description) {
 	return head;
 }
 
-struct Disabled *disabled_nd(const char *name_desc) {
-	struct Disabled *d = disabled_init();
+struct CfgDisabled *disabled_nd(const char *name_desc) {
+	struct CfgDisabled *d = cfg_disabled_init();
 	d->name_desc = strdup(name_desc);
 	return d;
 }

@@ -23,7 +23,7 @@
 #include "spmap.h"
 #include "sset.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 
 struct State {
 	struct Cfg *from;
@@ -138,7 +138,7 @@ static void cfg_equal__all(void **state) {
 	a->laptop_display_prefix = strdup(b->laptop_display_prefix);
 	assert_cfg_equal(a, b);
 
-	const struct Disabled *disabled = disabled_nd("foo");
+	const struct CfgDisabled *disabled = disabled_nd("foo");
 	pset_add(a->disableds, disabled);
 	assert_cfg_not_equal(a, b);
 	pset_remove_free(a->disableds, disabled);
@@ -474,17 +474,17 @@ static void cfg_merge_set__adaptive_sync_off(void **state) {
 static void cfg_merge_set__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Disabled *disabled1 = disabled_nd("cond");
+	struct CfgDisabled *disabled1 = disabled_nd("cond");
 
-	struct Condition *cond = condition_init();
+	struct CfgCondition *cond = cfg_condition_init();
 	sset_add(cond->plugged, "display");
 	pset_add(disabled1->conditions, cond);
 
-	cond = condition_init();
+	cond = cfg_condition_init();
 	cond->lid = LID_NOT_PRESENT;
 	pset_add(disabled1->conditions, cond);
 
-	cond = condition_init();
+	cond = cfg_condition_init();
 	sset_add(cond->plugged, "FOUR");
 	pset_add(disabled1->conditions, cond);
 
@@ -496,7 +496,7 @@ static void cfg_merge_set__disabled(void **state) {
 	pset_add_many(s->from->disableds,
 			disabled_nd("from"),
 			disabled_nd("both"),
-			disabled_clone(disabled1),
+			cfg_disabled_clone(disabled1),
 			NULL);
 
 	pset_add_many(s->expected->disableds,
@@ -942,8 +942,8 @@ static void cfg_validate_warn__(void **state) {
 			"DP-1",
 			NULL);
 
-	struct Disabled *disabled_cond = disabled_nd("cond1");
-	const struct Condition *cond = condition_init();
+	struct CfgDisabled *disabled_cond = disabled_nd("cond1");
+	const struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ppp", "DP-1", NULL);
 	sset_add_many(cond->unplugged, "uuu", "DP-1", NULL);
 	pset_add(disabled_cond->conditions, cond);

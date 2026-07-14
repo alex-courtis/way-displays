@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "head.h"
@@ -35,8 +35,8 @@ int yaml_seq_from_messages      (struct MC *c, const struct IpcOperation* const 
 int yaml_map_from_state         (struct MC *c); // g_heads and g_lid
 
 // yaml_map_add_pset: fn_yaml_node_from_type
-int yaml_map_from_condition(struct MC *c, const struct Condition* const condition);
-int yaml_node_from_disabled(struct MC *c, const struct Disabled*  const disabled);
+int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condition);
+int yaml_node_from_disabled(struct MC *c, const struct CfgDisabled*  const disabled);
 int yaml_map_from_mode     (struct MC *c, const struct Mode*      const mode);
 
 // yaml_map_add_pslist: fn_yaml_node_from_type

@@ -9,7 +9,7 @@
 #include "head.h"
 #include "pset.h"
 
-static bool disabled_equal(const struct Disabled* const a, const struct Disabled* const b) {
+static bool disabled_equal(const struct CfgDisabled* const a, const struct CfgDisabled* const b) {
 	if (!a || !b) {
 		return false;
 	}
@@ -25,28 +25,28 @@ static bool disabled_equal(const struct Disabled* const a, const struct Disabled
 	return pset_equal(a->conditions, b->conditions);
 }
 
-struct Disabled *disabled_init(void) {
-	struct Disabled *d = calloc(1, sizeof(struct Disabled));
+struct CfgDisabled *cfg_disabled_init(void) {
+	struct CfgDisabled *d = calloc(1, sizeof(struct CfgDisabled));
 
-	d->conditions = condition_pset_init();
+	d->conditions = cfg_condition_pset_init();
 
 	return d;
 }
 
-const struct Pset *disabled_pset_init(void) {
+const struct Pset *cfg_disabled_pset_init(void) {
 	const struct PsetParams params = {
 		.equal_val = (fn_equal)disabled_equal,
-		.free_val = (fn_free)disabled_free,
-		.clone_val = (fn_clone)disabled_clone,
+		.free_val = (fn_free)cfg_disabled_free,
+		.clone_val = (fn_clone)cfg_disabled_clone,
 	};
 	return pset_init_with(params);
 }
 
-const struct Disabled *disabled_clone(const struct Disabled * const from) {
+const struct CfgDisabled *cfg_disabled_clone(const struct CfgDisabled * const from) {
 	if (!from)
 		return NULL;
 
-	struct Disabled *to = (struct Disabled*)calloc(1, sizeof(struct Disabled));
+	struct CfgDisabled *to = (struct CfgDisabled*)calloc(1, sizeof(struct CfgDisabled));
 
 	if (from->name_desc) {
 		to->name_desc = strdup(from->name_desc);
@@ -57,7 +57,7 @@ const struct Disabled *disabled_clone(const struct Disabled * const from) {
 	return to;
 }
 
-void disabled_free(struct Disabled *disabled) {
+void cfg_disabled_free(struct CfgDisabled *disabled) {
 	if (!disabled)
 		return;
 
@@ -68,15 +68,15 @@ void disabled_free(struct Disabled *disabled) {
 	free(disabled);
 }
 
-bool disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head) {
+bool cfg_disabled_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
 	return
 		// name_desc must match
-		disabled_name_desc_matches_head(disabled, head) &&
+		cfg_disabled_name_desc_matches_head(disabled, head) &&
 		// all conditions must be false
-		pset_find(disabled->conditions, (fn_2pred)condition_true, NULL) == NULL;
+		pset_find(disabled->conditions, (fn_2pred)cfg_condition_true, NULL) == NULL;
 }
 
-bool disabled_name_desc_matches_head(const struct Disabled * const disabled, const struct Head * const head) {
+bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
 	return disabled && head && head_matches_name_desc(head, disabled->name_desc);
 }
 

@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "enum.h"
 #include "fn.h"
 #include "mode.h"

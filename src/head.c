@@ -8,7 +8,7 @@
 
 #include "head.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/disabled.h"
 #include "enum.h"
 #include "fn.h"
@@ -127,7 +127,7 @@ void g_heads_destroy(void) {
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	if (pset_find(cfg->disableds, (fn_2pred)disabled_name_desc_matches_head, head)) {
+	if (pset_find(cfg->disableds, (fn_2pred)cfg_disabled_name_desc_matches_head, head)) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);

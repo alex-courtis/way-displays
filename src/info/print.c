@@ -6,7 +6,7 @@
 
 #include "info/print.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/disabled.h"
 #include "enum.h"
 #include "fn.h"
@@ -60,7 +60,7 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	}
 }
 
-static void print_disabled(const enum LogThreshold t, const struct Disabled * const disabled) {
+static void print_disabled(const enum LogThreshold t, const struct CfgDisabled * const disabled) {
 	if (!disabled) return;
 
 	if (pset_size(disabled->conditions) > 0) {
@@ -276,7 +276,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 	newline = true;
 	for (const struct PsetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
-		const struct Disabled* d = it->val;
+		const struct CfgDisabled* d = it->val;
 		if (pset_size(d->conditions) == 0) {
 			print_newline(t, &newline);
 			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);

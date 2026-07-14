@@ -11,7 +11,7 @@
 #include "server.h"
 
 #include "act.h"
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/file.h"
 #include "displ.h"
 #include "enum.h"

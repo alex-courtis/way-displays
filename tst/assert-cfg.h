@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "str.h"
 #include "util-file.h"
 #include "yaml/marshal-types.h"

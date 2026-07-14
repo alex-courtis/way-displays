@@ -15,7 +15,7 @@
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "enum.h"
@@ -148,16 +148,16 @@ static void yaml_root_to_cfg__mode(void **state) {
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	struct Disabled *disabled_twelve_1 = disabled_nd("twelve");
-	const struct Condition *cond = condition_init();
+	struct CfgDisabled *disabled_twelve_1 = disabled_nd("twelve");
+	const struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
 	pset_add(disabled_twelve_1->conditions, cond);
-	cond = condition_init();
+	cond = cfg_condition_init();
 	sset_add_many(cond->unplugged, "THREE", NULL);
 	pset_add(disabled_twelve_1->conditions, cond);
 
-	struct Disabled *disabled_twelve_2 = disabled_nd("twelve");
-	cond = condition_init();
+	struct CfgDisabled *disabled_twelve_2 = disabled_nd("twelve");
+	cond = cfg_condition_init();
 	sset_add(cond->plugged, "FOUR");
 	pset_add(disabled_twelve_2->conditions, cond);
 

@@ -7,7 +7,7 @@
 #include "util-init.h"
 #include "util-col.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "enum.h"
@@ -79,18 +79,18 @@ struct Cfg *cfg_all(void) {
 			disabled_nd("nine"),
 			NULL);
 
-	struct Disabled *disabled = disabled_init();
+	struct CfgDisabled *disabled = cfg_disabled_init();
 	disabled->name_desc = strdup("twelve");
 
-	struct Condition *cond = condition_init();
+	struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
 	pset_add(disabled->conditions, cond);
 
-	cond = condition_init();
+	cond = cfg_condition_init();
 	sset_add_many(cond->unplugged, "THREE", NULL);
 	pset_add(disabled->conditions, cond);
 
-	cond = condition_init();
+	cond = cfg_condition_init();
 	cond->lid = LID_CLOSED;
 	pset_add(disabled->conditions, cond);
 

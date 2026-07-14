@@ -12,7 +12,7 @@
 
 #include "lid.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "enum.h"
 #include "log.h"
 

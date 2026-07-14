@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "enum.h"
 #include "head.h"
 #include "mode.h"

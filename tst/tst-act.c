@@ -13,7 +13,7 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "displ.h"
 #include "enum.h"
 #include "fn.h"

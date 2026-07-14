@@ -12,7 +12,7 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "enum.h"
@@ -159,8 +159,8 @@ static void print_cfg__all(void **state) {
 			NULL);
 
 	pset_add(c->disableds, disabled_nd("disabled always"));
-	const struct Disabled *disabled = disabled_nd("disabled conditionally");
-	const struct Condition *cond = condition_init();
+	const struct CfgDisabled *disabled = disabled_nd("disabled conditionally");
+	const struct CfgCondition *cond = cfg_condition_init();
 	sset_add(cond->plugged, "ONE");
 	pset_add(disabled->conditions, cond);
 	pset_add(c->disableds, disabled);

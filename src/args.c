@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <wayland-client-protocol.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/disabled.h"
 #include "enum.h"
 #include "ipc.h"
@@ -128,7 +128,7 @@ struct Cfg *args_cfg(enum IpcCommand command, enum CfgElement element, int argc,
 			break;
 		case DISABLED:
 			for (int i = optind; i < argc; i++) {
-				struct Disabled *disabled = disabled_init();
+				struct CfgDisabled *disabled = cfg_disabled_init();
 				disabled->name_desc = strdup(argv[i]);
 				pset_add(cfg->disableds, disabled);
 			}

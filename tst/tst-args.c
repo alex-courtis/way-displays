@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <wayland-client-protocol.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "enum.h"
 #include "ipc.h"
 #include "mode.h"

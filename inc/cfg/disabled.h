@@ -5,24 +5,23 @@
 
 #include "head.h"
 
-// TODO call these CfgDisabled
-struct Disabled {
+struct CfgDisabled {
 	char *name_desc;
 	const struct Pset *conditions;
 };
 
-struct Disabled *disabled_init(void);
+struct CfgDisabled *cfg_disabled_init(void);
 
-const struct Pset *disabled_pset_init(void);
+const struct Pset *cfg_disabled_pset_init(void);
 
-const struct Disabled *disabled_clone(const struct Disabled * const from);
+const struct CfgDisabled *cfg_disabled_clone(const struct CfgDisabled * const from);
 
-void disabled_free(struct Disabled *disabled);
+void cfg_disabled_free(struct CfgDisabled *disabled);
 
 // name_desc must match, if conditions are present at least one must be true
-bool disabled_matches_head(const struct Disabled * const disabled, const struct Head * const head);
+bool cfg_disabled_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head);
 
 // name_desc only
-bool disabled_name_desc_matches_head(const struct Disabled * const disabled, const struct Head * const head);
+bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head);
 
 #endif // CFG_DISABLED_H

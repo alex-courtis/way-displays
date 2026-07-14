@@ -11,14 +11,14 @@
 #include "pslist.h"
 #include "sset.h"
 
-static bool condition_equal(const struct Condition* const a, const struct Condition* const b) {
+static bool condition_equal(const struct CfgCondition* const a, const struct CfgCondition* const b) {
 	return a && b && a->lid == b->lid &&
 		sset_equal(a->plugged, b->plugged) &&
 		sset_equal(a->unplugged, b->unplugged);
 }
 
-struct Condition *condition_init(void) {
-	struct Condition *condition = (struct Condition*)calloc(1, sizeof(struct Condition));
+struct CfgCondition *cfg_condition_init(void) {
+	struct CfgCondition *condition = (struct CfgCondition*)calloc(1, sizeof(struct CfgCondition));
 
 	condition->plugged = sset_init();
 	condition->unplugged = sset_init();
@@ -26,20 +26,20 @@ struct Condition *condition_init(void) {
 	return condition;
 }
 
-const struct Pset *condition_pset_init(void) {
+const struct Pset *cfg_condition_pset_init(void) {
 	const struct PsetParams params = {
 		.equal_val = (fn_equal)condition_equal,
-		.free_val = (fn_free)condition_free,
-		.clone_val = (fn_clone)condition_clone,
+		.free_val = (fn_free)cfg_condition_free,
+		.clone_val = (fn_clone)cfg_condition_clone,
 	};
 	return pset_init_with(params);
 }
 
-struct Condition *condition_clone(const struct Condition* const from) {
+struct CfgCondition *cfg_condition_clone(const struct CfgCondition* const from) {
 	if (!from)
 		return NULL;
 
-	struct Condition *to = (struct Condition*)calloc(1, sizeof(struct Condition));
+	struct CfgCondition *to = (struct CfgCondition*)calloc(1, sizeof(struct CfgCondition));
 
 	to->plugged = sset_clone(from->plugged);
 	to->unplugged = sset_clone(from->unplugged);
@@ -48,7 +48,7 @@ struct Condition *condition_clone(const struct Condition* const from) {
 	return to;
 }
 
-bool condition_true(const struct Condition *condition, const void* const unused) {
+bool cfg_condition_true(const struct CfgCondition *condition, const void* const unused) {
 	if (!condition)
 		return false;
 
@@ -89,7 +89,7 @@ bool condition_true(const struct Condition *condition, const void* const unused)
 	return false;
 }
 
-void condition_free(struct Condition *condition) {
+void cfg_condition_free(struct CfgCondition *condition) {
 	if (!condition)
 		return;
 

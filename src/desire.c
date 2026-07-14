@@ -7,7 +7,7 @@
 
 #include "desire.h"
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 #include "cfg/disabled.h"
 #include "enum.h"
 #include "fn.h"
@@ -54,7 +54,7 @@ void desire_enabled(struct Head *head) {
 	enabled |= pslist_length(g_heads) == 1;
 
 	// name_desc matches and (if present) any condition is true
-	enabled &= pset_find(g_cfg->disableds, (fn_2pred)disabled_matches_head, head) == NULL;
+	enabled &= pset_find(g_cfg->disableds, (fn_2pred)cfg_disabled_matches_head, head) == NULL;
 
 	// reset manual override when it matches the auto-state
 	if (head->overrided_enabled != NoOverride) {

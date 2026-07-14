@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cfg.h"
+#include "cfg/cfg.h"
 
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
@@ -84,7 +84,7 @@ struct Cfg *cfg_init(void) {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
 	cfg->adaptive_sync_off     = sset_init();
-	cfg->disableds             = disabled_pset_init();
+	cfg->disableds             = cfg_disabled_pset_init();
 	cfg->max_preferred_refresh = sset_init();
 	cfg->modes                 = mode_spmap_equal_init();
 	cfg->order_name_desc       = sset_init();
@@ -319,11 +319,11 @@ void cfg_validate_warn(const struct Cfg * const cfg) {
 	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh, MAX_PREFERRED_REFRESH);
 
 	for (const struct PsetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
-		const struct Disabled *disabled = (struct Disabled*)dit->val;
+		const struct CfgDisabled *disabled = (struct CfgDisabled*)dit->val;
 		warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
 
 		for (const struct PsetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
-			const struct Condition *condition = (struct Condition*)cit->val;
+			const struct CfgCondition *condition = (struct CfgCondition*)cit->val;
 			warn_ambiguous_name_desc_sset(condition->plugged, PLUGGED);
 			warn_ambiguous_name_desc_sset(condition->unplugged, UNPLUGGED);
 		}
