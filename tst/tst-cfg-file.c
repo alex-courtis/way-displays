@@ -90,7 +90,7 @@ static void g_cfg_file_write__bad_yaml(void **state) {
 }
 
 static void g_cfg_file_write__none(void **state) {
-	pslist_append(&g_candidates, strdup("/path/to/zero"));
+	pslist_append(&g_candidates, strdup("/path/zero/0"));
 
 	char *expected = strdup("XXXX");
 
@@ -100,16 +100,16 @@ static void g_cfg_file_write__none(void **state) {
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
-	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	expect_str(__wrap_fs_mkdir_p, path, "/path/zero");
 	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
 	will_return_int(__wrap_fs_mkdir_p, true);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/zero");
+	expect_str(__wrap_fs_file_write, path, "/path/zero/0");
 	expect_str(__wrap_fs_file_write, contents, COMMENT_YAML_SCHEMA);
 	expect_str(__wrap_fs_file_write, mode, "w");
 	will_return_int(__wrap_fs_file_write, true);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/zero");
+	expect_str(__wrap_fs_file_write, path, "/path/zero/0");
 	expect_str(__wrap_fs_file_write, contents, expected);
 	expect_str(__wrap_fs_file_write, mode, "a");
 	will_return_int(__wrap_fs_file_write, true);
@@ -118,24 +118,24 @@ static void g_cfg_file_write__none(void **state) {
 
 	g_cfg_file_write();
 
-	assert_log(INFO, "\nWrote configuration file: /path/to/zero\n");
+	assert_log(INFO, "\nWrote configuration file: /path/zero/0\n");
 
-	assert_str_equal(g_cfg_file.file_path, "/path/to/zero");
-	assert_str_equal(g_cfg_file.dir_path, "/path/to");
-	assert_str_equal(g_cfg_file.file_name, "zero");
-	assert_str_equal(g_cfg_file.file_path_resolved, "/path/to/zero");
+	assert_str_equal(g_cfg_file.file_path, "/path/zero/0");
+	assert_str_equal(g_cfg_file.dir_path, "/path/zero");
+	assert_str_equal(g_cfg_file.file_name, "0");
+	assert_str_equal(g_cfg_file.file_path_resolved, "/path/zero/0");
 	assert_ptr_equal(g_cfg_file.file_path_resolved, pslist_at(g_candidates, 0));
 	assert_false(g_cfg_file.written);
 }
 
 static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
-	pslist_append(&g_candidates, strdup("/path/to/zero"));
-	pslist_append(&g_candidates, strdup("/path/to/one"));
-	pslist_append(&g_candidates, strdup("/path/to/two"));
-	pslist_append(&g_candidates, strdup("/path/to/three"));
-	pslist_append(&g_candidates, strdup("/path/to/four"));
+	pslist_append(&g_candidates, strdup("/path/zero/0"));
+	pslist_append(&g_candidates, strdup("/path/one/1"));
+	pslist_append(&g_candidates, strdup("/path/two/2"));
+	pslist_append(&g_candidates, strdup("/path/three/3"));
+	pslist_append(&g_candidates, strdup("/path/four/4"));
 
-	strncpy(g_cfg_file.file_path, "/path/to/two", PATH_MAX - 1);
+	strncpy(g_cfg_file.file_path, "/path/two/2", PATH_MAX - 1);
 	strncpy(g_cfg_file.dir_path, "nothing", PATH_MAX - 1);
 	strncpy(g_cfg_file.file_name, "missing", PATH_MAX - 1);
 	g_cfg_file.file_path_resolved = pslist_at(g_candidates, 2);
@@ -148,34 +148,40 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/two");
+	// 2 fails header write
+	expect_str(__wrap_fs_file_write, path, "/path/two/2");
 	expect_str(__wrap_fs_file_write, contents, COMMENT_YAML_SCHEMA);
 	expect_str(__wrap_fs_file_write, mode, "w");
 	will_return_int(__wrap_fs_file_write, false);
 
-	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	// 0 creates directory, fails header write
+	expect_str(__wrap_fs_mkdir_p, path, "/path/zero");
 	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
 	will_return_int(__wrap_fs_mkdir_p, true);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/zero");
+	expect_str(__wrap_fs_file_write, path, "/path/zero/0");
 	expect_str(__wrap_fs_file_write, contents, COMMENT_YAML_SCHEMA);
 	expect_str(__wrap_fs_file_write, mode, "w");
 	will_return_int(__wrap_fs_file_write, false);
 
-	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	// 1 fails to create dir
+	expect_str(__wrap_fs_mkdir_p, path, "/path/one");
 	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
 	will_return_int(__wrap_fs_mkdir_p, false);
 
-	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	// 2 already tried
+
+	// 3 creates dir and writes OK
+	expect_str(__wrap_fs_mkdir_p, path, "/path/three");
 	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
 	will_return_int(__wrap_fs_mkdir_p, true);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/three");
+	expect_str(__wrap_fs_file_write, path, "/path/three/3");
 	expect_str(__wrap_fs_file_write, contents, COMMENT_YAML_SCHEMA);
 	expect_str(__wrap_fs_file_write, mode, "w");
 	will_return_int(__wrap_fs_file_write, true);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/three");
+	expect_str(__wrap_fs_file_write, path, "/path/three/3");
 	expect_str(__wrap_fs_file_write, contents, expected);
 	expect_str(__wrap_fs_file_write, mode, "a");
 	will_return_int(__wrap_fs_file_write, true);
@@ -184,12 +190,17 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 
 	g_cfg_file_write();
 
-	assert_log(INFO, "\nWrote configuration file: /path/to/three\n");
+	assert_log(ERROR,
+			"\nUnable to write to /path/two/2\n"
+			"\nUnable to write to /path/zero/0\n"
+			"\nCannot create directory /path/one\n"
+			);
+	assert_log(INFO, "\nWrote configuration file: /path/three/3\n");
 
-	assert_str_equal(g_cfg_file.file_path, "/path/to/three");
-	assert_str_equal(g_cfg_file.dir_path, "/path/to");
-	assert_str_equal(g_cfg_file.file_name, "three");
-	assert_str_equal(g_cfg_file.file_path_resolved, "/path/to/three");
+	assert_str_equal(g_cfg_file.file_path, "/path/three/3");
+	assert_str_equal(g_cfg_file.dir_path, "/path/three");
+	assert_str_equal(g_cfg_file.file_name, "3");
+	assert_str_equal(g_cfg_file.file_path_resolved, "/path/three/3");
 	assert_ptr_equal(g_cfg_file.file_path_resolved, pslist_at(g_candidates, 3));
 	assert_false(g_cfg_file.written);
 
@@ -197,11 +208,11 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 }
 
 static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
-	pslist_append(&g_candidates, strdup("/path/to/zero"));
-	pslist_append(&g_candidates, strdup("/path/to/one"));
+	pslist_append(&g_candidates, strdup("/path/zero/0"));
+	pslist_append(&g_candidates, strdup("/path/one/1"));
 
-	strncpy(g_cfg_file.file_path, "/path/to/zero", PATH_MAX - 1);
-	strncpy(g_cfg_file.dir_path, "/path/to", PATH_MAX - 1);
+	strncpy(g_cfg_file.file_path, "/path/zero/0", PATH_MAX - 1);
+	strncpy(g_cfg_file.dir_path, "/path/zero", PATH_MAX - 1);
 	strncpy(g_cfg_file.file_name, "one", PATH_MAX - 1);
 	g_cfg_file.file_path_resolved = pslist_at(g_candidates, 0);
 
@@ -213,21 +224,23 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 
 	expect_function_call(__wrap_fd_wd_cfg_dir_destroy);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/zero");
+	// 0 fails file write existing
+	expect_str(__wrap_fs_file_write, path, "/path/zero/0");
 	expect_str(__wrap_fs_file_write, contents, COMMENT_YAML_SCHEMA);
 	expect_str(__wrap_fs_file_write, mode, "w");
 	will_return_int(__wrap_fs_file_write, false);
 
-	expect_str(__wrap_fs_mkdir_p, path, "/path/to");
+	// 1 creates dir but fails second write
+	expect_str(__wrap_fs_mkdir_p, path, "/path/one");
 	expect_int_value(__wrap_fs_mkdir_p, mode, 0755);
 	will_return_int(__wrap_fs_mkdir_p, true);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/one");
+	expect_str(__wrap_fs_file_write, path, "/path/one/1");
 	expect_str(__wrap_fs_file_write, contents, COMMENT_YAML_SCHEMA);
 	expect_str(__wrap_fs_file_write, mode, "w");
 	will_return_int(__wrap_fs_file_write, true);
 
-	expect_str(__wrap_fs_file_write, path, "/path/to/one");
+	expect_str(__wrap_fs_file_write, path, "/path/one/1");
 	expect_str(__wrap_fs_file_write, contents, expected);
 	expect_str(__wrap_fs_file_write, mode, "a");
 	will_return_int(__wrap_fs_file_write, false);
@@ -239,6 +252,11 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 	assert_str_equal(g_cfg_file.file_name, "");
 	assert_nul(g_cfg_file.file_path_resolved);
 	assert_false(g_cfg_file.written);
+
+	assert_log(ERROR,
+			"\nUnable to write to /path/zero/0\n"
+			"\nUnable to write to /path/one/1\n"
+			);
 
 	free(expected);
 }

@@ -81,9 +81,16 @@ void candidates_init(const char *user_path) {
 }
 
 static bool write_content(const char * const yaml) {
-	return
+	bool rc =
 		fs_file_write(g_cfg_file.file_path, COMMENT_YAML_SCHEMA, "w") &&
 		fs_file_write(g_cfg_file.file_path, yaml, "a");
+
+	if (!rc) {
+		log_error(NULL);
+		log_error_errno("Unable to write to %s", g_cfg_file.file_path);
+	}
+
+	return rc;
 }
 
 void g_cfg_file_write(void) {
@@ -119,12 +126,19 @@ void g_cfg_file_write(void) {
 		// optimistically try candidate
 		hydrate(i->val, i->val);
 
-		// attempt to write
-		if (fs_mkdir_p(g_cfg_file.dir_path, 0755) && (written = write_content(yaml))) {
+		// try and create the dir
+		if (fs_mkdir_p(g_cfg_file.dir_path, 0755)) {
 
-			// watch the new
-			fd_wd_cfg_dir_create();
-			goto end;
+			// attempt to write
+			if ((written = write_content(yaml))) {
+
+				// watch the new and we are done; it will fatal exit on failure
+				fd_wd_cfg_dir_create();
+				goto end;
+			}
+		} else {
+			log_error(NULL);
+			log_error_errno("Cannot create directory %s", g_cfg_file.dir_path);
 		}
 
 		// clear on failure

@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "enum.h"
 #include "str.h"
 
 #include "fs.h"
@@ -83,8 +82,6 @@ static void fs_mkdir_p__no_perm(void **state) {
 
 	assert_false(fs_mkdir_p("tst/tmp/fs_mkdir_p/writable/bar", 0755));
 
-	assert_log(ERROR, "\nCannot create directory tst/tmp/fs_mkdir_p/writable/bar\n");
-
 	struct stat sb;
 	assert_int_equal(stat("tst/tmp/fs_mkdir_p/writable/bar", &sb), -1);
 	assert_int_equal(errno, ENOENT);
@@ -93,8 +90,6 @@ static void fs_mkdir_p__no_perm(void **state) {
 static void fs_mkdir_p__bad_perms(void **state) {
 	assert_true(fs_mkdir_p("tst/tmp/fs_mkdir_p", 0755));
 	assert_false(fs_mkdir_p("tst/tmp/fs_mkdir_p/notwritable/foo/bar", 0555));
-
-	assert_log(ERROR, "\nCannot create directory tst/tmp/fs_mkdir_p/notwritable/foo\n");
 
 	struct stat sb;
 	assert_int_equal(stat("tst/tmp/fs_mkdir_p/notwritable/foo", &sb), -1);
