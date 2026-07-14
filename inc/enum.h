@@ -1,13 +1,9 @@
-#ifndef CONVERT_H
-#define CONVERT_H
+#ifndef ENUM_H
+#define ENUM_H
 
 #include <wayland-client-protocol.h>
 
-#include "cfg.h"
-#include "cfg/condition.h"
-#include "displ.h"
-#include "ipc.h"
-#include "log.h"
+#include "enums.h"
 
 // enum conversions enum value <-> enum key/name
 // _name matches via strcasecmp
@@ -67,5 +63,5 @@ unsigned int scale_round_to_val(const float scale_round_to);
 const char *scale_round_to_name(const unsigned int scale_round_to);
 char *scale_round_to_names(void);
 
-#endif // CONVERT_H
+#endif // ENUM_H
 

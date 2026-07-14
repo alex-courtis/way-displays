@@ -7,6 +7,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "enums.h"
 #include "mode.h"
 #include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -15,12 +16,6 @@
 extern struct Pslist *g_heads;
 extern struct Pslist *g_heads_arrived;
 extern struct Pslist *g_heads_departed;
-
-enum ManualOverride {
-	NoOverride = 0,
-	OverrideTrue,
-	OverrideFalse,
-};
 
 struct HeadState {
 	const struct Mode *mode;

@@ -4,11 +4,7 @@
 
 #include "enum.h"
 
-#include "cfg.h"
-#include "cfg/condition.h"
-#include "displ.h"
-#include "ipc.h"
-#include "log.h"
+#include "enums.h"
 #include "str.h"
 
 struct NameVal {

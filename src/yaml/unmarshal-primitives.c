@@ -7,8 +7,8 @@
 
 #include "yaml/unmarshal-primitives.h"
 
-#include "cfg.h"
 #include "enum.h"
+#include "enums.h"
 #include "spmap.h"
 #include "yaml/unmarshal.h"
 

@@ -3,16 +3,8 @@
 
 #include <stdbool.h>
 
+#include "enums.h"
 #include "pslist.h"
-
-enum LogThreshold {
-	DEBUG = 1,
-	INFO,
-	WARNING,
-	ERROR,
-	FATAL,
-	LOG_THRESHOLD_DEFAULT = INFO,
-};
 
 struct LogCapLine {
 	char *line;

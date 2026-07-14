@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "log.h"
-#include "ipc.h"
+#include "enums.h"
 
 // global singleton
 extern struct Cfg *g_cfg;
@@ -20,36 +19,6 @@ extern struct Cfg *g_cfg;
 #define AUTO_SCALE_MAX_DEFAULT -1.0f
 
 #define SCALE_ROUND_TO_DEFAULT 8
-
-enum Arrange {
-	ROW = 1,
-	COL,
-	ARRANGE_DEFAULT = ROW,
-};
-
-enum Align {
-	TOP = 1,
-	MIDDLE,
-	BOTTOM,
-	LEFT,
-	RIGHT,
-	ALIGN_DEFAULT = TOP,
-};
-
-enum OnOff {
-	ON = 1,
-	OFF,
-	SCALING_DEFAULT = ON,
-	AUTO_SCALE_DEFAULT = ON,
-	LAPTOP_LID_MONITOR_DEFAULT = ON,
-};
-
-enum ScaleRoundStrategy {
-	NEAREST = 1,
-	UP,
-	DOWN,
-	SCALE_ROUND_STRATEGY_DEFAULT = NEAREST,
-};
 
 #define CALLBACK_CMD_DEFAULT "notify-send \"way-displays ${CALLBACK_LEVEL}\" \"${CALLBACK_MSG}\""
 
@@ -88,34 +57,6 @@ struct Cfg {
 	const struct Pset *disableds;                 // DISABLED
 
 	const struct Sset *max_preferred_refresh;     // MAX_PREFERRED_REFRESH
-};
-
-enum CfgElement {
-	ARRANGE = 1,
-	ALIGN,
-	ORDER,
-	SCALING,
-	AUTO_SCALE,
-	SCALE,
-	MODE,
-	TRANSFORM,
-	VRR_OFF,
-	CALLBACK_CMD,
-	LAPTOP_DISPLAY_PREFIX,
-	LAPTOP_LID_MONITOR,
-	MAX_PREFERRED_REFRESH,
-	LOG_THRESHOLD,
-	DISABLED,
-	PLUGGED,
-	UNPLUGGED,
-	ARRANGE_ALIGN,
-	AUTO_SCALE_DPI,
-	AUTO_SCALE_MIN,
-	AUTO_SCALE_MAX,
-	SCALE_ROUND_TO,
-	SCALE_ROUND_STRATEGY,
-	// legacy
-	CHANGE_SUCCESS_CMD,
 };
 
 /*

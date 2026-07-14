@@ -3,9 +3,9 @@
 
 #include "act.h"
 
-#include "cfg.h"
 #include "desire.h"
 #include "displ.h"
+#include "enums.h"
 #include "fn.h"
 #include "head.h"
 #include "info/callback.h"

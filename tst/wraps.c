@@ -5,9 +5,8 @@
 #include <wayland-util.h>
 #include <yaml.h>
 
+#include "enums.h"
 #include "head.h"
-#include "info/print.h"
-#include "log.h"
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"

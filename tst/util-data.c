@@ -10,6 +10,7 @@
 #include "cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
+#include "enums.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"

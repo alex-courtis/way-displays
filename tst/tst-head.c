@@ -16,8 +16,8 @@
 #include <string.h>
 
 #include "cfg.h"
+#include "enums.h"
 #include "fn.h"
-#include "log.h"
 #include "mode.h"
 #include "pset.h"
 #include "pslist.h"

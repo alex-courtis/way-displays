@@ -5,7 +5,7 @@
 #include <yaml.h>
 
 #include "enum.h"
-#include "log.h"
+#include "enums.h"
 
 /*
  * Context available for the duration of marshalling

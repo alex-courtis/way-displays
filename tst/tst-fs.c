@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "log.h"
+#include "enums.h"
 #include "str.h"
 
 #include "fs.h"

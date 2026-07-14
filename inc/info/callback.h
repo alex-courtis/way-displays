@@ -1,8 +1,8 @@
 #ifndef CALLBACK_H
 #define CALLBACK_H
 
+#include "enums.h"
 #include "head.h"
-#include "log.h"
 #include "mode.h"
 
 #define CALLBACK_MSG_LEN 1024 * 64

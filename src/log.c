@@ -8,9 +8,10 @@
 #include <unistd.h>
 
 #include "log.h"
-#include "str.h"
 
+#include "enums.h"
 #include "pslist.h"
+#include "str.h"
 
 #define MAX_LINE_LEN 65536
 

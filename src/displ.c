@@ -4,7 +4,7 @@
 
 #include "displ.h"
 
-#include "cfg.h"
+#include "enums.h"
 #include "head.h"
 #include "listeners.h"
 #include "log.h"

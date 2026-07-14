@@ -15,6 +15,7 @@
 #include "cfg/file.h"
 #include "displ.h"
 #include "enum.h"
+#include "enums.h"
 #include "fds.h"
 #include "head.h"
 #include "info/print.h"

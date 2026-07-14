@@ -9,6 +9,7 @@
 #include "cfg/file.h"
 
 #include "cfg.h"
+#include "enums.h"
 #include "fds.h"
 #include "fs.h"
 #include "info/print.h"

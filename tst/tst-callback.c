@@ -12,8 +12,8 @@
 
 #include "cfg.h"
 #include "displ.h"
+#include "enums.h"
 #include "head.h"
-#include "log.h"
 #include "ssmap.h"
 #include "str.h"
 

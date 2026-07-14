@@ -3,19 +3,11 @@
 
 #include <stdint.h>
 
-#include "cfg.h"
+#include "enums.h"
 #include "head.h"
 
 // global singleton
 extern struct Displ *g_displ;
-
-enum DisplState {
-	IDLE = 0,
-	SUCCEEDED,
-	OUTSTANDING,
-	CANCELLED,
-	FAILED,
-};
 
 struct DisplDelta {
 	enum CfgElement element; // 0 for many changes, VRR_OFF indicates toggle

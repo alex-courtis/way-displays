@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include "cfg.h"
-#include "log.h"
+#include "enums.h"
 #include "pslist.h"
 #include "sset.h"
 

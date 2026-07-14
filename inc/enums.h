@@ -1,0 +1,108 @@
+#ifndef ENUMS_H
+#define ENUMS_H
+
+enum Arrange {
+	ROW = 1,
+	COL,
+	ARRANGE_DEFAULT = ROW,
+};
+
+enum Align {
+	TOP = 1,
+	MIDDLE,
+	BOTTOM,
+	LEFT,
+	RIGHT,
+	ALIGN_DEFAULT = TOP,
+};
+
+enum OnOff {
+	ON = 1,
+	OFF,
+	SCALING_DEFAULT = ON,
+	AUTO_SCALE_DEFAULT = ON,
+	LAPTOP_LID_MONITOR_DEFAULT = ON,
+};
+
+enum ScaleRoundStrategy {
+	NEAREST = 1,
+	UP,
+	DOWN,
+	SCALE_ROUND_STRATEGY_DEFAULT = NEAREST,
+};
+
+enum CfgElement {
+	ARRANGE = 1,
+	ALIGN,
+	ORDER,
+	SCALING,
+	AUTO_SCALE,
+	SCALE,
+	MODE,
+	TRANSFORM,
+	VRR_OFF,
+	CALLBACK_CMD,
+	LAPTOP_DISPLAY_PREFIX,
+	LAPTOP_LID_MONITOR,
+	MAX_PREFERRED_REFRESH,
+	LOG_THRESHOLD,
+	DISABLED,
+	PLUGGED,
+	UNPLUGGED,
+	ARRANGE_ALIGN,
+	AUTO_SCALE_DPI,
+	AUTO_SCALE_MIN,
+	AUTO_SCALE_MAX,
+	SCALE_ROUND_TO,
+	SCALE_ROUND_STRATEGY,
+	// legacy
+	CHANGE_SUCCESS_CMD,
+};
+
+enum DisplState {
+	IDLE = 0,
+	SUCCEEDED,
+	OUTSTANDING,
+	CANCELLED,
+	FAILED,
+};
+
+enum IpcCommand {
+	GET = 1,
+	LIST,
+	REAPPLY,
+	CFG_SET,
+	CFG_DEL,
+	CFG_WRITE,
+	CFG_TOGGLE,
+};
+
+enum ConditionLid {
+	LID_CLOSED = 1,
+	LID_OPEN,
+	LID_NOT_PRESENT,
+};
+
+enum LogThreshold {
+	DEBUG = 1,
+	INFO,
+	WARNING,
+	ERROR,
+	FATAL,
+	LOG_THRESHOLD_DEFAULT = INFO,
+};
+
+enum ManualOverride {
+	NoOverride = 0,
+	OverrideTrue,
+	OverrideFalse,
+};
+
+enum InfoEvent {
+	ARRIVED,
+	DEPARTED,
+	DELTA,
+	NONE,
+};
+
+#endif // ENUMS_H

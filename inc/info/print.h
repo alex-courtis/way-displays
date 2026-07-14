@@ -4,18 +4,10 @@
 #include <stdbool.h>
 
 #include "cfg.h"
-#include "displ.h"
+#include "enums.h"
 #include "head.h"
-#include "log.h"
 #include "mode.h"
 #include "pslist.h"
-
-enum InfoEvent {
-	ARRIVED,
-	DEPARTED,
-	DELTA,
-	NONE,
-};
 
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del);
 

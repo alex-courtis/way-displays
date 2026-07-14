@@ -3,11 +3,7 @@
 
 #include <stdbool.h>
 
-enum ConditionLid {
-	LID_CLOSED = 1,
-	LID_OPEN,
-	LID_NOT_PRESENT,
-};
+#include "enums.h"
 
 struct Condition {
 	const struct Sset *plugged;

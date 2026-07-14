@@ -6,6 +6,7 @@
 #include "ipc.h"
 
 #include "cfg.h"
+#include "enums.h"
 #include "fn.h"
 #include "head.h"
 #include "lid.h"

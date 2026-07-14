@@ -16,6 +16,7 @@
 #include <wayland-util.h>
 
 #include "cfg.h"
+#include "enums.h"
 #include "fn.h"
 #include "head.h"
 #include "pset.h"

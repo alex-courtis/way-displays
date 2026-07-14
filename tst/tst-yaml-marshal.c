@@ -11,11 +11,11 @@
 #include <string.h>
 
 #include "cfg.h"
+#include "enums.h"
 #include "fn.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
-#include "log.h"
 #include "pslist.h"
 #include "str.h"
 

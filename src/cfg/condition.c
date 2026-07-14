@@ -3,12 +3,13 @@
 
 #include "cfg/condition.h"
 
-#include "lid.h"
-#include "pslist.h"
-#include "pset.h"
-#include "sset.h"
+#include "enums.h"
 #include "fn.h"
 #include "head.h"
+#include "lid.h"
+#include "pset.h"
+#include "pslist.h"
+#include "sset.h"
 
 static bool condition_equal(const struct Condition* const a, const struct Condition* const b) {
 	return a && b && a->lid == b->lid &&

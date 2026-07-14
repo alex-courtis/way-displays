@@ -13,7 +13,7 @@
 
 #include "cfg.h"
 #include "cfg/file.h"
-#include "log.h"
+#include "enums.h"
 #include "str.h"
 
 #include "fds.h"
