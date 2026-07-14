@@ -47,10 +47,10 @@ void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
 	for (struct Pslist *i = ipc_operation->log_cap_lines; i; i = i->nex) {
 		const struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
 
-		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_RC_WARN)
-			ipc_operation->rc = IPC_RC_WARN;
-		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_RC_ERROR)
-			ipc_operation->rc = IPC_RC_ERROR;
+		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_WARN)
+			ipc_operation->rc = IPC_WARN;
+		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_ERROR)
+			ipc_operation->rc = IPC_ERROR;
 	}
 }
 

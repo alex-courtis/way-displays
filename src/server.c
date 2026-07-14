@@ -40,7 +40,7 @@ static void handle_ipc_in_progress(int server_socket) {
 	operation->request = request;
 	operation->socket_client = request->socket_client;
 	operation->done = true;
-	operation->rc = IPC_RC_REQUEST_IN_PROGRESS;
+	operation->rc = IPC_REQUEST_IN_PROGRESS;
 
 	ipc_send_operation(operation);
 
@@ -90,7 +90,7 @@ static void receive_ipc_request(int server_socket) {
 	ipc_operation->send_state = true;
 
 	if (ipc_request->bad) {
-		ipc_operation->rc = IPC_RC_BAD_REQUEST;
+		ipc_operation->rc = IPC_BAD_REQUEST;
 		ipc_operation->send_state = false;
 		goto send;
 	}

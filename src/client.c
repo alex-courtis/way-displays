@@ -34,7 +34,7 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 				done = response->status.done;
 
 				if (ipc_request->yaml) {
-					if (yaml && (rc < IPC_RC_ERROR)) {
+					if (yaml && (rc < IPC_ERROR)) {
 						// yaml
 						fprintf(stdout, "%s\n", yaml);
 					} else {
@@ -48,7 +48,7 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 			}
 			pslist_free_vals(&responses, (fn_free)ipc_response_free);
 		} else {
-			rc = IPC_RC_BAD_RESPONSE;
+			rc = IPC_BAD_RESPONSE;
 			done = true;
 		}
 

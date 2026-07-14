@@ -30,7 +30,7 @@ main(int argc, char **argv) {
 	// send the request
 	ipc_send_request(request);
 	if (request->socket_client == -1) {
-		exit(IPC_RC_BAD_REQUEST);
+		exit(IPC_BAD_REQUEST);
 	}
 
 	struct IpcResponseStatus status = { 0 };
@@ -41,7 +41,7 @@ main(int argc, char **argv) {
 		responses = ipc_receive_responses(request->socket_client, &yaml);
 		if (!responses) {
 			status.done = true;
-			status.rc = IPC_RC_BAD_RESPONSE;
+			status.rc = IPC_BAD_RESPONSE;
 		}
 
 		// parse one to many responses

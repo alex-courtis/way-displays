@@ -162,6 +162,18 @@ char *ipc_command_names(void);
 const char *ipc_command_friendly(enum IpcCommand ipc_command);
 
 /*
+ * IPC - IpcRC
+ */
+enum IpcRC {
+	IPC_SUCCESS = 0,
+	IPC_WARN = 1,
+	IPC_ERROR = 2,
+	IPC_BAD_REQUEST = 11,
+	IPC_BAD_RESPONSE = 12,
+	IPC_REQUEST_IN_PROGRESS = 13,
+};
+
+/*
  * Log - LogThreshold
  */
 enum LogThreshold {
