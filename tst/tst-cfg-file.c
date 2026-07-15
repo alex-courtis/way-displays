@@ -359,8 +359,7 @@ static void g_cfg_file_init_read__no_file(void **state) {
 
 	assert_cfg_equal(g_cfg, cfg_expected);
 
-	// TODO rename to cfg-file
-	char *log_expected = read_file("tst/server/load-no-file.log");
+	char *log_expected = read_file("tst/cfg-file/load-no-file.log");
 	assert_log(INFO, log_expected);
 
 	free(log_expected);
@@ -379,7 +378,7 @@ static void g_cfg_file_init_read__file_not_resolved(void **state) {
 
 	assert_cfg_equal(g_cfg, cfg_expected);
 
-	char *log_expected = read_file("tst/server/load-no-file.log");
+	char *log_expected = read_file("tst/cfg-file/load-no-file.log");
 	assert_log(INFO, log_expected);
 
 	free(log_expected);
@@ -411,7 +410,7 @@ static void g_cfg_file_init_read__valid_file(void **state) {
 
 	assert_cfg_equal(g_cfg, cfg_expected);
 
-	char *log_expected = read_file("tst/server/load-valid-file.log");
+	char *log_expected = read_file("tst/cfg-file/load-valid-file.log");
 	assert_log(INFO, log_expected);
 
 	free(log_expected);
@@ -433,7 +432,7 @@ static void g_cfg_file_init_read__invalid_file(void **state) {
 
 	assert_cfg_equal(g_cfg, cfg_expected);
 
-	char *log_expected = read_file("tst/server/load-invalid-file.log");
+	char *log_expected = read_file("tst/cfg-file/load-invalid-file.log");
 	assert_log(INFO, log_expected);
 
 	free(log_expected);
@@ -469,7 +468,7 @@ static void g_cfg_file_init_read__missing_defaults(void **state) {
 
 	assert_cfg_equal(g_cfg, cfg_expected);
 
-	char *log_expected = read_file("tst/server/load-missing-defaults.log");
+	char *log_expected = read_file("tst/cfg-file/load-missing-defaults.log");
 	assert_log(INFO, log_expected);
 
 	free(log_expected);
@@ -511,7 +510,7 @@ static void g_cfg_file_reload__invalid_file(void **state) {
 	assert_str_equal(g_cfg_file.file_name, "file_name");
 	assert_str_equal(g_cfg_file.dir_path, "dir_path");
 
-	char *log_expected = read_file("tst/server/reload-invalid-file.log");
+	char *log_expected = read_file("tst/cfg-file/reload-invalid-file.log");
 	assert_log(INFO, log_expected);
 
 	free(log_expected);
@@ -552,7 +551,7 @@ static void g_cfg_file_reload__valid_file(void **state) {
 	assert_str_equal(g_cfg_file.file_name, "file_name");
 	assert_str_equal(g_cfg_file.dir_path, "dir_path");
 
-	char *log_expected = read_file("tst/server/reload-valid-file.log");
+	char *log_expected = read_file("tst/cfg-file/reload-valid-file.log");
 	assert_log(INFO, log_expected);
 
 	free(log_expected);
