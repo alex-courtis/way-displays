@@ -17,6 +17,7 @@
 #include "displ.h"
 #include "enum.h"
 #include "fds.h"
+#include "fn.h"
 #include "head.h"
 #include "info/print.h"
 #include "ipc.h"
@@ -110,18 +111,19 @@ static void receive_ipc_request(int server_socket) {
 				head_apply_toggles(i->val, ipc_request->cfg);
 			}
 			break;
+		case CFG_DEL:
 		case CFG_SET:
-			// TODO tidy, combine with head_apply_toggles and use head_matches_name_desc
-			for (const struct PsetIt *it = pset_it(ipc_request->cfg->disableds); it; it = pset_it_next(it)) {
-				const struct CfgDisabled *disabled_req = it->val;
-				for (const struct PsetIt *it = pset_filter_it(g_cfg->disableds, (fn_2pred)cfg_disabled_has_condition_and_name_desc, disabled_req->name_desc); it; it = pset_it_next(it)) {
+			// exit early for set/del any disableds with conditions
+			for (const struct PsetIt *rit = pset_it(ipc_request->cfg->disableds); rit; rit = pset_it_next(rit)) {
+				const struct CfgDisabled *disabled_req = rit->val;
+				for (const struct PsetIt *cit = pset_filter_it(g_cfg->disableds, (fn_2pred)cfg_disabled_has_conditions_and_name_desc, disabled_req->name_desc); cit; cit = pset_it_next(cit)) {
 					log_error(NULL);
 					log_error("%s is conditionally disabled, it may only be toggled", disabled_req->name_desc);
+					pset_it_free(cit);
+					pset_it_free(rit);
 					goto send;
 				}
 			}
-			break;
-		case CFG_DEL:
 			break;
 		default:
 			break;
