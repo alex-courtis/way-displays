@@ -12,6 +12,7 @@
 
 #include "act.h"
 #include "cfg/cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/file.h"
 #include "displ.h"
 #include "enum.h"
@@ -22,6 +23,7 @@
 #include "lid.h"
 #include "log.h"
 #include "process.h"
+#include "pset.h"
 #include "pslist.h"
 
 // operation in progress
@@ -101,11 +103,29 @@ static void receive_ipc_request(int server_socket) {
 		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
-	// handle extra toggles
-	if (ipc_request->command == CFG_TOGGLE) {
-		for (struct Pslist *i = g_heads; i; i = i->nex) {
-			head_apply_toggles(i->val, ipc_request->cfg);
-		}
+	switch (ipc_request->command) {
+		case CFG_TOGGLE:
+			// handle extra toggles
+			for (struct Pslist *i = g_heads; i; i = i->nex) {
+				head_apply_toggles(i->val, ipc_request->cfg);
+			}
+			break;
+		case CFG_SET:
+			// TODO tidy, combine with head_apply_toggles and use head_matches_name_desc
+			for (const struct PsetIt *it = pset_it(ipc_request->cfg->disableds); it; it = pset_it_next(it)) {
+				const struct CfgDisabled *disabled_req = it->val;
+				for (const struct PsetIt *it = pset_filter_it(g_cfg->disableds, (fn_2pred)cfg_disabled_has_condition_and_name_desc, disabled_req->name_desc); it; it = pset_it_next(it)) {
+					log_error(NULL);
+					log_error("%s is conditionally disabled, it may only be toggled", disabled_req->name_desc);
+					goto send;
+				}
+			}
+			break;
+		case CFG_DEL:
+			break;
+		default:
+			break;
+
 	}
 
 	switch (ipc_request->command) {

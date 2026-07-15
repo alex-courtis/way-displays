@@ -24,4 +24,7 @@ bool cfg_disabled_matches_head(const struct CfgDisabled * const disabled, const 
 // name_desc only
 bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head);
 
+// has conditions and matches name_desc
+bool cfg_disabled_has_condition_and_name_desc(const struct CfgDisabled * const disabled, const char * const name_desc);
+
 #endif // CFG_DISABLED_H

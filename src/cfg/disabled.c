@@ -80,3 +80,11 @@ bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabl
 	return disabled && head && head_matches_name_desc(head, disabled->name_desc);
 }
 
+bool cfg_disabled_has_condition_and_name_desc(const struct CfgDisabled * const disabled, const char * const name_desc) {
+	if (!disabled)
+		return false;
+
+	// TODO match name_desc against the head
+	return (strcmp(disabled->name_desc, name_desc) == 0) && pset_size(disabled->conditions) > 0;
+}
+
