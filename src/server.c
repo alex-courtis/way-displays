@@ -285,7 +285,7 @@ server(char *cfg_path) {
 	g_lid_init();
 	g_lid_update();
 
-	// discover the output manager; it will call back
+	// one round trip for registration only; will call back later
 	g_displ_init();
 
 	// only stops when signalled or display goes away

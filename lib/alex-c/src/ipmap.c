@@ -313,7 +313,7 @@ const void *ipmap_put_if_absent(const struct IPmap* const map, const size_t key,
 	return map ? ppmap_put_if_absent(map->ppmap, &key, val) : NULL;
 }
 
-bool ipmap_put_free(const struct IPmap* const map, const size_t key, const char* const val) {
+bool ipmap_put_free(const struct IPmap* const map, const size_t key, const void* const val) {
 	return map ? ppmap_put_free(map->ppmap, &key, val) : false;
 }
 

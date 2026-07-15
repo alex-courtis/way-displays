@@ -7,9 +7,6 @@
 
 #include "xdg-output-unstable-v1.h"
 
-// global singleton
-extern const struct IPmap *g_outputs;
-
 struct Output {
 	struct wl_output *wl_output;
 	uint32_t wl_output_name;
@@ -27,13 +24,13 @@ struct Output {
 };
 
 // instantiate a new output and create an xdg output listener, appending to outputs
-// NULL on failure to retrieve xdg output
-struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output_name, struct zxdg_output_manager_v1 *zxdg_output_manager);
+// NULL on missing wl_output or failure to retrieve xdg output
+struct Output *output_init(struct wl_output *wl_output, const uint32_t name, struct zxdg_output_manager_v1 *zxdg_output_manager);
+
+// frees and releases resources
+void output_destroy(struct Output *output);
 
 // output matching (head) name
 bool output_matches_name(const struct Output* const output, const void* const name);
-
-// destroy all g_outputs
-void g_outputs_destroy(void);
 
 #endif // OUTPUT_H

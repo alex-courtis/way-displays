@@ -30,7 +30,7 @@ extern int g_cancellation_retries;
 static int before_each(void **state) {
 	g_cfg = cfg_default();
 
-	g_displ = calloc(1, sizeof(struct Displ));
+	g_displ = displ_init();
 
 	return 0;
 }
@@ -40,7 +40,7 @@ static int after_each(void **state) {
 
 	pslist_free_vals(&g_heads, (fn_free)head_free);
 
-	free(g_displ);
+	displ_free(g_displ);
 
 	g_cfg_destroy();
 

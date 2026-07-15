@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "util-init.h"
@@ -6,6 +7,7 @@
 #include "cfg/disabled.h"
 #include "head.h"
 #include "mode.h"
+#include "output.h"
 
 struct Head *head_n(const char *name) {
 	struct Head *head = head_init();
@@ -17,6 +19,12 @@ struct Head *head_d(const char *description) {
 	struct Head *head = head_init();
 	head->description = strdup(description);
 	return head;
+}
+
+struct Output *output_n(const char *name) {
+	struct Output *output = calloc(1, sizeof(struct Output));
+	output->name = strdup(name);
+	return output;
 }
 
 struct CfgDisabled *disabled_nd(const char *name_desc) {

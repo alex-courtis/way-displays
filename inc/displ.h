@@ -33,16 +33,25 @@ struct Displ {
 	uint32_t zxdg_output_manager_version;
 	char *zxdg_output_manager_interface;
 
+	const struct IPmap *outputs; // Outputs by WL global name
+
 	enum DisplState state;
 	struct DisplDelta delta;
 };
 
+struct Displ *displ_init(void);
+
+// instantiates g_displ, connects to the WL display/registry, adds the listener and performs one round trip for registration
 void g_displ_init(void);
+
+// free outputs and delta
+void displ_free(struct Displ *displ);
 
 void displ_delta_init(enum CfgElement element, struct Head *head);
 
 void displ_delta_destroy(void);
 
+// free and release all resources
 void g_displ_destroy(void);
 
 #endif // DISPL_H

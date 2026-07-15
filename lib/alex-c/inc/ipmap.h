@@ -116,7 +116,7 @@ const void *ipmap_put(const struct IPmap* const map, const size_t key, const voi
 const void *ipmap_put_if_absent(const struct IPmap* const map, const size_t key, const void* const val);
 
 // set key/val, free old val, return true if overwritten [alloc_val, free_val]
-bool ipmap_put_free(const struct IPmap* const map, const size_t key, const char* const val);
+bool ipmap_put_free(const struct IPmap* const map, const size_t key, const void* const val);
 
 // set all from key/val, returning number overwritten [alloc_val]
 size_t ipmap_put_all(const struct IPmap* const map, const struct IPmap* const from);

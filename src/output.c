@@ -6,29 +6,11 @@
 
 #include "output.h"
 
-#include "ipmap.h"
 #include "listeners.h"
 #include "xdg-output-unstable-v1.h"
 
-const struct IPmap *g_outputs; // by wl_output_name
-
-static void destroy(void *o) {
-	if (!o)
-		return;
-
-	struct Output *output = o;
-
-	zxdg_output_v1_destroy(output->zxdg_output);
-	wl_output_destroy(output->wl_output);
-
-	free(output->name);
-	free(output->description);
-
-	free(output);
-}
-
-struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output_name, struct zxdg_output_manager_v1 *zxdg_output_manager) {
-	if (!wl_output || !zxdg_output_manager)
+struct Output *output_init(struct wl_output *wl_output, const uint32_t name, struct zxdg_output_manager_v1 *zxdg_output_manager) {
+	if (!zxdg_output_manager)
 		return NULL;
 
 	struct zxdg_output_v1 *zxdg_output = zxdg_output_manager_v1_get_xdg_output(zxdg_output_manager, wl_output);
@@ -37,25 +19,31 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output
 
 	struct Output *output = calloc(1, sizeof(struct Output));
 	output->wl_output = wl_output;
-	output->wl_output_name = wl_output_name;
+	output->wl_output_name = name;
 	output->zxdg_output = zxdg_output;
-
-	if (!g_outputs) {
-		const struct IPmapParams params = { .free_val = destroy, };
-		g_outputs = ipmap_init_with(params);
-	}
-	ipmap_put(g_outputs, wl_output_name, output);
 
 	zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
 
 	return output;
 }
 
+void output_destroy(struct Output *output) {
+	if (!output)
+		return;
+
+	if (output->zxdg_output)
+		zxdg_output_v1_destroy(output->zxdg_output);
+
+	if (output->wl_output)
+		wl_output_destroy(output->wl_output);
+
+	free(output->name);
+
+	free(output->description);
+
+	free(output);
+}
+
 bool output_matches_name(const struct Output* const output, const void* const name) {
 	return name && output && output->name && strcmp(output->name, name) == 0;
 }
-
-void g_outputs_destroy(void) {
-	ipmap_free_vals(g_outputs);
-}
-

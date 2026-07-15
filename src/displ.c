@@ -5,7 +5,9 @@
 #include "displ.h"
 
 #include "enum.h"
+#include "fn.h"
 #include "head.h"
+#include "ipmap.h"
 #include "listeners.h"
 #include "log.h"
 #include "output.h"
@@ -15,9 +17,17 @@
 
 struct Displ *g_displ = NULL;
 
-void g_displ_init(void) {
+struct Displ *displ_init(void) {
+	struct Displ *displ = calloc(1, sizeof(struct Displ));
 
-	g_displ = calloc(1, sizeof(struct Displ));
+	const struct IPmapParams params = { .free_val = (fn_free)output_destroy, };
+	displ->outputs = ipmap_init_with(params);
+
+	return displ;
+}
+
+void g_displ_init(void) {
+	g_displ = displ_init();
 
 	if (!(g_displ->display = wl_display_connect(NULL))) {
 		log_fatal(NULL);
@@ -45,6 +55,21 @@ void g_displ_init(void) {
 	}
 }
 
+void displ_free(struct Displ *displ) {
+	if (!displ)
+		return;
+
+	displ_delta_destroy();
+
+	ipmap_free_vals(g_displ->outputs);
+
+	free(g_displ->zwlr_output_manager_interface);
+
+	free(g_displ->zxdg_output_manager_interface);
+
+	free(displ);
+}
+
 void displ_delta_init(enum CfgElement element, struct Head *head) {
 	displ_delta_destroy();
 
@@ -65,25 +90,22 @@ void displ_delta_destroy(void) {
 
 void g_displ_destroy(void) {
 
-	g_outputs_destroy();
+	// destroy outputs before zxdg_output_manager
+	ipmap_free_vals(g_displ->outputs);
+	g_displ->outputs = NULL;
 
-	if (g_displ->zwlr_output_manager) {
+	if (g_displ->zwlr_output_manager)
 		zwlr_output_manager_v1_destroy(g_displ->zwlr_output_manager);
-	}
 
-	if (g_displ->zxdg_output_manager) {
+	if (g_displ->zxdg_output_manager)
 		zxdg_output_manager_v1_destroy(g_displ->zxdg_output_manager);
-	}
 
 	wl_registry_destroy(g_displ->registry);
 
 	wl_display_disconnect(g_displ->display);
 
-	free(g_displ->zwlr_output_manager_interface);
+	displ_free(g_displ);
 
-	free(g_displ->zxdg_output_manager_interface);
-
-	free(g_displ);
 	g_displ = NULL;
 }
 

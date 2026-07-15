@@ -15,6 +15,7 @@
 #include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
+#include "displ.h"
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
@@ -36,6 +37,8 @@ struct State {
 
 int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
+
+	g_displ = displ_init();
 
 	g_cfg = cfg_default();
 
@@ -122,8 +125,6 @@ int before_each(void **state) {
 
 	pslist_append(&s->heads, s->head2);
 
-	g_outputs = ipmap_init();
-
 	*state = s;
 	return 0;
 }
@@ -137,8 +138,7 @@ int after_each(void **state) {
 
 	free(s);
 
-	ipmap_free_vals(g_outputs);
-	g_outputs = NULL;
+	displ_free(g_displ);
 
 	g_cfg_destroy();
 
@@ -338,17 +338,14 @@ static void print_head_arrived__all(void **state) {
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
 	will_return_int(__wrap_g_lid_is_closed, false);
 
-	struct Output *outputX = calloc(1, sizeof(struct Output));
-	outputX->name = "inexistent"; // we don't call output destroy, just free
-	ipmap_put(g_outputs, 888, outputX);
+	ipmap_put(g_displ->outputs, 888, output_n("inexistent"));
 
-	struct Output *output1 = calloc(1, sizeof(struct Output));
-	output1->name = "name1";
+	struct Output *output1 = output_n("name1");
 	output1->logical_width = 4000;
 	output1->logical_height = 2000;
 	output1->logical_x = 400;
 	output1->logical_y = 200;
-	ipmap_put(g_outputs, 999, output1);
+	ipmap_put(g_displ->outputs, 999, output1);
 
 	print_head(INFO, ARRIVED, s->head1);
 

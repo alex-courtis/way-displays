@@ -28,7 +28,7 @@ struct State {
 int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 
-	g_displ = calloc(1, sizeof(struct Displ));
+	g_displ = displ_init();
 
 
 	s->head1 = head_n("name1");
@@ -90,8 +90,7 @@ int after_each(void **state) {
 
 	free(s);
 
-	displ_delta_destroy();
-	free(g_displ);
+	displ_free(g_displ);
 
 	return 0;
 }

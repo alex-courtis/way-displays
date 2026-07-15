@@ -24,13 +24,12 @@ struct Cfg {
 	float auto_scale_min;                         // AUTO_SCALE_MIN
 	float auto_scale_max;                         // AUTO_SCALE_MAX
 
+	// by name_desc
 	const struct SImap *scales;                   // SCALE               milliscale
-
 	const struct SPmap *modes;                    // MODE                mode_spmap_equal_init
-
 	const struct SImap *transforms;               // TRANSFORM           wl_output_transform
-
 	const struct Sset *adaptive_sync_off;         // VRR_OFF
+	const struct Sset *max_preferred_refresh;     // MAX_PREFERRED_REFRESH
 
 	char *callback_cmd;                           // CALLBACK_CMD
 
@@ -40,8 +39,6 @@ struct Cfg {
 	enum LogThreshold log_threshold;              // LOG_THRESHOLD
 
 	const struct Pset *disableds;                 // DISABLED
-
-	const struct Sset *max_preferred_refresh;     // MAX_PREFERRED_REFRESH
 };
 
 /*
