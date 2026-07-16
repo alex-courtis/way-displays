@@ -155,8 +155,8 @@ static void print_cfg__all(void **state) {
 			NULL);
 
 	simap_put_many(c->scales,
-			"three", 3000,
-			"four", 4000,
+			"three", (size_t)3000,
+			"four",  (size_t)4000,
 			NULL);
 
 	pset_add(c->disableds, disabled_nd("disabled always"));
@@ -173,7 +173,7 @@ static void print_cfg__all(void **state) {
 			NULL);
 
 	simap_put_many(c->transforms,
-			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
+			"twelve", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
 			NULL);
 
 	sset_add(c->max_preferred_refresh, "legacy");
@@ -196,8 +196,8 @@ static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
 	simap_put_many(c->scales,
-			"three", 3000,
-			"four", 4000,
+			"three", (size_t)3000,
+			"four",  (size_t)4000,
 			NULL);
 
 	spmap_put_many(c->modes,
@@ -207,8 +207,8 @@ static void print_cfg__del(void **state) {
 			NULL);
 
 	simap_put_many(c->transforms,
-			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
-			"thirteen", WL_OUTPUT_TRANSFORM_FLIPPED,
+			"twelve",   (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
+			"thirteen", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
 			NULL);
 
 	print_cfg(INFO, c, true);
@@ -300,8 +300,8 @@ static void print_cfg_commands__ok(void **state) {
 	c->auto_scale = OFF;
 
 	simap_put_many(c->scales,
-			"one", 1000,
-			"two", 2345,
+			"one", (size_t)1000,
+			"two", (size_t)2345,
 			NULL);
 
 	spmap_put_many(c->modes,
@@ -311,7 +311,7 @@ static void print_cfg_commands__ok(void **state) {
 			NULL);
 
 	simap_put_many(c->transforms,
-			"seven", WL_OUTPUT_TRANSFORM_FLIPPED_90,
+			"seven", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED_90,
 			NULL);
 
 	pset_add_many(c->disableds,

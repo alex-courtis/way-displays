@@ -566,8 +566,8 @@ static void desire_scale__user(void **state) {
 	g_cfg->auto_scale = ON;
 
 	simap_put_many(g_cfg->scales,
-			"![Hh]ea.*", 3500,
-			"head1", 7500,
+			"![Hh]ea.*", (size_t)3500,
+			"head1",     (size_t)7500,
 			NULL);
 
 	desire_scale(head);
@@ -609,8 +609,8 @@ static void desire_transform__user(void **state) {
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 
 	simap_put_many(g_cfg->transforms,
-			"head9", WL_OUTPUT_TRANSFORM_270,
-			"head", WL_OUTPUT_TRANSFORM_180,
+			"head9", (size_t)WL_OUTPUT_TRANSFORM_270,
+			"head",  (size_t)WL_OUTPUT_TRANSFORM_180,
 			NULL);
 
 	desire_transform(head);

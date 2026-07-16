@@ -60,8 +60,8 @@ struct Cfg *cfg_all(void) {
 			NULL);
 
 	simap_put_many(cfg->scales,
-			"three", 3000,
-			"four", 4000,
+			"three", (size_t)3000,
+			"four",  (size_t)4000,
 			NULL);
 
 	spmap_put_many(cfg->modes,
@@ -99,7 +99,7 @@ struct Cfg *cfg_all(void) {
 	pset_add(cfg->disableds, disabled);
 
 	simap_put_many(cfg->transforms,
-			"twelve", WL_OUTPUT_TRANSFORM_FLIPPED,
+			"twelve", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
 			NULL);
 
 	return cfg;

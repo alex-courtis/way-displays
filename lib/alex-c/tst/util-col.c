@@ -150,10 +150,10 @@ size_t simap_put_many(const struct SImap* const map, ...) {
 
 	size_t added = 0;
 
-	const void *key;
+	const char *key;
 
 	// NULL terminator is odd vararg: the key
-	while ((key = va_arg(ap, void*))) {
+	while ((key = va_arg(ap, char*))) {
 
 		// trust that a value has been passed, NULL is valid
 		const size_t val = va_arg(ap, size_t);
