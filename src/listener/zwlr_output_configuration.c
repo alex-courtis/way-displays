@@ -14,7 +14,7 @@ static void cleanup(struct Displ *displ,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1,
 		enum DisplState state) {
 
-	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
+	for (const struct PPmapIt *it = ppmap_it(displ->heads); it; it = ppmap_it_next(it)) {
 		struct Head *head = (struct Head*)it->val;
 		if (head->zwlr_config_head) {
 			zwlr_output_configuration_head_v1_destroy(head->zwlr_config_head);

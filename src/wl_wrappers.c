@@ -79,9 +79,9 @@ int _wl_display_read_events(struct wl_display *display, char *file, int line) {
 	return ret;
 }
 
-struct zwlr_output_configuration_v1 *create_zwlr_output_config_listener(void) {
-	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(g_displ->zwlr_output_manager, g_displ->zwlr_output_manager_serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), g_displ);
+struct zwlr_output_configuration_v1 *create_zwlr_output_config_listener(struct Displ *displ) {
+	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
+	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
 
 	return zwlr_config;
 }

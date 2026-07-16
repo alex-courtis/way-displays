@@ -5,6 +5,7 @@
 #include <wayland-util.h>
 #include <yaml.h>
 
+#include "displ.h"
 #include "enum.h"
 #include "head.h"
 #include "mode.h"
@@ -159,7 +160,8 @@ void __wrap_wd_exit_message(const int __status) {
  * wl_wrappers
  */
 
-struct zwlr_output_configuration_v1 *__wrap_create_zwlr_output_config_listener(void) {
+struct zwlr_output_configuration_v1 *__wrap_create_zwlr_output_config_listener(struct Displ *displ) {
+	check_expected_ptr(displ);
 	return mock_ptr_type_checked(struct zwlr_output_configuration_v1*);
 }
 

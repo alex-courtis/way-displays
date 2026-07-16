@@ -16,7 +16,6 @@
 #include <string.h>
 
 #include "cfg/cfg.h"
-#include "displ.h"
 #include "enum.h"
 #include "mode.h"
 #include "ppmap.h"

@@ -121,7 +121,7 @@ static void adaptive_sync(void *data,
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 
-	g_displ_finished_head(zwlr_output_head_v1);
+	displ_finished_head(g_displ, zwlr_output_head_v1);
 
 	zwlr_output_head_v1_destroy(zwlr_output_head_v1);
 }

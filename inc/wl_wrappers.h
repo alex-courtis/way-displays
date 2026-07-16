@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 
+#include "displ.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // use multiple wrappers to disambiguate stacks
@@ -17,8 +18,8 @@ int _wl_display_flush(struct wl_display *display, char *file, int line);
 // returns 0 on success, -1 on epipe, exits otherwise
 int _wl_display_read_events(struct wl_display *display, char *file, int line);
 
-// uses g_displ to zwlr_output_manager_v1_create_configuration and zwlr_output_configuration_v1_add_listener
-struct zwlr_output_configuration_v1 *create_zwlr_output_config_listener(void);
+// zwlr_output_manager_v1_create_configuration and zwlr_output_configuration_v1_add_listener
+struct zwlr_output_configuration_v1 *create_zwlr_output_config_listener(struct Displ *displ);
 
 struct zwlr_output_configuration_head_v1 *_zwlr_output_configuration_v1_enable_head(struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1, struct zwlr_output_head_v1 *head);
 

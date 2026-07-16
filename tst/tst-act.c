@@ -68,6 +68,7 @@ static void act_apply__reapply(void **state) {
 	head->reapply_required = true;
 	ppmap_put(g_displ->heads, zwlr_head, head);
 
+	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
 	expect_int_value(__wrap_print_head, t, INFO);
@@ -86,7 +87,7 @@ static void act_apply__reapply(void **state) {
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 }
 
 static void act_apply__mode(void **state) {
@@ -102,6 +103,7 @@ static void act_apply__mode(void **state) {
 	head->desired.mode = mode;
 	mode->zwlr_mode = zwlr_mode;
 
+	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
 	expect_int_value(__wrap_print_head, t, INFO);
@@ -124,7 +126,7 @@ static void act_apply__mode(void **state) {
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 }
 
 static void act_apply__vrr(void **state) {
@@ -136,6 +138,7 @@ static void act_apply__vrr(void **state) {
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	ppmap_put(g_displ->heads, zwlr_head, head);
 
+	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
 	expect_int_value(__wrap_print_head, t, INFO);
@@ -158,7 +161,7 @@ static void act_apply__vrr(void **state) {
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 }
 
 static void act_apply__disable(void **state) {
@@ -170,6 +173,7 @@ static void act_apply__disable(void **state) {
 	head->desired.enabled = false;
 	ppmap_put(g_displ->heads, zwlr_head, head);
 
+	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
 	expect_int_value(__wrap_print_head_map, t, INFO);
@@ -188,7 +192,7 @@ static void act_apply__disable(void **state) {
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 }
 
 static void act_apply__remainder(void **state) {
@@ -205,6 +209,7 @@ static void act_apply__remainder(void **state) {
 	head->desired.y = 3;
 	ppmap_put(g_displ->heads, zwlr_head, head);
 
+	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
 	expect_int_value(__wrap_print_head_map, t, INFO);
@@ -234,7 +239,7 @@ static void act_apply__remainder(void **state) {
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 }
 
 static void act_handle_success__head_changing_adaptive_sync(void **state) {

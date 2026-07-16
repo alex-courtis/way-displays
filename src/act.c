@@ -52,7 +52,7 @@ void act_handle_success(void) {
 	log_info("Changes successful");
 	callback(INFO, g_displ->delta.human ? g_displ->delta.human : "Changes successful", NULL);
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 }
 
 bool act_handle_cancelled(void) {
@@ -117,13 +117,13 @@ void act_handle_failure(void) {
 			break;
 	}
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 }
 
 void act_apply(void) {
 	const struct PPmap *heads_changing = head_ppmap_init();
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 
 	// determine whether changes are needed before initiating output configuration
 	for (const struct PPmapIt *it = ppmap_val_filter_it(g_displ->heads, (fn_2pred)head_current_not_desired, NULL); it; it = ppmap_it_next(it)) {
@@ -136,7 +136,7 @@ void act_apply(void) {
 	}
 
 	// create and start the listener
-	struct zwlr_output_configuration_v1 *zwlr_config = create_zwlr_output_config_listener();
+	struct zwlr_output_configuration_v1 *zwlr_config = create_zwlr_output_config_listener(g_displ);
 
 	struct PPmapPair pair;
 	struct Head *head;
@@ -146,7 +146,7 @@ void act_apply(void) {
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 
-		displ_delta_init(0, head);
+		displ_delta_init(g_displ, 0, head);
 
 		print_head(INFO, DELTA, head);
 
@@ -164,7 +164,7 @@ void act_apply(void) {
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 
-		displ_delta_init(MODE, head);
+		displ_delta_init(g_displ, MODE, head);
 
 		print_head(INFO, DELTA, head);
 
@@ -182,7 +182,7 @@ void act_apply(void) {
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 
-		displ_delta_init(VRR_OFF, head);
+		displ_delta_init(g_displ, VRR_OFF, head);
 
 		print_head(INFO, DELTA, head);
 
@@ -197,7 +197,7 @@ void act_apply(void) {
 
 	// otherwise apply everything else
 	{
-		displ_delta_init(0, NULL);
+		displ_delta_init(g_displ, 0, NULL);
 
 		print_head_map(INFO, DELTA, heads_changing);
 

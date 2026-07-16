@@ -64,7 +64,7 @@ void displ_free(struct Displ *displ) {
 	if (!displ)
 		return;
 
-	displ_delta_destroy();
+	displ_delta_destroy(g_displ);
 
 	ipmap_free_vals(displ->outputs);
 
@@ -79,22 +79,22 @@ void displ_free(struct Displ *displ) {
 	free(displ);
 }
 
-void displ_delta_init(enum CfgElement element, struct Head *head) {
-	displ_delta_destroy();
+void displ_delta_init(struct Displ *displ, enum CfgElement element, struct Head *head) {
+	displ_delta_destroy(g_displ);
 
-	g_displ->delta.element = element;
+	displ->delta.element = element;
 
-	g_displ->delta.head = head;
+	displ->delta.head = head;
 }
 
-void displ_delta_destroy(void) {
+void displ_delta_destroy(struct Displ *displ) {
 
-	g_displ->delta.element = 0;
+	displ->delta.element = 0;
 
-	g_displ->delta.head = NULL;
+	displ->delta.head = NULL;
 
-	free(g_displ->delta.human);
-	g_displ->delta.human = NULL;
+	free(displ->delta.human);
+	displ->delta.human = NULL;
 }
 
 void g_displ_destroy(void) {
@@ -130,17 +130,17 @@ void displ_add_head(const struct Displ *displ, struct zwlr_output_head_v1 *zwlr_
 	zwlr_output_head_v1_add_listener(zwlr_head, zwlr_output_head_listener(), head);
 }
 
-void g_displ_finished_head(const struct zwlr_output_head_v1 * const zwlr_head) {
-	const struct Head *head = ppmap_get(g_displ->heads, zwlr_head);
+void displ_finished_head(const struct Displ *displ, const struct zwlr_output_head_v1 * const zwlr_head) {
+	const struct Head *head = ppmap_get(displ->heads, zwlr_head);
 	if (!head)
 		return;
 
 	// dummy Head, just for printing
-	pset_add(g_displ->heads_departed, head_dummy_init(head));
+	pset_add(displ->heads_departed, head_dummy_init(head));
 
-	pset_remove(g_displ->heads_arrived, head);
-	pset_remove(g_displ->heads_departed, head);
+	pset_remove(displ->heads_arrived, head);
+	pset_remove(displ->heads_departed, head);
 
-	ppmap_remove_free(g_displ->heads, zwlr_head);
+	ppmap_remove_free(displ->heads, zwlr_head);
 }
 
