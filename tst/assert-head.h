@@ -8,30 +8,6 @@
 #include "head.h"
 #include "pset.h"
 
-void _assert_heads_order(const struct Pset *a, const struct Pset *b, const char * const file, const int line) {
-	if (!pset_equal(a, b)) {
-		char actual[2048];
-		char *ap = actual;
-		*ap = '\0';
-		for (const struct PsetIt *it = pset_it(a); it; it = pset_it_next(it)) {
-			const struct Head *head = it->val;
-			ap += sprintf(ap, "\n .name = '%s', .description = '%s',", head->name, head->description);
-		}
-
-		char expected[2048];
-		char *ep = expected;
-		*ep = '\0';
-		for (const struct PsetIt *it = pset_it(b); it; it = pset_it_next(it)) {
-			const struct Head *head = it->val;
-			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
-		}
-
-		cmocka_print_error("assert_heads_order\nACTUAL:%s\nEXPECTED:%s\n\n", actual, expected);
-		_fail(file, line);
-	}
-}
-#define assert_heads_order(a, b) _assert_heads_order(a, b, __FILE__, __LINE__)
-
 void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char * const file, const int line) {
 	if (head->desired.x != x || head->desired.y != y) {
 		cmocka_print_error("assert_head_position %s (%d, %d) != (%d, %d)\n", head->name, head->desired.x, head->desired.y, x, y);

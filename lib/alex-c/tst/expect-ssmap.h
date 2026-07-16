@@ -18,7 +18,7 @@ static int check_ssmap_equal(CMockaValueData value, CMockaValueData check_data) 
 	} else {
 		fs_file_write("actual.ssmap", ssmap_str(actual), "w");
 		fs_file_write("expected.ssmap", ssmap_str(expected), "w");
-		cmocka_print_error("\n%s != \n%s", ssmap_str(actual), ssmap_str(expected));
+		cmocka_print_error("\n%s != \n%s\n",  ssmap_str(actual), ssmap_str(expected));
 		return false;
 	}
 }

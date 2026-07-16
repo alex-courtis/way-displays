@@ -3,6 +3,7 @@
 #include "assert-head.h"
 #include "assert-log.h"
 #include "assert-mode.h"
+#include "assert-pset.h"
 #include "assert-wl.h"
 #include "expects.h"
 #include "util-col.h"
@@ -108,7 +109,7 @@ static void desire_order__exact_partial_regex(void **state) {
 
 	const struct Pset *heads_ordered = desire_order(order_name_desc, g_displ->heads);
 
-	assert_heads_order(heads_ordered, expected);
+	assert_pset_equal(heads_ordered, expected);
 
 	sset_free(order_name_desc);
 	pset_free(expected);
@@ -155,7 +156,7 @@ static void desire_order__exact_regex_catchall(void **state) {
 
 	const struct Pset *heads_ordered = desire_order(order_name_desc, g_displ->heads);
 
-	assert_heads_order(heads_ordered, expected);
+	assert_pset_equal(heads_ordered, expected);
 
 	sset_free(order_name_desc);
 	pset_free(expected);
@@ -175,7 +176,7 @@ static void desire_order__no_order(void **state) {
 
 	// null/empty order
 	const struct Pset *heads_ordered = desire_order(NULL, g_displ->heads);
-	assert_heads_order(heads_ordered, expected);
+	assert_pset_equal(heads_ordered, expected);
 
 	pset_free(expected);
 	pset_free(heads_ordered);

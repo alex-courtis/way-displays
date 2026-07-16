@@ -11,7 +11,7 @@ void _assert_pset_equal(const struct Pset *a, const struct Pset *b, const char *
 	if (!pset_equal(a, b)) {
 		fs_file_write("actual.pset", pset_str(a), "w");
 		fs_file_write("expected.pset", pset_str(b), "w");
-		cmocka_print_error("\n%s != \n%s", pset_str(a), pset_str(b));
+		cmocka_print_error("\n%s != \n%s\n",  pset_str(a), pset_str(b));
 		_fail(file, line);
 	}
 }
@@ -21,7 +21,7 @@ void _assert_pset_not_equal(const struct Pset *a, const struct Pset *b, const ch
 	if (pset_equal(a, b)) {
 		fs_file_write("actual.pset", pset_str(a), "w");
 		fs_file_write("expected.pset", pset_str(b), "w");
-		cmocka_print_error("\n%s == \n%s", pset_str(a), pset_str(b));
+		cmocka_print_error("\n%s == \n%s\n",  pset_str(a), pset_str(b));
 		_fail(file, line);
 	}
 }

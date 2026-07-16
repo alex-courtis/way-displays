@@ -11,7 +11,7 @@ void _assert_ppmap_equal(const struct PPmap *a, const struct PPmap *b, const cha
 	if (!ppmap_equal(a, b)) {
 		fs_file_write("actual.ppmap", ppmap_str(a), "w");
 		fs_file_write("expected.ppmap", ppmap_str(b), "w");
-		cmocka_print_error("\n%s != \n%s", ppmap_str(a), ppmap_str(b));
+		cmocka_print_error("\n%s != \n%s\n",  ppmap_str(a), ppmap_str(b));
 		_fail(file, line);
 	}
 }
@@ -21,7 +21,7 @@ void _assert_ppmap_not_equal(const struct PPmap *a, const struct PPmap *b, const
 	if (ppmap_equal(a, b)) {
 		fs_file_write("actual.ppmap", ppmap_str(a), "w");
 		fs_file_write("expected.ppmap", ppmap_str(b), "w");
-		cmocka_print_error("\n%s == \n%s", ppmap_str(a), ppmap_str(b));
+		cmocka_print_error("\n%s == \n%s\n",  ppmap_str(a), ppmap_str(b));
 		_fail(file, line);
 	}
 }

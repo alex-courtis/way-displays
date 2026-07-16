@@ -23,15 +23,6 @@
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-struct Head *head_init(void) {
-	struct Head *head = calloc(1, sizeof(struct Head));
-
-	head->modes = mode_pset_ptr_init();
-	head->modes_failed = mode_pset_ptr_init();
-
-	return head;
-}
-
 // dummy head for departure printing
 static struct Head *head_dummy_init(struct Head *head) {
 	struct Head *dummy = head_init();
@@ -42,8 +33,28 @@ static struct Head *head_dummy_init(struct Head *head) {
 	return dummy;
 }
 
+static char *head_str(const struct Head *head) {
+	return sprintf_alloc(
+			".name = \"%s\", .description = \"%s\", ",
+			head->name,
+			head->description
+			);
+}
+
+struct Head *head_init(void) {
+	struct Head *head = calloc(1, sizeof(struct Head));
+
+	head->modes = mode_pset_ptr_init();
+	head->modes_failed = mode_pset_ptr_init();
+
+	return head;
+}
+
 const struct Pset *head_pset_init(void) {
-	const struct PsetParams params = { .free_val = (fn_free)head_free, };
+	const struct PsetParams params = {
+		.str_val = (fn_str)head_str,
+		.free_val = (fn_free)head_free,
+	};
 	return pset_init_with(params);
 }
 

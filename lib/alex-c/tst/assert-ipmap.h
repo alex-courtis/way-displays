@@ -11,7 +11,7 @@ void _assert_ipmap_equal(const struct IPmap *a, const struct IPmap *b, const cha
 	if (!ipmap_equal(a, b)) {
 		fs_file_write("actual.ipmap", ipmap_str(a), "w");
 		fs_file_write("expected.ipmap", ipmap_str(b), "w");
-		cmocka_print_error("\n%s != \n%s", ipmap_str(a), ipmap_str(b));
+		cmocka_print_error("\n%s != \n%s\n",  ipmap_str(a), ipmap_str(b));
 		_fail(file, line);
 	}
 }
@@ -21,7 +21,7 @@ void _assert_ipmap_not_equal(const struct IPmap *a, const struct IPmap *b, const
 	if (ipmap_equal(a, b)) {
 		fs_file_write("actual.ipmap", ipmap_str(a), "w");
 		fs_file_write("expected.ipmap", ipmap_str(b), "w");
-		cmocka_print_error("\n%s == \n%s", ipmap_str(a), ipmap_str(b));
+		cmocka_print_error("\n%s == \n%s\n",  ipmap_str(a), ipmap_str(b));
 		_fail(file, line);
 	}
 }

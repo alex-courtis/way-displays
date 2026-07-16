@@ -11,7 +11,7 @@ void _assert_spmap_equal(const struct SPmap *a, const struct SPmap *b, const cha
 	if (!spmap_equal(a, b)) {
 		fs_file_write("actual.spmap", spmap_str(a), "w");
 		fs_file_write("expected.spmap", spmap_str(b), "w");
-		cmocka_print_error("\n%s != \n%s", spmap_str(a), spmap_str(b));
+		cmocka_print_error("\n%s != \n%s\n",  spmap_str(a), spmap_str(b));
 		_fail(file, line);
 	}
 }
@@ -21,7 +21,7 @@ void _assert_spmap_not_equal(const struct SPmap *a, const struct SPmap *b, const
 	if (spmap_equal(a, b)) {
 		fs_file_write("actual.spmap", spmap_str(a), "w");
 		fs_file_write("expected.spmap", spmap_str(b), "w");
-		cmocka_print_error("\n%s == \n%s", spmap_str(a), spmap_str(b));
+		cmocka_print_error("\n%s == \n%s\n",  spmap_str(a), spmap_str(b));
 		_fail(file, line);
 	}
 }

@@ -18,7 +18,7 @@ static int check_simap_equal(CMockaValueData value, CMockaValueData check_data) 
 	} else {
 		fs_file_write("actual.simap", simap_str(actual), "w");
 		fs_file_write("expected.simap", simap_str(expected), "w");
-		cmocka_print_error("\n%s != \n%s", simap_str(actual), simap_str(expected));
+		cmocka_print_error("\n%s != \n%s\n",  simap_str(actual), simap_str(expected));
 		return false;
 	}
 }
