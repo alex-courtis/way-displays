@@ -87,7 +87,6 @@ void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	// TODO this invalid frees on unplug, issue from before head map
 	const struct Pset *modes_orphaned = mode_pset_ptr_init();
 	add_orphaned_mode(modes_orphaned, head, head->mode_preferred);
 	add_orphaned_mode(modes_orphaned, head, head->current.mode);

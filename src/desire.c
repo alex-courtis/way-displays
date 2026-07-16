@@ -198,7 +198,6 @@ static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *c
 	}
 }
 
-// TODO return a set
 const struct Pset *desire_order(const struct Sset * const order_name_desc, const struct PPmap *heads) {
 
 	// buckets for each order_name_desc

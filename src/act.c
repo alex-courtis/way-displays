@@ -121,85 +121,109 @@ void act_handle_failure(void) {
 }
 
 void act_apply(void) {
-	const struct Pset *heads_changing = head_pset_init();
+	const struct PPmap *heads_changing = head_ppmap_init();
 
 	displ_delta_destroy();
 
 	// determine whether changes are needed before initiating output configuration
 	for (const struct PPmapIt *it = ppmap_val_filter_it(g_displ->heads, (fn_2pred)head_current_not_desired_2p, NULL); it; it = ppmap_it_next(it)) {
-		pset_add(heads_changing, it->val);
+		ppmap_put(heads_changing, it->key, it->val);
 	}
 
-	if (pset_size(heads_changing) == 0) {
-		pset_free(heads_changing);
+	if (ppmap_size(heads_changing) == 0) {
+		ppmap_free(heads_changing);
 		return;
 	}
 
 	// create and start the listener
 	struct zwlr_output_configuration_v1 *zwlr_config = create_zwlr_output_config_listener();
 
+	struct PPmapPair pair;
 	struct Head *head;
 
-	if ((head = (struct Head*)ppmap_find_val(g_displ->heads, (fn_2pred)head_reapply_required_2p, NULL).val)) {
+	// 1 - reapply
+	pair = ppmap_find_val(heads_changing, (fn_2pred)head_reapply_required_2p, NULL);
+	if (pair.val) {
+		head = (struct Head*)pair.val;
+
 		displ_delta_init(0, head);
 
 		print_head(INFO, DELTA, head);
 
-		_zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+		_zwlr_output_configuration_v1_disable_head(zwlr_config, (struct zwlr_output_head_v1*)pair.key);
 
 		g_displ->delta.human = delta_human_reapply(head);
 
 		head->reapply_required = false;
 
-	} else if ((head = (struct Head*)ppmap_find_val(g_displ->heads, (fn_2pred)head_current_mode_not_desired_2p, NULL).val)) {
+		goto apply;
+	}
+
+	// 2 - single mode
+	pair = ppmap_find_val(heads_changing, (fn_2pred)head_current_mode_not_desired_2p, NULL);
+	if (pair.val) {
+		head = (struct Head*)pair.val;
+
 		displ_delta_init(MODE, head);
 
 		print_head(INFO, DELTA, head);
 
 		// mode change in its own operation; mode change desire is always enabled
-		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, (struct zwlr_output_head_v1*)pair.key);
 		_zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
 
 		g_displ->delta.human = delta_human_mode(head);
 
-	} else if ((head = (struct Head*)ppmap_find_val(g_displ->heads, (fn_2pred)head_current_adaptive_sync_not_desired_2p, NULL).val)) {
+		goto apply;
+	}
+
+	// 3 - single VRR
+	pair = ppmap_find_val(heads_changing, (fn_2pred)head_current_adaptive_sync_not_desired_2p, NULL);
+	if (pair.val) {
+		head = (struct Head*)pair.val;
+
 		displ_delta_init(VRR_OFF, head);
 
 		print_head(INFO, DELTA, head);
 
 		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
-		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, (struct zwlr_output_head_v1*)pair.key);
 		_zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
 
 		g_displ->delta.human = delta_human_adaptive_sync(head);
 
-	} else {
+		goto apply;
+	}
+
+	// otherwise apply everything else
+	{
 		displ_delta_init(0, NULL);
 
-		print_head_map(INFO, DELTA, g_displ->heads);
+		print_head_map(INFO, DELTA, heads_changing);
 
 		// all other changes
-		for (const struct PsetIt *it = pset_it(heads_changing); it; it = pset_it_next(it)) {
+		for (const struct PPmapIt *it = ppmap_it(heads_changing); it; it = ppmap_it_next(it)) {
 			head = (struct Head*)it->val;
 
 			if (head->desired.enabled) {
-				head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
+				head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, (void*)it->key);
 				_zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
 				_zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
 				_zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
 			} else {
-				_zwlr_output_configuration_v1_disable_head(zwlr_config, head->zwlr_head);
+				_zwlr_output_configuration_v1_disable_head(zwlr_config, (void*)it->key);
 			}
 		}
 
 		g_displ->delta.human = delta_human(heads_changing);
 	}
 
+apply:
 	_zwlr_output_configuration_v1_apply(zwlr_config);
 
 	g_displ->state = OUTSTANDING;
 
-	pset_free(heads_changing);
+	ppmap_free(heads_changing);
 }
 
 void act(void) {

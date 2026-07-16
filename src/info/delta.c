@@ -10,14 +10,14 @@
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-char *delta_human(const struct Pset * const heads) {
+char *delta_human(const struct PPmap * const heads) {
 	if (!heads) {
 		return NULL;
 	}
 
 	char *delta = NULL;
 
-	for (const struct PsetIt *it = pset_it(heads); it; it = pset_it_next(it)) {
+	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
 		const struct Head * head = it->val;
 
 		// disable in own operation

@@ -31,7 +31,7 @@
 struct State {
 	struct Head *head1;
 	struct Head *head2;
-	const struct PPmap *head_map;
+	const struct PPmap *heads;
 };
 
 int before_each(void **state) {
@@ -41,7 +41,7 @@ int before_each(void **state) {
 
 	g_cfg = cfg_default();
 
-	s->head_map = head_ppmap_init();
+	s->heads = head_ppmap_init();
 
 	s->head1 = head_init();
 
@@ -92,7 +92,7 @@ int before_each(void **state) {
 	s->head1->desired.transform = WL_OUTPUT_TRANSFORM_90;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	ppmap_put(s->head_map, "head1", s->head1);
+	ppmap_put(s->heads, "head1", s->head1);
 
 
 	s->head2 = head_init();
@@ -124,7 +124,7 @@ int before_each(void **state) {
 	s->head2->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	ppmap_put(s->head_map, "head2", s->head2);
+	ppmap_put(s->heads, "head2", s->head2);
 
 	*state = s;
 	return 0;
@@ -135,7 +135,7 @@ int after_each(void **state) {
 
 	struct State *s = *state;
 
-	ppmap_free_vals(s->head_map);
+	ppmap_free_vals(s->heads);
 
 	free(s);
 
@@ -618,7 +618,7 @@ static void print_active__many(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
-	print_list(INFO, s->head_map);
+	print_list(INFO, s->heads);
 
 	char *expected_log = read_file("tst/info/print-list.log");
 	assert_log(INFO, expected_log);

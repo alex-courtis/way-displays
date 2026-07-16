@@ -367,7 +367,6 @@ static void cfg_merge_set__auto_scale(void **state) {
 	cfg_free(merged);
 }
 
-// TODO simap seems broken
 static void cfg_merge_set__scale(void **state) {
 	struct State *s = *state;
 

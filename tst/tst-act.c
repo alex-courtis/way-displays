@@ -4,6 +4,7 @@
 #include "assert-mode.h"
 #include "asserts.h"
 #include "expects.h"
+#include "expect-ppmap.h"
 #include "util-col.h"
 #include "util-init.h"
 
@@ -64,9 +65,8 @@ static void act_apply__reapply(void **state) {
 	struct zwlr_output_configuration_v1 *zwlr_config = (struct zwlr_output_configuration_v1*)"dummy";
 
 	struct Head *head = head_init();
-	head->zwlr_head = zwlr_head;
 	head->reapply_required = true;
-	ppmap_put(g_displ->heads, "h", head);
+	ppmap_put(g_displ->heads, zwlr_head, head);
 
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
@@ -96,8 +96,7 @@ static void act_apply__mode(void **state) {
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
 
 	struct Head *head = head_init();
-	head->zwlr_head = zwlr_head;
-	ppmap_put(g_displ->heads, "h", head);
+	ppmap_put(g_displ->heads, zwlr_head, head);
 
 	struct Mode *mode = mode_h(head);
 	head->desired.mode = mode;
@@ -110,7 +109,7 @@ static void act_apply__mode(void **state) {
 	expect_ptr(__wrap_print_head, head, head);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zwlr_config);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, head->zwlr_head);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, zwlr_head);
 	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_config_head, struct zwlr_output_configuration_head_v1*);
 
 	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, zwlr_output_configuration_head_v1, zwlr_config_head);
@@ -134,9 +133,8 @@ static void act_apply__vrr(void **state) {
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
 
 	struct Head *head = head_init();
-	head->zwlr_head = zwlr_head;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	ppmap_put(g_displ->heads, "h", head);
+	ppmap_put(g_displ->heads, zwlr_head, head);
 
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
@@ -145,7 +143,7 @@ static void act_apply__vrr(void **state) {
 	expect_ptr(__wrap_print_head, head, head);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zwlr_config);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, head->zwlr_head);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, zwlr_head);
 	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_config_head, struct zwlr_output_configuration_head_v1*);
 
 	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_adaptive_sync, zwlr_output_configuration_head_v1, zwlr_config_head);
@@ -168,19 +166,18 @@ static void act_apply__disable(void **state) {
 	struct zwlr_output_configuration_v1 *zwlr_config = (struct zwlr_output_configuration_v1*)"dummy3";
 
 	struct Head *head = head_init();
-	head->zwlr_head = zwlr_head;
 	head->current.enabled = true;
 	head->desired.enabled = false;
-	ppmap_put(g_displ->heads, "h", head);
+	ppmap_put(g_displ->heads, zwlr_head, head);
 
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
 	expect_int_value(__wrap_print_head_map, t, INFO);
 	expect_int_value(__wrap_print_head_map, event, DELTA);
-	expect_ptr(__wrap_print_head_map, heads, g_displ->heads);
+	expect_ppmap(__wrap_print_head_map, heads, g_displ->heads);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, zwlr_output_configuration_v1, zwlr_config);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, head->zwlr_head);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, zwlr_head);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zwlr_config);
 
@@ -200,23 +197,22 @@ static void act_apply__remainder(void **state) {
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
 
 	struct Head *head = head_init();
-	head->zwlr_head = zwlr_head;
 	head->current.enabled = true;
 	head->desired.enabled = true;
 	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
 	head->desired.scale = 1;
 	head->desired.x = 2;
 	head->desired.y = 3;
-	ppmap_put(g_displ->heads, "h", head);
+	ppmap_put(g_displ->heads, zwlr_head, head);
 
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
 	expect_int_value(__wrap_print_head_map, t, INFO);
 	expect_int_value(__wrap_print_head_map, event, DELTA);
-	expect_ptr(__wrap_print_head_map, heads, g_displ->heads);
+	expect_ppmap(__wrap_print_head_map, heads, g_displ->heads);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zwlr_config);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, head->zwlr_head);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, zwlr_head);
 	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_config_head, struct zwlr_output_configuration_head_v1*);
 
 	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_transform, zwlr_output_configuration_head_v1, zwlr_config_head);

@@ -11,7 +11,7 @@
 #include <wayland-client-protocol.h>
 
 #include "head.h"
-#include "pset.h"
+#include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/delta.h"
@@ -19,13 +19,13 @@
 struct State {
 	struct Head *head1;
 	struct Head *head2;
-	const struct Pset *head_set;
+	const struct PPmap *heads;
 };
 
 int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 
-	s->head_set = head_pset_init();
+	s->heads = head_ppmap_init();
 
 	s->head1 = head_n("name1");
 	s->head1->description = strdup("description1");
@@ -48,7 +48,7 @@ int before_each(void **state) {
 	s->head1->desired.mode = mode_h_whr(s->head1, 400, 500, 60000);
 	pset_add(s->head1->modes, s->head1->desired.mode);
 
-	pset_add(s->head_set, s->head1);
+	ppmap_put(s->heads, "head1", s->head1);
 
 
 	s->head2 = head_n("name2");
@@ -71,7 +71,7 @@ int before_each(void **state) {
 	s->head2->desired.mode = mode_h_whr(s->head2, 1400, 1500, 160000);
 	pset_add(s->head2->modes, s->head2->desired.mode);
 
-	pset_add(s->head_set, s->head2);
+	ppmap_put(s->heads, "head2", s->head2);
 
 	*state = s;
 	return 0;
@@ -82,7 +82,7 @@ int after_each(void **state) {
 
 	struct State *s = *state;
 
-	pset_free_vals(s->head_set);
+	ppmap_free_vals(s->heads);
 
 	free(s);
 
@@ -168,7 +168,7 @@ static void delta_human_reapply__(void **state) {
 static void delta_human__all(void **state) {
 	const struct State *s = *state;
 
-	char *deltas = delta_human(s->head_set);
+	char *deltas = delta_human(s->heads);
 
 	assert_str_equal(deltas, ""
 			"description1\n"
@@ -193,7 +193,7 @@ static void delta_human__enabled(void **state) {
 	s->head2->current.enabled = false;
 	s->head2->desired.enabled = true;
 
-	char *deltas = delta_human(s->head_set);
+	char *deltas = delta_human(s->heads);
 
 	assert_str_equal(deltas, ""
 			"description1\n  enabled\n"
@@ -212,7 +212,7 @@ static void delta_human__disabled(void **state) {
 	s->head2->current.enabled = true;
 	s->head2->desired.enabled = false;
 
-	char *deltas = delta_human(s->head_set);
+	char *deltas = delta_human(s->heads);
 
 	assert_str_equal(deltas, ""
 			"description1\n  disabled\n"
