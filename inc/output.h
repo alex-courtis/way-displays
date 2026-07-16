@@ -29,9 +29,6 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t name, str
 
 const struct IPmap *output_ipmap_init(void);
 
-// frees and releases resources
-void output_destroy(struct Output *output);
-
 // output matching (head) name
 bool output_matches_name(const struct Output* const output, const void* const name);
 

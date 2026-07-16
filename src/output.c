@@ -29,12 +29,8 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t name, str
 	return output;
 }
 
-const struct IPmap *output_ipmap_init(void) {
-	const struct IPmapParams params = { .free_val = (fn_free)output_destroy, };
-	return ipmap_init_with(params);
-}
-
-void output_destroy(struct Output *output) {
+// frees and releases resources
+static void output_destroy(struct Output *output) {
 	if (!output)
 		return;
 
@@ -49,6 +45,11 @@ void output_destroy(struct Output *output) {
 	free(output->description);
 
 	free(output);
+}
+
+const struct IPmap *output_ipmap_init(void) {
+	const struct IPmapParams params = { .free_val = (fn_free)output_destroy, };
+	return ipmap_init_with(params);
 }
 
 bool output_matches_name(const struct Output* const output, const void* const name) {

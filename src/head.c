@@ -32,7 +32,8 @@ struct Head *head_init(void) {
 	return head;
 }
 
-struct Head *head_dummy_init(struct Head *head) {
+// dummy head for departure printing
+static struct Head *head_dummy_init(struct Head *head) {
 	struct Head *dummy = head_init();
 
 	dummy->name = strdup(head->name ? head->name : "???");

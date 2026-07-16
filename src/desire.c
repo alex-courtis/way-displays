@@ -17,7 +17,6 @@
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
@@ -39,11 +38,11 @@ void desire(void) {
 		desire_reapply(head);
 	}
 
-	struct Pslist *heads_ordered = desire_order(g_cfg->order_name_desc, g_displ->heads);
+	const struct Pset *heads_ordered = desire_order(g_cfg->order_name_desc, g_displ->heads);
 
 	desire_positions(heads_ordered);
 
-	pslist_free(&heads_ordered);
+	pset_free(heads_ordered);
 }
 
 void desire_enabled(struct Head *head) {
@@ -200,7 +199,7 @@ static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *c
 }
 
 // TODO return a set
-struct Pslist *desire_order(const struct Sset * const order_name_desc, const struct PPmap *heads) {
+const struct Pset *desire_order(const struct Sset * const order_name_desc, const struct PPmap *heads) {
 
 	// buckets for each order_name_desc
 	const struct SPmapParams params = { .free_val = (fn_free)pset_free, };
@@ -224,23 +223,19 @@ struct Pslist *desire_order(const struct Sset * const order_name_desc, const str
 	// add the remainder that didn't match
 	pset_add_all(sorted, candidates);
 
-	struct Pslist *sorted_list = pset_pslist(sorted);
-
 	pset_free(candidates);
 	spmap_free_vals(buckets);
-	pset_free(sorted);
 
-	return sorted_list;
+	return sorted;
 }
 
-void desire_positions(struct Pslist *heads) {
-	struct Head *head;
+void desire_positions(const struct Pset *heads_sorted) {
 	int32_t tallest = 0, widest = 0, x = 0, y = 0;
 
 	// find tallest/widest
-	for (struct Pslist *i = heads; i; i = i->nex) {
-		head = i->val;
-		if (!head || !head->desired.mode || !head->desired.enabled) {
+	for (const struct PsetIt *it = pset_it(heads_sorted); it; it = pset_it_next(it)) {
+		const struct Head *head = it->val;
+		if (!head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
 		if (head->scaled.height > tallest) {
@@ -252,9 +247,9 @@ void desire_positions(struct Pslist *heads) {
 	}
 
 	// arrange each in the predefined order
-	for (struct Pslist *i = heads; i; i = i->nex) {
-		head = i->val;
-		if (!head || !head->desired.mode || !head->desired.enabled) {
+	for (const struct PsetIt *it = pset_it(heads_sorted); it; it = pset_it_next(it)) {
+		struct Head *head = (struct Head*)it->val;
+		if (!head->desired.mode || !head->desired.enabled) {
 			continue;
 		}
 

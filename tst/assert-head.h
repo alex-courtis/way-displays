@@ -6,24 +6,23 @@
 #include <stdio.h>
 
 #include "head.h"
-#include "pslist.h"
+#include "pset.h"
 
-// TODO replace with set/map
-void _assert_heads_order(struct Pslist *a, struct Pslist *b, const char * const file, const int line) {
-	if (!pslist_equal(a, b, NULL)) {
+void _assert_heads_order(const struct Pset *a, const struct Pset *b, const char * const file, const int line) {
+	if (!pset_equal(a, b)) {
 		char actual[2048];
 		char *ap = actual;
 		*ap = '\0';
-		for (struct Pslist *i = a; i; i = i->nex) {
-			const struct Head *head = (struct Head*)i->val;
+		for (const struct PsetIt *it = pset_it(a); it; it = pset_it_next(it)) {
+			const struct Head *head = it->val;
 			ap += sprintf(ap, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 
 		char expected[2048];
 		char *ep = expected;
 		*ep = '\0';
-		for (struct Pslist *i = b; i; i = i->nex) {
-			const struct Head *head = (struct Head*)i->val;
+		for (const struct PsetIt *it = pset_it(b); it; it = pset_it_next(it)) {
+			const struct Head *head = it->val;
 			ep += sprintf(ep, "\n .name = '%s', .description = '%s',", head->name, head->description);
 		}
 

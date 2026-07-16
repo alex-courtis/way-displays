@@ -2,7 +2,6 @@
 
 #include "assert-cfg.h"
 #include "assert-log.h"
-#include "assert-simap.h"
 #include "asserts.h"
 #include "util-col.h"
 #include "util-data.h"

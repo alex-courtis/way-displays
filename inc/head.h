@@ -66,9 +66,6 @@ struct Head {
 
 struct Head *head_init(void);
 
-// dummy head for departure printing
-struct Head *head_dummy_init(struct Head *head);
-
 const struct Pset *head_pset_init(void);
 
 const struct PPmap *head_ppmap_init(void);
