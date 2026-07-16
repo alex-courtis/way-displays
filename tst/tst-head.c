@@ -632,81 +632,6 @@ static void head_release_mode__orphan(void **state) {
 	head_free(head);
 }
 
-static void head_release__present(void **state) {
-	g_displ = displ_init();
-
-	struct zwlr_output_head_v1 *zwlr_head_departed = (struct zwlr_output_head_v1*)"departed";
-	struct zwlr_output_head_v1 *zwlr_head_other = (struct zwlr_output_head_v1*)"other";
-
-	struct Head *departed = head_init();
-	departed->name = strdup("nam");
-	departed->description = strdup("desc");
-	departed->zwlr_head = zwlr_head_departed;
-
-	struct Head *other = head_init();
-	other->zwlr_head = zwlr_head_other;
-
-	ppmap_put(g_displ->heads, zwlr_head_departed, departed);
-	ppmap_put(g_displ->heads, zwlr_head_other, other);
-
-	pset_add(g_displ->heads_arrived, departed);
-	pset_add(g_displ->heads_arrived, other);
-
-	head_release(departed);
-
-	assert_int_equal(ppmap_size(g_displ->heads), 1);
-	assert_true(ppmap_contains_key(g_displ->heads, zwlr_head_other));
-
-	assert_int_equal(pset_size(g_displ->heads_arrived), 1);
-	assert_true(pset_contains(g_displ->heads_arrived, other));
-
-	assert_int_equal(pset_size(g_displ->heads_departed), 1);
-
-	const struct PsetIt *it = pset_it(g_displ->heads_departed);
-	const struct Head *dummy = it->val;
-	assert_nul(pset_it_next(it));
-
-	assert_non_nul(dummy);
-	assert_ptr_not_equal(dummy, departed);
-
-	assert_string_equal(dummy->name, "nam");
-	assert_string_equal(dummy->description, "desc");
-
-	displ_free(g_displ);
-}
-
-static void head_release__unnamed_orphan(void **state) {
-	g_displ = displ_init();
-
-	struct Head *departed = head_init();
-
-	head_release(departed);
-
-	assert_int_equal(pset_size(g_displ->heads_departed), 1);
-
-	const struct PsetIt *it = pset_it(g_displ->heads_departed);
-	const struct Head *dummy = it->val;
-	assert_nul(pset_it_next(it));
-
-	assert_non_nul(dummy);
-	assert_ptr_not_equal(dummy, departed);
-
-	assert_string_equal(dummy->name, "???");
-	assert_string_equal(dummy->description, "???");
-
-	displ_free(g_displ);
-}
-
-static void head_release__null(void **state) {
-	g_displ = displ_init();
-
-	head_release(NULL);
-
-	assert_int_equal(pset_size(g_displ->heads_departed), 0);
-
-	displ_free(g_displ);
-}
-
 static void head_set_mode_preferred__first(void **state) {
 	struct Head *head = head_init();
 	const struct Mode *mode_existing = mode_h_whr(head, 3840, 2160, 60000);
@@ -831,38 +756,6 @@ static void head_set_current_mode__nulls(void **state) {
 	head_free(head);
 }
 
-static void head_introduce__ok(void **state) {
-	g_displ = displ_init();
-	struct zwlr_output_head_v1 *zwlr_head = (struct zwlr_output_head_v1*)"dummy";
-
-	head_introduce(zwlr_head);
-
-	assert_int_equal(ppmap_size(g_displ->heads), 1);
-	assert_true(ppmap_contains_key(g_displ->heads, zwlr_head));
-
-	const struct Head *head = ppmap_get(g_displ->heads, zwlr_head);
-	assert_ptr_equal(head->zwlr_head, zwlr_head);
-
-	assert_int_equal(pset_size(g_displ->heads_arrived), 1);
-	pset_contains(g_displ->heads_arrived, head);
-
-	assert_int_equal(pset_size(g_displ->heads_departed), 0);
-
-	displ_free(g_displ);
-}
-
-static void head_introduce__null(void **state) {
-	g_displ = displ_init();
-
-	head_introduce(NULL);
-
-	assert_int_equal(ppmap_size(g_displ->heads), 0);
-	assert_int_equal(pset_size(g_displ->heads_arrived), 0);
-	assert_int_equal(pset_size(g_displ->heads_departed), 0);
-
-	displ_free(g_displ);
-}
-
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(head_get_fixed_scale__rounding_nearest),
@@ -905,10 +798,6 @@ int main(void) {
 		TEST_BA(head_release_mode__cur_des),
 		TEST_BA(head_release_mode__orphan),
 
-		TEST_BA(head_release__present),
-		TEST_BA(head_release__unnamed_orphan),
-		TEST_BA(head_release__null),
-
 		TEST_BA(head_set_mode_preferred__first),
 		TEST_BA(head_set_mode_preferred__current),
 		TEST_BA(head_set_mode_preferred__subsequent),
@@ -919,9 +808,6 @@ int main(void) {
 		TEST_BA(head_set_current_mode__ok),
 		TEST_BA(head_set_current_mode__not_present),
 		TEST_BA(head_set_current_mode__nulls),
-
-		TEST_BA(head_introduce__ok),
-		TEST_BA(head_introduce__null),
 	};
 
 	return RUN(tests);

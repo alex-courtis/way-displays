@@ -23,16 +23,6 @@
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-// dummy head for departure printing
-static struct Head *head_dummy_init(struct Head *head) {
-	struct Head *dummy = head_init();
-
-	dummy->name = strdup(head->name ? head->name : "???");
-	dummy->description = strdup(head->description ? head->description : "???");
-
-	return dummy;
-}
-
 static char *head_str(const struct Head *head) {
 	return sprintf_alloc(
 			".name = \"%s\", .description = \"%s\", ",
@@ -50,6 +40,16 @@ struct Head *head_init(void) {
 	return head;
 }
 
+// dummy head for departure printing
+struct Head *head_dummy_init(const struct Head * const head) {
+	struct Head *dummy = head_init();
+
+	dummy->name = strdup(head->name ? head->name : "???");
+	dummy->description = strdup(head->description ? head->description : "???");
+
+	return dummy;
+}
+
 const struct Pset *head_pset_init(void) {
 	const struct PsetParams params = {
 		.str_val = (fn_str)head_str,
@@ -61,19 +61,6 @@ const struct Pset *head_pset_init(void) {
 const struct PPmap *head_ppmap_init(void) {
 	const struct PPmapParams params = { .free_val = (fn_free)head_free, };
 	return ppmap_init_with(params);
-}
-
-struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head) {
-	if (!zwlr_head)
-		return NULL;
-
-	struct Head *head = head_init();
-	head->zwlr_head = zwlr_head;
-
-	ppmap_put(g_displ->heads, zwlr_head, head);
-	pset_add(g_displ->heads_arrived, head);
-
-	return head;
 }
 
 // add mode to modes_orphaned if it's not present in modes or failed modes
@@ -103,21 +90,6 @@ void head_free(struct Head *head) {
 	free(head->serial_number);
 
 	free(head);
-}
-
-void head_release(struct Head * const head) {
-	if (!head)
-		return;
-
-	// dummy Head, just for printing
-	pset_add(g_displ->heads_departed, head_dummy_init(head));
-
-	pset_remove(g_displ->heads_arrived, head);
-	pset_remove(g_displ->heads_departed, head);
-
-	ppmap_remove(g_displ->heads, head->zwlr_head);
-
-	head_free(head);
 }
 
 void head_release_mode(struct Mode *mode) {

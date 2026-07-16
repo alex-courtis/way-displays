@@ -51,11 +51,18 @@ void g_displ_init(void);
 // free outputs and delta
 void displ_free(struct Displ *displ);
 
+// TODO should some of these be g_ ?
 void displ_delta_init(enum CfgElement element, struct Head *head);
 
 void displ_delta_destroy(void);
 
 // free and release all resources
 void g_displ_destroy(void);
+
+// instantiate an arrived head
+void displ_add_head(const struct Displ *displ, struct zwlr_output_head_v1 *zwlr_head);
+
+// remove and free a head, putting a head_dummy_init in g_displ->heads_departed
+void g_displ_finished_head(const struct zwlr_output_head_v1 * const zwlr_head);
 
 #endif // DISPL_H

@@ -25,8 +25,6 @@ struct HeadState {
 
 struct Head {
 
-	struct zwlr_output_head_v1 *zwlr_head;
-
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
 	const struct Pset* modes;          // mode_pset_ptr_init
@@ -66,18 +64,14 @@ struct Head {
 
 struct Head *head_init(void);
 
+// dummy head for departure printing
+struct Head *head_dummy_init(const struct Head * const head);
+
 const struct Pset *head_pset_init(void);
 
 const struct PPmap *head_ppmap_init(void);
 
-// TODO move to displ
-// init a head, adding it to g_displ->heads and g_displ->heads_arrived
-struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head);
-
 void head_free(struct Head *head);
-
-// free a head, putting a head_dummy_init in g_displ->heads_departed
-void head_release(struct Head * const head);
 
 // remove a mode from the head, including current/desired, freeing it
 void head_release_mode(struct Mode *mode);

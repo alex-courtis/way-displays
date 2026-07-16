@@ -12,12 +12,7 @@ static void head(void *data,
 		struct zwlr_output_manager_v1 *zwlr_output_manager_v1,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 
-	struct Head *head = head_introduce(zwlr_output_head_v1);
-
-	if (!head)
-		return;
-
-	zwlr_output_head_v1_add_listener(zwlr_output_head_v1, zwlr_output_head_listener(), head);
+	displ_add_head(data, zwlr_output_head_v1);
 }
 
 static void done(void *data,

@@ -4,6 +4,7 @@
 
 #include "listeners.h"
 
+#include "displ.h"
 #include "head.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -120,7 +121,7 @@ static void adaptive_sync(void *data,
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
 
-	head_release(data);
+	g_displ_finished_head(zwlr_output_head_v1);
 
 	zwlr_output_head_v1_destroy(zwlr_output_head_v1);
 }

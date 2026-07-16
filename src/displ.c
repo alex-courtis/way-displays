@@ -118,3 +118,29 @@ void g_displ_destroy(void) {
 	g_displ = NULL;
 }
 
+void displ_add_head(const struct Displ *displ, struct zwlr_output_head_v1 *zwlr_head) {
+	if (!zwlr_head)
+		return;
+
+	struct Head *head = head_init();
+
+	ppmap_put(displ->heads, zwlr_head, head);
+	pset_add(displ->heads_arrived, head);
+
+	zwlr_output_head_v1_add_listener(zwlr_head, zwlr_output_head_listener(), head);
+}
+
+void g_displ_finished_head(const struct zwlr_output_head_v1 * const zwlr_head) {
+	const struct Head *head = ppmap_get(g_displ->heads, zwlr_head);
+	if (!head)
+		return;
+
+	// dummy Head, just for printing
+	pset_add(g_displ->heads_departed, head_dummy_init(head));
+
+	pset_remove(g_displ->heads_arrived, head);
+	pset_remove(g_displ->heads_departed, head);
+
+	ppmap_remove_free(g_displ->heads, zwlr_head);
+}
+
