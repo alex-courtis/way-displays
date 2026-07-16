@@ -32,6 +32,7 @@ struct Head {
 	const struct Pset* modes;          // mode_pset_ptr_init
 	const struct Pset *modes_failed;   // moved from modes
 
+	// TODO modes/modes_failed maps, with preferred, current and desired as keys
 	const struct Mode *mode_preferred; // pointer into modes
 
 	char *name;

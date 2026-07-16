@@ -116,6 +116,9 @@ void head_release_mode(struct Mode *mode) {
 	struct Head *head = mode->head;
 
 	if (head) {
+		if (head->mode_preferred == mode) {
+			head->mode_preferred = NULL;
+		}
 		if (head->desired.mode == mode) {
 			head->desired.mode = NULL;
 		}
