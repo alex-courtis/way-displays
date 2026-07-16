@@ -343,12 +343,12 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 		return;
 
 	if (head->desired.enabled) {
-		if (head_current_mode_not_desired(head)) {
+		if (head_current_mode_not_desired(head, NULL)) {
 			// mode changes happen in their own operation
 			if (!head->current.enabled || head->current.mode != head->desired.mode) {
 				print_mode(t, head->desired.mode);
 			}
-		} else if (head_current_adaptive_sync_not_desired(head)) {
+		} else if (head_current_adaptive_sync_not_desired(head, NULL)) {
 			// adaptive sync changes happen in their own operation
 			log_(t, "    VRR:       %s", head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 		} else {
@@ -432,7 +432,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 				log_(t, "    desc:      '%s'", head->description);
 			break;
 		case DELTA:
-			if (head_current_not_desired(head) || head_reapply_required(head)) {
+			if (head_current_not_desired(head, NULL) || head_reapply_required(head, NULL)) {
 				log_(t, NULL);
 				log_(t, "%s Changing:", head->name);
 				log_(t, "  from:");
@@ -526,15 +526,15 @@ void print_head_queue(const enum LogThreshold t, const struct Displ *displ, cons
 		const struct Head *head = it->val;
 
 		// granular reapplies first
-		if (head_reapply_required(head))
+		if (head_reapply_required(head, NULL))
 			reapply = sprintf_append(reapply, " %s:reapply ;", head->name);
 
 		// granular mode
-		if (head_current_mode_not_desired(head))
+		if (head_current_mode_not_desired(head, NULL))
 			mode = sprintf_append(mode, " %s:mode ;", head->name);
 
 		// granular vrr
-		if (head_current_adaptive_sync_not_desired(head))
+		if (head_current_adaptive_sync_not_desired(head, NULL))
 			vrr = sprintf_append(vrr, " %s:vrr ;", head->name);
 
 		// mass disable

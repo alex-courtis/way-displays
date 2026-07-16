@@ -315,10 +315,7 @@ bool head_name_desc_matches_head(const char * const name_desc, const struct Head
 	return head_matches_name_desc(head, name_desc);
 }
 
-bool head_current_not_desired_2p(const struct Head * const head, const void * const unused) {
-	return head_current_not_desired(head);
-}
-bool head_current_not_desired(const struct Head * const head) {
+bool head_current_not_desired(const struct Head * const head, const void * const unused) {
 	return (head &&
 			(head->reapply_required ||
 			 head->desired.mode != head->current.mode ||
@@ -330,24 +327,15 @@ bool head_current_not_desired(const struct Head * const head) {
 			 head->desired.adaptive_sync != head->current.adaptive_sync));
 }
 
-bool head_current_mode_not_desired_2p(const struct Head * const head, const void * const unused) {
-	return head_current_mode_not_desired(head);
-}
-bool head_current_mode_not_desired(const struct Head * const head) {
+bool head_current_mode_not_desired(const struct Head * const head, const void * const unused) {
 	return (head && head->desired.mode != head->current.mode);
 }
 
-bool head_current_adaptive_sync_not_desired_2p(const struct Head * const head, const void * const unused) {
-	return head_current_adaptive_sync_not_desired(head);
-}
-bool head_current_adaptive_sync_not_desired(const struct Head * const head) {
+bool head_current_adaptive_sync_not_desired(const struct Head * const head, const void * const unused) {
 	return (head && head->desired.adaptive_sync != head->current.adaptive_sync);
 }
 
-bool head_reapply_required_2p(const struct Head * const head, const void * const unused) {
-	return head_reapply_required(head);
-}
-bool head_reapply_required(const struct Head * const head) {
+bool head_reapply_required(const struct Head * const head, const void * const unused) {
 	return (head && head->reapply_required);
 }
 

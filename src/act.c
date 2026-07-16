@@ -37,7 +37,7 @@ void act_handle_success(void) {
 
 			case VRR_OFF:
 				// sway reports adaptive sync failure as success
-				if (head_current_adaptive_sync_not_desired(head)) {
+				if (head_current_adaptive_sync_not_desired(head, NULL)) {
 					act_handle_failure();
 					return;
 				}
@@ -98,7 +98,7 @@ void act_handle_failure(void) {
 		case VRR_OFF:
 			if (head) {
 				// river reports adaptive sync failure as failure
-				if (head_current_adaptive_sync_not_desired(head)) {
+				if (head_current_adaptive_sync_not_desired(head, NULL)) {
 
 					print_adaptive_sync_fail(WARNING, head);
 					callback_adaptive_sync_fail(WARNING, head);
@@ -126,7 +126,7 @@ void act_apply(void) {
 	displ_delta_destroy();
 
 	// determine whether changes are needed before initiating output configuration
-	for (const struct PPmapIt *it = ppmap_val_filter_it(g_displ->heads, (fn_2pred)head_current_not_desired_2p, NULL); it; it = ppmap_it_next(it)) {
+	for (const struct PPmapIt *it = ppmap_val_filter_it(g_displ->heads, (fn_2pred)head_current_not_desired, NULL); it; it = ppmap_it_next(it)) {
 		ppmap_put(heads_changing, it->key, it->val);
 	}
 
@@ -142,7 +142,7 @@ void act_apply(void) {
 	struct Head *head;
 
 	// 1 - reapply
-	pair = ppmap_find_val(heads_changing, (fn_2pred)head_reapply_required_2p, NULL);
+	pair = ppmap_find_val(heads_changing, (fn_2pred)head_reapply_required, NULL);
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 
@@ -160,7 +160,7 @@ void act_apply(void) {
 	}
 
 	// 2 - single mode
-	pair = ppmap_find_val(heads_changing, (fn_2pred)head_current_mode_not_desired_2p, NULL);
+	pair = ppmap_find_val(heads_changing, (fn_2pred)head_current_mode_not_desired, NULL);
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 
@@ -178,7 +178,7 @@ void act_apply(void) {
 	}
 
 	// 3 - single VRR
-	pair = ppmap_find_val(heads_changing, (fn_2pred)head_current_adaptive_sync_not_desired_2p, NULL);
+	pair = ppmap_find_val(heads_changing, (fn_2pred)head_current_adaptive_sync_not_desired, NULL);
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 

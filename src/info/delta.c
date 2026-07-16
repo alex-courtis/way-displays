@@ -32,7 +32,7 @@ char *delta_human(const struct PPmap * const heads) {
 			continue;
 		}
 
-		if (head_current_not_desired(head)) {
+		if (head_current_not_desired(head, NULL)) {
 			delta = sprintf_append(delta, "%s\n", head_human(head));
 
 			if (head->current.scale != head->desired.scale) {
