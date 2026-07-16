@@ -3,10 +3,8 @@
 
 #include <cmocka.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "head.h"
-#include "pset.h"
 
 void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char * const file, const int line) {
 	if (head->desired.x != x || head->desired.y != y) {

@@ -12,6 +12,7 @@
 
 #include "head.h"
 #include "ppmap.h"
+#include "pset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/delta.h"

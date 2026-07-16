@@ -6,7 +6,7 @@
 #include "enum.h"
 #include "head.h"
 #include "mode.h"
-#include "pset.h"
+#include "ppmap.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 

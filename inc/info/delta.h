@@ -2,7 +2,7 @@
 #define DELTA_H
 
 #include "head.h"
-#include "pset.h"
+#include "ppmap.h"
 
 // all changes between desired and current
 char *delta_human(const struct PPmap * const heads);
