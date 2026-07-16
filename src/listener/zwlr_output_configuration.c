@@ -5,7 +5,7 @@
 #include "displ.h"
 #include "enum.h"
 #include "head.h"
-#include "pslist.h"
+#include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Displ data
@@ -14,8 +14,8 @@ static void cleanup(struct Displ *displ,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1,
 		enum DisplState state) {
 
-	for (struct Pslist *i = g_heads; i; i = i->nex) {
-		struct Head *head = i->val;
+	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
+		struct Head *head = (struct Head*)it->val;
 		if (head->zwlr_config_head) {
 			zwlr_output_configuration_head_v1_destroy(head->zwlr_config_head);
 			head->zwlr_config_head = NULL;

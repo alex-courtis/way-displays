@@ -10,11 +10,13 @@
 #include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
+#include "displ.h"
 #include "enum.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
+#include "ppmap.h"
 #include "pset.h"
 #include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -162,7 +164,7 @@ struct IpcOperation *ipc_response(void) {
 
 	pset_add(head0->modes_failed, mode_h_whr(head0, 16, 17, 18));
 
-	pslist_append(&g_heads, head0);
+	ppmap_put(g_displ->heads, "head0", head0);
 
 	return ipc_operation;
 }

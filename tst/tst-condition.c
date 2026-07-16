@@ -1,5 +1,6 @@
 #include "assert-log.h"
 #include "tst.h"
+#include "util-col.h"
 #include "util-init.h"
 
 #include <cmocka.h>
@@ -7,12 +8,11 @@
 #include <stdlib.h>
 
 #include "cfg/disabled.h"
+#include "displ.h"
 #include "enum.h"
-#include "fn.h"
 #include "head.h"
 #include "lid.h"
 #include "pset.h"
-#include "pslist.h"
 #include "sset.h"
 
 #include "cfg/condition.h"
@@ -25,13 +25,13 @@ static int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 	s->condition = cfg_condition_init();
 
-	struct Head *h1 = head_n("DP-1");
-	struct Head *h2 = head_n("DP-2");
-	struct Head *h3 = head_n("DP-3");
+	g_displ = displ_init();
 
-	pslist_append(&g_heads, h1);
-	pslist_append(&g_heads, h2);
-	pslist_append(&g_heads, h3);
+	ppmap_put_many(g_displ->heads,
+			"1", head_n("DP-1"),
+			"2", head_n("DP-2"),
+			"3", head_n("DP-3"),
+			NULL);
 
 	g_lid = NULL;
 
@@ -45,7 +45,8 @@ static int after_each(void **state) {
 	struct State *s = *state;
 
 	cfg_condition_free(s->condition);
-	pslist_free_vals(&g_heads, (fn_free)head_free);
+
+	displ_free(g_displ);
 
 	free(g_lid);
 	g_lid = NULL;

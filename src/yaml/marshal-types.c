@@ -8,12 +8,14 @@
 #include "cfg/cfg.h"
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
+#include "displ.h"
 #include "enum.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "pset.h"
 #include "pslist.h"
 #include "str.h"
@@ -221,8 +223,11 @@ int yaml_map_from_state(struct MC *c) {
 	if (g_lid)
 		yaml_map_add_node(c, "LID", yaml_map_from_lid(c, g_lid), map);
 
-	if (g_heads)
-		yaml_map_add_pslist(c, "HEADS", g_heads, (fn_yaml_node_from_type)yaml_map_from_head, map);
+	if (ppmap_size(g_displ->heads) > 0) {
+		const struct Pset *set = ppmap_vals_pset(g_displ->heads);
+		yaml_map_add_pset(c, "HEADS", set, (fn_yaml_node_from_type)yaml_map_from_head, map);
+		pset_free(set);
+	}
 
 	return map;
 }

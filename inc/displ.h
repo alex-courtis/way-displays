@@ -27,13 +27,17 @@ struct Displ {
 	char *zwlr_output_manager_interface;
 	uint32_t zwlr_output_manager_serial;
 
+	const struct PPmap *heads;          // head_ppmap_init - Heads by zwlr_output_head_v1
+	const struct Pset *heads_arrived;   // head_pset_init  - pointers to heads
+	const struct Pset *heads_departed;  // head_pset_init  - dummy heads for printing
+
 	// wayland output manager
 	struct zxdg_output_manager_v1 *zxdg_output_manager;
 	uint32_t zxdg_output_manager_name;
 	uint32_t zxdg_output_manager_version;
 	char *zxdg_output_manager_interface;
 
-	const struct IPmap *outputs; // Outputs by WL global name
+	const struct IPmap *outputs; // output_ipmap_init - Outputs by uint32_t name
 
 	enum DisplState state;
 	struct DisplDelta delta;

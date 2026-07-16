@@ -10,21 +10,18 @@
 
 #include "cfg/cfg.h"
 #include "cfg/disabled.h"
+#include "displ.h"
 #include "enum.h"
 #include "fn.h"
 #include "info/callback.h"
 #include "log.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "spmap.h"
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
-
-struct Pslist *g_heads = NULL;
-struct Pslist *g_heads_arrived = NULL;
-struct Pslist *g_heads_departed = NULL;
 
 struct Head *head_init(void) {
 	struct Head *head = calloc(1, sizeof(struct Head));
@@ -35,6 +32,25 @@ struct Head *head_init(void) {
 	return head;
 }
 
+struct Head *head_dummy_init(struct Head *head) {
+	struct Head *dummy = head_init();
+
+	dummy->name = strdup(head->name ? head->name : "???");
+	dummy->description = strdup(head->description ? head->description : "???");
+
+	return dummy;
+}
+
+const struct Pset *head_pset_init(void) {
+	const struct PsetParams params = { .free_val = (fn_free)head_free, };
+	return pset_init_with(params);
+}
+
+const struct PPmap *head_ppmap_init(void) {
+	const struct PPmapParams params = { .free_val = (fn_free)head_free, };
+	return ppmap_init_with(params);
+}
+
 struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head) {
 	if (!zwlr_head)
 		return NULL;
@@ -42,8 +58,8 @@ struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head) {
 	struct Head *head = head_init();
 	head->zwlr_head = zwlr_head;
 
-	pslist_append(&g_heads, head);
-	pslist_append(&g_heads_arrived, head);
+	ppmap_put(g_displ->heads, zwlr_head, head);
+	pset_add(g_displ->heads_arrived, head);
 
 	return head;
 }
@@ -59,6 +75,7 @@ void head_free(struct Head *head) {
 	if (!head)
 		return;
 
+	// TODO this invalid frees on unplug, issue from before head map
 	const struct Pset *modes_orphaned = mode_pset_ptr_init();
 	add_orphaned_mode(modes_orphaned, head, head->mode_preferred);
 	add_orphaned_mode(modes_orphaned, head, head->current.mode);
@@ -81,17 +98,13 @@ void head_release(struct Head * const head) {
 	if (!head)
 		return;
 
-	static const char *unknown = "???";
-
 	// dummy Head, just for printing
-	struct Head *head_departed = head_init();
-	head_departed->name = strdup(head->name ? head->name : unknown);
-	head_departed->description = strdup(head->description ? head->description : unknown);
-	pslist_append(&g_heads_departed, head_departed);
+	pset_add(g_displ->heads_departed, head_dummy_init(head));
 
-	pslist_remove_all(&g_heads_arrived, NULL, head);
-	pslist_remove_all(&g_heads_departed, NULL, head);
-	pslist_remove_all(&g_heads, NULL, head);
+	pset_remove(g_displ->heads_arrived, head);
+	pset_remove(g_displ->heads_departed, head);
+
+	ppmap_remove(g_displ->heads, head->zwlr_head);
 
 	head_free(head);
 }
@@ -116,14 +129,6 @@ void head_release_mode(struct Mode *mode) {
 	} else {
 		mode_free(mode);
 	}
-}
-
-void g_heads_destroy(void) {
-
-	pslist_free_vals(&g_heads, (fn_free)head_free);
-	pslist_free_vals(&g_heads_departed, (fn_free)head_free);
-
-	pslist_free(&g_heads_arrived);
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
@@ -213,12 +218,12 @@ void head_set_mode_preferred(const struct Mode * const mode) {
 	mode->head->mode_preferred = mode;
 }
 
-void heads_reapply(struct Pslist *heads) {
+void heads_reapply(const struct PPmap *heads) {
 	log_info(NULL);
 	log_info("Reapply:");
 
-	for (struct Pslist *i = heads; i; i = i->nex) {
-		struct Head *head = (struct Head*)i->val;
+	for (const struct PPmapIt *hit = ppmap_it(heads); hit; hit = ppmap_it_next(hit)) {
+		struct Head *head = (struct Head*)hit->val;
 
 		int step = 1;
 
@@ -229,12 +234,12 @@ void heads_reapply(struct Pslist *heads) {
 		if (pset_size(head->modes_failed) > 0) {
 			log_info("    %d: Clear failed modes:", step++);
 
-			for (const struct PsetIt *it = pset_it(head->modes_failed); it; it = pset_it_next(it)) {
+			for (const struct PsetIt *mit = pset_it(head->modes_failed); mit; mit = pset_it_next(mit)) {
 
 				// add all failed back to modes
-				pset_add(head->modes, it->val);
+				pset_add(head->modes, mit->val);
 
-				char *str = mode_str(it->val);
+				char *str = mode_str(mit->val);
 				log_info("      %s", str);
 				free(str);
 			}
@@ -324,6 +329,9 @@ bool head_name_desc_matches_head(const char * const name_desc, const struct Head
 	return head_matches_name_desc(head, name_desc);
 }
 
+bool head_current_not_desired_2p(const struct Head * const head, const void * const unused) {
+	return head_current_not_desired(head);
+}
 bool head_current_not_desired(const struct Head * const head) {
 	return (head &&
 			(head->reapply_required ||
@@ -336,14 +344,23 @@ bool head_current_not_desired(const struct Head * const head) {
 			 head->desired.adaptive_sync != head->current.adaptive_sync));
 }
 
+bool head_current_mode_not_desired_2p(const struct Head * const head, const void * const unused) {
+	return head_current_mode_not_desired(head);
+}
 bool head_current_mode_not_desired(const struct Head * const head) {
 	return (head && head->desired.mode != head->current.mode);
 }
 
+bool head_current_adaptive_sync_not_desired_2p(const struct Head * const head, const void * const unused) {
+	return head_current_adaptive_sync_not_desired(head);
+}
 bool head_current_adaptive_sync_not_desired(const struct Head * const head) {
 	return (head && head->desired.adaptive_sync != head->current.adaptive_sync);
 }
 
+bool head_reapply_required_2p(const struct Head * const head, const void * const unused) {
+	return head_reapply_required(head);
+}
 bool head_reapply_required(const struct Head * const head) {
 	return (head && head->reapply_required);
 }

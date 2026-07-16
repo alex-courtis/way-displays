@@ -17,13 +17,12 @@
 #include "cfg/disabled.h"
 #include "displ.h"
 #include "enum.h"
-#include "fn.h"
 #include "head.h"
 #include "ipmap.h"
 #include "mode.h"
 #include "output.h"
+#include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -32,7 +31,7 @@
 struct State {
 	struct Head *head1;
 	struct Head *head2;
-	struct Pslist *heads;
+	const struct PPmap *head_map;
 };
 
 int before_each(void **state) {
@@ -41,6 +40,8 @@ int before_each(void **state) {
 	g_displ = displ_init();
 
 	g_cfg = cfg_default();
+
+	s->head_map = head_ppmap_init();
 
 	s->head1 = head_init();
 
@@ -91,7 +92,7 @@ int before_each(void **state) {
 	s->head1->desired.transform = WL_OUTPUT_TRANSFORM_90;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	pslist_append(&s->heads, s->head1);
+	ppmap_put(s->head_map, "head1", s->head1);
 
 
 	s->head2 = head_init();
@@ -123,7 +124,7 @@ int before_each(void **state) {
 	s->head2->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	pslist_append(&s->heads, s->head2);
+	ppmap_put(s->head_map, "head2", s->head2);
 
 	*state = s;
 	return 0;
@@ -134,7 +135,7 @@ int after_each(void **state) {
 
 	struct State *s = *state;
 
-	pslist_free_vals(&s->heads, (fn_free)head_free);
+	ppmap_free_vals(s->head_map);
 
 	free(s);
 
@@ -617,7 +618,7 @@ static void print_active__many(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
-	print_list(INFO, s->heads);
+	print_list(INFO, s->head_map);
 
 	char *expected_log = read_file("tst/info/print-list.log");
 	assert_log(INFO, expected_log);
@@ -664,52 +665,52 @@ static void print_mode_fail__head(void **state) {
 }
 
 static void print_heads_outstanding__many(void **state) {
-	struct Pslist *heads = NULL;
+	struct Displ *displ = displ_init();
 
 	will_return_int(__wrap_log_get_threshold, DEBUG);
 
 	struct Head *head_reapply = head_n("re");
 	head_reapply->reapply_required = true;
-	pslist_append(&heads, head_reapply);
+	ppmap_put(displ->heads, "re", head_reapply);
 
 	struct Head *head_mode = head_n("mo");
 	head_mode->desired.mode = mode_init();
-	pslist_append(&heads, head_mode);
+	ppmap_put(displ->heads, "mo", head_mode);
 
 	struct Head *head_disable = head_n("di");
 	head_disable->current.enabled = true;
 	head_disable->desired.enabled = false;
-	pslist_append(&heads, head_disable);
+	ppmap_put(displ->heads, "di", head_disable);
 
 	struct Head *head_vrr = head_n("vr");
 	head_vrr->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head_vrr->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	pslist_append(&heads, head_vrr);
+	ppmap_put(displ->heads, "vr", head_vrr);
 
 	struct Head *head_enable = head_n("en");
 	head_enable->current.enabled = false;
 	head_enable->desired.enabled = true;
-	pslist_append(&heads, head_enable);
+	ppmap_put(displ->heads, "en", head_enable);
 
 	struct Head *head_scale = head_n("sc");
 	head_scale->current.scale = 1;
 	head_scale->desired.scale = 2;
-	pslist_append(&heads, head_scale);
+	ppmap_put(displ->heads, "sc", head_scale);
 
 	struct Head *head_x = head_n("x");
 	head_x->current.x = 1;
 	head_x->desired.x = 2;
-	pslist_append(&heads, head_x);
+	ppmap_put(displ->heads, "x", head_x);
 
 	struct Head *head_y = head_n("y");
 	head_y->current.y = 1;
 	head_y->desired.y = 2;
-	pslist_append(&heads, head_y);
+	ppmap_put(displ->heads, "y", head_y);
 
 	struct Head *head_transform = head_n("tr");
 	head_transform->current.transform = WL_OUTPUT_TRANSFORM_90;
 	head_transform->desired.transform = WL_OUTPUT_TRANSFORM_180;
-	pslist_append(&heads, head_transform);
+	ppmap_put(displ->heads, "tr", head_transform);
 
 	struct Head *head_all = head_n("a");
 	head_all->reapply_required = true;
@@ -720,30 +721,38 @@ static void print_heads_outstanding__many(void **state) {
 	head_all->desired.x = 2;
 	head_all->current.enabled = false;
 	head_all->desired.enabled = true;
-	pslist_append(&heads, head_all);
+	ppmap_put(displ->heads, "a", head_all);
 
-	print_head_queue(DEBUG, "foo", IDLE, heads);
+	displ->state = IDLE;
+	print_head_queue(DEBUG, displ, "foo");
 
 	assert_log(DEBUG, "foo IDLE queue re:reapply ; a:reapply ; mo:mode ; a:mode ; vr:vrr ; a:vrr ; di:disable en:enable sc:geometry x:geometry y:geometry tr:geometry a:enable a:geometry\n");
 
-	pslist_free_vals(&heads, (fn_free)head_free);
+	displ_free(displ);
 }
 
 static void print_heads_outstanding__none(void **state) {
+	struct Displ *displ = displ_init();
 
 	will_return_int(__wrap_log_get_threshold, DEBUG);
 
-	print_head_queue(DEBUG, "foo", IDLE, NULL);
+	displ->state = IDLE;
+	print_head_queue(DEBUG, displ, "foo");
 
 	assert_log(DEBUG, "foo IDLE queue\n");
+
+	displ_free(displ);
 }
 
 static void print_heads_outstanding__below_threshold(void **state) {
-	const struct State *s = *state;
+	struct Displ *displ = displ_init();
 
 	will_return_int(__wrap_log_get_threshold, WARNING);
 
-	print_head_queue(DEBUG, "foo", IDLE, s->heads);
+	displ->state = IDLE;
+	print_head_queue(DEBUG, displ, "foo");
+
+	displ_free(displ);
 }
 
 int main(void) {

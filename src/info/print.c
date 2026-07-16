@@ -17,8 +17,8 @@
 #include "log.h"
 #include "mode.h"
 #include "output.h"
+#include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
@@ -444,23 +444,29 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 	}
 }
 
-void print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct Pslist * const heads) {
-	for (const struct Pslist *i = heads; i; i = i->nex) {
-		print_head(t, event, i->val);
+void print_head_map(const enum LogThreshold t, const enum InfoEvent event, const struct PPmap * const heads) {
+	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
+		print_head(t, event, it->val);
 	}
 }
 
-void print_list(const enum LogThreshold t, const struct Pslist * const heads) {
+void print_head_set(const enum LogThreshold t, const enum InfoEvent event, const struct Pset * const heads) {
+	for (const struct PsetIt *it = pset_it(heads); it; it = pset_it_next(it)) {
+		print_head(t, event, it->val);
+	}
+}
+
+void print_list(const enum LogThreshold t, const struct PPmap * const heads) {
 	if (!heads)
 		return;
 
 	size_t max_len_human = 0;
-	for (const struct Pslist *i = heads; i; i = i->nex) {
-		max_len_human = MAX(strlen(head_human(i->val)), max_len_human);
+	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
+		max_len_human = MAX(strlen(head_human(it->val)), max_len_human);
 	}
 
-	for (const struct Pslist *i = heads; i; i = i->nex) {
-		struct Head *head = i->val;
+	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
+		const struct Head *head = it->val;
 
 		if (head->current.enabled && head->current.mode) {
 			// full info
@@ -506,7 +512,8 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	print_mode(t, mode);
 }
 
-void print_head_queue(const enum LogThreshold t, const char *msg, enum DisplState displ_state, struct Pslist * const heads) {
+// TODO this does not always seem accurate, shows changes for DP-7 when none are needed on first start
+void print_head_queue(const enum LogThreshold t, const struct Displ *displ, const char *msg) {
 	if (log_get_threshold() > DEBUG)
 		return;
 
@@ -515,8 +522,8 @@ void print_head_queue(const enum LogThreshold t, const char *msg, enum DisplStat
 	char *vrr = strdup("");
 	char *remainder = strdup("");
 
-	for (struct Pslist *i = heads; i; i = i->nex) {
-		struct Head *head = i->val;
+	for (const struct PPmapIt *it = ppmap_it(displ->heads); it; it = ppmap_it_next(it)) {
+		const struct Head *head = it->val;
 
 		// granular reapplies first
 		if (head_reapply_required(head))
@@ -546,7 +553,7 @@ void print_head_queue(const enum LogThreshold t, const char *msg, enum DisplStat
 			remainder = sprintf_append(remainder, " %s:geometry", head->name);
 	}
 
-	log_(t, "%s %s queue%s%s%s%s", msg, displ_state_name(displ_state), reapply, mode, vrr, remainder);
+	log_(t, "%s %s queue%s%s%s%s", msg, displ_state_name(displ->state), reapply, mode, vrr, remainder);
 
 	free(reapply);
 	free(mode);

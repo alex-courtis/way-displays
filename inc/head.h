@@ -9,13 +9,8 @@
 #include "cfg/cfg.h"
 #include "enum.h"
 #include "mode.h"
-#include "pslist.h"
+#include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
-
-// global singletons
-extern struct Pslist *g_heads;
-extern struct Pslist *g_heads_arrived;
-extern struct Pslist *g_heads_departed;
 
 struct HeadState {
 	const struct Mode *mode;
@@ -70,19 +65,24 @@ struct Head {
 
 struct Head *head_init(void);
 
-// init a head, adding it to g_heads and g_heads_arrived
+// dummy head for departure printing
+struct Head *head_dummy_init(struct Head *head);
+
+const struct Pset *head_pset_init(void);
+
+const struct PPmap *head_ppmap_init(void);
+
+// TODO move to displ
+// init a head, adding it to g_displ->heads and g_displ->heads_arrived
 struct Head *head_introduce(struct zwlr_output_head_v1 *zwlr_head);
 
 void head_free(struct Head *head);
 
-// free a head, creating a dummy in g_heads_departed
+// free a head, putting a head_dummy_init in g_displ->heads_departed
 void head_release(struct Head * const head);
 
 // remove a mode from the head, including current/desired, freeing it
 void head_release_mode(struct Mode *mode);
-
-// free all g_heads
-void g_heads_destroy(void);
 
 /*
  * mutation
@@ -104,7 +104,7 @@ void head_set_current_mode(struct Head * const head, const struct zwlr_output_mo
 void head_set_mode_preferred(const struct Mode * const mode);
 
 // clear current and failed modes, flag for reapply
-void heads_reapply(struct Pslist *heads);
+void heads_reapply(const struct PPmap *heads);
 
 /*
  * string rendering
@@ -138,15 +138,19 @@ bool head_name_desc_matches_head(const char * const name_desc, const struct Head
 
 // current and desired differ in any way
 bool head_current_not_desired(const struct Head * const head);
+bool head_current_not_desired_2p(const struct Head * const head, const void * const unused);
 
 // current mode is not desired
 bool head_current_mode_not_desired(const struct Head * const head);
+bool head_current_mode_not_desired_2p(const struct Head * const head, const void * const unused);
 
 // current adaptive sync is not desired
 bool head_current_adaptive_sync_not_desired(const struct Head * const head);
+bool head_current_adaptive_sync_not_desired_2p(const struct Head * const head, const void * const unused);
 
 // full reapply next layout
 bool head_reapply_required(const struct Head * const head);
+bool head_reapply_required_2p(const struct Head * const head, const void * const unused);
 
 /*
  * utility

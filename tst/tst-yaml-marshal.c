@@ -11,21 +11,25 @@
 #include <string.h>
 
 #include "cfg/cfg.h"
+#include "displ.h"
 #include "enum.h"
-#include "fn.h"
 #include "fs.h"
-#include "head.h"
 #include "ipc.h"
 #include "lid.h"
-#include "pslist.h"
 #include "str.h"
 
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 
+static int before_each(void **state) {
+	g_displ = displ_init();
+	return 0;
+}
+
 static int after_each(void **state) {
 	assert_logs_empty();
 
+	displ_free(g_displ);
 	cfg_free(g_cfg);
 	g_cfg = NULL;
 	free(g_lid);
@@ -110,8 +114,6 @@ static void yaml_root_from_ipc_operation__map(void **state) {
 	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-map.yaml");
 
 	ipc_operation_free(ipc_operation);
-
-	pslist_free_vals(&g_heads, (fn_free)head_free);
 }
 
 static void yaml_root_from_ipc_operation__seq(void **state) {
@@ -121,8 +123,6 @@ static void yaml_root_from_ipc_operation__seq(void **state) {
 	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-seq.yaml");
 
 	ipc_operation_free(ipc_operation);
-
-	pslist_free_vals(&g_heads, (fn_free)head_free);
 }
 
 static void yaml_marshal__yaml_document_initialize_fail(void **state) {
@@ -241,25 +241,25 @@ static void yaml_write_handler__no_data(void **state) {
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
-		TEST_A(yaml_root_from_cfg__ok),
-		TEST_A(yaml_root_from_cfg__default),
-		TEST_A(yaml_root_from_cfg__empty),
+		TEST_BA(yaml_root_from_cfg__ok),
+		TEST_BA(yaml_root_from_cfg__default),
+		TEST_BA(yaml_root_from_cfg__empty),
 
-		TEST_A(yaml_root_from_ipc_request__no_op),
-		TEST_A(yaml_root_from_ipc_request__cfg_set),
+		TEST_BA(yaml_root_from_ipc_request__no_op),
+		TEST_BA(yaml_root_from_ipc_request__cfg_set),
 
-		TEST_A(yaml_root_from_ipc_operation__map),
-		TEST_A(yaml_root_from_ipc_operation__seq),
+		TEST_BA(yaml_root_from_ipc_operation__map),
+		TEST_BA(yaml_root_from_ipc_operation__seq),
 
-		TEST_A(yaml_marshal__yaml_document_initialize_fail),
-		TEST_A(yaml_marshal__yaml_emitter_initialize_fail),
-		TEST_A(yaml_marshal__yaml_emitter_open_fail),
-		TEST_A(yaml_marshal__yaml_emitter_dump_fail),
-		TEST_A(yaml_marshal__yaml_emitter_close_fail),
+		TEST_BA(yaml_marshal__yaml_document_initialize_fail),
+		TEST_BA(yaml_marshal__yaml_emitter_initialize_fail),
+		TEST_BA(yaml_marshal__yaml_emitter_open_fail),
+		TEST_BA(yaml_marshal__yaml_emitter_dump_fail),
+		TEST_BA(yaml_marshal__yaml_emitter_close_fail),
 
-		TEST_A(yaml_write_handler__empty),
-		TEST_A(yaml_write_handler__append),
-		TEST_A(yaml_write_handler__no_data),
+		TEST_BA(yaml_write_handler__empty),
+		TEST_BA(yaml_write_handler__append),
+		TEST_BA(yaml_write_handler__no_data),
 	};
 
 	return RUN(tests);

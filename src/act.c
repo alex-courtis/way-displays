@@ -13,9 +13,9 @@
 #include "info/print.h"
 #include "log.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "process.h"
 #include "pset.h"
-#include "pslist.h"
 #include "str.h"
 #include "wl_wrappers.h"
 
@@ -121,25 +121,26 @@ void act_handle_failure(void) {
 }
 
 void act_apply(void) {
-	struct Pslist *heads_changing = NULL;
+	const struct Pset *heads_changing = head_pset_init();
 
 	displ_delta_destroy();
 
 	// determine whether changes are needed before initiating output configuration
-	struct Pslist *i = g_heads;
-	while ((i = pslist_find(i, (fn_pred)head_current_not_desired))) {
-		pslist_append(&heads_changing, i->val);
-		i = i->nex;
+	for (const struct PPmapIt *it = ppmap_val_filter_it(g_displ->heads, (fn_2pred)head_current_not_desired_2p, NULL); it; it = ppmap_it_next(it)) {
+		pset_add(heads_changing, it->val);
 	}
-	if (!heads_changing)
+
+	if (pset_size(heads_changing) == 0) {
+		pset_free(heads_changing);
 		return;
+	}
 
 	// create and start the listener
 	struct zwlr_output_configuration_v1 *zwlr_config = create_zwlr_output_config_listener();
 
 	struct Head *head;
 
-	if ((head = pslist_find_val(g_heads, (fn_pred)head_reapply_required))) {
+	if ((head = (struct Head*)ppmap_find_val(g_displ->heads, (fn_2pred)head_reapply_required_2p, NULL).val)) {
 		displ_delta_init(0, head);
 
 		print_head(INFO, DELTA, head);
@@ -150,7 +151,7 @@ void act_apply(void) {
 
 		head->reapply_required = false;
 
-	} else if ((head = pslist_find_val(g_heads, (fn_pred)head_current_mode_not_desired))) {
+	} else if ((head = (struct Head*)ppmap_find_val(g_displ->heads, (fn_2pred)head_current_mode_not_desired_2p, NULL).val)) {
 		displ_delta_init(MODE, head);
 
 		print_head(INFO, DELTA, head);
@@ -161,7 +162,7 @@ void act_apply(void) {
 
 		g_displ->delta.human = delta_human_mode(head);
 
-	} else if ((head = pslist_find_val(g_heads, (fn_pred)head_current_adaptive_sync_not_desired))) {
+	} else if ((head = (struct Head*)ppmap_find_val(g_displ->heads, (fn_2pred)head_current_adaptive_sync_not_desired_2p, NULL).val)) {
 		displ_delta_init(VRR_OFF, head);
 
 		print_head(INFO, DELTA, head);
@@ -175,11 +176,11 @@ void act_apply(void) {
 	} else {
 		displ_delta_init(0, NULL);
 
-		print_heads(INFO, DELTA, g_heads);
+		print_head_map(INFO, DELTA, g_displ->heads);
 
 		// all other changes
-		for (i = heads_changing; i; i = i->nex) {
-			head = (struct Head*)i->val;
+		for (const struct PsetIt *it = pset_it(heads_changing); it; it = pset_it_next(it)) {
+			head = (struct Head*)it->val;
 
 			if (head->desired.enabled) {
 				head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, head->zwlr_head);
@@ -198,17 +199,20 @@ void act_apply(void) {
 
 	g_displ->state = OUTSTANDING;
 
-	pslist_free(&heads_changing);
+	pset_free(heads_changing);
 }
 
 void act(void) {
-	print_heads(INFO, ARRIVED, g_heads_arrived);
-	pslist_free(&g_heads_arrived);
+	print_head_set(INFO, ARRIVED, g_displ->heads_arrived);
+	// TODO need a clear collection
+	pset_free(g_displ->heads_arrived);
+	g_displ->heads_arrived = head_pset_init();
 
-	print_heads(INFO, DEPARTED, g_heads_departed);
-	pslist_free_vals(&g_heads_departed, (fn_free)head_free);
+	print_head_set(INFO, DEPARTED, g_displ->heads_departed);
+	pset_free_vals(g_displ->heads_departed);
+	g_displ->heads_departed = head_pset_init();
 
-	print_head_queue(DEBUG, "act started", g_displ->state, g_heads);
+	print_head_queue(FATAL, g_displ, "act started");
 
 	switch (g_displ->state) {
 		case SUCCEEDED:
@@ -240,9 +244,9 @@ void act(void) {
 	}
 
 	desire();
-	print_head_queue(DEBUG, "act desired", g_displ->state, g_heads);
+	print_head_queue(FATAL, g_displ, "act desired");
 
 	act_apply();
-	print_head_queue(DEBUG, "act applied", g_displ->state, g_heads);
+	print_head_queue(FATAL, g_displ, "act applied");
 }
 

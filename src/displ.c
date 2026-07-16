@@ -5,13 +5,14 @@
 #include "displ.h"
 
 #include "enum.h"
-#include "fn.h"
 #include "head.h"
 #include "ipmap.h"
 #include "listeners.h"
 #include "log.h"
 #include "output.h"
+#include "ppmap.h"
 #include "process.h"
+#include "pset.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "xdg-output-unstable-v1.h"
 
@@ -20,8 +21,12 @@ struct Displ *g_displ = NULL;
 struct Displ *displ_init(void) {
 	struct Displ *displ = calloc(1, sizeof(struct Displ));
 
-	const struct IPmapParams params = { .free_val = (fn_free)output_destroy, };
-	displ->outputs = ipmap_init_with(params);
+	displ->outputs = output_ipmap_init();
+
+	displ->heads = head_ppmap_init();
+
+	displ->heads_arrived = head_pset_init();
+	displ->heads_departed = head_pset_init();
 
 	return displ;
 }
@@ -61,11 +66,15 @@ void displ_free(struct Displ *displ) {
 
 	displ_delta_destroy();
 
-	ipmap_free_vals(g_displ->outputs);
+	ipmap_free_vals(displ->outputs);
 
-	free(g_displ->zwlr_output_manager_interface);
+	pset_free(displ->heads_arrived);
+	ppmap_free_vals(displ->heads);
+	pset_free_vals(displ->heads_departed);
 
-	free(g_displ->zxdg_output_manager_interface);
+	free(displ->zwlr_output_manager_interface);
+
+	free(displ->zxdg_output_manager_interface);
 
 	free(displ);
 }

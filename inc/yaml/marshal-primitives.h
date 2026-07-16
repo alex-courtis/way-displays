@@ -7,7 +7,6 @@
 
 #include "enum.h"
 #include "pset.h"
-#include "pslist.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
@@ -41,7 +40,6 @@ void yaml_map_add_enum    (struct MC *c, const char *key, const int     val,  fn
 // New sequence node values are populated by evaluating fn on each item
 void yaml_map_add_sset  (struct MC *c, const char *key, const struct Sset*   const sset,                                   int mapping);
 void yaml_map_add_pset  (struct MC *c, const char *key, const struct Pset*   const pset,  fn_yaml_node_from_type fn,       int mapping);
-void yaml_map_add_pslist(struct MC *c, const char *key, const struct Pslist* const list,  fn_yaml_node_from_type fn,       int mapping);
 void yaml_map_add_spmap (struct MC *c, const char *key, const struct SPmap*  const spmap, fn_yaml_node_from_key_type fn,   int mapping);
 void yaml_map_add_simap (struct MC *c, const char *key, const struct SImap*  const simap, fn_node_from_yaml_key_size_t fn, int mapping);
 

@@ -6,19 +6,19 @@
 #include "enum.h"
 #include "head.h"
 #include "mode.h"
-#include "pslist.h"
+#include "pset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
-char *delta_human(const struct Pslist * const heads) {
+char *delta_human(const struct Pset * const heads) {
 	if (!heads) {
 		return NULL;
 	}
 
 	char *delta = NULL;
 
-	for (const struct Pslist *i = heads; i; i = i->nex) {
-		const struct Head * head = i->val;
+	for (const struct PsetIt *it = pset_it(heads); it; it = pset_it_next(it)) {
+		const struct Head * head = it->val;
 
 		// disable in own operation
 		if (head->current.enabled && !head->desired.enabled) {

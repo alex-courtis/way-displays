@@ -3,12 +3,13 @@
 
 #include "cfg/condition.h"
 
+#include "displ.h"
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
 #include "lid.h"
+#include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "sset.h"
 
 static bool condition_equal(const struct CfgCondition* const a, const struct CfgCondition* const b) {
@@ -53,14 +54,14 @@ bool cfg_condition_true(const struct CfgCondition *condition, const void* const 
 		return false;
 
 	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
-		if (pslist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) == NULL) {
+		if (!ppmap_find_val(g_displ->heads, (fn_2pred)head_matches_name_desc, it->val).val) {
 			sset_it_free(it);
 			return true;
 		}
 	}
 
 	for (const struct SsetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
-		if (pslist_find_equal(g_heads, (fn_equal)head_matches_name_desc, it->val) != NULL) {
+		if (ppmap_find_val(g_displ->heads, (fn_2pred)head_matches_name_desc, it->val).val) {
 			sset_it_free(it);
 			return true;
 		}

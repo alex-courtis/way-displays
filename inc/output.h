@@ -27,6 +27,8 @@ struct Output {
 // NULL on missing wl_output or failure to retrieve xdg output
 struct Output *output_init(struct wl_output *wl_output, const uint32_t name, struct zxdg_output_manager_v1 *zxdg_output_manager);
 
+const struct IPmap *output_ipmap_init(void);
+
 // frees and releases resources
 void output_destroy(struct Output *output);
 

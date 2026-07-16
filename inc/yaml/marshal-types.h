@@ -32,7 +32,7 @@ int yaml_map_from_head_overrides(struct MC *c, const struct Head*         const 
 int yaml_map_from_head_state    (struct MC *c, const struct HeadState*    const head_state);
 int yaml_map_from_lid           (struct MC *c, const struct Lid*          const lid);
 int yaml_seq_from_messages      (struct MC *c, const struct IpcOperation* const ipc_operation);
-int yaml_map_from_state         (struct MC *c); // g_heads and g_lid
+int yaml_map_from_state         (struct MC *c); // g_displ->heads and g_lid
 
 // yaml_map_add_pset: fn_yaml_node_from_type
 int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condition);

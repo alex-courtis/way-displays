@@ -9,11 +9,13 @@
 
 #include "cfg/cfg.h"
 #include "cfg/disabled.h"
+#include "displ.h"
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
 #include "lid.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "pset.h"
 #include "pslist.h"
 #include "simap.h"
@@ -23,8 +25,8 @@
 
 void desire(void) {
 
-	for (struct Pslist *i = g_heads; i; i = i->nex) {
-		struct Head *head = (struct Head*)i->val;
+	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
+		struct Head *head = (struct Head*)it->val;
 
 		memcpy(&head->desired, &head->current, sizeof(struct HeadState));
 
@@ -37,7 +39,7 @@ void desire(void) {
 		desire_reapply(head);
 	}
 
-	struct Pslist *heads_ordered = desire_order(g_cfg->order_name_desc, g_heads);
+	struct Pslist *heads_ordered = desire_order(g_cfg->order_name_desc, g_displ->heads);
 
 	desire_positions(heads_ordered);
 
@@ -51,7 +53,7 @@ void desire_enabled(struct Head *head) {
 	enabled = !g_lid_is_closed(head->name);
 
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
-	enabled |= pslist_length(g_heads) == 1;
+	enabled |= ppmap_size(g_displ->heads) == 1;
 
 	// name_desc matches and (if present) any condition is true
 	enabled &= pset_find(g_cfg->disableds, (fn_2pred)cfg_disabled_matches_head, head) == NULL;
@@ -197,7 +199,8 @@ static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *c
 	}
 }
 
-struct Pslist *desire_order(const struct Sset * const order_name_desc, const struct Pslist *heads) {
+// TODO return a set
+struct Pslist *desire_order(const struct Sset * const order_name_desc, const struct PPmap *heads) {
 
 	// buckets for each order_name_desc
 	const struct SPmapParams params = { .free_val = (fn_free)pset_free, };
@@ -206,9 +209,7 @@ struct Pslist *desire_order(const struct Sset * const order_name_desc, const str
 		spmap_put(buckets, it->val, pset_init());
 
 	// all candidates to be moved into buckets
-	const struct Pset *candidates = pset_init();
-	for (const struct Pslist *e = heads; e; e = e->nex)
-		pset_add(candidates, e->val);
+	const struct Pset *candidates = ppmap_vals_pset(heads);
 
 	// fill buckets in preferential order
 	fill_order_buckets(buckets, candidates, (fn_2pred)head_matches_name_desc_exact);

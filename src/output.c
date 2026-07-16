@@ -6,6 +6,8 @@
 
 #include "output.h"
 
+#include "fn.h"
+#include "ipmap.h"
 #include "listeners.h"
 #include "xdg-output-unstable-v1.h"
 
@@ -25,6 +27,11 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t name, str
 	zxdg_output_v1_add_listener(zxdg_output, zxdg_output_listener(), output);
 
 	return output;
+}
+
+const struct IPmap *output_ipmap_init(void) {
+	const struct IPmapParams params = { .free_val = (fn_free)output_destroy, };
+	return ipmap_init_with(params);
 }
 
 void output_destroy(struct Output *output) {

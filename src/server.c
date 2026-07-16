@@ -23,9 +23,9 @@
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
+#include "ppmap.h"
 #include "process.h"
 #include "pset.h"
-#include "pslist.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;
@@ -107,8 +107,8 @@ static void receive_ipc_request(int server_socket) {
 	switch (ipc_request->command) {
 		case CFG_TOGGLE:
 			// handle extra toggles
-			for (struct Pslist *i = g_heads; i; i = i->nex) {
-				head_apply_toggles(i->val, ipc_request->cfg);
+			for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
+				head_apply_toggles((struct Head*)it->val, ipc_request->cfg);
 			}
 			break;
 		case CFG_DEL:
@@ -160,14 +160,14 @@ static void receive_ipc_request(int server_socket) {
 		case LIST:
 			{
 				// complete
-				print_list(INFO, g_heads);
+				print_list(INFO, g_displ->heads);
 				break;
 			}
 		case REAPPLY:
 			{
 				// ongoing
 				ipc_operation->done = false;
-				heads_reapply(g_heads);
+				heads_reapply(g_displ->heads);
 				break;
 			}
 		case GET:
@@ -178,7 +178,7 @@ static void receive_ipc_request(int server_socket) {
 				log_info("Active configuration:");
 				print_cfg(INFO, g_cfg, false);
 				print_cfg_commands(INFO, g_cfg);
-				print_heads(INFO, NONE, g_heads);
+				print_head_map(INFO, NONE, g_displ->heads);
 				break;
 			}
 	}
@@ -314,7 +314,6 @@ server(char *cfg_path) {
 	int sig = loop();
 
 	// release what resources we can
-	g_heads_destroy();
 	g_lid_destroy();
 	g_cfg_file_destroy();
 	g_cfg_destroy();

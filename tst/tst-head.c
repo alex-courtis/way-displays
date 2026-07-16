@@ -16,11 +16,11 @@
 #include <string.h>
 
 #include "cfg/cfg.h"
+#include "displ.h"
 #include "enum.h"
-#include "fn.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "spmap.h"
 #include "sset.h"
 
@@ -516,7 +516,7 @@ static void head_set_description__null_input(void **state) {
 }
 
 static void heads_reapply__(void **state) {
-	struct Pslist *heads = NULL;
+	const struct PPmap *heads = head_ppmap_init();
 
 	struct Head *head_disabled = head_n("DP-7");
 	head_disabled->current.enabled = false;
@@ -533,7 +533,7 @@ static void heads_reapply__(void **state) {
 	pset_free(head_disabled->modes_failed);
 	head_disabled->modes_failed = pset_clone(modes_once_failed);
 
-	pslist_append(&heads, head_disabled);
+	ppmap_put(heads, "head_disabled", head_disabled);
 
 
 	struct Head *head_enabled = head_n("eDP-1");
@@ -543,7 +543,7 @@ static void heads_reapply__(void **state) {
 	head_enabled->mode_preferred = head_enabled->current.mode;
 	pset_add(head_enabled->modes, head_enabled->current.mode);
 
-	pslist_append(&heads, head_enabled);
+	ppmap_put(heads, "head_enabled", head_enabled);
 
 
 	heads_reapply(heads);
@@ -556,7 +556,7 @@ static void heads_reapply__(void **state) {
 	assert_log(INFO, expected_log);
 	free(expected_log);
 
-	pslist_free_vals(&heads, (fn_free)head_free);
+	ppmap_free_vals(heads);
 	pset_free(modes_once_failed);
 }
 
@@ -633,63 +633,78 @@ static void head_release_mode__orphan(void **state) {
 }
 
 static void head_release__present(void **state) {
+	g_displ = displ_init();
+
+	struct zwlr_output_head_v1 *zwlr_head_departed = (struct zwlr_output_head_v1*)"departed";
+	struct zwlr_output_head_v1 *zwlr_head_other = (struct zwlr_output_head_v1*)"other";
+
 	struct Head *departed = head_init();
 	departed->name = strdup("nam");
 	departed->description = strdup("desc");
+	departed->zwlr_head = zwlr_head_departed;
 
 	struct Head *other = head_init();
+	other->zwlr_head = zwlr_head_other;
 
-	pslist_append(&g_heads, departed);
-	pslist_append(&g_heads, other);
-	pslist_append(&g_heads_arrived, departed);
-	pslist_append(&g_heads_arrived, other);
-	pslist_append(&g_heads_departed, departed);
-	pslist_append(&g_heads_departed, other);
+	ppmap_put(g_displ->heads, zwlr_head_departed, departed);
+	ppmap_put(g_displ->heads, zwlr_head_other, other);
+
+	pset_add(g_displ->heads_arrived, departed);
+	pset_add(g_displ->heads_arrived, other);
 
 	head_release(departed);
 
-	assert_int_equal(pslist_length(g_heads), 1);
-	assert_ptr_equal(pslist_at(g_heads, 0), other);
-	assert_int_equal(pslist_length(g_heads_arrived), 1);
-	assert_ptr_equal(pslist_at(g_heads_arrived, 0), other);
-	assert_int_equal(pslist_length(g_heads_departed), 2);
-	assert_ptr_equal(pslist_at(g_heads_departed, 0), other);
+	assert_int_equal(ppmap_size(g_displ->heads), 1);
+	assert_true(ppmap_contains_key(g_displ->heads, zwlr_head_other));
 
-	struct Head *dummy = pslist_at(g_heads_departed, 1);
+	assert_int_equal(pset_size(g_displ->heads_arrived), 1);
+	assert_true(pset_contains(g_displ->heads_arrived, other));
+
+	assert_int_equal(pset_size(g_displ->heads_departed), 1);
+
+	const struct PsetIt *it = pset_it(g_displ->heads_departed);
+	const struct Head *dummy = it->val;
+	assert_nul(pset_it_next(it));
+
 	assert_non_nul(dummy);
 	assert_ptr_not_equal(dummy, departed);
 
 	assert_string_equal(dummy->name, "nam");
 	assert_string_equal(dummy->description, "desc");
 
-	head_free(other);
-	head_free(dummy);
-	pslist_free(&g_heads);
-	pslist_free(&g_heads_arrived);
-	pslist_free(&g_heads_departed);
+	displ_free(g_displ);
 }
 
 static void head_release__unnamed_orphan(void **state) {
+	g_displ = displ_init();
+
 	struct Head *departed = head_init();
 
 	head_release(departed);
 
-	assert_int_equal(pslist_length(g_heads_departed), 1);
-	struct Head *dummy = pslist_at(g_heads_departed, 0);
+	assert_int_equal(pset_size(g_displ->heads_departed), 1);
+
+	const struct PsetIt *it = pset_it(g_displ->heads_departed);
+	const struct Head *dummy = it->val;
+	assert_nul(pset_it_next(it));
+
 	assert_non_nul(dummy);
 	assert_ptr_not_equal(dummy, departed);
 
 	assert_string_equal(dummy->name, "???");
 	assert_string_equal(dummy->description, "???");
 
-	head_free(dummy);
-	pslist_free(&g_heads_departed);
+	displ_free(g_displ);
 }
 
 static void head_release__null(void **state) {
+	g_displ = displ_init();
+
 	head_release(NULL);
 
-	assert_int_equal(pslist_length(g_heads_departed), 0);
+	assert_int_equal(pset_size(g_displ->heads_departed), 0);
+
+	displ_free(g_displ);
 }
 
 static void head_set_mode_preferred__first(void **state) {
@@ -817,30 +832,35 @@ static void head_set_current_mode__nulls(void **state) {
 }
 
 static void head_introduce__ok(void **state) {
+	g_displ = displ_init();
 	struct zwlr_output_head_v1 *zwlr_head = (struct zwlr_output_head_v1*)"dummy";
 
 	head_introduce(zwlr_head);
 
-	assert_int_equal(pslist_length(g_heads), 1);
-	assert_int_equal(pslist_length(g_heads_arrived), 1);
-	assert_int_equal(pslist_length(g_heads_departed), 0);
+	assert_int_equal(ppmap_size(g_displ->heads), 1);
+	assert_true(ppmap_contains_key(g_displ->heads, zwlr_head));
 
-	assert_ptr_equal(pslist_at(g_heads, 0), pslist_at(g_heads_arrived, 0));
-
-	struct Head *head = pslist_at(g_heads, 0);
+	const struct Head *head = ppmap_get(g_displ->heads, zwlr_head);
 	assert_ptr_equal(head->zwlr_head, zwlr_head);
 
-	head_free(head);
-	pslist_free(&g_heads);
-	pslist_free(&g_heads_arrived);
+	assert_int_equal(pset_size(g_displ->heads_arrived), 1);
+	pset_contains(g_displ->heads_arrived, head);
+
+	assert_int_equal(pset_size(g_displ->heads_departed), 0);
+
+	displ_free(g_displ);
 }
 
 static void head_introduce__null(void **state) {
+	g_displ = displ_init();
+
 	head_introduce(NULL);
 
-	assert_int_equal(pslist_length(g_heads), 0);
-	assert_int_equal(pslist_length(g_heads_arrived), 0);
-	assert_int_equal(pslist_length(g_heads_departed), 0);
+	assert_int_equal(ppmap_size(g_displ->heads), 0);
+	assert_int_equal(pset_size(g_displ->heads_arrived), 0);
+	assert_int_equal(pset_size(g_displ->heads_departed), 0);
+
+	displ_free(g_displ);
 }
 
 int main(void) {

@@ -8,8 +8,8 @@
 #include "enum.h"
 #include "head.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "ssmap.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal.h"
@@ -84,7 +84,13 @@ void __wrap_print_head(const enum LogThreshold t, const enum InfoEvent event, co
 	check_expected_ptr(head);
 }
 
-void __wrap_print_heads(const enum LogThreshold t, const enum InfoEvent event, const struct Pslist * const heads) {
+void __wrap_print_head_map(const enum LogThreshold t, const enum InfoEvent event, const struct PPmap * const heads) {
+	check_expected_int(t);
+	check_expected_int(event);
+	check_expected_ptr(heads);
+}
+
+void __wrap_print_head_set(const enum LogThreshold t, const enum InfoEvent event, const struct Pset * const heads) {
 	check_expected_int(t);
 	check_expected_int(event);
 	check_expected_ptr(heads);

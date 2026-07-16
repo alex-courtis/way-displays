@@ -10,11 +10,8 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
-#include "displ.h"
-#include "fn.h"
 #include "head.h"
 #include "pset.h"
-#include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/delta.h"
@@ -22,14 +19,13 @@
 struct State {
 	struct Head *head1;
 	struct Head *head2;
-	struct Pslist *heads;
+	const struct Pset *head_set;
 };
 
 int before_each(void **state) {
 	struct State *s = calloc(1, sizeof(struct State));
 
-	g_displ = displ_init();
-
+	s->head_set = head_pset_init();
 
 	s->head1 = head_n("name1");
 	s->head1->description = strdup("description1");
@@ -52,7 +48,7 @@ int before_each(void **state) {
 	s->head1->desired.mode = mode_h_whr(s->head1, 400, 500, 60000);
 	pset_add(s->head1->modes, s->head1->desired.mode);
 
-	pslist_append(&s->heads, s->head1);
+	pset_add(s->head_set, s->head1);
 
 
 	s->head2 = head_n("name2");
@@ -75,7 +71,7 @@ int before_each(void **state) {
 	s->head2->desired.mode = mode_h_whr(s->head2, 1400, 1500, 160000);
 	pset_add(s->head2->modes, s->head2->desired.mode);
 
-	pslist_append(&s->heads, s->head2);
+	pset_add(s->head_set, s->head2);
 
 	*state = s;
 	return 0;
@@ -86,11 +82,9 @@ int after_each(void **state) {
 
 	struct State *s = *state;
 
-	pslist_free_vals(&s->heads, (fn_free)head_free);
+	pset_free_vals(s->head_set);
 
 	free(s);
-
-	displ_free(g_displ);
 
 	return 0;
 }
@@ -107,8 +101,6 @@ static void delta_human_mode__to_no(void **state) {
 			"  100x200@30Hz -> (no mode)"
 			);
 
-	pslist_free(&g_heads);
-
 	free(deltas);
 }
 
@@ -123,8 +115,6 @@ static void delta_human_mode__from_no(void **state) {
 			"name2\n"
 			"  (no mode) -> 1400x1500@160Hz"
 			);
-
-	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -142,8 +132,6 @@ static void delta_human_adaptive_sync__on(void **state) {
 			"  VRR on"
 			);
 
-	pslist_free(&g_heads);
-
 	free(deltas);
 }
 
@@ -160,8 +148,6 @@ static void delta_human_adaptive_sync__off(void **state) {
 			"  VRR off"
 			);
 
-	pslist_free(&g_heads);
-
 	free(deltas);
 }
 
@@ -176,15 +162,13 @@ static void delta_human_reapply__(void **state) {
 			"  modes reset"
 			);
 
-	pslist_free(&g_heads);
-
 	free(deltas);
 }
 
 static void delta_human__all(void **state) {
 	const struct State *s = *state;
 
-	char *deltas = delta_human(s->heads);
+	char *deltas = delta_human(s->head_set);
 
 	assert_str_equal(deltas, ""
 			"description1\n"
@@ -196,8 +180,6 @@ static void delta_human__all(void **state) {
 			"  transform: 270 -> none\n"
 			"  position:  1700,1800 -> 1900,11000"
 			);
-
-	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -211,14 +193,12 @@ static void delta_human__enabled(void **state) {
 	s->head2->current.enabled = false;
 	s->head2->desired.enabled = true;
 
-	char *deltas = delta_human(s->heads);
+	char *deltas = delta_human(s->head_set);
 
 	assert_str_equal(deltas, ""
 			"description1\n  enabled\n"
 			"name2\n  enabled"
 			);
-
-	pslist_free(&g_heads);
 
 	free(deltas);
 }
@@ -232,14 +212,12 @@ static void delta_human__disabled(void **state) {
 	s->head2->current.enabled = true;
 	s->head2->desired.enabled = false;
 
-	char *deltas = delta_human(s->heads);
+	char *deltas = delta_human(s->head_set);
 
 	assert_str_equal(deltas, ""
 			"description1\n  disabled\n"
 			"name2\n  disabled"
 			);
-
-	pslist_free(&g_heads);
 
 	free(deltas);
 }

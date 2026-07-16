@@ -16,11 +16,10 @@
 #include "cfg/cfg.h"
 #include "displ.h"
 #include "enum.h"
-#include "fn.h"
 #include "head.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "act.h"
@@ -38,8 +37,6 @@ static int before_each(void **state) {
 static int after_each(void **state) {
 	assert_logs_empty();
 
-	pslist_free_vals(&g_heads, (fn_free)head_free);
-
 	displ_free(g_displ);
 
 	g_cfg_destroy();
@@ -52,8 +49,7 @@ static void act_apply__no_heads(void **state) {
 }
 
 static void act_apply__no_changes(void **state) {
-
-	pslist_append(&g_heads, head_init());
+	ppmap_put(g_displ->heads, "h", head_init());
 
 	act_apply();
 
@@ -70,7 +66,7 @@ static void act_apply__reapply(void **state) {
 	struct Head *head = head_init();
 	head->zwlr_head = zwlr_head;
 	head->reapply_required = true;
-	pslist_append(&g_heads, head);
+	ppmap_put(g_displ->heads, "h", head);
 
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
@@ -101,7 +97,7 @@ static void act_apply__mode(void **state) {
 
 	struct Head *head = head_init();
 	head->zwlr_head = zwlr_head;
-	pslist_append(&g_heads, head);
+	ppmap_put(g_displ->heads, "h", head);
 
 	struct Mode *mode = mode_h(head);
 	head->desired.mode = mode;
@@ -140,7 +136,7 @@ static void act_apply__vrr(void **state) {
 	struct Head *head = head_init();
 	head->zwlr_head = zwlr_head;
 	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	pslist_append(&g_heads, head);
+	ppmap_put(g_displ->heads, "h", head);
 
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
@@ -175,13 +171,13 @@ static void act_apply__disable(void **state) {
 	head->zwlr_head = zwlr_head;
 	head->current.enabled = true;
 	head->desired.enabled = false;
-	pslist_append(&g_heads, head);
+	ppmap_put(g_displ->heads, "h", head);
 
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
-	expect_int_value(__wrap_print_heads, t, INFO);
-	expect_int_value(__wrap_print_heads, event, DELTA);
-	expect_ptr(__wrap_print_heads, heads, g_heads);
+	expect_int_value(__wrap_print_head_map, t, INFO);
+	expect_int_value(__wrap_print_head_map, event, DELTA);
+	expect_ptr(__wrap_print_head_map, heads, g_displ->heads);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, zwlr_output_configuration_v1, zwlr_config);
 	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, head->zwlr_head);
@@ -211,13 +207,13 @@ static void act_apply__remainder(void **state) {
 	head->desired.scale = 1;
 	head->desired.x = 2;
 	head->desired.y = 3;
-	pslist_append(&g_heads, head);
+	ppmap_put(g_displ->heads, "h", head);
 
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
 
-	expect_int_value(__wrap_print_heads, t, INFO);
-	expect_int_value(__wrap_print_heads, event, DELTA);
-	expect_ptr(__wrap_print_heads, heads, g_heads);
+	expect_int_value(__wrap_print_head_map, t, INFO);
+	expect_int_value(__wrap_print_head_map, event, DELTA);
+	expect_ptr(__wrap_print_head_map, heads, g_displ->heads);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zwlr_config);
 	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, head->zwlr_head);
