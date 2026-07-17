@@ -5,6 +5,7 @@
 #include "assert-mode.h"
 #include "assert-pset.h"
 #include "assert-wl.h"
+#include "data.h"
 #include "expects.h"
 #include "util-col.h"
 #include "util-init.h"
@@ -30,18 +31,6 @@
 #include "desire.h"
 
 extern int g_cancellation_retries;
-
-static void *H0 = "H0";
-static void *H1 = "H1";
-static void *H2 = "H2";
-static void *H3 = "H3";
-static void *H4 = "H4";
-static void *H5 = "H5";
-static void *H6 = "H6";
-static void *H7 = "H7";
-
-static void *MD = "MD";
-static void *M0 = "M0";
 
 static struct Head *head_init_dp(int32_t width, int32_t height) {
 	struct Head *head = head_init();

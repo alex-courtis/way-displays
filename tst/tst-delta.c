@@ -2,6 +2,7 @@
 
 #include "assert-log.h"
 #include "asserts.h"
+#include "data.h"
 #include "util-init.h"
 
 #include <cmocka.h>
@@ -15,14 +16,6 @@
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/delta.h"
-
-static void *H1 = "H1";
-static void *H2 = "H2";
-
-static void *H1MC = "H1MC";
-static void *H1MD = "H1MD";
-static void *H2MC = "H2MC";
-static void *H2MD = "H2MD";
 
 struct State {
 	struct Head *head1;
@@ -44,8 +37,8 @@ int before_each(void **state) {
 	s->head1->current.y = 800;
 	s->head1->current.transform = WL_OUTPUT_TRANSFORM_180;
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	ppmap_put(s->head1->modes, H1MC, mode_h_whr(s->head1, 100, 200, 30000));
-	s->head1->current.mode = ppmap_get(s->head1->modes, H1MC);
+	ppmap_put(s->head1->modes, M0, mode_h_whr(s->head1, 100, 200, 30000));
+	s->head1->current.mode = ppmap_get(s->head1->modes, M0);
 
 	s->head1->desired.scale = 1024;
 	s->head1->desired.enabled = true;
@@ -53,8 +46,8 @@ int before_each(void **state) {
 	s->head1->desired.y = 1000;
 	s->head1->desired.transform = WL_OUTPUT_TRANSFORM_90;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	ppmap_put(s->head1->modes, H1MD, mode_h_whr(s->head1, 400, 500, 60000));
-	s->head1->desired.mode = ppmap_get(s->head1->modes, H1MD);
+	ppmap_put(s->head1->modes, M1, mode_h_whr(s->head1, 400, 500, 60000));
+	s->head1->desired.mode = ppmap_get(s->head1->modes, M1);
 
 	ppmap_put(s->heads, H1, s->head1);
 
@@ -67,8 +60,8 @@ int before_each(void **state) {
 	s->head2->current.y = 1800;
 	s->head2->current.transform = WL_OUTPUT_TRANSFORM_270;
 	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	ppmap_put(s->head2->modes, H2MC, mode_h_whr(s->head2, 1100, 1200, 130000));
-	s->head2->current.mode = ppmap_get(s->head2->modes, H2MC);
+	ppmap_put(s->head2->modes, M0, mode_h_whr(s->head2, 1100, 1200, 130000));
+	s->head2->current.mode = ppmap_get(s->head2->modes, M0);
 
 	s->head2->desired.scale = 4096;
 	s->head2->desired.enabled = true;
@@ -76,8 +69,8 @@ int before_each(void **state) {
 	s->head2->desired.y = 11000;
 	s->head2->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	ppmap_put(s->head2->modes, H2MD, mode_h_whr(s->head2, 1400, 1500, 160000));
-	s->head2->desired.mode = ppmap_get(s->head2->modes, H2MD);
+	ppmap_put(s->head2->modes, M1, mode_h_whr(s->head2, 1400, 1500, 160000));
+	s->head2->desired.mode = ppmap_get(s->head2->modes, M1);
 
 	ppmap_put(s->heads, H2, s->head2);
 

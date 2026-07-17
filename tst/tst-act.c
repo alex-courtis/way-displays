@@ -3,8 +3,9 @@
 #include "assert-log.h"
 #include "assert-mode.h"
 #include "asserts.h"
-#include "expects.h"
+#include "data.h"
 #include "expect-ppmap.h"
+#include "expects.h"
 #include "util-col.h"
 #include "util-init.h"
 
@@ -25,11 +26,6 @@
 #include "act.h"
 
 extern int g_cancellation_retries;
-
-static void *H0 = "H0";
-
-static void *MC = "MC";
-static void *MD = "MD";
 
 static int before_each(void **state) {
 	g_cfg = cfg_default();

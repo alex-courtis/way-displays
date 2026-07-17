@@ -1,6 +1,7 @@
 #include "tst.h"
 
 #include "assert-log.h"
+#include "data.h"
 #include "expect-ssmap.h"
 #include "expects.h"
 #include "util-col.h"
@@ -19,9 +20,6 @@
 #include "str.h"
 
 #include "info/callback.h"
-
-static void *MC = "MC";
-static void *MD = "MD";
 
 struct State {
 	struct Head *head1;

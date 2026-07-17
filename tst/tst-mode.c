@@ -4,6 +4,7 @@
 #include "assert-mode.h"
 #include "assert-pset.h"
 #include "asserts.h"
+#include "data.h"
 #include "util-col.h"
 #include "util-init.h"
 
@@ -18,9 +19,6 @@
 #include "spmap.h"
 
 #include "mode.h"
-
-static void *M0 = "M0";
-static void *M1 = "M1";
 
 struct Mode *target = NULL;
 const struct PPmap *head_modes = NULL;

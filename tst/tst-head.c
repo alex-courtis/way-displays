@@ -5,6 +5,7 @@
 #include "assert-ppmap.h"
 #include "assert-wl.h"
 #include "asserts.h"
+#include "data.h"
 #include "expects.h"
 #include "util-col.h"
 #include "util-file.h"
@@ -24,18 +25,6 @@
 #include "sset.h"
 
 #include "head.h"
-
-static void *HE = "HE";
-static void *HD = "HD";
-
-static void *MC = "MC";
-static void *MD = "MD";
-static void *M0 = "M0";
-static void *M1 = "M1";
-static void *M2 = "M2";
-static void *MP = "M3";
-static void *M4 = "M4";
-static void *M5 = "M5";
 
 static int before_each(void **state) {
 	g_cfg = cfg_default();
@@ -386,8 +375,8 @@ static void head_max_mode__max(void **state) {
 			M1, mode_whr(500, 500, 1000),
 			M2, mode_whr(1000, 1000, 500),
 			MP, mode_whr(2000, 2000, 1000),
-			M4, mode_expected,
-			M5, mode_whr(1000, 1000, 1000),
+			M3, mode_expected,
+			M4, mode_whr(1000, 1000, 1000),
 			NULL);
 
 	const struct Mode *actual = head_max_mode(head);
@@ -544,7 +533,7 @@ static void heads_reapply__(void **state) {
 	ppmap_free(head_disabled->modes_failed);
 	head_disabled->modes_failed = ppmap_clone(modes_once_failed);
 
-	ppmap_put(heads, HD, head_disabled);
+	ppmap_put(heads, H0, head_disabled);
 
 
 	struct Head *head_enabled = head_n("eDP-1");
@@ -555,7 +544,7 @@ static void heads_reapply__(void **state) {
 	head_enabled->current.mode = mc;
 	head_enabled->zwlr_mode_pref = MP;
 
-	ppmap_put(heads, HE, head_enabled);
+	ppmap_put(heads, H1, head_enabled);
 
 
 	heads_reapply(heads);

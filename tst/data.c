@@ -21,13 +21,7 @@
 #include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
 
-#include "util-data.h"
-
-static void *H0 = "H0";
-
-static void *MC = "MC";
-static void *MD = "MD";
-static void *M0 = "M0";
+#include "data.h"
 
 void log_cap_line_append(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));

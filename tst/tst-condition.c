@@ -1,4 +1,5 @@
 #include "assert-log.h"
+#include "data.h"
 #include "tst.h"
 #include "util-col.h"
 #include "util-init.h"
@@ -16,10 +17,6 @@
 #include "sset.h"
 
 #include "cfg/condition.h"
-
-static void *H1 = "H1";
-static void *H2 = "H2";
-static void *H3 = "H3";
 
 struct State {
 	struct CfgCondition *condition;
