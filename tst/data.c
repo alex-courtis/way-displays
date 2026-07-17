@@ -23,6 +23,36 @@
 
 #include "data.h"
 
+// head ppmap keys
+void *H0 = "H0";
+void *H1 = "H1";
+void *H2 = "H2";
+void *H3 = "H3";
+void *H4 = "H4";
+void *H5 = "H5";
+void *H6 = "H6";
+void *H7 = "H7";
+void *H8 = "H8";
+void *H9 = "H9";
+
+// mode ppmap keys
+void *MC = "MC";
+void *MD = "MD";
+void *MP = "MP";
+void *MF = "MF";
+
+void *M0 = "M0";
+void *M1 = "M1";
+void *M2 = "M2";
+void *M3 = "M3";
+void *M4 = "M4";
+void *M5 = "M5";
+void *M6 = "M6";
+void *M7 = "M7";
+void *M8 = "M8";
+void *M9 = "M9";
+void *M10 = "M10";
+
 void log_cap_line_append(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
