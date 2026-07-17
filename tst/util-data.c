@@ -23,6 +23,12 @@
 
 #include "util-data.h"
 
+static void *H0 = "H0";
+
+static void *MC = "MC";
+static void *MD = "MD";
+static void *M0 = "M0";
+
 void log_cap_line_append(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines) {
 	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
 
@@ -148,9 +154,10 @@ struct IpcOperation *ipc_response(void) {
 	head0->current.transform = WL_OUTPUT_TRANSFORM_270;
 
 	const struct Mode *mode_cur = mode_h_whr(head0, 10, 11, 12);
-	head0->mode_preferred = mode_cur;
-	head0->current.mode = mode_cur;
-	pset_add(head0->modes, head0->current.mode);
+	ppmap_put(head0->modes, MC, mode_cur);
+	head0->zwlr_mode_pref = MC;
+	head0->current.mode = ppmap_get(head0->modes, MC);
+	head0->desired.mode = ppmap_get(head0->modes, MD);
 
 	head0->desired.scale = wl_fixed_from_double(7.0);
 	head0->desired.enabled = true;
@@ -159,12 +166,12 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head0->desired.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
 
-	head0->desired.mode = mode_h_whr(head0, 13, 14, 15);
-	pset_add(head0->modes, head0->desired.mode);
+	ppmap_put(head0->modes, MD, mode_h_whr(head0, 13, 14, 15));
+	head0->desired.mode = ppmap_get(head0->modes, MD);
 
-	pset_add(head0->modes_failed, mode_h_whr(head0, 16, 17, 18));
+	ppmap_put(head0->modes_failed, M0, mode_h_whr(head0, 16, 17, 18));
 
-	ppmap_put(g_displ->heads, "head0", head0);
+	ppmap_put(g_displ->heads, H0, head0);
 
 	return ipc_operation;
 }

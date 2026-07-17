@@ -8,6 +8,8 @@
 
 // Mode data
 
+// TODO Head data
+
 static void size(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t width,
@@ -29,7 +31,7 @@ static void refresh(void *data,
 static void preferred(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 
-	head_set_mode_preferred(data);
+	head_set_mode_pref(data, zwlr_output_mode_v1);
 }
 
 static void finished(void *data,

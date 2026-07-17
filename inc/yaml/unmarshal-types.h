@@ -4,10 +4,11 @@
 #include <yaml.h>
 
 #include "head.h"
+#include "ppmap.h"
 #include "pset.h"
 #include "pslist.h"
-#include "spmap.h"
 #include "simap.h"
+#include "spmap.h"
 #include "sset.h"
 #include "yaml/unmarshal.h"
 
@@ -29,7 +30,7 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
 // fn_yaml_node_into_col: create a struct and add to collection
 void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses,        const yaml_node_t *map);
 void yaml_map_into_heads        (struct UC *c, struct Pslist **heads,                const yaml_node_t *map);
-void yaml_map_into_modes        (struct UC *c, const struct Pset *modes,             const yaml_node_t *map);
+void yaml_map_into_modes        (struct UC *c, const struct PPmap *modes,            const yaml_node_t *map);
 void yaml_map_into_log_cap_lines(struct UC *c, struct Pslist **log_cap_lines,        const yaml_node_t *map);
 void yaml_map_into_conditions   (struct UC *c, const struct Pset* const conditions,  const yaml_node_t *map);
 void yaml_map_into_scales       (struct UC *c, const struct SImap* const scales,     const yaml_node_t *map);

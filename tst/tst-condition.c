@@ -17,6 +17,10 @@
 
 #include "cfg/condition.h"
 
+static void *H1 = "H1";
+static void *H2 = "H2";
+static void *H3 = "H3";
+
 struct State {
 	struct CfgCondition *condition;
 };
@@ -28,9 +32,9 @@ static int before_each(void **state) {
 	g_displ = displ_init();
 
 	ppmap_put_many(g_displ->heads,
-			"1", head_n("DP-1"),
-			"2", head_n("DP-2"),
-			"3", head_n("DP-3"),
+			H1, head_n("DP-1"),
+			H2, head_n("DP-2"),
+			H3, head_n("DP-3"),
 			NULL);
 
 	g_lid = NULL;

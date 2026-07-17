@@ -53,9 +53,9 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	if (!head)
 		return;
 
-	if (pset_size(head->modes_failed) > 0) {
+	if (ppmap_size(head->modes_failed) > 0) {
 		log_(t, "  failed:");
-		for (const struct PsetIt *it = pset_it(head->modes_failed); it; it = pset_it_next(it)) {
+		for (const struct PPmapIt *it = ppmap_it(head->modes_failed); it; it = ppmap_it_next(it)) {
 			print_mode(t, it->val);
 		}
 	}
@@ -75,8 +75,10 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	if (!head)
 		return;
 
+	const struct Mode *mode_pref = ppmap_get(head->modes, head->zwlr_mode_pref);
+
 	// show from the top down
-	const struct Pset *modes_sorted = pset_clone(head->modes);
+	const struct Pset *modes_sorted = ppmap_vals_pset(head->modes);
 	pset_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
 	const struct PsetIt *it = pset_it(modes_sorted);
 	while (it) {
@@ -93,7 +95,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 			msg = sprintf_append(msg, "%4d,%03d mHz", mode_minor->refresh_mhz / 1000, mode_minor->refresh_mhz % 1000);
 
 			// append preferred
-			if (mode_minor == head->mode_preferred) {
+			if (mode_minor == mode_pref) {
 				msg = sprintf_append(msg, " (preferred)");
 			}
 
@@ -411,8 +413,9 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 			if (head->width_mm && head->height_mm) {
 				log_(t, "    width:     %dmm", head->width_mm);
 				log_(t, "    height:    %dmm", head->height_mm);
-				if (head->mode_preferred) {
-					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(head->mode_preferred), head->mode_preferred->width, head->mode_preferred->height);
+				const struct Mode *mode_pref = ppmap_get(head->modes, head->zwlr_mode_pref);
+				if (mode_pref) {
+					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(mode_pref), mode_pref->width, mode_pref->height);
 				}
 			} else {
 				log_(t, "    width:     (not specified)");

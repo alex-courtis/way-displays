@@ -31,12 +31,27 @@
 
 extern int g_cancellation_retries;
 
+static void *H0 = "H0";
+static void *H1 = "H1";
+static void *H2 = "H2";
+static void *H3 = "H3";
+static void *H4 = "H4";
+static void *H5 = "H5";
+static void *H6 = "H6";
+static void *H7 = "H7";
+
+static void *MD = "MD";
+static void *M0 = "M0";
+
 static struct Head *head_init_dp(int32_t width, int32_t height) {
 	struct Head *head = head_init();
 	head->desired.enabled = true;
 	head->scaled.width = width;
 	head->scaled.height = height;
-	head->desired.mode = mode_init();
+
+	ppmap_put(head->modes, MD, mode_init());
+	head->desired.mode = ppmap_get(head->modes, MD);
+
 	return head;
 }
 
@@ -85,14 +100,14 @@ static void desire_order__exact_partial_regex(void **state) {
 	struct Head *regex_match_2   = head_d("another regex match");
 	struct Head *not_specified_2 = head_d("not specified 2");
 	ppmap_put_many(g_displ->heads,
-			"0", not_specified_1,
-			"1", exact0_partial,
-			"2", partial,
-			"3", regex_match_1,
-			"4", exact1,
-			"5", exact0,
-			"6", regex_match_2,
-			"7", not_specified_2,
+			H0, not_specified_1,
+			H1, exact0_partial,
+			H2, partial,
+			H3, regex_match_1,
+			H4, exact1,
+			H5, exact0,
+			H6, regex_match_2,
+			H7, not_specified_2,
 			NULL);
 
 	// expected
@@ -136,12 +151,12 @@ static void desire_order__exact_regex_catchall(void **state) {
 	struct Head *regex_match_2   = head_d("another regex match");
 	struct Head *not_specified_2 = head_d("not specified 2");
 	ppmap_put_many(g_displ->heads,
-			"0", exact9,
-			"1", not_specified_1,
-			"2", regex_match_1,
-			"3", exact0,
-			"4", regex_match_2,
-			"5", not_specified_2,
+			H0, exact9,
+			H1, not_specified_1,
+			H2, regex_match_1,
+			H3, exact0,
+			H4, regex_match_2,
+			H5, not_specified_2,
 			NULL);
 
 	// expected
@@ -169,7 +184,7 @@ static void desire_order__no_order(void **state) {
 	const struct Head *head = head_n("head");
 
 	// heads
-	ppmap_put(g_displ->heads, "0", head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	// expected
 	pset_add(expected, head);
@@ -295,7 +310,11 @@ static void desire_position__row_bottom(void **state) {
 	struct Head *head1 = head_init_dp(7, 5);
 	struct Head *head2 = head_init_dp(2, 1);
 
-	ppmap_put_many(g_displ->heads, "0", head0, "1", head1, "2", head2, NULL);
+	ppmap_put_many(g_displ->heads,
+			H0, head0,
+			H1, head1,
+			H2, head2,
+			NULL);
 
 	const struct Pset *head_set = ppmap_vals_pset(g_displ->heads);
 
@@ -312,7 +331,7 @@ static void desire_enabled__disabled(void **state) {
 	struct Head *head = head_init();
 	head->name = strdup("head0");
 	head->desired.enabled = true;
-	ppmap_put(g_displ->heads, head, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -326,12 +345,12 @@ static void desire_enabled__disabled(void **state) {
 
 static void desire_enabled__lid_closed_many(void **state) {
 	struct Head *head0 = head_n("head0");
-	ppmap_put(g_displ->heads, head0, head0);
+	ppmap_put(g_displ->heads, H0, head0);
 
 	head0->desired.enabled = true;
 
 	struct Head *head1 = head_n("head1");
-	ppmap_put(g_displ->heads, head1, head1);
+	ppmap_put(g_displ->heads, H1, head1);
 
 	head1->desired.enabled = true;
 
@@ -345,7 +364,7 @@ static void desire_enabled__lid_closed_many(void **state) {
 
 static void desire_enabled__lid_closed_one(void **state) {
 	struct Head *head = head_n("head");
-	ppmap_put(g_displ->heads, head, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	head->desired.enabled = true;
 
@@ -359,7 +378,7 @@ static void desire_enabled__lid_closed_one(void **state) {
 
 static void desire_enabled__lid_closed_one_disabled(void **state) {
 	struct Head *head = head_n("head0");
-	ppmap_put(g_displ->heads, head, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	head->desired.enabled = true;
 
@@ -375,7 +394,7 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 
 static void desire_enabled__override(void **state) {
 	struct Head *head = head_n("head0");
-	ppmap_put(g_displ->heads, head, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	head->desired.enabled = false;
 	head->overrided_enabled = OverrideTrue;
@@ -393,7 +412,7 @@ static void desire_enabled__override(void **state) {
 
 static void desire_enabled__override_reset(void **state) {
 	struct Head *head = head_n("head0");
-	ppmap_put(g_displ->heads, head, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	head->desired.enabled = true;
 	head->overrided_enabled = OverrideFalse;
@@ -411,7 +430,7 @@ static void desire_enabled__override_reset(void **state) {
 
 static void desire_enabled__no_override(void **state) {
 	struct Head *head = head_n("head");
-	ppmap_put(g_displ->heads, head, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	head->desired.enabled = false;
 	head->overrided_enabled = OverrideFalse;
@@ -429,9 +448,9 @@ static void desire_mode__disabled(void **state) {
 	struct Head *head = head_n("head");
 	struct Mode *mode = mode_h(head);
 
+	ppmap_put(head->modes, MD, mode);
 	head->desired.enabled = false;
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
+	head->desired.mode = ppmap_get(head->modes, MD);
 
 	desire_mode(head);
 
@@ -447,9 +466,9 @@ static void desire_mode__no_mode(void **state) {
 	struct Head *head = head_n("head");
 	struct Mode *mode = mode_h(head);
 
+	ppmap_put(head->modes, MD, mode);
 	head->desired.enabled = true;
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
+	head->desired.mode = ppmap_get(head->modes, MD);
 
 	expect_ptr(__wrap_head_find_mode, head, head);
 	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
@@ -468,10 +487,11 @@ static void desire_mode__no_mode_warned(void **state) {
 	struct Head *head = head_n("head");
 	struct Mode *mode = mode_h(head);
 
+	ppmap_put(head->modes, MD, mode);
 	head->desired.enabled = true;
-	head->desired.mode = mode;
+	head->desired.mode = ppmap_get(head->modes, MD);
+
 	head->warned_no_mode = true;
-	pset_add(head->modes, mode);
 
 	expect_ptr(__wrap_head_find_mode, head, head);
 	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
@@ -488,22 +508,22 @@ static void desire_mode__no_mode_warned(void **state) {
 
 static void desire_mode__ok(void **state) {
 	struct Head *head = head_n("head");
-	const struct Mode *mode0 = mode_h_whr(head, 1, 2, 3);
+	const struct Mode *mode_des = mode_h_whr(head, 1, 2, 3);
 
+	ppmap_put(head->modes, MD, mode_des);
 	head->desired.enabled = true;
-	head->desired.mode = mode0;
-	pset_add(head->modes, mode0);
+	head->desired.mode = ppmap_get(head->modes, MD);
 
-	struct Mode *mode1 = mode_h_whr(head, 4, 5, 6);
-	pset_add(head->modes, mode1);
+	struct Mode *mode2 = mode_h_whr(head, 4, 5, 6);
+	ppmap_put(head->modes, M0, mode2);
 
 	expect_ptr(__wrap_head_find_mode, head, head);
-	will_return_ptr_type(__wrap_head_find_mode, mode1, struct Mode*);
+	will_return_ptr_type(__wrap_head_find_mode, mode2, struct Mode*);
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.mode, mode1);
-	assert_ptr_equal(head->desired.mode, mode1);
+	assert_mode_equal(head->desired.mode, mode2);
+	assert_ptr_equal(head->desired.mode, mode2);
 	assert_true(head->desired.enabled);
 	assert_false(head->warned_no_mode);
 
@@ -690,8 +710,8 @@ static void desire_scaled_dimensions__default(void **state) {
 
 	// no scale
 	const struct Mode *mode = mode_h_whr(head, 200, 100, 0);
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
+	ppmap_put(head->modes, MD, mode);
+	head->desired.mode = ppmap_get(head->modes, MD);
 
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1);
@@ -704,8 +724,8 @@ static void desire_scaled_dimensions__transform(void **state) {
 	struct Head *head = head_init();
 
 	const struct Mode *mode = mode_h_whr(head, 200, 100, 0);
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
+	ppmap_put(head->modes, MD, mode);
+	head->desired.mode = ppmap_get(head->modes, MD);
 
 	// double, not rotated
 	head->desired.scale = wl_fixed_from_double(0.5);
@@ -730,8 +750,8 @@ static void desire_scaled_dimensions__dimensions(void **state) {
 	struct Head *head = head_init();
 
 	const struct Mode *mode = mode_h_whr(head, 3840, 2160, 0);
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
+	ppmap_put(head->modes, MD, mode);
+	head->desired.mode = ppmap_get(head->modes, MD);
 
 	head->desired.scale = head_get_fixed_scale(1.0);
 	desire_scaled_dimensions(head);

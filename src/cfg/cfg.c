@@ -86,7 +86,7 @@ struct Cfg *cfg_init(void) {
 	cfg->adaptive_sync_off     = sset_init();
 	cfg->disableds             = cfg_disabled_pset_init();
 	cfg->max_preferred_refresh = sset_init();
-	cfg->modes                 = mode_spmap_equal_init();
+	cfg->modes                 = mode_spmap_init();
 	cfg->order_name_desc       = sset_init();
 	cfg->scales                = simap_init();
 	cfg->transforms            = simap_init();
@@ -236,11 +236,11 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 		}
 		merged->callback_cmd = strdup(from->callback_cmd);
 	}
-	pset_add_all_clone     (merged->disableds,         from->disableds);
+	pset_add_all_clone      (merged->disableds,         from->disableds);
 	spmap_put_all_clone_free(merged->modes,             from->modes);
-	simap_put_all          (merged->scales,            from->scales);
-	simap_put_all          (merged->transforms,        from->transforms);
-	sset_add_all           (merged->adaptive_sync_off, from->adaptive_sync_off);
+	simap_put_all           (merged->scales,            from->scales);
+	simap_put_all           (merged->transforms,        from->transforms);
+	sset_add_all            (merged->adaptive_sync_off, from->adaptive_sync_off);
 
 	// replace
 	sset_free(merged->order_name_desc);

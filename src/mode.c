@@ -9,10 +9,10 @@
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
+#include "ppmap.h"
 #include "pset.h"
 #include "spmap.h"
 #include "str.h"
-#include "wlr-output-management-unstable-v1.h"
 
 struct Mode *mode_init(void) {
 	struct Mode *mode = calloc(1, sizeof(struct Mode));
@@ -35,16 +35,7 @@ struct Mode *mode_clone(const struct Mode * const from) {
 	return to;
 }
 
-const struct Pset *mode_pset_ptr_init(void) {
-	const struct PsetParams params = {
-		.free_val = (fn_free)mode_free,
-		.str_val = (fn_str)mode_str,
-		.clone_val = (fn_clone)mode_clone,
-	};
-	return pset_init_with(params);
-}
-
-const struct SPmap *mode_spmap_equal_init(void) {
+const struct SPmap *mode_spmap_init(void) {
 	const struct SPmapParams params = {
 		.equal_val = (fn_equal)mode_equal,
 		.free_val = (fn_free)mode_free,
@@ -54,13 +45,13 @@ const struct SPmap *mode_spmap_equal_init(void) {
 	return spmap_init_with(params);
 }
 
-const struct SPmap *mode_spmap_ptr_init(void) {
-	const struct SPmapParams params = {
+const struct PPmap *mode_ppmap_init(void) {
+	const struct PPmapParams params = {
 		.free_val = (fn_free)mode_free,
 		.str_val = (fn_str)mode_str,
 		.clone_val = (fn_clone)mode_clone,
 	};
-	return spmap_init_with(params);
+	return ppmap_init_with(params);
 }
 
 void mode_free(struct Mode *mode) {
@@ -115,7 +106,13 @@ char *mode_str(const struct Mode * const mode) {
 	if (!mode)
 		return NULL;
 
-	bool preferred = mode->head ? mode->head->mode_preferred == mode : false;
+	// TODO unravel
+	bool preferred = false;
+	const struct Head *head = mode->head;
+	if (head) {
+		const struct Mode *mode_pref = ppmap_get(mode->head->modes, mode->head->zwlr_mode_pref);
+		preferred = mode_pref == mode;
+	}
 
 	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
 			mode->width,
@@ -145,10 +142,6 @@ char *mode_str_brief(const struct Mode * const mode) {
 				mode->height
 				);
 	}
-}
-
-bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1 *zwlr_mode) {
-	return mode ? mode->zwlr_mode == zwlr_mode : false;
 }
 
 bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target) {
@@ -185,11 +178,11 @@ double mode_scale(const struct Mode* const mode) {
 	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
 }
 
-const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct Pset* modes) {
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PPmap* const modes) {
 	if (!mode_target || !modes)
 		return NULL;
 
-	const struct Pset *candidates = pset_clone(modes);
+	const struct Pset *candidates = ppmap_vals_pset(modes);
 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
@@ -201,11 +194,11 @@ const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const 
 	return mode;
 }
 
-const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct Pset* const modes) {
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PPmap* const modes) {
 	if (!mode_target || !modes)
 		return NULL;
 
-	const struct Pset *candidates = pset_clone(modes);
+	const struct Pset *candidates = ppmap_vals_pset(modes);
 
 	// search from the top down
 	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);

@@ -33,8 +33,8 @@ static char *head_str(const struct Head *head) {
 struct Head *head_init(void) {
 	struct Head *head = calloc(1, sizeof(struct Head));
 
-	head->modes = mode_pset_ptr_init();
-	head->modes_failed = mode_pset_ptr_init();
+	head->modes = mode_ppmap_init();
+	head->modes_failed = mode_ppmap_init();
 
 	return head;
 }
@@ -62,25 +62,12 @@ const struct PPmap *head_ppmap_init(void) {
 	return ppmap_init_with(params);
 }
 
-// add mode to modes_orphaned if it's not present in modes or failed modes
-static void add_orphaned_mode(const struct Pset *modes_orphaned, const struct Head *head, const struct Mode *mode) {
-	if (mode && !pset_contains(head->modes, mode) && !pset_contains(head->modes_failed, mode)) {
-		pset_add(modes_orphaned, mode);
-	}
-}
-
 void head_free(struct Head *head) {
 	if (!head)
 		return;
 
-	const struct Pset *modes_orphaned = mode_pset_ptr_init();
-	add_orphaned_mode(modes_orphaned, head, head->mode_preferred);
-	add_orphaned_mode(modes_orphaned, head, head->current.mode);
-	add_orphaned_mode(modes_orphaned, head, head->desired.mode);
-	pset_free_vals(modes_orphaned);
-
-	pset_free_vals(head->modes);
-	pset_free_vals(head->modes_failed);
+	ppmap_free_vals(head->modes);
+	ppmap_free_vals(head->modes_failed);
 
 	free(head->name);
 	free(head->description);
@@ -98,9 +85,6 @@ void head_release_mode(struct Mode *mode) {
 	struct Head *head = mode->head;
 
 	if (head) {
-		if (head->mode_preferred == mode) {
-			head->mode_preferred = NULL;
-		}
 		if (head->desired.mode == mode) {
 			head->desired.mode = NULL;
 		}
@@ -108,9 +92,7 @@ void head_release_mode(struct Mode *mode) {
 			head->current.mode = NULL;
 		}
 
-		if (!pset_remove_free(head->modes, mode)) {
-			mode_free(mode);
-		}
+		ppmap_remove_free(head->modes, mode->zwlr_mode);
 	} else {
 		mode_free(mode);
 	}
@@ -150,7 +132,7 @@ void head_set_description(struct Head * const head, const char *description) {
 	}
 }
 
-struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1 *zwlr_mode) {
+struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1* const zwlr_mode) {
 	if (!head || !zwlr_mode)
 		return NULL;
 
@@ -158,31 +140,29 @@ struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1 
 	mode->head = head;
 	mode->zwlr_mode = zwlr_mode;
 
-	pset_add(head->modes, mode);
+	ppmap_put(head->modes, zwlr_mode, mode);
 
 	return mode;
 }
 
-void head_set_current_mode(struct Head * const head, const struct zwlr_output_mode_v1 *zwlr_mode) {
+void head_set_current_mode(struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode) {
 	if (!head || !zwlr_mode)
 		return;
 
-	const struct Mode *mode = pset_find(head->modes, (fn_2pred)mode_is_zwlr_mode, zwlr_mode);
-
-	if (mode) {
-		head->current.mode = mode;
+	if (ppmap_get(head->modes, zwlr_mode)) {
+		head->current.mode = ppmap_get(head->modes, zwlr_mode);
 	}
 }
 
-void head_set_mode_preferred(const struct Mode * const mode) {
+void head_set_mode_pref(const struct Mode * const mode, const struct zwlr_output_mode_v1* const zwlr_mode) {
 	if (!mode || !mode->head)
 		return;
 
 	struct Head *head = mode->head;
 
-	if (head->mode_preferred && head->mode_preferred != mode) {
-
-		char *existing_str = mode_str(head->mode_preferred);
+	if (head->zwlr_mode_pref && head->zwlr_mode_pref != zwlr_mode) {
+		const struct Mode *mode_cur_pref = ppmap_get(mode->head->modes, mode->head->zwlr_mode_pref);
+		char *existing_str = mode_str(mode_cur_pref);
 		char *new_str = mode_str(mode);
 
 		if (head->name) {
@@ -200,7 +180,7 @@ void head_set_mode_preferred(const struct Mode * const mode) {
 	}
 
 	// set new preferred
-	mode->head->mode_preferred = mode;
+	head->zwlr_mode_pref = zwlr_mode;
 }
 
 void heads_reapply(const struct PPmap *heads) {
@@ -216,13 +196,13 @@ void heads_reapply(const struct PPmap *heads) {
 		log_info("    %d: Clear current mode", step++);
 		log_info("    %d: Disable", step++);
 
-		if (pset_size(head->modes_failed) > 0) {
+		if (ppmap_size(head->modes_failed) > 0) {
 			log_info("    %d: Clear failed modes:", step++);
 
-			for (const struct PsetIt *mit = pset_it(head->modes_failed); mit; mit = pset_it_next(mit)) {
+			for (const struct PPmapIt *mit = ppmap_it(head->modes_failed); mit; mit = ppmap_it_next(mit)) {
 
 				// add all failed back to modes
-				pset_add(head->modes, mit->val);
+				ppmap_put(head->modes, mit->key, mit->val);
 
 				char *str = mode_str(mit->val);
 				log_info("      %s", str);
@@ -230,8 +210,8 @@ void heads_reapply(const struct PPmap *heads) {
 			}
 
 			// clear failed
-			pset_free(head->modes_failed);
-			head->modes_failed = mode_pset_ptr_init();
+			ppmap_free(head->modes_failed);
+			head->modes_failed = mode_ppmap_init();
 		}
 
 		if (head->current.enabled) {
@@ -405,7 +385,7 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	if (!head)
 		return NULL;
 
-	if (pset_size(head->modes) == 0) {
+	if (ppmap_size(head->modes) == 0) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head->name);
 		callback(ERROR, head_human(head), "\n  No mode, disabling");
@@ -415,13 +395,13 @@ const struct Mode *head_find_mode(struct Head * const head) {
 	const struct Mode *mode = NULL;
 
 	// maybe a cfg mode
-	struct Mode *mode_cfg = (struct Mode*)spmap_find_key(g_cfg->modes, (fn_2pred_str)head_name_desc_matches_head, head).val;
-	if (mode_cfg) {
-		mode = mode_best_satisfying(mode_cfg, head->modes);
-		if (!mode && !mode_cfg->warned_no_mode) {
-			mode_cfg->warned_no_mode = true;
+	struct Mode *cfg_mode = (struct Mode*)spmap_find_key(g_cfg->modes, (fn_2pred_str)head_name_desc_matches_head, head).val;
+	if (cfg_mode) {
+		mode = mode_best_satisfying(cfg_mode, head->modes);
+		if (!mode && !cfg_mode->warned_no_mode) {
+			cfg_mode->warned_no_mode = true;
 
-			char *um = mode_str_brief(mode_cfg);
+			char *um = mode_str_brief(cfg_mode);
 
 			log_warn(NULL);
 			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, um);
@@ -437,10 +417,13 @@ const struct Mode *head_find_mode(struct Head * const head) {
 
 	// always try preferred
 	if (!mode) {
-		if (sset_find(g_cfg->max_preferred_refresh, (fn_2pred_str)head_name_desc_matches_head, head)) {
-			mode = mode_max_refresh(head->mode_preferred, head->modes);
-		} else {
-			mode = head->mode_preferred;
+		const struct Mode *mode_pref = ppmap_get(head->modes, head->zwlr_mode_pref);
+		if (mode_pref) {
+			if (sset_find(g_cfg->max_preferred_refresh, (fn_2pred_str)head_name_desc_matches_head, head)) {
+				mode = mode_max_refresh(mode_pref, head->modes);
+			} else {
+				mode = mode_pref;
+			}
 		}
 		if (!mode && !head->warned_no_preferred) {
 			head->warned_no_preferred = true;
@@ -476,7 +459,7 @@ const struct Mode *head_max_mode(const struct Head * const head) {
 
 	const struct Mode *mode_max = NULL;
 
-	for (const struct PsetIt *it = pset_it(head->modes); it; it = pset_it_next(it)) {
+	for (const struct PPmapIt *it = ppmap_it(head->modes); it; it = ppmap_it_next(it)) {
 		const struct Mode *mode = it->val;
 
 		if (!mode_max) {

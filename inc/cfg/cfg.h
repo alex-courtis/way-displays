@@ -26,7 +26,7 @@ struct Cfg {
 
 	// by name_desc
 	const struct SImap *scales;                   // SCALE               milliscale
-	const struct SPmap *modes;                    // MODE                mode_spmap_equal_init
+	const struct SPmap *modes;                    // MODE                mode_spmap_init
 	const struct SImap *transforms;               // TRANSFORM           wl_output_transform
 	const struct Sset *adaptive_sync_off;         // VRR_OFF
 	const struct Sset *max_preferred_refresh;     // MAX_PREFERRED_REFRESH

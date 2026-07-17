@@ -37,12 +37,12 @@ int yaml_map_from_state         (struct MC *c); // g_displ->heads and g_lid
 // yaml_map_add_pset: fn_yaml_node_from_type
 int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condition);
 int yaml_node_from_disabled(struct MC *c, const struct CfgDisabled*  const disabled);
-int yaml_map_from_mode     (struct MC *c, const struct Mode*      const mode);
 
 // yaml_map_add_pslist: fn_yaml_node_from_type
 int yaml_map_from_head(struct MC *c, const struct Head* const head);
 
 // yaml_map_add_spmap: fn_yaml_node_from_key_type
+int yaml_map_from_mode      (struct MC *c, const void* const unused,    const struct Mode* const mode);
 int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const struct Mode* const mode);
 
 // yaml_map_add_simap: fn_node_from_yaml_key_size_t

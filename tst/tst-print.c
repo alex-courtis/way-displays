@@ -28,6 +28,32 @@
 
 #include "info/print.h"
 
+static void *H0 = "H0";
+static void *H1 = "H1";
+static void *H2 = "H2";
+static void *H3 = "H3";
+static void *H4 = "H4";
+static void *H5 = "H5";
+static void *H6 = "H6";
+static void *H7 = "H7";
+static void *H8 = "H8";
+static void *H9 = "H9";
+
+static void *MC = "MC";
+static void *MD = "MD";
+static void *MF = "MF";
+static void *M0 = "M0";
+static void *M1 = "M1";
+static void *M2 = "M2";
+static void *M3 = "M3";
+static void *M4 = "M4";
+static void *M5 = "M5";
+static void *M6 = "M6";
+static void *M7 = "M7";
+static void *M8 = "M8";
+static void *M9 = "M9";
+static void *M10 = "M10";
+
 struct State {
 	struct Head *head1;
 	struct Head *head2;
@@ -45,29 +71,28 @@ int before_each(void **state) {
 
 	s->head1 = head_init();
 
-	s->head1->current.mode = mode_h_whr(s->head1, 100, 200, 30000);
-	s->head1->mode_preferred = s->head1->current.mode;
-
-	s->head1->desired.mode = mode_h_whr(s->head1, 400, 500, 60000);
-
-	pset_add_many(s->head1->modes,
-			mode_h_whr(s->head1, 100, 200, 29999), // less than current
-			s->head1->current.mode,
-			mode_h_whr(s->head1, 100, 200, 30001), // more than current
-			s->head1->desired.mode,
-			mode_h_whr(s->head1, 700, 800, 89999), // group with failed
-			mode_h_whr(s->head1, 700, 800, 90001), // end
-			mode_h_whr(s->head1, 1000, 1000, 49499),
-			mode_h_whr(s->head1, 1000, 1000, 49500), // group start
-			mode_h_whr(s->head1, 1000, 1000, 49999), //
-			mode_h_whr(s->head1, 1000, 1000, 50000), //
-			mode_h_whr(s->head1, 1000, 1000, 50100), //
-			mode_h_whr(s->head1, 1000, 1000, 50499), // group
-			mode_h_whr(s->head1, 1000, 1000, 50500),
+	ppmap_put_many(s->head1->modes,
+			M0, mode_h_whr(s->head1, 100, 200, 29999), // less than current
+			MC, mode_h_whr(s->head1, 100, 200, 30000), // current
+			M1, mode_h_whr(s->head1, 100, 200, 30001), // more than current
+			MD, mode_h_whr(s->head1, 400, 500, 60000), // desired
+			M2, mode_h_whr(s->head1, 700, 800, 89999), // group with failed
+			M3, mode_h_whr(s->head1, 700, 800, 90001), // end
+			M4, mode_h_whr(s->head1, 1000, 1000, 49499),
+			M5, mode_h_whr(s->head1, 1000, 1000, 49500), // group start
+			M6, mode_h_whr(s->head1, 1000, 1000, 49999), //
+			M7, mode_h_whr(s->head1, 1000, 1000, 50000), //
+			M8, mode_h_whr(s->head1, 1000, 1000, 50100), //
+			M9, mode_h_whr(s->head1, 1000, 1000, 50499), // group
+			M10, mode_h_whr(s->head1, 1000, 1000, 50500),
 			NULL);
 
-	pset_add_many(s->head1->modes_failed,
-			mode_h_whr(s->head1, 700, 800, 90000),
+	s->head1->current.mode = ppmap_get(s->head1->modes, MC);
+	s->head1->desired.mode = ppmap_get(s->head1->modes, MD);
+	s->head1->zwlr_mode_pref = MC;
+
+	ppmap_put_many(s->head1->modes_failed,
+			MF, mode_h_whr(s->head1, 700, 800, 90000),
 			NULL);
 
 	s->head1->name = strdup("name1");
@@ -92,16 +117,17 @@ int before_each(void **state) {
 	s->head1->desired.transform = WL_OUTPUT_TRANSFORM_90;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	ppmap_put(s->heads, "head1", s->head1);
+	ppmap_put(s->heads, H1, s->head1);
 
 
 	s->head2 = head_init();
 
-	s->head2->current.mode = mode_h_whr(s->head2, 1100, 1200, 130000);
-	s->head2->desired.mode = mode_h_whr(s->head2, 1400, 1500, 160000);
-
-	pset_add(s->head2->modes, s->head2->current.mode);
-	pset_add(s->head2->modes, s->head2->desired.mode);
+	ppmap_put_many(s->head2->modes,
+			MC, mode_h_whr(s->head2, 1100, 1200, 130000), // current
+			MD, mode_h_whr(s->head2, 1400, 1500, 160000), // desired
+			NULL);
+	s->head2->current.mode = ppmap_get(s->head2->modes, MC);
+	s->head2->desired.mode = ppmap_get(s->head2->modes, MD);
 
 	s->head2->name = strdup("name2");
 	s->head2->width_mm = 3;
@@ -124,7 +150,7 @@ int before_each(void **state) {
 	s->head2->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	ppmap_put(s->heads, "head2", s->head2);
+	ppmap_put(s->heads, H2, s->head2);
 
 	*state = s;
 	return 0;
@@ -667,61 +693,67 @@ static void print_mode_fail__head(void **state) {
 static void print_heads_outstanding__many(void **state) {
 	struct Displ *displ = displ_init();
 
+	const struct Mode *mode;
+
 	will_return_int(__wrap_log_get_threshold, DEBUG);
 
 	struct Head *head_reapply = head_n("re");
 	head_reapply->reapply_required = true;
-	ppmap_put(displ->heads, "re", head_reapply);
+	ppmap_put(displ->heads, H0, head_reapply);
 
 	struct Head *head_mode = head_n("mo");
-	head_mode->desired.mode = mode_init();
-	ppmap_put(displ->heads, "mo", head_mode);
+	mode = mode_init();
+	ppmap_put(head_mode->modes, M0, mode);
+	head_mode->desired.mode = mode;
+	ppmap_put(displ->heads, H1, head_mode);
 
 	struct Head *head_disable = head_n("di");
 	head_disable->current.enabled = true;
 	head_disable->desired.enabled = false;
-	ppmap_put(displ->heads, "di", head_disable);
+	ppmap_put(displ->heads, H2, head_disable);
 
 	struct Head *head_vrr = head_n("vr");
 	head_vrr->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head_vrr->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	ppmap_put(displ->heads, "vr", head_vrr);
+	ppmap_put(displ->heads, H3, head_vrr);
 
 	struct Head *head_enable = head_n("en");
 	head_enable->current.enabled = false;
 	head_enable->desired.enabled = true;
-	ppmap_put(displ->heads, "en", head_enable);
+	ppmap_put(displ->heads, H4, head_enable);
 
 	struct Head *head_scale = head_n("sc");
 	head_scale->current.scale = 1;
 	head_scale->desired.scale = 2;
-	ppmap_put(displ->heads, "sc", head_scale);
+	ppmap_put(displ->heads, H5, head_scale);
 
 	struct Head *head_x = head_n("x");
 	head_x->current.x = 1;
 	head_x->desired.x = 2;
-	ppmap_put(displ->heads, "x", head_x);
+	ppmap_put(displ->heads, H6, head_x);
 
 	struct Head *head_y = head_n("y");
 	head_y->current.y = 1;
 	head_y->desired.y = 2;
-	ppmap_put(displ->heads, "y", head_y);
+	ppmap_put(displ->heads, H7, head_y);
 
 	struct Head *head_transform = head_n("tr");
 	head_transform->current.transform = WL_OUTPUT_TRANSFORM_90;
 	head_transform->desired.transform = WL_OUTPUT_TRANSFORM_180;
-	ppmap_put(displ->heads, "tr", head_transform);
+	ppmap_put(displ->heads, H8, head_transform);
 
 	struct Head *head_all = head_n("a");
+	mode = mode_init();
+	ppmap_put(head_all->modes, M0, mode);
 	head_all->reapply_required = true;
-	head_all->desired.mode = mode_init();
+	head_all->desired.mode = mode;
 	head_all->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head_all->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head_all->current.x = 1;
 	head_all->desired.x = 2;
 	head_all->current.enabled = false;
 	head_all->desired.enabled = true;
-	ppmap_put(displ->heads, "a", head_all);
+	ppmap_put(displ->heads, H9, head_all);
 
 	displ->state = IDLE;
 	print_head_queue(DEBUG, displ, "foo");

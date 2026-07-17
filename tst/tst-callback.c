@@ -14,10 +14,14 @@
 #include "displ.h"
 #include "enum.h"
 #include "head.h"
+#include "ppmap.h"
 #include "ssmap.h"
 #include "str.h"
 
 #include "info/callback.h"
+
+static void *MC = "MC";
+static void *MD = "MD";
 
 struct State {
 	struct Head *head1;
@@ -34,8 +38,13 @@ int before_each(void **state) {
 
 	s->head1->name = strdup("name1");
 	s->head1->description = strdup("description1");
-	s->head1->current.mode = mode_h_whr(s->head1, 100, 200, 30000);
-	s->head1->desired.mode = mode_h_whr(s->head1, 400, 500, 60000);
+
+	ppmap_put_many(s->head1->modes,
+			MC, mode_h_whr(s->head1, 100, 200, 30000),
+			MD, mode_h_whr(s->head1, 400, 500, 60000),
+			NULL);
+	s->head1->current.mode = ppmap_get(s->head1->modes, MC);
+	s->head1->desired.mode = ppmap_get(s->head1->modes, MD);
 
 	*state = s;
 	return 0;

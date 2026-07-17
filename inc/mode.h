@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "pset.h"
-#include "wlr-output-management-unstable-v1.h"
+#include "ppmap.h"
 
 /*
  * Mode contexts:
@@ -15,8 +14,10 @@
  */
 
 struct Mode {
+	// TODO this has to go
 	struct Head *head;
 
+	// TODO this has to go
 	struct zwlr_output_mode_v1 *zwlr_mode;
 
 	int32_t width;
@@ -37,13 +38,10 @@ struct Mode *mode_init(void);
 struct Mode *mode_clone(const struct Mode * const from);
 
 // raw pointers, for head modes
-const struct Pset *mode_pset_ptr_init(void);
-
-// raw pointers, for head modes
-const struct SPmap *mode_spmap_ptr_init(void);
+const struct PPmap *mode_ppmap_init(void);
 
 // mode_equal, for cfg modes
-const struct SPmap *mode_spmap_equal_init(void);
+const struct SPmap *mode_spmap_init(void);
 
 void mode_free(struct Mode *mode);
 
@@ -84,8 +82,6 @@ char *mode_str_brief(const struct Mode * const mode);
  * predicates
  */
 
-bool mode_is_zwlr_mode(const struct Mode *mode, const struct zwlr_output_mode_v1 *zwlr_mode);
-
 // target is MAX  or  WxH@Hz  or  WxH with no target refresh
 bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target);
 
@@ -107,10 +103,10 @@ double mode_scale(const struct Mode* const mode);
  */
 
 // highest refresh matching target resolution, NULL when no target
-const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct Pset* modes);
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PPmap* const modes);
 
 // mode exactly matching target otherwise mode_satisfies, NULL when no target
-const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct Pset* const modes);
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PPmap* const modes);
 
 #endif // MODE_H
 

@@ -127,13 +127,13 @@ double __wrap_mode_dpi(const struct Mode* const mode) {
 	return mock_type(double);
 }
 
-const struct Mode *__wrap_mode_best_satisfying(const struct Mode * const mode_target, const struct Pset* const modes) {
+const struct Mode *__wrap_mode_best_satisfying(const struct Mode * const mode_target, const struct PPmap* const modes) {
 	check_expected_ptr(mode_target);
 	check_expected_ptr(modes);
 	return mock_ptr_type_checked(struct Mode*);
 }
 
-const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target, const struct Pset* modes) {
+const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target, const struct PPmap* modes) {
 	check_expected_ptr(mode_target);
 	check_expected_ptr(modes);
 	return mock_ptr_type_checked(struct Mode*);

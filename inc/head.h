@@ -13,6 +13,7 @@
 #include "wlr-output-management-unstable-v1.h"
 
 struct HeadState {
+	// TODO current and desired as keys
 	const struct Mode *mode;
 	wl_fixed_t scale;
 	bool enabled;
@@ -27,11 +28,10 @@ struct Head {
 
 	struct zwlr_output_configuration_head_v1 *zwlr_config_head;
 
-	const struct Pset* modes;          // mode_pset_ptr_init
-	const struct Pset *modes_failed;   // moved from modes
+	const struct PPmap *modes;        // mode_ppmap_init - Modes by zwlr_output_mode_v1
+	const struct PPmap *modes_failed; // mode_ppmap_init - moved out of modes
 
-	// TODO modes/modes_failed maps, with preferred, current and desired as keys
-	const struct Mode *mode_preferred; // pointer into modes
+	const struct zwlr_output_mode_v1 *zwlr_mode_pref; // key to modes/modes_failed
 
 	char *name;
 	char *description;
@@ -87,13 +87,13 @@ void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
 void head_set_description(struct Head * const head, const char *description);
 
 // add a new entry to modes and return it, NULL on any NULL input
-struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1 *zwlr_mode);
+struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1* const zwlr_mode);
 
 // set current.mode, does nothing on NULL inputs or zwlr_mode not present
-void head_set_current_mode(struct Head * const head, const struct zwlr_output_mode_v1 *zwlr_mode);
+void head_set_current_mode(struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode);
 
 // set preferred mode, NOP and warning if preferred mode already set
-void head_set_mode_preferred(const struct Mode * const mode);
+void head_set_mode_pref(const struct Mode * const mode, const struct zwlr_output_mode_v1* const zwlr_mode);
 
 // clear current and failed modes, flag for reapply
 void heads_reapply(const struct PPmap *heads);

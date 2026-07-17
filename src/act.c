@@ -79,15 +79,20 @@ bool act_handle_cancelled(void) {
 void act_handle_failure(void) {
 	struct Head *head = g_displ->delta.head;
 
+	// TODO consider putting data in delta, for zwlr_mode
 	switch(g_displ->delta.element) {
 		case MODE:
 			if (head) {
 				print_mode_fail(ERROR, head, head->desired.mode);
 				callback_mode_fail(ERROR, head, head->desired.mode);
 
+				const struct Mode *mode_failed = head->desired.mode;
+
 				// mode setting failure, try again with another mode
-				pset_add(head->modes_failed, head->desired.mode);
-				pset_remove(head->modes, head->desired.mode);
+				if (mode_failed) {
+					ppmap_remove(head->modes, mode_failed->zwlr_mode);
+					ppmap_put(head->modes_failed, mode_failed->zwlr_mode, mode_failed);
+				}
 
 				// current mode may be misreported
 				head->current.mode = NULL;

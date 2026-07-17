@@ -20,12 +20,16 @@
 #include "head.h"
 #include "mode.h"
 #include "ppmap.h"
-#include "pset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "act.h"
 
 extern int g_cancellation_retries;
+
+static void *H0 = "H0";
+
+static void *MC = "MC";
+static void *MD = "MD";
 
 static int before_each(void **state) {
 	g_cfg = cfg_default();
@@ -50,7 +54,7 @@ static void act_apply__no_heads(void **state) {
 }
 
 static void act_apply__no_changes(void **state) {
-	ppmap_put(g_displ->heads, "h", head_init());
+	ppmap_put(g_displ->heads, H0, head_init());
 
 	act_apply();
 
@@ -100,7 +104,8 @@ static void act_apply__mode(void **state) {
 	ppmap_put(g_displ->heads, zwlr_head, head);
 
 	struct Mode *mode = mode_h(head);
-	head->desired.mode = mode;
+	ppmap_put(head->modes, zwlr_mode, mode);
+	head->desired.mode = ppmap_get(head->modes, zwlr_mode);
 	mode->zwlr_mode = zwlr_mode;
 
 	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
@@ -115,7 +120,7 @@ static void act_apply__mode(void **state) {
 	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_config_head, struct zwlr_output_configuration_head_v1*);
 
 	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, zwlr_output_configuration_head_v1, zwlr_config_head);
-	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, mode, head->desired.mode->zwlr_mode);
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, mode, zwlr_mode);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zwlr_config);
 
@@ -287,10 +292,13 @@ static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
 }
 
 static void act_handle_success__head_changing_mode(void **state) {
+	const struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy1";
+
 	struct Head *head = head_n("head");
+
 	struct Mode *mode = mode_h(head);
-	head->desired.mode = mode;
-	pset_add(head->modes, mode);
+	ppmap_put(head->modes, zwlr_mode, mode);
+	head->desired.mode = ppmap_get(head->modes, zwlr_mode);
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
@@ -323,16 +331,19 @@ static void act_handle_success__ok(void **state) {
 
 static void act_handle_failure__mode(void **state) {
 	struct Head *head = head_n("nam");
-	const struct Mode *mode_cur = mode_h_whr(head, 1, 2, 3);
-	const struct Mode *mode_des = mode_h_whr(head, 4, 5, 6);
 
-	head->current.mode = mode_cur;
-	head->desired.mode = mode_des;
+	struct Mode *mode_cur = mode_h_whr(head, 1, 2, 3);
+	mode_cur->zwlr_mode = MC;
 
-	pset_add_many(head->modes,
-			mode_cur,
-			mode_des,
+	struct Mode *mode_des = mode_h_whr(head, 4, 5, 6);
+	mode_des->zwlr_mode = MD;
+
+	ppmap_put_many(head->modes,
+			MC, mode_cur,
+			MD, mode_des,
 			NULL);
+	head->current.mode = ppmap_get(head->modes, MC);
+	head->desired.mode = ppmap_get(head->modes, MD);
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
@@ -352,11 +363,11 @@ static void act_handle_failure__mode(void **state) {
 	assert_mode_equal(head->desired.mode, mode_des);
 	assert_ptr_equal(head->desired.mode, mode_des);
 
-	assert_int_equal(pset_size(head->modes), 1);
-	assert_true(pset_contains(head->modes, mode_cur));
+	assert_int_equal(ppmap_size(head->modes), 1);
+	assert_ptr_equal(ppmap_get(head->modes, MC), mode_cur);
 
-	assert_int_equal(pset_size(head->modes_failed), 1);
-	assert_true(pset_contains(head->modes_failed, mode_des));
+	assert_int_equal(ppmap_size(head->modes_failed), 1);
+	assert_ptr_equal(ppmap_get(head->modes_failed, MD), mode_des);
 
 	head_free(head);
 }
