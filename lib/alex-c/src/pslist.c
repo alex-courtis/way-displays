@@ -95,7 +95,7 @@ void *pslist_remove(struct Pslist **head, struct Pslist **item) {
 	return removed;
 }
 
-size_t pslist_remove_all(struct Pslist **head, fn_2pred pred_val, const void *data) {
+size_t pslist_remove_from(struct Pslist **head, fn_2pred pred_val, const void *data) {
 	struct Pslist *i;
 	size_t removed = 0;
 
@@ -107,7 +107,7 @@ size_t pslist_remove_all(struct Pslist **head, fn_2pred pred_val, const void *da
 	return removed;
 }
 
-size_t pslist_remove_all_free(struct Pslist **head, fn_2pred pred_val, const void *data, fn_free free_val) {
+size_t pslist_remove_from_free(struct Pslist **head, fn_2pred pred_val, const void *data, fn_free free_val) {
 	struct Pslist *i;
 	size_t removed = 0;
 
@@ -128,7 +128,7 @@ void pslist_xor_free(struct Pslist **head1, struct Pslist *head2, fn_2pred pred_
 	struct Pslist *i = head2;
 
 	while (i) {
-		if (!pslist_remove_all_free(head1, pred_val, i->val, free_val)) {
+		if (!pslist_remove_from_free(head1, pred_val, i->val, free_val)) {
 			if (clone_val) {
 				pslist_append(head1, clone_val(i->val));
 			} else {

@@ -103,10 +103,10 @@ bool pset_remove(const struct Pset* const set, const void* const val);
 bool pset_remove_free(const struct Pset* const set, const void* const val);
 
 // remove vals contained in from, return number removed [equal_val]
-size_t pset_remove_all(const struct Pset* const set, const struct Pset* const from);
+size_t pset_remove_from(const struct Pset* const set, const struct Pset* const from);
 
 // remove and free vals contained in from, return number removed [equal_val, free_val]
-size_t pset_remove_all_free(const struct Pset* const set, const struct Pset* const from);
+size_t pset_remove_from_free(const struct Pset* const set, const struct Pset* const from);
 
 // remove the it.val, it is unusable, pset_it_next must be called
 void pset_it_remove(const struct PsetIt* const it);

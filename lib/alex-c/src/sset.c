@@ -135,8 +135,8 @@ bool sset_remove(const struct Sset* const set, const char* const val) {
 	return set ? pset_remove_free(set->pset, val) : false;
 }
 
-size_t sset_remove_all(const struct Sset* const set, const struct Sset* const from) {
-	return set && from ? pset_remove_all_free(set->pset, from->pset) : false;
+size_t sset_remove_from(const struct Sset* const set, const struct Sset* const from) {
+	return set && from ? pset_remove_from_free(set->pset, from->pset) : false;
 }
 
 void sset_it_remove(const struct SsetIt* const it) {

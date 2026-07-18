@@ -258,11 +258,11 @@ struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 
 	// TODO #220 ensure that disabled toggle is still not removed
 	// https://github.com/alex-courtis/way-displays/issues/220
-	pset_remove_all_free (merged->disableds,         from->disableds);
-	spmap_remove_all_free(merged->modes,             from->modes);
-	simap_remove_all     (merged->scales,            from->scales);
-	simap_remove_all     (merged->transforms,        from->transforms);
-	sset_remove_all      (merged->adaptive_sync_off, from->adaptive_sync_off);
+	pset_remove_from_free (merged->disableds,         from->disableds);
+	spmap_remove_from_free(merged->modes,             from->modes);
+	simap_remove_from     (merged->scales,            from->scales);
+	simap_remove_from     (merged->transforms,        from->transforms);
+	sset_remove_from      (merged->adaptive_sync_off, from->adaptive_sync_off);
 
 	// any string means no callback
 	if (from->callback_cmd) {

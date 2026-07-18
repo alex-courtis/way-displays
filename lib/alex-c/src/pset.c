@@ -338,11 +338,11 @@ bool pset_remove_free(const struct Pset* const set, const void* const val) {
 	return set ? remove(set, val, set->params.free_val ? set->params.free_val : free) : false;
 }
 
-size_t pset_remove_all(const struct Pset* const set, const struct Pset* const from) {
+size_t pset_remove_from(const struct Pset* const set, const struct Pset* const from) {
 	return set && from ? remove_all(set, from, NULL) : 0;
 }
 
-size_t pset_remove_all_free(const struct Pset* const set, const struct Pset* const from) {
+size_t pset_remove_from_free(const struct Pset* const set, const struct Pset* const from) {
 	return set && from ? remove_all(set, from, set->params.free_val ? set->params.free_val : free) : 0;
 }
 

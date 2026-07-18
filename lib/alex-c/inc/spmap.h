@@ -142,10 +142,10 @@ const void *spmap_remove(const struct SPmap* const map, const char* const key);
 bool spmap_remove_free(const struct SPmap* const map, const char* const key);
 
 // remove entries matching from keys, return number removed [equal_key]
-size_t spmap_remove_all(const struct SPmap* const map, const struct SPmap* const from);
+size_t spmap_remove_from(const struct SPmap* const map, const struct SPmap* const from);
 
 // remove and free entries matching from keys, return number removed [equal_key, free_val]
-size_t spmap_remove_all_free(const struct SPmap* const map, const struct SPmap* const from);
+size_t spmap_remove_from_free(const struct SPmap* const map, const struct SPmap* const from);
 
 // remove the entry, it is unusable, spmap_it_next must be called
 void spmap_it_remove(const struct SPmapIt* const it);

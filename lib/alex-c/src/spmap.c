@@ -257,12 +257,12 @@ bool spmap_remove_free(const struct SPmap* const map, const char* const key) {
 	return map ? ppmap_remove_free(map->ppmap, key) : false;
 }
 
-size_t spmap_remove_all(const struct SPmap* const map, const struct SPmap* const from) {
-	return map && from ? ppmap_remove_all(map->ppmap, from->ppmap) : 0;
+size_t spmap_remove_from(const struct SPmap* const map, const struct SPmap* const from) {
+	return map && from ? ppmap_remove_from(map->ppmap, from->ppmap) : 0;
 }
 
-size_t spmap_remove_all_free(const struct SPmap* const map, const struct SPmap* const from) {
-	return map && from ? ppmap_remove_all_free(map->ppmap, from->ppmap) : 0;
+size_t spmap_remove_from_free(const struct SPmap* const map, const struct SPmap* const from) {
+	return map && from ? ppmap_remove_from_free(map->ppmap, from->ppmap) : 0;
 }
 
 void spmap_it_remove(const struct SPmapIt* const it) {

@@ -214,8 +214,8 @@ bool ssmap_remove(const struct SSmap* const map, const char* const key) {
 	return map ? ppmap_remove_free(map->ppmap, key) : false;
 }
 
-size_t ssmap_remove_all(const struct SSmap* const map, const struct SSmap* const from) {
-	return map && from ? ppmap_remove_all_free(map->ppmap, from->ppmap) : false;
+size_t ssmap_remove_from(const struct SSmap* const map, const struct SSmap* const from) {
+	return map && from ? ppmap_remove_from_free(map->ppmap, from->ppmap) : false;
 }
 
 void ssmap_it_remove(const struct SSmapIt* const it) {
