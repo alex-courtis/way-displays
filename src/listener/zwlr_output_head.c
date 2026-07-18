@@ -6,6 +6,8 @@
 
 #include "displ.h"
 #include "head.h"
+#include "mode.h"
+#include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
 // Head data
@@ -38,11 +40,11 @@ static void physical_size(void *data,
 static void mode_(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
+	struct Head *head = data;
 
-	struct Mode *mode = head_add_mode(data, zwlr_output_mode_v1);
+	ppmap_put(head->modes, zwlr_output_mode_v1, mode_init());
 
-	if (mode)
-		zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), mode);
+	zwlr_output_mode_v1_add_listener(zwlr_output_mode_v1, zwlr_output_mode_listener(), head);
 }
 
 static void enabled(void *data,
@@ -56,8 +58,9 @@ static void enabled(void *data,
 static void current_mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
+	struct Head *head = data;
 
-	head_set_current_mode(data, zwlr_output_mode_v1);
+	head->current.zwlr_mode = zwlr_output_mode_v1;
 }
 
 static void position(void *data,

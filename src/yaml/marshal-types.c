@@ -137,7 +137,7 @@ int yaml_map_from_ipc_request(struct MC *c, const struct IpcRequest* const ipc_r
 	return map;
 }
 
-int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_state) {
+int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_state, const struct Head* const head) {
 	if (!head_state)
 		return 0;
 
@@ -153,7 +153,8 @@ int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_st
 	yaml_map_add_int     (c, "Y",         head_state->y,                                 map);
 	yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                         map);
 	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,         map);
-	yaml_map_add_node    (c, "MODE",      yaml_map_from_mode(c, NULL, head_state->mode), map);
+
+	yaml_map_add_node    (c, "MODE",      yaml_map_from_mode(c, NULL, ppmap_get(head->modes, head_state->zwlr_mode)), map);
 
 	return map;
 }
@@ -334,9 +335,9 @@ int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	yaml_map_add_int  (c, "WIDTH_MM",       head->width_mm,                              map);
 	yaml_map_add_int  (c, "HEIGHT_MM",      head->height_mm,                             map);
 
-	yaml_map_add_node (c, "CURRENT",        yaml_map_from_head_state(c, &head->current), map);
-	yaml_map_add_node (c, "DESIRED",        yaml_map_from_head_state(c, &head->desired), map);
-	yaml_map_add_node (c, "OVERRIDES",      yaml_map_from_head_overrides(c, head),       map);
+	yaml_map_add_node (c, "CURRENT",        yaml_map_from_head_state(c, &head->current, head), map);
+	yaml_map_add_node (c, "DESIRED",        yaml_map_from_head_state(c, &head->desired, head), map);
+	yaml_map_add_node (c, "OVERRIDES",      yaml_map_from_head_overrides(c, head),             map);
 
 	yaml_map_add_node (c, "MODE_PREFERRED", yaml_map_from_mode(c, NULL, ppmap_get(head->modes, head->zwlr_mode_pref)), map);
 

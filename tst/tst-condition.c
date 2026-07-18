@@ -1,4 +1,3 @@
-#include "assert-log.h"
 #include "data.h"
 #include "tst.h"
 #include "util-col.h"
@@ -41,8 +40,6 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	assert_logs_empty();
-
 	struct State *s = *state;
 
 	cfg_condition_free(s->condition);

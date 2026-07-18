@@ -521,7 +521,7 @@ void yaml_map_into_heads(struct UC *c, struct Pslist **heads, const yaml_node_t 
 	yaml_seq_into_col(c, spmap_get(nodes, "MODES"),        head->modes,        (fn_yaml_node_into_col)yaml_map_into_modes);
 	yaml_seq_into_col(c, spmap_get(nodes, "MODES_FAILED"), head->modes_failed, (fn_yaml_node_into_col)yaml_map_into_modes);
 
-	// TODO lookup a mode in modes
+	// TODO MODE lookup a mode in modes
 	// head->mode_preferred = yaml_map_to_mode     (c, spmap_get(nodes, "MODE_PREFERRED"));
 
 	yaml_scalar_to_int      (c, &head->width_mm,    spmap_get(nodes, "WIDTH_MM"));
@@ -624,7 +624,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	if (yaml_scalar_to_boolean(c, &vrr, spmap_get(nodes, "VRR")))
 		head_state->adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	// TODO lookup a mode in modes, passed in
+	// TODO MODE lookup a mode in modes, passed in
 	// head_state->mode = yaml_map_to_mode(c, spmap_get(nodes, "MODE"));
 
 	spmap_free(nodes);

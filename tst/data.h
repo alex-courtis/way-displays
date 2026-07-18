@@ -21,6 +21,7 @@ extern void *MC;
 extern void *MD;
 extern void *MP;
 extern void *MF;
+extern void *MR;
 
 extern void *M0;
 extern void *M1;

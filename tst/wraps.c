@@ -54,9 +54,9 @@ void __wrap_fd_wd_cfg_dir_destroy(void) {
  * head
  */
 
-const struct Mode *__wrap_head_find_mode(struct Head * const head) {
+const struct zwlr_output_mode_v1 *__wrap_head_find_mode(struct Head * const head) {
 	check_expected_ptr(head);
-	return mock_ptr_type_checked(struct Mode*);
+	return mock_ptr_type_checked(struct zwlr_output_mode_v1*);
 }
 
 wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
@@ -68,10 +68,10 @@ wl_fixed_t __wrap_head_auto_scale(struct Head *head) {
  * print
  */
 
-void __wrap_print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
+void __wrap_print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode) {
 	check_expected_int(t);
 	check_expected_ptr(head);
-	check_expected_ptr(mode);
+	check_expected_ptr(zwlr_mode);
 }
 
 void __wrap_print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
@@ -107,10 +107,10 @@ void __wrap_callback(const enum LogThreshold t, const char * const msg1, const c
 	check_expected_ptr(msg2);
 }
 
-void __wrap_callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
+void __wrap_callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode) {
 	check_expected_int(t);
 	check_expected_ptr(head);
-	check_expected_ptr(mode);
+	check_expected_ptr(zwlr_mode);
 }
 
 void __wrap_callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
@@ -122,8 +122,10 @@ void __wrap_callback_adaptive_sync_fail(const enum LogThreshold t, const struct 
  * mode
  */
 
-double __wrap_mode_dpi(const struct Mode* const mode) {
+double __wrap_mode_dpi(const struct Mode* const mode, int32_t width_mm, int32_t height_mm) {
 	check_expected_ptr(mode);
+	check_expected_int(width_mm);
+	check_expected_int(height_mm);
 	return mock_type(double);
 }
 

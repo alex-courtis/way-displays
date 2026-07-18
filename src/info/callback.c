@@ -8,9 +8,11 @@
 #include "head.h"
 #include "log.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "process.h"
 #include "ssmap.h"
 #include "str.h"
+#include "wlr-output-management-unstable-v1.h"
 
 void callback(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
 	if (!g_cfg->callback_cmd || t < log_get_threshold()) {
@@ -42,12 +44,13 @@ void callback(const enum LogThreshold t, const char * const msg1, const char * c
 	free(buf);
 }
 
-void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
-	if (!head) {
+void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode) {
+	if (!head || !zwlr_mode) {
 		return;
 	}
 
-	char *str = mode_str(mode);
+	const struct Mode *mode = ppmap_get(head->modes, zwlr_mode);
+	char *str = mode_str_pref(mode, head->zwlr_mode_pref == zwlr_mode);
 
 	char *human = sprintf_alloc(
 			"%s\n"

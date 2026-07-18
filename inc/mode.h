@@ -14,12 +14,6 @@
  */
 
 struct Mode {
-	// TODO this has to go
-	struct Head *head;
-
-	// TODO this has to go
-	struct zwlr_output_mode_v1 *zwlr_mode;
-
 	int32_t width;
 	int32_t height;
 	int32_t refresh_mhz;
@@ -72,8 +66,11 @@ bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode
  * to string
  */
 
-// WxH@Hz (mHz) (preferred)
+// WxH@Hz (mHz)
 char *mode_str(const struct Mode * const mode);
+
+// WxH@Hz (mHz) (preferred)
+char *mode_str_pref(const struct Mode * const mode, bool pref);
 
 // MAX, WxH@Hz, WxH
 char *mode_str_brief(const struct Mode * const mode);
@@ -92,11 +89,8 @@ bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_targe
 // mHz rounded up to Hz
 int32_t mode_hz_rounded(const struct Mode* const mode);
 
-// DPI when mode applied to head, 0 when no head or no head dimensions
-double mode_dpi(const struct Mode* const mode);
-
-// DPI / AUTO_SCALE_DPI, 1 when no DPI available
-double mode_scale(const struct Mode* const mode);
+// DPI, 0 when no dimensions
+double mode_dpi(const struct Mode* const mode, int32_t width_mm, int32_t height_mm);
 
 /*
  * search

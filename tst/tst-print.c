@@ -47,27 +47,27 @@ int before_each(void **state) {
 	s->head1 = head_init();
 
 	ppmap_put_many(s->head1->modes,
-			M0, mode_h_whr(s->head1, 100, 200, 29999), // less than current
-			MC, mode_h_whr(s->head1, 100, 200, 30000), // current
-			M1, mode_h_whr(s->head1, 100, 200, 30001), // more than current
-			MD, mode_h_whr(s->head1, 400, 500, 60000), // desired
-			M2, mode_h_whr(s->head1, 700, 800, 89999), // group with failed
-			M3, mode_h_whr(s->head1, 700, 800, 90001), // end
-			M4, mode_h_whr(s->head1, 1000, 1000, 49499),
-			M5, mode_h_whr(s->head1, 1000, 1000, 49500), // group start
-			M6, mode_h_whr(s->head1, 1000, 1000, 49999), //
-			M7, mode_h_whr(s->head1, 1000, 1000, 50000), //
-			M8, mode_h_whr(s->head1, 1000, 1000, 50100), //
-			M9, mode_h_whr(s->head1, 1000, 1000, 50499), // group
-			M10, mode_h_whr(s->head1, 1000, 1000, 50500),
+			M0, mode_whr(100, 200, 29999), // less than current
+			MC, mode_whr(100, 200, 30000), // current
+			M1, mode_whr(100, 200, 30001), // more than current
+			MD, mode_whr(400, 500, 60000), // desired
+			M2, mode_whr(700, 800, 89999), // group with failed
+			M3, mode_whr(700, 800, 90001), // end
+			M4, mode_whr(1000, 1000, 49499),
+			M5, mode_whr(1000, 1000, 49500), // group start
+			M6, mode_whr(1000, 1000, 49999), //
+			M7, mode_whr(1000, 1000, 50000), //
+			M8, mode_whr(1000, 1000, 50100), //
+			M9, mode_whr(1000, 1000, 50499), // group
+			M10, mode_whr(1000, 1000, 50500),
 			NULL);
 
-	s->head1->current.mode = ppmap_get(s->head1->modes, MC);
-	s->head1->desired.mode = ppmap_get(s->head1->modes, MD);
+	s->head1->current.zwlr_mode = MC;
+	s->head1->desired.zwlr_mode = MD;
 	s->head1->zwlr_mode_pref = MC;
 
 	ppmap_put_many(s->head1->modes_failed,
-			MF, mode_h_whr(s->head1, 700, 800, 90000),
+			MF, mode_whr(700, 800, 90000),
 			NULL);
 
 	s->head1->name = strdup("name1");
@@ -98,11 +98,11 @@ int before_each(void **state) {
 	s->head2 = head_init();
 
 	ppmap_put_many(s->head2->modes,
-			MC, mode_h_whr(s->head2, 1100, 1200, 130000), // current
-			MD, mode_h_whr(s->head2, 1400, 1500, 160000), // desired
+			MC, mode_whr(1100, 1200, 130000), // current
+			MD, mode_whr(1400, 1500, 160000), // desired
 			NULL);
-	s->head2->current.mode = ppmap_get(s->head2->modes, MC);
-	s->head2->desired.mode = ppmap_get(s->head2->modes, MD);
+	s->head2->current.zwlr_mode = MC;
+	s->head2->desired.zwlr_mode = MD;
 
 	s->head2->name = strdup("name2");
 	s->head2->width_mm = 3;
@@ -132,8 +132,6 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
-	assert_logs_empty();
-
 	struct State *s = *state;
 
 	ppmap_free_vals(s->heads);
@@ -191,6 +189,8 @@ static void print_cfg__all(void **state) {
 
 	free(expected_log);
 	cfg_free(c);
+
+	assert_logs_empty();
 }
 
 static void print_cfg__del(void **state) {
@@ -219,6 +219,8 @@ static void print_cfg__del(void **state) {
 
 	free(expected_log);
 	cfg_free(c);
+
+	assert_logs_empty();
 }
 
 static void print_cfg__arrange_only(void **state) {
@@ -232,6 +234,8 @@ static void print_cfg__arrange_only(void **state) {
 
 	free(expected_log);
 	cfg_free(c);
+
+	assert_logs_empty();
 }
 
 static void print_cfg__align_only(void **state) {
@@ -245,6 +249,8 @@ static void print_cfg__align_only(void **state) {
 
 	free(expected_log);
 	cfg_free(c);
+
+	assert_logs_empty();
 }
 
 static void print_cfg__auto_scale_max(void **state) {
@@ -261,6 +267,8 @@ static void print_cfg__auto_scale_max(void **state) {
 
 	free(expected_log);
 	cfg_free(c);
+
+	assert_logs_empty();
 }
 
 static void print_cfg__lid_disabled(void **state) {
@@ -274,6 +282,8 @@ static void print_cfg__lid_disabled(void **state) {
 
 	free(expected_log);
 	cfg_free(c);
+
+	assert_logs_empty();
 }
 
 static void print_cfg_commands__empty(void **state) {
@@ -282,6 +292,8 @@ static void print_cfg_commands__empty(void **state) {
 	print_cfg_commands(INFO, cfg);
 
 	cfg_free(cfg);
+
+	assert_logs_empty();
 }
 
 static void print_cfg_commands__ok(void **state) {
@@ -332,6 +344,8 @@ static void print_cfg_commands__ok(void **state) {
 
 	cfg_free(c);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_arrived__all(void **state) {
@@ -354,6 +368,8 @@ static void print_head_arrived__all(void **state) {
 	char *expected_log = read_file("tst/info/print-head-arrived-all.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_arrived__min(void **state) {
@@ -369,6 +385,8 @@ static void print_head_arrived__min(void **state) {
 	free(expected_log);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void print_head_departed__ok(void **state) {
@@ -379,6 +397,8 @@ static void print_head_departed__ok(void **state) {
 	char *expected_log = read_file("tst/info/print-head-departed-ok.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_deltas__mode(void **state) {
@@ -392,13 +412,15 @@ static void print_head_deltas__mode(void **state) {
 	char *expected_log = read_file("tst/info/print-head-deltas-mode.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_deltas__vrr(void **state) {
 	struct State *s = *state;
 
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head1->desired.mode = s->head1->current.mode;
+	s->head1->desired.zwlr_mode = s->head1->current.zwlr_mode;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -408,12 +430,14 @@ static void print_head_deltas__vrr(void **state) {
 	char *expected_log = read_file("tst/info/print-head-deltas-vrr.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_deltas__other(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.mode = s->head1->current.mode;
+	s->head1->desired.zwlr_mode = s->head1->current.zwlr_mode;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -423,6 +447,8 @@ static void print_head_deltas__other(void **state) {
 	char *expected_log = read_file("tst/info/print-head-deltas-other.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_deltas__disable(void **state) {
@@ -438,6 +464,8 @@ static void print_head_deltas__disable(void **state) {
 	char *expected_log = read_file("tst/info/print-head-deltas-disable.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_deltas__enable(void **state) {
@@ -453,6 +481,8 @@ static void print_head_deltas__enable(void **state) {
 	char *expected_log = read_file("tst/info/print-head-deltas-enable.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_deltas__reapply(void **state) {
@@ -472,6 +502,8 @@ static void print_head_deltas__reapply(void **state) {
 	char *expected_log = read_file("tst/info/print-head-deltas-reapply.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_current__disabled(void **state) {
@@ -488,6 +520,8 @@ static void print_head_current__disabled(void **state) {
 	char *expected_log = read_file("tst/info/print-head-current-disabled.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_current__disabled_override(void **state) {
@@ -505,6 +539,8 @@ static void print_head_current__disabled_override(void **state) {
 	char *expected_log = read_file("tst/info/print-head-current-disabled-override.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_current__enabled_override(void **state) {
@@ -522,6 +558,8 @@ static void print_head_current__enabled_override(void **state) {
 	char *expected_log = read_file("tst/info/print-head-current-enabled-override.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_current__lid_closed(void **state) {
@@ -537,6 +575,8 @@ static void print_head_current__lid_closed(void **state) {
 	char *expected_log = read_file("tst/info/print-head-current-lid-closed.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_head_desired__disabled(void **state) {
@@ -548,6 +588,8 @@ static void print_head_desired__disabled(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    (disabled)\n");
+
+	assert_logs_empty();
 }
 
 static void print_head_desired__disabled_override(void **state) {
@@ -560,6 +602,8 @@ static void print_head_desired__disabled_override(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    (manually disabled)\n");
+
+	assert_logs_empty();
 }
 
 static void print_head_desired__enabled(void **state) {
@@ -572,6 +616,8 @@ static void print_head_desired__enabled(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (enabled)\n");
+
+	assert_logs_empty();
 }
 
 static void print_head_desired__enabled_override(void **state) {
@@ -585,6 +631,8 @@ static void print_head_desired__enabled_override(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (manually enabled)\n");
+
+	assert_logs_empty();
 }
 
 static void print_head_desired__transform_270(void **state) {
@@ -597,6 +645,8 @@ static void print_head_desired__transform_270(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    transform: 270\n");
+
+	assert_logs_empty();
 }
 
 static void print_head_desired__transform_none(void **state) {
@@ -609,13 +659,17 @@ static void print_head_desired__transform_none(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    transform: none\n");
+
+	assert_logs_empty();
 }
 
-static void print_active__empty(void **state) {
+static void print_list__empty(void **state) {
 	print_list(INFO, NULL);
+
+	assert_logs_empty();
 }
 
-static void print_active__many(void **state) {
+static void print_list__many(void **state) {
 	struct State *s = *state;
 
 	s->head1->current.enabled = false;
@@ -624,10 +678,14 @@ static void print_active__many(void **state) {
 	char *expected_log = read_file("tst/info/print-list.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void print_adaptive_sync_fail__nulls(void **state) {
 	print_adaptive_sync_fail(ERROR, NULL);
+
+	assert_logs_empty();
 }
 
 static void print_adaptive_sync_fail__head(void **state) {
@@ -644,6 +702,8 @@ static void print_adaptive_sync_fail__head(void **state) {
 			"    - 'model0'\n");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void print_mode_fail__nulls(void **state) {
@@ -651,6 +711,8 @@ static void print_mode_fail__nulls(void **state) {
 	print_mode_fail(WARNING, NULL, NULL);
 
 	assert_log(WARNING, "\nChanges failed\n");
+
+	assert_logs_empty();
 }
 
 static void print_mode_fail__head(void **state) {
@@ -663,6 +725,8 @@ static void print_mode_fail__head(void **state) {
 	assert_log(WARNING, "\nChanges failed\n  head0:\n    (no mode)\n");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void print_heads_outstanding__many(void **state) {
@@ -677,9 +741,8 @@ static void print_heads_outstanding__many(void **state) {
 	ppmap_put(displ->heads, H0, head_reapply);
 
 	struct Head *head_mode = head_n("mo");
-	mode = mode_init();
-	ppmap_put(head_mode->modes, M0, mode);
-	head_mode->desired.mode = mode;
+	ppmap_put(head_mode->modes, M0, mode_init());
+	head_mode->desired.zwlr_mode = M0;
 	ppmap_put(displ->heads, H1, head_mode);
 
 	struct Head *head_disable = head_n("di");
@@ -697,10 +760,10 @@ static void print_heads_outstanding__many(void **state) {
 	head_enable->desired.enabled = true;
 	ppmap_put(displ->heads, H4, head_enable);
 
-	struct Head *head_scale = head_n("sc");
-	head_scale->current.scale = 1;
-	head_scale->desired.scale = 2;
-	ppmap_put(displ->heads, H5, head_scale);
+	struct Head *head_sc = head_n("sc");
+	head_sc->current.scale = 1;
+	head_sc->desired.scale = 2;
+	ppmap_put(displ->heads, H5, head_sc);
 
 	struct Head *head_x = head_n("x");
 	head_x->current.x = 1;
@@ -721,7 +784,7 @@ static void print_heads_outstanding__many(void **state) {
 	mode = mode_init();
 	ppmap_put(head_all->modes, M0, mode);
 	head_all->reapply_required = true;
-	head_all->desired.mode = mode;
+	head_all->desired.zwlr_mode = M0;
 	head_all->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head_all->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head_all->current.x = 1;
@@ -736,6 +799,8 @@ static void print_heads_outstanding__many(void **state) {
 	assert_log(DEBUG, "foo IDLE queue re:reapply ; a:reapply ; mo:mode ; a:mode ; vr:vrr ; a:vrr ; di:disable en:enable sc:geometry x:geometry y:geometry tr:geometry a:enable a:geometry\n");
 
 	displ_free(displ);
+
+	assert_logs_empty();
 }
 
 static void print_heads_outstanding__none(void **state) {
@@ -749,6 +814,8 @@ static void print_heads_outstanding__none(void **state) {
 	assert_log(DEBUG, "foo IDLE queue\n");
 
 	displ_free(displ);
+
+	assert_logs_empty();
 }
 
 static void print_heads_outstanding__below_threshold(void **state) {
@@ -760,6 +827,8 @@ static void print_heads_outstanding__below_threshold(void **state) {
 	print_head_queue(DEBUG, displ, "foo");
 
 	displ_free(displ);
+
+	assert_logs_empty();
 }
 
 int main(void) {
@@ -799,8 +868,8 @@ int main(void) {
 		TEST_BA(print_head_desired__transform_270),
 		TEST_BA(print_head_desired__transform_none),
 
-		TEST_BA(print_active__empty),
-		TEST_BA(print_active__many),
+		TEST_BA(print_list__empty),
+		TEST_BA(print_list__many),
 
 		TEST_BA(print_adaptive_sync_fail__nulls),
 		TEST_BA(print_adaptive_sync_fail__head),

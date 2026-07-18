@@ -84,12 +84,11 @@ void desire_mode(struct Head *head) {
 	}
 
 	// attempt to find a mode, will log and call back on failure to find a mode
-	const struct Mode *mode = head_find_mode(head);
+	const struct zwlr_output_mode_v1 *zwlr_mode = head_find_mode(head);
 
-	if (mode) {
-		head->desired.mode = mode;
+	if (zwlr_mode) {
+		head->desired.zwlr_mode = zwlr_mode;
 	} else {
-
 		if (!head->warned_no_mode) {
 			head->warned_no_mode = true;
 		}
@@ -168,16 +167,20 @@ static int32_t desired_scaled_length(const struct Head * const head, const int32
 }
 
 void desire_scaled_dimensions(struct Head * const head) {
-	if (!head || !head->desired.mode || !head->desired.scale) {
+	if (!head || !head->desired.scale) {
 		return;
 	}
 
+	const struct Mode *mode_des = ppmap_get(head->modes, head->desired.zwlr_mode);
+	if (!mode_des)
+		return;
+
 	if (head->desired.transform % 2 == 0) {
-		head->scaled.width = head->desired.mode->width;
-		head->scaled.height = head->desired.mode->height;
+		head->scaled.width = mode_des->width;
+		head->scaled.height = mode_des->height;
 	} else {
-		head->scaled.width = head->desired.mode->height;
-		head->scaled.height = head->desired.mode->width;
+		head->scaled.width = mode_des->height;
+		head->scaled.height = mode_des->width;
 	}
 
 	head->scaled.height = desired_scaled_length(head, head->scaled.height);
@@ -234,7 +237,7 @@ void desire_positions(const struct Pset *heads_sorted) {
 	// find tallest/widest
 	for (const struct PsetIt *it = pset_it(heads_sorted); it; it = pset_it_next(it)) {
 		const struct Head *head = it->val;
-		if (!head->desired.mode || !head->desired.enabled) {
+		if (!head->desired.zwlr_mode || !head->desired.enabled) {
 			continue;
 		}
 		if (head->scaled.height > tallest) {
@@ -248,7 +251,7 @@ void desire_positions(const struct Pset *heads_sorted) {
 	// arrange each in the predefined order
 	for (const struct PsetIt *it = pset_it(heads_sorted); it; it = pset_it_next(it)) {
 		struct Head *head = (struct Head*)it->val;
-		if (!head->desired.mode || !head->desired.enabled) {
+		if (!head->desired.zwlr_mode || !head->desired.enabled) {
 			continue;
 		}
 

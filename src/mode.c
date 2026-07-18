@@ -5,10 +5,7 @@
 
 #include "mode.h"
 
-#include "cfg/cfg.h"
-#include "enum.h"
 #include "fn.h"
-#include "head.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "spmap.h"
@@ -102,17 +99,9 @@ bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode
 	return false;
 }
 
-char *mode_str(const struct Mode * const mode) {
+char *mode_str_pref(const struct Mode * const mode, bool pref) {
 	if (!mode)
 		return NULL;
-
-	// TODO unravel
-	bool preferred = false;
-	const struct Head *head = mode->head;
-	if (head) {
-		const struct Mode *mode_pref = ppmap_get(mode->head->modes, mode->head->zwlr_mode_pref);
-		preferred = mode_pref == mode;
-	}
 
 	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
 			mode->width,
@@ -120,7 +109,21 @@ char *mode_str(const struct Mode * const mode) {
 			mode_hz_rounded(mode),
 			mode->refresh_mhz / 1000,
 			mode->refresh_mhz % 1000,
-			preferred ? " (preferred)" : ""
+			pref ? " (preferred)" : ""
+			);
+}
+
+
+char *mode_str(const struct Mode * const mode) {
+	if (!mode)
+		return NULL;
+
+	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)",
+			mode->width,
+			mode->height,
+			mode_hz_rounded(mode),
+			mode->refresh_mhz / 1000,
+			mode->refresh_mhz % 1000
 			);
 }
 
@@ -158,24 +161,14 @@ int32_t mode_hz_rounded(const struct Mode* const mode) {
 	return mode ? (mode->refresh_mhz + 500) / 1000 : 0;
 }
 
-double mode_dpi(const struct Mode* const mode) {
-	if (!mode || !mode->head || !mode->head->width_mm || !mode->head->height_mm) {
+double mode_dpi(const struct Mode* const mode, int32_t width_mm, int32_t height_mm) {
+	if (!mode || !width_mm || !height_mm) {
 		return 0;
 	}
 
-	double dpi_horiz = (double)(mode->width) / mode->head->width_mm * 25.4;
-	double dpi_vert = (double)(mode->height) / mode->head->height_mm * 25.4;
+	double dpi_horiz = (double)(mode->width) / width_mm * 25.4;
+	double dpi_vert = (double)(mode->height) / height_mm * 25.4;
 	return (dpi_horiz + dpi_vert) / 2;
-}
-
-double mode_scale(const struct Mode* const mode) {
-	double dpi = mode_dpi(mode);
-
-	if (dpi == 0) {
-		return 1;
-	}
-
-	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
 }
 
 const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PPmap* const modes) {

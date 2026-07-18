@@ -12,7 +12,7 @@
 #include "ssmap.h"
 #include "sset.h"
 
-// TODO static string functions
+// TODO c-lib static string functions
 
 /*
  * variadic mutation, not for production use, will flag code scanners

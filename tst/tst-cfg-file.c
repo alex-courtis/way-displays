@@ -55,6 +55,7 @@ static int before_each(void **state) {
 	return 0;
 }
 
+// TODO move assert_logs_empty
 static int after_each(void **state) {
 	assert_logs_empty();
 

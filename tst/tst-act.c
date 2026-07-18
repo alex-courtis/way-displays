@@ -1,7 +1,6 @@
 #include "tst.h"
 
 #include "assert-log.h"
-#include "assert-mode.h"
 #include "asserts.h"
 #include "data.h"
 #include "expect-ppmap.h"
@@ -99,10 +98,8 @@ static void act_apply__mode(void **state) {
 	struct Head *head = head_init();
 	ppmap_put(g_displ->heads, zwlr_head, head);
 
-	struct Mode *mode = mode_h(head);
-	ppmap_put(head->modes, zwlr_mode, mode);
-	head->desired.mode = ppmap_get(head->modes, zwlr_mode);
-	mode->zwlr_mode = zwlr_mode;
+	ppmap_put(head->modes, zwlr_mode, mode_init());
+	head->desired.zwlr_mode = zwlr_mode;
 
 	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zwlr_config, struct zwlr_output_configuration_v1*);
@@ -292,9 +289,9 @@ static void act_handle_success__head_changing_mode(void **state) {
 
 	struct Head *head = head_n("head");
 
-	struct Mode *mode = mode_h(head);
+	const struct Mode *mode = mode_init();
 	ppmap_put(head->modes, zwlr_mode, mode);
-	head->desired.mode = ppmap_get(head->modes, zwlr_mode);
+	head->desired.zwlr_mode = zwlr_mode;
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
@@ -307,8 +304,7 @@ static void act_handle_success__head_changing_mode(void **state) {
 
 	assert_log(INFO, "\nChanges successful\n");
 
-	assert_mode_equal(head->current.mode, mode);
-	assert_ptr_equal(head->current.mode, mode);
+	assert_ptr_equal(head->current.zwlr_mode, zwlr_mode);
 
 	head_free(head);
 }
@@ -328,36 +324,34 @@ static void act_handle_success__ok(void **state) {
 static void act_handle_failure__mode(void **state) {
 	struct Head *head = head_n("nam");
 
-	struct Mode *mode_cur = mode_h_whr(head, 1, 2, 3);
-	mode_cur->zwlr_mode = MC;
+	struct Mode *mode_cur = mode_whr(1, 2, 3);
 
-	struct Mode *mode_des = mode_h_whr(head, 4, 5, 6);
-	mode_des->zwlr_mode = MD;
+	struct Mode *mode_des = mode_whr(4, 5, 6);
 
 	ppmap_put_many(head->modes,
 			MC, mode_cur,
 			MD, mode_des,
 			NULL);
-	head->current.mode = ppmap_get(head->modes, MC);
-	head->desired.mode = ppmap_get(head->modes, MD);
+
+	head->current.zwlr_mode = MC;
+	head->desired.zwlr_mode = MD;
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
 
 	expect_int_value(__wrap_print_mode_fail, t, ERROR);
 	expect_ptr(__wrap_print_mode_fail, head, head);
-	expect_ptr(__wrap_print_mode_fail, mode, mode_des);
+	expect_ptr(__wrap_print_mode_fail, zwlr_mode, MD);
 
 	expect_int_value(__wrap_callback_mode_fail, t, ERROR);
 	expect_ptr(__wrap_callback_mode_fail, head, head);
-	expect_ptr(__wrap_callback_mode_fail, mode, mode_des);
+	expect_ptr(__wrap_callback_mode_fail, zwlr_mode, MD);
 
 	act_handle_failure();
 
-	assert_nul(head->current.mode);
+	assert_nul(head->current.zwlr_mode);
 
-	assert_mode_equal(head->desired.mode, mode_des);
-	assert_ptr_equal(head->desired.mode, mode_des);
+	assert_ptr_equal(head->desired.zwlr_mode, MD);
 
 	assert_int_equal(ppmap_size(head->modes), 1);
 	assert_ptr_equal(ppmap_get(head->modes, MC), mode_cur);

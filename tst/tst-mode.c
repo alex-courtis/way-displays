@@ -1,6 +1,5 @@
 #include "tst.h"
 
-#include "assert-log.h"
 #include "assert-mode.h"
 #include "assert-pset.h"
 #include "asserts.h"
@@ -13,7 +12,6 @@
 #include <stdlib.h>
 
 #include "fn.h"
-#include "head.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "spmap.h"
@@ -51,8 +49,6 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	assert_logs_empty();
-
 	mode_free(target);
 	target = NULL;
 
@@ -65,12 +61,7 @@ static int after_each(void **state) {
 static void mode_clone__(void **state) {
 	assert_nul(mode_clone(NULL));
 
-	struct Head head = { 0 };
-	struct zwlr_output_mode_v1 *zwlr_mode = NULL;
-
 	struct Mode from = {
-		.head = &head,
-		.zwlr_mode = zwlr_mode,
 		.width = 2,
 		.height = 1,
 		.refresh_mhz = 3,
@@ -80,8 +71,6 @@ static void mode_clone__(void **state) {
 
 	struct Mode *to = mode_clone(&from);
 
-	assert_ptr_equal(to->head, &head);
-	assert_ptr_equal(to->zwlr_mode, zwlr_mode);
 	assert_int_equal(to->width, 2);
 	assert_int_equal(to->height, 1);
 	assert_int_equal(to->refresh_mhz, 3);
@@ -232,22 +221,25 @@ static void mode_best_satisfying__height_failed(void **state) {
 	assert_nul(mode_best_satisfying(target, head_modes));
 }
 
-static void mode_dpi__(void **state) {
-	struct Head *head = head_init();
-	head->width_mm = 1000;
-	head->height_mm = 500;
-
-	struct Mode *mode = mode_h_whr(head, 2000, 1000, 0);
+static void mode_dpi__ok(void **state) {
+	struct Mode *mode = mode_whr(2000, 1000, 0);
 
 	// nice roundish number to prevent odd test fails
-	double expected = 50.8;
-
-	double actual = mode_dpi(mode);
-
-	assert_float_equal(actual, expected, 0);
+	assert_float_equal(mode_dpi(mode, 1000, 500), 50.8, 0);
 
 	mode_free(mode);
-	head_free(head);
+}
+
+static void mode_dpi__no_mode(void **state) {
+	assert_float_equal(mode_dpi(NULL, 1000, 500), 0, 0);
+}
+
+static void mode_dpi__no_width(void **state) {
+	assert_float_equal(mode_dpi(spmap_get(cfg_modes, "1x1@1000"), 0, 500), 0, 0);
+}
+
+static void mode_dpi__no_height(void **state) {
+	assert_float_equal(mode_dpi(spmap_get(cfg_modes, "1x1@1000"), 1000, 0), 0, 0);
 }
 
 static void mode_max_refresh__no_target(void **state) {
@@ -309,7 +301,10 @@ int main(void) {
 		TEST_BA(mode_best_satisfying__width_failed),
 		TEST_BA(mode_best_satisfying__height_failed),
 
-		TEST_BA(mode_dpi__),
+		TEST_BA(mode_dpi__ok),
+		TEST_BA(mode_dpi__no_mode),
+		TEST_BA(mode_dpi__no_width),
+		TEST_BA(mode_dpi__no_height),
 
 		TEST_BA(mode_max_refresh__no_target),
 		TEST_BA(mode_max_refresh__exact_matches),

@@ -22,11 +22,6 @@
 
 #include "args.h"
 
-static int after_each(void **state) {
-	assert_logs_empty();
-	return 0;
-}
-
 static void args_cfg__arrange_align_invalid_arrange(void **state) {
 	optind = 0;
 	char *argv[] = { "ROW", "INVALID" };
@@ -36,6 +31,8 @@ static void args_cfg__arrange_align_invalid_arrange(void **state) {
 	assert_nul(args_cfg(CFG_SET, ARRANGE_ALIGN, 2, argv));
 
 	assert_log(FATAL, "invalid ARRANGE_ALIGN ROW INVALID\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__arrange_align_invalid_align(void **state) {
@@ -47,6 +44,8 @@ static void args_cfg__arrange_align_invalid_align(void **state) {
 	assert_nul(args_cfg(CFG_SET, ARRANGE_ALIGN, 2, argv));
 
 	assert_log(FATAL, "invalid ARRANGE_ALIGN INVALID LEFT\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__arrange_align_ok(void **state) {
@@ -63,6 +62,8 @@ static void args_cfg__arrange_align_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__auto_scale_invalid(void **state) {
@@ -74,6 +75,8 @@ static void args_cfg__auto_scale_invalid(void **state) {
 	assert_nul(args_cfg(CFG_SET, AUTO_SCALE, 1, argv));
 
 	assert_log(FATAL, "invalid AUTO_SCALE INVALID\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__auto_scale_set(void **state) {
@@ -89,6 +92,8 @@ static void args_cfg__auto_scale_set(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__auto_scale_toggle(void **state) {
@@ -104,6 +109,8 @@ static void args_cfg__auto_scale_toggle(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__scaling_invalid(void **state) {
@@ -115,6 +122,8 @@ static void args_cfg__scaling_invalid(void **state) {
 	assert_nul(args_cfg(CFG_SET, SCALING, 1, argv));
 
 	assert_log(FATAL, "invalid SCALING INVALID\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__scaling_set(void **state) {
@@ -130,6 +139,8 @@ static void args_cfg__scaling_set(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__scaling_toggle(void **state) {
@@ -145,6 +156,8 @@ static void args_cfg__scaling_toggle(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__transform_invalid(void **state) {
@@ -156,6 +169,8 @@ static void args_cfg__transform_invalid(void **state) {
 	assert_nul(args_cfg(CFG_SET, TRANSFORM, 2, argv));
 
 	assert_log(FATAL, "invalid TRANSFORM displ INVALID\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__transform_ok(void **state) {
@@ -171,6 +186,8 @@ static void args_cfg__transform_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__transform_del_ok(void **state) {
@@ -186,6 +203,8 @@ static void args_cfg__transform_del_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__scale_set_invalid(void **state) {
@@ -197,6 +216,8 @@ static void args_cfg__scale_set_invalid(void **state) {
 	assert_nul(args_cfg(CFG_SET, SCALE, 2, argv));
 
 	assert_log(FATAL, "invalid SCALE DISPL NOTANUMBER\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__scale_set_ok(void **state) {
@@ -212,6 +233,8 @@ static void args_cfg__scale_set_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__scale_del_ok(void **state) {
@@ -227,6 +250,8 @@ static void args_cfg__scale_del_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__mode_set_invalid_width(void **state) {
@@ -238,6 +263,8 @@ static void args_cfg__mode_set_invalid_width(void **state) {
 	assert_nul(args_cfg(CFG_SET, MODE, 4, argv));
 
 	assert_log(FATAL, "invalid MODE DISPL NAN 2 3\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__mode_set_invalid_height(void **state) {
@@ -249,6 +276,8 @@ static void args_cfg__mode_set_invalid_height(void **state) {
 	assert_nul(args_cfg(CFG_SET, MODE, 4, argv));
 
 	assert_log(FATAL, "invalid MODE DISPL 1 NAN 3\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__mode_set_invalid_refresh(void **state) {
@@ -260,6 +289,8 @@ static void args_cfg__mode_set_invalid_refresh(void **state) {
 	assert_nul(args_cfg(CFG_SET, MODE, 4, argv));
 
 	assert_log(FATAL, "invalid MODE DISPL 1 2 NAN\n");
+
+	assert_logs_empty();
 }
 
 static void args_cfg__mode_set_max(void **state) {
@@ -278,6 +309,8 @@ static void args_cfg__mode_set_max(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__mode_set_res(void **state) {
@@ -298,6 +331,8 @@ static void args_cfg__mode_set_res(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__mode_set_res_refresh(void **state) {
@@ -319,6 +354,8 @@ static void args_cfg__mode_set_res_refresh(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__callback_cmd_set_ok(void **state) {
@@ -334,6 +371,8 @@ static void args_cfg__callback_cmd_set_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__callback_cmd_del_ok(void **state) {
@@ -349,6 +388,8 @@ static void args_cfg__callback_cmd_del_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__mode_del_ok(void **state) {
@@ -367,6 +408,8 @@ static void args_cfg__mode_del_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__adaptive_sync_off_ok(void **state) {
@@ -382,6 +425,8 @@ static void args_cfg__adaptive_sync_off_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__disabled_ok(void **state) {
@@ -400,6 +445,8 @@ static void args_cfg__disabled_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_cfg__order_ok(void **state) {
@@ -415,6 +462,8 @@ static void args_cfg__order_ok(void **state) {
 
 	cfg_free(actual);
 	cfg_free(expected);
+
+	assert_logs_empty();
 }
 
 static void args_ipc_write__nargs(void **state) {
@@ -426,6 +475,8 @@ static void args_ipc_write__nargs(void **state) {
 	assert_nul(args_ipc_write(1));
 
 	assert_log(FATAL, "--write takes no arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_write__ok(void **state) {
@@ -437,6 +488,8 @@ static void args_ipc_write__ok(void **state) {
 	assert_int_equal(request->command, CFG_WRITE);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 static void args_ipc_get__nargs(void **state) {
@@ -448,6 +501,8 @@ static void args_ipc_get__nargs(void **state) {
 	assert_nul(args_ipc_get(1));
 
 	assert_log(FATAL, "--get takes no arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_get__ok(void **state) {
@@ -459,6 +514,8 @@ static void args_ipc_get__ok(void **state) {
 	assert_int_equal(request->command, GET);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 static void args_ipc_list__nargs(void **state) {
@@ -470,6 +527,8 @@ static void args_ipc_list__nargs(void **state) {
 	assert_nul(args_ipc_list(1));
 
 	assert_log(FATAL, "--list takes no arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_list__ok(void **state) {
@@ -481,6 +540,8 @@ static void args_ipc_list__ok(void **state) {
 	assert_int_equal(request->command, LIST);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 static void args_ipc_reapply__nargs(void **state) {
@@ -492,6 +553,8 @@ static void args_ipc_reapply__nargs(void **state) {
 	assert_nul(args_ipc_reapply(1));
 
 	assert_log(FATAL, "--reapply takes no arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_reapply__ok(void **state) {
@@ -503,6 +566,8 @@ static void args_ipc_reapply__ok(void **state) {
 	assert_int_equal(request->command, REAPPLY);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__mode_nargs(void **state) {
@@ -520,6 +585,8 @@ static void args_ipc_set__mode_nargs(void **state) {
 	assert_nul(args_ipc_set(5, NULL));
 
 	assert_log(FATAL, "--set MODE requires two to four arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__arrange_align_nargs(void **state) {
@@ -531,6 +598,8 @@ static void args_ipc_set__arrange_align_nargs(void **state) {
 	assert_nul(args_ipc_set(0, NULL));
 
 	assert_log(FATAL, "--set ARRANGE_ALIGN requires two arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__scale_nargs(void **state) {
@@ -542,6 +611,8 @@ static void args_ipc_set__scale_nargs(void **state) {
 	assert_nul(args_ipc_set(0, NULL));
 
 	assert_log(FATAL, "--set SCALE requires two arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__transform_nargs(void **state) {
@@ -553,6 +624,8 @@ static void args_ipc_set__transform_nargs(void **state) {
 	assert_nul(args_ipc_set(0, NULL));
 
 	assert_log(FATAL, "--set TRANSFORM requires two arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__auto_scale_nargs(void **state) {
@@ -564,6 +637,8 @@ static void args_ipc_set__auto_scale_nargs(void **state) {
 	assert_nul(args_ipc_set(0, NULL));
 
 	assert_log(FATAL, "--set AUTO_SCALE requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__disabled_nargs(void **state) {
@@ -575,6 +650,8 @@ static void args_ipc_set__disabled_nargs(void **state) {
 	assert_nul(args_ipc_set(0, NULL));
 
 	assert_log(FATAL, "--set DISABLED requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__adaptive_sync_off_nargs(void **state) {
@@ -586,6 +663,8 @@ static void args_ipc_set__adaptive_sync_off_nargs(void **state) {
 	assert_nul(args_ipc_set(0, NULL));
 
 	assert_log(FATAL, "--set VRR_OFF requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__order_nargs(void **state) {
@@ -597,6 +676,8 @@ static void args_ipc_set__order_nargs(void **state) {
 	assert_nul(args_ipc_set(0, NULL));
 
 	assert_log(FATAL, "--set ORDER requires at least one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__invalid(void **state) {
@@ -608,6 +689,8 @@ static void args_ipc_set__invalid(void **state) {
 	assert_nul(args_ipc_set(0, NULL));
 
 	assert_log(FATAL, "invalid --set: INVALID\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_set__ok(void **state) {
@@ -622,6 +705,8 @@ static void args_ipc_set__ok(void **state) {
 	assert_int_equal(request->command, CFG_SET);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 static void args_ipc_del__mode_nargs(void **state) {
@@ -633,6 +718,8 @@ static void args_ipc_del__mode_nargs(void **state) {
 	assert_nul(args_ipc_del(0, NULL));
 
 	assert_log(FATAL, "--delete MODE requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_del__scale_nargs(void **state) {
@@ -644,6 +731,8 @@ static void args_ipc_del__scale_nargs(void **state) {
 	assert_nul(args_ipc_del(0, NULL));
 
 	assert_log(FATAL, "--delete SCALE requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_del__disabled_nargs(void **state) {
@@ -655,6 +744,8 @@ static void args_ipc_del__disabled_nargs(void **state) {
 	assert_nul(args_ipc_del(0, NULL));
 
 	assert_log(FATAL, "--delete DISABLED requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_del__adaptive_sync_off_nargs(void **state) {
@@ -666,6 +757,8 @@ static void args_ipc_del__adaptive_sync_off_nargs(void **state) {
 	assert_nul(args_ipc_del(0, NULL));
 
 	assert_log(FATAL, "--delete VRR_OFF requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_del__callback_cmd_nargs(void **state) {
@@ -677,6 +770,8 @@ static void args_ipc_del__callback_cmd_nargs(void **state) {
 	assert_nul(args_ipc_del(1, NULL));
 
 	assert_log(FATAL, "--delete CALLBACK_CMD takes no arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_del__invalid(void **state) {
@@ -688,6 +783,8 @@ static void args_ipc_del__invalid(void **state) {
 	assert_nul(args_ipc_del(0, NULL));
 
 	assert_log(FATAL, "invalid --delete: INVALID\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_del__ok(void **state) {
@@ -702,6 +799,8 @@ static void args_ipc_del__ok(void **state) {
 	assert_int_equal(request->command, CFG_DEL);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 static void args_ipc_toggle__scaling_nargs(void **state) {
@@ -713,6 +812,8 @@ static void args_ipc_toggle__scaling_nargs(void **state) {
 	assert_nul(args_ipc_toggle(1, NULL));
 
 	assert_log(FATAL, "--toggle SCALING takes no arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_toggle__auto_scale_nargs(void **state) {
@@ -724,6 +825,8 @@ static void args_ipc_toggle__auto_scale_nargs(void **state) {
 	assert_nul(args_ipc_toggle(1, NULL));
 
 	assert_log(FATAL, "--toggle AUTO_SCALE takes no arguments\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_toggle__vrr_off_nargs(void **state) {
@@ -735,6 +838,8 @@ static void args_ipc_toggle__vrr_off_nargs(void **state) {
 	assert_nul(args_ipc_toggle(0, NULL));
 
 	assert_log(FATAL, "--toggle VRR_OFF requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_toggle__disabled_nargs(void **state) {
@@ -746,6 +851,8 @@ static void args_ipc_toggle__disabled_nargs(void **state) {
 	assert_nul(args_ipc_toggle(0, NULL));
 
 	assert_log(FATAL, "--toggle DISABLED requires one argument\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_toggle__invalid(void **state) {
@@ -757,6 +864,8 @@ static void args_ipc_toggle__invalid(void **state) {
 	assert_nul(args_ipc_toggle(0, NULL));
 
 	assert_log(FATAL, "invalid --toggle: INVALID\n");
+
+	assert_logs_empty();
 }
 
 static void args_ipc_toggle__ok(void **state) {
@@ -770,97 +879,103 @@ static void args_ipc_toggle__ok(void **state) {
 	assert_int_equal(request->command, CFG_TOGGLE);
 
 	ipc_request_free(request);
+
+	assert_logs_empty();
 }
 
 static void args_log_threshold__invalid(void **state) {
 	assert_int_equal(args_log_threshold("INVALID"), 0);
 
 	assert_log(FATAL, "invalid --log-threshold INVALID\n");
+
+	assert_logs_empty();
 }
 
 static void args_log_threshold__ok(void **state) {
 	assert_int_equal(args_log_threshold("WARNING"), WARNING);
+
+	assert_logs_empty();
 }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_A(args_cfg__arrange_align_invalid_arrange),
-		TEST_A(args_cfg__arrange_align_invalid_align),
-		TEST_A(args_cfg__arrange_align_ok),
+		TEST(args_cfg__arrange_align_invalid_arrange),
+		TEST(args_cfg__arrange_align_invalid_align),
+		TEST(args_cfg__arrange_align_ok),
 
-		TEST_A(args_cfg__auto_scale_invalid),
-		TEST_A(args_cfg__auto_scale_set),
-		TEST_A(args_cfg__auto_scale_toggle),
+		TEST(args_cfg__auto_scale_invalid),
+		TEST(args_cfg__auto_scale_set),
+		TEST(args_cfg__auto_scale_toggle),
 
-		TEST_A(args_cfg__scaling_invalid),
-		TEST_A(args_cfg__scaling_set),
-		TEST_A(args_cfg__scaling_toggle),
+		TEST(args_cfg__scaling_invalid),
+		TEST(args_cfg__scaling_set),
+		TEST(args_cfg__scaling_toggle),
 
-		TEST_A(args_cfg__transform_invalid),
-		TEST_A(args_cfg__transform_ok),
-		TEST_A(args_cfg__transform_del_ok),
+		TEST(args_cfg__transform_invalid),
+		TEST(args_cfg__transform_ok),
+		TEST(args_cfg__transform_del_ok),
 
-		TEST_A(args_cfg__scale_set_invalid),
-		TEST_A(args_cfg__scale_set_ok),
-		TEST_A(args_cfg__scale_del_ok),
+		TEST(args_cfg__scale_set_invalid),
+		TEST(args_cfg__scale_set_ok),
+		TEST(args_cfg__scale_del_ok),
 
-		TEST_A(args_cfg__mode_set_invalid_width),
-		TEST_A(args_cfg__mode_set_invalid_height),
-		TEST_A(args_cfg__mode_set_invalid_refresh),
-		TEST_A(args_cfg__mode_set_max),
-		TEST_A(args_cfg__mode_set_res),
-		TEST_A(args_cfg__mode_set_res_refresh),
-		TEST_A(args_cfg__mode_del_ok),
+		TEST(args_cfg__mode_set_invalid_width),
+		TEST(args_cfg__mode_set_invalid_height),
+		TEST(args_cfg__mode_set_invalid_refresh),
+		TEST(args_cfg__mode_set_max),
+		TEST(args_cfg__mode_set_res),
+		TEST(args_cfg__mode_set_res_refresh),
+		TEST(args_cfg__mode_del_ok),
 
-		TEST_A(args_cfg__callback_cmd_set_ok),
-		TEST_A(args_cfg__callback_cmd_del_ok),
+		TEST(args_cfg__callback_cmd_set_ok),
+		TEST(args_cfg__callback_cmd_del_ok),
 
-		TEST_A(args_cfg__adaptive_sync_off_ok),
+		TEST(args_cfg__adaptive_sync_off_ok),
 
-		TEST_A(args_cfg__disabled_ok),
+		TEST(args_cfg__disabled_ok),
 
-		TEST_A(args_cfg__order_ok),
+		TEST(args_cfg__order_ok),
 
-		TEST_A(args_ipc_write__nargs),
-		TEST_A(args_ipc_write__ok),
+		TEST(args_ipc_write__nargs),
+		TEST(args_ipc_write__ok),
 
-		TEST_A(args_ipc_get__nargs),
-		TEST_A(args_ipc_get__ok),
+		TEST(args_ipc_get__nargs),
+		TEST(args_ipc_get__ok),
 
-		TEST_A(args_ipc_list__nargs),
-		TEST_A(args_ipc_list__ok),
+		TEST(args_ipc_list__nargs),
+		TEST(args_ipc_list__ok),
 
-		TEST_A(args_ipc_reapply__nargs),
-		TEST_A(args_ipc_reapply__ok),
+		TEST(args_ipc_reapply__nargs),
+		TEST(args_ipc_reapply__ok),
 
-		TEST_A(args_ipc_set__mode_nargs),
-		TEST_A(args_ipc_set__arrange_align_nargs),
-		TEST_A(args_ipc_set__scale_nargs),
-		TEST_A(args_ipc_set__transform_nargs),
-		TEST_A(args_ipc_set__auto_scale_nargs),
-		TEST_A(args_ipc_set__disabled_nargs),
-		TEST_A(args_ipc_set__adaptive_sync_off_nargs),
-		TEST_A(args_ipc_set__order_nargs),
-		TEST_A(args_ipc_set__invalid),
-		TEST_A(args_ipc_set__ok),
+		TEST(args_ipc_set__mode_nargs),
+		TEST(args_ipc_set__arrange_align_nargs),
+		TEST(args_ipc_set__scale_nargs),
+		TEST(args_ipc_set__transform_nargs),
+		TEST(args_ipc_set__auto_scale_nargs),
+		TEST(args_ipc_set__disabled_nargs),
+		TEST(args_ipc_set__adaptive_sync_off_nargs),
+		TEST(args_ipc_set__order_nargs),
+		TEST(args_ipc_set__invalid),
+		TEST(args_ipc_set__ok),
 
-		TEST_A(args_ipc_del__mode_nargs),
-		TEST_A(args_ipc_del__scale_nargs),
-		TEST_A(args_ipc_del__disabled_nargs),
-		TEST_A(args_ipc_del__adaptive_sync_off_nargs),
-		TEST_A(args_ipc_del__callback_cmd_nargs),
-		TEST_A(args_ipc_del__invalid),
-		TEST_A(args_ipc_del__ok),
+		TEST(args_ipc_del__mode_nargs),
+		TEST(args_ipc_del__scale_nargs),
+		TEST(args_ipc_del__disabled_nargs),
+		TEST(args_ipc_del__adaptive_sync_off_nargs),
+		TEST(args_ipc_del__callback_cmd_nargs),
+		TEST(args_ipc_del__invalid),
+		TEST(args_ipc_del__ok),
 
-		TEST_A(args_ipc_toggle__scaling_nargs),
-		TEST_A(args_ipc_toggle__auto_scale_nargs),
-		TEST_A(args_ipc_toggle__vrr_off_nargs),
-		TEST_A(args_ipc_toggle__disabled_nargs),
-		TEST_A(args_ipc_toggle__invalid),
-		TEST_A(args_ipc_toggle__ok),
+		TEST(args_ipc_toggle__scaling_nargs),
+		TEST(args_ipc_toggle__auto_scale_nargs),
+		TEST(args_ipc_toggle__vrr_off_nargs),
+		TEST(args_ipc_toggle__disabled_nargs),
+		TEST(args_ipc_toggle__invalid),
+		TEST(args_ipc_toggle__ok),
 
-		TEST_A(args_log_threshold__invalid),
-		TEST_A(args_log_threshold__ok),
+		TEST(args_log_threshold__invalid),
+		TEST(args_log_threshold__ok),
 	};
 
 	return RUN(tests);

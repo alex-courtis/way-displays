@@ -4,28 +4,35 @@
 
 #include "head.h"
 #include "mode.h"
+#include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
-// Mode data
-
-// TODO Head data
+// Head data
 
 static void size(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
 		int32_t width,
 		int32_t height) {
-	struct Mode *mode = data;
+	const struct Head *head = data;
 
-	mode->width = width;
-	mode->height = height;
+	struct Mode *mode = (struct Mode*)ppmap_get(head->modes, zwlr_output_mode_v1);
+
+	if (mode) {
+		mode->width = width;
+		mode->height = height;
+	}
 }
 
 static void refresh(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1,
-		int32_t refresh) {
-	struct Mode *mode = data;
+		int32_t refresh_mhz) {
+	const struct Head *head = data;
 
-	mode->refresh_mhz = refresh;
+	struct Mode *mode = (struct Mode*)ppmap_get(head->modes, zwlr_output_mode_v1);
+
+	if (mode) {
+		mode->refresh_mhz = refresh_mhz;
+	}
 }
 
 static void preferred(void *data,
@@ -36,9 +43,7 @@ static void preferred(void *data,
 
 static void finished(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
-	struct Mode *mode = data;
-
-	head_release_mode(mode);
+	head_release_mode(data, zwlr_output_mode_v1);
 
 	zwlr_output_mode_v1_destroy(zwlr_output_mode_v1);
 }

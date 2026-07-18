@@ -36,12 +36,6 @@
 
 #include "yaml/unmarshal.h"
 
-static int after_each(void **state) {
-	assert_logs_empty();
-
-	return 0;
-}
-
 // expected will be free'd, log_path is optional WARNING
 static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected, const char *log_path, const char * const file, const int line) {
 	struct Cfg *actual = yaml_unmarshal_file(yaml_path, yaml_root_to_cfg);
@@ -64,6 +58,8 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 
 static void yaml_root_to_cfg__ok(void **state) {
 	check_unmarshalled_cfg("tst/yaml/cfg-all.yaml", cfg_all(), NULL);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__unknown(void **state) {
@@ -71,6 +67,8 @@ static void yaml_root_to_cfg__unknown(void **state) {
 	expected->arrange = COL;
 
 	check_unmarshalled_cfg("tst/yaml/cfg-unknown.yaml", expected, NULL);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__empty(void **state) {
@@ -78,12 +76,16 @@ static void yaml_root_to_cfg__empty(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
 
 	assert_log(ERROR, "\ntst/yaml/cfg-empty.yaml: no root node\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__missing(void **state) {
 	assert_nul(yaml_unmarshal_file("foo/bar/baz.yaml", yaml_root_to_cfg));
 
 	assert_log(ERROR, "\nfoo/bar/baz.yaml: inexistent\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__invalid(void **state) {
@@ -92,6 +94,8 @@ static void yaml_root_to_cfg__invalid(void **state) {
 	pset_add(expected->disableds, disabled_nd("BAD_DISABLED_IFS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__legacy(void **state) {
@@ -108,16 +112,22 @@ static void yaml_root_to_cfg__legacy(void **state) {
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__mistyped(void **state) {
 	check_unmarshalled_cfg("tst/yaml/cfg-mistyped.yaml", cfg_default(), "tst/yaml/cfg-mistyped.log");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__root_mistyped(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-root-mistyped.yaml", yaml_root_to_cfg));
 
 	assert_log(WARNING, "Ignoring invalid tst/yaml/cfg-root-mistyped.yaml expected map, got sequence\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__transform(void **state) {
@@ -125,6 +135,8 @@ static void yaml_root_to_cfg__transform(void **state) {
 	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-transform.yaml", expected, "tst/yaml/cfg-transform.log");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__scale(void **state) {
@@ -132,6 +144,8 @@ static void yaml_root_to_cfg__scale(void **state) {
 	simap_put(expected->scales, "three", 3000);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__mode(void **state) {
@@ -144,6 +158,8 @@ static void yaml_root_to_cfg__mode(void **state) {
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__disabled(void **state) {
@@ -178,6 +194,8 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__scale_round_to_invalid(void **state) {
@@ -185,6 +203,8 @@ static void yaml_root_to_cfg__scale_round_to_invalid(void **state) {
 	expected->scale_round_to = 8;
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale-round-to-invalid.yaml", expected, "tst/yaml/cfg-scale-round-to-invalid.log");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__scale_round_to_zero(void **state) {
@@ -192,6 +212,8 @@ static void yaml_root_to_cfg__scale_round_to_zero(void **state) {
 	expected->scale_round_to = 8;
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale-round-to-zero.yaml", expected, "tst/yaml/cfg-scale-round-to-zero.log");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__empty(void **state) {
@@ -204,6 +226,8 @@ static void yaml_root_to_ipc_request__empty(void **state) {
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__mistyped_root(void **state) {
@@ -218,6 +242,8 @@ static void yaml_root_to_ipc_request__mistyped_root(void **state) {
 			"========================================\n"
 			"- FOO\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__invalid_op(void **state) {
@@ -232,6 +258,8 @@ static void yaml_root_to_ipc_request__invalid_op(void **state) {
 			"========================================\n"
 			"OP: aoeu\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__mistyped_op(void **state) {
@@ -247,6 +275,8 @@ static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 			"OP:\n"
 			"  FOO: BAR\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 
@@ -262,6 +292,8 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 			"========================================\n"
 			"FOO: BAR\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
@@ -285,6 +317,8 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	ipc_request_free(actual);
 	cfg_free(expected);
 	free(expected_log);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_request__cfg_set(void **state) {
@@ -303,6 +337,8 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	ipc_request_free(actual);
 	cfg_free(expected);
 	free(yaml);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__empty(void **state) {
@@ -313,6 +349,8 @@ static void yaml_root_to_ipc_response_list__empty(void **state) {
 			"========================================\n"
 			"\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
@@ -323,6 +361,8 @@ static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
 			"========================================\n"
 			"foo\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
@@ -333,6 +373,8 @@ static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
 			"========================================\n"
 			"-\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
@@ -345,6 +387,8 @@ static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
 			"========================================\n"
 			"- FOO: BAR\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
@@ -359,6 +403,8 @@ static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
 			"========================================\n"
 			"- DONE: TRUE\n"
 			"----------------------------------------\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__map(void **state) {
@@ -407,7 +453,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(head->desired.y, 9);
 	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
-	// TODO
+	// TODO MODE test marshalled
 	// const struct Mode *mode_current = head->current.mode;
 	// assert_non_nul(mode_current);
 	// assert_int_equal(mode_current->width, 10);
@@ -439,7 +485,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	assert_nul(ppmap_it_next(it));
 
-	// TODO
+	// TODO MODE test marshalled
 	// const struct Mode *mode_pref = head->mode_pref;
 	// assert_non_nul(mode_pref);
 	// assert_int_equal(mode_pref->width, 10);
@@ -482,6 +528,8 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	pslist_free_vals(&responses, (fn_free)ipc_response_free);
 	cfg_free(expected_cfg);
 	free(yaml);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_to_ipc_response_list__seq(void **state) {
@@ -558,6 +606,8 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	pslist_free_vals(&responses, (fn_free)ipc_response_free);
 	free(yaml);
 	cfg_free(cfg_expected);
+
+	assert_logs_empty();
 }
 
 static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
@@ -567,6 +617,8 @@ static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
 	assert_nul(yaml_unmarshal_str("", yaml_root_to_cfg, "foo"));
 
 	assert_log(ERROR, "\nfoo: yaml_parser_initialize failed\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
@@ -592,6 +644,8 @@ static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
 	assert_log(ERROR, err);
 
 	free(err);
+
+	assert_logs_empty();
 }
 
 static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
@@ -600,6 +654,8 @@ static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
 
 	assert_log(ERROR, "\ntst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
@@ -609,46 +665,48 @@ static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/CQ3W.yaml", yaml_root_to_cfg));
 
 	assert_log(ERROR, "\ntst/yaml/CQ3W.yaml line 2: found unexpected end of stream (while scanning a quoted scalar)\n");
+
+	assert_logs_empty();
 }
 
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
-		TEST_A(yaml_root_to_cfg__ok),
-		TEST_A(yaml_root_to_cfg__unknown),
-		TEST_A(yaml_root_to_cfg__empty),
-		TEST_A(yaml_root_to_cfg__missing),
-		TEST_A(yaml_root_to_cfg__invalid),
-		TEST_A(yaml_root_to_cfg__legacy),
-		TEST_A(yaml_root_to_cfg__mistyped),
-		TEST_A(yaml_root_to_cfg__root_mistyped),
-		TEST_A(yaml_root_to_cfg__transform),
-		TEST_A(yaml_root_to_cfg__scale),
-		TEST_A(yaml_root_to_cfg__mode),
-		TEST_A(yaml_root_to_cfg__disabled),
-		TEST_A(yaml_root_to_cfg__scale_round_to_invalid),
-		TEST_A(yaml_root_to_cfg__scale_round_to_zero),
+		TEST(yaml_root_to_cfg__ok),
+		TEST(yaml_root_to_cfg__unknown),
+		TEST(yaml_root_to_cfg__empty),
+		TEST(yaml_root_to_cfg__missing),
+		TEST(yaml_root_to_cfg__invalid),
+		TEST(yaml_root_to_cfg__legacy),
+		TEST(yaml_root_to_cfg__mistyped),
+		TEST(yaml_root_to_cfg__root_mistyped),
+		TEST(yaml_root_to_cfg__transform),
+		TEST(yaml_root_to_cfg__scale),
+		TEST(yaml_root_to_cfg__mode),
+		TEST(yaml_root_to_cfg__disabled),
+		TEST(yaml_root_to_cfg__scale_round_to_invalid),
+		TEST(yaml_root_to_cfg__scale_round_to_zero),
 
-		TEST_A(yaml_root_to_ipc_request__empty),
-		TEST_A(yaml_root_to_ipc_request__mistyped_root),
-		TEST_A(yaml_root_to_ipc_request__invalid_op),
-		TEST_A(yaml_root_to_ipc_request__mistyped_op),
-		TEST_A(yaml_root_to_ipc_request__no_op),
-		TEST_A(yaml_root_to_ipc_request__invalid_cfg),
-		TEST_A(yaml_root_to_ipc_request__cfg_set),
+		TEST(yaml_root_to_ipc_request__empty),
+		TEST(yaml_root_to_ipc_request__mistyped_root),
+		TEST(yaml_root_to_ipc_request__invalid_op),
+		TEST(yaml_root_to_ipc_request__mistyped_op),
+		TEST(yaml_root_to_ipc_request__no_op),
+		TEST(yaml_root_to_ipc_request__invalid_cfg),
+		TEST(yaml_root_to_ipc_request__cfg_set),
 
-		TEST_A(yaml_root_to_ipc_response_list__empty),
-		TEST_A(yaml_root_to_ipc_response_list__mistyped_root),
-		TEST_A(yaml_root_to_ipc_response_list__seq_no_map),
-		TEST_A(yaml_root_to_ipc_response_list__seq_no_done),
-		TEST_A(yaml_root_to_ipc_response_list__seq_no_rc),
-		TEST_A(yaml_root_to_ipc_response_list__map),
-		TEST_A(yaml_root_to_ipc_response_list__seq),
+		TEST(yaml_root_to_ipc_response_list__empty),
+		TEST(yaml_root_to_ipc_response_list__mistyped_root),
+		TEST(yaml_root_to_ipc_response_list__seq_no_map),
+		TEST(yaml_root_to_ipc_response_list__seq_no_done),
+		TEST(yaml_root_to_ipc_response_list__seq_no_rc),
+		TEST(yaml_root_to_ipc_response_list__map),
+		TEST(yaml_root_to_ipc_response_list__seq),
 
-		TEST_A(yaml_unmarshal_str__yaml_document_initialize_fail),
-		TEST_A(yaml_unmarshal_str__yaml_parser_load_fail),
-		TEST_A(yaml_unmarshal_file__yaml_document_initialize_fail),
-		TEST_A(yaml_unmarshal_file__yaml_parser_load_fail),
+		TEST(yaml_unmarshal_str__yaml_document_initialize_fail),
+		TEST(yaml_unmarshal_str__yaml_parser_load_fail),
+		TEST(yaml_unmarshal_file__yaml_document_initialize_fail),
+		TEST(yaml_unmarshal_file__yaml_parser_load_fail),
 	};
 
 	return RUN(tests);

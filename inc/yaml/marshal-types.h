@@ -29,7 +29,7 @@ int yaml_map_from_cfg           (struct MC *c, const struct Cfg*          const 
 int yaml_map_from_ipc_operation (struct MC *c, const struct IpcOperation* const ipc_operation);
 int yaml_map_from_ipc_request   (struct MC *c, const struct IpcRequest*   const ipc_request);
 int yaml_map_from_head_overrides(struct MC *c, const struct Head*         const head);
-int yaml_map_from_head_state    (struct MC *c, const struct HeadState*    const head_state);
+int yaml_map_from_head_state    (struct MC *c, const struct HeadState*    const head_state, const struct Head* const head);
 int yaml_map_from_lid           (struct MC *c, const struct Lid*          const lid);
 int yaml_seq_from_messages      (struct MC *c, const struct IpcOperation* const ipc_operation);
 int yaml_map_from_state         (struct MC *c); // g_displ->heads and g_lid

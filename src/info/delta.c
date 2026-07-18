@@ -80,21 +80,23 @@ char *delta_human_mode(const struct Head * const head) {
 			head_human(head)
 			);
 
-	if (head->current.mode) {
+	const struct Mode *mode_cur = ppmap_get(head->modes, head->current.zwlr_mode);
+	if (mode_cur) {
 		delta = sprintf_append(delta, "%dx%d@%dHz -> ",
-				head->current.mode->width,
-				head->current.mode->height,
-				mode_hz_rounded(head->current.mode)
+				mode_cur->width,
+				mode_cur->height,
+				mode_hz_rounded(mode_cur)
 				);
 	} else {
 		delta = sprintf_append(delta, "(no mode) -> ");
 	}
 
-	if (head->desired.mode) {
+	const struct Mode *mode_des = ppmap_get(head->modes, head->desired.zwlr_mode);
+	if (mode_des) {
 		delta = sprintf_append(delta, "%dx%d@%dHz",
-				head->desired.mode->width,
-				head->desired.mode->height,
-				mode_hz_rounded(head->desired.mode)
+				mode_des->width,
+				mode_des->height,
+				mode_hz_rounded(mode_des)
 				);
 	} else {
 		delta = sprintf_append(delta, "(no mode)");

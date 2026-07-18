@@ -38,10 +38,10 @@ static void print_mode_cfg(const enum LogThreshold t, const char * name_desc, co
 	}
 }
 
-static void print_mode(const enum LogThreshold t, const struct Mode * const mode) {
+static void print_mode(const enum LogThreshold t, const struct Mode * const mode, bool pref) {
 
 	if (mode) {
-		char *str = mode_str(mode);
+		char *str = mode_str_pref(mode, pref);
 		log_(t, "    mode:      %s", str);
 		free(str);
 	} else {
@@ -56,7 +56,7 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	if (ppmap_size(head->modes_failed) > 0) {
 		log_(t, "  failed:");
 		for (const struct PPmapIt *it = ppmap_it(head->modes_failed); it; it = ppmap_it_next(it)) {
-			print_mode(t, it->val);
+			print_mode(t, it->val, it->key == head->zwlr_mode_pref);
 		}
 	}
 }
@@ -304,8 +304,10 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	if (!head)
 		return;
 
+	const struct Mode *mode_cur = ppmap_get(head->modes, head->current.zwlr_mode);
+
 	if (head->current.enabled) {
-		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), mode_scale(head->current.mode));
+		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), head_scale(head, head->current.zwlr_mode));
 
 		const struct Output *output = ipmap_find_val(g_displ->outputs, (fn_2pred)output_matches_name, head->name).val;
 		if (output) {
@@ -320,7 +322,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 		}
 	}
 
-	print_mode(t, head->current.mode);
+	print_mode(t, mode_cur, head->current.zwlr_mode == head->zwlr_mode_pref);
 	log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 
 	if (head->current.enabled) {
@@ -347,8 +349,8 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 	if (head->desired.enabled) {
 		if (head_current_mode_not_desired(head, NULL)) {
 			// mode changes happen in their own operation
-			if (!head->current.enabled || head->current.mode != head->desired.mode) {
-				print_mode(t, head->desired.mode);
+			if (!head->current.enabled || head->current.zwlr_mode != head->desired.zwlr_mode) {
+				print_mode(t, ppmap_get(head->modes, head->desired.zwlr_mode), head->desired.zwlr_mode == head->zwlr_mode_pref);
 			}
 		} else if (head_current_adaptive_sync_not_desired(head, NULL)) {
 			// adaptive sync changes happen in their own operation
@@ -415,7 +417,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 				log_(t, "    height:    %dmm", head->height_mm);
 				const struct Mode *mode_pref = ppmap_get(head->modes, head->zwlr_mode_pref);
 				if (mode_pref) {
-					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(mode_pref), mode_pref->width, mode_pref->height);
+					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(mode_pref, head->width_mm, head->height_mm), mode_pref->width, mode_pref->height);
 				}
 			} else {
 				log_(t, "    width:     (not specified)");
@@ -470,16 +472,17 @@ void print_list(const enum LogThreshold t, const struct PPmap * const heads) {
 
 	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
 		const struct Head *head = it->val;
+		const struct Mode *mode_cur = ppmap_get(head->modes, head->current.zwlr_mode);
 
-		if (head->current.enabled && head->current.mode) {
+		if (head->current.enabled && mode_cur) {
 			// full info
 			log_(t, "%-*.*s %.3f %s %5d x%5d @%4d Hz",
 					(int)max_len_human, (int)max_len_human, head_human(head),
 					wl_fixed_to_double(head->current.scale),
 					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : "",
-					head->current.mode->width,
-					head->current.mode->height,
-					mode_hz_rounded(head->current.mode)
+					mode_cur->width,
+					mode_cur->height,
+					mode_hz_rounded(mode_cur)
 				);
 		} else {
 			// no mode is considered disabled
@@ -503,7 +506,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
 }
 
-void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct Mode * const mode) {
+void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode) {
 	log_(t, NULL);
 	log_(t, "Changes failed");
 
@@ -512,10 +515,10 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	}
 
 	log_(t, "  %s:", head_human(head));
-	print_mode(t, mode);
+	print_mode(t, ppmap_get(head->modes, zwlr_mode), head->zwlr_mode_pref == zwlr_mode);
 }
 
-// TODO this does not always seem accurate, shows changes for DP-7 when none are needed on first start
+// TODO debug this does not always seem accurate, shows changes for DP-7 when none are needed on first start
 void print_head_queue(const enum LogThreshold t, const struct Displ *displ, const char *msg) {
 	if (log_get_threshold() > DEBUG)
 		return;

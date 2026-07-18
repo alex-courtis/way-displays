@@ -15,7 +15,6 @@
 #include "displ.h"
 #include "enum.h"
 #include "head.h"
-#include "ppmap.h"
 #include "ssmap.h"
 #include "str.h"
 
@@ -38,19 +37,17 @@ int before_each(void **state) {
 	s->head1->description = strdup("description1");
 
 	ppmap_put_many(s->head1->modes,
-			MC, mode_h_whr(s->head1, 100, 200, 30000),
-			MD, mode_h_whr(s->head1, 400, 500, 60000),
+			MC, mode_whr(100, 200, 30000),
+			MD, mode_whr(400, 500, 60000),
 			NULL);
-	s->head1->current.mode = ppmap_get(s->head1->modes, MC);
-	s->head1->desired.mode = ppmap_get(s->head1->modes, MD);
+	s->head1->current.zwlr_mode = MC;
+	s->head1->desired.zwlr_mode = MD;
 
 	*state = s;
 	return 0;
 }
 
 int after_each(void **state) {
-	assert_logs_empty();
-
 	struct State *s = *state;
 
 	head_free(s->head1);
@@ -69,11 +66,15 @@ static void callback__no_callback(void **state) {
 	g_cfg->callback_cmd = NULL;
 
 	callback(INFO, "msg1", NULL);
+
+	assert_logs_empty();
 }
 
 static void callback__below_threshold(void **state) {
 	will_return_int(__wrap_log_get_threshold, WARNING);
 	callback(INFO, "msg1", NULL);
+
+	assert_logs_empty();
 }
 
 static void callback__one(void **state) {
@@ -101,6 +102,8 @@ static void callback__one(void **state) {
 	free(str_env);
 	free(str_log);
 	ssmap_free(env);
+
+	assert_logs_empty();
 }
 
 static void callback__two(void **state) {
@@ -130,6 +133,8 @@ static void callback__two(void **state) {
 	free(env_str);
 	free(log_str);
 	ssmap_free(expected_env);
+
+	assert_logs_empty();
 }
 
 static void callback_mode_fail__(void **state) {
@@ -138,10 +143,12 @@ static void callback_mode_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
+	s->head1->zwlr_mode_pref = MD;
+
 	const struct SSmap *expected_env = ssmap_init();
 	ssmap_put_many(expected_env,
 			"CALLBACK_MSG", "description1\n"
-			"  Unable to set mode 400x500@60Hz (60,000mHz), retrying",
+			"  Unable to set mode 400x500@60Hz (60,000mHz) (preferred), retrying",
 
 			"CALLBACK_LEVEL", "INFO",
 			NULL);
@@ -151,7 +158,7 @@ static void callback_mode_fail__(void **state) {
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_ssmap(__wrap_spawn_sh_cmd, env, expected_env);
 
-	callback_mode_fail(INFO, s->head1, s->head1->desired.mode);
+	callback_mode_fail(INFO, s->head1, s->head1->desired.zwlr_mode);
 
 	char *env_str = ssmap_str(expected_env);
 	char *log_str = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", env_str);
@@ -161,6 +168,8 @@ static void callback_mode_fail__(void **state) {
 	free(env_str);
 	free(log_str);
 	ssmap_free(expected_env);
+
+	assert_logs_empty();
 }
 
 static void callback_adaptive_sync_fail__(void **state) {
@@ -201,6 +210,8 @@ static void callback_adaptive_sync_fail__(void **state) {
 	free(log_str);
 	ssmap_free(expected_env);
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 int main(void) {

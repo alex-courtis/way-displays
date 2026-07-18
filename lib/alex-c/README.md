@@ -46,4 +46,4 @@ Not thread safe.
 
 libc string helpers 
 
-TODO: doxygen
+TODO: c-lib doxygen

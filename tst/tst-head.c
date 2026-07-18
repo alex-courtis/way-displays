@@ -32,8 +32,6 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	// assert_logs_empty();
-
 	g_cfg_destroy();
 	return 0;
 }
@@ -56,6 +54,8 @@ static void head_get_fixed_scale__rounding_nearest(void **state) {
 	// no rounding
 	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
+
+	assert_logs_empty();
 }
 
 static void head_get_fixed_scale__rounding_up(void **state) {
@@ -76,6 +76,8 @@ static void head_get_fixed_scale__rounding_up(void **state) {
 	// no rounding
 	g_cfg->scale_round_to = 8;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.125), 1.125);
+
+	assert_logs_empty();
 }
 
 static void head_get_fixed_scale__rounding_down(void **state) {
@@ -92,6 +94,8 @@ static void head_get_fixed_scale__rounding_down(void **state) {
 
 	g_cfg->scale_round_to = 1;
 	assert_wl_fixed_t_equal_double(head_get_fixed_scale(1.37), 1);
+
+	assert_logs_empty();
 }
 
 static void head_auto_scale__default(void **state) {
@@ -104,81 +108,88 @@ static void head_auto_scale__default(void **state) {
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 1);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_auto_scale__mode(void **state) {
 	struct Head *head = head_init();
+	head->width_mm = 200;
+	head->height_mm = 100;
 
-	struct Mode *mode = mode_h(head);
+	struct Mode *mode = mode_init();
 	ppmap_put(head->modes, MD, mode);
-	head->desired.mode = ppmap_get(head->modes, MD);
+	head->desired.zwlr_mode = MD;
+
+	expect_ptr_count(__wrap_mode_dpi, mode, mode, 4);
+	expect_int_value_count(__wrap_mode_dpi, width_mm, 200, 4);
+	expect_int_value_count(__wrap_mode_dpi, height_mm, 100, 4);
 
 	// dpi 0 defaults to 96
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 0);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 1);
 
 	// even 144
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 144);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 144.0 / 96);
 
 	// rounded down to 156
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 161);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 156.0 / 96);
 
 	// rounded up to 168
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 162);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 168.0 / 96);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_auto_scale__range(void **state) {
 	struct Head *head = head_init();
+	head->width_mm = 400;
+	head->height_mm = 300;
 
-	struct Mode *mode = mode_h(head);
+	struct Mode *mode = mode_init();
 	ppmap_put(head->modes, MD, mode);
-	head->desired.mode = ppmap_get(head->modes, MD);
+	head->desired.zwlr_mode = MD;
+
+	expect_ptr_count(__wrap_mode_dpi, mode, mode, 7);
+	expect_int_value_count(__wrap_mode_dpi, width_mm, 400, 7);
+	expect_int_value_count(__wrap_mode_dpi, height_mm, 300, 7);
 
 	// scale under 1.0 is clamped to 1.0 with default settings
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 72);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, -1.0f), 1);
 
 	// clamping to some other minimum value works too
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 12);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 0.125f, -1.0f), 0.125f);
 
 	// the minimum value is always positive (quantized to 1/8)
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 1);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, -1.0f, -1.0f), 0.125f);
 
 	// clamping to maximum value works
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, 2.5f), 2.5f);
 
 	// maximum values under 1.0 are ignored
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 1.0f, 0.9f), 4.0f);
 
 	// the configured maximum is respected even with quantization
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 384);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 0.63f, 1.49f), 1.375f);
 
 	// the configured minimum is respected even with quantization
-	expect_ptr(__wrap_mode_dpi, mode, mode);
 	will_return_int(__wrap_mode_dpi, 12);
 	assert_wl_fixed_t_equal_double(head_auto_scale(head, 0.63f, -1.0f), 0.75f);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_find_mode__no_modes(void **state) {
@@ -193,11 +204,13 @@ static void head_find_mode__no_modes(void **state) {
 	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_find_mode__all_failed(void **state) {
 	struct Head *head = head_n("head0");
-	const struct Mode *mode = mode_h(head);
+	const struct Mode *mode = mode_init();
 
 	// all modes failed
 	ppmap_put(head->modes_failed, M0, mode);
@@ -211,11 +224,13 @@ static void head_find_mode__all_failed(void **state) {
 	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_find_mode__user_available(void **state) {
 	struct Head *head = head_init();
-	const struct Mode *mode = mode_h_whr(head, 1, 2, 3);
+	const struct Mode *mode = mode_whr(1, 2, 3);
 	ppmap_put(head->modes, M0, mode);
 
 	// user preferred head
@@ -224,24 +239,26 @@ static void head_find_mode__user_available(void **state) {
 	head->name = strdup("HEAD");
 
 	// mode matched to user
-	const struct Mode *expected = mode_h_whr(head, 4, 5, 6);
+	const struct Mode *expected = mode_whr(4, 5, 6);
 	ppmap_put(head->modes, M1, expected);
 
 	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_target);
 	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
 	will_return_ptr_type(__wrap_mode_best_satisfying, expected, struct Mode*);
 
-	const struct Mode *actual = head_find_mode(head);
+	const struct zwlr_output_mode_v1 *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(ppmap_get(head->modes, actual), expected);
+	assert_ptr_equal(actual, M1);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_find_mode__user_failed(void **state) {
 	struct Head *head = head_init();
-	struct Mode *expected = mode_h(head);
+	const struct Mode *expected = mode_init();
 	ppmap_put(head->modes, M0, expected);
 
 	// user preferred head
@@ -263,10 +280,10 @@ static void head_find_mode__user_failed(void **state) {
 	expect_str(__wrap_callback, msg2, NULL);
 
 	// user failed, fall back to max
-	const struct Mode *actual = head_find_mode(head);
+	const struct zwlr_output_mode_v1 *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(ppmap_get(head->modes, actual), expected);
+	assert_ptr_equal(actual, M0);
 
 	// one and only notices: falling back to preferred then max
 	assert_log(WARNING, "\nHEAD: No available mode for user MODE -1x-1, falling back to preferred\n");
@@ -280,32 +297,36 @@ static void head_find_mode__user_failed(void **state) {
 	// marked failures avoided
 	actual = head_find_mode(head);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(ppmap_get(head->modes, actual), expected);
+	assert_ptr_equal(actual, M0);
 
 	// no notices this time
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_find_mode__preferred(void **state) {
 	struct Head *head = head_n("name");
-	struct Mode *expected = mode_h(head);
+	const struct Mode *expected = mode_init();
 
 	ppmap_put(head->modes, M0, expected);
 	head->zwlr_mode_pref = M0;
 
-	const struct Mode *actual = head_find_mode(head);
+	const struct zwlr_output_mode_v1 *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(ppmap_get(head->modes, actual), expected);
+	assert_ptr_equal(actual, M0);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_find_mode__mode_max_refresh(void **state) {
 	struct Head *head = head_n("name");
-	struct Mode *expected = mode_h(head);
+	struct Mode *expected = mode_init();
 
 	sset_add(g_cfg->max_preferred_refresh, "!nam.*");
 
@@ -316,18 +337,20 @@ static void head_find_mode__mode_max_refresh(void **state) {
 	expect_ptr(__wrap_mode_max_refresh, modes, head->modes);
 	will_return_ptr_type(__wrap_mode_max_refresh, expected, struct Mode*);
 
-	const struct Mode *actual = head_find_mode(head);
+	const struct zwlr_output_mode_v1 *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(ppmap_get(head->modes, actual), expected);
+	assert_ptr_equal(actual, M0);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_find_mode__max(void **state) {
 	struct Head *head = head_n("name");
 
-	struct Mode *expected = mode_h(head);
+	const struct Mode *expected = mode_init();
 	ppmap_put(head->modes, M0, expected);
 
 	expect_int_value(__wrap_callback, t, WARNING);
@@ -335,20 +358,22 @@ static void head_find_mode__max(void **state) {
 	expect_str(__wrap_callback, msg2, NULL);
 
 	// one and only notice
-	const struct Mode *actual = head_find_mode(head);
+	const struct zwlr_output_mode_v1 *actual = head_find_mode(head);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(ppmap_get(head->modes, actual), expected);
+	assert_ptr_equal(actual, M0);
 
 	assert_log(INFO, "\nname: No preferred mode, falling back to maximum available\n");
 
 	// no notice
 	actual = head_find_mode(head);
 
-	assert_mode_equal(actual, expected);
-	assert_ptr_equal(actual, expected);
+	assert_mode_equal(ppmap_get(head->modes, actual), expected);
+	assert_ptr_equal(actual, M0);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_find_mode__none(void **state) {
@@ -363,6 +388,8 @@ static void head_find_mode__none(void **state) {
 	assert_log(ERROR, "\nNo mode for head0, disabling.\n");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_max_mode__max(void **state) {
@@ -379,12 +406,14 @@ static void head_max_mode__max(void **state) {
 			M4, mode_whr(1000, 1000, 1000),
 			NULL);
 
-	const struct Mode *actual = head_max_mode(head);
+	const struct zwlr_output_mode_v1 *actual = head_max_mode(head);
 
-	assert_mode_equal(actual, mode_expected);
-	assert_ptr_equal(actual, mode_expected);
+	assert_mode_equal(ppmap_get(head->modes, actual), mode_expected);
+	assert_ptr_equal(actual, M3);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_matches_name_desc_regex__name(void **state) {
@@ -393,6 +422,8 @@ static void head_matches_name_desc_regex__name(void **state) {
 	assert_true(head_matches_name_desc_regex(head, "!nam"));
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_matches_name_desc_regex__desc(void **state) {
@@ -402,6 +433,8 @@ static void head_matches_name_desc_regex__desc(void **state) {
 	assert_true(head_matches_name_desc_regex(head, "!esc"));
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_matches_name_desc_regex__bad(void **state) {
@@ -412,6 +445,8 @@ static void head_matches_name_desc_regex__bad(void **state) {
 	assert_log(DEBUG, "Could not compile Head NAME_DESC regex '(badregex': Unmatched ( or \\(\n");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_matches_name_desc_regex__no_regex(void **state) {
@@ -420,6 +455,8 @@ static void head_matches_name_desc_regex__no_regex(void **state) {
 	assert_false(head_matches_name_desc_regex(head, "name"));
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_apply_toggles__none(void **state) {
@@ -433,6 +470,8 @@ static void head_apply_toggles__none(void **state) {
 	cfg_free(cfg);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_apply_toggles__disabled__enable(void **state) {
@@ -453,6 +492,8 @@ static void head_apply_toggles__disabled__enable(void **state) {
 
 	cfg_free(cfg);
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_apply_toggles__disabled__disable(void **state) {
@@ -473,6 +514,8 @@ static void head_apply_toggles__disabled__disable(void **state) {
 
 	cfg_free(cfg);
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_set_description__nulls(void **state) {
@@ -483,6 +526,8 @@ static void head_set_description__nulls(void **state) {
 	assert_str_equal(head->description, "foo (null) bar baz");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_set_description__no_nulls(void **state) {
@@ -493,6 +538,8 @@ static void head_set_description__no_nulls(void **state) {
 	assert_str_equal(head->description, "foo");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_set_description__empty(void **state) {
@@ -503,6 +550,8 @@ static void head_set_description__empty(void **state) {
 	assert_str_equal(head->description, "");
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_set_description__null_input(void **state) {
@@ -513,6 +562,8 @@ static void head_set_description__null_input(void **state) {
 	assert_nul(head->description);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void heads_reapply__(void **state) {
@@ -523,9 +574,9 @@ static void heads_reapply__(void **state) {
 
 	const struct PPmap *modes_once_failed = mode_ppmap_init();
 	ppmap_put_many(modes_once_failed,
-			M0, mode_h_whr(head_disabled, 3440, 1440, 59999),
-			M1, mode_h_whr(head_disabled, 3840, 2160, 30000),
-			M2, mode_h_whr(head_disabled, 3840, 2160, 29970),
+			M0, mode_whr(3440, 1440, 59999),
+			M1, mode_whr(3840, 2160, 30000),
+			M2, mode_whr(3840, 2160, 29970),
 			NULL);
 
 	head_disabled->zwlr_mode_pref = M0;
@@ -539,9 +590,8 @@ static void heads_reapply__(void **state) {
 	struct Head *head_enabled = head_n("eDP-1");
 	head_enabled->current.enabled = true;
 
-	const struct Mode *mc = mode_h_whr(head_enabled, 2256, 1504, 59999);
-	ppmap_put(head_enabled->modes, MP, mc);
-	head_enabled->current.mode = mc;
+	ppmap_put(head_enabled->modes, MP, mode_whr(2256, 1504, 59999));
+	head_enabled->current.zwlr_mode = MP;
 	head_enabled->zwlr_mode_pref = MP;
 
 	ppmap_put(heads, H1, head_enabled);
@@ -559,192 +609,147 @@ static void heads_reapply__(void **state) {
 
 	ppmap_free_vals(heads);
 	ppmap_free(modes_once_failed);
-}
 
-static void head_release_mode__nulls(void **state) {
-	head_release_mode(NULL);
-
-	struct Mode *mode_releasing = mode_whr(0, 0, 0);
-
-	head_release_mode(mode_releasing);
+	assert_logs_empty();
 }
 
 static void head_release_mode__other(void **state) {
 	struct Head *head = head_init();
 
-	struct Mode *mode_releasing = mode_h_whr(head, 10, 20, 0);
-	ppmap_put(head->modes, M0, mode_releasing);
-	mode_releasing->zwlr_mode = M0;
+	ppmap_put_many(head->modes,
+			MR, mode_whr(10, 20, 0),
+			MC, mode_whr(30, 40, 0),
+			MD, mode_whr(50, 60, 0),
+			NULL
+			);
 
-	struct Mode *mode_current = mode_h_whr(head, 30, 40, 0);
-	ppmap_put(head->modes, MC, mode_current);
-	head->current.mode = mode_current;
-	mode_current->zwlr_mode = MC;
-
-	struct Mode *mode_desired = mode_h_whr(head, 50, 60, 0);
-	ppmap_put(head->modes, MD, mode_desired);
-	head->desired.mode = mode_desired;
-	mode_desired->zwlr_mode = MD;
+	head->current.zwlr_mode = MC;
+	head->desired.zwlr_mode = MD;
 
 	assert_int_equal(ppmap_size(head->modes), 3);
 
-	head_release_mode(mode_releasing);
+	head_release_mode(head, MR);
 
 	assert_int_equal(ppmap_size(head->modes), 2);
 
 	assert_false(ppmap_contains_key(head->modes, M0));
 
-	assert_mode_equal(head->current.mode, mode_current);
-	assert_ptr_equal(head->current.mode, mode_current);
+	assert_ptr_equal(head->current.zwlr_mode, MC);
 	assert_true(ppmap_contains_key(head->modes, MC));
 
-	assert_mode_equal(head->desired.mode, mode_desired);
-	assert_ptr_equal(head->desired.mode, mode_desired);
+	assert_ptr_equal(head->desired.zwlr_mode, MD);
 	assert_true(ppmap_contains_key(head->modes, MD));
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_release_mode__cur_des(void **state) {
 	struct Head *head = head_init();
 
-	struct Mode *mode_releasing = mode_h(head);
-	ppmap_put(head->modes, M0, mode_releasing);
-	mode_releasing->zwlr_mode = M0;
-	head->current.mode = ppmap_get(head->modes, M0);
-	head->desired.mode = ppmap_get(head->modes, M0);
+	ppmap_put(head->modes, MR, mode_init());
+	head->current.zwlr_mode = MR;
+	head->desired.zwlr_mode = MR;
 
-	head_release_mode(mode_releasing);
+	head_release_mode(head, MR);
 
 	assert_int_equal(ppmap_size(head->modes), 0);
 
-	assert_false(ppmap_contains_key(head->modes, M0));
+	assert_false(ppmap_contains_key(head->modes, MR));
 
-	assert_nul(head->current.mode);
-	assert_nul(head->desired.mode);
+	assert_nul(head->current.zwlr_mode);
+	assert_nul(head->desired.zwlr_mode);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_set_mode_pref__first(void **state) {
 	struct Head *head = head_init();
-	const struct Mode *mode_existing = mode_h_whr(head, 3840, 2160, 60000);
-	const struct Mode *mode_pref = mode_h_whr(head, 2560, 1440, 30000);
+	ppmap_put(head->modes, M0, mode_whr(3840, 2160, 60000));
+	ppmap_put(head->modes, M1, mode_whr(2560, 1440, 30000));
 
-	ppmap_put(head->modes, M0, mode_existing);
-	ppmap_put(head->modes, M1, mode_pref);
-
-	head_set_mode_pref(mode_pref, M1);
+	head_set_mode_pref(head, M1);
 
 	assert_ptr_equal(head->zwlr_mode_pref, M1);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_set_mode_pref__current(void **state) {
 	struct Head *head = head_init();
-	const struct Mode *mode_pref = mode_h_whr(head, 2560, 1440, 30000);
-	ppmap_put(head->modes, M0, mode_pref);
+	ppmap_put(head->modes, M0, mode_whr(2560, 1440, 30000));
 	head->zwlr_mode_pref = M0;
 
-	head_set_mode_pref(mode_pref, M0);
+	head_set_mode_pref(head, M0);
 
-	assert_ptr_equal(ppmap_get(head->modes, M0), mode_pref);
+	assert_ptr_equal(head->zwlr_mode_pref, M0);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void head_set_mode_pref__subsequent(void **state) {
 	struct Head *head = head_n("NAM");
-	const struct Mode *mode_existing = mode_h_whr(head, 3840, 2160, 60000);
-	const struct Mode *mode_subsequent = mode_h_whr(head, 2560, 1440, 30000);
-
-	ppmap_put(head->modes, M0, mode_existing);
-	ppmap_put(head->modes, M1, mode_subsequent);
+	ppmap_put(head->modes, M0, mode_whr(3840, 2160, 60000));
+	ppmap_put(head->modes, M1, mode_whr(2560, 1440, 30000));
 
 	head->zwlr_mode_pref = M0;
 
-	head_set_mode_pref(mode_subsequent, M1);
+	head_set_mode_pref(head, M1);
 
 	assert_log(INFO, "\nNAM: multiple preferred modes advertised: using initial 3840x2160@60Hz (60,000mHz) (preferred), ignoring 2560x1440@30Hz (30,000mHz)\n");
 
 	assert_ptr_equal(head->zwlr_mode_pref, M0);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
-static void head_add_mode__ok(void **state) {
-	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
+static void head_scale__default(void **state) {
+	struct Head *head = head_init();
+	head->width_mm = 1000;
+	head->height_mm = 500;
 
-	struct Head *head = head_n("NAM");
-	struct Mode *expected_mode = mode_h(head);
-	expected_mode->zwlr_mode = zwlr_mode;
+	ppmap_put(head->modes, M0, mode_whr(2000, 1000, 0));
 
-	head_add_mode(head, zwlr_mode);
+	expect_ptr(__wrap_mode_dpi, mode, ppmap_get(head->modes, M0));
+	expect_int_value(__wrap_mode_dpi, width_mm, 1000);
+	expect_int_value(__wrap_mode_dpi, height_mm, 500);
+	will_return_int(__wrap_mode_dpi, 192);
 
-	assert_int_equal(ppmap_size(head->modes), 1);
+	assert_float_equal(head_scale(head, M0), 2, 0);
 
-	assert_mode_equal(ppmap_get(head->modes, zwlr_mode), expected_mode);
-
-	mode_free(expected_mode);
 	head_free(head);
+
+	assert_logs_empty();
 }
 
-static void head_add_mode__nulls(void **state) {
-	struct Head *head = head_n("NAM");
-	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
+static void head_scale__cfg(void **state) {
+	struct Head *head = head_init();
+	head->width_mm = 1000;
+	head->height_mm = 500;
 
-	head_add_mode(NULL, zwlr_mode);
+	ppmap_put(head->modes, M0, mode_whr(2000, 1000, 0));
 
-	head_add_mode(head, NULL);
+	g_cfg->auto_scale_dpi = 48;
 
-	assert_int_equal(ppmap_size(head->modes), 0);
+	expect_ptr(__wrap_mode_dpi, mode, ppmap_get(head->modes, M0));
+	expect_int_value(__wrap_mode_dpi, width_mm, 1000);
+	expect_int_value(__wrap_mode_dpi, height_mm, 500);
+	will_return_int(__wrap_mode_dpi, 192);
 
-	head_free(head);
-}
-
-static void head_set_current_mode__ok(void **state) {
-	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
-
-	struct Head *head = head_n("NAM");
-	struct Mode *mode = mode_h(head);
-	mode->zwlr_mode = zwlr_mode;
-
-	ppmap_put(head->modes, zwlr_mode, mode);
-
-	head_set_current_mode(head, zwlr_mode);
-
-	assert_ptr_equal(head->current.mode, mode);
+	assert_float_equal(head_scale(head, M0), 4, 0);
 
 	head_free(head);
-}
 
-static void head_set_current_mode__not_present(void **state) {
-	const struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
-
-	struct Head *head = head_n("NAM");
-
-	ppmap_put(head->modes, M0, mode_h(head));
-
-	head_set_current_mode(head, zwlr_mode);
-
-	assert_nul(head->current.mode);
-
-	head_free(head);
-}
-
-static void head_set_current_mode__nulls(void **state) {
-	struct Head *head = head_n("NAM");
-	struct zwlr_output_mode_v1 *zwlr_mode = (struct zwlr_output_mode_v1*)"dummy";
-
-	head_add_mode(NULL, zwlr_mode);
-
-	head_set_current_mode(head, NULL);
-
-	assert_int_equal(ppmap_size(head->modes), 0);
-	assert_nul(head->current.mode);
-
-	head_free(head);
+	assert_logs_empty();
 }
 
 int main(void) {
@@ -784,7 +789,6 @@ int main(void) {
 
 		TEST_BA(heads_reapply__),
 
-		TEST_BA(head_release_mode__nulls),
 		TEST_BA(head_release_mode__other),
 		TEST_BA(head_release_mode__cur_des),
 
@@ -792,12 +796,8 @@ int main(void) {
 		TEST_BA(head_set_mode_pref__current),
 		TEST_BA(head_set_mode_pref__subsequent),
 
-		TEST_BA(head_add_mode__ok),
-		TEST_BA(head_add_mode__nulls),
-
-		TEST_BA(head_set_current_mode__ok),
-		TEST_BA(head_set_current_mode__not_present),
-		TEST_BA(head_set_current_mode__nulls),
+		TEST_BA(head_scale__default),
+		TEST_BA(head_scale__cfg),
 	};
 
 	return RUN(tests);

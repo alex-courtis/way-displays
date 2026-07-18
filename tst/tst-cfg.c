@@ -43,6 +43,7 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
+	// TODO move assert_logs_empty
 	assert_logs_empty();
 
 	struct State *s = *state;

@@ -43,22 +43,6 @@ struct Mode *mode_whr(int32_t width, int32_t height, int32_t refresh_mhz) {
 	return mode;
 }
 
-struct Mode *mode_h(struct Head* const head) {
-	struct Mode *mode = mode_init();
-
-	mode->head = head;
-
-	return mode;
-}
-
-struct Mode *mode_h_whr(struct Head* const head, int32_t width, int32_t height, int32_t refresh_mhz) {
-	struct Mode *mode = mode_whr(width, height, refresh_mhz);
-
-	mode->head = head;
-
-	return mode;
-}
-
 struct Mode *mode_whr_max(int32_t width, int32_t height, int32_t refresh_mhz) {
 	struct Mode *mode = mode_whr(width, height, refresh_mhz);
 

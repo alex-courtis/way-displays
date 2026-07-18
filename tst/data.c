@@ -40,6 +40,7 @@ void *MC = "MC";
 void *MD = "MD";
 void *MP = "MP";
 void *MF = "MF";
+void *MR = "MR";
 
 void *M0 = "M0";
 void *M1 = "M1";
@@ -177,11 +178,11 @@ struct IpcOperation *ipc_response(void) {
 	head0->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head0->current.transform = WL_OUTPUT_TRANSFORM_270;
 
-	const struct Mode *mode_cur = mode_h_whr(head0, 10, 11, 12);
+	const struct Mode *mode_cur = mode_whr(10, 11, 12);
 	ppmap_put(head0->modes, MC, mode_cur);
 	head0->zwlr_mode_pref = MC;
-	head0->current.mode = ppmap_get(head0->modes, MC);
-	head0->desired.mode = ppmap_get(head0->modes, MD);
+	head0->current.zwlr_mode = MC;
+	head0->desired.zwlr_mode = MD;
 
 	head0->desired.scale = wl_fixed_from_double(7.0);
 	head0->desired.enabled = true;
@@ -190,10 +191,10 @@ struct IpcOperation *ipc_response(void) {
 	head0->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head0->desired.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
 
-	ppmap_put(head0->modes, MD, mode_h_whr(head0, 13, 14, 15));
-	head0->desired.mode = ppmap_get(head0->modes, MD);
+	ppmap_put(head0->modes, MD, mode_whr(13, 14, 15));
+	head0->desired.zwlr_mode = MD;
 
-	ppmap_put(head0->modes_failed, M0, mode_h_whr(head0, 16, 17, 18));
+	ppmap_put(head0->modes_failed, M0, mode_whr(16, 17, 18));
 
 	ppmap_put(g_displ->heads, H0, head0);
 

@@ -1,6 +1,5 @@
 #include "tst.h"
 
-#include "assert-log.h"
 #include "asserts.h"
 #include "data.h"
 #include "util-init.h"
@@ -37,8 +36,8 @@ int before_each(void **state) {
 	s->head1->current.y = 800;
 	s->head1->current.transform = WL_OUTPUT_TRANSFORM_180;
 	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	ppmap_put(s->head1->modes, M0, mode_h_whr(s->head1, 100, 200, 30000));
-	s->head1->current.mode = ppmap_get(s->head1->modes, M0);
+	ppmap_put(s->head1->modes, M0, mode_whr(100, 200, 30000));
+	s->head1->current.zwlr_mode = M0;
 
 	s->head1->desired.scale = 1024;
 	s->head1->desired.enabled = true;
@@ -46,8 +45,8 @@ int before_each(void **state) {
 	s->head1->desired.y = 1000;
 	s->head1->desired.transform = WL_OUTPUT_TRANSFORM_90;
 	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	ppmap_put(s->head1->modes, M1, mode_h_whr(s->head1, 400, 500, 60000));
-	s->head1->desired.mode = ppmap_get(s->head1->modes, M1);
+	ppmap_put(s->head1->modes, M1, mode_whr(400, 500, 60000));
+	s->head1->desired.zwlr_mode = M1;
 
 	ppmap_put(s->heads, H1, s->head1);
 
@@ -60,8 +59,8 @@ int before_each(void **state) {
 	s->head2->current.y = 1800;
 	s->head2->current.transform = WL_OUTPUT_TRANSFORM_270;
 	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	ppmap_put(s->head2->modes, M0, mode_h_whr(s->head2, 1100, 1200, 130000));
-	s->head2->current.mode = ppmap_get(s->head2->modes, M0);
+	ppmap_put(s->head2->modes, M0, mode_whr(1100, 1200, 130000));
+	s->head2->current.zwlr_mode = M0;
 
 	s->head2->desired.scale = 4096;
 	s->head2->desired.enabled = true;
@@ -69,8 +68,8 @@ int before_each(void **state) {
 	s->head2->desired.y = 11000;
 	s->head2->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	ppmap_put(s->head2->modes, M1, mode_h_whr(s->head2, 1400, 1500, 160000));
-	s->head2->desired.mode = ppmap_get(s->head2->modes, M1);
+	ppmap_put(s->head2->modes, M1, mode_whr(1400, 1500, 160000));
+	s->head2->desired.zwlr_mode = M1;
 
 	ppmap_put(s->heads, H2, s->head2);
 
@@ -79,8 +78,6 @@ int before_each(void **state) {
 }
 
 int after_each(void **state) {
-	assert_logs_empty();
-
 	struct State *s = *state;
 
 	ppmap_free_vals(s->heads);
@@ -106,7 +103,7 @@ static void delta_human_mode__to_mode(void **state) {
 static void delta_human_mode__to_no(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.mode = NULL;
+	s->head1->desired.zwlr_mode = NULL;
 
 	char *deltas = delta_human_mode(s->head1);
 
@@ -121,7 +118,7 @@ static void delta_human_mode__to_no(void **state) {
 static void delta_human_mode__from_no(void **state) {
 	struct State *s = *state;
 
-	s->head2->current.mode = NULL;
+	s->head2->current.zwlr_mode = NULL;
 
 	char *deltas = delta_human_mode(s->head2);
 

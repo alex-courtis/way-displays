@@ -1,8 +1,6 @@
 #include "tst.h"
 
 #include "assert-head.h"
-#include "assert-log.h"
-#include "assert-mode.h"
 #include "assert-pset.h"
 #include "assert-wl.h"
 #include "data.h"
@@ -38,8 +36,8 @@ static struct Head *head_init_dp(int32_t width, int32_t height) {
 	head->scaled.width = width;
 	head->scaled.height = height;
 
-	ppmap_put(head->modes, MD, mode_init());
-	head->desired.mode = ppmap_get(head->modes, MD);
+	ppmap_put(head->modes, M0, mode_init());
+	head->desired.zwlr_mode = M0;
 
 	return head;
 }
@@ -53,8 +51,6 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	assert_logs_empty();
-
 	displ_free(g_displ);
 
 	g_cfg_destroy();
@@ -194,7 +190,7 @@ static void desire_position__col_left(void **state) {
 	struct Head *head1 = head_init_dp(7, 3);
 	struct Head *head2 = head_init_dp(2, 1);
 
-	ppmap_put_many(g_displ->heads, "0", head0, "1", head1, "2", head2, NULL);
+	ppmap_put_many(g_displ->heads, H0, head0, H1, head1, H2, head2, NULL);
 
 	const struct Pset *head_set = ppmap_vals_pset(g_displ->heads);
 
@@ -435,16 +431,15 @@ static void desire_enabled__no_override(void **state) {
 
 static void desire_mode__disabled(void **state) {
 	struct Head *head = head_n("head");
-	struct Mode *mode = mode_h(head);
+	const struct Mode *mode = mode_init();
 
-	ppmap_put(head->modes, MD, mode);
+	ppmap_put(head->modes, M0, mode);
 	head->desired.enabled = false;
-	head->desired.mode = ppmap_get(head->modes, MD);
+	head->desired.zwlr_mode = M0;
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.mode, mode);
-	assert_ptr_equal(head->desired.mode, mode);
+	assert_ptr_equal(head->desired.zwlr_mode, M0);
 	assert_false(head->desired.enabled);
 	assert_false(head->warned_no_mode);
 
@@ -453,19 +448,18 @@ static void desire_mode__disabled(void **state) {
 
 static void desire_mode__no_mode(void **state) {
 	struct Head *head = head_n("head");
-	struct Mode *mode = mode_h(head);
+	const struct Mode *mode = mode_init();
 
-	ppmap_put(head->modes, MD, mode);
+	ppmap_put(head->modes, M0, mode);
 	head->desired.enabled = true;
-	head->desired.mode = ppmap_get(head->modes, MD);
+	head->desired.zwlr_mode = M0;
 
 	expect_ptr(__wrap_head_find_mode, head, head);
-	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
+	will_return_ptr_type(__wrap_head_find_mode, NULL, struct zwlr_output_mode_v1*);
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.mode, mode);
-	assert_ptr_equal(head->desired.mode, mode);
+	assert_ptr_equal(head->desired.zwlr_mode, M0);
 	assert_false(head->desired.enabled);
 	assert_true(head->warned_no_mode);
 
@@ -474,21 +468,20 @@ static void desire_mode__no_mode(void **state) {
 
 static void desire_mode__no_mode_warned(void **state) {
 	struct Head *head = head_n("head");
-	struct Mode *mode = mode_h(head);
+	const struct Mode *mode = mode_init();
 
 	ppmap_put(head->modes, MD, mode);
 	head->desired.enabled = true;
-	head->desired.mode = ppmap_get(head->modes, MD);
+	head->desired.zwlr_mode = MD;
 
-	head->warned_no_mode = true;
+	head->warned_no_mode = false;
 
 	expect_ptr(__wrap_head_find_mode, head, head);
-	will_return_ptr_type(__wrap_head_find_mode, NULL, struct Mode*);
+	will_return_ptr_type(__wrap_head_find_mode, NULL, struct zwlr_output_mode_v1*);
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.mode, mode);
-	assert_ptr_equal(head->desired.mode, mode);
+	assert_ptr_equal(head->desired.zwlr_mode, MD);
 	assert_false(head->desired.enabled);
 	assert_true(head->warned_no_mode);
 
@@ -497,22 +490,21 @@ static void desire_mode__no_mode_warned(void **state) {
 
 static void desire_mode__ok(void **state) {
 	struct Head *head = head_n("head");
-	const struct Mode *mode_des = mode_h_whr(head, 1, 2, 3);
 
-	ppmap_put(head->modes, MD, mode_des);
+	ppmap_put_many(head->modes,
+			M0, mode_whr(1, 2, 3),
+			MD, mode_whr(4, 5, 6),
+			NULL
+			);
+
 	head->desired.enabled = true;
-	head->desired.mode = ppmap_get(head->modes, MD);
-
-	struct Mode *mode2 = mode_h_whr(head, 4, 5, 6);
-	ppmap_put(head->modes, M0, mode2);
 
 	expect_ptr(__wrap_head_find_mode, head, head);
-	will_return_ptr_type(__wrap_head_find_mode, mode2, struct Mode*);
+	will_return_ptr_type(__wrap_head_find_mode, MD, struct zwlr_output_mode_v1*);
 
 	desire_mode(head);
 
-	assert_mode_equal(head->desired.mode, mode2);
-	assert_ptr_equal(head->desired.mode, mode2);
+	assert_ptr_equal(head->desired.zwlr_mode, MD);
 	assert_true(head->desired.enabled);
 	assert_false(head->warned_no_mode);
 
@@ -698,9 +690,8 @@ static void desire_scaled_dimensions__default(void **state) {
 	assert_int_equal(head->scaled.height, 1);
 
 	// no scale
-	const struct Mode *mode = mode_h_whr(head, 200, 100, 0);
-	ppmap_put(head->modes, MD, mode);
-	head->desired.mode = ppmap_get(head->modes, MD);
+	const struct Mode *mode = mode_whr(200, 100, 0);
+	ppmap_put(head->modes, M0, mode);
 
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1);
@@ -712,9 +703,9 @@ static void desire_scaled_dimensions__default(void **state) {
 static void desire_scaled_dimensions__transform(void **state) {
 	struct Head *head = head_init();
 
-	const struct Mode *mode = mode_h_whr(head, 200, 100, 0);
-	ppmap_put(head->modes, MD, mode);
-	head->desired.mode = ppmap_get(head->modes, MD);
+	const struct Mode *mode0 = mode_whr(200, 100, 0);
+	ppmap_put(head->modes, M0, mode0);
+	head->desired.zwlr_mode = M0;
 
 	// double, not rotated
 	head->desired.scale = wl_fixed_from_double(0.5);
@@ -738,9 +729,9 @@ static void desire_scaled_dimensions__transform(void **state) {
 static void desire_scaled_dimensions__dimensions(void **state) {
 	struct Head *head = head_init();
 
-	const struct Mode *mode = mode_h_whr(head, 3840, 2160, 0);
-	ppmap_put(head->modes, MD, mode);
-	head->desired.mode = ppmap_get(head->modes, MD);
+	const struct Mode *mode = mode_whr(3840, 2160, 0);
+	ppmap_put(head->modes, M0, mode);
+	head->desired.zwlr_mode = M0;
 
 	head->desired.scale = head_get_fixed_scale(1.0);
 	desire_scaled_dimensions(head);

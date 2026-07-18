@@ -31,7 +31,7 @@ struct IpcResponseStatus {
 struct IpcResponse {
 	struct IpcResponseStatus status;
 	struct Cfg *cfg;
-	// TODO set
+	// TODO c-lib change to set
 	struct Pslist *heads;
 	struct Lid *lid;
 	struct Pslist *log_cap_lines;

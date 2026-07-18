@@ -12,7 +12,6 @@
 #include "info/delta.h"
 #include "info/print.h"
 #include "log.h"
-#include "mode.h"
 #include "ppmap.h"
 #include "process.h"
 #include "pset.h"
@@ -32,7 +31,7 @@ void act_handle_success(void) {
 		switch(g_displ->delta.element) {
 			case MODE:
 				// successful mode change is not always reported
-				head->current.mode = head->desired.mode;
+				head->current.zwlr_mode = head->desired.zwlr_mode;
 				break;
 
 			case VRR_OFF:
@@ -79,23 +78,20 @@ bool act_handle_cancelled(void) {
 void act_handle_failure(void) {
 	struct Head *head = g_displ->delta.head;
 
-	// TODO consider putting data in delta, for zwlr_mode
+	// TODO MODE consider putting data in delta, for zwlr_mode
 	switch(g_displ->delta.element) {
 		case MODE:
 			if (head) {
-				print_mode_fail(ERROR, head, head->desired.mode);
-				callback_mode_fail(ERROR, head, head->desired.mode);
+				const struct zwlr_output_mode_v1 *zwlr_mode = head->desired.zwlr_mode;
 
-				const struct Mode *mode_failed = head->desired.mode;
+				print_mode_fail(ERROR, head, zwlr_mode);
+				callback_mode_fail(ERROR, head, zwlr_mode);
 
-				// mode setting failure, try again with another mode
-				if (mode_failed) {
-					ppmap_remove(head->modes, mode_failed->zwlr_mode);
-					ppmap_put(head->modes_failed, mode_failed->zwlr_mode, mode_failed);
-				}
+				// move the mode to failed
+				ppmap_put(head->modes_failed, zwlr_mode, ppmap_remove(head->modes, zwlr_mode));
 
 				// current mode may be misreported
-				head->current.mode = NULL;
+				head->current.zwlr_mode = NULL;
 			}
 
 			break;
@@ -175,7 +171,7 @@ void act_apply(void) {
 
 		// mode change in its own operation; mode change desire is always enabled
 		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, (struct zwlr_output_head_v1*)pair.key);
-		_zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, head->desired.mode->zwlr_mode);
+		_zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, (struct zwlr_output_mode_v1*)head->desired.zwlr_mode);
 
 		g_displ->delta.human = delta_human_mode(head);
 
@@ -233,7 +229,7 @@ apply:
 
 void act(void) {
 	print_head_set(INFO, ARRIVED, g_displ->heads_arrived);
-	// TODO need a clear collection
+	// TODO c-lib need a clear collection
 	pset_free(g_displ->heads_arrived);
 	g_displ->heads_arrived = head_pset_init();
 

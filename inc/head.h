@@ -8,13 +8,11 @@
 
 #include "cfg/cfg.h"
 #include "enum.h"
-#include "mode.h"
 #include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
 struct HeadState {
-	// TODO current and desired as keys
-	const struct Mode *mode;
+	const struct zwlr_output_mode_v1 *zwlr_mode;
 	wl_fixed_t scale;
 	bool enabled;
 	// layout coords
@@ -74,7 +72,7 @@ const struct PPmap *head_ppmap_init(void);
 void head_free(struct Head *head);
 
 // remove a mode from the head, including current/desired, freeing it
-void head_release_mode(struct Mode *mode);
+void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v1 *zwlr_mode);
 
 /*
  * mutation
@@ -86,14 +84,8 @@ void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
 
-// add a new entry to modes and return it, NULL on any NULL input
-struct Mode *head_add_mode(struct Head * const head, struct zwlr_output_mode_v1* const zwlr_mode);
-
-// set current.mode, does nothing on NULL inputs or zwlr_mode not present
-void head_set_current_mode(struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode);
-
 // set preferred mode, NOP and warning if preferred mode already set
-void head_set_mode_pref(const struct Mode * const mode, const struct zwlr_output_mode_v1* const zwlr_mode);
+void head_set_mode_pref(struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode);
 
 // clear current and failed modes, flag for reapply
 void heads_reapply(const struct PPmap *heads);
@@ -150,6 +142,9 @@ wl_fixed_t head_get_fixed_scale(const double scale);
 // auto scale at the desired mode, 1 when no desired or mode_dpi unavailable
 wl_fixed_t head_auto_scale(const struct Head * const head, const double min, const double max);
 
+// DPI / AUTO_SCALE_DPI, 1 when no DPI available
+double head_scale(const struct Head * const head, const struct zwlr_output_mode_v1 * const zwlr_mode);
+
 /*
  * search
  */
@@ -159,10 +154,10 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 //  invalid user mode: warning
 //  no preferred:      info
 // maybe sets warned_no_preferred
-const struct Mode *head_find_mode(struct Head * const head);
+const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head);
 
 // highest resolution at its highest refresh
-const struct Mode *head_max_mode(const struct Head * const head);
+const struct zwlr_output_mode_v1 *head_max_mode(const struct Head * const head);
 
 #endif // HEAD_H
 

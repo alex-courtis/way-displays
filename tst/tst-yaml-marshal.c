@@ -27,8 +27,6 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	assert_logs_empty();
-
 	displ_free(g_displ);
 	cfg_free(g_cfg);
 	g_cfg = NULL;
@@ -62,6 +60,7 @@ static void yaml_root_from_cfg__ok(void **state) {
 
 	cfg_free(cfg);
 
+	assert_logs_empty();
 }
 
 static void yaml_root_from_cfg__default(void **state) {
@@ -71,6 +70,7 @@ static void yaml_root_from_cfg__default(void **state) {
 
 	cfg_free(cfg);
 
+	assert_logs_empty();
 }
 
 static void yaml_root_from_cfg__empty(void **state) {
@@ -79,6 +79,8 @@ static void yaml_root_from_cfg__empty(void **state) {
 	check_marshalled(yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"), "tst/yaml/empty.yaml");
 
 	cfg_free(cfg);
+
+	assert_logs_empty();
 }
 
 
@@ -90,6 +92,8 @@ static void yaml_root_from_ipc_request__no_op(void **state) {
 	assert_log(ERROR, "unable to marshal ipc request: missing OP\n");
 
 	ipc_request_free(ipc_request);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_from_ipc_request__cfg_set(void **state) {
@@ -102,6 +106,8 @@ static void yaml_root_from_ipc_request__cfg_set(void **state) {
 	check_marshalled(yaml_marshal(ipc_request, (fn_yaml_root_from_type)yaml_root_from_ipc_request, "ipc request"), "tst/yaml/ipc-request-cfg-set.yaml");
 
 	ipc_request_free(ipc_request);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_from_ipc_operation__map(void **state) {
@@ -114,6 +120,8 @@ static void yaml_root_from_ipc_operation__map(void **state) {
 	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-map.yaml");
 
 	ipc_operation_free(ipc_operation);
+
+	assert_logs_empty();
 }
 
 static void yaml_root_from_ipc_operation__seq(void **state) {
@@ -123,6 +131,8 @@ static void yaml_root_from_ipc_operation__seq(void **state) {
 	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-seq.yaml");
 
 	ipc_operation_free(ipc_operation);
+
+	assert_logs_empty();
 }
 
 static void yaml_marshal__yaml_document_initialize_fail(void **state) {
@@ -138,6 +148,8 @@ static void yaml_marshal__yaml_document_initialize_fail(void **state) {
 	cfg_free(cfg);
 
 	assert_log(ERROR, "unable to marshal cfg: yaml_document_initialize failed\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_marshal__yaml_emitter_initialize_fail(void **state) {
@@ -153,6 +165,8 @@ static void yaml_marshal__yaml_emitter_initialize_fail(void **state) {
 	cfg_free(cfg);
 
 	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_initialize failed\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_marshal__yaml_emitter_open_fail(void **state) {
@@ -168,6 +182,8 @@ static void yaml_marshal__yaml_emitter_open_fail(void **state) {
 	cfg_free(cfg);
 
 	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_open failed\n");
+
+	assert_logs_empty();
 }
 
 // also covers case of write_handler fail
@@ -184,6 +200,8 @@ static void yaml_marshal__yaml_emitter_dump_fail(void **state) {
 	cfg_free(cfg);
 
 	assert_log(ERROR, "unable to marshal cfg: yaml_emitter_dump failed\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_marshal__yaml_emitter_close_fail(void **state) {
@@ -199,6 +217,8 @@ static void yaml_marshal__yaml_emitter_close_fail(void **state) {
 	cfg_free(cfg);
 
 	assert_log(WARNING, "unable to marshal cfg: yaml_emitter_close failed\n");
+
+	assert_logs_empty();
 }
 
 static void yaml_write_handler__empty(void **state) {
@@ -213,6 +233,8 @@ static void yaml_write_handler__empty(void **state) {
 
 	free(buffer);
 	free(data);
+
+	assert_logs_empty();
 }
 
 static void yaml_write_handler__append(void **state) {
@@ -227,6 +249,8 @@ static void yaml_write_handler__append(void **state) {
 
 	free(buffer);
 	free(data);
+
+	assert_logs_empty();
 }
 
 static void yaml_write_handler__no_data(void **state) {
@@ -236,6 +260,8 @@ static void yaml_write_handler__no_data(void **state) {
 	assert_int_equal(yaml_write_handler(NULL, (unsigned char *)buffer, size), 0);
 
 	free(buffer);
+
+	assert_logs_empty();
 }
 
 int main(void) {
