@@ -37,7 +37,7 @@ static void physical_size(void *data,
 	head->height_mm = height;
 }
 
-static void mode_(void *data,
+static void mode(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
@@ -133,7 +133,7 @@ static const struct zwlr_output_head_v1_listener listener = {
 	.name = name,
 	.description = description,
 	.physical_size = physical_size,
-	.mode = mode_,
+	.mode = mode,
 	.enabled = enabled,
 	.current_mode = current_mode,
 	.position = position,

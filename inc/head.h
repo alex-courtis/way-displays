@@ -154,8 +154,5 @@ double head_scale(const struct Head * const head, const struct zwlr_output_mode_
 // maybe sets warned_no_preferred
 const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head);
 
-// highest resolution at its highest refresh
-const struct zwlr_output_mode_v1 *head_max_mode(const struct Head * const head);
-
 #endif // HEAD_H
 

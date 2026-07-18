@@ -102,5 +102,8 @@ const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const 
 // mode exactly matching target otherwise mode_satisfies, NULL when no target
 const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PPmap* const modes);
 
+// highest resolution at its highest refresh
+const struct Mode *mode_max(const struct PPmap* const modes);
+
 #endif // MODE_H
 

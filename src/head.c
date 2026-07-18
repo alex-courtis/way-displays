@@ -412,54 +412,17 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 
 	// last chance maximum
 	if (!mode) {
-		const struct zwlr_output_mode_v1 *zmode_max = head_max_mode(head);
-		if (zmode_max) {
-			return zmode_max;
-		}
+		mode = mode_max(head->modes);
+	}
 
+	if (!mode) {
 		log_error(NULL);
 		log_error("No mode for %s, disabling.", head_human(head));
 		callback(ERROR, head_human(head), "\n  No mode, disabling");
 	}
 
-	// TODO MODE tidy
+	// TODO c-lib key_for_val, maybe repurpose contains_val
 	return ppmap_find_val(head->modes, equal_ptr, mode).key;
-}
-
-// TODO MODE maybe move to mode
-const struct zwlr_output_mode_v1 *head_max_mode(const struct Head * const head) {
-	if (!head)
-		return NULL;
-
-	const struct zwlr_output_mode_v1 *zmode_max = NULL;
-
-	for (const struct PPmapIt *it = ppmap_it(head->modes); it; it = ppmap_it_next(it)) {
-
-		if (!zmode_max) {
-			zmode_max = it->key;
-			continue;
-		}
-
-		// TODO MODE tidy or move back to mode
-		const struct Mode *mode = it->val;
-		const struct Mode *mode_max = ppmap_get(head->modes, zmode_max);
-
-		// highest resolution
-		if (mode->width * mode->height > mode_max->width * mode_max->height) {
-			zmode_max = it->key;
-			continue;
-		}
-
-		// highest refresh at highest resolution
-		if (mode->width == mode_max->width &&
-				mode->height == mode_max->height &&
-				mode->refresh_mhz > mode_max->refresh_mhz) {
-			zmode_max = it->key;
-			continue;
-		}
-	}
-
-	return zmode_max;
 }
 
 double head_scale(const struct Head * const head, const struct zwlr_output_mode_v1 * const zmode) {

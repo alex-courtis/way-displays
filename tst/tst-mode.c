@@ -281,6 +281,35 @@ static void mode_max_refresh__earlier_higher_refresh(void **state) {
 	assert_mode_equal(mode_max_refresh(target, head_modes), higher);
 }
 
+static void mode_max__max(void **state) {
+	struct Mode *mode_expected = mode_whr(2000, 2000, 2000);
+
+	const struct PPmap *modes = mode_ppmap_init();
+
+	ppmap_put_many(modes,
+			M0, mode_whr(1000, 1000, 1000),
+			M1, mode_whr(500, 500, 1000),
+			M2, mode_whr(1000, 1000, 500),
+			MP, mode_whr(2000, 2000, 1000),
+			M3, mode_expected,
+			M4, mode_whr(1000, 1000, 1000),
+			NULL);
+
+	assert_mode_equal(mode_max(modes), mode_expected);
+
+	ppmap_free_vals(modes);
+}
+
+static void mode_max__empty(void **state) {
+	assert_nul(mode_max(NULL));
+
+	const struct PPmap *modes = mode_ppmap_init();
+
+	assert_nul(mode_max(NULL));
+
+	ppmap_free_vals(modes);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(mode_clone__),
@@ -310,6 +339,9 @@ int main(void) {
 		TEST_BA(mode_max_refresh__exact_matches),
 		TEST_BA(mode_max_refresh__later_higher_refresh),
 		TEST_BA(mode_max_refresh__earlier_higher_refresh),
+
+		TEST_BA(mode_max__max),
+		TEST_BA(mode_max__empty),
 	};
 
 	return RUN(tests);

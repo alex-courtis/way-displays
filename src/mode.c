@@ -207,3 +207,31 @@ const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, c
 	return mode;
 }
 
+const struct Mode *mode_max(const struct PPmap* const modes) {
+	const struct Mode *mode_max = NULL;
+
+	for (const struct PPmapIt *it = ppmap_it(modes); it; it = ppmap_it_next(it)) {
+		const struct Mode *mode = it->val;
+
+		if (!mode_max) {
+			mode_max = mode;
+			continue;
+		}
+
+		// highest resolution
+		if (mode->width * mode->height > mode_max->width * mode_max->height) {
+			mode_max = mode;
+			continue;
+		}
+
+		// highest refresh at highest resolution
+		if (mode->width == mode_max->width &&
+				mode->height == mode_max->height &&
+				mode->refresh_mhz > mode_max->refresh_mhz) {
+			mode_max = mode;
+			continue;
+		}
+	}
+
+	return mode_max;
+}

@@ -392,30 +392,6 @@ static void head_find_mode__none(void **state) {
 	assert_logs_empty();
 }
 
-static void head_max_mode__max(void **state) {
-	struct Head *head = head_init();
-
-	struct Mode *mode_expected = mode_whr(2000, 2000, 2000);
-
-	ppmap_put_many(head->modes,
-			M0, mode_whr(1000, 1000, 1000),
-			M1, mode_whr(500, 500, 1000),
-			M2, mode_whr(1000, 1000, 500),
-			MP, mode_whr(2000, 2000, 1000),
-			M3, mode_expected,
-			M4, mode_whr(1000, 1000, 1000),
-			NULL);
-
-	const struct zwlr_output_mode_v1 *actual = head_max_mode(head);
-
-	assert_mode_equal(ppmap_get(head->modes, actual), mode_expected);
-	assert_ptr_equal(actual, M3);
-
-	head_free(head);
-
-	assert_logs_empty();
-}
-
 static void head_matches_name_desc_regex__name(void **state) {
 	struct Head *head = head_n("name");
 
@@ -770,8 +746,6 @@ int main(void) {
 		TEST_BA(head_find_mode__mode_max_refresh),
 		TEST_BA(head_find_mode__max),
 		TEST_BA(head_find_mode__none),
-
-		TEST_BA(head_max_mode__max),
 
 		TEST_BA(head_matches_name_desc_regex__name),
 		TEST_BA(head_matches_name_desc_regex__desc),
