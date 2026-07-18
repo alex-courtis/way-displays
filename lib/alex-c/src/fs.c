@@ -9,7 +9,7 @@
 
 #include "fs.h"
 
-bool fs_mkdir_p(char *path, mode_t mode) {
+bool fs_mkdir_p(const char *path, const mode_t mode) {
 	bool rc = false;
 	char *dir_path = NULL;
 
@@ -64,7 +64,7 @@ bool fs_file_write(const char *path, const char *contents, const char *mode) {
 	return true;
 }
 
-char *fs_canonical_path(char *path) {
+char *fs_canonical_path(const char *path) {
 	if (!path)
 		return NULL;
 

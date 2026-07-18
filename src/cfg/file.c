@@ -14,18 +14,18 @@
 #include "fs.h"
 #include "info/print.h"
 #include "log.h"
-#include "pslist.h"
+#include "sset.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"
 
-struct Pslist *g_candidates = NULL; // user then expected
+const struct Sset *g_candidates = NULL;
 
 struct CfgFile g_cfg_file = { 0 };
 
-static void hydrate(char *resolved_from, const char *paths) {
-	g_cfg_file.file_path_resolved = resolved_from;
+static void hydrate(const char *resolved_from, const char *paths) {
+	strncpy(g_cfg_file.file_path_resolved, resolved_from, PATH_MAX - 1);
 
 	strncpy(g_cfg_file.file_path, paths, PATH_MAX - 1);
 
@@ -43,13 +43,12 @@ static void hydrate(char *resolved_from, const char *paths) {
 static bool resolve(void) {
 	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 
-	for (struct Pslist *i = g_candidates; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		char *path = fs_canonical_path(i->val);
+	for (const struct SsetIt *it = sset_it(g_candidates); it; it = sset_it_next(it)) {
+		char *path = fs_canonical_path(it->val);
 		if (path) {
-			hydrate(i->val, path);
+			hydrate(it->val, path);
 			free(path);
+			sset_it_free(it);
 			return true;
 		}
 	}
@@ -60,24 +59,28 @@ static bool resolve(void) {
 void candidates_init(const char *user_path) {
 	char path[PATH_MAX];
 
+	if (g_candidates)
+		sset_free(g_candidates);
+	g_candidates = sset_init();
+
 	// maybe user
 	if (user_path && access(user_path, R_OK) == 0) {
-		pslist_append(&g_candidates, strdup(user_path));
+		sset_add(g_candidates, user_path);
 	}
 
 	if (getenv("XDG_CONFIG_HOME") != NULL) {
 		// maybe XDG_CONFIG_HOME
 		snprintf(path, PATH_MAX - 1, "%s/way-displays/cfg.yaml", getenv("XDG_CONFIG_HOME"));
-		pslist_append(&g_candidates, strdup(path));
+		sset_add(g_candidates, path);
 	} else if (getenv("HOME") != NULL) {
 		// ~/.config
 		snprintf(path, PATH_MAX - 1, "%s/.config/way-displays/cfg.yaml", getenv("HOME"));
-		pslist_append(&g_candidates, strdup(path));
+		sset_add(g_candidates, path);
 	}
 
 	// etc
-	pslist_append(&g_candidates, strdup("/usr/local/etc/way-displays/cfg.yaml"));
-	pslist_append(&g_candidates, strdup(ROOT_ETC"/way-displays/cfg.yaml"));
+	sset_add(g_candidates, "/usr/local/etc/way-displays/cfg.yaml");
+	sset_add(g_candidates, ROOT_ETC"/way-displays/cfg.yaml");
 }
 
 static bool write_content(const char * const yaml) {
@@ -97,7 +100,9 @@ void g_cfg_file_write(void) {
 	char *yaml = NULL;
 	bool written = false;
 
-	const char *resolved_from_prev = g_cfg_file.file_path_resolved;
+	const struct SsetIt *it = NULL;
+
+	char *resolved_from_prev = strdup(g_cfg_file.file_path_resolved);
 
 	g_cfg_file.written = false;
 
@@ -116,15 +121,15 @@ void g_cfg_file_write(void) {
 	fd_wd_cfg_dir_destroy();
 
 	// write preferred alternatives
-	for (const struct Pslist *i = g_candidates; i; i = i->nex) {
+	for (it = sset_it(g_candidates); it; it = sset_it_next(it)) {
 
 		// skip previously resolved
-		if (resolved_from_prev == i->val) {
+		if (strcmp(resolved_from_prev, it->val) == 0) {
 			continue;
 		}
 
 		// optimistically try candidate
-		hydrate(i->val, i->val);
+		hydrate(it->val, it->val);
 
 		// try and create the dir
 		if (fs_mkdir_p(g_cfg_file.dir_path, 0755)) {
@@ -146,6 +151,8 @@ void g_cfg_file_write(void) {
 	}
 
 end:
+	free(resolved_from_prev);
+	sset_it_free(it);
 	free(yaml);
 
 	if (written) {
@@ -224,6 +231,6 @@ void g_cfg_file_reload(void) {
 }
 
 void g_cfg_file_destroy(void) {
-	pslist_free_vals(&g_candidates, NULL);
+	sset_free(g_candidates);
 }
 

@@ -2,8 +2,10 @@
 
 #include "assert-cfg.h"
 #include "assert-log.h"
+#include "assert-sset.h"
 #include "asserts.h"
 #include "expects.h"
+#include "util-col.h"
 #include "util-file.h"
 
 #include <cmocka.h>
@@ -14,14 +16,13 @@
 
 #include "cfg/cfg.h"
 #include "enum.h"
-#include "pslist.h"
 #include "sset.h"
 
 #include "cfg/file.h"
 
 void candidates_init(const char *user_path);
 
-extern struct Pslist *g_candidates;
+extern const struct Sset *g_candidates;
 
 char *env_xdg_config_home = NULL;
 char *env_home = NULL;
@@ -48,17 +49,14 @@ static int after_all(void **state) {
 }
 
 static int before_each(void **state) {
-	pslist_free_vals(&g_candidates, NULL);
+	g_candidates = sset_init();
 
 	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 
 	return 0;
 }
 
-// TODO move assert_logs_empty
 static int after_each(void **state) {
-	assert_logs_empty();
-
 	if (env_xdg_config_home) {
 		setenv("XDG_CONFIG_HOME", env_xdg_config_home, 1);
 	} else {
@@ -71,7 +69,8 @@ static int after_each(void **state) {
 		unsetenv("HOME");
 	}
 
-	pslist_free_vals(&g_candidates, NULL);
+	sset_free(g_candidates);
+	g_candidates = NULL;
 
 	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
 
@@ -88,10 +87,12 @@ static void g_cfg_file_write__bad_yaml(void **state) {
 	will_return_ptr_type(__wrap_yaml_marshal, NULL, char*);
 
 	g_cfg_file_write();
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_write__none(void **state) {
-	pslist_append(&g_candidates, strdup("/path/zero/0"));
+	sset_add(g_candidates, "/path/zero/0");
 
 	char *expected = strdup("XXXX");
 
@@ -125,21 +126,22 @@ static void g_cfg_file_write__none(void **state) {
 	assert_str_equal(g_cfg_file.dir_path, "/path/zero");
 	assert_str_equal(g_cfg_file.file_name, "0");
 	assert_str_equal(g_cfg_file.file_path_resolved, "/path/zero/0");
-	assert_ptr_equal(g_cfg_file.file_path_resolved, pslist_at(g_candidates, 0));
 	assert_false(g_cfg_file.written);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
-	pslist_append(&g_candidates, strdup("/path/zero/0"));
-	pslist_append(&g_candidates, strdup("/path/one/1"));
-	pslist_append(&g_candidates, strdup("/path/two/2"));
-	pslist_append(&g_candidates, strdup("/path/three/3"));
-	pslist_append(&g_candidates, strdup("/path/four/4"));
+	sset_add(g_candidates, "/path/zero/0");
+	sset_add(g_candidates, "/path/one/1");
+	sset_add(g_candidates, "/path/two/2");
+	sset_add(g_candidates, "/path/three/3");
+	sset_add(g_candidates, "/path/four/4");
 
 	strncpy(g_cfg_file.file_path, "/path/two/2", PATH_MAX - 1);
 	strncpy(g_cfg_file.dir_path, "nothing", PATH_MAX - 1);
 	strncpy(g_cfg_file.file_name, "missing", PATH_MAX - 1);
-	g_cfg_file.file_path_resolved = pslist_at(g_candidates, 2);
+	strncpy(g_cfg_file.file_path_resolved, "/path/two/2", PATH_MAX - 1);
 
 	char *expected = strdup("XXXXxxxX");
 
@@ -202,20 +204,21 @@ static void g_cfg_file_write__cannot_write_use_alternative(void **state) {
 	assert_str_equal(g_cfg_file.dir_path, "/path/three");
 	assert_str_equal(g_cfg_file.file_name, "3");
 	assert_str_equal(g_cfg_file.file_path_resolved, "/path/three/3");
-	assert_ptr_equal(g_cfg_file.file_path_resolved, pslist_at(g_candidates, 3));
 	assert_false(g_cfg_file.written);
 
 	free(expected);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
-	pslist_append(&g_candidates, strdup("/path/zero/0"));
-	pslist_append(&g_candidates, strdup("/path/one/1"));
+	sset_add(g_candidates, "/path/zero/0");
+	sset_add(g_candidates, "/path/one/1");
 
 	strncpy(g_cfg_file.file_path, "/path/zero/0", PATH_MAX - 1);
 	strncpy(g_cfg_file.dir_path, "/path/zero", PATH_MAX - 1);
 	strncpy(g_cfg_file.file_name, "one", PATH_MAX - 1);
-	g_cfg_file.file_path_resolved = pslist_at(g_candidates, 0);
+	strncpy(g_cfg_file.file_path_resolved, "/path/zero/0", PATH_MAX - 1);
 
 	char *expected = strdup("XXXX");
 
@@ -251,7 +254,7 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 	assert_str_equal(g_cfg_file.file_path, "");
 	assert_str_equal(g_cfg_file.dir_path, "");
 	assert_str_equal(g_cfg_file.file_name, "");
-	assert_nul(g_cfg_file.file_path_resolved);
+	assert_str_equal(g_cfg_file.file_path_resolved, "");
 	assert_false(g_cfg_file.written);
 
 	assert_log(ERROR,
@@ -260,6 +263,8 @@ static void g_cfg_file_write__cannot_write_no_alternative(void **state) {
 			);
 
 	free(expected);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_write__existing(void **state) {
@@ -288,72 +293,91 @@ static void g_cfg_file_write__existing(void **state) {
 	assert_true(g_cfg_file.written);
 
 	free(expected);
+
+	assert_logs_empty();
 }
 
-static void candidates_init__min(void **state) {
+static void g_candidates_init__min(void **state) {
 	unsetenv("XDG_CONFIG_HOME");
 	unsetenv("HOME");
 
 	candidates_init("inexistent");
 
-	assert_str_equal(pslist_at(g_candidates, 0), "/usr/local/etc/way-displays/cfg.yaml");
+	const struct Sset *expected = sset_init();
+	sset_add_many(expected,
+			"/usr/local/etc/way-displays/cfg.yaml",
+			ROOT_ETC"/way-displays/cfg.yaml",
+			NULL);
 
-	assert_str_equal(pslist_at(g_candidates, 1), ROOT_ETC"/way-displays/cfg.yaml");
+	assert_sset_equal(g_candidates, expected);
 
-	assert_int_equal(pslist_length(g_candidates), 2);
+	sset_free(expected);
+
+	assert_logs_empty();
 }
 
-static void candidates_init__xch(void **state) {
+static void g_candidates_init__xch(void **state) {
 	setenv("XDG_CONFIG_HOME", "xch", 1);
 	setenv("HOME", "hom", 1);
 
 	candidates_init(NULL);
 
-	assert_str_equal(pslist_at(g_candidates, 0), "xch/way-displays/cfg.yaml");
+	const struct Sset *expected = sset_init();
+	sset_add_many(expected,
+			"xch/way-displays/cfg.yaml",
+			"/usr/local/etc/way-displays/cfg.yaml",
+			ROOT_ETC"/way-displays/cfg.yaml",
+			NULL);
 
-	assert_str_equal(pslist_at(g_candidates, 1), "/usr/local/etc/way-displays/cfg.yaml");
+	assert_sset_equal(g_candidates, expected);
 
-	assert_str_equal(pslist_at(g_candidates, 2), ROOT_ETC"/way-displays/cfg.yaml");
+	sset_free(expected);
 
-	assert_int_equal(pslist_length(g_candidates), 3);
+	assert_logs_empty();
 }
 
-static void candidates_init__home(void **state) {
+static void g_candidates_init__home(void **state) {
 	unsetenv("XDG_CONFIG_HOME");
 	setenv("HOME", "hom", 1);
 
 	candidates_init(NULL);
 
-	assert_str_equal(pslist_at(g_candidates, 0), "hom/.config/way-displays/cfg.yaml");
+	const struct Sset *expected = sset_init();
+	sset_add_many(expected,
+			"hom/.config/way-displays/cfg.yaml",
+			"/usr/local/etc/way-displays/cfg.yaml",
+			ROOT_ETC"/way-displays/cfg.yaml",
+			NULL);
 
-	assert_str_equal(pslist_at(g_candidates, 1), "/usr/local/etc/way-displays/cfg.yaml");
+	assert_sset_equal(g_candidates, expected);
 
-	assert_str_equal(pslist_at(g_candidates, 2), ROOT_ETC"/way-displays/cfg.yaml");
+	sset_free(expected);
 
-	assert_int_equal(pslist_length(g_candidates), 3);
+	assert_logs_empty();
 }
 
-static void candidates_init__user(void **state) {
+static void g_candidates_init__user(void **state) {
 	setenv("XDG_CONFIG_HOME", "xch", 1);
 	setenv("HOME", "hom", 1);
 
 	candidates_init(".");
 
-	assert_str_equal(pslist_at(g_candidates, 0), ".");
+	const struct Sset *expected = sset_init();
+	sset_add_many(expected,
+			".",
+			"xch/way-displays/cfg.yaml",
+			"/usr/local/etc/way-displays/cfg.yaml",
+			ROOT_ETC"/way-displays/cfg.yaml",
+			NULL);
 
-	assert_str_equal(pslist_at(g_candidates, 1), "xch/way-displays/cfg.yaml");
+	assert_sset_equal(g_candidates, expected);
 
-	assert_str_equal(pslist_at(g_candidates, 2), "/usr/local/etc/way-displays/cfg.yaml");
+	sset_free(expected);
 
-	assert_str_equal(pslist_at(g_candidates, 3), ROOT_ETC"/way-displays/cfg.yaml");
-
-	assert_int_equal(pslist_length(g_candidates), 4);
+	assert_logs_empty();
 }
 
 static void g_cfg_file_init_read__no_file(void **state) {
-	// dummy to stop known path reading
-	pslist_append(&g_candidates, NULL);
-
 	g_cfg_file_init_read(NULL);
 
 	struct Cfg *cfg_expected = cfg_default();
@@ -365,10 +389,12 @@ static void g_cfg_file_init_read__no_file(void **state) {
 
 	free(log_expected);
 	cfg_free(cfg_expected);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_init_read__file_not_resolved(void **state) {
-	pslist_append(&g_candidates, strdup("known-path"));
+	sset_add(g_candidates, "known-path");
 
 	expect_str(__wrap_fs_canonical_path, path, "known-path");
 	will_return_ptr_type(__wrap_fs_canonical_path, NULL, char*);
@@ -384,10 +410,12 @@ static void g_cfg_file_init_read__file_not_resolved(void **state) {
 
 	free(log_expected);
 	cfg_free(cfg_expected);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_init_read__valid_file(void **state) {
-	pslist_append(&g_candidates, strdup("known-path"));
+	sset_add(g_candidates, "known-path");
 
 	struct Cfg *cfg_read = cfg_default();
 	cfg_read->auto_scale_max = 888;
@@ -416,10 +444,12 @@ static void g_cfg_file_init_read__valid_file(void **state) {
 
 	free(log_expected);
 	cfg_free(cfg_expected);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_init_read__invalid_file(void **state) {
-	pslist_append(&g_candidates, strdup("known-path"));
+	sset_add(g_candidates, "known-path");
 
 	expect_str(__wrap_fs_canonical_path, path, "known-path");
 	will_return_ptr_type(__wrap_fs_canonical_path, strdup("invalid-cfg.yaml"), char*);
@@ -438,10 +468,12 @@ static void g_cfg_file_init_read__invalid_file(void **state) {
 
 	free(log_expected);
 	cfg_free(cfg_expected);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_init_read__missing_defaults(void **state) {
-	pslist_append(&g_candidates, strdup("known-path"));
+	sset_add(g_candidates, "known-path");
 
 	expect_str(__wrap_fs_canonical_path, path, "known-path");
 	will_return_ptr_type(__wrap_fs_canonical_path, strdup("file_path"), char*);
@@ -474,6 +506,8 @@ static void g_cfg_file_init_read__missing_defaults(void **state) {
 
 	free(log_expected);
 	cfg_free(cfg_expected);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_reload__no_file(void **state) {
@@ -485,6 +519,8 @@ static void g_cfg_file_reload__no_file(void **state) {
 	g_cfg_file_reload();
 
 	assert_ptr_equal(g_cfg, cfg_orig);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_reload__invalid_file(void **state) {
@@ -516,6 +552,8 @@ static void g_cfg_file_reload__invalid_file(void **state) {
 
 	free(log_expected);
 	cfg_free(cfg_expected);
+
+	assert_logs_empty();
 }
 
 static void g_cfg_file_reload__valid_file(void **state) {
@@ -557,6 +595,8 @@ static void g_cfg_file_reload__valid_file(void **state) {
 
 	free(log_expected);
 	cfg_free(cfg_expected);
+
+	assert_logs_empty();
 }
 
 int main(void) {
@@ -567,10 +607,10 @@ int main(void) {
 		TEST_BA(g_cfg_file_write__cannot_write_no_alternative),
 		TEST_BA(g_cfg_file_write__existing),
 
-		TEST_BA(candidates_init__min),
-		TEST_BA(candidates_init__home),
-		TEST_BA(candidates_init__xch),
-		TEST_BA(candidates_init__user),
+		TEST_BA(g_candidates_init__min),
+		TEST_BA(g_candidates_init__home),
+		TEST_BA(g_candidates_init__xch),
+		TEST_BA(g_candidates_init__user),
 
 		TEST_BA(g_cfg_file_init_read__no_file),
 		TEST_BA(g_cfg_file_init_read__file_not_resolved),

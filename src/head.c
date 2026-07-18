@@ -421,7 +421,6 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 		callback(ERROR, head_human(head), "\n  No mode, disabling");
 	}
 
-	// TODO c-lib key_for_val, maybe repurpose contains_val
 	return ppmap_find_val(head->modes, equal_ptr, mode).key;
 }
 

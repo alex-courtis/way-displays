@@ -7,12 +7,12 @@
 #define COMMENT_YAML_SCHEMA "# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml"
 
 struct CfgFile {
-	char dir_path[PATH_MAX];  // inotify pfd_cfg_dir
+	char dir_path[PATH_MAX];           // inotify pfd_cfg_dir
 	char file_path[PATH_MAX];
-	char file_name[PATH_MAX]; // name to check on inotify pfd_cfg_dir
-	char *file_path_resolved; // --config or expected paths
+	char file_name[PATH_MAX];          // name to check on inotify pfd_cfg_dir
+	char file_path_resolved[PATH_MAX]; // --config or expected paths
 
-	bool written;             // set on write to prevent fs watch reloading it
+	bool written;                      // set on write to prevent fs watch reloading it
 };
 
 extern struct CfgFile g_cfg_file;
