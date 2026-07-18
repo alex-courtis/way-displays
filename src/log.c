@@ -10,7 +10,8 @@
 #include "log.h"
 
 #include "enum.h"
-#include "pslist.h"
+#include "fn.h"
+#include "pset.h"
 #include "str.h"
 
 #define MAX_LINE_LEN 65536
@@ -28,7 +29,7 @@ static struct LogActive active = {
 	.suppressing = false,
 };
 
-static struct Pslist *log_cap_lines_active = NULL;
+static const struct Pset *log_cap_lines_active = NULL;
 
 // all thresholds, start of line
 static const char threshold_char[] = {
@@ -62,12 +63,8 @@ static const char *threshold_colours[] = {
 static const char reset_colour[] = "\x1B[0m";
 
 static void capture_line(enum LogThreshold threshold, const char *l) {
-	for (struct Pslist *i = log_cap_lines_active; i; i = i->nex) {
-		struct LogCapLine *line = calloc(1, sizeof(struct LogCapLine));
-		line->line = strdup(l);
-		line->threshold = threshold;
-
-		pslist_append(i->val, line);
+	for (const struct PsetIt *it = pset_it(log_cap_lines_active); it; it = pset_it_next(it)) {
+		pset_add(it->val, log_cap_line_init(threshold, l));
 	}
 }
 
@@ -156,6 +153,14 @@ void log_set_threshold(enum LogThreshold threshold, bool cli) {
 
 enum LogThreshold log_get_threshold(void) {
 	return active.threshold;
+}
+
+void log_init(void) {
+	log_cap_lines_active = pset_init();
+}
+
+void log_destroy(void) {
+	pset_free(log_cap_lines_active);
 }
 
 void log_set_prefix(bool prefix) {
@@ -247,12 +252,26 @@ static void log_cap_line_free(void *data) {
 	free(line);
 }
 
-void log_cap_lines_playback(const struct Pslist *log_cap_lines) {
+struct LogCapLine *log_cap_line_init(const enum LogThreshold t, const char *line) {
+	struct LogCapLine *l = calloc(1, sizeof(struct LogCapLine));
+	l->line = strdup(line);
+	l->threshold = t;
+	return l;
+}
+
+const struct Pset *log_cap_line_pset_init(void) {
+	const struct PsetParams params = {
+		.free_val = (fn_free)log_cap_line_free,
+	};
+	return pset_init_with(params);
+}
+
+void log_cap_lines_playback(const struct Pset *log_cap_lines) {
 	if (!log_cap_lines)
 		return;
 
-	for (const struct Pslist *i = log_cap_lines; i; i = i->nex) {
-		const struct LogCapLine *line = i->val;
+	for (const struct PsetIt *it = pset_it(log_cap_lines); it; it = pset_it_next(it)) {
+		const struct LogCapLine *line = it->val;
 		if (!line)
 			continue;
 
@@ -260,14 +279,10 @@ void log_cap_lines_playback(const struct Pslist *log_cap_lines) {
 	}
 }
 
-void log_cap_lines_start(struct Pslist **log_cap_lines) {
-	pslist_append(&log_cap_lines_active, log_cap_lines);
+void log_cap_lines_start(const struct Pset *log_cap_lines) {
+	pset_add(log_cap_lines_active, log_cap_lines);
 }
 
-void log_cap_lines_stop(struct Pslist **log_cap_lines) {
-	pslist_remove_all(&log_cap_lines_active, NULL, log_cap_lines);
-}
-
-void log_cap_lines_free(struct Pslist **log_cap_lines) {
-	pslist_free_vals(log_cap_lines, log_cap_line_free);
+void log_cap_lines_stop(const struct Pset *log_cap_lines) {
+	pset_remove(log_cap_lines_active, log_cap_lines);
 }

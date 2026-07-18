@@ -180,9 +180,7 @@ struct IpcRequest *args_ipc_list(int argc) {
 		return NULL;
 	}
 
-	struct IpcRequest *request = ipc_request_init(LIST);
-
-	return request;
+	return ipc_request_init(LIST);
 }
 
 struct IpcRequest *args_ipc_get(int argc) {
@@ -192,9 +190,7 @@ struct IpcRequest *args_ipc_get(int argc) {
 		return NULL;
 	}
 
-	struct IpcRequest *request = ipc_request_init(GET);
-
-	return request;
+	return ipc_request_init(GET);
 }
 
 struct IpcRequest *args_ipc_write(int argc) {
@@ -204,9 +200,7 @@ struct IpcRequest *args_ipc_write(int argc) {
 		return NULL;
 	}
 
-	struct IpcRequest *request = ipc_request_init(CFG_WRITE);
-
-	return request;
+	return ipc_request_init(CFG_WRITE);
 }
 
 struct IpcRequest *args_ipc_reapply(int argc) {
@@ -216,9 +210,7 @@ struct IpcRequest *args_ipc_reapply(int argc) {
 		return NULL;
 	}
 
-	struct IpcRequest *request = ipc_request_init(REAPPLY);
-
-	return request;
+	return ipc_request_init(REAPPLY);
 }
 
 struct IpcRequest *args_ipc_set(int argc, char **argv) {

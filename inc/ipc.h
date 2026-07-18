@@ -11,7 +11,7 @@ struct IpcOperation {
 	bool done;
 	int rc;
 	bool send_state;	// not for bad requests
-	struct Pslist *log_cap_lines;
+	const struct Pset *log_cap_lines;
 };
 
 struct IpcRequest {
@@ -33,8 +33,10 @@ struct IpcResponse {
 	struct Cfg *cfg;
 	const struct Pset *heads;
 	struct Lid *lid;
-	struct Pslist *log_cap_lines;
+	const struct Pset *log_cap_lines;
 };
+
+struct IpcOperation *ipc_operation_init(void);
 
 struct IpcRequest *ipc_request_init(const enum IpcCommand command);
 
@@ -58,7 +60,7 @@ void ipc_request_free(struct IpcRequest *request);
 
 void ipc_response_free(struct IpcResponse *response);
 
-void ipc_operation_free(struct IpcOperation *operation);
+void ipc_operation_destroy(struct IpcOperation *operation);
 
 #endif // IPC_H
 

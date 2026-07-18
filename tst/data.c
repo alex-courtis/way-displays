@@ -18,7 +18,6 @@
 #include "log.h"
 #include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "data.h"
@@ -53,15 +52,6 @@ void *M7 = "M7";
 void *M8 = "M8";
 void *M9 = "M9";
 void *M10 = "M10";
-
-void log_cap_line_append(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines) {
-	struct LogCapLine *lcl = calloc(1, sizeof(struct LogCapLine));
-
-	lcl->threshold = threshold;
-	lcl->line = strdup(line);
-
-	pslist_append(log_cap_lines, lcl);
-}
 
 // cfg-all.yaml
 struct Cfg *cfg_all(void) {
@@ -141,7 +131,7 @@ struct IpcOperation *ipc_response(void) {
 	struct IpcRequest *ipc_request = ipc_request_init(GET);
 	ipc_request->log_threshold = WARNING;
 
-	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
+	struct IpcOperation *ipc_operation = ipc_operation_init();
 	ipc_operation->request = ipc_request;
 	ipc_operation->done = true;
 	ipc_operation->rc = 0;
@@ -153,9 +143,9 @@ struct IpcOperation *ipc_response(void) {
 	g_lid->closed = true;
 	g_lid->device_path = "/path/to/lid";
 
-	log_cap_line_append(DEBUG, "dbg", &ipc_operation->log_cap_lines);
-	log_cap_line_append(INFO, "inf", &ipc_operation->log_cap_lines);
-	log_cap_line_append(WARNING, "war", &ipc_operation->log_cap_lines);
+	pset_add(ipc_operation->log_cap_lines, log_cap_line_init(DEBUG, "dbg"));
+	pset_add(ipc_operation->log_cap_lines, log_cap_line_init(INFO, "inf"));
+	pset_add(ipc_operation->log_cap_lines, log_cap_line_init(WARNING, "war"));
 
 	ipc_operation_update_rc(ipc_operation);
 

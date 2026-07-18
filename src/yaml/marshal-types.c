@@ -17,7 +17,6 @@
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal-primitives.h"
@@ -195,8 +194,8 @@ int yaml_seq_from_messages(struct MC *c, const struct IpcOperation* const ipc_op
 	int seq = 0;
 	int map = 0;
 
-	for (struct Pslist *i = ipc_operation->log_cap_lines; i; i = i->nex) {
-		const struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+	for (const struct PsetIt *it = pset_it(ipc_operation->log_cap_lines); it; it = pset_it_next(it)) {
+		const struct LogCapLine *cap_line = (struct LogCapLine*)it->val;
 
 		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
 			continue;

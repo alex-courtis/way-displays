@@ -26,7 +26,6 @@
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "simap.h"
 #include "sset.h"
 #include "str.h"
@@ -469,23 +468,23 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 	assert_int_equal(mode_desired->refresh_mhz, 15);
 
 	assert_int_equal(ppmap_size(head->modes), 2);
-	const struct PPmapIt *it = ppmap_it(head->modes);
+	const struct PPmapIt *mit = ppmap_it(head->modes);
 
-	const struct Mode *mode1 = it->val;
+	const struct Mode *mode1 = mit->val;
 	assert_non_nul(mode1);
 	assert_int_equal(mode1->width, 10);
 	assert_int_equal(mode1->height, 11);
 	assert_int_equal(mode1->refresh_mhz, 12);
 
-	it = ppmap_it_next(it);
+	mit = ppmap_it_next(mit);
 
-	const struct Mode *mode2 = it->val;
+	const struct Mode *mode2 = mit->val;
 	assert_non_nul(mode2);
 	assert_int_equal(mode2->width, 13);
 	assert_int_equal(mode2->height, 14);
 	assert_int_equal(mode2->refresh_mhz, 15);
 
-	assert_nul(ppmap_it_next(it));
+	assert_nul(ppmap_it_next(mit));
 
 	const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 	assert_non_nul(mode_pref);
@@ -494,9 +493,9 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 	assert_int_equal(mode_pref->refresh_mhz, 12);
 
 	assert_int_equal(ppmap_size(head->modes_failed), 1);
-	it = ppmap_it(head->modes_failed);
+	mit = ppmap_it(head->modes_failed);
 
-	const struct Mode *mode_failed = it->val;
+	const struct Mode *mode_failed = mit->val;
 	assert_non_nul(mode_failed);
 	assert_int_equal(mode_failed->width, 16);
 	assert_int_equal(mode_failed->height, 17);
@@ -505,28 +504,33 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 	assert_int_equal(head->cur.transform, 3);
 	assert_int_equal(head->des.transform, 4);
 
-	assert_nul(ppmap_it_next(it));
+	assert_nul(ppmap_it_next(mit));
 
-	assert_int_equal(pslist_length(response->log_cap_lines), 3);
+	assert_int_equal(pset_size(response->log_cap_lines), 3);
+	const struct PsetIt *lit = pset_it(response->log_cap_lines);
 
-	struct LogCapLine *line = pslist_at(response->log_cap_lines, 0);
+	const struct LogCapLine *line = lit->val;
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, WARNING);
 	assert_str_equal(line->line, "war");
 
-	line = pslist_at(response->log_cap_lines, 1);
+	lit = pset_it_next(lit);
+	line = lit->val;
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err");
 
-	line = pslist_at(response->log_cap_lines, 2);
+	lit = pset_it_next(lit);
+	line = lit->val;
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, FATAL);
 	assert_str_equal(line->line, "fat");
 
+	assert_nul(pset_it_next(lit));
+
 	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
-	assert_nul(rit = pset_it_next(rit));
+	assert_nul(pset_it_next(rit));
 	pset_free_vals(responses);
 	cfg_free(expected_cfg);
 	free(yaml);
@@ -579,11 +583,15 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 
 	assert_nul(pset_it_next(hit));
 
-	assert_int_equal(pslist_length(response->log_cap_lines), 4);
-	struct LogCapLine *line = pslist_at(response->log_cap_lines, 0);
-	assert_non_nul(line);
+	assert_int_equal(pset_size(response->log_cap_lines), 4);
+	const struct PsetIt *lit = pset_it(response->log_cap_lines);
+
+	// TODO check the other 3 lines
+	const struct LogCapLine *line = lit->val;
 	assert_int_equal(line->threshold, DEBUG);
 	assert_str_equal(line->line, "dbg0");
+
+	pset_it_free(lit);
 
 	// 1
 	assert_non_nul(rit = pset_it_next(rit));
@@ -595,11 +603,14 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_nul(response->lid);
 	assert_int_equal(pset_size(response->heads), 0);
 
-	assert_int_equal(pslist_length(response->log_cap_lines), 4);
-	line = pslist_at(response->log_cap_lines, 0);
-	assert_non_nul(line);
+	// TODO check the other 3 lines
+	assert_int_equal(pset_size(response->log_cap_lines), 4);
+	lit = pset_it(response->log_cap_lines);
+	line = lit->val;
 	assert_int_equal(line->threshold, DEBUG);
 	assert_str_equal(line->line, "dbg1");
+
+	pset_it_free(lit);
 
 	// 2
 	assert_non_nul(rit = pset_it_next(rit));
@@ -610,7 +621,7 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_nul(response->cfg);
 	assert_nul(response->lid);
 	assert_int_equal(pset_size(response->heads), 0);
-	assert_nul(response->log_cap_lines);
+	assert_int_equal(pset_size(response->log_cap_lines), 0);
 
 	assert_nul(pset_it_next(rit));
 

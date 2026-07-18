@@ -12,12 +12,17 @@
 #include "lid.h"
 #include "log.h"
 #include "pset.h"
-#include "pslist.h"
 #include "sockets.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"
+
+struct IpcOperation *ipc_operation_init(void) {
+	struct IpcOperation *operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	operation->log_cap_lines = log_cap_line_pset_init();
+	return operation;
+}
 
 struct IpcRequest *ipc_request_init(const enum IpcCommand command) {
 	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
@@ -28,6 +33,7 @@ struct IpcRequest *ipc_request_init(const enum IpcCommand command) {
 struct IpcResponse *ipc_response_init(void) {
 	struct IpcResponse *response = calloc(1, sizeof(struct IpcResponse));
 	response->heads = head_pset_init();
+	response->log_cap_lines = log_cap_line_pset_init();
 	return response;
 }
 
@@ -62,8 +68,8 @@ void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
 	if (!ipc_operation)
 		return;
 
-	for (struct Pslist *i = ipc_operation->log_cap_lines; i; i = i->nex) {
-		const struct LogCapLine *cap_line = (struct LogCapLine*)i->val;
+	for (const struct PsetIt *it = pset_it(ipc_operation->log_cap_lines); it; it = pset_it_next(it)) {
+		const struct LogCapLine *cap_line = (struct LogCapLine*)it->val;
 
 		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_WARN)
 			ipc_operation->rc = IPC_WARN;
@@ -77,7 +83,8 @@ void ipc_send_operation(struct IpcOperation *operation) {
 
 	char *yaml = yaml_marshal(operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response");
 
-	log_cap_lines_free(&operation->log_cap_lines);
+	pset_free_vals(operation->log_cap_lines);
+	operation->log_cap_lines = NULL;
 
 	if (!yaml) {
 		operation->done = true;
@@ -119,10 +126,7 @@ struct IpcRequest *ipc_receive_request(int socket_server) {
 	free(yaml);
 
 	if (!request) {
-		request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
-		request->bad = true;
-		request->socket_client = socket_client;
-		return request;
+		return ipc_request_init(0);
 	}
 
 	request->socket_client = socket_client;
@@ -158,20 +162,20 @@ void ipc_response_free(struct IpcResponse *response) {
 	lid_free(response->lid);
 	pset_free_vals(response->heads);
 
-	log_cap_lines_free(&response->log_cap_lines);
+	pset_free_vals(response->log_cap_lines);
 
 	free(response);
 }
 
-void ipc_operation_free(struct IpcOperation *operation) {
+void ipc_operation_destroy(struct IpcOperation *operation) {
 	if (!operation)
 		return;
 
 	ipc_request_free(operation->request);
 
-	log_cap_lines_stop(&operation->log_cap_lines);
+	log_cap_lines_stop(operation->log_cap_lines);
 
-	log_cap_lines_free(&operation->log_cap_lines);
+	pset_free_vals(operation->log_cap_lines);
 
 	free(operation);
 }

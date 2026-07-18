@@ -39,7 +39,7 @@ static void handle_ipc_in_progress(int server_socket) {
 		return;
 	}
 
-	struct IpcOperation *operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
+	struct IpcOperation *operation = ipc_operation_init();
 	operation->request = request;
 	operation->socket_client = request->socket_client;
 	operation->done = true;
@@ -49,7 +49,7 @@ static void handle_ipc_in_progress(int server_socket) {
 
 	close(operation->socket_client);
 
-	ipc_operation_free(operation);
+	ipc_operation_destroy(operation);
 }
 
 static void notify_ipc_operation(void) {
@@ -62,8 +62,7 @@ static void notify_ipc_operation(void) {
 	if (ipc_operation->done) {
 		close(ipc_operation->socket_client);
 
-		log_cap_lines_stop(&ipc_operation->log_cap_lines);
-		ipc_operation_free(ipc_operation);
+		ipc_operation_destroy(ipc_operation);
 		ipc_operation = NULL;
 	}
 }
@@ -74,15 +73,14 @@ static void receive_ipc_request(int server_socket) {
 		return;
 	}
 
-	ipc_operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
-	log_cap_lines_start(&ipc_operation->log_cap_lines);
+	ipc_operation = ipc_operation_init();
+	log_cap_lines_start(ipc_operation->log_cap_lines);
 
 	struct IpcRequest *ipc_request = ipc_receive_request(server_socket);
 	if (!ipc_request) {
 		log_error(NULL);
 		log_error("Failed to read IPC request");
-		log_cap_lines_stop(&ipc_operation->log_cap_lines);
-		ipc_operation_free(ipc_operation);
+		ipc_operation_destroy(ipc_operation);
 		ipc_operation = NULL;
 		return;
 	}
@@ -281,13 +279,14 @@ server(char *cfg_path) {
 	// exits when another instance running
 	pid_file_create();
 
+	log_init();
 	log_set_prefix(true);
 
 	setup_signal_handlers();
 
 	// don't log anything until cfg log level is known
-	struct Pslist *log_cap_lines = NULL;
-	log_cap_lines_start(&log_cap_lines);
+	const struct Pset *log_cap_lines = log_cap_line_pset_init();
+	log_cap_lines_start(log_cap_lines);
 	log_suppress_start();
 
 	log_info("way-displays version %s %s", VERSION, COMMIT);
@@ -299,9 +298,9 @@ server(char *cfg_path) {
 	// play back captured logs from cfg parse
 	log_set_threshold(g_cfg->log_threshold, false);
 	log_suppress_stop();
-	log_cap_lines_stop(&log_cap_lines);
+	log_cap_lines_stop(log_cap_lines);
 	log_cap_lines_playback(log_cap_lines);
-	log_cap_lines_free(&log_cap_lines);
+	pset_free_vals(log_cap_lines);
 
 	// discover the lid state immediately
 	g_lid_init();
@@ -318,6 +317,7 @@ server(char *cfg_path) {
 	g_cfg_file_destroy();
 	g_cfg_destroy();
 	g_displ_destroy();
+	log_destroy();
 
 	return sig;
 }

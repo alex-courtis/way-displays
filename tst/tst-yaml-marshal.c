@@ -16,6 +16,8 @@
 #include "fs.h"
 #include "ipc.h"
 #include "lid.h"
+#include "log.h"
+#include "pset.h"
 #include "str.h"
 
 #include "yaml/marshal-types.h"
@@ -112,13 +114,13 @@ static void yaml_root_from_ipc_request__cfg_set(void **state) {
 static void yaml_root_from_ipc_operation__map(void **state) {
 	struct IpcOperation *ipc_operation = ipc_response();
 
-	log_cap_line_append(ERROR, "err", &ipc_operation->log_cap_lines);
-	log_cap_line_append(FATAL, "fat", &ipc_operation->log_cap_lines);
+	pset_add(ipc_operation->log_cap_lines, log_cap_line_init(ERROR, "err"));
+	pset_add(ipc_operation->log_cap_lines, log_cap_line_init(FATAL, "fat"));
 	ipc_operation_update_rc(ipc_operation);
 
 	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-map.yaml");
 
-	ipc_operation_free(ipc_operation);
+	ipc_operation_destroy(ipc_operation);
 
 	assert_logs_empty();
 }
@@ -129,7 +131,7 @@ static void yaml_root_from_ipc_operation__seq(void **state) {
 
 	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-seq.yaml");
 
-	ipc_operation_free(ipc_operation);
+	ipc_operation_destroy(ipc_operation);
 
 	assert_logs_empty();
 }

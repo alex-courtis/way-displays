@@ -1,7 +1,6 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 #include <yaml.h>
@@ -20,7 +19,6 @@
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
-#include "pslist.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
@@ -263,7 +261,7 @@ void yaml_map_into_ipc_responses(struct UC *c, const struct Pset *ipc_responses,
 	yaml_unmarshal_log_ctx_top(c, "MESSAGES");
 	const yaml_node_t *messages = spmap_get(nodes, "MESSAGES");
 	if (messages) {
-		yaml_seq_into_col(c, messages, &ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
+		yaml_seq_into_col(c, messages, ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
 	}
 
 	pset_add(ipc_responses, ipc_response);
@@ -647,7 +645,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	return;
 }
 
-void yaml_map_into_log_cap_lines(struct UC *c, struct Pslist **log_cap_lines, const yaml_node_t *map) {
+void yaml_map_into_log_cap_lines(struct UC *c, const struct Pset *log_cap_lines, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
@@ -658,13 +656,8 @@ void yaml_map_into_log_cap_lines(struct UC *c, struct Pslist **log_cap_lines, co
 		enum LogThreshold threshold = log_threshold_val(i->key);
 		char *line = yaml_scalar_to_string(c, i->val);
 
-		if (threshold && line) {
-			struct LogCapLine *log_cap_line = (struct LogCapLine*)calloc(1, sizeof(struct LogCapLine));
-			log_cap_line->threshold = threshold;
-			log_cap_line->line = strdup(line);
-			pslist_append(log_cap_lines, log_cap_line);
-
-		}
+		if (threshold && line)
+			pset_add(log_cap_lines, log_cap_line_init(threshold, line));
 
 		free(line);
 	}

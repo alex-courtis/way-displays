@@ -1,9 +1,6 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include "enum.h"
-#include "pslist.h"
-
 // head ppmap keys
 extern void *H0;
 extern void *H1;
@@ -38,8 +35,5 @@ extern void *M10;
 struct Cfg *cfg_all(void);
 
 struct IpcOperation *ipc_response(void);
-
-// add a LogCapLine to log_cap_lines
-void log_cap_line_append(enum LogThreshold threshold, const char *line, struct Pslist **log_cap_lines);
 
 #endif // DATA_H
