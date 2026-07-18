@@ -78,11 +78,10 @@ bool act_handle_cancelled(void) {
 void act_handle_failure(void) {
 	struct Head *head = g_displ->delta.head;
 
-	// TODO MODE consider putting data in delta, for zmode
 	switch(g_displ->delta.element) {
 		case MODE:
 			if (head) {
-				const struct zwlr_output_mode_v1 *zmode = head->des.zmode;
+				const struct zwlr_output_mode_v1 *zmode = g_displ->delta.zmode;
 
 				print_mode_fail(ERROR, head, zmode);
 				callback_mode_fail(ERROR, head, zmode);

@@ -345,6 +345,7 @@ static void act_handle_failure__mode(void **state) {
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
+	g_displ->delta.zmode = MD;
 
 	expect_int_value(__wrap_print_mode_fail, t, ERROR);
 	expect_ptr(__wrap_print_mode_fail, head, head);
