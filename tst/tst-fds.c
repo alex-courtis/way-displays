@@ -45,9 +45,6 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	// TODO move assert_logs_empty
-	assert_logs_empty();
-
 	g_cfg_destroy();
 
 	fd_cfg_dir = -1;
@@ -61,6 +58,8 @@ static void fd_wd_cfg_dir_create__no_dir(void **state) {
 
 	assert_int_equal(fd_cfg_dir, -1);
 	assert_int_equal(wd_cfg_dir, -1);
+
+	assert_logs_empty();
 }
 
 static void fd_wd_cfg_dir_create__bad_dir(void **state) {
@@ -74,6 +73,8 @@ static void fd_wd_cfg_dir_create__bad_dir(void **state) {
 	assert_int_equal(wd_cfg_dir, -1);
 
 	assert_log(FATAL, "\nunable to create config directory watch for /inexistent, exiting\n");
+
+	assert_logs_empty();
 }
 
 static void fd_wd_cfg_dir_create__ok(void **state) {
@@ -87,6 +88,8 @@ static void fd_wd_cfg_dir_create__ok(void **state) {
 	assert_int_not_equal(inotify_rm_watch(fd_cfg_dir, wd_cfg_dir), -1);
 
 	assert_int_equal(close(fd_cfg_dir), 0);
+
+	assert_logs_empty();
 }
 
 static void fd_wd_cfg_dir_destroy__bad(void **state) {
@@ -99,6 +102,8 @@ static void fd_wd_cfg_dir_destroy__bad(void **state) {
 	assert_int_equal(wd_cfg_dir, -1);
 
 	assert_log(ERROR, "\nunable to remove config directory watch\n\nunable to close config directory watch\n");
+
+	assert_logs_empty();
 }
 
 static void fd_wd_cfg_dir_destroy__ok(void **state) {
@@ -112,6 +117,8 @@ static void fd_wd_cfg_dir_destroy__ok(void **state) {
 
 	assert_int_equal(fd_cfg_dir, -1);
 	assert_int_equal(wd_cfg_dir, -1);
+
+	assert_logs_empty();
 }
 
 int main(void) {

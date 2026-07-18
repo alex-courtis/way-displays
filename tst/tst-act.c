@@ -35,8 +35,6 @@ static int before_each(void **state) {
 }
 
 static int after_each(void **state) {
-	assert_logs_empty();
-
 	displ_free(g_displ);
 
 	g_cfg_destroy();
@@ -46,6 +44,8 @@ static int after_each(void **state) {
 
 static void act_apply__no_heads(void **state) {
 	act_apply();
+
+	assert_logs_empty();
 }
 
 static void act_apply__no_changes(void **state) {
@@ -58,6 +58,8 @@ static void act_apply__no_changes(void **state) {
 	assert_nul(g_displ->delta.zmode);
 	assert_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, IDLE);
+
+	assert_logs_empty();
 }
 
 static void act_apply__reapply(void **state) {
@@ -89,6 +91,8 @@ static void act_apply__reapply(void **state) {
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
 	displ_delta_destroy(g_displ);
+
+	assert_logs_empty();
 }
 
 static void act_apply__mode(void **state) {
@@ -128,6 +132,8 @@ static void act_apply__mode(void **state) {
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
 	displ_delta_destroy(g_displ);
+
+	assert_logs_empty();
 }
 
 static void act_apply__vrr(void **state) {
@@ -164,6 +170,8 @@ static void act_apply__vrr(void **state) {
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
 	displ_delta_destroy(g_displ);
+
+	assert_logs_empty();
 }
 
 static void act_apply__disable(void **state) {
@@ -196,6 +204,8 @@ static void act_apply__disable(void **state) {
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
 	displ_delta_destroy(g_displ);
+
+	assert_logs_empty();
 }
 
 static void act_apply__remainder(void **state) {
@@ -244,6 +254,8 @@ static void act_apply__remainder(void **state) {
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
 	displ_delta_destroy(g_displ);
+
+	assert_logs_empty();
 }
 
 static void act_handle_success__head_changing_adaptive_sync(void **state) {
@@ -266,6 +278,8 @@ static void act_handle_success__head_changing_adaptive_sync(void **state) {
 	assert_false(head->adaptive_sync_failed);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
@@ -288,6 +302,8 @@ static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
 	assert_true(head->adaptive_sync_failed);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void act_handle_success__head_changing_mode(void **state) {
@@ -314,6 +330,8 @@ static void act_handle_success__head_changing_mode(void **state) {
 	assert_ptr_equal(head->cur.zmode, zmode);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void act_handle_success__ok(void **state) {
@@ -326,6 +344,8 @@ static void act_handle_success__ok(void **state) {
 	act_handle_success();
 
 	assert_log(INFO, "\nChanges successful\n");
+
+	assert_logs_empty();
 }
 
 static void act_handle_failure__mode(void **state) {
@@ -368,6 +388,8 @@ static void act_handle_failure__mode(void **state) {
 	assert_ptr_equal(ppmap_get(head->modes_failed, MD), mode_des);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void act_handle_failure__adaptive_sync(void **state) {
@@ -390,6 +412,8 @@ static void act_handle_failure__adaptive_sync(void **state) {
 	assert_true(head->adaptive_sync_failed);
 
 	head_free(head);
+
+	assert_logs_empty();
 }
 
 static void act_handle_failure__unspecified(void **state) {
@@ -404,6 +428,8 @@ static void act_handle_failure__unspecified(void **state) {
 	act_handle_failure();
 
 	assert_log(FATAL, "\nChanges failed, exiting\n");
+
+	assert_logs_empty();
 }
 
 static void act_handle_cancelled__retrying(void **state) {
@@ -418,6 +444,8 @@ static void act_handle_cancelled__retrying(void **state) {
 	assert_log(WARNING, "\nChanges cancelled, retrying (attempt 5)\n");
 
 	assert_int_equal(g_cancellation_retries, 5);
+
+	assert_logs_empty();
 }
 
 static void act_handle_cancelled__over_max(void **state) {
@@ -432,6 +460,8 @@ static void act_handle_cancelled__over_max(void **state) {
 	assert_log(WARNING, "\nChanges cancelled after 5 retries\n");
 
 	assert_int_equal(g_cancellation_retries, 6);
+
+	assert_logs_empty();
 }
 
 int main(void) {
