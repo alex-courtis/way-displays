@@ -56,8 +56,11 @@ void sset_it_free(const struct SsetIt* const it);
 // true if this set contains the specified element
 bool sset_contains(const struct Sset* const set, const char* const val);
 
+// element at zero indexed position
+const char *sset_at(const struct Sset* const set, const size_t i);
+
 // find the first match, NULL when no match or NULL match
-const void *sset_find(const struct Sset* const set, fn_2pred_str pred_val, const void* const data);
+const char *sset_find(const struct Sset* const set, fn_2pred_str pred_val, const void* const data);
 
 // create an iterator, caller must sset_it_free or invoke pset_next until NULL
 const struct SsetIt *sset_it(const struct Sset* const set);

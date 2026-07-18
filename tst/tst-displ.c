@@ -35,9 +35,7 @@ static void displ_finished_head__present(void **state) {
 	assert_int_equal(pset_size(displ->heads_arrived), 0);
 	assert_int_equal(pset_size(displ->heads_departed), 1);
 
-	const struct PsetIt *it = pset_it(displ->heads_departed);
-	const struct Head *head_departed = it->val;
-	pset_it_free(it);
+	const struct Head *head_departed = pset_at(displ->heads_departed, 0);
 
 	assert_non_nul(head_departed);
 

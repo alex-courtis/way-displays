@@ -83,6 +83,9 @@ bool spmap_contains_key(const struct SPmap* const map, const char* const key);
 // true if val is present [equal_val]
 bool spmap_contains_val(const struct SPmap* const map, const void* const val);
 
+// element at zero indexed position
+struct SPmapPair spmap_at(const struct SPmap* const map, const size_t i);
+
 // find the first key/val pred, {NULL,NULL} when no matches or NULL match
 struct SPmapPair spmap_find(const struct SPmap* const map, fn_3pred_str_ptr pred_key_val, const void* const data);
 

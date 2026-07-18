@@ -73,6 +73,9 @@ bool ssmap_contains_key(const struct SSmap* const map, const char* const key);
 // true if val is present
 bool ssmap_contains_val(const struct SSmap* const map, const char* const val);
 
+// element at zero indexed position
+struct SSmapPair ssmap_at(const struct SSmap* const map, const size_t i);
+
 // find the first key/val pred, {NULL,NULL} when no matches or NULL match
 struct SSmapPair ssmap_find(const struct SSmap* const map, fn_3pred_str_str pred_key_val, const void* const data);
 

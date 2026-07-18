@@ -326,6 +326,17 @@ bool ppmap_contains_val(const struct PPmap* const map, const void* const val) {
 	return false;
 }
 
+struct PPmapPair ppmap_at(const struct PPmap* const map, const size_t i) {
+	struct PPmapPair res = { 0 };
+
+	if (map && i < map->size) {
+		res.key = *(map->keys + i);
+		res.val = *(map->vals + i);
+	}
+
+	return res;
+}
+
 struct PPmapPair ppmap_find(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data) {
 	struct PPmapPair res = { 0 };
 

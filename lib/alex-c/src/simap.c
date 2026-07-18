@@ -151,6 +151,20 @@ bool simap_contains_val(const struct SImap* const map, const size_t val) {
 	return map ? ppmap_contains_val(map->ppmap, &val) : false;
 }
 
+struct SImapPair simap_at(const struct SImap* const map, const size_t i) {
+	struct SImapPair res = { 0 };
+
+	if (!map)
+		return res;
+
+	struct PPmapPair pres = ppmap_at(map->ppmap, i);
+
+	res.key = pres.key;
+	res.val = pres.val ? *(size_t*)pres.val : 0;
+
+	return res;
+}
+
 struct SImapPair simap_find(const struct SImap* const map, fn_3pred_str_szt pred_key_val, const void* const data) {
 	struct SImapPair res = { 0 };
 

@@ -103,6 +103,20 @@ bool ssmap_contains_val(const struct SSmap* const map, const char* const val) {
 	return map ? ppmap_contains_val(map->ppmap, val) : false;
 }
 
+struct SSmapPair ssmap_at(const struct SSmap* const map, const size_t i) {
+	struct SSmapPair res = { 0 };
+
+	if (!map)
+		return res;
+
+	struct PPmapPair pres = ppmap_at(map->ppmap, i);
+
+	res.key = pres.key;
+	res.val = pres.val;
+
+	return res;
+}
+
 struct SSmapPair ssmap_find(const struct SSmap* const map, fn_3pred_str_str pred_key_val, const void* const data) {
 	struct SSmapPair res = { 0 };
 

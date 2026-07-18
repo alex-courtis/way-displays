@@ -68,6 +68,9 @@ void pset_it_free(const struct PsetIt* const it);
 // true if this set contains the specified element [equal_val]
 bool pset_contains(const struct Pset* const set, const void* const val);
 
+// element at zero indexed position
+const void *pset_at(const struct Pset* const set, const size_t i);
+
 // find the first, NULL when no match or NULL match
 const void *pset_find(const struct Pset* const set, fn_2pred pred_val, const void* const data);
 

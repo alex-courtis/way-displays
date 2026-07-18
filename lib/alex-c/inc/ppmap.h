@@ -88,6 +88,9 @@ bool ppmap_contains_key(const struct PPmap* const map, const void* const key);
 // true if val is present [equal_val]
 bool ppmap_contains_val(const struct PPmap* const map, const void* const val);
 
+// element at zero indexed position
+struct PPmapPair ppmap_at(const struct PPmap* const map, const size_t i);
+
 // find the first key/val pred, {NULL,NULL} when no matches or NULL match
 struct PPmapPair ppmap_find(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data);
 

@@ -244,6 +244,10 @@ bool pset_contains(const struct Pset* const set, const void* const val) {
 	return false;
 }
 
+const void *pset_at(const struct Pset* const set, const size_t i) {
+	return set && i < set->size ? *(set->vals + i) : NULL;
+}
+
 const void *pset_find(const struct Pset* const set, fn_2pred pred_val, const void* const data) {
 	if (!set || !pred_val)
 		return NULL;

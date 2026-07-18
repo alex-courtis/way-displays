@@ -86,7 +86,11 @@ bool sset_contains(const struct Sset* const set, const char* const val) {
 	return set ? pset_contains(set->pset, val) : false;
 }
 
-const void *sset_find(const struct Sset* const set, fn_2pred_str pred_val, const void* const data) {
+const char *sset_at(const struct Sset* const set, const size_t i) {
+	return set ? pset_at(set->pset, i) : NULL;
+}
+
+const char *sset_find(const struct Sset* const set, fn_2pred_str pred_val, const void* const data) {
 	return set ? pset_find(set->pset, (fn_2pred)pred_val, data) : NULL;
 }
 

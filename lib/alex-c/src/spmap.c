@@ -142,6 +142,20 @@ bool spmap_contains_val(const struct SPmap* const map, const void* const val) {
 	return map ? ppmap_contains_val(map->ppmap, val) : false;
 }
 
+struct SPmapPair spmap_at(const struct SPmap* const map, const size_t i) {
+	struct SPmapPair res = { 0 };
+
+	if (!map)
+		return res;
+
+	struct PPmapPair pres = ppmap_at(map->ppmap, i);
+
+	res.key = pres.key;
+	res.val = pres.val;
+
+	return res;
+}
+
 struct SPmapPair spmap_find(const struct SPmap* const map, fn_3pred_str_ptr pred_key_val, const void* const data) {
 	struct SPmapPair res = { 0 };
 

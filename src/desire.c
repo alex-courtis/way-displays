@@ -206,8 +206,9 @@ const struct Pset *desire_order(const struct Sset * const order_name_desc, const
 	// buckets for each order_name_desc
 	const struct SPmapParams params = { .free_val = (fn_free)pset_free, };
 	const struct SPmap *buckets = spmap_init_with(params);
-	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it))
+	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
 		spmap_put(buckets, it->val, head_pset_init());
+	}
 
 	// all candidates to be moved into buckets
 	const struct Pset *candidates = ppmap_vals_pset(heads);
@@ -219,8 +220,9 @@ const struct Pset *desire_order(const struct Sset * const order_name_desc, const
 
 	// marshal buckets in final order
 	const struct Pset *sorted = head_pset_init();
-	for (const struct SPmapIt *it = spmap_it(buckets); it; it = spmap_it_next(it))
+	for (const struct SPmapIt *it = spmap_it(buckets); it; it = spmap_it_next(it)) {
 		pset_add_all(sorted, it->val);
+	}
 
 	// add the remainder that didn't match
 	pset_add_all(sorted, candidates);

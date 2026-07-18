@@ -164,6 +164,20 @@ bool ipmap_contains_val(const struct IPmap* const map, const void* const val) {
 	return map ? ppmap_contains_val(map->ppmap, val) : false;
 }
 
+struct IPmapPair ipmap_at(const struct IPmap* const map, const size_t i) {
+	struct IPmapPair res = { 0 };
+
+	if (!map)
+		return res;
+
+	struct PPmapPair pres = ppmap_at(map->ppmap, i);
+
+	res.key = pres.key ? *(size_t*)pres.key : 0;
+	res.val = pres.val;
+
+	return res;
+}
+
 struct IPmapPair ipmap_find(const struct IPmap* const map, fn_3pred_szt_ptr pred_key_val, const void* const data) {
 	struct IPmapPair res = { 0 };
 
