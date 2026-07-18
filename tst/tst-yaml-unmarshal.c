@@ -19,7 +19,6 @@
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "enum.h"
-#include "fn.h"
 #include "head.h"
 #include "ipc.h"
 #include "lid.h"
@@ -341,8 +340,8 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_list__empty(void **state) {
-	assert_nul(yaml_unmarshal_str("", yaml_root_to_ipc_response_list, "ipc response"));
+static void yaml_root_to_ipc_response_pset__empty(void **state) {
+	assert_nul(yaml_unmarshal_str("", yaml_root_to_ipc_response_pset, "ipc response"));
 
 	assert_log(ERROR, "\n"
 			"ipc response: empty request\n"
@@ -353,8 +352,8 @@ static void yaml_root_to_ipc_response_list__empty(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
-	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_list, "ipc response"));
+static void yaml_root_to_ipc_response_pset__mistyped_root(void **state) {
+	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_pset, "ipc response"));
 
 	assert_log(ERROR, "\n"
 			"ipc response: expected map or sequence, got scalar\n"
@@ -365,8 +364,8 @@ static void yaml_root_to_ipc_response_list__mistyped_root(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
-	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_list, "ipc response"));
+static void yaml_root_to_ipc_response_pset__seq_no_map(void **state) {
+	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_pset, "ipc response"));
 
 	assert_log(ERROR,
 			"ipc response: expected map, got scalar\n"
@@ -377,10 +376,10 @@ static void yaml_root_to_ipc_response_list__seq_no_map(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
+static void yaml_root_to_ipc_response_pset__seq_no_done(void **state) {
 	expect_function_call(__wrap_lid_free);
 
-	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_list, "ipc response"));
+	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_pset, "ipc response"));
 
 	assert_log(ERROR,
 			"ipc response: missing DONE\n"
@@ -391,10 +390,10 @@ static void yaml_root_to_ipc_response_list__seq_no_done(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
+static void yaml_root_to_ipc_response_pset__seq_no_rc(void **state) {
 	expect_function_call(__wrap_lid_free);
 
-	const struct Pslist *actual = yaml_unmarshal_str( "- DONE: TRUE", yaml_root_to_ipc_response_list, "ipc response");
+	const struct Pset *actual = yaml_unmarshal_str( "- DONE: TRUE", yaml_root_to_ipc_response_pset, "ipc response");
 
 	assert_nul(actual);
 
@@ -407,17 +406,18 @@ static void yaml_root_to_ipc_response_list__seq_no_rc(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_list__map(void **state) {
+static void yaml_root_to_ipc_response_pset__map(void **state) {
 	char *yaml = read_file("tst/yaml/ipc-responses-map.yaml");
 
 	expect_function_call(__wrap_lid_free);
 
-	struct Pslist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
+	const struct Pset *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_pset, "ipc response");
 
 	assert_non_nul(responses);
-	assert_int_equal(pslist_length(responses), 1);
+	assert_int_equal(pset_size(responses), 1);
 
-	struct IpcResponse *response = pslist_at(responses, 0);
+	const struct PsetIt *rit = pset_it(responses);
+	const struct IpcResponse *response = rit->val;
 
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
@@ -430,8 +430,11 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	struct Cfg *expected_cfg = cfg_all();
 	assert_cfg_equal(response->cfg, expected_cfg);
 
-	assert_int_equal(pslist_length(response->heads), 1);
-	struct Head *head = pslist_at(response->heads, 0);
+	assert_int_equal(pset_size(response->heads), 1);
+	const struct PsetIt *hit = pset_it(response->heads);
+	const struct Head *head = hit->val;
+
+	assert_nul(pset_it_next(hit));
 
 	assert_str_equal(head->name, "name");
 	assert_str_equal(head->description, "desc");
@@ -523,28 +526,30 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
-	pslist_free_vals(&responses, (fn_free)ipc_response_free);
+	assert_nul(rit = pset_it_next(rit));
+	pset_free_vals(responses);
 	cfg_free(expected_cfg);
 	free(yaml);
 
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_list__seq(void **state) {
+static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	char *yaml = read_file("tst/yaml/ipc-responses-seq-brief.yaml");
 
 	expect_function_calls(__wrap_lid_free, 3);
 
-	struct Pslist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_list, "ipc response");
+	const struct Pset *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_pset, "ipc response");
 
 	struct Cfg *cfg_expected = cfg_init();
 	cfg_expected->arrange = COL;
 
 	assert_non_nul(responses);
-	assert_int_equal(pslist_length(responses), 3);
+	assert_int_equal(pset_size(responses), 3);
 
 	// 0
-	struct IpcResponse *response = pslist_at(responses, 0);
+	const struct PsetIt *rit = pset_it(responses);
+	const struct IpcResponse *response = rit->val;
 	assert_non_nul(response);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 0);
@@ -557,18 +562,22 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_non_nul(lid);
 	assert_str_equal(lid->device_path, "/path/to/lid");
 
-	assert_non_nul(response->heads);
-	assert_int_equal(pslist_length(response->heads), 2);
+	assert_int_equal(pset_size(response->heads), 2);
 
-	struct Head *head0 = pslist_at(response->heads, 0);
+	// TODO c-lib set_at
+	const struct PsetIt *hit = pset_it(response->heads);
+	const struct Head *head0 = hit->val;
 	assert_non_nul(head0);
 	assert_str_equal(head0->name, "name0");
 	assert_int_equal(head0->overrided_enabled, NoOverride);
 
-	struct Head *head1 = pslist_at(response->heads, 1);
+	hit = pset_it_next(hit);
+	const struct Head *head1 = hit->val;
 	assert_non_nul(head1);
 	assert_str_equal(head1->name, "name1");
 	assert_int_equal(head1->overrided_enabled, NoOverride);
+
+	assert_nul(pset_it_next(hit));
 
 	assert_int_equal(pslist_length(response->log_cap_lines), 4);
 	struct LogCapLine *line = pslist_at(response->log_cap_lines, 0);
@@ -577,13 +586,14 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_str_equal(line->line, "dbg0");
 
 	// 1
-	response = pslist_at(responses, 1);
+	assert_non_nul(rit = pset_it_next(rit));
+	response = rit->val;
 	assert_non_nul(response);
 	assert_false(response->status.done);
 	assert_int_equal(response->status.rc, 1);
 	assert_nul(response->cfg);
 	assert_nul(response->lid);
-	assert_nul(response->heads);
+	assert_int_equal(pset_size(response->heads), 0);
 
 	assert_int_equal(pslist_length(response->log_cap_lines), 4);
 	line = pslist_at(response->log_cap_lines, 0);
@@ -592,16 +602,19 @@ static void yaml_root_to_ipc_response_list__seq(void **state) {
 	assert_str_equal(line->line, "dbg1");
 
 	// 2
-	response = pslist_at(responses, 2);
+	assert_non_nul(rit = pset_it_next(rit));
+	response = rit->val;
 	assert_non_nul(response);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
 	assert_nul(response->cfg);
 	assert_nul(response->lid);
-	assert_nul(response->heads);
+	assert_int_equal(pset_size(response->heads), 0);
 	assert_nul(response->log_cap_lines);
 
-	pslist_free_vals(&responses, (fn_free)ipc_response_free);
+	assert_nul(pset_it_next(rit));
+
+	pset_free_vals(responses);
 	free(yaml);
 	cfg_free(cfg_expected);
 
@@ -693,13 +706,13 @@ int main(void) {
 		TEST(yaml_root_to_ipc_request__invalid_cfg),
 		TEST(yaml_root_to_ipc_request__cfg_set),
 
-		TEST(yaml_root_to_ipc_response_list__empty),
-		TEST(yaml_root_to_ipc_response_list__mistyped_root),
-		TEST(yaml_root_to_ipc_response_list__seq_no_map),
-		TEST(yaml_root_to_ipc_response_list__seq_no_done),
-		TEST(yaml_root_to_ipc_response_list__seq_no_rc),
-		TEST(yaml_root_to_ipc_response_list__map),
-		TEST(yaml_root_to_ipc_response_list__seq),
+		TEST(yaml_root_to_ipc_response_pset__empty),
+		TEST(yaml_root_to_ipc_response_pset__mistyped_root),
+		TEST(yaml_root_to_ipc_response_pset__seq_no_map),
+		TEST(yaml_root_to_ipc_response_pset__seq_no_done),
+		TEST(yaml_root_to_ipc_response_pset__seq_no_rc),
+		TEST(yaml_root_to_ipc_response_pset__map),
+		TEST(yaml_root_to_ipc_response_pset__seq),
 
 		TEST(yaml_unmarshal_str__yaml_document_initialize_fail),
 		TEST(yaml_unmarshal_str__yaml_parser_load_fail),

@@ -85,7 +85,7 @@ static void yaml_root_from_cfg__empty(void **state) {
 
 
 static void yaml_root_from_ipc_request__no_op(void **state) {
-	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
+	struct IpcRequest *ipc_request = ipc_request_init(0);
 
 	assert_nul(yaml_marshal(ipc_request, (fn_yaml_root_from_type)yaml_root_from_ipc_request, "ipc request"));
 
@@ -97,8 +97,7 @@ static void yaml_root_from_ipc_request__no_op(void **state) {
 }
 
 static void yaml_root_from_ipc_request__cfg_set(void **state) {
-	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
-	ipc_request->command = CFG_SET;
+	struct IpcRequest *ipc_request = ipc_request_init(CFG_SET);
 	ipc_request->log_threshold = ERROR;
 
 	ipc_request->cfg = cfg_all();

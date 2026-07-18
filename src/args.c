@@ -180,8 +180,7 @@ struct IpcRequest *args_ipc_list(int argc) {
 		return NULL;
 	}
 
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = LIST;
+	struct IpcRequest *request = ipc_request_init(LIST);
 
 	return request;
 }
@@ -193,8 +192,7 @@ struct IpcRequest *args_ipc_get(int argc) {
 		return NULL;
 	}
 
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = GET;
+	struct IpcRequest *request = ipc_request_init(GET);
 
 	return request;
 }
@@ -206,8 +204,7 @@ struct IpcRequest *args_ipc_write(int argc) {
 		return NULL;
 	}
 
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_WRITE;
+	struct IpcRequest *request = ipc_request_init(CFG_WRITE);
 
 	return request;
 }
@@ -219,8 +216,7 @@ struct IpcRequest *args_ipc_reapply(int argc) {
 		return NULL;
 	}
 
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = REAPPLY;
+	struct IpcRequest *request = ipc_request_init(REAPPLY);
 
 	return request;
 }
@@ -268,8 +264,7 @@ struct IpcRequest *args_ipc_set(int argc, char **argv) {
 			return NULL;
 	}
 
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_SET;
+	struct IpcRequest *request = ipc_request_init(CFG_SET);
 	request->cfg = args_cfg(CFG_SET, element, argc, argv);
 
 	return request;
@@ -302,8 +297,7 @@ struct IpcRequest *args_ipc_del(int argc, char **argv) {
 			return NULL;
 	}
 
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_DEL;
+	struct IpcRequest *request = ipc_request_init(CFG_DEL);
 	request->cfg = args_cfg(CFG_DEL, element, argc, argv);
 
 	return request;
@@ -334,8 +328,7 @@ struct IpcRequest *args_ipc_toggle(int argc, char **argv) {
 			return NULL;
 	}
 
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_TOGGLE;
+	struct IpcRequest *request = ipc_request_init(CFG_TOGGLE);
 	request->cfg = args_cfg(CFG_TOGGLE, element, argc, argv);
 
 	return request;

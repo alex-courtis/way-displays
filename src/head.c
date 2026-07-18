@@ -58,7 +58,10 @@ const struct Pset *head_pset_init(void) {
 }
 
 const struct PPmap *head_ppmap_init(void) {
-	const struct PPmapParams params = { .free_val = (fn_free)head_free, };
+	const struct PPmapParams params = {
+		.str_val = (fn_str)head_str,
+		.free_val = (fn_free)head_free,
+	};
 	return ppmap_init_with(params);
 }
 

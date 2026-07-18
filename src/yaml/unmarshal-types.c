@@ -52,7 +52,7 @@ void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {
 	if (!nodes)
 		return NULL;
 
-	struct IpcRequest *ipc_request = (struct IpcRequest*)calloc(1, sizeof(struct IpcRequest));
+	struct IpcRequest *ipc_request = ipc_request_init(0);
 
 	yaml_unmarshal_log_ctx_top(c, "OP");
 	const yaml_node_t *op = spmap_get(nodes, "OP");
@@ -84,11 +84,11 @@ end:
 	return ipc_request;
 }
 
-void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root) {
+void *yaml_root_to_ipc_response_pset(struct UC *c, const yaml_node_t *root) {
 	if (!root)
 		return NULL;
 
-	struct Pslist *ipc_responses = NULL;
+	const struct Pset *ipc_responses = ipc_response_pset_init();
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
 		log_error(NULL);
@@ -98,20 +98,21 @@ void *yaml_root_to_ipc_response_list(struct UC *c, const yaml_node_t *root) {
 
 	if (root->type == YAML_SEQUENCE_NODE) {
 		for (const yaml_node_item_t *item = root->data.sequence.items.start; item < root->data.sequence.items.top; item ++) {
-			yaml_map_into_ipc_responses(c, &ipc_responses, yaml_document_get_node(&c->d, *item));
+			yaml_map_into_ipc_responses(c, ipc_responses, yaml_document_get_node(&c->d, *item));
 		}
 	} else {
-		yaml_map_into_ipc_responses(c, &ipc_responses, root);
+		yaml_map_into_ipc_responses(c, ipc_responses, root);
 	}
 
-	goto end;
+	if (pset_size(ipc_responses) == 0) {
+		goto err;
+	}
+
+	return (void*)ipc_responses;
 
 err:
-	pslist_free_vals(&ipc_responses, (fn_free)ipc_response_free);
-	ipc_responses = NULL;
-
-end:
-	return ipc_responses;
+	pset_free_vals(ipc_responses);
+	return NULL;
 }
 
 struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
@@ -214,7 +215,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 	return cfg;
 }
 
-void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses, const yaml_node_t *map) {
+void yaml_map_into_ipc_responses(struct UC *c, const struct Pset *ipc_responses, const yaml_node_t *map) {
 	if (!ipc_responses)
 		return;
 
@@ -225,7 +226,7 @@ void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses, co
 	if (!nodes)
 		return;
 
-	struct IpcResponse *ipc_response = (struct IpcResponse*)calloc(1, sizeof(struct IpcResponse));
+	struct IpcResponse *ipc_response = ipc_response_init();
 
 	yaml_unmarshal_log_ctx_top(c, "DONE");
 	const yaml_node_t *done = spmap_get(nodes, "DONE");
@@ -253,7 +254,7 @@ void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses, co
 
 			ipc_response->lid =	yaml_map_to_lid(c, spmap_get(nodes_state, "LID"));
 
-			yaml_seq_into_col(c, spmap_get(nodes_state, "HEADS"), &ipc_response->heads, (fn_yaml_node_into_col)yaml_map_into_heads);
+			yaml_seq_into_col(c, spmap_get(nodes_state, "HEADS"), ipc_response->heads, (fn_yaml_node_into_col)yaml_map_into_heads);
 
 			spmap_free(nodes_state);
 		}
@@ -265,7 +266,7 @@ void yaml_map_into_ipc_responses(struct UC *c, struct Pslist **ipc_responses, co
 		yaml_seq_into_col(c, messages, &ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
 	}
 
-	pslist_append((struct Pslist**)ipc_responses, ipc_response);
+	pset_add(ipc_responses, ipc_response);
 
 	goto end;
 
@@ -505,7 +506,7 @@ void yaml_map_into_modes(struct UC *c, const struct PPmap *modes, const yaml_nod
 	spmap_free(nodes);
 }
 
-void yaml_map_into_heads(struct UC *c, struct Pslist **heads, const yaml_node_t *map) {
+void yaml_map_into_heads(struct UC *c, const struct Pset *heads, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!heads)
 		return;
@@ -544,7 +545,7 @@ void yaml_map_into_heads(struct UC *c, struct Pslist **heads, const yaml_node_t 
 		}
 	}
 
-	pslist_append(heads, head);
+	pset_add(heads, head);
 
 	spmap_free(nodes);
 	spmap_free(nodes_overrides);

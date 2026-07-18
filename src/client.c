@@ -7,18 +7,17 @@
 #include "client.h"
 
 #include "enum.h"
-#include "fn.h"
 #include "info/print.h"
 #include "ipc.h"
 #include "log.h"
 #include "process.h"
-#include "pslist.h"
+#include "pset.h"
 
 static int handle_responses(const struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
-	struct Pslist *responses = NULL;
-	struct IpcResponse *response = NULL;
+	const struct Pset *responses = NULL;
+	const struct IpcResponse *response = NULL;
 	bool done = false;
 
 	while (!done) {
@@ -26,8 +25,8 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 		responses = ipc_receive_responses(ipc_request->socket_client, &yaml);
 
 		if (responses) {
-			for (struct Pslist *i = responses; i; i = i->nex) {
-				if (!(response = i->val)) {
+			for (const struct PsetIt *it = pset_it(responses); it; it = pset_it_next(it)) {
+				if (!(response = it->val)) {
 					continue;
 				}
 				rc = response->status.rc;
@@ -46,7 +45,7 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 					log_cap_lines_playback(response->log_cap_lines);
 				}
 			}
-			pslist_free_vals(&responses, (fn_free)ipc_response_free);
+			pset_free_vals(responses);
 		} else {
 			rc = IPC_BAD_RESPONSE;
 			done = true;

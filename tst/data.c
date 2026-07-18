@@ -138,9 +138,8 @@ struct Cfg *cfg_all(void) {
 
 // ipc-responses-map.yaml and ipc-responses-seq.yaml
 struct IpcOperation *ipc_response(void) {
-	struct IpcRequest *ipc_request = calloc(1, sizeof(struct IpcRequest));
+	struct IpcRequest *ipc_request = ipc_request_init(GET);
 	ipc_request->log_threshold = WARNING;
-	ipc_request->command = GET;
 
 	struct IpcOperation *ipc_operation = calloc(1, sizeof(struct IpcOperation));
 	ipc_operation->request = ipc_request;
