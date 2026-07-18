@@ -7,8 +7,8 @@
 #include "head.h"
 
 void _assert_head_position(struct Head *head, int32_t x, int32_t y, const char * const file, const int line) {
-	if (head->desired.x != x || head->desired.y != y) {
-		cmocka_print_error("assert_head_position %s (%d, %d) != (%d, %d)\n", head->name, head->desired.x, head->desired.y, x, y);
+	if (head->des.x != x || head->des.y != y) {
+		cmocka_print_error("assert_head_position %s (%d, %d) != (%d, %d)\n", head->name, head->des.x, head->des.y, x, y);
 		_fail(file, line);
 	}
 }

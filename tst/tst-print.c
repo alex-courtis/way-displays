@@ -62,9 +62,9 @@ int before_each(void **state) {
 			M10, mode_whr(1000, 1000, 50500),
 			NULL);
 
-	s->head1->current.zwlr_mode = MC;
-	s->head1->desired.zwlr_mode = MD;
-	s->head1->zwlr_mode_pref = MC;
+	s->head1->cur.zmode = MC;
+	s->head1->des.zmode = MD;
+	s->head1->zmode_pref = MC;
 
 	ppmap_put_many(s->head1->modes_failed,
 			MF, mode_whr(700, 800, 90000),
@@ -78,19 +78,19 @@ int before_each(void **state) {
 	s->head1->model = strdup("model1");
 	s->head1->serial_number = strdup("serial_number1");
 
-	s->head1->current.scale = 512;
-	s->head1->current.enabled = true;
-	s->head1->current.x = 700;
-	s->head1->current.y = 800;
-	s->head1->current.transform = WL_OUTPUT_TRANSFORM_180;
-	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head1->cur.scale = 512;
+	s->head1->cur.enabled = true;
+	s->head1->cur.x = 700;
+	s->head1->cur.y = 800;
+	s->head1->cur.transform = WL_OUTPUT_TRANSFORM_180;
+	s->head1->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	s->head1->desired.scale = 1024;
-	s->head1->desired.enabled = true;
-	s->head1->desired.x = 900;
-	s->head1->desired.y = 1000;
-	s->head1->desired.transform = WL_OUTPUT_TRANSFORM_90;
-	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head1->des.scale = 1024;
+	s->head1->des.enabled = true;
+	s->head1->des.x = 900;
+	s->head1->des.y = 1000;
+	s->head1->des.transform = WL_OUTPUT_TRANSFORM_90;
+	s->head1->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	ppmap_put(s->heads, H1, s->head1);
 
@@ -101,8 +101,8 @@ int before_each(void **state) {
 			MC, mode_whr(1100, 1200, 130000), // current
 			MD, mode_whr(1400, 1500, 160000), // desired
 			NULL);
-	s->head2->current.zwlr_mode = MC;
-	s->head2->desired.zwlr_mode = MD;
+	s->head2->cur.zmode = MC;
+	s->head2->des.zmode = MD;
 
 	s->head2->name = strdup("name2");
 	s->head2->width_mm = 3;
@@ -111,19 +111,19 @@ int before_each(void **state) {
 	s->head2->model = strdup("model2");
 	s->head2->serial_number = strdup("serial_number2");
 
-	s->head2->current.scale = 2048;
-	s->head2->current.enabled = true;
-	s->head2->current.x = 1700;
-	s->head2->current.y = 1800;
-	s->head2->current.transform = WL_OUTPUT_TRANSFORM_270;
-	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	s->head2->cur.scale = 2048;
+	s->head2->cur.enabled = true;
+	s->head2->cur.x = 1700;
+	s->head2->cur.y = 1800;
+	s->head2->cur.transform = WL_OUTPUT_TRANSFORM_270;
+	s->head2->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
-	s->head2->desired.scale = 4096;
-	s->head2->desired.enabled = true;
-	s->head2->desired.x = 1900;
-	s->head2->desired.y = 11000;
-	s->head2->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
-	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head2->des.scale = 4096;
+	s->head2->des.enabled = true;
+	s->head2->des.x = 1900;
+	s->head2->des.y = 11000;
+	s->head2->des.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	s->head2->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	ppmap_put(s->heads, H2, s->head2);
 
@@ -419,8 +419,8 @@ static void print_head_deltas__mode(void **state) {
 static void print_head_deltas__vrr(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head1->desired.zwlr_mode = s->head1->current.zwlr_mode;
+	s->head1->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	s->head1->des.zmode = s->head1->cur.zmode;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -437,7 +437,7 @@ static void print_head_deltas__vrr(void **state) {
 static void print_head_deltas__other(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.zwlr_mode = s->head1->current.zwlr_mode;
+	s->head1->des.zmode = s->head1->cur.zmode;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -454,7 +454,7 @@ static void print_head_deltas__other(void **state) {
 static void print_head_deltas__disable(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.enabled = false;
+	s->head1->des.enabled = false;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -471,7 +471,7 @@ static void print_head_deltas__disable(void **state) {
 static void print_head_deltas__enable(void **state) {
 	struct State *s = *state;
 
-	s->head1->current.enabled = false;
+	s->head1->cur.enabled = false;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -489,9 +489,9 @@ static void print_head_deltas__reapply(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	head.desired = head.current;
-	head.current.enabled = false;
-	head.desired.enabled = false;
+	head.des = head.cur;
+	head.cur.enabled = false;
+	head.des.enabled = false;
 	head.reapply_required = true;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
@@ -510,7 +510,7 @@ static void print_head_current__disabled(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	head.current.enabled = false;
+	head.cur.enabled = false;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -528,7 +528,7 @@ static void print_head_current__disabled_override(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	head.current.enabled = false;
+	head.cur.enabled = false;
 	head.overrided_enabled = OverrideFalse;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
@@ -547,7 +547,7 @@ static void print_head_current__enabled_override(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	head.current.enabled = true;
+	head.cur.enabled = true;
 	head.overrided_enabled = OverrideTrue;
 
 	expect_str(__wrap_g_lid_is_closed, name, "name1");
@@ -583,7 +583,7 @@ static void print_head_desired__disabled(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	head.desired.enabled = false;
+	head.des.enabled = false;
 
 	print_head_desired(INFO, &head);
 
@@ -596,7 +596,7 @@ static void print_head_desired__disabled_override(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	head.desired.enabled = false;
+	head.des.enabled = false;
 	head.overrided_enabled = OverrideFalse;
 
 	print_head_desired(INFO, &head);
@@ -610,8 +610,8 @@ static void print_head_desired__enabled(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	head.current.enabled = false;
-	head.desired.enabled = true;
+	head.cur.enabled = false;
+	head.des.enabled = true;
 
 	print_head_desired(INFO, &head);
 
@@ -624,8 +624,8 @@ static void print_head_desired__enabled_override(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	head.current.enabled = false;
-	head.desired.enabled = true;
+	head.cur.enabled = false;
+	head.des.enabled = true;
 	head.overrided_enabled = OverrideTrue;
 
 	print_head_desired(INFO, &head);
@@ -639,8 +639,8 @@ static void print_head_desired__transform_270(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	memcpy(&head.desired, &head.current, sizeof(struct HeadState));
-	head.desired.transform = WL_OUTPUT_TRANSFORM_270;
+	memcpy(&head.des, &head.cur, sizeof(struct HeadState));
+	head.des.transform = WL_OUTPUT_TRANSFORM_270;
 
 	print_head_desired(INFO, &head);
 
@@ -653,8 +653,8 @@ static void print_head_desired__transform_none(void **state) {
 	struct State *s = *state;
 
 	struct Head head = *s->head1;
-	memcpy(&head.desired, &head.current, sizeof(struct HeadState));
-	head.desired.transform = 0;
+	memcpy(&head.des, &head.cur, sizeof(struct HeadState));
+	head.des.transform = 0;
 
 	print_head_desired(INFO, &head);
 
@@ -672,7 +672,7 @@ static void print_list__empty(void **state) {
 static void print_list__many(void **state) {
 	struct State *s = *state;
 
-	s->head1->current.enabled = false;
+	s->head1->cur.enabled = false;
 	print_list(INFO, s->heads);
 
 	char *expected_log = read_file("tst/info/print-list.log");
@@ -742,55 +742,55 @@ static void print_heads_outstanding__many(void **state) {
 
 	struct Head *head_mode = head_n("mo");
 	ppmap_put(head_mode->modes, M0, mode_init());
-	head_mode->desired.zwlr_mode = M0;
+	head_mode->des.zmode = M0;
 	ppmap_put(displ->heads, H1, head_mode);
 
 	struct Head *head_disable = head_n("di");
-	head_disable->current.enabled = true;
-	head_disable->desired.enabled = false;
+	head_disable->cur.enabled = true;
+	head_disable->des.enabled = false;
 	ppmap_put(displ->heads, H2, head_disable);
 
 	struct Head *head_vrr = head_n("vr");
-	head_vrr->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	head_vrr->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head_vrr->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head_vrr->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	ppmap_put(displ->heads, H3, head_vrr);
 
 	struct Head *head_enable = head_n("en");
-	head_enable->current.enabled = false;
-	head_enable->desired.enabled = true;
+	head_enable->cur.enabled = false;
+	head_enable->des.enabled = true;
 	ppmap_put(displ->heads, H4, head_enable);
 
 	struct Head *head_sc = head_n("sc");
-	head_sc->current.scale = 1;
-	head_sc->desired.scale = 2;
+	head_sc->cur.scale = 1;
+	head_sc->des.scale = 2;
 	ppmap_put(displ->heads, H5, head_sc);
 
 	struct Head *head_x = head_n("x");
-	head_x->current.x = 1;
-	head_x->desired.x = 2;
+	head_x->cur.x = 1;
+	head_x->des.x = 2;
 	ppmap_put(displ->heads, H6, head_x);
 
 	struct Head *head_y = head_n("y");
-	head_y->current.y = 1;
-	head_y->desired.y = 2;
+	head_y->cur.y = 1;
+	head_y->des.y = 2;
 	ppmap_put(displ->heads, H7, head_y);
 
 	struct Head *head_transform = head_n("tr");
-	head_transform->current.transform = WL_OUTPUT_TRANSFORM_90;
-	head_transform->desired.transform = WL_OUTPUT_TRANSFORM_180;
+	head_transform->cur.transform = WL_OUTPUT_TRANSFORM_90;
+	head_transform->des.transform = WL_OUTPUT_TRANSFORM_180;
 	ppmap_put(displ->heads, H8, head_transform);
 
 	struct Head *head_all = head_n("a");
 	mode = mode_init();
 	ppmap_put(head_all->modes, M0, mode);
 	head_all->reapply_required = true;
-	head_all->desired.zwlr_mode = M0;
-	head_all->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	head_all->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	head_all->current.x = 1;
-	head_all->desired.x = 2;
-	head_all->current.enabled = false;
-	head_all->desired.enabled = true;
+	head_all->des.zmode = M0;
+	head_all->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head_all->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head_all->cur.x = 1;
+	head_all->des.x = 2;
+	head_all->cur.enabled = false;
+	head_all->des.enabled = true;
 	ppmap_put(displ->heads, H9, head_all);
 
 	displ->state = IDLE;

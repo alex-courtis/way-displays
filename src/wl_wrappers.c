@@ -80,10 +80,10 @@ int _wl_display_read_events(struct wl_display *display, char *file, int line) {
 }
 
 struct zwlr_output_configuration_v1 *create_zwlr_output_config_listener(struct Displ *displ) {
-	struct zwlr_output_configuration_v1 *zwlr_config = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
-	zwlr_output_configuration_v1_add_listener(zwlr_config, zwlr_output_configuration_listener(), displ);
+	struct zwlr_output_configuration_v1 *zconfig = zwlr_output_manager_v1_create_configuration(displ->zwlr_output_manager, displ->zwlr_output_manager_serial);
+	zwlr_output_configuration_v1_add_listener(zconfig, zwlr_output_configuration_listener(), displ);
 
-	return zwlr_config;
+	return zconfig;
 }
 
 struct zwlr_output_configuration_head_v1 * _zwlr_output_configuration_v1_enable_head(struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1, struct zwlr_output_head_v1 *head) {

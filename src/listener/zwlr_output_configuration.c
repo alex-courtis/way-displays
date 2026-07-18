@@ -16,9 +16,9 @@ static void cleanup(struct Displ *displ,
 
 	for (const struct PPmapIt *it = ppmap_it(displ->heads); it; it = ppmap_it_next(it)) {
 		struct Head *head = (struct Head*)it->val;
-		if (head->zwlr_config_head) {
-			zwlr_output_configuration_head_v1_destroy(head->zwlr_config_head);
-			head->zwlr_config_head = NULL;
+		if (head->zconfig) {
+			zwlr_output_configuration_head_v1_destroy(head->zconfig);
+			head->zconfig = NULL;
 		}
 	}
 

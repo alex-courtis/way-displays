@@ -13,7 +13,7 @@
 void callback(const enum LogThreshold t, const char * const msg1, const char * const msg2);
 
 // execute CALLBACK_CMD with mode failed message, if enabled
-void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode);
+void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zmode);
 
 // execute CALLBACK_CMD with VRR failed message, if enabled
 void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);

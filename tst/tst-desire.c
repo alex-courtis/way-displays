@@ -32,12 +32,12 @@ extern int g_cancellation_retries;
 
 static struct Head *head_init_dp(int32_t width, int32_t height) {
 	struct Head *head = head_init();
-	head->desired.enabled = true;
+	head->des.enabled = true;
 	head->scaled.width = width;
 	head->scaled.height = height;
 
 	ppmap_put(head->modes, M0, mode_init());
-	head->desired.zwlr_mode = M0;
+	head->des.zmode = M0;
 
 	return head;
 }
@@ -315,7 +315,7 @@ static void desire_position__row_bottom(void **state) {
 static void desire_enabled__disabled(void **state) {
 	struct Head *head = head_init();
 	head->name = strdup("head0");
-	head->desired.enabled = true;
+	head->des.enabled = true;
 	ppmap_put(g_displ->heads, H0, head);
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
@@ -325,47 +325,47 @@ static void desire_enabled__disabled(void **state) {
 
 	desire_enabled(head);
 
-	assert_false(head->desired.enabled);
+	assert_false(head->des.enabled);
 }
 
 static void desire_enabled__lid_closed_many(void **state) {
 	struct Head *head0 = head_n("head0");
 	ppmap_put(g_displ->heads, H0, head0);
 
-	head0->desired.enabled = true;
+	head0->des.enabled = true;
 
 	struct Head *head1 = head_n("head1");
 	ppmap_put(g_displ->heads, H1, head1);
 
-	head1->desired.enabled = true;
+	head1->des.enabled = true;
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, true);
 
 	desire_enabled(head0);
 
-	assert_false(head0->desired.enabled);
+	assert_false(head0->des.enabled);
 }
 
 static void desire_enabled__lid_closed_one(void **state) {
 	struct Head *head = head_n("head");
 	ppmap_put(g_displ->heads, H0, head);
 
-	head->desired.enabled = true;
+	head->des.enabled = true;
 
 	expect_str(__wrap_g_lid_is_closed, name, "head");
 	will_return_int(__wrap_g_lid_is_closed, true);
 
 	desire_enabled(head);
 
-	assert_true(head->desired.enabled);
+	assert_true(head->des.enabled);
 }
 
 static void desire_enabled__lid_closed_one_disabled(void **state) {
 	struct Head *head = head_n("head0");
 	ppmap_put(g_displ->heads, H0, head);
 
-	head->desired.enabled = true;
+	head->des.enabled = true;
 
 	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
 
@@ -374,14 +374,14 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 
 	desire_enabled(head);
 
-	assert_false(head->desired.enabled);
+	assert_false(head->des.enabled);
 }
 
 static void desire_enabled__override(void **state) {
 	struct Head *head = head_n("head0");
 	ppmap_put(g_displ->heads, H0, head);
 
-	head->desired.enabled = false;
+	head->des.enabled = false;
 	head->overrided_enabled = OverrideTrue;
 
 	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
@@ -391,7 +391,7 @@ static void desire_enabled__override(void **state) {
 
 	desire_enabled(head);
 
-	assert_true(head->desired.enabled);
+	assert_true(head->des.enabled);
 	assert_true(head->overrided_enabled == OverrideTrue);
 }
 
@@ -399,7 +399,7 @@ static void desire_enabled__override_reset(void **state) {
 	struct Head *head = head_n("head0");
 	ppmap_put(g_displ->heads, H0, head);
 
-	head->desired.enabled = true;
+	head->des.enabled = true;
 	head->overrided_enabled = OverrideFalse;
 
 	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
@@ -409,7 +409,7 @@ static void desire_enabled__override_reset(void **state) {
 
 	desire_enabled(head);
 
-	assert_false(head->desired.enabled);
+	assert_false(head->des.enabled);
 	assert_true(head->overrided_enabled == NoOverride);
 }
 
@@ -417,7 +417,7 @@ static void desire_enabled__no_override(void **state) {
 	struct Head *head = head_n("head");
 	ppmap_put(g_displ->heads, H0, head);
 
-	head->desired.enabled = false;
+	head->des.enabled = false;
 	head->overrided_enabled = OverrideFalse;
 
 	expect_str(__wrap_g_lid_is_closed, name, "head");
@@ -425,7 +425,7 @@ static void desire_enabled__no_override(void **state) {
 
 	desire_enabled(head);
 
-	assert_false(head->desired.enabled);
+	assert_false(head->des.enabled);
 	assert_true(head->overrided_enabled == OverrideFalse);
 }
 
@@ -434,13 +434,13 @@ static void desire_mode__disabled(void **state) {
 	const struct Mode *mode = mode_init();
 
 	ppmap_put(head->modes, M0, mode);
-	head->desired.enabled = false;
-	head->desired.zwlr_mode = M0;
+	head->des.enabled = false;
+	head->des.zmode = M0;
 
 	desire_mode(head);
 
-	assert_ptr_equal(head->desired.zwlr_mode, M0);
-	assert_false(head->desired.enabled);
+	assert_ptr_equal(head->des.zmode, M0);
+	assert_false(head->des.enabled);
 	assert_false(head->warned_no_mode);
 
 	head_free(head);
@@ -451,16 +451,16 @@ static void desire_mode__no_mode(void **state) {
 	const struct Mode *mode = mode_init();
 
 	ppmap_put(head->modes, M0, mode);
-	head->desired.enabled = true;
-	head->desired.zwlr_mode = M0;
+	head->des.enabled = true;
+	head->des.zmode = M0;
 
 	expect_ptr(__wrap_head_find_mode, head, head);
 	will_return_ptr_type(__wrap_head_find_mode, NULL, struct zwlr_output_mode_v1*);
 
 	desire_mode(head);
 
-	assert_ptr_equal(head->desired.zwlr_mode, M0);
-	assert_false(head->desired.enabled);
+	assert_ptr_equal(head->des.zmode, M0);
+	assert_false(head->des.enabled);
 	assert_true(head->warned_no_mode);
 
 	head_free(head);
@@ -471,8 +471,8 @@ static void desire_mode__no_mode_warned(void **state) {
 	const struct Mode *mode = mode_init();
 
 	ppmap_put(head->modes, MD, mode);
-	head->desired.enabled = true;
-	head->desired.zwlr_mode = MD;
+	head->des.enabled = true;
+	head->des.zmode = MD;
 
 	head->warned_no_mode = false;
 
@@ -481,8 +481,8 @@ static void desire_mode__no_mode_warned(void **state) {
 
 	desire_mode(head);
 
-	assert_ptr_equal(head->desired.zwlr_mode, MD);
-	assert_false(head->desired.enabled);
+	assert_ptr_equal(head->des.zmode, MD);
+	assert_false(head->des.enabled);
 	assert_true(head->warned_no_mode);
 
 	head_free(head);
@@ -497,15 +497,15 @@ static void desire_mode__ok(void **state) {
 			NULL
 			);
 
-	head->desired.enabled = true;
+	head->des.enabled = true;
 
 	expect_ptr(__wrap_head_find_mode, head, head);
 	will_return_ptr_type(__wrap_head_find_mode, MD, struct zwlr_output_mode_v1*);
 
 	desire_mode(head);
 
-	assert_ptr_equal(head->desired.zwlr_mode, MD);
-	assert_true(head->desired.enabled);
+	assert_ptr_equal(head->des.zmode, MD);
+	assert_true(head->des.enabled);
 	assert_false(head->warned_no_mode);
 
 	head_free(head);
@@ -513,7 +513,7 @@ static void desire_mode__ok(void **state) {
 
 static void desire_scale__disabled(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = false;
+	head->des.enabled = false;
 
 	desire_scale(head);
 
@@ -522,33 +522,33 @@ static void desire_scale__disabled(void **state) {
 
 static void desire_scale__no_scaling(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
+	head->des.enabled = true;
 	g_cfg->scaling = OFF;
 	g_cfg->auto_scale = ON;
 
 	desire_scale(head);
 
-	assert_wl_fixed_t_equal_double(head->desired.scale, 1);
+	assert_wl_fixed_t_equal_double(head->des.scale, 1);
 
 	head_free(head);
 }
 
 static void desire_scale__no_auto(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
+	head->des.enabled = true;
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = OFF;
 
 	desire_scale(head);
 
-	assert_wl_fixed_t_equal_double(head->desired.scale, 1);
+	assert_wl_fixed_t_equal_double(head->des.scale, 1);
 
 	head_free(head);
 }
 
 static void desire_scale__auto(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
+	head->des.enabled = true;
 
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
@@ -558,14 +558,14 @@ static void desire_scale__auto(void **state) {
 
 	desire_scale(head);
 
-	assert_wl_fixed_t_equal_double(head->desired.scale, 2.5);
+	assert_wl_fixed_t_equal_double(head->des.scale, 2.5);
 
 	head_free(head);
 }
 
 static void desire_scale__user(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
+	head->des.enabled = true;
 
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
@@ -577,41 +577,41 @@ static void desire_scale__user(void **state) {
 
 	desire_scale(head);
 
-	assert_wl_fixed_t_equal_double(head->desired.scale, 3.5);
+	assert_wl_fixed_t_equal_double(head->des.scale, 3.5);
 
 	head_free(head);
 }
 
 static void desire_transform__disabled(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = false;
-	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
+	head->des.enabled = false;
+	head->des.transform = WL_OUTPUT_TRANSFORM_90;
 
 	simap_put(g_cfg->transforms, "head", WL_OUTPUT_TRANSFORM_180);
 
 	desire_transform(head);
 
-	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_90);
+	assert_int_equal(head->des.transform, WL_OUTPUT_TRANSFORM_90);
 
 	head_free(head);
 }
 
 static void desire_transform__no_transform(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
-	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
+	head->des.enabled = true;
+	head->des.transform = WL_OUTPUT_TRANSFORM_90;
 
 	desire_transform(head);
 
-	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_NORMAL);
+	assert_int_equal(head->des.transform, WL_OUTPUT_TRANSFORM_NORMAL);
 
 	head_free(head);
 }
 
 static void desire_transform__user(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
-	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
+	head->des.enabled = true;
+	head->des.transform = WL_OUTPUT_TRANSFORM_90;
 
 	simap_put_many(g_cfg->transforms,
 			"head9", (size_t)WL_OUTPUT_TRANSFORM_270,
@@ -620,58 +620,58 @@ static void desire_transform__user(void **state) {
 
 	desire_transform(head);
 
-	assert_int_equal(head->desired.transform, WL_OUTPUT_TRANSFORM_180);
+	assert_int_equal(head->des.transform, WL_OUTPUT_TRANSFORM_180);
 
 	head_free(head);
 }
 
 static void desire_adaptive_sync__head_disabled(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = false;
-	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head->des.enabled = false;
+	head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	desire_adaptive_sync(head);
 
-	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head->des.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
 	head_free(head);
 }
 
 static void desire_adaptive_sync__failed(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
-	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head->des.enabled = true;
+	head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	head->adaptive_sync_failed = true;
 
 	desire_adaptive_sync(head);
 
-	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head->des.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
 	head_free(head);
 }
 
 static void desire_adaptive_sync__disabled(void **state) {
 	struct Head *head = head_n("some head");
-	head->desired.enabled = true;
-	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head->des.enabled = true;
+	head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
 	sset_add(g_cfg->adaptive_sync_off, "!.*hea");
 
 	desire_adaptive_sync(head);
 
-	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head->des.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
 	head_free(head);
 }
 
 static void desire_adaptive_sync__enabled(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
-	head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head->des.enabled = true;
+	head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	desire_adaptive_sync(head);
 
-	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+	assert_int_equal(head->des.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
 
 	head_free(head);
 }
@@ -705,19 +705,19 @@ static void desire_scaled_dimensions__transform(void **state) {
 
 	const struct Mode *mode0 = mode_whr(200, 100, 0);
 	ppmap_put(head->modes, M0, mode0);
-	head->desired.zwlr_mode = M0;
+	head->des.zmode = M0;
 
 	// double, not rotated
-	head->desired.scale = wl_fixed_from_double(0.5);
-	head->desired.transform = WL_OUTPUT_TRANSFORM_180;
+	head->des.scale = wl_fixed_from_double(0.5);
+	head->des.transform = WL_OUTPUT_TRANSFORM_180;
 
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 400);
 	assert_int_equal(head->scaled.height, 200);
 
 	// one third, rotated
-	head->desired.scale = wl_fixed_from_double(3);
-	head->desired.transform = WL_OUTPUT_TRANSFORM_90;
+	head->des.scale = wl_fixed_from_double(3);
+	head->des.transform = WL_OUTPUT_TRANSFORM_90;
 
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 33);
@@ -731,25 +731,25 @@ static void desire_scaled_dimensions__dimensions(void **state) {
 
 	const struct Mode *mode = mode_whr(3840, 2160, 0);
 	ppmap_put(head->modes, M0, mode);
-	head->desired.zwlr_mode = M0;
+	head->des.zmode = M0;
 
-	head->desired.scale = head_get_fixed_scale(1.0);
+	head->des.scale = head_get_fixed_scale(1.0);
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 3840);
 	assert_int_equal(head->scaled.height, 2160);
 
-	head->desired.scale = head_get_fixed_scale(2.0);
+	head->des.scale = head_get_fixed_scale(2.0);
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1920);
 	assert_int_equal(head->scaled.height, 1080);
 
-	head->desired.scale = head_get_fixed_scale(1.7);
+	head->des.scale = head_get_fixed_scale(1.7);
 	// actual scale will be 1.75
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 2194);
 	assert_int_equal(head->scaled.height, 1234);
 
-	head->desired.scale = head_get_fixed_scale(1.9);
+	head->des.scale = head_get_fixed_scale(1.9);
 	// actual scale will be 1.875
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 2048);
@@ -757,7 +757,7 @@ static void desire_scaled_dimensions__dimensions(void **state) {
 
 	head->name = strdup("name");
 
-	head->desired.scale = head_get_fixed_scale(2.01);
+	head->des.scale = head_get_fixed_scale(2.01);
 	// actual scale will be 2.0
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1920);
@@ -769,24 +769,24 @@ static void desire_scaled_dimensions__dimensions(void **state) {
 
 static void desire_reapply__required(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
+	head->des.enabled = true;
 	head->reapply_required = true;
 
 	desire_reapply(head);
 
-	assert_false(head->desired.enabled);
+	assert_false(head->des.enabled);
 
 	head_free(head);
 }
 
 static void desire_reapply__not_required(void **state) {
 	struct Head *head = head_n("head");
-	head->desired.enabled = true;
+	head->des.enabled = true;
 	head->reapply_required = false;
 
 	desire_reapply(head);
 
-	assert_true(head->desired.enabled);
+	assert_true(head->des.enabled);
 
 	head_free(head);
 }

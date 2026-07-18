@@ -52,7 +52,7 @@ static void enabled(void *data,
 		int32_t enabled) {
 	struct Head *head = data;
 
-	head->current.enabled = enabled;
+	head->cur.enabled = enabled;
 }
 
 static void current_mode(void *data,
@@ -60,7 +60,7 @@ static void current_mode(void *data,
 		struct zwlr_output_mode_v1 *zwlr_output_mode_v1) {
 	struct Head *head = data;
 
-	head->current.zwlr_mode = zwlr_output_mode_v1;
+	head->cur.zmode = zwlr_output_mode_v1;
 }
 
 static void position(void *data,
@@ -69,8 +69,8 @@ static void position(void *data,
 		int32_t y) {
 	struct Head *head = data;
 
-	head->current.x = x;
-	head->current.y = y;
+	head->cur.x = x;
+	head->cur.y = y;
 }
 
 static void transform(void *data,
@@ -78,7 +78,7 @@ static void transform(void *data,
 		int32_t transform) {
 	struct Head *head = data;
 
-	head->current.transform = transform;
+	head->cur.transform = transform;
 }
 
 static void scale(void *data,
@@ -86,7 +86,7 @@ static void scale(void *data,
 		wl_fixed_t scale) {
 	struct Head *head = data;
 
-	head->current.scale = scale;
+	head->cur.scale = scale;
 }
 
 static void make(void *data,
@@ -118,7 +118,7 @@ static void adaptive_sync(void *data,
 		uint32_t state) {
 	struct Head *head = data;
 
-	head->current.adaptive_sync = state;
+	head->cur.adaptive_sync = state;
 }
 
 static void finished(void *data,

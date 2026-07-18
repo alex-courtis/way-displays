@@ -119,7 +119,7 @@ static void head_auto_scale__mode(void **state) {
 
 	struct Mode *mode = mode_init();
 	ppmap_put(head->modes, MD, mode);
-	head->desired.zwlr_mode = MD;
+	head->des.zmode = MD;
 
 	expect_ptr_count(__wrap_mode_dpi, mode, mode, 4);
 	expect_int_value_count(__wrap_mode_dpi, width_mm, 200, 4);
@@ -153,7 +153,7 @@ static void head_auto_scale__range(void **state) {
 
 	struct Mode *mode = mode_init();
 	ppmap_put(head->modes, MD, mode);
-	head->desired.zwlr_mode = MD;
+	head->des.zmode = MD;
 
 	expect_ptr_count(__wrap_mode_dpi, mode, mode, 7);
 	expect_int_value_count(__wrap_mode_dpi, width_mm, 400, 7);
@@ -312,7 +312,7 @@ static void head_find_mode__preferred(void **state) {
 	const struct Mode *expected = mode_init();
 
 	ppmap_put(head->modes, M0, expected);
-	head->zwlr_mode_pref = M0;
+	head->zmode_pref = M0;
 
 	const struct zwlr_output_mode_v1 *actual = head_find_mode(head);
 
@@ -331,7 +331,7 @@ static void head_find_mode__mode_max_refresh(void **state) {
 	sset_add(g_cfg->max_preferred_refresh, "!nam.*");
 
 	ppmap_put(head->modes, M0, expected);
-	head->zwlr_mode_pref = M0;
+	head->zmode_pref = M0;
 
 	expect_ptr(__wrap_mode_max_refresh, mode_target, expected);
 	expect_ptr(__wrap_mode_max_refresh, modes, head->modes);
@@ -476,7 +476,7 @@ static void head_apply_toggles__none(void **state) {
 
 static void head_apply_toggles__disabled__enable(void **state) {
 	struct Head *head = head_n("head0");
-	head->current.enabled = false;
+	head->cur.enabled = false;
 	struct Cfg *cfg = cfg_init();
 	pset_add(cfg->disableds, disabled_nd("head0"));
 
@@ -498,7 +498,7 @@ static void head_apply_toggles__disabled__enable(void **state) {
 
 static void head_apply_toggles__disabled__disable(void **state) {
 	struct Head *head = head_n("head0");
-	head->current.enabled = true;
+	head->cur.enabled = true;
 	struct Cfg *cfg = cfg_init();
 	pset_add(cfg->disableds, disabled_nd("head0"));
 
@@ -570,7 +570,7 @@ static void heads_reapply__(void **state) {
 	const struct PPmap *heads = head_ppmap_init();
 
 	struct Head *head_disabled = head_n("DP-7");
-	head_disabled->current.enabled = false;
+	head_disabled->cur.enabled = false;
 
 	const struct PPmap *modes_once_failed = mode_ppmap_init();
 	ppmap_put_many(modes_once_failed,
@@ -579,7 +579,7 @@ static void heads_reapply__(void **state) {
 			M2, mode_whr(3840, 2160, 29970),
 			NULL);
 
-	head_disabled->zwlr_mode_pref = M0;
+	head_disabled->zmode_pref = M0;
 
 	ppmap_free(head_disabled->modes_failed);
 	head_disabled->modes_failed = ppmap_clone(modes_once_failed);
@@ -588,11 +588,11 @@ static void heads_reapply__(void **state) {
 
 
 	struct Head *head_enabled = head_n("eDP-1");
-	head_enabled->current.enabled = true;
+	head_enabled->cur.enabled = true;
 
 	ppmap_put(head_enabled->modes, MP, mode_whr(2256, 1504, 59999));
-	head_enabled->current.zwlr_mode = MP;
-	head_enabled->zwlr_mode_pref = MP;
+	head_enabled->cur.zmode = MP;
+	head_enabled->zmode_pref = MP;
 
 	ppmap_put(heads, H1, head_enabled);
 
@@ -623,8 +623,8 @@ static void head_release_mode__other(void **state) {
 			NULL
 			);
 
-	head->current.zwlr_mode = MC;
-	head->desired.zwlr_mode = MD;
+	head->cur.zmode = MC;
+	head->des.zmode = MD;
 
 	assert_int_equal(ppmap_size(head->modes), 3);
 
@@ -634,10 +634,10 @@ static void head_release_mode__other(void **state) {
 
 	assert_false(ppmap_contains_key(head->modes, M0));
 
-	assert_ptr_equal(head->current.zwlr_mode, MC);
+	assert_ptr_equal(head->cur.zmode, MC);
 	assert_true(ppmap_contains_key(head->modes, MC));
 
-	assert_ptr_equal(head->desired.zwlr_mode, MD);
+	assert_ptr_equal(head->des.zmode, MD);
 	assert_true(ppmap_contains_key(head->modes, MD));
 
 	head_free(head);
@@ -649,8 +649,8 @@ static void head_release_mode__cur_des(void **state) {
 	struct Head *head = head_init();
 
 	ppmap_put(head->modes, MR, mode_init());
-	head->current.zwlr_mode = MR;
-	head->desired.zwlr_mode = MR;
+	head->cur.zmode = MR;
+	head->des.zmode = MR;
 
 	head_release_mode(head, MR);
 
@@ -658,8 +658,8 @@ static void head_release_mode__cur_des(void **state) {
 
 	assert_false(ppmap_contains_key(head->modes, MR));
 
-	assert_nul(head->current.zwlr_mode);
-	assert_nul(head->desired.zwlr_mode);
+	assert_nul(head->cur.zmode);
+	assert_nul(head->des.zmode);
 
 	head_free(head);
 
@@ -673,7 +673,7 @@ static void head_set_mode_pref__first(void **state) {
 
 	head_set_mode_pref(head, M1);
 
-	assert_ptr_equal(head->zwlr_mode_pref, M1);
+	assert_ptr_equal(head->zmode_pref, M1);
 
 	head_free(head);
 
@@ -683,11 +683,11 @@ static void head_set_mode_pref__first(void **state) {
 static void head_set_mode_pref__current(void **state) {
 	struct Head *head = head_init();
 	ppmap_put(head->modes, M0, mode_whr(2560, 1440, 30000));
-	head->zwlr_mode_pref = M0;
+	head->zmode_pref = M0;
 
 	head_set_mode_pref(head, M0);
 
-	assert_ptr_equal(head->zwlr_mode_pref, M0);
+	assert_ptr_equal(head->zmode_pref, M0);
 
 	head_free(head);
 
@@ -699,13 +699,13 @@ static void head_set_mode_pref__subsequent(void **state) {
 	ppmap_put(head->modes, M0, mode_whr(3840, 2160, 60000));
 	ppmap_put(head->modes, M1, mode_whr(2560, 1440, 30000));
 
-	head->zwlr_mode_pref = M0;
+	head->zmode_pref = M0;
 
 	head_set_mode_pref(head, M1);
 
 	assert_log(INFO, "\nNAM: multiple preferred modes advertised: using initial 3840x2160@60Hz (60,000mHz) (preferred), ignoring 2560x1440@30Hz (30,000mHz)\n");
 
-	assert_ptr_equal(head->zwlr_mode_pref, M0);
+	assert_ptr_equal(head->zmode_pref, M0);
 
 	head_free(head);
 

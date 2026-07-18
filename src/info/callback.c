@@ -44,13 +44,13 @@ void callback(const enum LogThreshold t, const char * const msg1, const char * c
 	free(buf);
 }
 
-void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode) {
-	if (!head || !zwlr_mode) {
+void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zmode) {
+	if (!head || !zmode) {
 		return;
 	}
 
-	const struct Mode *mode = ppmap_get(head->modes, zwlr_mode);
-	char *str = mode_str_pref(mode, head->zwlr_mode_pref == zwlr_mode);
+	const struct Mode *mode = ppmap_get(head->modes, zmode);
+	char *str = mode_str_pref(mode, head->zmode_pref == zmode);
 
 	char *human = sprintf_alloc(
 			"%s\n"

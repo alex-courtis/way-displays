@@ -118,20 +118,20 @@ void g_displ_destroy(void) {
 	g_displ = NULL;
 }
 
-void displ_add_head(const struct Displ *displ, struct zwlr_output_head_v1 *zwlr_head) {
-	if (!zwlr_head)
+void displ_add_head(const struct Displ *displ, struct zwlr_output_head_v1 *zhead) {
+	if (!zhead)
 		return;
 
 	struct Head *head = head_init();
 
-	ppmap_put(displ->heads, zwlr_head, head);
+	ppmap_put(displ->heads, zhead, head);
 	pset_add(displ->heads_arrived, head);
 
-	zwlr_output_head_v1_add_listener(zwlr_head, zwlr_output_head_listener(), head);
+	zwlr_output_head_v1_add_listener(zhead, zwlr_output_head_listener(), head);
 }
 
-void displ_finished_head(const struct Displ *displ, const struct zwlr_output_head_v1 * const zwlr_head) {
-	const struct Head *head = ppmap_get(displ->heads, zwlr_head);
+void displ_finished_head(const struct Displ *displ, const struct zwlr_output_head_v1 * const zhead) {
+	const struct Head *head = ppmap_get(displ->heads, zhead);
 	if (!head)
 		return;
 
@@ -141,6 +141,6 @@ void displ_finished_head(const struct Displ *displ, const struct zwlr_output_hea
 	pset_remove(displ->heads_arrived, head);
 	pset_remove(displ->heads_departed, head);
 
-	ppmap_remove_free(displ->heads, zwlr_head);
+	ppmap_remove_free(displ->heads, zhead);
 }
 

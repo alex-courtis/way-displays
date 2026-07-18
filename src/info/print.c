@@ -56,7 +56,7 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	if (ppmap_size(head->modes_failed) > 0) {
 		log_(t, "  failed:");
 		for (const struct PPmapIt *it = ppmap_it(head->modes_failed); it; it = ppmap_it_next(it)) {
-			print_mode(t, it->val, it->key == head->zwlr_mode_pref);
+			print_mode(t, it->val, it->key == head->zmode_pref);
 		}
 	}
 }
@@ -75,7 +75,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	if (!head)
 		return;
 
-	const struct Mode *mode_pref = ppmap_get(head->modes, head->zwlr_mode_pref);
+	const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 
 	// show from the top down
 	const struct Pset *modes_sorted = ppmap_vals_pset(head->modes);
@@ -304,28 +304,28 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	if (!head)
 		return;
 
-	const struct Mode *mode_cur = ppmap_get(head->modes, head->current.zwlr_mode);
+	const struct Mode *mode_cur = ppmap_get(head->modes, head->cur.zmode);
 
-	if (head->current.enabled) {
-		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->current.scale), head_scale(head, head->current.zwlr_mode));
+	if (head->cur.enabled) {
+		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->cur.scale), head_scale(head, head->cur.zmode));
 
 		const struct Output *output = ipmap_find_val(g_displ->outputs, (fn_2pred)output_matches_name, head->name).val;
 		if (output) {
 			log_(t, "    size:      %dx%d", output->logical_width, output->logical_height);
 			log_(t, "    position:  %d,%d", output->logical_x, output->logical_y);
 		} else {
-			log_(t, "    position:  %d,%d", head->current.x, head->current.y);
+			log_(t, "    position:  %d,%d", head->cur.x, head->cur.y);
 		}
 
-		if (head->current.transform) {
-			log_(t, "    transform: %s", transform_name(head->current.transform));
+		if (head->cur.transform) {
+			log_(t, "    transform: %s", transform_name(head->cur.transform));
 		}
 	}
 
-	print_mode(t, mode_cur, head->current.zwlr_mode == head->zwlr_mode_pref);
-	log_(t, "    VRR:       %s", head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
+	print_mode(t, mode_cur, head->cur.zmode == head->zmode_pref);
+	log_(t, "    VRR:       %s", head->cur.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 
-	if (head->current.enabled) {
+	if (head->cur.enabled) {
 		if (head->overrided_enabled == OverrideTrue) {
 			log_(t, "    (manually enabled)");
 		}
@@ -346,37 +346,37 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 	if (!head)
 		return;
 
-	if (head->desired.enabled) {
+	if (head->des.enabled) {
 		if (head_current_mode_not_desired(head, NULL)) {
 			// mode changes happen in their own operation
-			if (!head->current.enabled || head->current.zwlr_mode != head->desired.zwlr_mode) {
-				print_mode(t, ppmap_get(head->modes, head->desired.zwlr_mode), head->desired.zwlr_mode == head->zwlr_mode_pref);
+			if (!head->cur.enabled || head->cur.zmode != head->des.zmode) {
+				print_mode(t, ppmap_get(head->modes, head->des.zmode), head->des.zmode == head->zmode_pref);
 			}
 		} else if (head_current_adaptive_sync_not_desired(head, NULL)) {
 			// adaptive sync changes happen in their own operation
-			log_(t, "    VRR:       %s", head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
+			log_(t, "    VRR:       %s", head->des.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 		} else {
-			if (!head->current.enabled || head->current.scale != head->desired.scale) {
+			if (!head->cur.enabled || head->cur.scale != head->des.scale) {
 				log_(t, "    scale:     %.3f%s",
-						wl_fixed_to_double(head->desired.scale),
+						wl_fixed_to_double(head->des.scale),
 						(!head->width_mm || !head->height_mm) ? " (default, size not specified)" : ""
 					);
 			}
-			if (!head->current.enabled || head->current.x != head->desired.x || head->current.y != head->desired.y) {
+			if (!head->cur.enabled || head->cur.x != head->des.x || head->cur.y != head->des.y) {
 				log_(t, "    position:  %d,%d",
-						head->desired.x,
-						head->desired.y
+						head->des.x,
+						head->des.y
 					);
 			}
-			if (!head->current.enabled || head->current.transform != head->desired.transform) {
-				if (head->desired.transform) {
-					log_(t, "    transform: %s", transform_name(head->desired.transform));
+			if (!head->cur.enabled || head->cur.transform != head->des.transform) {
+				if (head->des.transform) {
+					log_(t, "    transform: %s", transform_name(head->des.transform));
 				} else {
 					log_(t, "    transform: none");
 				}
 			}
 		}
-		if (!head->current.enabled) {
+		if (!head->cur.enabled) {
 			if (head->overrided_enabled == OverrideTrue) {
 				log_(t, "    (manually enabled)");
 			} else {
@@ -415,7 +415,7 @@ void print_head(const enum LogThreshold t, const enum InfoEvent event, const str
 			if (head->width_mm && head->height_mm) {
 				log_(t, "    width:     %dmm", head->width_mm);
 				log_(t, "    height:    %dmm", head->height_mm);
-				const struct Mode *mode_pref = ppmap_get(head->modes, head->zwlr_mode_pref);
+				const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 				if (mode_pref) {
 					log_(t, "    dpi:       %.2f @ %dx%d", mode_dpi(mode_pref, head->width_mm, head->height_mm), mode_pref->width, mode_pref->height);
 				}
@@ -472,14 +472,14 @@ void print_list(const enum LogThreshold t, const struct PPmap * const heads) {
 
 	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
 		const struct Head *head = it->val;
-		const struct Mode *mode_cur = ppmap_get(head->modes, head->current.zwlr_mode);
+		const struct Mode *mode_cur = ppmap_get(head->modes, head->cur.zmode);
 
-		if (head->current.enabled && mode_cur) {
+		if (head->cur.enabled && mode_cur) {
 			// full info
 			log_(t, "%-*.*s %.3f %s %5d x%5d @%4d Hz",
 					(int)max_len_human, (int)max_len_human, head_human(head),
-					wl_fixed_to_double(head->current.scale),
-					(head->current.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : "",
+					wl_fixed_to_double(head->cur.scale),
+					(head->cur.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED) ? "VRR" : "",
 					mode_cur->width,
 					mode_cur->height,
 					mode_hz_rounded(mode_cur)
@@ -506,7 +506,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
 }
 
-void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode) {
+void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zmode) {
 	log_(t, NULL);
 	log_(t, "Changes failed");
 
@@ -515,7 +515,7 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	}
 
 	log_(t, "  %s:", head_human(head));
-	print_mode(t, ppmap_get(head->modes, zwlr_mode), head->zwlr_mode_pref == zwlr_mode);
+	print_mode(t, ppmap_get(head->modes, zmode), head->zmode_pref == zmode);
 }
 
 // TODO debug this does not always seem accurate, shows changes for DP-7 when none are needed on first start
@@ -544,18 +544,18 @@ void print_head_queue(const enum LogThreshold t, const struct Displ *displ, cons
 			vrr = sprintf_append(vrr, " %s:vrr ;", head->name);
 
 		// mass disable
-		if (head->current.enabled && !head->desired.enabled)
+		if (head->cur.enabled && !head->des.enabled)
 			remainder = sprintf_append(remainder, " %s:disable", head->name);
 
 		// mass enable
-		if (!head->current.enabled && head->desired.enabled)
+		if (!head->cur.enabled && head->des.enabled)
 			remainder = sprintf_append(remainder, " %s:enable", head->name);
 
 		// mass remainder
-		if (head->desired.scale != head->current.scale ||
-				head->desired.x != head->current.x ||
-				head->desired.y != head->current.y ||
-				head->desired.transform != head->current.transform )
+		if (head->des.scale != head->cur.scale ||
+				head->des.x != head->cur.x ||
+				head->des.y != head->cur.y ||
+				head->des.transform != head->cur.transform )
 			remainder = sprintf_append(remainder, " %s:geometry", head->name);
 	}
 

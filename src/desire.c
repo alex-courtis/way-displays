@@ -27,7 +27,7 @@ void desire(void) {
 	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
 		struct Head *head = (struct Head*)it->val;
 
-		memcpy(&head->desired, &head->current, sizeof(struct HeadState));
+		memcpy(&head->des, &head->cur, sizeof(struct HeadState));
 
 		desire_enabled(head);
 		desire_mode(head);
@@ -67,80 +67,80 @@ void desire_enabled(struct Head *head) {
 
 	switch (head->overrided_enabled) {
 		case NoOverride:
-			head->desired.enabled = enabled;
+			head->des.enabled = enabled;
 			break;
 		case OverrideTrue:
-			head->desired.enabled = true;
+			head->des.enabled = true;
 			break;
 		case OverrideFalse:
-			head->desired.enabled = false;
+			head->des.enabled = false;
 			break;
 	}
 }
 
 void desire_mode(struct Head *head) {
-	if (!head->desired.enabled) {
+	if (!head->des.enabled) {
 		return;
 	}
 
 	// attempt to find a mode, will log and call back on failure to find a mode
-	const struct zwlr_output_mode_v1 *zwlr_mode = head_find_mode(head);
+	const struct zwlr_output_mode_v1 *zmode = head_find_mode(head);
 
-	if (zwlr_mode) {
-		head->desired.zwlr_mode = zwlr_mode;
+	if (zmode) {
+		head->des.zmode = zmode;
 	} else {
 		if (!head->warned_no_mode) {
 			head->warned_no_mode = true;
 		}
-		head->desired.enabled = false;
+		head->des.enabled = false;
 	}
 }
 
 void desire_scale(struct Head *head) {
-	if (!head->desired.enabled) {
+	if (!head->des.enabled) {
 		return;
 	}
 
 	// all scaling disabled
 	if (g_cfg->scaling == OFF) {
-		head->desired.scale = head_get_fixed_scale(1.0);
+		head->des.scale = head_get_fixed_scale(1.0);
 		return;
 	}
 
 	// user scale first
 	const struct SImapPair pair = simap_find_key(g_cfg->scales, (fn_2pred_str)head_name_desc_matches_head, head);
 	if (pair.key) {
-		head->desired.scale = head_get_fixed_scale((double)pair.val / 1000);
+		head->des.scale = head_get_fixed_scale((double)pair.val / 1000);
 		return;
 	}
 
 	// auto or 1
 	if (g_cfg->auto_scale == ON) {
-		head->desired.scale =
+		head->des.scale =
 			head_auto_scale(head, g_cfg->auto_scale_min, g_cfg->auto_scale_max);
 	} else {
-		head->desired.scale = head_get_fixed_scale(1.0);
+		head->des.scale = head_get_fixed_scale(1.0);
 	}
 }
 
 void desire_transform(struct Head *head) {
-	if (!head->desired.enabled) {
+	if (!head->des.enabled) {
 		return;
 	}
 
 	// maybe user transform
 	enum wl_output_transform transform = simap_find_key(g_cfg->transforms, (fn_2pred_str)head_name_desc_matches_head, head).val;
 	if (transform) {
-		head->desired.transform = transform;
+		head->des.transform = transform;
 		return;
 	}
 
 	// normal if not specified
-	head->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	head->des.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 }
 
 void desire_adaptive_sync(struct Head *head) {
-	if (!head->desired.enabled) {
+	if (!head->des.enabled) {
 		return;
 	}
 
@@ -149,9 +149,9 @@ void desire_adaptive_sync(struct Head *head) {
 	}
 
 	if (sset_find(g_cfg->adaptive_sync_off, (fn_2pred_str)head_name_desc_matches_head, head)) {
-		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+		head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
-		head->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+		head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	}
 }
 
@@ -160,22 +160,22 @@ static int32_t desired_scaled_length(const struct Head * const head, const int32
 
 	int32_t b = g_cfg->scale_round_to ? g_cfg->scale_round_to : SCALE_ROUND_TO_DEFAULT;
 
-	wl_fixed_t f = (double)head->desired.scale / 256 * b + 0.5;
+	wl_fixed_t f = (double)head->des.scale / 256 * b + 0.5;
 
 	// wayland truncates when calculating size
 	return floor((double)length * b / f);
 }
 
 void desire_scaled_dimensions(struct Head * const head) {
-	if (!head || !head->desired.scale) {
+	if (!head || !head->des.scale) {
 		return;
 	}
 
-	const struct Mode *mode_des = ppmap_get(head->modes, head->desired.zwlr_mode);
+	const struct Mode *mode_des = ppmap_get(head->modes, head->des.zmode);
 	if (!mode_des)
 		return;
 
-	if (head->desired.transform % 2 == 0) {
+	if (head->des.transform % 2 == 0) {
 		head->scaled.width = mode_des->width;
 		head->scaled.height = mode_des->height;
 	} else {
@@ -189,7 +189,7 @@ void desire_scaled_dimensions(struct Head * const head) {
 
 void desire_reapply(struct Head *head) {
 	if (head->reapply_required)
-		head->desired.enabled = false;
+		head->des.enabled = false;
 }
 
 static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *candidates, fn_2pred pred) {
@@ -237,7 +237,7 @@ void desire_positions(const struct Pset *heads_sorted) {
 	// find tallest/widest
 	for (const struct PsetIt *it = pset_it(heads_sorted); it; it = pset_it_next(it)) {
 		const struct Head *head = it->val;
-		if (!head->desired.zwlr_mode || !head->desired.enabled) {
+		if (!head->des.zmode || !head->des.enabled) {
 			continue;
 		}
 		if (head->scaled.height > tallest) {
@@ -251,47 +251,47 @@ void desire_positions(const struct Pset *heads_sorted) {
 	// arrange each in the predefined order
 	for (const struct PsetIt *it = pset_it(heads_sorted); it; it = pset_it_next(it)) {
 		struct Head *head = (struct Head*)it->val;
-		if (!head->desired.zwlr_mode || !head->desired.enabled) {
+		if (!head->des.zmode || !head->des.enabled) {
 			continue;
 		}
 
 		switch (g_cfg->arrange) {
 			case COL:
 				// position
-				head->desired.y = y;
+				head->des.y = y;
 				y += head->scaled.height;
 
 				// align
 				switch (g_cfg->align) {
 					case RIGHT:
-						head->desired.x = widest - head->scaled.width;
+						head->des.x = widest - head->scaled.width;
 						break;
 					case MIDDLE:
-						head->desired.x = (widest - head->scaled.width) / 2.0 + 0.5;
+						head->des.x = (widest - head->scaled.width) / 2.0 + 0.5;
 						break;
 					case LEFT:
 					default:
-						head->desired.x = 0;
+						head->des.x = 0;
 						break;
 				}
 				break;
 			case ROW:
 			default:
 				// position
-				head->desired.x = x;
+				head->des.x = x;
 				x += head->scaled.width;
 
 				// align
 				switch (g_cfg->align) {
 					case BOTTOM:
-						head->desired.y = tallest - head->scaled.height;
+						head->des.y = tallest - head->scaled.height;
 						break;
 					case MIDDLE:
-						head->desired.y = (tallest - head->scaled.height) / 2.0 + 0.5;
+						head->des.y = (tallest - head->scaled.height) / 2.0 + 0.5;
 						break;
 					case TOP:
 					default:
-						head->desired.y = 0;
+						head->des.y = 0;
 						break;
 				}
 				break;

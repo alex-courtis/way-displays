@@ -78,20 +78,20 @@ void head_free(struct Head *head) {
 	free(head);
 }
 
-void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v1 *zwlr_mode) {
-	if (!head || !zwlr_mode)
+void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v1 *zmode) {
+	if (!head || !zmode)
 		return;
 
-	ppmap_remove_free(head->modes, zwlr_mode);
+	ppmap_remove_free(head->modes, zmode);
 
-	if (head->zwlr_mode_pref == zwlr_mode)
-		head->zwlr_mode_pref = NULL;
+	if (head->zmode_pref == zmode)
+		head->zmode_pref = NULL;
 
-	if (head->current.zwlr_mode == zwlr_mode)
-		head->current.zwlr_mode = NULL;
+	if (head->cur.zmode == zmode)
+		head->cur.zmode = NULL;
 
-	if (head->desired.zwlr_mode == zwlr_mode)
-		head->desired.zwlr_mode = NULL;
+	if (head->des.zmode == zmode)
+		head->des.zmode = NULL;
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
@@ -99,7 +99,7 @@ void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);
-			if (head->current.enabled) {
+			if (head->cur.enabled) {
 				head->overrided_enabled = OverrideFalse;
 			} else {
 				head->overrided_enabled = OverrideTrue;
@@ -128,11 +128,11 @@ void head_set_description(struct Head * const head, const char *description) {
 	}
 }
 
-void head_set_mode_pref(struct Head * const head, const struct zwlr_output_mode_v1* const zwlr_mode) {
-	const struct Mode *mode_cur_pref = ppmap_get(head->modes, head->zwlr_mode_pref);
-	const struct Mode *mode_new_pref = ppmap_get(head->modes, zwlr_mode);
+void head_set_mode_pref(struct Head * const head, const struct zwlr_output_mode_v1* const zmode) {
+	const struct Mode *mode_cur_pref = ppmap_get(head->modes, head->zmode_pref);
+	const struct Mode *mode_new_pref = ppmap_get(head->modes, zmode);
 
-	if (mode_cur_pref && mode_new_pref && head->zwlr_mode_pref != zwlr_mode) {
+	if (mode_cur_pref && mode_new_pref && head->zmode_pref != zmode) {
 		char *cur_str = mode_str_pref(mode_cur_pref, true);
 		char *new_str = mode_str_pref(mode_new_pref, false);
 
@@ -151,7 +151,7 @@ void head_set_mode_pref(struct Head * const head, const struct zwlr_output_mode_
 	}
 
 	// set new preferred
-	head->zwlr_mode_pref = zwlr_mode;
+	head->zmode_pref = zmode;
 }
 
 void heads_reapply(const struct PPmap *heads) {
@@ -175,7 +175,7 @@ void heads_reapply(const struct PPmap *heads) {
 				// add all failed back to modes
 				ppmap_put(head->modes, mit->key, mit->val);
 
-				char *str = mode_str_pref(mit->val, mit->key == head->zwlr_mode_pref);
+				char *str = mode_str_pref(mit->val, mit->key == head->zmode_pref);
 				log_info("      %s", str);
 				free(str);
 			}
@@ -185,8 +185,8 @@ void heads_reapply(const struct PPmap *heads) {
 			head->modes_failed = mode_ppmap_init();
 		}
 
-		if (head->current.enabled) {
-			char *str = mode_str_pref(ppmap_get(head->modes, head->current.zwlr_mode), head->current.zwlr_mode == head->zwlr_mode_pref);
+		if (head->cur.enabled) {
+			char *str = mode_str_pref(ppmap_get(head->modes, head->cur.zmode), head->cur.zmode == head->zmode_pref);
 			log_info("    %d: Enable with mode:", step++);
 			log_info("      %s", str);
 			free(str);
@@ -195,7 +195,7 @@ void heads_reapply(const struct PPmap *heads) {
 		}
 
 		head->reapply_required = true;
-		head->current.zwlr_mode = NULL;
+		head->cur.zmode = NULL;
 	}
 }
 
@@ -268,21 +268,21 @@ bool head_name_desc_matches_head(const char * const name_desc, const struct Head
 bool head_current_not_desired(const struct Head * const head, const void * const unused) {
 	return (head &&
 			(head->reapply_required ||
-			 head->desired.zwlr_mode != head->current.zwlr_mode ||
-			 head->desired.scale != head->current.scale ||
-			 head->desired.enabled != head->current.enabled ||
-			 head->desired.x != head->current.x ||
-			 head->desired.y != head->current.y ||
-			 head->desired.transform != head->current.transform ||
-			 head->desired.adaptive_sync != head->current.adaptive_sync));
+			 head->des.zmode != head->cur.zmode ||
+			 head->des.scale != head->cur.scale ||
+			 head->des.enabled != head->cur.enabled ||
+			 head->des.x != head->cur.x ||
+			 head->des.y != head->cur.y ||
+			 head->des.transform != head->cur.transform ||
+			 head->des.adaptive_sync != head->cur.adaptive_sync));
 }
 
 bool head_current_mode_not_desired(const struct Head * const head, const void * const unused) {
-	return (head && head->desired.zwlr_mode != head->current.zwlr_mode);
+	return (head && head->des.zmode != head->cur.zmode);
 }
 
 bool head_current_adaptive_sync_not_desired(const struct Head * const head, const void * const unused) {
-	return (head && head->desired.adaptive_sync != head->current.adaptive_sync);
+	return (head && head->des.adaptive_sync != head->cur.adaptive_sync);
 }
 
 bool head_reapply_required(const struct Head * const head, const void * const unused) {
@@ -324,12 +324,12 @@ wl_fixed_t head_auto_scale(const struct Head * const head, const double min, con
 
 	int32_t dpi_base = g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT;
 
-	if (!head->desired.zwlr_mode) {
+	if (!head->des.zmode) {
 		return head_get_fixed_scale(1.0);
 	}
 
 	// average dpi
-	double dpi = mode_dpi(ppmap_get(head->modes, head->desired.zwlr_mode), head->width_mm, head->height_mm);
+	double dpi = mode_dpi(ppmap_get(head->modes, head->des.zmode), head->width_mm, head->height_mm);
 	if (dpi == 0) {
 		return head_get_fixed_scale(1.0);
 	}
@@ -388,7 +388,7 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 
 	// always try preferred
 	if (!mode) {
-		const struct Mode *mode_pref = ppmap_get(head->modes, head->zwlr_mode_pref);
+		const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 		if (mode_pref) {
 			if (sset_find(g_cfg->max_preferred_refresh, (fn_2pred_str)head_name_desc_matches_head, head)) {
 				mode = mode_max_refresh(mode_pref, head->modes);
@@ -412,9 +412,9 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 
 	// last chance maximum
 	if (!mode) {
-		const struct zwlr_output_mode_v1 *zwlr_mode_max = head_max_mode(head);
-		if (zwlr_mode_max) {
-			return zwlr_mode_max;
+		const struct zwlr_output_mode_v1 *zmode_max = head_max_mode(head);
+		if (zmode_max) {
+			return zmode_max;
 		}
 
 		log_error(NULL);
@@ -431,22 +431,22 @@ const struct zwlr_output_mode_v1 *head_max_mode(const struct Head * const head) 
 	if (!head)
 		return NULL;
 
-	const struct zwlr_output_mode_v1 *zwlr_mode_max = NULL;
+	const struct zwlr_output_mode_v1 *zmode_max = NULL;
 
 	for (const struct PPmapIt *it = ppmap_it(head->modes); it; it = ppmap_it_next(it)) {
 
-		if (!zwlr_mode_max) {
-			zwlr_mode_max = it->key;
+		if (!zmode_max) {
+			zmode_max = it->key;
 			continue;
 		}
 
 		// TODO MODE tidy or move back to mode
 		const struct Mode *mode = it->val;
-		const struct Mode *mode_max = ppmap_get(head->modes, zwlr_mode_max);
+		const struct Mode *mode_max = ppmap_get(head->modes, zmode_max);
 
 		// highest resolution
 		if (mode->width * mode->height > mode_max->width * mode_max->height) {
-			zwlr_mode_max = it->key;
+			zmode_max = it->key;
 			continue;
 		}
 
@@ -454,19 +454,19 @@ const struct zwlr_output_mode_v1 *head_max_mode(const struct Head * const head) 
 		if (mode->width == mode_max->width &&
 				mode->height == mode_max->height &&
 				mode->refresh_mhz > mode_max->refresh_mhz) {
-			zwlr_mode_max = it->key;
+			zmode_max = it->key;
 			continue;
 		}
 	}
 
-	return zwlr_mode_max;
+	return zmode_max;
 }
 
-double head_scale(const struct Head * const head, const struct zwlr_output_mode_v1 * const zwlr_mode) {
+double head_scale(const struct Head * const head, const struct zwlr_output_mode_v1 * const zmode) {
 	if (!head)
 		return 1;
 
-	double dpi = mode_dpi(ppmap_get(head->modes, zwlr_mode), head->width_mm, head->height_mm);
+	double dpi = mode_dpi(ppmap_get(head->modes, zmode), head->width_mm, head->height_mm);
 
 	if (dpi == 0)
 		return 1;

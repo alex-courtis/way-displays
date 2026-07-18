@@ -526,8 +526,8 @@ void yaml_map_into_heads(struct UC *c, struct Pslist **heads, const yaml_node_t 
 
 	yaml_scalar_to_int      (c, &head->width_mm,    spmap_get(nodes, "WIDTH_MM"));
 	yaml_scalar_to_int      (c, &head->height_mm,   spmap_get(nodes, "HEIGHT_MM"));
-	yaml_map_into_head_state(c, &head->current,     spmap_get(nodes, "CURRENT"));
-	yaml_map_into_head_state(c, &head->desired,     spmap_get(nodes, "DESIRED"));
+	yaml_map_into_head_state(c, &head->cur,     spmap_get(nodes, "CURRENT"));
+	yaml_map_into_head_state(c, &head->des,     spmap_get(nodes, "DESIRED"));
 
 	const struct SPmap *nodes_overrides = yaml_map_to_spmap(c, spmap_get(nodes, "OVERRIDES"));
 	if (nodes_overrides) {

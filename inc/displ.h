@@ -60,9 +60,9 @@ void displ_delta_destroy(struct Displ *displ);
 void g_displ_destroy(void);
 
 // instantiate an arrived head
-void displ_add_head(const struct Displ *displ, struct zwlr_output_head_v1 *zwlr_head);
+void displ_add_head(const struct Displ *displ, struct zwlr_output_head_v1 *zhead);
 
 // remove and free a head, putting a head_dummy_init in g_displ->heads_departed
-void displ_finished_head(const struct Displ *displ, const struct zwlr_output_head_v1 * const zwlr_head);
+void displ_finished_head(const struct Displ *displ, const struct zwlr_output_head_v1 * const zhead);
 
 #endif // DISPL_H

@@ -21,13 +21,13 @@ char *delta_human(const struct PPmap * const heads) {
 		const struct Head * head = it->val;
 
 		// disable in own operation
-		if (head->current.enabled && !head->desired.enabled) {
+		if (head->cur.enabled && !head->des.enabled) {
 			delta = sprintf_append(delta, "%s\n  disabled\n", head_human(head));
 			continue;
 		}
 
 		// enable in own operation
-		if (!head->current.enabled && head->desired.enabled) {
+		if (!head->cur.enabled && head->des.enabled) {
 			delta = sprintf_append(delta, "%s\n  enabled\n", head_human(head));
 			continue;
 		}
@@ -35,24 +35,24 @@ char *delta_human(const struct PPmap * const heads) {
 		if (head_current_not_desired(head, NULL)) {
 			delta = sprintf_append(delta, "%s\n", head_human(head));
 
-			if (head->current.scale != head->desired.scale) {
+			if (head->cur.scale != head->des.scale) {
 				delta = sprintf_append(delta, "  scale:     %.3f -> %.3f\n",
-						wl_fixed_to_double(head->current.scale),
-						wl_fixed_to_double(head->desired.scale)
+						wl_fixed_to_double(head->cur.scale),
+						wl_fixed_to_double(head->des.scale)
 						);
 			}
 
-			if (head->current.transform != head->desired.transform) {
+			if (head->cur.transform != head->des.transform) {
 				delta = sprintf_append(delta, "  transform: %s -> %s\n",
-						head->current.transform ? transform_name(head->current.transform) : "none",
-						head->desired.transform ? transform_name(head->desired.transform) : "none"
+						head->cur.transform ? transform_name(head->cur.transform) : "none",
+						head->des.transform ? transform_name(head->des.transform) : "none"
 						);
 			}
 
-			if (head->current.x != head->desired.x || head->current.y != head->desired.y) {
+			if (head->cur.x != head->des.x || head->cur.y != head->des.y) {
 				delta = sprintf_append(delta, "  position:  %d,%d -> %d,%d\n",
-						head->current.x, head->current.y,
-						head->desired.x, head->desired.y
+						head->cur.x, head->cur.y,
+						head->des.x, head->des.y
 						);
 			}
 		}
@@ -80,7 +80,7 @@ char *delta_human_mode(const struct Head * const head) {
 			head_human(head)
 			);
 
-	const struct Mode *mode_cur = ppmap_get(head->modes, head->current.zwlr_mode);
+	const struct Mode *mode_cur = ppmap_get(head->modes, head->cur.zmode);
 	if (mode_cur) {
 		delta = sprintf_append(delta, "%dx%d@%dHz -> ",
 				mode_cur->width,
@@ -91,7 +91,7 @@ char *delta_human_mode(const struct Head * const head) {
 		delta = sprintf_append(delta, "(no mode) -> ");
 	}
 
-	const struct Mode *mode_des = ppmap_get(head->modes, head->desired.zwlr_mode);
+	const struct Mode *mode_des = ppmap_get(head->modes, head->des.zmode);
 	if (mode_des) {
 		delta = sprintf_append(delta, "%dx%d@%dHz",
 				mode_des->width,
@@ -113,7 +113,7 @@ char *delta_human_adaptive_sync(const struct Head * const head) {
 
 	return sprintf_append(NULL, "%s\n  VRR %s",
 			head_human(head),
-			head->desired.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
+			head->des.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off"
 			);
 }
 

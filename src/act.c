@@ -31,7 +31,7 @@ void act_handle_success(void) {
 		switch(g_displ->delta.element) {
 			case MODE:
 				// successful mode change is not always reported
-				head->current.zwlr_mode = head->desired.zwlr_mode;
+				head->cur.zmode = head->des.zmode;
 				break;
 
 			case VRR_OFF:
@@ -78,20 +78,20 @@ bool act_handle_cancelled(void) {
 void act_handle_failure(void) {
 	struct Head *head = g_displ->delta.head;
 
-	// TODO MODE consider putting data in delta, for zwlr_mode
+	// TODO MODE consider putting data in delta, for zmode
 	switch(g_displ->delta.element) {
 		case MODE:
 			if (head) {
-				const struct zwlr_output_mode_v1 *zwlr_mode = head->desired.zwlr_mode;
+				const struct zwlr_output_mode_v1 *zmode = head->des.zmode;
 
-				print_mode_fail(ERROR, head, zwlr_mode);
-				callback_mode_fail(ERROR, head, zwlr_mode);
+				print_mode_fail(ERROR, head, zmode);
+				callback_mode_fail(ERROR, head, zmode);
 
 				// move the mode to failed
-				ppmap_put(head->modes_failed, zwlr_mode, ppmap_remove(head->modes, zwlr_mode));
+				ppmap_put(head->modes_failed, zmode, ppmap_remove(head->modes, zmode));
 
 				// current mode may be misreported
-				head->current.zwlr_mode = NULL;
+				head->cur.zmode = NULL;
 			}
 
 			break;
@@ -137,7 +137,7 @@ void act_apply(void) {
 	}
 
 	// create and start the listener
-	struct zwlr_output_configuration_v1 *zwlr_config = create_zwlr_output_config_listener(g_displ);
+	struct zwlr_output_configuration_v1 *zconfig = create_zwlr_output_config_listener(g_displ);
 
 	struct PPmapPair pair;
 	struct Head *head;
@@ -151,7 +151,7 @@ void act_apply(void) {
 
 		print_head(INFO, DELTA, head);
 
-		_zwlr_output_configuration_v1_disable_head(zwlr_config, (struct zwlr_output_head_v1*)pair.key);
+		_zwlr_output_configuration_v1_disable_head(zconfig, (struct zwlr_output_head_v1*)pair.key);
 
 		g_displ->delta.human = delta_human_reapply(head);
 
@@ -170,8 +170,8 @@ void act_apply(void) {
 		print_head(INFO, DELTA, head);
 
 		// mode change in its own operation; mode change desire is always enabled
-		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, (struct zwlr_output_head_v1*)pair.key);
-		_zwlr_output_configuration_head_v1_set_mode(head->zwlr_config_head, (struct zwlr_output_mode_v1*)head->desired.zwlr_mode);
+		head->zconfig = _zwlr_output_configuration_v1_enable_head(zconfig, (struct zwlr_output_head_v1*)pair.key);
+		_zwlr_output_configuration_head_v1_set_mode(head->zconfig, (struct zwlr_output_mode_v1*)head->des.zmode);
 
 		g_displ->delta.human = delta_human_mode(head);
 
@@ -188,8 +188,8 @@ void act_apply(void) {
 		print_head(INFO, DELTA, head);
 
 		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
-		head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, (struct zwlr_output_head_v1*)pair.key);
-		_zwlr_output_configuration_head_v1_set_adaptive_sync(head->zwlr_config_head, head->desired.adaptive_sync);
+		head->zconfig = _zwlr_output_configuration_v1_enable_head(zconfig, (struct zwlr_output_head_v1*)pair.key);
+		_zwlr_output_configuration_head_v1_set_adaptive_sync(head->zconfig, head->des.adaptive_sync);
 
 		g_displ->delta.human = delta_human_adaptive_sync(head);
 
@@ -206,13 +206,13 @@ void act_apply(void) {
 		for (const struct PPmapIt *it = ppmap_it(heads_changing); it; it = ppmap_it_next(it)) {
 			head = (struct Head*)it->val;
 
-			if (head->desired.enabled) {
-				head->zwlr_config_head = _zwlr_output_configuration_v1_enable_head(zwlr_config, (void*)it->key);
-				_zwlr_output_configuration_head_v1_set_scale(head->zwlr_config_head, head->desired.scale);
-				_zwlr_output_configuration_head_v1_set_position(head->zwlr_config_head, head->desired.x, head->desired.y);
-				_zwlr_output_configuration_head_v1_set_transform(head->zwlr_config_head, head->desired.transform);
+			if (head->des.enabled) {
+				head->zconfig = _zwlr_output_configuration_v1_enable_head(zconfig, (void*)it->key);
+				_zwlr_output_configuration_head_v1_set_scale(head->zconfig, head->des.scale);
+				_zwlr_output_configuration_head_v1_set_position(head->zconfig, head->des.x, head->des.y);
+				_zwlr_output_configuration_head_v1_set_transform(head->zconfig, head->des.transform);
 			} else {
-				_zwlr_output_configuration_v1_disable_head(zwlr_config, (void*)it->key);
+				_zwlr_output_configuration_v1_disable_head(zconfig, (void*)it->key);
 			}
 		}
 
@@ -220,7 +220,7 @@ void act_apply(void) {
 	}
 
 apply:
-	_zwlr_output_configuration_v1_apply(zwlr_config);
+	_zwlr_output_configuration_v1_apply(zconfig);
 
 	g_displ->state = OUTSTANDING;
 

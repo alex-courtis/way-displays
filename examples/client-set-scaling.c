@@ -58,8 +58,8 @@ main(int argc, char **argv) {
 			// inspect head state
 			for (struct Pslist *j = response->heads; j; j = j->nex) {
 				struct Head *head = j->val;
-				float scale_current = wl_fixed_to_double(head->current.scale);
-				float scale_desired = wl_fixed_to_double(head->desired.scale);
+				float scale_current = wl_fixed_to_double(head->cur.scale);
+				float scale_desired = wl_fixed_to_double(head->des.scale);
 
 				log_info("%s", head->description);
 				if (scale_current == scale_desired) {

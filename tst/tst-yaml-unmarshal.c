@@ -441,19 +441,19 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_str_equal(head->model, "model");
 	assert_str_equal(head->serial_number, "serial");
 
-	assert_int_equal(head->current.scale, wl_fixed_from_double(4));
-	assert_true(head->current.enabled);
-	assert_int_equal(head->current.x, 5);
-	assert_int_equal(head->current.y, 6);
-	assert_int_equal(head->current.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
+	assert_int_equal(head->cur.scale, wl_fixed_from_double(4));
+	assert_true(head->cur.enabled);
+	assert_int_equal(head->cur.x, 5);
+	assert_int_equal(head->cur.y, 6);
+	assert_int_equal(head->cur.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED);
 
-	assert_int_equal(head->desired.scale, wl_fixed_from_double(7.0));
-	assert_true(head->desired.enabled);
-	assert_int_equal(head->desired.x, 8);
-	assert_int_equal(head->desired.y, 9);
-	assert_int_equal(head->desired.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
+	assert_int_equal(head->des.scale, wl_fixed_from_double(7.0));
+	assert_true(head->des.enabled);
+	assert_int_equal(head->des.x, 8);
+	assert_int_equal(head->des.y, 9);
+	assert_int_equal(head->des.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
-	// TODO MODE test marshalled
+	// TODO mode test marshalled
 	// const struct Mode *mode_current = head->current.mode;
 	// assert_non_nul(mode_current);
 	// assert_int_equal(mode_current->width, 10);
@@ -485,7 +485,7 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	assert_nul(ppmap_it_next(it));
 
-	// TODO MODE test marshalled
+	// TODO mode test marshalled
 	// const struct Mode *mode_pref = head->mode_pref;
 	// assert_non_nul(mode_pref);
 	// assert_int_equal(mode_pref->width, 10);
@@ -501,8 +501,8 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(mode_failed->height, 17);
 	assert_int_equal(mode_failed->refresh_mhz, 18);
 
-	assert_int_equal(head->current.transform, 3);
-	assert_int_equal(head->desired.transform, 4);
+	assert_int_equal(head->cur.transform, 3);
+	assert_int_equal(head->des.transform, 4);
 
 	assert_nul(ppmap_it_next(it));
 

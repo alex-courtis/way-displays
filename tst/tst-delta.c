@@ -30,46 +30,46 @@ int before_each(void **state) {
 	s->head1 = head_n("name1");
 	s->head1->description = strdup("description1");
 
-	s->head1->current.scale = 512;
-	s->head1->current.enabled = true;
-	s->head1->current.x = 700;
-	s->head1->current.y = 800;
-	s->head1->current.transform = WL_OUTPUT_TRANSFORM_180;
-	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head1->cur.scale = 512;
+	s->head1->cur.enabled = true;
+	s->head1->cur.x = 700;
+	s->head1->cur.y = 800;
+	s->head1->cur.transform = WL_OUTPUT_TRANSFORM_180;
+	s->head1->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	ppmap_put(s->head1->modes, M0, mode_whr(100, 200, 30000));
-	s->head1->current.zwlr_mode = M0;
+	s->head1->cur.zmode = M0;
 
-	s->head1->desired.scale = 1024;
-	s->head1->desired.enabled = true;
-	s->head1->desired.x = 900;
-	s->head1->desired.y = 1000;
-	s->head1->desired.transform = WL_OUTPUT_TRANSFORM_90;
-	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head1->des.scale = 1024;
+	s->head1->des.enabled = true;
+	s->head1->des.x = 900;
+	s->head1->des.y = 1000;
+	s->head1->des.transform = WL_OUTPUT_TRANSFORM_90;
+	s->head1->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	ppmap_put(s->head1->modes, M1, mode_whr(400, 500, 60000));
-	s->head1->desired.zwlr_mode = M1;
+	s->head1->des.zmode = M1;
 
 	ppmap_put(s->heads, H1, s->head1);
 
 
 	s->head2 = head_n("name2");
 
-	s->head2->current.scale = 2048;
-	s->head2->current.enabled = true;
-	s->head2->current.x = 1700;
-	s->head2->current.y = 1800;
-	s->head2->current.transform = WL_OUTPUT_TRANSFORM_270;
-	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	s->head2->cur.scale = 2048;
+	s->head2->cur.enabled = true;
+	s->head2->cur.x = 1700;
+	s->head2->cur.y = 1800;
+	s->head2->cur.transform = WL_OUTPUT_TRANSFORM_270;
+	s->head2->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	ppmap_put(s->head2->modes, M0, mode_whr(1100, 1200, 130000));
-	s->head2->current.zwlr_mode = M0;
+	s->head2->cur.zmode = M0;
 
-	s->head2->desired.scale = 4096;
-	s->head2->desired.enabled = true;
-	s->head2->desired.x = 1900;
-	s->head2->desired.y = 11000;
-	s->head2->desired.transform = WL_OUTPUT_TRANSFORM_NORMAL;
-	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head2->des.scale = 4096;
+	s->head2->des.enabled = true;
+	s->head2->des.x = 1900;
+	s->head2->des.y = 11000;
+	s->head2->des.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	s->head2->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	ppmap_put(s->head2->modes, M1, mode_whr(1400, 1500, 160000));
-	s->head2->desired.zwlr_mode = M1;
+	s->head2->des.zmode = M1;
 
 	ppmap_put(s->heads, H2, s->head2);
 
@@ -103,7 +103,7 @@ static void delta_human_mode__to_mode(void **state) {
 static void delta_human_mode__to_no(void **state) {
 	struct State *s = *state;
 
-	s->head1->desired.zwlr_mode = NULL;
+	s->head1->des.zmode = NULL;
 
 	char *deltas = delta_human_mode(s->head1);
 
@@ -118,7 +118,7 @@ static void delta_human_mode__to_no(void **state) {
 static void delta_human_mode__from_no(void **state) {
 	struct State *s = *state;
 
-	s->head2->current.zwlr_mode = NULL;
+	s->head2->cur.zmode = NULL;
 
 	char *deltas = delta_human_mode(s->head2);
 
@@ -133,8 +133,8 @@ static void delta_human_mode__from_no(void **state) {
 static void delta_human_adaptive_sync__on(void **state) {
 	struct State *s = *state;
 
-	s->head1->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	s->head1->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	s->head1->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head1->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 
 	char *deltas = delta_human_adaptive_sync(s->head1);
 
@@ -149,8 +149,8 @@ static void delta_human_adaptive_sync__on(void **state) {
 static void delta_human_adaptive_sync__off(void **state) {
 	struct State *s = *state;
 
-	s->head2->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	s->head2->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	s->head2->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	s->head2->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	char *deltas = delta_human_adaptive_sync(s->head2);
 
@@ -198,11 +198,11 @@ static void delta_human__all(void **state) {
 static void delta_human__enabled(void **state) {
 	struct State *s = *state;
 
-	s->head1->current.enabled = false;
-	s->head1->desired.enabled = true;
+	s->head1->cur.enabled = false;
+	s->head1->des.enabled = true;
 
-	s->head2->current.enabled = false;
-	s->head2->desired.enabled = true;
+	s->head2->cur.enabled = false;
+	s->head2->des.enabled = true;
 
 	char *deltas = delta_human(s->heads);
 
@@ -217,11 +217,11 @@ static void delta_human__enabled(void **state) {
 static void delta_human__disabled(void **state) {
 	struct State *s = *state;
 
-	s->head1->current.enabled = true;
-	s->head1->desired.enabled = false;
+	s->head1->cur.enabled = true;
+	s->head1->des.enabled = false;
 
-	s->head2->current.enabled = true;
-	s->head2->desired.enabled = false;
+	s->head2->cur.enabled = true;
+	s->head2->des.enabled = false;
 
 	char *deltas = delta_human(s->heads);
 

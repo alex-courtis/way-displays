@@ -40,8 +40,8 @@ int before_each(void **state) {
 			MC, mode_whr(100, 200, 30000),
 			MD, mode_whr(400, 500, 60000),
 			NULL);
-	s->head1->current.zwlr_mode = MC;
-	s->head1->desired.zwlr_mode = MD;
+	s->head1->cur.zmode = MC;
+	s->head1->des.zmode = MD;
 
 	*state = s;
 	return 0;
@@ -143,7 +143,7 @@ static void callback_mode_fail__(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	s->head1->zwlr_mode_pref = MD;
+	s->head1->zmode_pref = MD;
 
 	const struct SSmap *expected_env = ssmap_init();
 	ssmap_put_many(expected_env,
@@ -158,7 +158,7 @@ static void callback_mode_fail__(void **state) {
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_ssmap(__wrap_spawn_sh_cmd, env, expected_env);
 
-	callback_mode_fail(INFO, s->head1, s->head1->desired.zwlr_mode);
+	callback_mode_fail(INFO, s->head1, s->head1->des.zmode);
 
 	char *env_str = ssmap_str(expected_env);
 	char *log_str = sprintf_alloc("\nExecuting CALLBACK_CMD:\n  command\n%s\n", env_str);

@@ -171,28 +171,28 @@ struct IpcOperation *ipc_response(void) {
 	head0->serial_number = strdup("serial");
 	head0->overrided_enabled = true;
 
-	head0->current.scale = wl_fixed_from_double(4.0);
-	head0->current.enabled = true;
-	head0->current.x = 5;
-	head0->current.y = 6;
-	head0->current.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	head0->current.transform = WL_OUTPUT_TRANSFORM_270;
+	head0->cur.scale = wl_fixed_from_double(4.0);
+	head0->cur.enabled = true;
+	head0->cur.x = 5;
+	head0->cur.y = 6;
+	head0->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head0->cur.transform = WL_OUTPUT_TRANSFORM_270;
 
 	const struct Mode *mode_cur = mode_whr(10, 11, 12);
 	ppmap_put(head0->modes, MC, mode_cur);
-	head0->zwlr_mode_pref = MC;
-	head0->current.zwlr_mode = MC;
-	head0->desired.zwlr_mode = MD;
+	head0->zmode_pref = MC;
+	head0->cur.zmode = MC;
+	head0->des.zmode = MD;
 
-	head0->desired.scale = wl_fixed_from_double(7.0);
-	head0->desired.enabled = true;
-	head0->desired.x = 8;
-	head0->desired.y = 9;
-	head0->desired.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	head0->desired.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
+	head0->des.scale = wl_fixed_from_double(7.0);
+	head0->des.enabled = true;
+	head0->des.x = 8;
+	head0->des.y = 9;
+	head0->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head0->des.transform = WL_OUTPUT_TRANSFORM_FLIPPED;
 
 	ppmap_put(head0->modes, MD, mode_whr(13, 14, 15));
-	head0->desired.zwlr_mode = MD;
+	head0->des.zmode = MD;
 
 	ppmap_put(head0->modes_failed, M0, mode_whr(16, 17, 18));
 
