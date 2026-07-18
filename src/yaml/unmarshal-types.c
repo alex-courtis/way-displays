@@ -517,17 +517,24 @@ void yaml_map_into_heads(struct UC *c, struct Pslist **heads, const yaml_node_t 
 	head->make           = yaml_scalar_to_string(c, spmap_get(nodes, "MAKE"));
 	head->model          = yaml_scalar_to_string(c, spmap_get(nodes, "MODEL"));
 	head->serial_number  = yaml_scalar_to_string(c, spmap_get(nodes, "SERIAL_NUMBER"));
+	yaml_scalar_to_int      (c, &head->width_mm,    spmap_get(nodes, "WIDTH_MM"));
+	yaml_scalar_to_int      (c, &head->height_mm,   spmap_get(nodes, "HEIGHT_MM"));
 
 	yaml_seq_into_col(c, spmap_get(nodes, "MODES"),        head->modes,        (fn_yaml_node_into_col)yaml_map_into_modes);
 	yaml_seq_into_col(c, spmap_get(nodes, "MODES_FAILED"), head->modes_failed, (fn_yaml_node_into_col)yaml_map_into_modes);
 
-	// TODO MODE lookup a mode in modes
-	// head->mode_preferred = yaml_map_to_mode     (c, spmap_get(nodes, "MODE_PREFERRED"));
+	// find MODE_PREFERRED in MODES/MODES_FAILED and assign the key
+	struct Mode *mode_pref = yaml_map_to_mode(c, spmap_get(nodes, "MODE_PREFERRED"));
+	if (mode_pref) {
+		head->zmode_pref = ppmap_find_val(head->modes, (fn_2pred)mode_equal, mode_pref).key;
+		if (!head->zmode_pref) {
+			head->zmode_pref = ppmap_find_val(head->modes_failed, (fn_2pred)mode_equal, mode_pref).key;
+		}
+		mode_free(mode_pref);
+	}
 
-	yaml_scalar_to_int      (c, &head->width_mm,    spmap_get(nodes, "WIDTH_MM"));
-	yaml_scalar_to_int      (c, &head->height_mm,   spmap_get(nodes, "HEIGHT_MM"));
-	yaml_map_into_head_state(c, &head->cur,     spmap_get(nodes, "CURRENT"));
-	yaml_map_into_head_state(c, &head->des,     spmap_get(nodes, "DESIRED"));
+	yaml_map_into_head_state(c, &head->cur, head, spmap_get(nodes, "CURRENT"));
+	yaml_map_into_head_state(c, &head->des, head, spmap_get(nodes, "DESIRED"));
 
 	const struct SPmap *nodes_overrides = yaml_map_to_spmap(c, spmap_get(nodes, "OVERRIDES"));
 	if (nodes_overrides) {
@@ -604,7 +611,7 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map) {
+void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const struct Head * const head, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
@@ -624,8 +631,15 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	if (yaml_scalar_to_boolean(c, &vrr, spmap_get(nodes, "VRR")))
 		head_state->adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
-	// TODO MODE lookup a mode in modes, passed in
-	// head_state->mode = yaml_map_to_mode(c, spmap_get(nodes, "MODE"));
+	// find MODE in MODES/MODES_FAILED and assign the key
+	struct Mode *mode = yaml_map_to_mode(c, spmap_get(nodes, "MODE"));
+	if (mode) {
+		head_state->zmode = ppmap_find_val(head->modes, (fn_2pred)mode_equal, mode).key;
+		if (!head_state->zmode) {
+			head_state->zmode = ppmap_find_val(head->modes_failed, (fn_2pred)mode_equal, mode).key;
+		}
+		mode_free(mode);
+	}
 
 	spmap_free(nodes);
 

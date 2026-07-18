@@ -39,7 +39,7 @@ void yaml_map_into_transforms   (struct UC *c, const struct SImap* const transfo
 void yaml_node_into_disableds   (struct UC *c, const struct Pset* const disableds,   const yaml_node_t *node); // scalar or map
 
 // into an existing HeadState struct
-void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const yaml_node_t *map);
+void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const struct Head * const head, const yaml_node_t *map);
 
 // unmarshal a scalar to a name_desc, validating regex
 char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar);

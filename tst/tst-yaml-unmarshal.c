@@ -453,18 +453,17 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 	assert_int_equal(head->des.y, 9);
 	assert_int_equal(head->des.adaptive_sync, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED);
 
-	// TODO mode test marshalled
-	// const struct Mode *mode_current = head->current.mode;
-	// assert_non_nul(mode_current);
-	// assert_int_equal(mode_current->width, 10);
-	// assert_int_equal(mode_current->height, 11);
-	// assert_int_equal(mode_current->refresh_mhz, 12);
-	//
-	// const struct Mode *mode_desired = head->desired.mode;
-	// assert_non_nul(mode_desired);
-	// assert_int_equal(mode_desired->width, 13);
-	// assert_int_equal(mode_desired->height, 14);
-	// assert_int_equal(mode_desired->refresh_mhz, 15);
+	const struct Mode *mode_current = ppmap_get(head->modes, head->cur.zmode);
+	assert_non_nul(mode_current);
+	assert_int_equal(mode_current->width, 10);
+	assert_int_equal(mode_current->height, 11);
+	assert_int_equal(mode_current->refresh_mhz, 12);
+
+	const struct Mode *mode_desired = ppmap_get(head->modes, head->des.zmode);
+	assert_non_nul(mode_desired);
+	assert_int_equal(mode_desired->width, 13);
+	assert_int_equal(mode_desired->height, 14);
+	assert_int_equal(mode_desired->refresh_mhz, 15);
 
 	assert_int_equal(ppmap_size(head->modes), 2);
 	const struct PPmapIt *it = ppmap_it(head->modes);
@@ -485,12 +484,11 @@ static void yaml_root_to_ipc_response_list__map(void **state) {
 
 	assert_nul(ppmap_it_next(it));
 
-	// TODO mode test marshalled
-	// const struct Mode *mode_pref = head->mode_pref;
-	// assert_non_nul(mode_pref);
-	// assert_int_equal(mode_pref->width, 10);
-	// assert_int_equal(mode_pref->height, 11);
-	// assert_int_equal(mode_pref->refresh_mhz, 12);
+	const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
+	assert_non_nul(mode_pref);
+	assert_int_equal(mode_pref->width, 10);
+	assert_int_equal(mode_pref->height, 11);
+	assert_int_equal(mode_pref->refresh_mhz, 12);
 
 	assert_int_equal(ppmap_size(head->modes_failed), 1);
 	it = ppmap_it(head->modes_failed);
