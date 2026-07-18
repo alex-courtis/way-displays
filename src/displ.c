@@ -64,7 +64,7 @@ void displ_free(struct Displ *displ) {
 	if (!displ)
 		return;
 
-	displ_delta_destroy(g_displ);
+	displ_delta_destroy(displ);
 
 	ipmap_free_vals(displ->outputs);
 
@@ -80,7 +80,7 @@ void displ_free(struct Displ *displ) {
 }
 
 void displ_delta_init(struct Displ *displ, enum CfgElement element, struct Head *head, const struct zwlr_output_mode_v1 *zmode) {
-	displ_delta_destroy(g_displ);
+	displ_delta_destroy(displ);
 
 	displ->delta.element = element;
 

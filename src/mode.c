@@ -115,19 +115,10 @@ char *mode_str_pref(const struct Mode * const mode, bool pref) {
 
 
 char *mode_str(const struct Mode * const mode) {
-	if (!mode)
-		return NULL;
-
-	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)",
-			mode->width,
-			mode->height,
-			mode_hz_rounded(mode),
-			mode->refresh_mhz / 1000,
-			mode->refresh_mhz % 1000
-			);
+	return mode_str_pref(mode, false);
 }
 
-char *mode_str_brief(const struct Mode * const mode) {
+char *mode_str_cfg(const struct Mode * const mode) {
 	if (!mode)
 		return NULL;
 

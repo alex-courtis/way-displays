@@ -72,8 +72,8 @@ char *mode_str(const struct Mode * const mode);
 // WxH@Hz (mHz) (preferred)
 char *mode_str_pref(const struct Mode * const mode, bool pref);
 
-// MAX, WxH@Hz, WxH
-char *mode_str_brief(const struct Mode * const mode);
+// MAX or WxH@Hz or WxH
+char *mode_str_cfg(const struct Mode * const mode);
 
 /*
  * predicates

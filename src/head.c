@@ -375,7 +375,7 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 		if (!mode && !cfg_mode->warned_no_mode) {
 			cfg_mode->warned_no_mode = true;
 
-			char *um = mode_str_brief(cfg_mode);
+			char *um = mode_str_cfg(cfg_mode);
 
 			log_warn(NULL);
 			log_warn("%s: No available mode for user MODE %s, falling back to preferred", head->name, um);
@@ -389,7 +389,7 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 		}
 	}
 
-	// always try preferred
+	// try preferred
 	if (!mode) {
 		const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 		if (mode_pref) {
@@ -413,15 +413,9 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 		}
 	}
 
-	// last chance maximum
+	// maximum; we have already checked that modes are available
 	if (!mode) {
 		mode = mode_max(head->modes);
-	}
-
-	if (!mode) {
-		log_error(NULL);
-		log_error("No mode for %s, disabling.", head_human(head));
-		callback(ERROR, head_human(head), "\n  No mode, disabling");
 	}
 
 	return ppmap_find_val(head->modes, equal_ptr, mode).key;

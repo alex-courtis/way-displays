@@ -32,7 +32,7 @@ static void print_mode_cfg(const enum LogThreshold t, const char * name_desc, co
 	if (del) {
 		log_(t, "    %s", name_desc);
 	} else {
-		char *um_str = mode_str_brief(mode);
+		char *um_str = mode_str_cfg(mode);
 		log_(t, "    %s: %s", name_desc, um_str);
 		free(um_str);
 	}
