@@ -228,13 +228,10 @@ apply:
 
 void act(void) {
 	print_head_set(INFO, ARRIVED, g_displ->heads_arrived);
-	// TODO c-lib need a clear collection
-	pset_free(g_displ->heads_arrived);
-	g_displ->heads_arrived = head_pset_init();
+	pset_remove_all(g_displ->heads_arrived);
 
 	print_head_set(INFO, DEPARTED, g_displ->heads_departed);
-	pset_free_vals(g_displ->heads_departed);
-	g_displ->heads_departed = head_pset_init();
+	pset_remove_all_free(g_displ->heads_departed);
 
 	print_head_queue(FATAL, g_displ, "act started");
 

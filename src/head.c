@@ -183,6 +183,7 @@ void heads_reapply(const struct PPmap *heads) {
 				free(str);
 			}
 
+			// TODO c-lib map remove_all
 			// clear failed
 			ppmap_free(head->modes_failed);
 			head->modes_failed = mode_ppmap_init();
@@ -418,6 +419,7 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 		mode = mode_max(head->modes);
 	}
 
+	// TODO c-lib map map_first_key
 	return ppmap_find_val(head->modes, equal_ptr, mode).key;
 }
 

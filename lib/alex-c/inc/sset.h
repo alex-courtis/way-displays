@@ -84,6 +84,9 @@ size_t sset_add_all(const struct Sset* const set, const struct Sset* const from)
 // if the set contains val, remove it, free it and return true
 bool sset_remove(const struct Sset* const set, const char* const val);
 
+// remove all vals, returning number removed
+size_t sset_remove_all(const struct Sset* const set);
+
 // remove vals contained in from, return number removed
 size_t sset_remove_from(const struct Sset* const set, const struct Sset* const from);
 

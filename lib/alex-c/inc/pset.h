@@ -102,6 +102,12 @@ bool pset_remove(const struct Pset* const set, const void* const val);
 // if the set contains val, remove it, free it and return true [equal_val, alloc_val, free_val]
 bool pset_remove_free(const struct Pset* const set, const void* const val);
 
+// remove all vals, returning number removed
+size_t pset_remove_all(const struct Pset* const set);
+
+// remove all vals and free, returning number removed [free_val]
+size_t pset_remove_all_free(const struct Pset* const set);
+
 // remove vals contained in from, return number removed [equal_val]
 size_t pset_remove_from(const struct Pset* const set, const struct Pset* const from);
 

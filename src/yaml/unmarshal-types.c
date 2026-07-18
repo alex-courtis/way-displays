@@ -632,6 +632,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 
 	// find MODE in MODES/MODES_FAILED and assign the key
 	struct Mode *mode = yaml_map_to_mode(c, spmap_get(nodes, "MODE"));
+	// TODO c-lib map map_first_key
 	if (mode) {
 		head_state->zmode = ppmap_find_val(head->modes, (fn_2pred)mode_equal, mode).key;
 		if (!head_state->zmode) {
