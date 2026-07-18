@@ -31,7 +31,7 @@ void act_handle_success(void) {
 		switch(g_displ->delta.element) {
 			case MODE:
 				// successful mode change is not always reported
-				head->cur.zmode = head->des.zmode;
+				head->cur.zmode = g_displ->delta.zmode;
 				break;
 
 			case VRR_OFF:
@@ -147,7 +147,7 @@ void act_apply(void) {
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 
-		displ_delta_init(g_displ, 0, head);
+		displ_delta_init(g_displ, 0, head, NULL);
 
 		print_head(INFO, DELTA, head);
 
@@ -165,7 +165,7 @@ void act_apply(void) {
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 
-		displ_delta_init(g_displ, MODE, head);
+		displ_delta_init(g_displ, MODE, head, head->des.zmode);
 
 		print_head(INFO, DELTA, head);
 
@@ -183,7 +183,7 @@ void act_apply(void) {
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 
-		displ_delta_init(g_displ, VRR_OFF, head);
+		displ_delta_init(g_displ, VRR_OFF, head, NULL);
 
 		print_head(INFO, DELTA, head);
 
@@ -198,7 +198,7 @@ void act_apply(void) {
 
 	// otherwise apply everything else
 	{
-		displ_delta_init(g_displ, 0, NULL);
+		displ_delta_init(g_displ, 0, NULL, NULL);
 
 		print_head_map(INFO, DELTA, heads_changing);
 

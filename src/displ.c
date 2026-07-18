@@ -79,12 +79,13 @@ void displ_free(struct Displ *displ) {
 	free(displ);
 }
 
-void displ_delta_init(struct Displ *displ, enum CfgElement element, struct Head *head) {
+void displ_delta_init(struct Displ *displ, enum CfgElement element, struct Head *head, const struct zwlr_output_mode_v1 *zmode) {
 	displ_delta_destroy(g_displ);
 
 	displ->delta.element = element;
 
 	displ->delta.head = head;
+	displ->delta.zmode = zmode;
 }
 
 void displ_delta_destroy(struct Displ *displ) {
@@ -92,6 +93,7 @@ void displ_delta_destroy(struct Displ *displ) {
 	displ->delta.element = 0;
 
 	displ->delta.head = NULL;
+	displ->delta.zmode = NULL;
 
 	free(displ->delta.human);
 	displ->delta.human = NULL;

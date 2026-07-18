@@ -11,9 +11,10 @@
 extern struct Displ *g_displ;
 
 struct DisplDelta {
-	enum CfgElement element; // 0 for many changes, VRR_OFF indicates toggle
-	struct Head *head;       // only when element set
-	char *human;             // collected for callbacks
+	enum CfgElement element;                 // 0 for many changes, VRR_OFF indicates toggle
+	struct Head *head;                       // only when element set
+	const struct zwlr_output_mode_v1 *zmode; // only for MODE
+	char *human;                             // collected for callbacks
 };
 
 struct Displ {
@@ -52,7 +53,7 @@ void g_displ_init(void);
 // free outputs and delta
 void displ_free(struct Displ *displ);
 
-void displ_delta_init(struct Displ *displ, enum CfgElement element, struct Head *head);
+void displ_delta_init(struct Displ *displ, enum CfgElement element, struct Head *head, const struct zwlr_output_mode_v1 *zmode);
 
 void displ_delta_destroy(struct Displ *displ);
 

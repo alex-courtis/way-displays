@@ -55,6 +55,7 @@ static void act_apply__no_changes(void **state) {
 
 	assert_int_equal(g_displ->delta.element, 0);
 	assert_nul(g_displ->delta.head);
+	assert_nul(g_displ->delta.zmode);
 	assert_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, IDLE);
 }
@@ -83,6 +84,7 @@ static void act_apply__reapply(void **state) {
 
 	assert_int_equal(g_displ->delta.element, 0);
 	assert_ptr_equal(g_displ->delta.head, head);
+	assert_nul(g_displ->delta.zmode);
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
@@ -121,6 +123,7 @@ static void act_apply__mode(void **state) {
 
 	assert_int_equal(g_displ->delta.element, MODE);
 	assert_ptr_equal(g_displ->delta.head, head);
+	assert_ptr_equal(g_displ->delta.zmode, zmode);
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
@@ -156,6 +159,7 @@ static void act_apply__vrr(void **state) {
 
 	assert_int_equal(g_displ->delta.element, VRR_OFF);
 	assert_ptr_equal(g_displ->delta.head, head);
+	assert_nul(g_displ->delta.zmode);
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
@@ -187,6 +191,7 @@ static void act_apply__disable(void **state) {
 
 	assert_int_equal(g_displ->delta.element, 0);
 	assert_nul(g_displ->delta.head);
+	assert_nul(g_displ->delta.zmode);
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
@@ -234,6 +239,7 @@ static void act_apply__remainder(void **state) {
 
 	assert_int_equal(g_displ->delta.element, 0);
 	assert_nul(g_displ->delta.head);
+	assert_nul(g_displ->delta.zmode);
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
@@ -285,7 +291,7 @@ static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
 }
 
 static void act_handle_success__head_changing_mode(void **state) {
-	const struct zwlr_output_mode_v1 *zmode = (struct zwlr_output_mode_v1*)"dummy1";
+	struct zwlr_output_mode_v1 *zmode = (struct zwlr_output_mode_v1*)"dummy1";
 
 	struct Head *head = head_n("head");
 
@@ -295,6 +301,7 @@ static void act_handle_success__head_changing_mode(void **state) {
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
+	g_displ->delta.zmode = zmode;
 
 	expect_int_value(__wrap_callback, t, INFO);
 	expect_str(__wrap_callback, msg1, "Changes successful");
