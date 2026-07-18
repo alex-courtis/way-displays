@@ -63,12 +63,11 @@ static void act_apply__no_changes(void **state) {
 }
 
 static void act_apply__reapply(void **state) {
-	struct zwlr_output_head_v1 *zhead = (struct zwlr_output_head_v1*)"dummy";
 	struct zwlr_output_configuration_v1 *zconfig = (struct zwlr_output_configuration_v1*)"dummy";
 
 	struct Head *head = head_init();
 	head->reapply_required = true;
-	ppmap_put(g_displ->heads, zhead, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zconfig, struct zwlr_output_configuration_v1*);
@@ -78,7 +77,7 @@ static void act_apply__reapply(void **state) {
 	expect_ptr(__wrap_print_head, head, head);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, zwlr_output_configuration_v1, zconfig);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, zhead);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, H0);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zconfig);
 
@@ -96,16 +95,14 @@ static void act_apply__reapply(void **state) {
 }
 
 static void act_apply__mode(void **state) {
-	struct zwlr_output_head_v1 *zhead = (struct zwlr_output_head_v1*)"dummy1";
-	struct zwlr_output_mode_v1 *zmode = (struct zwlr_output_mode_v1*)"dummy2";
 	struct zwlr_output_configuration_v1 *zconfig = (struct zwlr_output_configuration_v1*)"dummy3";
 	struct zwlr_output_configuration_head_v1 *zconfig_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
 
 	struct Head *head = head_init();
-	ppmap_put(g_displ->heads, zhead, head);
+	ppmap_put(g_displ->heads, H0, head);
 
-	ppmap_put(head->modes, zmode, mode_init());
-	head->des.zmode = zmode;
+	ppmap_put(head->modes, MD, mode_init());
+	head->des.zmode = MD;
 
 	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zconfig, struct zwlr_output_configuration_v1*);
@@ -115,11 +112,11 @@ static void act_apply__mode(void **state) {
 	expect_ptr(__wrap_print_head, head, head);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zconfig);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, zhead);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, H0);
 	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zconfig_head, struct zwlr_output_configuration_head_v1*);
 
 	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, zwlr_output_configuration_head_v1, zconfig_head);
-	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, mode, zmode);
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_mode, mode, MD);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zconfig);
 
@@ -127,7 +124,7 @@ static void act_apply__mode(void **state) {
 
 	assert_int_equal(g_displ->delta.element, MODE);
 	assert_ptr_equal(g_displ->delta.head, head);
-	assert_ptr_equal(g_displ->delta.zmode, zmode);
+	assert_ptr_equal(g_displ->delta.zmode, MD);
 	assert_non_nul(g_displ->delta.human);
 	assert_int_equal(g_displ->state, OUTSTANDING);
 
@@ -137,13 +134,12 @@ static void act_apply__mode(void **state) {
 }
 
 static void act_apply__vrr(void **state) {
-	struct zwlr_output_head_v1 *zhead = (struct zwlr_output_head_v1*)"dummy1";
 	struct zwlr_output_configuration_v1 *zconfig = (struct zwlr_output_configuration_v1*)"dummy3";
 	struct zwlr_output_configuration_head_v1 *zconfig_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
 
 	struct Head *head = head_init();
 	head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	ppmap_put(g_displ->heads, zhead, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zconfig, struct zwlr_output_configuration_v1*);
@@ -153,7 +149,7 @@ static void act_apply__vrr(void **state) {
 	expect_ptr(__wrap_print_head, head, head);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zconfig);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, zhead);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, H0);
 	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zconfig_head, struct zwlr_output_configuration_head_v1*);
 
 	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_adaptive_sync, zwlr_output_configuration_head_v1, zconfig_head);
@@ -175,13 +171,12 @@ static void act_apply__vrr(void **state) {
 }
 
 static void act_apply__disable(void **state) {
-	struct zwlr_output_head_v1 *zhead = (struct zwlr_output_head_v1*)"dummy1";
 	struct zwlr_output_configuration_v1 *zconfig = (struct zwlr_output_configuration_v1*)"dummy3";
 
 	struct Head *head = head_init();
 	head->cur.enabled = true;
 	head->des.enabled = false;
-	ppmap_put(g_displ->heads, zhead, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zconfig, struct zwlr_output_configuration_v1*);
@@ -191,7 +186,7 @@ static void act_apply__disable(void **state) {
 	expect_ppmap(__wrap_print_head_map, heads, g_displ->heads);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, zwlr_output_configuration_v1, zconfig);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, zhead);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_disable_head, head, H0);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zconfig);
 
@@ -209,7 +204,6 @@ static void act_apply__disable(void **state) {
 }
 
 static void act_apply__remainder(void **state) {
-	struct zwlr_output_head_v1 *zhead = (struct zwlr_output_head_v1*)"dummy1";
 	struct zwlr_output_configuration_v1 *zconfig = (struct zwlr_output_configuration_v1*)"dummy3";
 	struct zwlr_output_configuration_head_v1 *zconfig_head = (struct zwlr_output_configuration_head_v1*)"dummy4";
 
@@ -220,7 +214,7 @@ static void act_apply__remainder(void **state) {
 	head->des.scale = 1;
 	head->des.x = 2;
 	head->des.y = 3;
-	ppmap_put(g_displ->heads, zhead, head);
+	ppmap_put(g_displ->heads, H0, head);
 
 	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
 	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zconfig, struct zwlr_output_configuration_v1*);
@@ -230,7 +224,7 @@ static void act_apply__remainder(void **state) {
 	expect_ppmap(__wrap_print_head_map, heads, g_displ->heads);
 
 	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zconfig);
-	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, zhead);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, H0);
 	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zconfig_head, struct zwlr_output_configuration_head_v1*);
 
 	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_transform, zwlr_output_configuration_head_v1, zconfig_head);
@@ -307,17 +301,15 @@ static void act_handle_success__head_changing_adaptive_sync_fail(void **state) {
 }
 
 static void act_handle_success__head_changing_mode(void **state) {
-	struct zwlr_output_mode_v1 *zmode = (struct zwlr_output_mode_v1*)"dummy1";
-
 	struct Head *head = head_n("head");
 
 	const struct Mode *mode = mode_init();
-	ppmap_put(head->modes, zmode, mode);
-	head->des.zmode = zmode;
+	ppmap_put(head->modes, MD, mode);
+	head->des.zmode = MD;
 
 	g_displ->delta.element = MODE;
 	g_displ->delta.head = head;
-	g_displ->delta.zmode = zmode;
+	g_displ->delta.zmode = MD;
 
 	expect_int_value(__wrap_callback, t, INFO);
 	expect_str(__wrap_callback, msg1, "Changes successful");
@@ -327,7 +319,7 @@ static void act_handle_success__head_changing_mode(void **state) {
 
 	assert_log(INFO, "\nChanges successful\n");
 
-	assert_ptr_equal(head->cur.zmode, zmode);
+	assert_ptr_equal(head->cur.zmode, MD);
 
 	head_free(head);
 

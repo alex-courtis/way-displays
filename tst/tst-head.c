@@ -230,8 +230,7 @@ static void head_find_mode__all_failed(void **state) {
 
 static void head_find_mode__user_available(void **state) {
 	struct Head *head = head_init();
-	const struct Mode *mode = mode_whr(1, 2, 3);
-	ppmap_put(head->modes, M0, mode);
+	ppmap_put(head->modes, M0, mode_whr(1, 2, 3));
 
 	// user preferred head
 	struct Mode *mode_target = mode_init();

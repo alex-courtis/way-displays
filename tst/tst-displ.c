@@ -12,14 +12,6 @@
 
 #include "displ.h"
 
-static int before_each(void **state) {
-	return 0;
-}
-
-static int after_each(void **state) {
-	return 0;
-}
-
 static void displ_finished_head__not_present(void **state) {
 	struct Displ *displ = displ_init();
 
@@ -33,11 +25,9 @@ static void displ_finished_head__not_present(void **state) {
 }
 
 static void displ_finished_head__present(void **state) {
-
 	struct Displ *displ = displ_init();
 
-	const struct Head *head = head_n("head_finished");
-	ppmap_put(displ->heads, H0, head);
+	ppmap_put(displ->heads, H0, head_n("head_finished"));
 
 	displ_finished_head(displ, H0);
 
@@ -60,8 +50,8 @@ static void displ_finished_head__present(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_BA(displ_finished_head__not_present),
-		TEST_BA(displ_finished_head__present),
+		TEST(displ_finished_head__not_present),
+		TEST(displ_finished_head__present),
 	};
 
 	return RUN(tests);

@@ -431,9 +431,8 @@ static void desire_enabled__no_override(void **state) {
 
 static void desire_mode__disabled(void **state) {
 	struct Head *head = head_n("head");
-	const struct Mode *mode = mode_init();
 
-	ppmap_put(head->modes, M0, mode);
+	ppmap_put(head->modes, M0, mode_init());
 	head->des.enabled = false;
 	head->des.zmode = M0;
 
@@ -448,9 +447,8 @@ static void desire_mode__disabled(void **state) {
 
 static void desire_mode__no_mode(void **state) {
 	struct Head *head = head_n("head");
-	const struct Mode *mode = mode_init();
 
-	ppmap_put(head->modes, M0, mode);
+	ppmap_put(head->modes, M0, mode_init());
 	head->des.enabled = true;
 	head->des.zmode = M0;
 
@@ -468,9 +466,8 @@ static void desire_mode__no_mode(void **state) {
 
 static void desire_mode__no_mode_warned(void **state) {
 	struct Head *head = head_n("head");
-	const struct Mode *mode = mode_init();
 
-	ppmap_put(head->modes, MD, mode);
+	ppmap_put(head->modes, MD, mode_init());
 	head->des.enabled = true;
 	head->des.zmode = MD;
 
@@ -690,8 +687,7 @@ static void desire_scaled_dimensions__default(void **state) {
 	assert_int_equal(head->scaled.height, 1);
 
 	// no scale
-	const struct Mode *mode = mode_whr(200, 100, 0);
-	ppmap_put(head->modes, M0, mode);
+	ppmap_put(head->modes, M0, mode_whr(200, 100, 0));
 
 	desire_scaled_dimensions(head);
 	assert_int_equal(head->scaled.width, 1);
@@ -703,8 +699,7 @@ static void desire_scaled_dimensions__default(void **state) {
 static void desire_scaled_dimensions__transform(void **state) {
 	struct Head *head = head_init();
 
-	const struct Mode *mode0 = mode_whr(200, 100, 0);
-	ppmap_put(head->modes, M0, mode0);
+	ppmap_put(head->modes, M0, mode_whr(200, 100, 0));
 	head->des.zmode = M0;
 
 	// double, not rotated
@@ -729,8 +724,7 @@ static void desire_scaled_dimensions__transform(void **state) {
 static void desire_scaled_dimensions__dimensions(void **state) {
 	struct Head *head = head_init();
 
-	const struct Mode *mode = mode_whr(3840, 2160, 0);
-	ppmap_put(head->modes, M0, mode);
+	ppmap_put(head->modes, M0, mode_whr(3840, 2160, 0));
 	head->des.zmode = M0;
 
 	head->des.scale = head_get_fixed_scale(1.0);

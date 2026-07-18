@@ -167,8 +167,7 @@ struct IpcOperation *ipc_response(void) {
 	head0->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	head0->cur.transform = WL_OUTPUT_TRANSFORM_270;
 
-	const struct Mode *mode_cur = mode_whr(10, 11, 12);
-	ppmap_put(head0->modes, MC, mode_cur);
+	ppmap_put(head0->modes, MC, mode_whr(10, 11, 12));
 	head0->zmode_pref = MC;
 	head0->cur.zmode = MC;
 	head0->des.zmode = MD;
