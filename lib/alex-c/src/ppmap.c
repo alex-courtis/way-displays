@@ -599,12 +599,12 @@ bool ppmap_remove_free(const struct PPmap* const map, const void* const key) {
 	}
 }
 
-size_t ppmap_remove_all(const struct PPmap* const set) {
-	return set ? remove_all(set, false) : 0;
+size_t ppmap_remove_all(const struct PPmap* const map) {
+	return map ? remove_all(map, false) : 0;
 }
 
-size_t ppmap_remove_all_free(const struct PPmap* const set) {
-	return set ? remove_all(set, true) : 0;
+size_t ppmap_remove_all_free(const struct PPmap* const map) {
+	return map ? remove_all(map, true) : 0;
 }
 
 size_t ppmap_remove_from(const struct PPmap* const map, const struct PPmap* const from) {

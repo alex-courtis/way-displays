@@ -147,10 +147,10 @@ const void *ppmap_remove(const struct PPmap* const map, const void* const key);
 bool ppmap_remove_free(const struct PPmap* const map, const void* const key);
 
 // remove all entries, returning number removed [free_key]
-size_t ppmap_remove_all(const struct PPmap* const set);
+size_t ppmap_remove_all(const struct PPmap* const map);
 
 // remove all entries and free, returning number removed [free_key, free_val]
-size_t ppmap_remove_all_free(const struct PPmap* const set);
+size_t ppmap_remove_all_free(const struct PPmap* const map);
 
 // remove entries matching from keys, return number removed [equal_key, free_key]
 size_t ppmap_remove_from(const struct PPmap* const map, const struct PPmap* const from);

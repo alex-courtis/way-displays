@@ -339,6 +339,14 @@ bool ipmap_remove_free(const struct IPmap* const map, const size_t key) {
 	return map ? ppmap_remove_free(map->ppmap, &key) : false;
 }
 
+size_t ipmap_remove_all(const struct IPmap* const map) {
+	return map ? ppmap_remove_all(map->ppmap) : 0;
+}
+
+size_t ipmap_remove_all_free(const struct IPmap* const map) {
+	return map ? ppmap_remove_all_free(map->ppmap) : 0;
+}
+
 size_t ipmap_remove_from(const struct IPmap* const map, const struct IPmap* const from) {
 	return map && from ? ppmap_remove_from(map->ppmap, from->ppmap) : 0;
 }

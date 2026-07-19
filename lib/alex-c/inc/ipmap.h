@@ -139,6 +139,12 @@ const void *ipmap_remove(const struct IPmap* const map, const size_t key);
 // remove and free entry, if removed free it and return true [free_val]
 bool ipmap_remove_free(const struct IPmap* const map, const size_t key);
 
+// remove all entries, returning number removed
+size_t ipmap_remove_all(const struct IPmap* const map);
+
+// remove all entries and free, returning number removed [free_val]
+size_t ipmap_remove_all_free(const struct IPmap* const map);
+
 // remove entries matching from keys, return number removed
 size_t ipmap_remove_from(const struct IPmap* const map, const struct IPmap* const from);
 

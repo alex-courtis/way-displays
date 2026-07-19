@@ -116,6 +116,9 @@ size_t ssmap_put_all(const struct SSmap* const map, const struct SSmap* const fr
 // remove entry, if removed return true
 bool ssmap_remove(const struct SSmap* const map, const char* const key);
 
+// remove all entries, returning number removed
+size_t ssmap_remove_all(const struct SSmap* const map);
+
 // remove entries matching from keys, return number removed
 size_t ssmap_remove_from(const struct SSmap* const map, const struct SSmap* const from);
 

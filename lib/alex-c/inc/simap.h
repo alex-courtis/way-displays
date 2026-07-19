@@ -117,6 +117,9 @@ size_t simap_put_all(const struct SImap* const map, const struct SImap* const fr
 // remove entry, if removed return true
 bool simap_remove(const struct SImap* const map, const char* const key);
 
+// remove all entries, returning number removed
+size_t simap_remove_all(const struct SImap* const map);
+
 // remove entries matching from keys, return number removed
 size_t simap_remove_from(const struct SImap* const map, const struct SImap* const from);
 

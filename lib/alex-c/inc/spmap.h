@@ -141,6 +141,12 @@ const void *spmap_remove(const struct SPmap* const map, const char* const key);
 // remove and free entry, if removed free it and return true [free_val]
 bool spmap_remove_free(const struct SPmap* const map, const char* const key);
 
+// remove all entries, returning number removed
+size_t spmap_remove_all(const struct SPmap* const map);
+
+// remove all entries and free, returning number removed [free_val]
+size_t spmap_remove_all_free(const struct SPmap* const map);
+
 // remove entries matching from keys, return number removed [equal_key]
 size_t spmap_remove_from(const struct SPmap* const map, const struct SPmap* const from);
 
