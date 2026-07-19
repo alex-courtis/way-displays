@@ -511,6 +511,12 @@ void yaml_map_into_heads(struct UC *c, const struct Pset *heads, const yaml_node
 
 	struct Head *head = head_init();
 
+	// use mode equals so that we can map preferred/current/desired to the lists
+	ppmap_free(head->modes);
+	head->modes = mode_ppmap_equal_init();
+	ppmap_free(head->modes_failed);
+	head->modes_failed = mode_ppmap_equal_init();
+
 	head->name           = yaml_scalar_to_string(c, spmap_get(nodes, "NAME"));
 	head->description    = yaml_scalar_to_string(c, spmap_get(nodes, "DESCRIPTION"));
 	head->make           = yaml_scalar_to_string(c, spmap_get(nodes, "MAKE"));
@@ -634,11 +640,9 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	// find MODE in MODES/MODES_FAILED and assign the key
 	struct Mode *mode = yaml_map_to_mode(c, spmap_get(nodes, "MODE"));
 	if (mode) {
-		// TODO pass around a pset equal modes
-		struct PPmapFilter f = { .val_data = (fn_pred_pp)mode_equal, .data = mode, };
-		head_state->zmode = ppmap_find(head->modes, f).key;
+		head_state->zmode = ppmap_first_key(head->modes, mode);
 		if (!head_state->zmode) {
-			head_state->zmode = ppmap_find(head->modes_failed, f).key;
+			head_state->zmode = ppmap_first_key(head->modes_failed, mode);
 		}
 		mode_free(mode);
 	}

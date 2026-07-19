@@ -51,6 +51,16 @@ const struct PPmap *mode_ppmap_init(void) {
 	return ppmap_init_with(params);
 }
 
+const struct PPmap *mode_ppmap_equal_init(void) {
+	const struct PPmapParams params = {
+		.equal_val = (fn_equal)mode_equal,
+		.free_val = (fn_free)mode_free,
+		.str_val = (fn_str)mode_str,
+		.clone_val = (fn_clone)mode_clone,
+	};
+	return ppmap_init_with(params);
+}
+
 void mode_free(struct Mode *mode) {
 	free(mode);
 }

@@ -34,6 +34,9 @@ struct Mode *mode_clone(const struct Mode * const from);
 // raw pointers, for head modes
 const struct PPmap *mode_ppmap_init(void);
 
+// mode equals, for unmarshalling head
+const struct PPmap *mode_ppmap_equal_init(void);
+
 // mode_equal, for cfg modes
 const struct SPmap *mode_spmap_init(void);
 
