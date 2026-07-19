@@ -158,6 +158,35 @@ static const struct PPmap *clone(const struct PPmap* const from, fn_clone clone_
 	return to;
 }
 
+static size_t remove_all(const struct PPmap* const cmap, bool do_free_val) {
+	struct PPmap *map = (struct PPmap*)cmap;
+
+	if (map->params.free_key || do_free_val) {
+		const void **k;
+		const void **v;
+		for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+			if (map->params.free_key) {
+				map->params.free_key((void*)*k);
+			}
+			if (*v && do_free_val) {
+				if (map->params.free_val) {
+					map->params.free_val((void*)*v);
+				} else {
+					free((void*)*v);
+				}
+			}
+		}
+	}
+
+	size_t removed = map->size;
+	map->size = 0;
+
+	memset(map->keys, 0, map->size * sizeof(void*));
+	memset(map->vals, 0, map->size * sizeof(void*));
+
+	return removed;
+}
+
 static void it_remove(const struct PPmapIt* const it, bool do_free) {
 	if (!it)
 		return;
@@ -250,11 +279,7 @@ void ppmap_free(const struct PPmap* const map) {
 	if (!map)
 		return;
 
-	if (map->params.free_key) {
-		for (const void **k = map->keys; k < map->keys + map->size; k++) {
-			map->params.free_key((void*)*k);
-		}
-	}
+	remove_all(map, false);
 
 	free(map->keys);
 	free(map->vals);
@@ -266,13 +291,12 @@ void ppmap_free_vals(const struct PPmap* const map) {
 	if (!map)
 		return;
 
-	for (const void **v = map->vals; v < map->vals + map->size; v++) {
-		if (*v) {
-			map->params.free_val ? map->params.free_val((void*)*v) : free((void*)*v);
-		}
-	}
+	remove_all(map, true);
 
-	ppmap_free(map);
+	free(map->keys);
+	free(map->vals);
+
+	free((void*)map);
 }
 
 void ppmap_it_free(const struct PPmapIt* const it) {
@@ -573,6 +597,14 @@ bool ppmap_remove_free(const struct PPmap* const map, const void* const key) {
 	} else {
 		return false;
 	}
+}
+
+size_t ppmap_remove_all(const struct PPmap* const set) {
+	return set ? remove_all(set, false) : 0;
+}
+
+size_t ppmap_remove_all_free(const struct PPmap* const set) {
+	return set ? remove_all(set, true) : 0;
 }
 
 size_t ppmap_remove_from(const struct PPmap* const map, const struct PPmap* const from) {

@@ -183,10 +183,8 @@ void heads_reapply(const struct PPmap *heads) {
 				free(str);
 			}
 
-			// TODO c-lib map remove_all
 			// clear failed
-			ppmap_free(head->modes_failed);
-			head->modes_failed = mode_ppmap_init();
+			ppmap_remove_all(head->modes_failed);
 		}
 
 		if (head->cur.enabled) {
