@@ -420,9 +420,7 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 		mode = mode_max(head->modes);
 	}
 
-	// TODO c-lib map map_first_key
-	struct PPmapFilter fv = { .val_data = equal_ptr, .data = mode, };
-	return ppmap_find(head->modes, fv).key;
+	return ppmap_first_key(head->modes, mode);
 }
 
 double head_scale(const struct Head * const head, const struct zwlr_output_mode_v1 * const zmode) {

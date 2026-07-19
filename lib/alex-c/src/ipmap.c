@@ -155,6 +155,21 @@ bool ipmap_contains_val(const struct IPmap* const map, const void* const val) {
 	return map ? ppmap_contains_val(map->ppmap, val) : false;
 }
 
+bool ipmap_first_key(size_t* kp, const struct IPmap *const map, const void* const val) {
+	if (!map || !kp)
+		return false;
+
+	const size_t *fp = ppmap_first_key(map->ppmap, val);
+
+	if (fp) {
+		*kp = *fp;
+		return true;
+	} else {
+		*kp = 0;
+		return false;
+	}
+}
+
 struct IPmapPair ipmap_at(const struct IPmap* const map, const size_t i) {
 	struct IPmapPair res = { 0 };
 

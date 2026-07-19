@@ -117,6 +117,10 @@ bool ssmap_contains_val(const struct SSmap* const map, const char* const val) {
 	return map ? ppmap_contains_val(map->ppmap, val) : false;
 }
 
+const char *ssmap_first_key(const struct SSmap *const map, const char* const val) {
+	return map ? ppmap_first_key(map->ppmap, val) : false;
+}
+
 struct SSmapPair ssmap_at(const struct SSmap* const map, const size_t i) {
 	struct SSmapPair res = { 0 };
 

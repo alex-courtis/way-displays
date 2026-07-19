@@ -90,6 +90,9 @@ bool simap_contains_key(const struct SImap* const map, const char* const key);
 // true if val is present
 bool simap_contains_val(const struct SImap* const map, const size_t val);
 
+// first key mapped to val, NULL if not present
+const void *simap_first_key(const struct SImap *const map, const size_t val);
+
 // element at zero indexed position
 struct SImapPair simap_at(const struct SImap* const map, const size_t i);
 

@@ -104,6 +104,9 @@ bool ppmap_contains_key(const struct PPmap* const map, const void* const key);
 // true if val is present [equal_val]
 bool ppmap_contains_val(const struct PPmap* const map, const void* const val);
 
+// first key mapped to val, NULL if not present [equal_val]
+const void *ppmap_first_key(const struct PPmap *const map, const void* const val);
+
 // element at zero indexed position
 struct PPmapPair ppmap_at(const struct PPmap* const map, const size_t i);
 

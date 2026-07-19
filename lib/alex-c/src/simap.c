@@ -142,6 +142,10 @@ bool simap_contains_val(const struct SImap* const map, const size_t val) {
 	return map ? ppmap_contains_val(map->ppmap, &val) : false;
 }
 
+const void *simap_first_key(const struct SImap *const map, const size_t val) {
+	return map ? ppmap_first_key(map->ppmap, &val) : NULL;
+}
+
 struct SImapPair simap_at(const struct SImap* const map, const size_t i) {
 	struct SImapPair res = { 0 };
 

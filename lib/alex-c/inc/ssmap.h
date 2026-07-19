@@ -89,6 +89,9 @@ bool ssmap_contains_key(const struct SSmap* const map, const char* const key);
 // true if val is present
 bool ssmap_contains_val(const struct SSmap* const map, const char* const val);
 
+// first key mapped to val, NULL if not present
+const char *ssmap_first_key(const struct SSmap *const map, const char* const val);
+
 // element at zero indexed position
 struct SSmapPair ssmap_at(const struct SSmap* const map, const size_t i);
 

@@ -357,6 +357,21 @@ bool ppmap_contains_val(const struct PPmap* const map, const void* const val) {
 	return false;
 }
 
+const void *ppmap_first_key(const struct PPmap *const map, const void* const val) {
+	if (!map)
+		return NULL;
+
+	const void **k;
+	const void **v;
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+		if (map->params.equal_val ? map->params.equal_val(*v, val) : *v == val) {
+			return *k;
+		}
+	}
+
+	return NULL;
+}
+
 struct PPmapPair ppmap_at(const struct PPmap* const map, const size_t i) {
 	struct PPmapPair res = { 0 };
 

@@ -98,6 +98,9 @@ bool ipmap_contains_key(const struct IPmap* const map, const size_t key);
 // true if val is present [equal_val]
 bool ipmap_contains_val(const struct IPmap* const map, const void* const val);
 
+// put first key mapped to val in kp if present, 0 and return false if not present [equal_val]
+bool ipmap_first_key(size_t* kp, const struct IPmap *const map, const void* const val);
+
 // element at zero indexed position
 struct IPmapPair ipmap_at(const struct IPmap* const map, const size_t i);
 

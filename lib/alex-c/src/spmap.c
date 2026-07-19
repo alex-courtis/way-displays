@@ -156,6 +156,10 @@ bool spmap_contains_val(const struct SPmap* const map, const void* const val) {
 	return map ? ppmap_contains_val(map->ppmap, val) : false;
 }
 
+const char *spmap_first_key(const struct SPmap *const map, const void* const val) {
+	return map ? ppmap_first_key(map->ppmap, val) : false;
+}
+
 struct SPmapPair spmap_at(const struct SPmap* const map, const size_t i) {
 	struct SPmapPair res = { 0 };
 
