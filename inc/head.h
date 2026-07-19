@@ -119,7 +119,7 @@ bool head_name_desc_matches_head(const char * const name_desc, const struct Head
  */
 
 // current and desired differ in any way
-bool head_current_not_desired(const struct Head * const head, const void * const unused);
+bool head_current_not_desired(const struct Head * const head);
 
 // current mode is not desired
 bool head_current_mode_not_desired(const struct Head * const head, const void * const unused);
@@ -128,7 +128,7 @@ bool head_current_mode_not_desired(const struct Head * const head, const void * 
 bool head_current_adaptive_sync_not_desired(const struct Head * const head, const void * const unused);
 
 // full reapply next layout
-bool head_reapply_required(const struct Head * const head, const void * const unused);
+bool head_reapply_required(const struct Head * const head);
 
 /*
  * utility

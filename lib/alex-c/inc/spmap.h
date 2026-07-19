@@ -38,6 +38,22 @@ struct SPmapParams {
 };
 
 /*
+ * Filter, must match all when multiple predicates specified, empty filter matches anything
+ */
+struct SPmapFilter {
+	// test keys or vals
+	fn_pred_str key;
+	fn_pred val;
+	fn_2pred_str key_val;
+
+	// test keys or vals against user data
+	const void * const data;
+	fn_2pred_str key_data;
+	fn_2pred val_data;
+	fn_3pred_str_ptr key_val_data;
+};
+
+/*
  * Key/Val
  */
 struct SPmapPair {
@@ -86,26 +102,14 @@ bool spmap_contains_val(const struct SPmap* const map, const void* const val);
 // element at zero indexed position
 struct SPmapPair spmap_at(const struct SPmap* const map, const size_t i);
 
-// find the first key/val pred, {NULL,NULL} when no matches or NULL match
-struct SPmapPair spmap_find(const struct SPmap* const map, fn_3pred_str_ptr pred_key_val, const void* const data);
-
-// find the first key pred, {NULL,NULL} when no matches or NULL match
-struct SPmapPair spmap_find_key(const struct SPmap* const map, fn_2pred_str pred_key, const void* const data);
-
-// find the first val pred, {NULL,NULL} when no matches or NULL match
-struct SPmapPair spmap_find_val(const struct SPmap* const map, fn_2pred pred_val, const void* const data);
+// find the first key/val pred, {NULL,NULL} when no matches, first when empty filter
+struct SPmapPair spmap_find(const struct SPmap* const map, const struct SPmapFilter filter);
 
 // create an iterator, caller must spmap_it_free or invoke spmap_next until NULL
 const struct SPmapIt *spmap_it(const struct SPmap* const map);
 
-// create an iterator filtering by key/val pred, return NULL when no matches or NULL match
-const struct SPmapIt *spmap_filter_it(const struct SPmap* const map, fn_3pred_str_ptr pred_key_val, const void* const data);
-
-// create an iterator filtering by key pred, return NULL when no matches or NULL match
-const struct SPmapIt *spmap_key_filter_it(const struct SPmap* const map, fn_2pred_str pred_key, const void* const data);
-
-// create an iterator filtering by val pred, return NULL when no matches or NULL match
-const struct SPmapIt *spmap_val_filter_it(const struct SPmap* const map, fn_2pred pred_val, const void* const data);
+// create a filtering iterator, return NULL when no matches, caller must spmap_it_free or invoke spmap_next until NULL
+const struct SPmapIt *spmap_filter_it(const struct SPmap* const map, const struct SPmapFilter filter);
 
 // next iterator entry, NULL at end of map
 const struct SPmapIt *spmap_it_next(const struct SPmapIt* const it);

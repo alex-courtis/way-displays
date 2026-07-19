@@ -126,7 +126,8 @@ void act_apply(void) {
 	displ_delta_destroy(g_displ);
 
 	// determine whether changes are needed before initiating output configuration
-	for (const struct PPmapIt *it = ppmap_val_filter_it(g_displ->heads, (fn_2pred)head_current_not_desired, NULL); it; it = ppmap_it_next(it)) {
+	struct PPmapFilter filter_changing = { .val = (fn_pred)head_current_not_desired, };
+	for (const struct PPmapIt *it = ppmap_filter_it2(g_displ->heads, filter_changing); it; it = ppmap_it_next(it)) {
 		ppmap_put(heads_changing, it->key, it->val);
 	}
 
@@ -142,7 +143,8 @@ void act_apply(void) {
 	struct Head *head;
 
 	// 1 - reapply
-	pair = ppmap_find_val(heads_changing, (fn_2pred)head_reapply_required, NULL);
+	struct PPmapFilter filter_reapply = { .val = (fn_pred)head_reapply_required, };
+	pair = ppmap_find2(heads_changing, filter_reapply);
 	if (pair.val) {
 		head = (struct Head*)pair.val;
 

@@ -23,6 +23,7 @@ struct PPmap {
 
 struct PPmapItState {
 	const struct PPmap *map;
+	const struct PPmapFilter filter;
 	size_t position;
 	bool attached;
 	fn_3pred pred_key_val;
@@ -62,6 +63,16 @@ static const struct PPmapIt *it_init(const struct PPmap *map) {
 	it->st->map = map;
 
 	return it;
+}
+
+static bool filter_matches(const struct PPmapFilter *filter, const void* const key, const void* const val) {
+	return
+		(filter->key          && !filter->key         (key                    )) ||
+		(filter->val          && !filter->val         (val                    )) ||
+		(filter->key_val      && !filter->key_val     (key,  val              )) ||
+		(filter->key_data     && !filter->key_data    (key,       filter->data)) ||
+		(filter->val_data     && !filter->val_data    (val,       filter->data)) ||
+		(filter->key_val_data && !filter->key_val_data(key,  val, filter->data));
 }
 
 static const void *put(const struct PPmap* const map, const void* const key, const void* const val, fn_clone clone_val) {
@@ -380,6 +391,26 @@ struct PPmapPair ppmap_find(const struct PPmap* const map, fn_3pred pred_key_val
 	return res;
 }
 
+struct PPmapPair ppmap_find2(const struct PPmap* const map, const struct PPmapFilter filter) {
+	struct PPmapPair res = { 0 };
+
+	if (!map)
+		return res;
+
+	const void **k;
+	const void **v;
+	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+		if (filter_matches(&filter, *k, *v))
+			continue;
+
+		res.key = *k;
+		res.val = *v;
+		break;
+	}
+
+	return res;
+}
+
 struct PPmapPair ppmap_find_key(const struct PPmap* const map, fn_2pred pred_key, const void* const data) {
 	struct PPmapPair res = { 0 };
 
@@ -426,6 +457,19 @@ const struct PPmapIt *ppmap_it(const struct PPmap* const map) {
 
 	if (!it)
 		return NULL;
+
+	return ppmap_it_next(it);
+}
+
+const struct PPmapIt *ppmap_filter_it2(const struct PPmap* const map, const struct PPmapFilter filter) {
+	if (!map)
+		return NULL;
+
+	const struct PPmapIt *it = it_init(map);
+	if (!it)
+		return NULL;
+
+	memcpy((void*)&it->st->filter, &filter, sizeof(struct PPmapFilter));
 
 	return ppmap_it_next(it);
 }
@@ -496,6 +540,9 @@ const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it) {
 
 		it_m->key = *(st->map->keys + st->position);
 		it_m->val = *(st->map->vals + st->position);
+
+		if (filter_matches(&st->filter, it_m->key, it_m->val))
+			continue;
 
 		if (st->pred_key_val && !st->pred_key_val(it->key, it->val, st->data)) {
 			continue;

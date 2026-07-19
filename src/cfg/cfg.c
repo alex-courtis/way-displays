@@ -47,7 +47,7 @@ static void warn_ambiguous_name_desc_sset(const struct Sset *name_descs, const e
 	}
 }
 
-static bool mode_is_invalid(const char* const name_desc, const struct Mode* const mode, const void* const unused) {
+static bool mode_is_invalid(const char* const name_desc, const struct Mode* const mode) {
 	if (mode->width != -1 && mode->width <= 0) {
 		log_warn(NULL);
 		log_warn("Ignoring non-positive MODE %s WIDTH %d", name_desc, mode->width);
@@ -335,6 +335,8 @@ void cfg_validate_fix(struct Cfg *cfg) {
 	if (!cfg) {
 		return;
 	}
+
+	// warn and fix arrange/align
 	enum Align align = cfg->align;
 	enum Arrange arrange = cfg->arrange;
 	switch(arrange) {
@@ -355,13 +357,16 @@ void cfg_validate_fix(struct Cfg *cfg) {
 			break;
 	}
 
+	// warn and fix auto_scale_dpi
 	if (cfg->auto_scale_dpi <= AUTO_SCALE_DPI_MIN) {
 		log_warn(NULL);
 		log_warn("Ignoring AUTO_SCALE_DPI %d < %d. Using default %d.", cfg->auto_scale_dpi, AUTO_SCALE_DPI_MIN, AUTO_SCALE_DPI_DEFAULT);
 		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
 	}
 
-	for (const struct SPmapIt *it = spmap_filter_it(cfg->modes, (fn_3pred_str_ptr)mode_is_invalid, NULL); it; it = spmap_it_next(it)) {
+	// warn and clear invalid modes
+	const struct SPmapFilter filter = { .key_val = (fn_2pred_str)mode_is_invalid, };
+	for (const struct SPmapIt *it = spmap_filter_it(cfg->modes, filter); it; it = spmap_it_next(it)) {
 		spmap_it_remove_free(it);
 	}
 }

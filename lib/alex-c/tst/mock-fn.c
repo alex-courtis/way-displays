@@ -16,6 +16,7 @@ bool mock_less_than(const void* const a, const void* const b) {
 	return mock_type(bool);
 }
 
+// TODO rename params
 bool mock_2pred(const void* const ptr, const void* const data) {
 	check_expected_ptr(ptr);
 	check_expected_ptr(data);
