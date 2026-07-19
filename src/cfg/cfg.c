@@ -365,7 +365,7 @@ void cfg_validate_fix(struct Cfg *cfg) {
 	}
 
 	// warn and remove invalid MODE
-	struct SPmapFilter f = { .key_val = (fn_pred_s_p)mode_is_invalid, };
+	struct SPmapFilter f = { .key_val = (fn_pred_sp)mode_is_invalid, };
 	for (const struct SPmapIt *it = spmap_filter_it(cfg->modes, f); it; it = spmap_it_next(it)) {
 		spmap_it_remove_free(it);
 	}

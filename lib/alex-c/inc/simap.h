@@ -46,13 +46,13 @@ struct SImapFilter {
 	// test keys or vals
 	fn_pred_s key;
 	fn_pred_i val;
-	fn_pred_s_i key_val;
+	fn_pred_si key_val;
 
 	// test keys or vals against user data
 	const void *data;
-	fn_pred_s_p key_data;
-	fn_pred_i_p val_data;
-	fn_pred_s_i_p key_val_data;
+	fn_pred_sp key_data;
+	fn_pred_ip val_data;
+	fn_pred_sip key_val_data;
 };
 
 /*

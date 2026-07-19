@@ -53,7 +53,7 @@ bool cfg_condition_true(const struct CfgCondition *condition) {
 	if (!condition)
 		return false;
 
-	struct PPmapFilter f = { .val_data = (fn_pred_p_p)head_matches_name_desc };
+	struct PPmapFilter f = { .val_data = (fn_pred_pp)head_matches_name_desc };
 
 	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
 		f.data = it->val;

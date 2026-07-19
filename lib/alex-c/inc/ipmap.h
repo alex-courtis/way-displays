@@ -36,13 +36,13 @@ struct IPmapFilter {
 	// test keys or vals
 	fn_pred_i key;
 	fn_pred_p val;
-	fn_pred_i_p key_val;
+	fn_pred_ip key_val;
 
 	// test keys or vals against user data
 	const void *data;
-	fn_pred_i_p key_data;
-	fn_pred_p_p val_data;
-	fn_pred_i_p_p key_val_data;
+	fn_pred_ip key_data;
+	fn_pred_pp val_data;
+	fn_pred_ipp key_val_data;
 };
 
 

@@ -30,7 +30,7 @@ struct SsetFilter {
 
 	// test vals against user data
 	const void *data;
-	fn_pred_s_p val_data;
+	fn_pred_sp val_data;
 };
 
 /*

@@ -33,7 +33,7 @@ static struct PsetFilter pset_filter_init(const struct SsetFilter *filter) {
 	const struct PsetFilter ppmap_filter = {
 		.val = (fn_pred_p)filter->val,
 		.data = filter->data,
-		.val_data = (fn_pred_p_p)filter->val_data,
+		.val_data = (fn_pred_pp)filter->val_data,
 	};
 
 	return ppmap_filter;
@@ -169,7 +169,7 @@ void sset_it_remove(const struct SsetIt* const it) {
 
 void sset_sort(const struct Sset* const set) {
 	if (set)
-		pset_sort(set->pset, set->params.case_insensitive ? (fn_pred_p_p)less_than_strcasecmp : (fn_pred_p_p)less_than_strcmp);
+		pset_sort(set->pset, set->params.case_insensitive ? (fn_pred_pp)less_than_strcasecmp : (fn_pred_pp)less_than_strcmp);
 }
 
 bool sset_equal(const struct Sset* const a, const struct Sset* const b) {

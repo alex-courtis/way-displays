@@ -32,7 +32,7 @@ struct PsetFilter {
 
 	// test vals against user data
 	const void *data;
-	fn_pred_p_p val_data;
+	fn_pred_pp val_data;
 };
 
 /*

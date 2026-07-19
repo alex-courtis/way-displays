@@ -32,6 +32,9 @@ bool less_than_strcmp(const char* const a, const char* const b);
 // strcasecmp(a, b) < 0
 bool less_than_strcasecmp(const char* const a, const char* const b);
 
+// true if both present and equal value
+bool equal_stp(const size_t* const a, const size_t* const b);
+
 //
 // predicate
 //
@@ -44,28 +47,28 @@ typedef bool (*fn_pred_i)(const size_t i);
 //
 // bi-predicate
 //
-typedef bool (*fn_pred_p_p)(const void* const p1, const void* const p2);
+typedef bool (*fn_pred_pp)(const void* const p1, const void* const p2);
 
-typedef bool (*fn_pred_s_p)(const char* const s,  const void* const p);
+typedef bool (*fn_pred_sp)(const char* const s,  const void* const p);
 
-typedef bool (*fn_pred_s_s)(const char* const s1, const char* const s2);
+typedef bool (*fn_pred_ss)(const char* const s1, const char* const s2);
 
-typedef bool (*fn_pred_s_i)(const char* const s,  const size_t i);
+typedef bool (*fn_pred_si)(const char* const s,  const size_t i);
 
-typedef bool (*fn_pred_i_p)(const size_t i,       const void* const p);
+typedef bool (*fn_pred_ip)(const size_t i,       const void* const p);
 
 //
 // tri-predicate
 //
-typedef bool (*fn_pred_p_p_p)(const void* const p1, const void* const p2, const void* const p3);
+typedef bool (*fn_pred_ppp)(const void* const p1, const void* const p2, const void* const p3);
 
-typedef bool (*fn_pred_s_p_p)(const char* const s,  const void* const p1, const void* const p2);
+typedef bool (*fn_pred_spp)(const char* const s,  const void* const p1, const void* const p2);
 
-typedef bool (*fn_pred_s_s_p)(const char* const s1, const char* const s2, const void* const p);
+typedef bool (*fn_pred_ssp)(const char* const s1, const char* const s2, const void* const p);
 
-typedef bool (*fn_pred_s_i_p)(const char* const s,  const size_t i,       const void* const p);
+typedef bool (*fn_pred_sip)(const char* const s,  const size_t i,       const void* const p);
 
-typedef bool (*fn_pred_i_p_p)(const size_t i,       const void* const p1, const void* const p2);
+typedef bool (*fn_pred_ipp)(const size_t i,       const void* const p1, const void* const p2);
 
 //
 // free

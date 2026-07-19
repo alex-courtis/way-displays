@@ -114,7 +114,7 @@ static void receive_ipc_request(int server_socket) {
 			// exit early for set/del any disableds with conditions
 			for (const struct PsetIt *rit = pset_it(ipc_request->cfg->disableds); rit; rit = pset_it_next(rit)) {
 				const struct CfgDisabled *disabled_req = rit->val;
-				struct PsetFilter f = { .val_data = (fn_pred_p_p)cfg_disabled_has_conditions_and_name_desc, .data = disabled_req->name_desc, };
+				struct PsetFilter f = { .val_data = (fn_pred_pp)cfg_disabled_has_conditions_and_name_desc, .data = disabled_req->name_desc, };
 				for (const struct PsetIt *cit = pset_filter_it(g_cfg->disableds, f); cit; cit = pset_it_next(cit)) {
 					log_error(NULL);
 					log_error("%s is conditionally disabled, it may only be toggled", disabled_req->name_desc);

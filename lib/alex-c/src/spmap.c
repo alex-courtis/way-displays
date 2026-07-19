@@ -35,11 +35,11 @@ static struct PPmapFilter ppmap_filter_init(const struct SPmapFilter *filter) {
 	const struct PPmapFilter ppmap_filter = {
 		.key = (fn_pred_p)filter->key,
 		.val = filter->val,
-		.key_val = (fn_pred_p_p)filter->key_val,
+		.key_val = (fn_pred_pp)filter->key_val,
 		.data = filter->data,
-		.key_data = (fn_pred_p_p)filter->key_data,
+		.key_data = (fn_pred_pp)filter->key_data,
 		.val_data = filter->val_data,
-		.key_val_data = (fn_pred_p_p_p)filter->key_val_data,
+		.key_val_data = (fn_pred_ppp)filter->key_val_data,
 	};
 
 	return ppmap_filter;

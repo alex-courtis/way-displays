@@ -98,7 +98,7 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	struct PsetFilter f = { .val_data = (fn_pred_p_p)cfg_disabled_name_desc_matches_head, .data = head, };
+	struct PsetFilter f = { .val_data = (fn_pred_pp)cfg_disabled_name_desc_matches_head, .data = head, };
 	if (pset_find(cfg->disableds, f)) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
@@ -369,7 +369,7 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 	const struct Mode *mode = NULL;
 
 	// maybe a cfg mode
-	struct SPmapFilter cf = { .key_data = (fn_pred_s_p)head_name_desc_matches_head, .data = head, };
+	struct SPmapFilter cf = { .key_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
 	struct Mode *cfg_mode = (struct Mode*)spmap_find(g_cfg->modes, cf).val;
 	if (cfg_mode) {
 		mode = mode_best_satisfying(cfg_mode, head->modes);
@@ -394,7 +394,7 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 	if (!mode) {
 		const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 		if (mode_pref) {
-			struct SsetFilter pf = { .val_data = (fn_pred_s_p)head_name_desc_matches_head, .data = head, };
+			struct SsetFilter pf = { .val_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
 			if (sset_find(g_cfg->max_preferred_refresh, pf)) {
 				mode = mode_max_refresh(mode_pref, head->modes);
 			} else {

@@ -40,13 +40,13 @@ struct SSmapFilter {
 	// test keys or vals
 	fn_pred_s key;
 	fn_pred_s val;
-	fn_pred_s_s key_val;
+	fn_pred_ss key_val;
 
 	// test keys or vals against user data
 	const void *data;
-	fn_pred_s_p key_data;
-	fn_pred_s_p val_data;
-	fn_pred_s_s_p key_val_data;
+	fn_pred_sp key_data;
+	fn_pred_sp val_data;
+	fn_pred_ssp key_val_data;
 };
 
 /*
