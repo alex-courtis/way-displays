@@ -369,8 +369,8 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 	const struct Mode *mode = NULL;
 
 	// maybe a cfg mode
-	struct SPmapFilter f = { .key_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
-	struct Mode *cfg_mode = (struct Mode*)spmap_find(g_cfg->modes, f).val;
+	struct SPmapFilter cf = { .key_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+	struct Mode *cfg_mode = (struct Mode*)spmap_find(g_cfg->modes, cf).val;
 	if (cfg_mode) {
 		mode = mode_best_satisfying(cfg_mode, head->modes);
 		if (!mode && !cfg_mode->warned_no_mode) {
@@ -394,8 +394,8 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 	if (!mode) {
 		const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 		if (mode_pref) {
-			struct SsetFilter f = { .val_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
-			if (sset_find(g_cfg->max_preferred_refresh, f)) {
+			struct SsetFilter pf = { .val_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+			if (sset_find(g_cfg->max_preferred_refresh, pf)) {
 				mode = mode_max_refresh(mode_pref, head->modes);
 			} else {
 				mode = mode_pref;

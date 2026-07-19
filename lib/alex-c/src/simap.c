@@ -247,8 +247,8 @@ size_t simap_remove_all(const struct SImap* const map) {
 	return map ? ppmap_remove_all_free(map->ppmap) : false;
 }
 
-size_t simap_remove_from(const struct SImap* const map, const struct SImap* const from) {
-	return map && from ? ppmap_remove_from_free(map->ppmap, from->ppmap) : false;
+size_t simap_remove_in(const struct SImap* const map, const struct SImap* const in) {
+	return map && in ? ppmap_remove_in_free(map->ppmap, in->ppmap) : false;
 }
 
 void simap_it_remove(const struct SImapIt* const it) {

@@ -150,11 +150,11 @@ size_t ipmap_remove_all(const struct IPmap* const map);
 // remove all entries and free, returning number removed [free_val]
 size_t ipmap_remove_all_free(const struct IPmap* const map);
 
-// remove entries matching from keys, return number removed
-size_t ipmap_remove_from(const struct IPmap* const map, const struct IPmap* const from);
+// remove entries in keys, return number removed
+size_t ipmap_remove_in(const struct IPmap* const map, const struct IPmap* const in);
 
-// remove and free entries matching from keys, return number removed [free_val]
-size_t ipmap_remove_from_free(const struct IPmap* const map, const struct IPmap* const from);
+// remove and free entries in keys, return number removed [free_val]
+size_t ipmap_remove_in_free(const struct IPmap* const map, const struct IPmap* const in);
 
 // remove the entry, it is unusable, ipmap_it_next must be called
 void ipmap_it_remove(const struct IPmapIt* const it);

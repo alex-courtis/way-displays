@@ -267,12 +267,12 @@ size_t ipmap_remove_all_free(const struct IPmap* const map) {
 	return map ? ppmap_remove_all_free(map->ppmap) : 0;
 }
 
-size_t ipmap_remove_from(const struct IPmap* const map, const struct IPmap* const from) {
-	return map && from ? ppmap_remove_from(map->ppmap, from->ppmap) : 0;
+size_t ipmap_remove_in(const struct IPmap* const map, const struct IPmap* const in) {
+	return map && in ? ppmap_remove_in(map->ppmap, in->ppmap) : 0;
 }
 
-size_t ipmap_remove_from_free(const struct IPmap* const map, const struct IPmap* const from) {
-	return map && from ? ppmap_remove_from_free(map->ppmap, from->ppmap) : 0;
+size_t ipmap_remove_in_free(const struct IPmap* const map, const struct IPmap* const in) {
+	return map && in ? ppmap_remove_in_free(map->ppmap, in->ppmap) : 0;
 }
 
 void ipmap_it_remove(const struct IPmapIt* const it) {

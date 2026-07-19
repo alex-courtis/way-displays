@@ -176,10 +176,10 @@ static size_t add_all(const struct Pset* const set, const struct Pset* const fro
 	return added;
 }
 
-static size_t remove_from(const struct Pset* const set, const struct Pset* const from, fn_free free_val) {
+static size_t remove_in(const struct Pset* const set, const struct Pset* const in, fn_free free_val) {
 	size_t removed = 0;
 
-	for (const void **v = from->vals; v < from->vals + from->size; v++) {
+	for (const void **v = in->vals; v < in->vals + in->size; v++) {
 		if (remove(set, *v, free_val)) {
 			removed++;
 		}
@@ -375,12 +375,12 @@ size_t pset_remove_all_free(const struct Pset* const set) {
 	return set ? remove_all(set, true) : 0;
 }
 
-size_t pset_remove_from(const struct Pset* const set, const struct Pset* const from) {
-	return set && from ? remove_from(set, from, NULL) : 0;
+size_t pset_remove_in(const struct Pset* const set, const struct Pset* const in) {
+	return set && in ? remove_in(set, in, NULL) : 0;
 }
 
-size_t pset_remove_from_free(const struct Pset* const set, const struct Pset* const from) {
-	return set && from ? remove_from(set, from, set->params.free_val ? set->params.free_val : free) : 0;
+size_t pset_remove_in_free(const struct Pset* const set, const struct Pset* const in) {
+	return set && in ? remove_in(set, in, set->params.free_val ? set->params.free_val : free) : 0;
 }
 
 void pset_it_remove(const struct PsetIt* const it) {

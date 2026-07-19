@@ -244,12 +244,12 @@ size_t spmap_remove_all_free(const struct SPmap* const map) {
 	return map ? ppmap_remove_all_free(map->ppmap) : false;
 }
 
-size_t spmap_remove_from(const struct SPmap* const map, const struct SPmap* const from) {
-	return map && from ? ppmap_remove_from(map->ppmap, from->ppmap) : 0;
+size_t spmap_remove_in(const struct SPmap* const map, const struct SPmap* const in) {
+	return map && in ? ppmap_remove_in(map->ppmap, in->ppmap) : 0;
 }
 
-size_t spmap_remove_from_free(const struct SPmap* const map, const struct SPmap* const from) {
-	return map && from ? ppmap_remove_from_free(map->ppmap, from->ppmap) : 0;
+size_t spmap_remove_in_free(const struct SPmap* const map, const struct SPmap* const in) {
+	return map && in ? ppmap_remove_in_free(map->ppmap, in->ppmap) : 0;
 }
 
 void spmap_it_remove(const struct SPmapIt* const it) {

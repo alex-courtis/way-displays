@@ -541,14 +541,14 @@ size_t ppmap_remove_all_free(const struct PPmap* const map) {
 	return map ? remove_all(map, true) : 0;
 }
 
-size_t ppmap_remove_from(const struct PPmap* const map, const struct PPmap* const from) {
-	if (!map || !from)
+size_t ppmap_remove_in(const struct PPmap* const map, const struct PPmap* const in) {
+	if (!map || !in)
 		return 0;
 
 	size_t removed = 0;
 
 	const void **k;
-	for (k = from->keys; k < from->keys + from->size; k++) {
+	for (k = in->keys; k < in->keys + in->size; k++) {
 		if (ppmap_remove(map, *k) != NULL) {
 			removed++;
 		}
@@ -557,14 +557,14 @@ size_t ppmap_remove_from(const struct PPmap* const map, const struct PPmap* cons
 	return removed;
 }
 
-size_t ppmap_remove_from_free(const struct PPmap* const map, const struct PPmap* const from) {
-	if (!map || !from)
+size_t ppmap_remove_in_free(const struct PPmap* const map, const struct PPmap* const in) {
+	if (!map || !in)
 		return 0;
 
 	size_t removed = 0;
 
 	const void **k;
-	for (k = from->keys; k < from->keys + from->size; k++) {
+	for (k = in->keys; k < in->keys + in->size; k++) {
 		if (ppmap_remove_free(map, *k)) {
 			removed++;
 		}

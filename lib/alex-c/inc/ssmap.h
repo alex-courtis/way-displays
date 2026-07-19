@@ -123,8 +123,8 @@ bool ssmap_remove(const struct SSmap* const map, const char* const key);
 // remove all entries, returning number removed
 size_t ssmap_remove_all(const struct SSmap* const map);
 
-// remove entries matching from keys, return number removed
-size_t ssmap_remove_from(const struct SSmap* const map, const struct SSmap* const from);
+// remove entries in keys, return number removed
+size_t ssmap_remove_in(const struct SSmap* const map, const struct SSmap* const in);
 
 // remove the entry, it is unusable, ssmap_it_next must be called
 void ssmap_it_remove(const struct SSmapIt* const it);
