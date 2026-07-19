@@ -6,38 +6,48 @@
 
 bool mock_equal(const void* const a, const void* const b);
 
+
 bool mock_less_than(const void* const a, const void* const b);
 
-bool mock_pred     (const void* const ptr);
 
-bool mock_pred_str(const char* const str);
+bool mock_pred_p(const void* const p);
 
-bool mock_pred_szt(const size_t i);
+bool mock_pred_s(const char* const s);
 
-bool mock_2pred    (const void* const ptr, const void* const data);
+bool mock_pred_i(const size_t i);
 
-bool mock_2pred_str(const char* const str, const void* const data);
 
-bool mock_2pred_szt(const size_t i,        const void* const data);
+bool mock_pred_p_p(const void* const p1, const void* const p2);
 
-bool mock_2pred_str_szt(const char* const str,  const size_t i);
+bool mock_pred_s_p(const char* const s,  const void* const p);
 
-bool mock_3pred        (const void* const ptr1, const void* const ptr2, const void* const data);
+bool mock_pred_s_s(const char* const s1, const void* const s2);
 
-bool mock_3pred_str_ptr(const char* const str,  const void* const ptr,  const void* const data);
+bool mock_pred_s_i(const char* const s,  const size_t i);
 
-bool mock_3pred_str_str(const char* const str1, const char* const str2, const void* const data);
+bool mock_pred_i_p(const size_t i,       const void* const p);
 
-bool mock_3pred_str_szt(const char* const str,  const size_t i,         const void* const data);
 
-bool mock_3pred_szt_ptr(const size_t i,         const void* const ptr,  const void* const data);
+bool mock_pred_p_p_p(const void* const p1, const void* const p2, const void* const p3);
 
-void *mock_clone(const void* const ptr);
+bool mock_pred_s_p_p(const char* const s,  const void* const p1, const void* const p2);
 
-void *mock_alloc(const void* const ptr);
+bool mock_pred_s_s_p(const char* const s1, const char* const s2, const void* const p);
+
+bool mock_pred_s_i_p(const char* const s,  const size_t i,       const void* const p);
+
+bool mock_pred_i_p_p(const size_t i,       const void* const p1, const void* const p2);
+
 
 void mock_free(void *ptr);
 
+
+void *mock_clone(const void* const ptr);
+
+
 char* mock_str(const void* const ptr);
+
+
+void *mock_alloc(const void* const ptr);
 
 #endif // MOCK_FN

@@ -44,15 +44,15 @@ struct SImapPair {
  */
 struct SImapFilter {
 	// test keys or vals
-	fn_pred_str key;
-	fn_pred_szt val;
-	fn_2pred_str_szt key_val;
+	fn_pred_s key;
+	fn_pred_i val;
+	fn_pred_s_i key_val;
 
 	// test keys or vals against user data
 	const void *data;
-	fn_2pred_str key_data;
-	fn_2pred_szt val_data;
-	fn_3pred_str_szt key_val_data;
+	fn_pred_s_p key_data;
+	fn_pred_i_p val_data;
+	fn_pred_s_i_p key_val_data;
 };
 
 /*

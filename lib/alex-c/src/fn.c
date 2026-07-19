@@ -40,13 +40,6 @@ bool equal_strstr(const char* const a, const char* const b) {
 	return strstr(a, b);
 }
 
-bool equal_stp(const size_t* const a, const size_t* const b) {
-	if (!a || !b)
-		return false;
-
-	return *a == *b;
-}
-
 bool less_than_strcmp(const char* const a, const char* const b) {
 	if (a == b)
 		return true;

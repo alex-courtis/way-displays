@@ -55,7 +55,7 @@ void desire_enabled(struct Head *head) {
 	enabled |= ppmap_size(g_displ->heads) == 1;
 
 	// name_desc matches and (if present) any condition is true
-	struct PsetFilter f = { .val_data = (fn_2pred)cfg_disabled_matches_head, .data = head, };
+	struct PsetFilter f = { .val_data = (fn_pred_p_p)cfg_disabled_matches_head, .data = head, };
 	enabled &= pset_find(g_cfg->disableds, f) == NULL;
 
 	// reset manual override when it matches the auto-state
@@ -109,7 +109,7 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	const struct SImapFilter f = { .key_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+	const struct SImapFilter f = { .key_data = (fn_pred_s_p)head_name_desc_matches_head, .data = head, };
 	const struct SImapPair p = simap_find(g_cfg->scales, f);
 	if (p.key) {
 		head->des.scale = head_get_fixed_scale((double)p.val / 1000);
@@ -131,7 +131,7 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	const struct SImapFilter f = { .key_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+	const struct SImapFilter f = { .key_data = (fn_pred_s_p)head_name_desc_matches_head, .data = head, };
 	enum wl_output_transform transform = simap_find(g_cfg->transforms, f).val;
 	if (transform) {
 		head->des.transform = transform;
@@ -151,7 +151,7 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	struct SsetFilter f = { .val_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+	struct SsetFilter f = { .val_data = (fn_pred_s_p)head_name_desc_matches_head, .data = head, };
 	if (sset_find(g_cfg->adaptive_sync_off, f)) {
 		head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
@@ -196,7 +196,7 @@ void desire_reapply(struct Head *head) {
 		head->des.enabled = false;
 }
 
-static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *candidates, fn_2pred pred) {
+static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *candidates, fn_pred_p_p pred) {
 	struct PsetFilter f = { .val_data = pred, };
 	for (const struct SPmapIt *bit = spmap_it(buckets); bit; bit = spmap_it_next(bit)) {
 		f.data = bit->key;
@@ -220,9 +220,9 @@ const struct Pset *desire_order(const struct Sset * const order_name_desc, const
 	const struct Pset *candidates = ppmap_vals_pset(heads);
 
 	// fill buckets in preferential order
-	fill_order_buckets(buckets, candidates, (fn_2pred)head_matches_name_desc_exact);
-	fill_order_buckets(buckets, candidates, (fn_2pred)head_matches_name_desc_regex);
-	fill_order_buckets(buckets, candidates, (fn_2pred)head_matches_name_desc_fuzzy);
+	fill_order_buckets(buckets, candidates, (fn_pred_p_p)head_matches_name_desc_exact);
+	fill_order_buckets(buckets, candidates, (fn_pred_p_p)head_matches_name_desc_regex);
+	fill_order_buckets(buckets, candidates, (fn_pred_p_p)head_matches_name_desc_fuzzy);
 
 	// marshal buckets in final order
 	const struct Pset *sorted = head_pset_init();

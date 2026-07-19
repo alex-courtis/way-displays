@@ -128,7 +128,7 @@ void act_apply(void) {
 	struct PPmapFilter f = { 0 };
 
 	// determine whether changes are needed before initiating output configuration
-	f.val = (fn_pred)head_current_not_desired;
+	f.val = (fn_pred_p)head_current_not_desired;
 	for (const struct PPmapIt *it = ppmap_filter_it(g_displ->heads, f); it; it = ppmap_it_next(it)) {
 		ppmap_put(heads_changing, it->key, it->val);
 	}
@@ -145,7 +145,7 @@ void act_apply(void) {
 	struct Head *head;
 
 	// 1 - reapply
-	f.val = (fn_pred)head_reapply_required;
+	f.val = (fn_pred_p)head_reapply_required;
 	p = ppmap_find(heads_changing, f);
 	if (p.val) {
 		head = (struct Head*)p.val;
@@ -164,7 +164,7 @@ void act_apply(void) {
 	}
 
 	// 2 - single mode
-	f.val = (fn_pred)head_current_mode_not_desired;
+	f.val = (fn_pred_p)head_current_mode_not_desired;
 	p = ppmap_find(heads_changing, f);
 	if (p.val) {
 		head = (struct Head*)p.val;
@@ -183,7 +183,7 @@ void act_apply(void) {
 	}
 
 	// 3 - single VRR
-	f.val = (fn_pred)head_current_adaptive_sync_not_desired;
+	f.val = (fn_pred_p)head_current_adaptive_sync_not_desired;
 	p = ppmap_find(heads_changing, f);
 	if (p.val) {
 		head = (struct Head*)p.val;

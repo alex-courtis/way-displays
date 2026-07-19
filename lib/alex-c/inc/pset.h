@@ -28,11 +28,11 @@ struct PsetIt {
  */
 struct PsetFilter {
 	// test vals
-	fn_pred val;
+	fn_pred_p val;
 
 	// test vals against user data
 	const void *data;
-	fn_2pred val_data;
+	fn_pred_p_p val_data;
 };
 
 /*

@@ -37,15 +37,15 @@ struct PPmapPair {
  */
 struct PPmapFilter {
 	// test keys or vals
-	fn_pred key;
-	fn_pred val;
-	fn_2pred key_val;
+	fn_pred_p key;
+	fn_pred_p val;
+	fn_pred_p_p key_val;
 
 	// test keys or vals against user data
 	const void *data;
-	fn_2pred key_data;
-	fn_2pred val_data;
-	fn_3pred key_val_data;
+	fn_pred_p_p key_data;
+	fn_pred_p_p val_data;
+	fn_pred_p_p_p key_val_data;
 };
 
 /*

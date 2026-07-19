@@ -20,13 +20,13 @@ struct SSmapItState {
 
 static struct PPmapFilter ppmap_filter_init(const struct SSmapFilter *filter) {
 	const struct PPmapFilter ppmap_filter = {
-		.key = (fn_pred)filter->key,
-		.val = (fn_pred)filter->val,
-		.key_val = (fn_2pred)filter->key_val,
+		.key = (fn_pred_p)filter->key,
+		.val = (fn_pred_p)filter->val,
+		.key_val = (fn_pred_p_p)filter->key_val,
 		.data = filter->data,
-		.key_data = (fn_2pred)filter->key_data,
-		.val_data = (fn_2pred)filter->val_data,
-		.key_val_data = (fn_3pred)filter->key_val_data,
+		.key_data = (fn_pred_p_p)filter->key_data,
+		.val_data = (fn_pred_p_p)filter->val_data,
+		.key_val_data = (fn_pred_p_p_p)filter->key_val_data,
 	};
 
 	return ppmap_filter;

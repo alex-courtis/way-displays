@@ -21,9 +21,6 @@ bool equal_strcasecmp(const char* const a, const char* const b);
 // true if both NULL or strstr(a, b)
 bool equal_strstr(const char* const a, const char* const b);
 
-// true if both present and equal value
-bool equal_stp(const size_t* const a, const size_t* const b);
-
 //
 // a less than b, a is generally the value from the collection, b generally user data or the value from the other collection
 //
@@ -38,39 +35,37 @@ bool less_than_strcasecmp(const char* const a, const char* const b);
 //
 // predicate
 //
-typedef bool (*fn_pred)(const void* const ptr);
+typedef bool (*fn_pred_p)(const void* const p);
 
-typedef bool (*fn_pred_str)(const char* const str);
+typedef bool (*fn_pred_s)(const char* const s);
 
-typedef bool (*fn_pred_szt)(const size_t i);
-
-// TODO rename params
+typedef bool (*fn_pred_i)(const size_t i);
 
 //
-// bi-predicate against user data
+// bi-predicate
 //
-typedef bool (*fn_2pred)    (const void* const ptr, const void* const data);
+typedef bool (*fn_pred_p_p)(const void* const p1, const void* const p2);
 
-typedef bool (*fn_2pred_str)(const char* const str, const void* const data);
+typedef bool (*fn_pred_s_p)(const char* const s,  const void* const p);
 
-typedef bool (*fn_2pred_str_str)(const char* const str, const char* const str2);
+typedef bool (*fn_pred_s_s)(const char* const s1, const char* const s2);
 
-typedef bool (*fn_2pred_str_szt)(const char* const str, const size_t i);
+typedef bool (*fn_pred_s_i)(const char* const s,  const size_t i);
 
-typedef bool (*fn_2pred_szt)(const size_t i,        const void* const data);
+typedef bool (*fn_pred_i_p)(const size_t i,       const void* const p);
 
 //
-// tri-predicate against user data, generally map key/val
+// tri-predicate
 //
-typedef bool (*fn_3pred)        (const void* const ptr1, const void* const ptr2, const void* const data);
+typedef bool (*fn_pred_p_p_p)(const void* const p1, const void* const p2, const void* const p3);
 
-typedef bool (*fn_3pred_str_ptr)(const char* const str,  const void* const ptr,  const void* const data);
+typedef bool (*fn_pred_s_p_p)(const char* const s,  const void* const p1, const void* const p2);
 
-typedef bool (*fn_3pred_str_str)(const char* const str1, const char* const str2, const void* const data);
+typedef bool (*fn_pred_s_s_p)(const char* const s1, const char* const s2, const void* const p);
 
-typedef bool (*fn_3pred_str_szt)(const char* const str,  const size_t i,         const void* const data);
+typedef bool (*fn_pred_s_i_p)(const char* const s,  const size_t i,       const void* const p);
 
-typedef bool (*fn_3pred_szt_ptr)(const size_t i,         const void* const ptr,  const void* const data);
+typedef bool (*fn_pred_i_p_p)(const size_t i,       const void* const p1, const void* const p2);
 
 //
 // free

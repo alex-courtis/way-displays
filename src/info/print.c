@@ -304,7 +304,7 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	if (!head)
 		return;
 
-	struct IPmapFilter of = { .val_data = (fn_2pred)output_matches_name, };
+	struct IPmapFilter of = { .val_data = (fn_pred_p_p)output_matches_name, };
 
 	const struct Mode *mode_cur = ppmap_get(head->modes, head->cur.zmode);
 

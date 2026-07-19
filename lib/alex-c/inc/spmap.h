@@ -42,15 +42,15 @@ struct SPmapParams {
  */
 struct SPmapFilter {
 	// test keys or vals
-	fn_pred_str key;
-	fn_pred val;
-	fn_2pred_str key_val;
+	fn_pred_s key;
+	fn_pred_p val;
+	fn_pred_s_p key_val;
 
 	// test keys or vals against user data
 	const void *data;
-	fn_2pred_str key_data;
-	fn_2pred val_data;
-	fn_3pred_str_ptr key_val_data;
+	fn_pred_s_p key_data;
+	fn_pred_p_p val_data;
+	fn_pred_s_p_p key_val_data;
 };
 
 /*

@@ -26,11 +26,11 @@ struct SsetIt {
  */
 struct SsetFilter {
 	// test vals
-	fn_pred_str val;
+	fn_pred_s val;
 
 	// test vals against user data
 	const void *data;
-	fn_2pred_str val_data;
+	fn_pred_s_p val_data;
 };
 
 /*

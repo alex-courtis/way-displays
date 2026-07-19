@@ -95,11 +95,11 @@ void *pslist_remove(struct Pslist **head, struct Pslist **item) {
 	return removed;
 }
 
-size_t pslist_remove_from(struct Pslist **head, fn_2pred pred_val, const void *data) {
+size_t pslist_remove_from(struct Pslist **head, fn_pred_p_p pred, const void *data) {
 	struct Pslist *i;
 	size_t removed = 0;
 
-	while ((i = pslist_find_equal(*head, pred_val, data))) {
+	while ((i = pslist_find_equal(*head, pred, data))) {
 		pslist_remove(head, &i);
 		removed++;
 	}
@@ -107,11 +107,11 @@ size_t pslist_remove_from(struct Pslist **head, fn_2pred pred_val, const void *d
 	return removed;
 }
 
-size_t pslist_remove_all_free(struct Pslist **head, fn_2pred pred_val, const void *data, fn_free free_val) {
+size_t pslist_remove_all_free(struct Pslist **head, fn_pred_p_p pred, const void *data, fn_free free_val) {
 	struct Pslist *i;
 	size_t removed = 0;
 
-	while ((i = pslist_find_equal(*head, pred_val, data))) {
+	while ((i = pslist_find_equal(*head, pred, data))) {
 		if (free_val) {
 			free_val(i->val);
 		} else {
@@ -124,11 +124,11 @@ size_t pslist_remove_all_free(struct Pslist **head, fn_2pred pred_val, const voi
 	return removed;
 }
 
-void pslist_xor_free(struct Pslist **head1, struct Pslist *head2, fn_2pred pred_val, fn_free free_val, fn_clone clone_val) {
+void pslist_xor_free(struct Pslist **head1, struct Pslist *head2, fn_pred_p_p pred, fn_free free_val, fn_clone clone_val) {
 	struct Pslist *i = head2;
 
 	while (i) {
-		if (!pslist_remove_all_free(head1, pred_val, i->val, free_val)) {
+		if (!pslist_remove_all_free(head1, pred, i->val, free_val)) {
 			if (clone_val) {
 				pslist_append(head1, clone_val(i->val));
 			} else {
@@ -151,14 +151,14 @@ void *pslist_at(const struct Pslist *head, size_t index) {
 	return NULL;
 }
 
-struct Pslist *pslist_find(struct Pslist *head, fn_pred pred_val) {
+struct Pslist *pslist_find(struct Pslist *head, fn_pred_p pred) {
 	struct Pslist *i;
 
-	if (!pred_val)
+	if (!pred)
 		return NULL;
 
 	for (i = head; i; i = i->nex) {
-		if (pred_val(i->val)) {
+		if (pred(i->val)) {
 			return i;
 		}
 	}
@@ -166,8 +166,8 @@ struct Pslist *pslist_find(struct Pslist *head, fn_pred pred_val) {
 	return NULL;
 }
 
-void *pslist_find_val(struct Pslist *head, fn_pred pred_val) {
-	const struct Pslist *f = pslist_find(head, pred_val);
+void *pslist_find_val(struct Pslist *head, fn_pred_p pred) {
+	const struct Pslist *f = pslist_find(head, pred);
 	if (f)
 		return f->val;
 	else
@@ -263,8 +263,8 @@ struct Pslist *pslist_sort(struct Pslist *head, fn_less_than less_than_val) {
 	return sorted;
 }
 
-void pslist_move(struct Pslist **to, struct Pslist **from, fn_2pred pred_val, const void *data) {
-	if (!to || !from || !pred_val)
+void pslist_move(struct Pslist **to, struct Pslist **from, fn_pred_p_p pred, const void *data) {
+	if (!to || !from || !pred)
 		return;
 
 	struct Pslist *f = *from;
@@ -272,7 +272,7 @@ void pslist_move(struct Pslist **to, struct Pslist **from, fn_2pred pred_val, co
 		struct Pslist *r = f;
 		void *val = f->val;
 		f = f->nex;
-		if (pred_val(val, data)) {
+		if (pred(val, data)) {
 			pslist_append(to, val);
 			pslist_remove(from, &r);
 		}
