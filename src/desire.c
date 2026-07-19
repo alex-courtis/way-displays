@@ -55,7 +55,8 @@ void desire_enabled(struct Head *head) {
 	enabled |= ppmap_size(g_displ->heads) == 1;
 
 	// name_desc matches and (if present) any condition is true
-	enabled &= pset_find(g_cfg->disableds, (fn_2pred)cfg_disabled_matches_head, head) == NULL;
+	struct PsetFilter f = { .val_data = (fn_2pred)cfg_disabled_matches_head, .data = head, };
+	enabled &= pset_find(g_cfg->disableds, f) == NULL;
 
 	// reset manual override when it matches the auto-state
 	if (head->overrided_enabled != NoOverride) {
@@ -150,7 +151,8 @@ void desire_adaptive_sync(struct Head *head) {
 		return;
 	}
 
-	if (sset_find(g_cfg->adaptive_sync_off, (fn_2pred_str)head_name_desc_matches_head, head)) {
+	struct SsetFilter f = { .val_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+	if (sset_find(g_cfg->adaptive_sync_off, f)) {
 		head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 	} else {
 		head->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
@@ -195,8 +197,10 @@ void desire_reapply(struct Head *head) {
 }
 
 static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *candidates, fn_2pred pred) {
+	struct PsetFilter f = { .val_data = pred, };
 	for (const struct SPmapIt *bit = spmap_it(buckets); bit; bit = spmap_it_next(bit)) {
-		for (const struct PsetIt *cit = pset_filter_it(candidates, pred, bit->key); cit; cit = pset_it_next(cit)) {
+		f.data = bit->key;
+		for (const struct PsetIt *cit = pset_filter_it(candidates, f); cit; cit = pset_it_next(cit)) {
 			pset_add(bit->val, cit->val);
 			pset_it_remove(cit);
 		}

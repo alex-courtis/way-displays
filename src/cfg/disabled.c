@@ -69,11 +69,14 @@ void cfg_disabled_free(struct CfgDisabled *disabled) {
 }
 
 bool cfg_disabled_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
+	struct PsetFilter f = { .val = (fn_pred)cfg_condition_true, };
+
 	return
 		// name_desc must match
 		cfg_disabled_name_desc_matches_head(disabled, head) &&
+
 		// all conditions must be false
-		pset_find(disabled->conditions, (fn_2pred)cfg_condition_true, NULL) == NULL;
+		pset_find(disabled->conditions, f) == NULL;
 }
 
 bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {

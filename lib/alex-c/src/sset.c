@@ -29,6 +29,16 @@ static const struct SsetIt *it_init(const struct PsetIt *pit) {
 	return it;
 }
 
+static struct PsetFilter pset_filter_init(const struct SsetFilter *filter) {
+	const struct PsetFilter ppmap_filter = {
+		.val = (fn_pred)filter->val,
+		.data = filter->data,
+		.val_data = (fn_2pred)filter->val_data,
+	};
+
+	return ppmap_filter;
+}
+
 const struct Sset *sset_init(void) {
 	const struct SsetParams params = { 0 };
 	return sset_init_with(params);
@@ -90,16 +100,16 @@ const char *sset_at(const struct Sset* const set, const size_t i) {
 	return set ? pset_at(set->pset, i) : NULL;
 }
 
-const char *sset_find(const struct Sset* const set, fn_2pred_str pred_val, const void* const data) {
-	return set ? pset_find(set->pset, (fn_2pred)pred_val, data) : NULL;
+const void *sset_find(const struct Sset* const set, const struct SsetFilter filter) {
+	return set ? pset_find(set->pset, pset_filter_init(&filter)) : NULL;
 }
 
 const struct SsetIt *sset_it(const struct Sset* const set) {
 	return set ? it_init(pset_it(set->pset)) : NULL;
 }
 
-const struct SsetIt *sset_filter_it(const struct Sset* const set, fn_2pred_str pred_val, const void* const data) {
-	return set ? it_init(pset_filter_it(set->pset, (fn_2pred)pred_val, data)) : NULL;
+const struct SsetIt *sset_filter_it(const struct Sset* const set, const struct SsetFilter filter) {
+	return set ? it_init(pset_filter_it(set->pset, pset_filter_init(&filter))) : NULL;
 }
 
 const struct SsetIt *sset_it_next(const struct SsetIt* const it) {

@@ -98,7 +98,8 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	if (pset_find(cfg->disableds, (fn_2pred)cfg_disabled_name_desc_matches_head, head)) {
+	struct PsetFilter f = { .val_data = (fn_2pred)cfg_disabled_name_desc_matches_head, .data = head, };
+	if (pset_find(cfg->disableds, f)) {
 		if (head->overrided_enabled == NoOverride) {
 			log_info(NULL);
 			log_info("Applying \"DISABLED\" override for %s", head->name);
@@ -393,7 +394,8 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 	if (!mode) {
 		const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 		if (mode_pref) {
-			if (sset_find(g_cfg->max_preferred_refresh, (fn_2pred_str)head_name_desc_matches_head, head)) {
+			struct SsetFilter f = { .val_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+			if (sset_find(g_cfg->max_preferred_refresh, f)) {
 				mode = mode_max_refresh(mode_pref, head->modes);
 			} else {
 				mode = mode_pref;

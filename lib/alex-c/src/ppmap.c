@@ -26,7 +26,6 @@ struct PPmapItState {
 	const struct PPmapFilter filter;
 	size_t position;
 	bool attached;
-	const void *data;
 };
 
 // grow to capacity + grow

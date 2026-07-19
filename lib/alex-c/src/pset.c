@@ -20,10 +20,9 @@ struct Pset {
 
 struct PsetItState {
 	const struct Pset *set;
+	const struct PsetFilter filter;
 	size_t position;
 	bool attached;
-	fn_2pred pred_val;
-	const void *data;
 };
 
 // grow to capacity + grow
@@ -42,6 +41,17 @@ static void grow(struct Pset *set) {
 	// lock in new
 	set->vals = new_vals;
 	set->capacity = new_capacity;
+}
+
+static const struct PsetIt *it_init(const struct Pset *set) {
+	if (set->size == 0)
+		return NULL;
+
+	struct PsetIt *it = calloc(1, sizeof(struct PsetIt));
+	it->st = calloc(1, sizeof(struct PsetItState));
+	it->st->set = set;
+
+	return it;
 }
 
 static bool add(const struct Pset* const set, const void* const val, fn_clone alloc_val) {
@@ -146,6 +156,12 @@ static void it_remove(const struct PsetIt* const it, bool do_free) {
 	}
 
 	((struct PsetIt*)it)->val = NULL;
+}
+
+static bool filter_blocks(const struct PsetFilter *filter, const void* const val) {
+	return
+		(filter->val          && !filter->val         (val              )) ||
+		(filter->val_data     && !filter->val_data    (val, filter->data));
 }
 
 static size_t add_all(const struct Pset* const set, const struct Pset* const from, fn_clone clone_val) {
@@ -263,12 +279,12 @@ const void *pset_at(const struct Pset* const set, const size_t i) {
 	return set && i < set->size ? *(set->vals + i) : NULL;
 }
 
-const void *pset_find(const struct Pset* const set, fn_2pred pred_val, const void* const data) {
-	if (!set || !pred_val)
+const void *pset_find(const struct Pset* const set, const struct PsetFilter filter) {
+	if (!set)
 		return NULL;
 
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
-		if (pred_val(*v, data)) {
+		if (!filter_blocks(&filter, *v)) {
 			return *v;
 		}
 	}
@@ -280,22 +296,20 @@ const struct PsetIt *pset_it(const struct Pset* const set) {
 	if (!set || set->size == 0)
 		return NULL;
 
-	struct PsetIt *it = calloc(1, sizeof(struct PsetIt));
-	it->st = calloc(1, sizeof(struct PsetItState));
-	it->st->set = set;
+	const struct PsetIt *it = it_init(set);
 
 	return pset_it_next(it);
 }
 
-const struct PsetIt *pset_filter_it(const struct Pset* const set, fn_2pred pred_val, const void* const data) {
-	if (!set || !pred_val || set->size == 0)
+const struct PsetIt *pset_filter_it(const struct Pset* const set, const struct PsetFilter filter) {
+	if (!set)
 		return NULL;
 
-	struct PsetIt *it = calloc(1, sizeof(struct PsetIt));
-	it->st = calloc(1, sizeof(struct PsetItState));
-	it->st->set = set;
-	it->st->pred_val = pred_val;
-	it->st->data = data;
+	const struct PsetIt *it = it_init(set);
+	if (!it)
+		return NULL;
+
+	memcpy((void*)&it->st->filter, &filter, sizeof(struct PsetFilter));
 
 	return pset_it_next(it);
 }
@@ -322,7 +336,7 @@ const struct PsetIt *pset_it_next(const struct PsetIt* const it) {
 		struct PsetIt *it_m = (struct PsetIt*)it;
 		it_m->val = *(st->set->vals + st->position);
 
-		if ((st->pred_val && !st->pred_val(it->val, st->data))) {
+		if (filter_blocks(&st->filter, it->val)) {
 			continue;
 		}
 

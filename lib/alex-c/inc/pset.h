@@ -24,6 +24,18 @@ struct PsetIt {
 };
 
 /*
+ * Filter, must match all when multiple predicates specified, empty filter matches anything
+ */
+struct PsetFilter {
+	// test vals
+	fn_pred val;
+
+	// test vals against user data
+	const void *data;
+	fn_2pred val_data;
+};
+
+/*
  * Optional constructor params (default)
  */
 struct PsetParams {
@@ -72,13 +84,13 @@ bool pset_contains(const struct Pset* const set, const void* const val);
 const void *pset_at(const struct Pset* const set, const size_t i);
 
 // find the first, NULL when no match or NULL match
-const void *pset_find(const struct Pset* const set, fn_2pred pred_val, const void* const data);
+const void *pset_find(const struct Pset* const set, const struct PsetFilter filter);
 
 // create an iterator, caller must pset_it_free or invoke pset_next until NULL
 const struct PsetIt *pset_it(const struct Pset* const set);
 
-// create an iterator filtering by pred, return NULL when no matches or NULL match
-const struct PsetIt *pset_filter_it(const struct Pset* const set, fn_2pred pred_val, const void* const data);
+// create a filtering iterator, return NULL when no matches, caller must pset_it_free or invoke pset_next until NULL
+const struct PsetIt *pset_filter_it(const struct Pset* const set, const struct PsetFilter filter);
 
 // next iterator val, NULL at end of set
 const struct PsetIt *pset_it_next(const struct PsetIt* const it);

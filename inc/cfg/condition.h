@@ -19,7 +19,7 @@ struct CfgCondition *cfg_condition_clone(const struct CfgCondition* const from);
 
 // evaluates a condition.
 // NULL condition is always evaluated to be false.
-bool cfg_condition_true(const struct CfgCondition *condition, const void* const unused);
+bool cfg_condition_true(const struct CfgCondition *condition);
 
 void cfg_condition_free(struct CfgCondition *condition);
 

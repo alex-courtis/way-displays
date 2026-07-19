@@ -49,7 +49,7 @@ struct CfgCondition *cfg_condition_clone(const struct CfgCondition* const from) 
 	return to;
 }
 
-bool cfg_condition_true(const struct CfgCondition *condition, const void* const unused) {
+bool cfg_condition_true(const struct CfgCondition *condition) {
 	if (!condition)
 		return false;
 

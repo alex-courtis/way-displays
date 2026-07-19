@@ -22,6 +22,18 @@ struct SsetIt {
 };
 
 /*
+ * Filter, must match all when multiple predicates specified, empty filter matches anything
+ */
+struct SsetFilter {
+	// test vals
+	fn_pred_str val;
+
+	// test vals against user data
+	const void *data;
+	fn_2pred_str val_data;
+};
+
+/*
  * Optional constructor params, defaults noted
  */
 struct SsetParams {
@@ -59,14 +71,14 @@ bool sset_contains(const struct Sset* const set, const char* const val);
 // element at zero indexed position
 const char *sset_at(const struct Sset* const set, const size_t i);
 
-// find the first match, NULL when no match or NULL match
-const char *sset_find(const struct Sset* const set, fn_2pred_str pred_val, const void* const data);
+// find the first, NULL when no match or NULL match
+const void *sset_find(const struct Sset* const set, const struct SsetFilter filter);
 
 // create an iterator, caller must sset_it_free or invoke pset_next until NULL
 const struct SsetIt *sset_it(const struct Sset* const set);
 
-// create an iterator filtering by pred, return NULL when no matches or NULL match
-const struct SsetIt *sset_filter_it(const struct Sset* const set, fn_2pred_str pred_val, const void* const data);
+// create a filtering iterator, return NULL when no matches, caller must sset_it_free or invoke sset_next until NULL
+const struct SsetIt *sset_filter_it(const struct Sset* const set, const struct SsetFilter filter);
 
 // next iterator val, NULL at end of set
 const struct SsetIt *sset_it_next(const struct SsetIt* const it);
