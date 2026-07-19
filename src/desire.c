@@ -108,9 +108,10 @@ void desire_scale(struct Head *head) {
 	}
 
 	// user scale first
-	const struct SImapPair pair = simap_find_key(g_cfg->scales, (fn_2pred_str)head_name_desc_matches_head, head);
-	if (pair.key) {
-		head->des.scale = head_get_fixed_scale((double)pair.val / 1000);
+	const struct SImapFilter f = { .key_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+	const struct SImapPair p = simap_find(g_cfg->scales, f);
+	if (p.key) {
+		head->des.scale = head_get_fixed_scale((double)p.val / 1000);
 		return;
 	}
 
@@ -129,7 +130,8 @@ void desire_transform(struct Head *head) {
 	}
 
 	// maybe user transform
-	enum wl_output_transform transform = simap_find_key(g_cfg->transforms, (fn_2pred_str)head_name_desc_matches_head, head).val;
+	const struct SImapFilter f = { .key_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+	enum wl_output_transform transform = simap_find(g_cfg->transforms, f).val;
 	if (transform) {
 		head->des.transform = transform;
 		return;

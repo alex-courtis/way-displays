@@ -47,7 +47,7 @@ struct SPmapFilter {
 	fn_2pred_str key_val;
 
 	// test keys or vals against user data
-	const void * const data;
+	const void *data;
 	fn_2pred_str key_data;
 	fn_2pred val_data;
 	fn_3pred_str_ptr key_val_data;

@@ -36,7 +36,7 @@ void act_handle_success(void) {
 
 			case VRR_OFF:
 				// sway reports adaptive sync failure as success
-				if (head_current_adaptive_sync_not_desired(head, NULL)) {
+				if (head_current_adaptive_sync_not_desired(head)) {
 					act_handle_failure();
 					return;
 				}
@@ -98,7 +98,7 @@ void act_handle_failure(void) {
 		case VRR_OFF:
 			if (head) {
 				// river reports adaptive sync failure as failure
-				if (head_current_adaptive_sync_not_desired(head, NULL)) {
+				if (head_current_adaptive_sync_not_desired(head)) {
 
 					print_adaptive_sync_fail(WARNING, head);
 					callback_adaptive_sync_fail(WARNING, head);
@@ -125,9 +125,11 @@ void act_apply(void) {
 
 	displ_delta_destroy(g_displ);
 
+	struct PPmapFilter f = { 0 };
+
 	// determine whether changes are needed before initiating output configuration
-	struct PPmapFilter filter_changing = { .val = (fn_pred)head_current_not_desired, };
-	for (const struct PPmapIt *it = ppmap_filter_it2(g_displ->heads, filter_changing); it; it = ppmap_it_next(it)) {
+	f.val = (fn_pred)head_current_not_desired;
+	for (const struct PPmapIt *it = ppmap_filter_it(g_displ->heads, f); it; it = ppmap_it_next(it)) {
 		ppmap_put(heads_changing, it->key, it->val);
 	}
 
@@ -139,20 +141,20 @@ void act_apply(void) {
 	// create and start the listener
 	struct zwlr_output_configuration_v1 *zconfig = create_zwlr_output_config_listener(g_displ);
 
-	struct PPmapPair pair;
+	struct PPmapPair p;
 	struct Head *head;
 
 	// 1 - reapply
-	struct PPmapFilter filter_reapply = { .val = (fn_pred)head_reapply_required, };
-	pair = ppmap_find2(heads_changing, filter_reapply);
-	if (pair.val) {
-		head = (struct Head*)pair.val;
+	f.val = (fn_pred)head_reapply_required;
+	p = ppmap_find(heads_changing, f);
+	if (p.val) {
+		head = (struct Head*)p.val;
 
 		displ_delta_init(g_displ, 0, head, NULL);
 
 		print_head(INFO, DELTA, head);
 
-		_zwlr_output_configuration_v1_disable_head(zconfig, (struct zwlr_output_head_v1*)pair.key);
+		_zwlr_output_configuration_v1_disable_head(zconfig, (struct zwlr_output_head_v1*)p.key);
 
 		g_displ->delta.human = delta_human_reapply(head);
 
@@ -162,16 +164,17 @@ void act_apply(void) {
 	}
 
 	// 2 - single mode
-	pair = ppmap_find_val(heads_changing, (fn_2pred)head_current_mode_not_desired, NULL);
-	if (pair.val) {
-		head = (struct Head*)pair.val;
+	f.val = (fn_pred)head_current_mode_not_desired;
+	p = ppmap_find(heads_changing, f);
+	if (p.val) {
+		head = (struct Head*)p.val;
 
 		displ_delta_init(g_displ, MODE, head, head->des.zmode);
 
 		print_head(INFO, DELTA, head);
 
 		// mode change in its own operation; mode change desire is always enabled
-		head->zconfig = _zwlr_output_configuration_v1_enable_head(zconfig, (struct zwlr_output_head_v1*)pair.key);
+		head->zconfig = _zwlr_output_configuration_v1_enable_head(zconfig, (struct zwlr_output_head_v1*)p.key);
 		_zwlr_output_configuration_head_v1_set_mode(head->zconfig, (struct zwlr_output_mode_v1*)head->des.zmode);
 
 		g_displ->delta.human = delta_human_mode(head);
@@ -180,16 +183,17 @@ void act_apply(void) {
 	}
 
 	// 3 - single VRR
-	pair = ppmap_find_val(heads_changing, (fn_2pred)head_current_adaptive_sync_not_desired, NULL);
-	if (pair.val) {
-		head = (struct Head*)pair.val;
+	f.val = (fn_pred)head_current_adaptive_sync_not_desired;
+	p = ppmap_find(heads_changing, f);
+	if (p.val) {
+		head = (struct Head*)p.val;
 
 		displ_delta_init(g_displ, VRR_OFF, head, NULL);
 
 		print_head(INFO, DELTA, head);
 
 		// adaptive sync change in its own operation; adaptive sync change desire is always enabled
-		head->zconfig = _zwlr_output_configuration_v1_enable_head(zconfig, (struct zwlr_output_head_v1*)pair.key);
+		head->zconfig = _zwlr_output_configuration_v1_enable_head(zconfig, (struct zwlr_output_head_v1*)p.key);
 		_zwlr_output_configuration_head_v1_set_adaptive_sync(head->zconfig, head->des.adaptive_sync);
 
 		g_displ->delta.human = delta_human_adaptive_sync(head);

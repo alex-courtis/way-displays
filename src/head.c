@@ -279,11 +279,11 @@ bool head_current_not_desired(const struct Head * const head) {
 			 head->des.adaptive_sync != head->cur.adaptive_sync));
 }
 
-bool head_current_mode_not_desired(const struct Head * const head, const void * const unused) {
+bool head_current_mode_not_desired(const struct Head * const head) {
 	return (head && head->des.zmode != head->cur.zmode);
 }
 
-bool head_current_adaptive_sync_not_desired(const struct Head * const head, const void * const unused) {
+bool head_current_adaptive_sync_not_desired(const struct Head * const head) {
 	return (head && head->des.adaptive_sync != head->cur.adaptive_sync);
 }
 
@@ -368,9 +368,8 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 	const struct Mode *mode = NULL;
 
 	// maybe a cfg mode
-	const struct SPmapFilter filter = { .key_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
-	struct Mode *cfg_mode = (struct Mode*)spmap_find(g_cfg->modes, filter).val;
-
+	struct SPmapFilter f = { .key_data = (fn_2pred_str)head_name_desc_matches_head, .data = head, };
+	struct Mode *cfg_mode = (struct Mode*)spmap_find(g_cfg->modes, f).val;
 	if (cfg_mode) {
 		mode = mode_best_satisfying(cfg_mode, head->modes);
 		if (!mode && !cfg_mode->warned_no_mode) {
@@ -420,7 +419,8 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 	}
 
 	// TODO c-lib map map_first_key
-	return ppmap_find_val(head->modes, equal_ptr, mode).key;
+	struct PPmapFilter fv = { .val_data = equal_ptr, .data = mode, };
+	return ppmap_find(head->modes, fv).key;
 }
 
 double head_scale(const struct Head * const head, const struct zwlr_output_mode_v1 * const zmode) {

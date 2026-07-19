@@ -304,12 +304,15 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	if (!head)
 		return;
 
+	struct IPmapFilter of = { .val_data = (fn_2pred)output_matches_name, };
+
 	const struct Mode *mode_cur = ppmap_get(head->modes, head->cur.zmode);
 
 	if (head->cur.enabled) {
 		log_(t, "    scale:     %.3f (%.3f)", wl_fixed_to_double(head->cur.scale), head_scale(head, head->cur.zmode));
 
-		const struct Output *output = ipmap_find_val(g_displ->outputs, (fn_2pred)output_matches_name, head->name).val;
+		of.data = head->name;
+		const struct Output *output = ipmap_find(g_displ->outputs, of).val;
 		if (output) {
 			log_(t, "    size:      %dx%d", output->logical_width, output->logical_height);
 			log_(t, "    position:  %d,%d", output->logical_x, output->logical_y);
@@ -347,12 +350,12 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 		return;
 
 	if (head->des.enabled) {
-		if (head_current_mode_not_desired(head, NULL)) {
+		if (head_current_mode_not_desired(head)) {
 			// mode changes happen in their own operation
 			if (!head->cur.enabled || head->cur.zmode != head->des.zmode) {
 				print_mode(t, ppmap_get(head->modes, head->des.zmode), head->des.zmode == head->zmode_pref);
 			}
-		} else if (head_current_adaptive_sync_not_desired(head, NULL)) {
+		} else if (head_current_adaptive_sync_not_desired(head)) {
 			// adaptive sync changes happen in their own operation
 			log_(t, "    VRR:       %s", head->des.adaptive_sync == ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED ? "on" : "off");
 		} else {
@@ -536,11 +539,11 @@ void print_head_queue(const enum LogThreshold t, const struct Displ *displ, cons
 			reapply = sprintf_append(reapply, " %s:reapply ;", head->name);
 
 		// granular mode
-		if (head_current_mode_not_desired(head, NULL))
+		if (head_current_mode_not_desired(head))
 			mode = sprintf_append(mode, " %s:mode ;", head->name);
 
 		// granular vrr
-		if (head_current_adaptive_sync_not_desired(head, NULL))
+		if (head_current_adaptive_sync_not_desired(head))
 			vrr = sprintf_append(vrr, " %s:vrr ;", head->name);
 
 		// mass disable

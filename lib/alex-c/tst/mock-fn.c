@@ -16,7 +16,24 @@ bool mock_less_than(const void* const a, const void* const b) {
 	return mock_type(bool);
 }
 
-// TODO rename params
+bool mock_pred(const void* const ptr) {
+	check_expected_ptr(ptr);
+
+	return mock_type(bool);
+}
+
+bool mock_pred_str(const char* const str) {
+	check_expected_ptr(str);
+
+	return mock_type(bool);
+}
+
+bool mock_pred_szt(const size_t i) {
+	check_expected_int(i);
+
+	return mock_type(bool);
+}
+
 bool mock_2pred(const void* const ptr, const void* const data) {
 	check_expected_ptr(ptr);
 	check_expected_ptr(data);
@@ -34,6 +51,13 @@ bool mock_2pred_str(const char* const str, const void* const data) {
 bool mock_2pred_szt(const size_t i, const void* const data) {
 	check_expected_int(i);
 	check_expected_ptr(data);
+
+	return mock_type(bool);
+}
+
+bool mock_2pred_str_szt(const char* const str,  const size_t i) {
+	check_expected_ptr(str);
+	check_expected_int(i);
 
 	return mock_type(bool);
 }
@@ -74,12 +98,6 @@ bool mock_3pred_szt_ptr(const size_t i, const void* const ptr, const void* const
 	check_expected_int(i);
 	check_expected_ptr(ptr);
 	check_expected_ptr(data);
-
-	return mock_type(bool);
-}
-
-bool mock_pred(const void* const ptr) {
-	check_expected_ptr(ptr);
 
 	return mock_type(bool);
 }

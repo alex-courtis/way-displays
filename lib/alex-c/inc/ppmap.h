@@ -42,7 +42,7 @@ struct PPmapFilter {
 	fn_2pred key_val;
 
 	// test keys or vals against user data
-	const void * const data;
+	const void *data;
 	fn_2pred key_data;
 	fn_2pred val_data;
 	fn_3pred key_val_data;
@@ -108,31 +108,13 @@ bool ppmap_contains_val(const struct PPmap* const map, const void* const val);
 struct PPmapPair ppmap_at(const struct PPmap* const map, const size_t i);
 
 // find the first key/val pred, {NULL,NULL} when no matches, first when empty filter
-struct PPmapPair ppmap_find2(const struct PPmap* const map, const struct PPmapFilter filter);
-
-// find the first key/val pred, {NULL,NULL} when no matches or NULL match
-struct PPmapPair ppmap_find(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data);
-
-// find the first key pred, {NULL,NULL} when no matches or NULL match
-struct PPmapPair ppmap_find_key(const struct PPmap* const map, fn_2pred pred_key, const void* const data);
-
-// find the first val pred, {NULL,NULL} when no matches or NULL match
-struct PPmapPair ppmap_find_val(const struct PPmap* const map, fn_2pred pred_val, const void* const data);
+struct PPmapPair ppmap_find(const struct PPmap* const map, const struct PPmapFilter filter);
 
 // create an iterator, caller must ppmap_it_free or invoke ppmap_next until NULL
 const struct PPmapIt *ppmap_it(const struct PPmap* const map);
 
 // create a filtering iterator, return NULL when no matches, caller must ppmap_it_free or invoke ppmap_next until NULL
-const struct PPmapIt *ppmap_filter_it2(const struct PPmap* const map, const struct PPmapFilter filter);
-
-// create an iterator filtering by key/val pred,  or NULL match
-const struct PPmapIt *ppmap_filter_it(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data);
-
-// create an iterator filtering by key pred, return NULL when no matches or NULL match
-const struct PPmapIt *ppmap_key_filter_it(const struct PPmap* const map, fn_2pred pred_key, const void* const data);
-
-// create an iterator filtering by val pred, return NULL when no matches or NULL match
-const struct PPmapIt *ppmap_val_filter_it(const struct PPmap* const map, fn_2pred pred_val, const void* const data);
+const struct PPmapIt *ppmap_filter_it(const struct PPmap* const map, const struct PPmapFilter filter);
 
 // next iterator entry, NULL at end of map
 const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it);

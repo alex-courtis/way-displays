@@ -14,31 +14,22 @@ struct SImap {
 	const struct PPmap *ppmap;
 };
 
-struct SImapFilterData {
-	fn_3pred_str_szt pred_key_val;
-	fn_2pred_str pred_key;
-	fn_2pred_szt pred_val;
-	const void *data;
-};
-
 struct SImapItState {
 	const struct PPmapIt *pit;
-	const struct SImapFilterData *filter_data;
+	const struct SImapFilter *filter;
 };
 
-static bool pred_key_val_wrapper(const void* const key, const void* const val, const void* const data) {
-	const struct SImapFilterData* const filter_data = data;
-	return filter_data->pred_key_val(key, *(size_t*)val, filter_data->data);
-}
+static bool filter_passes(const void* const key, const void* const val, const struct SImapFilter* const filter) {
+	const size_t i = *(size_t*)val;
 
-static bool pred_key_wrapper(const void* const key, const void* const data) {
-	const struct SImapFilterData* const filter_data = data;
-	return filter_data->pred_key(key, filter_data->data);
-}
-
-static bool pred_val_wrapper(const void* const val, const void* const data) {
-	const struct SImapFilterData* const filter_data = data;
-	return filter_data->pred_val(*(size_t*)val, filter_data->data);
+	return !(
+			(filter->key          && !filter->key         (key                 )) ||
+			(filter->val          && !filter->val         (     i              )) ||
+			(filter->key_val      && !filter->key_val     (key, i              )) ||
+			(filter->key_data     && !filter->key_data    (key,    filter->data)) ||
+			(filter->val_data     && !filter->val_data    (     i, filter->data)) ||
+			(filter->key_val_data && !filter->key_val_data(key, i, filter->data))
+			);
 }
 
 static struct SImapIt *it_init(const struct PPmapIt *pit) {
@@ -107,7 +98,7 @@ void simap_it_free(const struct SImapIt* const it) {
 		return;
 
 	if (it->st) {
-		free((void*)it->st->filter_data);
+		free((void*)it->st->filter);
 		ppmap_it_free(it->st->pit);
 	}
 
@@ -165,56 +156,17 @@ struct SImapPair simap_at(const struct SImap* const map, const size_t i) {
 	return res;
 }
 
-struct SImapPair simap_find(const struct SImap* const map, fn_3pred_str_szt pred_key_val, const void* const data) {
+struct SImapPair simap_find(const struct SImap* const map, const struct SImapFilter filter) {
 	struct SImapPair res = { 0 };
 
-	if (!map || !pred_key_val)
+	if (!map)
 		return res;
 
-	struct SImapFilterData filter_data = {
-		.pred_key_val = pred_key_val,
-		.data = data,
+	const struct PPmapFilter ppmap_filter = {
+		.key_val_data = (fn_3pred)filter_passes,
+		.data = &filter,
 	};
-
-	struct PPmapPair pres = ppmap_find(map->ppmap, pred_key_val_wrapper, &filter_data);
-
-	res.key = pres.key;
-	res.val = pres.val ? *(size_t*)pres.val : 0;
-
-	return res;
-}
-
-struct SImapPair simap_find_key(const struct SImap* const map, fn_2pred_str pred_key, const void* const data) {
-	struct SImapPair res = { 0 };
-
-	if (!map || !pred_key)
-		return res;
-
-	struct SImapFilterData filter_data = {
-		.pred_key = pred_key,
-		.data = data,
-	};
-
-	struct PPmapPair pres = ppmap_find_key(map->ppmap, pred_key_wrapper, &filter_data);
-
-	res.key = pres.key;
-	res.val = pres.val ? *(size_t*)pres.val : 0;
-
-	return res;
-}
-
-struct SImapPair simap_find_val(const struct SImap* const map, fn_2pred_szt pred_val, const void* const data) {
-	struct SImapPair res = { 0 };
-
-	if (!map || !pred_val)
-		return res;
-
-	struct SImapFilterData filter_data = {
-		.pred_val = pred_val,
-		.data = data,
-	};
-
-	struct PPmapPair pres = ppmap_find_val(map->ppmap, pred_val_wrapper, &filter_data);
+	struct PPmapPair pres = ppmap_find(map->ppmap, ppmap_filter);
 
 	res.key = pres.key;
 	res.val = pres.val ? *(size_t*)pres.val : 0;
@@ -226,61 +178,29 @@ const struct SImapIt *simap_it(const struct SImap* const map) {
 	return map ? it_init(ppmap_it(map->ppmap)) : NULL;
 }
 
-const struct SImapIt *simap_filter_it(const struct SImap* const map, fn_3pred_str_szt pred_key_val, const void* const data) {
-	if (!map || !pred_key_val)
+const struct SImapIt *simap_filter_it(const struct SImap* const map, const struct SImapFilter filter) {
+	if (!map)
 		return NULL;
 
-	struct SImapFilterData *filter_data = calloc(1, sizeof(struct SImapFilterData));
-	filter_data->pred_key_val = pred_key_val;
-	filter_data->data = data;
+	struct SImapFilter *filter_as_data = calloc(1, sizeof(struct SImapFilter));
+	memcpy((void*)filter_as_data, &filter, sizeof(struct SImapFilter));
 
-	struct SImapIt *it = it_init(ppmap_filter_it(map->ppmap, pred_key_val_wrapper, filter_data));
+	const struct PPmapFilter ppmap_filter = {
+		.key_val_data = (fn_3pred)filter_passes,
+		.data = filter_as_data,
+	};
+
+	struct SImapIt *it = it_init(ppmap_filter_it(map->ppmap, ppmap_filter));
 
 	if (it) {
-		it->st->filter_data = filter_data;
+		it->st->filter = filter_as_data;
 		return it;
 	} else {
-		free(filter_data);
+		free(filter_as_data);
 		return NULL;
 	}
-}
 
-const struct SImapIt *simap_key_filter_it(const struct SImap* const map, fn_2pred_str pred_key, const void* const data) {
-	if (!map || !pred_key)
-		return NULL;
-
-	struct SImapFilterData *filter_data = calloc(1, sizeof(struct SImapFilterData));
-	filter_data->pred_key = pred_key;
-	filter_data->data = data;
-
-	struct SImapIt *it = it_init(ppmap_key_filter_it(map->ppmap, pred_key_wrapper, filter_data));
-
-	if (it) {
-		it->st->filter_data = filter_data;
-		return it;
-	} else {
-		free(filter_data);
-		return NULL;
-	}
-}
-
-const struct SImapIt *simap_val_filter_it(const struct SImap* const map, fn_2pred_szt pred_val, const void* const data) {
-	if (!map || !pred_val)
-		return NULL;
-
-	struct SImapFilterData *filter_data = calloc(1, sizeof(struct SImapFilterData));
-	filter_data->pred_val = pred_val;
-	filter_data->data = data;
-
-	struct SImapIt *it = it_init(ppmap_val_filter_it(map->ppmap, pred_val_wrapper, filter_data));
-
-	if (it) {
-		it->st->filter_data = filter_data;
-		return it;
-	} else {
-		free(filter_data);
-		return NULL;
-	}
+	return NULL;
 }
 
 const struct SImapIt *simap_it_next(const struct SImapIt* const it) {

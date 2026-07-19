@@ -336,7 +336,7 @@ void cfg_validate_fix(struct Cfg *cfg) {
 		return;
 	}
 
-	// warn and fix arrange/align
+	// warn and fix bad ARRANGE ALIGN
 	enum Align align = cfg->align;
 	enum Arrange arrange = cfg->arrange;
 	switch(arrange) {
@@ -357,16 +357,16 @@ void cfg_validate_fix(struct Cfg *cfg) {
 			break;
 	}
 
-	// warn and fix auto_scale_dpi
+	// warn and default bad AUTO_SCALE_DPI
 	if (cfg->auto_scale_dpi <= AUTO_SCALE_DPI_MIN) {
 		log_warn(NULL);
 		log_warn("Ignoring AUTO_SCALE_DPI %d < %d. Using default %d.", cfg->auto_scale_dpi, AUTO_SCALE_DPI_MIN, AUTO_SCALE_DPI_DEFAULT);
 		cfg->auto_scale_dpi = AUTO_SCALE_DPI_DEFAULT;
 	}
 
-	// warn and clear invalid modes
-	const struct SPmapFilter filter = { .key_val = (fn_2pred_str)mode_is_invalid, };
-	for (const struct SPmapIt *it = spmap_filter_it(cfg->modes, filter); it; it = spmap_it_next(it)) {
+	// warn and remove invalid MODE
+	struct SPmapFilter f = { .key_val = (fn_2pred_str)mode_is_invalid, };
+	for (const struct SPmapIt *it = spmap_filter_it(cfg->modes, f); it; it = spmap_it_next(it)) {
 		spmap_it_remove_free(it);
 	}
 }

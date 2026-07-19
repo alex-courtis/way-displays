@@ -10,11 +10,17 @@ bool mock_less_than(const void* const a, const void* const b);
 
 bool mock_pred     (const void* const ptr);
 
+bool mock_pred_str(const char* const str);
+
+bool mock_pred_szt(const size_t i);
+
 bool mock_2pred    (const void* const ptr, const void* const data);
 
 bool mock_2pred_str(const char* const str, const void* const data);
 
 bool mock_2pred_szt(const size_t i,        const void* const data);
+
+bool mock_2pred_str_szt(const char* const str,  const size_t i);
 
 bool mock_3pred        (const void* const ptr1, const void* const ptr2, const void* const data);
 

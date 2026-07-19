@@ -26,9 +26,6 @@ struct PPmapItState {
 	const struct PPmapFilter filter;
 	size_t position;
 	bool attached;
-	fn_3pred pred_key_val;
-	fn_2pred pred_key;
-	fn_2pred pred_val;
 	const void *data;
 };
 
@@ -65,13 +62,13 @@ static const struct PPmapIt *it_init(const struct PPmap *map) {
 	return it;
 }
 
-static bool filter_matches(const struct PPmapFilter *filter, const void* const key, const void* const val) {
+static bool filter_blocks(const struct PPmapFilter *filter, const void* const key, const void* const val) {
 	return
 		(filter->key          && !filter->key         (key                    )) ||
-		(filter->val          && !filter->val         (val                    )) ||
+		(filter->val          && !filter->val         (      val              )) ||
 		(filter->key_val      && !filter->key_val     (key,  val              )) ||
 		(filter->key_data     && !filter->key_data    (key,       filter->data)) ||
-		(filter->val_data     && !filter->val_data    (val,       filter->data)) ||
+		(filter->val_data     && !filter->val_data    (      val, filter->data)) ||
 		(filter->key_val_data && !filter->key_val_data(key,  val, filter->data));
 }
 
@@ -372,26 +369,7 @@ struct PPmapPair ppmap_at(const struct PPmap* const map, const size_t i) {
 	return res;
 }
 
-struct PPmapPair ppmap_find(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data) {
-	struct PPmapPair res = { 0 };
-
-	if (!map || !pred_key_val)
-		return res;
-
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
-		if (pred_key_val(*k, *v, data)) {
-			res.key = *k;
-			res.val = *v;
-			break;
-		}
-	}
-
-	return res;
-}
-
-struct PPmapPair ppmap_find2(const struct PPmap* const map, const struct PPmapFilter filter) {
+struct PPmapPair ppmap_find(const struct PPmap* const map, const struct PPmapFilter filter) {
 	struct PPmapPair res = { 0 };
 
 	if (!map)
@@ -400,50 +378,12 @@ struct PPmapPair ppmap_find2(const struct PPmap* const map, const struct PPmapFi
 	const void **k;
 	const void **v;
 	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
-		if (filter_matches(&filter, *k, *v))
+		if (filter_blocks(&filter, *k, *v))
 			continue;
 
 		res.key = *k;
 		res.val = *v;
 		break;
-	}
-
-	return res;
-}
-
-struct PPmapPair ppmap_find_key(const struct PPmap* const map, fn_2pred pred_key, const void* const data) {
-	struct PPmapPair res = { 0 };
-
-	if (!map || !pred_key)
-		return res;
-
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
-		if (pred_key(*k, data)) {
-			res.key = *k;
-			res.val = *v;
-			break;
-		}
-	}
-
-	return res;
-}
-
-struct PPmapPair ppmap_find_val(const struct PPmap* const map, fn_2pred pred_val, const void* const data) {
-	struct PPmapPair res = { 0 };
-
-	if (!map || !pred_val)
-		return res;
-
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
-		if (pred_val(*v, data)) {
-			res.key = *k;
-			res.val = *v;
-			break;
-		}
 	}
 
 	return res;
@@ -461,7 +401,7 @@ const struct PPmapIt *ppmap_it(const struct PPmap* const map) {
 	return ppmap_it_next(it);
 }
 
-const struct PPmapIt *ppmap_filter_it2(const struct PPmap* const map, const struct PPmapFilter filter) {
+const struct PPmapIt *ppmap_filter_it(const struct PPmap* const map, const struct PPmapFilter filter) {
 	if (!map)
 		return NULL;
 
@@ -470,48 +410,6 @@ const struct PPmapIt *ppmap_filter_it2(const struct PPmap* const map, const stru
 		return NULL;
 
 	memcpy((void*)&it->st->filter, &filter, sizeof(struct PPmapFilter));
-
-	return ppmap_it_next(it);
-}
-
-const struct PPmapIt *ppmap_filter_it(const struct PPmap* const map, fn_3pred pred_key_val, const void* const data) {
-	if (!map || !pred_key_val)
-		return NULL;
-
-	const struct PPmapIt *it = it_init(map);
-	if (!it)
-		return NULL;
-
-	it->st->pred_key_val = pred_key_val;
-	it->st->data = data;
-
-	return ppmap_it_next(it);
-}
-
-const struct PPmapIt *ppmap_key_filter_it(const struct PPmap* const map, fn_2pred pred_key, const void* const data) {
-	if (!map || !pred_key)
-		return NULL;
-
-	const struct PPmapIt *it = it_init(map);
-	if (!it)
-		return NULL;
-
-	it->st->pred_key = pred_key;
-	it->st->data = data;
-
-	return ppmap_it_next(it);
-}
-
-const struct PPmapIt *ppmap_val_filter_it(const struct PPmap* const map, fn_2pred pred_val, const void* const data) {
-	if (!map || !pred_val)
-		return NULL;
-
-	const struct PPmapIt *it = it_init(map);
-	if (!it)
-		return NULL;
-
-	it->st->pred_val = pred_val;
-	it->st->data = data;
 
 	return ppmap_it_next(it);
 }
@@ -541,18 +439,8 @@ const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it) {
 		it_m->key = *(st->map->keys + st->position);
 		it_m->val = *(st->map->vals + st->position);
 
-		if (filter_matches(&st->filter, it_m->key, it_m->val))
+		if (filter_blocks(&st->filter, it_m->key, it_m->val))
 			continue;
-
-		if (st->pred_key_val && !st->pred_key_val(it->key, it->val, st->data)) {
-			continue;
-		}
-		if (st->pred_key && !st->pred_key(it->key, st->data)) {
-			continue;
-		}
-		if (st->pred_val && !st->pred_val(it->val, st->data)) {
-			continue;
-		}
 
 		return it;
 	}

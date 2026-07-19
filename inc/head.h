@@ -122,10 +122,10 @@ bool head_name_desc_matches_head(const char * const name_desc, const struct Head
 bool head_current_not_desired(const struct Head * const head);
 
 // current mode is not desired
-bool head_current_mode_not_desired(const struct Head * const head, const void * const unused);
+bool head_current_mode_not_desired(const struct Head * const head);
 
 // current adaptive sync is not desired
-bool head_current_adaptive_sync_not_desired(const struct Head * const head, const void * const unused);
+bool head_current_adaptive_sync_not_desired(const struct Head * const head);
 
 // full reapply next layout
 bool head_reapply_required(const struct Head * const head);

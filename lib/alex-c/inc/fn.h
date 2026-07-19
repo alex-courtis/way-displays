@@ -42,6 +42,8 @@ typedef bool (*fn_pred)(const void* const ptr);
 
 typedef bool (*fn_pred_str)(const char* const str);
 
+typedef bool (*fn_pred_szt)(const size_t i);
+
 // TODO rename params
 
 //
@@ -50,6 +52,10 @@ typedef bool (*fn_pred_str)(const char* const str);
 typedef bool (*fn_2pred)    (const void* const ptr, const void* const data);
 
 typedef bool (*fn_2pred_str)(const char* const str, const void* const data);
+
+typedef bool (*fn_2pred_str_str)(const char* const str, const char* const str2);
+
+typedef bool (*fn_2pred_str_szt)(const char* const str, const size_t i);
 
 typedef bool (*fn_2pred_szt)(const size_t i,        const void* const data);
 

@@ -12,32 +12,10 @@ struct IPmap {
 	const struct PPmap *ppmap;
 };
 
-struct IPmapFilterData {
-	fn_3pred_szt_ptr pred_key_val;
-	fn_2pred_szt pred_key;
-	fn_2pred pred_val;
-	const void *data;
-};
-
 struct IPmapItState {
 	const struct PPmapIt *pit;
-	const struct IPmapFilterData *filter_data;
+	const struct IPmapFilter *filter;
 };
-
-static bool pred_key_val_wrapper(const void* const key, const void* const val, const void* const data) {
-	const struct IPmapFilterData* const filter_data = data;
-	return filter_data->pred_key_val(*(size_t*)key, val, filter_data->data);
-}
-
-static bool pred_key_wrapper(const void* const val, const void* const data) {
-	const struct IPmapFilterData* const filter_data = data;
-	return filter_data->pred_key(*(size_t*)val, filter_data->data);
-}
-
-static bool pred_val_wrapper(const void* const val, const void* const data) {
-	const struct IPmapFilterData* const filter_data = data;
-	return filter_data->pred_val(val, filter_data->data);
-}
 
 static const struct IPmap *clone(const struct IPmap* const from, bool deep) {
 	if (!from)
@@ -50,6 +28,19 @@ static const struct IPmap *clone(const struct IPmap* const from, bool deep) {
 	memcpy((void*)&to->params, &from->params, sizeof(struct IPmapParams));
 
 	return to;
+}
+
+static bool filter_passes(const void* const key, const void* const val, const struct IPmapFilter* const filter) {
+	const size_t i = *(size_t*)key;
+
+	return !(
+			(filter->key          && !filter->key         (i                   )) ||
+			(filter->val          && !filter->val         (   val              )) ||
+			(filter->key_val      && !filter->key_val     (i, val              )) ||
+			(filter->key_data     && !filter->key_data    (i,      filter->data)) ||
+			(filter->val_data     && !filter->val_data    (   val, filter->data)) ||
+			(filter->key_val_data && !filter->key_val_data(i, val, filter->data))
+			);
 }
 
 static struct IPmapIt *it_init(const struct PPmapIt *pit) {
@@ -144,7 +135,7 @@ void ipmap_it_free(const struct IPmapIt* const it) {
 		return;
 
 	if (it->st) {
-		free((void*)it->st->filter_data);
+		free((void*)it->st->filter);
 		ppmap_it_free(it->st->pit);
 	}
 
@@ -178,56 +169,17 @@ struct IPmapPair ipmap_at(const struct IPmap* const map, const size_t i) {
 	return res;
 }
 
-struct IPmapPair ipmap_find(const struct IPmap* const map, fn_3pred_szt_ptr pred_key_val, const void* const data) {
+struct IPmapPair ipmap_find(const struct IPmap* const map, const struct IPmapFilter filter) {
 	struct IPmapPair res = { 0 };
 
-	if (!map || !pred_key_val)
+	if (!map)
 		return res;
 
-	struct IPmapFilterData filter_data = {
-		.pred_key_val = pred_key_val,
-		.data = data,
+	const struct PPmapFilter ppmap_filter = {
+		.key_val_data = (fn_3pred)filter_passes,
+		.data = &filter,
 	};
-
-	struct PPmapPair pres = ppmap_find(map->ppmap, pred_key_val_wrapper, &filter_data);
-
-	res.key = pres.key ? *(size_t*)pres.key : 0;
-	res.val = pres.val;
-
-	return res;
-}
-
-struct IPmapPair ipmap_find_key(const struct IPmap* const map, fn_2pred_szt pred_key, const void* const data) {
-	struct IPmapPair res = { 0 };
-
-	if (!map || !pred_key)
-		return res;
-
-	struct IPmapFilterData filter_data = {
-		.pred_key = pred_key,
-		.data = data,
-	};
-
-	struct PPmapPair pres = ppmap_find_key(map->ppmap, pred_key_wrapper, &filter_data);
-
-	res.key = pres.key ? *(size_t*)pres.key : 0;
-	res.val = pres.val;
-
-	return res;
-}
-
-struct IPmapPair ipmap_find_val(const struct IPmap* const map, fn_2pred pred_val, const void* const data) {
-	struct IPmapPair res = { 0 };
-
-	if (!map || !pred_val)
-		return res;
-
-	struct IPmapFilterData filter_data = {
-		.pred_val = pred_val,
-		.data = data,
-	};
-
-	struct PPmapPair pres = ppmap_find_val(map->ppmap, pred_val_wrapper, &filter_data);
+	struct PPmapPair pres = ppmap_find(map->ppmap, ppmap_filter);
 
 	res.key = pres.key ? *(size_t*)pres.key : 0;
 	res.val = pres.val;
@@ -239,61 +191,29 @@ const struct IPmapIt *ipmap_it(const struct IPmap* const map) {
 	return map ? it_init(ppmap_it(map->ppmap)) : NULL;
 }
 
-const struct IPmapIt *ipmap_filter_it(const struct IPmap* const map, fn_3pred_szt_ptr pred_key_val, const void* const data) {
-	if (!map || !pred_key_val)
+const struct IPmapIt *ipmap_filter_it(const struct IPmap* const map, const struct IPmapFilter filter) {
+	if (!map)
 		return NULL;
 
-	struct IPmapFilterData *filter_data = calloc(1, sizeof(struct IPmapFilterData));
-	filter_data->pred_key_val = pred_key_val;
-	filter_data->data = data;
+	struct IPmapFilter *filter_as_data = calloc(1, sizeof(struct IPmapFilter));
+	memcpy((void*)filter_as_data, &filter, sizeof(struct IPmapFilter));
 
-	struct IPmapIt *it = it_init(ppmap_filter_it(map->ppmap, pred_key_val_wrapper, filter_data));
+	const struct PPmapFilter ppmap_filter = {
+		.key_val_data = (fn_3pred)filter_passes,
+		.data = filter_as_data,
+	};
+
+	struct IPmapIt *it = it_init(ppmap_filter_it(map->ppmap, ppmap_filter));
 
 	if (it) {
-		it->st->filter_data = filter_data;
+		it->st->filter = filter_as_data;
 		return it;
 	} else {
-		free(filter_data);
+		free(filter_as_data);
 		return NULL;
 	}
-}
 
-const struct IPmapIt *ipmap_key_filter_it(const struct IPmap* const map, fn_2pred_szt pred_key, const void* const data) {
-	if (!map || !pred_key)
-		return NULL;
-
-	struct IPmapFilterData *filter_data = calloc(1, sizeof(struct IPmapFilterData));
-	filter_data->pred_key = pred_key;
-	filter_data->data = data;
-
-	struct IPmapIt *it = it_init(ppmap_key_filter_it(map->ppmap, pred_key_wrapper, filter_data));
-
-	if (it) {
-		it->st->filter_data = filter_data;
-		return it;
-	} else {
-		free(filter_data);
-		return NULL;
-	}
-}
-
-const struct IPmapIt *ipmap_val_filter_it(const struct IPmap* const map, fn_2pred pred_val, const void* const data) {
-	if (!map || !pred_val)
-		return NULL;
-
-	struct IPmapFilterData *filter_data = calloc(1, sizeof(struct IPmapFilterData));
-	filter_data->pred_val = pred_val;
-	filter_data->data = data;
-
-	struct IPmapIt *it = it_init(ppmap_val_filter_it(map->ppmap, pred_val_wrapper, filter_data));
-
-	if (it) {
-		it->st->filter_data = filter_data;
-		return it;
-	} else {
-		free(filter_data);
-		return NULL;
-	}
+	return NULL;
 }
 
 const struct IPmapIt *ipmap_it_next(const struct IPmapIt* const it) {

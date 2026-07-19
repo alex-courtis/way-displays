@@ -53,15 +53,19 @@ bool cfg_condition_true(const struct CfgCondition *condition, const void* const 
 	if (!condition)
 		return false;
 
+	struct PPmapFilter f = { .val_data = (fn_2pred)head_matches_name_desc };
+
 	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
-		if (!ppmap_find_val(g_displ->heads, (fn_2pred)head_matches_name_desc, it->val).val) {
+		f.data = it->val;
+		if (!ppmap_find(g_displ->heads, f).val) {
 			sset_it_free(it);
 			return true;
 		}
 	}
 
 	for (const struct SsetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
-		if (ppmap_find_val(g_displ->heads, (fn_2pred)head_matches_name_desc, it->val).val) {
+		f.data = it->val;
+		if (ppmap_find(g_displ->heads, f).val) {
 			sset_it_free(it);
 			return true;
 		}

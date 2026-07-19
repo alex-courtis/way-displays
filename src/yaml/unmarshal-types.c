@@ -525,9 +525,10 @@ void yaml_map_into_heads(struct UC *c, const struct Pset *heads, const yaml_node
 	// find MODE_PREFERRED in MODES/MODES_FAILED and assign the key
 	struct Mode *mode_pref = yaml_map_to_mode(c, spmap_get(nodes, "MODE_PREFERRED"));
 	if (mode_pref) {
-		head->zmode_pref = ppmap_find_val(head->modes, (fn_2pred)mode_equal, mode_pref).key;
+		struct PPmapFilter f = { .val_data = (fn_2pred)mode_equal, .data = mode_pref, };
+		head->zmode_pref = ppmap_find(head->modes, f).key;
 		if (!head->zmode_pref) {
-			head->zmode_pref = ppmap_find_val(head->modes_failed, (fn_2pred)mode_equal, mode_pref).key;
+			head->zmode_pref = ppmap_find(head->modes_failed, f).key;
 		}
 		mode_free(mode_pref);
 	}
@@ -632,11 +633,12 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 
 	// find MODE in MODES/MODES_FAILED and assign the key
 	struct Mode *mode = yaml_map_to_mode(c, spmap_get(nodes, "MODE"));
-	// TODO c-lib map map_first_key
 	if (mode) {
-		head_state->zmode = ppmap_find_val(head->modes, (fn_2pred)mode_equal, mode).key;
+		// TODO c-lib map map_first_key
+		struct PPmapFilter f = { .val_data = (fn_2pred)mode_equal, .data = mode, };
+		head_state->zmode = ppmap_find(head->modes, f).key;
 		if (!head_state->zmode) {
-			head_state->zmode = ppmap_find_val(head->modes_failed, (fn_2pred)mode_equal, mode).key;
+			head_state->zmode = ppmap_find(head->modes_failed, f).key;
 		}
 		mode_free(mode);
 	}
