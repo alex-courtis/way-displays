@@ -68,29 +68,18 @@ void cfg_disabled_free(struct CfgDisabled *disabled) {
 	free(disabled);
 }
 
-bool cfg_disabled_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
+bool cfg_disabled_applies_to_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
 	struct PsetFilter f = { .val = (fn_pred_p)cfg_condition_true, };
 
 	return
 		// name_desc must match
-		cfg_disabled_name_desc_matches_head(disabled, head) &&
+		head_matches_name_desc(head, disabled->name_desc) &&
 
 		// all conditions must be false
 		pset_find(disabled->conditions, f) == NULL;
 }
 
-bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
-	return disabled && head && head_matches_name_desc(head, disabled->name_desc);
-}
-
-bool cfg_disabled_with_conditions_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
+bool cfg_disabled_conditionally_for_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
 	return disabled && head && pset_size(disabled->conditions) > 0 && head_matches_name_desc(head, disabled->name_desc);
-}
-
-bool cfg_disabled_has_conditions_and_name_desc(const struct CfgDisabled * const disabled, const char * const name_desc) {
-	if (!disabled)
-		return false;
-
-	return (strcmp(disabled->name_desc, name_desc) == 0) && pset_size(disabled->conditions) > 0;
 }
 

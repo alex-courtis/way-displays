@@ -19,15 +19,9 @@ const struct CfgDisabled *cfg_disabled_clone(const struct CfgDisabled * const fr
 void cfg_disabled_free(struct CfgDisabled *disabled);
 
 // name_desc must match, if conditions are present at least one must be true
-bool cfg_disabled_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head);
+bool cfg_disabled_applies_to_head(const struct CfgDisabled * const disabled, const struct Head * const head);
 
-// name_desc only
-bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head);
-
-// disabled has conditions and applies to head
-bool cfg_disabled_with_conditions_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head);
-
-// has conditions and exactly matches name_desc
-bool cfg_disabled_has_conditions_and_name_desc(const struct CfgDisabled * const disabled, const char * const name_desc);
+// disabled has conditions and may apply to head
+bool cfg_disabled_conditionally_for_head(const struct CfgDisabled * const disabled, const struct Head * const head);
 
 #endif // CFG_DISABLED_H

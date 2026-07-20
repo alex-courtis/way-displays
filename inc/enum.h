@@ -194,6 +194,8 @@ enum ManualOverride {
 	OverrideTrue,
 	OverrideFalse,
 };
+enum ManualOverride manual_override_val(const char *name);
+const char *manual_override_name(enum ManualOverride manual_override);
 
 /*
  * info - DisplState

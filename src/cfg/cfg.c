@@ -242,9 +242,11 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 	simap_put_all           (merged->transforms,        from->transforms);
 	sset_add_all            (merged->adaptive_sync_off, from->adaptive_sync_off);
 
-	// replace
-	sset_free(merged->order_name_desc);
-	merged->order_name_desc = sset_clone(from->order_name_desc);
+	// replace if present
+	if (sset_size(from->order_name_desc) > 0) {
+		sset_free(merged->order_name_desc);
+		merged->order_name_desc = sset_clone(from->order_name_desc);
+	}
 
 	return merged;
 }

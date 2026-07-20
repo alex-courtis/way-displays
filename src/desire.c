@@ -54,8 +54,8 @@ void desire_enabled(struct Head *head) {
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
 	enabled |= ppmap_size(g_displ->heads) == 1;
 
-	// name_desc matches and (if present) any condition is true
-	struct PsetFilter f = { .val_data = (fn_pred_pp)cfg_disabled_matches_head, .data = head, };
+	// disabled if name_desc matches and (if present) any condition is true
+	struct PsetFilter f = { .val_data = (fn_pred_pp)cfg_disabled_applies_to_head, .data = head, };
 	enabled &= pset_find(g_cfg->disableds, f) == NULL;
 
 	// reset manual override when it matches the auto-state

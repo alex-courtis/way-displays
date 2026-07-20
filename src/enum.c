@@ -95,6 +95,12 @@ static struct NameVal log_thresholds[] = {
 	{ .val = 0,       .name = NULL,      },
 };
 
+static struct NameVal manual_overrides[] = {
+	{ .val = NoOverride,    .name = "NoOverride",    },
+	{ .val = OverrideTrue,  .name = "OverrideTrue",  },
+	{ .val = OverrideFalse, .name = "OverrideFalse", },
+};
+
 static struct NameVal displ_states[] = {
 	{ .val = IDLE,        .name = "IDLE",        },
 	{ .val = SUCCEEDED,   .name = "SUCCEEDED",   },
@@ -253,6 +259,14 @@ const char *log_threshold_name(enum LogThreshold log_threshold) {
 
 char *log_threshold_names(void) {
 	return names(log_thresholds);
+}
+
+enum ManualOverride manual_override_val(const char *name) {
+	return _val(manual_overrides, name);
+}
+
+const char *manual_override_name(enum ManualOverride manual_override) {
+	return _name(manual_overrides, manual_override);
 }
 
 enum DisplState displ_state_val(const char *name) {

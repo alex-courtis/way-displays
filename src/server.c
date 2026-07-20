@@ -12,12 +12,10 @@
 
 #include "act.h"
 #include "cfg/cfg.h"
-#include "cfg/disabled.h"
 #include "cfg/file.h"
 #include "displ.h"
 #include "enum.h"
 #include "fds.h"
-#include "fn.h"
 #include "head.h"
 #include "info/print.h"
 #include "ipc.h"
@@ -102,36 +100,9 @@ static void receive_ipc_request(int server_socket) {
 		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
-	// for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
-	// 	head_process_ipc_disableds((struct Head*)it->val, ipc_request);
-	// }
-
-	// TODO replace with above
-	switch (ipc_request->command) {
-		case CFG_TOGGLE:
-			// handle extra toggles
-			for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
-				head_apply_toggles((struct Head*)it->val, ipc_request->cfg);
-			}
-			break;
-		case CFG_DEL:
-		case CFG_SET:
-			// exit early for set/del any disableds with conditions
-			for (const struct PsetIt *rit = pset_it(ipc_request->cfg->disableds); rit; rit = pset_it_next(rit)) {
-				const struct CfgDisabled *disabled_req = rit->val;
-				struct PsetFilter f = { .val_data = (fn_pred_pp)cfg_disabled_has_conditions_and_name_desc, .data = disabled_req->name_desc, };
-				for (const struct PsetIt *cit = pset_filter_it(g_cfg->disableds, f); cit; cit = pset_it_next(cit)) {
-					log_error(NULL);
-					log_error("%s is conditionally disabled, it may only be toggled", disabled_req->name_desc);
-					pset_it_free(cit);
-					pset_it_free(rit);
-					goto send;
-				}
-			}
-			break;
-		default:
-			break;
-
+	// filter out and apply any disabled requests that affect conditionally disabled heads
+	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
+		head_process_ipc_disableds((struct Head*)it->val, ipc_request);
 	}
 
 	switch (ipc_request->command) {
