@@ -111,6 +111,8 @@ The server responds to [IPC](https://github.com/alex-courtis/way-displays/wiki/I
 
 ### From Source
 
+master is unstable, a release tag is recommended for a stable experience.
+
 [![CI](https://github.com/alex-courtis/way-displays/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/alex-courtis/way-displays/actions/workflows/ci.yml?query=branch%3Amaster)
 
 See [CONTRIBUTING](CONTRIBUTING.md) for a list of the dependencies you'll need.

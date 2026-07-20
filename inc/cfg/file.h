@@ -4,7 +4,7 @@
 #include <limits.h>
 #include <stdbool.h>
 
-#define COMMENT_YAML_SCHEMA "# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml"
+#define COMMENT_YAML_SCHEMA "# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0-SNAPSHOT.yaml"
 
 struct CfgFile {
 	char dir_path[PATH_MAX];           // inotify pfd_cfg_dir
