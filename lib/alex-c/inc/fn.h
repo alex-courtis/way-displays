@@ -2,59 +2,99 @@
 #define FN_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 //
-// a is generally the value from the collection, b generally user supplied or the value from the other collection
+// a equals b, a is generally the value from the collection, b generally user data or the value from the other collection
 //
 typedef bool (*fn_equal)(const void* const a, const void* const b);
 
 // true if a == b
-bool fn_equal_ptr(const void* const a, const void* const b);
+bool equal_ptr(const void* const a, const void* const b);
 
 // true if both NULL or strcmp(a, b) == 0
-bool fn_equal_strcmp(const void* const a, const void* const b);
+bool equal_strcmp(const char* const a, const char* const b);
 
 // true if both NULL or strcasecmp(a, b) == 0
-bool fn_equal_strcasecmp(const void* const a, const void* const b);
+bool equal_strcasecmp(const char* const a, const char* const b);
 
 // true if both NULL or strstr(a, b)
-bool fn_equal_strstr(const void* const a, const void* const b);
+bool equal_strstr(const char* const a, const char* const b);
 
 //
-// a < b
+// a less than b, a is generally the value from the collection, b generally user data or the value from the other collection
 //
 typedef bool (*fn_less_than)(const void* const a, const void* const b);
 
 // strcmp(a, b) <= 0
-bool fn_less_than_strcmp(const void* const a, const void* const b);
+bool less_than_strcmp(const char* const a, const char* const b);
 
 // strcasecmp(a, b) < 0
-bool fn_less_than_strcasecmp(const void* const a, const void* const b);
+bool less_than_strcasecmp(const char* const a, const char* const b);
+
+// true if both present and equal value
+bool equal_stp(const size_t* const a, const size_t* const b);
 
 //
-// arbitrary test
+// predicate
 //
-typedef bool (*fn_test)(const void* const data);
+typedef bool (*fn_pred_p)(const void* const p);
+
+typedef bool (*fn_pred_s)(const char* const s);
+
+typedef bool (*fn_pred_i)(const size_t i);
+
+//
+// bi-predicate
+//
+typedef bool (*fn_pred_pp)(const void* const p1, const void* const p2);
+
+typedef bool (*fn_pred_sp)(const char* const s,  const void* const p);
+
+typedef bool (*fn_pred_ss)(const char* const s1, const char* const s2);
+
+typedef bool (*fn_pred_si)(const char* const s,  const size_t i);
+
+typedef bool (*fn_pred_ip)(const size_t i,       const void* const p);
+
+//
+// tri-predicate
+//
+typedef bool (*fn_pred_ppp)(const void* const p1, const void* const p2, const void* const p3);
+
+typedef bool (*fn_pred_spp)(const char* const s,  const void* const p1, const void* const p2);
+
+typedef bool (*fn_pred_ssp)(const char* const s1, const char* const s2, const void* const p);
+
+typedef bool (*fn_pred_sip)(const char* const s,  const size_t i,       const void* const p);
+
+typedef bool (*fn_pred_ipp)(const size_t i,       const void* const p1, const void* const p2);
 
 //
 // free
 //
-typedef void (*fn_free)(const void* const val);
+typedef void (*fn_free)(void *ptr);
 
 //
 // clone
 //
-typedef void* (*fn_clone)(const void* const val);
+typedef void* (*fn_clone)(const void* const ptr);
 
-// copies a string using strdup, if val is NULL, returns NULL
-void *fn_clone_strdup(const void* const val);
+// copies a string using strdup, return NULL on NULL str
+void *clone_strdup(const char* const str);
+
+// allocates and sets a size_t*, return NULL on NULL np
+void *clone_size_t_ptr(const size_t* const np);
 
 //
 // to string, caller frees, may return NULL
 //
-typedef char* (*fn_str)(const void* const val);
+typedef char* (*fn_str)(const void* const ptr);
 
 // val or "(null)"
-char *fn_str_or_null(const void* const val);
+char *str_or_null(const char* const str);
+
+// %zu or "(null)"
+char *str_size_t_ptr(const size_t* const pi);
 
 #endif // FN_H

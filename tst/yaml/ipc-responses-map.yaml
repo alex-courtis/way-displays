@@ -73,7 +73,6 @@ STATE:
         WIDTH: 10
         HEIGHT: 11
         REFRESH_MHZ: 12
-        PREFERRED: TRUE
     DESIRED:
       SCALE: 7
       ENABLED: TRUE
@@ -85,21 +84,25 @@ STATE:
         WIDTH: 13
         HEIGHT: 14
         REFRESH_MHZ: 15
-        PREFERRED: FALSE
     OVERRIDES:
       DISABLED: TRUE
+    MODE_PREFERRED:
+      WIDTH: 10
+      HEIGHT: 11
+      REFRESH_MHZ: 12
     MODES:
     - WIDTH: 10
       HEIGHT: 11
       REFRESH_MHZ: 12
-      PREFERRED: TRUE
     - WIDTH: 13
       HEIGHT: 14
       REFRESH_MHZ: 15
-      PREFERRED: FALSE
+    MODES_FAILED:
+    - WIDTH: 16
+      HEIGHT: 17
+      REFRESH_MHZ: 18
 MESSAGES:
 - WARNING: war
 - ERROR: err
 - FATAL: fat
 RC: 2
-

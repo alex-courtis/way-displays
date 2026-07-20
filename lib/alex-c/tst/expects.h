@@ -17,6 +17,9 @@ int check_ptr_equal(CMockaValueData value, CMockaValueData check_data) {
 #define expect_ptr(function, parameter, value) \
 	expect_check_data(function, parameter, check_ptr_equal, cast_ptr_to_cmocka_value(value))
 
+#define expect_ptr_count(function, parameter, value, count) \
+	expect_check_data_count(function, parameter, check_ptr_equal, cast_ptr_to_cmocka_value(value), count)
+
 #define expect_nul(function, parameter) \
 	expect_check_data(function, parameter, check_ptr_equal, cast_ptr_to_cmocka_value(NULL))
 

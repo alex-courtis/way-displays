@@ -1,3 +1,4 @@
+Removing duplicate MODE max_override
 Ignoring invalid MODE invalid_width WIDTH wid
 Ignoring invalid MODE invalid_height HEIGHT hei
 Ignoring invalid MODE invalid_hz HZ hzz
@@ -10,4 +11,3 @@ Ignoring invalid MODE mistyped HZ expected scalar, got sequence
 Ignoring invalid MODE mistyped MAX expected scalar, got sequence, valid values: ON|OFF|TRUE|FALSE|YES|NO
 Ignoring invalid MODE expected map, got sequence
 MODE: Ignoring missing NAME_DESC
-

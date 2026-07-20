@@ -3,7 +3,7 @@
 
 #include <sys/types.h>
 
-#include "smaps.h"
+#include "ssmap.h"
 
 void pid_path_generate(char *pid_path);
 
@@ -11,7 +11,7 @@ pid_t pid_active_server(const char *pid_path);
 
 void pid_file_create(void);
 
-void spawn_sh_cmd(const char * const command, const struct SMapS * const env);
+void spawn_sh_cmd(const char * const command, const struct SSmap * const env);
 
 // exit no message
 void wd_exit(const int __status);

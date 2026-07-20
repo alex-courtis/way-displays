@@ -6,18 +6,18 @@
 
 #include "client.h"
 
-#include "convert.h"
-#include "info.h"
+#include "enum.h"
+#include "info/print.h"
 #include "ipc.h"
 #include "log.h"
 #include "process.h"
-#include "slist.h"
+#include "pset.h"
 
 static int handle_responses(const struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
-	struct SList *responses = NULL;
-	struct IpcResponse *response = NULL;
+	const struct Pset *responses = NULL;
+	const struct IpcResponse *response = NULL;
 	bool done = false;
 
 	while (!done) {
@@ -25,15 +25,15 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 		responses = ipc_receive_responses(ipc_request->socket_client, &yaml);
 
 		if (responses) {
-			for (struct SList *i = responses; i; i = i->nex) {
-				if (!(response = i->val)) {
+			for (const struct PsetIt *it = pset_it(responses); it; it = pset_it_next(it)) {
+				if (!(response = it->val)) {
 					continue;
 				}
 				rc = response->status.rc;
 				done = response->status.done;
 
 				if (ipc_request->yaml) {
-					if (yaml && (rc < IPC_RC_ERROR)) {
+					if (yaml && (rc < IPC_ERROR)) {
 						// yaml
 						fprintf(stdout, "%s\n", yaml);
 					} else {
@@ -45,9 +45,9 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 					log_cap_lines_playback(response->log_cap_lines);
 				}
 			}
-			slist_free_vals(&responses, ipc_response_free);
+			pset_free_vals(responses);
 		} else {
-			rc = IPC_RC_BAD_RESPONSE;
+			rc = IPC_BAD_RESPONSE;
 			done = true;
 		}
 
@@ -75,7 +75,7 @@ int client(struct IpcRequest *ipc_request) {
 
 	if (!ipc_request->yaml) {
 		log_debug(NULL);
-		log_debug("Client sending request: %s", ipc_command_friendly(ipc_request->command));
+		log_debug("Client sending request: %s", ipc_command_name(ipc_request->command));
 		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 

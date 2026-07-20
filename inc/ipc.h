@@ -3,24 +3,7 @@
 
 #include <stdbool.h>
 
-#include "log.h"
-
-#define IPC_RC_SUCCESS 0
-#define IPC_RC_WARN 1
-#define IPC_RC_ERROR 2
-#define IPC_RC_BAD_REQUEST 11
-#define IPC_RC_BAD_RESPONSE 12
-#define IPC_RC_REQUEST_IN_PROGRESS 13
-
-enum IpcCommand {
-	GET = 1,
-	LIST,
-	REAPPLY,
-	CFG_SET,
-	CFG_DEL,
-	CFG_WRITE,
-	CFG_TOGGLE,
-};
+#include "enum.h"
 
 struct IpcOperation {
 	struct IpcRequest *request;
@@ -28,7 +11,7 @@ struct IpcOperation {
 	bool done;
 	int rc;
 	bool send_state;	// not for bad requests
-	struct SList *log_cap_lines;
+	const struct Pset *log_cap_lines;
 };
 
 struct IpcRequest {
@@ -48,10 +31,20 @@ struct IpcResponseStatus {
 struct IpcResponse {
 	struct IpcResponseStatus status;
 	struct Cfg *cfg;
-	struct SList *heads;
+	const struct Pset *heads;
 	struct Lid *lid;
-	struct SList *log_cap_lines;
+	const struct Pset *log_cap_lines;
 };
+
+struct IpcOperation *ipc_operation_init(void);
+
+struct IpcRequest *ipc_request_init(const enum IpcCommand command);
+
+struct IpcResponse *ipc_response_init(void);
+
+const struct Pset *ipc_response_pset_init(void);
+
+void ipc_operation_update_rc(struct IpcOperation *ipc_operation);
 
 void ipc_send_request(struct IpcRequest *request);
 
@@ -61,13 +54,13 @@ void ipc_send_operation(struct IpcOperation *operation);
 struct IpcRequest *ipc_receive_request(int socket_server);
 
 // receive all responses, user frees complete yaml
-struct SList *ipc_receive_responses(int socket_client, char **yaml);
+struct Pset *ipc_receive_responses(int socket_client, char **yaml);
 
 void ipc_request_free(struct IpcRequest *request);
 
-void ipc_response_free(const void *response);
+void ipc_response_free(struct IpcResponse *response);
 
-void ipc_operation_free(struct IpcOperation *operation);
+void ipc_operation_destroy(struct IpcOperation *operation);
 
 #endif // IPC_H
 

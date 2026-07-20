@@ -18,7 +18,7 @@ main(int argc, char **argv) {
 	struct IpcRequest *ipc_request = NULL;
 	char *cfg_path = NULL;
 
-	parse_args(argc, argv, &ipc_request, &cfg_path);
+	cli_parse(argc, argv, &ipc_request, &cfg_path);
 
 	if (!getenv("WAYLAND_DISPLAY")) {
 		log_fatal("environment variable $WAYLAND_DISPLAY missing");

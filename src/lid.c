@@ -12,8 +12,8 @@
 
 #include "lid.h"
 
-#include "cfg.h"
-#include "convert.h"
+#include "cfg/cfg.h"
+#include "enum.h"
 #include "log.h"
 
 struct Lid *g_lid = NULL;
@@ -22,7 +22,7 @@ static const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
 
 static bool warned_permission_fail = false;
 
-static int libinput_open_restricted(const char *path, int flags, void *data) {
+static int libinput_open_restricted(const char* const path, const int flags, const void* const data) {
 
 	// user permissions are sufficient for input devices, no need for systemd
 	int fd = open(path, flags);
@@ -48,7 +48,7 @@ static int libinput_open_restricted(const char *path, int flags, void *data) {
 	return fd;
 }
 
-static void libinput_close_restricted(int fd, void *data) {
+static void libinput_close_restricted(const int fd, const void* const data) {
 
 	if (close(fd) != 0) {
 		log_warn(NULL);
@@ -57,8 +57,8 @@ static void libinput_close_restricted(int fd, void *data) {
 }
 
 static const struct libinput_interface libinput_impl = {
-	.open_restricted = libinput_open_restricted,
-	.close_restricted = libinput_close_restricted
+	.open_restricted = (int(*)(const char*, int, void*))libinput_open_restricted,
+	.close_restricted = (void(*)(int, void*))libinput_close_restricted
 };
 
 static struct libinput *create_libinput_discovery(void) {
@@ -156,7 +156,7 @@ static void destroy_libinput_monitor(struct libinput* libinput) {
 	libinput_unref(libinput);
 }
 
-void lid_destroy(void) {
+void g_lid_destroy(void) {
 	if (!g_lid)
 		return;
 
@@ -167,18 +167,16 @@ void lid_destroy(void) {
 	g_lid = NULL;
 }
 
-void lid_free(void *data) {
-	if (!data)
+void lid_free(struct Lid *lid) {
+	if (!lid)
 		return;
-
-	struct Lid *lid = data;
 
 	free(lid->device_path);
 
 	free(lid);
 }
 
-void lid_update(void) {
+void g_lid_update(void) {
 	if (!g_lid || !g_lid->libinput_monitor)
 		return;
 
@@ -207,7 +205,7 @@ void lid_update(void) {
 	}
 }
 
-void lid_init(void) {
+void g_lid_init(void) {
 	g_lid = NULL;
 
 	if (g_cfg->laptop_lid_monitor == OFF)
@@ -247,7 +245,7 @@ void lid_init(void) {
 	g_lid->libinput_monitor = libinput_monitor;
 }
 
-bool lid_is_closed(char *name) {
+bool g_lid_is_closed(char *name) {
 	if (!name)
 		return false;
 

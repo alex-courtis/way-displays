@@ -2,6 +2,9 @@ TRANSFORM:
   - NAME_DESC: one
     TRANSFORM: FLIPPED
 
+  - NAME_DESC: one
+    TRANSFORM: 270
+
   - NAME_DESC: invalid
     TRANSFORM: foobar
   - NAME_DESC: '!(transform'

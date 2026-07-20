@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <wayland-util.h>
 
-#include "cfg.h"
-#include "convert.h"
+#include "cfg/cfg.h"
+#include "enum.h"
 #include "head.h"
 #include "ipc.h"
 #include "log.h"
-#include "slist.h"
+#include "pset.h"
 
 /*
  * Execute a CFG_SET scaling off and unpack the responses
@@ -15,12 +15,11 @@
 int
 main(int argc, char **argv) {
 	char *yaml;
-	struct SList *responses = NULL;
-	struct IpcResponse *response = NULL;
+	const struct Pset *responses = NULL;
+	const struct IpcResponse *response = NULL;
 
 	// request CFG_SET
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_SET;
+	struct IpcRequest *request = ipc_request_init(CFG_SET);
 
 	// turn scaling OFF
 	request->cfg = cfg_init();
@@ -29,7 +28,7 @@ main(int argc, char **argv) {
 	// send the request
 	ipc_send_request(request);
 	if (request->socket_client == -1) {
-		exit(IPC_RC_BAD_REQUEST);
+		exit(IPC_BAD_REQUEST);
 	}
 
 	struct IpcResponseStatus status = { 0 };
@@ -40,12 +39,12 @@ main(int argc, char **argv) {
 		responses = ipc_receive_responses(request->socket_client, &yaml);
 		if (!responses) {
 			status.done = true;
-			status.rc = IPC_RC_BAD_RESPONSE;
+			status.rc = IPC_BAD_RESPONSE;
 		}
 
 		// parse one to many responses
-		for (struct SList *i = responses; i; i = i->nex) {
-			response = i->val;
+		for (const struct PsetIt *rit = pset_it(responses); rit; rit = pset_it_next(rit)) {
+			response = rit->val;
 			log_info("--------------------------------");
 
 			// status informs whether there are more messages
@@ -55,10 +54,10 @@ main(int argc, char **argv) {
 			log_info("scaling is %s", on_off_name(response->cfg->scaling));
 
 			// inspect head state
-			for (struct SList *j = response->heads; j; j = j->nex) {
-				struct Head *head = j->val;
-				float scale_current = wl_fixed_to_double(head->current.scale);
-				float scale_desired = wl_fixed_to_double(head->desired.scale);
+			for (const struct PsetIt *hit = pset_it(response->heads); hit; hit = pset_it_next(hit)) {
+				const struct Head *head = hit->val;
+				float scale_current = wl_fixed_to_double(head->cur.scale);
+				float scale_desired = wl_fixed_to_double(head->des.scale);
 
 				log_info("%s", head->description);
 				if (scale_current == scale_desired) {
@@ -69,7 +68,7 @@ main(int argc, char **argv) {
 			}
 		}
 
-		slist_free_vals(&responses, ipc_response_free);
+		pset_free_vals(responses);
 		free(yaml);
 	}
 

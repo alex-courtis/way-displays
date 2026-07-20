@@ -1,0 +1,91 @@
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wayland-client-protocol.h>
+#include <wayland-util.h>
+
+#include "listeners.h"
+
+#include "displ.h"
+#include "ipmap.h"
+#include "log.h"
+#include "output.h"
+#include "process.h"
+#include "wlr-output-management-unstable-v1.h"
+#include "xdg-output-unstable-v1.h"
+
+static void bind_zwlr_output_manager(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
+
+	if (version < ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN) {
+		log_fatal(NULL);
+		log_fatal("This compositor provides WLR Output Management protocol version %u. The minimum required version is %u.", version, ZWLR_OUTPUT_MANAGER_V1_VERSION_MIN);
+		wd_exit(EXIT_FAILURE);
+	}
+
+	displ->zwlr_output_manager_name = name;
+	displ->zwlr_output_manager_version = version;
+	displ->zwlr_output_manager_interface = strdup(interface);
+	displ->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->zwlr_output_manager_version);
+
+	zwlr_output_manager_v1_add_listener(displ->zwlr_output_manager, zwlr_output_manager_listener(), displ);
+}
+
+static void bind_zxdg_output_manager(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
+
+	displ->zxdg_output_manager_name = name;
+	displ->zxdg_output_manager_version = version;
+	displ->zxdg_output_manager_interface = strdup(interface);
+	displ->zxdg_output_manager = wl_registry_bind(wl_registry, name, &zxdg_output_manager_v1_interface, displ->zxdg_output_manager_version);
+}
+
+static void bind_wl_output(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
+
+	// TODO do we log warnings for these situations? Do we add debug to all listened events and here?
+	struct wl_output *wl_output = wl_registry_bind(wl_registry, name, &wl_output_interface, version);
+	if (!wl_output)
+		return;
+
+	const struct Output *output = output_init(wl_output, name, displ->zxdg_output_manager);
+	if (output) {
+		ipmap_put_free(displ->outputs, name, output);
+	} else {
+		wl_output_destroy(wl_output);
+	}
+}
+
+// Displ data
+
+static void global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
+
+	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
+		bind_zwlr_output_manager(data, wl_registry, name, interface, version);
+	} else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
+		bind_zxdg_output_manager(data, wl_registry, name, interface, version);
+	} else if (strcmp(interface, wl_output_interface.name) == 0) {
+		bind_wl_output(data, wl_registry, name, interface, version);
+	}
+}
+
+static void global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
+	const struct Displ *displ = data;
+
+	// NOP if output not present
+	ipmap_remove_free(g_displ->outputs, name);
+
+	// a "who cares?" situation in the WLR examples
+	if (displ && displ->zwlr_output_manager_name == name) {
+		log_info(NULL);
+		log_info("Display's output manager has been removed, exiting");
+		wd_exit(EXIT_SUCCESS);
+	}
+}
+
+static const struct wl_registry_listener listener = {
+	.global = global,
+	.global_remove = global_remove,
+};
+
+const struct wl_registry_listener *registry_listener(void) {
+	return &listener;
+}
+

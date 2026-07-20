@@ -3,25 +3,25 @@
 
 #include <cmocka.h>
 
-#include "util-file.h"
+#include "fs.h"
 
 #include "sset.h"
 
-void _assert_sset_equal(const struct SSet *a, const struct SSet *b, const char * const file, const int line) {
+void _assert_sset_equal(const struct Sset *a, const struct Sset *b, const char * const file, const int line) {
 	if (!sset_equal(a, b)) {
-		write_file("actual.sset", sset_str(a));
-		write_file("expected.sset", sset_str(b));
-		cmocka_print_error("\n%s != \n%s", sset_str(a), sset_str(b));
+		fs_file_write("actual.sset", sset_str(a), "w");
+		fs_file_write("expected.sset", sset_str(b), "w");
+		cmocka_print_error("\n%s != \n%s\n",  sset_str(a), sset_str(b));
 		_fail(file, line);
 	}
 }
 #define assert_sset_equal(a, b) _assert_sset_equal(a, b, __FILE__, __LINE__)
 
-void _assert_sset_not_equal(const struct SSet *a, const struct SSet *b, const char * const file, const int line) {
+void _assert_sset_not_equal(const struct Sset *a, const struct Sset *b, const char * const file, const int line) {
 	if (sset_equal(a, b)) {
-		write_file("actual.sset", sset_str(a));
-		write_file("expected.sset", sset_str(b));
-		cmocka_print_error("\n%s == \n%s", sset_str(a), sset_str(b));
+		fs_file_write("actual.sset", sset_str(a), "w");
+		fs_file_write("expected.sset", sset_str(b), "w");
+		cmocka_print_error("\n%s == \n%s\n",  sset_str(a), sset_str(b));
 		_fail(file, line);
 	}
 }

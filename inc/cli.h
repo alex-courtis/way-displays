@@ -5,8 +5,10 @@
 
 #include "ipc.h"
 
-void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path);
+// print usage message only
+void cli_usage(FILE *stream);
 
-void usage(FILE *stream);
+// populate ipc_request and cfg_path, set log threshold, exits on failure
+void cli_parse(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path);
 
 #endif // CLI_H

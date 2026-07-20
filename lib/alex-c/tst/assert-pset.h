@@ -3,25 +3,25 @@
 
 #include <cmocka.h>
 
-#include "util-file.h"
+#include "fs.h"
 
 #include "pset.h"
 
-void _assert_pset_equal(const struct PSet *a, const struct PSet *b, const char * const file, const int line) {
+void _assert_pset_equal(const struct Pset *a, const struct Pset *b, const char * const file, const int line) {
 	if (!pset_equal(a, b)) {
-		write_file("actual.pset", pset_str(a));
-		write_file("expected.pset", pset_str(b));
-		cmocka_print_error("\n%s != \n%s", pset_str(a), pset_str(b));
+		fs_file_write("actual.pset", pset_str(a), "w");
+		fs_file_write("expected.pset", pset_str(b), "w");
+		cmocka_print_error("\n%s != \n%s\n",  pset_str(a), pset_str(b));
 		_fail(file, line);
 	}
 }
 #define assert_pset_equal(a, b) _assert_pset_equal(a, b, __FILE__, __LINE__)
 
-void _assert_pset_not_equal(const struct PSet *a, const struct PSet *b, const char * const file, const int line) {
+void _assert_pset_not_equal(const struct Pset *a, const struct Pset *b, const char * const file, const int line) {
 	if (pset_equal(a, b)) {
-		write_file("actual.pset", pset_str(a));
-		write_file("expected.pset", pset_str(b));
-		cmocka_print_error("\n%s == \n%s", pset_str(a), pset_str(b));
+		fs_file_write("actual.pset", pset_str(a), "w");
+		fs_file_write("expected.pset", pset_str(b), "w");
+		cmocka_print_error("\n%s == \n%s\n",  pset_str(a), pset_str(b));
 		_fail(file, line);
 	}
 }

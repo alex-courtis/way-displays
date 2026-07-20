@@ -19,24 +19,11 @@ char *read_file(const char *path) {
 	char *out = calloc(len + 1, sizeof(char));
 
 	if (len > 0) {
-		memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len - 1);
+		memcpy(out, mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0), sizeof(char) * len);
 	}
 
 	close(fd);
 
 	return out;
-}
-
-void write_file(const char *path, const char *content) {
-	FILE *f = fopen(path, "w");
-	if (!f) {
-		fprintf(stderr, "could not write to %s\n", path);
-		exit(1);
-	}
-
-	if (content)
-		fprintf(f, "%s", content);
-
-	fclose(f);
 }
 

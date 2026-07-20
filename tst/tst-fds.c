@@ -5,24 +5,25 @@
 
 #include <cmocka.h>
 #include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "cfg.h"
-#include "log.h"
+#include "cfg/cfg.h"
+#include "cfg/file.h"
+#include "enum.h"
+#include "str.h"
 
 #include "fds.h"
 
-char DIR_TMP[PATH_MAX + 20];
+char *DIR_TMP = NULL;
 
 static int before_all(void **state) {
 	char cwd[PATH_MAX];
 	assert_non_nul(getcwd(cwd, PATH_MAX));
-	snprintf(DIR_TMP, sizeof(DIR_TMP), "%s/tst/tmp", cwd);
+	DIR_TMP = snprintf_alloc(PATH_MAX, "%s/tst/tmp", cwd);
 	mkdir(DIR_TMP, 0755);
 
 	return 0;
@@ -30,6 +31,7 @@ static int before_all(void **state) {
 
 static int after_all(void **state) {
 	rmdir(DIR_TMP);
+	free(DIR_TMP);
 
 	return 0;
 }
@@ -37,11 +39,13 @@ static int after_all(void **state) {
 static int before_each(void **state) {
 	g_cfg = cfg_default();
 
+	memset(&g_cfg_file, 0, sizeof(struct CfgFile));
+
 	return 0;
 }
 
 static int after_each(void **state) {
-	cfg_destroy();
+	g_cfg_destroy();
 
 	fd_cfg_dir = -1;
 	wd_cfg_dir = -1;
@@ -59,7 +63,7 @@ static void fd_wd_cfg_dir_create__no_dir(void **state) {
 }
 
 static void fd_wd_cfg_dir_create__bad_dir(void **state) {
-	g_cfg->dir_path = strdup("/inexistent");
+	strncpy(g_cfg_file.dir_path, "/inexistent", PATH_MAX - 1);
 
 	expect_int_value(__wrap_wd_exit_message, __status, EXIT_FAILURE);
 
@@ -69,11 +73,12 @@ static void fd_wd_cfg_dir_create__bad_dir(void **state) {
 	assert_int_equal(wd_cfg_dir, -1);
 
 	assert_log(FATAL, "\nunable to create config directory watch for /inexistent, exiting\n");
+
 	assert_logs_empty();
 }
 
 static void fd_wd_cfg_dir_create__ok(void **state) {
-	g_cfg->dir_path = strdup(DIR_TMP);
+	strncpy(g_cfg_file.dir_path, DIR_TMP, PATH_MAX - 1);
 
 	fd_wd_cfg_dir_create();
 
@@ -97,6 +102,7 @@ static void fd_wd_cfg_dir_destroy__bad(void **state) {
 	assert_int_equal(wd_cfg_dir, -1);
 
 	assert_log(ERROR, "\nunable to remove config directory watch\n\nunable to close config directory watch\n");
+
 	assert_logs_empty();
 }
 

@@ -1,0 +1,10 @@
+
+Found configuration file: canonical-path
+
+Active configuration:
+  Arrange in a ROW aligned at the TOP
+  Scaling: ON
+  Auto scale: ON (dpi: 96, min: 1.000, max: 888.000)
+  Round scales to: 0.25, NEAREST
+  Change success command:
+    notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"

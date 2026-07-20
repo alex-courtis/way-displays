@@ -3,22 +3,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <unistd.h>
-#include <wayland-client-protocol.h>
 
-#include "cfg.h"
-#include "convert.h"
+#include "args.h"
+#include "enum.h"
 #include "ipc.h"
-#include "slist.h"
 #include "log.h"
-#include "mode.h"
 #include "process.h"
-#include "str.h"
 
 #include "cli.h"
 
-void usage(FILE *stream) {
+void cli_usage(FILE *stream) {
 	const char mesg[] =
 		"Usage: way-displays [OPTIONS...] [COMMAND]\n"
 		"  Runs the server when no COMMAND specified.\n"
@@ -56,341 +51,12 @@ void usage(FILE *stream) {
 		"     TRANSFORM <name>\n"
 		"     DISABLED <name>\n"
 		"     VRR_OFF <name>\n"
-		"     CALLBACK_CMD <shell command>\n"
+		"     CALLBACK_CMD\n"
 		;
 	fprintf(stream, "%s", mesg);
 }
 
-struct Cfg *parse_element(enum IpcCommand command, enum CfgElement element, int argc, char **argv) {
-	struct UserScale *user_scale = NULL;
-	struct UserMode *user_mode = NULL;
-	struct UserTransform *user_transform = NULL;
-
-	struct Cfg *cfg = cfg_init();
-
-	bool parsed = false;
-	switch (element) {
-		case ARRANGE_ALIGN:
-			parsed = (cfg->arrange = arrange_val_start(argv[optind]));
-			parsed = parsed && (cfg->align = align_val_start(argv[optind + 1]));
-			break;
-		case SCALING:
-			if (command == CFG_TOGGLE) {
-				cfg->scaling = ON;
-				parsed = true;
-				break;
-			}
-			parsed = (cfg->scaling = on_off_val(argv[optind]));
-			break;
-		case AUTO_SCALE:
-			if (command == CFG_TOGGLE) {
-				cfg->auto_scale = ON;
-				parsed = true;
-				break;
-			}
-			parsed = (cfg->auto_scale = on_off_val(argv[optind]));
-			break;
-		case SCALE:
-			switch (command) {
-				case CFG_SET:
-					// parse input value
-					user_scale = (struct UserScale*)calloc(1, sizeof(struct UserScale));
-					user_scale->name_desc = strdup(argv[optind]);
-					parsed = ((user_scale->scale = strtof(argv[optind + 1], NULL)) > 0);
-					slist_append(&cfg->user_scales, user_scale);
-					break;
-				case CFG_DEL:
-					// dummy value
-					slist_append(&cfg->user_scales, cfg_user_scale_init(argv[optind], 1));
-					parsed = true;
-					break;
-				default:
-					break;
-			}
-			break;
-		case MODE:
-			switch (command) {
-				case CFG_SET:
-					// parse input value
-					user_mode = cfg_user_mode_default();
-					user_mode->name_desc = strdup(argv[optind]);
-					if (strcasecmp(argv[optind + 1], "MAX") == 0) {
-						user_mode->max = true;
-						parsed = true;
-					} else {
-						if (optind + 2 < argc) {
-							parsed = ((user_mode->width = atoi(argv[optind + 1])) > 0);
-							parsed = parsed && ((user_mode->height = atoi(argv[optind + 2])) > 0);
-						}
-						if (optind + 3 < argc) {
-							parsed = parsed && ((user_mode->refresh_mhz = hz_str_to_mhz(argv[optind + 3])) > 0);
-						}
-					}
-					slist_append(&cfg->user_modes, user_mode);
-					break;
-				case CFG_DEL:
-					// dummy value
-					user_mode = cfg_user_mode_default();
-					user_mode->name_desc = strdup(argv[optind]);
-					user_mode->max = true;
-					slist_append(&cfg->user_modes, user_mode);
-					parsed = true;
-					break;
-				default:
-					break;
-			}
-			break;
-		case VRR_OFF:
-			for (int i = optind; i < argc; i++) {
-				slist_append(&cfg->adaptive_sync_off_name_desc, strdup(argv[i]));
-			}
-			parsed = true;
-			break;
-		case TRANSFORM:
-			switch (command) {
-				case CFG_SET:
-					// parse input value
-					user_transform = (struct UserTransform*)calloc(1, sizeof(struct UserTransform));
-					user_transform->name_desc = strdup(argv[optind]);
-					parsed = (user_transform->transform = transform_val(argv[optind + 1]));
-					slist_append(&cfg->user_transforms, user_transform);
-					break;
-				case CFG_DEL:
-					// dummy value
-					slist_append(&cfg->user_transforms, cfg_user_transform_init(argv[optind], WL_OUTPUT_TRANSFORM_90));
-					parsed = true;
-					break;
-				default:
-					break;
-			}
-			break;
-		case DISABLED:
-			for (int i = optind; i < argc; i++) {
-				slist_append(&cfg->disabled, cfg_disabled_always(argv[i]));
-			}
-			parsed = true;
-			break;
-		case ORDER:
-			for (int i = optind; i < argc; i++) {
-				slist_append(&cfg->order_name_desc, strdup(argv[i]));
-			}
-			parsed = true;
-			break;
-		case CALLBACK_CMD:
-			switch (command) {
-				case CFG_SET:
-					cfg->callback_cmd = strdup(argv[optind]);
-					parsed = true;
-					break;
-				case CFG_DEL:
-					cfg->callback_cmd = strdup("");
-					parsed = true;
-					break;
-				default:
-					break;
-			}
-			break;
-		default:
-			break;
-	}
-
-	if (!parsed) {
-		char *msg = strdup("");
-		for (int i = optind; i < argc; i++) {
-			msg = sprintf_append(msg, " %s", argv[i]);
-		}
-		log_fatal("invalid %s%s", cfg_element_name(element), msg);
-		free(msg);
-		if (cfg) {
-			cfg_free(cfg);
-		}
-		wd_exit(EXIT_FAILURE);
-		return NULL;
-	}
-
-	return cfg;
-}
-
-static struct IpcRequest *parse_list(int argc, char **argv) {
-	if (optind != argc) {
-		log_fatal("--list takes no arguments");
-		wd_exit(EXIT_FAILURE);
-		return NULL;
-	}
-
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = LIST;
-
-	return request;
-}
-
-static struct IpcRequest *parse_get(int argc, char **argv) {
-	if (optind != argc) {
-		log_fatal("--get takes no arguments");
-		wd_exit(EXIT_FAILURE);
-		return NULL;
-	}
-
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = GET;
-
-	return request;
-}
-
-struct IpcRequest *parse_write(int argc, char **argv) {
-	if (optind != argc) {
-		log_fatal("--write takes no arguments");
-		wd_exit(EXIT_FAILURE);
-		return NULL;
-	}
-
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_WRITE;
-
-	return request;
-}
-
-struct IpcRequest *parse_reapply(int argc, char **argv) {
-	if (optind != argc) {
-		log_fatal("--reapply takes no arguments");
-		wd_exit(EXIT_FAILURE);
-		return NULL;
-	}
-
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = REAPPLY;
-
-	return request;
-}
-
-struct IpcRequest *parse_set(int argc, char **argv) {
-	enum CfgElement element = cfg_element_val(optarg);
-	switch (element) {
-		case MODE:
-			if (optind + 2 > argc || optind + 4 < argc) {
-				log_fatal("%s requires two to four arguments", cfg_element_name(element));
-				wd_exit(EXIT_FAILURE);
-				return NULL;
-			}
-			break;
-		case ARRANGE_ALIGN:
-		case SCALE:
-		case TRANSFORM:
-			if (optind + 2 != argc) {
-				log_fatal("%s requires two arguments", cfg_element_name(element));
-				wd_exit(EXIT_FAILURE);
-				return NULL;
-			}
-			break;
-		case SCALING:
-		case AUTO_SCALE:
-		case DISABLED:
-		case VRR_OFF:
-		case CALLBACK_CMD:
-			if (optind + 1 != argc) {
-				log_fatal("%s requires one argument", cfg_element_name(element));
-				wd_exit(EXIT_FAILURE);
-				return NULL;
-			}
-			break;
-		case ORDER:
-			if (optind + 1 > argc) {
-				log_fatal("%s requires at least one argument", cfg_element_name(element));
-				wd_exit(EXIT_FAILURE);
-				return NULL;
-			}
-			break;
-		default:
-			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_SET), element ? cfg_element_name(element) : optarg);
-			wd_exit(EXIT_FAILURE);
-			return NULL;
-	}
-
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_SET;
-	request->cfg = parse_element(CFG_SET, element, argc, argv);
-
-	return request;
-}
-
-struct IpcRequest *parse_del(int argc, char **argv) {
-	enum CfgElement element = cfg_element_val(optarg);
-	switch (element) {
-		case MODE:
-		case TRANSFORM:
-		case SCALE:
-		case DISABLED:
-		case VRR_OFF:
-			if (optind + 1 != argc) {
-				log_fatal("%s requires one argument", cfg_element_name(element));
-				wd_exit(EXIT_FAILURE);
-				return NULL;
-			}
-			break;
-		case CALLBACK_CMD:
-			if (optind != argc) {
-				log_fatal("%s takes no arguments", cfg_element_name(element));
-				wd_exit(EXIT_FAILURE);
-				return NULL;
-			}
-			break;
-		default:
-			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_DEL), element ? cfg_element_name(element) : optarg);
-			wd_exit(EXIT_FAILURE);
-			return NULL;
-	}
-
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_DEL;
-	request->cfg = parse_element(CFG_DEL, element, argc, argv);
-
-	return request;
-}
-
-struct IpcRequest *parse_toggle(int argc, char **argv) {
-	enum CfgElement element = cfg_element_val(optarg);
-	switch (element) {
-		case SCALING:
-		case AUTO_SCALE:
-			if (optind != argc) {
-				log_fatal("%s takes no arguments", cfg_element_name(element));
-				wd_exit(EXIT_FAILURE);
-				return NULL;
-			}
-			break;
-		case VRR_OFF:
-		case DISABLED:
-			if (optind + 1 != argc) {
-				log_fatal("%s requires one argument", cfg_element_name(element));
-				wd_exit(EXIT_FAILURE);
-				return NULL;
-			}
-			break;
-		default:
-			log_fatal("invalid %s: %s", ipc_command_friendly(CFG_TOGGLE), element ? cfg_element_name(element) : optarg);
-			wd_exit(EXIT_FAILURE);
-			return NULL;
-	}
-
-	struct IpcRequest *request = calloc(1, sizeof(struct IpcRequest));
-	request->command = CFG_TOGGLE;
-	request->cfg = parse_element(CFG_TOGGLE, element, argc, argv);
-
-	return request;
-}
-
-enum LogThreshold parse_log_threshold(char *optarg) {
-	enum LogThreshold threshold = log_threshold_val(optarg);
-
-	if (!threshold) {
-		log_fatal("invalid --log-threshold %s", optarg);
-		return 0;
-	}
-
-	return threshold;
-}
-
-void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
+void cli_parse(int argc, char **argv, struct IpcRequest **ipc_request, char **cfg_path) {
 	static struct option long_options[] = {
 		{ "config",        required_argument, 0, 'c' },
 		{ "delete",        required_argument, 0, 'd' },
@@ -418,20 +84,20 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 			break;
 		switch (c) {
 			case 'L':
-				if (!(threshold = parse_log_threshold(optarg))) {
+				if (!(threshold = args_log_threshold(optarg))) {
 					wd_exit(EXIT_FAILURE);
 					return;
 				}
 				break;
 			case 'h':
-				usage(stdout);
+				cli_usage(stdout);
 				wd_exit(EXIT_SUCCESS);
 				return;
 			case 'c':
 				*cfg_path = strdup(optarg);
 				break;
 			case 'v':
-				log_info("way-displays version %s", VERSION);
+				log_info("way-displays version %s %s", VERSION, COMMIT);
 				wd_exit(EXIT_SUCCESS);
 				break;
 			case 'y':
@@ -439,29 +105,29 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 				yaml = true;
 				break;
 			case 'l':
-				*ipc_request = parse_list(argc, argv);
+				*ipc_request = args_ipc_list(argc);
 				break;
 			case 'g':
-				*ipc_request = parse_get(argc, argv);
+				*ipc_request = args_ipc_get(argc);
 				break;
 			case 's':
-				*ipc_request = parse_set(argc, argv);
+				*ipc_request = args_ipc_set(argc, argv);
 				break;
 			case 'd':
-				*ipc_request = parse_del(argc, argv);
+				*ipc_request = args_ipc_del(argc, argv);
 				break;
 			case 't':
-				*ipc_request = parse_toggle(argc, argv);
+				*ipc_request = args_ipc_toggle(argc, argv);
 				break;
 			case 'w':
-				*ipc_request = parse_write(argc, argv);
+				*ipc_request = args_ipc_write(argc);
 				break;
 			case 'r':
-				*ipc_request = parse_reapply(argc, argv);
+				*ipc_request = args_ipc_reapply(argc);
 				break;
 			case '?':
 			default:
-				usage(stderr);
+				cli_usage(stderr);
 				wd_exit(EXIT_FAILURE);
 				return;
 		}
@@ -477,4 +143,3 @@ void parse_args(int argc, char **argv, struct IpcRequest **ipc_request, char **c
 		}
 	}
 }
-

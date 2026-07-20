@@ -4,54 +4,109 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "cfg.h"
-#include "slist.h"
-#include "wlr-output-management-unstable-v1.h"
+#include "ppmap.h"
+
+/*
+ * Mode contexts:
+ * - Cfg: partial res/refresh or max
+ * - State: res/refresh
+ * - Head: res/refresh, pointers and warned
+ */
 
 struct Mode {
-	struct Head *head;
-
-	struct zwlr_output_mode_v1 *zwlr_mode;
-
 	int32_t width;
 	int32_t height;
 	int32_t refresh_mhz;
-	bool preferred;
+
+	bool max;
+
+	bool warned_no_mode;
 };
 
-struct ModesResRefresh {
-	int32_t width;
-	int32_t height;
-	int32_t refresh_mhz;
-	struct SList *modes;
-};
+/*
+ * lifecycle
+ */
 
-struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed);
+struct Mode *mode_init(void);
 
-struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed);
+struct Mode *mode_clone(const struct Mode * const from);
 
-// up to 3 d.p.
-const char *mhz_to_hz_str(int32_t mhz);
+// raw pointers, for head modes
+const struct PPmap *mode_ppmap_init(void);
 
-// hz float string to milliHz, 0 on failure
-int32_t hz_str_to_mhz(const char *hz_str);
+// mode equals, for unmarshalling head
+const struct PPmap *mode_ppmap_equal_init(void);
 
-// rounded integer
-int32_t mhz_to_hz_rounded(int32_t mhz);
+// mode_equal, for cfg modes
+const struct SPmap *mode_spmap_init(void);
 
-double mode_dpi(struct Mode *mode);
+void mode_free(struct Mode *mode);
 
-double mode_scale(struct Mode *mode);
+/*
+ * equals
+ */
 
-struct SList *modes_res_refresh(struct SList *modes);
+// exact pointers and values - memcmp
+bool mode_equal(const struct Mode* const a, const struct Mode* const b);
 
-struct Mode *mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode, int32_t width, int32_t height, int32_t refresh_mhz, bool preferred);
+// w/h
+bool mode_equal_res(const struct Mode* const a, const struct Mode* const b);
 
-void mode_free(const void *mode);
+// w/h and rounded refresh
+bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b);
 
-void mode_res_refresh_free(const void *mode);
+// w/h and exact refresh
+bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b);
 
-struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, const struct UserMode *user_mode);
+/*
+ * comparison
+ */
+
+// w greater, h greater when w equal, refresh greater than when w/h equal
+bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b);
+
+/*
+ * to string
+ */
+
+// WxH@Hz (mHz)
+char *mode_str(const struct Mode * const mode);
+
+// WxH@Hz (mHz) (preferred)
+char *mode_str_pref(const struct Mode * const mode, bool pref);
+
+// MAX or WxH@Hz or WxH
+char *mode_str_cfg(const struct Mode * const mode);
+
+/*
+ * predicates
+ */
+
+// target is MAX  or  WxH@Hz  or  WxH with no target refresh
+bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target);
+
+/*
+ * utility
+ */
+
+// mHz rounded up to Hz
+int32_t mode_hz_rounded(const struct Mode* const mode);
+
+// DPI, 0 when no dimensions
+double mode_dpi(const struct Mode* const mode, int32_t width_mm, int32_t height_mm);
+
+/*
+ * search
+ */
+
+// highest refresh matching target resolution, NULL when no target
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PPmap* const modes);
+
+// mode exactly matching target otherwise mode_satisfies, NULL when no target
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PPmap* const modes);
+
+// highest resolution at its highest refresh
+const struct Mode *mode_max(const struct PPmap* const modes);
 
 #endif // MODE_H
 

@@ -1,6 +1,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 
@@ -23,16 +24,12 @@ struct Output {
 };
 
 // instantiate a new output and create an xdg output listener, appending to outputs
-// NULL on failure to retrieve xdg output
-struct Output *output_init(struct wl_output *wl_output, const uint32_t wl_output_name, struct zxdg_output_manager_v1 *zxdg_output_manager);
+// NULL on missing wl_output or failure to retrieve xdg output
+struct Output *output_init(struct wl_output *wl_output, const uint32_t name, struct zxdg_output_manager_v1 *zxdg_output_manager);
+
+const struct IPmap *output_ipmap_init(void);
 
 // output matching (head) name
-const struct Output *output_for_name(const char *name);
-
-// destroy all outputs, clearing outputs
-void output_destroy_all(void);
-
-// destroy an output matching name, removing from outputs
-void output_destroy_by_wl_output_name(const uint32_t wl_output_name);
+bool output_matches_name(const struct Output* const output, const void* const name);
 
 #endif // OUTPUT_H

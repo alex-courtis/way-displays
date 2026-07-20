@@ -11,7 +11,7 @@
 
 #include "fds.h"
 
-#include "cfg.h"
+#include "cfg/file.h"
 #include "displ.h"
 #include "lid.h"
 #include "log.h"
@@ -47,15 +47,15 @@ static int create_fd_signal(void) {
 }
 
 void fd_wd_cfg_dir_create(void) {
-	if (!g_cfg->dir_path)
+	if (strlen(g_cfg_file.dir_path) == 0)
 		return;
 
 	fd_cfg_dir = inotify_init1(IN_NONBLOCK);
-	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, g_cfg->dir_path, IN_CLOSE_WRITE)) == -1) {
+	if ((wd_cfg_dir = inotify_add_watch(fd_cfg_dir, g_cfg_file.dir_path, IN_CLOSE_WRITE)) == -1) {
 		close(fd_cfg_dir);
 		fd_cfg_dir = -1;
 		log_fatal(NULL);
-		log_fatal_errno("unable to create config directory watch for %s, exiting", g_cfg->dir_path);
+		log_fatal_errno("unable to create config directory watch for %s, exiting", g_cfg_file.dir_path);
 		wd_exit_message(EXIT_FAILURE);
 		return;
 	}
@@ -149,10 +149,9 @@ void pfds_destroy(void) {
 }
 
 // see man 7 inotify
-bool fd_cfg_dir_modified(const char *file_name) {
-	if (!file_name) {
+bool fd_cfg_file_modified(void) {
+	if (strlen(g_cfg_file.file_name) == 0)
 		return false;
-	}
 
 	char buf[4096] __attribute__ ((aligned(__alignof__(struct inotify_event))));
 	const struct inotify_event *event;
@@ -161,7 +160,7 @@ bool fd_cfg_dir_modified(const char *file_name) {
 	while ((len = read(fd_cfg_dir, buf, sizeof(buf))) > 0) {
 		for (char *ptr = buf; ptr < buf + len; ptr += sizeof(struct inotify_event) + event->len) {
 			event = (const struct inotify_event *) ptr;
-			if (event->mask & IN_CLOSE_WRITE && event->len && strcmp(file_name, event->name) == 0) {
+			if (event->mask & IN_CLOSE_WRITE && event->len && strcmp(g_cfg_file.file_name, event->name) == 0) {
 				return true;
 			}
 		}

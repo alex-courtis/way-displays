@@ -2,17 +2,20 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "convert.h"
-#include "log.h"
-#include "util-file.h"
+#include "enum.h"
+#include "fs.h"
+#include "str.h"
 
-#include "wrap-log.h"
+/*
+ * replaces all of log except for cap lines
+ */
 
 // log space b is statically allocated and not cleared
 // bp is used to indicate presence of logs
-// logs are reset by clearing bp on assert_log and logs_clear
+// logs are reset by clearing bp on assert_log
 
 // 0 unused, 1 DEBUG, 5 FATAL
 static char b[6][262144] = { 0 };
@@ -22,10 +25,11 @@ void _assert_log(enum LogThreshold t, const char * s, const char * const file, c
 	if (bp[t]) {
 		bp[t] = NULL;
 		if (strcmp(b[t], s) != 0) {
-			cmocka_print_error("assert_log\nactual.log:\n\"%s\"\nexpected.log:\n\"%s\"\n", b[t], s);
-			write_file("actual.log", b[t]);
-			write_file("expected.log", s);
-			_fail(file, line);
+			const char *err = sprintf_alloc("assert_log\nactual.log:\n\"%s\"\nexpected.log:\n\"%s\"\n", b[t], s);
+			fprintf(stderr, "%s:%d: %s", file, line, err);
+			fs_file_write("actual.log", b[t], "w");
+			fs_file_write("expected.log", s, "w");
+			exit(1);
 		}
 	} else {
 		_assert_string_equal("", s, file, line);
@@ -37,32 +41,29 @@ void _assert_logs_empty(const char * const file, const int line) {
 	for (enum LogThreshold t = DEBUG; t <= FATAL; t++) {
 		if (bp[t]) {
 			bp[t] = NULL;
-			cmocka_print_error("\nunexpected log %s:\n\"%s\"\n", log_threshold_name(t), b[t]);
+			char *file_name = sprintf_alloc("unexpected.%s.log", log_threshold_name(t));
+			const char *err = sprintf_alloc("%s:\n\"%s\"\n", file_name, b[t]);
+			fprintf(stderr, "%s:%d: %s", file, line, err);
+			fs_file_write(file_name, b[t], "w");
+			free(file_name);
 			empty = false;
 		}
 	}
 	if (!empty) {
-		_fail(file, line);
+		exit(1);
 	}
 }
 
 static void _log(enum LogThreshold t, const char *__restrict __format, va_list __args) {
-	const char *printed;
 
 	if (!bp[t]) {
 		bp[t] = b[t];
 	}
 
-	printed = bp[t];
-
 	if (__format) {
 		bp[t] += vsnprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), __format, __args);
 	} else {
 		bp[t] += snprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), "%s", "");
-	}
-
-	if (LOG_PRINT) {
-		fprintf(stderr, "%s\n", printed);
 	}
 
 	bp[t] += snprintf(bp[t], sizeof(b[t]) - (bp[t] - b[t]), "\n");

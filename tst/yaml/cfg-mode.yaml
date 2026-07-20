@@ -5,6 +5,9 @@ MODE:
     HZ: 12.34
     MAX: TRUE
 
+  - NAME_DESC: max_override
+    MAX: TRUE
+
   - NAME_DESC: five
     WIDTH: 1920
     HEIGHT: 1080

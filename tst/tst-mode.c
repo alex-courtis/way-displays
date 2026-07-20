@@ -1,157 +1,347 @@
 #include "tst.h"
 
+#include "assert-mode.h"
+#include "assert-pset.h"
 #include "asserts.h"
+#include "data.h"
+#include "util-col.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "cfg.h"
-#include "head.h"
-#include "slist.h"
+#include "fn.h"
+#include "ppmap.h"
+#include "pset.h"
+#include "spmap.h"
 
 #include "mode.h"
 
-struct UserMode *user_mode = NULL;
-struct SList *modes = NULL;
-struct SList *modes_failed = NULL;
+struct Mode *target = NULL;
+const struct PPmap *head_modes = NULL;
+const struct SPmap *cfg_modes = NULL;
 
-static int after_each(void **state) {
-	cfg_user_mode_free(user_mode);
-	user_mode = NULL;
+static int before_each(void **state) {
 
-	slist_free_vals(&modes, NULL);
-	slist_free(&modes_failed);
+	cfg_modes = mode_spmap_init();
+	spmap_put_many(cfg_modes,
+			"200x100@59999",  mode_whr(200, 100, 59999),
+			"200x100@60498",  mode_whr(200, 100, 60498),
+			"200x100@60499",  mode_whr(200, 100, 60499),
+			"200x100@60500",  mode_whr(200, 100, 60500),
+			"400x200@120000", mode_whr(400, 200, 120000),
+			"600x600@164999", mode_whr(600, 300, 164999),
+			"800x400@144000", mode_whr(800, 400, 144000),
+			"1x1@1000",       mode_whr(1, 1, 1000),
+			"2x1@1000",       mode_whr(2, 1, 1000),
+			"1x2@3000",       mode_whr(1, 2, 3000),
+			"1x2@4000",       mode_whr(1, 2, 4000),
+			"1x2@4100",       mode_whr(1, 2, 4100),
+			NULL);
+
+	head_modes = mode_ppmap_init();
+	for (const struct SPmapIt *it = spmap_it(cfg_modes); it; it = spmap_it_next(it)) {
+		ppmap_put(head_modes, it->key, it->val);
+	}
 
 	return 0;
 }
 
-static void mode_mhz_to_hz_str__(void **state) {
-	assert_str_equal(mhz_to_hz_str(0), "0");
-	assert_str_equal(mhz_to_hz_str(99000), "99");
-	assert_str_equal(mhz_to_hz_str(12300), "12.3");
-	assert_str_equal(mhz_to_hz_str(12345), "12.345");
+static int after_each(void **state) {
+	mode_free(target);
+	target = NULL;
+
+	spmap_free(cfg_modes);
+	ppmap_free_vals(head_modes);
+
+	return 0;
 }
 
-static void mode_hz_str_to_mhz__(void **state) {
-	assert_int_equal(hz_str_to_mhz(NULL), 0);
-	assert_int_equal(hz_str_to_mhz(""), 0);
-	assert_int_equal(hz_str_to_mhz("abcde"), 0);
-	assert_int_equal(hz_str_to_mhz("12"), 12000);
-	assert_int_equal(hz_str_to_mhz("12.34"), 12340);
-	assert_int_equal(hz_str_to_mhz("12.3456"), 12346);
+static void mode_clone__(void **state) {
+	assert_nul(mode_clone(NULL));
+
+	struct Mode from = {
+		.width = 2,
+		.height = 1,
+		.refresh_mhz = 3,
+		.max = true,
+		.warned_no_mode = true,
+	};
+
+	struct Mode *to = mode_clone(&from);
+
+	assert_int_equal(to->width, 2);
+	assert_int_equal(to->height, 1);
+	assert_int_equal(to->refresh_mhz, 3);
+	assert_true(to->max);
+	assert_true(to->warned_no_mode);
+
+	mode_free(to);
 }
 
-static void mode_mhz_to_hz_rounded__(void **state) {
-	assert_int_equal(mhz_to_hz_rounded(0), 0);
-	assert_int_equal(mhz_to_hz_rounded(123567), 124);
+static void mode_equal__variants(void **state) {
+	assert_false(mode_equal_res(spmap_get(cfg_modes, "1x1@1000"), spmap_get(cfg_modes, "1x2@3000")));
+	assert_false(mode_equal_res(spmap_get(cfg_modes, "1x1@1000"), spmap_get(cfg_modes, "2x1@3000")));
+
+	assert_true (mode_equal_res(spmap_get(cfg_modes, "1x2@3000"), spmap_get(cfg_modes, "1x2@4000")));
+
+
+	assert_false(mode_equal_res_hz(spmap_get(cfg_modes, "1x2@3000"), spmap_get(cfg_modes, "1x2@4000")));
+
+	assert_true (mode_equal_res_hz(spmap_get(cfg_modes, "1x2@4000"), spmap_get(cfg_modes, "1x2@4100")));
+
+
+	assert_false(mode_equal_res_mhz(spmap_get(cfg_modes, "1x2@3000"), spmap_get(cfg_modes, "1x2@4000")));
+	assert_false(mode_equal_res_mhz(spmap_get(cfg_modes, "1x2@4000"), spmap_get(cfg_modes, "1x2@4100")));
+
+	assert_true (mode_equal_res_mhz(spmap_get(cfg_modes, "1x2@4100"), spmap_get(cfg_modes, "1x2@4100")));
+
+
+	assert_false(mode_equal(spmap_get(cfg_modes, "1x2@4000"), spmap_get(cfg_modes, "1x2@4100")));
+
+	assert_true (mode_equal(spmap_get(cfg_modes, "1x2@4100"), spmap_get(cfg_modes, "1x2@4100")));
 }
 
-static void mode_user_mode__max(void **state) {
-	user_mode = cfg_user_mode_init("um", true, -1, -1, -1, false);
-
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
-
-	assert_ptr_equal(actual, slist_at(modes, 5));
+static void mode_satisfies__null(void **state) {
+	assert_false(mode_satisfies(NULL, NULL));
+	assert_false(mode_satisfies(spmap_get(cfg_modes, "200x100@60499"), NULL));
+	assert_false(mode_satisfies(NULL, spmap_get(cfg_modes, "200x100@60499")));
 }
 
-static void mode_user_mode__no_hz_no_match(void **state) {
-	user_mode = cfg_user_mode_init("um", false, 999, 999, -1, false);
+static void mode_greater_than_res_refresh__sort(void **state) {
+	const struct Mode *mode06 = mode_whr(9, 2, 3);
+	const struct Mode *mode05 = mode_whr(2, 2, 9);
+	const struct Mode *mode04 = mode_whr(2, 2, 8);
+	const struct Mode *mode03 = mode_whr(2, 1, 9);
+	const struct Mode *mode02 = mode_whr(1, 9, 3);
+	const struct Mode *mode01 = mode_whr(1, 2, 9);
+	const struct Mode *mode00 = mode_whr(1, 2, 3);
 
-	const struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+	const struct PsetParams params = {
+		.free_val = (fn_free)mode_free,
+		.str_val = (fn_str)mode_str,
+	};
+	const struct Pset *expected = pset_init_with(params);
+	pset_add_many(expected,
+			mode06,
+			mode05,
+			mode04,
+			mode03,
+			mode02,
+			mode01,
+			mode00,
+			NULL);
 
-	assert_nul(actual);
+	const struct Pset *actual = pset_init();
+	pset_add_many(actual,
+			mode00,
+			mode01,
+			mode02,
+			mode03,
+			mode05,
+			mode04,
+			mode06,
+			NULL);
+
+	pset_sort(actual, (fn_less_than)mode_greater_than_res_refresh);
+
+	assert_pset_equal(actual, expected);
+
+	pset_free_vals(expected);
+	pset_free(actual);
 }
 
-static void mode_user_mode__no_hz_match(void **state) {
-	user_mode = cfg_user_mode_init("um", false, 400, 200, -1, false);
+static void mode_hz_rounded__(void **state) {
+	target = mode_init();
 
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+	target->refresh_mhz = 0;
+	assert_int_equal(mode_hz_rounded(target), 0);
 
-	assert_ptr_equal(actual, slist_at(modes, 3));
+	target->refresh_mhz = 123567;
+	assert_int_equal(mode_hz_rounded(target), 124);
+
+	target->refresh_mhz = 123500;
+	assert_int_equal(mode_hz_rounded(target), 124);
 }
 
-static void mode_user_mode__even_hz_no_match(void **state) {
-	user_mode = cfg_user_mode_init("um", false, 200, 100, 144000, false);
+static void mode_best_satisfying__max(void **state) {
+	target = mode_whr_max(-1, -1, -1);
 
-	const struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
+	const struct Mode *actual = mode_best_satisfying(target, head_modes);
 
-	assert_nul(actual);
+	assert_mode_equal(actual, spmap_get(cfg_modes, "800x400@144000"));
 }
 
-static void mode_user_mode__even_hz_match(void **state) {
-	user_mode = cfg_user_mode_init("um", false, 200, 100, 60000, false);
+static void mode_best_satisfying__no_hz_no_match(void **state) {
+	target = mode_whr(999, 999, -1);
 
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
-
-	assert_ptr_equal(actual, slist_at(modes, 1));
+	assert_nul(mode_best_satisfying(target, head_modes));
 }
 
-static void mode_user_mode__even_hz_rounded_up(void **state) {
-	user_mode = cfg_user_mode_init("um", false, 600, 300, 165000, false);
+static void mode_best_satisfying__no_hz_match(void **state) {
+	target = mode_whr(400, 200, -1);
 
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
-
-	assert_ptr_equal(actual, slist_at(modes, 4));
+	assert_mode_equal(mode_best_satisfying(target, head_modes), spmap_get(cfg_modes, "400x200@120000"));
 }
 
-static void mode_user_mode__failed(void **state) {
-	user_mode = cfg_user_mode_init("um", false, 200, 100, 60000, false);
+static void mode_best_satisfying__even_hz_no_match(void **state) {
+	target = mode_whr(200, 100, 144000);
 
-	slist_append(&modes_failed, slist_at(modes, 1));
-
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
-
-	assert_ptr_equal(actual, slist_at(modes, 0));
+	assert_nul(mode_best_satisfying(target, head_modes));
 }
 
-static void mode_user_mode__exact_hz_match(void **state) {
-	user_mode = cfg_user_mode_init("um", false, 200, 100, 60499, false);
+static void mode_best_satisfying__even_hz_match(void **state) {
+	target = mode_whr(200, 100, 60000);
 
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
-
-	assert_ptr_equal(actual, slist_at(modes, 1));
+	assert_mode_equal(mode_best_satisfying(target, head_modes), spmap_get(cfg_modes, "200x100@60499"));
 }
 
-static void mode_user_mode__exact_hz_failed(void **state) {
-	user_mode = cfg_user_mode_init("um", false, 200, 100, 60499, false);
+static void mode_best_satisfying__even_hz_rounded_up(void **state) {
+	target = mode_whr(600, 300, 165000);
 
-	slist_append(&modes_failed, slist_at(modes, 1));
-
-	struct Mode *actual = mode_user_mode(modes, modes_failed, user_mode);
-
-	assert_ptr_equal(actual, slist_at(modes, 0));
+	assert_mode_equal(mode_best_satisfying(target, head_modes), spmap_get(cfg_modes, "600x600@164999"));
 }
 
-static void mode_dpi__(void **state) {
-	struct Head head = { .width_mm = 1000, .height_mm = 500, };
-	struct Mode mode = { .width    = 2000, .height    = 1000, .head = &head };
+static void mode_best_satisfying__exact_hz_match(void **state) {
+	target = mode_whr(200, 100, 60498);
+
+	assert_mode_equal(mode_best_satisfying(target, head_modes), spmap_get(cfg_modes, "200x100@60498"));
+}
+
+static void mode_best_satisfying__width_failed(void **state) {
+	target = mode_whr(1000, 100, 60499);
+
+	assert_nul(mode_best_satisfying(target, head_modes));
+}
+
+static void mode_best_satisfying__height_failed(void **state) {
+	target = mode_whr(200, 9999999, 60499);
+
+	assert_nul(mode_best_satisfying(target, head_modes));
+}
+
+static void mode_dpi__ok(void **state) {
+	struct Mode *mode = mode_whr(2000, 1000, 0);
 
 	// nice roundish number to prevent odd test fails
-	double expected = 50.8;
+	assert_float_equal(mode_dpi(mode, 1000, 500), 50.8, 0);
 
-	double actual = mode_dpi(&mode);
+	mode_free(mode);
+}
 
-	assert_float_equal(actual, expected, 0);
+static void mode_dpi__no_mode(void **state) {
+	assert_float_equal(mode_dpi(NULL, 1000, 500), 0, 0);
+}
+
+static void mode_dpi__no_width(void **state) {
+	assert_float_equal(mode_dpi(spmap_get(cfg_modes, "1x1@1000"), 0, 500), 0, 0);
+}
+
+static void mode_dpi__no_height(void **state) {
+	assert_float_equal(mode_dpi(spmap_get(cfg_modes, "1x1@1000"), 1000, 0), 0, 0);
+}
+
+static void mode_max_refresh__no_target(void **state) {
+	const struct Mode *actual = mode_max_refresh(NULL, head_modes);
+
+	assert_nul(actual);
+}
+
+static void mode_max_refresh__exact_matches(void **state) {
+	const struct Mode *exact = mode_whr(111, 222, 333);
+	ppmap_put(head_modes, M0, exact);
+
+	target = mode_whr(111, 222, 333);
+
+	assert_mode_equal(mode_max_refresh(target, head_modes), exact);
+}
+
+static void mode_max_refresh__later_higher_refresh(void **state) {
+	const struct Mode *lower = mode_whr(111, 222, 333);
+	ppmap_put(head_modes, M0, lower);
+
+	const struct Mode *higher = mode_whr(111, 222, 999999);
+	ppmap_put(head_modes, M1, higher);
+
+	target = mode_whr(111, 222, 333);
+
+	assert_mode_equal(mode_max_refresh(target, head_modes), higher);
+}
+
+static void mode_max_refresh__earlier_higher_refresh(void **state) {
+	const struct Mode *higher = mode_whr(111, 222, 999999);
+	ppmap_put(head_modes, M0, higher);
+
+	const struct Mode *lower = mode_whr(111, 222, 333);
+	ppmap_put(head_modes, M1, lower);
+
+	target = mode_whr(111, 222, 333);
+
+	assert_mode_equal(mode_max_refresh(target, head_modes), higher);
+}
+
+static void mode_max__max(void **state) {
+	struct Mode *mode_expected = mode_whr(2000, 2000, 2000);
+
+	const struct PPmap *modes = mode_ppmap_init();
+
+	ppmap_put_many(modes,
+			M0, mode_whr(1000, 1000, 1000),
+			M1, mode_whr(500, 500, 1000),
+			M2, mode_whr(1000, 1000, 500),
+			MP, mode_whr(2000, 2000, 1000),
+			M3, mode_expected,
+			M4, mode_whr(1000, 1000, 1000),
+			NULL);
+
+	assert_mode_equal(mode_max(modes), mode_expected);
+
+	ppmap_free_vals(modes);
+}
+
+static void mode_max__empty(void **state) {
+	assert_nul(mode_max(NULL));
+
+	const struct PPmap *modes = mode_ppmap_init();
+
+	assert_nul(mode_max(NULL));
+
+	ppmap_free_vals(modes);
 }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		TEST_A(mode_mhz_to_hz_str__),
-		TEST_A(mode_hz_str_to_mhz__),
-		TEST_A(mode_mhz_to_hz_rounded__),
+		TEST_BA(mode_clone__),
+		TEST_BA(mode_equal__variants),
+		TEST_BA(mode_satisfies__null),
 
-		TEST_A(mode_user_mode__max),
-		TEST_A(mode_user_mode__no_hz_no_match),
-		TEST_A(mode_user_mode__no_hz_match),
-		TEST_A(mode_user_mode__even_hz_no_match),
-		TEST_A(mode_user_mode__even_hz_match),
-		TEST_A(mode_user_mode__even_hz_rounded_up),
-		TEST_A(mode_user_mode__failed),
-		TEST_A(mode_user_mode__exact_hz_match),
-		TEST_A(mode_user_mode__exact_hz_failed),
+		TEST_BA(mode_greater_than_res_refresh__sort),
 
-		TEST_A(mode_dpi__),
+		TEST_BA(mode_hz_rounded__),
+
+		TEST_BA(mode_best_satisfying__max),
+		TEST_BA(mode_best_satisfying__no_hz_no_match),
+		TEST_BA(mode_best_satisfying__no_hz_match),
+		TEST_BA(mode_best_satisfying__even_hz_no_match),
+		TEST_BA(mode_best_satisfying__even_hz_match),
+		TEST_BA(mode_best_satisfying__even_hz_rounded_up),
+		TEST_BA(mode_best_satisfying__exact_hz_match),
+		TEST_BA(mode_best_satisfying__width_failed),
+		TEST_BA(mode_best_satisfying__height_failed),
+
+		TEST_BA(mode_dpi__ok),
+		TEST_BA(mode_dpi__no_mode),
+		TEST_BA(mode_dpi__no_width),
+		TEST_BA(mode_dpi__no_height),
+
+		TEST_BA(mode_max_refresh__no_target),
+		TEST_BA(mode_max_refresh__exact_matches),
+		TEST_BA(mode_max_refresh__later_higher_refresh),
+		TEST_BA(mode_max_refresh__earlier_higher_refresh),
+
+		TEST_BA(mode_max__max),
+		TEST_BA(mode_max__empty),
 	};
 
 	return RUN(tests);

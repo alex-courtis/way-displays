@@ -12,4 +12,5 @@ cp "${FROM}/src/"*c "${TO}/src"
 cp "${FROM}/tst/"*[ch] "${TO}/tst"
 
 rm "${TO}/tst/tst-"*
+rm "${TO}/tst/data"*
 

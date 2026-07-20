@@ -7,20 +7,29 @@ staticFunction:yaml/unmarshal.c
 staticFunction:yaml/unmarshal-types.c
 
 # unused are implemented for completeness
-unusedFunction:src/convert.c
+unusedFunction:src/enum.c
 
 # many library functions are not used
 unusedFunction:lib/alex-c
 staticFunction:lib/alex-c
 
 # wraps are dynamically invoked at runtime only
-unusedFunction:tst/wrap-*.c
+unusedFunction:tst/wrap*.c
 
 # this is just not practical
 nullPointerOutOfMemory
 
-# questionable value and requires much casting
-constParameterCallback
+# requires too much function pointer casting
+constParameterCallback:listener/*c
 
 # does not identify correctly
 unusedStructMember
+ 
+# not sure why this doesn't work; iwyu takes care of it
+missingIncludeSystem
+
+# this does not handle function pointer types
+funcArgNamesDifferentUnnamed
+
+# this is explicitly OK
+varFuncNullUB

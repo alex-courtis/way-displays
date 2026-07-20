@@ -3,22 +3,20 @@
 
 #include <stdbool.h>
 
-#include "slist.h"
-
-enum LogThreshold {
-	DEBUG = 1,
-	INFO,
-	WARNING,
-	ERROR,
-	FATAL,
-	LOG_THRESHOLD_DEFAULT = INFO,
-};
+#include "enum.h"
+#include "pset.h"
 
 struct LogCapLine {
 	char *line;
 	enum LogThreshold threshold;
 };
 
+
+// call before any logging ops
+void log_init(void);
+
+// clear any resources before shutdown
+void log_destroy(void);
 
 void log_set_threshold(enum LogThreshold threshold, bool cli);
 
@@ -52,14 +50,20 @@ void log_suppress_start(void);
 void log_suppress_stop(void);
 
 
-// caller must call stop and free lines
-void log_cap_lines_start(struct SList **log_cap_lines);
+// create a line, contents strdup'd
+struct LogCapLine *log_cap_line_init(const enum LogThreshold t, const char *line);
 
-void log_cap_lines_stop(struct SList **log_cap_lines);
+// create a set to contain LogCapLine, caller must pset_free_vals
+const struct Pset *log_cap_line_pset_init(void);
 
-void log_cap_lines_free(struct SList **log_cap_lines);
+// caller must call stop before freeing log_cap_lines
+void log_cap_lines_start(const struct Pset *log_cap_lines);
 
-void log_cap_lines_playback(const struct SList *log_cap_lines);
+// stops only, does not free
+void log_cap_lines_stop(const struct Pset *log_cap_lines);
+
+// any set of lines
+void log_cap_lines_playback(const struct Pset *log_cap_lines);
 
 
 #endif // LOG_H

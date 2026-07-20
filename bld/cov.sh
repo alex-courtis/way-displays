@@ -2,12 +2,16 @@
 
 set -e
 
+HI_LIMIT=85
+MED_LIMIT=60
+
 INFO_PATH="/tmp/coverage.info" 
 REP_PATH="/tmp/coverage-report"
 SRC_PATH="src"
 
 usage() {
-	echo "usage: ${0} [test-x target ...]"
+	echo "usage: ${0} [executable|make target ...]"
+	echo "executes all tests when no executables supplied"
 	exit 0
 }
 
@@ -31,32 +35,38 @@ make \
 	all
 
 if [ $# -gt 0 ]; then
-	TESTS="${*}"
+	EXECS="${*}"
 else
-	for TEST_C in tst/tst-*c; do
-		TESTS="${TESTS} $(echo "${TEST_C}" | sed -E 's/tst\/tst\-(.*)\.c/\1/g')"
+	for EXEC_C in tst/tst-*c; do
+		EXECS="${EXECS} $(echo "${EXEC_C}" | sed -E 's/tst\/tst\-(.*)\.c/test-\1/g')"
 	done
 fi
 
-for TEST in ${TESTS}; do
+for EXEC in ${EXECS}; do
+	# dashes in test names are not tolerated
+	TEST_NAME="$(echo "${EXEC}" | sed -E 's/-/_/g')"
 
-	# execute test target to generate .gcda
-	make \
-		CC="gcc" \
-		OFLAGS="-O0" \
-		"test-${TEST}"
+	# execute test or executable to generate .gcda
+	if [ "$(echo "${EXEC}" | cut -c 1-5)" = "test-" ]; then
+		make \
+			CC="gcc" \
+			OFLAGS="-O0" \
+			"${EXEC}"
+	else
+		"./${EXEC}"
+	fi
 
 	# generate coverage info for the individual test
 	geninfo \
-		--test-name "tst_${TEST}" \
+		--test-name "${TEST_NAME}" \
 		--mcdc-coverage \
 		--branch-coverage \
 		--all \
 		--no-external \
-		--output-file "${INFO_PATH}/${TEST}.info" \
+		--output-file "${INFO_PATH}/${EXEC}.info" \
 		"${SRC_PATH}"
 
-	# clear test execution data
+	# clear execution data
 	find . -name '*gcda' -delete -print
 
 done
@@ -70,19 +80,20 @@ genhtml \
 	--dark-mode \
 	--num-spaces 4 \
 	--flat \
-	--rc genhtml_hi_limit=100 \
-	--rc genhtml_med_limit=60 \
+	--rc genhtml_hi_limit="${HI_LIMIT}" \
+	--rc genhtml_med_limit="${MED_LIMIT}" \
 	--output-directory "${REP_PATH}" \
 	${INFO_PATH}
 
-# clear .gnco for next (non-coverage) run
-make clean
-
-ONLY_HTML="${REP_PATH}/${SRC_PATH}/${1}.c.gcov.html"
+TESTED_NAME="$(echo "${1}" | sed -E 's/test-(.*)/\1/g')"
+ONLY_HTML=$(find "${REP_PATH}" -name "${TESTED_NAME}.c.gcov.html")
 
 if [ $# -eq 1 ] && [ -f "${ONLY_HTML}" ]; then
 	xdg-open "${ONLY_HTML}"
 else
 	xdg-open "${REP_PATH}/index.html"
 fi
+
+# clear .gnco for next (non-coverage) run
+make clean all
 

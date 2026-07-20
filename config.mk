@@ -1,4 +1,7 @@
 VERSION ?= "2.0.0-SNAPSHOT"
+ifneq (,$(findstring -SNAPSHOT,$(VERSION)))
+	COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null)
+endif
 
 PREFIX ?= /usr/local
 PREFIX_ETC ?= /usr/local
@@ -6,7 +9,7 @@ ROOT_ETC ?= /etc
 
 INCS = -Iinc -Ipro -Ilib/alex-c/inc
 
-CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" -DROOT_ETC=\"$(ROOT_ETC)\"
+CPPFLAGS += $(INCS) -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" -DCOMMIT=\"$(COMMIT)\" -DROOT_ETC=\"$(ROOT_ETC)\"
 
 OFLAGS = -O3
 WFLAGS = -pedantic \
@@ -39,6 +42,7 @@ VALGRIND = valgrind \
 		   --leak-check=full \
 		   --show-leak-kinds=all \
 		   --errors-for-leak-kinds=all \
+		   --suppressions=bld/vg.supp \
 		   --gen-suppressions=all
 
 ifneq (,$(findstring -m32,$(MFLAGS)))

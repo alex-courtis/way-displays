@@ -4,11 +4,11 @@
 
 FROM archlinux:multilib-devel
 
-COPY bld/docker-install-*.sh /usr/local/bin
+COPY bld/docker-packages /packages
 
-RUN docker-install-arch.sh
-RUN docker-install-libyaml-32.sh
-RUN docker-install-iwyu.sh
+RUN sh /packages/base-install.sh
+RUN sh /packages/libyaml-32-build-install.sh
+RUN sh /packages/iwyu-build-install.sh
 
 ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 ENV DEBUGINFOD_CACHE_PATH="/tmp/debuginfod_client"

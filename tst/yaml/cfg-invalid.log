@@ -27,4 +27,3 @@ Ignoring invalid DISABLED NAME_DESC regex '(disabled2': Unmatched ( or \(
 Ignoring invalid DISABLED BAD_DISABLED_IFS PLUGGED regex '(plugged1': Unmatched ( or \(
 Ignoring invalid DISABLED BAD_DISABLED_IFS UNPLUGGED regex '(unplugged1': Unmatched ( or \(
 Ignoring invalid DISABLED BAD_DISABLED_IFS LID BAD_DISABLED_LID, valid values: OPEN|CLOSED|NOT_PRESENT
-

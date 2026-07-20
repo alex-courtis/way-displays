@@ -1,0 +1,887 @@
+#include "tst.h"
+
+#include "assert-log.h"
+#include "data.h"
+#include "expects.h"
+#include "util-col.h"
+#include "util-file.h"
+#include "util-init.h"
+
+#include <cmocka.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wayland-client-protocol.h>
+
+#include "cfg/cfg.h"
+#include "cfg/condition.h"
+#include "cfg/disabled.h"
+#include "displ.h"
+#include "enum.h"
+#include "head.h"
+#include "ipmap.h"
+#include "mode.h"
+#include "output.h"
+#include "ppmap.h"
+#include "pset.h"
+#include "sset.h"
+#include "wlr-output-management-unstable-v1.h"
+
+#include "info/print.h"
+
+struct State {
+	struct Head *head1;
+	struct Head *head2;
+	const struct PPmap *heads;
+};
+
+int before_each(void **state) {
+	struct State *s = calloc(1, sizeof(struct State));
+
+	g_displ = displ_init();
+
+	g_cfg = cfg_default();
+
+	s->heads = head_ppmap_init();
+
+	s->head1 = head_init();
+
+	ppmap_put_many(s->head1->modes,
+			M0, mode_whr(100, 200, 29999), // less than current
+			MC, mode_whr(100, 200, 30000), // current
+			M1, mode_whr(100, 200, 30001), // more than current
+			MD, mode_whr(400, 500, 60000), // desired
+			M2, mode_whr(700, 800, 89999), // group with failed
+			M3, mode_whr(700, 800, 90001), // end
+			M4, mode_whr(1000, 1000, 49499),
+			M5, mode_whr(1000, 1000, 49500), // group start
+			M6, mode_whr(1000, 1000, 49999), //
+			M7, mode_whr(1000, 1000, 50000), //
+			M8, mode_whr(1000, 1000, 50100), //
+			M9, mode_whr(1000, 1000, 50499), // group
+			M10, mode_whr(1000, 1000, 50500),
+			NULL);
+
+	s->head1->cur.zmode = MC;
+	s->head1->des.zmode = MD;
+	s->head1->zmode_pref = MC;
+
+	ppmap_put_many(s->head1->modes_failed,
+			MF, mode_whr(700, 800, 90000),
+			NULL);
+
+	s->head1->name = strdup("name1");
+	s->head1->description = strdup("description1");
+	s->head1->width_mm = 1;
+	s->head1->height_mm = 2;
+	s->head1->make = strdup("make1");
+	s->head1->model = strdup("model1");
+	s->head1->serial_number = strdup("serial_number1");
+
+	s->head1->cur.scale = 512;
+	s->head1->cur.enabled = true;
+	s->head1->cur.x = 700;
+	s->head1->cur.y = 800;
+	s->head1->cur.transform = WL_OUTPUT_TRANSFORM_180;
+	s->head1->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+
+	s->head1->des.scale = 1024;
+	s->head1->des.enabled = true;
+	s->head1->des.x = 900;
+	s->head1->des.y = 1000;
+	s->head1->des.transform = WL_OUTPUT_TRANSFORM_90;
+	s->head1->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+
+	ppmap_put(s->heads, H1, s->head1);
+
+
+	s->head2 = head_init();
+
+	ppmap_put_many(s->head2->modes,
+			MC, mode_whr(1100, 1200, 130000), // current
+			MD, mode_whr(1400, 1500, 160000), // desired
+			NULL);
+	s->head2->cur.zmode = MC;
+	s->head2->des.zmode = MD;
+
+	s->head2->name = strdup("name2");
+	s->head2->width_mm = 3;
+	s->head2->height_mm = 4;
+	s->head2->make = strdup("make2");
+	s->head2->model = strdup("model2");
+	s->head2->serial_number = strdup("serial_number2");
+
+	s->head2->cur.scale = 2048;
+	s->head2->cur.enabled = true;
+	s->head2->cur.x = 1700;
+	s->head2->cur.y = 1800;
+	s->head2->cur.transform = WL_OUTPUT_TRANSFORM_270;
+	s->head2->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+
+	s->head2->des.scale = 4096;
+	s->head2->des.enabled = true;
+	s->head2->des.x = 1900;
+	s->head2->des.y = 11000;
+	s->head2->des.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	s->head2->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+
+	ppmap_put(s->heads, H2, s->head2);
+
+	*state = s;
+	return 0;
+}
+
+int after_each(void **state) {
+	struct State *s = *state;
+
+	ppmap_free_vals(s->heads);
+
+	free(s);
+
+	displ_free(g_displ);
+
+	g_cfg_destroy();
+
+	return 0;
+}
+
+static void print_cfg__all(void **state) {
+	struct Cfg *c = cfg_default();
+
+	sset_add_many(c->order_name_desc,
+			"first",
+			"last",
+			NULL);
+
+	simap_put_many(c->scales,
+			"three", (size_t)3000,
+			"four",  (size_t)4000,
+			NULL);
+
+	pset_add(c->disableds, disabled_nd("disabled always"));
+	const struct CfgDisabled *disabled = disabled_nd("disabled conditionally");
+	const struct CfgCondition *cond = cfg_condition_init();
+	sset_add(cond->plugged, "ONE");
+	pset_add(disabled->conditions, cond);
+	pset_add(c->disableds, disabled);
+
+	spmap_put_many(c->modes,
+			"five", mode_whr(1920, 1080, 12340),
+			"six", mode_whr(2560, 1440, -1),
+			"seven", mode_whr_max(-1, -1, -1),
+			NULL);
+
+	simap_put_many(c->transforms,
+			"twelve", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
+			NULL);
+
+	sset_add(c->max_preferred_refresh, "legacy");
+
+	c->laptop_display_prefix = strdup("lappy");
+
+	c->scale_round_to = 2;
+	c->scale_round_strategy = DOWN;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-all.log");
+	assert_log(INFO, expected_log);
+
+	free(expected_log);
+	cfg_free(c);
+
+	assert_logs_empty();
+}
+
+static void print_cfg__del(void **state) {
+	struct Cfg *c = cfg_init();
+
+	simap_put_many(c->scales,
+			"three", (size_t)3000,
+			"four",  (size_t)4000,
+			NULL);
+
+	spmap_put_many(c->modes,
+			"five", mode_whr(1920, 1080, 12340),
+			"six", mode_whr(2560, 1440, -1),
+			"seven", mode_whr_max(-1, -1, -1),
+			NULL);
+
+	simap_put_many(c->transforms,
+			"twelve",   (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
+			"thirteen", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
+			NULL);
+
+	print_cfg(INFO, c, true);
+
+	char *expected_log = read_file("tst/info/print-cfg-del.log");
+	assert_log(INFO, expected_log);
+
+	free(expected_log);
+	cfg_free(c);
+
+	assert_logs_empty();
+}
+
+static void print_cfg__arrange_only(void **state) {
+	struct Cfg *c = cfg_init();
+	c->arrange = ROW;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-arrange-only.log");
+	assert_log(INFO, expected_log);
+
+	free(expected_log);
+	cfg_free(c);
+
+	assert_logs_empty();
+}
+
+static void print_cfg__align_only(void **state) {
+	struct Cfg *c = cfg_init();
+	c->align = TOP;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-align-only.log");
+	assert_log(INFO, expected_log);
+
+	free(expected_log);
+	cfg_free(c);
+
+	assert_logs_empty();
+}
+
+static void print_cfg__auto_scale_max(void **state) {
+	struct Cfg *c = cfg_init();
+	c->auto_scale = true;
+	c->auto_scale_dpi = 77;
+	c->auto_scale_min = 88.0f;
+	c->auto_scale_max = 99.0f;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-auto-scale-max.log");
+	assert_log(INFO, expected_log);
+
+	free(expected_log);
+	cfg_free(c);
+
+	assert_logs_empty();
+}
+
+static void print_cfg__lid_disabled(void **state) {
+	struct Cfg *c = cfg_init();
+	c->laptop_lid_monitor = OFF;
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-lid-disabled.log");
+	assert_log(INFO, expected_log);
+
+	free(expected_log);
+	cfg_free(c);
+
+	assert_logs_empty();
+}
+
+static void print_cfg_commands__empty(void **state) {
+	struct Cfg *cfg = cfg_init();
+
+	print_cfg_commands(INFO, cfg);
+
+	cfg_free(cfg);
+
+	assert_logs_empty();
+}
+
+static void print_cfg_commands__ok(void **state) {
+	struct Cfg *c = cfg_default();
+
+	c->arrange = COL;
+	c->align = RIGHT;
+
+	sset_add_many(c->order_name_desc,
+			"one",
+			"two",
+			"three",
+			NULL);
+
+	c->scaling = OFF;
+
+	c->auto_scale = OFF;
+
+	simap_put_many(c->scales,
+			"one", (size_t)1000,
+			"two", (size_t)2345,
+			NULL);
+
+	spmap_put_many(c->modes,
+			"all", mode_whr(1, 2, 12340),
+			"res", mode_whr(4, 5, -1),
+			"max", mode_whr_max(7, 8, 9),
+			NULL);
+
+	simap_put_many(c->transforms,
+			"seven", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED_90,
+			NULL);
+
+	pset_add_many(c->disableds,
+			disabled_nd("three"),
+			disabled_nd("four"),
+			NULL);
+
+	sset_add_many(c->adaptive_sync_off,
+			"five",
+			"six",
+			NULL);
+
+	print_cfg_commands(INFO, c);
+
+	char *expected_log = read_file("tst/info/print-cfg-commands-ok.log");
+	assert_log(INFO, expected_log);
+
+	cfg_free(c);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_arrived__all(void **state) {
+	const struct State *s = *state;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	ipmap_put(g_displ->outputs, 888, output_n("inexistent"));
+
+	struct Output *output1 = output_n("name1");
+	output1->logical_width = 4000;
+	output1->logical_height = 2000;
+	output1->logical_x = 400;
+	output1->logical_y = 200;
+	ipmap_put(g_displ->outputs, 999, output1);
+
+	print_head(INFO, ARRIVED, s->head1);
+
+	char *expected_log = read_file("tst/info/print-head-arrived-all.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_arrived__min(void **state) {
+	struct Head *head = head_init();
+
+	expect_str(__wrap_g_lid_is_closed, name, NULL);
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head(INFO, ARRIVED, head);
+
+	char *expected_log = read_file("tst/info/print-head-arrived-min.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	head_free(head);
+
+	assert_logs_empty();
+}
+
+static void print_head_departed__ok(void **state) {
+	const struct State *s = *state;
+
+	print_head(INFO, DEPARTED, s->head1);
+
+	char *expected_log = read_file("tst/info/print-head-departed-ok.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_deltas__mode(void **state) {
+	const struct State *s = *state;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head(INFO, DELTA, s->head1);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-mode.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_deltas__vrr(void **state) {
+	struct State *s = *state;
+
+	s->head1->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	s->head1->des.zmode = s->head1->cur.zmode;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head(INFO, DELTA, s->head1);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-vrr.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_deltas__other(void **state) {
+	struct State *s = *state;
+
+	s->head1->des.zmode = s->head1->cur.zmode;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head(INFO, DELTA, s->head1);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-other.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_deltas__disable(void **state) {
+	struct State *s = *state;
+
+	s->head1->des.enabled = false;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head(INFO, DELTA, s->head1);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-disable.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_deltas__enable(void **state) {
+	struct State *s = *state;
+
+	s->head1->cur.enabled = false;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head(INFO, DELTA, s->head1);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-enable.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_deltas__reapply(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.des = head.cur;
+	head.cur.enabled = false;
+	head.des.enabled = false;
+	head.reapply_required = true;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head(INFO, DELTA, &head);
+
+	char *expected_log = read_file("tst/info/print-head-deltas-reapply.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_current__disabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.cur.enabled = false;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-disabled.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_current__disabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.cur.enabled = false;
+	head.overrided_enabled = OverrideFalse;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-disabled-override.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_current__enabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.cur.enabled = true;
+	head.overrided_enabled = OverrideTrue;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, false);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-enabled-override.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_current__lid_closed(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+
+	expect_str(__wrap_g_lid_is_closed, name, "name1");
+	will_return_int(__wrap_g_lid_is_closed, true);
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-lid-closed.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_desired__disabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.des.enabled = false;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    (disabled)\n");
+
+	assert_logs_empty();
+}
+
+static void print_head_desired__disabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.des.enabled = false;
+	head.overrided_enabled = OverrideFalse;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    (manually disabled)\n");
+
+	assert_logs_empty();
+}
+
+static void print_head_desired__enabled(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.cur.enabled = false;
+	head.des.enabled = true;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (enabled)\n");
+
+	assert_logs_empty();
+}
+
+static void print_head_desired__enabled_override(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.cur.enabled = false;
+	head.des.enabled = true;
+	head.overrided_enabled = OverrideTrue;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (manually enabled)\n");
+
+	assert_logs_empty();
+}
+
+static void print_head_desired__transform_270(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	memcpy(&head.des, &head.cur, sizeof(struct HeadState));
+	head.des.transform = WL_OUTPUT_TRANSFORM_270;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    transform: 270\n");
+
+	assert_logs_empty();
+}
+
+static void print_head_desired__transform_none(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	memcpy(&head.des, &head.cur, sizeof(struct HeadState));
+	head.des.transform = 0;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    transform: none\n");
+
+	assert_logs_empty();
+}
+
+static void print_list__empty(void **state) {
+	print_list(INFO, NULL);
+
+	assert_logs_empty();
+}
+
+static void print_list__many(void **state) {
+	struct State *s = *state;
+
+	s->head1->cur.enabled = false;
+	print_list(INFO, s->heads);
+
+	char *expected_log = read_file("tst/info/print-list.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_adaptive_sync_fail__nulls(void **state) {
+	print_adaptive_sync_fail(ERROR, NULL);
+
+	assert_logs_empty();
+}
+
+static void print_adaptive_sync_fail__head(void **state) {
+	struct Head *head = head_init();
+	head->name = strdup("head0");
+	head->model = strdup("model0");
+
+	print_adaptive_sync_fail(WARNING, head);
+
+	assert_log(WARNING, "\nhead0:\n"
+			"  Cannot enable VRR: this display or compositor may not support it.\n"
+			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
+			"  VRR_OFF:\n"
+			"    - 'model0'\n");
+
+	head_free(head);
+
+	assert_logs_empty();
+}
+
+static void print_mode_fail__nulls(void **state) {
+
+	print_mode_fail(WARNING, NULL, NULL);
+
+	assert_log(WARNING, "\nChanges failed\n");
+
+	assert_logs_empty();
+}
+
+static void print_mode_fail__head(void **state) {
+	struct Head *head = head_init();
+	head->name = strdup("head0");
+	head->model = strdup("model0");
+
+	print_mode_fail(WARNING, head, NULL);
+
+	assert_log(WARNING, "\nChanges failed\n  head0:\n    (no mode)\n");
+
+	head_free(head);
+
+	assert_logs_empty();
+}
+
+static void print_heads_outstanding__many(void **state) {
+	struct Displ *displ = displ_init();
+
+	const struct Mode *mode;
+
+	will_return_int(__wrap_log_get_threshold, DEBUG);
+
+	struct Head *head_reapply = head_n("re");
+	head_reapply->reapply_required = true;
+	ppmap_put(displ->heads, H0, head_reapply);
+
+	struct Head *head_mode = head_n("mo");
+	ppmap_put(head_mode->modes, M0, mode_init());
+	head_mode->des.zmode = M0;
+	ppmap_put(displ->heads, H1, head_mode);
+
+	struct Head *head_disable = head_n("di");
+	head_disable->cur.enabled = true;
+	head_disable->des.enabled = false;
+	ppmap_put(displ->heads, H2, head_disable);
+
+	struct Head *head_vrr = head_n("vr");
+	head_vrr->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head_vrr->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	ppmap_put(displ->heads, H3, head_vrr);
+
+	struct Head *head_enable = head_n("en");
+	head_enable->cur.enabled = false;
+	head_enable->des.enabled = true;
+	ppmap_put(displ->heads, H4, head_enable);
+
+	struct Head *head_sc = head_n("sc");
+	head_sc->cur.scale = 1;
+	head_sc->des.scale = 2;
+	ppmap_put(displ->heads, H5, head_sc);
+
+	struct Head *head_x = head_n("x");
+	head_x->cur.x = 1;
+	head_x->des.x = 2;
+	ppmap_put(displ->heads, H6, head_x);
+
+	struct Head *head_y = head_n("y");
+	head_y->cur.y = 1;
+	head_y->des.y = 2;
+	ppmap_put(displ->heads, H7, head_y);
+
+	struct Head *head_transform = head_n("tr");
+	head_transform->cur.transform = WL_OUTPUT_TRANSFORM_90;
+	head_transform->des.transform = WL_OUTPUT_TRANSFORM_180;
+	ppmap_put(displ->heads, H8, head_transform);
+
+	struct Head *head_all = head_n("a");
+	mode = mode_init();
+	ppmap_put(head_all->modes, M0, mode);
+	head_all->reapply_required = true;
+	head_all->des.zmode = M0;
+	head_all->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
+	head_all->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
+	head_all->cur.x = 1;
+	head_all->des.x = 2;
+	head_all->cur.enabled = false;
+	head_all->des.enabled = true;
+	ppmap_put(displ->heads, H9, head_all);
+
+	displ->state = IDLE;
+	print_head_queue(DEBUG, displ, "foo");
+
+	assert_log(DEBUG, "foo IDLE queue re:reapply ; a:reapply ; mo:mode ; a:mode ; vr:vrr ; a:vrr ; di:disable en:enable sc:geometry x:geometry y:geometry tr:geometry a:enable a:geometry\n");
+
+	displ_free(displ);
+
+	assert_logs_empty();
+}
+
+static void print_heads_outstanding__none(void **state) {
+	struct Displ *displ = displ_init();
+
+	will_return_int(__wrap_log_get_threshold, DEBUG);
+
+	displ->state = IDLE;
+	print_head_queue(DEBUG, displ, "foo");
+
+	assert_log(DEBUG, "foo IDLE queue\n");
+
+	displ_free(displ);
+
+	assert_logs_empty();
+}
+
+static void print_heads_outstanding__below_threshold(void **state) {
+	struct Displ *displ = displ_init();
+
+	will_return_int(__wrap_log_get_threshold, WARNING);
+
+	displ->state = IDLE;
+	print_head_queue(DEBUG, displ, "foo");
+
+	displ_free(displ);
+
+	assert_logs_empty();
+}
+
+int main(void) {
+	const struct CMUnitTest tests[] = {
+		TEST_BA(print_cfg__all),
+		TEST_BA(print_cfg__arrange_only),
+		TEST_BA(print_cfg__align_only),
+		TEST_BA(print_cfg__auto_scale_max),
+		TEST_BA(print_cfg__del),
+		TEST_BA(print_cfg__lid_disabled),
+
+		TEST_BA(print_cfg_commands__empty),
+		TEST_BA(print_cfg_commands__ok),
+
+		TEST_BA(print_head_arrived__all),
+		TEST_BA(print_head_arrived__min),
+		TEST_BA(print_head_departed__ok),
+
+		TEST_BA(print_head_deltas__mode),
+		TEST_BA(print_head_deltas__vrr),
+		TEST_BA(print_head_deltas__other),
+		TEST_BA(print_head_deltas__disable),
+		TEST_BA(print_head_deltas__enable),
+		TEST_BA(print_head_deltas__reapply),
+
+		TEST_BA(print_head_current__disabled),
+		TEST_BA(print_head_current__disabled_override),
+		TEST_BA(print_head_current__enabled_override),
+
+		TEST_BA(print_head_current__lid_closed),
+
+		TEST_BA(print_head_desired__disabled),
+		TEST_BA(print_head_desired__disabled_override),
+		TEST_BA(print_head_desired__enabled),
+		TEST_BA(print_head_desired__enabled_override),
+
+		TEST_BA(print_head_desired__transform_270),
+		TEST_BA(print_head_desired__transform_none),
+
+		TEST_BA(print_list__empty),
+		TEST_BA(print_list__many),
+
+		TEST_BA(print_adaptive_sync_fail__nulls),
+		TEST_BA(print_adaptive_sync_fail__head),
+
+		TEST_BA(print_mode_fail__nulls),
+		TEST_BA(print_mode_fail__head),
+
+		TEST_BA(print_heads_outstanding__many),
+		TEST_BA(print_heads_outstanding__none),
+		TEST_BA(print_heads_outstanding__below_threshold),
+	};
+
+	return RUN(tests);
+}
+

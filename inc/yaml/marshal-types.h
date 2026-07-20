@@ -2,39 +2,49 @@
 #define YAML_MARSHAL_TYPES_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
+#include "cfg/cfg.h"
+#include "cfg/condition.h"
+#include "cfg/disabled.h"
+#include "head.h"
+#include "ipc.h"
+#include "lid.h"
+#include "mode.h"
 #include "yaml/marshal.h"
 
 /*
- * Functions to add to yaml_document from structs
- * Returns false on failure to add to the document
- * Returns true and does nothing when NULL data
+ * Functions to add nodes to a yaml_document_t from structs and collections
+ * NOP on failure to add to the document
+ * NOP when NULL data
  */
 
-// yaml_doc_fn: create the document's contents
-bool yaml_doc_cfg          (struct MC *c, const void *cfg);
-bool yaml_doc_ipc_operation(struct MC *c, const void *ipc_operation);
-bool yaml_doc_ipc_request  (struct MC *c, const void *ipc_request);
+// fn_yaml_root_from_type: populate an empty document
+bool yaml_root_from_cfg          (struct MC *c, const struct Cfg*          const cfg);
+bool yaml_root_from_ipc_operation(struct MC *c, const struct IpcOperation* const ipc_operation);
+bool yaml_root_from_ipc_request  (struct MC *c, const struct IpcRequest*   const ipc_request);
 
-// yaml_map_populate_fn: add pairs to an existing mapping node
-bool yaml_map_populate_cfg           (struct MC *c, const void *cfg,         int mapping);
-bool yaml_map_populate_ipc_operation (struct MC *c, void *ipc_operation,     int mapping); // IpcOperation, mutates IpcOperation.rc
-bool yaml_map_populate_ipc_request   (struct MC *c, const void *ipc_request, int mapping);
-bool yaml_map_populate_mode          (struct MC *c, const void *mode,        int mapping);
-bool yaml_map_populate_head_state    (struct MC *c, const void *head_state,  int mapping);
-bool yaml_map_populate_head_overrides(struct MC *c, const void *head,        int mapping);
-bool yaml_map_populate_lid           (struct MC *c, const void *lid,         int mapping);
-bool yaml_map_populate_messages      (struct MC *c, void *ipc_operation,     int mapping); // IpcOperation, mutates IpcOperation.rc
-bool yaml_map_populate_state         (struct MC *c, const void *g_heads,     int mapping); // g_heads and g_lid
+// explicitly called
+int yaml_map_from_cfg           (struct MC *c, const struct Cfg*          const cfg);
+int yaml_map_from_ipc_operation (struct MC *c, const struct IpcOperation* const ipc_operation);
+int yaml_map_from_ipc_request   (struct MC *c, const struct IpcRequest*   const ipc_request);
+int yaml_map_from_head_overrides(struct MC *c, const struct Head*         const head);
+int yaml_map_from_head_state    (struct MC *c, const struct HeadState*    const head_state, const struct Head* const head);
+int yaml_map_from_lid           (struct MC *c, const struct Lid*          const lid);
+int yaml_seq_from_messages      (struct MC *c, const struct IpcOperation* const ipc_operation);
+int yaml_map_from_state         (struct MC *c); // g_displ->heads and g_lid
 
-// yaml_seq_append_fn: create and append a new item node to an existing sequence node
-bool yaml_seq_append_user_scale    (struct MC *c, const void *user_scale,     int sequence);
-bool yaml_seq_append_user_mode     (struct MC *c, const void *user_mode,      int sequence);
-bool yaml_seq_append_user_transform(struct MC *c, const void *user_transform, int sequence);
-bool yaml_seq_append_condition     (struct MC *c, const void *condition,      int sequence);
-bool yaml_seq_append_disabled      (struct MC *c, const void *disabled,       int sequence);
-bool yaml_seq_append_mode          (struct MC *c, const void *mode,           int sequence);
-bool yaml_seq_append_head          (struct MC *c, const void *head,           int sequence);
-bool yaml_seq_append_log_cap_line  (struct MC *c, const void *log_cap_line,   int sequence);
+// yaml_map_add_pset: fn_yaml_node_from_type
+int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condition);
+int yaml_node_from_disabled(struct MC *c, const struct CfgDisabled*  const disabled);
+int yaml_map_from_head     (struct MC *c, const struct Head* const head);
+
+// yaml_map_add_spmap: fn_yaml_node_from_key_type
+int yaml_map_from_mode      (struct MC *c, const void* const unused,    const struct Mode* const mode);
+int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const struct Mode* const mode);
+
+// yaml_map_add_simap: fn_node_from_yaml_key_size_t
+int yaml_map_from_scale    (struct MC *c, const char* const name_desc, const size_t scale);
+int yaml_map_from_transform(struct MC *c, const char* const name_desc, const size_t transform);
 
 #endif // YAML_MARSHAL_TYPES_H

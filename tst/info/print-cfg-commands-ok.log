@@ -8,7 +8,7 @@ way-displays -s SCALING OFF
 way-displays -s AUTO_SCALE OFF
 
 way-displays -s SCALE 'one' 1.000
-way-displays -s SCALE 'two' 2.346
+way-displays -s SCALE 'two' 2.345
 
 way-displays -s MODE 'all' 1 2 12.34
 way-displays -s MODE 'res' 4 5
@@ -23,4 +23,3 @@ way-displays -s VRR_OFF 'five'
 way-displays -s VRR_OFF 'six'
 
 way-displays -s CALLBACK_CMD 'notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"'
-

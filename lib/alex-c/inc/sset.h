@@ -7,24 +7,36 @@
 #include "fn.h"
 
 /*
- * `PSet` with string values
+ * `Pset` with string values
  * Values are memory managed.
  */
-struct SSet; // IWYU pragma: keep
+struct Sset; // IWYU pragma: keep
 
 /*
  * Entry iterator.
  */
-struct SSetIterState; // IWYU pragma: keep
-struct SSetIter {
+struct SsetItState; // IWYU pragma: keep
+struct SsetIt {
 	const char* val;
-	struct SSetIterState *st;
+	struct SsetItState *st;
+};
+
+/*
+ * Filter, must match all when multiple predicates specified, empty filter matches anything
+ */
+struct SsetFilter {
+	// test vals
+	fn_pred_s val;
+
+	// test vals against user data
+	const void *data;
+	fn_pred_sp val_data;
 };
 
 /*
  * Optional constructor params, defaults noted
  */
-struct SSetParams {
+struct SsetParams {
 	const bool case_insensitive; // false
 	const size_t initial;        // 10
 	const size_t grow;           // 10
@@ -35,72 +47,90 @@ struct SSetParams {
  */
 
 // construct a set with defaults
-const struct SSet *sset_init(void);
+const struct Sset *sset_init(void);
 
 // construct a set with params
-const struct SSet *sset_init_with(const struct SSetParams params);
+const struct Sset *sset_init_with(const struct SsetParams params);
 
 // clone a set
-const struct SSet *sset_clone(const struct SSet* const from);
+const struct Sset *sset_clone(const struct Sset* const from);
 
 // free set
-void sset_free(const struct SSet* const set);
+void sset_free(const struct Sset* const set);
 
-// free iter
-void sset_iter_free(const struct SSetIter* const iter);
+// free iterator
+void sset_it_free(const struct SsetIt* const it);
 
 /*
  * Access
  */
 
 // true if this set contains the specified element
-bool sset_contains(const struct SSet* const set, const char* const val);
+bool sset_contains(const struct Sset* const set, const char* const val);
 
-// create an iterator, caller must sset_iter_free or invoke pset_next until NULL
-const struct SSetIter *sset_iter(const struct SSet* const set);
+// element at zero indexed position
+const char *sset_at(const struct Sset* const set, const size_t i);
 
-// create an iterator filtering by equal_val, NULL equal_val matches all
-const struct SSetIter *sset_filter_iter(const struct SSet* const set, fn_equal equal_val, const void* const data);
+// find the first, NULL when no match or NULL match
+const void *sset_find(const struct Sset* const set, const struct SsetFilter filter);
 
-// next iterator value, NULL at end of set
-const struct SSetIter *sset_iter_next(const struct SSetIter* const iter);
+// create an iterator, caller must sset_it_free or invoke pset_next until NULL
+const struct SsetIt *sset_it(const struct Sset* const set);
+
+// create a filtering iterator, return NULL when no matches, caller must sset_it_free or invoke sset_next until NULL
+const struct SsetIt *sset_filter_it(const struct Sset* const set, const struct SsetFilter filter);
+
+// next iterator val, NULL at end of set
+const struct SsetIt *sset_it_next(const struct SsetIt* const it);
 
 /*
  * Mutate
  */
 
 // add if the set does not contain val, return true if added
-bool sset_add(const struct SSet* const set, const char* const val);
+bool sset_add(const struct Sset* const set, const char* const val);
+
+// add from vals not contained in the set, return number added
+size_t sset_add_all(const struct Sset* const set, const struct Sset* const from);
 
 // if the set contains val, remove it, free it and return true
-bool sset_remove(const struct SSet* const set, const char* const val);
+bool sset_remove(const struct Sset* const set, const char* const val);
+
+// remove all vals, returning number removed
+size_t sset_remove_all(const struct Sset* const set);
+
+// remove vals contained in, return number removed
+size_t sset_remove_in(const struct Sset* const set, const struct Sset* const in);
+
+// remove the it.val, it is unusable, sset_it_next must be called
+void sset_it_remove(const struct SsetIt* const it);
 
 // shell sort in place
-void sset_sort(const struct SSet* const set);
+void sset_sort(const struct Sset* const set);
 
 /*
  * Comparison
  */
 
 // same length, vals equal in order, case sensitivity is from a
-bool sset_equal(const struct SSet* const a, const struct SSet* const b);
+bool sset_equal(const struct Sset* const a, const struct Sset* const b);
 
 /*
  * Conversion
  */
 
-// ordered vals, caller frees list and vals
-struct SList *sset_slist_deep(const struct SSet* const set);
+// set ordered vals, caller frees list and vals
+struct Pslist *sset_pslist(const struct Sset* const set);
 
 /*
  * Info
  */
 
 // to string, user frees, format "%s\n"
-char *sset_str(const struct SSet* const set);
+char *sset_str(const struct Sset* const set);
 
 // number of values
-size_t sset_size(const struct SSet* const set);
+size_t sset_size(const struct Sset* const set);
 
 #endif // SSET_H
 

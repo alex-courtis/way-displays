@@ -1,248 +1,243 @@
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mode.h"
 
-#include "cfg.h"
-#include "head.h"
-#include "slist.h"
-#include "wlr-output-management-unstable-v1.h"
+#include "fn.h"
+#include "ppmap.h"
+#include "pset.h"
+#include "spmap.h"
+#include "str.h"
 
-struct Mode *mode_preferred(struct SList *modes, struct SList *modes_failed) {
-	struct Mode *mode = NULL;
+struct Mode *mode_init(void) {
+	struct Mode *mode = calloc(1, sizeof(struct Mode));
 
-	for (struct SList *i = modes; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		mode = i->val;
+	mode->width = -1;
+	mode->height = -1;
+	mode->refresh_mhz = -1;
 
-		if (mode->preferred && !slist_find_equal(modes_failed, NULL, mode)) {
-			return mode;
-		}
-	}
-
-	return NULL;
+	return mode;
 }
 
-struct Mode *mode_max_preferred(struct SList *modes, struct SList *modes_failed) {
-	const struct Mode *preferred = mode_preferred(modes, modes_failed);
-
-	if (!preferred)
+struct Mode *mode_clone(const struct Mode * const from) {
+	if (!from)
 		return NULL;
 
-	struct Mode *mode = NULL, *max = NULL;
+	struct Mode *to = (struct Mode*)calloc(1, sizeof(struct Mode));
 
-	for (struct SList *i = modes; i; i = i->nex) {
-		if (!i->val)
-			continue;
-		mode = i->val;
+	memcpy(to, from, sizeof(struct Mode));
 
-		if (slist_find_equal(modes_failed, NULL, mode)) {
-			continue;
-		}
-
-		if (mode->width != preferred->width || mode->height != preferred->height) {
-			continue;
-		}
-
-		if (!max) {
-			max = mode;
-		} else if (mode->refresh_mhz > max->refresh_mhz) {
-			max = mode;
-		}
-	}
-
-	return max;
+	return to;
 }
 
-const char *mhz_to_hz_str(int32_t mhz) {
-	static char buf[64];
-	snprintf(buf, 64, "%g", ((float)mhz) / 1000);
-	return buf;
+const struct SPmap *mode_spmap_init(void) {
+	const struct SPmapParams params = {
+		.equal_val = (fn_equal)mode_equal,
+		.free_val = (fn_free)mode_free,
+		.str_val = (fn_str)mode_str,
+		.clone_val = (fn_clone)mode_clone,
+	};
+	return spmap_init_with(params);
 }
 
-int32_t hz_str_to_mhz(const char *hz_str) {
-	if (!hz_str)
-		return 0;
-
-	return lround(atof(hz_str) * 1000);
+const struct PPmap *mode_ppmap_init(void) {
+	const struct PPmapParams params = {
+		.free_val = (fn_free)mode_free,
+		.str_val = (fn_str)mode_str,
+		.clone_val = (fn_clone)mode_clone,
+	};
+	return ppmap_init_with(params);
 }
 
-int32_t mhz_to_hz_rounded(int32_t mhz) {
-	return (mhz + 500) / 1000;
+const struct PPmap *mode_ppmap_equal_init(void) {
+	const struct PPmapParams params = {
+		.equal_val = (fn_equal)mode_equal,
+		.free_val = (fn_free)mode_free,
+		.str_val = (fn_str)mode_str,
+		.clone_val = (fn_clone)mode_clone,
+	};
+	return ppmap_init_with(params);
 }
 
-static bool equal_mode_res_hz(const void *a, const void *b) {
+void mode_free(struct Mode *mode) {
+	free(mode);
+}
+
+bool mode_equal(const struct Mode* const a, const struct Mode* const b) {
+	return a && b && memcmp(a, b, sizeof(struct Mode)) == 0;
+}
+
+bool mode_equal_res(const struct Mode* const a, const struct Mode* const b) {
+	return a && b &&
+		a->width == b->width &&
+		a->height == b->height;
+}
+
+bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b) {
+	return mode_equal_res(a, b) &&
+		mode_hz_rounded(a) == mode_hz_rounded(b);
+}
+
+bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b) {
+	return mode_equal_res(a, b) &&
+		a->refresh_mhz == b->refresh_mhz;
+}
+
+bool mode_greater_than_res_refresh(const struct Mode* const a, const struct Mode* const b) {
 	if (!a || !b) {
 		return false;
 	}
 
-	const struct Mode *lhs = (struct Mode*)a;
-	const struct Mode *rhs = (struct Mode*)b;
-
-	return lhs->width == rhs->width &&
-		lhs->height == rhs->height &&
-		mhz_to_hz_rounded(lhs->refresh_mhz) == mhz_to_hz_rounded(rhs->refresh_mhz);
-}
-
-static bool equal_mode_user_mode_res_refresh(const void *a, const void *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	const struct Mode *lhs = (struct Mode*)a;
-	const struct UserMode *rhs = (struct UserMode*)b;
-
-	return lhs->width == rhs->width && lhs->height == rhs->height && lhs->refresh_mhz == rhs->refresh_mhz;
-}
-
-static bool greater_than_res_refresh(const void *a, const void *b) {
-	if (!a || !b) {
-		return false;
-	}
-
-	const struct Mode *lhs = (struct Mode*)a;
-	const struct Mode *rhs = (struct Mode*)b;
-
-	if (lhs->width > rhs->width) {
+	if (a->width > b->width) {
 		return true;
-	} else if (lhs->width != rhs->width) {
+	} else if (a->width != b->width) {
 		return false;
 	}
 
-	if (lhs->height > rhs->height) {
+	if (a->height > b->height) {
 		return true;
-	} else if (lhs->height != rhs->height) {
+	} else if (a->height != b->height) {
 		return false;
 	}
 
-	if (lhs->refresh_mhz > rhs->refresh_mhz) {
+	if (a->refresh_mhz > b->refresh_mhz) {
 		return true;
 	}
 
 	return false;
 }
 
-static bool mrr_satisfies_user_mode(const struct ModesResRefresh *mrr, const struct UserMode *user_mode) {
-	if (!mrr || !user_mode) {
-		return false;
-	}
+char *mode_str_pref(const struct Mode * const mode, bool pref) {
+	if (!mode)
+		return NULL;
 
-	return user_mode->max ||
-		(mrr->width == user_mode->width &&
-		 mrr->height == user_mode->height &&
-		 (user_mode->refresh_mhz == -1 || mhz_to_hz_rounded(mrr->refresh_mhz) == mhz_to_hz_rounded(user_mode->refresh_mhz)));
+	return sprintf_alloc("%dx%d@%dHz (%d,%03dmHz)%s",
+			mode->width,
+			mode->height,
+			mode_hz_rounded(mode),
+			mode->refresh_mhz / 1000,
+			mode->refresh_mhz % 1000,
+			pref ? " (preferred)" : ""
+			);
 }
 
-double mode_dpi(struct Mode *mode) {
-	if (!mode || !mode->head || !mode->head->width_mm || !mode->head->height_mm) {
+
+char *mode_str(const struct Mode * const mode) {
+	return mode_str_pref(mode, false);
+}
+
+char *mode_str_cfg(const struct Mode * const mode) {
+	if (!mode)
+		return NULL;
+
+	if (mode->max) {
+		return sprintf_alloc("MAX");
+	} else if (mode->refresh_mhz != -1) {
+		return sprintf_alloc("%dx%d@%gHz",
+				mode->width,
+				mode->height,
+				((float)mode->refresh_mhz) / 1000
+				);
+	} else {
+		return sprintf_alloc("%dx%d",
+				mode->width,
+				mode->height
+				);
+	}
+}
+
+bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target) {
+	if (!mode || !mode_target)
+		return false;
+
+	return mode_target->max ||
+		(mode->width == mode_target->width &&
+		 mode->height == mode_target->height &&
+		 (mode_target->refresh_mhz == -1 || mode_hz_rounded(mode) == mode_hz_rounded(mode_target)));
+}
+
+int32_t mode_hz_rounded(const struct Mode* const mode) {
+	return mode ? (mode->refresh_mhz + 500) / 1000 : 0;
+}
+
+double mode_dpi(const struct Mode* const mode, int32_t width_mm, int32_t height_mm) {
+	if (!mode || !width_mm || !height_mm) {
 		return 0;
 	}
 
-	double dpi_horiz = (double)(mode->width) / mode->head->width_mm * 25.4;
-	double dpi_vert = (double)(mode->height) / mode->head->height_mm * 25.4;
+	double dpi_horiz = (double)(mode->width) / width_mm * 25.4;
+	double dpi_vert = (double)(mode->height) / height_mm * 25.4;
 	return (dpi_horiz + dpi_vert) / 2;
 }
 
-double mode_scale(struct Mode *mode) {
-	double dpi = mode_dpi(mode);
-
-	if (dpi == 0) {
-		return 1;
-	}
-
-	return dpi / (g_cfg->auto_scale_dpi ? g_cfg->auto_scale_dpi : AUTO_SCALE_DPI_DEFAULT);
-}
-
-struct SList *modes_res_refresh(struct SList *modes) {
-	struct SList *mrrs = NULL;
-
-	struct SList *sorted = slist_sort(modes, greater_than_res_refresh);
-
-	struct ModesResRefresh *mrr = NULL;
-	struct Mode *mode = NULL;
-	for (struct SList *i = sorted; i; i = i->nex) {
-		mode = i->val;
-
-		if (!mrr || !equal_mode_res_hz(mode, mrr->modes->val)) {
-			mrr = calloc(1, sizeof(struct ModesResRefresh));
-			mrr->width = mode->width;
-			mrr->height = mode->height;
-			mrr->refresh_mhz = mode->refresh_mhz;
-			slist_append(&mrrs, mrr);
-		}
-
-		slist_append(&mrr->modes, mode);
-	}
-
-	slist_free(&sorted);
-
-	return mrrs;
-}
-
-struct Mode *mode_user_mode(struct SList *modes, struct SList *modes_failed, const struct UserMode *user_mode) {
-	if (!modes || !user_mode)
+const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const struct PPmap* const modes) {
+	if (!mode_target || !modes)
 		return NULL;
 
-	struct SList *i, *j;
+	const struct Pset *candidates = ppmap_vals_pset(modes);
 
-	// exact res and refresh
-	struct Mode *mode_exact = slist_find_equal_val(modes, equal_mode_user_mode_res_refresh, user_mode);
-	if (mode_exact && !slist_find_equal_val(modes_failed, NULL, mode_exact)) {
-		return mode_exact;
-	}
+	// search from the top down
+	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
 
-	// highest mode matching the user mode
-	struct SList *mrrs = modes_res_refresh(modes);
-	for (i = mrrs; i; i = i->nex) {
-		struct ModesResRefresh *mrr = i->val;
-		if (mrr && mrr_satisfies_user_mode(mrr, user_mode)) {
-			for (j = mrr->modes; j; j = j->nex) {
-				struct Mode *mode = j->val;
-				if (!slist_find_equal(modes_failed, NULL, mode)) {
-					slist_free_vals(&mrrs, mode_res_refresh_free);
-					return mode;
-				}
-			}
-		}
-	}
-	slist_free_vals(&mrrs, mode_res_refresh_free);
+	struct PsetFilter f = { .val_data = (fn_pred_pp)mode_equal_res, .data = mode_target, };
+	const struct Mode *mode = pset_find(candidates, f);
 
-	return NULL;
-}
-
-struct Mode *mode_init(struct Head *head, struct zwlr_output_mode_v1 *zwlr_mode, int32_t width, int32_t height, int32_t refresh_mhz, bool preferred) {
-	struct Mode *mode = calloc(1, sizeof(struct Mode));
-
-	mode->head = head;
-	mode->zwlr_mode = zwlr_mode;
-	mode->width = width;
-	mode->height = height;
-	mode->refresh_mhz = refresh_mhz;
-	mode->preferred = preferred;
+	pset_free(candidates);
 
 	return mode;
 }
 
-void mode_free(const void *data) {
-	struct Mode *mode = (struct Mode*)data;
+const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, const struct PPmap* const modes) {
+	if (!mode_target || !modes)
+		return NULL;
 
-	if (!mode)
-		return;
+	const struct Pset *candidates = ppmap_vals_pset(modes);
 
-	free(mode);
+	// search from the top down
+	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
+
+	struct PsetFilter f = { .data = mode_target, };
+
+	// exact match first
+	f.val_data = (fn_pred_pp)mode_equal_res_mhz;
+	const struct Mode *mode = pset_find(candidates, f);
+
+	// otherwise best match
+	f.val_data = (fn_pred_pp)mode_satisfies;
+	mode = mode ? mode : pset_find(candidates, f);
+
+	pset_free(candidates);
+
+	return mode;
 }
 
-void mode_res_refresh_free(const void *data) {
-	struct ModesResRefresh *mrr = (struct ModesResRefresh*)data;
+const struct Mode *mode_max(const struct PPmap* const modes) {
+	const struct Mode *mode_max = NULL;
 
-	if (!mrr)
-		return;
+	for (const struct PPmapIt *it = ppmap_it(modes); it; it = ppmap_it_next(it)) {
+		const struct Mode *mode = it->val;
 
-	slist_free(&mrr->modes);
-	free(mrr);
+		if (!mode_max) {
+			mode_max = mode;
+			continue;
+		}
+
+		// highest resolution
+		if (mode->width * mode->height > mode_max->width * mode_max->height) {
+			mode_max = mode;
+			continue;
+		}
+
+		// highest refresh at highest resolution
+		if (mode->width == mode_max->width &&
+				mode->height == mode_max->height &&
+				mode->refresh_mhz > mode_max->refresh_mhz) {
+			mode_max = mode;
+			continue;
+		}
+	}
+
+	return mode_max;
 }
-
