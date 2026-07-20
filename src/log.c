@@ -134,7 +134,7 @@ static void log_line(const enum LogThreshold threshold, const int eno, const cha
 	print_line(threshold, l);
 
 	// capture content regardless of threshold
-	if (log_cap_lines_active)
+	if (pset_size(log_cap_lines_active) > 0)
 		capture_line(threshold, l);
 
 	free(l);

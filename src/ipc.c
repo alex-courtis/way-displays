@@ -83,8 +83,8 @@ void ipc_send_operation(struct IpcOperation *operation) {
 
 	char *yaml = yaml_marshal(operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response");
 
-	pset_free_vals(operation->log_cap_lines);
-	operation->log_cap_lines = NULL;
+	// clear marshalled lines but keep capturing
+	pset_remove_all_free(operation->log_cap_lines);
 
 	if (!yaml) {
 		operation->done = true;
