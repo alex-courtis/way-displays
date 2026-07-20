@@ -86,12 +86,13 @@ tst/tst-desire: LDFLAGS += -Wl,$\
 	--wrap=head_find_mode,$\
 	--wrap=head_auto_scale
 
-tst/tst-cfg-file: LDFLAGS += -Wl,$\
+tst/tst-cfg-file-read: LDFLAGS += -Wl,$\
+	--wrap=fs_canonical_path,$\
+	--wrap=yaml_unmarshal_file
+
+tst/tst-cfg-file-write: LDFLAGS += -Wl,$\
 	--wrap=yaml_marshal,$\
 	--wrap=fs_file_write,$\
 	--wrap=fs_mkdir_p,$\
-	--wrap=fs_canonical_path,$\
 	--wrap=fd_wd_cfg_dir_destroy,$\
-	--wrap=fd_wd_cfg_dir_create,$\
-	--wrap=yaml_unmarshal_file
-
+	--wrap=fd_wd_cfg_dir_create

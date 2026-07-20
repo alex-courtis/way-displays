@@ -20,13 +20,6 @@
  * fs
  */
 
-bool __wrap_fs_file_write(const char *path, const char *contents, const char *mode) {
-	check_expected_ptr(path);
-	check_expected_ptr(contents);
-	check_expected_ptr(mode);
-	return mock_type(bool);
-}
-
 bool __wrap_fs_mkdir_p(char *path, mode_t mode) {
 	check_expected_ptr(path);
 	check_expected_int(mode);
