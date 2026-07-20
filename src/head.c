@@ -13,6 +13,7 @@
 #include "enum.h"
 #include "fn.h"
 #include "info/callback.h"
+#include "ipc.h"
 #include "log.h"
 #include "mode.h"
 #include "ppmap.h"
@@ -95,6 +96,71 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
 
 	if (head->des.zmode == zmode)
 		head->des.zmode = NULL;
+}
+
+static void head_apply_toggles2(struct Head * const head, const struct Cfg* cfg) {
+	if (head->overrided_enabled == NoOverride) {
+		log_info(NULL);
+		log_info("Applying \"DISABLED\" override for %s", head->name);
+		if (head->cur.enabled) {
+			head->overrided_enabled = OverrideFalse;
+		} else {
+			head->overrided_enabled = OverrideTrue;
+		}
+	} else {
+		log_info(NULL);
+		log_info("Resetting \"DISABLED\" override for %s", head->name);
+		head->overrided_enabled = NoOverride;
+	}
+}
+
+void head_process_ipc_disableds(const struct Head * const head, const struct IpcRequest * const ipc_request) {
+	bool override_needed = false;
+
+	// ipc disabled request for this head
+	struct PsetFilter f_req = { .val_data = (fn_pred_pp)cfg_disabled_matches_head, .data = head, };
+	for (const struct PsetIt *rit = pset_filter_it(ipc_request->cfg->disableds, f_req); rit; rit = pset_it_next(rit)) {
+
+		// cfg conditionally disabled for this head
+		struct PsetFilter f_cfg = { .val_data = (fn_pred_pp)cfg_disabled_with_conditions_matches_head, .data = head, };
+		if (pset_find(g_cfg->disableds, f_cfg)) {
+
+			// remove from the request for temporary override
+			pset_it_remove_free(rit);
+			override_needed = true;
+		}
+	}
+
+	if (!override_needed)
+		return;
+
+	struct Head *head_mutable = (struct Head*)head;
+
+	switch (ipc_request->command) {
+		case CFG_TOGGLE:
+			head_apply_toggles2((struct Head*)head, ipc_request->cfg);
+			break;
+		case CFG_DEL:
+			log_info(NULL);
+			if (head->cur.enabled) {
+				log_info("%s is conditionally enabled, no action", head->name);
+			} else {
+				log_info("%s is conditionally disabled, enabling temporarily", head->name);
+				head_mutable->overrided_enabled = OverrideTrue;
+			}
+			break;
+		case CFG_SET:
+			log_info(NULL);
+			if (head->cur.enabled) {
+				log_info("%s is conditionally enabled, disabling temporarily", head->name);
+				head_mutable->overrided_enabled = OverrideFalse;
+			} else {
+				log_info("%s is conditionally disabled, no action", head->name);
+			}
+			break;
+		default:
+			break;
+	}
 }
 
 void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {

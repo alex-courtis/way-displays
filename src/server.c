@@ -102,6 +102,11 @@ static void receive_ipc_request(int server_socket) {
 		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
+	// for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
+	// 	head_process_ipc_disableds((struct Head*)it->val, ipc_request);
+	// }
+
+	// TODO replace with above
 	switch (ipc_request->command) {
 		case CFG_TOGGLE:
 			// handle extra toggles

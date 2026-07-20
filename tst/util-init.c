@@ -15,6 +15,13 @@ struct Head *head_n(const char *name) {
 	return head;
 }
 
+struct Head *head_n_en(const char *name, bool enabled) {
+	struct Head *head = head_init();
+	head->name = strdup(name);
+	head->cur.enabled = enabled;
+	return head;
+}
+
 struct Head *head_d(const char *description) {
 	struct Head *head = head_init();
 	head->description = strdup(description);

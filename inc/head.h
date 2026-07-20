@@ -8,6 +8,7 @@
 
 #include "cfg/cfg.h"
 #include "enum.h"
+#include "ipc.h"
 #include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -75,6 +76,9 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
 /*
  * mutation
  */
+
+// TODO what exactly does this do?
+void head_process_ipc_disableds(const struct Head * const head, const struct IpcRequest * const ipc_request);
 
 // applies extra toggles that should change head state directly
 void head_apply_toggles(struct Head * const head, const struct Cfg *cfg);

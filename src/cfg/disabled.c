@@ -83,6 +83,10 @@ bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabl
 	return disabled && head && head_matches_name_desc(head, disabled->name_desc);
 }
 
+bool cfg_disabled_with_conditions_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
+	return disabled && head && pset_size(disabled->conditions) > 0 && head_matches_name_desc(head, disabled->name_desc);
+}
+
 bool cfg_disabled_has_conditions_and_name_desc(const struct CfgDisabled * const disabled, const char * const name_desc) {
 	if (!disabled)
 		return false;
