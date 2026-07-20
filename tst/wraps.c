@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <wayland-util.h>
-#include <yaml.h>
 
 #include "displ.h"
 #include "enum.h"
@@ -15,6 +14,8 @@
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal.h"
+
+// any mocks that require __real should be in the test c itself, as they require the --wrap= to be explicitly specified
 
 /*
  * fs
@@ -202,7 +203,7 @@ void __wrap__zwlr_output_configuration_head_v1_set_adaptive_sync(struct zwlr_out
 }
 
 /*
- * yaml-(un)marshal
+ * yaml/
  */
 char *__wrap_yaml_marshal(const void *data, fn_yaml_root_from_type fn, const char *human) {
 	check_expected_ptr(data);
@@ -216,57 +217,3 @@ void *__wrap_yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 
 	return mock_ptr_type_checked(struct Cfg*);
 }
-
-/*
- * libyaml
- */
-
-int __real_yaml_document_initialize(yaml_document_t *document, yaml_version_directive_t *version_directive, yaml_tag_directive_t *tag_directives_start, yaml_tag_directive_t *tag_directives_end, int start_implicit, int end_implicit);
-int __wrap_yaml_document_initialize(yaml_document_t *document, yaml_version_directive_t *version_directive, yaml_tag_directive_t *tag_directives_start, yaml_tag_directive_t *tag_directives_end, int start_implicit, int end_implicit) {
-	if (has_mock())
-		return mock_int();
-	else
-		return __real_yaml_document_initialize(document, version_directive, tag_directives_start, tag_directives_end, start_implicit, end_implicit);
-}
-
-int __real_yaml_emitter_initialize(yaml_emitter_t *emitter);
-int __wrap_yaml_emitter_initialize(yaml_emitter_t *emitter) {
-	if (has_mock())
-		return mock_int();
-	else
-		return __real_yaml_emitter_initialize(emitter);
-}
-
-int __real_yaml_emitter_open(yaml_emitter_t *emitter);
-int __wrap_yaml_emitter_open(yaml_emitter_t *emitter) {
-	if (has_mock())
-		return mock_int();
-	else
-		return __real_yaml_emitter_open(emitter);
-}
-
-int __real_yaml_emitter_dump(yaml_emitter_t *emitter, yaml_document_t *document);
-int __wrap_yaml_emitter_dump(yaml_emitter_t *emitter, yaml_document_t *document) {
-	if (has_mock())
-		return mock_int();
-	else
-		return __real_yaml_emitter_dump(emitter, document);
-}
-
-int __real_yaml_emitter_close(yaml_emitter_t *emitter);
-int __wrap_yaml_emitter_close(yaml_emitter_t *emitter) {
-	if (has_mock())
-		return mock_int();
-	else
-
-		return __real_yaml_emitter_close(emitter);
-}
-
-int __real_yaml_parser_initialize(yaml_parser_t *parser);
-int __wrap_yaml_parser_initialize(yaml_parser_t *parser) {
-	if (has_mock())
-		return mock_int();
-	else
-		return __real_yaml_parser_initialize(parser);
-}
-

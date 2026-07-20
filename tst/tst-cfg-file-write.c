@@ -21,8 +21,7 @@ void candidates_init(const char *user_path);
 extern const struct Sset *g_candidates;
 
 // this is local to this test, as some asserts/expects will call fs_file_write
-// cppcheck-suppress staticFunction
-bool __wrap_fs_file_write(const char *path, const char *contents, const char *mode) {
+bool __wrap_fs_file_write(const char *path, const char *contents, const char *mode) { // cppcheck-suppress staticFunction
 	check_expected_ptr(path);
 	check_expected_ptr(contents);
 	check_expected_ptr(mode);

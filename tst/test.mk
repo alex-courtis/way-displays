@@ -54,12 +54,6 @@ LDFLAGS += -Wl,$\
 		   --wrap=lid_free,--wrap=g_lid_destroy,$\
 		   --wrap=g_lid_is_closed,--wrap=g_lid_update
 
-# yaml
-LDFLAGS += -Wl,$\
-		   --wrap=yaml_document_initialize,$\
-		   --wrap=yaml_parser_initialize,$\
-		   --wrap=yaml_emitter_initialize,--wrap=yaml_emitter_open,--wrap=yaml_emitter_dump,--wrap=yaml_emitter_close
-
 #
 # test specific mocks
 #
@@ -96,3 +90,10 @@ tst/tst-cfg-file-write: LDFLAGS += -Wl,$\
 	--wrap=fs_mkdir_p,$\
 	--wrap=fd_wd_cfg_dir_destroy,$\
 	--wrap=fd_wd_cfg_dir_create
+
+tst/tst-yaml-marshal: LDFLAGS += -Wl,$\
+	--wrap=yaml_document_initialize,$\
+	--wrap=yaml_emitter_initialize,--wrap=yaml_emitter_open,--wrap=yaml_emitter_dump,--wrap=yaml_emitter_close
+
+tst/tst-yaml-unmarshal: LDFLAGS += -Wl,$\
+	--wrap=yaml_parser_initialize

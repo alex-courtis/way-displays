@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <yaml.h>
 
 #include "cfg/cfg.h"
 #include "displ.h"
@@ -22,6 +23,33 @@
 
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
+
+// these mocks are local to this test as they specifically require __real to be present i.e. explicitly wrapped
+
+int __real_yaml_emitter_initialize(yaml_emitter_t *emitter);
+int __wrap_yaml_emitter_initialize(yaml_emitter_t *emitter) { // cppcheck-suppress staticFunction
+	return has_mock() ? mock_int() : __real_yaml_emitter_initialize(emitter);
+}
+
+int __real_yaml_emitter_open(yaml_emitter_t *emitter);
+int __wrap_yaml_emitter_open(yaml_emitter_t *emitter) { // cppcheck-suppress staticFunction
+	return has_mock() ? mock_int() : __real_yaml_emitter_open(emitter);
+}
+
+int __real_yaml_emitter_dump(yaml_emitter_t *emitter, yaml_document_t *document);
+int __wrap_yaml_emitter_dump(yaml_emitter_t *emitter, yaml_document_t *document) { // cppcheck-suppress staticFunction
+	return has_mock() ? mock_int() : __real_yaml_emitter_dump(emitter, document);
+}
+
+int __real_yaml_emitter_close(yaml_emitter_t *emitter);
+int __wrap_yaml_emitter_close(yaml_emitter_t *emitter) { // cppcheck-suppress staticFunction
+	return has_mock() ? mock_int() : __real_yaml_emitter_close(emitter);
+}
+
+int __real_yaml_document_initialize(yaml_document_t *document, yaml_version_directive_t *version_directive, yaml_tag_directive_t *tag_directives_start, yaml_tag_directive_t *tag_directives_end, int start_implicit, int end_implicit);
+int __wrap_yaml_document_initialize(yaml_document_t *document, yaml_version_directive_t *version_directive, yaml_tag_directive_t *tag_directives_start, yaml_tag_directive_t *tag_directives_end, int start_implicit, int end_implicit) { // cppcheck-suppress staticFunction
+	return has_mock() ? mock_int() : __real_yaml_document_initialize(document, version_directive, tag_directives_start, tag_directives_end, start_implicit, end_implicit);
+}
 
 static int before_each(void **state) {
 	g_displ = displ_init();

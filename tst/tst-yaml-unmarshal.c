@@ -14,6 +14,7 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
+#include <yaml.h>
 
 #include "cfg/cfg.h"
 #include "cfg/condition.h"
@@ -33,6 +34,13 @@
 #include "yaml/unmarshal-types.h"
 
 #include "yaml/unmarshal.h"
+
+// these mocks are local to this test as they specifically require __real to be present i.e. explicitly wrapped
+//
+int __real_yaml_parser_initialize(yaml_parser_t *parser);
+int __wrap_yaml_parser_initialize(yaml_parser_t *parser) { // cppcheck-suppress staticFunction
+	return has_mock() ? mock_int() : __real_yaml_parser_initialize(parser);
+}
 
 // expected will be free'd, log_path is optional WARNING
 static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected, const char *log_path, const char * const file, const int line) {
@@ -612,7 +620,7 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_unmarshal_str__yaml_document_initialize_fail(void **state) {
+static void yaml_unmarshal_str__yaml_parser_initialize_fail(void **state) {
 
 	will_return_int(__wrap_yaml_parser_initialize, 0);
 
@@ -650,7 +658,7 @@ static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_unmarshal_file__yaml_document_initialize_fail(void **state) {
+static void yaml_unmarshal_file__yaml_parser_initialize_fail(void **state) {
 	will_return_int(__wrap_yaml_parser_initialize, 0);
 
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
@@ -705,9 +713,9 @@ int main(void) {
 		TEST(yaml_root_to_ipc_response_pset__map),
 		TEST(yaml_root_to_ipc_response_pset__seq),
 
-		TEST(yaml_unmarshal_str__yaml_document_initialize_fail),
+		TEST(yaml_unmarshal_str__yaml_parser_initialize_fail),
 		TEST(yaml_unmarshal_str__yaml_parser_load_fail),
-		TEST(yaml_unmarshal_file__yaml_document_initialize_fail),
+		TEST(yaml_unmarshal_file__yaml_parser_initialize_fail),
 		TEST(yaml_unmarshal_file__yaml_parser_load_fail),
 	};
 
