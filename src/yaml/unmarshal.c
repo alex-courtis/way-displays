@@ -1,4 +1,3 @@
-#include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +8,7 @@
 
 #include "enum.h"
 #include "log.h"
+#include "regx.h"
 #include "str.h"
 
 static void log_error_parser(const yaml_parser_t *parser, const char *prefix) {
@@ -258,26 +258,21 @@ bool yaml_check_mandatory(struct UC *c, const yaml_node_t *node) {
 	return false;
 }
 
-bool yaml_valid_regex(struct UC *c, const void *pattern) {
-	bool rc = true;
-	char *p = (char*)pattern;
+bool yaml_valid_regex(struct UC *c, const char *pattern) {
+	if (!pattern || strlen(pattern) < 2 || pattern[0] != '!')
+		return true;
 
-	if (p && p[0] == '!') {
-		regex_t regex;
-		int result = regcomp(&regex, p + 1, REG_EXTENDED);
-		if (result) {
-			char err[1024];
-			regerror(result, &regex, err, 1024);
+	char *err = regex_compiles(pattern + 1);
 
-			char *msg = sprintf_alloc("regex '%s': %s", p + 1, err);
-			yaml_unmarshal_log_invalid_value(c, (yaml_char_t*)msg);
-			free(msg);
-
-			rc = false;
-		}
-		regfree(&regex);
+	if (err) {
+		char *msg = sprintf_alloc("regex '%s': %s", pattern + 1, err);
+		yaml_unmarshal_log_invalid_value(c, (yaml_char_t*)msg);
+		free(msg);
+		free(err);
+		return false;
 	}
-	return rc;
+
+	return true;
 }
 
 char *yaml_node_type_str(const yaml_node_type_t type) {

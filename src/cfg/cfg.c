@@ -242,9 +242,11 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 	simap_put_all           (merged->transforms,        from->transforms);
 	sset_add_all            (merged->adaptive_sync_off, from->adaptive_sync_off);
 
-	// replace
-	sset_free(merged->order_name_desc);
-	merged->order_name_desc = sset_clone(from->order_name_desc);
+	// replace if present
+	if (sset_size(from->order_name_desc) > 0) {
+		sset_free(merged->order_name_desc);
+		merged->order_name_desc = sset_clone(from->order_name_desc);
+	}
 
 	return merged;
 }
@@ -256,8 +258,6 @@ struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = cfg_clone(to);
 
-	// TODO #220 ensure that disabled toggle is still not removed
-	// https://github.com/alex-courtis/way-displays/issues/220
 	pset_remove_in_free (merged->disableds,         from->disableds);
 	spmap_remove_in_free(merged->modes,             from->modes);
 	simap_remove_in     (merged->scales,            from->scales);
@@ -284,7 +284,7 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = cfg_clone(to);
 
-	// the IpcRequest passes ON for CFG_TOGGLE
+	// the IpcRequest passes ON to indicate CFG_TOGGLE, regardless of state
 
 	// SCALE
 	if (from->scaling == ON) {
@@ -300,6 +300,13 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	for (const struct SsetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
 		if (!sset_remove(merged->adaptive_sync_off, it->val)) {
 			sset_add(merged->adaptive_sync_off, it->val);
+		}
+	}
+
+	// DISABLED, conditionals toggled and filtered earlier
+	for (const struct PsetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
+		if (!pset_remove_free(merged->disableds, it->val)) {
+			pset_add(merged->disableds, cfg_disabled_clone(it->val));
 		}
 	}
 

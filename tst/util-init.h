@@ -1,9 +1,12 @@
 #ifndef UTIL_INIT_H
 #define UTIL_INIT_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 struct Head *head_n(const char *name);
+
+struct Head *head_n_en(const char *name, bool enabled);
 
 struct Head *head_d(const char *description);
 

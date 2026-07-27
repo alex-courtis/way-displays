@@ -1,5 +1,4 @@
 #include <math.h>
-#include <regex.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -13,10 +12,12 @@
 #include "enum.h"
 #include "fn.h"
 #include "info/callback.h"
+#include "ipc.h"
 #include "log.h"
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
+#include "regx.h"
 #include "spmap.h"
 #include "sset.h"
 #include "str.h"
@@ -97,22 +98,60 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
 		head->des.zmode = NULL;
 }
 
-void head_apply_toggles(struct Head * const head, const struct Cfg* cfg) {
-	struct PsetFilter f = { .val_data = (fn_pred_pp)cfg_disabled_name_desc_matches_head, .data = head, };
-	if (pset_find(cfg->disableds, f)) {
-		if (head->overrided_enabled == NoOverride) {
-			log_info(NULL);
-			log_info("Applying \"DISABLED\" override for %s", head->name);
-			if (head->cur.enabled) {
-				head->overrided_enabled = OverrideFalse;
-			} else {
-				head->overrided_enabled = OverrideTrue;
-			}
+// remove a ManualOverride if present, or set one based on current head enabled state
+static void head_apply_disabled_toggle(struct Head * const head) {
+	if (head->overrided_enabled == NoOverride) {
+		log_info(NULL);
+		log_info("Applying %s override for %s", cfg_element_name(DISABLED), head->name);
+		if (head->cur.enabled) {
+			head->overrided_enabled = OverrideFalse;
 		} else {
-			log_info(NULL);
-			log_info("Resetting \"DISABLED\" override for %s", head->name);
-			head->overrided_enabled = NoOverride;
+			head->overrided_enabled = OverrideTrue;
 		}
+	} else {
+		log_info(NULL);
+		log_info("Resetting %s override for %s", cfg_element_name(DISABLED), head->name);
+		head->overrided_enabled = NoOverride;
+	}
+}
+
+void head_override_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request) {
+	if (!head || !ipc_request || !ipc_request->cfg)
+		return;
+
+	bool override = false;
+
+	// ipc disabled request for this head, no conditions may be present
+	struct PsetFilter f_req = { .val_data = (fn_pred_pp)cfg_disabled_applies_to_head, .data = head, };
+	for (const struct PsetIt *it = pset_filter_it(ipc_request->cfg->disableds, f_req); it; it = pset_it_next(it)) {
+
+		// cfg conditionally disabled for this head
+		struct PsetFilter f_cfg = { .val_data = (fn_pred_pp)cfg_disabled_conditionally_for_head, .data = head, };
+		if (pset_find(g_cfg->disableds, f_cfg)) {
+
+			// remove from the request for override now
+			pset_it_remove_free(it);
+			override = true;
+		}
+	}
+
+	if (!override)
+		return;
+
+	switch (ipc_request->command) {
+		case CFG_TOGGLE:
+			head_apply_disabled_toggle(head);
+			break;
+		case CFG_DEL:
+			if (!head->cur.enabled)
+				head_apply_disabled_toggle(head);
+			break;
+		case CFG_SET:
+			if (head->cur.enabled)
+				head_apply_disabled_toggle(head);
+			break;
+		default:
+			break;
 	}
 }
 
@@ -223,32 +262,21 @@ bool head_matches_name_desc_exact(const struct Head * const head, const char * c
 }
 
 bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc) {
-	if (!head || !name_desc || name_desc[0] != '!')
+	if (!head || !name_desc || strlen(name_desc) < 2 || name_desc[0] != '!')
 		return false;
 
-	const char *regex_pattern = name_desc + 1;
+	const char *pattern = name_desc + 1;
 
-	regex_t regex;
-	int result;
-
-	result = regcomp(&regex, regex_pattern, REG_EXTENDED);
-	if (result) {
-		char error_msg[100];
-		regerror(result, &regex, error_msg, sizeof(error_msg));
-		log_debug("Could not compile Head NAME_DESC regex '%s': %s", regex_pattern, error_msg);
+	char *err = regex_compiles(pattern);
+	if (err) {
+		log_debug("Could not compile Head NAME_DESC regex '%s': %s", pattern, err);
+		free(err);
 		return false;
 	}
 
-	result = REG_NOMATCH;
-	if (head->name) {
-		result = regexec(&regex, head->name, 0, NULL, 0);
-	}
-	if (result && head->description) {
-		result = regexec(&regex, head->description, 0, NULL, 0);
-	}
-	regfree(&regex);
-
-	return !result;
+	return
+		(head->name && regex_matches(head->name, pattern)) ||
+		(head->description && regex_matches(head->description, pattern));
 }
 
 bool head_matches_name_desc_fuzzy(const struct Head * const head, const char * const name_desc) {

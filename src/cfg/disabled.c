@@ -4,10 +4,14 @@
 
 #include "cfg/disabled.h"
 
+#include "cfg/cfg.h"
 #include "cfg/condition.h"
+#include "enum.h"
 #include "fn.h"
 #include "head.h"
+#include "log.h"
 #include "pset.h"
+#include "regx.h"
 
 static bool disabled_equal(const struct CfgDisabled* const a, const struct CfgDisabled* const b) {
 	if (!a || !b) {
@@ -68,25 +72,56 @@ void cfg_disabled_free(struct CfgDisabled *disabled) {
 	free(disabled);
 }
 
-bool cfg_disabled_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
-	struct PsetFilter f = { .val = (fn_pred_p)cfg_condition_true, };
-
-	return
-		// name_desc must match
-		cfg_disabled_name_desc_matches_head(disabled, head) &&
-
-		// all conditions must be false
-		pset_find(disabled->conditions, f) == NULL;
-}
-
-bool cfg_disabled_name_desc_matches_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
-	return disabled && head && head_matches_name_desc(head, disabled->name_desc);
-}
-
-bool cfg_disabled_has_conditions_and_name_desc(const struct CfgDisabled * const disabled, const char * const name_desc) {
-	if (!disabled)
+// a has conditions and matches b name_desc
+static bool cfg_disabled_cond_with_name_desc(const struct CfgDisabled * const a, const struct CfgDisabled * const b) {
+	if (!a || !b || !a->name_desc || !b->name_desc || pset_size(a->conditions) == 0)
 		return false;
 
-	return (strcmp(disabled->name_desc, name_desc) == 0) && pset_size(disabled->conditions) > 0;
+	// substring match
+	if (strcasestr(a->name_desc, b->name_desc) != NULL || strcasestr(b->name_desc, a->name_desc) != NULL)
+		return true;
+
+	// b matches regex a
+	if (strlen(a->name_desc) > 2 && a->name_desc[0] == '!' && regex_matches(b->name_desc, a->name_desc + 1))
+		return true;
+
+	// a matches regex b
+	if (strlen(b->name_desc) > 2 && b->name_desc[0] == '!' && regex_matches(a->name_desc, b->name_desc + 1))
+		return true;
+
+	return false;
+}
+
+void cfg_disabled_filter_conditional_clashes(const struct Pset *disableds) {
+	for (const struct PsetIt *it = pset_it(disableds); it; it = pset_it_next(it)) {
+
+		// current global conditionally disabled that match the name_desc
+		const struct CfgDisabled *contitionally = pset_find(g_cfg->disableds, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_disabled_cond_with_name_desc, .data = it->val, });
+		if (contitionally) {
+
+			log_info(NULL);
+			log_info("Ignoring %s for '%s' as it is conditionally %s '%s'",
+					cfg_element_name(DISABLED),
+					((const struct CfgDisabled*)it->val)->name_desc,
+					cfg_element_name(DISABLED),
+					contitionally->name_desc
+					);
+
+			pset_it_remove_free(it);
+		}
+	}
+}
+
+bool cfg_disabled_applies_to_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
+	return
+		// name_desc must match
+		head_matches_name_desc(head, disabled->name_desc) &&
+
+		// all conditions must be false
+		pset_find(disabled->conditions, (struct PsetFilter){ .val = (fn_pred_p)cfg_condition_true, }) == NULL;
+}
+
+bool cfg_disabled_conditionally_for_head(const struct CfgDisabled * const disabled, const struct Head * const head) {
+	return disabled && head && pset_size(disabled->conditions) > 0 && head_matches_name_desc(head, disabled->name_desc);
 }
 

@@ -17,7 +17,10 @@
 #include <string.h>
 
 #include "cfg/cfg.h"
+#include "cfg/condition.h"
+#include "cfg/disabled.h"
 #include "enum.h"
+#include "ipc.h"
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
@@ -26,13 +29,50 @@
 
 #include "head.h"
 
+struct IpcRequest *ipc_req = NULL;
+struct Head *head_enabled_nc = NULL;
+struct Head *head_enabled_cond = NULL;
+struct Head *head_disabled_nc = NULL;
+struct Head *head_disabled_cond = NULL;
+
 static int before_each(void **state) {
 	g_cfg = cfg_default();
+
+	ipc_req = ipc_request_init(0);
+	ipc_req->cfg = cfg_init();
+
+	head_enabled_nc = head_n_en("head_enabled_nc", true);
+	head_enabled_cond = head_n_en("head_enabled_cond", true);
+	head_disabled_nc = head_n_en("head_disabled_nc", false);
+	head_disabled_cond = head_n_en("head_disabled_cond", false);
+
+	const struct CfgDisabled *disabled = disabled_nd("head_disabled_cond");
+	struct CfgCondition *cond = cfg_condition_init();
+	cond->lid = LID_CLOSED;
+	pset_add(disabled->conditions, cond);
+	pset_add(g_cfg->disableds, disabled);
+
+	disabled = disabled_nd("head_enabled_cond");
+	cond = cfg_condition_clone(cond);
+	pset_add(disabled->conditions, cond);
+	pset_add(g_cfg->disableds, disabled);
+
+	pset_add(g_cfg->disableds, disabled_nd("head_disabled_nc"));
+	pset_add(g_cfg->disableds, disabled_nd("head_enabled_nc"));
+
 	return 0;
 }
 
 static int after_each(void **state) {
 	g_cfg_destroy();
+
+	ipc_request_free(ipc_req);
+
+	head_free(head_enabled_nc);
+	head_free(head_enabled_cond);
+	head_free(head_disabled_nc);
+	head_free(head_disabled_cond);
+
 	return 0;
 }
 
@@ -434,65 +474,6 @@ static void head_matches_name_desc_regex__no_regex(void **state) {
 	assert_logs_empty();
 }
 
-static void head_apply_toggles__none(void **state) {
-	struct Head *head = head_n("head0");
-	struct Cfg *cfg = cfg_init();
-
-	head_apply_toggles(head, cfg);
-
-	assert_true(head->overrided_enabled == NoOverride);
-
-	cfg_free(cfg);
-
-	head_free(head);
-
-	assert_logs_empty();
-}
-
-static void head_apply_toggles__disabled__enable(void **state) {
-	struct Head *head = head_n("head0");
-	head->cur.enabled = false;
-	struct Cfg *cfg = cfg_init();
-	pset_add(cfg->disableds, disabled_nd("head0"));
-
-	head_apply_toggles(head, cfg);
-
-	assert_true(head->overrided_enabled == OverrideTrue);
-	assert_log(INFO, "\nApplying \"DISABLED\" override for head0\n");
-
-	head_apply_toggles(head, cfg);
-
-	assert_true(head->overrided_enabled == NoOverride);
-	assert_log(INFO, "\nResetting \"DISABLED\" override for head0\n");
-
-	cfg_free(cfg);
-	head_free(head);
-
-	assert_logs_empty();
-}
-
-static void head_apply_toggles__disabled__disable(void **state) {
-	struct Head *head = head_n("head0");
-	head->cur.enabled = true;
-	struct Cfg *cfg = cfg_init();
-	pset_add(cfg->disableds, disabled_nd("head0"));
-
-	head_apply_toggles(head, cfg);
-
-	assert_true(head->overrided_enabled == OverrideFalse);
-	assert_log(INFO, "\nApplying \"DISABLED\" override for head0\n");
-
-	head_apply_toggles(head, cfg);
-
-	assert_true(head->overrided_enabled == NoOverride);
-	assert_log(INFO, "\nResetting \"DISABLED\" override for head0\n");
-
-	cfg_free(cfg);
-	head_free(head);
-
-	assert_logs_empty();
-}
-
 static void head_set_description__nulls(void **state) {
 	struct Head *head = head_d("orig");
 
@@ -727,6 +708,177 @@ static void head_scale__cfg(void **state) {
 	assert_logs_empty();
 }
 
+static void head_process_ipc_disableds__set_disabled(void **state) {
+	ipc_req->command = CFG_SET;
+
+	pset_add_many(ipc_req->cfg->disableds,
+			disabled_nd("other"),
+			disabled_nd("d_disabled_c"),
+			disabled_nd("d_disabled_co"),
+			disabled_nd("!disabled"),
+			NULL);
+
+	// already disabled, NOP
+	head_override_ipc_disableds(head_disabled_cond, ipc_req);
+
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+
+	assert_int_equal(head_disabled_cond->overrided_enabled, NoOverride);
+
+	assert_logs_empty();
+}
+
+static void head_process_ipc_disableds__set_enabled(void **state) {
+	ipc_req->command = CFG_SET;
+
+	pset_add_many(ipc_req->cfg->disableds,
+			disabled_nd("other"),
+			disabled_nd("!.*enabled"),
+			disabled_nd("head_enable"),
+			NULL);
+
+	// enabled conditionally, override to disable
+	head_override_ipc_disableds(head_enabled_cond, ipc_req);
+
+	assert_log(INFO, "\nApplying DISABLED override for head_enabled_cond\n");
+
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+
+	assert_int_equal(head_enabled_cond->overrided_enabled, OverrideFalse);
+
+	assert_logs_empty();
+}
+
+static void head_process_ipc_disableds__del_disabled(void **state) {
+	ipc_req->command = CFG_DEL;
+
+	pset_add_many(ipc_req->cfg->disableds,
+			disabled_nd("other"),
+			disabled_nd("head_disabled"),
+			disabled_nd("!.*disabled"),
+			disabled_nd("head_disable"),
+			NULL);
+
+	// disabled conditionally, override to enable
+	head_override_ipc_disableds(head_disabled_cond, ipc_req);
+
+	assert_log(INFO, "\nApplying DISABLED override for head_disabled_cond\n");
+
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+
+	assert_int_equal(head_disabled_cond->overrided_enabled, OverrideTrue);
+
+	assert_logs_empty();
+}
+
+static void head_process_ipc_disableds__del_enabled(void **state) {
+	ipc_req->command = CFG_DEL;
+
+	pset_add_many(ipc_req->cfg->disableds,
+			disabled_nd("other"),
+			disabled_nd("head_enabled"),
+			disabled_nd("!.*enabled"),
+			disabled_nd("head_enable"),
+			NULL);
+
+	// already enabled, NOP
+	head_override_ipc_disableds(head_enabled_cond, ipc_req);
+
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+
+	assert_int_equal(head_enabled_cond->overrided_enabled, NoOverride);
+
+	assert_logs_empty();
+}
+
+static void head_process_ipc_disableds__toggle_reset(void **state) {
+	ipc_req->command = CFG_TOGGLE;
+
+	pset_add_many(ipc_req->cfg->disableds,
+			disabled_nd("other"),
+			disabled_nd("!disabled"),
+			disabled_nd("head_disabled"),
+			disabled_nd("head_disable"),
+			NULL);
+
+	// disabled conditionally, enable it
+	head_disabled_cond->overrided_enabled = OverrideTrue;
+	head_override_ipc_disableds(head_disabled_cond, ipc_req);
+
+	assert_log(INFO, "\nResetting DISABLED override for head_disabled_cond\n");
+
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+
+	assert_int_equal(head_disabled_cond->overrided_enabled, NoOverride);
+
+	assert_logs_empty();
+}
+
+static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
+	ipc_req->command = CFG_TOGGLE;
+
+	pset_add_many(ipc_req->cfg->disableds,
+			disabled_nd("other"),
+			disabled_nd("head_enabled"),
+			disabled_nd("head_enable"),
+			disabled_nd("!enable"),
+			NULL);
+
+	// enabled conditionally, (set) disabled
+	head_disabled_cond->overrided_enabled = NoOverride;
+	head_override_ipc_disableds(head_enabled_cond, ipc_req);
+
+	assert_log(INFO, "\nApplying DISABLED override for head_enabled_cond\n");
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(head_enabled_cond->overrided_enabled, OverrideFalse);
+
+	assert_logs_empty();
+}
+
+static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
+	ipc_req->command = CFG_TOGGLE;
+
+	pset_add_many(ipc_req->cfg->disableds,
+			disabled_nd("other"),
+			disabled_nd("head_disabled"),
+			disabled_nd("!disabled"),
+			NULL);
+
+	// enabled conditionally, (set) disabled
+	head_disabled_cond->overrided_enabled = NoOverride;
+	head_override_ipc_disableds(head_disabled_cond, ipc_req);
+
+	assert_log(INFO, "\nApplying DISABLED override for head_disabled_cond\n");
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(head_disabled_cond->overrided_enabled, OverrideTrue);
+
+	assert_logs_empty();
+}
+
+static void head_process_ipc_disableds__nop(void **state) {
+	ipc_req->command = CFG_TOGGLE;
+
+	pset_add_many(ipc_req->cfg->disableds,
+			disabled_nd("other"),
+			disabled_nd("head_disabled"),
+			disabled_nd("head_enabled"),
+			disabled_nd("!disabled"),
+			disabled_nd("!enabled"),
+			NULL);
+
+	// no conditionals, NOP
+	head_override_ipc_disableds(head_disabled_nc, ipc_req);
+
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 5);
+
+	// no conditionals, NOP
+	head_override_ipc_disableds(head_enabled_nc, ipc_req);
+
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 5);
+
+	assert_logs_empty();
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(head_get_fixed_scale__rounding_nearest),
@@ -751,10 +903,6 @@ int main(void) {
 		TEST_BA(head_matches_name_desc_regex__bad),
 		TEST_BA(head_matches_name_desc_regex__no_regex),
 
-		TEST_BA(head_apply_toggles__none),
-		TEST_BA(head_apply_toggles__disabled__enable),
-		TEST_BA(head_apply_toggles__disabled__disable),
-
 		TEST_BA(head_set_description__nulls),
 		TEST_BA(head_set_description__no_nulls),
 		TEST_BA(head_set_description__empty),
@@ -771,6 +919,15 @@ int main(void) {
 
 		TEST_BA(head_scale__default),
 		TEST_BA(head_scale__cfg),
+
+		TEST_BA(head_process_ipc_disableds__set_disabled),
+		TEST_BA(head_process_ipc_disableds__set_enabled),
+		TEST_BA(head_process_ipc_disableds__del_disabled),
+		TEST_BA(head_process_ipc_disableds__del_enabled),
+		TEST_BA(head_process_ipc_disableds__toggle_reset),
+		TEST_BA(head_process_ipc_disableds__toggle_apply_enabled),
+		TEST_BA(head_process_ipc_disableds__toggle_apply_disabled),
+		TEST_BA(head_process_ipc_disableds__nop),
 	};
 
 	return RUN(tests);

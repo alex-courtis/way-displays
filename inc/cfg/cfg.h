@@ -38,7 +38,7 @@ struct Cfg {
 
 	enum LogThreshold log_threshold;              // LOG_THRESHOLD
 
-	const struct Pset *disableds;                 // DISABLED
+	const struct Pset *disableds;                 // DISABLED           cfg_disabled_pset_init
 };
 
 /*
