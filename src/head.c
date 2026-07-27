@@ -102,7 +102,7 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
 static void head_apply_disabled_toggle(struct Head * const head) {
 	if (head->overrided_enabled == NoOverride) {
 		log_info(NULL);
-		log_info("Applying \"DISABLED\" override for %s", head->name);
+		log_info("Applying %s override for %s", cfg_element_name(DISABLED), head->name);
 		if (head->cur.enabled) {
 			head->overrided_enabled = OverrideFalse;
 		} else {
@@ -110,7 +110,7 @@ static void head_apply_disabled_toggle(struct Head * const head) {
 		}
 	} else {
 		log_info(NULL);
-		log_info("Resetting \"DISABLED\" override for %s", head->name);
+		log_info("Resetting %s override for %s", cfg_element_name(DISABLED), head->name);
 		head->overrided_enabled = NoOverride;
 	}
 }

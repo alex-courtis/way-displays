@@ -740,7 +740,7 @@ static void head_process_ipc_disableds__set_enabled(void **state) {
 	// enabled conditionally, override to disable
 	head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
-	assert_log(INFO, "\nApplying \"DISABLED\" override for head_enabled_cond\n");
+	assert_log(INFO, "\nApplying DISABLED override for head_enabled_cond\n");
 
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
 
@@ -762,7 +762,7 @@ static void head_process_ipc_disableds__del_disabled(void **state) {
 	// disabled conditionally, override to enable
 	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
-	assert_log(INFO, "\nApplying \"DISABLED\" override for head_disabled_cond\n");
+	assert_log(INFO, "\nApplying DISABLED override for head_disabled_cond\n");
 
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
 
@@ -805,7 +805,7 @@ static void head_process_ipc_disableds__toggle_reset(void **state) {
 	head_disabled_cond->overrided_enabled = OverrideTrue;
 	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
-	assert_log(INFO, "\nResetting \"DISABLED\" override for head_disabled_cond\n");
+	assert_log(INFO, "\nResetting DISABLED override for head_disabled_cond\n");
 
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
 
@@ -828,7 +828,7 @@ static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
 	head_disabled_cond->overrided_enabled = NoOverride;
 	head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
-	assert_log(INFO, "\nApplying \"DISABLED\" override for head_enabled_cond\n");
+	assert_log(INFO, "\nApplying DISABLED override for head_enabled_cond\n");
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
 	assert_int_equal(head_enabled_cond->overrided_enabled, OverrideFalse);
 
@@ -848,7 +848,7 @@ static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
 	head_disabled_cond->overrided_enabled = NoOverride;
 	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
-	assert_log(INFO, "\nApplying \"DISABLED\" override for head_disabled_cond\n");
+	assert_log(INFO, "\nApplying DISABLED override for head_disabled_cond\n");
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
 	assert_int_equal(head_disabled_cond->overrided_enabled, OverrideTrue);
 
