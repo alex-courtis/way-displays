@@ -718,7 +718,7 @@ static void head_process_ipc_disableds__set_disabled(void **state) {
 			NULL);
 
 	// already disabled, NOP
-	head_process_ipc_disableds(head_disabled_cond, ipc_req);
+	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
 
@@ -737,7 +737,7 @@ static void head_process_ipc_disableds__set_enabled(void **state) {
 			NULL);
 
 	// enabled conditionally, override to disable
-	head_process_ipc_disableds(head_enabled_cond, ipc_req);
+	head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
 	assert_log(INFO, "\nApplying \"DISABLED\" override for head_enabled_cond\n");
 
@@ -758,7 +758,7 @@ static void head_process_ipc_disableds__del_disabled(void **state) {
 			NULL);
 
 	// disabled conditionally, override to enable
-	head_process_ipc_disableds(head_disabled_cond, ipc_req);
+	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
 	assert_log(INFO, "\nApplying \"DISABLED\" override for head_disabled_cond\n");
 
@@ -779,7 +779,7 @@ static void head_process_ipc_disableds__del_enabled(void **state) {
 			NULL);
 
 	// already enabled, NOP
-	head_process_ipc_disableds(head_enabled_cond, ipc_req);
+	head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
 
@@ -799,7 +799,7 @@ static void head_process_ipc_disableds__toggle_reset(void **state) {
 
 	// disabled conditionally, enable it
 	head_disabled_cond->overrided_enabled = OverrideTrue;
-	head_process_ipc_disableds(head_disabled_cond, ipc_req);
+	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
 	assert_log(INFO, "\nResetting \"DISABLED\" override for head_disabled_cond\n");
 
@@ -821,7 +821,7 @@ static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
 
 	// enabled conditionally, (set) disabled
 	head_disabled_cond->overrided_enabled = NoOverride;
-	head_process_ipc_disableds(head_enabled_cond, ipc_req);
+	head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
 	assert_log(INFO, "\nApplying \"DISABLED\" override for head_enabled_cond\n");
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
@@ -840,7 +840,7 @@ static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
 
 	// enabled conditionally, (set) disabled
 	head_disabled_cond->overrided_enabled = NoOverride;
-	head_process_ipc_disableds(head_disabled_cond, ipc_req);
+	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
 	assert_log(INFO, "\nApplying \"DISABLED\" override for head_disabled_cond\n");
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
@@ -859,12 +859,12 @@ static void head_process_ipc_disableds__nop(void **state) {
 			NULL);
 
 	// no conditionals, NOP
-	head_process_ipc_disableds(head_disabled_nc, ipc_req);
+	head_override_ipc_disableds(head_disabled_nc, ipc_req);
 
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 3);
 
 	// no conditionals, NOP
-	head_process_ipc_disableds(head_enabled_nc, ipc_req);
+	head_override_ipc_disableds(head_enabled_nc, ipc_req);
 
 	assert_int_equal(pset_size(ipc_req->cfg->disableds), 3);
 

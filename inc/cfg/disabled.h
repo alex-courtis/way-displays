@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "head.h"
+#include "pset.h"
 
 struct CfgDisabled {
 	char *name_desc;
@@ -17,6 +18,9 @@ const struct Pset *cfg_disabled_pset_init(void);
 const struct CfgDisabled *cfg_disabled_clone(const struct CfgDisabled * const from);
 
 void cfg_disabled_free(struct CfgDisabled *disabled);
+
+// remove any disableds with the same name as a cfg disabled
+void cfg_disabled_filter_conditional_clashes(const struct Pset *disableds);
 
 // name_desc must match, if conditions are present at least one must be true
 bool cfg_disabled_applies_to_head(const struct CfgDisabled * const disabled, const struct Head * const head);

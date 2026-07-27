@@ -12,6 +12,7 @@
 
 #include "act.h"
 #include "cfg/cfg.h"
+#include "cfg/disabled.h"
 #include "cfg/file.h"
 #include "displ.h"
 #include "enum.h"
@@ -102,10 +103,13 @@ static void receive_ipc_request(int server_socket) {
 
 	// filter out and apply any disabled requests that affect conditionally disabled heads
 	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
-		head_process_ipc_disableds((struct Head*)it->val, ipc_request);
+		head_override_ipc_disableds((struct Head*)it->val, ipc_request);
 	}
 
-	// TODO #220 remove any ipc disabled that clash with conditionals
+	// filter out any disabled requests that are present as conditionals
+	if (ipc_request->cfg) {
+		cfg_disabled_filter_conditional_clashes(ipc_request->cfg->disableds);
+	}
 
 	switch (ipc_request->command) {
 		case CFG_DEL:

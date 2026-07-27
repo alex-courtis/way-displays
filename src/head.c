@@ -115,7 +115,7 @@ static void head_apply_disabled_toggle(struct Head * const head) {
 	}
 }
 
-void head_process_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request) {
+void head_override_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request) {
 	if (!head || !ipc_request || !ipc_request->cfg)
 		return;
 

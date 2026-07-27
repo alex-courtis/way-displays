@@ -77,7 +77,7 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
  */
 
 // removes any disabled requests that apply to conditionally disabled heads, changing head state directly
-void head_process_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request);
+void head_override_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request);
 
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
