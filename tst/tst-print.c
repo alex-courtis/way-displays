@@ -24,6 +24,7 @@
 #include "output.h"
 #include "ppmap.h"
 #include "pset.h"
+#include "simap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -153,10 +154,8 @@ static void print_cfg__all(void **state) {
 			"last",
 			NULL);
 
-	simap_put_many(c->scales,
-			"three", (size_t)3000,
-			"four",  (size_t)4000,
-			NULL);
+	simap_put(c->scales, "three", 3000);
+	simap_put(c->scales, "four",  4000);
 
 	pset_add(c->disableds, disabled_nd("disabled always"));
 	const struct CfgDisabled *disabled = disabled_nd("disabled conditionally");
@@ -171,9 +170,7 @@ static void print_cfg__all(void **state) {
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	simap_put_many(c->transforms,
-			"twelve", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
-			NULL);
+	simap_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	sset_add(c->max_preferred_refresh, "legacy");
 
@@ -196,10 +193,8 @@ static void print_cfg__all(void **state) {
 static void print_cfg__del(void **state) {
 	struct Cfg *c = cfg_init();
 
-	simap_put_many(c->scales,
-			"three", (size_t)3000,
-			"four",  (size_t)4000,
-			NULL);
+	simap_put(c->scales, "three", 3000);
+	simap_put(c->scales, "four",  4000);
 
 	spmap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
@@ -207,10 +202,8 @@ static void print_cfg__del(void **state) {
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	simap_put_many(c->transforms,
-			"twelve",   (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
-			"thirteen", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
-			NULL);
+	simap_put(c->transforms, "twelve",   WL_OUTPUT_TRANSFORM_FLIPPED);
+	simap_put(c->transforms, "thirteen", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	print_cfg(INFO, c, true);
 
@@ -312,10 +305,8 @@ static void print_cfg_commands__ok(void **state) {
 
 	c->auto_scale = OFF;
 
-	simap_put_many(c->scales,
-			"one", (size_t)1000,
-			"two", (size_t)2345,
-			NULL);
+	simap_put(c->scales, "one", 1000);
+	simap_put(c->scales, "two", 2345);
 
 	spmap_put_many(c->modes,
 			"all", mode_whr(1, 2, 12340),
@@ -323,9 +314,7 @@ static void print_cfg_commands__ok(void **state) {
 			"max", mode_whr_max(7, 8, 9),
 			NULL);
 
-	simap_put_many(c->transforms,
-			"seven", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED_90,
-			NULL);
+	simap_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 
 	pset_add_many(c->disableds,
 			disabled_nd("three"),

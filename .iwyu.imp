@@ -7,6 +7,8 @@
   { "symbol": ["SSmap", "public", '"ssmap.h"', "public"] },
   { "symbol": ["Pset",  "public", '"pset.h"',  "public"] },
   { "symbol": ["Sset",  "public", '"sset.h"',  "public"] },
+  { "symbol": ["Plist", "public", '"plist.h"', "public"] },
+  { "symbol": ["Slist", "public", '"slist.h"', "public"] },
 
   # ensure these are sourced from wayland, not the forward declarations in river
   { "symbol": ["wl_buffer",              "public", "<wayland-client-protocol.h>", "public"] },

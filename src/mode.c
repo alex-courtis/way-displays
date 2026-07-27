@@ -6,8 +6,8 @@
 #include "mode.h"
 
 #include "fn.h"
+#include "plist.h"
 #include "ppmap.h"
-#include "pset.h"
 #include "spmap.h"
 #include "str.h"
 
@@ -176,15 +176,15 @@ const struct Mode *mode_max_refresh(const struct Mode* const mode_target, const 
 	if (!mode_target || !modes)
 		return NULL;
 
-	const struct Pset *candidates = ppmap_vals_pset(modes);
+	const struct Plist *candidates = ppmap_vals_plist(modes);
 
 	// search from the top down
-	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
+	plist_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
 
-	struct PsetFilter f = { .val_data = (fn_pred_pp)mode_equal_res, .data = mode_target, };
-	const struct Mode *mode = pset_find(candidates, f);
+	struct PlistFilter f = { .val_data = (fn_pred_pp)mode_equal_res, .data = mode_target, };
+	const struct Mode *mode = plist_find(candidates, f);
 
-	pset_free(candidates);
+	plist_free(candidates);
 
 	return mode;
 }
@@ -193,22 +193,22 @@ const struct Mode *mode_best_satisfying(const struct Mode * const mode_target, c
 	if (!mode_target || !modes)
 		return NULL;
 
-	const struct Pset *candidates = ppmap_vals_pset(modes);
+	const struct Plist *candidates = ppmap_vals_plist(modes);
 
 	// search from the top down
-	pset_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
+	plist_sort(candidates, (fn_less_than)mode_greater_than_res_refresh);
 
-	struct PsetFilter f = { .data = mode_target, };
+	struct PlistFilter f = { .data = mode_target, };
 
 	// exact match first
 	f.val_data = (fn_pred_pp)mode_equal_res_mhz;
-	const struct Mode *mode = pset_find(candidates, f);
+	const struct Mode *mode = plist_find(candidates, f);
 
 	// otherwise best match
 	f.val_data = (fn_pred_pp)mode_satisfies;
-	mode = mode ? mode : pset_find(candidates, f);
+	mode = mode ? mode : plist_find(candidates, f);
 
-	pset_free(candidates);
+	plist_free(candidates);
 
 	return mode;
 }

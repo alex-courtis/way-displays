@@ -79,13 +79,13 @@ const struct PPmap *ppmap_init_with(const struct PPmapParams params);
 // same params, caller frees keys when alloc_key present and vals when alloc_val present [alloc_key, alloc_val]
 const struct PPmap *ppmap_clone(const struct PPmap* const from);
 
-// same params, caller frees keys when alloc_key present, caller frees vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_key, alloc_val, clone_val]
+// same params, caller frees keys when alloc_key present, caller frees vals, NULL on NULL clone_val [alloc_key, clone_val]
 const struct PPmap *ppmap_clone_deep(const struct PPmap* const from);
 
-// free map
+// free map [free_key]
 void ppmap_free(const struct PPmap* const map);
 
-// free map and vals [free_val]
+// free map and vals [free_key, free_val]
 void ppmap_free_vals(const struct PPmap* const map);
 
 // free iterator
@@ -110,13 +110,13 @@ const void *ppmap_first_key(const struct PPmap *const map, const void* const val
 // element at zero indexed position
 struct PPmapPair ppmap_at(const struct PPmap* const map, const size_t i);
 
-// find the first key/val pred, {NULL,NULL} when no matches, first when empty filter
+// find the first, {NULL,NULL} when no matches, first entry when empty filter
 struct PPmapPair ppmap_find(const struct PPmap* const map, const struct PPmapFilter filter);
 
 // create an iterator, caller must ppmap_it_free or invoke ppmap_next until NULL
 const struct PPmapIt *ppmap_it(const struct PPmap* const map);
 
-// create a filtering iterator, return NULL when no matches, caller must ppmap_it_free or invoke ppmap_next until NULL
+// create a filtering iterator, return NULL when no matches, first entry when empty filter
 const struct PPmapIt *ppmap_filter_it(const struct PPmap* const map, const struct PPmapFilter filter);
 
 // next iterator entry, NULL at end of map
@@ -165,40 +165,37 @@ size_t ppmap_remove_in(const struct PPmap* const map, const struct PPmap* const 
 // remove and free entries in keys, return number removed [equal_key, free_key, free_val]
 size_t ppmap_remove_in_free(const struct PPmap* const map, const struct PPmap* const in);
 
-// remove the entry, it is unusable, ppmap_it_next must be called [free_key]
-void ppmap_it_remove(const struct PPmapIt* const it);
+// remove the entry, return val if removed, it is unusable, ppmap_it_next must be called [free_key]
+const void *ppmap_it_remove(const struct PPmapIt* const it);
 
-// remove and entry, free the val, it is unusable, ppmap_it_next must be called [free_key, free_val]
-void ppmap_it_remove_free(const struct PPmapIt* const it);
+// remove the entry and free the val, return true if removed, it is unusable, ppmap_it_next must be called [free_key, free_val]
+bool ppmap_it_remove_free(const struct PPmapIt* const it);
 
 /*
  * Comparison
  */
 
-// same length, keys and vals equal in order, uses params from a [equal_key, equal_val]
+// same length, keys and vals equal, uses params from a [equal_key, equal_val]
 bool ppmap_equal(const struct PPmap* const a, const struct PPmap* const b);
+
+// same length, keys and vals equal in order, uses params from a [equal_key, equal_val]
+bool ppmap_equal_ordered(const struct PPmap* const a, const struct PPmap* const b);
 
 /*
  * Conversion
  */
 
-// map ordered keys, caller frees list, caller frees contents when alloc_key present [alloc_key]
-struct Pslist *ppmap_keys_pslist(const struct PPmap* const map);
+// map ordered keys, same params, caller frees contents when alloc_key present [alloc_key]
+const struct Plist *ppmap_keys_plist(const struct PPmap* const map);
 
 // map ordered keys, same params, caller frees contents when alloc_key present [alloc_key]
 const struct Pset *ppmap_keys_pset(const struct PPmap* const map);
 
-// map ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
-struct Pslist *ppmap_vals_pslist(const struct PPmap* const map);
+// map ordered vals, same params, caller frees contents when alloc_val present [alloc_val]
+const struct Plist *ppmap_vals_plist(const struct PPmap* const map);
 
-// map ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
-struct Pslist *ppmap_vals_pslist_clone(const struct PPmap* const map);
-
-// map ordered vals, same params, caller frees set, caller frees vals when alloc_val present [alloc_val]
-const struct Pset *ppmap_vals_pset(const struct PPmap* const map);
-
-// map ordered vals, same params, caller frees set and vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_val, clone_val]
-const struct Pset *ppmap_vals_pset_clone(const struct PPmap* const map);
+// map ordered vals, same params, caller frees contents, NULL when NULL clone_val [clone_val]
+const struct Plist *ppmap_vals_plist_clone(const struct PPmap* const map);
 
 /*
  * Info

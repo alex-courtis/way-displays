@@ -448,21 +448,15 @@ static void cfg_merge_set__auto_scale(void **state) {
 static void cfg_merge_set__scale(void **state) {
 	struct State *s = *state;
 
-	simap_put_many(s->to->scales,
-			"to",   (size_t)1000,
-			"both", (size_t)2000,
-			NULL);
+	simap_put(s->to->scales, "to",   1000);
+	simap_put(s->to->scales, "both", 2000);
 
-	simap_put_many(s->from->scales,
-			"from", (size_t)3000,
-			"both", (size_t)4000,
-			NULL);
+	simap_put(s->from->scales, "from", 3000);
+	simap_put(s->from->scales, "both", 4000);
 
-	simap_put_many(s->expected->scales,
-			"to",   (size_t)1000,
-			"both", (size_t)4000,
-			"from", (size_t)3000,
-			NULL);
+	simap_put(s->expected->scales, "to",   1000);
+	simap_put(s->expected->scales, "both", 4000);
+	simap_put(s->expected->scales, "from", 3000);
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -476,21 +470,15 @@ static void cfg_merge_set__scale(void **state) {
 static void cfg_merge_set__transform(void **state) {
 	struct State *s = *state;
 
-	simap_put_many(s->to->transforms,
-			"to",   (size_t)WL_OUTPUT_TRANSFORM_90,
-			"both", (size_t)WL_OUTPUT_TRANSFORM_180,
-			NULL);
+	simap_put(s->to->transforms, "to",   WL_OUTPUT_TRANSFORM_90);
+	simap_put(s->to->transforms, "both", WL_OUTPUT_TRANSFORM_180);
 
-	simap_put_many(s->from->transforms,
-			"from", (size_t)WL_OUTPUT_TRANSFORM_270,
-			"both", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
-			NULL);
+	simap_put(s->from->transforms, "from", WL_OUTPUT_TRANSFORM_270);
+	simap_put(s->from->transforms, "both", WL_OUTPUT_TRANSFORM_FLIPPED);
 
-	simap_put_many(s->expected->transforms,
-			"to",   (size_t)WL_OUTPUT_TRANSFORM_90,
-			"both", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
-			"from", (size_t)WL_OUTPUT_TRANSFORM_270,
-			NULL);
+	simap_put(s->expected->transforms, "to",   WL_OUTPUT_TRANSFORM_90);
+	simap_put(s->expected->transforms, "both", WL_OUTPUT_TRANSFORM_FLIPPED);
+	simap_put(s->expected->transforms, "from", WL_OUTPUT_TRANSFORM_270);
 
 	struct Cfg *merged = cfg_merge_set(s->to, s->from);
 
@@ -686,19 +674,13 @@ static void cfg_merge_del__all_deletes(void **state) {
 static void cfg_merge_del__scale(void **state) {
 	struct State *s = *state;
 
-	simap_put_many(s->to->scales,
-			"1", (size_t)1000,
-			"2", (size_t)2000,
-			NULL);
+	simap_put(s->to->scales, "1", 1000);
+	simap_put(s->to->scales, "2", 2000);
 
-	simap_put_many(s->from->scales,
-			"2", (size_t)3000,
-			"3", (size_t)4000,
-			NULL);
+	simap_put(s->from->scales, "2", 3000);
+	simap_put(s->from->scales, "3", 4000);
 
-	simap_put_many(s->expected->scales,
-			"1", (size_t)1000,
-			NULL);
+	simap_put(s->expected->scales, "1", 1000);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -738,19 +720,13 @@ static void cfg_merge_del__mode(void **state) {
 static void cfg_merge_del__transform(void **state) {
 	struct State *s = *state;
 
-	simap_put_many(s->to->transforms,
-			"to",   (size_t)WL_OUTPUT_TRANSFORM_90,
-			"both", (size_t)WL_OUTPUT_TRANSFORM_180,
-			NULL);
+	simap_put(s->to->transforms, "to",   WL_OUTPUT_TRANSFORM_90);
+	simap_put(s->to->transforms, "both", WL_OUTPUT_TRANSFORM_180);
 
-	simap_put_many(s->from->transforms,
-			"from", (size_t)WL_OUTPUT_TRANSFORM_270,
-			"both", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED,
-			NULL);
+	simap_put(s->from->transforms, "from", WL_OUTPUT_TRANSFORM_270);
+	simap_put(s->from->transforms, "both", WL_OUTPUT_TRANSFORM_FLIPPED);
 
-	simap_put_many(s->expected->transforms,
-			"to", (size_t)WL_OUTPUT_TRANSFORM_90,
-			NULL);
+	simap_put(s->expected->transforms, "to", WL_OUTPUT_TRANSFORM_90);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
@@ -1142,11 +1118,9 @@ static void cfg_validate_warn__(void **state) {
 
 	cfg_validate_warn(NULL);
 
-	simap_put_many(s->expected->scales,
-			"sss",      (size_t)1000,
-			"ssssssss", (size_t)2000,
-			"DP-1",     (size_t)3000,
-			NULL);
+	simap_put(s->expected->scales, "sss",      1000);
+	simap_put(s->expected->scales, "ssssssss", 2000);
+	simap_put(s->expected->scales, "DP-1",     3000);
 
 	spmap_put_many(s->expected->modes,
 			"mmm", mode_whr(1, 1, 1),
@@ -1154,11 +1128,9 @@ static void cfg_validate_warn__(void **state) {
 			"DP-1", mode_whr(1, 1, 1),
 			NULL);
 
-	simap_put_many(s->expected->transforms,
-			"ttt",        (size_t)WL_OUTPUT_TRANSFORM_180,
-			"tttttttttt", (size_t)WL_OUTPUT_TRANSFORM_270,
-			"DP-1",       (size_t)WL_OUTPUT_TRANSFORM_270,
-			NULL);
+	simap_put(s->expected->transforms, "ttt",        WL_OUTPUT_TRANSFORM_180);
+	simap_put(s->expected->transforms, "tttttttttt", WL_OUTPUT_TRANSFORM_270);
+	simap_put(s->expected->transforms, "DP-1",       WL_OUTPUT_TRANSFORM_270);
 
 	sset_add_many(s->expected->order_name_desc,
 			"ooo",

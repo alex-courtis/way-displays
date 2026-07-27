@@ -8,12 +8,12 @@
 
 #include "simap.h"
 
-static int check_simap_equal(CMockaValueData value, CMockaValueData check_data) {
+static int check_simap_equal_ordered(CMockaValueData value, CMockaValueData check_data) {
 
 	const struct SImap* const actual = (struct SImap*)value.ptr;
 	const struct SImap* const expected = (struct SImap*)check_data.ptr;
 
-	if (simap_equal(actual, expected)) {
+	if (simap_equal_ordered(actual, expected)) {
 		return true;
 	} else {
 		fs_file_write("actual.simap", simap_str(actual), "w");
@@ -24,6 +24,6 @@ static int check_simap_equal(CMockaValueData value, CMockaValueData check_data) 
 }
 
 #define expect_simap(function, parameter, value) \
-	expect_check_data(function, parameter, check_simap_equal, cast_ptr_to_cmocka_value(value))
+	expect_check_data(function, parameter, check_simap_equal_ordered, cast_ptr_to_cmocka_value(value))
 
 #endif // EXPECT_SIMAP_H

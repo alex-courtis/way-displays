@@ -12,6 +12,7 @@
 #include "enum.h"
 #include "head.h"
 #include "ipc.h"
+#include "plist.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
@@ -224,9 +225,9 @@ int yaml_map_from_state(struct MC *c) {
 		yaml_map_add_node(c, "LID", yaml_map_from_lid(c, g_lid), map);
 
 	if (ppmap_size(g_displ->heads) > 0) {
-		const struct Pset *set = ppmap_vals_pset(g_displ->heads);
-		yaml_map_add_pset(c, "HEADS", set, (fn_yaml_node_from_type)yaml_map_from_head, map);
-		pset_free(set);
+		const struct Plist *list = ppmap_vals_plist(g_displ->heads);
+		yaml_map_add_plist(c, "HEADS", list, (fn_yaml_node_from_type)yaml_map_from_head, map);
+		plist_free(list);
 	}
 
 	return map;

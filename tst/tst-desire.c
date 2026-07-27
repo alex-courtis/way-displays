@@ -1,7 +1,7 @@
 #include "tst.h"
 
 #include "assert-head.h"
-#include "assert-pset.h"
+#include "assert-plist.h"
 #include "assert-wl.h"
 #include "data.h"
 #include "expects.h"
@@ -20,6 +20,7 @@
 #include "enum.h"
 #include "head.h"
 #include "mode.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -64,7 +65,7 @@ static void desire__nothing(void **state) {
 
 static void desire_order__exact_partial_regex(void **state) {
 	const struct Sset *order_name_desc = sset_init();
-	const struct Pset *expected = head_pset_init();
+	const struct Plist *expected = head_plist_init();
 
 	// ORDER
 	sset_add_many(order_name_desc,
@@ -96,7 +97,7 @@ static void desire_order__exact_partial_regex(void **state) {
 			NULL);
 
 	// expected
-	pset_add_many(expected,
+	plist_append_many(expected,
 			exact0,
 			exact0_partial,
 			exact1,
@@ -107,18 +108,18 @@ static void desire_order__exact_partial_regex(void **state) {
 			not_specified_2,
 			NULL);
 
-	const struct Pset *heads_ordered = desire_order(order_name_desc, g_displ->heads);
+	const struct Plist *heads_ordered = desire_order(order_name_desc, g_displ->heads);
 
-	assert_pset_equal(heads_ordered, expected);
+	assert_plist_equal(heads_ordered, expected);
 
 	sset_free(order_name_desc);
-	pset_free(expected);
-	pset_free(heads_ordered);
+	plist_free(expected);
+	plist_free(heads_ordered);
 }
 
 static void desire_order__exact_regex_catchall(void **state) {
 	const struct Sset *order_name_desc = sset_init();
-	const struct Pset *expected = head_pset_init();
+	const struct Plist *expected = head_plist_init();
 
 	// ORDER
 	sset_add_many(order_name_desc,
@@ -145,7 +146,7 @@ static void desire_order__exact_regex_catchall(void **state) {
 			NULL);
 
 	// expected
-	pset_add_many(expected,
+	plist_append_many(expected,
 			exact0,
 			regex_match_1,
 			regex_match_2,
@@ -154,17 +155,17 @@ static void desire_order__exact_regex_catchall(void **state) {
 			exact9,
 			NULL);
 
-	const struct Pset *heads_ordered = desire_order(order_name_desc, g_displ->heads);
+	const struct Plist *heads_ordered = desire_order(order_name_desc, g_displ->heads);
 
-	assert_pset_equal(heads_ordered, expected);
+	assert_plist_equal(heads_ordered, expected);
 
 	sset_free(order_name_desc);
-	pset_free(expected);
-	pset_free(heads_ordered);
+	plist_free(expected);
+	plist_free(heads_ordered);
 }
 
 static void desire_order__no_order(void **state) {
-	const struct Pset *expected = head_pset_init();
+	const struct Plist *expected = head_plist_init();
 
 	const struct Head *head = head_n("head");
 
@@ -172,14 +173,14 @@ static void desire_order__no_order(void **state) {
 	ppmap_put(g_displ->heads, H0, head);
 
 	// expected
-	pset_add(expected, head);
+	plist_append(expected, head);
 
 	// null/empty order
-	const struct Pset *heads_ordered = desire_order(NULL, g_displ->heads);
-	assert_pset_equal(heads_ordered, expected);
+	const struct Plist *heads_ordered = desire_order(NULL, g_displ->heads);
+	assert_plist_equal(heads_ordered, expected);
 
-	pset_free(expected);
-	pset_free(heads_ordered);
+	plist_free(expected);
+	plist_free(heads_ordered);
 }
 
 static void desire_position__col_left(void **state) {
@@ -192,15 +193,15 @@ static void desire_position__col_left(void **state) {
 
 	ppmap_put_many(g_displ->heads, H0, head0, H1, head1, H2, head2, NULL);
 
-	const struct Pset *head_set = ppmap_vals_pset(g_displ->heads);
+	const struct Plist *head_list = ppmap_vals_plist(g_displ->heads);
 
-	desire_positions(head_set);
+	desire_positions(head_list);
 
 	assert_head_position(head0, 0, 0);
 	assert_head_position(head1, 0, 2);
 	assert_head_position(head2, 0, 5);
 
-	pset_free(head_set);
+	plist_free(head_list);
 }
 
 static void desire_position__col_mid(void **state) {
@@ -213,15 +214,15 @@ static void desire_position__col_mid(void **state) {
 
 	ppmap_put_many(g_displ->heads, "0", head0, "1", head1, "2", head2, NULL);
 
-	const struct Pset *head_set = ppmap_vals_pset(g_displ->heads);
+	const struct Plist *head_list = ppmap_vals_plist(g_displ->heads);
 
-	desire_positions(head_set);
+	desire_positions(head_list);
 
 	assert_head_position(head0, 2, 0);
 	assert_head_position(head1, 0, 2);
 	assert_head_position(head2, 3, 5);
 
-	pset_free(head_set);
+	plist_free(head_list);
 }
 
 static void desire_position__col_right(void **state) {
@@ -234,15 +235,15 @@ static void desire_position__col_right(void **state) {
 
 	ppmap_put_many(g_displ->heads, "0", head0, "1", head1, "2", head2, NULL);
 
-	const struct Pset *head_set = ppmap_vals_pset(g_displ->heads);
+	const struct Plist *head_list = ppmap_vals_plist(g_displ->heads);
 
-	desire_positions(head_set);
+	desire_positions(head_list);
 
 	assert_head_position(head0, 3, 0);
 	assert_head_position(head1, 0, 2);
 	assert_head_position(head2, 5, 5);
 
-	pset_free(head_set);
+	plist_free(head_list);
 }
 
 static void desire_position__row_top(void **state) {
@@ -255,15 +256,15 @@ static void desire_position__row_top(void **state) {
 
 	ppmap_put_many(g_displ->heads, "0", head0, "1", head1, "2", head2, NULL);
 
-	const struct Pset *head_set = ppmap_vals_pset(g_displ->heads);
+	const struct Plist *head_list = ppmap_vals_plist(g_displ->heads);
 
-	desire_positions(head_set);
+	desire_positions(head_list);
 
 	assert_head_position(head0, 0, 0);
 	assert_head_position(head1, 4, 0);
 	assert_head_position(head2, 11, 0);
 
-	pset_free(head_set);
+	plist_free(head_list);
 }
 
 static void desire_position__row_mid(void **state) {
@@ -276,15 +277,15 @@ static void desire_position__row_mid(void **state) {
 
 	ppmap_put_many(g_displ->heads, "0", head0, "1", head1, "2", head2, NULL);
 
-	const struct Pset *head_set = ppmap_vals_pset(g_displ->heads);
+	const struct Plist *head_list = ppmap_vals_plist(g_displ->heads);
 
-	desire_positions(head_set);
+	desire_positions(head_list);
 
 	assert_head_position(head0, 0, 2);
 	assert_head_position(head1, 4, 0);
 	assert_head_position(head2, 11, 2);
 
-	pset_free(head_set);
+	plist_free(head_list);
 }
 
 static void desire_position__row_bottom(void **state) {
@@ -301,15 +302,15 @@ static void desire_position__row_bottom(void **state) {
 			H2, head2,
 			NULL);
 
-	const struct Pset *head_set = ppmap_vals_pset(g_displ->heads);
+	const struct Plist *head_list = ppmap_vals_plist(g_displ->heads);
 
-	desire_positions(head_set);
+	desire_positions(head_list);
 
 	assert_head_position(head0, 0, 3);
 	assert_head_position(head1, 4, 0);
 	assert_head_position(head2, 11, 4);
 
-	pset_free(head_set);
+	plist_free(head_list);
 }
 
 static void desire_enabled__disabled(void **state) {
@@ -567,10 +568,8 @@ static void desire_scale__user(void **state) {
 	g_cfg->scaling = ON;
 	g_cfg->auto_scale = ON;
 
-	simap_put_many(g_cfg->scales,
-			"![Hh]ea.*", (size_t)3500,
-			"head1",     (size_t)7500,
-			NULL);
+	simap_put(g_cfg->scales,"![Hh]ea.*", 3500);
+	simap_put(g_cfg->scales,"head1",     7500);
 
 	desire_scale(head);
 
@@ -610,10 +609,8 @@ static void desire_transform__user(void **state) {
 	head->des.enabled = true;
 	head->des.transform = WL_OUTPUT_TRANSFORM_90;
 
-	simap_put_many(g_cfg->transforms,
-			"head9", (size_t)WL_OUTPUT_TRANSFORM_270,
-			"head",  (size_t)WL_OUTPUT_TRANSFORM_180,
-			NULL);
+	simap_put(g_cfg->transforms, "head9", WL_OUTPUT_TRANSFORM_270);
+	simap_put(g_cfg->transforms, "head",  WL_OUTPUT_TRANSFORM_180);
 
 	desire_transform(head);
 

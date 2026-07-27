@@ -5,7 +5,7 @@
 
 #include "fn.h"
 #include "pset.h"
-#include "pslist.h"
+#include "plist.h"
 #include "str.h"
 
 #include "ppmap.h"
@@ -50,13 +50,17 @@ static void grow(struct PPmap *map) {
 	map->capacity = new_capacity;
 }
 
-static const struct PPmapIt *it_init(const struct PPmap *map) {
+static const struct PPmapIt *it_init(const struct PPmap *map, const struct PPmapFilter *filter) {
 	if (map->size == 0)
 		return NULL;
 
 	struct PPmapIt *it = calloc(1, sizeof(struct PPmapIt));
 	it->st = calloc(1, sizeof(struct PPmapItState));
 	it->st->map = map;
+
+	if (filter) {
+		memcpy((void*)&it->st->filter, filter, sizeof(struct PPmapFilter));
+	}
 
 	return it;
 }
@@ -71,7 +75,8 @@ static bool filter_blocks(const struct PPmapFilter *filter, const void* const ke
 		(filter->key_val_data && !filter->key_val_data(key,  val, filter->data));
 }
 
-static const void *put(const struct PPmap* const map, const void* const key, const void* const val, fn_clone clone_val) {
+// return true if overwritten - val_old populated, maybe NULL
+static bool put(const void **val_old, const struct PPmap* const map, const void* const key, const void* const val, fn_clone alloc_val, bool overwrite) {
 	if (!val && !map->params.allow_null_val)
 		return NULL;
 
@@ -81,27 +86,31 @@ static const void *put(const struct PPmap* const map, const void* const key, con
 
 		// overwrite existing values
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
-			const void *val_old = *v;
+			*val_old = *v;
 
-			const void *val_new = val && clone_val ? clone_val(val) : val;
+			if (!overwrite) {
+				return true;
+			}
+
+			const void *val_new = alloc_val ? alloc_val(val) : val;
 			if (!val_new && !map->params.allow_null_val) {
-				return NULL;
+				return true;
 			}
 
 			*v = val_new;
-			return val_old;
+			return true;
 		}
 	}
 
 	// alloc new key, never null
 	const void *key_new = map->params.alloc_key ? map->params.alloc_key(key) : key;
 	if (!key_new)
-		return NULL;
+		return false;
 
-	// alloc new val, maybe null
-	const void *val_new = val && clone_val ? clone_val(val) : val;
+	// alloc new value; alloc_val may return a valid new from a NULL val
+	const void *val_new = alloc_val ? alloc_val(val) : val;
 	if (!val_new && !map->params.allow_null_val) {
-		return NULL;
+		return false;
 	}
 
 	struct PPmap *map_m = (struct PPmap*)map;
@@ -119,36 +128,40 @@ static const void *put(const struct PPmap* const map, const void* const key, con
 
 	map_m->size++;
 
-	return NULL;
-}
-
-static bool put_free(const struct PPmap* const map, const void* const key, const void* const val, fn_clone clone_val) {
-	const void *val_old = put(map, key, val, clone_val);
-
-	if (val_old) {
-		map->params.free_val ? map->params.free_val((void*)val_old) : free((void*)val_old);
-		return true;
-	} else {
-		return false;
-	}
+	return false;
 }
 
 static size_t put_all(const struct PPmap* const map, const struct PPmap* const from, fn_clone clone_val, bool do_free) {
 	size_t overwritten = 0;
 
-	const void **k;
-	const void **v;
-	for (k = from->keys, v = from->vals; k < from->keys + from->size; k++, v++) {
-		if (do_free) {
-			if (put_free(map, *k, *v, clone_val)) {
-				overwritten++;
-			}
-		} else {
-			if (put(map, *k, *v, clone_val) != NULL) {
-				overwritten++;
+	// values already freed
+	const void **freed = calloc(map->size, sizeof(void*));
+	size_t nf = 0;
+
+	for (const void **k = from->keys, **v = from->vals; k < from->keys + from->size; k++, v++) {
+		const void *val_old = NULL;
+
+		if (put(&val_old, map, *k, *v, clone_val, true)) {
+			overwritten++;
+
+			if (do_free && val_old) {
+				bool already_freed = false;
+				for (const void **vf = freed; vf < freed + nf; vf++) {
+					if (val_old == *vf) {
+						already_freed = true;
+						break;
+					}
+				}
+
+				if (!already_freed) {
+					map->params.free_val ? map->params.free_val((void*)val_old) : free((void*)val_old);
+					*(freed + nf++) = val_old;
+				}
 			}
 		}
 	}
+
+	free(freed);
 
 	return overwritten;
 }
@@ -156,59 +169,162 @@ static size_t put_all(const struct PPmap* const map, const struct PPmap* const f
 static const struct PPmap *clone(const struct PPmap* const from, fn_clone clone_val) {
 	const struct PPmap *to =  ppmap_init_with(from->params);
 
-	const void **k;
-	const void **v;
-	for (k = from->keys, v = from->vals; k < from->keys + from->size; k++, v++) {
-		put(to, *k, *v, clone_val);
+	const void *val_old = NULL;
+	for (const void **k = from->keys, **v = from->vals; k < from->keys + from->size; k++, v++) {
+		put(&val_old, to, *k, *v, clone_val, true);
 	}
 
 	return to;
 }
 
-static size_t remove_all(const struct PPmap* const cmap, bool do_free_val) {
-	struct PPmap *map = (struct PPmap*)cmap;
+static void free_keys(const struct PPmap* const map) {
+	if (!map->params.free_key)
+		return;
 
-	if (map->params.free_key || do_free_val) {
-		const void **k;
-		const void **v;
-		for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+	for (const void **k = map->keys; k < map->keys + map->size; k++) {
+		if (*k) {
+			map->params.free_key((void*)*k);
+		}
+	}
+}
+
+static void free_vals(const struct PPmap* const map) {
+
+	// values already freed
+	const void **freed = calloc(map->size, sizeof(void*));
+	size_t nf = 0;
+
+	for (const void **v = map->vals; v < map->vals + map->size; v++) {
+		if (!*v)
+			continue;
+
+		bool already_freed = false;
+		for (const void **vf = freed; vf < freed + nf; vf++) {
+			if (*v == *vf) {
+				already_freed = true;
+				break;
+			}
+		}
+
+		if (!already_freed) {
+			map->params.free_val ? map->params.free_val((void*)*v) : free((void*)*v);
+			*(freed + nf++) = *v;
+		}
+	}
+
+	free(freed);
+}
+
+static bool remove_(const void **removed, const struct PPmap* const map, const void* const key, bool do_free) {
+	if (removed)
+		*removed = NULL;
+
+	if (!key)
+		return NULL;
+
+	bool was_removed = false;
+
+	const void *val_old = NULL;
+
+	for (const void **k = map->keys, **v = map->vals; k < map->keys + map->size; k++, v++) {
+
+		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
+			struct PPmap *map_m = (struct PPmap*)map;
+
 			if (map->params.free_key) {
 				map->params.free_key((void*)*k);
 			}
-			if (*v && do_free_val) {
-				if (map->params.free_val) {
-					map->params.free_val((void*)*v);
-				} else {
-					free((void*)*v);
+			*k = NULL;
+			val_old = *v;
+			*v = NULL;
+			map_m->size--;
+
+			// shift down over removed
+			const void **mk;
+			const void **mv;
+			for (mk = k, mv = v; mk < map->keys + map->size; mk++, mv++) {
+				*mk = *(mk + 1);
+				*mv = *(mv + 1);
+			}
+			*mk = NULL;
+			*mv = NULL;
+
+			was_removed = true;
+			break;
+		}
+	}
+
+	if (removed) {
+		*removed = val_old;
+	}
+
+	if (do_free && val_old) {
+		if (map->params.free_val) {
+			map->params.free_val((void*)val_old);
+		} else {
+			free((void*)val_old);
+		}
+	}
+
+	return was_removed;
+}
+
+static size_t remove_all(const struct PPmap* const map) {
+	memset(map->keys, 0, map->size * sizeof(void*));
+	memset(map->vals, 0, map->size * sizeof(void*));
+
+	size_t removed = map->size;
+
+	((struct PPmap*)map)->size = 0;
+
+	return removed;
+}
+
+static size_t remove_in(const struct PPmap* const map, const struct PPmap* const in, bool do_free) {
+	size_t removed = 0;
+
+	// values to free, no duplicates or nulls
+	const void **freed = calloc(map->size, sizeof(void*));
+	size_t nf = 0;
+
+	for (const void **k = in->keys; k < in->keys + in->size; k++) {
+		const void *val_old = NULL;
+		if (remove_(&val_old, map, *k, false)) {
+			removed++;
+
+			if (val_old && do_free) {
+				bool already_freed = false;
+				for (const void **vf = freed; vf < freed + nf; vf++) {
+					if (val_old == *vf) {
+						already_freed = true;
+						break;
+					}
+				}
+
+				if (!already_freed) {
+					map->params.free_val ? map->params.free_val((void*)val_old) : free((void*)val_old);
+					*(freed + nf++) = val_old;
 				}
 			}
 		}
 	}
 
-	size_t removed = map->size;
-	map->size = 0;
-
-	memset(map->keys, 0, map->size * sizeof(void*));
-	memset(map->vals, 0, map->size * sizeof(void*));
+	free(freed);
 
 	return removed;
 }
 
-static void it_remove(const struct PPmapIt* const it, bool do_free) {
-	if (!it)
-		return;
+static bool it_remove(const void **removed, const struct PPmapIt* const it, bool do_free) {
+	if (removed)
+		*removed = NULL;
 
 	struct PPmapItState *st = it->st;
 	if (!st) {
 		ppmap_it_free(it);
-		return;
+		return false;
 	}
 
-	if (do_free) {
-		ppmap_remove_free(st->map, it->key);
-	} else {
-		ppmap_remove(st->map, it->key);
-	}
+	bool was_removed = remove_(removed, st->map, it->key, do_free);
 
 	if (st->position > 0) {
 		st->position--;
@@ -218,39 +334,29 @@ static void it_remove(const struct PPmapIt* const it, bool do_free) {
 
 	((struct PPmapIt*)it)->key = NULL;
 	((struct PPmapIt*)it)->val = NULL;
+
+	return was_removed;
 }
 
 
-static const struct Pset *vals_pset(const struct PPmap* const map, fn_clone clone_val) {
-	const struct PsetParams params = {
+static const struct Plist *vals_plist(const struct PPmap* const map, fn_clone clone_val) {
+	const struct PlistParams params = {
 		.equal_val = map->params.equal_val,
 		.alloc_val = map->params.alloc_val,
 		.free_val = map->params.free_val,
 		.clone_val = map->params.clone_val,
 		.str_val = map->params.str_val,
+		.allow_null_val = map->params.allow_null_val,
 		.initial = MAX(map->size, map->params.initial),
 		.grow  = map->params.grow,
 	};
-	const struct Pset *set = pset_init_with(params);
+	const struct Plist *list = plist_init_with(params);
 
-	const void **v;
-	for (v = map->vals; v < map->vals + map->size; v++) {
-		pset_add(set, clone_val && !map->params.alloc_val ? clone_val(*v) : *v);
-	}
-
-	return set;
-}
-
-static struct Pslist *vals_pslist(const struct PPmap* const map, fn_clone clone_val) {
-	struct Pslist *list = NULL;
-
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+	for (const void **v = map->vals; v < map->vals + map->size; v++) {
 		if (*v && clone_val) {
-			pslist_append(&list, (void*)clone_val(*v));
+			plist_append(list, (void*)clone_val(*v));
 		} else {
-			pslist_append(&list, (void*)*v);
+			plist_append(list, (void*)*v);
 		}
 	}
 
@@ -279,14 +385,16 @@ const struct PPmap *ppmap_clone(const struct PPmap* const from) {
 }
 
 const struct PPmap *ppmap_clone_deep(const struct PPmap* const from) {
-	return from && from->params.clone_val ? clone(from, from->params.alloc_val ? from->params.alloc_val : from->params.clone_val) : NULL;
+	return from && from->params.clone_val ? clone(from, from->params.clone_val) : NULL;
 }
 
 void ppmap_free(const struct PPmap* const map) {
 	if (!map)
 		return;
 
-	remove_all(map, false);
+	free_keys(map);
+
+	remove_all(map);
 
 	free(map->keys);
 	free(map->vals);
@@ -298,12 +406,9 @@ void ppmap_free_vals(const struct PPmap* const map) {
 	if (!map)
 		return;
 
-	remove_all(map, true);
+	free_vals(map);
 
-	free(map->keys);
-	free(map->vals);
-
-	free((void*)map);
+	ppmap_free(map);
 }
 
 void ppmap_it_free(const struct PPmapIt* const it) {
@@ -318,9 +423,7 @@ const void *ppmap_get(const struct PPmap* const map, const void* const key) {
 	if (!map || !key)
 		return NULL;
 
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+	for (const void **k = map->keys, **v = map->vals; k < map->keys + map->size; k++, v++) {
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			return *v;
 		}
@@ -333,8 +436,7 @@ bool ppmap_contains_key(const struct PPmap* const map, const void* const key) {
 	if (!map || !key)
 		return false;
 
-	const void **k;
-	for (k = map->keys; k < map->keys + map->size; k++) {
+	for (const void **k = map->keys; k < map->keys + map->size; k++) {
 		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
 			return true;
 		}
@@ -347,8 +449,7 @@ bool ppmap_contains_val(const struct PPmap* const map, const void* const val) {
 	if (!map)
 		return false;
 
-	const void **v;
-	for (v = map->vals; v < map->vals + map->size; v++) {
+	for (const void **v = map->vals; v < map->vals + map->size; v++) {
 		if (map->params.equal_val ? map->params.equal_val(*v, val) : *v == val) {
 			return true;
 		}
@@ -361,9 +462,7 @@ const void *ppmap_first_key(const struct PPmap *const map, const void* const val
 	if (!map)
 		return NULL;
 
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+	for (const void **k = map->keys, **v = map->vals; k < map->keys + map->size; k++, v++) {
 		if (map->params.equal_val ? map->params.equal_val(*v, val) : *v == val) {
 			return *k;
 		}
@@ -389,43 +488,24 @@ struct PPmapPair ppmap_find(const struct PPmap* const map, const struct PPmapFil
 	if (!map)
 		return res;
 
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
-		if (filter_blocks(&filter, *k, *v))
-			continue;
+	for (const void **k = map->keys, **v = map->vals; k < map->keys + map->size; k++, v++) {
+		if (!filter_blocks(&filter, *k, *v)) {
+			res.key = *k;
+			res.val = *v;
 
-		res.key = *k;
-		res.val = *v;
-		break;
+			return res;
+		}
 	}
 
 	return res;
 }
 
 const struct PPmapIt *ppmap_it(const struct PPmap* const map) {
-	if (!map)
-		return NULL;
-
-	const struct PPmapIt *it = it_init(map);
-
-	if (!it)
-		return NULL;
-
-	return ppmap_it_next(it);
+	return map ? ppmap_it_next(it_init(map, NULL)) : NULL;
 }
 
 const struct PPmapIt *ppmap_filter_it(const struct PPmap* const map, const struct PPmapFilter filter) {
-	if (!map)
-		return NULL;
-
-	const struct PPmapIt *it = it_init(map);
-	if (!it)
-		return NULL;
-
-	memcpy((void*)&it->st->filter, &filter, sizeof(struct PPmapFilter));
-
-	return ppmap_it_next(it);
+	return map ? ppmap_it_next(it_init(map, &filter)) : NULL;
 }
 
 const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it) {
@@ -465,23 +545,39 @@ const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it) {
 
 
 const void *ppmap_put(const struct PPmap* const map, const void* const key, const void* const val) {
-	return map ? put(map, key, val, map->params.alloc_val) : NULL;
+	if (!map)
+		return NULL;
+
+	const void *val_old = NULL;
+	put(&val_old, map, key, val, map->params.alloc_val, true);
+
+	return val_old;
 }
 
 const void *ppmap_put_if_absent(const struct PPmap* const map, const void* const key, const void* const val) {
-	if (!map || !key)
+	if (!map)
 		return NULL;
 
-	if (ppmap_contains_key(map, key)) {
-		return ppmap_get(map, key);
+	const void *val_old = NULL;
+	if (put(&val_old, map, key, val, map->params.alloc_val, false)) {
+		return val_old;
 	} else {
-		put(map, key, val, map->params.alloc_val);
 		return NULL;
 	}
 }
 
 bool ppmap_put_free(const struct PPmap* const map, const void* const key, const void* const val) {
-	return map ? put_free(map, key, val, map->params.alloc_val) : false;
+	if (!map)
+		return false;
+
+	const void *val_old = NULL;
+	bool was_overwritten = put(&val_old, map, key, val, map->params.alloc_val, true);
+
+	if (val_old) {
+		map->params.free_val ? map->params.free_val((void*)val_old) : free((void*)val_old);
+	}
+
+	return was_overwritten;
 }
 
 size_t ppmap_put_all(const struct PPmap* const map, const struct PPmap* const from) {
@@ -501,102 +597,79 @@ size_t ppmap_put_all_clone_free(const struct PPmap* const map, const struct PPma
 }
 
 const void *ppmap_remove(const struct PPmap* const map, const void* const key) {
-	if (!map || !key)
+	if (!map)
 		return NULL;
 
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+	const void *removed = NULL;
+	remove_(&removed, map, key, false);
 
-		if (map->params.equal_key ? map->params.equal_key(*k, key) : *k == key) {
-			struct PPmap *map_m = (struct PPmap*)map;
-
-			if (map->params.free_key) {
-				map->params.free_key((void*)*k);
-			}
-			*k = NULL;
-			const void* val_old = *v;
-			*v = NULL;
-			map_m->size--;
-
-			// shift down over removed
-			const void **mk;
-			const void **mv;
-			for (mk = k, mv = v; mk < map->keys + map->size; mk++, mv++) {
-				*mk = *(mk + 1);
-				*mv = *(mv + 1);
-			}
-			*mk = NULL;
-			*mv = NULL;
-
-			return val_old;
-		}
-	}
-
-	return NULL;
+	return removed;
 }
 
 bool ppmap_remove_free(const struct PPmap* const map, const void* const key) {
-	if (ppmap_contains_key(map, key)) {
-		const void *removed = ppmap_remove(map, key);
-		if (removed) {
-			map->params.free_val ? map->params.free_val((void*)removed) : free((void*)removed);
-		}
-		return true;
-	} else {
-		return false;
-	}
+	return map ? remove_(NULL, map, key, true) : false;
 }
 
 size_t ppmap_remove_all(const struct PPmap* const map) {
-	return map ? remove_all(map, false) : 0;
+	if (!map)
+		return 0;
+
+	free_keys(map);
+
+	return remove_all(map);
 }
 
 size_t ppmap_remove_all_free(const struct PPmap* const map) {
-	return map ? remove_all(map, true) : 0;
+	if (!map)
+		return 0;
+
+	free_keys(map);
+	free_vals(map);
+
+	return remove_all(map);
 }
 
 size_t ppmap_remove_in(const struct PPmap* const map, const struct PPmap* const in) {
-	if (!map || !in)
-		return 0;
-
-	size_t removed = 0;
-
-	const void **k;
-	for (k = in->keys; k < in->keys + in->size; k++) {
-		if (ppmap_remove(map, *k) != NULL) {
-			removed++;
-		}
-	}
-
-	return removed;
+	return map && in ? remove_in(map, in, false) : 0;
 }
 
 size_t ppmap_remove_in_free(const struct PPmap* const map, const struct PPmap* const in) {
-	if (!map || !in)
-		return 0;
+	return map && in ? remove_in(map, in, true) : 0;
+}
 
-	size_t removed = 0;
+const void *ppmap_it_remove(const struct PPmapIt* const it) {
+	if (!it)
+		return NULL;
 
-	const void **k;
-	for (k = in->keys; k < in->keys + in->size; k++) {
-		if (ppmap_remove_free(map, *k)) {
-			removed++;
-		}
-	}
+	const void *removed = NULL;
+	it_remove(&removed, it, false);
 
 	return removed;
 }
 
-void ppmap_it_remove(const struct PPmapIt* const it) {
-	it_remove(it, false);
-}
-
-void ppmap_it_remove_free(const struct PPmapIt* const it) {
-	it_remove(it, true);
+bool ppmap_it_remove_free(const struct PPmapIt* const it) {
+	return it ? it_remove(NULL, it, true) : false;
 }
 
 bool ppmap_equal(const struct PPmap* const a, const struct PPmap* const b) {
+	if (!a || !b || a->size != b->size)
+		return false;
+
+	for (const void **bk = b->keys, **bv = b->vals; bk < b->keys + b->size; bk++, bv++) {
+		const void *av = ppmap_get(a, *bk);
+		if (a->params.equal_val) {
+			if (!a->params.equal_val(av, *bv)) {
+				return false;
+			}
+		} else if (av != *bv) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool ppmap_equal_ordered(const struct PPmap* const a, const struct PPmap* const b) {
 	if (!a || !b || a->size != b->size)
 		return false;
 
@@ -623,16 +696,23 @@ bool ppmap_equal(const struct PPmap* const a, const struct PPmap* const b) {
 	return true;
 }
 
-struct Pslist *ppmap_keys_pslist(const struct PPmap* const map) {
+const struct Plist *ppmap_keys_plist(const struct PPmap* const map) {
 	if (!map)
 		return NULL;
 
-	struct Pslist *list = NULL;
+	const struct PlistParams params = {
+		.equal_val = map->params.equal_key,
+		.alloc_val = map->params.alloc_key,
+		.free_val = map->params.free_key,
+		.clone_val = map->params.alloc_key,
+		.str_val = map->params.str_key,
+		.initial = MAX(map->size, map->params.initial),
+		.grow  = map->params.grow,
+	};
+	const struct Plist *list = plist_init_with(params);
 
-	const void **k;
-	for (k = map->keys; k < map->keys + map->size; k++) {
-		const void *key = map->params.alloc_key ? map->params.alloc_key(*k) : *k;
-		pslist_append(&list, (void*)key);
+	for (const void **k = map->keys; k < map->keys + map->size; k++) {
+		plist_append(list, *k);
 	}
 
 	return list;
@@ -653,31 +733,22 @@ const struct Pset *ppmap_keys_pset(const struct PPmap* const map) {
 	};
 	const struct Pset *set = pset_init_with(params);
 
-	const void **k;
-	for (k = map->keys; k < map->keys + map->size; k++) {
+	for (const void **k = map->keys; k < map->keys + map->size; k++) {
 		pset_add(set, *k);
 	}
 
 	return set;
 }
 
-struct Pslist *ppmap_vals_pslist(const struct PPmap* const map) {
-	return map ? vals_pslist(map, map->params.alloc_val) : NULL;
+const struct Plist *ppmap_vals_plist(const struct PPmap* const map) {
+	return map ? vals_plist(map, NULL) : NULL;
 }
 
-struct Pslist *ppmap_vals_pslist_clone(const struct PPmap* const map) {
+const struct Plist *ppmap_vals_plist_clone(const struct PPmap* const map) {
 	if (!map || !map->params.clone_val)
 		return NULL;
 
-	return vals_pslist(map, map->params.clone_val);
-}
-
-const struct Pset *ppmap_vals_pset(const struct PPmap* const map) {
-	return map ? vals_pset(map, NULL) : NULL;
-}
-
-const struct Pset *ppmap_vals_pset_clone(const struct PPmap* const map) {
-	return map && map->params.clone_val ? vals_pset(map, map->params.clone_val) : NULL;
+	return vals_plist(map, map->params.clone_val);
 }
 
 char *ppmap_str(const struct PPmap* const map) {
@@ -686,32 +757,38 @@ char *ppmap_str(const struct PPmap* const map) {
 
 	char *out = strdup("");
 
-	const void **k;
-	const void **v;
-	for (k = map->keys, v = map->vals; k < map->keys + map->size; k++, v++) {
+	for (const void **k = map->keys, **v = map->vals; k < map->keys + map->size; k++, v++) {
 
-		if (*k) {
-			if (map->params.str_key) {
-				char *key_old = map->params.str_key(*k);
-				out = sprintf_append(out, "%s = ", key_old);
-				free(key_old);
+		if (map->params.str_key) {
+			char *key_str = map->params.str_key(*k);
+			if (key_str) {
+				out = sprintf_append(out, "%s = ", key_str);
+				free(key_str);
 			} else {
-				out = sprintf_append(out, "%p = ", *k);
+				out = sprintf_append(out, "(null) = ");
 			}
 		} else {
-			out = sprintf_append(out, "(null) = ");
+			if (*k) {
+				out = sprintf_append(out, "%p = ", *k);
+			} else {
+				out = sprintf_append(out, "(null) = ");
+			}
 		}
 
-		if (*v) {
-			if (map->params.str_val) {
-				char *val_old = map->params.str_val(*v);
-				out = sprintf_append(out, "%s\n", val_old);
-				free(val_old);
+		if (map->params.str_val) {
+			char *val_str = map->params.str_val(*v);
+			if (val_str) {
+				out = sprintf_append(out, "%s\n", val_str);
+				free(val_str);
 			} else {
-				out = sprintf_append(out, "%p\n", *v);
+				out = sprintf_append(out, "(null)\n");
 			}
 		} else {
-			out = sprintf_append(out, "%s", "(null)\n");
+			if (*v) {
+				out = sprintf_append(out, "%p\n", *v);
+			} else {
+				out = sprintf_append(out, "(null)\n");
+			}
 		}
 	}
 

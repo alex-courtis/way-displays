@@ -6,6 +6,7 @@
 #include "yaml/marshal-primitives.h"
 
 #include "enum.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -83,6 +84,25 @@ void yaml_map_add_enum(struct MC *c, const char *key, const int val, fn_enum_nam
 		str = (val == ON) ? "TRUE" : "FALSE";
 
 	yaml_map_add_str(c, key, str, mapping);
+}
+
+void yaml_map_add_plist(struct MC *c, const char *key, const struct Plist* const plist, fn_yaml_node_from_type fn, int mapping) {
+	if (!key || plist_size(plist) == 0)
+		return;
+
+	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int seq = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+
+	if (!k || !seq)
+		return;
+
+	for (const struct PlistIt *it = plist_it_start(plist); it; it = plist_it_next(it)) {
+		int n = fn(c, it->val);
+		if (n)
+			yaml_document_append_sequence_item(&c->d, seq, n);
+	}
+
+	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
 void yaml_map_add_sset(struct MC *c, const char *key, const struct Sset* const sset, int mapping) {

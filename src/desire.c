@@ -15,6 +15,7 @@
 #include "head.h"
 #include "lid.h"
 #include "mode.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -38,11 +39,11 @@ void desire(void) {
 		desire_reapply(head);
 	}
 
-	const struct Pset *heads_ordered = desire_order(g_cfg->order_name_desc, g_displ->heads);
+	const struct Plist *heads_ordered = desire_order(g_cfg->order_name_desc, g_displ->heads);
 
 	desire_positions(heads_ordered);
 
-	pset_free(heads_ordered);
+	plist_free(heads_ordered);
 }
 
 void desire_enabled(struct Head *head) {
@@ -196,28 +197,28 @@ void desire_reapply(struct Head *head) {
 		head->des.enabled = false;
 }
 
-static void fill_order_buckets(const struct SPmap *buckets, const struct Pset *candidates, fn_pred_pp pred) {
-	struct PsetFilter f = { .val_data = pred, };
+static void fill_order_buckets(const struct SPmap *buckets, const struct Plist *candidates, fn_pred_pp pred) {
+	struct PlistFilter f = { .val_data = pred, };
 	for (const struct SPmapIt *bit = spmap_it(buckets); bit; bit = spmap_it_next(bit)) {
 		f.data = bit->key;
-		for (const struct PsetIt *cit = pset_filter_it(candidates, f); cit; cit = pset_it_next(cit)) {
-			pset_add(bit->val, cit->val);
-			pset_it_remove(cit);
+		for (const struct PlistIt *cit = plist_filter_it_start(candidates, f); cit; cit = plist_it_next(cit)) {
+			plist_append(bit->val, cit->val);
+			plist_it_remove(cit);
 		}
 	}
 }
 
-const struct Pset *desire_order(const struct Sset * const order_name_desc, const struct PPmap *heads) {
+const struct Plist *desire_order(const struct Sset * const order_name_desc, const struct PPmap *heads) {
 
 	// buckets for each order_name_desc
-	const struct SPmapParams params = { .free_val = (fn_free)pset_free, };
+	const struct SPmapParams params = { .free_val = (fn_free)plist_free, };
 	const struct SPmap *buckets = spmap_init_with(params);
 	for (const struct SsetIt *it = sset_it(order_name_desc); it; it = sset_it_next(it)) {
-		spmap_put(buckets, it->val, head_pset_init());
+		spmap_put(buckets, it->val, head_plist_init());
 	}
 
 	// all candidates to be moved into buckets
-	const struct Pset *candidates = ppmap_vals_pset(heads);
+	const struct Plist *candidates = ppmap_vals_plist(heads);
 
 	// fill buckets in preferential order
 	fill_order_buckets(buckets, candidates, (fn_pred_pp)head_matches_name_desc_exact);
@@ -225,25 +226,27 @@ const struct Pset *desire_order(const struct Sset * const order_name_desc, const
 	fill_order_buckets(buckets, candidates, (fn_pred_pp)head_matches_name_desc_fuzzy);
 
 	// marshal buckets in final order
-	const struct Pset *sorted = head_pset_init();
+	const struct Plist *sorted = head_plist_init();
 	for (const struct SPmapIt *it = spmap_it(buckets); it; it = spmap_it_next(it)) {
-		pset_add_all(sorted, it->val);
+		plist_append_all(sorted, it->val);
 	}
 
 	// add the remainder that didn't match
-	pset_add_all(sorted, candidates);
+	for (const struct PlistIt *it = plist_it_start(candidates); it; it = plist_it_next(it)) {
+		plist_append(sorted, it->val);
+	}
 
-	pset_free(candidates);
+	plist_free(candidates);
 	spmap_free_vals(buckets);
 
 	return sorted;
 }
 
-void desire_positions(const struct Pset *heads_sorted) {
+void desire_positions(const struct Plist *heads_sorted) {
 	int32_t tallest = 0, widest = 0, x = 0, y = 0;
 
 	// find tallest/widest
-	for (const struct PsetIt *it = pset_it(heads_sorted); it; it = pset_it_next(it)) {
+	for (const struct PlistIt *it = plist_it_start(heads_sorted); it; it = plist_it_next(it)) {
 		const struct Head *head = it->val;
 		if (!head->des.zmode || !head->des.enabled) {
 			continue;
@@ -257,7 +260,7 @@ void desire_positions(const struct Pset *heads_sorted) {
 	}
 
 	// arrange each in the predefined order
-	for (const struct PsetIt *it = pset_it(heads_sorted); it; it = pset_it_next(it)) {
+	for (const struct PlistIt *it = plist_it_start(heads_sorted); it; it = plist_it_next(it)) {
 		struct Head *head = (struct Head*)it->val;
 		if (!head->des.zmode || !head->des.enabled) {
 			continue;

@@ -18,6 +18,7 @@ unusedFunction:tst/wrap*.c
 
 # this is just not practical
 nullPointerOutOfMemory
+nullPointerArithmeticOutOfMemory
 
 # requires too much function pointer casting
 constParameterCallback:listener/*c

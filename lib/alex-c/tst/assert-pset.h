@@ -27,4 +27,24 @@ void _assert_pset_not_equal(const struct Pset *a, const struct Pset *b, const ch
 }
 #define assert_pset_not_equal(a, b) _assert_pset_not_equal(a, b, __FILE__, __LINE__)
 
+void _assert_pset_equal_ordered(const struct Pset *a, const struct Pset *b, const char * const file, const int line) {
+	if (!pset_equal_ordered(a, b)) {
+		fs_file_write("actual.pset", pset_str(a), "w");
+		fs_file_write("expected.pset", pset_str(b), "w");
+		cmocka_print_error("\n%s != \n%s\n",  pset_str(a), pset_str(b));
+		_fail(file, line);
+	}
+}
+#define assert_pset_equal_ordered(a, b) _assert_pset_equal_ordered(a, b, __FILE__, __LINE__)
+
+void _assert_pset_not_equal_ordered(const struct Pset *a, const struct Pset *b, const char * const file, const int line) {
+	if (pset_equal_ordered(a, b)) {
+		fs_file_write("actual.pset", pset_str(a), "w");
+		fs_file_write("expected.pset", pset_str(b), "w");
+		cmocka_print_error("\n%s == \n%s\n",  pset_str(a), pset_str(b));
+		_fail(file, line);
+	}
+}
+#define assert_pset_not_equal_ordered(a, b) _assert_pset_not_equal_ordered(a, b, __FILE__, __LINE__)
+
 #endif // ASSERT_PSET_H

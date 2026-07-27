@@ -73,7 +73,7 @@ const struct IPmap *ipmap_init_with(const struct IPmapParams params);
 // same params, caller frees vals when alloc_val present [alloc_val]
 const struct IPmap *ipmap_clone(const struct IPmap* const from);
 
-// same params, caller frees vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_val, clone_val]
+// same params, caller frees vals, NULL on NULL clone_val [clone_val]
 const struct IPmap *ipmap_clone_deep(const struct IPmap* const from);
 
 // free map
@@ -104,13 +104,13 @@ bool ipmap_first_key(size_t* kp, const struct IPmap *const map, const void* cons
 // element at zero indexed position
 struct IPmapPair ipmap_at(const struct IPmap* const map, const size_t i);
 
-// find the first key/val pred, {NULL,NULL} when no matches, first when empty filter
+// find the first, {0,NULL} when no matches or allow_null_val and NULL present, first entry when empty filter
 struct IPmapPair ipmap_find(const struct IPmap* const map, const struct IPmapFilter filter);
 
 // create an iterator, caller must ipmap_it_free or invoke ipmap_next until NULL
 const struct IPmapIt *ipmap_it(const struct IPmap* const map);
 
-// create a filtering iterator, return NULL when no matches, caller must ipmap_it_free or invoke ipmap_next until NULL
+// create a filtering iterator, return NULL when no matches, first entry when empty filter
 const struct IPmapIt *ipmap_filter_it(const struct IPmap* const map, const struct IPmapFilter filter);
 
 // next iterator entry, NULL at end of map
@@ -159,34 +159,31 @@ size_t ipmap_remove_in(const struct IPmap* const map, const struct IPmap* const 
 // remove and free entries in keys, return number removed [free_val]
 size_t ipmap_remove_in_free(const struct IPmap* const map, const struct IPmap* const in);
 
-// remove the entry, it is unusable, ipmap_it_next must be called
-void ipmap_it_remove(const struct IPmapIt* const it);
+// remove the entry, return val if removed, it is unusable, ipmap_it_next must be called
+const void *ipmap_it_remove(const struct IPmapIt* const it);
 
-// remove and entry, free the val, it is unusable, ipmap_it_next must be called [free_val]
-void ipmap_it_remove_free(const struct IPmapIt* const it);
+// remove the entry and free the val, return true if removed, it is unusable, ipmap_it_next must be called [free_val]
+bool ipmap_it_remove_free(const struct IPmapIt* const it);
 
 /*
  * Comparison
  */
 
-// same length, keys and vals equal in order, uses params from a [equal_val]
+// same length, keys and vals equal, uses params from a [equal_val]
 bool ipmap_equal(const struct IPmap* const a, const struct IPmap* const b);
+
+// same length, keys and vals equal in order, uses params from a [equal_val]
+bool ipmap_equal_ordered(const struct IPmap* const a, const struct IPmap* const b);
 
 /*
  * Conversion
  */
 
-// map ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
-struct Pslist *ipmap_vals_pslist(const struct IPmap* const map);
+// map ordered vals, caller frees contents when alloc_val present [alloc_val]
+const struct Plist *ipmap_vals_plist(const struct IPmap* const map);
 
-// map ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
-struct Pslist *ipmap_vals_pslist_clone(const struct IPmap* const map);
-
-// map ordered vals, same params, caller frees set, caller frees vals when alloc_val present [alloc_val]
-const struct Pset *ipmap_vals_pset(const struct IPmap* const map);
-
-// map ordered vals, same params, caller frees set and vals, NULL on NULL clone_val or both alloc_val and clone_val [clone_val]
-const struct Pset *ipmap_vals_pset_clone(const struct IPmap* const map);
+// map ordered vals, caller frees contents, NULL when NULL clone_val [clone_val]
+const struct Plist *ipmap_vals_plist_clone(const struct IPmap* const map);
 
 /*
  * Info

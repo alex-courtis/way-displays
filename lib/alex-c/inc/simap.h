@@ -81,8 +81,8 @@ void simap_it_free(const struct SImapIt* const it);
 // return val, will return 0 if not present
 size_t simap_get(const struct SImap* const map, const char* const key);
 
-// populate np with val if present, 0 and return false if not present
-bool simap_get_ptr(size_t* np, const struct SImap* const map, const char* const key);
+// populate val if present, 0 and return false if not present
+bool simap_get_ptr(size_t* val, const struct SImap* const map, const char* const key);
 
 // true if key is present
 bool simap_contains_key(const struct SImap* const map, const char* const key);
@@ -96,7 +96,7 @@ const void *simap_first_key(const struct SImap *const map, const size_t val);
 // element at zero indexed position
 struct SImapPair simap_at(const struct SImap* const map, const size_t i);
 
-// find the first key/val pred, {NULL,NULL} when no matches, first when empty filter
+// find the first, {NULL,0} when no matches, first entry when empty filter
 struct SImapPair simap_find(const struct SImap* const map, const struct SImapFilter filter);
 
 // create an iterator, caller must simap_it_free or invoke simap_next until NULL
@@ -130,22 +130,25 @@ size_t simap_remove_all(const struct SImap* const map);
 // remove entries in keys, return number removed
 size_t simap_remove_in(const struct SImap* const map, const struct SImap* const in);
 
-// remove the entry, it is unusable, simap_it_next must be called
-void simap_it_remove(const struct SImapIt* const it);
+// remove the entry, return true if removed, it is unusable, ipmap_it_next must be called
+bool simap_it_remove(const struct SImapIt* const it);
 
 /*
  * Comparison
  */
 
-// same length, keys and vals equal in order, uses case from a
+// same length, keys and vals equal, uses case from a
 bool simap_equal(const struct SImap* const a, const struct SImap* const b);
+
+// same length, keys and vals equal in order, uses case from a
+bool simap_equal_ordered(const struct SImap* const a, const struct SImap* const b);
 
 /*
  * Conversion
  */
 
-// map ordered keys, caller frees list and contents
-struct Pslist *simap_keys_pslist(const struct SImap* const map);
+// map ordered keys, same params
+const struct Slist *simap_keys_slist(const struct SImap* const map);
 
 // map ordered keys, same params
 const struct Sset *simap_keys_sset(const struct SImap* const map);

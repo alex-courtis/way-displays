@@ -57,25 +57,6 @@ static struct IPmapIt *it_init(const struct PPmapIt *pit) {
 	return it;
 }
 
-static void it_remove(const struct IPmapIt* const it, bool do_free) {
-	if (!it)
-		return;
-
-	if (!it->st) {
-		ipmap_it_free(it);
-		return;
-	}
-
-	if (do_free) {
-		ppmap_it_remove_free(it->st->pit);
-	} else {
-		ppmap_it_remove(it->st->pit);
-	}
-
-	((struct IPmapIt*)it)->key = 0;
-	((struct IPmapIt*)it)->val = NULL;
-}
-
 const struct IPmap *ipmap_init(void) {
 	const struct IPmapParams params = { 0 };
 	return ipmap_init_with(params);
@@ -156,6 +137,9 @@ bool ipmap_contains_val(const struct IPmap* const map, const void* const val) {
 }
 
 bool ipmap_first_key(size_t* kp, const struct IPmap *const map, const void* const val) {
+	if (kp)
+		*kp = 0;
+
 	if (!map || !kp)
 		return false;
 
@@ -165,7 +149,6 @@ bool ipmap_first_key(size_t* kp, const struct IPmap *const map, const void* cons
 		*kp = *fp;
 		return true;
 	} else {
-		*kp = 0;
 		return false;
 	}
 }
@@ -290,12 +273,34 @@ size_t ipmap_remove_in_free(const struct IPmap* const map, const struct IPmap* c
 	return map && in ? ppmap_remove_in_free(map->ppmap, in->ppmap) : 0;
 }
 
-void ipmap_it_remove(const struct IPmapIt* const it) {
-	it_remove(it, false);
+const void *ipmap_it_remove(const struct IPmapIt* const it) {
+	if (!it)
+		return NULL;
+
+	if (!it->st) {
+		ipmap_it_free(it);
+		return NULL;
+	}
+
+	((struct IPmapIt*)it)->key = 0;
+	((struct IPmapIt*)it)->val = NULL;
+
+	return ppmap_it_remove(it->st->pit);
 }
 
-void ipmap_it_remove_free(const struct IPmapIt* const it) {
-	it_remove(it, true);
+bool ipmap_it_remove_free(const struct IPmapIt* const it) {
+	if (!it)
+		return false;
+
+	if (!it->st) {
+		ipmap_it_free(it);
+		return false;
+	}
+
+	((struct IPmapIt*)it)->key = 0;
+	((struct IPmapIt*)it)->val = NULL;
+
+	return ppmap_it_remove_free(it->st->pit);
 }
 
 size_t ipmap_put_all(const struct IPmap* const map, const struct IPmap* const from) {
@@ -318,20 +323,16 @@ bool ipmap_equal(const struct IPmap* const a, const struct IPmap* const b) {
 	return a && b ? ppmap_equal(a->ppmap, b->ppmap) : false;
 }
 
-struct Pslist *ipmap_vals_pslist(const struct IPmap* const map) {
-	return map ? ppmap_vals_pslist(map->ppmap) : NULL;
+bool ipmap_equal_ordered(const struct IPmap* const a, const struct IPmap* const b) {
+	return a && b ? ppmap_equal_ordered(a->ppmap, b->ppmap) : false;
 }
 
-struct Pslist *ipmap_vals_pslist_clone(const struct IPmap* const map) {
-	return map ? ppmap_vals_pslist_clone(map->ppmap) : NULL;
+const struct Plist *ipmap_vals_plist(const struct IPmap* const map) {
+	return map ? ppmap_vals_plist(map->ppmap) : NULL;
 }
 
-const struct Pset *ipmap_vals_pset(const struct IPmap* const map) {
-	return map ? ppmap_vals_pset(map->ppmap) : NULL;
-}
-
-const struct Pset *ipmap_vals_pset_clone(const struct IPmap* const map) {
-	return map ? ppmap_vals_pset_clone(map->ppmap) : NULL;
+const struct Plist *ipmap_vals_plist_clone(const struct IPmap* const map) {
+	return map ? ppmap_vals_plist_clone(map->ppmap) : NULL;
 }
 
 char *ipmap_str(const struct IPmap* const map) {
