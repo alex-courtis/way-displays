@@ -920,7 +920,6 @@ int main(void) {
 		TEST_BA(head_scale__default),
 		TEST_BA(head_scale__cfg),
 
-		// TODO test regex on the conditional
 		TEST_BA(head_process_ipc_disableds__set_disabled),
 		TEST_BA(head_process_ipc_disableds__set_enabled),
 		TEST_BA(head_process_ipc_disableds__del_disabled),
