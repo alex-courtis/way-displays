@@ -715,6 +715,7 @@ static void head_process_ipc_disableds__set_disabled(void **state) {
 			disabled_nd("other"),
 			disabled_nd("d_disabled_c"),
 			disabled_nd("d_disabled_co"),
+			disabled_nd("!disabled"),
 			NULL);
 
 	// already disabled, NOP
@@ -732,7 +733,7 @@ static void head_process_ipc_disableds__set_enabled(void **state) {
 
 	pset_add_many(ipc_req->cfg->disableds,
 			disabled_nd("other"),
-			disabled_nd("head_enabled"),
+			disabled_nd("!.*enabled"),
 			disabled_nd("head_enable"),
 			NULL);
 
@@ -754,6 +755,7 @@ static void head_process_ipc_disableds__del_disabled(void **state) {
 	pset_add_many(ipc_req->cfg->disableds,
 			disabled_nd("other"),
 			disabled_nd("head_disabled"),
+			disabled_nd("!.*disabled"),
 			disabled_nd("head_disable"),
 			NULL);
 
@@ -775,6 +777,7 @@ static void head_process_ipc_disableds__del_enabled(void **state) {
 	pset_add_many(ipc_req->cfg->disableds,
 			disabled_nd("other"),
 			disabled_nd("head_enabled"),
+			disabled_nd("!.*enabled"),
 			disabled_nd("head_enable"),
 			NULL);
 
@@ -793,6 +796,7 @@ static void head_process_ipc_disableds__toggle_reset(void **state) {
 
 	pset_add_many(ipc_req->cfg->disableds,
 			disabled_nd("other"),
+			disabled_nd("!disabled"),
 			disabled_nd("head_disabled"),
 			disabled_nd("head_disable"),
 			NULL);
@@ -817,6 +821,7 @@ static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
 			disabled_nd("other"),
 			disabled_nd("head_enabled"),
 			disabled_nd("head_enable"),
+			disabled_nd("!enable"),
 			NULL);
 
 	// enabled conditionally, (set) disabled
@@ -836,6 +841,7 @@ static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
 	pset_add_many(ipc_req->cfg->disableds,
 			disabled_nd("other"),
 			disabled_nd("head_disabled"),
+			disabled_nd("!disabled"),
 			NULL);
 
 	// enabled conditionally, (set) disabled
@@ -856,17 +862,19 @@ static void head_process_ipc_disableds__nop(void **state) {
 			disabled_nd("other"),
 			disabled_nd("head_disabled"),
 			disabled_nd("head_enabled"),
+			disabled_nd("!disabled"),
+			disabled_nd("!enabled"),
 			NULL);
 
 	// no conditionals, NOP
 	head_override_ipc_disableds(head_disabled_nc, ipc_req);
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 3);
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 5);
 
 	// no conditionals, NOP
 	head_override_ipc_disableds(head_enabled_nc, ipc_req);
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 3);
+	assert_int_equal(pset_size(ipc_req->cfg->disableds), 5);
 
 	assert_logs_empty();
 }
@@ -912,6 +920,7 @@ int main(void) {
 		TEST_BA(head_scale__default),
 		TEST_BA(head_scale__cfg),
 
+		// TODO test regex on the conditional
 		TEST_BA(head_process_ipc_disableds__set_disabled),
 		TEST_BA(head_process_ipc_disableds__set_enabled),
 		TEST_BA(head_process_ipc_disableds__del_disabled),

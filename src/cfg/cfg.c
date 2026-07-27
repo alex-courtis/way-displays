@@ -286,7 +286,7 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = cfg_clone(to);
 
-	// the IpcRequest passes ON for CFG_TOGGLE
+	// the IpcRequest passes ON to indicate CFG_TOGGLE, regardless of state
 
 	// SCALE
 	if (from->scaling == ON) {
@@ -302,6 +302,13 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	for (const struct SsetIt *it = sset_it(from->adaptive_sync_off); it; it = sset_it_next(it)) {
 		if (!sset_remove(merged->adaptive_sync_off, it->val)) {
 			sset_add(merged->adaptive_sync_off, it->val);
+		}
+	}
+
+	// DISABLED, conditionals toggled and filtered earlier
+	for (const struct PsetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
+		if (!pset_remove_free(merged->disableds, it->val)) {
+			pset_add(merged->disableds, cfg_disabled_clone(it->val));
 		}
 	}
 

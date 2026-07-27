@@ -9,7 +9,6 @@
 #include "util-init.h"
 
 #include <cmocka.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
@@ -928,9 +927,6 @@ static void cfg_merge_toggle__auto_scale(void **state) {
 static void cfg_merge_toggle__adaptive_sync_off(void **state) {
 	struct State *s = *state;
 
-	s->from->auto_scale = false;
-	s->from->scaling = false;
-
 	sset_add_many(s->to->adaptive_sync_off,
 			"display1",
 			"display2",
@@ -944,6 +940,33 @@ static void cfg_merge_toggle__adaptive_sync_off(void **state) {
 	sset_add_many(s->expected->adaptive_sync_off,
 			"display1",
 			"display3",
+			NULL);
+
+	struct Cfg *merged = cfg_merge_toggle(s->to, s->from);
+
+	assert_cfg_equal(merged, s->expected);
+
+	cfg_free(merged);
+
+	assert_logs_empty();
+}
+
+static void cfg_merge_toggle__disableds(void **state) {
+	struct State *s = *state;
+
+	pset_add_many(s->to->disableds,
+			disabled_nd("existing1"),
+			disabled_nd("existing2"),
+			NULL);
+
+	pset_add_many(s->from->disableds,
+			disabled_nd("existing1"),
+			disabled_nd("new1"),
+			NULL);
+
+	pset_add_many(s->expected->disableds,
+			disabled_nd("existing2"),
+			disabled_nd("new1"),
 			NULL);
 
 	struct Cfg *merged = cfg_merge_toggle(s->to, s->from);
@@ -1226,6 +1249,7 @@ int main(void) {
 		TEST_BA(cfg_merge_toggle__scaling),
 		TEST_BA(cfg_merge_toggle__auto_scale),
 		TEST_BA(cfg_merge_toggle__adaptive_sync_off),
+		TEST_BA(cfg_merge_toggle__disableds),
 
 		TEST_BA(cfg_validate_fix__null),
 

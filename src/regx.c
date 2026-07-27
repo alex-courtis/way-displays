@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "regx.h"
-#include "str.h"
 
 bool regex_matches(const char * const string, const char * const pattern) {
 	if (!string || !pattern)
@@ -28,12 +27,15 @@ char *regex_compiles(const char * const pattern) {
 	char *err = NULL;
 
 	regex_t regex;
-	int result = regcomp(&regex, pattern, REG_EXTENDED);
-	if (result) {
-		char buf[1024];
-		regerror(result, &regex, buf, 1024);
 
-		err = sprintf_alloc("%s", buf);
+	int result = regcomp(&regex, pattern, REG_EXTENDED);
+
+	if (result) {
+		size_t err_len = regerror(result, &regex, NULL, 0);
+
+		err = calloc(err_len, sizeof(char));
+
+		regerror(result, &regex, err, err_len);
 	}
 
 	regfree(&regex);
