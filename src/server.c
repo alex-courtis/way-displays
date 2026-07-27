@@ -105,6 +105,8 @@ static void receive_ipc_request(int server_socket) {
 		head_process_ipc_disableds((struct Head*)it->val, ipc_request);
 	}
 
+	// TODO #220 remove any ipc disabled that clash with conditionals
+
 	switch (ipc_request->command) {
 		case CFG_DEL:
 		case CFG_SET:

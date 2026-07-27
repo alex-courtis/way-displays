@@ -321,6 +321,53 @@ static void cfg_merge_set__nulls(void **state) {
 	assert_logs_empty();
 }
 
+static void cfg_merge_set__no_changes(void **state) {
+	struct Cfg *to = cfg_all();
+	struct Cfg *from = cfg_all();
+	struct Cfg *expected = cfg_all();
+
+	struct Cfg *merged = cfg_merge_set(to, from);
+
+	assert_cfg_equal(merged, expected);
+
+	cfg_free(merged);
+	cfg_free(from);
+	cfg_free(to);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void cfg_merge_set__all_changes(void **state) {
+	struct Cfg *to = cfg_init();
+	struct Cfg *from = cfg_all();
+	struct Cfg *expected = cfg_all();
+
+	// set the non-settable scalars
+	to->scale_round_to = from->scale_round_to;
+	to->scale_round_strategy = from->scale_round_strategy;
+	to->auto_scale_dpi = from->auto_scale_dpi;
+	to->auto_scale_min = from->auto_scale_min;
+	to->auto_scale_max = from->auto_scale_max;
+	to->log_threshold = from->log_threshold;
+	to->laptop_lid_monitor = from->laptop_lid_monitor;
+	if (from->laptop_display_prefix) {
+		free(to->laptop_display_prefix);
+		to->laptop_display_prefix = strdup(from->laptop_display_prefix);
+	}
+
+	struct Cfg *merged = cfg_merge_set(to, from);
+
+	assert_cfg_equal(merged, expected);
+
+	cfg_free(merged);
+	cfg_free(from);
+	cfg_free(to);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
 static void cfg_merge_set__arrange(void **state) {
 	struct State *s = *state;
 
@@ -594,6 +641,49 @@ static void cfg_merge_del__nulls(void **state) {
 	assert_logs_empty();
 }
 
+static void cfg_merge_del__no_deletes(void **state) {
+	struct Cfg *to = cfg_all();
+	struct Cfg *from = cfg_init();
+	struct Cfg *expected = cfg_all();
+
+	struct Cfg *merged = cfg_merge_del(to, from);
+
+	assert_cfg_equal(merged, expected);
+
+	cfg_free(merged);
+	cfg_free(from);
+	cfg_free(to);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void cfg_merge_del__all_deletes(void **state) {
+	struct Cfg *to = cfg_all();
+	struct Cfg *from = cfg_all();
+	struct Cfg *expected = cfg_all();
+
+	// remove all deletable
+	pset_remove_all_free(expected->disableds);
+	spmap_remove_all_free(expected->modes);
+	simap_remove_all(expected->scales);
+	simap_remove_all(expected->transforms);
+	sset_remove_all(expected->adaptive_sync_off);
+	free(expected->callback_cmd);
+	expected->callback_cmd = NULL;
+
+	struct Cfg *merged = cfg_merge_del(to, from);
+
+	assert_cfg_equal(merged, expected);
+
+	cfg_free(merged);
+	cfg_free(from);
+	cfg_free(to);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
 static void cfg_merge_del__scale(void **state) {
 	struct State *s = *state;
 
@@ -750,6 +840,49 @@ static void cfg_merge_toggle__nulls(void **state) {
 
 	assert_nul(cfg_merge_toggle(s->to, NULL));
 	assert_nul(cfg_merge_toggle(NULL, s->from));
+
+	assert_logs_empty();
+}
+
+static void cfg_merge_toggle__no_toggles(void **state) {
+	struct Cfg *to = cfg_all();
+	struct Cfg *from = cfg_init();
+	struct Cfg *expected = cfg_all();
+
+	struct Cfg *merged = cfg_merge_toggle(to, from);
+
+	assert_cfg_equal(merged, expected);
+
+	cfg_free(merged);
+	cfg_free(from);
+	cfg_free(to);
+	cfg_free(expected);
+
+	assert_logs_empty();
+}
+
+static void cfg_merge_toggle__all_toggles(void **state) {
+	struct Cfg *to = cfg_all();
+	struct Cfg *from = cfg_init();
+	struct Cfg *expected = cfg_all();
+
+	// change all togglable
+	from->auto_scale = ON;
+	from->scaling = ON;
+	sset_add_all(from->adaptive_sync_off, to->adaptive_sync_off);
+
+	expected->auto_scale = ON;
+	expected->scaling = ON;
+	sset_remove_all(expected->adaptive_sync_off);
+
+	struct Cfg *merged = cfg_merge_toggle(to, from);
+
+	assert_cfg_equal(merged, expected);
+
+	cfg_free(merged);
+	cfg_free(from);
+	cfg_free(to);
+	cfg_free(expected);
 
 	assert_logs_empty();
 }
@@ -1063,6 +1196,8 @@ int main(void) {
 		TEST_BA(cfg_merge__fix_set),
 
 		TEST_BA(cfg_merge_set__nulls),
+		TEST_BA(cfg_merge_set__no_changes),
+		TEST_BA(cfg_merge_set__all_changes),
 		TEST_BA(cfg_merge_set__arrange),
 		TEST_BA(cfg_merge_set__align),
 		TEST_BA(cfg_merge_set__order),
@@ -1076,6 +1211,8 @@ int main(void) {
 		TEST_BA(cfg_merge_set__callback_cmd),
 
 		TEST_BA(cfg_merge_del__nulls),
+		TEST_BA(cfg_merge_del__no_deletes),
+		TEST_BA(cfg_merge_del__all_deletes),
 		TEST_BA(cfg_merge_del__scale),
 		TEST_BA(cfg_merge_del__mode),
 		TEST_BA(cfg_merge_del__transform),
@@ -1084,6 +1221,8 @@ int main(void) {
 		TEST_BA(cfg_merge_del__callback_cmd_any),
 
 		TEST_BA(cfg_merge_toggle__nulls),
+		TEST_BA(cfg_merge_toggle__no_toggles),
+		TEST_BA(cfg_merge_toggle__all_toggles),
 		TEST_BA(cfg_merge_toggle__scaling),
 		TEST_BA(cfg_merge_toggle__auto_scale),
 		TEST_BA(cfg_merge_toggle__adaptive_sync_off),
