@@ -1,5 +1,4 @@
 #include <math.h>
-#include <regex.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -18,6 +17,7 @@
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
+#include "regx.h"
 #include "spmap.h"
 #include "sset.h"
 #include "str.h"
@@ -262,32 +262,21 @@ bool head_matches_name_desc_exact(const struct Head * const head, const char * c
 }
 
 bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc) {
-	if (!head || !name_desc || name_desc[0] != '!')
+	if (!head || !name_desc || strlen(name_desc) < 2 || name_desc[0] != '!')
 		return false;
 
-	const char *regex_pattern = name_desc + 1;
+	const char *pattern = name_desc + 1;
 
-	regex_t regex;
-	int result;
-
-	result = regcomp(&regex, regex_pattern, REG_EXTENDED);
-	if (result) {
-		char error_msg[100];
-		regerror(result, &regex, error_msg, sizeof(error_msg));
-		log_debug("Could not compile Head NAME_DESC regex '%s': %s", regex_pattern, error_msg);
+	char *err = regex_compiles(pattern);
+	if (err) {
+		log_debug("Could not compile Head NAME_DESC regex '%s': %s", pattern, err);
+		free(err);
 		return false;
 	}
 
-	result = REG_NOMATCH;
-	if (head->name) {
-		result = regexec(&regex, head->name, 0, NULL, 0);
-	}
-	if (result && head->description) {
-		result = regexec(&regex, head->description, 0, NULL, 0);
-	}
-	regfree(&regex);
-
-	return !result;
+	return
+		(head->name && regex_matches(head->name, pattern)) ||
+		(head->description && regex_matches(head->description, pattern));
 }
 
 bool head_matches_name_desc_fuzzy(const struct Head * const head, const char * const name_desc) {

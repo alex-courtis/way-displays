@@ -11,6 +11,7 @@
 #include "head.h"
 #include "log.h"
 #include "pset.h"
+#include "regx.h"
 
 static bool disabled_equal(const struct CfgDisabled* const a, const struct CfgDisabled* const b) {
 	if (!a || !b) {
@@ -72,22 +73,39 @@ void cfg_disabled_free(struct CfgDisabled *disabled) {
 }
 
 // a has conditions and matches b name_desc
-// TODO use fuzzy name_desc match, would need to be moved out of head
 static bool cfg_disabled_cond_with_name_desc(const struct CfgDisabled * const a, const struct CfgDisabled * const b) {
-	return a && b && pset_size(a->conditions) > 0 && equal_strstr(a->name_desc, b->name_desc);
+	if (!a || !b || !a->name_desc || !b->name_desc || pset_size(a->conditions) == 0)
+		return false;
+
+	// substring match
+	if (strcasestr(a->name_desc, b->name_desc) != NULL || strcasestr(b->name_desc, a->name_desc) != NULL)
+		return true;
+
+	// b matches regex a
+	if (strlen(a->name_desc) > 2 && a->name_desc[0] == '!' && regex_matches(b->name_desc, a->name_desc + 1))
+		return true;
+
+	// a matches regex b
+	if (strlen(b->name_desc) > 2 && b->name_desc[0] == '!' && regex_matches(a->name_desc, b->name_desc + 1))
+		return true;
+
+	return false;
 }
 
 void cfg_disabled_filter_conditional_clashes(const struct Pset *disableds) {
 	for (const struct PsetIt *it = pset_it(disableds); it; it = pset_it_next(it)) {
 
 		// current global conditionally disabled that match the name_desc
-		if (pset_find(g_cfg->disableds, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_disabled_cond_with_name_desc, .data = it->val, })) {
+		const struct CfgDisabled *contitionally = pset_find(g_cfg->disableds, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_disabled_cond_with_name_desc, .data = it->val, });
+		if (contitionally) {
 
 			log_info(NULL);
-			log_info("Ignoring %s for %s as it is %s conditionally",
+			log_info("Ignoring %s for '%s' as it is conditionally %s '%s'",
 					cfg_element_name(DISABLED),
 					((const struct CfgDisabled*)it->val)->name_desc,
-					cfg_element_name(DISABLED));
+					cfg_element_name(DISABLED),
+					contitionally->name_desc
+					);
 
 			pset_it_remove_free(it);
 		}

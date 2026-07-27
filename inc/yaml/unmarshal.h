@@ -57,8 +57,8 @@ bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const ya
 // assert that node is not null
 bool yaml_check_mandatory(struct UC *c, const yaml_node_t *node);
 
-// valdate a regex pattern by attempting to compile it
-bool yaml_valid_regex(struct UC *c, const void *pattern);
+// if pattern starts with '!' return false if it fails to compile, otherwise return true
+bool yaml_valid_regex(struct UC *c, const char *pattern);
 
 // return a static string for the node type
 char *yaml_node_type_str(const yaml_node_type_t type);
