@@ -7,6 +7,7 @@
 #include "head.h"
 #include "ipc.h"
 #include "log.h"
+#include "plist.h"
 #include "pset.h"
 
 /*
@@ -15,7 +16,7 @@
 int
 main(int argc, char **argv) {
 	char *yaml;
-	const struct Pset *responses = NULL;
+	const struct Plist *responses = NULL;
 	const struct IpcResponse *response = NULL;
 
 	// request CFG_SET
@@ -43,7 +44,7 @@ main(int argc, char **argv) {
 		}
 
 		// parse one to many responses
-		for (const struct PsetIt *rit = pset_it(responses); rit; rit = pset_it_next(rit)) {
+		for (const struct PlistIt *rit = plist_it(responses); rit; rit = plist_it_next(rit)) {
 			response = rit->val;
 			log_info("--------------------------------");
 
@@ -68,7 +69,7 @@ main(int argc, char **argv) {
 			}
 		}
 
-		pset_free_vals(responses);
+		plist_free_vals(responses);
 		free(yaml);
 	}
 

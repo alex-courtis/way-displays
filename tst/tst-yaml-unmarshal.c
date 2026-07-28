@@ -25,6 +25,7 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -418,12 +419,12 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 
 	expect_function_call(__wrap_lid_free);
 
-	const struct Pset *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_pset, "ipc response");
+	const struct Plist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_pset, "ipc response");
 
 	assert_non_nul(responses);
-	assert_int_equal(pset_size(responses), 1);
+	assert_int_equal(plist_size(responses), 1);
 
-	const struct IpcResponse *response = pset_at(responses, 0);
+	const struct IpcResponse *response = plist_at(responses, 0);
 
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
@@ -517,7 +518,7 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 
 	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
-	pset_free_vals(responses);
+	plist_free_vals(responses);
 	cfg_free(expected_cfg);
 	free(yaml);
 
@@ -529,16 +530,16 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 
 	expect_function_calls(__wrap_lid_free, 3);
 
-	const struct Pset *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_pset, "ipc response");
+	const struct Plist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_pset, "ipc response");
 
 	struct Cfg *cfg_expected = cfg_init();
 	cfg_expected->arrange = COL;
 
 	assert_non_nul(responses);
-	assert_int_equal(pset_size(responses), 3);
+	assert_int_equal(plist_size(responses), 3);
 
 	// 0
-	const struct IpcResponse *response = pset_at(responses, 0);
+	const struct IpcResponse *response = plist_at(responses, 0);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 0);
 
@@ -580,7 +581,7 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_str_equal(line->line, "err0");
 
 	// 1
-	response = pset_at(responses, 1);
+	response = plist_at(responses, 1);
 	assert_false(response->status.done);
 	assert_int_equal(response->status.rc, 1);
 	assert_nul(response->cfg);
@@ -605,7 +606,7 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_str_equal(line->line, "err1");
 
 	// 2
-	response = pset_at(responses, 2);
+	response = plist_at(responses, 2);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
 	assert_nul(response->cfg);
@@ -613,7 +614,7 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_int_equal(pset_size(response->heads), 0);
 	assert_int_equal(plist_size(response->log_cap_lines), 0);
 
-	pset_free_vals(responses);
+	plist_free_vals(responses);
 	free(yaml);
 	cfg_free(cfg_expected);
 

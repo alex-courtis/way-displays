@@ -25,7 +25,6 @@
 #include "plist.h"
 #include "ppmap.h"
 #include "process.h"
-#include "pset.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;

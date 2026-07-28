@@ -11,6 +11,7 @@
 #include "head.h"
 #include "lid.h"
 #include "log.h"
+#include "plist.h"
 #include "pset.h"
 #include "sockets.h"
 #include "yaml/marshal-types.h"
@@ -37,9 +38,8 @@ struct IpcResponse *ipc_response_init(void) {
 	return response;
 }
 
-const struct Pset *ipc_response_pset_init(void) {
-	const struct PsetParams params = { .free_val = (fn_free)ipc_response_free, };
-	return pset_init_with(params);
+const struct Plist *ipc_response_plist_init(void) {
+	return plist_init_with((struct PlistParams){ .free_val = (fn_free)ipc_response_free, });
 }
 
 void ipc_send_request(struct IpcRequest *request) {
@@ -134,14 +134,12 @@ struct IpcRequest *ipc_receive_request(int socket_server) {
 	return request;
 }
 
-struct Pset *ipc_receive_responses(int socket_client, char **yaml) {
+struct Plist *ipc_receive_responses(int socket_client, char **yaml) {
 	if (!(*yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
 
-	struct Pset *responses = yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_pset, "ipc response");
-
-	return responses;
+	return yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_pset, "ipc response");
 }
 
 void ipc_request_free(struct IpcRequest *request) {

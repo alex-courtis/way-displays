@@ -18,7 +18,7 @@
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
-#include "pset.h"
+#include "plist.h"
 #include "str.h"
 
 #include "yaml/marshal-types.h"

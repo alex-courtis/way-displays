@@ -10,13 +10,13 @@
 #include "info/print.h"
 #include "ipc.h"
 #include "log.h"
+#include "plist.h"
 #include "process.h"
-#include "pset.h"
 
 static int handle_responses(const struct IpcRequest *ipc_request) {
 	int rc = EXIT_SUCCESS;
 
-	const struct Pset *responses = NULL;
+	const struct Plist *responses = NULL;
 	const struct IpcResponse *response = NULL;
 	bool done = false;
 
@@ -25,7 +25,7 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 		responses = ipc_receive_responses(ipc_request->socket_client, &yaml);
 
 		if (responses) {
-			for (const struct PsetIt *it = pset_it(responses); it; it = pset_it_next(it)) {
+			for (const struct PlistIt *it = plist_it(responses); it; it = plist_it_next(it)) {
 				if (!(response = it->val)) {
 					continue;
 				}
@@ -45,7 +45,7 @@ static int handle_responses(const struct IpcRequest *ipc_request) {
 					log_cap_lines_playback(response->log_cap_lines);
 				}
 			}
-			pset_free_vals(responses);
+			plist_free_vals(responses);
 		} else {
 			rc = IPC_BAD_RESPONSE;
 			done = true;

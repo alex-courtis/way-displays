@@ -16,6 +16,7 @@
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"

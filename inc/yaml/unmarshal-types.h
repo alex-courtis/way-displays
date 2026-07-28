@@ -4,6 +4,7 @@
 #include <yaml.h>
 
 #include "head.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -27,7 +28,7 @@ struct Lid  *yaml_map_to_lid (struct UC *c, const yaml_node_t *map);  // Lid
 struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
 
 // fn_yaml_node_into_col: create a struct and add to collection
-void yaml_map_into_ipc_responses(struct UC *c, const struct Pset *ipc_responses,     const yaml_node_t *map);
+void yaml_map_into_ipc_responses(struct UC *c, const struct Plist *ipc_responses,    const yaml_node_t *map);
 void yaml_map_into_heads        (struct UC *c, const struct Pset *heads,             const yaml_node_t *map);
 void yaml_map_into_modes        (struct UC *c, const struct PPmap *modes,            const yaml_node_t *map);
 void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist *log_cap_lines,    const yaml_node_t *map);

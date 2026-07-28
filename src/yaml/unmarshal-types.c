@@ -17,6 +17,7 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -86,7 +87,7 @@ void *yaml_root_to_ipc_response_pset(struct UC *c, const yaml_node_t *root) {
 	if (!root)
 		return NULL;
 
-	const struct Pset *ipc_responses = ipc_response_pset_init();
+	const struct Plist *ipc_responses = ipc_response_plist_init();
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
 		log_error(NULL);
@@ -102,14 +103,14 @@ void *yaml_root_to_ipc_response_pset(struct UC *c, const yaml_node_t *root) {
 		yaml_map_into_ipc_responses(c, ipc_responses, root);
 	}
 
-	if (pset_size(ipc_responses) == 0) {
+	if (plist_size(ipc_responses) == 0) {
 		goto err;
 	}
 
 	return (void*)ipc_responses;
 
 err:
-	pset_free_vals(ipc_responses);
+	plist_free_vals(ipc_responses);
 	return NULL;
 }
 
@@ -213,7 +214,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 	return cfg;
 }
 
-void yaml_map_into_ipc_responses(struct UC *c, const struct Pset *ipc_responses, const yaml_node_t *map) {
+void yaml_map_into_ipc_responses(struct UC *c, const struct Plist *ipc_responses, const yaml_node_t *map) {
 	if (!ipc_responses)
 		return;
 
@@ -264,7 +265,7 @@ void yaml_map_into_ipc_responses(struct UC *c, const struct Pset *ipc_responses,
 		yaml_seq_into_col(c, messages, ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
 	}
 
-	pset_add(ipc_responses, ipc_response);
+	plist_append(ipc_responses, ipc_response);
 
 	goto end;
 
