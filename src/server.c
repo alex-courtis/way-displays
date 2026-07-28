@@ -22,9 +22,9 @@
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "process.h"
-#include "pset.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;
@@ -268,7 +268,7 @@ server(char *cfg_path) {
 	setup_signal_handlers();
 
 	// don't log anything until cfg log level is known
-	const struct Pset *log_cap_lines = log_cap_line_pset_init();
+	const struct Plist *log_cap_lines = log_cap_line_plist_init();
 	log_cap_lines_start(log_cap_lines);
 	log_suppress_start();
 
@@ -283,7 +283,7 @@ server(char *cfg_path) {
 	log_suppress_stop();
 	log_cap_lines_stop(log_cap_lines);
 	log_cap_lines_playback(log_cap_lines);
-	pset_free_vals(log_cap_lines);
+	plist_free_vals(log_cap_lines);
 
 	// discover the lid state immediately
 	g_lid_init();

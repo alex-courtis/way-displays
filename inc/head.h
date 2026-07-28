@@ -65,6 +65,8 @@ struct Head *head_dummy_init(const struct Head * const head);
 
 const struct Pset *head_pset_init(void);
 
+const struct Plist *head_plist_init(void);
+
 const struct PPmap *head_ppmap_init(void);
 
 void head_free(struct Head *head);

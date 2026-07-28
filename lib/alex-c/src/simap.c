@@ -5,6 +5,7 @@
 
 #include "fn.h"
 #include "ppmap.h"
+#include "slist.h"
 #include "sset.h"
 
 #include "simap.h"
@@ -119,17 +120,20 @@ size_t simap_get(const struct SImap* const map, const char* const key) {
 	}
 }
 
-bool simap_get_ptr(size_t* np, const struct SImap* const map, const char* const key) {
-	if (!map || !np)
+bool simap_get_ptr(size_t* val, const struct SImap* const map, const char* const key) {
+	if (val)
+		*val = 0;
+
+	if (!map || !val)
 		return false;
 
 	const size_t *vp = ppmap_get(map->ppmap, key);
 
 	if (vp) {
-		*np = *vp;
+		*val = *vp;
 		return true;
 	} else {
-		*np = 0;
+		*val = 0;
 		return false;
 	}
 }
@@ -255,27 +259,45 @@ size_t simap_remove_in(const struct SImap* const map, const struct SImap* const 
 	return map && in ? ppmap_remove_in_free(map->ppmap, in->ppmap) : false;
 }
 
-void simap_it_remove(const struct SImapIt* const it) {
+bool simap_it_remove(const struct SImapIt* const it) {
 	if (!it)
-		return;
+		return false;
 
 	if (!it->st) {
 		simap_it_free(it);
-		return;
+		return false;
 	}
-
-	ppmap_it_remove_free(it->st->pit);
 
 	((struct SImapIt*)it)->key = NULL;
 	((struct SImapIt*)it)->val = 0;
+
+	return ppmap_it_remove_free(it->st->pit);
 }
 
 bool simap_equal(const struct SImap* const a, const struct SImap* const b) {
 	return a && b ? ppmap_equal(a->ppmap, b->ppmap) : false;
 }
 
-struct Pslist *simap_keys_pslist(const struct SImap* const map) {
-	return map ? ppmap_keys_pslist(map->ppmap) : NULL;
+bool simap_equal_ordered(const struct SImap* const a, const struct SImap* const b) {
+	return a && b ? ppmap_equal_ordered(a->ppmap, b->ppmap) : false;
+}
+
+const struct Slist *simap_keys_slist(const struct SImap* const map) {
+	if (!map)
+		return NULL;
+
+	const struct SlistParams params = {
+		.case_insensitive = map->params.case_insensitive_key,
+		.initial = MAX(ppmap_size(map->ppmap), map->params.initial),
+		.grow = map->params.grow,
+	};
+	const struct Slist *list = slist_init_with(params);
+
+	for (const struct SImapIt *it = simap_it(map); it; it = simap_it_next(it)) {
+		slist_append(list, it->key);
+	}
+
+	return list;
 }
 
 const struct Sset *simap_keys_sset(const struct SImap* const map) {

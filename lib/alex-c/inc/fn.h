@@ -21,19 +21,19 @@ bool equal_strcasecmp(const char* const a, const char* const b);
 // true if both NULL or strstr(a, b)
 bool equal_strstr(const char* const a, const char* const b);
 
+// true if both present and equal value
+bool equal_stp(const size_t* const a, const size_t* const b);
+
 //
 // a less than b, a is generally the value from the collection, b generally user data or the value from the other collection
 //
 typedef bool (*fn_less_than)(const void* const a, const void* const b);
 
-// strcmp(a, b) <= 0
+// strcmp(a, b) <= 0, NULL is greater than
 bool less_than_strcmp(const char* const a, const char* const b);
 
-// strcasecmp(a, b) < 0
+// strcasecmp(a, b) < 0, NULL is greater than
 bool less_than_strcasecmp(const char* const a, const char* const b);
-
-// true if both present and equal value
-bool equal_stp(const size_t* const a, const size_t* const b);
 
 //
 // predicate

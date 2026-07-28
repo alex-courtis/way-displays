@@ -51,7 +51,10 @@ bool less_than_strcmp(const char* const a, const char* const b) {
 	if (a == b)
 		return true;
 
-	if (!a || !b)
+	if (a && !b)
+		return true;
+
+	if (!a)
 		return false;
 
 	return strcmp(a, b) < 0;
@@ -61,7 +64,10 @@ bool less_than_strcasecmp(const char* const a, const char* const b) {
 	if (a == b)
 		return true;
 
-	if (!a || !b)
+	if (a && !b)
+		return true;
+
+	if (!a)
 		return false;
 
 	return strcasecmp(a, b) < 0;

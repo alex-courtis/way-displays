@@ -7,7 +7,7 @@
 #include "head.h"
 #include "ipc.h"
 #include "log.h"
-#include "pset.h"
+#include "plist.h"
 
 /*
  * Execute a CFG_SET scaling off and unpack the responses
@@ -15,7 +15,7 @@
 int
 main(int argc, char **argv) {
 	char *yaml;
-	const struct Pset *responses = NULL;
+	const struct Plist *responses = NULL;
 	const struct IpcResponse *response = NULL;
 
 	// request CFG_SET
@@ -43,7 +43,7 @@ main(int argc, char **argv) {
 		}
 
 		// parse one to many responses
-		for (const struct PsetIt *rit = pset_it(responses); rit; rit = pset_it_next(rit)) {
+		for (const struct PlistIt *rit = plist_it(responses); rit; rit = plist_it_next(rit)) {
 			response = rit->val;
 			log_info("--------------------------------");
 
@@ -54,7 +54,7 @@ main(int argc, char **argv) {
 			log_info("scaling is %s", on_off_name(response->cfg->scaling));
 
 			// inspect head state
-			for (const struct PsetIt *hit = pset_it(response->heads); hit; hit = pset_it_next(hit)) {
+			for (const struct PlistIt *hit = plist_it(response->heads); hit; hit = plist_it_next(hit)) {
 				const struct Head *head = hit->val;
 				float scale_current = wl_fixed_to_double(head->cur.scale);
 				float scale_desired = wl_fixed_to_double(head->des.scale);
@@ -68,7 +68,7 @@ main(int argc, char **argv) {
 			}
 		}
 
-		pset_free_vals(responses);
+		plist_free_vals(responses);
 		free(yaml);
 	}
 

@@ -27,4 +27,24 @@ void _assert_ssmap_not_equal(const struct SSmap *a, const struct SSmap *b, const
 }
 #define assert_ssmap_not_equal(a, b) _assert_ssmap_not_equal(a, b, __FILE__, __LINE__)
 
+void _assert_ssmap_equal_ordered(const struct SSmap *a, const struct SSmap *b, const char * const file, const int line) {
+	if (!ssmap_equal_ordered(a, b)) {
+		fs_file_write("actual.ssmap", ssmap_str(a), "w");
+		fs_file_write("expected.ssmap", ssmap_str(b), "w");
+		cmocka_print_error("\n%s != \n%s\n",  ssmap_str(a), ssmap_str(b));
+		_fail(file, line);
+	}
+}
+#define assert_ssmap_equal_ordered(a, b) _assert_ssmap_equal_ordered(a, b, __FILE__, __LINE__)
+
+void _assert_ssmap_not_equal_ordered(const struct SSmap *a, const struct SSmap *b, const char * const file, const int line) {
+	if (ssmap_equal_ordered(a, b)) {
+		fs_file_write("actual.ssmap", ssmap_str(a), "w");
+		fs_file_write("expected.ssmap", ssmap_str(b), "w");
+		cmocka_print_error("\n%s == \n%s\n",  ssmap_str(a), ssmap_str(b));
+		_fail(file, line);
+	}
+}
+#define assert_ssmap_not_equal_ordered(a, b) _assert_ssmap_not_equal_ordered(a, b, __FILE__, __LINE__)
+
 #endif // ASSERT_SSMAP_H

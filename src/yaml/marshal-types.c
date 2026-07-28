@@ -12,6 +12,7 @@
 #include "enum.h"
 #include "head.h"
 #include "ipc.h"
+#include "plist.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
@@ -194,7 +195,7 @@ int yaml_seq_from_messages(struct MC *c, const struct IpcOperation* const ipc_op
 	int seq = 0;
 	int map = 0;
 
-	for (const struct PsetIt *it = pset_it(ipc_operation->log_cap_lines); it; it = pset_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(ipc_operation->log_cap_lines); it; it = plist_it_next(it)) {
 		const struct LogCapLine *cap_line = (struct LogCapLine*)it->val;
 
 		if (!cap_line || !cap_line->line || cap_line->threshold < ipc_operation->request->log_threshold)
@@ -224,9 +225,9 @@ int yaml_map_from_state(struct MC *c) {
 		yaml_map_add_node(c, "LID", yaml_map_from_lid(c, g_lid), map);
 
 	if (ppmap_size(g_displ->heads) > 0) {
-		const struct Pset *set = ppmap_vals_pset(g_displ->heads);
-		yaml_map_add_pset(c, "HEADS", set, (fn_yaml_node_from_type)yaml_map_from_head, map);
-		pset_free(set);
+		const struct Plist *list = ppmap_vals_plist(g_displ->heads);
+		yaml_map_add_plist(c, "HEADS", list, (fn_yaml_node_from_type)yaml_map_from_head, map);
+		plist_free(list);
 	}
 
 	return map;

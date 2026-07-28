@@ -15,13 +15,20 @@
 #include "wlr-output-management-unstable-v1.h"
 
 void callback(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
-	if (!g_cfg->callback_cmd || t < log_get_threshold()) {
+	if (!g_cfg->callback_cmd) {
 		return;
 	}
 
-	log_debug(NULL);
-	log_debug("Executing CALLBACK_CMD:");
-	log_debug("  %s", g_cfg->callback_cmd);
+	enum LogThreshold t_cur = log_get_threshold();
+	if (t < t_cur) {
+		return;
+	}
+
+	if (t_cur <= DEBUG) {
+		log_debug(NULL);
+		log_debug("Executing CALLBACK_CMD:");
+		log_debug("  %s", g_cfg->callback_cmd);
+	}
 
 	// decorate human message and optional log
 	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
@@ -33,9 +40,11 @@ void callback(const enum LogThreshold t, const char * const msg1, const char * c
 	ssmap_put_if_absent(env, "CALLBACK_MSG", buf);
 	ssmap_put_if_absent(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
-	char *env_str = ssmap_str(env);
-	log_debug("%s", env_str);
-	free(env_str);
+	if (t_cur <= DEBUG) {
+		char *env_str = ssmap_str(env);
+		log_debug("%s", env_str);
+		free(env_str);
+	}
 
 	// execute callback
 	spawn_sh_cmd(g_cfg->callback_cmd, env);

@@ -17,6 +17,7 @@
 #include "log.h"
 #include "mode.h"
 #include "output.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -78,9 +79,9 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
 
 	// show from the top down
-	const struct Pset *modes_sorted = ppmap_vals_pset(head->modes);
-	pset_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
-	const struct PsetIt *it = pset_it(modes_sorted);
+	const struct Plist *modes_sorted = ppmap_vals_plist(head->modes);
+	plist_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
+	const struct PlistIt *it = plist_it(modes_sorted);
 	while (it) {
 
 		// res/refresh/hz line
@@ -99,7 +100,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 				msg = sprintf_append(msg, " (preferred)");
 			}
 
-			it = pset_it_next(it);
+			it = plist_it_next(it);
 			mode_minor = it ? it->val : NULL;
 		}
 
@@ -107,7 +108,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 		free(msg);
 	}
 
-	pset_free(modes_sorted);
+	plist_free(modes_sorted);
 }
 
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del) {

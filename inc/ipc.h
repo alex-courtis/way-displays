@@ -11,7 +11,7 @@ struct IpcOperation {
 	bool done;
 	int rc;
 	bool send_state;	// not for bad requests
-	const struct Pset *log_cap_lines;
+	const struct Plist *log_cap_lines;
 };
 
 struct IpcRequest {
@@ -31,9 +31,9 @@ struct IpcResponseStatus {
 struct IpcResponse {
 	struct IpcResponseStatus status;
 	struct Cfg *cfg;
-	const struct Pset *heads;
+	const struct Plist *heads;          // head_plist_init
 	struct Lid *lid;
-	const struct Pset *log_cap_lines;
+	const struct Plist *log_cap_lines;  // log_cap_line_plist_init
 };
 
 struct IpcOperation *ipc_operation_init(void);
@@ -42,7 +42,7 @@ struct IpcRequest *ipc_request_init(const enum IpcCommand command);
 
 struct IpcResponse *ipc_response_init(void);
 
-const struct Pset *ipc_response_pset_init(void);
+const struct Plist *ipc_response_plist_init(void);
 
 void ipc_operation_update_rc(struct IpcOperation *ipc_operation);
 
@@ -54,7 +54,7 @@ void ipc_send_operation(struct IpcOperation *operation);
 struct IpcRequest *ipc_receive_request(int socket_server);
 
 // receive all responses, user frees complete yaml
-struct Pset *ipc_receive_responses(int socket_client, char **yaml);
+struct Plist *ipc_receive_responses(int socket_client, char **yaml);
 
 void ipc_request_free(struct IpcRequest *request);
 

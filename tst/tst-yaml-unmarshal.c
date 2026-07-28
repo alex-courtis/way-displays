@@ -25,6 +25,7 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -347,8 +348,8 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__empty(void **state) {
-	assert_nul(yaml_unmarshal_str("", yaml_root_to_ipc_response_pset, "ipc response"));
+static void yaml_root_to_ipc_response_plist__empty(void **state) {
+	assert_nul(yaml_unmarshal_str("", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR, "\n"
 			"ipc response: empty request\n"
@@ -359,8 +360,8 @@ static void yaml_root_to_ipc_response_pset__empty(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__mistyped_root(void **state) {
-	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_pset, "ipc response"));
+static void yaml_root_to_ipc_response_plist__mistyped_root(void **state) {
+	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR, "\n"
 			"ipc response: expected map or sequence, got scalar\n"
@@ -371,8 +372,8 @@ static void yaml_root_to_ipc_response_pset__mistyped_root(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__seq_no_map(void **state) {
-	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_pset, "ipc response"));
+static void yaml_root_to_ipc_response_plist__seq_no_map(void **state) {
+	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR,
 			"ipc response: expected map, got scalar\n"
@@ -383,10 +384,10 @@ static void yaml_root_to_ipc_response_pset__seq_no_map(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__seq_no_done(void **state) {
+static void yaml_root_to_ipc_response_plist__seq_no_done(void **state) {
 	expect_function_call(__wrap_lid_free);
 
-	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_pset, "ipc response"));
+	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR,
 			"ipc response: missing DONE\n"
@@ -397,10 +398,10 @@ static void yaml_root_to_ipc_response_pset__seq_no_done(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__seq_no_rc(void **state) {
+static void yaml_root_to_ipc_response_plist__seq_no_rc(void **state) {
 	expect_function_call(__wrap_lid_free);
 
-	const struct Pset *actual = yaml_unmarshal_str( "- DONE: TRUE", yaml_root_to_ipc_response_pset, "ipc response");
+	const struct Pset *actual = yaml_unmarshal_str( "- DONE: TRUE", yaml_root_to_ipc_response_plist, "ipc response");
 
 	assert_nul(actual);
 
@@ -413,17 +414,17 @@ static void yaml_root_to_ipc_response_pset__seq_no_rc(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__map(void **state) {
+static void yaml_root_to_ipc_response_plist__map(void **state) {
 	char *yaml = read_file("tst/yaml/ipc-responses-map.yaml");
 
 	expect_function_call(__wrap_lid_free);
 
-	const struct Pset *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_pset, "ipc response");
+	const struct Plist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_plist, "ipc response");
 
 	assert_non_nul(responses);
-	assert_int_equal(pset_size(responses), 1);
+	assert_int_equal(plist_size(responses), 1);
 
-	const struct IpcResponse *response = pset_at(responses, 0);
+	const struct IpcResponse *response = plist_at(responses, 0);
 
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
@@ -436,8 +437,8 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 	struct Cfg *expected_cfg = cfg_all();
 	assert_cfg_equal(response->cfg, expected_cfg);
 
-	assert_int_equal(pset_size(response->heads), 1);
-	const struct Head *head = pset_at(response->heads, 0);
+	assert_int_equal(plist_size(response->heads), 1);
+	const struct Head *head = plist_at(response->heads, 0);
 
 	assert_str_equal(head->name, "name");
 	assert_str_equal(head->description, "desc");
@@ -501,44 +502,44 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 	assert_int_equal(head->cur.transform, 3);
 	assert_int_equal(head->des.transform, 4);
 
-	assert_int_equal(pset_size(response->log_cap_lines), 3);
-	const struct LogCapLine *line = pset_at(response->log_cap_lines, 0);
+	assert_int_equal(plist_size(response->log_cap_lines), 3);
+	const struct LogCapLine *line = plist_at(response->log_cap_lines, 0);
 	assert_int_equal(line->threshold, WARNING);
 	assert_str_equal(line->line, "war");
 
-	line = pset_at(response->log_cap_lines, 1);
+	line = plist_at(response->log_cap_lines, 1);
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err");
 
-	line = pset_at(response->log_cap_lines, 2);
+	line = plist_at(response->log_cap_lines, 2);
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, FATAL);
 	assert_str_equal(line->line, "fat");
 
 	assert_int_equal(head->overrided_enabled, OverrideFalse);
 
-	pset_free_vals(responses);
+	plist_free_vals(responses);
 	cfg_free(expected_cfg);
 	free(yaml);
 
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__seq(void **state) {
+static void yaml_root_to_ipc_response_plist__seq(void **state) {
 	char *yaml = read_file("tst/yaml/ipc-responses-seq-brief.yaml");
 
 	expect_function_calls(__wrap_lid_free, 3);
 
-	const struct Pset *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_pset, "ipc response");
+	const struct Plist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_plist, "ipc response");
 
 	struct Cfg *cfg_expected = cfg_init();
 	cfg_expected->arrange = COL;
 
 	assert_non_nul(responses);
-	assert_int_equal(pset_size(responses), 3);
+	assert_int_equal(plist_size(responses), 3);
 
 	// 0
-	const struct IpcResponse *response = pset_at(responses, 0);
+	const struct IpcResponse *response = plist_at(responses, 0);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 0);
 
@@ -550,70 +551,70 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_non_nul(lid);
 	assert_str_equal(lid->device_path, "/path/to/lid");
 
-	assert_int_equal(pset_size(response->heads), 2);
+	assert_int_equal(plist_size(response->heads), 2);
 
-	const struct Head *head0 = pset_at(response->heads, 0);
+	const struct Head *head0 = plist_at(response->heads, 0);
 	assert_non_nul(head0);
 	assert_str_equal(head0->name, "name0");
 	assert_int_equal(head0->overrided_enabled, NoOverride);
 
-	const struct Head *head1 = pset_at(response->heads, 1);
+	const struct Head *head1 = plist_at(response->heads, 1);
 	assert_non_nul(head1);
 	assert_str_equal(head1->name, "name1");
 	assert_int_equal(head1->overrided_enabled, NoOverride);
 
-	assert_int_equal(pset_size(response->log_cap_lines), 4);
-	const struct LogCapLine *line = pset_at(response->log_cap_lines, 0);
+	assert_int_equal(plist_size(response->log_cap_lines), 4);
+	const struct LogCapLine *line = plist_at(response->log_cap_lines, 0);
 	assert_int_equal(line->threshold, DEBUG);
 	assert_str_equal(line->line, "dbg0");
 
-	line = pset_at(response->log_cap_lines, 1);
+	line = plist_at(response->log_cap_lines, 1);
 	assert_int_equal(line->threshold, INFO);
 	assert_str_equal(line->line, "inf0");
 
-	line = pset_at(response->log_cap_lines, 2);
+	line = plist_at(response->log_cap_lines, 2);
 	assert_int_equal(line->threshold, WARNING);
 	assert_str_equal(line->line, "war0");
 
-	line = pset_at(response->log_cap_lines, 3);
+	line = plist_at(response->log_cap_lines, 3);
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err0");
 
 	// 1
-	response = pset_at(responses, 1);
+	response = plist_at(responses, 1);
 	assert_false(response->status.done);
 	assert_int_equal(response->status.rc, 1);
 	assert_nul(response->cfg);
 	assert_nul(response->lid);
-	assert_int_equal(pset_size(response->heads), 0);
+	assert_int_equal(plist_size(response->heads), 0);
 
-	assert_int_equal(pset_size(response->log_cap_lines), 4);
-	line = pset_at(response->log_cap_lines, 0);
+	assert_int_equal(plist_size(response->log_cap_lines), 4);
+	line = plist_at(response->log_cap_lines, 0);
 	assert_int_equal(line->threshold, DEBUG);
 	assert_str_equal(line->line, "dbg1");
 
-	line = pset_at(response->log_cap_lines, 1);
+	line = plist_at(response->log_cap_lines, 1);
 	assert_int_equal(line->threshold, INFO);
 	assert_str_equal(line->line, "inf1");
 
-	line = pset_at(response->log_cap_lines, 2);
+	line = plist_at(response->log_cap_lines, 2);
 	assert_int_equal(line->threshold, WARNING);
 	assert_str_equal(line->line, "war1");
 
-	line = pset_at(response->log_cap_lines, 3);
+	line = plist_at(response->log_cap_lines, 3);
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err1");
 
 	// 2
-	response = pset_at(responses, 2);
+	response = plist_at(responses, 2);
 	assert_true(response->status.done);
 	assert_int_equal(response->status.rc, 2);
 	assert_nul(response->cfg);
 	assert_nul(response->lid);
-	assert_int_equal(pset_size(response->heads), 0);
-	assert_int_equal(pset_size(response->log_cap_lines), 0);
+	assert_int_equal(plist_size(response->heads), 0);
+	assert_int_equal(plist_size(response->log_cap_lines), 0);
 
-	pset_free_vals(responses);
+	plist_free_vals(responses);
 	free(yaml);
 	cfg_free(cfg_expected);
 
@@ -705,13 +706,13 @@ int main(void) {
 		TEST(yaml_root_to_ipc_request__invalid_cfg),
 		TEST(yaml_root_to_ipc_request__cfg_set),
 
-		TEST(yaml_root_to_ipc_response_pset__empty),
-		TEST(yaml_root_to_ipc_response_pset__mistyped_root),
-		TEST(yaml_root_to_ipc_response_pset__seq_no_map),
-		TEST(yaml_root_to_ipc_response_pset__seq_no_done),
-		TEST(yaml_root_to_ipc_response_pset__seq_no_rc),
-		TEST(yaml_root_to_ipc_response_pset__map),
-		TEST(yaml_root_to_ipc_response_pset__seq),
+		TEST(yaml_root_to_ipc_response_plist__empty),
+		TEST(yaml_root_to_ipc_response_plist__mistyped_root),
+		TEST(yaml_root_to_ipc_response_plist__seq_no_map),
+		TEST(yaml_root_to_ipc_response_plist__seq_no_done),
+		TEST(yaml_root_to_ipc_response_plist__seq_no_rc),
+		TEST(yaml_root_to_ipc_response_plist__map),
+		TEST(yaml_root_to_ipc_response_plist__seq),
 
 		TEST(yaml_unmarshal_str__yaml_parser_initialize_fail),
 		TEST(yaml_unmarshal_str__yaml_parser_load_fail),

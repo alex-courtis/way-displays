@@ -1,9 +1,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "fn.h"
-#include "pslist.h"
+#include "plist.h"
 #include "str.h"
 
 #include "pset.h"
@@ -26,7 +27,7 @@ struct PsetItState {
 };
 
 // grow to capacity + grow
-static void grow(struct Pset *set) {
+static void grow(const struct Pset *set) {
 	size_t new_capacity = set->capacity + (set->params.grow ? set->params.grow : PSET_DEFAULT_GROW);
 
 	// grow new arrays
@@ -39,17 +40,21 @@ static void grow(struct Pset *set) {
 	free(set->vals);
 
 	// lock in new
-	set->vals = new_vals;
-	set->capacity = new_capacity;
+	((struct Pset*)set)->vals = new_vals;
+	((struct Pset*)set)->capacity = new_capacity;
 }
 
-static const struct PsetIt *it_init(const struct Pset *set) {
+static const struct PsetIt *it_init(const struct Pset *set, const struct PsetFilter *filter) {
 	if (set->size == 0)
 		return NULL;
 
 	struct PsetIt *it = calloc(1, sizeof(struct PsetIt));
 	it->st = calloc(1, sizeof(struct PsetItState));
 	it->st->set = set;
+
+	if (filter) {
+		memcpy((void*)&it->st->filter, filter, sizeof(struct PsetFilter));
+	}
 
 	return it;
 }
@@ -58,14 +63,11 @@ static bool add(const struct Pset* const set, const void* const val, fn_clone al
 	if (!val)
 		return false;
 
-	const void **v;
-	for (v = set->vals; v < set->vals + set->size; v++) {
+	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (set->params.equal_val ? set->params.equal_val(*v, val) : *v == val) {
 			return false;
 		}
 	}
-
-	struct Pset *set_m = (struct Pset*)set;
 
 	// create new value
 	const void *new = alloc_val ? alloc_val(val) : val;
@@ -74,31 +76,36 @@ static bool add(const struct Pset* const set, const void* const val, fn_clone al
 
 	// maybe grow for new entry
 	if (set->size >= set->capacity) {
-		grow(set_m);
-		v = &set->vals[set->size];
+		grow(set);
 	}
 
 	// assign new value
-	*v = new;
-	set_m->size++;
+	set->vals[set->size] = new;
+	((struct Pset*)set)->size++;
 
 	return true;
 }
 
-static bool remove(const struct Pset* const cset, const void* const val, fn_free free_val) {
+static bool remove(const void **removed, const struct Pset* const set, const void* const val, bool do_free) {
 	if (!val)
 		return false;
 
-	struct Pset *set = (struct Pset*)cset;
-
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (set->params.equal_val ? set->params.equal_val(*v, val) : *v == val) {
-			if (free_val) {
-				free_val((void*)*v);
+			if (removed) {
+				*removed = *v;
+			}
+
+			if (do_free) {
+				if (set->params.free_val) {
+					set->params.free_val((void*)*v);
+				} else {
+					free((void*)*v);
+				}
 			}
 
 			*v = NULL;
-			set->size--;
+			((struct Pset*)set)->size--;
 
 			// shift down over removed
 			const void **m;
@@ -114,40 +121,35 @@ static bool remove(const struct Pset* const cset, const void* const val, fn_free
 	return false;
 }
 
-static size_t remove_all(const struct Pset* const cset, bool do_free) {
-	struct Pset *set = (struct Pset*)cset;
-
-	if (do_free) {
-		for (const void **v = set->vals; v < set->vals + set->size; v++) {
-			if (*v) {
-				if (set->params.free_val) {
-					set->params.free_val((void*)*v);
-				} else {
-					free((void*)*v);
-				}
+static void free_vals(const struct Pset* const set) {
+	for (const void **v = set->vals; v < set->vals + set->size; v++) {
+		if (*v) {
+			if (set->params.free_val) {
+				set->params.free_val((void*)*v);
+			} else {
+				free((void*)*v);
 			}
 		}
 	}
+}
 
+static size_t remove_all(const struct Pset* const set, bool do_free) {
 	size_t removed = set->size;
-	set->size = 0;
+	((struct Pset*)set)->size = 0;
 
 	memset(set->vals, 0, set->size * sizeof(void*));
 
 	return removed;
 }
 
-static void it_remove(const struct PsetIt* const it, bool do_free) {
-	if (!it)
-		return;
-
+static bool it_remove(const void **removed, const struct PsetIt* const it, bool do_free) {
 	struct PsetItState *st = it->st;
 	if (!st) {
 		pset_it_free(it);
-		return;
+		return false;
 	}
 
-	remove(st->set, it->val, do_free ? st->set->params.free_val: NULL);
+	bool was_removed = remove(removed, st->set, it->val, do_free);
 
 	if (st->position > 0) {
 		st->position--;
@@ -156,6 +158,8 @@ static void it_remove(const struct PsetIt* const it, bool do_free) {
 	}
 
 	((struct PsetIt*)it)->val = NULL;
+
+	return was_removed;
 }
 
 static bool filter_blocks(const struct PsetFilter *filter, const void* const val) {
@@ -176,11 +180,11 @@ static size_t add_all(const struct Pset* const set, const struct Pset* const fro
 	return added;
 }
 
-static size_t remove_in(const struct Pset* const set, const struct Pset* const in, fn_free free_val) {
+static size_t remove_in(const struct Pset* const set, const struct Pset* const in, bool do_free) {
 	size_t removed = 0;
 
 	for (const void **v = in->vals; v < in->vals + in->size; v++) {
-		if (remove(set, *v, free_val)) {
+		if (remove(NULL, set, *v, do_free)) {
 			removed++;
 		}
 	}
@@ -198,14 +202,23 @@ static const struct Pset *clone(const struct Pset* const from, fn_clone clone_va
 	return to;
 }
 
-static struct Pslist *slist(const struct Pset* const set, fn_clone clone_val) {
-	struct Pslist *list = NULL;
+static const struct Plist *plist(const struct Pset* const set, fn_clone clone_val) {
+	const struct PlistParams params = {
+		.equal_val = set->params.equal_val,
+		.alloc_val = set->params.alloc_val,
+		.free_val = set->params.free_val,
+		.clone_val = set->params.clone_val,
+		.str_val = set->params.str_val,
+		.initial = MAX(set->size, set->params.initial),
+		.grow  = set->params.grow,
+	};
+	const struct Plist *list = plist_init_with(params);
 
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (clone_val) {
-			pslist_append(&list, (void*)clone_val(*v));
+			plist_append(list, (void*)clone_val(*v));
 		} else {
-			pslist_append(&list, (void*)*v);
+			plist_append(list, (void*)*v);
 		}
 	}
 
@@ -249,7 +262,7 @@ void pset_free_vals(const struct Pset* const set) {
 	if (!set)
 		return;
 
-	remove_all(set, true);
+	free_vals(set);
 
 	pset_free(set);
 }
@@ -293,25 +306,11 @@ const void *pset_find(const struct Pset* const set, const struct PsetFilter filt
 }
 
 const struct PsetIt *pset_it(const struct Pset* const set) {
-	if (!set || set->size == 0)
-		return NULL;
-
-	const struct PsetIt *it = it_init(set);
-
-	return pset_it_next(it);
+	return set ? pset_it_next(it_init(set, NULL)) : NULL;
 }
 
 const struct PsetIt *pset_filter_it(const struct Pset* const set, const struct PsetFilter filter) {
-	if (!set)
-		return NULL;
-
-	const struct PsetIt *it = it_init(set);
-	if (!it)
-		return NULL;
-
-	memcpy((void*)&it->st->filter, &filter, sizeof(struct PsetFilter));
-
-	return pset_it_next(it);
+	return set ? pset_it_next(it_init(set, &filter)) : NULL;
 }
 
 const struct PsetIt *pset_it_next(const struct PsetIt* const it) {
@@ -351,6 +350,10 @@ bool pset_add(const struct Pset* const set, const void* const val) {
 	return set ? add(set, val, set->params.alloc_val) : false;
 }
 
+bool pset_add_clone(const struct Pset* const set, const void* const val) {
+	return set && set->params.clone_val ? add(set, val, set->params.clone_val) : false;
+}
+
 size_t pset_add_all(const struct Pset* const set, const struct Pset* const from) {
 	return set && from ? add_all(set, from, set->params.alloc_val) : 0;
 }
@@ -359,12 +362,18 @@ size_t pset_add_all_clone(const struct Pset* const set, const struct Pset* const
 	return set && from && set->params.clone_val ? add_all(set, from, set->params.clone_val) : 0;
 }
 
-bool pset_remove(const struct Pset* const set, const void* const val) {
-	return set ? remove(set, val, NULL) : false;
+const void *pset_remove(const struct Pset* const set, const void* const val) {
+	if (!set)
+		return NULL;
+
+	const void *removed = NULL;
+	remove(&removed, set, val, false);
+
+	return removed;
 }
 
 bool pset_remove_free(const struct Pset* const set, const void* const val) {
-	return set ? remove(set, val, set->params.free_val ? set->params.free_val : free) : false;
+	return set ? remove(NULL, set, val, true) : false;
 }
 
 size_t pset_remove_all(const struct Pset* const set) {
@@ -372,23 +381,34 @@ size_t pset_remove_all(const struct Pset* const set) {
 }
 
 size_t pset_remove_all_free(const struct Pset* const set) {
-	return set ? remove_all(set, true) : 0;
+	if (!set)
+		return 0;
+
+	free_vals(set);
+
+	return remove_all(set, true);
 }
 
 size_t pset_remove_in(const struct Pset* const set, const struct Pset* const in) {
-	return set && in ? remove_in(set, in, NULL) : 0;
+	return set && in ? remove_in(set, in, false) : 0;
 }
 
 size_t pset_remove_in_free(const struct Pset* const set, const struct Pset* const in) {
-	return set && in ? remove_in(set, in, set->params.free_val ? set->params.free_val : free) : 0;
+	return set && in ? remove_in(set, in, true) : 0;
 }
 
-void pset_it_remove(const struct PsetIt* const it) {
-	it_remove(it, false);
+const void *pset_it_remove(const struct PsetIt* const it) {
+	if (!it)
+		return NULL;
+
+	const void *removed = NULL;
+	it_remove(&removed, it, false);
+
+	return removed;
 }
 
-void pset_it_remove_free(const struct PsetIt* const it) {
-	it_remove(it, true);
+bool pset_it_remove_free(const struct PsetIt* const it) {
+	return it ? it_remove(NULL, it, true) : false;
 }
 
 void pset_sort(const struct Pset* const set, fn_less_than less_than_val) {
@@ -413,6 +433,19 @@ bool pset_equal(const struct Pset* const a, const struct Pset* const b) {
 	if (!a || !b || a->size != b->size)
 		return false;
 
+	for (const void **bv = b->vals; bv < (b->vals + b->size); bv++) {
+		if (!pset_contains(a, *bv)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool pset_equal_ordered(const struct Pset* const a, const struct Pset* const b) {
+	if (!a || !b || a->size != b->size)
+		return false;
+
 	for (const void **av = a->vals, **bv = b->vals; av < (a->vals + a->size); av++, bv++) {
 		if (a->params.equal_val) {
 			if (!a->params.equal_val(*av, *bv)) {
@@ -426,15 +459,15 @@ bool pset_equal(const struct Pset* const a, const struct Pset* const b) {
 	return true;
 }
 
-struct Pslist *pset_pslist(const struct Pset* const set) {
-	return set ? slist(set, set->params.alloc_val) : NULL;
+const struct Plist *pset_plist(const struct Pset* const set) {
+	return set ? plist(set, NULL) : NULL;
 }
 
-struct Pslist *pset_pslist_clone(const struct Pset* const set) {
+const struct Plist *pset_plist_clone(const struct Pset* const set) {
 	if (!set || !set->params.clone_val)
 		return NULL;
 
-	return slist(set, set->params.clone_val);
+	return plist(set, set->params.clone_val);
 }
 
 char *pset_str(const struct Pset* const set) {
@@ -446,10 +479,18 @@ char *pset_str(const struct Pset* const set) {
 	for (const void **v = set->vals; v < set->vals + set->size; v++) {
 		if (set->params.str_val) {
 			char *val_str = set->params.str_val(*v);
-			out = sprintf_append(out, "%s\n", val_str);
-			free(val_str);
+			if (val_str) {
+				out = sprintf_append(out, "%s\n", val_str);
+				free(val_str);
+			} else {
+				out = sprintf_append(out, "(null)\n");
+			}
 		} else {
-			out = sprintf_append(out, "%p\n", *v);
+			if (*v) {
+				out = sprintf_append(out, "%p\n", *v);
+			} else {
+				out = sprintf_append(out, "(null)\n");
+			}
 		}
 	}
 

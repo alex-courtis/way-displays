@@ -4,10 +4,16 @@
 
 Not thread safe.
 
-### Pslist
+### Plist
 
-* Containerless singly linked list.
+* Array backed pointer list.
+* Operations linearly traverse values.
 * NULL values permitted.
+
+### Slist
+
+* `Plist` with string values
+* Values are memory managed.
 
 ### Pset
 
@@ -68,5 +74,3 @@ libc string helpers
 function typedefs for equals, less_than, predicates, freeing, cloning and to-string.
 
 Some convenience implementations provided.
-
-TODO: doxygen

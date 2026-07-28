@@ -11,7 +11,7 @@
 #include "head.h"
 #include "lid.h"
 #include "log.h"
-#include "pset.h"
+#include "plist.h"
 #include "sockets.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
@@ -20,7 +20,7 @@
 
 struct IpcOperation *ipc_operation_init(void) {
 	struct IpcOperation *operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
-	operation->log_cap_lines = log_cap_line_pset_init();
+	operation->log_cap_lines = log_cap_line_plist_init();
 	return operation;
 }
 
@@ -32,14 +32,13 @@ struct IpcRequest *ipc_request_init(const enum IpcCommand command) {
 
 struct IpcResponse *ipc_response_init(void) {
 	struct IpcResponse *response = calloc(1, sizeof(struct IpcResponse));
-	response->heads = head_pset_init();
-	response->log_cap_lines = log_cap_line_pset_init();
+	response->heads = head_plist_init();
+	response->log_cap_lines = log_cap_line_plist_init();
 	return response;
 }
 
-const struct Pset *ipc_response_pset_init(void) {
-	const struct PsetParams params = { .free_val = (fn_free)ipc_response_free, };
-	return pset_init_with(params);
+const struct Plist *ipc_response_plist_init(void) {
+	return plist_init_with((struct PlistParams){ .free_val = (fn_free)ipc_response_free, });
 }
 
 void ipc_send_request(struct IpcRequest *request) {
@@ -68,7 +67,7 @@ void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
 	if (!ipc_operation)
 		return;
 
-	for (const struct PsetIt *it = pset_it(ipc_operation->log_cap_lines); it; it = pset_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(ipc_operation->log_cap_lines); it; it = plist_it_next(it)) {
 		const struct LogCapLine *cap_line = (struct LogCapLine*)it->val;
 
 		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_WARN)
@@ -84,7 +83,7 @@ void ipc_send_operation(struct IpcOperation *operation) {
 	char *yaml = yaml_marshal(operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response");
 
 	// clear marshalled lines but keep capturing
-	pset_remove_all_free(operation->log_cap_lines);
+	plist_remove_all_free(operation->log_cap_lines);
 
 	if (!yaml) {
 		operation->done = true;
@@ -134,14 +133,12 @@ struct IpcRequest *ipc_receive_request(int socket_server) {
 	return request;
 }
 
-struct Pset *ipc_receive_responses(int socket_client, char **yaml) {
+struct Plist *ipc_receive_responses(int socket_client, char **yaml) {
 	if (!(*yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
 
-	struct Pset *responses = yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_pset, "ipc response");
-
-	return responses;
+	return yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_plist, "ipc response");
 }
 
 void ipc_request_free(struct IpcRequest *request) {
@@ -160,9 +157,9 @@ void ipc_response_free(struct IpcResponse *response) {
 
 	cfg_free(response->cfg);
 	lid_free(response->lid);
-	pset_free_vals(response->heads);
+	plist_free_vals(response->heads);
 
-	pset_free_vals(response->log_cap_lines);
+	plist_free_vals(response->log_cap_lines);
 
 	free(response);
 }
@@ -175,7 +172,7 @@ void ipc_operation_destroy(struct IpcOperation *operation) {
 
 	log_cap_lines_stop(operation->log_cap_lines);
 
-	pset_free_vals(operation->log_cap_lines);
+	plist_free_vals(operation->log_cap_lines);
 
 	free(operation);
 }

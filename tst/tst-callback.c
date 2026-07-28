@@ -87,7 +87,7 @@ static void callback__one(void **state) {
 	free(g_cfg->callback_cmd);
 	g_cfg->callback_cmd = strdup("command");
 
-	will_return_int(__wrap_log_get_threshold, INFO);
+	will_return_int(__wrap_log_get_threshold, DEBUG);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_ssmap(__wrap_spawn_sh_cmd, env, env);
@@ -118,7 +118,7 @@ static void callback__two(void **state) {
 
 	g_displ->delta.human = strdup("not successful");
 
-	will_return_int(__wrap_log_get_threshold, INFO);
+	will_return_int(__wrap_log_get_threshold, DEBUG);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_ssmap(__wrap_spawn_sh_cmd, env, expected_env);
@@ -153,7 +153,7 @@ static void callback_mode_fail__(void **state) {
 			"CALLBACK_LEVEL", "INFO",
 			NULL);
 
-	will_return_int(__wrap_log_get_threshold, INFO);
+	will_return_int(__wrap_log_get_threshold, DEBUG);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_ssmap(__wrap_spawn_sh_cmd, env, expected_env);
@@ -194,7 +194,7 @@ static void callback_adaptive_sync_fail__(void **state) {
 			"CALLBACK_LEVEL", "WARNING",
 			NULL);
 
-	will_return_int(__wrap_log_get_threshold, INFO);
+	will_return_int(__wrap_log_get_threshold, DEBUG);
 
 	expect_str(__wrap_spawn_sh_cmd, command, g_cfg->callback_cmd);
 	expect_ssmap(__wrap_spawn_sh_cmd, env, expected_env);

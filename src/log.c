@@ -11,6 +11,7 @@
 
 #include "enum.h"
 #include "fn.h"
+#include "plist.h"
 #include "pset.h"
 #include "str.h"
 
@@ -259,18 +260,18 @@ struct LogCapLine *log_cap_line_init(const enum LogThreshold t, const char *line
 	return l;
 }
 
-const struct Pset *log_cap_line_pset_init(void) {
-	const struct PsetParams params = {
+const struct Plist *log_cap_line_plist_init(void) {
+	const struct PlistParams params = {
 		.free_val = (fn_free)log_cap_line_free,
 	};
-	return pset_init_with(params);
+	return plist_init_with(params);
 }
 
-void log_cap_lines_playback(const struct Pset *log_cap_lines) {
+void log_cap_lines_playback(const struct Plist *log_cap_lines) {
 	if (!log_cap_lines)
 		return;
 
-	for (const struct PsetIt *it = pset_it(log_cap_lines); it; it = pset_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(log_cap_lines); it; it = plist_it_next(it)) {
 		const struct LogCapLine *line = it->val;
 		if (!line)
 			continue;
@@ -279,10 +280,10 @@ void log_cap_lines_playback(const struct Pset *log_cap_lines) {
 	}
 }
 
-void log_cap_lines_start(const struct Pset *log_cap_lines) {
+void log_cap_lines_start(const struct Plist *log_cap_lines) {
 	pset_add(log_cap_lines_active, log_cap_lines);
 }
 
-void log_cap_lines_stop(const struct Pset *log_cap_lines) {
-	pset_remove(log_cap_lines_active, log_cap_lines);
+void log_cap_lines_stop(const struct Plist *log_cap_lines) {
+	pset_add(log_cap_lines_active, log_cap_lines);
 }

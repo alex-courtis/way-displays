@@ -8,12 +8,12 @@
 
 #include "ssmap.h"
 
-static int check_ssmap_equal(CMockaValueData value, CMockaValueData check_data) {
+static int check_ssmap_equal_ordered(CMockaValueData value, CMockaValueData check_data) {
 
 	const struct SSmap* const actual = (struct SSmap*)value.ptr;
 	const struct SSmap* const expected = (struct SSmap*)check_data.ptr;
 
-	if (ssmap_equal(actual, expected)) {
+	if (ssmap_equal_ordered(actual, expected)) {
 		return true;
 	} else {
 		fs_file_write("actual.ssmap", ssmap_str(actual), "w");
@@ -24,6 +24,6 @@ static int check_ssmap_equal(CMockaValueData value, CMockaValueData check_data) 
 }
 
 #define expect_ssmap(function, parameter, value) \
-	expect_check_data(function, parameter, check_ssmap_equal, cast_ptr_to_cmocka_value(value))
+	expect_check_data(function, parameter, check_ssmap_equal_ordered, cast_ptr_to_cmocka_value(value))
 
 #endif // EXPECT_SSMAP_H

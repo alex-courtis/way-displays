@@ -17,6 +17,7 @@
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
@@ -82,11 +83,11 @@ end:
 	return ipc_request;
 }
 
-void *yaml_root_to_ipc_response_pset(struct UC *c, const yaml_node_t *root) {
+void *yaml_root_to_ipc_response_plist(struct UC *c, const yaml_node_t *root) {
 	if (!root)
 		return NULL;
 
-	const struct Pset *ipc_responses = ipc_response_pset_init();
+	const struct Plist *ipc_responses = ipc_response_plist_init();
 
 	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
 		log_error(NULL);
@@ -102,14 +103,14 @@ void *yaml_root_to_ipc_response_pset(struct UC *c, const yaml_node_t *root) {
 		yaml_map_into_ipc_responses(c, ipc_responses, root);
 	}
 
-	if (pset_size(ipc_responses) == 0) {
+	if (plist_size(ipc_responses) == 0) {
 		goto err;
 	}
 
 	return (void*)ipc_responses;
 
 err:
-	pset_free_vals(ipc_responses);
+	plist_free_vals(ipc_responses);
 	return NULL;
 }
 
@@ -213,7 +214,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 	return cfg;
 }
 
-void yaml_map_into_ipc_responses(struct UC *c, const struct Pset *ipc_responses, const yaml_node_t *map) {
+void yaml_map_into_ipc_responses(struct UC *c, const struct Plist* const ipc_responses, const yaml_node_t *map) {
 	if (!ipc_responses)
 		return;
 
@@ -264,7 +265,7 @@ void yaml_map_into_ipc_responses(struct UC *c, const struct Pset *ipc_responses,
 		yaml_seq_into_col(c, messages, ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
 	}
 
-	pset_add(ipc_responses, ipc_response);
+	plist_append(ipc_responses, ipc_response);
 
 	goto end;
 
@@ -312,7 +313,9 @@ void yaml_map_into_conditions(struct UC *c, const struct Pset* const conditions,
 	if (sset_size(condition->plugged) == 0 && sset_size(condition->unplugged) == 0 && !condition->lid)
 		goto err;
 
-	pset_add(conditions, condition);
+	if (!pset_add(conditions, condition)) {
+		cfg_condition_free(condition);
+	}
 
 	goto end;
 
@@ -490,7 +493,7 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
 	return mode;
 }
 
-void yaml_map_into_modes(struct UC *c, const struct PPmap *modes, const yaml_node_t *map) {
+void yaml_map_into_modes(struct UC *c, const struct PPmap* const modes, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!modes)
 		return;
@@ -504,7 +507,7 @@ void yaml_map_into_modes(struct UC *c, const struct PPmap *modes, const yaml_nod
 	spmap_free(nodes);
 }
 
-void yaml_map_into_heads(struct UC *c, const struct Pset *heads, const yaml_node_t *map) {
+void yaml_map_into_heads(struct UC *c, const struct Plist* const heads, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!heads)
 		return;
@@ -550,7 +553,7 @@ void yaml_map_into_heads(struct UC *c, const struct Pset *heads, const yaml_node
 		}
 	}
 
-	pset_add(heads, head);
+	plist_append(heads, head);
 
 	spmap_free(nodes);
 	spmap_free(nodes_overrides);
@@ -571,7 +574,9 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 				if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
 					goto err;
 
-				pset_add(disableds, disabled);
+				if (!pset_add(disableds, disabled)) {
+					cfg_disabled_free(disabled);
+				}
 
 				break;
 			}
@@ -595,7 +600,9 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 				if (map)
 					yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 
-				pset_add(disableds, disabled);
+				if (!pset_add(disableds, disabled)) {
+					cfg_disabled_free(disabled);
+				}
 
 				break;
 			}
@@ -652,19 +659,19 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	return;
 }
 
-void yaml_map_into_log_cap_lines(struct UC *c, const struct Pset *log_cap_lines, const yaml_node_t *map) {
+void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist* const log_cap_lines, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
 	// unmarshal many pairs even though schema specifies exactly one
-	for (const struct SPmapIt *i = spmap_it(nodes); i; i = spmap_it_next(i)) {
+	for (const struct SPmapIt *it = spmap_it(nodes); it; it = spmap_it_next(it)) {
 
-		enum LogThreshold threshold = log_threshold_val(i->key);
-		char *line = yaml_scalar_to_string(c, i->val);
+		enum LogThreshold threshold = log_threshold_val(it->key);
+		char *line = yaml_scalar_to_string(c, it->val);
 
 		if (threshold && line)
-			pset_add(log_cap_lines, log_cap_line_init(threshold, line));
+			plist_append(log_cap_lines, log_cap_line_init(threshold, line));
 
 		free(line);
 	}
@@ -710,7 +717,7 @@ end:
 	return ret;
 }
 
-void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset *sset, const yaml_node_t *seq) {
+void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset* const sset, const yaml_node_t *seq) {
 	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
 		return;
 

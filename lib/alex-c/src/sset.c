@@ -1,9 +1,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "fn.h"
 #include "pset.h"
+#include "slist.h"
 
 #include "sset.h"
 
@@ -30,13 +32,13 @@ static const struct SsetIt *it_init(const struct PsetIt *pit) {
 }
 
 static struct PsetFilter pset_filter_init(const struct SsetFilter *filter) {
-	const struct PsetFilter ppmap_filter = {
+	const struct PsetFilter pset_filter = {
 		.val = (fn_pred_p)filter->val,
 		.data = filter->data,
 		.val_data = (fn_pred_pp)filter->val_data,
 	};
 
-	return ppmap_filter;
+	return pset_filter;
 }
 
 const struct Sset *sset_init(void) {
@@ -100,7 +102,7 @@ const char *sset_at(const struct Sset* const set, const size_t i) {
 	return set ? pset_at(set->pset, i) : NULL;
 }
 
-const void *sset_find(const struct Sset* const set, const struct SsetFilter filter) {
+const char *sset_find(const struct Sset* const set, const struct SsetFilter filter) {
 	return set ? pset_find(set->pset, pset_filter_init(&filter)) : NULL;
 }
 
@@ -153,18 +155,18 @@ size_t sset_remove_in(const struct Sset* const set, const struct Sset* const in)
 	return set && in ? pset_remove_in_free(set->pset, in->pset) : false;
 }
 
-void sset_it_remove(const struct SsetIt* const it) {
+bool sset_it_remove(const struct SsetIt* const it) {
 	if (!it)
-		return;
+		return false;
 
 	if (!it->st) {
 		sset_it_free(it);
-		return;
+		return false;
 	}
 
-	pset_it_remove_free(it->st->pit);
-
 	((struct SsetIt*)it)->val = NULL;
+
+	return pset_it_remove_free(it->st->pit);
 }
 
 void sset_sort(const struct Sset* const set) {
@@ -176,8 +178,26 @@ bool sset_equal(const struct Sset* const a, const struct Sset* const b) {
 	return a && b ? pset_equal(a->pset, b->pset) : false;
 }
 
-struct Pslist *sset_pslist(const struct Sset* const set) {
-	return set ? pset_pslist(set->pset) : NULL;
+bool sset_equal_ordered(const struct Sset* const a, const struct Sset* const b) {
+	return a && b ? pset_equal_ordered(a->pset, b->pset) : false;
+}
+
+const struct Slist *sset_slist(const struct Sset* const set) {
+	if (!set)
+		return NULL;
+
+	const struct SlistParams params = {
+		.case_insensitive = set->params.case_insensitive,
+		.initial = MAX(pset_size(set->pset), set->params.initial),
+		.grow = set->params.grow,
+	};
+	const struct Slist *list = slist_init_with(params);
+
+	for (const struct SsetIt *it = sset_it(set); it; it = sset_it_next(it)) {
+		slist_append(list, it->val);
+	}
+
+	return list;
 }
 
 char *sset_str(const struct Sset* const set) {

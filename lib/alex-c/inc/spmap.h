@@ -26,15 +26,15 @@ struct SPmapIt {
  * Optional constructor params (default)
  */
 struct SPmapParams {
-	const bool case_insensitive; // false
-	const fn_equal equal_val;    // compare key pointers
-	const fn_clone alloc_val;    // assign val pointer
-	const fn_free free_val;      // free
-	const fn_clone clone_val;    // NOP
-	const fn_str str_val;        // %p
-	const bool allow_null_val;   // false
-	const size_t initial;        // 10
-	const size_t grow;           // 10
+	const bool case_insensitive_key; // false
+	const fn_equal equal_val;        // compare key pointers
+	const fn_clone alloc_val;        // assign val pointer
+	const fn_free free_val;          // free
+	const fn_clone clone_val;        // NOP
+	const fn_str str_val;            // %p
+	const bool allow_null_val;       // false
+	const size_t initial;            // 10
+	const size_t grow;               // 10
 };
 
 /*
@@ -74,7 +74,7 @@ const struct SPmap *spmap_init_with(const struct SPmapParams params);
 // same params, caller frees vals when alloc_val present [alloc_val]
 const struct SPmap *spmap_clone(const struct SPmap* const from);
 
-// same params, caller frees vals, NULL on NULL clone_val, alloc_val overrides clone_val [alloc_key, alloc_val, clone_val]
+// same params, caller frees vals, NULL on NULL clone_val [clone_val]
 const struct SPmap *spmap_clone_deep(const struct SPmap* const from);
 
 // free map
@@ -105,13 +105,13 @@ const char *spmap_first_key(const struct SPmap *const map, const void* const val
 // element at zero indexed position
 struct SPmapPair spmap_at(const struct SPmap* const map, const size_t i);
 
-// find the first key/val pred, {NULL,NULL} when no matches, first when empty filter
+// find the first, {NULL,NULL} when no matches, first entry when empty filter
 struct SPmapPair spmap_find(const struct SPmap* const map, const struct SPmapFilter filter);
 
 // create an iterator, caller must spmap_it_free or invoke spmap_next until NULL
 const struct SPmapIt *spmap_it(const struct SPmap* const map);
 
-// create a filtering iterator, return NULL when no matches, caller must spmap_it_free or invoke spmap_next until NULL
+// create a filtering iterator, return NULL when no matches, first entry when empty filter
 const struct SPmapIt *spmap_filter_it(const struct SPmap* const map, const struct SPmapFilter filter);
 
 // next iterator entry, NULL at end of map
@@ -124,11 +124,20 @@ const struct SPmapIt *spmap_it_next(const struct SPmapIt* const it);
 // set key/val, return old val if overwritten [alloc_val]
 const void *spmap_put(const struct SPmap* const map, const char* const key, const void* const val);
 
+// set key/val, free old val, return true if overwritten [alloc_val, free_val]
+bool spmap_put_free(const struct SPmap* const map, const  char* const key, const void* const val);
+
+// set key/val, return old val if overwritten, NOP when NULL clone_val [clone_val]
+const void *spmap_put_clone(const struct SPmap* const map, const char* const key, const void* const val);
+
+// set key/val, free old val, return true if overwritten, NOP when NULL clone_val [clone_val, free_val]
+bool spmap_put_clone_free(const struct SPmap* const map, const char* const key, const void* const val);
+
 // set key/val if not present, return existing val if present [alloc_val]
 const void *spmap_put_if_absent(const struct SPmap* const map, const char* const key, const void* const val);
 
-// set key/val, free old val, return true if overwritten [alloc_val, free_val]
-bool spmap_put_free(const struct SPmap* const map, const  char* const key, const void* const val);
+// set key/val if not present, return existing val if present, NOP when NULL clone_val [equal_key, alloc_key, clone_val]
+const void *spmap_put_if_absent_clone(const struct SPmap* const map, const char* const key, const void* const val);
 
 // set all from key/val, returning number overwritten [alloc_val]
 size_t spmap_put_all(const struct SPmap* const map, const struct SPmap* const from);
@@ -160,41 +169,43 @@ size_t spmap_remove_in(const struct SPmap* const map, const struct SPmap* const 
 // remove and free entries in keys, return number removed [equal_key, free_val]
 size_t spmap_remove_in_free(const struct SPmap* const map, const struct SPmap* const in);
 
-// remove the entry, it is unusable, spmap_it_next must be called
-void spmap_it_remove(const struct SPmapIt* const it);
+// remove the entry, return val if removed, it is unusable, spmap_it_next must be called
+const void *spmap_it_remove(const struct SPmapIt* const it);
 
-// remove and entry, free the val, it is unusable, spmap_it_next must be called [free_val]
-void spmap_it_remove_free(const struct SPmapIt* const it);
+// remove the entry and free the val, return true if removed, it is unusable, spmap_it_next must be called [free_val]
+bool spmap_it_remove_free(const struct SPmapIt* const it);
 
 /*
  * Comparison
  */
 
-// same length, keys and vals equal in order, uses params from a [equal_val]
+// same length, keys and vals equal, uses params from a [equal_val]
 bool spmap_equal(const struct SPmap* const a, const struct SPmap* const b);
+
+// same length, keys and vals equal in order, uses params from a [equal_val]
+bool spmap_equal_ordered(const struct SPmap* const a, const struct SPmap* const b);
 
 /*
  * Conversion
  */
 
-// map ordered keys, caller frees list and contents
-struct Pslist *spmap_keys_pslist(const struct SPmap* const map);
+// map ordered keys, same params
+const struct Slist *spmap_keys_slist(const struct SPmap* const map);
 
 // map ordered keys, same params
 const struct Sset *spmap_keys_sset(const struct SPmap* const map);
 
-// map ordered vals, caller frees list, caller frees contents when alloc_val present [alloc_val]
-struct Pslist *spmap_vals_pslist(const struct SPmap* const map);
+// map ordered vals, caller frees contents when alloc_val present [alloc_val]
+const struct Plist *spmap_vals_plist(const struct SPmap* const map);
 
-// map ordered vals, caller frees list and vals, NULL when NULL clone_val [clone_val]
-struct Pslist *spmap_vals_pslist_clone(const struct SPmap* const map);
+// map ordered vals, caller frees contents, NULL when NULL clone_val [clone_val]
+const struct Plist *spmap_vals_plist_clone(const struct SPmap* const map);
 
-// map ordered vals, same params, caller frees set, caller frees vals when alloc_val present [alloc_val]
+// map ordered vals with duplicates removed, same params, caller frees contents when alloc_val present [alloc_val]
 const struct Pset *spmap_vals_pset(const struct SPmap* const map);
 
-// map ordered vals, same params, caller frees set and vals, NULL on NULL clone_val or both alloc_val and clone_val [clone_val]
+// map ordered vals with duplicates removed, same params, caller frees contents, NULL when NULL clone_val [clone_val]
 const struct Pset *spmap_vals_pset_clone(const struct SPmap* const map);
-
 
 /*
  * Info

@@ -15,6 +15,7 @@
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
 #include "regx.h"
@@ -51,19 +52,24 @@ struct Head *head_dummy_init(const struct Head * const head) {
 }
 
 const struct Pset *head_pset_init(void) {
-	const struct PsetParams params = {
-		.str_val = (fn_str)head_str,
-		.free_val = (fn_free)head_free,
-	};
-	return pset_init_with(params);
+	return pset_init_with( (struct PsetParams) {
+			.str_val = (fn_str)head_str,
+			.free_val = (fn_free)head_free,
+			});
+}
+
+const struct Plist *head_plist_init(void) {
+	return plist_init_with((struct PlistParams){
+			.str_val = (fn_str)head_str,
+			.free_val = (fn_free)head_free,
+			});
 }
 
 const struct PPmap *head_ppmap_init(void) {
-	const struct PPmapParams params = {
-		.str_val = (fn_str)head_str,
-		.free_val = (fn_free)head_free,
-	};
-	return ppmap_init_with(params);
+	return ppmap_init_with((struct PPmapParams){
+			.str_val = (fn_str)head_str,
+			.free_val = (fn_free)head_free,
+			});
 }
 
 void head_free(struct Head *head) {

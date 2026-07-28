@@ -5,6 +5,7 @@
 
 #include "fn.h"
 #include "ppmap.h"
+#include "slist.h"
 #include "sset.h"
 
 #include "spmap.h"
@@ -59,25 +60,6 @@ static const struct SPmapIt *it_init(const struct PPmapIt *pit) {
 	return it;
 }
 
-static void it_remove(const struct SPmapIt* const it, bool do_free) {
-	if (!it)
-		return;
-
-	if (!it->st) {
-		spmap_it_free(it);
-		return;
-	}
-
-	if (do_free) {
-		ppmap_it_remove_free(it->st->pit);
-	} else {
-		ppmap_it_remove(it->st->pit);
-	}
-
-	((struct SPmapIt*)it)->key = NULL;
-	((struct SPmapIt*)it)->val = NULL;
-}
-
 const struct SPmap *spmap_init(void) {
 	const struct SPmapParams params = { 0 };
 	return spmap_init_with(params);
@@ -85,7 +67,7 @@ const struct SPmap *spmap_init(void) {
 
 const struct SPmap *spmap_init_with(const struct SPmapParams params) {
 	const struct PPmapParams ppmap_params = {
-		.equal_key = params.case_insensitive ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
+		.equal_key = params.case_insensitive_key ? (fn_equal)equal_strcasecmp : (fn_equal)equal_strcmp,
 		.equal_val = params.equal_val,
 		.alloc_key = (fn_clone)clone_strdup,
 		.alloc_val = params.alloc_val,
@@ -174,7 +156,6 @@ struct SPmapPair spmap_at(const struct SPmap* const map, const size_t i) {
 	return res;
 }
 
-// find the first key/val pred, {NULL,NULL} when no matches, first when empty filter
 struct SPmapPair spmap_find(const struct SPmap* const map, const struct SPmapFilter filter) {
 	struct SPmapPair res = { 0 };
 
@@ -224,12 +205,24 @@ const void *spmap_put(const struct SPmap* const map, const char* const key, cons
 	return map ? ppmap_put(map->ppmap, key, val) : NULL;
 }
 
+bool spmap_put_free(const struct SPmap* const map, const char* const key, const void* const val) {
+	return map ? ppmap_put_free(map->ppmap, key, val) : false;
+}
+
+const void *spmap_put_clone(const struct SPmap* const map, const char* const key, const void* const val) {
+	return map && map->params.clone_val ? ppmap_put_clone(map->ppmap, key, val) : NULL;
+}
+
+bool spmap_put_clone_free(const struct SPmap* const map, const char* const key, const void* const val) {
+	return map && map->params.clone_val ? ppmap_put_clone_free(map->ppmap, key, val) : false;
+}
+
 const void *spmap_put_if_absent(const struct SPmap* const map, const char* const key, const void* const val) {
 	return map ? ppmap_put_if_absent(map->ppmap, key, val) : NULL;
 }
 
-bool spmap_put_free(const struct SPmap* const map, const char* const key, const void* const val) {
-	return map ? ppmap_put_free(map->ppmap, key, val) : false;
+const void *spmap_put_if_absent_clone(const struct SPmap* const map, const char* const key, const void* const val) {
+	return map && map->params.clone_val ? ppmap_put_if_absent_clone(map->ppmap, key, val) : NULL;
 }
 
 const void *spmap_remove(const struct SPmap* const map, const char* const key) {
@@ -256,12 +249,34 @@ size_t spmap_remove_in_free(const struct SPmap* const map, const struct SPmap* c
 	return map && in ? ppmap_remove_in_free(map->ppmap, in->ppmap) : 0;
 }
 
-void spmap_it_remove(const struct SPmapIt* const it) {
-	it_remove(it, false);
+const void *spmap_it_remove(const struct SPmapIt* const it) {
+	if (!it)
+		return NULL;
+
+	if (!it->st) {
+		spmap_it_free(it);
+		return NULL;
+	}
+
+	((struct SPmapIt*)it)->key = NULL;
+	((struct SPmapIt*)it)->val = NULL;
+
+	return ppmap_it_remove(it->st->pit);
 }
 
-void spmap_it_remove_free(const struct SPmapIt* const it) {
-	it_remove(it, true);
+bool spmap_it_remove_free(const struct SPmapIt* const it) {
+	if (!it)
+		return false;
+
+	if (!it->st) {
+		spmap_it_free(it);
+		return false;
+	}
+
+	((struct SPmapIt*)it)->key = NULL;
+	((struct SPmapIt*)it)->val = NULL;
+
+	return ppmap_it_remove_free(it->st->pit);
 }
 
 size_t spmap_put_all(const struct SPmap* const map, const struct SPmap* const from) {
@@ -284,8 +299,26 @@ bool spmap_equal(const struct SPmap* const a, const struct SPmap* const b) {
 	return a && b ? ppmap_equal(a->ppmap, b->ppmap) : false;
 }
 
-struct Pslist *spmap_keys_pslist(const struct SPmap* const map) {
-	return map ? ppmap_keys_pslist(map->ppmap) : NULL;
+bool spmap_equal_ordered(const struct SPmap* const a, const struct SPmap* const b) {
+	return a && b ? ppmap_equal_ordered(a->ppmap, b->ppmap) : false;
+}
+
+const struct Slist *spmap_keys_slist(const struct SPmap* const map) {
+	if (!map)
+		return NULL;
+
+	const struct SlistParams params = {
+		.case_insensitive = map->params.case_insensitive_key,
+		.initial = MAX(ppmap_size(map->ppmap), map->params.initial),
+		.grow = map->params.grow,
+	};
+	const struct Slist *list = slist_init_with(params);
+
+	for (const struct SPmapIt *it = spmap_it(map); it; it = spmap_it_next(it)) {
+		slist_append(list, it->key);
+	}
+
+	return list;
 }
 
 const struct Sset *spmap_keys_sset(const struct SPmap* const map) {
@@ -293,7 +326,7 @@ const struct Sset *spmap_keys_sset(const struct SPmap* const map) {
 		return NULL;
 
 	const struct SsetParams params = {
-		.case_insensitive = map->params.case_insensitive,
+		.case_insensitive = map->params.case_insensitive_key,
 		.initial = MAX(ppmap_size(map->ppmap), map->params.initial),
 		.grow = map->params.grow,
 	};
@@ -306,12 +339,12 @@ const struct Sset *spmap_keys_sset(const struct SPmap* const map) {
 	return set;
 }
 
-struct Pslist *spmap_vals_pslist(const struct SPmap* const map) {
-	return map ? ppmap_vals_pslist(map->ppmap) : NULL;
+const struct Plist *spmap_vals_plist(const struct SPmap* const map) {
+	return map ? ppmap_vals_plist(map->ppmap) : NULL;
 }
 
-struct Pslist *spmap_vals_pslist_clone(const struct SPmap* const map) {
-	return map ? ppmap_vals_pslist_clone(map->ppmap) : NULL;
+const struct Plist *spmap_vals_plist_clone(const struct SPmap* const map) {
+	return map ? ppmap_vals_plist_clone(map->ppmap) : NULL;
 }
 
 const struct Pset *spmap_vals_pset(const struct SPmap* const map) {
