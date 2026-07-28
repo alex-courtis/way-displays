@@ -12,7 +12,6 @@
 #include "lid.h"
 #include "log.h"
 #include "plist.h"
-#include "pset.h"
 #include "sockets.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
@@ -33,7 +32,7 @@ struct IpcRequest *ipc_request_init(const enum IpcCommand command) {
 
 struct IpcResponse *ipc_response_init(void) {
 	struct IpcResponse *response = calloc(1, sizeof(struct IpcResponse));
-	response->heads = head_pset_init();
+	response->heads = head_plist_init();
 	response->log_cap_lines = log_cap_line_plist_init();
 	return response;
 }
@@ -139,7 +138,7 @@ struct Plist *ipc_receive_responses(int socket_client, char **yaml) {
 		return NULL;
 	}
 
-	return yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_pset, "ipc response");
+	return yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_plist, "ipc response");
 }
 
 void ipc_request_free(struct IpcRequest *request) {
@@ -158,7 +157,7 @@ void ipc_response_free(struct IpcResponse *response) {
 
 	cfg_free(response->cfg);
 	lid_free(response->lid);
-	pset_free_vals(response->heads);
+	plist_free_vals(response->heads);
 
 	plist_free_vals(response->log_cap_lines);
 

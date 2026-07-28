@@ -31,7 +31,7 @@ struct IpcResponseStatus {
 struct IpcResponse {
 	struct IpcResponseStatus status;
 	struct Cfg *cfg;
-	const struct Pset *heads;
+	const struct Plist *heads;
 	struct Lid *lid;
 	const struct Plist *log_cap_lines;
 };

@@ -8,7 +8,6 @@
 #include "ipc.h"
 #include "log.h"
 #include "plist.h"
-#include "pset.h"
 
 /*
  * Execute a CFG_SET scaling off and unpack the responses
@@ -55,7 +54,7 @@ main(int argc, char **argv) {
 			log_info("scaling is %s", on_off_name(response->cfg->scaling));
 
 			// inspect head state
-			for (const struct PsetIt *hit = pset_it(response->heads); hit; hit = pset_it_next(hit)) {
+			for (const struct PlistIt *hit = plist_it(response->heads); hit; hit = plist_it_next(hit)) {
 				const struct Head *head = hit->val;
 				float scale_current = wl_fixed_to_double(head->cur.scale);
 				float scale_desired = wl_fixed_to_double(head->des.scale);

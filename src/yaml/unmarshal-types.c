@@ -83,7 +83,7 @@ end:
 	return ipc_request;
 }
 
-void *yaml_root_to_ipc_response_pset(struct UC *c, const yaml_node_t *root) {
+void *yaml_root_to_ipc_response_plist(struct UC *c, const yaml_node_t *root) {
 	if (!root)
 		return NULL;
 
@@ -505,7 +505,7 @@ void yaml_map_into_modes(struct UC *c, const struct PPmap *modes, const yaml_nod
 	spmap_free(nodes);
 }
 
-void yaml_map_into_heads(struct UC *c, const struct Pset *heads, const yaml_node_t *map) {
+void yaml_map_into_heads(struct UC *c, const struct Plist *heads, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!heads)
 		return;
@@ -551,7 +551,7 @@ void yaml_map_into_heads(struct UC *c, const struct Pset *heads, const yaml_node
 		}
 	}
 
-	pset_add(heads, head);
+	plist_append(heads, head);
 
 	spmap_free(nodes);
 	spmap_free(nodes_overrides);
