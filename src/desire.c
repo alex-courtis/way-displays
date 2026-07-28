@@ -208,7 +208,7 @@ static void fill_order_buckets(const struct SPmap *buckets, const struct Plist *
 	}
 }
 
-const struct Plist *desire_order(const struct Sset * const order_name_desc, const struct PPmap *heads) {
+const struct Plist *desire_order(const struct Sset * const order_name_desc, const struct PPmap * const heads) {
 
 	// buckets for each order_name_desc
 	const struct SPmapParams params = { .free_val = (fn_free)plist_free, };

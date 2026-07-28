@@ -31,9 +31,9 @@ struct IpcResponseStatus {
 struct IpcResponse {
 	struct IpcResponseStatus status;
 	struct Cfg *cfg;
-	const struct Plist *heads;
+	const struct Plist *heads;          // head_plist_init
 	struct Lid *lid;
-	const struct Plist *log_cap_lines;
+	const struct Plist *log_cap_lines;  // log_cap_line_plist_init
 };
 
 struct IpcOperation *ipc_operation_init(void);

@@ -348,7 +348,7 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__empty(void **state) {
+static void yaml_root_to_ipc_response_plist__empty(void **state) {
 	assert_nul(yaml_unmarshal_str("", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR, "\n"
@@ -360,7 +360,7 @@ static void yaml_root_to_ipc_response_pset__empty(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__mistyped_root(void **state) {
+static void yaml_root_to_ipc_response_plist__mistyped_root(void **state) {
 	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR, "\n"
@@ -372,7 +372,7 @@ static void yaml_root_to_ipc_response_pset__mistyped_root(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__seq_no_map(void **state) {
+static void yaml_root_to_ipc_response_plist__seq_no_map(void **state) {
 	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR,
@@ -384,7 +384,7 @@ static void yaml_root_to_ipc_response_pset__seq_no_map(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__seq_no_done(void **state) {
+static void yaml_root_to_ipc_response_plist__seq_no_done(void **state) {
 	expect_function_call(__wrap_lid_free);
 
 	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_plist, "ipc response"));
@@ -398,7 +398,7 @@ static void yaml_root_to_ipc_response_pset__seq_no_done(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__seq_no_rc(void **state) {
+static void yaml_root_to_ipc_response_plist__seq_no_rc(void **state) {
 	expect_function_call(__wrap_lid_free);
 
 	const struct Pset *actual = yaml_unmarshal_str( "- DONE: TRUE", yaml_root_to_ipc_response_plist, "ipc response");
@@ -414,7 +414,7 @@ static void yaml_root_to_ipc_response_pset__seq_no_rc(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__map(void **state) {
+static void yaml_root_to_ipc_response_plist__map(void **state) {
 	char *yaml = read_file("tst/yaml/ipc-responses-map.yaml");
 
 	expect_function_call(__wrap_lid_free);
@@ -525,7 +525,7 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_pset__seq(void **state) {
+static void yaml_root_to_ipc_response_plist__seq(void **state) {
 	char *yaml = read_file("tst/yaml/ipc-responses-seq-brief.yaml");
 
 	expect_function_calls(__wrap_lid_free, 3);
@@ -706,13 +706,13 @@ int main(void) {
 		TEST(yaml_root_to_ipc_request__invalid_cfg),
 		TEST(yaml_root_to_ipc_request__cfg_set),
 
-		TEST(yaml_root_to_ipc_response_pset__empty),
-		TEST(yaml_root_to_ipc_response_pset__mistyped_root),
-		TEST(yaml_root_to_ipc_response_pset__seq_no_map),
-		TEST(yaml_root_to_ipc_response_pset__seq_no_done),
-		TEST(yaml_root_to_ipc_response_pset__seq_no_rc),
-		TEST(yaml_root_to_ipc_response_pset__map),
-		TEST(yaml_root_to_ipc_response_pset__seq),
+		TEST(yaml_root_to_ipc_response_plist__empty),
+		TEST(yaml_root_to_ipc_response_plist__mistyped_root),
+		TEST(yaml_root_to_ipc_response_plist__seq_no_map),
+		TEST(yaml_root_to_ipc_response_plist__seq_no_done),
+		TEST(yaml_root_to_ipc_response_plist__seq_no_rc),
+		TEST(yaml_root_to_ipc_response_plist__map),
+		TEST(yaml_root_to_ipc_response_plist__seq),
 
 		TEST(yaml_unmarshal_str__yaml_parser_initialize_fail),
 		TEST(yaml_unmarshal_str__yaml_parser_load_fail),

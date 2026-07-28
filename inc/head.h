@@ -63,7 +63,6 @@ struct Head *head_init(void);
 // dummy head for departure printing
 struct Head *head_dummy_init(const struct Head * const head);
 
-// TODO remove head_pset_init
 const struct Pset *head_pset_init(void);
 
 const struct Plist *head_plist_init(void);

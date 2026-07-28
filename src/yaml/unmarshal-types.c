@@ -214,7 +214,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 	return cfg;
 }
 
-void yaml_map_into_ipc_responses(struct UC *c, const struct Plist *ipc_responses, const yaml_node_t *map) {
+void yaml_map_into_ipc_responses(struct UC *c, const struct Plist* const ipc_responses, const yaml_node_t *map) {
 	if (!ipc_responses)
 		return;
 
@@ -491,7 +491,7 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
 	return mode;
 }
 
-void yaml_map_into_modes(struct UC *c, const struct PPmap *modes, const yaml_node_t *map) {
+void yaml_map_into_modes(struct UC *c, const struct PPmap* const modes, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!modes)
 		return;
@@ -505,7 +505,7 @@ void yaml_map_into_modes(struct UC *c, const struct PPmap *modes, const yaml_nod
 	spmap_free(nodes);
 }
 
-void yaml_map_into_heads(struct UC *c, const struct Plist *heads, const yaml_node_t *map) {
+void yaml_map_into_heads(struct UC *c, const struct Plist* const heads, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!heads)
 		return;
@@ -572,6 +572,7 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 				if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
 					goto err;
 
+				// TODO handle duplicate and warn
 				pset_add(disableds, disabled);
 
 				break;
@@ -596,6 +597,7 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 				if (map)
 					yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 
+				// TODO handle duplicate and warn
 				pset_add(disableds, disabled);
 
 				break;
@@ -653,7 +655,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	return;
 }
 
-void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist *log_cap_lines, const yaml_node_t *map) {
+void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist* const log_cap_lines, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
@@ -711,7 +713,7 @@ end:
 	return ret;
 }
 
-void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset *sset, const yaml_node_t *seq) {
+void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset* const sset, const yaml_node_t *seq) {
 	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
 		return;
 
