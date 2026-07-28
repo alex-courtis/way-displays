@@ -313,7 +313,9 @@ void yaml_map_into_conditions(struct UC *c, const struct Pset* const conditions,
 	if (sset_size(condition->plugged) == 0 && sset_size(condition->unplugged) == 0 && !condition->lid)
 		goto err;
 
-	pset_add(conditions, condition);
+	if (!pset_add(conditions, condition)) {
+		cfg_condition_free(condition);
+	}
 
 	goto end;
 
@@ -572,8 +574,9 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 				if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
 					goto err;
 
-				// TODO handle duplicate and warn
-				pset_add(disableds, disabled);
+				if (!pset_add(disableds, disabled)) {
+					cfg_disabled_free(disabled);
+				}
 
 				break;
 			}
@@ -597,8 +600,9 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 				if (map)
 					yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 
-				// TODO handle duplicate and warn
-				pset_add(disableds, disabled);
+				if (!pset_add(disableds, disabled)) {
+					cfg_disabled_free(disabled);
+				}
 
 				break;
 			}
