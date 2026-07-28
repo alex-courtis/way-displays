@@ -90,13 +90,13 @@ const void *plist_at(const struct Plist* const list, const size_t i);
 const void *plist_find(const struct Plist* const list, const struct PlistFilter filter);
 
 // create an iterator at the start, caller must plist_it_free or invoke plist_next/prev until NULL
-const struct PlistIt *plist_it_start(const struct Plist* const list);
+const struct PlistIt *plist_it(const struct Plist* const list);
 
 // create an iterator at the end
 const struct PlistIt *plist_it_end(const struct Plist* const list);
 
 // create a filtering iterator, return NULL when no matches, first entry when empty filter
-const struct PlistIt *plist_filter_it_start(const struct Plist* const list, const struct PlistFilter filter);
+const struct PlistIt *plist_filter_it(const struct Plist* const list, const struct PlistFilter filter);
 
 // create a filtering iterator at the end of the list, return NULL when no matches, last entry when empty filter
 const struct PlistIt *plist_filter_it_end(const struct Plist* const list, const struct PlistFilter filter);
@@ -114,17 +114,32 @@ const struct PlistIt *plist_it_prev(const struct PlistIt* const it);
 // add at index, appends when index >= size, return true if added [alloc_val]
 bool plist_insert(const struct Plist* const list, size_t index, const void* const val);
 
+// add at index, appends when index >= size, return true if added, NOP when NULL clone_val [equal_val, clone_val]
+bool plist_insert_clone(const struct Plist* const list, size_t index, const void* const val);
+
 // add to end, return true if added [alloc_val]
 bool plist_append(const struct Plist* const list, const void* const val);
 
+// add to end, return true if added, NOP when NULL clone_val [equal_val, clone_val]
+bool plist_append_clone(const struct Plist* const list, const void* const val);
+
 // add to start, return true if added [alloc_val]
 bool plist_prepend(const struct Plist* const list, const void* const val);
+
+// add to start, return true if added, NOP when NULL clone_val [equal_val, clone_val]
+bool plist_prepend_clone(const struct Plist* const list, const void* const val);
 
 // replace val at index and return it, NOP when index >= size [alloc_val]
 const void *plist_replace(const struct Plist* const list, size_t index, const void* const val);
 
 // replace val at index and free it, return true if replaced, NOP when index >= size [alloc_val]
 bool plist_replace_free(const struct Plist* const list, size_t index, const void* const val);
+
+// replace val at index and return it, NOP when index >= size, NOP when NULL clone_val [equal_val, clone_val]
+const void *plist_replace_clone(const struct Plist* const list, size_t index, const void* const val);
+
+// replace val at index and free it, return true if replaced, NOP when index >= size, NOP when NULL clone_val [equal_val, clone_val]
+bool plist_replace_clone_free(const struct Plist* const list, size_t index, const void* const val);
 
 // add from vals, return number added [alloc_val]
 size_t plist_append_all(const struct Plist* const list, const struct Plist* const from);
@@ -151,10 +166,10 @@ size_t plist_remove_all(const struct Plist* const list);
 size_t plist_remove_all_free(const struct Plist* const list);
 
 // remove vals contained in, return number removed [equal_val]
-size_t plist_remove_in(const struct Plist* const map, const struct Plist* const in);
+size_t plist_remove_in(const struct Plist* const list, const struct Plist* const in);
 
 // remove and free vals contained in, return number removed [equal_val, free_val]
-size_t plist_remove_in_free(const struct Plist* const map, const struct Plist* const in);
+size_t plist_remove_in_free(const struct Plist* const list, const struct Plist* const in);
 
 // remove the it.val, return val if removed, it is unusable, plist_it_next or plist_it_prev must be called
 const void *plist_it_remove(const struct PlistIt* const it);
@@ -174,6 +189,16 @@ bool plist_equal(const struct Plist* const a, const struct Plist* const b);
 
 // same length, vals equal in order, uses params from a [equal_val]
 bool plist_equal_ordered(const struct Plist* const a, const struct Plist* const b);
+
+/*
+ * Conversion
+ */
+
+// list ordered keys with duplicates removed, same params, caller frees contents when alloc_key present [alloc_key]
+const struct Pset *plist_pset(const struct Plist* const list);
+
+// list ordered vals with duplicates removed, same params, caller frees contents, NULL when NULL clone_val [clone_val]
+const struct Pset *plist_pset_clone(const struct Plist* const list);
 
 /*
  * Info

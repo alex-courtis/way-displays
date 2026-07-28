@@ -61,7 +61,7 @@ const struct Pset *pset_init_with(const struct PsetParams params);
 // same params, caller frees vals when alloc_val present [alloc_val]
 const struct Pset *pset_clone(const struct Pset* const from);
 
-// set ordered vals, caller frees vals, NULL when NULL clone_val, alloc_val overrides clone_val [alloc_val, clone_val]
+// set ordered vals, caller frees vals, NULL when NULL clone_val [clone_val]
 const struct Pset *pset_clone_deep(const struct Pset* const from);
 
 // free set
@@ -101,6 +101,9 @@ const struct PsetIt *pset_it_next(const struct PsetIt* const it);
 
 // add if the set does not contain val, return true if added [equal_val, alloc_val]
 bool pset_add(const struct Pset* const set, const void* const val);
+
+// add if the set does not contain val, return true if added, NOP when NULL clone_val [equal_val, clone_val]
+bool pset_add_clone(const struct Pset* const set, const void* const val);
 
 // add from vals not contained in the set, return number added [equal_val, alloc_val]
 size_t pset_add_all(const struct Pset* const set, const struct Pset* const from);
@@ -149,10 +152,10 @@ bool pset_equal_ordered(const struct Pset* const a, const struct Pset* const b);
  * Conversion
  */
 
-// set ordered vals, caller frees contents when alloc_val present [alloc_val]
+// set ordered vals, same params, caller frees contents when alloc_val present [alloc_val]
 const struct Plist *pset_plist(const struct Pset* const set);
 
-// set ordered vals, caller frees contents, NULL when NULL clone_val [clone_val]
+// set ordered vals, same params, caller frees contents, NULL when NULL clone_val [clone_val]
 const struct Plist *pset_plist_clone(const struct Pset* const set);
 
 /*

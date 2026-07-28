@@ -123,11 +123,20 @@ const struct IPmapIt *ipmap_it_next(const struct IPmapIt* const it);
 // set key/val, return old val if overwritten [alloc_val]
 const void *ipmap_put(const struct IPmap* const map, const size_t key, const void* const val);
 
+// set key/val, free old val, return true if overwritten [alloc_val, free_val]
+bool ipmap_put_free(const struct IPmap* const map, const size_t key, const void* const val);
+
+// set key/val, return old val if overwritten, NOP when NULL clone_val [clone_val]
+const void *ipmap_put_clone(const struct IPmap* const map, const size_t key, const void* const val);
+
+// set key/val, free old val, return true if overwritten, NOP when NULL clone_val [clone_val, free_val]
+bool ipmap_put_clone_free(const struct IPmap* const map, const size_t key, const void* const val);
+
 // set key/val if not present, return existing val if present [alloc_val]
 const void *ipmap_put_if_absent(const struct IPmap* const map, const size_t key, const void* const val);
 
-// set key/val, free old val, return true if overwritten [alloc_val, free_val]
-bool ipmap_put_free(const struct IPmap* const map, const size_t key, const void* const val);
+// set key/val if not present, return existing val if present, NOP when NULL clone_val [clone_val]
+const void *ipmap_put_if_absent_clone(const struct IPmap* const map, const size_t key, const void* const val);
 
 // set all from key/val, returning number overwritten [alloc_val]
 size_t ipmap_put_all(const struct IPmap* const map, const struct IPmap* const from);
@@ -184,6 +193,12 @@ const struct Plist *ipmap_vals_plist(const struct IPmap* const map);
 
 // map ordered vals, caller frees contents, NULL when NULL clone_val [clone_val]
 const struct Plist *ipmap_vals_plist_clone(const struct IPmap* const map);
+
+// map ordered vals with duplicates removed, same params, caller frees contents when alloc_val present [alloc_val]
+const struct Pset *ipmap_vals_pset(const struct IPmap* const map);
+
+// map ordered vals with duplicates removed, same params, caller frees contents, NULL when NULL clone_val [clone_val]
+const struct Pset *ipmap_vals_pset_clone(const struct IPmap* const map);
 
 /*
  * Info

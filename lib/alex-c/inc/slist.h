@@ -79,13 +79,13 @@ const char *slist_at(const struct Slist* const list, const size_t i);
 const char *slist_find(const struct Slist* const list, const struct SlistFilter filter);
 
 // create an iterator at the start, caller must slist_it_free or invoke slist_next/prev until NULL
-const struct SlistIt *slist_it_start(const struct Slist* const list);
+const struct SlistIt *slist_it(const struct Slist* const list);
 
 // create an iterator at the end
 const struct SlistIt *slist_it_end(const struct Slist* const list);
 
 // create a filtering iterator, return NULL when no matches, first entry when empty filter
-const struct SlistIt *slist_filter_it_start(const struct Slist* const list, const struct SlistFilter filter);
+const struct SlistIt *slist_filter_it(const struct Slist* const list, const struct SlistFilter filter);
 
 // create a filtering iterator at the end of the list, return NULL when no matches, last entry when empty filter
 const struct SlistIt *slist_filter_it_end(const struct Slist* const list, const struct SlistFilter filter);
@@ -139,6 +139,13 @@ bool slist_equal(const struct Slist* const a, const struct Slist* const b);
 
 // same length, vals equal in order
 bool slist_equal_ordered(const struct Slist* const a, const struct Slist* const b);
+
+/*
+ * Conversion
+ */
+
+// list ordered vals with duplicates removed, same params
+const struct Sset *slist_sset(const struct Slist* const list);
 
 /*
  * Info

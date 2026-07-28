@@ -205,12 +205,24 @@ const void *spmap_put(const struct SPmap* const map, const char* const key, cons
 	return map ? ppmap_put(map->ppmap, key, val) : NULL;
 }
 
+bool spmap_put_free(const struct SPmap* const map, const char* const key, const void* const val) {
+	return map ? ppmap_put_free(map->ppmap, key, val) : false;
+}
+
+const void *spmap_put_clone(const struct SPmap* const map, const char* const key, const void* const val) {
+	return map && map->params.clone_val ? ppmap_put_clone(map->ppmap, key, val) : NULL;
+}
+
+bool spmap_put_clone_free(const struct SPmap* const map, const char* const key, const void* const val) {
+	return map && map->params.clone_val ? ppmap_put_clone_free(map->ppmap, key, val) : false;
+}
+
 const void *spmap_put_if_absent(const struct SPmap* const map, const char* const key, const void* const val) {
 	return map ? ppmap_put_if_absent(map->ppmap, key, val) : NULL;
 }
 
-bool spmap_put_free(const struct SPmap* const map, const char* const key, const void* const val) {
-	return map ? ppmap_put_free(map->ppmap, key, val) : false;
+const void *spmap_put_if_absent_clone(const struct SPmap* const map, const char* const key, const void* const val) {
+	return map && map->params.clone_val ? ppmap_put_if_absent_clone(map->ppmap, key, val) : NULL;
 }
 
 const void *spmap_remove(const struct SPmap* const map, const char* const key) {
@@ -333,6 +345,14 @@ const struct Plist *spmap_vals_plist(const struct SPmap* const map) {
 
 const struct Plist *spmap_vals_plist_clone(const struct SPmap* const map) {
 	return map ? ppmap_vals_plist_clone(map->ppmap) : NULL;
+}
+
+const struct Pset *spmap_vals_pset(const struct SPmap* const map) {
+	return map ? ppmap_vals_pset(map->ppmap) : NULL;
+}
+
+const struct Pset *spmap_vals_pset_clone(const struct SPmap* const map) {
+	return map ? ppmap_vals_pset_clone(map->ppmap) : NULL;
 }
 
 char *spmap_str(const struct SPmap* const map) {

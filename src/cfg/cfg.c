@@ -306,7 +306,7 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	// DISABLED, conditionals toggled and filtered earlier
 	for (const struct PsetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
 		if (!pset_remove_free(merged->disableds, it->val)) {
-			pset_add(merged->disableds, cfg_disabled_clone(it->val));
+			pset_add_clone(merged->disableds, it->val);
 		}
 	}
 

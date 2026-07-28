@@ -201,7 +201,7 @@ static void fill_order_buckets(const struct SPmap *buckets, const struct Plist *
 	struct PlistFilter f = { .val_data = pred, };
 	for (const struct SPmapIt *bit = spmap_it(buckets); bit; bit = spmap_it_next(bit)) {
 		f.data = bit->key;
-		for (const struct PlistIt *cit = plist_filter_it_start(candidates, f); cit; cit = plist_it_next(cit)) {
+		for (const struct PlistIt *cit = plist_filter_it(candidates, f); cit; cit = plist_it_next(cit)) {
 			plist_append(bit->val, cit->val);
 			plist_it_remove(cit);
 		}
@@ -232,7 +232,7 @@ const struct Plist *desire_order(const struct Sset * const order_name_desc, cons
 	}
 
 	// add the remainder that didn't match
-	for (const struct PlistIt *it = plist_it_start(candidates); it; it = plist_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(candidates); it; it = plist_it_next(it)) {
 		plist_append(sorted, it->val);
 	}
 
@@ -246,7 +246,7 @@ void desire_positions(const struct Plist *heads_sorted) {
 	int32_t tallest = 0, widest = 0, x = 0, y = 0;
 
 	// find tallest/widest
-	for (const struct PlistIt *it = plist_it_start(heads_sorted); it; it = plist_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(heads_sorted); it; it = plist_it_next(it)) {
 		const struct Head *head = it->val;
 		if (!head->des.zmode || !head->des.enabled) {
 			continue;
@@ -260,7 +260,7 @@ void desire_positions(const struct Plist *heads_sorted) {
 	}
 
 	// arrange each in the predefined order
-	for (const struct PlistIt *it = plist_it_start(heads_sorted); it; it = plist_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(heads_sorted); it; it = plist_it_next(it)) {
 		struct Head *head = (struct Head*)it->val;
 		if (!head->des.zmode || !head->des.enabled) {
 			continue;

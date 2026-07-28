@@ -1,9 +1,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "fn.h"
 #include "plist.h"
+#include "sset.h"
 
 #include "slist.h"
 
@@ -52,13 +54,13 @@ static const struct SlistIt *it_next_prev(const struct SlistIt* const it, bool p
 }
 
 static struct PlistFilter plist_filter_init(const struct SlistFilter *filter) {
-	const struct PlistFilter ppmap_filter = {
+	const struct PlistFilter plist_filter = {
 		.val = (fn_pred_p)filter->val,
 		.data = filter->data,
 		.val_data = (fn_pred_pp)filter->val_data,
 	};
 
-	return ppmap_filter;
+	return plist_filter;
 }
 
 const struct Slist *slist_init(void) {
@@ -137,16 +139,16 @@ const char *slist_find(const struct Slist* const list, const struct SlistFilter 
 	return list ? plist_find(list->plist, plist_filter_init(&filter)) : NULL;
 }
 
-const struct SlistIt *slist_it_start(const struct Slist* const list) {
-	return list ? it_init(plist_it_start(list->plist)) : NULL;
+const struct SlistIt *slist_it(const struct Slist* const list) {
+	return list ? it_init(plist_it(list->plist)) : NULL;
 }
 
 const struct SlistIt *slist_it_end(const struct Slist* const list) {
 	return list ? it_init(plist_it_end(list->plist)) : NULL;
 }
 
-const struct SlistIt *slist_filter_it_start(const struct Slist* const list, const struct SlistFilter filter) {
-	return list ? it_init(plist_filter_it_start(list->plist, plist_filter_init(&filter))) : NULL;
+const struct SlistIt *slist_filter_it(const struct Slist* const list, const struct SlistFilter filter) {
+	return list ? it_init(plist_filter_it(list->plist, plist_filter_init(&filter))) : NULL;
 }
 
 const struct SlistIt *slist_filter_it_end(const struct Slist* const list, const struct SlistFilter filter) {
@@ -218,6 +220,24 @@ bool slist_equal(const struct Slist* const a, const struct Slist* const b) {
 
 bool slist_equal_ordered(const struct Slist* const a, const struct Slist* const b) {
 	return a && b ? plist_equal_ordered(a->plist, b->plist) : false;
+}
+
+const struct Sset *slist_sset(const struct Slist* const list) {
+	if (!list)
+		return NULL;
+
+	const struct SsetParams params = {
+		.case_insensitive = list->params.case_insensitive,
+		.initial = MAX(plist_size(list->plist), list->params.initial),
+		.grow = list->params.grow,
+	};
+	const struct Sset *set = sset_init_with(params);
+
+	for (const struct SlistIt *it = slist_it(list); it; it = slist_it_next(it)) {
+		sset_add(set, it->val);
+	}
+
+	return set;
 }
 
 char *slist_str(const struct Slist* const list) {

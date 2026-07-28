@@ -129,11 +129,20 @@ const struct PPmapIt *ppmap_it_next(const struct PPmapIt* const it);
 // set key/val, return old val if overwritten [equal_key, alloc_key, alloc_val]
 const void *ppmap_put(const struct PPmap* const map, const void* const key, const void* const val);
 
+// set key/val, free old val, return true if overwritten [equal_key, alloc_key, alloc_val, free_key, free_val]
+bool ppmap_put_free(const struct PPmap* const map, const void* const key, const void* const val);
+
+// set key/val, return old val if overwritten, NOP when NULL clone_val [equal_key, alloc_key, clone_val]
+const void *ppmap_put_clone(const struct PPmap* const map, const void* const key, const void* const val);
+
+// set key/val, free old val, return true if overwritten, NOP when NULL clone_val [equal_key, alloc_key, clone_val, free_key, free_val]
+bool ppmap_put_clone_free(const struct PPmap* const map, const void* const key, const void* const val);
+
 // set key/val if not present, return existing val if present [equal_key, alloc_key, alloc_val]
 const void *ppmap_put_if_absent(const struct PPmap* const map, const void* const key, const void* const val);
 
-// set key/val, free old val, return true if overwritten [equal_key, alloc_key, alloc_val, free_key, free_val]
-bool ppmap_put_free(const struct PPmap* const map, const void* const key, const void* const val);
+// set key/val if not present, return existing val if present, NOP when NULL clone_val [equal_key, alloc_key, clone_val]
+const void *ppmap_put_if_absent_clone(const struct PPmap* const map, const void* const key, const void* const val);
 
 // set all from key/val, returning number overwritten [equal_key, alloc_key, alloc_val]
 size_t ppmap_put_all(const struct PPmap* const map, const struct PPmap* const from);
@@ -196,6 +205,12 @@ const struct Plist *ppmap_vals_plist(const struct PPmap* const map);
 
 // map ordered vals, same params, caller frees contents, NULL when NULL clone_val [clone_val]
 const struct Plist *ppmap_vals_plist_clone(const struct PPmap* const map);
+
+// map ordered vals with duplicates removed, same params, caller frees contents when alloc_val present [alloc_val]
+const struct Pset *ppmap_vals_pset(const struct PPmap* const map);
+
+// map ordered vals with duplicates removed, same params, caller frees contents, NULL when NULL clone_val [clone_val]
+const struct Pset *ppmap_vals_pset_clone(const struct PPmap* const map);
 
 /*
  * Info

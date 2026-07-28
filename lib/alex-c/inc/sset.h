@@ -122,7 +122,7 @@ bool sset_equal_ordered(const struct Sset* const a, const struct Sset* const b);
  * Conversion
  */
 
-// set ordered vals, caller frees list and contents
+// set ordered vals, same params
 const struct Slist *sset_slist(const struct Sset* const set);
 
 /*

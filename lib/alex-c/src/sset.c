@@ -32,13 +32,13 @@ static const struct SsetIt *it_init(const struct PsetIt *pit) {
 }
 
 static struct PsetFilter pset_filter_init(const struct SsetFilter *filter) {
-	const struct PsetFilter ppmap_filter = {
+	const struct PsetFilter pset_filter = {
 		.val = (fn_pred_p)filter->val,
 		.data = filter->data,
 		.val_data = (fn_pred_pp)filter->val_data,
 	};
 
-	return ppmap_filter;
+	return pset_filter;
 }
 
 const struct Sset *sset_init(void) {

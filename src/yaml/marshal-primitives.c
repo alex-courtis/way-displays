@@ -96,7 +96,7 @@ void yaml_map_add_plist(struct MC *c, const char *key, const struct Plist* const
 	if (!k || !seq)
 		return;
 
-	for (const struct PlistIt *it = plist_it_start(plist); it; it = plist_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(plist); it; it = plist_it_next(it)) {
 		int n = fn(c, it->val);
 		if (n)
 			yaml_document_append_sequence_item(&c->d, seq, n);

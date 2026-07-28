@@ -81,7 +81,7 @@ static void print_modes_res_refresh(const enum LogThreshold t, const struct Head
 	// show from the top down
 	const struct Plist *modes_sorted = ppmap_vals_plist(head->modes);
 	plist_sort(modes_sorted, (fn_less_than)mode_greater_than_res_refresh);
-	const struct PlistIt *it = plist_it_start(modes_sorted);
+	const struct PlistIt *it = plist_it(modes_sorted);
 	while (it) {
 
 		// res/refresh/hz line

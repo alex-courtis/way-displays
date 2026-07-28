@@ -1,8 +1,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "fn.h"
+#include "pset.h"
 #include "str.h"
 
 #include "plist.h"
@@ -93,7 +95,7 @@ static bool insert(const struct Plist* const list, size_t index, const void* con
 	return true;
 }
 
-static bool replace(const void **replaced, const struct Plist* const list, size_t index, const void* const val, bool do_free) {
+static bool replace(const void **replaced, const struct Plist* const list, size_t index, const void* const val, bool do_free, fn_clone alloc_val) {
 	if (replaced)
 		*replaced = NULL;
 
@@ -101,7 +103,7 @@ static bool replace(const void **replaced, const struct Plist* const list, size_
 		return false;
 
 	// create new value; alloc_val may return a valid new from a NULL val
-	const void *new = list->params.alloc_val ? list->params.alloc_val(val) : val;
+	const void *new = alloc_val ? alloc_val(val) : val;
 
 	if (!new && !list->params.allow_null_val) {
 		return false;
@@ -293,6 +295,32 @@ static const struct Plist *clone(const struct Plist* const from, fn_clone clone_
 	return to;
 }
 
+static const struct Pset *pset(const struct Plist* const list, fn_clone clone_val) {
+	const struct PsetParams params = {
+		.equal_val = list->params.equal_val,
+		.alloc_val = list->params.alloc_val,
+		.free_val = list->params.free_val,
+		.clone_val = list->params.clone_val,
+		.str_val = list->params.str_val,
+		.initial = MAX(list->size, list->params.initial),
+		.grow  = list->params.grow,
+	};
+	const struct Pset *set = pset_init_with(params);
+
+	for (const void **v = list->vals; v < list->vals + list->size; v++) {
+		if (clone_val) {
+			void *val = clone_val(*v);
+			if (!pset_add(set, val)) {
+				list->params.free_val ? list->params.free_val(val) : free(val);
+			}
+		} else {
+			pset_add(set, (void*)*v);
+		}
+	}
+
+	return set;
+}
+
 const struct Plist *plist_init(void) {
 	const struct PlistParams params = { 0 };
 	return plist_init_with(params);
@@ -387,7 +415,7 @@ const void *plist_find(const struct Plist* const list, const struct PlistFilter 
 	return NULL;
 }
 
-const struct PlistIt *plist_it_start(const struct Plist* const list) {
+const struct PlistIt *plist_it(const struct Plist* const list) {
 	return list ? plist_it_next(it_init(list, NULL)) : NULL;
 }
 
@@ -395,7 +423,7 @@ const struct PlistIt *plist_it_end(const struct Plist* const list) {
 	return list ? plist_it_prev(it_init(list, NULL)) : NULL;
 }
 
-const struct PlistIt *plist_filter_it_start(const struct Plist* const list, const struct PlistFilter filter) {
+const struct PlistIt *plist_filter_it(const struct Plist* const list, const struct PlistFilter filter) {
 	return list ? plist_it_next(it_init(list, &filter)) : NULL;
 }
 
@@ -476,12 +504,24 @@ bool plist_insert(const struct Plist* const list, size_t index, const void* cons
 	return list ? insert(list, index, val, list->params.alloc_val) : false;
 }
 
+bool plist_insert_clone(const struct Plist* const list, size_t index, const void* const val) {
+	return list && list->params.clone_val ? insert(list, index, val, list->params.clone_val) : false;
+}
+
 bool plist_append(const struct Plist* const list, const void* const val) {
 	return list ? insert(list, list->size, val, list->params.alloc_val) : false;
 }
 
+bool plist_append_clone(const struct Plist* const list, const void* const val) {
+	return list && list->params.clone_val ? insert(list, list->size, val, list->params.clone_val) : false;
+}
+
 bool plist_prepend(const struct Plist* const list, const void* const val) {
 	return list ? insert(list, 0, val, list->params.alloc_val) : false;
+}
+
+bool plist_prepend_clone(const struct Plist* const list, const void* const val) {
+	return list && list->params.clone_val ? insert(list, 0, val, list->params.clone_val) : false;
 }
 
 const void *plist_replace(const struct Plist* const list, size_t index, const void* const val) {
@@ -489,13 +529,33 @@ const void *plist_replace(const struct Plist* const list, size_t index, const vo
 		return NULL;
 
 	const void *replaced = NULL;
-	replace(&replaced, list, index, val, false);
+	replace(&replaced, list, index, val, false, list->params.alloc_val);
 
 	return replaced;
 }
 
 bool plist_replace_free(const struct Plist* const list, size_t index, const void* const val) {
-	return list ? replace(NULL, list, index, val, true) : false;
+	return list ? replace(NULL, list, index, val, true, list->params.alloc_val) : false;
+}
+
+const void *plist_replace_clone(const struct Plist* const list, size_t index, const void* const val) {
+	if (!list || !list->params.clone_val)
+		return NULL;
+
+	const void *replaced = NULL;
+	replace(&replaced, list, index, val, false, list->params.clone_val);
+
+	return replaced;
+}
+
+bool plist_replace_clone_free(const struct Plist* const list, size_t index, const void* const val) {
+	if (!list || !list->params.clone_val)
+		return NULL;
+
+	const void *replaced = NULL;
+	replace(&replaced, list, index, val, true, list->params.clone_val);
+
+	return replaced;
 }
 
 size_t plist_append_all(const struct Plist* const list, const struct Plist* const from) {
@@ -558,12 +618,12 @@ size_t plist_remove_all_free(const struct Plist* const list) {
 	return remove_all(list);
 }
 
-size_t plist_remove_in(const struct Plist* const map, const struct Plist* const in) {
-	return map && in ? remove_in(map, in, false) : 0;
+size_t plist_remove_in(const struct Plist* const list, const struct Plist* const in) {
+	return list && in ? remove_in(list, in, false) : 0;
 }
 
-size_t plist_remove_in_free(const struct Plist* const map, const struct Plist* const in) {
-	return map && in ? remove_in(map, in, true) : 0;
+size_t plist_remove_in_free(const struct Plist* const list, const struct Plist* const in) {
+	return list && in ? remove_in(list, in, true) : 0;
 }
 
 const void *plist_it_remove(const struct PlistIt* const it) {
@@ -627,6 +687,18 @@ bool plist_equal_ordered(const struct Plist* const a, const struct Plist* const 
 
 	return true;
 }
+
+const struct Pset *plist_pset(const struct Plist* const list) {
+	return list ? pset(list, NULL) : NULL;
+}
+
+const struct Pset *plist_pset_clone(const struct Plist* const list) {
+	if (!list || !list->params.clone_val)
+		return NULL;
+
+	return pset(list, list->params.clone_val);
+}
+
 
 char *plist_str(const struct Plist* const list) {
 	if (!list)

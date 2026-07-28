@@ -75,7 +75,7 @@ static bool filter_blocks(const struct PPmapFilter *filter, const void* const ke
 		(filter->key_val_data && !filter->key_val_data(key,  val, filter->data));
 }
 
-// return true if overwritten - val_old populated, maybe NULL
+// return true if old value was overwritten (overwrite == true) or would be (overwrite == false) and populate val_old which maybe NULL
 static bool put(const void **val_old, const struct PPmap* const map, const void* const key, const void* const val, fn_clone alloc_val, bool overwrite) {
 	if (!val && !map->params.allow_null_val)
 		return NULL;
@@ -92,9 +92,11 @@ static bool put(const void **val_old, const struct PPmap* const map, const void*
 				return true;
 			}
 
+			// alloc new value; alloc_val may return a valid new from a NULL val
 			const void *val_new = alloc_val ? alloc_val(val) : val;
 			if (!val_new && !map->params.allow_null_val) {
-				return true;
+				*val_old = NULL;
+				return false;
 			}
 
 			*v = val_new;
@@ -353,7 +355,7 @@ static const struct Plist *vals_plist(const struct PPmap* const map, fn_clone cl
 	const struct Plist *list = plist_init_with(params);
 
 	for (const void **v = map->vals; v < map->vals + map->size; v++) {
-		if (*v && clone_val) {
+		if (clone_val) {
 			plist_append(list, (void*)clone_val(*v));
 		} else {
 			plist_append(list, (void*)*v);
@@ -361,6 +363,32 @@ static const struct Plist *vals_plist(const struct PPmap* const map, fn_clone cl
 	}
 
 	return list;
+}
+
+static const struct Pset *vals_pset(const struct PPmap* const map, fn_clone clone_val) {
+	const struct PsetParams params = {
+		.equal_val = map->params.equal_val,
+		.alloc_val = map->params.alloc_val,
+		.free_val = map->params.free_val,
+		.clone_val = map->params.clone_val,
+		.str_val = map->params.str_val,
+		.initial = MAX(map->size, map->params.initial),
+		.grow  = map->params.grow,
+	};
+	const struct Pset *set = pset_init_with(params);
+
+	for (const void **v = map->vals; v < map->vals + map->size; v++) {
+		if (clone_val) {
+			void *val = clone_val(*v);
+			if (!pset_add(set, val)) {
+				map->params.free_val ? map->params.free_val(val) : free(val);
+			}
+		} else {
+			pset_add(set, (void*)*v);
+		}
+	}
+
+	return set;
 }
 
 const struct PPmap *ppmap_init(void) {
@@ -554,18 +582,6 @@ const void *ppmap_put(const struct PPmap* const map, const void* const key, cons
 	return val_old;
 }
 
-const void *ppmap_put_if_absent(const struct PPmap* const map, const void* const key, const void* const val) {
-	if (!map)
-		return NULL;
-
-	const void *val_old = NULL;
-	if (put(&val_old, map, key, val, map->params.alloc_val, false)) {
-		return val_old;
-	} else {
-		return NULL;
-	}
-}
-
 bool ppmap_put_free(const struct PPmap* const map, const void* const key, const void* const val) {
 	if (!map)
 		return false;
@@ -578,6 +594,55 @@ bool ppmap_put_free(const struct PPmap* const map, const void* const key, const 
 	}
 
 	return was_overwritten;
+}
+
+const void *ppmap_put_clone(const struct PPmap* const map, const void* const key, const void* const val) {
+	if (!map || !map->params.clone_val)
+		return NULL;
+
+	const void *val_old = NULL;
+	if (put(&val_old, map, key, val, map->params.clone_val, true))
+		return val_old;
+	else
+		return NULL;
+}
+
+bool ppmap_put_clone_free(const struct PPmap* const map, const void* const key, const void* const val) {
+	if (!map || !map->params.clone_val)
+		return false;
+
+	const void *val_old = NULL;
+	bool was_overwritten = put(&val_old, map, key, val, map->params.clone_val, true);
+
+	if (was_overwritten && val_old) {
+		map->params.free_val ? map->params.free_val((void*)val_old) : free((void*)val_old);
+	}
+
+	return was_overwritten;
+}
+
+const void *ppmap_put_if_absent(const struct PPmap* const map, const void* const key, const void* const val) {
+	if (!map)
+		return NULL;
+
+	const void *val_old = NULL;
+	if (put(&val_old, map, key, val, map->params.alloc_val, false)) {
+		return val_old;
+	} else {
+		return NULL;
+	}
+}
+
+const void *ppmap_put_if_absent_clone(const struct PPmap* const map, const void* const key, const void* const val) {
+	if (!map || !map->params.clone_val)
+		return NULL;
+
+	const void *val_old = NULL;
+	if (put(&val_old, map, key, val, map->params.clone_val, false)) {
+		return val_old;
+	} else {
+		return NULL;
+	}
 }
 
 size_t ppmap_put_all(const struct PPmap* const map, const struct PPmap* const from) {
@@ -706,6 +771,7 @@ const struct Plist *ppmap_keys_plist(const struct PPmap* const map) {
 		.free_val = map->params.free_key,
 		.clone_val = map->params.alloc_key,
 		.str_val = map->params.str_key,
+		.allow_null_val = map->params.allow_null_val,
 		.initial = MAX(map->size, map->params.initial),
 		.grow  = map->params.grow,
 	};
@@ -726,7 +792,6 @@ const struct Pset *ppmap_keys_pset(const struct PPmap* const map) {
 		.equal_val = map->params.equal_key,
 		.alloc_val = map->params.alloc_key,
 		.free_val = map->params.free_key,
-		.clone_val = map->params.alloc_key,
 		.str_val = map->params.str_key,
 		.initial = MAX(map->size, map->params.initial),
 		.grow  = map->params.grow,
@@ -749,6 +814,20 @@ const struct Plist *ppmap_vals_plist_clone(const struct PPmap* const map) {
 		return NULL;
 
 	return vals_plist(map, map->params.clone_val);
+}
+
+const struct Pset *ppmap_vals_pset(const struct PPmap* const map) {
+	if (!map)
+		return NULL;
+
+	return vals_pset(map, NULL);
+}
+
+const struct Pset *ppmap_vals_pset_clone(const struct PPmap* const map) {
+	if (!map || !map->params.clone_val)
+		return NULL;
+
+	return vals_pset(map, map->params.clone_val);
 }
 
 char *ppmap_str(const struct PPmap* const map) {
