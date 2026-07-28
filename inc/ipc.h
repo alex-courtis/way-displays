@@ -11,7 +11,7 @@ struct IpcOperation {
 	bool done;
 	int rc;
 	bool send_state;	// not for bad requests
-	const struct Pset *log_cap_lines;
+	const struct Plist *log_cap_lines;
 };
 
 struct IpcRequest {
@@ -33,7 +33,7 @@ struct IpcResponse {
 	struct Cfg *cfg;
 	const struct Pset *heads;
 	struct Lid *lid;
-	const struct Pset *log_cap_lines;
+	const struct Plist *log_cap_lines;
 };
 
 struct IpcOperation *ipc_operation_init(void);

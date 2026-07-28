@@ -20,7 +20,7 @@
 
 struct IpcOperation *ipc_operation_init(void) {
 	struct IpcOperation *operation = (struct IpcOperation*)calloc(1, sizeof(struct IpcOperation));
-	operation->log_cap_lines = log_cap_line_pset_init();
+	operation->log_cap_lines = log_cap_line_plist_init();
 	return operation;
 }
 
@@ -33,7 +33,7 @@ struct IpcRequest *ipc_request_init(const enum IpcCommand command) {
 struct IpcResponse *ipc_response_init(void) {
 	struct IpcResponse *response = calloc(1, sizeof(struct IpcResponse));
 	response->heads = head_pset_init();
-	response->log_cap_lines = log_cap_line_pset_init();
+	response->log_cap_lines = log_cap_line_plist_init();
 	return response;
 }
 
@@ -68,7 +68,7 @@ void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
 	if (!ipc_operation)
 		return;
 
-	for (const struct PsetIt *it = pset_it(ipc_operation->log_cap_lines); it; it = pset_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(ipc_operation->log_cap_lines); it; it = plist_it_next(it)) {
 		const struct LogCapLine *cap_line = (struct LogCapLine*)it->val;
 
 		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_WARN)
@@ -84,7 +84,7 @@ void ipc_send_operation(struct IpcOperation *operation) {
 	char *yaml = yaml_marshal(operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response");
 
 	// clear marshalled lines but keep capturing
-	pset_remove_all_free(operation->log_cap_lines);
+	plist_remove_all_free(operation->log_cap_lines);
 
 	if (!yaml) {
 		operation->done = true;
@@ -162,7 +162,7 @@ void ipc_response_free(struct IpcResponse *response) {
 	lid_free(response->lid);
 	pset_free_vals(response->heads);
 
-	pset_free_vals(response->log_cap_lines);
+	plist_free_vals(response->log_cap_lines);
 
 	free(response);
 }
@@ -175,7 +175,7 @@ void ipc_operation_destroy(struct IpcOperation *operation) {
 
 	log_cap_lines_stop(operation->log_cap_lines);
 
-	pset_free_vals(operation->log_cap_lines);
+	plist_free_vals(operation->log_cap_lines);
 
 	free(operation);
 }

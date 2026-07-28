@@ -30,7 +30,7 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
 void yaml_map_into_ipc_responses(struct UC *c, const struct Pset *ipc_responses,     const yaml_node_t *map);
 void yaml_map_into_heads        (struct UC *c, const struct Pset *heads,             const yaml_node_t *map);
 void yaml_map_into_modes        (struct UC *c, const struct PPmap *modes,            const yaml_node_t *map);
-void yaml_map_into_log_cap_lines(struct UC *c, const struct Pset *log_cap_lines,     const yaml_node_t *map);
+void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist *log_cap_lines,    const yaml_node_t *map);
 void yaml_map_into_conditions   (struct UC *c, const struct Pset* const conditions,  const yaml_node_t *map);
 void yaml_map_into_scales       (struct UC *c, const struct SImap* const scales,     const yaml_node_t *map);
 void yaml_map_into_named_modes  (struct UC *c, const struct SPmap* const modes,      const yaml_node_t *map);

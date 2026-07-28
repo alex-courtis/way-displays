@@ -652,19 +652,19 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	return;
 }
 
-void yaml_map_into_log_cap_lines(struct UC *c, const struct Pset *log_cap_lines, const yaml_node_t *map) {
+void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist *log_cap_lines, const yaml_node_t *map) {
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!nodes)
 		return;
 
 	// unmarshal many pairs even though schema specifies exactly one
-	for (const struct SPmapIt *i = spmap_it(nodes); i; i = spmap_it_next(i)) {
+	for (const struct SPmapIt *it = spmap_it(nodes); it; it = spmap_it_next(it)) {
 
-		enum LogThreshold threshold = log_threshold_val(i->key);
-		char *line = yaml_scalar_to_string(c, i->val);
+		enum LogThreshold threshold = log_threshold_val(it->key);
+		char *line = yaml_scalar_to_string(c, it->val);
 
 		if (threshold && line)
-			pset_add(log_cap_lines, log_cap_line_init(threshold, line));
+			plist_append(log_cap_lines, log_cap_line_init(threshold, line));
 
 		free(line);
 	}

@@ -501,16 +501,16 @@ static void yaml_root_to_ipc_response_pset__map(void **state) {
 	assert_int_equal(head->cur.transform, 3);
 	assert_int_equal(head->des.transform, 4);
 
-	assert_int_equal(pset_size(response->log_cap_lines), 3);
-	const struct LogCapLine *line = pset_at(response->log_cap_lines, 0);
+	assert_int_equal(plist_size(response->log_cap_lines), 3);
+	const struct LogCapLine *line = plist_at(response->log_cap_lines, 0);
 	assert_int_equal(line->threshold, WARNING);
 	assert_str_equal(line->line, "war");
 
-	line = pset_at(response->log_cap_lines, 1);
+	line = plist_at(response->log_cap_lines, 1);
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err");
 
-	line = pset_at(response->log_cap_lines, 2);
+	line = plist_at(response->log_cap_lines, 2);
 	assert_non_nul(line);
 	assert_int_equal(line->threshold, FATAL);
 	assert_str_equal(line->line, "fat");
@@ -562,20 +562,20 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_str_equal(head1->name, "name1");
 	assert_int_equal(head1->overrided_enabled, NoOverride);
 
-	assert_int_equal(pset_size(response->log_cap_lines), 4);
-	const struct LogCapLine *line = pset_at(response->log_cap_lines, 0);
+	assert_int_equal(plist_size(response->log_cap_lines), 4);
+	const struct LogCapLine *line = plist_at(response->log_cap_lines, 0);
 	assert_int_equal(line->threshold, DEBUG);
 	assert_str_equal(line->line, "dbg0");
 
-	line = pset_at(response->log_cap_lines, 1);
+	line = plist_at(response->log_cap_lines, 1);
 	assert_int_equal(line->threshold, INFO);
 	assert_str_equal(line->line, "inf0");
 
-	line = pset_at(response->log_cap_lines, 2);
+	line = plist_at(response->log_cap_lines, 2);
 	assert_int_equal(line->threshold, WARNING);
 	assert_str_equal(line->line, "war0");
 
-	line = pset_at(response->log_cap_lines, 3);
+	line = plist_at(response->log_cap_lines, 3);
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err0");
 
@@ -587,20 +587,20 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_nul(response->lid);
 	assert_int_equal(pset_size(response->heads), 0);
 
-	assert_int_equal(pset_size(response->log_cap_lines), 4);
-	line = pset_at(response->log_cap_lines, 0);
+	assert_int_equal(plist_size(response->log_cap_lines), 4);
+	line = plist_at(response->log_cap_lines, 0);
 	assert_int_equal(line->threshold, DEBUG);
 	assert_str_equal(line->line, "dbg1");
 
-	line = pset_at(response->log_cap_lines, 1);
+	line = plist_at(response->log_cap_lines, 1);
 	assert_int_equal(line->threshold, INFO);
 	assert_str_equal(line->line, "inf1");
 
-	line = pset_at(response->log_cap_lines, 2);
+	line = plist_at(response->log_cap_lines, 2);
 	assert_int_equal(line->threshold, WARNING);
 	assert_str_equal(line->line, "war1");
 
-	line = pset_at(response->log_cap_lines, 3);
+	line = plist_at(response->log_cap_lines, 3);
 	assert_int_equal(line->threshold, ERROR);
 	assert_str_equal(line->line, "err1");
 
@@ -611,7 +611,7 @@ static void yaml_root_to_ipc_response_pset__seq(void **state) {
 	assert_nul(response->cfg);
 	assert_nul(response->lid);
 	assert_int_equal(pset_size(response->heads), 0);
-	assert_int_equal(pset_size(response->log_cap_lines), 0);
+	assert_int_equal(plist_size(response->log_cap_lines), 0);
 
 	pset_free_vals(responses);
 	free(yaml);

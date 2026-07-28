@@ -140,9 +140,9 @@ struct IpcOperation *ipc_response(void) {
 	g_lid->closed = true;
 	g_lid->device_path = "/path/to/lid";
 
-	pset_add(ipc_operation->log_cap_lines, log_cap_line_init(DEBUG, "dbg"));
-	pset_add(ipc_operation->log_cap_lines, log_cap_line_init(INFO, "inf"));
-	pset_add(ipc_operation->log_cap_lines, log_cap_line_init(WARNING, "war"));
+	plist_append(ipc_operation->log_cap_lines, log_cap_line_init(DEBUG, "dbg"));
+	plist_append(ipc_operation->log_cap_lines, log_cap_line_init(INFO, "inf"));
+	plist_append(ipc_operation->log_cap_lines, log_cap_line_init(WARNING, "war"));
 
 	ipc_operation_update_rc(ipc_operation);
 

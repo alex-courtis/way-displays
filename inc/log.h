@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "enum.h"
-#include "pset.h"
+#include "plist.h"
 
 struct LogCapLine {
 	char *line;
@@ -53,17 +53,17 @@ void log_suppress_stop(void);
 // create a line, contents strdup'd
 struct LogCapLine *log_cap_line_init(const enum LogThreshold t, const char *line);
 
-// create a set to contain LogCapLine, caller must pset_free_vals
-const struct Pset *log_cap_line_pset_init(void);
+// create a list to contain LogCapLine, caller must plist_free_vals
+const struct Plist *log_cap_line_plist_init(void);
 
 // caller must call stop before freeing log_cap_lines
-void log_cap_lines_start(const struct Pset *log_cap_lines);
+void log_cap_lines_start(const struct Plist *log_cap_lines);
 
 // stops only, does not free
-void log_cap_lines_stop(const struct Pset *log_cap_lines);
+void log_cap_lines_stop(const struct Plist *log_cap_lines);
 
 // any set of lines
-void log_cap_lines_playback(const struct Pset *log_cap_lines);
+void log_cap_lines_playback(const struct Plist *log_cap_lines);
 
 
 #endif // LOG_H
