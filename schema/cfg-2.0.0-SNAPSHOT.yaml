@@ -102,6 +102,9 @@ properties:
     items:
       $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
 
+  TRANSFORMS:
+    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transforms'
+
   VRR_OFF:
     type: array
     description: |-

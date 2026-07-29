@@ -3,9 +3,9 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 $id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/ipc-request-2.0.0-SNAPSHOT.yaml
 
-title: way-displays IPC
+title: way-displays IPC request
 description: |-
-  Schema for https://github.com/alex-courtis/way-displays IPC
+  Schema for https://github.com/alex-courtis/way-displays IPC request
 
 type: object
 properties:

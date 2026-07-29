@@ -141,6 +141,22 @@ $defs:
       - TRANSFORM
     additionalProperties: false
 
+  transforms:
+    type: object
+    description: |-
+      Rotate or translate the display.
+    propertyNames:
+      type: string
+    additionalProperties:
+      enum:
+        - 90
+        - 180
+        - 270
+        - FLIPPED
+        - FLIPPED-90
+        - FLIPPED-180
+        - FLIPPED-270
+
   log_threshold:
     enum:
       - FATAL
@@ -204,6 +220,8 @@ $defs:
         type: integer
       TRANSFORM:
         $ref: '#/$defs/transform'
+      TRANSFORMS:
+        $ref: '#/$defs/transforms'
       CURRENT:
         $ref: '#/$defs/head/state'
       DESIRED:
@@ -237,6 +255,8 @@ $defs:
           type: boolean
         TRANSFORM:
           $ref: '#/$defs/transform'
+        TRANSFORMS:
+          $ref: '#/$defs/transforms'
         MODE:
           $ref: '#/$defs/head/mode'
       additionalProperties: false
