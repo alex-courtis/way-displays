@@ -36,6 +36,8 @@ void yaml_map_into_conditions   (struct UC *c, const struct Pset*  const conditi
 void yaml_map_into_scales       (struct UC *c, const struct SImap* const scales,        const yaml_node_t *map);
 void yaml_map_into_named_modes  (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *map);
 void yaml_map_into_transforms   (struct UC *c, const struct SImap* const transforms,    const yaml_node_t *map);
+void yaml_map_into_transforms_v2(struct UC *c, const struct SImap* const transforms,    const yaml_node_t *map);
+void yaml_node_into_transforms  (struct UC *c, const struct SImap* const transforms,    const yaml_node_t *node);
 void yaml_node_into_disableds   (struct UC *c, const struct Pset*  const disableds,     const yaml_node_t *node); // scalar or map
 
 // into an existing HeadState struct

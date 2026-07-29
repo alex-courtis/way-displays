@@ -122,7 +122,8 @@ $defs:
       - SCALE
     additionalProperties: false
 
-  transform:
+  # TODO schema: tidy away or just remove
+  transformv1:
     type: object
     properties:
       NAME_DESC:
@@ -141,7 +142,7 @@ $defs:
       - TRANSFORM
     additionalProperties: false
 
-  transforms:
+  transform:
     type: object
     description: |-
       Rotate or translate the display.
@@ -218,10 +219,10 @@ $defs:
         type: integer
       HEIGHT_MM:
         type: integer
+      TRANSFORMV1:
+        $ref: '#/$defs/transformv1'
       TRANSFORM:
         $ref: '#/$defs/transform'
-      TRANSFORMS:
-        $ref: '#/$defs/transforms'
       CURRENT:
         $ref: '#/$defs/head/state'
       DESIRED:
@@ -253,10 +254,10 @@ $defs:
           type: integer
         VRR:
           type: boolean
+        TRANSFORMV1:
+          $ref: '#/$defs/transformv1'
         TRANSFORM:
           $ref: '#/$defs/transform'
-        TRANSFORMS:
-          $ref: '#/$defs/transforms'
         MODE:
           $ref: '#/$defs/head/mode'
       additionalProperties: false

@@ -1,7 +1,0 @@
-# $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
-TRANSFORMS:
-  one: 90
-  "!two": 180
-  seven: FLIPPED-270
-  enum_incorrect: aoeu
-

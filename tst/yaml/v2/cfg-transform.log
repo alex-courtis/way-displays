@@ -1,0 +1,4 @@
+Ignoring invalid TRANSFORM two foobar, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+Ignoring invalid TRANSFORM regex '(three': Unmatched ( or \(
+Ignoring invalid TRANSFORM four , valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+Ignoring invalid TRANSFORM five expected scalar, got sequence, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270

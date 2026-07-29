@@ -136,74 +136,74 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 		if (!element_val)
 			continue;
 
-		const yaml_node_t *value = yaml_document_get_node(&c->d, pair->value);
-		if (!value)
+		const yaml_node_t *node = yaml_document_get_node(&c->d, pair->value);
+		if (!node)
 			continue;
 
 		yaml_unmarshal_log_ctx_top(c, element_name);
 
 		switch (element_val) {
 			case ARRANGE:
-				cfg->arrange = yaml_scalar_to_enum_def(c, ARRANGE_DEFAULT, value, arrange_val_start, arrange_name, arrange_names);
+				cfg->arrange = yaml_scalar_to_enum_def(c, ARRANGE_DEFAULT, node, arrange_val_start, arrange_name, arrange_names);
 				break;
 			case ALIGN:
-				cfg->align = yaml_scalar_to_enum_def(c, ALIGN_DEFAULT, value, align_val_start, align_name, align_names);
+				cfg->align = yaml_scalar_to_enum_def(c, ALIGN_DEFAULT, node, align_val_start, align_name, align_names);
 				break;
 			case ORDER:
-				yaml_seq_into_name_desc_sset(c, cfg->order_name_desc, value);
+				yaml_seq_into_name_desc_sset(c, cfg->order_name_desc, node);
 				break;
 			case SCALING:
-				cfg->scaling  = yaml_scalar_to_enum_def(c, SCALING_DEFAULT, value, on_off_val, on_off_name, on_off_names);
+				cfg->scaling  = yaml_scalar_to_enum_def(c, SCALING_DEFAULT, node, on_off_val, on_off_name, on_off_names);
 				break;
 			case AUTO_SCALE:
-				cfg->auto_scale = yaml_scalar_to_enum_def(c, AUTO_SCALE_DEFAULT, value, on_off_val, on_off_name, on_off_names);
+				cfg->auto_scale = yaml_scalar_to_enum_def(c, AUTO_SCALE_DEFAULT, node, on_off_val, on_off_name, on_off_names);
 				break;
 			case SCALE:
-				yaml_seq_into_col(c, value, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales);
+				yaml_seq_into_col(c, node, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales);
 				break;
 			case SCALE_ROUND_TO:
-				cfg->scale_round_to = yaml_scalar_to_scale_round_to(c, value);
+				cfg->scale_round_to = yaml_scalar_to_scale_round_to(c, node);
 				break;
 			case SCALE_ROUND_STRATEGY:
-				cfg->scale_round_strategy = yaml_scalar_to_enum_def(c, SCALE_ROUND_STRATEGY_DEFAULT, value, scale_round_strategy_val, scale_round_strategy_name, scale_round_strategy_names);
+				cfg->scale_round_strategy = yaml_scalar_to_enum_def(c, SCALE_ROUND_STRATEGY_DEFAULT, node, scale_round_strategy_val, scale_round_strategy_name, scale_round_strategy_names);
 				break;
 			case MODE:
-				yaml_seq_into_col(c, value, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_named_modes);
+				yaml_seq_into_col(c, node, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_named_modes);
 				break;
 			case TRANSFORM:
-				yaml_seq_into_col(c, value, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms);
+				yaml_node_into_transforms(c, cfg->transforms, node);
 				break;
 			case VRR_OFF:
-				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, value);
+				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, node);
 				break;
 			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
 				free(cfg->callback_cmd); // may be both entries present, use the last
-				cfg->callback_cmd = yaml_scalar_to_string_def(c, CALLBACK_CMD_DEFAULT, value);
+				cfg->callback_cmd = yaml_scalar_to_string_def(c, CALLBACK_CMD_DEFAULT, node);
 				break;
 			case LAPTOP_DISPLAY_PREFIX:
-				cfg->laptop_display_prefix = yaml_scalar_to_string(c, value);
+				cfg->laptop_display_prefix = yaml_scalar_to_string(c, node);
 				break;
 			case LAPTOP_LID_MONITOR:
-				cfg->laptop_lid_monitor = yaml_scalar_to_enum_def(c, LAPTOP_LID_MONITOR_DEFAULT, value, on_off_val, on_off_name, on_off_names);
+				cfg->laptop_lid_monitor = yaml_scalar_to_enum_def(c, LAPTOP_LID_MONITOR_DEFAULT, node, on_off_val, on_off_name, on_off_names);
 				break;
 			case MAX_PREFERRED_REFRESH:
-				yaml_seq_into_name_desc_sset(c, cfg->max_preferred_refresh, value);
+				yaml_seq_into_name_desc_sset(c, cfg->max_preferred_refresh, node);
 				break;
 			case LOG_THRESHOLD:
-				cfg->log_threshold = yaml_scalar_to_enum(c, value, log_threshold_val, log_threshold_names);
+				cfg->log_threshold = yaml_scalar_to_enum(c, node, log_threshold_val, log_threshold_names);
 				break;
 			case DISABLED:
-				yaml_seq_into_col(c, value, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds);
+				yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds);
 				break;
 			case AUTO_SCALE_DPI:
-				yaml_scalar_to_int_def(c, &cfg->auto_scale_dpi, AUTO_SCALE_DPI_DEFAULT, value);
+				yaml_scalar_to_int_def(c, &cfg->auto_scale_dpi, AUTO_SCALE_DPI_DEFAULT, node);
 				break;
 			case AUTO_SCALE_MIN:
-				yaml_scalar_to_float_def(c, &cfg->auto_scale_min, AUTO_SCALE_MIN_DEFAULT, value);
+				yaml_scalar_to_float_def(c, &cfg->auto_scale_min, AUTO_SCALE_MIN_DEFAULT, node);
 				break;
 			case AUTO_SCALE_MAX:
-				yaml_scalar_to_float_def(c, &cfg->auto_scale_max, AUTO_SCALE_MAX_DEFAULT, value);
+				yaml_scalar_to_float_def(c, &cfg->auto_scale_max, AUTO_SCALE_MAX_DEFAULT, node);
 				break;
 			default:
 				// ignore unexpected
@@ -460,6 +460,44 @@ end:
 	spmap_free(nodes);
 	yaml_unmarshal_log_ctx_key(c, NULL);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+}
+
+void yaml_map_into_transforms_v2(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!transforms || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	enum wl_output_transform transform;
+	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
+		yaml_unmarshal_log_ctx_key(c, NULL);
+
+		if (!yaml_valid_regex(c, it->key))
+			continue;
+
+		yaml_unmarshal_log_ctx_key(c, it->key);
+
+		if (!(transform = yaml_scalar_to_enum(c, it->val, transform_val, transform_names)))
+			continue;
+
+		simap_put_if_absent(transforms, it->key, transform);
+	}
+
+	spmap_free(m);
+	yaml_unmarshal_log_ctx_key(c, NULL);
+}
+
+void yaml_node_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *node) {
+	switch (node->type) {
+		case YAML_SEQUENCE_NODE:
+			yaml_seq_into_col(c, node, transforms, (fn_yaml_node_into_col)yaml_map_into_transforms);
+			break;
+		case YAML_MAPPING_NODE:
+			yaml_map_into_transforms_v2(c, transforms, node);
+			break;
+		default:
+			log_warn("Ignoring invalid TRANSFORM expected sequence or map, got %s", yaml_node_type_str(node->type));
+			break;
+	}
 }
 
 struct Lid *yaml_map_to_lid(struct UC *c, const yaml_node_t *map) {

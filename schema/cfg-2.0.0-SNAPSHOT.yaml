@@ -95,15 +95,16 @@ properties:
     items:
       $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/mode'
 
-  TRANSFORM:
+  # TODO schema: tidy away or just remove
+  TRANSFORMV1:
     type: array
     description: |-
       Rotate or translate the display.
     items:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
+      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transformv1'
 
-  TRANSFORMS:
-    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transforms'
+  TRANSFORM:
+    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
 
   VRR_OFF:
     type: array

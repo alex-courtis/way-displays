@@ -97,3 +97,6 @@ tst/tst-yaml-marshal: LDFLAGS += -Wl,$\
 
 tst/tst-yaml-unmarshal: LDFLAGS += -Wl,$\
 	--wrap=yaml_parser_initialize
+
+tst/tst-yaml-unmarshal-v2: LDFLAGS += -Wl,$\
+	--wrap=yaml_parser_initialize
