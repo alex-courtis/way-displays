@@ -42,6 +42,7 @@ $(EXAMPLE_O): $(INC_H) $(PRO_H) config.mk GNUmakefile
 way-displays: $(SRC_O) $(PRO_O) $(LIB_O)
 	$(CC) -o $(@) $(^) $(LDFLAGS) $(LDLIBS)
 	@test -x ../deploy.sh && ../deploy.sh || true
+	@test -x ../../deploy.sh && ../../deploy.sh || true
 
 #
 # protocols
