@@ -185,8 +185,7 @@ static void yaml_log(struct UC *c, const char *value, const char *expected) {
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
 	if (expected)
-		// TODO maybe add a comma
-		msg = sprintf_append(msg, " expected %s", expected);
+		msg = sprintf_append(msg, ", expected %s", expected);
 	if (c->enum_names) {
 		char *valids = c->enum_names();
 		if (valids) {

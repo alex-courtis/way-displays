@@ -42,6 +42,7 @@ void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {
 
 void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {
 	c->t = ERROR;
+	yaml_unmarshal_log_ctx_top(c, "document");
 
 	const struct SPmap *m;
 	if (!root || !(m = yaml_map_to_spmap(c, root)))
@@ -87,6 +88,7 @@ void *yaml_root_to_ipc_response_plist(struct UC *c, const yaml_node_t *root) {
 
 	// fail on bad type
 	c->t = ERROR;
+	yaml_unmarshal_log_ctx_top(c, "document");
 	if (!yaml_check_node_type(c, root, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE)) {
 		goto err;
 	}

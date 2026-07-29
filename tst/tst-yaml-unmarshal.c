@@ -132,7 +132,7 @@ static void yaml_root_to_cfg__mistyped(void **state) {
 static void yaml_root_to_cfg__root_mistyped(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-root-mistyped.yaml", yaml_root_to_cfg));
 
-	assert_log(WARNING, "Ignoring invalid tst/yaml/cfg-root-mistyped.yaml expected map, got sequence\n");
+	assert_log(WARNING, "Ignoring invalid tst/yaml/cfg-root-mistyped.yaml, expected map, got sequence\n");
 
 	assert_logs_empty();
 }
@@ -245,7 +245,7 @@ static void yaml_root_to_ipc_request__mistyped_root(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: expected map, got sequence\n"
+			"ipc request: invalid document, expected map, got sequence\n"
 			"========================================\n"
 			"- FOO\n"
 			"----------------------------------------\n");
@@ -277,7 +277,7 @@ static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: invalid OP expected scalar, got map, valid values: GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+			"ipc request: invalid OP, expected scalar, got map, valid values: GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP:\n"
 			"  FOO: BAR\n"
@@ -364,7 +364,7 @@ static void yaml_root_to_ipc_response_plist__mistyped_root(void **state) {
 	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR,
-			"ipc response: expected sequence or map, got scalar\n"
+			"ipc response: invalid document, expected sequence or map, got scalar\n"
 			"========================================\n"
 			"foo\n"
 			"----------------------------------------\n");
@@ -376,7 +376,7 @@ static void yaml_root_to_ipc_response_plist__seq_no_map(void **state) {
 	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR,
-			"ipc response: expected map, got scalar\n"
+			"ipc response: invalid document, expected map, got scalar\n"
 			"========================================\n"
 			"-\n"
 			"----------------------------------------\n");
