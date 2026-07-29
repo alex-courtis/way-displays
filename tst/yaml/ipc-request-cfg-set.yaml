@@ -1,3 +1,4 @@
+# $schema: ../../schema/ipc-request-2.0.0-SNAPSHOT.yaml
 OP: CFG_SET
 LOG_THRESHOLD: ERROR
 CFG:

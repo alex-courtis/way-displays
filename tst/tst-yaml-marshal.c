@@ -68,7 +68,7 @@ static int after_each(void **state) {
 static void _check_marshalled(char *actual, const char *expected_path, const char * const file, const int line) {
 	_assert_non_nul(actual, "actual", file, line);
 
-	char *expected = read_file(expected_path);
+	char *expected = read_file_filter(expected_path, "# $schema:");
 
 	if (strcmp(actual, expected) != 0) {
 		const char *err = sprintf_alloc("check_marshalled\nactual.yaml:\n%s !=\nexpected.yaml:\n%s\n", actual, expected);

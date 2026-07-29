@@ -1,3 +1,4 @@
+# $schema: ../../schema/ipc-response-2.0.0-SNAPSHOT.yaml
 DONE: TRUE
 CFG:
   ARRANGE: COLUMN
