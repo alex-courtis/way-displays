@@ -343,7 +343,7 @@ void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const 
 	}
 
 	if (simap_put_if_absent(scales, name_desc, round(scale * 1000))) {
-		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
+		yaml_unmarshal_log_duplicate_value(c, name_desc);
 	}
 
 end:
@@ -425,7 +425,7 @@ void yaml_map_into_named_modes(struct UC *c, const struct SPmap* const modes, co
 		goto err;
 
 	if (spmap_put_if_absent(modes, name_desc, mode)) {
-		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
+		yaml_unmarshal_log_duplicate_value(c, name_desc);
 		goto err;
 	}
 
@@ -462,7 +462,7 @@ void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms
 		goto end;
 
 	if (simap_put_if_absent(transforms, name_desc, transform)) {
-		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
+		yaml_unmarshal_log_duplicate_value(c, name_desc);
 	}
 
 end:
@@ -554,10 +554,7 @@ void yaml_map_into_modes(struct UC *c, const struct PPmap* const modes, const ya
 		return;
 
 	const struct Mode *mode = yaml_map_to_mode(c, map);
-
-	if (mode) {
-		ppmap_put(modes, mode, mode);
-	}
+	ppmap_put(modes, mode, mode);
 }
 
 void yaml_map_into_heads(struct UC *c, const struct Plist* const heads, const yaml_node_t *map) {
@@ -598,7 +595,6 @@ void yaml_map_into_heads(struct UC *c, const struct Plist* const heads, const ya
 	yaml_map_into_head_state(c, &head->cur, head, spmap_get(m, "CURRENT"));
 	yaml_map_into_head_state(c, &head->des, head, spmap_get(m, "DESIRED"));
 
-	// TODO split out
 	const struct SPmap *mo = yaml_map_to_spmap(c, spmap_get(m, "OVERRIDES"));
 	if (mo) {
 		bool disabled;

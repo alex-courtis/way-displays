@@ -167,7 +167,7 @@ void yaml_unmarshal_log_enum_names(struct UC *c, fn_enum_names fn) {
 	c->enum_names = fn;
 }
 
-static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_node_type_t type_expected1, const yaml_node_type_t type_expected2, const yaml_node_type_t type_actual) {
+static void yaml_log(struct UC *c, const yaml_char_t *value, const char *mess) {
 
 	char *msg = NULL;
 
@@ -182,10 +182,8 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 		msg = sprintf_append(msg, " %s", c->name_desc);
 	if (*c->key)
 		msg = sprintf_append(msg, " %s", c->key);
-	if (type_expected1 && type_expected2)
-		msg = sprintf_append(msg, " expected %s or %s, got %s", yaml_node_type_str(type_expected1), yaml_node_type_str(type_expected2), yaml_node_type_str(type_actual));
-	else if (type_expected1)
-		msg = sprintf_append(msg, " expected %s, got %s", yaml_node_type_str(type_expected1), yaml_node_type_str(type_actual));
+	if (mess)
+		msg = sprintf_append(msg, " %s", mess);
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
 	if (c->enum_names) {
@@ -224,10 +222,10 @@ static void yaml_log_misssing(struct UC *c) {
 }
 
 void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value) {
-	yaml_log_invalid(c, value, YAML_NO_NODE, 0, YAML_NO_NODE);
+	yaml_log(c, value, NULL);
 }
 
-void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value) {
+void yaml_unmarshal_log_duplicate_value(struct UC *c, const char *value) {
 	char *msg = strdup("Removing duplicate");
 
 	if (*c->top)
@@ -246,7 +244,12 @@ bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const ya
 	if (node_actual && (node_actual->type == expected1 || node_actual->type == expected2))
 		return true;
 
-	yaml_log_invalid(c, NULL, expected1, expected2, node_actual ? node_actual->type : YAML_NO_NODE);
+	char *msg = sprintf_alloc("expected %s", yaml_node_type_str(expected1));
+	if (expected2)
+		msg = sprintf_append(msg, " or %s", yaml_node_type_str(expected2));
+	msg = sprintf_append(msg, ", got %s", yaml_node_type_str(node_actual ? node_actual->type : YAML_NO_NODE));
+
+	yaml_log(c, NULL, msg);
 
 	return false;
 }
@@ -268,7 +271,7 @@ bool yaml_valid_regex(struct UC *c, const char *pattern) {
 
 	if (err) {
 		char *msg = sprintf_alloc("regex '%s': %s", pattern + 1, err);
-		yaml_unmarshal_log_invalid_value(c, (yaml_char_t*)msg);
+		yaml_log(c, NULL, msg);
 		free(msg);
 		free(err);
 		return false;
