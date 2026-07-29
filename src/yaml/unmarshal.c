@@ -179,7 +179,7 @@ static void yaml_log(struct UC *c, const char *value, const char *expected) {
 	if (*c->top)
 		msg = sprintf_append(msg, " invalid %s", c->top);
 	if (*c->name_desc)
-		msg = sprintf_append(msg, " %s", c->name_desc);
+		msg = sprintf_append(msg, " '%s'", c->name_desc);
 	if (*c->key)
 		msg = sprintf_append(msg, " %s", c->key);
 	if (value)
