@@ -225,16 +225,18 @@ void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, co
 	yaml_log(c, (char*)value, expected);
 }
 
-bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected1, const yaml_node_type_t expected2) {
-	if (node_actual && (node_actual->type == expected1 || node_actual->type == expected2))
+bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t type1, const yaml_node_type_t type2) {
+	if (node_actual && (node_actual->type == type1 || node_actual->type == type2))
 		return true;
 
-	char *msg = sprintf_alloc("%s", yaml_node_type_str(expected1));
-	if (expected2)
-		msg = sprintf_append(msg, " or %s", yaml_node_type_str(expected2));
-	msg = sprintf_append(msg, ", got %s", yaml_node_type_str(node_actual ? node_actual->type : YAML_NO_NODE));
+	char *expected = sprintf_alloc("%s", yaml_node_type_str(type1));
+	if (type2)
+		expected = sprintf_append(expected, " or %s", yaml_node_type_str(type2));
+	expected = sprintf_append(expected, ", got %s", yaml_node_type_str(node_actual ? node_actual->type : YAML_NO_NODE));
 
-	yaml_log(c, NULL, msg);
+	yaml_log(c, NULL, expected);
+
+	free(expected);
 
 	return false;
 }

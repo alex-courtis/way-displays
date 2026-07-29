@@ -38,8 +38,7 @@ bool yaml_scalar_to_int(struct UC *c, int32_t *dst, const yaml_node_t *scalar) {
 	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) == 1)
 		return true;
 
-	// TODO "integer"
-	yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, NULL);
+	yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "integer");
 	return false;
 }
 
@@ -66,8 +65,7 @@ bool yaml_scalar_to_float(struct UC *c, float *dst, const yaml_node_t *scalar) {
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) == 1)
 		return true;
 
-	// TODO "number"
-	yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, NULL);
+	yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "number");
 	return false;
 }
 
@@ -95,8 +93,7 @@ int yaml_scalar_to_enum(struct UC *c, const yaml_node_t *scalar, fn_enum_val val
 	if (yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0)) {
 		ret = val((char*)scalar->data.scalar.value);
 		if (!ret) {
-			// TODO "enum"
-			yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, NULL);
+			yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "enum");
 		}
 	}
 

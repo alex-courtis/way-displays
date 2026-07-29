@@ -262,7 +262,7 @@ static void yaml_root_to_ipc_request__invalid_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: invalid OP aoeu, valid values: GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+			"ipc request: invalid OP aoeu, expected enum, valid values: GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP: aoeu\n"
 			"----------------------------------------\n");
