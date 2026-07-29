@@ -612,6 +612,7 @@ void yaml_map_into_heads(struct UC *c, const struct Plist* const heads, const ya
 }
 
 void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, const yaml_node_t *node) {
+	// TODO expect string, not scalar
 	if (!disableds || !yaml_check_node_type(c, node, YAML_SCALAR_NODE, YAML_MAPPING_NODE))
 		return;
 
@@ -755,6 +756,7 @@ end:
 }
 
 void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset* const sset, const yaml_node_t *seq) {
+	// TODO expect string, not scalar
 	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE, 0))
 		return;
 

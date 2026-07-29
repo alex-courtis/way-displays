@@ -1,4 +1,4 @@
 Ignoring invalid TRANSFORM 'badenum' foobar, expected enum, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 Ignoring invalid TRANSFORM regex '(badpat': Unmatched ( or \(
 Ignoring invalid TRANSFORM 'emptystr' , expected enum, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
-Ignoring invalid TRANSFORM 'sequ', expected scalar, got sequence, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+Ignoring invalid TRANSFORM 'sequ', expected enum, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270

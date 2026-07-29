@@ -3,4 +3,4 @@ Ignoring invalid SCALE 'neg' -956421.52, expected a number greater than 0
 Ignoring invalid SCALE 'astring' aoeu, expected number
 Ignoring invalid SCALE regex '(badpat': Unmatched ( or \(
 Ignoring invalid SCALE 'emptystr' , expected number
-Ignoring invalid SCALE 'sequ', expected scalar, got sequence
+Ignoring invalid SCALE 'sequ', expected number

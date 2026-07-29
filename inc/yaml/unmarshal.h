@@ -48,7 +48,10 @@ void yaml_unmarshal_log_enum_names   (struct UC *c, fn_enum_names fn); // all va
 // explicitly log a value as invalid
 void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected);
 
-// validate actual is one of type expecteds, returning false and logging a warning if not
+// validate that the node is a scalar, return false and log a warning with expected string if not
+bool yaml_check_is_scalar(struct UC *c, const yaml_node_t *node, const char *expected);
+
+// validate actual is one of type expecteds, returning false and logging an expected-got warning if not
 bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected1, const yaml_node_type_t expected2);
 
 // assert that node is not null

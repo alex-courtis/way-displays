@@ -12,8 +12,8 @@
 #include "yaml/unmarshal.h"
 
 char *yaml_scalar_to_string(struct UC *c, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0))
-		return NULL;
+	if (!yaml_check_is_scalar(c, scalar, "string"))
+		return false;
 
 	return(strdup((char*)scalar->data.scalar.value));
 }
@@ -32,7 +32,7 @@ char *yaml_scalar_to_string_def(struct UC *c, const char *def, const yaml_node_t
 }
 
 bool yaml_scalar_to_int(struct UC *c, int32_t *dst, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0))
+	if (!yaml_check_is_scalar(c, scalar, "integer"))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) == 1)
@@ -59,7 +59,7 @@ bool yaml_scalar_to_int_def(struct UC *c, int32_t *dst, int32_t def, const yaml_
 }
 
 bool yaml_scalar_to_float(struct UC *c, float *dst, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0))
+	if (!yaml_check_is_scalar(c, scalar, "number"))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) == 1)
@@ -90,7 +90,7 @@ int yaml_scalar_to_enum(struct UC *c, const yaml_node_t *scalar, fn_enum_val val
 
 	int ret = 0;
 
-	if (yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0)) {
+	if (yaml_check_is_scalar(c, scalar, "enum")) {
 		ret = val((char*)scalar->data.scalar.value);
 		if (!ret) {
 			yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "enum");

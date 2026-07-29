@@ -184,13 +184,14 @@ static void yaml_log(struct UC *c, const char *value, const char *expected) {
 		msg = sprintf_append(msg, " %s", c->key);
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
-	if (expected)
+	if (expected) {
 		msg = sprintf_append(msg, ", expected %s", expected);
-	if (c->enum_names) {
-		char *valids = c->enum_names();
-		if (valids) {
-			msg = sprintf_append(msg, ", valid values: %s", valids);
-			free(valids);
+		if (c->enum_names) {
+			char *valids = c->enum_names();
+			if (valids) {
+				msg = sprintf_append(msg, ", valid values: %s", valids);
+				free(valids);
+			}
 		}
 	}
 	if (*c->def)
@@ -223,6 +224,15 @@ static void yaml_log_misssing(struct UC *c) {
 
 void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected) {
 	yaml_log(c, (char*)value, expected);
+}
+
+bool yaml_check_is_scalar(struct UC *c, const yaml_node_t *node, const char *expected) {
+	if (node && node->type == YAML_SCALAR_NODE)
+		return true;
+
+	yaml_unmarshal_log_invalid_value(c, NULL, expected);
+
+	return false;
 }
 
 bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t type1, const yaml_node_type_t type2) {
