@@ -4,7 +4,7 @@ SCALE:
   one: 1
   big: 900.0045
   zero: 0
-  neg: -1
+  neg: -956421.52
   astring: aoeu
   '!(badpat': 4
   emptystr:

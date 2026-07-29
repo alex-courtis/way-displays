@@ -338,7 +338,7 @@ void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const 
 		goto end;
 
 	if (scale <= 0) {
-		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value);
+		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "a number greater than 0");
 		goto end;
 	}
 
@@ -373,7 +373,7 @@ void yaml_map_into_scales_v2(struct UC *c, const struct SImap* const scales, con
 			continue;
 
 		if (scale <= 0) {
-			yaml_unmarshal_log_invalid_value(c, ((const yaml_node_t*)it->val)->data.scalar.value);
+			yaml_unmarshal_log_invalid_value(c, ((const yaml_node_t*)it->val)->data.scalar.value, "a number greater than 0");
 			continue;
 		}
 
@@ -740,7 +740,7 @@ unsigned int yaml_scalar_to_scale_round_to(struct UC *c, const yaml_node_t *scal
 
 	ret = scale_round_to_val(val);
 	if (!ret) {
-		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value);
+		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "enum");
 		ret = SCALE_ROUND_TO_DEFAULT;
 		goto end;
 	}

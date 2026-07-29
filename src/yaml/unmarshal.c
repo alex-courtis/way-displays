@@ -167,7 +167,7 @@ void yaml_unmarshal_log_enum_names(struct UC *c, fn_enum_names fn) {
 	c->enum_names = fn;
 }
 
-static void yaml_log(struct UC *c, const yaml_char_t *value, const char *mess) {
+static void yaml_log(struct UC *c, const char *value, const char *expected) {
 
 	char *msg = NULL;
 
@@ -182,10 +182,11 @@ static void yaml_log(struct UC *c, const yaml_char_t *value, const char *mess) {
 		msg = sprintf_append(msg, " %s", c->name_desc);
 	if (*c->key)
 		msg = sprintf_append(msg, " %s", c->key);
-	if (mess)
-		msg = sprintf_append(msg, " %s", mess);
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
+	if (expected)
+		// TODO maybe add a comma
+		msg = sprintf_append(msg, " expected %s", expected);
 	if (c->enum_names) {
 		char *valids = c->enum_names();
 		if (valids) {
@@ -221,15 +222,15 @@ static void yaml_log_misssing(struct UC *c) {
 	}
 }
 
-void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value) {
-	yaml_log(c, value, NULL);
+void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected) {
+	yaml_log(c, (char*)value, expected);
 }
 
 bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected1, const yaml_node_type_t expected2) {
 	if (node_actual && (node_actual->type == expected1 || node_actual->type == expected2))
 		return true;
 
-	char *msg = sprintf_alloc("expected %s", yaml_node_type_str(expected1));
+	char *msg = sprintf_alloc("%s", yaml_node_type_str(expected1));
 	if (expected2)
 		msg = sprintf_append(msg, " or %s", yaml_node_type_str(expected2));
 	msg = sprintf_append(msg, ", got %s", yaml_node_type_str(node_actual ? node_actual->type : YAML_NO_NODE));
@@ -256,7 +257,7 @@ bool yaml_valid_regex(struct UC *c, const char *pattern) {
 
 	if (err) {
 		char *msg = sprintf_alloc("regex '%s': %s", pattern + 1, err);
-		yaml_log(c, NULL, msg);
+		yaml_log(c, msg, NULL);
 		free(msg);
 		free(err);
 		return false;

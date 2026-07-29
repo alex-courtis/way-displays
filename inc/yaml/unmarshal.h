@@ -46,7 +46,7 @@ void yaml_unmarshal_log_ctx_top      (struct UC *c, const char *top); // root ma
 void yaml_unmarshal_log_enum_names   (struct UC *c, fn_enum_names fn); // all valid enum values
 
 // explicitly log a value as invalid
-void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value);
+void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected);
 
 // validate actual is one of type expecteds, returning false and logging a warning if not
 bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected1, const yaml_node_type_t expected2);
