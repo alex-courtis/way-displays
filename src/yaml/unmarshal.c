@@ -225,21 +225,6 @@ void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value) {
 	yaml_log(c, value, NULL);
 }
 
-void yaml_unmarshal_log_duplicate_value(struct UC *c, const char *value) {
-	char *msg = strdup("Removing duplicate");
-
-	if (*c->top)
-		msg = sprintf_append(msg, " %s", c->top);
-
-	if (value)
-		msg = sprintf_append(msg, " %s", value);
-
-	if (msg) {
-		log_(c->t, "%s", msg);
-		free(msg);
-	}
-}
-
 bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected1, const yaml_node_type_t expected2) {
 	if (node_actual && (node_actual->type == expected1 || node_actual->type == expected2))
 		return true;

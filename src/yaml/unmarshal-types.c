@@ -343,7 +343,7 @@ void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const 
 	}
 
 	if (simap_put_if_absent(scales, name_desc, round(scale * 1000))) {
-		yaml_unmarshal_log_duplicate_value(c, name_desc);
+		log_warn("Removing duplicate SCALE %s", name_desc);
 	}
 
 end:
@@ -425,7 +425,7 @@ void yaml_map_into_named_modes(struct UC *c, const struct SPmap* const modes, co
 		goto err;
 
 	if (spmap_put_if_absent(modes, name_desc, mode)) {
-		yaml_unmarshal_log_duplicate_value(c, name_desc);
+		log_warn("Removing duplicate MODE %s", name_desc);
 		goto err;
 	}
 
@@ -462,7 +462,7 @@ void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms
 		goto end;
 
 	if (simap_put_if_absent(transforms, name_desc, transform)) {
-		yaml_unmarshal_log_duplicate_value(c, name_desc);
+		log_warn("Removing duplicate TRANSFORM %s", name_desc);
 	}
 
 end:
