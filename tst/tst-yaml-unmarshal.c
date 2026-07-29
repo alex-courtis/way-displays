@@ -363,8 +363,8 @@ static void yaml_root_to_ipc_response_plist__empty(void **state) {
 static void yaml_root_to_ipc_response_plist__mistyped_root(void **state) {
 	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_plist, "ipc response"));
 
-	assert_log(ERROR, "\n"
-			"ipc response: expected map or sequence, got scalar\n"
+	assert_log(ERROR,
+			"ipc response: expected sequence or map, got scalar\n"
 			"========================================\n"
 			"foo\n"
 			"----------------------------------------\n");

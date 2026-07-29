@@ -139,7 +139,7 @@ static void yaml_root_to_cfg__root_mistyped(void **state) {
 
 static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
-	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
+	simap_put(expected->transforms, "ninety", WL_OUTPUT_TRANSFORM_90);
 
 	check_unmarshalled_cfg("tst/yaml/v2/cfg-transform.yaml", expected, "tst/yaml/v2/cfg-transform.log");
 
@@ -148,9 +148,10 @@ static void yaml_root_to_cfg__transform(void **state) {
 
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
-	simap_put(expected->scales, "three", 3000);
+	simap_put(expected->scales, "one", 1000);
+	simap_put(expected->scales, "big", 900005);
 
-	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
+	check_unmarshalled_cfg("tst/yaml/v2/cfg-scale.yaml", expected, "tst/yaml/v2/cfg-scale.log");
 
 	assert_logs_empty();
 }
@@ -363,8 +364,8 @@ static void yaml_root_to_ipc_response_plist__empty(void **state) {
 static void yaml_root_to_ipc_response_plist__mistyped_root(void **state) {
 	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_plist, "ipc response"));
 
-	assert_log(ERROR, "\n"
-			"ipc response: expected map or sequence, got scalar\n"
+	assert_log(ERROR,
+			"ipc response: expected sequence or map, got scalar\n"
 			"========================================\n"
 			"foo\n"
 			"----------------------------------------\n");

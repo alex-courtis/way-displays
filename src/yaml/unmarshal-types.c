@@ -34,7 +34,7 @@ void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {
 	// log warnings and skip failures
 	c->t = WARNING;
 
-	if (!yaml_check_node_type(c, root, YAML_MAPPING_NODE))
+	if (!yaml_check_node_type(c, root, YAML_MAPPING_NODE, 0))
 		return NULL;
 
 	return yaml_map_to_cfg(c, root);
@@ -89,9 +89,9 @@ void *yaml_root_to_ipc_response_plist(struct UC *c, const yaml_node_t *root) {
 
 	const struct Plist *ipc_responses = ipc_response_plist_init();
 
-	if (root->type != YAML_MAPPING_NODE && root->type != YAML_SEQUENCE_NODE) {
-		log_error(NULL);
-		log_error("%s: expected %s or %s, got %s", *c->prefix ? c->prefix : "", yaml_node_type_str(YAML_MAPPING_NODE), yaml_node_type_str(YAML_SEQUENCE_NODE), yaml_node_type_str(root->type));
+	// fail on bad type
+	c->t = ERROR;
+	if (!yaml_check_node_type(c, root, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE)) {
 		goto err;
 	}
 
@@ -159,7 +159,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->auto_scale = yaml_scalar_to_enum_def(c, AUTO_SCALE_DEFAULT, node, on_off_val, on_off_name, on_off_names);
 				break;
 			case SCALE:
-				yaml_seq_into_col(c, node, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales);
+				yaml_node_into_scales(c, cfg->scales, node);
 				break;
 			case SCALE_ROUND_TO:
 				cfg->scale_round_to = yaml_scalar_to_scale_round_to(c, node);
@@ -355,7 +355,7 @@ void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const 
 		goto end;
 	}
 
-	if (simap_put_if_absent(scales, name_desc, round(scale*1000))) {
+	if (simap_put_if_absent(scales, name_desc, round(scale * 1000))) {
 		yaml_unmarshal_log_remove_duplicate_value(c, name_desc);
 	}
 
@@ -366,6 +366,35 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 
 	return;
+}
+
+void yaml_map_into_scales_v2(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!scales || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	float scale;
+	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
+		yaml_unmarshal_log_ctx_key(c, NULL);
+
+		if (!yaml_valid_regex(c, it->key))
+			continue;
+
+		yaml_unmarshal_log_ctx_key(c, it->key);
+
+		if (!yaml_scalar_to_float(c, &scale, it->val))
+			continue;
+
+		if (scale <= 0) {
+			yaml_unmarshal_log_invalid_value(c, ((const yaml_node_t*)it->val)->data.scalar.value);
+			continue;
+		}
+
+		simap_put_if_absent(scales, it->key, round(scale * 1000));
+	}
+
+	yaml_unmarshal_log_ctx_key(c, NULL);
+	spmap_free(m);
 }
 
 void yaml_map_into_named_modes(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
@@ -486,17 +515,25 @@ void yaml_map_into_transforms_v2(struct UC *c, const struct SImap* const transfo
 	yaml_unmarshal_log_ctx_key(c, NULL);
 }
 
+void yaml_node_into_scales(struct UC *c, const struct SImap* const scales, const yaml_node_t *node) {
+	if (!yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE))
+		return;
+
+	if (node->type == YAML_SEQUENCE_NODE) {
+		yaml_seq_into_col(c, node, scales, (fn_yaml_node_into_col)yaml_map_into_scales);
+	} else if (node->type == YAML_MAPPING_NODE) {
+		yaml_map_into_scales_v2(c, scales, node);
+	}
+}
+
 void yaml_node_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *node) {
-	switch (node->type) {
-		case YAML_SEQUENCE_NODE:
-			yaml_seq_into_col(c, node, transforms, (fn_yaml_node_into_col)yaml_map_into_transforms);
-			break;
-		case YAML_MAPPING_NODE:
-			yaml_map_into_transforms_v2(c, transforms, node);
-			break;
-		default:
-			log_warn("Ignoring invalid TRANSFORM expected sequence or map, got %s", yaml_node_type_str(node->type));
-			break;
+	if (!yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE))
+		return;
+
+	if (node->type == YAML_SEQUENCE_NODE) {
+		yaml_seq_into_col(c, node, transforms, (fn_yaml_node_into_col)yaml_map_into_transforms);
+	} else if (node->type == YAML_MAPPING_NODE) {
+		yaml_map_into_transforms_v2(c, transforms, node);
 	}
 }
 
@@ -532,6 +569,7 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
 }
 
 void yaml_map_into_modes(struct UC *c, const struct PPmap* const modes, const yaml_node_t *map) {
+	// TODO this is not a good pattern, check nodes is not null
 	const struct SPmap *nodes = yaml_map_to_spmap(c, map);
 	if (!modes)
 		return;
@@ -598,57 +636,45 @@ void yaml_map_into_heads(struct UC *c, const struct Plist* const heads, const ya
 }
 
 void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, const yaml_node_t *node) {
-	if (!disableds)
+	if (!disableds || !yaml_check_node_type(c, node, YAML_SCALAR_NODE, YAML_MAPPING_NODE))
 		return;
 
 	struct CfgDisabled *disabled = NULL;
 
 	const struct SPmap *node_map = NULL;
 
-	switch (node->type) {
-		case YAML_SCALAR_NODE:
-			{
-				disabled = cfg_disabled_init();
-				if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
-					goto err;
+	if (node->type == YAML_SCALAR_NODE) {
 
-				if (!pset_add(disableds, disabled)) {
-					cfg_disabled_free(disabled);
-				}
-
-				break;
-			}
-
-		case YAML_MAPPING_NODE:
-			{
-				if (!(node_map = yaml_map_to_spmap(c, node)))
-					return;
-
-				disabled = cfg_disabled_init();
-
-				yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-				const yaml_node_t *scalar = spmap_get(node_map, "NAME_DESC");
-				if (!yaml_check_mandatory(c, scalar) || !(disabled->name_desc = yaml_scalar_to_name_desc(c, scalar)))
-					goto err;
-
-				yaml_unmarshal_log_ctx_name_desc(c, disabled->name_desc);
-
-				yaml_unmarshal_log_ctx_key(c, "IF");
-				const yaml_node_t *map = spmap_get(node_map, "IF");
-				if (map)
-					yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
-
-				if (!pset_add(disableds, disabled)) {
-					cfg_disabled_free(disabled);
-				}
-
-				break;
-			}
-
-		default:
-			log_warn("Ignoring invalid DISABLED expected scalar or map, got %s", yaml_node_type_str(node->type));
+		disabled = cfg_disabled_init();
+		if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
 			goto err;
-			break;
+
+		if (!pset_add(disableds, disabled)) {
+			cfg_disabled_free(disabled);
+		}
+
+	} else if (node->type == YAML_MAPPING_NODE) {
+
+		if (!(node_map = yaml_map_to_spmap(c, node)))
+			return;
+
+		disabled = cfg_disabled_init();
+
+		yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
+		const yaml_node_t *scalar = spmap_get(node_map, "NAME_DESC");
+		if (!yaml_check_mandatory(c, scalar) || !(disabled->name_desc = yaml_scalar_to_name_desc(c, scalar)))
+			goto err;
+
+		yaml_unmarshal_log_ctx_name_desc(c, disabled->name_desc);
+
+		yaml_unmarshal_log_ctx_key(c, "IF");
+		const yaml_node_t *map = spmap_get(node_map, "IF");
+		if (map)
+			yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
+
+		if (!pset_add(disableds, disabled)) {
+			cfg_disabled_free(disabled);
+		}
 	}
 
 	goto end;
@@ -756,7 +782,7 @@ end:
 }
 
 void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset* const sset, const yaml_node_t *seq) {
-	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE))
+	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE, 0))
 		return;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {

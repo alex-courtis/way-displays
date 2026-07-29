@@ -1,9 +1,9 @@
 # $schema: ../../../schema/cfg-2.0.0-SNAPSHOT.yaml
 TRANSFORM:
-  one: 270     # first one is overwritten
-  one: FLIPPED
-  two: foobar
-  '!(three': 180
-  four:
-  five:
+  ninety: FLIPPED     # first one is overwritten
+  ninety: 90
+  badenum: foobar
+  '!(badpat': 180
+  emptystr:
+  sequ:
     - 

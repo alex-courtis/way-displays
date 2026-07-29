@@ -167,7 +167,7 @@ void yaml_unmarshal_log_enum_names(struct UC *c, fn_enum_names fn) {
 	c->enum_names = fn;
 }
 
-static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_node_type_t type_expected, const yaml_node_type_t type_actual) {
+static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_node_type_t type_expected1, const yaml_node_type_t type_expected2, const yaml_node_type_t type_actual) {
 
 	char *msg = NULL;
 
@@ -182,8 +182,10 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 		msg = sprintf_append(msg, " %s", c->name_desc);
 	if (*c->key)
 		msg = sprintf_append(msg, " %s", c->key);
-	if (type_expected)
-		msg = sprintf_append(msg, " expected %s, got %s", yaml_node_type_str(type_expected), yaml_node_type_str(type_actual));
+	if (type_expected1 && type_expected2)
+		msg = sprintf_append(msg, " expected %s or %s, got %s", yaml_node_type_str(type_expected1), yaml_node_type_str(type_expected2), yaml_node_type_str(type_actual));
+	else if (type_expected1)
+		msg = sprintf_append(msg, " expected %s, got %s", yaml_node_type_str(type_expected1), yaml_node_type_str(type_actual));
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
 	if (c->enum_names) {
@@ -222,7 +224,7 @@ static void yaml_log_misssing(struct UC *c) {
 }
 
 void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value) {
-	yaml_log_invalid(c, value, YAML_NO_NODE, YAML_NO_NODE);
+	yaml_log_invalid(c, value, YAML_NO_NODE, 0, YAML_NO_NODE);
 }
 
 void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value) {
@@ -240,11 +242,11 @@ void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value) 
 	}
 }
 
-bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected) {
-	if (node_actual && node_actual->type == expected)
+bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected1, const yaml_node_type_t expected2) {
+	if (node_actual && (node_actual->type == expected1 || node_actual->type == expected2))
 		return true;
 
-	yaml_log_invalid(c, NULL, expected, node_actual ? node_actual->type : YAML_NO_NODE);
+	yaml_log_invalid(c, NULL, expected1, expected2, node_actual ? node_actual->type : YAML_NO_NODE);
 
 	return false;
 }

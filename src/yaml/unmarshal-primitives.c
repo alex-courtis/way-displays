@@ -12,7 +12,7 @@
 #include "yaml/unmarshal.h"
 
 char *yaml_scalar_to_string(struct UC *c, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE))
+	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0))
 		return NULL;
 
 	return(strdup((char*)scalar->data.scalar.value));
@@ -32,7 +32,7 @@ char *yaml_scalar_to_string_def(struct UC *c, const char *def, const yaml_node_t
 }
 
 bool yaml_scalar_to_int(struct UC *c, int32_t *dst, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE))
+	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) == 1)
@@ -59,7 +59,7 @@ bool yaml_scalar_to_int_def(struct UC *c, int32_t *dst, int32_t def, const yaml_
 }
 
 bool yaml_scalar_to_float(struct UC *c, float *dst, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE))
+	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) == 1)
@@ -90,7 +90,7 @@ int yaml_scalar_to_enum(struct UC *c, const yaml_node_t *scalar, fn_enum_val val
 
 	int ret = 0;
 
-	if (yaml_check_node_type(c, scalar, YAML_SCALAR_NODE)) {
+	if (yaml_check_node_type(c, scalar, YAML_SCALAR_NODE, 0)) {
 		ret = val((char*)scalar->data.scalar.value);
 		if (!ret) {
 			yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value);
@@ -126,7 +126,7 @@ bool yaml_scalar_to_boolean(struct UC *c, bool *dst, const yaml_node_t *scalar) 
 }
 
 bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn_yaml_node_into_col fn) {
-	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !col)
+	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE, 0) || !col)
 		return false;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
@@ -142,7 +142,7 @@ bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn
 }
 
 const struct SPmap *yaml_map_to_spmap(struct UC *c, const yaml_node_t *map) {
-	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE))
+	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE, 0))
 		return NULL;
 
 	const struct SPmap *nodes = spmap_init();
