@@ -6,5 +6,5 @@ Ignoring invalid SCALE 'mistyped' SCALE, expected number
 Ignoring invalid SCALE, expected map, got sequence
 SCALE: Ignoring missing SCALE for 'missing_scale'
 SCALE: Ignoring missing NAME_DESC
-Ignoring invalid SCALE 'neg' SCALE -1, expected a number greater than 0
-Ignoring invalid SCALE 'zero' SCALE 0, expected a number greater than 0
+Ignoring invalid SCALE 'neg' SCALE -1, expected positive number
+Ignoring invalid SCALE 'zero' SCALE 0, expected positive number

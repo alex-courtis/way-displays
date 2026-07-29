@@ -45,10 +45,10 @@ void yaml_unmarshal_log_ctx_name_desc(struct UC *c, const char *name_desc); // N
 void yaml_unmarshal_log_ctx_top      (struct UC *c, const char *top); // root map key
 void yaml_unmarshal_log_enum_names   (struct UC *c, fn_enum_names fn); // all valid enum values
 
-// explicitly log a value as invalid
+// explicitly log a value as invalid with free-form expectation message
 void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected);
 
-// validate that the node is a scalar, return false and log a warning with expected string if not
+// validate that the node is a scalar, return false and log a warning with free-form expected message if not
 bool yaml_check_is_scalar(struct UC *c, const yaml_node_t *node, const char *expected);
 
 // validate actual is one of type expecteds, returning false and logging an expected-got warning if not

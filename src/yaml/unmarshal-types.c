@@ -340,7 +340,7 @@ void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const 
 		goto end;
 
 	if (scale <= 0) {
-		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "a number greater than 0");
+		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "positive number");
 		goto end;
 	}
 
@@ -375,7 +375,7 @@ void yaml_map_into_scales_v2(struct UC *c, const struct SImap* const scales, con
 			continue;
 
 		if (scale <= 0) {
-			yaml_unmarshal_log_invalid_value(c, ((const yaml_node_t*)it->val)->data.scalar.value, "a number greater than 0");
+			yaml_unmarshal_log_invalid_value(c, ((const yaml_node_t*)it->val)->data.scalar.value, "positive number");
 			continue;
 		}
 
