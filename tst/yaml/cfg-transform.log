@@ -1,8 +1,8 @@
 Removing duplicate TRANSFORM one
-Ignoring invalid TRANSFORM 'invalid' TRANSFORM foobar, expected enum, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+Ignoring invalid TRANSFORM 'invalid' TRANSFORM foobar, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 Ignoring invalid TRANSFORM NAME_DESC regex '(transform': Unmatched ( or \(
 Ignoring invalid TRANSFORM NAME_DESC, expected string
-Ignoring invalid TRANSFORM 'mistyped' TRANSFORM, expected enum, valid values: 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+Ignoring invalid TRANSFORM 'mistyped' TRANSFORM, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 Ignoring invalid TRANSFORM, expected map, got sequence
 TRANSFORM: Ignoring missing TRANSFORM for 'missing_transform'
 TRANSFORM: Ignoring missing NAME_DESC

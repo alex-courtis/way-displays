@@ -189,7 +189,7 @@ static void yaml_log(struct UC *c, const char *value, const char *expected) {
 		if (c->enum_names) {
 			char *valids = c->enum_names();
 			if (valids) {
-				msg = sprintf_append(msg, ", valid values: %s", valids);
+				msg = sprintf_append(msg, " %s", valids);
 				free(valids);
 			}
 		}
