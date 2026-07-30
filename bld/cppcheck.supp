@@ -2,7 +2,8 @@
 *:pro
 
 # compilation unit only functions are in .h for documentation purposes
-staticFunction:yaml/marshal-types.c
+staticFunction:yaml/marshal-types-cfg.c
+staticFunction:yaml/marshal-types-ipc.c
 staticFunction:yaml/unmarshal.c
 staticFunction:yaml/unmarshal-types.c
 

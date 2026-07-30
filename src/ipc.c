@@ -13,7 +13,7 @@
 #include "log.h"
 #include "plist.h"
 #include "sockets.h"
-#include "yaml/marshal-types.h"
+#include "yaml/marshal-types-ipc.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"
