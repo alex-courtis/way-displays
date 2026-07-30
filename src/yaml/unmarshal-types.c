@@ -734,7 +734,7 @@ unsigned int yaml_scalar_to_scale_round_to(struct UC *c, const yaml_node_t *scal
 	unsigned int ret;
 
 	yaml_unmarshal_log_def(c, scale_round_to_name(SCALE_ROUND_TO_DEFAULT));
-	c->enum_names = scale_round_to_names;
+	yaml_unmarshal_log_enum_names(c, scale_round_to_names);
 
 	if (!yaml_scalar_to_float(c, &val, scalar)) {
 		ret = SCALE_ROUND_TO_DEFAULT;
@@ -750,7 +750,7 @@ unsigned int yaml_scalar_to_scale_round_to(struct UC *c, const yaml_node_t *scal
 
 end:
 	yaml_unmarshal_log_def(c, NULL);
-	c->enum_names = NULL;
+	yaml_unmarshal_log_enum_names(c, NULL);
 
 	return ret;
 }
