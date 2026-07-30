@@ -65,7 +65,7 @@ static const char reset_colour[] = "\x1B[0m";
 
 static void capture_line(enum LogThreshold threshold, const char *l) {
 	for (const struct PsetIt *it = pset_it(log_cap_lines_active); it; it = pset_it_next(it)) {
-		pset_add(it->val, log_cap_line_init(threshold, l));
+		plist_append(it->val, log_cap_line_init(threshold, l));
 	}
 }
 
@@ -285,5 +285,5 @@ void log_cap_lines_start(const struct Plist *log_cap_lines) {
 }
 
 void log_cap_lines_stop(const struct Plist *log_cap_lines) {
-	pset_add(log_cap_lines_active, log_cap_lines);
+	pset_remove(log_cap_lines_active, log_cap_lines);
 }
