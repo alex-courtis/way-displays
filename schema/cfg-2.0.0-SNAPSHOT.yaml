@@ -82,9 +82,13 @@ properties:
       Ignored if below AUTO_SCALE_MIN.
 
   SCALE:
-    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/scale'
+    type: object
     description: |-
       Auto scale may be overridden for each display.
+    propertyNames:
+      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+    additionalProperties:
+      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/scale'
 
   MODE:
     type: array
@@ -95,9 +99,13 @@ properties:
       $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/mode'
 
   TRANSFORM:
-    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
+    type: object
     description: |-
       Rotate or translate the display.
+    propertyNames:
+      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+    additionalProperties:
+      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
 
   VRR_OFF:
     type: array

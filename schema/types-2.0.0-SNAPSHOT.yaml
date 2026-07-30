@@ -111,28 +111,18 @@ $defs:
     additionalProperties: false
 
   scale:
-    type: object
-    propertyNames:
-      type: string
-      minLength: 4
-    additionalProperties:
-      type: number
-      exclusiveMinimum: 0
+    type: number
+    exclusiveMinimum: 0
 
   transform:
-    type: object
-    propertyNames:
-      type: string # TODO time-box 20 min: try and use fuzzy_display_match
-      minLength: 4
-    additionalProperties:
-      enum:
-        - 90
-        - 180
-        - 270
-        - FLIPPED
-        - FLIPPED-90
-        - FLIPPED-180
-        - FLIPPED-270
+    enum:
+      - 90
+      - 180
+      - 270
+      - FLIPPED
+      - FLIPPED-90
+      - FLIPPED-180
+      - FLIPPED-270
 
   log_threshold:
     enum:
