@@ -181,22 +181,3 @@ void yaml_map_add_ppmap(struct MC *c, const char *key, const struct PPmap* const
 	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
 }
 
-void yaml_map_add_simap(struct MC *c, const char *key, const struct SImap* const simap, fn_node_from_yaml_key_size_t fn, int mapping) {
-	if (!key || simap_size(simap) == 0)
-		return;
-
-	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-	int seq = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-
-	if (!k || !seq)
-		return;
-
-	for (const struct SImapIt *it = simap_it(simap); it; it = simap_it_next(it)) {
-		int n = fn(c, it->key, it->val);
-		if (n)
-			yaml_document_append_sequence_item(&c->d, seq, n);
-	}
-
-	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
-}
-

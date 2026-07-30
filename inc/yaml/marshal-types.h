@@ -33,6 +33,8 @@ int yaml_map_from_head_state    (struct MC *c, const struct HeadState*    const 
 int yaml_map_from_lid           (struct MC *c, const struct Lid*          const lid);
 int yaml_seq_from_messages      (struct MC *c, const struct IpcOperation* const ipc_operation);
 int yaml_map_from_state         (struct MC *c); // g_displ->heads and g_lid
+int yaml_map_from_scales        (struct MC *c, const struct SImap*        const scales);
+int yaml_map_from_transforms    (struct MC *c, const struct SImap*        const transforms);
 
 // yaml_map_add_pset: fn_yaml_node_from_type
 int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condition);
@@ -42,9 +44,5 @@ int yaml_map_from_head     (struct MC *c, const struct Head* const head);
 // yaml_map_add_spmap: fn_yaml_node_from_key_type
 int yaml_map_from_mode      (struct MC *c, const void* const unused,    const struct Mode* const mode);
 int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const struct Mode* const mode);
-
-// yaml_map_add_simap: fn_node_from_yaml_key_size_t
-int yaml_map_from_scale    (struct MC *c, const char* const name_desc, const size_t scale);
-int yaml_map_from_transform(struct MC *c, const char* const name_desc, const size_t transform);
 
 #endif // YAML_MARSHAL_TYPES_H

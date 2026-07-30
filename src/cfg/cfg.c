@@ -17,6 +17,7 @@
 
 struct Cfg *g_cfg = NULL;
 
+// TODO yaml v2: move to parser, providing it doesn't mess with IPC
 static void warn_ambiguous_name_desc(const char *name_desc, const enum CfgElement element) {
 	if (strlen(name_desc) < 4) {
 		log_warn(NULL);

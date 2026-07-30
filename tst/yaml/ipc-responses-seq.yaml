@@ -15,10 +15,8 @@
     AUTO_SCALE_MIN: 0.5
     AUTO_SCALE_MAX: 2.5
     SCALE:
-    - NAME_DESC: three
-      SCALE: 3
-    - NAME_DESC: four
-      SCALE: 4
+      three: 3
+      four: 4
     MODE:
     - NAME_DESC: five
       WIDTH: 1920
@@ -30,8 +28,7 @@
     - NAME_DESC: seven
       MAX: TRUE
     TRANSFORM:
-    - NAME_DESC: twelve
-      TRANSFORM: FLIPPED
+      twelve: FLIPPED
     VRR_OFF:
     - ten
     - ELEVEN

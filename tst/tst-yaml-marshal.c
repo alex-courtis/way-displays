@@ -86,7 +86,7 @@ static void _check_marshalled(char *actual, const char *expected_path, const cha
 static void yaml_root_from_cfg__ok(void **state) {
 	struct Cfg *cfg = cfg_all();
 
-	check_marshalled(yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"), "tst/yaml/cfg-all.yaml");
+	check_marshalled(yaml_marshal(cfg, (fn_yaml_root_from_type)yaml_root_from_cfg, "cfg"), "tst/yaml/v2/cfg-all.yaml");
 
 	cfg_free(cfg);
 
@@ -132,7 +132,7 @@ static void yaml_root_from_ipc_request__cfg_set(void **state) {
 
 	ipc_request->cfg = cfg_all();
 
-	check_marshalled(yaml_marshal(ipc_request, (fn_yaml_root_from_type)yaml_root_from_ipc_request, "ipc request"), "tst/yaml/ipc-request-cfg-set.yaml");
+	check_marshalled(yaml_marshal(ipc_request, (fn_yaml_root_from_type)yaml_root_from_ipc_request, "ipc request"), "tst/yaml/v2/ipc-request-cfg-set.yaml");
 
 	ipc_request_free(ipc_request);
 
@@ -146,7 +146,7 @@ static void yaml_root_from_ipc_operation__map(void **state) {
 	plist_append(ipc_operation->log_cap_lines, log_cap_line_init(FATAL, "fat"));
 	ipc_operation_update_rc(ipc_operation);
 
-	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/ipc-responses-map.yaml");
+	check_marshalled(yaml_marshal(ipc_operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response"), "tst/yaml/v2/ipc-responses-map.yaml");
 
 	ipc_operation_destroy(ipc_operation);
 

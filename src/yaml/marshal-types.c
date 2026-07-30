@@ -85,9 +85,9 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_int_nz  (c, cfg_element_name(AUTO_SCALE_DPI),        cfg->auto_scale_dpi,                                                              map);
 	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                              map);
 	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                              map);
-	yaml_map_add_simap   (c, cfg_element_name(SCALE),                 cfg->scales,                yaml_map_from_scale,                                  map);
+	yaml_map_add_node    (c, cfg_element_name(SCALE),                 yaml_map_from_scales(c, cfg->scales),                                             map);
 	yaml_map_add_spmap   (c, cfg_element_name(MODE),                  cfg->modes,                 (fn_yaml_node_from_key_type)yaml_map_from_named_mode, map);
-	yaml_map_add_simap   (c, cfg_element_name(TRANSFORM),             cfg->transforms,            yaml_map_from_transform,                              map);
+	yaml_map_add_node    (c, cfg_element_name(TRANSFORM),             yaml_map_from_transforms(c, cfg->transforms),                                     map);
 	yaml_map_add_sset    (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,                                                           map);
 	yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                                map);
 	yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                       map);
@@ -233,13 +233,14 @@ int yaml_map_from_state(struct MC *c) {
 	return map;
 }
 
-int yaml_map_from_scale(struct MC *c, const char* const name_desc, const size_t scale) {
-	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
-	if (!map)
+int yaml_map_from_scales(struct MC *c, const struct SImap* const scales) {
+	int map;
+	if (simap_size(scales) < 1 || !(map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
 		return 0;
 
-	yaml_map_add_str(c, "NAME_DESC", name_desc, map);
-	yaml_map_add_float_nz(c, "SCALE", (double)scale/1000, map);
+	for (const struct SImapIt *it = simap_it(scales); it; it = simap_it_next(it)) {
+		yaml_map_add_int(c, it->key, (double)it->val/1000, map);
+	}
 
 	return map;
 }
@@ -266,13 +267,14 @@ int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const st
 	return map;
 }
 
-int yaml_map_from_transform(struct MC *c, const char* const name_desc, const size_t transform) {
-	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
-	if (!map)
+int yaml_map_from_transforms(struct MC *c, const struct SImap* const transforms) {
+	int map;
+	if (simap_size(transforms) < 1 || !(map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
 		return 0;
 
-	yaml_map_add_str(c, "NAME_DESC", name_desc, map);
-	yaml_map_add_str(c, "TRANSFORM", transform_name(transform), map);
+	for (const struct SImapIt *it = simap_it(transforms); it; it = simap_it_next(it)) {
+		yaml_map_add_str(c, it->key, transform_name(it->val), map);
+	}
 
 	return map;
 }

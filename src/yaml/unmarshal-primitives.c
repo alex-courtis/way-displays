@@ -13,7 +13,7 @@
 
 char *yaml_scalar_to_string(struct UC *c, const yaml_node_t *scalar) {
 	if (!yaml_check_is_scalar(c, scalar, "string"))
-		return false;
+		return NULL;
 
 	return(strdup((char*)scalar->data.scalar.value));
 }

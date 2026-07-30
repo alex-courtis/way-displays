@@ -26,9 +26,6 @@ typedef int (*fn_yaml_node_from_type)(struct MC *c, const void* const val);
 // create a node from the key and pointer val, never null
 typedef int (*fn_yaml_node_from_key_type)(struct MC *c, const char* const key, const void* const val);
 
-// create a node from the key and integer val
-typedef int (*fn_node_from_yaml_key_size_t)(struct MC *c, const char* const key, const size_t val);
-
 // add a node or scalar pair to an existing maping node
 void yaml_map_add_node    (struct MC *c, const char *key,       int     node,                       int mapping); // NOP on 0
 void yaml_map_add_str     (struct MC *c, const char *key, const char    *str,                       int mapping); // NOP on NULL
@@ -45,6 +42,5 @@ void yaml_map_add_sset  (struct MC *c, const char *key, const struct Sset*   con
 void yaml_map_add_pset  (struct MC *c, const char *key, const struct Pset*   const pset,  fn_yaml_node_from_type fn,       int mapping);
 void yaml_map_add_spmap (struct MC *c, const char *key, const struct SPmap*  const spmap, fn_yaml_node_from_key_type fn,   int mapping);
 void yaml_map_add_ppmap (struct MC *c, const char *key, const struct PPmap*  const ppmap, fn_yaml_node_from_key_type fn,   int mapping);
-void yaml_map_add_simap (struct MC *c, const char *key, const struct SImap*  const simap, fn_node_from_yaml_key_size_t fn, int mapping);
 
 #endif // YAML_MARSHAL_PRIMITIVES_H

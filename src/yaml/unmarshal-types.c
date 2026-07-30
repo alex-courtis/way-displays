@@ -483,6 +483,7 @@ void yaml_map_into_transforms_v2(struct UC *c, const struct SImap* const transfo
 	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
 		yaml_unmarshal_log_ctx_name_desc(c, NULL);
 
+		// TODO yaml v2: maybe yaml_scalar_to_name_desc or similar, if this gets repetitive
 		if (!yaml_valid_regex(c, it->key))
 			continue;
 
