@@ -144,65 +144,115 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 			case ARRANGE:
 				cfg->arrange = yaml_scalar_to_enum_def(c, ARRANGE_DEFAULT, node, arrange_val_start, arrange_name, arrange_names);
 				break;
+
 			case ALIGN:
 				cfg->align = yaml_scalar_to_enum_def(c, ALIGN_DEFAULT, node, align_val_start, align_name, align_names);
 				break;
+
 			case ORDER:
 				yaml_seq_into_name_desc_sset(c, cfg->order_name_desc, node);
 				break;
+
 			case SCALING:
 				cfg->scaling  = yaml_scalar_to_enum_def(c, SCALING_DEFAULT, node, on_off_val, on_off_name, on_off_names);
 				break;
+
 			case AUTO_SCALE:
 				cfg->auto_scale = yaml_scalar_to_enum_def(c, AUTO_SCALE_DEFAULT, node, on_off_val, on_off_name, on_off_names);
 				break;
+
 			case SCALE:
-				yaml_node_into_scales(c, cfg->scales, node);
+				switch(node->type) {
+					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+						yaml_seq_into_col(c, node, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales_v1);
+						break;
+					case YAML_MAPPING_NODE:
+						yaml_map_into_scales(c, cfg->scales, node);
+						break;
+					default:
+						yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE);
+						break;
+				}
 				break;
+
 			case SCALE_ROUND_TO:
 				cfg->scale_round_to = yaml_scalar_to_scale_round_to(c, node);
 				break;
+
 			case SCALE_ROUND_STRATEGY:
 				cfg->scale_round_strategy = yaml_scalar_to_enum_def(c, SCALE_ROUND_STRATEGY_DEFAULT, node, scale_round_strategy_val, scale_round_strategy_name, scale_round_strategy_names);
 				break;
+
 			case MODE:
-				yaml_node_into_modes(c, cfg->modes, node);
+				switch(node->type) {
+					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+						yaml_seq_into_col(c, node, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_cfg_modes_v1);
+						break;
+					case YAML_MAPPING_NODE:
+						yaml_map_into_cfg_modes(c, cfg->modes, node);
+						break;
+					default:
+						yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE);
+						break;
+				}
 				break;
+
 			case TRANSFORM:
-				yaml_node_into_transforms(c, cfg->transforms, node);
+				switch(node->type) {
+					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+						yaml_seq_into_col(c, node, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms_v1);
+						break;
+					case YAML_MAPPING_NODE:
+						yaml_map_into_transforms(c, cfg->transforms, node);
+						break;
+					default:
+						yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE);
+						break;
+				}
 				break;
+
 			case VRR_OFF:
 				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, node);
 				break;
+
 			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
 				free(cfg->callback_cmd); // may be both entries present, use the last
 				cfg->callback_cmd = yaml_scalar_to_string_def(c, CALLBACK_CMD_DEFAULT, node);
 				break;
+
 			case LAPTOP_DISPLAY_PREFIX:
 				cfg->laptop_display_prefix = yaml_scalar_to_string(c, node);
 				break;
+
 			case LAPTOP_LID_MONITOR:
 				cfg->laptop_lid_monitor = yaml_scalar_to_enum_def(c, LAPTOP_LID_MONITOR_DEFAULT, node, on_off_val, on_off_name, on_off_names);
 				break;
+
 			case MAX_PREFERRED_REFRESH:
 				yaml_seq_into_name_desc_sset(c, cfg->max_preferred_refresh, node);
 				break;
+
 			case LOG_THRESHOLD:
 				cfg->log_threshold = yaml_scalar_to_enum(c, node, log_threshold_val, log_threshold_names);
 				break;
+
 			case DISABLED:
 				yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds);
 				break;
+
 			case AUTO_SCALE_DPI:
 				yaml_scalar_to_int_def(c, &cfg->auto_scale_dpi, AUTO_SCALE_DPI_DEFAULT, node);
 				break;
+
 			case AUTO_SCALE_MIN:
 				yaml_scalar_to_float_def(c, &cfg->auto_scale_min, AUTO_SCALE_MIN_DEFAULT, node);
 				break;
+
 			case AUTO_SCALE_MAX:
 				yaml_scalar_to_float_def(c, &cfg->auto_scale_max, AUTO_SCALE_MAX_DEFAULT, node);
 				break;
+
 			default:
 				// ignore unexpected
 				break;
@@ -319,7 +369,7 @@ end:
 	spmap_free(m);
 }
 
-void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
+void yaml_map_into_scales_v1(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!scales || !(m = yaml_map_to_spmap(c, map)))
 		return;
@@ -357,7 +407,7 @@ end:
 	return;
 }
 
-void yaml_map_into_scales_v2(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
+void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!scales || !(m = yaml_map_to_spmap(c, map)))
 		return;
@@ -386,24 +436,15 @@ void yaml_map_into_scales_v2(struct UC *c, const struct SImap* const scales, con
 	spmap_free(m);
 }
 
-void yaml_map_into_cfg_modes(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
+struct Mode *yaml_map_to_cfg_mode(struct UC *c, const yaml_node_t *map) {
 	const struct SPmap *m;
-	if (!modes || !(m = yaml_map_to_spmap(c, map)))
-		return;
+	if (!(m = yaml_map_to_spmap(c, map)))
+		return NULL;
 
 	struct Mode *mode = mode_init();
 
-	char *name_desc = NULL;
-
-	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
-		goto err;
-
-	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
-
 	yaml_unmarshal_log_ctx_key(c, "WIDTH");
-	scalar = spmap_get(m, "WIDTH");
+	const yaml_node_t *scalar = spmap_get(m, "WIDTH");
 	if (scalar && !yaml_scalar_to_int(c, &mode->width, scalar))
 		goto err;
 
@@ -426,6 +467,39 @@ void yaml_map_into_cfg_modes(struct UC *c, const struct SPmap* const modes, cons
 	if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
 		goto err;
 
+	goto end;
+
+err:
+	mode_free(mode);
+	mode = NULL;
+
+end:
+	spmap_free(m);
+	yaml_unmarshal_log_ctx_key(c, NULL);
+
+	return mode;
+}
+
+void yaml_map_into_cfg_modes_v1(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!modes || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	struct Mode *mode = NULL;
+
+	char *name_desc = NULL;
+
+	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
+	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
+	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+		goto err;
+
+	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
+
+	mode = yaml_map_to_cfg_mode(c, map);
+	if (!mode)
+		goto err;
+
 	if (spmap_put_if_absent(modes, name_desc, mode)) {
 		log_warn("Removing duplicate MODE %s", name_desc);
 		goto err;
@@ -443,66 +517,27 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_map_into_cfg_modes_v2(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
+void yaml_map_into_cfg_modes(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!modes || !(m = yaml_map_to_spmap(c, map)))
 		return;
 
 	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
 		yaml_unmarshal_log_ctx_name_desc(c, NULL);
-		yaml_unmarshal_log_ctx_key(c, NULL);
 
 		if (!yaml_valid_regex(c, it->key))
 			continue;
 
 		yaml_unmarshal_log_ctx_name_desc(c, it->key);
 
-		if (!yaml_check_node_type(c, it->val, YAML_MAPPING_NODE, 0))
-			continue;
-
-		struct Mode *mode = mode_init();
-
-		const struct SPmap *mi = yaml_map_to_spmap(c, it->val);
-
-		yaml_unmarshal_log_ctx_key(c, "WIDTH");
-		const yaml_node_t *scalar = spmap_get(mi, "WIDTH");
-		if (scalar && !yaml_scalar_to_int(c, &mode->width, scalar))
-			goto err;
-
-		yaml_unmarshal_log_ctx_key(c, "HEIGHT");
-		scalar = spmap_get(mi, "HEIGHT");
-		if (scalar && !yaml_scalar_to_int(c, &mode->height, scalar))
-			goto err;
-
-		yaml_unmarshal_log_ctx_key(c, "HZ");
-		scalar = spmap_get(mi, "HZ");
-		if (scalar) {
-			float hz = 0;
-			if (!yaml_scalar_to_float(c, &hz, scalar))
-				goto err;
-			mode->refresh_mhz = lround(hz * 1000);
-		}
-
-		yaml_unmarshal_log_ctx_key(c, "MAX");
-		scalar = spmap_get(mi, "MAX");
-		if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
-			goto err;
-
-		if (spmap_put_if_absent(modes, it->key, mode))
-			goto err;
-
-		goto end;
-err:
-		mode_free(mode);
-end:
-		spmap_free(mi);
+		spmap_put_if_absent(modes, it->key, yaml_map_to_cfg_mode(c, it->val));
 	}
 
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 	spmap_free(m);
 }
 
-void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
+void yaml_map_into_transforms_v1(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!transforms || !(m = yaml_map_to_spmap(c, map)))
 		return;
@@ -533,7 +568,7 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_map_into_transforms_v2(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
+void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!transforms || !(m = yaml_map_to_spmap(c, map)))
 		return;
@@ -558,39 +593,6 @@ void yaml_map_into_transforms_v2(struct UC *c, const struct SImap* const transfo
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_node_into_modes(struct UC *c, const struct SPmap* const modes, const yaml_node_t *node) {
-	if (!yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE))
-		return;
-
-	if (node->type == YAML_SEQUENCE_NODE) {
-		yaml_seq_into_col(c, node, modes, (fn_yaml_node_into_col)yaml_map_into_cfg_modes);
-	} else if (node->type == YAML_MAPPING_NODE) {
-		yaml_map_into_cfg_modes_v2(c, modes, node);
-	}
-}
-
-void yaml_node_into_scales(struct UC *c, const struct SImap* const scales, const yaml_node_t *node) {
-	if (!yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE))
-		return;
-
-	if (node->type == YAML_SEQUENCE_NODE) {
-		yaml_seq_into_col(c, node, scales, (fn_yaml_node_into_col)yaml_map_into_scales);
-	} else if (node->type == YAML_MAPPING_NODE) {
-		yaml_map_into_scales_v2(c, scales, node);
-	}
-}
-
-void yaml_node_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *node) {
-	if (!yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE))
-		return;
-
-	if (node->type == YAML_SEQUENCE_NODE) {
-		yaml_seq_into_col(c, node, transforms, (fn_yaml_node_into_col)yaml_map_into_transforms);
-	} else if (node->type == YAML_MAPPING_NODE) {
-		yaml_map_into_transforms_v2(c, transforms, node);
-	}
-}
-
 struct Lid *yaml_map_to_lid(struct UC *c, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!(m = yaml_map_to_spmap(c, map)))
@@ -606,7 +608,7 @@ struct Lid *yaml_map_to_lid(struct UC *c, const yaml_node_t *map) {
 	return lid;
 }
 
-struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map) {
+struct Mode *yaml_map_to_head_mode(struct UC *c, const yaml_node_t *map) {
 	const struct SPmap *m = yaml_map_to_spmap(c, map);
 	if (!m)
 		return NULL;
@@ -626,7 +628,7 @@ void yaml_map_into_head_modes(struct UC *c, const struct PPmap* const modes, con
 	if (!modes)
 		return;
 
-	const struct Mode *mode = yaml_map_to_mode(c, map);
+	const struct Mode *mode = yaml_map_to_head_mode(c, map);
 	ppmap_put(modes, mode, mode);
 }
 
@@ -655,7 +657,7 @@ void yaml_map_into_heads(struct UC *c, const struct Plist* const heads, const ya
 	yaml_seq_into_col(c, spmap_get(m, "MODES_FAILED"), head->modes_failed, (fn_yaml_node_into_col)yaml_map_into_head_modes);
 
 	// find MODE_PREFERRED in MODES/MODES_FAILED and assign the key
-	struct Mode *mode_pref = yaml_map_to_mode(c, spmap_get(m, "MODE_PREFERRED"));
+	struct Mode *mode_pref = yaml_map_to_head_mode(c, spmap_get(m, "MODE_PREFERRED"));
 	if (mode_pref) {
 		struct PPmapFilter f = { .val_data = (fn_pred_pp)mode_equal, .data = mode_pref, };
 		head->zmode_pref = ppmap_find(head->modes, f).key;
@@ -754,7 +756,7 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 		head_state->adaptive_sync = vrr ? ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED : ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
 
 	// find MODE in MODES/MODES_FAILED and assign the key
-	struct Mode *mode = yaml_map_to_mode(c, spmap_get(m, "MODE"));
+	struct Mode *mode = yaml_map_to_head_mode(c, spmap_get(m, "MODE"));
 	if (mode) {
 		head_state->zmode = ppmap_first_key(head->modes, mode);
 		if (!head_state->zmode) {
