@@ -42,7 +42,7 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                              map);
 	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                              map);
 	yaml_map_add_node    (c, cfg_element_name(SCALE),                 yaml_map_from_scales(c, cfg->scales),                                             map);
-	yaml_map_add_node    (c, cfg_element_name(MODE),                  yaml_map_from_cfg_modes(c, cfg->modes),                                     map);
+	yaml_map_add_node    (c, cfg_element_name(MODE),                  yaml_map_from_cfg_modes(c, cfg->modes),                                           map);
 	yaml_map_add_node    (c, cfg_element_name(TRANSFORM),             yaml_map_from_transforms(c, cfg->transforms),                                     map);
 	yaml_map_add_sset    (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,                                                           map);
 	yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                                map);
@@ -50,18 +50,6 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                                          map);
 	yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,                                   map);
 	yaml_map_add_pset    (c, cfg_element_name(DISABLED),              cfg->disableds,             (fn_yaml_node_from_type)yaml_node_from_disabled,      map);
-
-	return map;
-}
-
-int yaml_map_from_scales(struct MC *c, const struct SImap* const scales) {
-	int map;
-	if (simap_size(scales) < 1 || !(map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
-		return 0;
-
-	for (const struct SImapIt *it = simap_it(scales); it; it = simap_it_next(it)) {
-		yaml_map_add_int(c, it->key, (double)it->val/1000, map);
-	}
 
 	return map;
 }
@@ -94,6 +82,18 @@ int yaml_map_from_cfg_modes(struct MC *c, const struct SPmap* const modes) {
 	}
 
 	return map_out;
+}
+
+int yaml_map_from_scales(struct MC *c, const struct SImap* const scales) {
+	int map;
+	if (simap_size(scales) < 1 || !(map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
+		return 0;
+
+	for (const struct SImapIt *it = simap_it(scales); it; it = simap_it_next(it)) {
+		yaml_map_add_int(c, it->key, (double)it->val/1000, map);
+	}
+
+	return map;
 }
 
 int yaml_map_from_transforms(struct MC *c, const struct SImap* const transforms) {

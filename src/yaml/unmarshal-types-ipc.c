@@ -92,66 +92,6 @@ err:
 	return NULL;
 }
 
-void yaml_map_into_ipc_responses(struct UC *c, const struct Plist* const ipc_responses, const yaml_node_t *map) {
-	const struct SPmap *m;
-	if (!ipc_responses || !(m = yaml_map_to_spmap(c, map)))
-		return;
-
-	// log exceptions and fail for required fields
-	c->t = ERROR;
-
-	struct IpcResponse *ipc_response = ipc_response_init();
-
-	yaml_unmarshal_log_ctx_top(c, "DONE");
-	const yaml_node_t *done = spmap_get(m, "DONE");
-	if (!yaml_check_mandatory(c, done) || !yaml_scalar_to_boolean(c, &ipc_response->status.done, done))
-		goto err;
-
-	yaml_unmarshal_log_ctx_top(c, "RC");
-	const yaml_node_t *rc = spmap_get(m, "RC");
-	if (!yaml_check_mandatory(c, rc) || !yaml_scalar_to_int(c, &ipc_response->status.rc, rc))
-		goto err;
-
-	// suppress validation failures for remainder
-	c->t = 0;
-
-	yaml_unmarshal_log_ctx_top(c, "CFG");
-	const yaml_node_t *cfg = spmap_get(m, "CFG");
-	if (cfg)
-		ipc_response->cfg = yaml_map_to_cfg(c, cfg);
-
-	yaml_unmarshal_log_ctx_top(c, "STATE");
-	const yaml_node_t *state = spmap_get(m, "STATE");
-	if (state) {
-		const struct SPmap *ms = yaml_map_to_spmap(c, state);
-		if (ms) {
-
-			ipc_response->lid =	yaml_map_to_lid(c, spmap_get(ms, "LID"));
-
-			yaml_seq_into_col(c, spmap_get(ms, "HEADS"), ipc_response->heads, (fn_yaml_node_into_col)yaml_map_into_heads);
-
-			spmap_free(ms);
-		}
-	}
-
-	yaml_unmarshal_log_ctx_top(c, "MESSAGES");
-	const yaml_node_t *messages = spmap_get(m, "MESSAGES");
-	if (messages) {
-		yaml_seq_into_col(c, messages, ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
-	}
-
-	plist_append(ipc_responses, ipc_response);
-
-	goto end;
-
-err:
-	ipc_response_free(ipc_response);
-	ipc_response = NULL;
-
-end:
-	spmap_free(m);
-}
-
 struct Lid *yaml_map_to_lid(struct UC *c, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!(m = yaml_map_to_spmap(c, map)))
@@ -243,6 +183,86 @@ void yaml_map_into_heads(struct UC *c, const struct Plist* const heads, const ya
 	spmap_free(mo);
 }
 
+void yaml_map_into_ipc_responses(struct UC *c, const struct Plist* const ipc_responses, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!ipc_responses || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	// log exceptions and fail for required fields
+	c->t = ERROR;
+
+	struct IpcResponse *ipc_response = ipc_response_init();
+
+	yaml_unmarshal_log_ctx_top(c, "DONE");
+	const yaml_node_t *done = spmap_get(m, "DONE");
+	if (!yaml_check_mandatory(c, done) || !yaml_scalar_to_boolean(c, &ipc_response->status.done, done))
+		goto err;
+
+	yaml_unmarshal_log_ctx_top(c, "RC");
+	const yaml_node_t *rc = spmap_get(m, "RC");
+	if (!yaml_check_mandatory(c, rc) || !yaml_scalar_to_int(c, &ipc_response->status.rc, rc))
+		goto err;
+
+	// suppress validation failures for remainder
+	c->t = 0;
+
+	yaml_unmarshal_log_ctx_top(c, "CFG");
+	const yaml_node_t *cfg = spmap_get(m, "CFG");
+	if (cfg)
+		ipc_response->cfg = yaml_map_to_cfg(c, cfg);
+
+	yaml_unmarshal_log_ctx_top(c, "STATE");
+	const yaml_node_t *state = spmap_get(m, "STATE");
+	if (state) {
+		const struct SPmap *ms = yaml_map_to_spmap(c, state);
+		if (ms) {
+
+			ipc_response->lid =	yaml_map_to_lid(c, spmap_get(ms, "LID"));
+
+			yaml_seq_into_col(c, spmap_get(ms, "HEADS"), ipc_response->heads, (fn_yaml_node_into_col)yaml_map_into_heads);
+
+			spmap_free(ms);
+		}
+	}
+
+	yaml_unmarshal_log_ctx_top(c, "MESSAGES");
+	const yaml_node_t *messages = spmap_get(m, "MESSAGES");
+	if (messages) {
+		yaml_seq_into_col(c, messages, ipc_response->log_cap_lines, (fn_yaml_node_into_col)yaml_map_into_log_cap_lines);
+	}
+
+	plist_append(ipc_responses, ipc_response);
+
+	goto end;
+
+err:
+	ipc_response_free(ipc_response);
+	ipc_response = NULL;
+
+end:
+	spmap_free(m);
+}
+
+void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist* const log_cap_lines, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!log_cap_lines || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	// unmarshal many pairs even though schema specifies exactly one
+	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
+
+		enum LogThreshold threshold = log_threshold_val(it->key);
+		char *line = yaml_scalar_to_string(c, it->val);
+
+		if (threshold && line)
+			plist_append(log_cap_lines, log_cap_line_init(threshold, line));
+
+		free(line);
+	}
+
+	spmap_free(m);
+}
+
 void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const struct Head * const head, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!head_state || !(m = yaml_map_to_spmap(c, map)))
@@ -276,25 +296,5 @@ void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const 
 	spmap_free(m);
 
 	return;
-}
-
-void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist* const log_cap_lines, const yaml_node_t *map) {
-	const struct SPmap *m;
-	if (!log_cap_lines || !(m = yaml_map_to_spmap(c, map)))
-		return;
-
-	// unmarshal many pairs even though schema specifies exactly one
-	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
-
-		enum LogThreshold threshold = log_threshold_val(it->key);
-		char *line = yaml_scalar_to_string(c, it->val);
-
-		if (threshold && line)
-			plist_append(log_cap_lines, log_cap_line_init(threshold, line));
-
-		free(line);
-	}
-
-	spmap_free(m);
 }
 

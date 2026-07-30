@@ -181,6 +181,50 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 	return cfg;
 }
 
+struct Mode *yaml_map_to_cfg_mode(struct UC *c, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!(m = yaml_map_to_spmap(c, map)))
+		return NULL;
+
+	struct Mode *mode = mode_init();
+
+	yaml_unmarshal_log_ctx_key(c, "WIDTH");
+	const yaml_node_t *scalar = spmap_get(m, "WIDTH");
+	if (scalar && !yaml_scalar_to_int(c, &mode->width, scalar))
+		goto err;
+
+	yaml_unmarshal_log_ctx_key(c, "HEIGHT");
+	scalar = spmap_get(m, "HEIGHT");
+	if (scalar && !yaml_scalar_to_int(c, &mode->height, scalar))
+		goto err;
+
+	yaml_unmarshal_log_ctx_key(c, "HZ");
+	scalar = spmap_get(m, "HZ");
+	if (scalar) {
+		float hz = 0;
+		if (!yaml_scalar_to_float(c, &hz, scalar))
+			goto err;
+		mode->refresh_mhz = lround(hz * 1000);
+	}
+
+	yaml_unmarshal_log_ctx_key(c, "MAX");
+	scalar = spmap_get(m, "MAX");
+	if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
+		goto err;
+
+	goto end;
+
+err:
+	mode_free(mode);
+	mode = NULL;
+
+end:
+	spmap_free(m);
+	yaml_unmarshal_log_ctx_key(c, NULL);
+
+	return mode;
+}
+
 void yaml_map_into_conditions(struct UC *c, const struct Pset* const conditions, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!conditions || !(m = yaml_map_to_spmap(c, map)))
@@ -228,6 +272,43 @@ end:
 	spmap_free(m);
 }
 
+void yaml_map_into_cfg_modes_v1(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!modes || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	struct Mode *mode = NULL;
+
+	char *name_desc = NULL;
+
+	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
+	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
+	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+		goto err;
+
+	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
+
+	mode = yaml_map_to_cfg_mode(c, map);
+	if (!mode)
+		goto err;
+
+	if (spmap_put_if_absent(modes, name_desc, mode)) {
+		log_warn("Removing duplicate MODE %s", name_desc);
+		goto err;
+	}
+
+	goto end;
+
+err:
+	mode_free(mode);
+
+end:
+	free(name_desc);
+	spmap_free(m);
+	yaml_unmarshal_log_ctx_key(c, NULL);
+	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+}
+
 void yaml_map_into_scales_v1(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!scales || !(m = yaml_map_to_spmap(c, map)))
@@ -266,136 +347,6 @@ end:
 	return;
 }
 
-void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
-	const struct SPmap *m;
-	if (!scales || !(m = yaml_map_to_spmap(c, map)))
-		return;
-
-	float scale;
-	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
-		yaml_unmarshal_log_ctx_name_desc(c, NULL);
-
-		if (!yaml_valid_regex(c, it->key))
-			continue;
-
-		yaml_unmarshal_log_ctx_name_desc(c, it->key);
-
-		if (!yaml_scalar_to_float(c, &scale, it->val))
-			continue;
-
-		if (scale <= 0) {
-			yaml_unmarshal_log_invalid_value(c, ((const yaml_node_t*)it->val)->data.scalar.value, "positive number");
-			continue;
-		}
-
-		simap_put_if_absent(scales, it->key, round(scale * 1000));
-	}
-
-	yaml_unmarshal_log_ctx_name_desc(c, NULL);
-	spmap_free(m);
-}
-
-struct Mode *yaml_map_to_cfg_mode(struct UC *c, const yaml_node_t *map) {
-	const struct SPmap *m;
-	if (!(m = yaml_map_to_spmap(c, map)))
-		return NULL;
-
-	struct Mode *mode = mode_init();
-
-	yaml_unmarshal_log_ctx_key(c, "WIDTH");
-	const yaml_node_t *scalar = spmap_get(m, "WIDTH");
-	if (scalar && !yaml_scalar_to_int(c, &mode->width, scalar))
-		goto err;
-
-	yaml_unmarshal_log_ctx_key(c, "HEIGHT");
-	scalar = spmap_get(m, "HEIGHT");
-	if (scalar && !yaml_scalar_to_int(c, &mode->height, scalar))
-		goto err;
-
-	yaml_unmarshal_log_ctx_key(c, "HZ");
-	scalar = spmap_get(m, "HZ");
-	if (scalar) {
-		float hz = 0;
-		if (!yaml_scalar_to_float(c, &hz, scalar))
-			goto err;
-		mode->refresh_mhz = lround(hz * 1000);
-	}
-
-	yaml_unmarshal_log_ctx_key(c, "MAX");
-	scalar = spmap_get(m, "MAX");
-	if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
-		goto err;
-
-	goto end;
-
-err:
-	mode_free(mode);
-	mode = NULL;
-
-end:
-	spmap_free(m);
-	yaml_unmarshal_log_ctx_key(c, NULL);
-
-	return mode;
-}
-
-void yaml_map_into_cfg_modes_v1(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
-	const struct SPmap *m;
-	if (!modes || !(m = yaml_map_to_spmap(c, map)))
-		return;
-
-	struct Mode *mode = NULL;
-
-	char *name_desc = NULL;
-
-	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
-	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-	if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
-		goto err;
-
-	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
-
-	mode = yaml_map_to_cfg_mode(c, map);
-	if (!mode)
-		goto err;
-
-	if (spmap_put_if_absent(modes, name_desc, mode)) {
-		log_warn("Removing duplicate MODE %s", name_desc);
-		goto err;
-	}
-
-	goto end;
-
-err:
-	mode_free(mode);
-
-end:
-	free(name_desc);
-	spmap_free(m);
-	yaml_unmarshal_log_ctx_key(c, NULL);
-	yaml_unmarshal_log_ctx_name_desc(c, NULL);
-}
-
-void yaml_map_into_cfg_modes(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
-	const struct SPmap *m;
-	if (!modes || !(m = yaml_map_to_spmap(c, map)))
-		return;
-
-	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
-		yaml_unmarshal_log_ctx_name_desc(c, NULL);
-
-		if (!yaml_valid_regex(c, it->key))
-			continue;
-
-		yaml_unmarshal_log_ctx_name_desc(c, it->key);
-
-		spmap_put_if_absent(modes, it->key, yaml_map_to_cfg_mode(c, it->val));
-	}
-
-	yaml_unmarshal_log_ctx_name_desc(c, NULL);
-	spmap_free(m);
-}
-
 void yaml_map_into_transforms_v1(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
 	const struct SPmap *m;
 	if (!transforms || !(m = yaml_map_to_spmap(c, map)))
@@ -424,31 +375,6 @@ end:
 	free(name_desc);
 	spmap_free(m);
 	yaml_unmarshal_log_ctx_key(c, NULL);
-	yaml_unmarshal_log_ctx_name_desc(c, NULL);
-}
-
-void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
-	const struct SPmap *m;
-	if (!transforms || !(m = yaml_map_to_spmap(c, map)))
-		return;
-
-	enum wl_output_transform transform;
-	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
-		yaml_unmarshal_log_ctx_name_desc(c, NULL);
-
-		// TODO yaml v2: maybe yaml_scalar_to_name_desc or similar, if this gets repetitive
-		if (!yaml_valid_regex(c, it->key))
-			continue;
-
-		yaml_unmarshal_log_ctx_name_desc(c, it->key);
-
-		if (!(transform = yaml_scalar_to_enum(c, it->val, transform_val, transform_names)))
-			continue;
-
-		simap_put_if_absent(transforms, it->key, transform);
-	}
-
-	spmap_free(m);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
@@ -500,6 +426,80 @@ err:
 end:
 	spmap_free(m);
 	yaml_unmarshal_log_ctx_key(c, NULL);
+	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+}
+
+void yaml_map_into_cfg_modes(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!modes || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
+		yaml_unmarshal_log_ctx_name_desc(c, NULL);
+
+		if (!yaml_valid_regex(c, it->key))
+			continue;
+
+		yaml_unmarshal_log_ctx_name_desc(c, it->key);
+
+		spmap_put_if_absent(modes, it->key, yaml_map_to_cfg_mode(c, it->val));
+	}
+
+	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+	spmap_free(m);
+}
+
+void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!scales || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	float scale;
+	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
+		yaml_unmarshal_log_ctx_name_desc(c, NULL);
+
+		if (!yaml_valid_regex(c, it->key))
+			continue;
+
+		yaml_unmarshal_log_ctx_name_desc(c, it->key);
+
+		if (!yaml_scalar_to_float(c, &scale, it->val))
+			continue;
+
+		if (scale <= 0) {
+			yaml_unmarshal_log_invalid_value(c, ((const yaml_node_t*)it->val)->data.scalar.value, "positive number");
+			continue;
+		}
+
+		simap_put_if_absent(scales, it->key, round(scale * 1000));
+	}
+
+	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+	spmap_free(m);
+}
+
+void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!transforms || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	enum wl_output_transform transform;
+	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
+		yaml_unmarshal_log_ctx_name_desc(c, NULL);
+
+		// TODO yaml v2: maybe yaml_scalar_to_name_desc or similar, if this gets repetitive
+		if (!yaml_valid_regex(c, it->key))
+			continue;
+
+		yaml_unmarshal_log_ctx_name_desc(c, it->key);
+
+		if (!(transform = yaml_scalar_to_enum(c, it->val, transform_val, transform_names)))
+			continue;
+
+		simap_put_if_absent(transforms, it->key, transform);
+	}
+
+	spmap_free(m);
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 

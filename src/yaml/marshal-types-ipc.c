@@ -96,6 +96,21 @@ int yaml_map_from_ipc_request(struct MC *c, const struct IpcRequest* const ipc_r
 	return map;
 }
 
+int yaml_map_from_head_overrides(struct MC *c, const struct Head* const head) {
+	if (!head)
+		return 0;
+
+	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return 0;
+
+	if (head->overrided_enabled != NoOverride) {
+		yaml_map_add_bool(c, "DISABLED", head->overrided_enabled == OverrideTrue, map);
+	}
+
+	return map;
+}
+
 int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_state, const struct Head* const head) {
 	if (!head_state)
 		return 0;
@@ -114,21 +129,6 @@ int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_st
 	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,         map);
 
 	yaml_map_add_node    (c, "MODE",      yaml_map_from_head_mode(c, NULL, ppmap_get(head->modes, head_state->zmode)), map);
-
-	return map;
-}
-
-int yaml_map_from_head_overrides(struct MC *c, const struct Head* const head) {
-	if (!head)
-		return 0;
-
-	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
-	if (!map)
-		return 0;
-
-	if (head->overrided_enabled != NoOverride) {
-		yaml_map_add_bool(c, "DISABLED", head->overrided_enabled == OverrideTrue, map);
-	}
 
 	return map;
 }
@@ -192,21 +192,6 @@ int yaml_map_from_state(struct MC *c) {
 	return map;
 }
 
-int yaml_map_from_head_mode(struct MC *c, const void* const unused, const struct Mode* const mode) {
-	if (!mode)
-		return 0;
-
-	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
-	if (!map)
-		return 0;
-
-	yaml_map_add_int (c, "WIDTH",       mode->width,       map);
-	yaml_map_add_int (c, "HEIGHT",      mode->height,      map);
-	yaml_map_add_int (c, "REFRESH_MHZ", mode->refresh_mhz, map);
-
-	return map;
-}
-
 int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 	if (!map)
@@ -232,3 +217,17 @@ int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	return map;
 }
 
+int yaml_map_from_head_mode(struct MC *c, const void* const unused, const struct Mode* const mode) {
+	if (!mode)
+		return 0;
+
+	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map)
+		return 0;
+
+	yaml_map_add_int (c, "WIDTH",       mode->width,       map);
+	yaml_map_add_int (c, "HEIGHT",      mode->height,      map);
+	yaml_map_add_int (c, "REFRESH_MHZ", mode->refresh_mhz, map);
+
+	return map;
+}
