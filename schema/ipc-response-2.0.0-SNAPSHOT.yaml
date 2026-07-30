@@ -7,13 +7,11 @@ title: way-displays IPC response
 description: |-
   Schema for https://github.com/alex-courtis/way-displays IPC response
 
-# TODO schema: oneOf is not working with yamlls, split into two
-# TODO schema: why do sequenced responses exist?
 oneOf:
-  - $ref: "#$defs/response"
+  - $ref: "#/$defs/response"
   - type: array
     items:
-      $ref: "#$defs/response"
+      $ref: "#/$defs/response"
 
 $defs:
   response:
