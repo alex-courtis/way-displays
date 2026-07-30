@@ -112,24 +112,16 @@ $defs:
 
   scale:
     type: object
-    properties:
-      NAME_DESC:
-        $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
-      SCALE:
-        type: number
-        description: |-
-          Scale: float.
-    required:
-      - NAME_DESC
-      - SCALE
-    additionalProperties: false
+    propertyNames:
+      type: string
+    additionalProperties:
+      type: number
+      exclusiveMinimum: 0
 
   transform:
     type: object
-    description: |-
-      Rotate or translate the display.
     propertyNames:
-      type: string
+      type: string # TODO time-box 20 min: try and use fuzzy_display_match
       minLength: 4
     additionalProperties:
       enum:

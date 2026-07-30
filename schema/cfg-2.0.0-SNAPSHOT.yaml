@@ -16,6 +16,7 @@ properties:
       - COLUMN
     default: ROW
 
+  # TODO move descriptions up for easier readability
   ALIGN:
     $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/align'
     default: TOP
@@ -81,11 +82,9 @@ properties:
       Ignored if below AUTO_SCALE_MIN.
 
   SCALE:
-    type: array
+    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/scale'
     description: |-
       Auto scale may be overridden for each display.
-    items:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/scale'
 
   MODE:
     type: array
@@ -97,6 +96,8 @@ properties:
 
   TRANSFORM:
     $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
+    description: |-
+      Rotate or translate the display.
 
   VRR_OFF:
     type: array
