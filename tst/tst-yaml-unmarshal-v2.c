@@ -64,16 +64,16 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 #define check_unmarshalled_cfg(yaml_path, expected, log_path) _check_unmarshalled_cfg(yaml_path, expected, log_path, __FILE__, __LINE__)
 
 static void yaml_root_to_cfg__ok(void **state) {
-	check_unmarshalled_cfg("tst/yaml/cfg-all.yaml", cfg_all(), NULL);
+	check_unmarshalled_cfg("tst/yaml/v2/cfg-all.yaml", cfg_all(), NULL);
 
 	assert_logs_empty();
 }
 
-static void yaml_root_to_cfg__unknown(void **state) {
+static void yaml_root_to_cfg__unknown_fields_ok(void **state) {
 	struct Cfg *expected = cfg_init();
 	expected->arrange = COL;
 
-	check_unmarshalled_cfg("tst/yaml/cfg-unknown.yaml", expected, NULL);
+	check_unmarshalled_cfg("tst/yaml/cfg-unknown-fields-ok.yaml", expected, NULL);
 
 	assert_logs_empty();
 }
@@ -100,7 +100,7 @@ static void yaml_root_to_cfg__invalid(void **state) {
 	struct Cfg *expected = cfg_default();
 	pset_add(expected->disableds, disabled_nd("BAD_DISABLED_IFS"));
 
-	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
+	check_unmarshalled_cfg("tst/yaml/v2/cfg-invalid.yaml", expected, "tst/yaml/v2/cfg-invalid.log");
 
 	assert_logs_empty();
 }
@@ -332,7 +332,7 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	struct Cfg *expected = cfg_all();
 
-	char *yaml = read_file("tst/yaml/ipc-request-cfg-set.yaml");
+	char *yaml = read_file("tst/yaml/v2/ipc-request-cfg-set.yaml");
 
 	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
@@ -416,7 +416,7 @@ static void yaml_root_to_ipc_response_plist__seq_no_rc(void **state) {
 }
 
 static void yaml_root_to_ipc_response_plist__map(void **state) {
-	char *yaml = read_file("tst/yaml/ipc-responses-map.yaml");
+	char *yaml = read_file("tst/yaml/v2/ipc-responses-map.yaml");
 
 	expect_function_call(__wrap_lid_free);
 
@@ -685,7 +685,7 @@ int main(void) {
 
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_root_to_cfg__ok),
-		TEST(yaml_root_to_cfg__unknown),
+		TEST(yaml_root_to_cfg__unknown_fields_ok),
 		TEST(yaml_root_to_cfg__empty),
 		TEST(yaml_root_to_cfg__missing),
 		TEST(yaml_root_to_cfg__invalid),

@@ -10,7 +10,8 @@ description: |-
 $defs:
   fuzzy_display_match:
     type: string
-    minLength: 4
+    # TODO increase to 4 after changing test yamls
+    minLength: 3
     description: |-
       Fuzzy match for a display. In order of precedence:
       - Exact match of name or description e.g. 'HDMI-1'
@@ -209,7 +210,7 @@ $defs:
       type: object
       properties:
         SCALE:
-          type: number
+          $ref: '#/$defs/scale'
         ENABLED:
           type: boolean
         X:

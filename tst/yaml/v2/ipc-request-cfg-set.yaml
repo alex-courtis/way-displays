@@ -1,0 +1,51 @@
+# $schema: ../../../schema/ipc-request-2.0.0-SNAPSHOT.yaml
+OP: CFG_SET
+LOG_THRESHOLD: ERROR
+CFG:
+  ARRANGE: COLUMN
+  ALIGN: BOTTOM
+  ORDER:
+  - one
+  - ONE
+  - '!two'
+  SCALING: FALSE
+  SCALE_ROUND_TO: 0.25
+  SCALE_ROUND_STRATEGY: UP
+  AUTO_SCALE: FALSE
+  AUTO_SCALE_DPI: 48
+  AUTO_SCALE_MIN: 0.5
+  AUTO_SCALE_MAX: 2.5
+  SCALE:
+    three: 3
+    four: 4
+  MODE:
+  - NAME_DESC: five
+    WIDTH: 1920
+    HEIGHT: 1080
+    HZ: 12.34
+  - NAME_DESC: six
+    WIDTH: 2560
+    HEIGHT: 1440
+  - NAME_DESC: seven
+    MAX: TRUE
+  TRANSFORM:
+    twelve: FLIPPED
+  VRR_OFF:
+  - ten
+  - ELEVEN
+  CALLBACK_CMD: cmd
+  LAPTOP_DISPLAY_PREFIX: ldp
+  LAPTOP_LID_MONITOR: FALSE
+  LOG_THRESHOLD: ERROR
+  DISABLED:
+  - eight
+  - EIGHT
+  - nine
+  - NAME_DESC: twelve
+    IF:
+    - PLUGGED:
+      - ONE
+      - TWO
+    - UNPLUGGED:
+      - THREE
+    - LID: CLOSED
