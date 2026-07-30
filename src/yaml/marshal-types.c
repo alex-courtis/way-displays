@@ -12,12 +12,14 @@
 #include "enum.h"
 #include "head.h"
 #include "ipc.h"
-#include "plist.h"
 #include "lid.h"
 #include "log.h"
 #include "mode.h"
+#include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
+#include "simap.h"
+#include "spmap.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal-primitives.h"
@@ -86,7 +88,7 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MIN),        cfg->auto_scale_min,                                                              map);
 	yaml_map_add_float_nz(c, cfg_element_name(AUTO_SCALE_MAX),        cfg->auto_scale_max,                                                              map);
 	yaml_map_add_node    (c, cfg_element_name(SCALE),                 yaml_map_from_scales(c, cfg->scales),                                             map);
-	yaml_map_add_spmap   (c, cfg_element_name(MODE),                  cfg->modes,                 (fn_yaml_node_from_key_type)yaml_map_from_named_mode, map);
+	yaml_map_add_node    (c, cfg_element_name(MODE),                  yaml_map_from_cfg_modes(c, cfg->modes),                                     map);
 	yaml_map_add_node    (c, cfg_element_name(TRANSFORM),             yaml_map_from_transforms(c, cfg->transforms),                                     map);
 	yaml_map_add_sset    (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,                                                           map);
 	yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                                map);
@@ -154,7 +156,7 @@ int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_st
 	yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                         map);
 	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,         map);
 
-	yaml_map_add_node    (c, "MODE",      yaml_map_from_mode(c, NULL, ppmap_get(head->modes, head_state->zmode)), map);
+	yaml_map_add_node    (c, "MODE",      yaml_map_from_head_mode(c, NULL, ppmap_get(head->modes, head_state->zmode)), map);
 
 	return map;
 }
@@ -245,26 +247,34 @@ int yaml_map_from_scales(struct MC *c, const struct SImap* const scales) {
 	return map;
 }
 
-int yaml_map_from_named_mode(struct MC *c, const char* const name_desc, const struct Mode* const mode) {
-	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
-	if (!map)
+int yaml_map_from_cfg_modes(struct MC *c, const struct SPmap* const modes) {
+	int map_out;
+	if (spmap_size(modes) < 1 || !(map_out = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
 		return 0;
 
-	yaml_map_add_str(c, "NAME_DESC", name_desc, map);
+	for (const struct SPmapIt *it = spmap_it(modes); it; it = spmap_it_next(it)) {
+		const struct Mode *mode = it->val;
 
-	if (mode->max) {
-		yaml_map_add_bool(c, "MAX", mode->max, map);
-	} else {
-		yaml_map_add_int(c, "WIDTH", mode->width, map);
-		yaml_map_add_int(c, "HEIGHT", mode->height, map);
-		if (mode->refresh_mhz != -1) {
-			char *hz = sprintf_alloc("%g", ((float)mode->refresh_mhz) / 1000);
-			yaml_map_add_str(c, "HZ", hz, map);
-			free(hz);
+		int map_in = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+		if (!map_in)
+			continue;
+
+		if (mode->max) {
+			yaml_map_add_bool(c, "MAX", mode->max, map_in);
+		} else {
+			yaml_map_add_int(c, "WIDTH", mode->width, map_in);
+			yaml_map_add_int(c, "HEIGHT", mode->height, map_in);
+			if (mode->refresh_mhz != -1) {
+				char *hz = sprintf_alloc("%g", ((float)mode->refresh_mhz) / 1000);
+				yaml_map_add_str(c, "HZ", hz, map_in);
+				free(hz);
+			}
 		}
+
+		yaml_map_add_node(c, it->key, map_in, map_out);
 	}
 
-	return map;
+	return map_out;
 }
 
 int yaml_map_from_transforms(struct MC *c, const struct SImap* const transforms) {
@@ -309,7 +319,7 @@ int yaml_node_from_disabled(struct MC *c, const struct CfgDisabled* const disabl
 	}
 }
 
-int yaml_map_from_mode(struct MC *c, const void* const unused, const struct Mode* const mode) {
+int yaml_map_from_head_mode(struct MC *c, const void* const unused, const struct Mode* const mode) {
 	if (!mode)
 		return 0;
 
@@ -341,10 +351,10 @@ int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	yaml_map_add_node (c, "DESIRED",        yaml_map_from_head_state(c, &head->des, head), map);
 	yaml_map_add_node (c, "OVERRIDES",      yaml_map_from_head_overrides(c, head),             map);
 
-	yaml_map_add_node (c, "MODE_PREFERRED", yaml_map_from_mode(c, NULL, ppmap_get(head->modes, head->zmode_pref)), map);
+	yaml_map_add_node (c, "MODE_PREFERRED", yaml_map_from_head_mode(c, NULL, ppmap_get(head->modes, head->zmode_pref)), map);
 
-	yaml_map_add_ppmap(c, "MODES",          head->modes,        (fn_yaml_node_from_key_type)yaml_map_from_mode, map);
-	yaml_map_add_ppmap(c, "MODES_FAILED",   head->modes_failed, (fn_yaml_node_from_key_type)yaml_map_from_mode, map);
+	yaml_map_add_ppmap(c, "MODES",          head->modes,        (fn_yaml_node_from_key_type)yaml_map_from_head_mode, map);
+	yaml_map_add_ppmap(c, "MODES_FAILED",   head->modes_failed, (fn_yaml_node_from_key_type)yaml_map_from_head_mode, map);
 
 	return map;
 }

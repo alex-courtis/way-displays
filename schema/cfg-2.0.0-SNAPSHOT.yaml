@@ -91,11 +91,13 @@ properties:
       $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/scale'
 
   MODE:
-    type: array
+    type: object
     description: |-
       Override the preferred mode.
       WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
-    items:
+    propertyNames:
+      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+    additionalProperties:
       $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/mode'
 
   TRANSFORM:

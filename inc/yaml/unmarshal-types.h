@@ -30,15 +30,17 @@ struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
 // fn_yaml_node_into_col: create a struct and add to collection
 void yaml_map_into_ipc_responses(struct UC *c, const struct Plist* const ipc_responses, const yaml_node_t *map);
 void yaml_map_into_heads        (struct UC *c, const struct Plist* const heads,         const yaml_node_t *map);
-void yaml_map_into_modes        (struct UC *c, const struct PPmap* const modes,         const yaml_node_t *map);
+void yaml_map_into_head_modes   (struct UC *c, const struct PPmap* const modes,         const yaml_node_t *map);
 void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist* const log_cap_lines, const yaml_node_t *map);
 void yaml_map_into_conditions   (struct UC *c, const struct Pset*  const conditions,    const yaml_node_t *map);
 void yaml_map_into_scales       (struct UC *c, const struct SImap* const scales,        const yaml_node_t *map);
 void yaml_map_into_scales_v2    (struct UC *c, const struct SImap* const scales,        const yaml_node_t *map);
-void yaml_map_into_named_modes  (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *map);
+void yaml_map_into_cfg_modes    (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *map);
+void yaml_map_into_cfg_modes_v2 (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *map);
 void yaml_map_into_transforms   (struct UC *c, const struct SImap* const transforms,    const yaml_node_t *map);
 void yaml_map_into_transforms_v2(struct UC *c, const struct SImap* const transforms,    const yaml_node_t *map);
 
+void yaml_node_into_modes       (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *node);
 void yaml_node_into_scales      (struct UC *c, const struct SImap* const scales,        const yaml_node_t *node);
 void yaml_node_into_transforms  (struct UC *c, const struct SImap* const transforms,    const yaml_node_t *node);
 void yaml_node_into_disableds   (struct UC *c, const struct Pset*  const disableds,     const yaml_node_t *node); // scalar or map

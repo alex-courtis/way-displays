@@ -16,15 +16,15 @@ SCALE:
   three: 3
   four: 4
 MODE:
-- NAME_DESC: five
-  WIDTH: 1920
-  HEIGHT: 1080
-  HZ: 12.34
-- NAME_DESC: six
-  WIDTH: 2560
-  HEIGHT: 1440
-- NAME_DESC: seven
-  MAX: TRUE
+  five:
+    WIDTH: 1920
+    HEIGHT: 1080
+    HZ: 12.34
+  six:
+    WIDTH: 2560
+    HEIGHT: 1440
+  seven:
+    MAX: TRUE
 TRANSFORM:
   twelve: FLIPPED
 VRR_OFF:
