@@ -450,15 +450,19 @@ void yaml_map_into_cfg_modes_v2(struct UC *c, const struct SPmap* const modes, c
 
 	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
 		yaml_unmarshal_log_ctx_name_desc(c, NULL);
-
-		const struct SPmap *mi = yaml_map_to_spmap(c, it->val);
+		yaml_unmarshal_log_ctx_key(c, NULL);
 
 		if (!yaml_valid_regex(c, it->key))
 			continue;
 
 		yaml_unmarshal_log_ctx_name_desc(c, it->key);
 
+		if (!yaml_check_node_type(c, it->val, YAML_MAPPING_NODE, 0))
+			continue;
+
 		struct Mode *mode = mode_init();
+
+		const struct SPmap *mi = yaml_map_to_spmap(c, it->val);
 
 		yaml_unmarshal_log_ctx_key(c, "WIDTH");
 		const yaml_node_t *scalar = spmap_get(mi, "WIDTH");
@@ -484,7 +488,8 @@ void yaml_map_into_cfg_modes_v2(struct UC *c, const struct SPmap* const modes, c
 		if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
 			goto err;
 
-		spmap_put_if_absent(modes, it->key, mode);
+		if (spmap_put_if_absent(modes, it->key, mode))
+			goto err;
 
 		goto end;
 err:

@@ -114,6 +114,7 @@ int yaml_scalar_to_enum_def(struct UC *c, const int def, const yaml_node_t *scal
 	return ret;
 }
 
+// TODO yaml v2: this could log_invalid_value with "bool"
 bool yaml_scalar_to_boolean(struct UC *c, bool *dst, const yaml_node_t *scalar) {
 	int val = yaml_scalar_to_enum(c, scalar, on_off_val, on_off_names);
 

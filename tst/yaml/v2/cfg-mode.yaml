@@ -1,0 +1,48 @@
+# $schema: ../../../schema/cfg-2.0.0-SNAPSHOT.yaml
+MODE:
+  width_height_hz:  # first one is overwritten
+    WIDTH: 1920
+    HEIGHT: 1080
+    HZ: 12.34
+
+  max_overrides:
+    WIDTH: 1280
+    HEIGHT: 720
+    HZ: 60
+    MAX: TRUE
+
+  max_only:
+    MAX: TRUE
+
+  '!(badpat':
+    MAX: TRUE
+
+  empty_str:
+
+  str_width:
+    WIDTH: wid
+
+  str_height:
+    HEIGHT: hei
+
+  str_hz:
+    HZ: hzz
+
+  str_max:
+    MAX: maxx
+
+  seq_width:  
+    WIDTH:
+      -
+
+  seq_height:  
+    HEIGHT:
+      -
+
+  seq_hz:  
+    HZ:
+      -
+
+  seq_max:  
+    MAX:
+      -

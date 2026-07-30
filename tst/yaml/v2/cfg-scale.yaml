@@ -1,12 +1,18 @@
 # $schema: ../../../schema/cfg-2.0.0-SNAPSHOT.yaml
 SCALE:
-  three: 99  # first one is overwritten
   three: 3
+
   large: 900.0045
+
   zero: 0
+
   negative: -956421.52
+
   astring: aoeu
+
   '!(badpat': 4
+
   emptystr:
+
   sequ:
     -

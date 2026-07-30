@@ -1,0 +1,10 @@
+Ignoring invalid MODE regex '(badpat': Unmatched ( or \(
+Ignoring invalid MODE 'empty_str', expected map, got scalar
+Ignoring invalid MODE 'str_width' WIDTH wid, expected integer
+Ignoring invalid MODE 'str_height' HEIGHT hei, expected integer
+Ignoring invalid MODE 'str_hz' HZ hzz, expected number
+Ignoring invalid MODE 'str_max' MAX maxx, expected enum ON|OFF|TRUE|FALSE|YES|NO
+Ignoring invalid MODE 'seq_width' WIDTH, expected integer
+Ignoring invalid MODE 'seq_height' HEIGHT, expected integer
+Ignoring invalid MODE 'seq_hz' HZ, expected number
+Ignoring invalid MODE 'seq_max' MAX, expected enum ON|OFF|TRUE|FALSE|YES|NO

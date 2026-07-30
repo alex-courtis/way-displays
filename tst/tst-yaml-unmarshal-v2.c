@@ -160,12 +160,12 @@ static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
 	spmap_put_many(expected->modes,
-			"max_override", mode_whr_max(1920, 1080, 12340),
-			"five", mode_whr(1920, 1080, 12340),
-			"seven", mode_whr_max(-1, -1, -1),
+			"width_height_hz", mode_whr(1920, 1080, 12340),
+			"max_overrides", mode_whr_max(1280, 720, 60000),
+			"max_only", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
+	check_unmarshalled_cfg("tst/yaml/v2/cfg-mode.yaml", expected, "tst/yaml/v2/cfg-mode.log");
 
 	assert_logs_empty();
 }
