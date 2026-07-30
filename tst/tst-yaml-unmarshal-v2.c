@@ -32,7 +32,8 @@
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml/unmarshal-types.h"
+#include "yaml/unmarshal-types-cfg.h"
+#include "yaml/unmarshal-types-ipc.h"
 
 #include "yaml/unmarshal.h"
 

@@ -17,7 +17,7 @@
 #include "sset.h"
 #include "yaml/marshal-types-cfg.h"
 #include "yaml/marshal.h"
-#include "yaml/unmarshal-types.h"
+#include "yaml/unmarshal-types-cfg.h"
 #include "yaml/unmarshal.h"
 
 const struct Sset *g_candidates = NULL;
