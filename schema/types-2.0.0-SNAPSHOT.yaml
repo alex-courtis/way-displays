@@ -10,11 +10,13 @@ description: |-
 $defs:
   fuzzy_display_match:
     type: string
+    minLength: 4
     description: |-
       Fuzzy match for a display. In order of precedence:
       - Exact match of name or description e.g. 'HDMI-1'
       - Single quoted POSIX regex starting with ! e.g. '!^DP-.*' 
       - Case insensitive mach of name or description e.g. 'ROG PG27AQ'
+      - Should be at least 4 characters, to avoid any ambiguous matches
 
   condition:
     type: object
@@ -122,32 +124,13 @@ $defs:
       - SCALE
     additionalProperties: false
 
-  # TODO schema: tidy away or just remove
-  transformv1:
-    type: object
-    properties:
-      NAME_DESC:
-        $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
-      TRANSFORM:
-        enum:
-          - 90
-          - 180
-          - 270
-          - FLIPPED
-          - FLIPPED-90
-          - FLIPPED-180
-          - FLIPPED-270
-    required:
-      - NAME_DESC
-      - TRANSFORM
-    additionalProperties: false
-
   transform:
     type: object
     description: |-
       Rotate or translate the display.
     propertyNames:
       type: string
+      minLength: 4
     additionalProperties:
       enum:
         - 90
@@ -219,8 +202,6 @@ $defs:
         type: integer
       HEIGHT_MM:
         type: integer
-      TRANSFORMV1:
-        $ref: '#/$defs/transformv1'
       TRANSFORM:
         $ref: '#/$defs/transform'
       CURRENT:
@@ -254,8 +235,6 @@ $defs:
           type: integer
         VRR:
           type: boolean
-        TRANSFORMV1:
-          $ref: '#/$defs/transformv1'
         TRANSFORM:
           $ref: '#/$defs/transform'
         MODE:
