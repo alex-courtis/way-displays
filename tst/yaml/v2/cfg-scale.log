@@ -1,5 +1,5 @@
 Ignoring invalid SCALE 'zero' 0, expected positive number
-Ignoring invalid SCALE 'neg' -956421.52, expected positive number
+Ignoring invalid SCALE 'negative' -956421.52, expected positive number
 Ignoring invalid SCALE 'astring' aoeu, expected number
 Ignoring invalid SCALE regex '(badpat': Unmatched ( or \(
 Ignoring invalid SCALE 'emptystr' , expected number

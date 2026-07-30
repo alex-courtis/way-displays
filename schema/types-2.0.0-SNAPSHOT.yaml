@@ -114,6 +114,7 @@ $defs:
     type: object
     propertyNames:
       type: string
+      minLength: 4
     additionalProperties:
       type: number
       exclusiveMinimum: 0

@@ -148,8 +148,8 @@ static void yaml_root_to_cfg__transform(void **state) {
 
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
-	simap_put(expected->scales, "one", 1000);
-	simap_put(expected->scales, "big", 900005);
+	simap_put(expected->scales, "three", 3000);
+	simap_put(expected->scales, "large", 900005);
 
 	check_unmarshalled_cfg("tst/yaml/v2/cfg-scale.yaml", expected, "tst/yaml/v2/cfg-scale.log");
 
