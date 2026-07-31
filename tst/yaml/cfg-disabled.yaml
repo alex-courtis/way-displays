@@ -12,7 +12,16 @@ DISABLED:
   - NAME_DESC: twelve
     IF:
       - PLUGGED:
-          - FOUR
+          - EIGHT
+  - NAME_DESC: twelve
+    IF:
+    - PLUGGED:
+      - FOUR
+      - FIVE
+      UNPLUGGED:
+      - SIX
+      - SEVEN
+      LID: NOT_PRESENT
   - '!(disabled1'
   - NAME_DESC: '!(disabled2'
   - NAME_DESC: BAD_DISABLED_IFS

@@ -47,9 +47,18 @@
       - PLUGGED:
         - ONE
         - TWO
-      - UNPLUGGED:
+        UNPLUGGED:
         - THREE
-      - LID: CLOSED
+        LID: CLOSED
+    - NAME_DESC: twelve
+      IF:
+      - PLUGGED:
+        - FOUR
+        - FIVE
+        UNPLUGGED:
+        - SIX
+        - SEVEN
+        LID: NOT_PRESENT
   STATE:
     LID:
       CLOSED: TRUE

@@ -597,8 +597,23 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 
 				yaml_unmarshal_log_ctx_key(c, "IF");
 				const yaml_node_t *map = spmap_get(node_map, "IF");
-				if (map)
+				if (map) {
 					yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
+
+					if (pset_size(disabled->conditions) > 0) {
+
+						struct CfgCondition *combined_condition = cfg_condition_init();
+						for (const struct PsetIt *it = pset_it(disabled->conditions); it; it = pset_it_next(it)) {
+							const struct CfgCondition *condition = it->val;
+							combined_condition->lid = condition->lid;
+							sset_add_all(combined_condition->plugged, condition->plugged);
+							sset_add_all(combined_condition->unplugged, condition->unplugged);
+							pset_it_remove_free(it);
+						}
+
+						pset_add(disabled->conditions, combined_condition);
+					}
+				}
 
 				if (!pset_add(disableds, disabled)) {
 					cfg_disabled_free(disabled);

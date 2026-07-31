@@ -11,14 +11,18 @@
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
 #include "cfg/cfg.h"
+#include "cfg/condition.h"
+#include "cfg/disabled.h"
 #include "displ.h"
 #include "enum.h"
 #include "head.h"
+#include "lid.h"
 #include "mode.h"
 #include "plist.h"
 #include "ppmap.h"
@@ -327,6 +331,72 @@ static void desire_enabled__disabled(void **state) {
 	desire_enabled(head);
 
 	assert_false(head->des.enabled);
+}
+
+static void desire_enabled__disabled_condition(void **state) {
+	g_lid = calloc(1, sizeof(struct Lid));
+	g_lid->closed = true;
+
+	expect_str_count(__wrap_g_lid_is_closed, name, "head0", EXPECT_ALWAYS);
+	will_return_int_count(__wrap_g_lid_is_closed, false, EXPECT_ALWAYS);
+
+	struct Head *head = head_n("head0");
+	ppmap_put(g_displ->heads, H0, head);
+
+	head->des.enabled = true;
+
+	// compound condition
+	struct CfgDisabled *disabled = cfg_disabled_init();
+	disabled->name_desc = strdup("head0");
+	struct CfgCondition *cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "headp1", "headp2", NULL);
+	sset_add_many(cond->unplugged, "headu1", "headu2", NULL);
+	cond->lid = LID_OPEN;
+	pset_add(disabled->conditions, cond);
+
+	pset_add(g_cfg->disableds, disabled);
+
+	// unplugged
+	desire_enabled(head);
+	assert_true(head->des.enabled);
+
+	// unplugged, lid
+	g_lid->closed = false;
+	desire_enabled(head);
+	assert_true(head->des.enabled);
+
+	// unplugged, lid
+	ppmap_put(g_displ->heads, H1, head_n("headp1"));
+	desire_enabled(head);
+	assert_true(head->des.enabled);
+
+	// MET: unplugged, lid, plugged
+	ppmap_put(g_displ->heads, H2, head_n("headp2"));
+	desire_enabled(head);
+	assert_false(head->des.enabled);
+
+	// plugged, lid
+	ppmap_put(g_displ->heads, H3, head_n("headu1"));
+	desire_enabled(head);
+	assert_true(head->des.enabled);
+
+	// plugged, lid
+	ppmap_put_free(g_displ->heads, H4, head_n("headu2"));
+	desire_enabled(head);
+	assert_true(head->des.enabled);
+
+	// MET: plugged, lid, unplugged
+	ppmap_put_free(g_displ->heads, H3, head_n("headx"));
+	ppmap_put_free(g_displ->heads, H4, head_n("heady"));
+	desire_enabled(head);
+	assert_false(head->des.enabled);
+
+	// plugged, unplugged
+	g_lid->closed = true;
+	desire_enabled(head);
+	assert_true(head->des.enabled);
+
+	free(g_lid);
 }
 
 static void desire_enabled__lid_closed_many(void **state) {
@@ -798,6 +868,7 @@ int main(void) {
 		TEST_BA(desire_position__row_bottom),
 
 		TEST_BA(desire_enabled__disabled),
+		TEST_BA(desire_enabled__disabled_condition),
 		TEST_BA(desire_enabled__lid_closed_many),
 		TEST_BA(desire_enabled__lid_closed_one_disabled),
 		TEST_BA(desire_enabled__lid_closed_one),

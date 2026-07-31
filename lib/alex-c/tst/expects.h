@@ -46,4 +46,7 @@ int check_str_equal(CMockaValueData value, CMockaValueData check_data) {
 #define expect_str(function, parameter, value) \
 	expect_check_data(function, parameter, check_str_equal, cast_ptr_to_cmocka_value(value))
 
+#define expect_str_count(function, parameter, value, count) \
+	expect_check_data_count(function, parameter, check_str_equal, cast_ptr_to_cmocka_value(value), count)
+
 #endif // EXPECTS_H

@@ -104,19 +104,20 @@ struct Cfg *cfg_all(void) {
 
 	struct CfgDisabled *disabled = cfg_disabled_init();
 	disabled->name_desc = strdup("twelve");
-
 	struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
-	pset_add(disabled->conditions, cond);
-
-	cond = cfg_condition_init();
 	sset_add_many(cond->unplugged, "THREE", NULL);
-	pset_add(disabled->conditions, cond);
-
-	cond = cfg_condition_init();
 	cond->lid = LID_CLOSED;
 	pset_add(disabled->conditions, cond);
+	pset_add(cfg->disableds, disabled);
 
+	disabled = cfg_disabled_init();
+	disabled->name_desc = strdup("twelve");
+	cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "FOUR", "FIVE", NULL);
+	sset_add_many(cond->unplugged, "SIX", "SEVEN", NULL);
+	cond->lid = LID_NOT_PRESENT;
+	pset_add(disabled->conditions, cond);
 	pset_add(cfg->disableds, disabled);
 
 	simap_put(cfg->transforms, "twelve", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED);
