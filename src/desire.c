@@ -55,7 +55,7 @@ void desire_enabled(struct Head *head) {
 	enabled |= ppmap_size(g_displ->heads) == 1;
 
 	// disabled if name_desc matches and (if present) any condition is true
-	struct SPmapFilter f = { .val_data = (fn_pred_pp)cfg_disabled_applies_to_head, .data = head, };
+	struct SPmapFilter f = { .key_val_data = (fn_pred_spp)cfg_disabled_applies_to_head, .data = head, };
 	enabled &= spmap_find(g_cfg->disableds, f).val == NULL;
 
 	// reset manual override when it matches the auto-state

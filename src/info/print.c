@@ -62,13 +62,13 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	}
 }
 
-static void print_disabled(const enum LogThreshold t, const struct CfgDisabled * const disabled) {
+static void print_disabled(const enum LogThreshold t, const char * const name_desc, const struct CfgDisabled * const disabled) {
 	if (!disabled) return;
 
 	if (pset_size(disabled->conditions) > 0) {
-		log_(t, "    %s (conditionally)", disabled->name_desc);
+		log_(t, "    %s (conditionally)", name_desc);
 	} else {
-		log_(t, "    %s", disabled->name_desc);
+		log_(t, "    %s", name_desc);
 	}
 }
 
@@ -187,7 +187,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 	if (spmap_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
 		for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it)) {
-			print_disabled(t, it->val);
+			print_disabled(t, it->key, it->val);
 		}
 	}
 
@@ -282,7 +282,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 		const struct CfgDisabled* d = it->val;
 		if (pset_size(d->conditions) == 0) {
 			print_newline(t, &newline);
-			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);
+			log_(t, "way-displays -s DISABLED '%s'", it->key);
 		}
 	}
 

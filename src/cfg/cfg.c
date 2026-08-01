@@ -47,6 +47,7 @@ static void warn_ambiguous_name_desc_sset(const struct Sset *name_descs, const e
 	}
 }
 
+// fn_pred_sp: not a valid cfg mode
 static bool mode_is_invalid(const char* const name_desc, const struct Mode* const mode) {
 	if (mode->width != -1 && mode->width <= 0) {
 		log_warn(NULL);
@@ -328,7 +329,7 @@ void cfg_validate_warn(const struct Cfg * const cfg) {
 
 	for (const struct SPmapIt *dit = spmap_it(cfg->disableds); dit; dit = spmap_it_next(dit)) {
 		const struct CfgDisabled *disabled = (struct CfgDisabled*)dit->val;
-		warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
+		warn_ambiguous_name_desc(dit->key, DISABLED);
 
 		for (const struct PsetIt *cit = pset_it(disabled->conditions); cit; cit = pset_it_next(cit)) {
 			const struct CfgCondition *condition = (struct CfgCondition*)cit->val;

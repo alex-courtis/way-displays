@@ -149,7 +149,7 @@ static void cfg_disabled_applies_to_head__name_desc_conditions(void **state) {
 
 	struct Head *head = head_n("DP-1");
 
-	struct CfgDisabled *disabled = disabled_nd("DP-1");
+	struct CfgDisabled *disabled = cfg_disabled_init();
 
 	const struct CfgCondition *condition_plugged = cfg_condition_clone(s->condition);
 	sset_add(condition_plugged->plugged, "DP-1");
@@ -163,11 +163,11 @@ static void cfg_disabled_applies_to_head__name_desc_conditions(void **state) {
 	sset_add(condition_unplugged->unplugged, "DP-99");
 	pset_add(disabled->conditions, condition_unplugged);
 
-	assert_true(cfg_disabled_applies_to_head(disabled, head));
+	assert_true(cfg_disabled_applies_to_head("DP-1", disabled, head));
 
 	condition_lid->lid = LID_OPEN;
 
-	assert_false(cfg_disabled_applies_to_head(disabled, head));
+	assert_false(cfg_disabled_applies_to_head("DP-1", disabled, head));
 
 	cfg_disabled_free(disabled);
 
@@ -175,15 +175,15 @@ static void cfg_disabled_applies_to_head__name_desc_conditions(void **state) {
 }
 
 static void cfg_disabled_applies_to_head__name_desc_only(void **state) {
-	struct CfgDisabled *disabled = disabled_nd("DP-1");
+	struct CfgDisabled *disabled = cfg_disabled_init();
 
 	struct Head *head_disabled = head_n("DP-1");
 
-	assert_true(cfg_disabled_applies_to_head(disabled, head_disabled));
+	assert_true(cfg_disabled_applies_to_head("DP-1", disabled, head_disabled));
 
 	struct Head *head_enabled = head_n("DP-2");
 
-	assert_false(cfg_disabled_applies_to_head(disabled, head_enabled));
+	assert_false(cfg_disabled_applies_to_head("DP-1", disabled, head_enabled));
 
 	cfg_disabled_free(disabled);
 

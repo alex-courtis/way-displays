@@ -1,6 +1,5 @@
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>
 #include <wayland-client-protocol.h>
 #include <yaml.h>
 
@@ -388,14 +387,17 @@ void yaml_node_into_disableds(struct UC *c, const struct SPmap* const disableds,
 	const struct SPmap *m = NULL;
 
 	if (node->type == YAML_SCALAR_NODE) {
+		char *name_desc = NULL;
 
 		disabled = cfg_disabled_init();
-		if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
+		if (!(name_desc = yaml_scalar_to_name_desc(c, node)))
 			goto err;
 
-		if (spmap_put_if_absent(disableds, disabled->name_desc, disabled)) {
+		if (spmap_put_if_absent(disableds, name_desc, disabled)) {
 			cfg_disabled_free(disabled);
 		}
+
+		free(name_desc);
 
 	} else if (node->type == YAML_MAPPING_NODE && (m = yaml_map_to_spmap(c, node))) {
 
@@ -414,8 +416,7 @@ void yaml_node_into_disableds(struct UC *c, const struct SPmap* const disableds,
 
 		if (!disabled) {
 			disabled = cfg_disabled_init();
-			disabled->name_desc = strdup(name_desc);
-			spmap_put(disableds, disabled->name_desc, disabled);
+			spmap_put(disableds, name_desc, disabled);
 		}
 
 		free(name_desc);

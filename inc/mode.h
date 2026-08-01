@@ -46,16 +46,16 @@ void mode_free(struct Mode *mode);
  * equals
  */
 
-// exact pointers and values - memcmp
+// fn_pred_pp: exact pointers and values - memcmp
 bool mode_equal(const struct Mode* const a, const struct Mode* const b);
 
-// w/h
+// fn_pred_pp: w/h
 bool mode_equal_res(const struct Mode* const a, const struct Mode* const b);
 
-// w/h and rounded refresh
+// fn_pred_pp: w/h and rounded refresh
 bool mode_equal_res_hz(const struct Mode* const a, const struct Mode* const b);
 
-// w/h and exact refresh
+// fn_pred_pp: w/h and exact refresh
 bool mode_equal_res_mhz(const struct Mode* const a, const struct Mode* const b);
 
 /*
@@ -82,7 +82,7 @@ char *mode_str_cfg(const struct Mode * const mode);
  * predicates
  */
 
-// target is MAX  or  WxH@Hz  or  WxH with no target refresh
+// mode_satisfies: target is MAX  or  WxH@Hz  or  WxH with no target refresh
 bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target);
 
 /*

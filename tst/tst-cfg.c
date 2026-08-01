@@ -135,7 +135,7 @@ static void cfg_equal__all(void **state) {
 	a->laptop_display_prefix = strdup(b->laptop_display_prefix);
 	assert_cfg_equal(a, b);
 
-	const struct CfgDisabled *disabled = disabled_nd("foo");
+	const struct CfgDisabled *disabled = cfg_disabled_init();
 	spmap_put(a->disableds, "foo", disabled);
 	assert_cfg_not_equal(a, b);
 	spmap_remove_free(a->disableds, "foo");
@@ -548,7 +548,7 @@ static void cfg_merge_set__adaptive_sync_off(void **state) {
 static void cfg_merge_set__disabled(void **state) {
 	struct State *s = *state;
 
-	struct CfgDisabled *disabled1 = disabled_nd("cond");
+	struct CfgDisabled *disabled1 = cfg_disabled_init();
 
 	struct CfgCondition *cond = cfg_condition_init();
 	sset_add(cond->plugged, "display");
@@ -563,20 +563,20 @@ static void cfg_merge_set__disabled(void **state) {
 	pset_add(disabled1->conditions, cond);
 
 	spmap_put_many(s->to->disableds,
-			"to", disabled_nd("to"),
-			"both", disabled_nd("both"),
+			"to", cfg_disabled_init(),
+			"both", cfg_disabled_init(),
 			NULL);
 
 	spmap_put_many(s->from->disableds,
-			"from", disabled_nd("from"),
-			"both", disabled_nd("both"),
+			"from", cfg_disabled_init(),
+			"both", cfg_disabled_init(),
 			"cond", cfg_disabled_clone(disabled1),
 			NULL);
 
 	spmap_put_many(s->expected->disableds,
-			"to", disabled_nd("to"),
-			"both", disabled_nd("both"),
-			"from", disabled_nd("from"),
+			"to", cfg_disabled_init(),
+			"both", cfg_disabled_init(),
+			"from", cfg_disabled_init(),
 			"cond", disabled1,
 			NULL);
 
@@ -767,17 +767,17 @@ static void cfg_merge_del__disabled(void **state) {
 	struct State *s = *state;
 
 	spmap_put_many(s->to->disableds,
-			"1", disabled_nd("1"),
-			"2", disabled_nd("2"),
+			"1", cfg_disabled_init(),
+			"2", cfg_disabled_init(),
 			NULL);
 
 	spmap_put_many(s->from->disableds,
-			"2", disabled_nd("2"),
-			"3", disabled_nd("3"),
+			"2", cfg_disabled_init(),
+			"3", cfg_disabled_init(),
 			NULL);
 
 	spmap_put_many(s->expected->disableds,
-			"1", disabled_nd("1"),
+			"1", cfg_disabled_init(),
 			NULL);
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
@@ -931,18 +931,18 @@ static void cfg_merge_toggle__disableds(void **state) {
 	struct State *s = *state;
 
 	spmap_put_many(s->to->disableds,
-			"existing1", disabled_nd("existing1"),
-			"existing2", disabled_nd("existing2"),
+			"existing1", cfg_disabled_init(),
+			"existing2", cfg_disabled_init(),
 			NULL);
 
 	spmap_put_many(s->from->disableds,
-			"existing1", disabled_nd("existing1"),
-			"new1", disabled_nd("new1"),
+			"existing1", cfg_disabled_init(),
+			"new1", cfg_disabled_init(),
 			NULL);
 
 	spmap_put_many(s->expected->disableds,
-			"existing2", disabled_nd("existing2"),
-			"new1", disabled_nd("new1"),
+			"existing2", cfg_disabled_init(),
+			"new1", cfg_disabled_init(),
 			NULL);
 
 	struct Cfg *merged = cfg_merge_toggle(s->to, s->from);
@@ -1150,16 +1150,16 @@ static void cfg_validate_warn__(void **state) {
 			"DP-1",
 			NULL);
 
-	struct CfgDisabled *disabled_cond = disabled_nd("cond1");
+	struct CfgDisabled *disabled_cond = cfg_disabled_init();
 	const struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ppp", "DP-1", NULL);
 	sset_add_many(cond->unplugged, "uuu", "DP-1", NULL);
 	pset_add(disabled_cond->conditions, cond);
 
 	spmap_put_many(s->expected->disableds,
-			"ddd", disabled_nd("ddd"),
-			"dddddddddd", disabled_nd("dddddddddd"),
-			"DP-1", disabled_nd("DP-1"),
+			"ddd", cfg_disabled_init(),
+			"dddddddddd", cfg_disabled_init(),
+			"DP-1", cfg_disabled_init(),
 			"cond1", disabled_cond,
 			NULL);
 

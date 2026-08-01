@@ -127,9 +127,7 @@ struct Cfg *args_cfg(enum IpcCommand command, enum CfgElement element, int argc,
 			break;
 		case DISABLED:
 			for (int i = optind; i < argc; i++) {
-				struct CfgDisabled *disabled = cfg_disabled_init();
-				disabled->name_desc = strdup(argv[i]);
-				spmap_put(cfg->disableds, disabled->name_desc, disabled);
+				spmap_put(cfg->disableds, argv[i], cfg_disabled_init());
 			}
 			parsed = true;
 			break;

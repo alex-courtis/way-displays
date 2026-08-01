@@ -100,7 +100,7 @@ static void yaml_root_to_cfg__missing(void **state) {
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
-	spmap_put(expected->disableds, "BAD_DISABLED_IFS", disabled_nd("BAD_DISABLED_IFS"));
+	spmap_put(expected->disableds, "BAD_DISABLED_IFS", cfg_disabled_init());
 
 	check_unmarshalled_cfg("tst/yaml/v2/cfg-invalid.yaml", expected, "tst/yaml/v2/cfg-invalid.log");
 
@@ -175,7 +175,7 @@ static void yaml_root_to_cfg__mode(void **state) {
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	struct CfgDisabled *disabled_consolidated = disabled_nd("twelve");
+	struct CfgDisabled *disabled_consolidated = cfg_disabled_init();
 
 	struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
@@ -199,17 +199,17 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	pset_add(disabled_consolidated->conditions, cond);
 
 	spmap_put_many(expected->disableds,
-			"eight",                      disabled_nd("eight"),
-			"EIGHT",                      disabled_nd("EIGHT"),
-			"nine",                       disabled_nd("nine"),
+			"eight",                      cfg_disabled_init(),
+			"EIGHT",                      cfg_disabled_init(),
+			"nine",                       cfg_disabled_init(),
 			"twelve",                     disabled_consolidated,
-			"BAD_DISABLED_IFS",           disabled_nd("BAD_DISABLED_IFS"),
-			"MISTYPED_IF_SCALAR",         disabled_nd("MISTYPED_IF_SCALAR"),
-			"MISTYPED_IF_MAP",            disabled_nd("MISTYPED_IF_MAP"),
-			"MISTYPED_UN_PLUGGED_SCALAR", disabled_nd("MISTYPED_UN_PLUGGED_SCALAR"),
-			"MISTYPED_UN_PLUGGED_MAP",    disabled_nd("MISTYPED_UN_PLUGGED_MAP"),
-			"MISTYPED_LID_MAP",           disabled_nd("MISTYPED_LID_MAP"),
-			"NO_VALID_CONDITIONS",        disabled_nd("NO_VALID_CONDITIONS"),
+			"BAD_DISABLED_IFS",           cfg_disabled_init(),
+			"MISTYPED_IF_SCALAR",         cfg_disabled_init(),
+			"MISTYPED_IF_MAP",            cfg_disabled_init(),
+			"MISTYPED_UN_PLUGGED_SCALAR", cfg_disabled_init(),
+			"MISTYPED_UN_PLUGGED_MAP",    cfg_disabled_init(),
+			"MISTYPED_LID_MAP",           cfg_disabled_init(),
+			"NO_VALID_CONDITIONS",        cfg_disabled_init(),
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
@@ -317,7 +317,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected = cfg_default();
-	spmap_put(expected->disableds, "BAD_DISABLED_IFS", disabled_nd("BAD_DISABLED_IFS"));
+	spmap_put(expected->disableds, "BAD_DISABLED_IFS", cfg_disabled_init());
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 

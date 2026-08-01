@@ -17,8 +17,7 @@ const struct Pset *cfg_condition_pset_init(void);
 
 struct CfgCondition *cfg_condition_clone(const struct CfgCondition* const from);
 
-// evaluates a condition.
-// NULL condition is always evaluated to be false.
+// fn_pred_p: true if all elements of the condition are met, NULL condition is always evaluated to be false.
 bool cfg_condition_true(const struct CfgCondition *condition);
 
 void cfg_condition_free(struct CfgCondition *condition);

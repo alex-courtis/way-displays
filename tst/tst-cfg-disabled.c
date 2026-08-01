@@ -2,7 +2,6 @@
 
 #include "assert-spmap.h"
 #include "assert-log.h"
-#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdlib.h>
@@ -36,15 +35,15 @@ static void cfg_disabled_filter_conditional_clashes__null(void **state) {
 static void cfg_disabled_filter_conditional_clashes__no_clash(void **state) {
 	const struct SPmap *ipc_disableds = cfg_disabled_spmap_init();
 
-	spmap_put(ipc_disableds, "both", disabled_nd("both"));
-	spmap_put(ipc_disableds, "ipc only", disabled_nd("ipc only"));
+	spmap_put(ipc_disableds, "both", cfg_disabled_init());
+	spmap_put(ipc_disableds, "ipc only", cfg_disabled_init());
 
-	spmap_put(g_cfg->disableds, "both", disabled_nd("both"));
-	spmap_put(g_cfg->disableds, "cfg only", disabled_nd("cfg only"));
+	spmap_put(g_cfg->disableds, "both", cfg_disabled_init());
+	spmap_put(g_cfg->disableds, "cfg only", cfg_disabled_init());
 
 	const struct SPmap *expected = cfg_disabled_spmap_init();
-	spmap_put(expected, "both", disabled_nd("both"));
-	spmap_put(expected, "ipc only", disabled_nd("ipc only"));
+	spmap_put(expected, "both", cfg_disabled_init());
+	spmap_put(expected, "ipc only", cfg_disabled_init());
 
 	cfg_disabled_filter_conditional_clashes(ipc_disableds);
 
@@ -59,16 +58,16 @@ static void cfg_disabled_filter_conditional_clashes__no_clash(void **state) {
 static void cfg_disabled_filter_conditional_clashes__substring(void **state) {
 	const struct SPmap *ipc_disableds = cfg_disabled_spmap_init();
 
-	spmap_put(ipc_disableds, "has conditions", disabled_nd("has conditions"));
-	spmap_put(ipc_disableds, "cond", disabled_nd("cond"));
-	spmap_put(ipc_disableds, "ipc only", disabled_nd("ipc only"));
+	spmap_put(ipc_disableds, "has conditions", cfg_disabled_init());
+	spmap_put(ipc_disableds, "cond", cfg_disabled_init());
+	spmap_put(ipc_disableds, "ipc only", cfg_disabled_init());
 
-	const struct CfgDisabled *conditional = disabled_nd("condit");
+	const struct CfgDisabled *conditional = cfg_disabled_init();
 	pset_add(conditional->conditions, cfg_condition_init());
 	spmap_put(g_cfg->disableds, "condit", conditional);
 
 	const struct SPmap *expected = cfg_disabled_spmap_init();
-	spmap_put(expected, "ipc only", disabled_nd("ipc only"));
+	spmap_put(expected, "ipc only", cfg_disabled_init());
 
 	cfg_disabled_filter_conditional_clashes(ipc_disableds);
 
@@ -88,20 +87,20 @@ static void cfg_disabled_filter_conditional_clashes__substring(void **state) {
 static void cfg_disabled_filter_conditional_clashes__regex_req(void **state) {
 	const struct SPmap *ipc_disableds = cfg_disabled_spmap_init();
 
-	spmap_put(ipc_disableds, "!has", disabled_nd("!has"));
-	spmap_put(ipc_disableds, "!more", disabled_nd("!more"));
-	spmap_put(ipc_disableds, "!ipc only", disabled_nd("!ipc only"));
+	spmap_put(ipc_disableds, "!has", cfg_disabled_init());
+	spmap_put(ipc_disableds, "!more", cfg_disabled_init());
+	spmap_put(ipc_disableds, "!ipc only", cfg_disabled_init());
 
-	const struct CfgDisabled *conditional = disabled_nd("has conditions");
+	const struct CfgDisabled *conditional = cfg_disabled_init();
 	pset_add(conditional->conditions, cfg_condition_init());
 	spmap_put(g_cfg->disableds, "has conditions", conditional);
 
-	conditional = disabled_nd("more conditions");
+	conditional = cfg_disabled_init();
 	pset_add(conditional->conditions, cfg_condition_init());
 	spmap_put(g_cfg->disableds, "more conditions", conditional);
 
 	const struct SPmap *expected = cfg_disabled_spmap_init();
-	spmap_put(expected, "!ipc only", disabled_nd("!ipc only"));
+	spmap_put(expected, "!ipc only", cfg_disabled_init());
 
 	cfg_disabled_filter_conditional_clashes(ipc_disableds);
 
@@ -121,17 +120,17 @@ static void cfg_disabled_filter_conditional_clashes__regex_req(void **state) {
 static void cfg_disabled_filter_conditional_clashes__regex_cfg(void **state) {
 	const struct SPmap *ipc_disableds = cfg_disabled_spmap_init();
 
-	spmap_put(ipc_disableds, "cond", disabled_nd("cond"));
-	spmap_put(ipc_disableds, "conditional", disabled_nd("conditional"));
-	spmap_put(ipc_disableds, "!cond", disabled_nd("!cond"));
-	spmap_put(ipc_disableds, "!ipc only", disabled_nd("!ipc only"));
+	spmap_put(ipc_disableds, "cond", cfg_disabled_init());
+	spmap_put(ipc_disableds, "conditional", cfg_disabled_init());
+	spmap_put(ipc_disableds, "!cond", cfg_disabled_init());
+	spmap_put(ipc_disableds, "!ipc only", cfg_disabled_init());
 
-	const struct CfgDisabled *conditional = disabled_nd("!cond");
+	const struct CfgDisabled *conditional = cfg_disabled_init();
 	pset_add(conditional->conditions, cfg_condition_init());
 	spmap_put(g_cfg->disableds, "!cond", conditional);
 
 	const struct SPmap *expected = cfg_disabled_spmap_init();
-	spmap_put(expected, "!ipc only", disabled_nd("!ipc only"));
+	spmap_put(expected, "!ipc only", cfg_disabled_init());
 
 	cfg_disabled_filter_conditional_clashes(ipc_disableds);
 

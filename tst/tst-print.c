@@ -158,9 +158,9 @@ static void print_cfg__all(void **state) {
 	simap_put(c->scales, "three", 3000);
 	simap_put(c->scales, "four",  4000);
 
-	spmap_put(c->disableds, "disabled always", disabled_nd("disabled always"));
+	spmap_put(c->disableds, "disabled always", cfg_disabled_init());
 
-	const struct CfgDisabled *disabled = disabled_nd("disabled conditionally");
+	const struct CfgDisabled *disabled = cfg_disabled_init();
 	const struct CfgCondition *cond = cfg_condition_init();
 	sset_add(cond->plugged, "ONE");
 	pset_add(disabled->conditions, cond);
@@ -319,8 +319,8 @@ static void print_cfg_commands__ok(void **state) {
 	simap_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 
 	spmap_put_many(c->disableds,
-			"three", disabled_nd("three"),
-			"four", disabled_nd("four"),
+			"three", cfg_disabled_init(),
+			"four", cfg_disabled_init(),
 			NULL);
 
 	sset_add_many(c->adaptive_sync_off,

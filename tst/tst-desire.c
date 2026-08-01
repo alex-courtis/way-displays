@@ -16,6 +16,7 @@
 #include <wayland-util.h>
 
 #include "cfg/cfg.h"
+#include "cfg/disabled.h"
 #include "displ.h"
 #include "enum.h"
 #include "head.h"
@@ -322,7 +323,7 @@ static void desire_enabled__disabled(void **state) {
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, false);
 
-	spmap_put(g_cfg->disableds, "head0", disabled_nd("head0"));
+	spmap_put(g_cfg->disableds, "head0", cfg_disabled_init());
 
 	desire_enabled(head);
 
@@ -368,7 +369,7 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 
 	head->des.enabled = true;
 
-	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", disabled_nd("![hH]ead[0-9]"));
+	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, true);
@@ -385,7 +386,7 @@ static void desire_enabled__override(void **state) {
 	head->des.enabled = false;
 	head->overrided_enabled = OverrideTrue;
 
-	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", disabled_nd("![hH]ead[0-9]"));
+	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -403,7 +404,7 @@ static void desire_enabled__override_reset(void **state) {
 	head->des.enabled = true;
 	head->overrided_enabled = OverrideFalse;
 
-	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", disabled_nd("![hH]ead[0-9]"));
+	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, false);

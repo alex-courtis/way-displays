@@ -98,13 +98,12 @@ struct Cfg *cfg_all(void) {
 			NULL);
 
 	spmap_put_many(cfg->disableds,
-			"eight", disabled_nd("eight"),
-			"EIGHT", disabled_nd("EIGHT"),
-			"nine",  disabled_nd("nine"),
+			"eight", cfg_disabled_init(),
+			"EIGHT", cfg_disabled_init(),
+			"nine",  cfg_disabled_init(),
 			NULL);
 
-	struct CfgDisabled *disabled = cfg_disabled_init();
-	disabled->name_desc = strdup("twelve");
+	const struct CfgDisabled *disabled = cfg_disabled_init();
 
 	struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
@@ -118,7 +117,7 @@ struct Cfg *cfg_all(void) {
 	cond->lid = LID_CLOSED;
 	pset_add(disabled->conditions, cond);
 
-	spmap_put(cfg->disableds, disabled->name_desc, disabled);
+	spmap_put(cfg->disableds, "twelve", disabled);
 
 	simap_put(cfg->transforms, "twelve", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED);
 

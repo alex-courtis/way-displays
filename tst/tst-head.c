@@ -46,19 +46,19 @@ static int before_each(void **state) {
 	head_disabled_nc = head_n_en("head_disabled_nc", false);
 	head_disabled_cond = head_n_en("head_disabled_cond", false);
 
-	const struct CfgDisabled *disabled = disabled_nd("head_disabled_cond");
+	const struct CfgDisabled *disabled = cfg_disabled_init();
 	struct CfgCondition *cond = cfg_condition_init();
 	cond->lid = LID_CLOSED;
 	pset_add(disabled->conditions, cond);
 	spmap_put(g_cfg->disableds, "head_disabled_cond", disabled);
 
-	disabled = disabled_nd("head_enabled_cond");
+	disabled = cfg_disabled_init();
 	cond = cfg_condition_clone(cond);
 	pset_add(disabled->conditions, cond);
 	spmap_put(g_cfg->disableds, "head_enabled_cond", disabled);
 
-	spmap_put(g_cfg->disableds, "head_disabled_nc", disabled_nd("head_disabled_nc"));
-	spmap_put(g_cfg->disableds, "head_enabled_nc", disabled_nd("head_enabled_nc"));
+	spmap_put(g_cfg->disableds, "head_disabled_nc", cfg_disabled_init());
+	spmap_put(g_cfg->disableds, "head_enabled_nc", cfg_disabled_init());
 
 	return 0;
 }
@@ -712,10 +712,10 @@ static void head_process_ipc_disableds__set_disabled(void **state) {
 	ipc_req->command = CFG_SET;
 
 	spmap_put_many(ipc_req->cfg->disableds,
-			"other", disabled_nd("other"),
-			"d_disabled_c", disabled_nd("d_disabled_c"),
-			"d_disabled_co", disabled_nd("d_disabled_co"),
-			"!disabled", disabled_nd("!disabled"),
+			"other", cfg_disabled_init(),
+			"d_disabled_c", cfg_disabled_init(),
+			"d_disabled_co", cfg_disabled_init(),
+			"!disabled", cfg_disabled_init(),
 			NULL);
 
 	// already disabled, NOP
@@ -732,9 +732,9 @@ static void head_process_ipc_disableds__set_enabled(void **state) {
 	ipc_req->command = CFG_SET;
 
 	spmap_put_many(ipc_req->cfg->disableds,
-			"other", disabled_nd("other"),
-			"!.*enabled", disabled_nd("!.*enabled"),
-			"head_enable", disabled_nd("head_enable"),
+			"other", cfg_disabled_init(),
+			"!.*enabled", cfg_disabled_init(),
+			"head_enable", cfg_disabled_init(),
 			NULL);
 
 	// enabled conditionally, override to disable
@@ -753,10 +753,10 @@ static void head_process_ipc_disableds__del_disabled(void **state) {
 	ipc_req->command = CFG_DEL;
 
 	spmap_put_many(ipc_req->cfg->disableds,
-			"other",         disabled_nd("other"),
-			"head_disabled", disabled_nd("head_disabled"),
-			"!.*disabled",   disabled_nd("!.*disabled"),
-			"head_disable",  disabled_nd("head_disable"),
+			"other",         cfg_disabled_init(),
+			"head_disabled", cfg_disabled_init(),
+			"!.*disabled",   cfg_disabled_init(),
+			"head_disable",  cfg_disabled_init(),
 			NULL);
 
 	// disabled conditionally, override to enable
@@ -775,10 +775,10 @@ static void head_process_ipc_disableds__del_enabled(void **state) {
 	ipc_req->command = CFG_DEL;
 
 	spmap_put_many(ipc_req->cfg->disableds,
-			"other",        disabled_nd("other"),
-			"head_enabled", disabled_nd("head_enabled"),
-			"!.*enabled",   disabled_nd("!.*enabled"),
-			"head_enable",  disabled_nd("head_enable"),
+			"other",        cfg_disabled_init(),
+			"head_enabled", cfg_disabled_init(),
+			"!.*enabled",   cfg_disabled_init(),
+			"head_enable",  cfg_disabled_init(),
 			NULL);
 
 	// already enabled, NOP
@@ -795,10 +795,10 @@ static void head_process_ipc_disableds__toggle_reset(void **state) {
 	ipc_req->command = CFG_TOGGLE;
 
 	spmap_put_many(ipc_req->cfg->disableds,
-			"other",         disabled_nd("other"),
-			"!disabled",     disabled_nd("!disabled"),
-			"head_disabled", disabled_nd("head_disabled"),
-			"head_disable",  disabled_nd("head_disable"),
+			"other",         cfg_disabled_init(),
+			"!disabled",     cfg_disabled_init(),
+			"head_disabled", cfg_disabled_init(),
+			"head_disable",  cfg_disabled_init(),
 			NULL);
 
 	// disabled conditionally, enable it
@@ -818,10 +818,10 @@ static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
 	ipc_req->command = CFG_TOGGLE;
 
 	spmap_put_many(ipc_req->cfg->disableds,
-			"other",        disabled_nd("other"),
-			"head_enabled", disabled_nd("head_enabled"),
-			"head_enable",  disabled_nd("head_enable"),
-			"!enable",      disabled_nd("!enable"),
+			"other",        cfg_disabled_init(),
+			"head_enabled", cfg_disabled_init(),
+			"head_enable",  cfg_disabled_init(),
+			"!enable",      cfg_disabled_init(),
 			NULL);
 
 	// enabled conditionally, (set) disabled
@@ -839,9 +839,9 @@ static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
 	ipc_req->command = CFG_TOGGLE;
 
 	spmap_put_many(ipc_req->cfg->disableds,
-			"other",         disabled_nd("other"),
-			"head_disabled", disabled_nd("head_disabled"),
-			"!disabled",     disabled_nd("!disabled"),
+			"other",         cfg_disabled_init(),
+			"head_disabled", cfg_disabled_init(),
+			"!disabled",     cfg_disabled_init(),
 			NULL);
 
 	// enabled conditionally, (set) disabled
@@ -859,11 +859,11 @@ static void head_process_ipc_disableds__nop(void **state) {
 	ipc_req->command = CFG_TOGGLE;
 
 	spmap_put_many(ipc_req->cfg->disableds,
-			"other",         disabled_nd("other"),
-			"head_disabled", disabled_nd("head_disabled"),
-			"head_enabled",  disabled_nd("head_enabled"),
-			"!disabled",     disabled_nd("!disabled"),
-			"!enabled",      disabled_nd("!enabled"),
+			"other",         cfg_disabled_init(),
+			"head_disabled", cfg_disabled_init(),
+			"head_enabled",  cfg_disabled_init(),
+			"!disabled",     cfg_disabled_init(),
+			"!enabled",      cfg_disabled_init(),
 			NULL);
 
 	// no conditionals, NOP

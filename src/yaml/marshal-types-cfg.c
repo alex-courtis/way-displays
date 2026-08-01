@@ -121,7 +121,7 @@ int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condi
 }
 
 int yaml_node_from_disabled(struct MC *c, const char* const name_desc, const struct CfgDisabled* const disabled) {
-	if (!disabled || !disabled->name_desc)
+	if (!disabled || !name_desc)
 		return 0;
 
 	if (pset_size(disabled->conditions) > 0) {
@@ -129,12 +129,12 @@ int yaml_node_from_disabled(struct MC *c, const char* const name_desc, const str
 		if (!map)
 			return 0;
 
-		yaml_map_add_str(c, "NAME_DESC", disabled->name_desc, map);
+		yaml_map_add_str(c, "NAME_DESC", name_desc, map);
 		yaml_map_add_pset(c, "IF", disabled->conditions, (fn_yaml_node_from_type)yaml_map_from_condition, map);
 
 		return map;
 	} else {
-		return yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)disabled->name_desc, -1, YAML_PLAIN_SCALAR_STYLE);
+		return yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)name_desc, -1, YAML_PLAIN_SCALAR_STYLE);
 	}
 }
 
