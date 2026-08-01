@@ -3,17 +3,33 @@ DISABLED:
   - eight
   - EIGHT
   - nine
+  - nine
   - NAME_DESC: twelve
     IF:
       - PLUGGED:
           - ONE
           - TWO
+      - PLUGGED: # equal to first, erased
+          - ONE
+          - TWO
+      - PLUGGED: # not equal to first
+          - ONE
+          - TWO
+        LID: OPEN
       - UNPLUGGED:
           - THREE
+        LID: CLOSED
   - NAME_DESC: twelve
     IF:
       - PLUGGED:
           - FOUR
+        UNPLUGGED:
+          - FIVE
+          - SIX
+        LID: NOT_PRESENT
+      - PLUGGED: # equal to first but different disabled, erased
+          - ONE
+          - TWO
   - '!(disabled1'
   - NAME_DESC: '!(disabled2'
   - NAME_DESC: BAD_DISABLED_IFS

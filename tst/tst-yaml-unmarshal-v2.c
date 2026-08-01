@@ -174,25 +174,34 @@ static void yaml_root_to_cfg__mode(void **state) {
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	struct CfgDisabled *disabled_twelve_1 = disabled_nd("twelve");
-	const struct CfgCondition *cond = cfg_condition_init();
+	struct CfgDisabled *disabled_consolidated = disabled_nd("twelve");
+
+	struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
-	pset_add(disabled_twelve_1->conditions, cond);
+	pset_add(disabled_consolidated->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
+	cond->lid = LID_OPEN;
+	pset_add(disabled_consolidated->conditions, cond);
+
 	cond = cfg_condition_init();
 	sset_add_many(cond->unplugged, "THREE", NULL);
-	pset_add(disabled_twelve_1->conditions, cond);
+	cond->lid = LID_CLOSED;
+	pset_add(disabled_consolidated->conditions, cond);
 
-	struct CfgDisabled *disabled_twelve_2 = disabled_nd("twelve");
 	cond = cfg_condition_init();
 	sset_add(cond->plugged, "FOUR");
-	pset_add(disabled_twelve_2->conditions, cond);
+	pset_add(disabled_consolidated->conditions, cond);
+	sset_add_many(cond->unplugged, "FIVE", "SIX", NULL);
+	cond->lid = LID_NOT_PRESENT;
+	pset_add(disabled_consolidated->conditions, cond);
 
 	pset_add_many(expected->disableds,
 			disabled_nd("eight"),
 			disabled_nd("EIGHT"),
 			disabled_nd("nine"),
-			disabled_twelve_1,
-			disabled_twelve_2,
+			disabled_consolidated,
 			disabled_nd("BAD_DISABLED_IFS"),
 			disabled_nd("MISTYPED_IF_SCALAR"),
 			disabled_nd("MISTYPED_IF_MAP"),

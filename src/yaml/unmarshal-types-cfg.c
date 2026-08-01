@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #include <wayland-client-protocol.h>
 #include <yaml.h>
 
@@ -379,7 +380,6 @@ end:
 }
 
 void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, const yaml_node_t *node) {
-	// TODO expect string, not scalar
 	if (!disableds || !yaml_check_node_type(c, node, YAML_SCALAR_NODE, YAML_MAPPING_NODE))
 		return;
 
@@ -399,23 +399,38 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 
 	} else if (node->type == YAML_MAPPING_NODE && (m = yaml_map_to_spmap(c, node))) {
 
-		disabled = cfg_disabled_init();
+		char *name_desc = NULL;
 
 		yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 		const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-		if (!yaml_check_mandatory(c, scalar) || !(disabled->name_desc = yaml_scalar_to_name_desc(c, scalar)))
+		if (!yaml_check_mandatory(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar))) {
+			free(name_desc);
 			goto err;
+		}
 
-		yaml_unmarshal_log_ctx_name_desc(c, disabled->name_desc);
+		yaml_unmarshal_log_ctx_name_desc(c, name_desc);
+
+		disabled = NULL;
+		for (const struct PsetIt *it = pset_it(disableds); it; it = pset_it_next(it)) {
+			const struct CfgDisabled *d = it->val;
+			if (strcmp(name_desc, d->name_desc) == 0) {
+				disabled = (struct CfgDisabled*)it->val;
+				pset_it_free(it);
+				break;
+			}
+		}
+		if (!disabled) {
+			disabled = cfg_disabled_init();
+			disabled->name_desc = strdup(name_desc);
+			pset_add(disableds, disabled);
+		}
+
+		free(name_desc);
 
 		yaml_unmarshal_log_ctx_key(c, "IF");
 		const yaml_node_t *map = spmap_get(m, "IF");
 		if (map)
 			yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
-
-		if (!pset_add(disableds, disabled)) {
-			cfg_disabled_free(disabled);
-		}
 	}
 
 	goto end;
