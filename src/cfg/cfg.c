@@ -17,7 +17,6 @@
 
 struct Cfg *g_cfg = NULL;
 
-// TODO yaml v2: move to parser, providing it doesn't mess with IPC
 static void warn_ambiguous_name_desc(const char *name_desc, const enum CfgElement element) {
 	if (strlen(name_desc) < 4) {
 		log_warn(NULL);
@@ -85,7 +84,7 @@ struct Cfg *cfg_init(void) {
 	struct Cfg *cfg = (struct Cfg*)calloc(1, sizeof(struct Cfg));
 
 	cfg->adaptive_sync_off     = sset_init();
-	cfg->disableds             = cfg_disabled_pset_init();
+	cfg->disableds             = cfg_disabled_spmap_init();
 	cfg->max_preferred_refresh = sset_init();
 	cfg->modes                 = mode_spmap_init();
 	cfg->order_name_desc       = sset_init();
@@ -117,7 +116,7 @@ struct Cfg *cfg_clone(struct Cfg *from) {
 	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
 	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
 	to->order_name_desc       = sset_clone(from->order_name_desc);
-	to->disableds             = pset_clone_deep(from->disableds);
+	to->disableds             = spmap_clone_deep(from->disableds);
 	to->modes                 = spmap_clone_deep(from->modes);
 	to->scales                = simap_clone(from->scales);
 	to->transforms            = simap_clone(from->transforms);
@@ -131,7 +130,7 @@ void cfg_free(struct Cfg *cfg) {
 
 	free(cfg->callback_cmd);
 	free(cfg->laptop_display_prefix);
-	pset_free_vals(cfg->disableds);
+	spmap_free_vals(cfg->disableds);
 	spmap_free_vals(cfg->modes);
 	simap_free(cfg->scales);
 	simap_free(cfg->transforms);
@@ -162,7 +161,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		a->scaling == b->scaling &&
 		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
 		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
-		pset_equal(a->disableds, b->disableds) &&
+		spmap_equal(a->disableds, b->disableds) &&
 		spmap_equal(a->modes, b->modes) &&
 		simap_equal(a->scales, b->scales) &&
 		simap_equal(a->transforms, b->transforms) &&
@@ -237,7 +236,7 @@ struct Cfg *cfg_merge_set(struct Cfg *to, const struct Cfg *from) {
 		}
 		merged->callback_cmd = strdup(from->callback_cmd);
 	}
-	pset_add_all_clone      (merged->disableds,         from->disableds);
+	spmap_put_all_clone_free(merged->disableds,         from->disableds);
 	spmap_put_all_clone_free(merged->modes,             from->modes);
 	simap_put_all           (merged->scales,            from->scales);
 	simap_put_all           (merged->transforms,        from->transforms);
@@ -259,7 +258,7 @@ struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 
 	struct Cfg *merged = cfg_clone(to);
 
-	pset_remove_in_free (merged->disableds,         from->disableds);
+	spmap_remove_in_free(merged->disableds,         from->disableds);
 	spmap_remove_in_free(merged->modes,             from->modes);
 	simap_remove_in     (merged->scales,            from->scales);
 	simap_remove_in     (merged->transforms,        from->transforms);
@@ -305,9 +304,9 @@ struct Cfg *cfg_merge_toggle(struct Cfg *to, const struct Cfg *from) {
 	}
 
 	// DISABLED, conditionals toggled and filtered earlier
-	for (const struct PsetIt *it = pset_it(from->disableds); it; it = pset_it_next(it)) {
-		if (!pset_remove_free(merged->disableds, it->val)) {
-			pset_add_clone(merged->disableds, it->val);
+	for (const struct SPmapIt *it = spmap_it(from->disableds); it; it = spmap_it_next(it)) {
+		if (spmap_put_if_absent_clone(merged->disableds, it->key, it->val)) {
+			spmap_remove_free(merged->disableds, it->key);
 		}
 	}
 
@@ -327,7 +326,7 @@ void cfg_validate_warn(const struct Cfg * const cfg) {
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, VRR_OFF);
 	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh, MAX_PREFERRED_REFRESH);
 
-	for (const struct PsetIt *dit = pset_it(cfg->disableds); dit; dit = pset_it_next(dit)) {
+	for (const struct SPmapIt *dit = spmap_it(cfg->disableds); dit; dit = spmap_it_next(dit)) {
 		const struct CfgDisabled *disabled = (struct CfgDisabled*)dit->val;
 		warn_ambiguous_name_desc(disabled->name_desc, DISABLED);
 

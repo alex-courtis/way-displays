@@ -25,6 +25,7 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
+#include "spmap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -157,12 +158,13 @@ static void print_cfg__all(void **state) {
 	simap_put(c->scales, "three", 3000);
 	simap_put(c->scales, "four",  4000);
 
-	pset_add(c->disableds, disabled_nd("disabled always"));
+	spmap_put(c->disableds, "disabled always", disabled_nd("disabled always"));
+
 	const struct CfgDisabled *disabled = disabled_nd("disabled conditionally");
 	const struct CfgCondition *cond = cfg_condition_init();
 	sset_add(cond->plugged, "ONE");
 	pset_add(disabled->conditions, cond);
-	pset_add(c->disableds, disabled);
+	spmap_put(c->disableds, "disabled conditionally", disabled);
 
 	spmap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
@@ -316,9 +318,9 @@ static void print_cfg_commands__ok(void **state) {
 
 	simap_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);
 
-	pset_add_many(c->disableds,
-			disabled_nd("three"),
-			disabled_nd("four"),
+	spmap_put_many(c->disableds,
+			"three", disabled_nd("three"),
+			"four", disabled_nd("four"),
 			NULL);
 
 	sset_add_many(c->adaptive_sync_off,

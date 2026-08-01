@@ -50,15 +50,15 @@ static int before_each(void **state) {
 	struct CfgCondition *cond = cfg_condition_init();
 	cond->lid = LID_CLOSED;
 	pset_add(disabled->conditions, cond);
-	pset_add(g_cfg->disableds, disabled);
+	spmap_put(g_cfg->disableds, "head_disabled_cond", disabled);
 
 	disabled = disabled_nd("head_enabled_cond");
 	cond = cfg_condition_clone(cond);
 	pset_add(disabled->conditions, cond);
-	pset_add(g_cfg->disableds, disabled);
+	spmap_put(g_cfg->disableds, "head_enabled_cond", disabled);
 
-	pset_add(g_cfg->disableds, disabled_nd("head_disabled_nc"));
-	pset_add(g_cfg->disableds, disabled_nd("head_enabled_nc"));
+	spmap_put(g_cfg->disableds, "head_disabled_nc", disabled_nd("head_disabled_nc"));
+	spmap_put(g_cfg->disableds, "head_enabled_nc", disabled_nd("head_enabled_nc"));
 
 	return 0;
 }
@@ -711,17 +711,17 @@ static void head_scale__cfg(void **state) {
 static void head_process_ipc_disableds__set_disabled(void **state) {
 	ipc_req->command = CFG_SET;
 
-	pset_add_many(ipc_req->cfg->disableds,
-			disabled_nd("other"),
-			disabled_nd("d_disabled_c"),
-			disabled_nd("d_disabled_co"),
-			disabled_nd("!disabled"),
+	spmap_put_many(ipc_req->cfg->disableds,
+			"other", disabled_nd("other"),
+			"d_disabled_c", disabled_nd("d_disabled_c"),
+			"d_disabled_co", disabled_nd("d_disabled_co"),
+			"!disabled", disabled_nd("!disabled"),
 			NULL);
 
 	// already disabled, NOP
 	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
 
 	assert_int_equal(head_disabled_cond->overrided_enabled, NoOverride);
 
@@ -731,10 +731,10 @@ static void head_process_ipc_disableds__set_disabled(void **state) {
 static void head_process_ipc_disableds__set_enabled(void **state) {
 	ipc_req->command = CFG_SET;
 
-	pset_add_many(ipc_req->cfg->disableds,
-			disabled_nd("other"),
-			disabled_nd("!.*enabled"),
-			disabled_nd("head_enable"),
+	spmap_put_many(ipc_req->cfg->disableds,
+			"other", disabled_nd("other"),
+			"!.*enabled", disabled_nd("!.*enabled"),
+			"head_enable", disabled_nd("head_enable"),
 			NULL);
 
 	// enabled conditionally, override to disable
@@ -742,7 +742,7 @@ static void head_process_ipc_disableds__set_enabled(void **state) {
 
 	assert_log(INFO, "\nApplying DISABLED override for head_enabled_cond\n");
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
 
 	assert_int_equal(head_enabled_cond->overrided_enabled, OverrideFalse);
 
@@ -752,11 +752,11 @@ static void head_process_ipc_disableds__set_enabled(void **state) {
 static void head_process_ipc_disableds__del_disabled(void **state) {
 	ipc_req->command = CFG_DEL;
 
-	pset_add_many(ipc_req->cfg->disableds,
-			disabled_nd("other"),
-			disabled_nd("head_disabled"),
-			disabled_nd("!.*disabled"),
-			disabled_nd("head_disable"),
+	spmap_put_many(ipc_req->cfg->disableds,
+			"other",         disabled_nd("other"),
+			"head_disabled", disabled_nd("head_disabled"),
+			"!.*disabled",   disabled_nd("!.*disabled"),
+			"head_disable",  disabled_nd("head_disable"),
 			NULL);
 
 	// disabled conditionally, override to enable
@@ -764,7 +764,7 @@ static void head_process_ipc_disableds__del_disabled(void **state) {
 
 	assert_log(INFO, "\nApplying DISABLED override for head_disabled_cond\n");
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
 
 	assert_int_equal(head_disabled_cond->overrided_enabled, OverrideTrue);
 
@@ -774,17 +774,17 @@ static void head_process_ipc_disableds__del_disabled(void **state) {
 static void head_process_ipc_disableds__del_enabled(void **state) {
 	ipc_req->command = CFG_DEL;
 
-	pset_add_many(ipc_req->cfg->disableds,
-			disabled_nd("other"),
-			disabled_nd("head_enabled"),
-			disabled_nd("!.*enabled"),
-			disabled_nd("head_enable"),
+	spmap_put_many(ipc_req->cfg->disableds,
+			"other",        disabled_nd("other"),
+			"head_enabled", disabled_nd("head_enabled"),
+			"!.*enabled",   disabled_nd("!.*enabled"),
+			"head_enable",  disabled_nd("head_enable"),
 			NULL);
 
 	// already enabled, NOP
 	head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
 
 	assert_int_equal(head_enabled_cond->overrided_enabled, NoOverride);
 
@@ -794,11 +794,11 @@ static void head_process_ipc_disableds__del_enabled(void **state) {
 static void head_process_ipc_disableds__toggle_reset(void **state) {
 	ipc_req->command = CFG_TOGGLE;
 
-	pset_add_many(ipc_req->cfg->disableds,
-			disabled_nd("other"),
-			disabled_nd("!disabled"),
-			disabled_nd("head_disabled"),
-			disabled_nd("head_disable"),
+	spmap_put_many(ipc_req->cfg->disableds,
+			"other",         disabled_nd("other"),
+			"!disabled",     disabled_nd("!disabled"),
+			"head_disabled", disabled_nd("head_disabled"),
+			"head_disable",  disabled_nd("head_disable"),
 			NULL);
 
 	// disabled conditionally, enable it
@@ -807,7 +807,7 @@ static void head_process_ipc_disableds__toggle_reset(void **state) {
 
 	assert_log(INFO, "\nResetting DISABLED override for head_disabled_cond\n");
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
 
 	assert_int_equal(head_disabled_cond->overrided_enabled, NoOverride);
 
@@ -817,11 +817,11 @@ static void head_process_ipc_disableds__toggle_reset(void **state) {
 static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
 	ipc_req->command = CFG_TOGGLE;
 
-	pset_add_many(ipc_req->cfg->disableds,
-			disabled_nd("other"),
-			disabled_nd("head_enabled"),
-			disabled_nd("head_enable"),
-			disabled_nd("!enable"),
+	spmap_put_many(ipc_req->cfg->disableds,
+			"other",        disabled_nd("other"),
+			"head_enabled", disabled_nd("head_enabled"),
+			"head_enable",  disabled_nd("head_enable"),
+			"!enable",      disabled_nd("!enable"),
 			NULL);
 
 	// enabled conditionally, (set) disabled
@@ -829,7 +829,7 @@ static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
 	head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
 	assert_log(INFO, "\nApplying DISABLED override for head_enabled_cond\n");
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
 	assert_int_equal(head_enabled_cond->overrided_enabled, OverrideFalse);
 
 	assert_logs_empty();
@@ -838,10 +838,10 @@ static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
 static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
 	ipc_req->command = CFG_TOGGLE;
 
-	pset_add_many(ipc_req->cfg->disableds,
-			disabled_nd("other"),
-			disabled_nd("head_disabled"),
-			disabled_nd("!disabled"),
+	spmap_put_many(ipc_req->cfg->disableds,
+			"other",         disabled_nd("other"),
+			"head_disabled", disabled_nd("head_disabled"),
+			"!disabled",     disabled_nd("!disabled"),
 			NULL);
 
 	// enabled conditionally, (set) disabled
@@ -849,7 +849,7 @@ static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
 	head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
 	assert_log(INFO, "\nApplying DISABLED override for head_disabled_cond\n");
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 1);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
 	assert_int_equal(head_disabled_cond->overrided_enabled, OverrideTrue);
 
 	assert_logs_empty();
@@ -858,23 +858,23 @@ static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
 static void head_process_ipc_disableds__nop(void **state) {
 	ipc_req->command = CFG_TOGGLE;
 
-	pset_add_many(ipc_req->cfg->disableds,
-			disabled_nd("other"),
-			disabled_nd("head_disabled"),
-			disabled_nd("head_enabled"),
-			disabled_nd("!disabled"),
-			disabled_nd("!enabled"),
+	spmap_put_many(ipc_req->cfg->disableds,
+			"other",         disabled_nd("other"),
+			"head_disabled", disabled_nd("head_disabled"),
+			"head_enabled",  disabled_nd("head_enabled"),
+			"!disabled",     disabled_nd("!disabled"),
+			"!enabled",      disabled_nd("!enabled"),
 			NULL);
 
 	// no conditionals, NOP
 	head_override_ipc_disableds(head_disabled_nc, ipc_req);
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 5);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 5);
 
 	// no conditionals, NOP
 	head_override_ipc_disableds(head_enabled_nc, ipc_req);
 
-	assert_int_equal(pset_size(ipc_req->cfg->disableds), 5);
+	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 5);
 
 	assert_logs_empty();
 }

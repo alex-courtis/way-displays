@@ -436,9 +436,9 @@ static void args_cfg__disabled_ok(void **state) {
 	struct Cfg *actual = args_cfg(CFG_SET, DISABLED, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	pset_add_many(expected->disableds,
-			disabled_nd("ONE"),
-			disabled_nd("TWO"),
+	spmap_put_many(expected->disableds,
+			"ONE", disabled_nd("ONE"),
+			"TWO", disabled_nd("TWO"),
 			NULL);
 
 	assert_cfg_equal(actual, expected);

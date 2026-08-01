@@ -12,6 +12,7 @@
 #include "log.h"
 #include "pset.h"
 #include "regx.h"
+#include "spmap.h"
 
 static bool disabled_equal(const struct CfgDisabled* const a, const struct CfgDisabled* const b) {
 	if (!a || !b) {
@@ -37,13 +38,13 @@ struct CfgDisabled *cfg_disabled_init(void) {
 	return d;
 }
 
-const struct Pset *cfg_disabled_pset_init(void) {
-	const struct PsetParams params = {
+const struct SPmap *cfg_disabled_spmap_init(void) {
+	const struct SPmapParams params = {
 		.equal_val = (fn_equal)disabled_equal,
 		.free_val = (fn_free)cfg_disabled_free,
 		.clone_val = (fn_clone)cfg_disabled_clone,
 	};
-	return pset_init_with(params);
+	return spmap_init_with(params);
 }
 
 const struct CfgDisabled *cfg_disabled_clone(const struct CfgDisabled * const from) {
@@ -92,11 +93,12 @@ static bool cfg_disabled_cond_with_name_desc(const struct CfgDisabled * const a,
 	return false;
 }
 
-void cfg_disabled_filter_conditional_clashes(const struct Pset *disableds) {
-	for (const struct PsetIt *it = pset_it(disableds); it; it = pset_it_next(it)) {
+void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds) {
+	for (const struct SPmapIt *it = spmap_it(disableds); it; it = spmap_it_next(it)) {
 
 		// current global conditionally disabled that match the name_desc
-		const struct CfgDisabled *contitionally = pset_find(g_cfg->disableds, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_disabled_cond_with_name_desc, .data = it->val, });
+		const struct SPmapFilter f = { .val_data = (fn_pred_pp)cfg_disabled_cond_with_name_desc, .data = it->val, };
+		const struct CfgDisabled *contitionally = spmap_find(g_cfg->disableds, f).val;
 		if (contitionally) {
 
 			log_info(NULL);
@@ -107,7 +109,7 @@ void cfg_disabled_filter_conditional_clashes(const struct Pset *disableds) {
 					contitionally->name_desc
 					);
 
-			pset_it_remove_free(it);
+			spmap_it_remove_free(it);
 		}
 	}
 }

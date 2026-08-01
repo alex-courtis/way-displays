@@ -9,6 +9,7 @@
 #include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
+#include "spmap.h"
 #include "sset.h"
 #include "yaml/marshal.h"
 
@@ -134,6 +135,25 @@ void yaml_map_add_pset(struct MC *c, const char *key, const struct Pset* const p
 
 	for (const struct PsetIt *it = pset_it(pset); it; it = pset_it_next(it)) {
 		int n = fn(c, it->val);
+		if (n)
+			yaml_document_append_sequence_item(&c->d, seq, n);
+	}
+
+	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
+}
+
+void yaml_map_add_spmap(struct MC *c, const char *key, const struct SPmap* const spmap, fn_yaml_node_from_key_type fn, int mapping) {
+	if (!key || spmap_size(spmap) == 0)
+		return;
+
+	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
+	int seq = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE);
+
+	if (!k || !seq)
+		return;
+
+	for (const struct SPmapIt *it = spmap_it(spmap); it; it = spmap_it_next(it)) {
+		int n = fn(c, it->key, it->val);
 		if (n)
 			yaml_document_append_sequence_item(&c->d, seq, n);
 	}

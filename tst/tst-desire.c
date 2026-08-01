@@ -22,8 +22,8 @@
 #include "mode.h"
 #include "plist.h"
 #include "ppmap.h"
-#include "pset.h"
 #include "simap.h"
+#include "spmap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -322,7 +322,7 @@ static void desire_enabled__disabled(void **state) {
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, false);
 
-	pset_add(g_cfg->disableds, disabled_nd("head0"));
+	spmap_put(g_cfg->disableds, "head0", disabled_nd("head0"));
 
 	desire_enabled(head);
 
@@ -368,7 +368,7 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 
 	head->des.enabled = true;
 
-	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
+	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", disabled_nd("![hH]ead[0-9]"));
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, true);
@@ -385,7 +385,7 @@ static void desire_enabled__override(void **state) {
 	head->des.enabled = false;
 	head->overrided_enabled = OverrideTrue;
 
-	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
+	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", disabled_nd("![hH]ead[0-9]"));
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, false);
@@ -403,7 +403,7 @@ static void desire_enabled__override_reset(void **state) {
 	head->des.enabled = true;
 	head->overrided_enabled = OverrideFalse;
 
-	pset_add(g_cfg->disableds, disabled_nd("![hH]ead[0-9]"));
+	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", disabled_nd("![hH]ead[0-9]"));
 
 	expect_str(__wrap_g_lid_is_closed, name, "head0");
 	will_return_int(__wrap_g_lid_is_closed, false);

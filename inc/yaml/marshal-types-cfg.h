@@ -27,6 +27,6 @@ int yaml_map_from_transforms    (struct MC *c, const struct SImap*        const 
 
 // yaml_map_add_pset: fn_yaml_node_from_type
 int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condition);
-int yaml_node_from_disabled(struct MC *c, const struct CfgDisabled*  const disabled);
+int yaml_node_from_disabled(struct MC *c, const char* const name_desc, const struct CfgDisabled*  const disabled);
 
 #endif // YAML_MARSHAL_TYPES_CFG_H

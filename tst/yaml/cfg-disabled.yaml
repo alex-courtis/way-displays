@@ -4,6 +4,7 @@ DISABLED:
   - EIGHT
   - nine
   - nine
+  - twelve # will have conditions added
   - NAME_DESC: twelve
     IF:
       - PLUGGED:
@@ -30,6 +31,7 @@ DISABLED:
       - PLUGGED: # equal to first but different disabled, erased
           - ONE
           - TWO
+  - twelve   # already exists
   - '!(disabled1'
   - NAME_DESC: '!(disabled2'
   - NAME_DESC: BAD_DISABLED_IFS

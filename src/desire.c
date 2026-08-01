@@ -17,7 +17,6 @@
 #include "mode.h"
 #include "plist.h"
 #include "ppmap.h"
-#include "pset.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
@@ -56,8 +55,8 @@ void desire_enabled(struct Head *head) {
 	enabled |= ppmap_size(g_displ->heads) == 1;
 
 	// disabled if name_desc matches and (if present) any condition is true
-	struct PsetFilter f = { .val_data = (fn_pred_pp)cfg_disabled_applies_to_head, .data = head, };
-	enabled &= pset_find(g_cfg->disableds, f) == NULL;
+	struct SPmapFilter f = { .val_data = (fn_pred_pp)cfg_disabled_applies_to_head, .data = head, };
+	enabled &= spmap_find(g_cfg->disableds, f).val == NULL;
 
 	// reset manual override when it matches the auto-state
 	if (head->overrided_enabled != NoOverride) {

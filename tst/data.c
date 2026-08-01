@@ -20,6 +20,7 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
+#include "spmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "data.h"
@@ -96,10 +97,10 @@ struct Cfg *cfg_all(void) {
 			"ELEVEN",
 			NULL);
 
-	pset_add_many(cfg->disableds,
-			disabled_nd("eight"),
-			disabled_nd("EIGHT"),
-			disabled_nd("nine"),
+	spmap_put_many(cfg->disableds,
+			"eight", disabled_nd("eight"),
+			"EIGHT", disabled_nd("EIGHT"),
+			"nine",  disabled_nd("nine"),
 			NULL);
 
 	struct CfgDisabled *disabled = cfg_disabled_init();
@@ -117,7 +118,7 @@ struct Cfg *cfg_all(void) {
 	cond->lid = LID_CLOSED;
 	pset_add(disabled->conditions, cond);
 
-	pset_add(cfg->disableds, disabled);
+	spmap_put(cfg->disableds, disabled->name_desc, disabled);
 
 	simap_put(cfg->transforms, "twelve", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED);
 

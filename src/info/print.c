@@ -184,13 +184,12 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (pset_size(cfg->disableds) > 0) {
+	if (spmap_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
-		for (const struct PsetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
+		for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it)) {
 			print_disabled(t, it->val);
 		}
 	}
-
 
 	if (cfg->callback_cmd) {
 		log_(t, "  Change success command:");
@@ -279,7 +278,7 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct PsetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
+	for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it)) {
 		const struct CfgDisabled* d = it->val;
 		if (pset_size(d->conditions) == 0) {
 			print_newline(t, &newline);

@@ -128,15 +128,15 @@ void head_override_ipc_disableds(struct Head * const head, const struct IpcReque
 	bool override = false;
 
 	// ipc disabled request for this head, no conditions may be present
-	struct PsetFilter f_req = { .val_data = (fn_pred_pp)cfg_disabled_applies_to_head, .data = head, };
-	for (const struct PsetIt *it = pset_filter_it(ipc_request->cfg->disableds, f_req); it; it = pset_it_next(it)) {
+	struct SPmapFilter f_req = { .val_data = (fn_pred_pp)cfg_disabled_applies_to_head, .data = head, };
+	for (const struct SPmapIt *it = spmap_filter_it(ipc_request->cfg->disableds, f_req); it; it = spmap_it_next(it)) {
 
 		// cfg conditionally disabled for this head
-		struct PsetFilter f_cfg = { .val_data = (fn_pred_pp)cfg_disabled_conditionally_for_head, .data = head, };
-		if (pset_find(g_cfg->disableds, f_cfg)) {
+		struct SPmapFilter f_cfg = { .val_data = (fn_pred_pp)cfg_disabled_conditionally_for_head, .data = head, };
+		if (spmap_find(g_cfg->disableds, f_cfg).val) {
 
 			// remove from the request for override now
-			pset_it_remove_free(it);
+			spmap_it_remove_free(it);
 			override = true;
 		}
 	}

@@ -379,7 +379,7 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, const yaml_node_t *node) {
+void yaml_node_into_disableds(struct UC *c, const struct SPmap* const disableds, const yaml_node_t *node) {
 	if (!disableds || !yaml_check_node_type(c, node, YAML_SCALAR_NODE, YAML_MAPPING_NODE))
 		return;
 
@@ -393,7 +393,7 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 		if (!(disabled->name_desc = yaml_scalar_to_name_desc(c, node)))
 			goto err;
 
-		if (!pset_add(disableds, disabled)) {
+		if (spmap_put_if_absent(disableds, disabled->name_desc, disabled)) {
 			cfg_disabled_free(disabled);
 		}
 
@@ -410,19 +410,12 @@ void yaml_node_into_disableds(struct UC *c, const struct Pset* const disableds, 
 
 		yaml_unmarshal_log_ctx_name_desc(c, name_desc);
 
-		disabled = NULL;
-		for (const struct PsetIt *it = pset_it(disableds); it; it = pset_it_next(it)) {
-			const struct CfgDisabled *d = it->val;
-			if (strcmp(name_desc, d->name_desc) == 0) {
-				disabled = (struct CfgDisabled*)it->val;
-				pset_it_free(it);
-				break;
-			}
-		}
+		disabled = (struct CfgDisabled*)spmap_get(disableds, name_desc);
+
 		if (!disabled) {
 			disabled = cfg_disabled_init();
 			disabled->name_desc = strdup(name_desc);
-			pset_add(disableds, disabled);
+			spmap_put(disableds, disabled->name_desc, disabled);
 		}
 
 		free(name_desc);

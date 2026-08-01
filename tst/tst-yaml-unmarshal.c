@@ -31,6 +31,7 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
+#include "spmap.h"
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -101,7 +102,7 @@ static void yaml_root_to_cfg__missing(void **state) {
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
-	pset_add(expected->disableds, disabled_nd("BAD_DISABLED_IFS"));
+	spmap_put(expected->disableds, "BAD_DISABLED_IFS", disabled_nd("BAD_DISABLED_IFS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
 
@@ -198,18 +199,18 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	cond->lid = LID_NOT_PRESENT;
 	pset_add(disabled_consolidated->conditions, cond);
 
-	pset_add_many(expected->disableds,
-			disabled_nd("eight"),
-			disabled_nd("EIGHT"),
-			disabled_nd("nine"),
-			disabled_consolidated,
-			disabled_nd("BAD_DISABLED_IFS"),
-			disabled_nd("MISTYPED_IF_SCALAR"),
-			disabled_nd("MISTYPED_IF_MAP"),
-			disabled_nd("MISTYPED_UN_PLUGGED_SCALAR"),
-			disabled_nd("MISTYPED_UN_PLUGGED_MAP"),
-			disabled_nd("MISTYPED_LID_MAP"),
-			disabled_nd("NO_VALID_CONDITIONS"),
+	spmap_put_many(expected->disableds,
+			"eight",                      disabled_nd("eight"),
+			"EIGHT",                      disabled_nd("EIGHT"),
+			"nine",                       disabled_nd("nine"),
+			"twelve",                     disabled_consolidated,
+			"BAD_DISABLED_IFS",           disabled_nd("BAD_DISABLED_IFS"),
+			"MISTYPED_IF_SCALAR",         disabled_nd("MISTYPED_IF_SCALAR"),
+			"MISTYPED_IF_MAP",            disabled_nd("MISTYPED_IF_MAP"),
+			"MISTYPED_UN_PLUGGED_SCALAR", disabled_nd("MISTYPED_UN_PLUGGED_SCALAR"),
+			"MISTYPED_UN_PLUGGED_MAP",    disabled_nd("MISTYPED_UN_PLUGGED_MAP"),
+			"MISTYPED_LID_MAP",           disabled_nd("MISTYPED_LID_MAP"),
+			"NO_VALID_CONDITIONS",        disabled_nd("NO_VALID_CONDITIONS"),
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
@@ -317,7 +318,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected = cfg_default();
-	pset_add(expected->disableds, disabled_nd("BAD_DISABLED_IFS"));
+	spmap_put(expected->disableds, "BAD_DISABLED_IFS", disabled_nd("BAD_DISABLED_IFS"));
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 

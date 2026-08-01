@@ -13,7 +13,6 @@
 #include "log.h"
 #include "mode.h"
 #include "process.h"
-#include "pset.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
@@ -130,7 +129,7 @@ struct Cfg *args_cfg(enum IpcCommand command, enum CfgElement element, int argc,
 			for (int i = optind; i < argc; i++) {
 				struct CfgDisabled *disabled = cfg_disabled_init();
 				disabled->name_desc = strdup(argv[i]);
-				pset_add(cfg->disableds, disabled);
+				spmap_put(cfg->disableds, disabled->name_desc, disabled);
 			}
 			parsed = true;
 			break;

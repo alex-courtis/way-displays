@@ -49,7 +49,7 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                       map);
 	yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                                          map);
 	yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,                                   map);
-	yaml_map_add_pset    (c, cfg_element_name(DISABLED),              cfg->disableds,             (fn_yaml_node_from_type)yaml_node_from_disabled,      map);
+	yaml_map_add_spmap   (c, cfg_element_name(DISABLED),              cfg->disableds,             (fn_yaml_node_from_key_type)yaml_node_from_disabled,  map);
 
 	return map;
 }
@@ -120,7 +120,7 @@ int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condi
 	return map;
 }
 
-int yaml_node_from_disabled(struct MC *c, const struct CfgDisabled* const disabled) {
+int yaml_node_from_disabled(struct MC *c, const char* const name_desc, const struct CfgDisabled* const disabled) {
 	if (!disabled || !disabled->name_desc)
 		return 0;
 
