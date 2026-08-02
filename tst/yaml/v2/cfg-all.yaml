@@ -2,9 +2,9 @@
 ARRANGE: COLUMN
 ALIGN: BOTTOM
 ORDER:
-- one
-- ONE
-- '!two'
+- first
+- FIRST
+- '!second'
 SCALING: FALSE
 SCALE_ROUND_TO: 0.25
 SCALE_ROUND_STRATEGY: UP
@@ -13,36 +13,36 @@ AUTO_SCALE_DPI: 48
 AUTO_SCALE_MIN: 0.5
 AUTO_SCALE_MAX: 2.5
 SCALE:
-  three: 3
-  four: 4
+  third: 3
+  fourth: 4
 MODE:
-  five:
+  fifth:
     WIDTH: 1920
     HEIGHT: 1080
     HZ: 12.34
-  six:
+  sixth:
     WIDTH: 2560
     HEIGHT: 1440
-  seven:
+  seventh:
     MAX: TRUE
 TRANSFORM:
-  twelve: FLIPPED
+  twelfth: FLIPPED
 VRR_OFF:
-- ten
-- ELEVEN
+- tenth
+- eleventh
 CALLBACK_CMD: cmd
 LAPTOP_DISPLAY_PREFIX: ldp
 LAPTOP_LID_MONITOR: FALSE
 LOG_THRESHOLD: ERROR
 DISABLED:
-  eight:
-  EIGHT:
-  nine:
-  twelve:
+  eighth:
+  EIGHTH:
+  ninth:
+  twelfth:
     IF:
     - PLUGGED:
-      - ONE
-      - TWO
+      - first
+      - second
     - UNPLUGGED:
-      - THREE
+      - third
     - LID: CLOSED

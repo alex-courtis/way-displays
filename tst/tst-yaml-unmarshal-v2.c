@@ -177,23 +177,23 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	struct CfgDisabled *conditionally = cfg_disabled_init();
 
 	struct CfgCondition *cond = cfg_condition_init();
-	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
+	sset_add_many(cond->plugged, "first", "second", NULL);
 	pset_add(conditionally->conditions, cond);
 
 	cond = cfg_condition_init();
-	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
+	sset_add_many(cond->plugged, "first", "second", NULL);
 	cond->lid = LID_OPEN;
 	pset_add(conditionally->conditions, cond);
 
 	cond = cfg_condition_init();
-	sset_add_many(cond->unplugged, "THREE", NULL);
+	sset_add_many(cond->unplugged, "third", NULL);
 	cond->lid = LID_CLOSED;
 	pset_add(conditionally->conditions, cond);
 
 	cond = cfg_condition_init();
-	sset_add(cond->plugged, "FOUR");
+	sset_add(cond->plugged, "fourth");
 	pset_add(conditionally->conditions, cond);
-	sset_add_many(cond->unplugged, "FIVE", "SIX", NULL);
+	sset_add_many(cond->unplugged, "fifth", "sixth", NULL);
 	cond->lid = LID_NOT_PRESENT;
 	pset_add(conditionally->conditions, cond);
 

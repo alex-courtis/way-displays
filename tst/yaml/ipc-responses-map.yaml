@@ -1,12 +1,12 @@
-# $schema: ../../schema/ipc-response-2.0.0-SNAPSHOT.yaml
+# $schema: ../../schema/cfg-1.2.0.yaml
 DONE: TRUE
 CFG:
   ARRANGE: COLUMN
   ALIGN: BOTTOM
   ORDER:
-  - one
-  - ONE
-  - '!two'
+  - first
+  - FIRST
+  - '!second'
   SCALING: FALSE
   SCALE_ROUND_TO: 0.25
   SCALE_ROUND_STRATEGY: UP
@@ -15,41 +15,41 @@ CFG:
   AUTO_SCALE_MIN: 0.5
   AUTO_SCALE_MAX: 2.5
   SCALE:
-  - NAME_DESC: three
+  - NAME_DESC: third
     SCALE: 3
-  - NAME_DESC: four
+  - NAME_DESC: fourth
     SCALE: 4
   MODE:
-  - NAME_DESC: five
+  - NAME_DESC: fifth
     WIDTH: 1920
     HEIGHT: 1080
     HZ: 12.34
-  - NAME_DESC: six
+  - NAME_DESC: sixth
     WIDTH: 2560
     HEIGHT: 1440
-  - NAME_DESC: seven
+  - NAME_DESC: seventh
     MAX: TRUE
   TRANSFORM:
-  - NAME_DESC: twelve
+  - NAME_DESC: twelfth
     TRANSFORM: FLIPPED
   VRR_OFF:
-  - ten
-  - ELEVEN
+  - tenth
+  - eleventh
   CALLBACK_CMD: cmd
   LAPTOP_DISPLAY_PREFIX: ldp
   LAPTOP_LID_MONITOR: FALSE
   LOG_THRESHOLD: ERROR
   DISABLED:
-  - eight
-  - EIGHT
-  - nine
-  - NAME_DESC: twelve
+  - eighth
+  - EIGHTH
+  - ninth
+  - NAME_DESC: twelfth
     IF:
     - PLUGGED:
-      - ONE
-      - TWO
+      - first
+      - second
     - UNPLUGGED:
-      - THREE
+      - third
     - LID: CLOSED
 STATE:
   LID:

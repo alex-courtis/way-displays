@@ -8,23 +8,23 @@ DISABLED:
   conditional:
     IF:
     - PLUGGED:
-      - ONE
-      - TWO
+      - first
+      - second
     - PLUGGED: # equal to first, erased
-      - ONE
-      - TWO
+      - first
+      - second
     - PLUGGED: # not equal to first
-      - ONE
-      - TWO
+      - first
+      - second
       LID: OPEN
     - UNPLUGGED:
-      - THREE
+      - third
       LID: CLOSED
     - PLUGGED:
-      - FOUR
+      - fourth
       UNPLUGGED:
-      - FIVE
-      - SIX
+      - fifth
+      - sixth
       LID: NOT_PRESENT
 
   '!(bad_pat_key':

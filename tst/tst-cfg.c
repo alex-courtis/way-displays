@@ -141,19 +141,19 @@ static void cfg_equal__all(void **state) {
 	spmap_remove_free(a->disableds, "foo");
 	assert_cfg_equal(a, b);
 
-	((struct Mode*)spmap_get(a->modes, "five"))->height = 9999999;
+	((struct Mode*)spmap_get(a->modes, "fifth"))->height = 9999999;
 	assert_cfg_not_equal(a, b);
-	((struct Mode*)spmap_get(a->modes, "five"))->height = 1080;
+	((struct Mode*)spmap_get(a->modes, "fifth"))->height = 1080;
 	assert_cfg_equal(a, b);
 
-	simap_put(a->scales, "three", 999999);
+	simap_put(a->scales, "third", 999999);
 	assert_cfg_not_equal(a, b);
-	simap_put(a->scales, "three", 3000);
+	simap_put(a->scales, "third", 3000);
 	assert_cfg_equal(a, b);
 
-	simap_put(a->transforms, "twelve", WL_OUTPUT_TRANSFORM_180);
+	simap_put(a->transforms, "twelfth", WL_OUTPUT_TRANSFORM_180);
 	assert_cfg_not_equal(a, b);
-	simap_put(a->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
+	simap_put(a->transforms, "twelfth", WL_OUTPUT_TRANSFORM_FLIPPED);
 	assert_cfg_equal(a, b);
 
 	sset_add(a->adaptive_sync_off, "foo");
