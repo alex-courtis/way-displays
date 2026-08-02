@@ -73,11 +73,11 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case SCALING:
-				cfg->scaling  = yaml_scalar_to_enum_def(c, SCALING_DEFAULT, node, on_off_val, on_off_name, on_off_names);
+				cfg->scaling  = yaml_scalar_to_on_off_def(c, SCALING_DEFAULT, node);
 				break;
 
 			case AUTO_SCALE:
-				cfg->auto_scale = yaml_scalar_to_enum_def(c, AUTO_SCALE_DEFAULT, node, on_off_val, on_off_name, on_off_names);
+				cfg->auto_scale = yaml_scalar_to_on_off_def(c, AUTO_SCALE_DEFAULT, node);
 				break;
 
 			case SCALE:
@@ -145,7 +145,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case LAPTOP_LID_MONITOR:
-				cfg->laptop_lid_monitor = yaml_scalar_to_enum_def(c, LAPTOP_LID_MONITOR_DEFAULT, node, on_off_val, on_off_name, on_off_names);
+				cfg->laptop_lid_monitor = yaml_scalar_to_on_off_def(c, LAPTOP_LID_MONITOR_DEFAULT, node);
 				break;
 
 			case MAX_PREFERRED_REFRESH:

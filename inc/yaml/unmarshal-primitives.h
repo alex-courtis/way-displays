@@ -14,15 +14,16 @@
  */
 
 // extract scalars
-char *yaml_scalar_to_string    (struct UC *c,                                const yaml_node_t *scalar);
-char *yaml_scalar_to_string_def(struct UC *c,               const char *def, const yaml_node_t *scalar);
-bool  yaml_scalar_to_int       (struct UC *c, int32_t *dst,                  const yaml_node_t *scalar);
-bool  yaml_scalar_to_int_def   (struct UC *c, int32_t *dst, int32_t def,     const yaml_node_t *scalar);
-bool  yaml_scalar_to_float     (struct UC *c, float *dst,                    const yaml_node_t *scalar);
-bool  yaml_scalar_to_float_def (struct UC *c, float *dst,   float def,       const yaml_node_t *scalar);
-int   yaml_scalar_to_enum      (struct UC *c,                                const yaml_node_t *scalar, fn_enum_val val,                    fn_enum_names names);
-int   yaml_scalar_to_enum_def  (struct UC *c, const int def,                 const yaml_node_t *scalar, fn_enum_val val, fn_enum_name name, fn_enum_names names);
-bool  yaml_scalar_to_boolean   (struct UC *c, bool *dst,                     const yaml_node_t *scalar);
+char *yaml_scalar_to_string    (struct UC *c,                            const yaml_node_t *scalar);
+char *yaml_scalar_to_string_def(struct UC *c,           const char *def, const yaml_node_t *scalar);
+bool  yaml_scalar_to_int       (struct UC *c, int32_t *dst,              const yaml_node_t *scalar);
+bool  yaml_scalar_to_int_def   (struct UC *c, int32_t *dst, int32_t def, const yaml_node_t *scalar);
+bool  yaml_scalar_to_float     (struct UC *c, float *dst,                const yaml_node_t *scalar);
+bool  yaml_scalar_to_float_def (struct UC *c, float *dst,     float def, const yaml_node_t *scalar);
+int   yaml_scalar_to_enum      (struct UC *c,                            const yaml_node_t *scalar, fn_enum_val val,                    fn_enum_names names);
+int   yaml_scalar_to_enum_def  (struct UC *c,             const int def, const yaml_node_t *scalar, fn_enum_val val, fn_enum_name name, fn_enum_names names);
+bool  yaml_scalar_to_boolean   (struct UC *c, bool *dst,                 const yaml_node_t *scalar);
+int   yaml_scalar_to_on_off_def(struct UC *c,      const enum OnOff def, const yaml_node_t *scalar);
 
 // put into col using fn to unmarshal each item
 typedef void (*fn_yaml_node_into_col)(struct UC *c, const void *col, const yaml_node_t *node);

@@ -114,16 +114,34 @@ int yaml_scalar_to_enum_def(struct UC *c, const int def, const yaml_node_t *scal
 	return ret;
 }
 
-// TODO yaml v2: this could log_invalid_value with "bool"
 bool yaml_scalar_to_boolean(struct UC *c, bool *dst, const yaml_node_t *scalar) {
-	int val = yaml_scalar_to_enum(c, scalar, on_off_val, on_off_names);
-
-	if (val) {
-		*dst = val == ON;
-		return true;
+	if (!yaml_check_is_scalar(c, scalar, "boolean")) {
+		return false;
 	}
 
-	return false;
+	int val = on_off_val((char*)scalar->data.scalar.value);
+	if (!val) {
+		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "boolean");
+		return false;
+	}
+
+	*dst = val == ON;
+	return true;
+}
+
+int yaml_scalar_to_on_off_def(struct UC *c, const enum OnOff def, const yaml_node_t *scalar) {
+	yaml_unmarshal_log_def(c, def == ON ? "true" : "false");
+
+	int ret = def;
+
+	bool val;
+	if (yaml_scalar_to_boolean(c, &val, scalar)) {
+		ret = val ? ON : OFF;
+	}
+
+	yaml_unmarshal_log_def(c, NULL);
+
+	return ret;
 }
 
 bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn_yaml_node_into_col fn) {
