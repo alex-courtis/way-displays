@@ -5,8 +5,7 @@
 staticFunction:yaml/marshal-types-cfg.c
 staticFunction:yaml/marshal-types-ipc.c
 staticFunction:yaml/unmarshal.c
-staticFunction:yaml/unmarshal-types-cfg.c
-staticFunction:yaml/unmarshal-types-ipc.c
+staticFunction:yaml/unmarshal-types.c
 
 # unused are implemented for completeness
 unusedFunction:src/enum.c

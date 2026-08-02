@@ -7,8 +7,6 @@
 
 #include "enum.h"
 #include "plist.h"
-#include "ppmap.h"
-#include "pset.h"
 #include "sset.h"
 #include "yaml/marshal.h"
 

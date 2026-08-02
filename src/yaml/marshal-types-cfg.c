@@ -9,6 +9,7 @@
 #include "cfg/disabled.h"
 #include "enum.h"
 #include "mode.h"
+#include "plist.h"
 #include "pset.h"
 #include "simap.h"
 #include "spmap.h"
