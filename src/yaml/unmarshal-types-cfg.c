@@ -456,7 +456,7 @@ void yaml_map_into_cfg_modes(struct UC *c, const struct SPmap* const modes, cons
 	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
 		yaml_unmarshal_log_ctx_name_desc(c, NULL);
 
-		if (!yaml_valid_regex(c, it->key))
+		if (!yaml_valid_name_desc(c, it->key))
 			continue;
 
 		yaml_unmarshal_log_ctx_name_desc(c, it->key);
@@ -477,7 +477,7 @@ void yaml_map_into_disableds(struct UC *c, const struct SPmap* const disableds, 
 		yaml_unmarshal_log_ctx_name_desc(c, NULL);
 		yaml_unmarshal_log_ctx_key(c, NULL);
 
-		if (!yaml_valid_regex(c, it->key))
+		if (!yaml_valid_name_desc(c, it->key))
 			continue;
 
 		yaml_unmarshal_log_ctx_name_desc(c, it->key);
@@ -487,7 +487,7 @@ void yaml_map_into_disableds(struct UC *c, const struct SPmap* const disableds, 
 		if (!yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SCALAR_NODE))
 			continue;
 
-		struct CfgDisabled *disabled = cfg_disabled_init();
+		const struct CfgDisabled *disabled = cfg_disabled_init();
 
 		if (node->type == YAML_MAPPING_NODE) {
 			yaml_unmarshal_log_ctx_key(c, "IF");
@@ -514,7 +514,7 @@ void yaml_map_into_scales(struct UC *c, const struct SImap* const scales, const 
 	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
 		yaml_unmarshal_log_ctx_name_desc(c, NULL);
 
-		if (!yaml_valid_regex(c, it->key))
+		if (!yaml_valid_name_desc(c, it->key))
 			continue;
 
 		yaml_unmarshal_log_ctx_name_desc(c, it->key);
@@ -543,8 +543,7 @@ void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms
 	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
 		yaml_unmarshal_log_ctx_name_desc(c, NULL);
 
-		// TODO yaml v2: maybe yaml_scalar_to_name_desc or similar, if this gets repetitive
-		if (!yaml_valid_regex(c, it->key))
+		if (!yaml_valid_name_desc(c, it->key))
 			continue;
 
 		yaml_unmarshal_log_ctx_name_desc(c, it->key);
@@ -564,7 +563,7 @@ char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar) {
 	if (!name_desc)
 		return NULL;
 
-	if (yaml_valid_regex(c, name_desc))
+	if (yaml_valid_name_desc(c, name_desc))
 		return name_desc;
 
 	free(name_desc);
@@ -598,7 +597,6 @@ end:
 }
 
 void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset* const sset, const yaml_node_t *seq) {
-	// TODO expect string, not scalar
 	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE, 0))
 		return;
 

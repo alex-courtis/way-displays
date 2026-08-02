@@ -260,7 +260,7 @@ bool yaml_check_mandatory(struct UC *c, const yaml_node_t *node) {
 	return false;
 }
 
-bool yaml_valid_regex(struct UC *c, const char *pattern) {
+bool yaml_valid_name_desc(struct UC *c, const char *pattern) {
 	if (!pattern || strlen(pattern) < 2 || pattern[0] != '!')
 		return true;
 

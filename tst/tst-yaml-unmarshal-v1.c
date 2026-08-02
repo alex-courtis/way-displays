@@ -53,10 +53,10 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 	cfg_free(actual);
 	cfg_free(expected);
 }
-#define check_unmarshalled_cfg(yaml_path, expected, log_path) _check_unmarshalled_cfg(yaml_path, expected, log_path, __FILE__, __LINE__)
+#define check_unmarshalled_cfg_v1(yaml_path, expected, log_path) _check_unmarshalled_cfg(yaml_path, expected, log_path, __FILE__, __LINE__)
 
 static void yaml_root_to_cfg__ok(void **state) {
-	check_unmarshalled_cfg("tst/yaml/v1/cfg-all.yaml", cfg_all(), NULL);
+	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-all.yaml", cfg_all(), NULL);
 
 	assert_logs_empty();
 }
@@ -74,7 +74,7 @@ static void yaml_root_to_cfg__legacy(void **state) {
 			"!sixteen",
 			NULL);
 
-	check_unmarshalled_cfg("tst/yaml/v1/cfg-legacy.yaml", expected, NULL);
+	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-legacy.yaml", expected, NULL);
 
 	assert_logs_empty();
 }
@@ -83,7 +83,7 @@ static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
 	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
-	check_unmarshalled_cfg("tst/yaml/v1/cfg-transform.yaml", expected, "tst/yaml/v1/cfg-transform.log");
+	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-transform.yaml", expected, "tst/yaml/v1/cfg-transform.log");
 
 	assert_logs_empty();
 }
@@ -92,7 +92,7 @@ static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
 	simap_put(expected->scales, "three", 3000);
 
-	check_unmarshalled_cfg("tst/yaml/v1/cfg-scale.yaml", expected, "tst/yaml/v1/cfg-scale.log");
+	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-scale.yaml", expected, "tst/yaml/v1/cfg-scale.log");
 
 	assert_logs_empty();
 }
@@ -106,7 +106,7 @@ static void yaml_root_to_cfg__mode(void **state) {
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	check_unmarshalled_cfg("tst/yaml/v1/cfg-mode.yaml", expected, "tst/yaml/v1/cfg-mode.log");
+	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-mode.yaml", expected, "tst/yaml/v1/cfg-mode.log");
 
 	assert_logs_empty();
 }
@@ -152,7 +152,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			"NO_VALID_CONDITIONS",        cfg_disabled_init(),
 			NULL);
 
-	check_unmarshalled_cfg("tst/yaml/v1/cfg-disabled.yaml", expected, "tst/yaml/v1/cfg-disabled.log");
+	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-disabled.yaml", expected, "tst/yaml/v1/cfg-disabled.log");
 
 	assert_logs_empty();
 }
