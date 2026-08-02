@@ -21,8 +21,7 @@
 #include "plist.h"
 #include "str.h"
 
-#include "yaml/marshal-types-cfg.h"
-#include "yaml/marshal-types-ipc.h"
+#include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 
 // these mocks are local to this test as they specifically require __real to be present i.e. explicitly wrapped

@@ -15,7 +15,7 @@
 #include "info/print.h"
 #include "log.h"
 #include "sset.h"
-#include "yaml/marshal-types-cfg.h"
+#include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"

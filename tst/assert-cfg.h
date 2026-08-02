@@ -8,7 +8,7 @@
 #include "cfg/cfg.h"
 #include "fs.h"
 #include "str.h"
-#include "yaml/marshal-types-cfg.h"
+#include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 
 void _assert_cfg(const struct Cfg *a, const struct Cfg *b, bool equal, const char * const name, const char * const file, const int line) {
