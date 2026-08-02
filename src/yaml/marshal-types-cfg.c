@@ -131,7 +131,11 @@ int yaml_map_from_disableds(struct MC *c, const struct SPmap* const disableds) {
 			int map_if = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
 			if (!map_if)
 				continue;
-			yaml_map_add_pset(c, "IF", disabled->conditions, (fn_yaml_node_from_type)yaml_map_from_condition, map_if);
+
+			const struct Plist *conditions = pset_plist(disabled->conditions);
+			yaml_map_add_plist(c, "IF", conditions, (fn_yaml_node_from_type)yaml_map_from_condition, map_if);
+			plist_free(conditions);
+
 			yaml_map_add_node(c, it->key, map_if, map);
 		} else {
 			yaml_map_add_str(c, it->key, "", map);

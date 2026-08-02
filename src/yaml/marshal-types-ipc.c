@@ -128,7 +128,7 @@ int yaml_map_from_head_state(struct MC *c, const struct HeadState* const head_st
 	yaml_map_add_bool    (c, "VRR",       adaptive_sync_enabled,                         map);
 	yaml_map_add_enum    (c, "TRANSFORM", head_state->transform, transform_name,         map);
 
-	yaml_map_add_node    (c, "MODE",      yaml_map_from_head_mode(c, NULL, ppmap_get(head->modes, head_state->zmode)), map);
+	yaml_map_add_node    (c, "MODE",      yaml_map_from_head_mode(c, ppmap_get(head->modes, head_state->zmode)), map);
 
 	return map;
 }
@@ -209,15 +209,20 @@ int yaml_map_from_head(struct MC *c, const struct Head* const head) {
 	yaml_map_add_node (c, "DESIRED",        yaml_map_from_head_state(c, &head->des, head), map);
 	yaml_map_add_node (c, "OVERRIDES",      yaml_map_from_head_overrides(c, head),             map);
 
-	yaml_map_add_node (c, "MODE_PREFERRED", yaml_map_from_head_mode(c, NULL, ppmap_get(head->modes, head->zmode_pref)), map);
+	yaml_map_add_node (c, "MODE_PREFERRED", yaml_map_from_head_mode(c, ppmap_get(head->modes, head->zmode_pref)), map);
 
-	yaml_map_add_ppmap(c, "MODES",          head->modes,        (fn_yaml_node_from_key_type)yaml_map_from_head_mode, map);
-	yaml_map_add_ppmap(c, "MODES_FAILED",   head->modes_failed, (fn_yaml_node_from_key_type)yaml_map_from_head_mode, map);
+	const struct Plist *modes = ppmap_vals_plist(head->modes);
+	yaml_map_add_plist(c, "MODES",          modes,        (fn_yaml_node_from_type)yaml_map_from_head_mode, map);
+	plist_free(modes);
+
+	const struct Plist *modes_failed = ppmap_vals_plist(head->modes_failed);
+	yaml_map_add_plist(c, "MODES_FAILED",   modes_failed, (fn_yaml_node_from_type)yaml_map_from_head_mode, map);
+	plist_free(modes_failed);
 
 	return map;
 }
 
-int yaml_map_from_head_mode(struct MC *c, const void* const unused, const struct Mode* const mode) {
+int yaml_map_from_head_mode(struct MC *c, const struct Mode* const mode) {
 	if (!mode)
 		return 0;
 

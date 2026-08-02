@@ -28,10 +28,8 @@ int yaml_map_from_lid           (struct MC *c, const struct Lid*          const 
 int yaml_seq_from_messages      (struct MC *c, const struct IpcOperation* const ipc_operation);
 int yaml_map_from_state         (struct MC *c); // g_displ->heads and g_lid
 
-// yaml_map_add_pset: fn_yaml_node_from_type
+// fn_yaml_node_from_type: called for each item in a collection
 int yaml_map_from_head     (struct MC *c, const struct Head* const head);
-
-// yaml_map_add_spmap: fn_yaml_node_from_key_type
-int yaml_map_from_head_mode(struct MC *c, const void* const unused,    const struct Mode* const mode); // Head.modes
+int yaml_map_from_head_mode(struct MC *c, const struct Mode* const mode);
 
 #endif // YAML_MARSHAL_TYPES_IPC_H
