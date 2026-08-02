@@ -177,7 +177,6 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	cond->lid = LID_NOT_PRESENT;
 	pset_add(conditionally->conditions, cond);
 
-	// TODO yaml v2 all of the failures should not be here
 	spmap_put_many(expected->disableds,
 			"unconditional",    cfg_disabled_init(),
 			"conditional",      conditionally,

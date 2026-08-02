@@ -707,7 +707,6 @@ char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar) {
 	return NULL;
 }
 
-// TODO v2 too complex
 unsigned int yaml_scalar_to_scale_round_to(struct UC *c, const yaml_node_t *scalar) {
 	float val;
 	unsigned int ret;

@@ -1,6 +1,6 @@
-% WAY-DISPLAYS(1) way-displays | User Manuals
+% WAY-DISPLAYS(1) way-displays | General Commands Manual
 % Alexander Courtis
-% 2026/06/02
+% 2026/08/03
 
 # NAME
 
@@ -48,6 +48,21 @@ See the default /etc/way-displays/cfg.yaml and https://github.com/alex-courtis/w
 Server is run when no commands are specified.
 
 Server responds to IPC requests to fetch and mutate state: https://github.com/alex-courtis/way-displays/wiki/IPC
+
+## cfg.yaml
+
+For details on individual configurable settings see:
+
+1. Default `cfg.yaml`
+
+    /etc/way-displays/cfg.yaml
+
+    https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/examples/cfg.yaml
+
+2. Wiki
+
+    https://github.com/alex-courtis/way-displays/wiki/Configuration
+
 
 ## Client
 
@@ -188,7 +203,7 @@ It is recommended to use the description rather than the nondeterministic name.
 
 Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. '!^DP-1'. Regex strings must be single quoted.
 
-Using a regex is preferred, however fuzzy case insensitive string matches of at least 3 characters may be used.
+Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
 
 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
 
