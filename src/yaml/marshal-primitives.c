@@ -73,15 +73,14 @@ void yaml_map_add_enum(struct MC *c, const char *key, const int val, fn_enum_nam
 	if (!key || !fn_name || !mapping)
 		return;
 
-	const char *str = fn_name(val);
-	if (!str)
-		return;
-
-	// use T/F to obey schema
-	if (fn_name == on_off_name)
-		str = (val == ON) ? "TRUE" : "FALSE";
-
-	yaml_map_add_str(c, key, str, mapping);
+	if (fn_name == on_off_name && val) {
+		yaml_map_add_bool(c, key, val == ON, mapping);
+	} else {
+		const char *str = fn_name(val);
+		if (!str)
+			return;
+		yaml_map_add_str(c, key, str, mapping);
+	}
 }
 
 void yaml_map_add_plist(struct MC *c, const char *key, const struct Plist* const plist, fn_yaml_node_from_type fn, int mapping) {
