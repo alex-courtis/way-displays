@@ -226,22 +226,6 @@ bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const ya
 	return false;
 }
 
-bool yaml_check_mandatory_key(struct UC *c, const yaml_node_t *node) {
-	if (node)
-		return true;
-
-	// temporarily pop the key
-	char *key = strdup(c->key);
-	yaml_unmarshal_log_ctx_key(c, NULL);
-
-	yaml_unmarshal_log_invalid_value(c, NULL, key);
-
-	yaml_unmarshal_log_ctx_key(c, key);
-	free(key);
-
-	return false;
-}
-
 bool yaml_valid_name_desc(struct UC *c, const char *pattern) {
 	if (!pattern || strlen(pattern) < 2 || pattern[0] != '!')
 		return true;

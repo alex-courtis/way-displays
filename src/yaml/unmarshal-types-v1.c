@@ -26,7 +26,7 @@ void yaml_map_into_cfg_modes_v1(struct UC *c, const struct SPmap* const modes, c
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-	if (!yaml_check_mandatory_key(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+	if (!(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto err;
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
@@ -61,7 +61,7 @@ void yaml_map_into_scales_v1(struct UC *c, const struct SImap* const scales, con
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-	if (!yaml_check_mandatory_key(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+	if (!(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto end;
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
@@ -69,7 +69,7 @@ void yaml_map_into_scales_v1(struct UC *c, const struct SImap* const scales, con
 	yaml_unmarshal_log_ctx_key(c, "SCALE");
 	scalar = spmap_get(m, "SCALE");
 	float scale;
-	if (!yaml_check_mandatory_key(c, scalar) || !yaml_scalar_to_float(c, &scale, scalar))
+	if (!yaml_scalar_to_float(c, &scale, scalar))
 		goto end;
 
 	if (scale <= 0) {
@@ -99,7 +99,7 @@ void yaml_map_into_transforms_v1(struct UC *c, const struct SImap* const transfo
 
 	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-	if (!yaml_check_mandatory_key(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+	if (!(name_desc = yaml_scalar_to_name_desc(c, scalar)))
 		goto end;
 
 	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
@@ -107,7 +107,7 @@ void yaml_map_into_transforms_v1(struct UC *c, const struct SImap* const transfo
 	yaml_unmarshal_log_ctx_key(c, "TRANSFORM");
 	scalar = spmap_get(m, "TRANSFORM");
 	enum wl_output_transform transform;
-	if (!yaml_check_mandatory_key(c, scalar) || !(transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names)))
+	if (!(transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names)))
 		goto end;
 
 	if (simap_put_if_absent(transforms, name_desc, transform)) {
@@ -148,7 +148,7 @@ void yaml_node_into_disableds_v1(struct UC *c, const struct SPmap* const disable
 
 		yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
 		const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-		if (!yaml_check_mandatory_key(c, scalar) || !(name_desc = yaml_scalar_to_name_desc(c, scalar))) {
+		if (!(name_desc = yaml_scalar_to_name_desc(c, scalar))) {
 			free(name_desc);
 			goto err;
 		}

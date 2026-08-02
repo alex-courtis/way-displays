@@ -10,4 +10,4 @@ Ignoring invalid MODE 'mistyped' HEIGHT, expected integer
 Ignoring invalid MODE 'mistyped' HZ, expected number
 Ignoring invalid MODE 'mistyped' MAX, expected boolean
 Ignoring invalid MODE, expected map, got sequence
-Ignoring invalid MODE, expected NAME_DESC
+Ignoring invalid MODE NAME_DESC, expected string

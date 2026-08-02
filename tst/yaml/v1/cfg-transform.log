@@ -4,5 +4,5 @@ Ignoring invalid TRANSFORM NAME_DESC regex '(transform': Unmatched ( or \(
 Ignoring invalid TRANSFORM NAME_DESC, expected string
 Ignoring invalid TRANSFORM 'mistyped' TRANSFORM, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 Ignoring invalid TRANSFORM, expected map, got sequence
-Ignoring invalid TRANSFORM 'missing_transform', expected TRANSFORM
-Ignoring invalid TRANSFORM, expected NAME_DESC
+Ignoring invalid TRANSFORM 'missing_transform' TRANSFORM, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+Ignoring invalid TRANSFORM NAME_DESC, expected string

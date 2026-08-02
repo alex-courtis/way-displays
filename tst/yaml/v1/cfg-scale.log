@@ -4,7 +4,7 @@ Ignoring invalid SCALE NAME_DESC regex '(foobar': Unmatched ( or \(
 Ignoring invalid SCALE NAME_DESC, expected string
 Ignoring invalid SCALE 'mistyped' SCALE, expected number
 Ignoring invalid SCALE, expected map, got sequence
-Ignoring invalid SCALE 'missing_scale', expected SCALE
-Ignoring invalid SCALE, expected NAME_DESC
+Ignoring invalid SCALE 'missing_scale' SCALE, expected number
+Ignoring invalid SCALE NAME_DESC, expected string
 Ignoring invalid SCALE 'neg' SCALE -1, expected positive number
 Ignoring invalid SCALE 'zero' SCALE 0, expected positive number
