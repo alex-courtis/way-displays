@@ -10,7 +10,6 @@ description: |-
 $defs:
   fuzzy_display_match:
     type: string
-    # TODO increase to 4 after changing test yamls
     minLength: 4
     description: |-
       Fuzzy match for a display. In order of precedence:
