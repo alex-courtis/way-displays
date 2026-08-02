@@ -53,33 +53,6 @@ $defs:
     description: |-
       A list of conditions. Evaluates to true if at least one of the conditions is true.
 
-  arrange:
-    enum:
-      - ROW
-      - COLUMN
-    description: |-
-      Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom).
-
-  align:
-    enum:
-      - MIDDLE
-      - LEFT
-      - RIGHT
-      - TOP
-      - BOTTOM
-    description: |-
-      Align ROWs at the TOP (default), MIDDLE or BOTTOM.
-      Align COLUMNs at the LEFT (default), MIDDLE or RIGHT.
-
-  disabled:
-    anyOf:
-      - type: object
-        properties:
-          IF:
-            $ref: '#/$defs/condition_list'
-        additionalProperties: false
-      - type: "null"
-
   mode:
     type: object
     properties:
@@ -101,10 +74,6 @@ $defs:
           Use the highest available mode.
     minProperties: 1
     additionalProperties: false
-
-  scale:
-    type: number
-    exclusiveMinimum: 0
 
   transform:
     enum:
@@ -201,7 +170,8 @@ $defs:
       type: object
       properties:
         SCALE:
-          $ref: '#/$defs/scale'
+          type: number
+          exclusiveMinimum: 0
         ENABLED:
           type: boolean
         X:

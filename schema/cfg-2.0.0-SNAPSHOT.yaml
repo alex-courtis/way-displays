@@ -15,11 +15,20 @@ properties:
       - ROW
       - COLUMN
     default: ROW
+    description: |-
+      Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom).
 
-  # TODO move descriptions up for easier readability
   ALIGN:
-    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/align'
+    enum:
+      - MIDDLE
+      - LEFT
+      - RIGHT
+      - TOP
+      - BOTTOM
     default: TOP
+    description: |-
+      Align ROWs at the TOP (default), MIDDLE or BOTTOM.
+      Align COLUMNs at the LEFT (default), MIDDLE or RIGHT.
 
   ORDER:
     type: array
@@ -88,7 +97,8 @@ properties:
     propertyNames:
       $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
     additionalProperties:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/scale'
+      type: number
+      exclusiveMinimum: 0
 
   MODE:
     type: object
@@ -150,6 +160,12 @@ properties:
     propertyNames:
       $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
     additionalProperties:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/disabled'
+      anyOf:
+        - type: "null"
+        - type: object
+          properties:
+            IF:
+              $ref: '#/$defs/condition_list'
+          additionalProperties: false
 
 additionalProperties: false
