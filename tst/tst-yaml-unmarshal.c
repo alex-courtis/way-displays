@@ -1,5 +1,3 @@
-// TODO yaml v2 split into unmarshal-cfg and unmarshal-ipc
-
 #include "tst.h"
 
 #include "assert-cfg.h"
@@ -16,7 +14,6 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
-#include <yaml.h>
 
 #include "cfg/cfg.h"
 #include "cfg/condition.h"
@@ -31,21 +28,12 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
-#include "spmap.h"
 #include "sset.h"
-#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/unmarshal-types-cfg.h"
 #include "yaml/unmarshal-types-ipc.h"
 
 #include "yaml/unmarshal.h"
-
-// these mocks are local to this test as they specifically require __real to be present i.e. explicitly wrapped
-//
-int __real_yaml_parser_initialize(yaml_parser_t *parser);
-int __wrap_yaml_parser_initialize(yaml_parser_t *parser) { // cppcheck-suppress staticFunction
-	return has_mock() ? mock_int() : __real_yaml_parser_initialize(parser);
-}
 
 // expected will be free'd, log_path is optional WARNING
 static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected, const char *log_path, const char * const file, const int line) {
@@ -73,42 +61,6 @@ static void yaml_root_to_cfg__ok(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_cfg__unknown_fields_ok(void **state) {
-	struct Cfg *expected = cfg_init();
-	expected->arrange = COL;
-
-	check_unmarshalled_cfg("tst/yaml/cfg-unknown-fields-ok.yaml", expected, NULL);
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__empty(void **state) {
-
-	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
-
-	assert_log(ERROR, "\ntst/yaml/cfg-empty.yaml: no root node\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__missing(void **state) {
-	assert_nul(yaml_unmarshal_file("foo/bar/baz.yaml", yaml_root_to_cfg));
-
-	assert_log(ERROR, "\nfoo/bar/baz.yaml: inexistent\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__invalid(void **state) {
-	// all invalid have been set to default
-	struct Cfg *expected = cfg_default();
-	spmap_put(expected->disableds, "BAD_DISABLED_IFS", cfg_disabled_init());
-
-	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
-
-	assert_logs_empty();
-}
-
 static void yaml_root_to_cfg__legacy(void **state) {
 	struct Cfg *expected = cfg_init();
 
@@ -123,20 +75,6 @@ static void yaml_root_to_cfg__legacy(void **state) {
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__mistyped(void **state) {
-	check_unmarshalled_cfg("tst/yaml/cfg-mistyped.yaml", cfg_default(), "tst/yaml/cfg-mistyped.log");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__root_mistyped(void **state) {
-	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-root-mistyped.yaml", yaml_root_to_cfg));
-
-	assert_log(WARNING, "Ignoring invalid tst/yaml/cfg-root-mistyped.yaml, expected map, got sequence\n");
 
 	assert_logs_empty();
 }
@@ -219,133 +157,10 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_cfg__scale_round_to_invalid(void **state) {
-	struct Cfg *expected = cfg_init();
-	expected->scale_round_to = 8;
-
-	check_unmarshalled_cfg("tst/yaml/cfg-scale-round-to-invalid.yaml", expected, "tst/yaml/cfg-scale-round-to-invalid.log");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__scale_round_to_zero(void **state) {
-	struct Cfg *expected = cfg_init();
-	expected->scale_round_to = 8;
-
-	check_unmarshalled_cfg("tst/yaml/cfg-scale-round-to-zero.yaml", expected, "tst/yaml/cfg-scale-round-to-zero.log");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_request__empty(void **state) {
-	const struct IpcRequest *actual = yaml_unmarshal_str("", yaml_root_to_ipc_request, "ipc request");
-
-	assert_nul(actual);
-
-	assert_log(ERROR, "\n"
-			"ipc request: empty request\n"
-			"========================================\n"
-			"\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_request__mistyped_root(void **state) {
-	const char *yaml = "- FOO";
-
-	const struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
-
-	assert_nul(actual);
-
-	assert_log(ERROR,
-			"ipc request: invalid document, expected map, got sequence\n"
-			"========================================\n"
-			"- FOO\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_request__invalid_op(void **state) {
-	const char *yaml = "OP: aoeu";
-
-	const struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
-
-	assert_nul(actual);
-
-	assert_log(ERROR,
-			"ipc request: invalid OP aoeu, expected enum GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
-			"========================================\n"
-			"OP: aoeu\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_request__mistyped_op(void **state) {
-	const char *yaml = "OP:\n  FOO: BAR";
-
-	const struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
-
-	assert_nul(actual);
-
-	assert_log(ERROR,
-			"ipc request: invalid OP, expected enum GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
-			"========================================\n"
-			"OP:\n"
-			"  FOO: BAR\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-
-static void yaml_root_to_ipc_request__no_op(void **state) {
-	const char *yaml = "FOO: BAR";
-
-	const struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
-
-	assert_nul(actual);
-
-	assert_log(ERROR,
-			"ipc request: missing OP\n"
-			"========================================\n"
-			"FOO: BAR\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
-	struct Cfg *expected = cfg_default();
-	spmap_put(expected->disableds, "BAD_DISABLED_IFS", cfg_disabled_init());
-
-	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
-
-	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
-
-	assert_non_nul(actual);
-	assert_int_equal(actual->command, CFG_SET);
-	assert_int_equal(actual->log_threshold, ERROR);
-
-	assert_cfg_equal(actual->cfg, expected);
-
-	char *expected_log = read_file("tst/yaml/ipc-request-cfg-invalid.log");
-	assert_log(WARNING, expected_log);
-
-	free(yaml);
-	ipc_request_free(actual);
-	cfg_free(expected);
-	free(expected_log);
-
-	assert_logs_empty();
-}
-
 static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	struct Cfg *expected = cfg_all();
 
-	char *yaml = read_file("tst/yaml/ipc-request-cfg-set.yaml");
+	char *yaml = read_file("tst/yaml/v2/ipc-request-cfg-set.yaml");
 
 	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
@@ -358,72 +173,6 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	ipc_request_free(actual);
 	cfg_free(expected);
 	free(yaml);
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_response_plist__empty(void **state) {
-	assert_nul(yaml_unmarshal_str("", yaml_root_to_ipc_response_plist, "ipc response"));
-
-	assert_log(ERROR, "\n"
-			"ipc response: empty request\n"
-			"========================================\n"
-			"\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_response_plist__mistyped_root(void **state) {
-	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_plist, "ipc response"));
-
-	assert_log(ERROR,
-			"ipc response: invalid document, expected sequence or map, got scalar\n"
-			"========================================\n"
-			"foo\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_response_plist__seq_no_map(void **state) {
-	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_plist, "ipc response"));
-
-	assert_log(ERROR,
-			"ipc response: invalid document, expected map, got scalar\n"
-			"========================================\n"
-			"-\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_response_plist__seq_no_done(void **state) {
-	expect_function_call(__wrap_lid_free);
-
-	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_plist, "ipc response"));
-
-	assert_log(ERROR,
-			"ipc response: missing DONE\n"
-			"========================================\n"
-			"- FOO: BAR\n"
-			"----------------------------------------\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_ipc_response_plist__seq_no_rc(void **state) {
-	expect_function_call(__wrap_lid_free);
-
-	const struct Pset *actual = yaml_unmarshal_str( "- DONE: TRUE", yaml_root_to_ipc_response_plist, "ipc response");
-
-	assert_nul(actual);
-
-	assert_log(ERROR,
-			"ipc response: missing RC\n"
-			"========================================\n"
-			"- DONE: TRUE\n"
-			"----------------------------------------\n");
 
 	assert_logs_empty();
 }
@@ -539,199 +288,19 @@ static void yaml_root_to_ipc_response_plist__map(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_ipc_response_plist__seq(void **state) {
-	char *yaml = read_file("tst/yaml/ipc-responses-seq-brief.yaml");
-
-	expect_function_calls(__wrap_lid_free, 3);
-
-	const struct Plist *responses = yaml_unmarshal_str(yaml, yaml_root_to_ipc_response_plist, "ipc response");
-
-	struct Cfg *cfg_expected = cfg_init();
-	cfg_expected->arrange = COL;
-
-	assert_non_nul(responses);
-	assert_int_equal(plist_size(responses), 3);
-
-	// 0
-	const struct IpcResponse *response = plist_at(responses, 0);
-	assert_true(response->status.done);
-	assert_int_equal(response->status.rc, 0);
-
-	const struct Cfg *cfg_actual = response->cfg;
-	assert_non_nul(cfg_actual);
-	assert_cfg_equal(cfg_actual, cfg_expected);
-
-	const struct Lid *lid = response->lid;
-	assert_non_nul(lid);
-	assert_str_equal(lid->device_path, "/path/to/lid");
-
-	assert_int_equal(plist_size(response->heads), 2);
-
-	const struct Head *head0 = plist_at(response->heads, 0);
-	assert_non_nul(head0);
-	assert_str_equal(head0->name, "name0");
-	assert_int_equal(head0->overrided_enabled, NoOverride);
-
-	const struct Head *head1 = plist_at(response->heads, 1);
-	assert_non_nul(head1);
-	assert_str_equal(head1->name, "name1");
-	assert_int_equal(head1->overrided_enabled, NoOverride);
-
-	assert_int_equal(plist_size(response->log_cap_lines), 4);
-	const struct LogCapLine *line = plist_at(response->log_cap_lines, 0);
-	assert_int_equal(line->threshold, DEBUG);
-	assert_str_equal(line->line, "dbg0");
-
-	line = plist_at(response->log_cap_lines, 1);
-	assert_int_equal(line->threshold, INFO);
-	assert_str_equal(line->line, "inf0");
-
-	line = plist_at(response->log_cap_lines, 2);
-	assert_int_equal(line->threshold, WARNING);
-	assert_str_equal(line->line, "war0");
-
-	line = plist_at(response->log_cap_lines, 3);
-	assert_int_equal(line->threshold, ERROR);
-	assert_str_equal(line->line, "err0");
-
-	// 1
-	response = plist_at(responses, 1);
-	assert_false(response->status.done);
-	assert_int_equal(response->status.rc, 1);
-	assert_nul(response->cfg);
-	assert_nul(response->lid);
-	assert_int_equal(plist_size(response->heads), 0);
-
-	assert_int_equal(plist_size(response->log_cap_lines), 4);
-	line = plist_at(response->log_cap_lines, 0);
-	assert_int_equal(line->threshold, DEBUG);
-	assert_str_equal(line->line, "dbg1");
-
-	line = plist_at(response->log_cap_lines, 1);
-	assert_int_equal(line->threshold, INFO);
-	assert_str_equal(line->line, "inf1");
-
-	line = plist_at(response->log_cap_lines, 2);
-	assert_int_equal(line->threshold, WARNING);
-	assert_str_equal(line->line, "war1");
-
-	line = plist_at(response->log_cap_lines, 3);
-	assert_int_equal(line->threshold, ERROR);
-	assert_str_equal(line->line, "err1");
-
-	// 2
-	response = plist_at(responses, 2);
-	assert_true(response->status.done);
-	assert_int_equal(response->status.rc, 2);
-	assert_nul(response->cfg);
-	assert_nul(response->lid);
-	assert_int_equal(plist_size(response->heads), 0);
-	assert_int_equal(plist_size(response->log_cap_lines), 0);
-
-	plist_free_vals(responses);
-	free(yaml);
-	cfg_free(cfg_expected);
-
-	assert_logs_empty();
-}
-
-static void yaml_unmarshal_str__yaml_parser_initialize_fail(void **state) {
-
-	will_return_int(__wrap_yaml_parser_initialize, 0);
-
-	assert_nul(yaml_unmarshal_str("", yaml_root_to_cfg, "foo"));
-
-	assert_log(ERROR, "\nfoo: yaml_parser_initialize failed\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
-
-	// https://github.com/yaml/libyaml/tree/run-test-suite
-	// 4HVU
-	// line and column error
-	char *yaml =
-		"key:\n"
-		"   - ok\n"
-		"   - also ok\n"
-		"  - wrong";
-
-	assert_nul(yaml_unmarshal_str(yaml, yaml_root_to_cfg, "foo"));
-
-	char *err = sprintf_alloc(
-			"\nfoo line 3 column 2: did not find expected key (while parsing a block mapping)\n"
-			"========================================\n"
-			"%s\n"
-			"----------------------------------------\n",
-			yaml);
-
-	assert_log(ERROR, err);
-
-	free(err);
-
-	assert_logs_empty();
-}
-
-static void yaml_unmarshal_file__yaml_parser_initialize_fail(void **state) {
-	will_return_int(__wrap_yaml_parser_initialize, 0);
-
-	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
-
-	assert_log(ERROR, "\ntst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
-
-	assert_logs_empty();
-}
-
-static void yaml_unmarshal_file__yaml_parser_load_fail(void **state) {
-
-	// https://github.com/yaml/libyaml/tree/run-test-suite
-	// line error only
-	assert_nul(yaml_unmarshal_file("tst/yaml/CQ3W.yaml", yaml_root_to_cfg));
-
-	assert_log(ERROR, "\ntst/yaml/CQ3W.yaml line 2: found unexpected end of stream (while scanning a quoted scalar)\n");
-
-	assert_logs_empty();
-}
-
 int main(void) {
 
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_root_to_cfg__ok),
-		TEST(yaml_root_to_cfg__unknown_fields_ok),
-		TEST(yaml_root_to_cfg__empty),
-		TEST(yaml_root_to_cfg__missing),
-		TEST(yaml_root_to_cfg__invalid),
 		TEST(yaml_root_to_cfg__legacy),
-		TEST(yaml_root_to_cfg__mistyped),
-		TEST(yaml_root_to_cfg__root_mistyped),
 		TEST(yaml_root_to_cfg__transform),
 		TEST(yaml_root_to_cfg__scale),
 		TEST(yaml_root_to_cfg__mode),
 		TEST(yaml_root_to_cfg__disabled),
-		TEST(yaml_root_to_cfg__scale_round_to_invalid),
-		TEST(yaml_root_to_cfg__scale_round_to_zero),
 
-		TEST(yaml_root_to_ipc_request__empty),
-		TEST(yaml_root_to_ipc_request__mistyped_root),
-		TEST(yaml_root_to_ipc_request__invalid_op),
-		TEST(yaml_root_to_ipc_request__mistyped_op),
-		TEST(yaml_root_to_ipc_request__no_op),
-		TEST(yaml_root_to_ipc_request__invalid_cfg),
 		TEST(yaml_root_to_ipc_request__cfg_set),
 
-		TEST(yaml_root_to_ipc_response_plist__empty),
-		TEST(yaml_root_to_ipc_response_plist__mistyped_root),
-		TEST(yaml_root_to_ipc_response_plist__seq_no_map),
-		TEST(yaml_root_to_ipc_response_plist__seq_no_done),
-		TEST(yaml_root_to_ipc_response_plist__seq_no_rc),
 		TEST(yaml_root_to_ipc_response_plist__map),
-		TEST(yaml_root_to_ipc_response_plist__seq),
-
-		TEST(yaml_unmarshal_str__yaml_parser_initialize_fail),
-		TEST(yaml_unmarshal_str__yaml_parser_load_fail),
-		TEST(yaml_unmarshal_file__yaml_parser_initialize_fail),
-		TEST(yaml_unmarshal_file__yaml_parser_load_fail),
 	};
 
 	return RUN(tests);

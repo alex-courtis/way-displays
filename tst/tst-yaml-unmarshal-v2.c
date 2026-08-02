@@ -11,7 +11,6 @@
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 #include <yaml.h>
@@ -102,24 +101,6 @@ static void yaml_root_to_cfg__invalid(void **state) {
 	struct Cfg *expected = cfg_default();
 
 	check_unmarshalled_cfg("tst/yaml/v2/cfg-invalid.yaml", expected, "tst/yaml/v2/cfg-invalid.log");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__legacy(void **state) {
-	struct Cfg *expected = cfg_init();
-
-	// CHANGE_SUCCESS_CMD -> CALLBACK_CMD
-	free(expected->callback_cmd);
-	expected->callback_cmd = strdup("foo");
-
-	// MAX_PREFERRED_REFRESH
-	sset_add_many(expected->max_preferred_refresh,
-			"fifteen",
-			"!sixteen",
-			NULL);
-
-	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
 
 	assert_logs_empty();
 }
@@ -701,7 +682,6 @@ int main(void) {
 		TEST(yaml_root_to_cfg__empty),
 		TEST(yaml_root_to_cfg__missing),
 		TEST(yaml_root_to_cfg__invalid),
-		TEST(yaml_root_to_cfg__legacy),
 		TEST(yaml_root_to_cfg__mistyped),
 		TEST(yaml_root_to_cfg__root_mistyped),
 		TEST(yaml_root_to_cfg__transform),
