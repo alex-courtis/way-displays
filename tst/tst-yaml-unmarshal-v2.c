@@ -656,9 +656,9 @@ static void yaml_unmarshal_str__yaml_parser_load_fail(void **state) {
 static void yaml_unmarshal_file__yaml_parser_initialize_fail(void **state) {
 	will_return_int(__wrap_yaml_parser_initialize, 0);
 
-	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-all.yaml", yaml_root_to_cfg));
+	assert_nul(yaml_unmarshal_file("tst/yaml/v2/cfg-all.yaml", yaml_root_to_cfg));
 
-	assert_log(ERROR, "\ntst/yaml/cfg-all.yaml: yaml_parser_initialize failed\n");
+	assert_log(ERROR, "\ntst/yaml/v2/cfg-all.yaml: yaml_parser_initialize failed\n");
 
 	assert_logs_empty();
 }

@@ -1,4 +1,4 @@
-# $schema: ../../schema/cfg-1.2.0.yaml
+# $schema: ../../../schema/ipc-response-1.2.0.yaml
 DONE: TRUE
 CFG:
   ARRANGE: COLUMN

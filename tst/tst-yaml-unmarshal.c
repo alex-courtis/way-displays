@@ -56,7 +56,7 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 #define check_unmarshalled_cfg(yaml_path, expected, log_path) _check_unmarshalled_cfg(yaml_path, expected, log_path, __FILE__, __LINE__)
 
 static void yaml_root_to_cfg__ok(void **state) {
-	check_unmarshalled_cfg("tst/yaml/cfg-all.yaml", cfg_all(), NULL);
+	check_unmarshalled_cfg("tst/yaml/v1/cfg-all.yaml", cfg_all(), NULL);
 
 	assert_logs_empty();
 }
@@ -74,7 +74,7 @@ static void yaml_root_to_cfg__legacy(void **state) {
 			"!sixteen",
 			NULL);
 
-	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
+	check_unmarshalled_cfg("tst/yaml/v1/cfg-legacy.yaml", expected, NULL);
 
 	assert_logs_empty();
 }
@@ -83,7 +83,7 @@ static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
 	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
-	check_unmarshalled_cfg("tst/yaml/cfg-transform.yaml", expected, "tst/yaml/cfg-transform.log");
+	check_unmarshalled_cfg("tst/yaml/v1/cfg-transform.yaml", expected, "tst/yaml/v1/cfg-transform.log");
 
 	assert_logs_empty();
 }
@@ -92,7 +92,7 @@ static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
 	simap_put(expected->scales, "three", 3000);
 
-	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
+	check_unmarshalled_cfg("tst/yaml/v1/cfg-scale.yaml", expected, "tst/yaml/v1/cfg-scale.log");
 
 	assert_logs_empty();
 }
@@ -106,7 +106,7 @@ static void yaml_root_to_cfg__mode(void **state) {
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
 
-	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
+	check_unmarshalled_cfg("tst/yaml/v1/cfg-mode.yaml", expected, "tst/yaml/v1/cfg-mode.log");
 
 	assert_logs_empty();
 }
@@ -152,7 +152,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			"NO_VALID_CONDITIONS",        cfg_disabled_init(),
 			NULL);
 
-	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
+	check_unmarshalled_cfg("tst/yaml/v1/cfg-disabled.yaml", expected, "tst/yaml/v1/cfg-disabled.log");
 
 	assert_logs_empty();
 }
@@ -160,7 +160,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 static void yaml_root_to_ipc_request__cfg_set(void **state) {
 	struct Cfg *expected = cfg_all();
 
-	char *yaml = read_file("tst/yaml/v2/ipc-request-cfg-set.yaml");
+	char *yaml = read_file("tst/yaml/v1/ipc-request-cfg-set.yaml");
 
 	struct IpcRequest *actual = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 
@@ -178,7 +178,7 @@ static void yaml_root_to_ipc_request__cfg_set(void **state) {
 }
 
 static void yaml_root_to_ipc_response_plist__map(void **state) {
-	char *yaml = read_file("tst/yaml/ipc-responses-map.yaml");
+	char *yaml = read_file("tst/yaml/v1/ipc-responses-map.yaml");
 
 	expect_function_call(__wrap_lid_free);
 

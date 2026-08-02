@@ -1,4 +1,4 @@
-# $schema: ../../schema/cfg-1.2.0.yaml
+# $schema: ../../../schema/cfg-1.2.0.yaml
 MODE:
   - NAME_DESC: max_override
     WIDTH: 1920

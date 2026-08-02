@@ -1,4 +1,4 @@
-# $schema: ../../schema/cfg-1.2.0.yaml
+# $schema: ../../../schema/ipc-request-1.1.0.yaml
 OP: CFG_SET
 LOG_THRESHOLD: ERROR
 CFG:
