@@ -5,7 +5,6 @@
 
 #include "cfg/cfg.h"
 #include "cfg/condition.h"
-#include "cfg/disabled.h"
 #include "simap.h"
 #include "spmap.h"
 #include "yaml/marshal.h"

@@ -8,7 +8,6 @@
 #include "plist.h"
 #include "ppmap.h"
 #include "pset.h"
-#include "spmap.h"
 #include "sset.h"
 #include "yaml/marshal.h"
 
