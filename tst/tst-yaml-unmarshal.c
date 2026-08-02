@@ -290,7 +290,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: missing OP\n"
+			"ipc request: invalid document, expected OP\n"
 			"========================================\n"
 			"FOO: BAR\n"
 			"----------------------------------------\n");
@@ -385,7 +385,7 @@ static void yaml_root_to_ipc_response_plist__seq_no_done(void **state) {
 	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR,
-			"ipc response: missing DONE\n"
+			"ipc response: invalid document, expected DONE\n"
 			"========================================\n"
 			"- FOO: BAR\n"
 			"----------------------------------------\n");
@@ -401,7 +401,7 @@ static void yaml_root_to_ipc_response_plist__seq_no_rc(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc response: missing RC\n"
+			"ipc response: invalid document, expected RC\n"
 			"========================================\n"
 			"- DONE: TRUE\n"
 			"----------------------------------------\n");

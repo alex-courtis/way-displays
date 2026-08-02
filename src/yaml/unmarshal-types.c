@@ -51,9 +51,14 @@ void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {
 
 	struct IpcRequest *ipc_request = ipc_request_init(0);
 
-	yaml_unmarshal_log_ctx_top(c, "OP");
 	const yaml_node_t *op = spmap_get(m, "OP");
-	if (!yaml_check_mandatory(c, op) || !(ipc_request->command = yaml_scalar_to_enum(c, op, ipc_command_val, ipc_command_names)))
+	if (!op) {
+		yaml_unmarshal_log_invalid_value(c, NULL, "OP");
+		goto err;
+	}
+
+	yaml_unmarshal_log_ctx_top(c, "OP");
+	if (!(ipc_request->command = yaml_scalar_to_enum(c, op, ipc_command_val, ipc_command_names)))
 		goto err;
 
 	// log warnings for remainder
@@ -465,14 +470,24 @@ void yaml_map_into_ipc_responses(struct UC *c, const struct Plist* const ipc_res
 
 	struct IpcResponse *ipc_response = ipc_response_init();
 
-	yaml_unmarshal_log_ctx_top(c, "DONE");
 	const yaml_node_t *done = spmap_get(m, "DONE");
-	if (!yaml_check_mandatory(c, done) || !yaml_scalar_to_boolean(c, &ipc_response->status.done, done))
+	if (!done) {
+		yaml_unmarshal_log_invalid_value(c, NULL, "DONE");
+		goto err;
+	}
+
+	const yaml_node_t *rc = spmap_get(m, "RC");
+	if (!rc) {
+		yaml_unmarshal_log_invalid_value(c, NULL, "RC");
+		goto err;
+	}
+
+	yaml_unmarshal_log_ctx_top(c, "DONE");
+	if (!yaml_scalar_to_boolean(c, &ipc_response->status.done, done))
 		goto err;
 
 	yaml_unmarshal_log_ctx_top(c, "RC");
-	const yaml_node_t *rc = spmap_get(m, "RC");
-	if (!yaml_check_mandatory(c, rc) || !yaml_scalar_to_int(c, &ipc_response->status.rc, rc))
+	if (!yaml_scalar_to_int(c, &ipc_response->status.rc, rc))
 		goto err;
 
 	// suppress validation failures for remainder
@@ -579,7 +594,6 @@ void yaml_map_into_disableds(struct UC *c, const struct SPmap* const disableds, 
 		if (node->type == YAML_MAPPING_NODE) {
 			yaml_unmarshal_log_ctx_key(c, "IF");
 
-			// TODO yaml v2 map get node would be good in many places
 			const struct SPmap *mif = yaml_map_to_spmap(c, it->val);
 			yaml_seq_into_col(c, spmap_get(mif, "IF"), disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 			spmap_free(mif);
@@ -589,6 +603,7 @@ void yaml_map_into_disableds(struct UC *c, const struct SPmap* const disableds, 
 	}
 
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+	yaml_unmarshal_log_ctx_key(c, NULL);
 	spmap_free(m);
 }
 

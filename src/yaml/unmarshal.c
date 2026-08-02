@@ -167,7 +167,7 @@ void yaml_unmarshal_log_enum_names(struct UC *c, fn_enum_names fn) {
 	c->enum_names = fn;
 }
 
-static void yaml_log(struct UC *c, const char *value, const char *expected) {
+void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected) {
 
 	char *msg = NULL;
 
@@ -201,31 +201,6 @@ static void yaml_log(struct UC *c, const char *value, const char *expected) {
 	free(msg);
 }
 
-static void yaml_log_misssing(struct UC *c) {
-
-	char *msg = NULL;
-
-	if (*c->prefix)
-		msg = sprintf_append(msg, "%s: missing %s", c->prefix, c->top);
-	else
-		msg = sprintf_append(msg, "%s: Ignoring missing", c->top);
-
-	if (*c->key)
-		msg = sprintf_append(msg, " %s", c->key);
-
-	if (*c->name_desc)
-		msg = sprintf_append(msg, " for '%s'", c->name_desc);
-
-	if (msg) {
-		log_(c->t, "%s", msg);
-		free(msg);
-	}
-}
-
-void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected) {
-	yaml_log(c, (char*)value, expected);
-}
-
 bool yaml_check_is_scalar(struct UC *c, const yaml_node_t *node, const char *expected) {
 	if (node && node->type == YAML_SCALAR_NODE)
 		return true;
@@ -244,18 +219,25 @@ bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const ya
 		expected = sprintf_append(expected, " or %s", yaml_node_type_str(type2));
 	expected = sprintf_append(expected, ", got %s", yaml_node_type_str(node_actual ? node_actual->type : YAML_NO_NODE));
 
-	yaml_log(c, NULL, expected);
+	yaml_unmarshal_log_invalid_value(c, NULL, expected);
 
 	free(expected);
 
 	return false;
 }
 
-bool yaml_check_mandatory(struct UC *c, const yaml_node_t *node) {
+bool yaml_check_mandatory_key(struct UC *c, const yaml_node_t *node) {
 	if (node)
 		return true;
 
-	yaml_log_misssing(c);
+	// temporarily pop the key
+	char *key = strdup(c->key);
+	yaml_unmarshal_log_ctx_key(c, NULL);
+
+	yaml_unmarshal_log_invalid_value(c, NULL, key);
+
+	yaml_unmarshal_log_ctx_key(c, key);
+	free(key);
 
 	return false;
 }
@@ -268,7 +250,7 @@ bool yaml_valid_name_desc(struct UC *c, const char *pattern) {
 
 	if (err) {
 		char *msg = sprintf_alloc("regex '%s': %s", pattern + 1, err);
-		yaml_log(c, msg, NULL);
+		yaml_unmarshal_log_invalid_value(c, (yaml_char_t*)msg, NULL);
 		free(msg);
 		free(err);
 		return false;

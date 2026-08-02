@@ -55,7 +55,7 @@ bool yaml_check_is_scalar(struct UC *c, const yaml_node_t *node, const char *exp
 bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t type1, const yaml_node_type_t type2);
 
 // assert that node is not null
-bool yaml_check_mandatory(struct UC *c, const yaml_node_t *node);
+bool yaml_check_mandatory_key(struct UC *c, const yaml_node_t *node);
 
 // if pattern starts with '!' return false if it fails to compile, otherwise return true
 bool yaml_valid_name_desc(struct UC *c, const char *pattern);
