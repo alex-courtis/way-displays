@@ -192,6 +192,8 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			"map_lid",          cfg_disabled_init(),
 			"map_plugged",      cfg_disabled_init(),
 			"map_unplugged",    cfg_disabled_init(),
+			"scalar_if",        cfg_disabled_init(),
+			"missing_if",       cfg_disabled_init(),
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");

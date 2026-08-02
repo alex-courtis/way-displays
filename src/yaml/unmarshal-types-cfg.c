@@ -494,17 +494,8 @@ void yaml_map_into_disableds(struct UC *c, const struct SPmap* const disableds, 
 
 			// TODO yaml v2 map get node would be good in many places
 			const struct SPmap *mif = yaml_map_to_spmap(c, it->val);
-
-			// TODO yaml v2 error on node other than IF
-			const yaml_node_t *mapi = spmap_get(mif, "IF");
+			yaml_seq_into_col(c, spmap_get(mif, "IF"), disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 			spmap_free(mif);
-			if (mapi && yaml_check_node_type(c, mapi, YAML_SEQUENCE_NODE, 0)) {
-				yaml_seq_into_col(c, mapi, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
-			} else {
-				cfg_disabled_free(disabled);
-				continue;
-			}
-
 		}
 
 		spmap_put(disableds, it->key, disabled);
