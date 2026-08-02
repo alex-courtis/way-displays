@@ -49,7 +49,7 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                       map);
 	yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                                          map);
 	yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,                                   map);
-	yaml_map_add_spmap   (c, cfg_element_name(DISABLED),              cfg->disableds,             (fn_yaml_node_from_key_type)yaml_node_from_disabled,  map);
+	yaml_map_add_node    (c, cfg_element_name(DISABLED),              yaml_map_from_disableds(c, cfg->disableds),                                       map);
 
 	return map;
 }
@@ -120,21 +120,24 @@ int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condi
 	return map;
 }
 
-int yaml_node_from_disabled(struct MC *c, const char* const name_desc, const struct CfgDisabled* const disabled) {
-	if (!disabled || !name_desc)
+int yaml_map_from_disableds(struct MC *c, const struct SPmap* const disableds) {
+	int map;
+	if (spmap_size(disableds) < 1 || !(map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
 		return 0;
 
-	if (pset_size(disabled->conditions) > 0) {
-		int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
-		if (!map)
-			return 0;
-
-		yaml_map_add_str(c, "NAME_DESC", name_desc, map);
-		yaml_map_add_pset(c, "IF", disabled->conditions, (fn_yaml_node_from_type)yaml_map_from_condition, map);
-
-		return map;
-	} else {
-		return yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)name_desc, -1, YAML_PLAIN_SCALAR_STYLE);
+	for (const struct SPmapIt *it = spmap_it(disableds); it; it = spmap_it_next(it)) {
+		const struct CfgDisabled *disabled = it->val;
+		if (pset_size(disabled->conditions) > 0 ) {
+			int map_if = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+			if (!map_if)
+				continue;
+			yaml_map_add_pset(c, "IF", disabled->conditions, (fn_yaml_node_from_type)yaml_map_from_condition, map_if);
+			yaml_map_add_node(c, it->key, map_if, map);
+		} else {
+			yaml_map_add_str(c, it->key, "", map);
+		}
 	}
+
+	return map;
 }
 

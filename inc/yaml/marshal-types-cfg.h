@@ -20,13 +20,13 @@
 bool yaml_root_from_cfg          (struct MC *c, const struct Cfg*          const cfg);
 
 // explicitly called
-int yaml_map_from_cfg           (struct MC *c, const struct Cfg*          const cfg);
-int yaml_map_from_cfg_modes     (struct MC *c, const struct SPmap*        const modes);      // Cfg.modes
-int yaml_map_from_scales        (struct MC *c, const struct SImap*        const scales);
-int yaml_map_from_transforms    (struct MC *c, const struct SImap*        const transforms);
+int yaml_map_from_cfg       (struct MC *c, const struct Cfg*   const cfg);
+int yaml_map_from_cfg_modes (struct MC *c, const struct SPmap* const modes);
+int yaml_map_from_scales    (struct MC *c, const struct SImap* const scales);
+int yaml_map_from_transforms(struct MC *c, const struct SImap* const transforms);
+int yaml_map_from_disableds (struct MC *c, const struct SPmap* const disableds);
 
 // yaml_map_add_pset: fn_yaml_node_from_type
 int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condition);
-int yaml_node_from_disabled(struct MC *c, const char* const name_desc, const struct CfgDisabled*  const disabled);
 
 #endif // YAML_MARSHAL_TYPES_CFG_H

@@ -20,8 +20,4 @@ Ignoring invalid MODE NAME_DESC regex '(mode': Unmatched ( or \(
 Ignoring invalid TRANSFORM 'badenum' foobar, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 Ignoring invalid VRR_OFF regex '(vrroff': Unmatched ( or \(
 Ignoring invalid MAX_PREFERRED_REFRESH regex '(max': Unmatched ( or \(
-Ignoring invalid DISABLED regex '(disabled1': Unmatched ( or \(
-Ignoring invalid DISABLED NAME_DESC regex '(disabled2': Unmatched ( or \(
-Ignoring invalid DISABLED 'BAD_DISABLED_IFS' PLUGGED regex '(plugged1': Unmatched ( or \(
-Ignoring invalid DISABLED 'BAD_DISABLED_IFS' UNPLUGGED regex '(unplugged1': Unmatched ( or \(
-Ignoring invalid DISABLED 'BAD_DISABLED_IFS' LID BAD_DISABLED_LID, expected enum OPEN|CLOSED|NOT_PRESENT
+Ignoring invalid DISABLED regex '(disabled': Unmatched ( or \(

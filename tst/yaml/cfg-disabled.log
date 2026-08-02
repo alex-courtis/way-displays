@@ -10,5 +10,6 @@ Ignoring invalid DISABLED 'MISTYPED_UN_PLUGGED_SCALAR' UNPLUGGED, expected seque
 Ignoring invalid DISABLED 'MISTYPED_UN_PLUGGED_MAP' PLUGGED, expected sequence, got map
 Ignoring invalid DISABLED 'MISTYPED_UN_PLUGGED_MAP' UNPLUGGED, expected sequence, got map
 Ignoring invalid DISABLED 'MISTYPED_LID_MAP' LID, expected enum OPEN|CLOSED|NOT_PRESENT
+Ignoring invalid DISABLED 'BAD_LID_ENUM' LID FOO, expected enum OPEN|CLOSED|NOT_PRESENT
 Ignoring invalid DISABLED, expected scalar or map, got sequence
 DISABLED: Ignoring missing NAME_DESC

@@ -1,0 +1,12 @@
+Ignoring invalid DISABLED regex '(bad_pat_key': Unmatched ( or \(
+Ignoring invalid DISABLED 'empty_if' IF, expected map, got scalar
+Ignoring invalid DISABLED 'bad_enum_lid' LID foo, expected enum OPEN|CLOSED|NOT_PRESENT
+Ignoring invalid DISABLED 'bad_pat_plugged' PLUGGED regex '(bad_pat_plugged': Unmatched ( or \(
+Ignoring invalid DISABLED 'bad_pat_unplugged' UNPLUGGED regex '(bad_pat_unplugged': Unmatched ( or \(
+Ignoring invalid DISABLED 'scalar_plugged' PLUGGED, expected sequence, got scalar
+Ignoring invalid DISABLED 'scalar_unplugged' UNPLUGGED, expected sequence, got scalar
+Ignoring invalid DISABLED 'map_lid' LID, expected enum OPEN|CLOSED|NOT_PRESENT
+Ignoring invalid DISABLED 'map_plugged' PLUGGED, expected sequence, got map
+Ignoring invalid DISABLED 'map_unplugged' UNPLUGGED, expected sequence, got map
+Ignoring invalid DISABLED 'sequ_top', expected map or scalar, got sequence
+Ignoring invalid DISABLED 'scalar_if' IF, expected sequence, got scalar

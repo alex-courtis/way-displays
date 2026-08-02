@@ -1,0 +1,90 @@
+# $schema: ../../../schema/cfg-2.0.0-SNAPSHOT.yaml
+DISABLED:
+  #
+  # accepted
+  #
+  unconditional:
+
+  conditional:
+    IF:
+    - PLUGGED:
+      - ONE
+      - TWO
+    - PLUGGED: # equal to first, erased
+      - ONE
+      - TWO
+    - PLUGGED: # not equal to first
+      - ONE
+      - TWO
+      LID: OPEN
+    - UNPLUGGED:
+      - THREE
+      LID: CLOSED
+    - PLUGGED:
+      - FOUR
+      UNPLUGGED:
+      - FIVE
+      - SIX
+      LID: NOT_PRESENT
+
+  '!(bad_pat_key':
+
+  empty_if:
+    IF:
+    -
+
+  unknown_if:
+    IF:
+    - foo:
+      - bar
+
+  bad_enum_lid:
+    IF:
+    - LID: foo
+
+  bad_pat_plugged:
+    IF:
+    - PLUGGED:
+      - '!(bad_pat_plugged'
+
+  bad_pat_unplugged:
+    IF:
+    - UNPLUGGED:
+      - '!(bad_pat_unplugged'
+
+  scalar_plugged:
+    IF:
+    - PLUGGED: foo
+
+  scalar_unplugged:
+    IF:
+    - UNPLUGGED: foo
+
+  map_lid:
+    IF:
+    - LID:
+        foo: bar
+
+  map_plugged:
+    IF:
+    - PLUGGED:
+        foo: bar
+
+  map_unplugged:
+    IF:
+    - UNPLUGGED:
+        foo: bar
+
+  #
+  # rejected
+  #
+  sequ_top:
+  -
+
+  scalar_if:
+    IF: foo
+
+  # this should be an error
+  missing_if:
+    FOO:
+

@@ -1,5 +1,5 @@
 # $schema: ../../../schema/cfg-2.0.0-SNAPSHOT.yaml
-# all fields have an invalid value
+# all fields have an invalid value and will not be added to cfg
 
 LOG_THRESHOLD: BAD_LOG_THRESHOLD
 LAPTOP_LID_MONITOR: BAD_LAPTOP_LID_MONITOR
@@ -35,12 +35,4 @@ VRR_OFF:
 MAX_PREFERRED_REFRESH:
   - '!(max'
 DISABLED:
-  - '!(disabled1'
-  - NAME_DESC: '!(disabled2'
-  - NAME_DESC: BAD_DISABLED_IFS
-    IF:
-      - PLUGGED:
-          - '!(plugged1'
-      - UNPLUGGED:
-          - '!(unplugged1'
-      - LID: BAD_DISABLED_LID
+  '!(disabled':

@@ -100,7 +100,6 @@ static void yaml_root_to_cfg__missing(void **state) {
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
-	spmap_put(expected->disableds, "BAD_DISABLED_IFS", cfg_disabled_init());
 
 	check_unmarshalled_cfg("tst/yaml/v2/cfg-invalid.yaml", expected, "tst/yaml/v2/cfg-invalid.log");
 
@@ -175,44 +174,46 @@ static void yaml_root_to_cfg__mode(void **state) {
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	struct CfgDisabled *disabled_consolidated = cfg_disabled_init();
+	struct CfgDisabled *conditionally = cfg_disabled_init();
 
 	struct CfgCondition *cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
-	pset_add(disabled_consolidated->conditions, cond);
+	pset_add(conditionally->conditions, cond);
 
 	cond = cfg_condition_init();
 	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
 	cond->lid = LID_OPEN;
-	pset_add(disabled_consolidated->conditions, cond);
+	pset_add(conditionally->conditions, cond);
 
 	cond = cfg_condition_init();
 	sset_add_many(cond->unplugged, "THREE", NULL);
 	cond->lid = LID_CLOSED;
-	pset_add(disabled_consolidated->conditions, cond);
+	pset_add(conditionally->conditions, cond);
 
 	cond = cfg_condition_init();
 	sset_add(cond->plugged, "FOUR");
-	pset_add(disabled_consolidated->conditions, cond);
+	pset_add(conditionally->conditions, cond);
 	sset_add_many(cond->unplugged, "FIVE", "SIX", NULL);
 	cond->lid = LID_NOT_PRESENT;
-	pset_add(disabled_consolidated->conditions, cond);
+	pset_add(conditionally->conditions, cond);
 
+	// TODO yaml v2 all of the failures should not be here
 	spmap_put_many(expected->disableds,
-			"eight",                      cfg_disabled_init(),
-			"EIGHT",                      cfg_disabled_init(),
-			"nine",                       cfg_disabled_init(),
-			"twelve",                     disabled_consolidated,
-			"BAD_DISABLED_IFS",           cfg_disabled_init(),
-			"MISTYPED_IF_SCALAR",         cfg_disabled_init(),
-			"MISTYPED_IF_MAP",            cfg_disabled_init(),
-			"MISTYPED_UN_PLUGGED_SCALAR", cfg_disabled_init(),
-			"MISTYPED_UN_PLUGGED_MAP",    cfg_disabled_init(),
-			"MISTYPED_LID_MAP",           cfg_disabled_init(),
-			"NO_VALID_CONDITIONS",        cfg_disabled_init(),
+			"unconditional",    cfg_disabled_init(),
+			"conditional",      conditionally,
+			"empty_if",         cfg_disabled_init(),
+			"unknown_if",       cfg_disabled_init(),
+			"bad_enum_lid",     cfg_disabled_init(),
+			"bad_pat_plugged",  cfg_disabled_init(),
+			"bad_pat_unplugged",cfg_disabled_init(),
+			"scalar_plugged",   cfg_disabled_init(),
+			"scalar_unplugged", cfg_disabled_init(),
+			"map_lid",          cfg_disabled_init(),
+			"map_plugged",      cfg_disabled_init(),
+			"map_unplugged",    cfg_disabled_init(),
 			NULL);
 
-	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
+	check_unmarshalled_cfg("tst/yaml/v2/cfg-disabled.yaml", expected, "tst/yaml/v2/cfg-disabled.log");
 
 	assert_logs_empty();
 }

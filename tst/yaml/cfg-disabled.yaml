@@ -61,6 +61,9 @@ DISABLED:
     IF:
       - LID:
         -
+  - NAME_DESC: BAD_LID_ENUM
+    IF:
+      - LID: FOO
   - NAME_DESC: NO_VALID_CONDITIONS
     IF:
       - FOO: bar

@@ -89,7 +89,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 						yaml_map_into_scales(c, cfg->scales, node);
 						break;
 					default:
-						yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE);
+						yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE);
 						break;
 				}
 				break;
@@ -104,28 +104,28 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 
 			case MODE:
 				switch(node->type) {
-					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
-						yaml_seq_into_col(c, node, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_cfg_modes_v1);
-						break;
 					case YAML_MAPPING_NODE:
 						yaml_map_into_cfg_modes(c, cfg->modes, node);
 						break;
+					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+						yaml_seq_into_col(c, node, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_cfg_modes_v1);
+						break;
 					default:
-						yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE);
+						yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE);
 						break;
 				}
 				break;
 
 			case TRANSFORM:
 				switch(node->type) {
-					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
-						yaml_seq_into_col(c, node, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms_v1);
-						break;
 					case YAML_MAPPING_NODE:
 						yaml_map_into_transforms(c, cfg->transforms, node);
 						break;
+					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+						yaml_seq_into_col(c, node, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms_v1);
+						break;
 					default:
-						yaml_check_node_type(c, node, YAML_SEQUENCE_NODE, YAML_MAPPING_NODE);
+						yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE);
 						break;
 				}
 				break;
@@ -157,7 +157,17 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case DISABLED:
-				yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds);
+				switch(node->type) {
+					case YAML_MAPPING_NODE:
+						yaml_map_into_disableds(c, cfg->disableds, node);
+						break;
+					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+						yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds_v1);
+						break;
+					default:
+						yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE);
+						break;
+				}
 				break;
 
 			case AUTO_SCALE_DPI:
@@ -378,7 +388,7 @@ end:
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);
 }
 
-void yaml_node_into_disableds(struct UC *c, const struct SPmap* const disableds, const yaml_node_t *node) {
+void yaml_node_into_disableds_v1(struct UC *c, const struct SPmap* const disableds, const yaml_node_t *node) {
 	if (!disableds || !yaml_check_node_type(c, node, YAML_SCALAR_NODE, YAML_MAPPING_NODE))
 		return;
 
@@ -452,6 +462,52 @@ void yaml_map_into_cfg_modes(struct UC *c, const struct SPmap* const modes, cons
 		yaml_unmarshal_log_ctx_name_desc(c, it->key);
 
 		spmap_put_if_absent(modes, it->key, yaml_map_to_cfg_mode(c, it->val));
+	}
+
+	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+	spmap_free(m);
+}
+
+void yaml_map_into_disableds(struct UC *c, const struct SPmap* const disableds, const yaml_node_t *map) {
+	const struct SPmap *m;
+	if (!disableds || !(m = yaml_map_to_spmap(c, map)))
+		return;
+
+	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
+		yaml_unmarshal_log_ctx_name_desc(c, NULL);
+		yaml_unmarshal_log_ctx_key(c, NULL);
+
+		if (!yaml_valid_regex(c, it->key))
+			continue;
+
+		yaml_unmarshal_log_ctx_name_desc(c, it->key);
+
+		// map for conditons, otherwise unconditional (empty scalar)
+		const yaml_node_t *node = it->val;
+		if (!yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SCALAR_NODE))
+			continue;
+
+		struct CfgDisabled *disabled = cfg_disabled_init();
+
+		if (node->type == YAML_MAPPING_NODE) {
+			yaml_unmarshal_log_ctx_key(c, "IF");
+
+			// TODO yaml v2 map get node would be good in many places
+			const struct SPmap *mif = yaml_map_to_spmap(c, it->val);
+
+			// TODO yaml v2 error on node other than IF
+			const yaml_node_t *mapi = spmap_get(mif, "IF");
+			spmap_free(mif);
+			if (mapi && yaml_check_node_type(c, mapi, YAML_SEQUENCE_NODE, 0)) {
+				yaml_seq_into_col(c, mapi, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
+			} else {
+				cfg_disabled_free(disabled);
+				continue;
+			}
+
+		}
+
+		spmap_put(disableds, it->key, disabled);
 	}
 
 	yaml_unmarshal_log_ctx_name_desc(c, NULL);

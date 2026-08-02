@@ -26,12 +26,13 @@ void yaml_map_into_conditions   (struct UC *c, const struct Pset*  const conditi
 void yaml_map_into_cfg_modes_v1 (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *map);
 void yaml_map_into_scales_v1    (struct UC *c, const struct SImap* const scales,        const yaml_node_t *map);
 void yaml_map_into_transforms_v1(struct UC *c, const struct SImap* const transforms,    const yaml_node_t *map);
-void yaml_node_into_disableds   (struct UC *c, const struct SPmap* const disableds,     const yaml_node_t *node); // scalar or map
+void yaml_node_into_disableds_v1(struct UC *c, const struct SPmap* const disableds,     const yaml_node_t *node); // scalar or map
 
 // called directly
-void yaml_map_into_cfg_modes    (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *map);
-void yaml_map_into_scales       (struct UC *c, const struct SImap* const scales,        const yaml_node_t *map);
-void yaml_map_into_transforms   (struct UC *c, const struct SImap* const transforms,    const yaml_node_t *map);
+void yaml_map_into_cfg_modes (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *map);
+void yaml_map_into_disableds (struct UC *c, const struct SPmap* const disableds,     const yaml_node_t *map);
+void yaml_map_into_scales    (struct UC *c, const struct SImap* const scales,        const yaml_node_t *map);
+void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms,    const yaml_node_t *map);
 
 // unmarshal a scalar to a name_desc, validating regex
 char *yaml_scalar_to_name_desc(struct UC *c, const yaml_node_t *scalar);

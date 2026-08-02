@@ -37,17 +37,17 @@ CFG:
   LAPTOP_LID_MONITOR: FALSE
   LOG_THRESHOLD: ERROR
   DISABLED:
-  - eight
-  - EIGHT
-  - nine
-  - NAME_DESC: twelve
-    IF:
-    - PLUGGED:
-      - ONE
-      - TWO
-    - UNPLUGGED:
-      - THREE
-    - LID: CLOSED
+    eight:
+    EIGHT:
+    nine:
+    twelve:
+      IF:
+      - PLUGGED:
+        - ONE
+        - TWO
+      - UNPLUGGED:
+        - THREE
+      - LID: CLOSED
 STATE:
   LID:
     CLOSED: TRUE

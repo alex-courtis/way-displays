@@ -210,6 +210,7 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			"MISTYPED_UN_PLUGGED_SCALAR", cfg_disabled_init(),
 			"MISTYPED_UN_PLUGGED_MAP",    cfg_disabled_init(),
 			"MISTYPED_LID_MAP",           cfg_disabled_init(),
+			"BAD_LID_ENUM",               cfg_disabled_init(),
 			"NO_VALID_CONDITIONS",        cfg_disabled_init(),
 			NULL);
 
