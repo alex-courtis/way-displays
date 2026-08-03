@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <wayland-client-protocol.h>
 #include <yaml.h>
@@ -7,6 +8,8 @@
 
 #include "cfg/disabled.h"
 #include "enum.h"
+#include "info/callback.h"
+#include "info/print.h"
 #include "log.h"
 #include "mode.h"
 #include "simap.h"
@@ -15,7 +18,49 @@
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"
 
+const char *v1_deprecation_log_text = "Deprecation:\n"
+"way-displays 2.0 has deprecated some arrays, replacing NAME_DESC with keyed maps.\n"
+"\n"
+"This affects: DISABLED, MODE, SCALE and TRANSFORM\n"
+"e.g.\n"
+"\n"
+"  SCALE:\n"
+"  - NAME_DESC: DP-2\n"
+"    SCALE: 1.5\n"
+"\n"
+"is now expressed as\n"
+"\n"
+"  SCALE:\n"
+"    'DP-2': 1.5\n"
+"This is a non-breaking change however compatibility will be removed in version 3.0\n"
+"\n"
+"See https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes for complete details.\n"
+"\n"
+"Please way-displays --write to upgrade your cfg.yaml\n"
+;
+
+const char *v1_deprecation_callback_text =
+"Deprecation:\n"
+"NAME_DESC arrays are replaced with keyed maps.\n"
+"See logs or https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes\n"
+"\n"
+"Please way-displays --write to upgrade your cfg.yaml\n"
+;
+
+static void yaml_unmarshal_log_v1(struct UC *c) {
+	// warn once only
+	if (!c->v1_warn)
+		return;
+
+	print_v1_deprecation();
+	callback_v1_deprecation();
+
+	c->v1_warn = false;
+}
+
 void yaml_map_into_cfg_modes_v1(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
+	yaml_unmarshal_log_v1(c);
+
 	const struct SPmap *m;
 	if (!modes || !(m = yaml_map_to_spmap(c, map)))
 		return;
@@ -53,6 +98,8 @@ end:
 }
 
 void yaml_map_into_scales_v1(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
+	yaml_unmarshal_log_v1(c);
+
 	const struct SPmap *m;
 	if (!scales || !(m = yaml_map_to_spmap(c, map)))
 		return;
@@ -91,6 +138,8 @@ end:
 }
 
 void yaml_map_into_transforms_v1(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
+	yaml_unmarshal_log_v1(c);
+
 	const struct SPmap *m;
 	if (!transforms || !(m = yaml_map_to_spmap(c, map)))
 		return;
@@ -122,6 +171,8 @@ end:
 }
 
 void yaml_node_into_disableds_v1(struct UC *c, const struct SPmap* const disableds, const yaml_node_t *node) {
+	yaml_unmarshal_log_v1(c);
+
 	if (!disableds || !yaml_check_node_type(c, node, YAML_SCALAR_NODE, YAML_MAPPING_NODE))
 		return;
 

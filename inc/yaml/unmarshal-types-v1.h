@@ -7,6 +7,9 @@
 #include "spmap.h"
 #include "yaml/unmarshal.h"
 
+extern const char *v1_deprecation_log_text;
+extern const char *v1_deprecation_callback_text;
+
 /*
  * schema v1.2.0 compatibility
  */

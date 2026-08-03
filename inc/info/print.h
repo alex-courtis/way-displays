@@ -33,5 +33,7 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 
 void print_head_queue(const enum LogThreshold t, const struct Displ *displ, const char *msg);
 
+void print_v1_deprecation(void);
+
 #endif // PRINT_H
 

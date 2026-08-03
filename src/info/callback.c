@@ -13,6 +13,7 @@
 #include "ssmap.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
+#include "yaml/unmarshal-types-v1.h"
 
 void callback(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
 	if (!g_cfg->callback_cmd) {
@@ -93,3 +94,6 @@ void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * 
 	free(human);
 }
 
+void callback_v1_deprecation(void) {
+	callback(WARNING, v1_deprecation_callback_text, NULL);
+}

@@ -28,7 +28,6 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
-#include "spmap.h"
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -290,7 +289,6 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected = cfg_default();
-	spmap_put(expected->disableds, "BAD_DISABLED_IFS", cfg_disabled_init());
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 
@@ -300,7 +298,7 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	assert_int_equal(actual->command, CFG_SET);
 	assert_int_equal(actual->log_threshold, ERROR);
 
-	assert_cfg_equal(actual->cfg, expected);
+	assert_cfg_equal(actual->cfg, cfg_default());
 
 	char *expected_log = read_file("tst/yaml/ipc-request-cfg-invalid.log");
 	assert_log(WARNING, expected_log);

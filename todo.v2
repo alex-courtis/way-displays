@@ -1,0 +1,10 @@
+deprecation messages, --write new schema
+deprecate CHANGE_SUCCESS_CMD
+move MAX_PREFERRED_REFRESH to mode
+warn on unexpected keys
+
+wiki document v2 changes
+
+quote values
+fix man option formatting
+man 5

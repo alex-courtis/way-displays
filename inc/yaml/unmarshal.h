@@ -13,12 +13,13 @@ struct UC {
 	yaml_document_t d;
 
 	enum LogThreshold t;
-	char prefix[64];
-	char def[64];
-	char key[64];
-	char name_desc[64];
-	char top[64];
-	fn_enum_names enum_names;
+	char prefix[64];          // cfg file name or ipc operation
+	char top[64];             // key e.g. MODE
+	char key[64];             // sub-key e.g. WIDTH
+	char name_desc[64];       // name_desc key for top e.g. 'DP-1'
+	fn_enum_names enum_names; // accepted enums
+	char def[64];             // default value
+	bool v1_warn;             // warn on v1 schema elements used, one shot
 };
 
 /*

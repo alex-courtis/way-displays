@@ -55,6 +55,10 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 #define check_unmarshalled_cfg_v1(yaml_path, expected, log_path) _check_unmarshalled_cfg(yaml_path, expected, log_path, __FILE__, __LINE__)
 
 static void yaml_root_to_cfg__ok(void **state) {
+	// only once
+	expect_function_call(__wrap_print_v1_deprecation);
+	expect_function_call(__wrap_callback_v1_deprecation);
+
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-all.yaml", cfg_all(), NULL);
 
 	assert_logs_empty();
@@ -82,6 +86,10 @@ static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
 	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
+	// only once
+	expect_function_call(__wrap_print_v1_deprecation);
+	expect_function_call(__wrap_callback_v1_deprecation);
+
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-transform.yaml", expected, "tst/yaml/v1/cfg-transform.log");
 
 	assert_logs_empty();
@@ -90,6 +98,10 @@ static void yaml_root_to_cfg__transform(void **state) {
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
 	simap_put(expected->scales, "three", 3000);
+
+	// only once
+	expect_function_call(__wrap_print_v1_deprecation);
+	expect_function_call(__wrap_callback_v1_deprecation);
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-scale.yaml", expected, "tst/yaml/v1/cfg-scale.log");
 
@@ -104,6 +116,10 @@ static void yaml_root_to_cfg__mode(void **state) {
 			"five", mode_whr(1920, 1080, 12340),
 			"seven", mode_whr_max(-1, -1, -1),
 			NULL);
+
+	// only once
+	expect_function_call(__wrap_print_v1_deprecation);
+	expect_function_call(__wrap_callback_v1_deprecation);
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-mode.yaml", expected, "tst/yaml/v1/cfg-mode.log");
 
@@ -150,6 +166,10 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			"BAD_LID_ENUM",               cfg_disabled_init(),
 			"NO_VALID_CONDITIONS",        cfg_disabled_init(),
 			NULL);
+
+	// only once
+	expect_function_call(__wrap_print_v1_deprecation);
+	expect_function_call(__wrap_callback_v1_deprecation);
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-disabled.yaml", expected, "tst/yaml/v1/cfg-disabled.log");
 

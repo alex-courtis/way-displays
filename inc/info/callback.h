@@ -18,5 +18,8 @@ void callback_mode_fail(const enum LogThreshold t, const struct Head * const hea
 // execute CALLBACK_CMD with VRR failed message, if enabled
 void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
 
+// execute CALLBACK_CMD with v1_deprecation_callback_text
+void callback_v1_deprecation(void);
+
 #endif // CALLBACK_H
 

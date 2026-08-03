@@ -35,6 +35,9 @@ void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {
 	// log warnings and skip failures
 	c->t = WARNING;
 
+	// warn once for deprecated usage
+	c->v1_warn = true;
+
 	if (!yaml_check_node_type(c, root, YAML_MAPPING_NODE, 0))
 		return NULL;
 
