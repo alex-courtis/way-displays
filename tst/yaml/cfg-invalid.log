@@ -1,23 +1,23 @@
-Ignoring invalid LOG_THRESHOLD BAD_LOG_THRESHOLD, expected enum DEBUG|INFO|WARNING|ERROR|FATAL
-Ignoring invalid LAPTOP_LID_MONITOR BAD_LAPTOP_LID_MONITOR, expected boolean, using default true
-Ignoring invalid CALLBACK_CMD, expected string, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
-Ignoring invalid ORDER regex '(order': Unmatched ( or \(
-Ignoring invalid ARRANGE BAD_ARRANGE, expected enum ROW|COLUMN, using default ROW
-Ignoring invalid ALIGN BAD_ALIGN, expected enum TOP|MIDDLE|BOTTOM|LEFT|RIGHT, using default TOP
-Ignoring invalid SCALING BAD_SCALING, expected boolean, using default true
-Ignoring invalid SCALE_ROUND_TO BAD_SCALE_ROUND_TO, expected number 0.125|0.25|0.5|1, using default 0.125
-Ignoring invalid SCALE_ROUND_STRATEGY BAD_SCALE_ROUND_STRATEGY, expected enum NEAREST|UP|DOWN, using default NEAREST
-Ignoring invalid AUTO_SCALE BAD_AUTO_SCALE, expected boolean, using default true
-Ignoring invalid AUTO_SCALE_DPI BAD_AUTO_SCALE_DPI, expected integer, using default 96
-Ignoring invalid AUTO_SCALE_MIN BAD_AUTO_SCALE_MIN, expected number, using default 1.0
-Ignoring invalid AUTO_SCALE_MAX BAD_AUTO_SCALE_MAX, expected number, using default -1.0
-Ignoring invalid SCALE 'negative' -1.23, expected positive number
-Ignoring invalid MODE 'BAD_MODE_MAX' MAX BAD_MAX, expected boolean
-Ignoring invalid MODE 'BAD_MODE_WIDTH' WIDTH BAD_WIDTH, expected integer
-Ignoring invalid MODE 'BAD_MODE_HEIGHT' HEIGHT BAD_HEIGHT, expected integer
-Ignoring invalid MODE 'BAD_MODE_HZ' HZ BAD_HZ, expected number
-Ignoring invalid MODE NAME_DESC regex '(mode': Unmatched ( or \(
-Ignoring invalid TRANSFORM 'badenum' foobar, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
-Ignoring invalid VRR_OFF regex '(vrroff': Unmatched ( or \(
-Ignoring invalid MAX_PREFERRED_REFRESH regex '(max': Unmatched ( or \(
-Ignoring invalid DISABLED regex '(disabled': Unmatched ( or \(
+cfg-invalid.yaml: invalid LOG_THRESHOLD BAD_LOG_THRESHOLD, expected enum DEBUG|INFO|WARNING|ERROR|FATAL
+cfg-invalid.yaml: invalid LAPTOP_LID_MONITOR BAD_LAPTOP_LID_MONITOR, expected boolean, using default true
+cfg-invalid.yaml: invalid CALLBACK_CMD, expected string, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
+cfg-invalid.yaml: invalid ORDER regex '(order': Unmatched ( or \(
+cfg-invalid.yaml: invalid ARRANGE BAD_ARRANGE, expected enum ROW|COLUMN, using default ROW
+cfg-invalid.yaml: invalid ALIGN BAD_ALIGN, expected enum TOP|MIDDLE|BOTTOM|LEFT|RIGHT, using default TOP
+cfg-invalid.yaml: invalid SCALING BAD_SCALING, expected boolean, using default true
+cfg-invalid.yaml: invalid SCALE_ROUND_TO BAD_SCALE_ROUND_TO, expected number 0.125|0.25|0.5|1, using default 0.125
+cfg-invalid.yaml: invalid SCALE_ROUND_STRATEGY BAD_SCALE_ROUND_STRATEGY, expected enum NEAREST|UP|DOWN, using default NEAREST
+cfg-invalid.yaml: invalid AUTO_SCALE BAD_AUTO_SCALE, expected boolean, using default true
+cfg-invalid.yaml: invalid AUTO_SCALE_DPI BAD_AUTO_SCALE_DPI, expected integer, using default 96
+cfg-invalid.yaml: invalid AUTO_SCALE_MIN BAD_AUTO_SCALE_MIN, expected number, using default 1.0
+cfg-invalid.yaml: invalid AUTO_SCALE_MAX BAD_AUTO_SCALE_MAX, expected number, using default -1.0
+cfg-invalid.yaml: invalid SCALE 'negative' -1.23, expected positive number
+cfg-invalid.yaml: invalid MODE 'BAD_MODE_MAX' MAX BAD_MAX, expected boolean
+cfg-invalid.yaml: invalid MODE 'BAD_MODE_WIDTH' WIDTH BAD_WIDTH, expected integer
+cfg-invalid.yaml: invalid MODE 'BAD_MODE_HEIGHT' HEIGHT BAD_HEIGHT, expected integer
+cfg-invalid.yaml: invalid MODE 'BAD_MODE_HZ' HZ BAD_HZ, expected number
+cfg-invalid.yaml: invalid MODE NAME_DESC regex '(mode': Unmatched ( or \(
+cfg-invalid.yaml: invalid TRANSFORM 'badenum' foobar, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+cfg-invalid.yaml: invalid VRR_OFF regex '(vrroff': Unmatched ( or \(
+cfg-invalid.yaml: invalid MAX_PREFERRED_REFRESH regex '(max': Unmatched ( or \(
+cfg-invalid.yaml: invalid DISABLED regex '(disabled': Unmatched ( or \(

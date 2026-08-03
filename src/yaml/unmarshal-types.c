@@ -43,7 +43,6 @@ void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {
 
 void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {
 	c->t = ERROR;
-	yaml_unmarshal_log_ctx_top(c, "document");
 
 	const struct SPmap *m;
 	if (!root || !(m = yaml_map_to_spmap(c, root)))

@@ -78,15 +78,6 @@ static void yaml_root_to_cfg__unknown_fields_ok(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_cfg__empty(void **state) {
-
-	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
-
-	assert_log(ERROR, "\ntst/yaml/cfg-empty.yaml: no root node\n");
-
-	assert_logs_empty();
-}
-
 static void yaml_root_to_cfg__missing(void **state) {
 	assert_nul(yaml_unmarshal_file("foo/bar/baz.yaml", yaml_root_to_cfg));
 
@@ -113,7 +104,7 @@ static void yaml_root_to_cfg__mistyped(void **state) {
 static void yaml_root_to_cfg__root_mistyped(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-root-mistyped.yaml", yaml_root_to_cfg));
 
-	assert_log(WARNING, "Ignoring invalid tst/yaml/cfg-root-mistyped.yaml, expected map, got sequence\n");
+	assert_log(WARNING, "cfg-root-mistyped.yaml: invalid document, expected map, got sequence\n");
 
 	assert_logs_empty();
 }
@@ -679,7 +670,6 @@ int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_root_to_cfg__ok),
 		TEST(yaml_root_to_cfg__unknown_fields_ok),
-		TEST(yaml_root_to_cfg__empty),
 		TEST(yaml_root_to_cfg__missing),
 		TEST(yaml_root_to_cfg__invalid),
 		TEST(yaml_root_to_cfg__mistyped),

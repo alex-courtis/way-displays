@@ -1,6 +1,6 @@
-Ignoring invalid SCALE 'zero' 0, expected positive number
-Ignoring invalid SCALE 'negative' -956421.52, expected positive number
-Ignoring invalid SCALE 'astring' aoeu, expected number
-Ignoring invalid SCALE regex '(badpat': Unmatched ( or \(
-Ignoring invalid SCALE 'emptystr' , expected number
-Ignoring invalid SCALE 'sequ', expected number
+cfg-scale.yaml: invalid SCALE 'zero' 0, expected positive number
+cfg-scale.yaml: invalid SCALE 'negative' -956421.52, expected positive number
+cfg-scale.yaml: invalid SCALE 'astring' aoeu, expected number
+cfg-scale.yaml: invalid SCALE regex '(badpat': Unmatched ( or \(
+cfg-scale.yaml: invalid SCALE 'emptystr' , expected number
+cfg-scale.yaml: invalid SCALE 'sequ', expected number

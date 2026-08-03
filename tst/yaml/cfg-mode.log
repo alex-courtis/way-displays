@@ -1,10 +1,10 @@
-Ignoring invalid MODE regex '(badpat': Unmatched ( or \(
-Ignoring invalid MODE 'empty_str', expected map, got scalar
-Ignoring invalid MODE 'str_width' WIDTH wid, expected integer
-Ignoring invalid MODE 'str_height' HEIGHT hei, expected integer
-Ignoring invalid MODE 'str_hz' HZ hzz, expected number
-Ignoring invalid MODE 'str_max' MAX maxx, expected boolean
-Ignoring invalid MODE 'seq_width' WIDTH, expected integer
-Ignoring invalid MODE 'seq_height' HEIGHT, expected integer
-Ignoring invalid MODE 'seq_hz' HZ, expected number
-Ignoring invalid MODE 'seq_max' MAX, expected boolean
+cfg-mode.yaml: invalid MODE regex '(badpat': Unmatched ( or \(
+cfg-mode.yaml: invalid MODE 'empty_str', expected map, got scalar
+cfg-mode.yaml: invalid MODE 'str_width' WIDTH wid, expected integer
+cfg-mode.yaml: invalid MODE 'str_height' HEIGHT hei, expected integer
+cfg-mode.yaml: invalid MODE 'str_hz' HZ hzz, expected number
+cfg-mode.yaml: invalid MODE 'str_max' MAX maxx, expected boolean
+cfg-mode.yaml: invalid MODE 'seq_width' WIDTH, expected integer
+cfg-mode.yaml: invalid MODE 'seq_height' HEIGHT, expected integer
+cfg-mode.yaml: invalid MODE 'seq_hz' HZ, expected number
+cfg-mode.yaml: invalid MODE 'seq_max' MAX, expected boolean

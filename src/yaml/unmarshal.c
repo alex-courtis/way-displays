@@ -40,9 +40,8 @@ static void log_error_yaml(const char *yaml) {
 }
 
 void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
-	if (!path) {
+	if (!path)
 		return NULL;
-	}
 
 	FILE *input = fopen(path, "rb");
 	if (!input) {
@@ -63,6 +62,12 @@ void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 	yaml_parser_set_input_file(&parser, input);
 
 	struct UC c = { 0 };
+	yaml_unmarshal_log_ctx_top(&c, "document");
+
+	// basename modifies path
+	char *tmp = strdup(path);
+	yaml_unmarshal_log_prefix(&c, basename(tmp));
+	free(tmp);
 
 	if (!yaml_parser_load(&parser, &c.d)) {
 		log_error_parser(&parser, path);
@@ -72,21 +77,10 @@ void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 		return NULL;
 	}
 
-	const yaml_node_t *root;
-
 	void *out = NULL;
 
-	if (!(root = yaml_document_get_root_node(&c.d))) {
-		log_error(NULL);
-		log_error("%s: no root node", path);
-		goto end;
-	}
+	out = fn(&c, yaml_document_get_root_node(&c.d));
 
-	yaml_unmarshal_log_ctx_top(&c, path);
-
-	out = fn(&c, root);
-
-end:
 	yaml_document_delete(&c.d);
 
 	yaml_parser_delete(&parser);
@@ -112,6 +106,7 @@ void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to_type fn, char *human)
 	yaml_parser_set_input_string(&parser, (yaml_char_t*)yaml, strlen(yaml));
 
 	struct UC c = { 0 };
+	yaml_unmarshal_log_ctx_top(&c, "document");
 	yaml_unmarshal_log_prefix(&c, human);
 
 	if (!yaml_parser_load(&parser, &c.d)) {
