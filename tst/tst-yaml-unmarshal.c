@@ -298,7 +298,7 @@ static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	assert_int_equal(actual->command, CFG_SET);
 	assert_int_equal(actual->log_threshold, ERROR);
 
-	assert_cfg_equal(actual->cfg, cfg_default());
+	assert_cfg_equal(actual->cfg, expected);
 
 	char *expected_log = read_file("tst/yaml/ipc-request-cfg-invalid.log");
 	assert_log(WARNING, expected_log);
