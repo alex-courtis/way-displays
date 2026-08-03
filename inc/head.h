@@ -101,35 +101,35 @@ const char *head_human(const struct Head * const head);
  * predicates
  */
 
-// exact name or description
+// fn_pred_pp: exact name or description
 bool head_matches_name_desc_exact(const struct Head * const head, const char * const name_desc);
 
-// regex match on name or description
+// fn_pred_pp: regex match on name or description
 bool head_matches_name_desc_regex(const struct Head * const head, const char * const name_desc);
 
-// partial case insensitive name or description, regexes excluded
+// fn_pred_pp: partial case insensitive name or description, regexes excluded
 bool head_matches_name_desc_fuzzy(const struct Head * const head, const char * const name_desc);
 
-// exact, regex or fuzzy
+// fn_pred_pp: exact, regex or fuzzy
 bool head_matches_name_desc(const struct Head * const head, const char * const name_desc);
 
-// exact, regex or fuzzy
+// fn_pred_sp: exact, regex or fuzzy
 bool head_name_desc_matches_head(const char * const name_desc, const struct Head * const head);
 
 /*
- * tests
+ * predicates
  */
 
-// current and desired differ in any way
+// fn_pred_p: current and desired differ in any way
 bool head_current_not_desired(const struct Head * const head);
 
-// current mode is not desired
+// fn_pred_p: current mode is not desired
 bool head_current_mode_not_desired(const struct Head * const head);
 
-// current adaptive sync is not desired
+// fn_pred_p: current adaptive sync is not desired
 bool head_current_adaptive_sync_not_desired(const struct Head * const head);
 
-// full reapply next layout
+// fn_pred_p: full reapply next layout
 bool head_reapply_required(const struct Head * const head);
 
 /*

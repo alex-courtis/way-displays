@@ -29,7 +29,7 @@ struct Output *output_init(struct wl_output *wl_output, const uint32_t name, str
 
 const struct IPmap *output_ipmap_init(void);
 
-// output matching (head) name
+// fn_pred_pp: output matching (head) name
 bool output_matches_name(const struct Output* const output, const void* const name);
 
 #endif // OUTPUT_H

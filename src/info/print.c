@@ -25,6 +25,7 @@
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
+#include "yaml/unmarshal-types-v1.h"
 
 static void print_mode_cfg(const enum LogThreshold t, const char * name_desc, const struct Mode * const mode, const bool del) {
 	if (!mode)
@@ -62,13 +63,13 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	}
 }
 
-static void print_disabled(const enum LogThreshold t, const struct CfgDisabled * const disabled) {
+static void print_disabled(const enum LogThreshold t, const char * const name_desc, const struct CfgDisabled * const disabled) {
 	if (!disabled) return;
 
 	if (pset_size(disabled->conditions) > 0) {
-		log_(t, "    %s (conditionally)", disabled->name_desc);
+		log_(t, "    %s (conditionally)", name_desc);
 	} else {
-		log_(t, "    %s", disabled->name_desc);
+		log_(t, "    %s", name_desc);
 	}
 }
 
@@ -184,13 +185,12 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (pset_size(cfg->disableds) > 0) {
+	if (spmap_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
-		for (const struct PsetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
-			print_disabled(t, it->val);
+		for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it)) {
+			print_disabled(t, it->key, it->val);
 		}
 	}
-
 
 	if (cfg->callback_cmd) {
 		log_(t, "  Change success command:");
@@ -279,11 +279,11 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 
 	newline = true;
-	for (const struct PsetIt *it = pset_it(cfg->disableds); it; it = pset_it_next(it)) {
+	for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it)) {
 		const struct CfgDisabled* d = it->val;
 		if (pset_size(d->conditions) == 0) {
 			print_newline(t, &newline);
-			log_(t, "way-displays -s DISABLED '%s'", d->name_desc);
+			log_(t, "way-displays -s DISABLED '%s'", it->key);
 		}
 	}
 
@@ -569,4 +569,8 @@ void print_head_queue(const enum LogThreshold t, const struct Displ *displ, cons
 	free(mode);
 	free(vrr);
 	free(remainder);
+}
+
+void print_v1_deprecation(void) {
+	log_warn("%s", v1_deprecation_log_text);
 }

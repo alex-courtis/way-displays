@@ -1,0 +1,13 @@
+Removing duplicate MODE max_override
+cfg-mode.yaml: invalid MODE 'invalid_width' WIDTH wid, expected integer
+cfg-mode.yaml: invalid MODE 'invalid_height' HEIGHT hei, expected integer
+cfg-mode.yaml: invalid MODE 'invalid_hz' HZ hzz, expected number
+cfg-mode.yaml: invalid MODE 'invalid_max' MAX maxx, expected boolean
+cfg-mode.yaml: invalid MODE NAME_DESC regex '(foobar': Unmatched ( or \(
+cfg-mode.yaml: invalid MODE NAME_DESC, expected string
+cfg-mode.yaml: invalid MODE 'mistyped' WIDTH, expected integer
+cfg-mode.yaml: invalid MODE 'mistyped' HEIGHT, expected integer
+cfg-mode.yaml: invalid MODE 'mistyped' HZ, expected number
+cfg-mode.yaml: invalid MODE 'mistyped' MAX, expected boolean
+cfg-mode.yaml: invalid MODE, expected map, got sequence
+cfg-mode.yaml: invalid MODE NAME_DESC, expected string

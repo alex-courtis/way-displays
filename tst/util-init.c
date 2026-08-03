@@ -4,7 +4,6 @@
 
 #include "util-init.h"
 
-#include "cfg/disabled.h"
 #include "head.h"
 #include "mode.h"
 #include "output.h"
@@ -32,12 +31,6 @@ struct Output *output_n(const char *name) {
 	struct Output *output = calloc(1, sizeof(struct Output));
 	output->name = strdup(name);
 	return output;
-}
-
-struct CfgDisabled *disabled_nd(const char *name_desc) {
-	struct CfgDisabled *d = cfg_disabled_init();
-	d->name_desc = strdup(name_desc);
-	return d;
 }
 
 struct Mode *mode_whr(int32_t width, int32_t height, int32_t refresh_mhz) {

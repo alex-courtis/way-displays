@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,10 +8,12 @@
 
 #include "util-file.h"
 
+#include "str.h"
+
 char *read_file(const char *path) {
 	int fd = open(path, O_RDONLY);
 	if (fd == -1) {
-		fprintf(stderr,"file not found: %s\n", path);
+		fprintf(stderr,"%s : %s\n", path, strerror(errno));
 		exit(1);
 	}
 
@@ -23,6 +26,30 @@ char *read_file(const char *path) {
 	}
 
 	close(fd);
+
+	return out;
+}
+
+char *read_file_filter(const char *path, const char *starts_with) {
+	char *line = NULL;
+	size_t size = 0;
+
+	FILE* file = fopen(path, "r");
+	if (!file) {
+		fprintf(stderr,"%s : %s\n", path, strerror(errno));
+		exit(1);
+	}
+
+	char *out = strdup("");
+	while (getline(&line, &size, file) != -1) {
+		if (strstr(line, starts_with) != line) {
+			out = sprintf_append(out, "%s", line);
+		}
+	}
+
+	free(line);
+
+	fclose(file);
 
 	return out;
 }

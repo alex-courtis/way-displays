@@ -20,6 +20,7 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "simap.h"
+#include "spmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "data.h"
@@ -77,49 +78,48 @@ struct Cfg *cfg_all(void) {
 	cfg->laptop_lid_monitor = OFF;
 
 	sset_add_many(cfg->order_name_desc,
-			"one",
-			"ONE",
-			"!two",
+			"first",
+			"FIRST",
+			"!second",
 			NULL);
 
-	simap_put(cfg->scales, "three", 3000);
-	simap_put(cfg->scales, "four", 4000);
+	simap_put(cfg->scales, "third", 3000);
+	simap_put(cfg->scales, "fourth", 4000);
 
 	spmap_put_many(cfg->modes,
-			"five", mode_whr(1920, 1080, 12340),
-			"six", mode_whr(2560, 1440, -1),
-			"seven", mode_whr_max(-1, -1, -1),
+			"fifth", mode_whr(1920, 1080, 12340),
+			"sixth", mode_whr(2560, 1440, -1),
+			"seventh", mode_whr_max(-1, -1, -1),
 			NULL);
 
 	sset_add_many(cfg->adaptive_sync_off,
-			"ten",
-			"ELEVEN",
+			"tenth",
+			"eleventh",
 			NULL);
 
-	pset_add_many(cfg->disableds,
-			disabled_nd("eight"),
-			disabled_nd("EIGHT"),
-			disabled_nd("nine"),
+	spmap_put_many(cfg->disableds,
+			"eighth", cfg_disabled_init(),
+			"EIGHTH", cfg_disabled_init(),
+			"ninth",  cfg_disabled_init(),
 			NULL);
 
-	struct CfgDisabled *disabled = cfg_disabled_init();
-	disabled->name_desc = strdup("twelve");
+	const struct CfgDisabled *disabled = cfg_disabled_init();
 
 	struct CfgCondition *cond = cfg_condition_init();
-	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
+	sset_add_many(cond->plugged, "first", "second", NULL);
 	pset_add(disabled->conditions, cond);
 
 	cond = cfg_condition_init();
-	sset_add_many(cond->unplugged, "THREE", NULL);
+	sset_add_many(cond->unplugged, "third", NULL);
 	pset_add(disabled->conditions, cond);
 
 	cond = cfg_condition_init();
 	cond->lid = LID_CLOSED;
 	pset_add(disabled->conditions, cond);
 
-	pset_add(cfg->disableds, disabled);
+	spmap_put(cfg->disableds, "twelfth", disabled);
 
-	simap_put(cfg->transforms, "twelve", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED);
+	simap_put(cfg->transforms, "twelfth", (size_t)WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	return cfg;
 }

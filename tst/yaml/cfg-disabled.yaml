@@ -1,51 +1,83 @@
+# $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
 DISABLED:
-  - eight
-  - EIGHT
-  - nine
-  - NAME_DESC: twelve
+  unconditional:
+
+  conditional:
     IF:
-      - PLUGGED:
-          - ONE
-          - TWO
-      - UNPLUGGED:
-          - THREE
-  - NAME_DESC: twelve
+    - PLUGGED:
+      - first
+      - second
+    - PLUGGED: # equal to first, erased
+      - first
+      - second
+    - PLUGGED: # not equal to first
+      - first
+      - second
+      LID: OPEN
+    - UNPLUGGED:
+      - third
+      LID: CLOSED
+    - PLUGGED:
+      - fourth
+      UNPLUGGED:
+      - fifth
+      - sixth
+      LID: NOT_PRESENT
+
+  '!(bad_pat_key':
+
+  empty_if:
     IF:
-      - PLUGGED:
-          - FOUR
-  - '!(disabled1'
-  - NAME_DESC: '!(disabled2'
-  - NAME_DESC: BAD_DISABLED_IFS
-    IF:
-      - PLUGGED:
-          - '!(plugged1'
-      - UNPLUGGED:
-          - '!(unplugged1'
-  - NAME_DESC:
-      -
-  - NAME_DESC: MISTYPED_IF_SCALAR
-    IF: foo
-  - NAME_DESC: MISTYPED_IF_MAP
-    IF:
-      FOO: bar
-  - NAME_DESC: MISTYPED_UN_PLUGGED_SCALAR
-    IF:
-      - PLUGGED: foo
-      - UNPLUGGED: bar
-  - NAME_DESC: MISTYPED_UN_PLUGGED_MAP
-    IF:
-      - PLUGGED:
-          FOO: bar
-      - UNPLUGGED:
-          FOO: bar
-  - NAME_DESC: MISTYPED_LID_MAP
-    IF:
-      - LID:
-        -
-  - NAME_DESC: NO_VALID_CONDITIONS
-    IF:
-      - FOO: bar
-  - -
     -
 
-  - IF:
+  unknown_if:
+    IF:
+    - foo:
+      - bar
+
+  bad_enum_lid:
+    IF:
+    - LID: foo
+
+  bad_pat_plugged:
+    IF:
+    - PLUGGED:
+      - '!(bad_pat_plugged'
+
+  bad_pat_unplugged:
+    IF:
+    - UNPLUGGED:
+      - '!(bad_pat_unplugged'
+
+  scalar_plugged:
+    IF:
+    - PLUGGED: foo
+
+  scalar_unplugged:
+    IF:
+    - UNPLUGGED: foo
+
+  map_lid:
+    IF:
+    - LID:
+        foo: bar
+
+  map_plugged:
+    IF:
+    - PLUGGED:
+        foo: bar
+
+  map_unplugged:
+    IF:
+    - UNPLUGGED:
+        foo: bar
+
+  scalar_if:
+    IF: foo
+
+  missing_if:
+    FOO:
+
+  sequ_top:
+  -
+

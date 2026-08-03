@@ -1,29 +1,18 @@
+# $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
 SCALE:
-  - NAME_DESC: three
-    SCALE: 3
+  three: 3
 
-  - NAME_DESC: three
-    SCALE: 5
+  large: 900.0045
 
-  - NAME_DESC: invalid
-    SCALE: foobar
+  zero: 0
 
-  - NAME_DESC: '!(foobar'
+  negative: -956421.52
 
-  - NAME_DESC:
-      -
+  astring: aoeu
 
-  - NAME_DESC: mistyped
-    SCALE:
-      -
+  '!(badpat': 4
 
-  - - foo
-    - bar
-  - NAME_DESC: missing_scale
-  - SCALE: 99
+  emptystr:
 
-  - NAME_DESC: neg
-    SCALE: -1
-
-  - NAME_DESC: zero
-    SCALE: 0
+  sequ:
+    -

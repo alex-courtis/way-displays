@@ -1,0 +1,73 @@
+# $schema: ../../../schema/cfg-1.2.0.yaml
+DISABLED:
+  - eight
+  - EIGHT
+  - nine
+  - nine
+  - twelve # will have conditions added
+  - NAME_DESC: twelve
+    IF:
+      - PLUGGED:
+          - ONE
+          - TWO
+      - PLUGGED: # equal to first, erased
+          - ONE
+          - TWO
+      - PLUGGED: # not equal to first
+          - ONE
+          - TWO
+        LID: OPEN
+      - UNPLUGGED:
+          - THREE
+        LID: CLOSED
+  - NAME_DESC: twelve
+    IF:
+      - PLUGGED:
+          - FOUR
+        UNPLUGGED:
+          - FIVE
+          - SIX
+        LID: NOT_PRESENT
+      - PLUGGED: # equal to first but different disabled, erased
+          - ONE
+          - TWO
+  - twelve   # already exists
+  - '!(disabled1'
+  - NAME_DESC: '!(disabled2'
+  - NAME_DESC: BAD_DISABLED_IFS
+    IF:
+      - PLUGGED:
+          - '!(plugged1'
+      - UNPLUGGED:
+          - '!(unplugged1'
+  - NAME_DESC:
+      -
+  - NAME_DESC: MISTYPED_IF_SCALAR
+    IF: foo
+  - NAME_DESC: MISTYPED_IF_MAP
+    IF:
+      FOO: bar
+  - NAME_DESC: MISTYPED_UN_PLUGGED_SCALAR
+    IF:
+      - PLUGGED: foo
+      - UNPLUGGED: bar
+  - NAME_DESC: MISTYPED_UN_PLUGGED_MAP
+    IF:
+      - PLUGGED:
+          FOO: bar
+      - UNPLUGGED:
+          FOO: bar
+  - NAME_DESC: MISTYPED_LID_MAP
+    IF:
+      - LID:
+        -
+  - NAME_DESC: BAD_LID_ENUM
+    IF:
+      - LID: FOO
+  - NAME_DESC: NO_VALID_CONDITIONS
+    IF:
+      - FOO: bar
+  - -
+    -
+
+  - IF:

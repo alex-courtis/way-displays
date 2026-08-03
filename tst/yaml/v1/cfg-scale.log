@@ -1,0 +1,10 @@
+Removing duplicate SCALE three
+cfg-scale.yaml: invalid SCALE 'invalid' SCALE foobar, expected number
+cfg-scale.yaml: invalid SCALE NAME_DESC regex '(foobar': Unmatched ( or \(
+cfg-scale.yaml: invalid SCALE NAME_DESC, expected string
+cfg-scale.yaml: invalid SCALE 'mistyped' SCALE, expected number
+cfg-scale.yaml: invalid SCALE, expected map, got sequence
+cfg-scale.yaml: invalid SCALE 'missing_scale' SCALE, expected number
+cfg-scale.yaml: invalid SCALE NAME_DESC, expected string
+cfg-scale.yaml: invalid SCALE 'neg' SCALE -1, expected positive number
+cfg-scale.yaml: invalid SCALE 'zero' SCALE 0, expected positive number

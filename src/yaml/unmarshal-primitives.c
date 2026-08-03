@@ -12,7 +12,7 @@
 #include "yaml/unmarshal.h"
 
 char *yaml_scalar_to_string(struct UC *c, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE))
+	if (!yaml_check_is_scalar(c, scalar, "string"))
 		return NULL;
 
 	return(strdup((char*)scalar->data.scalar.value));
@@ -32,13 +32,13 @@ char *yaml_scalar_to_string_def(struct UC *c, const char *def, const yaml_node_t
 }
 
 bool yaml_scalar_to_int(struct UC *c, int32_t *dst, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE))
+	if (!yaml_check_is_scalar(c, scalar, "integer"))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) == 1)
 		return true;
 
-	yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value);
+	yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "integer");
 	return false;
 }
 
@@ -59,13 +59,13 @@ bool yaml_scalar_to_int_def(struct UC *c, int32_t *dst, int32_t def, const yaml_
 }
 
 bool yaml_scalar_to_float(struct UC *c, float *dst, const yaml_node_t *scalar) {
-	if (!yaml_check_node_type(c, scalar, YAML_SCALAR_NODE))
+	if (!yaml_check_is_scalar(c, scalar, "number"))
 		return false;
 
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) == 1)
 		return true;
 
-	yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value);
+	yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "number");
 	return false;
 }
 
@@ -90,10 +90,10 @@ int yaml_scalar_to_enum(struct UC *c, const yaml_node_t *scalar, fn_enum_val val
 
 	int ret = 0;
 
-	if (yaml_check_node_type(c, scalar, YAML_SCALAR_NODE)) {
+	if (yaml_check_is_scalar(c, scalar, "enum")) {
 		ret = val((char*)scalar->data.scalar.value);
 		if (!ret) {
-			yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value);
+			yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "enum");
 		}
 	}
 
@@ -115,18 +115,37 @@ int yaml_scalar_to_enum_def(struct UC *c, const int def, const yaml_node_t *scal
 }
 
 bool yaml_scalar_to_boolean(struct UC *c, bool *dst, const yaml_node_t *scalar) {
-	int val = yaml_scalar_to_enum(c, scalar, on_off_val, on_off_names);
-
-	if (val) {
-		*dst = val == ON;
-		return true;
+	if (!yaml_check_is_scalar(c, scalar, "boolean")) {
+		return false;
 	}
 
-	return false;
+	int val = on_off_val((char*)scalar->data.scalar.value);
+	if (!val) {
+		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "boolean");
+		return false;
+	}
+
+	*dst = val == ON;
+	return true;
+}
+
+int yaml_scalar_to_on_off_def(struct UC *c, const enum OnOff def, const yaml_node_t *scalar) {
+	yaml_unmarshal_log_def(c, def == ON ? "true" : "false");
+
+	int ret = def;
+
+	bool val;
+	if (yaml_scalar_to_boolean(c, &val, scalar)) {
+		ret = val ? ON : OFF;
+	}
+
+	yaml_unmarshal_log_def(c, NULL);
+
+	return ret;
 }
 
 bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn_yaml_node_into_col fn) {
-	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE) || !col)
+	if (!yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE, 0) || !col)
 		return false;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {
@@ -142,7 +161,7 @@ bool yaml_seq_into_col(struct UC *c, const yaml_node_t *seq, const void *col, fn
 }
 
 const struct SPmap *yaml_map_to_spmap(struct UC *c, const yaml_node_t *map) {
-	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE))
+	if (!yaml_check_node_type(c, map, YAML_MAPPING_NODE, 0))
 		return NULL;
 
 	const struct SPmap *nodes = spmap_init();

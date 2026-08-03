@@ -4,7 +4,6 @@
 #include "assert-log.h"
 #include "asserts.h"
 #include "util-col.h"
-#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdbool.h>
@@ -14,6 +13,7 @@
 #include <wayland-client-protocol.h>
 
 #include "cfg/cfg.h"
+#include "cfg/disabled.h"
 #include "enum.h"
 #include "ipc.h"
 #include "mode.h"
@@ -436,9 +436,9 @@ static void args_cfg__disabled_ok(void **state) {
 	struct Cfg *actual = args_cfg(CFG_SET, DISABLED, 2, argv);
 
 	struct Cfg *expected = cfg_init();
-	pset_add_many(expected->disableds,
-			disabled_nd("ONE"),
-			disabled_nd("TWO"),
+	spmap_put_many(expected->disableds,
+			"ONE", cfg_disabled_init(),
+			"TWO", cfg_disabled_init(),
 			NULL);
 
 	assert_cfg_equal(actual, expected);

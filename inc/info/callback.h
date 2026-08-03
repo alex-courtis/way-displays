@@ -1,6 +1,7 @@
 #ifndef CALLBACK_H
 #define CALLBACK_H
 
+#include "cfg/cfg.h"
 #include "enum.h"
 #include "head.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -17,6 +18,9 @@ void callback_mode_fail(const enum LogThreshold t, const struct Head * const hea
 
 // execute CALLBACK_CMD with VRR failed message, if enabled
 void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
+
+// execute CALLBACK_CMD with v1_deprecation_callback_text
+void callback_v1_deprecation(const struct Cfg * const cfg);
 
 #endif // CALLBACK_H
 

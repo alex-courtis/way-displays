@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0-SNAPSHOT.yaml
+# $schema: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0-SNAPSHOT.yaml
 
 ## Default cfg.yaml for way-displays.
 ## Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
@@ -23,11 +23,9 @@ ALIGN: TOP
 ##
 ## It is recommended to use the description rather than the nondeterministic name.
 ##
-## Avoid using 'DP-1' as that will also match 'eDP-1'
-## 
 ## Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. '!^DP-1'. Regex strings must be single quoted.
 ## 
-## Using a regex is preferred, however fuzzy case insensitive string matches of at least 3 characters may be used.
+## Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
 ##
 ## 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
 
@@ -35,9 +33,9 @@ ALIGN: TOP
 ## The default ORDER is simply the order in which the displays are discovered. This is nondeterministic.
 ## You are encouraged to explicitly define your order.
 # ORDER:
-#   - '!^DP-1'
-#   - 'Monitor Maker ABC123'
-#   - 'HDMI-1'
+# - '!^DP-1'
+# - 'Monitor Maker ABC123'
+# - 'HDMI-1'
 
 
 ## Enable scaling, overrides AUTO_SCALE and SCALE
@@ -56,8 +54,7 @@ AUTO_SCALE_MIN: 1.0
 
 ## Auto scale may be overridden for each display.
 # SCALE:
-#   - NAME_DESC: 'monitor description'
-#     SCALE: 1.75
+#   'monitor description': 1.75
 
 ## Round scale to 0.125 (default), 0.25, 0.5 or 1.0
 SCALE_ROUND_TO: 0.125
@@ -70,30 +67,29 @@ SCALE_ROUND_STRATEGY: NEAREST
 ## for a possible workaround.
 # MODE:
 #   # Resolution and refresh
-#   - NAME_DESC: HDMI-A-1
+#   HDMI-A-1:
 #     WIDTH: 1920
 #     HEIGHT: 1080
 #     HZ: 60
 #
 #   # Resolution with highest refresh
-#   - NAME_DESC: 'monitor description'
+#   'monitor description':
 #     WIDTH: 2560
 #     HEIGHT: 1440
 #
 #   # Highest available
-#   - NAME_DESC: DP-2
+#   DP-2:
 #     MAX: TRUE
 
 ## Rotate or translate the display.
 ## 90, 180, 270, FLIPPED, FLIPPED-90, FLIPPED-180, FLIPPED-270
 # TRANSFORM:
-#   - NAME_DESC: 'monitor description'
-#     TRANSFORM: 270
+#   'monitor description': 270
 
 ## VRR / adaptive sync is enabled by default. Disable it per display.
 # VRR_OFF:
-#   - DP-2
-#   - '!.*my monitor.*'
+# - DP-2
+# - '!.*my monitor.*'
 
 
 ## Sets a /bin/sh command to be executed following most events.
@@ -118,21 +114,32 @@ LOG_THRESHOLD: INFO
 ## Disable the specified displays.
 ## Resulting state of a display is equal to OR of all matching conditions, so
 ## explicit disabled without `IF` will override any conditions for the display.
-## In this example:
-##  HDMI-1 will always be disabled
-##  eDP-1 will be disabled only if both DP-1 and DP-2 are plugged.
-##  DP-3 will be disabled when the lid is open or HDMI-2 is plugged
 # DISABLED:
-#   - 'HDMI-1'
-#   - NAME_DESC: 'eDP-1'
+#
+#   # HDMI-1 will always be disabled
+#   'HDMI-1':
+#
+#   # DP-3 will be disabled when: DP-1 AND DP-2 are plugged AND HDMI-2 is unplugged
+#   'DP-3':
 #     IF:
-#       - PLUGGED:
-#           - '!^DP-1$'
-#           - '!^DP-2$'
-#   - NAME_DESC: 'DP-3'
+#     - PLUGGED:
+#       - '!^DP-1$'
+#       - '!^DP-2$'
+#       UNPLUGGED:
+#       - 'HDMI-2'
+#
+#   # eDP-1 will be disabled when:
+#   #  lid is closed  OR 
+#   #  HDMI-2 is plugged AND lid is open  OR
+#   #  DP-2 is plugged AND HDMI-1 is unplugged AND lid is open
+#   'eDP-1':
 #     IF:
-#       - LID: OPEN
-#   - NAME_DESC: 'DP-3'
-#     IF:
-#       - PLUGGED:
-#           - 'HDMI-2'
+#     - LID: CLOSED
+#     - PLUGGED:
+#       - 'HDMI-2'
+#       LID: OPEN
+#     - PLUGGED:
+#       - 'DP-2'
+#       UNPLUGGED:
+#       - 'HDMI-1'
+#       LID: OPEN

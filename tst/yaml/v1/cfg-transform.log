@@ -1,0 +1,8 @@
+Removing duplicate TRANSFORM one
+cfg-transform.yaml: invalid TRANSFORM 'invalid' TRANSFORM foobar, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+cfg-transform.yaml: invalid TRANSFORM NAME_DESC regex '(transform': Unmatched ( or \(
+cfg-transform.yaml: invalid TRANSFORM NAME_DESC, expected string
+cfg-transform.yaml: invalid TRANSFORM 'mistyped' TRANSFORM, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+cfg-transform.yaml: invalid TRANSFORM, expected map, got sequence
+cfg-transform.yaml: invalid TRANSFORM 'missing_transform' TRANSFORM, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
+cfg-transform.yaml: invalid TRANSFORM NAME_DESC, expected string

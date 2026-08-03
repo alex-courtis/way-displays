@@ -91,6 +91,10 @@ void __wrap_print_head_set(const enum LogThreshold t, const enum InfoEvent event
 	check_expected_ptr(heads);
 }
 
+void __wrap_print_v1_deprecation(void) {
+	function_called();
+}
+
 /*
  * callback
  */
@@ -110,6 +114,10 @@ void __wrap_callback_mode_fail(const enum LogThreshold t, const struct Head * co
 void __wrap_callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
 	check_expected_int(t);
 	check_expected_ptr(head);
+}
+
+void __wrap_callback_v1_deprecation(void) {
+	function_called();
 }
 
 /*

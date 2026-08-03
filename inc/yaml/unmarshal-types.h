@@ -23,20 +23,24 @@ void *yaml_root_to_ipc_request       (struct UC *c, const yaml_node_t *root); //
 void *yaml_root_to_ipc_response_plist(struct UC *c, const yaml_node_t *root); // Plist of IpcResponse
 
 // create a struct from a map
-struct Cfg  *yaml_map_to_cfg (struct UC *c, const yaml_node_t *map);  // Cfg
-struct Lid  *yaml_map_to_lid (struct UC *c, const yaml_node_t *map);  // Lid
-struct Mode *yaml_map_to_mode(struct UC *c, const yaml_node_t *map);  // Mode
+
+struct Cfg  *yaml_map_to_cfg      (struct UC *c, const yaml_node_t *map);  // Cfg
+struct Lid  *yaml_map_to_lid      (struct UC *c, const yaml_node_t *map);  // Lid
+struct Mode *yaml_map_to_cfg_mode (struct UC *c, const yaml_node_t *map);  // Cfg mode
+struct Mode *yaml_map_to_head_mode(struct UC *c, const yaml_node_t *map);  // Head mode
 
 // fn_yaml_node_into_col: create a struct and add to collection
-void yaml_map_into_ipc_responses(struct UC *c, const struct Plist* const ipc_responses, const yaml_node_t *map);
-void yaml_map_into_heads        (struct UC *c, const struct Plist* const heads,         const yaml_node_t *map);
-void yaml_map_into_modes        (struct UC *c, const struct PPmap* const modes,         const yaml_node_t *map);
-void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist* const log_cap_lines, const yaml_node_t *map);
 void yaml_map_into_conditions   (struct UC *c, const struct Pset*  const conditions,    const yaml_node_t *map);
-void yaml_map_into_scales       (struct UC *c, const struct SImap* const scales,        const yaml_node_t *map);
-void yaml_map_into_named_modes  (struct UC *c, const struct SPmap* const modes,         const yaml_node_t *map);
-void yaml_map_into_transforms   (struct UC *c, const struct SImap* const transforms,    const yaml_node_t *map);
-void yaml_node_into_disableds   (struct UC *c, const struct Pset*  const disableds,     const yaml_node_t *node); // scalar or map
+void yaml_map_into_head_modes   (struct UC *c, const struct PPmap* const modes,         const yaml_node_t *map);
+void yaml_map_into_heads        (struct UC *c, const struct Plist* const heads,         const yaml_node_t *map);
+void yaml_map_into_ipc_responses(struct UC *c, const struct Plist* const ipc_responses, const yaml_node_t *map);
+void yaml_map_into_log_cap_lines(struct UC *c, const struct Plist* const log_cap_lines, const yaml_node_t *map);
+
+// into an existing map
+void yaml_map_into_cfg_modes (struct UC *c, const struct SPmap* const modes,      const yaml_node_t *map);
+void yaml_map_into_disableds (struct UC *c, const struct SPmap* const disableds,  const yaml_node_t *map);
+void yaml_map_into_scales    (struct UC *c, const struct SImap* const scales,     const yaml_node_t *map);
+void yaml_map_into_transforms(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map);
 
 // into an existing HeadState struct
 void yaml_map_into_head_state(struct UC *c, struct HeadState *head_state, const struct Head * const head, const yaml_node_t *map);

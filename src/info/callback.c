@@ -13,9 +13,11 @@
 #include "ssmap.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
+#include "yaml/unmarshal-types-v1.h"
 
-void callback(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
-	if (!g_cfg->callback_cmd) {
+// allows callbacks before g_cfg has been set, to cover the case of unmarshalling errors
+static void callback_with_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const char * const msg1, const char * const msg2) {
+	if (!cfg || !cfg->callback_cmd) {
 		return;
 	}
 
@@ -27,7 +29,7 @@ void callback(const enum LogThreshold t, const char * const msg1, const char * c
 	if (t_cur <= DEBUG) {
 		log_debug(NULL);
 		log_debug("Executing CALLBACK_CMD:");
-		log_debug("  %s", g_cfg->callback_cmd);
+		log_debug("  %s", cfg->callback_cmd);
 	}
 
 	// decorate human message and optional log
@@ -47,14 +49,18 @@ void callback(const enum LogThreshold t, const char * const msg1, const char * c
 	}
 
 	// execute callback
-	spawn_sh_cmd(g_cfg->callback_cmd, env);
+	spawn_sh_cmd(cfg->callback_cmd, env);
 
 	ssmap_free(env);
 	free(buf);
 }
 
+void callback(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
+	callback_with_cfg(t, g_cfg, msg1, msg2);
+}
+
 void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zmode) {
-	if (!head || !zmode) {
+	if (!g_cfg || !g_cfg->callback_cmd || !head || !zmode) {
 		return;
 	}
 
@@ -74,7 +80,7 @@ void callback_mode_fail(const enum LogThreshold t, const struct Head * const hea
 }
 
 void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
-	if (!g_cfg->callback_cmd || !head) {
+	if (!g_cfg || !g_cfg->callback_cmd || !head) {
 		return;
 	}
 
@@ -93,3 +99,6 @@ void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * 
 	free(human);
 }
 
+void callback_v1_deprecation(const struct Cfg * const cfg) {
+	callback_with_cfg(WARNING, cfg, v1_deprecation_callback_text, NULL);
+}

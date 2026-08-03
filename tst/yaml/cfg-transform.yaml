@@ -1,24 +1,12 @@
+# $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
 TRANSFORM:
-  - NAME_DESC: one
-    TRANSFORM: FLIPPED
+  ninety: 90
 
-  - NAME_DESC: one
-    TRANSFORM: 270
+  badenum: foobar
 
-  - NAME_DESC: invalid
-    TRANSFORM: foobar
-  - NAME_DESC: '!(transform'
+  '!(badpat': 180
 
-  - NAME_DESC:
-      -
+  emptystr:
 
-  - NAME_DESC: mistyped
-    TRANSFORM:
-      -
-
-  - - foo
-    - bar
-
-  - NAME_DESC: missing_transform
-
-  - TRANSFORM: 90
+  sequ:
+    - 

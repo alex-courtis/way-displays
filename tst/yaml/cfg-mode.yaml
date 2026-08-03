@@ -1,55 +1,48 @@
+# $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
 MODE:
-  - NAME_DESC: max_override
-    WIDTH: 1920
-    HEIGHT: 1080
-    HZ: 12.34
-    MAX: TRUE
-
-  - NAME_DESC: max_override
-    MAX: TRUE
-
-  - NAME_DESC: five
+  width_height_hz:  # first one is overwritten
     WIDTH: 1920
     HEIGHT: 1080
     HZ: 12.34
 
-  - NAME_DESC: seven
+  max_overrides:
+    WIDTH: 1280
+    HEIGHT: 720
+    HZ: 60
     MAX: TRUE
 
-  - NAME_DESC: invalid_width
+  max_only:
+    MAX: TRUE
+
+  '!(badpat':
+    MAX: TRUE
+
+  empty_str:
+
+  str_width:
     WIDTH: wid
 
-  - NAME_DESC: invalid_height
+  str_height:
     HEIGHT: hei
 
-  - NAME_DESC: invalid_hz
+  str_hz:
     HZ: hzz
 
-  - NAME_DESC: invalid_max
+  str_max:
     MAX: maxx
 
-  - NAME_DESC: '!(foobar'
-
-  - NAME_DESC:
-      -
-
-  - NAME_DESC: mistyped
+  seq_width:  
     WIDTH:
       -
 
-  - NAME_DESC: mistyped
+  seq_height:  
     HEIGHT:
       -
 
-  - NAME_DESC: mistyped
+  seq_hz:  
     HZ:
       -
 
-  - NAME_DESC: mistyped
+  seq_max:  
     MAX:
       -
-
-  - - foo
-    - bar
-
-  - MAX: TRUE

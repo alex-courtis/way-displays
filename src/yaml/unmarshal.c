@@ -40,9 +40,8 @@ static void log_error_yaml(const char *yaml) {
 }
 
 void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
-	if (!path) {
+	if (!path)
 		return NULL;
-	}
 
 	FILE *input = fopen(path, "rb");
 	if (!input) {
@@ -63,6 +62,12 @@ void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 	yaml_parser_set_input_file(&parser, input);
 
 	struct UC c = { 0 };
+	yaml_unmarshal_log_ctx_top(&c, "document");
+
+	// basename modifies path
+	char *tmp = strdup(path);
+	yaml_unmarshal_log_prefix(&c, basename(tmp));
+	free(tmp);
 
 	if (!yaml_parser_load(&parser, &c.d)) {
 		log_error_parser(&parser, path);
@@ -72,21 +77,10 @@ void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 		return NULL;
 	}
 
-	const yaml_node_t *root;
-
 	void *out = NULL;
 
-	if (!(root = yaml_document_get_root_node(&c.d))) {
-		log_error(NULL);
-		log_error("%s: no root node", path);
-		goto end;
-	}
+	out = fn(&c, yaml_document_get_root_node(&c.d));
 
-	yaml_unmarshal_log_ctx_top(&c, path);
-
-	out = fn(&c, root);
-
-end:
 	yaml_document_delete(&c.d);
 
 	yaml_parser_delete(&parser);
@@ -112,6 +106,7 @@ void *yaml_unmarshal_str(const char *yaml, fn_yaml_root_to_type fn, char *human)
 	yaml_parser_set_input_string(&parser, (yaml_char_t*)yaml, strlen(yaml));
 
 	struct UC c = { 0 };
+	yaml_unmarshal_log_ctx_top(&c, "document");
 	yaml_unmarshal_log_prefix(&c, human);
 
 	if (!yaml_parser_load(&parser, &c.d)) {
@@ -167,7 +162,7 @@ void yaml_unmarshal_log_enum_names(struct UC *c, fn_enum_names fn) {
 	c->enum_names = fn;
 }
 
-static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_node_type_t type_expected, const yaml_node_type_t type_actual) {
+void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected) {
 
 	char *msg = NULL;
 
@@ -179,18 +174,19 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 	if (*c->top)
 		msg = sprintf_append(msg, " invalid %s", c->top);
 	if (*c->name_desc)
-		msg = sprintf_append(msg, " %s", c->name_desc);
+		msg = sprintf_append(msg, " '%s'", c->name_desc);
 	if (*c->key)
 		msg = sprintf_append(msg, " %s", c->key);
-	if (type_expected)
-		msg = sprintf_append(msg, " expected %s, got %s", yaml_node_type_str(type_expected), yaml_node_type_str(type_actual));
 	if (value)
 		msg = sprintf_append(msg, " %s", value);
-	if (c->enum_names) {
-		char *valids = c->enum_names();
-		if (valids) {
-			msg = sprintf_append(msg, ", valid values: %s", valids);
-			free(valids);
+	if (expected) {
+		msg = sprintf_append(msg, ", expected %s", expected);
+		if (c->enum_names) {
+			char *valids = c->enum_names();
+			if (valids) {
+				msg = sprintf_append(msg, " %s", valids);
+				free(valids);
+			}
 		}
 	}
 	if (*c->def)
@@ -200,65 +196,32 @@ static void yaml_log_invalid(struct UC *c, const yaml_char_t *value, const yaml_
 	free(msg);
 }
 
-static void yaml_log_misssing(struct UC *c) {
-
-	char *msg = NULL;
-
-	if (*c->prefix)
-		msg = sprintf_append(msg, "%s: missing %s", c->prefix, c->top);
-	else
-		msg = sprintf_append(msg, "%s: Ignoring missing", c->top);
-
-	if (*c->key)
-		msg = sprintf_append(msg, " %s", c->key);
-
-	if (*c->name_desc)
-		msg = sprintf_append(msg, " for '%s'", c->name_desc);
-
-	if (msg) {
-		log_(c->t, "%s", msg);
-		free(msg);
-	}
-}
-
-void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value) {
-	yaml_log_invalid(c, value, YAML_NO_NODE, YAML_NO_NODE);
-}
-
-void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value) {
-	char *msg = strdup("Removing duplicate");
-
-	if (*c->top)
-		msg = sprintf_append(msg, " %s", c->top);
-
-	if (value)
-		msg = sprintf_append(msg, " %s", value);
-
-	if (msg) {
-		log_(c->t, "%s", msg);
-		free(msg);
-	}
-}
-
-bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected) {
-	if (node_actual && node_actual->type == expected)
+bool yaml_check_is_scalar(struct UC *c, const yaml_node_t *node, const char *expected) {
+	if (node && node->type == YAML_SCALAR_NODE)
 		return true;
 
-	yaml_log_invalid(c, NULL, expected, node_actual ? node_actual->type : YAML_NO_NODE);
+	yaml_unmarshal_log_invalid_value(c, NULL, expected);
 
 	return false;
 }
 
-bool yaml_check_mandatory(struct UC *c, const yaml_node_t *node) {
-	if (node)
+bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t type1, const yaml_node_type_t type2) {
+	if (node_actual && (node_actual->type == type1 || node_actual->type == type2))
 		return true;
 
-	yaml_log_misssing(c);
+	char *expected = sprintf_alloc("%s", yaml_node_type_str(type1));
+	if (type2)
+		expected = sprintf_append(expected, " or %s", yaml_node_type_str(type2));
+	expected = sprintf_append(expected, ", got %s", yaml_node_type_str(node_actual ? node_actual->type : YAML_NO_NODE));
+
+	yaml_unmarshal_log_invalid_value(c, NULL, expected);
+
+	free(expected);
 
 	return false;
 }
 
-bool yaml_valid_regex(struct UC *c, const char *pattern) {
+bool yaml_valid_name_desc(struct UC *c, const char *pattern) {
 	if (!pattern || strlen(pattern) < 2 || pattern[0] != '!')
 		return true;
 
@@ -266,7 +229,7 @@ bool yaml_valid_regex(struct UC *c, const char *pattern) {
 
 	if (err) {
 		char *msg = sprintf_alloc("regex '%s': %s", pattern + 1, err);
-		yaml_unmarshal_log_invalid_value(c, (yaml_char_t*)msg);
+		yaml_unmarshal_log_invalid_value(c, (yaml_char_t*)msg, NULL);
 		free(msg);
 		free(err);
 		return false;

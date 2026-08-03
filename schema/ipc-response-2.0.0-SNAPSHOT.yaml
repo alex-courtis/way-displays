@@ -1,17 +1,17 @@
-# yaml-language-server: $schema=https://json-schema.org/draft/2020-12/schema
+# $schema: https://json-schema.org/draft/2020-12/schema
 
 $schema: https://json-schema.org/draft/2020-12/schema
 $id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/ipc-response-2.0.0-SNAPSHOT.yaml
 
-title: way-displays IPC
+title: way-displays IPC response
 description: |-
-  Schema for https://github.com/alex-courtis/way-displays IPC
+  Schema for https://github.com/alex-courtis/way-displays IPC response
 
 oneOf:
-  - $ref: "#$defs/response"
+  - $ref: "#/$defs/response"
   - type: array
     items:
-      $ref: "#$defs/response"
+      $ref: "#/$defs/response"
 
 $defs:
   response:

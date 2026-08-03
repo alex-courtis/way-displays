@@ -11,7 +11,6 @@
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 #include <yaml.h>
@@ -69,20 +68,11 @@ static void yaml_root_to_cfg__ok(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_cfg__unknown(void **state) {
+static void yaml_root_to_cfg__unknown_fields_ok(void **state) {
 	struct Cfg *expected = cfg_init();
 	expected->arrange = COL;
 
-	check_unmarshalled_cfg("tst/yaml/cfg-unknown.yaml", expected, NULL);
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__empty(void **state) {
-
-	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-empty.yaml", yaml_root_to_cfg));
-
-	assert_log(ERROR, "\ntst/yaml/cfg-empty.yaml: no root node\n");
+	check_unmarshalled_cfg("tst/yaml/cfg-unknown-fields-ok.yaml", expected, NULL);
 
 	assert_logs_empty();
 }
@@ -98,27 +88,8 @@ static void yaml_root_to_cfg__missing(void **state) {
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
 	struct Cfg *expected = cfg_default();
-	pset_add(expected->disableds, disabled_nd("BAD_DISABLED_IFS"));
 
 	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__legacy(void **state) {
-	struct Cfg *expected = cfg_init();
-
-	// CHANGE_SUCCESS_CMD -> CALLBACK_CMD
-	free(expected->callback_cmd);
-	expected->callback_cmd = strdup("foo");
-
-	// MAX_PREFERRED_REFRESH
-	sset_add_many(expected->max_preferred_refresh,
-			"fifteen",
-			"!sixteen",
-			NULL);
-
-	check_unmarshalled_cfg("tst/yaml/cfg-legacy.yaml", expected, NULL);
 
 	assert_logs_empty();
 }
@@ -132,14 +103,14 @@ static void yaml_root_to_cfg__mistyped(void **state) {
 static void yaml_root_to_cfg__root_mistyped(void **state) {
 	assert_nul(yaml_unmarshal_file("tst/yaml/cfg-root-mistyped.yaml", yaml_root_to_cfg));
 
-	assert_log(WARNING, "Ignoring invalid tst/yaml/cfg-root-mistyped.yaml expected map, got sequence\n");
+	assert_log(WARNING, "cfg-root-mistyped.yaml: invalid document, expected map, got sequence\n");
 
 	assert_logs_empty();
 }
 
 static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
-	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
+	simap_put(expected->transforms, "ninety", WL_OUTPUT_TRANSFORM_90);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-transform.yaml", expected, "tst/yaml/cfg-transform.log");
 
@@ -149,6 +120,7 @@ static void yaml_root_to_cfg__transform(void **state) {
 static void yaml_root_to_cfg__scale(void **state) {
 	struct Cfg *expected = cfg_init();
 	simap_put(expected->scales, "three", 3000);
+	simap_put(expected->scales, "large", 900005);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-scale.yaml", expected, "tst/yaml/cfg-scale.log");
 
@@ -159,9 +131,9 @@ static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
 	spmap_put_many(expected->modes,
-			"max_override", mode_whr_max(1920, 1080, 12340),
-			"five", mode_whr(1920, 1080, 12340),
-			"seven", mode_whr_max(-1, -1, -1),
+			"width_height_hz", mode_whr(1920, 1080, 12340),
+			"max_overrides", mode_whr_max(1280, 720, 60000),
+			"max_only", mode_whr_max(-1, -1, -1),
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
@@ -172,32 +144,44 @@ static void yaml_root_to_cfg__mode(void **state) {
 static void yaml_root_to_cfg__disabled(void **state) {
 	struct Cfg *expected = cfg_init();
 
-	struct CfgDisabled *disabled_twelve_1 = disabled_nd("twelve");
-	const struct CfgCondition *cond = cfg_condition_init();
-	sset_add_many(cond->plugged, "ONE", "TWO", NULL);
-	pset_add(disabled_twelve_1->conditions, cond);
-	cond = cfg_condition_init();
-	sset_add_many(cond->unplugged, "THREE", NULL);
-	pset_add(disabled_twelve_1->conditions, cond);
+	struct CfgDisabled *conditionally = cfg_disabled_init();
 
-	struct CfgDisabled *disabled_twelve_2 = disabled_nd("twelve");
-	cond = cfg_condition_init();
-	sset_add(cond->plugged, "FOUR");
-	pset_add(disabled_twelve_2->conditions, cond);
+	struct CfgCondition *cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "first", "second", NULL);
+	pset_add(conditionally->conditions, cond);
 
-	pset_add_many(expected->disableds,
-			disabled_nd("eight"),
-			disabled_nd("EIGHT"),
-			disabled_nd("nine"),
-			disabled_twelve_1,
-			disabled_twelve_2,
-			disabled_nd("BAD_DISABLED_IFS"),
-			disabled_nd("MISTYPED_IF_SCALAR"),
-			disabled_nd("MISTYPED_IF_MAP"),
-			disabled_nd("MISTYPED_UN_PLUGGED_SCALAR"),
-			disabled_nd("MISTYPED_UN_PLUGGED_MAP"),
-			disabled_nd("MISTYPED_LID_MAP"),
-			disabled_nd("NO_VALID_CONDITIONS"),
+	cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "first", "second", NULL);
+	cond->lid = LID_OPEN;
+	pset_add(conditionally->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add_many(cond->unplugged, "third", NULL);
+	cond->lid = LID_CLOSED;
+	pset_add(conditionally->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add(cond->plugged, "fourth");
+	pset_add(conditionally->conditions, cond);
+	sset_add_many(cond->unplugged, "fifth", "sixth", NULL);
+	cond->lid = LID_NOT_PRESENT;
+	pset_add(conditionally->conditions, cond);
+
+	spmap_put_many(expected->disableds,
+			"unconditional",    cfg_disabled_init(),
+			"conditional",      conditionally,
+			"empty_if",         cfg_disabled_init(),
+			"unknown_if",       cfg_disabled_init(),
+			"bad_enum_lid",     cfg_disabled_init(),
+			"bad_pat_plugged",  cfg_disabled_init(),
+			"bad_pat_unplugged",cfg_disabled_init(),
+			"scalar_plugged",   cfg_disabled_init(),
+			"scalar_unplugged", cfg_disabled_init(),
+			"map_lid",          cfg_disabled_init(),
+			"map_plugged",      cfg_disabled_init(),
+			"map_unplugged",    cfg_disabled_init(),
+			"scalar_if",        cfg_disabled_init(),
+			"missing_if",       cfg_disabled_init(),
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
@@ -245,7 +229,7 @@ static void yaml_root_to_ipc_request__mistyped_root(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: expected map, got sequence\n"
+			"ipc request: invalid document, expected map, got sequence\n"
 			"========================================\n"
 			"- FOO\n"
 			"----------------------------------------\n");
@@ -261,7 +245,7 @@ static void yaml_root_to_ipc_request__invalid_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: invalid OP aoeu, valid values: GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+			"ipc request: invalid OP aoeu, expected enum GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP: aoeu\n"
 			"----------------------------------------\n");
@@ -277,7 +261,7 @@ static void yaml_root_to_ipc_request__mistyped_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: invalid OP expected scalar, got map, valid values: GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
+			"ipc request: invalid OP, expected enum GET|LIST|REAPPLY|CFG_SET|CFG_DEL|CFG_WRITE|CFG_TOGGLE\n"
 			"========================================\n"
 			"OP:\n"
 			"  FOO: BAR\n"
@@ -295,7 +279,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc request: missing OP\n"
+			"ipc request: invalid document, expected OP\n"
 			"========================================\n"
 			"FOO: BAR\n"
 			"----------------------------------------\n");
@@ -305,7 +289,6 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
 	struct Cfg *expected = cfg_default();
-	pset_add(expected->disableds, disabled_nd("BAD_DISABLED_IFS"));
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 
@@ -363,8 +346,8 @@ static void yaml_root_to_ipc_response_plist__empty(void **state) {
 static void yaml_root_to_ipc_response_plist__mistyped_root(void **state) {
 	assert_nul(yaml_unmarshal_str("foo", yaml_root_to_ipc_response_plist, "ipc response"));
 
-	assert_log(ERROR, "\n"
-			"ipc response: expected map or sequence, got scalar\n"
+	assert_log(ERROR,
+			"ipc response: invalid document, expected sequence or map, got scalar\n"
 			"========================================\n"
 			"foo\n"
 			"----------------------------------------\n");
@@ -376,7 +359,7 @@ static void yaml_root_to_ipc_response_plist__seq_no_map(void **state) {
 	assert_nul(yaml_unmarshal_str("-", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR,
-			"ipc response: expected map, got scalar\n"
+			"ipc response: invalid document, expected map, got scalar\n"
 			"========================================\n"
 			"-\n"
 			"----------------------------------------\n");
@@ -390,7 +373,7 @@ static void yaml_root_to_ipc_response_plist__seq_no_done(void **state) {
 	assert_nul(yaml_unmarshal_str("- FOO: BAR", yaml_root_to_ipc_response_plist, "ipc response"));
 
 	assert_log(ERROR,
-			"ipc response: missing DONE\n"
+			"ipc response: invalid document, expected DONE\n"
 			"========================================\n"
 			"- FOO: BAR\n"
 			"----------------------------------------\n");
@@ -406,7 +389,7 @@ static void yaml_root_to_ipc_response_plist__seq_no_rc(void **state) {
 	assert_nul(actual);
 
 	assert_log(ERROR,
-			"ipc response: missing RC\n"
+			"ipc response: invalid document, expected RC\n"
 			"========================================\n"
 			"- DONE: TRUE\n"
 			"----------------------------------------\n");
@@ -684,11 +667,9 @@ int main(void) {
 
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_root_to_cfg__ok),
-		TEST(yaml_root_to_cfg__unknown),
-		TEST(yaml_root_to_cfg__empty),
+		TEST(yaml_root_to_cfg__unknown_fields_ok),
 		TEST(yaml_root_to_cfg__missing),
 		TEST(yaml_root_to_cfg__invalid),
-		TEST(yaml_root_to_cfg__legacy),
 		TEST(yaml_root_to_cfg__mistyped),
 		TEST(yaml_root_to_cfg__root_mistyped),
 		TEST(yaml_root_to_cfg__transform),

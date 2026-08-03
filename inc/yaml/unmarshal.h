@@ -13,12 +13,13 @@ struct UC {
 	yaml_document_t d;
 
 	enum LogThreshold t;
-	char prefix[64];
-	char def[64];
-	char key[64];
-	char name_desc[64];
-	char top[64];
-	fn_enum_names enum_names;
+	char prefix[64];          // cfg file name or ipc operation
+	char top[64];             // key e.g. MODE
+	char key[64];             // sub-key e.g. WIDTH
+	char name_desc[64];       // name_desc key for top e.g. 'DP-1'
+	fn_enum_names enum_names; // accepted enums
+	char def[64];             // default value
+	bool v1_present;          // warn after unmarshal if v1 elements were parsed
 };
 
 /*
@@ -45,20 +46,17 @@ void yaml_unmarshal_log_ctx_name_desc(struct UC *c, const char *name_desc); // N
 void yaml_unmarshal_log_ctx_top      (struct UC *c, const char *top); // root map key
 void yaml_unmarshal_log_enum_names   (struct UC *c, fn_enum_names fn); // all valid enum values
 
-// explicitly log a value as invalid
-void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value);
+// explicitly log a value as invalid with free-form expectation message
+void yaml_unmarshal_log_invalid_value(struct UC *c, const yaml_char_t *value, const char *expected);
 
-// explicitly log a removed duplicate
-void yaml_unmarshal_log_remove_duplicate_value(struct UC *c, const char *value);
+// validate that the node is a scalar, return false and log a warning with free-form expected message if not
+bool yaml_check_is_scalar(struct UC *c, const yaml_node_t *node, const char *expected);
 
-// validate actual is of type expected, returning false and logging a warning if not
-bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t expected);
-
-// assert that node is not null
-bool yaml_check_mandatory(struct UC *c, const yaml_node_t *node);
+// validate actual is one of expected type, returning false and logging an expected-got warning if not
+bool yaml_check_node_type(struct UC *c, const yaml_node_t *node_actual, const yaml_node_type_t type1, const yaml_node_type_t type2);
 
 // if pattern starts with '!' return false if it fails to compile, otherwise return true
-bool yaml_valid_regex(struct UC *c, const char *pattern);
+bool yaml_valid_name_desc(struct UC *c, const char *pattern);
 
 // return a static string for the node type
 char *yaml_node_type_str(const yaml_node_type_t type);
