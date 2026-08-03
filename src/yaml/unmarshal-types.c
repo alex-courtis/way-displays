@@ -168,16 +168,12 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case SCALE:
-				switch(node->type) {
-					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
-						yaml_seq_into_col(c, node, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales_v1);
-						break;
-					case YAML_MAPPING_NODE:
+				if (yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE)) {
+					if (node->type == YAML_MAPPING_NODE) {
 						yaml_map_into_scales(c, cfg->scales, node);
-						break;
-					default:
-						yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE);
-						break;
+					} else { // v1, sequence with NAME_DESC
+						yaml_seq_into_col(c, node, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales_v1);
+					}
 				}
 				break;
 
@@ -190,30 +186,22 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case MODE:
-				switch(node->type) {
-					case YAML_MAPPING_NODE:
+				if (yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE)) {
+					if (node->type == YAML_MAPPING_NODE) {
 						yaml_map_into_cfg_modes(c, cfg->modes, node);
-						break;
-					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+					} else { // v1, sequence with NAME_DESC
 						yaml_seq_into_col(c, node, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_cfg_modes_v1);
-						break;
-					default:
-						yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE);
-						break;
+					}
 				}
 				break;
 
 			case TRANSFORM:
-				switch(node->type) {
-					case YAML_MAPPING_NODE:
+				if (yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE)) {
+					if (node->type == YAML_MAPPING_NODE) {
 						yaml_map_into_transforms(c, cfg->transforms, node);
-						break;
-					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+					} else { // v1, sequence with NAME_DESC
 						yaml_seq_into_col(c, node, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms_v1);
-						break;
-					default:
-						yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE);
-						break;
+					}
 				}
 				break;
 
@@ -244,16 +232,12 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case DISABLED:
-				switch(node->type) {
-					case YAML_MAPPING_NODE:
+				if (yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE)) {
+					if (node->type == YAML_MAPPING_NODE) {
 						yaml_map_into_disableds(c, cfg->disableds, node);
-						break;
-					case YAML_SEQUENCE_NODE: // v1, sequence with NAME_DESC
+					} else { // v1, sequence with NAME_DESC
 						yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds_v1);
-						break;
-					default:
-						yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE);
-						break;
+					}
 				}
 				break;
 
