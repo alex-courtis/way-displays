@@ -13,6 +13,8 @@
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
+#include "info/callback.h"
+#include "info/print.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
@@ -35,13 +37,17 @@ void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {
 	// log warnings and skip failures
 	c->t = WARNING;
 
-	// warn once for deprecated usage
-	c->v1_warn = true;
-
 	if (!yaml_check_node_type(c, root, YAML_MAPPING_NODE, 0))
 		return NULL;
 
-	return yaml_map_to_cfg(c, root);
+	struct Cfg *cfg = yaml_map_to_cfg(c, root);
+
+	if (c->v1_present) {
+		print_v1_deprecation();
+		callback_v1_deprecation(cfg);
+	}
+
+	return cfg;
 }
 
 void *yaml_root_to_ipc_request(struct UC *c, const yaml_node_t *root) {

@@ -19,7 +19,7 @@ struct UC {
 	char name_desc[64];       // name_desc key for top e.g. 'DP-1'
 	fn_enum_names enum_names; // accepted enums
 	char def[64];             // default value
-	bool v1_warn;             // warn on v1 schema elements used, one shot
+	bool v1_present;          // warn after unmarshal if v1 elements were parsed
 };
 
 /*
