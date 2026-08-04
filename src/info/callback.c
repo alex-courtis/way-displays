@@ -16,9 +16,14 @@
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/unmarshal-types-v1.h"
 
+// true if the callback command is a non-empty string
+static bool callback_valid(const struct Cfg * const cfg) {
+	return cfg && cfg->callback_cmd && strlen(cfg->callback_cmd) >= 0;
+}
+
 // allows callbacks before g_cfg has been set, to cover the case of unmarshalling errors
 static void callback_with_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const char * const msg1, const char * const msg2) {
-	if (!cfg || !cfg->callback_cmd || strlen(cfg->callback_cmd) == 0) {
+	if (!callback_valid(cfg)) {
 		return;
 	}
 
@@ -57,7 +62,7 @@ void callback(const enum LogThreshold t, const char * const msg1, const char * c
 }
 
 void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zmode) {
-	if (!g_cfg || !g_cfg->callback_cmd || strlen(g_cfg->callback_cmd) == 0 || !head || !zmode) {
+	if (!callback_valid(g_cfg) || !head || !zmode) {
 		return;
 	}
 
@@ -77,7 +82,7 @@ void callback_mode_fail(const enum LogThreshold t, const struct Head * const hea
 }
 
 void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
-	if (!g_cfg || !g_cfg->callback_cmd || strlen(g_cfg->callback_cmd) == 0 || !head) {
+	if (!callback_valid(g_cfg) || !head) {
 		return;
 	}
 
