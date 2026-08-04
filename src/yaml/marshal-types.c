@@ -140,9 +140,14 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 }
 
 int yaml_map_from_cfg_modes(struct MC *c, const struct SPmap* const modes) {
-	int map_out;
-	if (spmap_size(modes) < 1 || !(map_out = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
+	if (!modes || spmap_size(modes) == 0) {
+		return yaml_document_add_scalar(&c->d, NULL, (yaml_char_t*)"", 0, YAML_PLAIN_SCALAR_STYLE);
+	}
+
+	int map_out = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map_out) {
 		return 0;
+	}
 
 	for (const struct SPmapIt *it = spmap_it(modes); it; it = spmap_it_next(it)) {
 		const struct Mode *mode = it->val;
@@ -170,9 +175,14 @@ int yaml_map_from_cfg_modes(struct MC *c, const struct SPmap* const modes) {
 }
 
 int yaml_map_from_disableds(struct MC *c, const struct SPmap* const disableds) {
-	int map;
-	if (spmap_size(disableds) < 1 || !(map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
+	if (!disableds || spmap_size(disableds) == 0) {
+		return yaml_document_add_scalar(&c->d, NULL, (yaml_char_t*)"", 0, YAML_PLAIN_SCALAR_STYLE);
+	}
+
+	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map) {
 		return 0;
+	}
 
 	for (const struct SPmapIt *it = spmap_it(disableds); it; it = spmap_it_next(it)) {
 		const struct CfgDisabled *disabled = it->val;
@@ -246,9 +256,14 @@ int yaml_map_from_lid(struct MC *c, const struct Lid* const lid) {
 }
 
 int yaml_map_from_scales(struct MC *c, const struct SImap* const scales) {
-	int map;
-	if (simap_size(scales) < 1 || !(map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
+	if (!scales || simap_size(scales) == 0) {
+		return yaml_document_add_scalar(&c->d, NULL, (yaml_char_t*)"", 0, YAML_PLAIN_SCALAR_STYLE);
+	}
+
+	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map) {
 		return 0;
+	}
 
 	for (const struct SImapIt *it = simap_it(scales); it; it = simap_it_next(it)) {
 		yaml_map_add_int(c, it->key, (double)it->val/1000, map);
@@ -275,9 +290,14 @@ int yaml_map_from_state(struct MC *c) {
 }
 
 int yaml_map_from_transforms(struct MC *c, const struct SImap* const transforms) {
-	int map;
-	if (simap_size(transforms) < 1 || !(map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE)))
+	if (!transforms || simap_size(transforms) == 0) {
+		return yaml_document_add_scalar(&c->d, NULL, (yaml_char_t*)"", 0, YAML_PLAIN_SCALAR_STYLE);
+	}
+
+	int map = yaml_document_add_mapping(&c->d, NULL, YAML_BLOCK_MAPPING_STYLE);
+	if (!map) {
 		return 0;
+	}
 
 	for (const struct SImapIt *it = simap_it(transforms); it; it = simap_it_next(it)) {
 		yaml_map_add_str(c, it->key, transform_name(it->val), map);
@@ -319,8 +339,12 @@ int yaml_map_from_condition(struct MC *c, const struct CfgCondition* const condi
 	if (!map)
 		return 0;
 
-	yaml_map_add_sset(c, "PLUGGED", condition->plugged, map);
-	yaml_map_add_sset(c, "UNPLUGGED", condition->unplugged, map);
+	if (sset_size(condition->plugged) > 0)
+		yaml_map_add_sset(c, "PLUGGED", condition->plugged, map);
+
+	if (sset_size(condition->unplugged) > 0)
+		yaml_map_add_sset(c, "UNPLUGGED", condition->unplugged, map);
+
 	yaml_map_add_enum(c, "LID", condition->lid, condition_lid_name, map);
 
 	return map;
