@@ -25,7 +25,6 @@ static struct NameVal cfg_elements[] = {
 	{ .val = CALLBACK_CMD,          .name = "CALLBACK_CMD"           },
 	{ .val = LAPTOP_DISPLAY_PREFIX, .name = "LAPTOP_DISPLAY_PREFIX", },
 	{ .val = LAPTOP_LID_MONITOR,    .name = "LAPTOP_LID_MONITOR",    },
-	{ .val = MAX_PREFERRED_REFRESH, .name = "MAX_PREFERRED_REFRESH", },
 	{ .val = TRANSFORM,             .name = "TRANSFORM",             },
 	{ .val = LOG_THRESHOLD,         .name = "LOG_THRESHOLD",         },
 	{ .val = DISABLED,              .name = "DISABLED",              },
@@ -35,7 +34,6 @@ static struct NameVal cfg_elements[] = {
 	{ .val = AUTO_SCALE_DPI,        .name = "AUTO_SCALE_DPI",        },
 	{ .val = AUTO_SCALE_MIN,        .name = "AUTO_SCALE_MIN",        },
 	{ .val = AUTO_SCALE_MAX,        .name = "AUTO_SCALE_MAX",        },
-	{ .val = CHANGE_SUCCESS_CMD,    .name = "CHANGE_SUCCESS_CMD",    },
 	{ .val = 0,                     .name = NULL,                    },
 };
 

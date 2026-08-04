@@ -50,3 +50,11 @@ struct Mode *mode_whr_max(int32_t width, int32_t height, int32_t refresh_mhz) {
 
 	return mode;
 }
+
+struct Mode *mode_whr_max_pref(int32_t width, int32_t height, int32_t refresh_mhz) {
+	struct Mode *mode = mode_whr(width, height, refresh_mhz);
+
+	mode->max_preferred_refresh = true;
+
+	return mode;
+}

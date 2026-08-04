@@ -25,7 +25,6 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "spmap.h"
-#include "sset.h"
 
 #include "head.h"
 
@@ -367,10 +366,16 @@ static void head_find_mode__mode_max_refresh(void **state) {
 	struct Head *head = head_n("name");
 	struct Mode *expected = mode_init();
 
-	sset_add(g_cfg->max_preferred_refresh, "!nam.*");
+	struct Mode *mode_max_pref = mode_init();
+	mode_max_pref->max_preferred_refresh = true;
+	spmap_put(g_cfg->modes, "!nam.*", mode_max_pref);
 
 	ppmap_put(head->modes, M0, expected);
 	head->zmode_pref = M0;
+
+	expect_ptr(__wrap_mode_best_satisfying, mode_target, mode_max_pref);
+	expect_ptr(__wrap_mode_best_satisfying, modes, head->modes);
+	will_return_ptr_type(__wrap_mode_best_satisfying, NULL, struct Mode*);
 
 	expect_ptr(__wrap_mode_max_refresh, mode_target, expected);
 	expect_ptr(__wrap_mode_max_refresh, modes, head->modes);

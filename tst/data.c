@@ -90,6 +90,7 @@ struct Cfg *cfg_all(void) {
 			"fifth", mode_whr(1920, 1080, 12340),
 			"sixth", mode_whr(2560, 1440, -1),
 			"seventh", mode_whr_max(-1, -1, -1),
+			"tenth", mode_whr_max_pref(-1, -1, -1),
 			NULL);
 
 	sset_add_many(cfg->adaptive_sync_off,

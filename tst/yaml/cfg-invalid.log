@@ -15,5 +15,4 @@ cfg-invalid.yaml: invalid SCALE 'negative' -1.23, expected positive number
 cfg-invalid.yaml: invalid MODE 'BAD_MODE_MAX' MAX BAD_MAX, expected boolean
 cfg-invalid.yaml: invalid TRANSFORM 'badenum' foobar, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 cfg-invalid.yaml: invalid VRR_OFF regex '(vrroff': Unmatched ( or \(
-cfg-invalid.yaml: invalid MAX_PREFERRED_REFRESH regex '(max': Unmatched ( or \(
 cfg-invalid.yaml: invalid DISABLED regex '(disabled': Unmatched ( or \(

@@ -211,9 +211,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, node);
 				break;
 
-			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
-				free(cfg->callback_cmd); // may be both entries present, use the last
 				cfg->callback_cmd = yaml_scalar_to_string_def(c, CALLBACK_CMD_DEFAULT, node);
 				break;
 
@@ -223,10 +221,6 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 
 			case LAPTOP_LID_MONITOR:
 				cfg->laptop_lid_monitor = yaml_scalar_to_on_off_def(c, LAPTOP_LID_MONITOR_DEFAULT, node);
-				break;
-
-			case MAX_PREFERRED_REFRESH:
-				yaml_seq_into_name_desc_sset(c, cfg->max_preferred_refresh, node);
 				break;
 
 			case LOG_THRESHOLD:
@@ -306,6 +300,11 @@ struct Mode *yaml_map_to_cfg_mode(struct UC *c, const yaml_node_t *map) {
 	yaml_unmarshal_log_ctx_key(c, "MAX");
 	scalar = spmap_get(m, "MAX");
 	if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
+		goto err;
+
+	yaml_unmarshal_log_ctx_key(c, "MAX_PREFERRED_REFRESH");
+	scalar = spmap_get(m, "MAX_PREFERRED_REFRESH");
+	if (scalar && !yaml_scalar_to_boolean(c, &mode->max_preferred_refresh, scalar))
 		goto err;
 
 	goto end;

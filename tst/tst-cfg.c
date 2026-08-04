@@ -161,11 +161,6 @@ static void cfg_equal__all(void **state) {
 	sset_remove(a->adaptive_sync_off, "foo");
 	assert_cfg_equal(a, b);
 
-	sset_add(a->max_preferred_refresh, "foo");
-	assert_cfg_not_equal(a, b);
-	sset_remove(a->max_preferred_refresh, "foo");
-	assert_cfg_equal(a, b);
-
 	sset_add(a->order_name_desc, "foo");
 	assert_cfg_not_equal(a, b);
 	sset_remove(a->order_name_desc, "foo");
@@ -1141,12 +1136,6 @@ static void cfg_validate_warn__(void **state) {
 	sset_add_many(s->expected->adaptive_sync_off,
 			"vvv",
 			"vvvvvvvvvv",
-			"DP-1",
-			NULL);
-
-	sset_add_many(s->expected->max_preferred_refresh,
-			"ppp",
-			"pppppppppp",
 			"DP-1",
 			NULL);
 

@@ -20,6 +20,8 @@ struct Mode {
 
 	bool max;
 
+	bool max_preferred_refresh;
+
 	bool warned_no_mode;
 };
 
@@ -82,7 +84,7 @@ char *mode_str_cfg(const struct Mode * const mode);
  * predicates
  */
 
-// mode_satisfies: target is MAX  or  WxH@Hz  or  WxH with no target refresh
+// fn_pred_pp: mode_satisfies: target is MAX  or  WxH@Hz  or  WxH with no target refresh
 bool mode_satisfies(const struct Mode* const mode, const struct Mode *mode_target);
 
 /*

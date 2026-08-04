@@ -126,7 +126,6 @@ enum CfgElement {
 	CALLBACK_CMD,
 	LAPTOP_DISPLAY_PREFIX,
 	LAPTOP_LID_MONITOR,
-	MAX_PREFERRED_REFRESH,
 	LOG_THRESHOLD,
 	DISABLED,
 	PLUGGED,
@@ -137,8 +136,6 @@ enum CfgElement {
 	AUTO_SCALE_MAX,
 	SCALE_ROUND_TO,
 	SCALE_ROUND_STRATEGY,
-	// legacy
-	CHANGE_SUCCESS_CMD,
 };
 enum CfgElement cfg_element_val(const char *name);
 const char *cfg_element_name(enum CfgElement cfg_element);

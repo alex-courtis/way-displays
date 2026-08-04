@@ -27,7 +27,5 @@ CFG:
     badenum: foobar
   VRR_OFF:
     - '!(vrroff'
-  MAX_PREFERRED_REFRESH:
-    - '!(max'
   DISABLED:
     '!(disabled':

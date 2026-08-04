@@ -66,6 +66,7 @@ static void mode_clone__(void **state) {
 		.height = 1,
 		.refresh_mhz = 3,
 		.max = true,
+		.max_preferred_refresh = true,
 		.warned_no_mode = true,
 	};
 
@@ -75,6 +76,7 @@ static void mode_clone__(void **state) {
 	assert_int_equal(to->height, 1);
 	assert_int_equal(to->refresh_mhz, 3);
 	assert_true(to->max);
+	assert_true(to->max_preferred_refresh);
 	assert_true(to->warned_no_mode);
 
 	mode_free(to);

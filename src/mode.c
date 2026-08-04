@@ -134,6 +134,8 @@ char *mode_str_cfg(const struct Mode * const mode) {
 
 	if (mode->max) {
 		return sprintf_alloc("MAX");
+	} else if (mode->max_preferred_refresh) {
+		return sprintf_alloc("MAX Preferred Refresh");
 	} else if (mode->refresh_mhz != -1) {
 		return sprintf_alloc("%dx%d@%gHz",
 				mode->width,

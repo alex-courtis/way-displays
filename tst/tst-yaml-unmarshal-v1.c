@@ -11,7 +11,6 @@
 #include <cmocka.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-util.h>
 
@@ -60,24 +59,6 @@ static void yaml_root_to_cfg__ok(void **state) {
 	expect_function_call(__wrap_callback_v1_deprecation);
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-all.yaml", cfg_all(), NULL);
-
-	assert_logs_empty();
-}
-
-static void yaml_root_to_cfg__legacy(void **state) {
-	struct Cfg *expected = cfg_init();
-
-	// CHANGE_SUCCESS_CMD -> CALLBACK_CMD
-	free(expected->callback_cmd);
-	expected->callback_cmd = strdup("foo");
-
-	// MAX_PREFERRED_REFRESH
-	sset_add_many(expected->max_preferred_refresh,
-			"fifteen",
-			"!sixteen",
-			NULL);
-
-	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-legacy.yaml", expected, NULL);
 
 	assert_logs_empty();
 }
@@ -310,7 +291,6 @@ int main(void) {
 
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_root_to_cfg__ok),
-		TEST(yaml_root_to_cfg__legacy),
 		TEST(yaml_root_to_cfg__transform),
 		TEST(yaml_root_to_cfg__scale),
 		TEST(yaml_root_to_cfg__mode),

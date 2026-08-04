@@ -1,4 +1,4 @@
-# $schema: ../../../schema/ipc-response-2.0.0-SNAPSHOT.yaml
+# $schema: ../../schema/ipc-response-2.0.0-SNAPSHOT.yaml
 DONE: TRUE
 CFG:
   ARRANGE: COLUMN
@@ -27,6 +27,8 @@ CFG:
       HEIGHT: 1440
     seventh:
       MAX: TRUE
+    tenth:
+      MAX_PREFERRED_REFRESH: TRUE
   TRANSFORM:
     twelfth: FLIPPED
   VRR_OFF:

@@ -11,8 +11,24 @@ MODE:
     HZ: 60
     MAX: TRUE
 
+  max_overrides_max_pref:
+    WIDTH: 1024
+    HEIGHT: 768
+    HZ: 85
+    MAX: TRUE
+    MAX_PREFERRED_REFRESH: TRUE
+
+  max_pref_overrides:
+    WIDTH: 640
+    HEIGHT: 480
+    HZ: 30
+    MAX_PREFERRED_REFRESH: TRUE
+
   max_only:
     MAX: TRUE
+
+  max_pref_only:
+    MAX_PREFERRED_REFRESH: TRUE
 
   '!(badpat':
     MAX: TRUE
@@ -31,6 +47,9 @@ MODE:
   str_max:
     MAX: maxx
 
+  str_max_pref:
+    MAX_PREFERRED_REFRESH: maxp
+
   seq_width:  
     WIDTH:
       -
@@ -45,4 +64,8 @@ MODE:
 
   seq_max:  
     MAX:
+      -
+
+  seq_max_pref:  
+    MAX_PREFERRED_REFRESH:
       -

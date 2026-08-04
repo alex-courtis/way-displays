@@ -64,6 +64,10 @@ $defs:
         type: boolean
         description: |-
           Use the highest available mode.
+      MAX_PREFERRED_REFRESH:
+        type: boolean
+        description: |-
+          Use the highest available refresh for the preferred mode's resolution.
     minProperties: 1
     additionalProperties: false
 

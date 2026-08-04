@@ -12,10 +12,9 @@
     five: 1920x1080@12.34Hz
     six: 2560x1440
     seven: MAX
+    eight: MAX Preferred Refresh
   Transform:
     twelve: FLIPPED
-  Max preferred refresh:
-    legacy
   Disabled:
     disabled always
     disabled conditionally (conditionally)
