@@ -26,11 +26,9 @@ static void callback_with_cfg(const enum LogThreshold t, const struct Cfg * cons
 		return;
 	}
 
-	if (t_cur <= DEBUG) {
-		log_debug(NULL);
-		log_debug("Executing CALLBACK_CMD:");
-		log_debug("  %s", cfg->callback_cmd);
-	}
+	log_debug(NULL);
+	log_debug("Executing CALLBACK_CMD:");
+	log_debug("  %s", cfg->callback_cmd);
 
 	// decorate human message and optional log
 	char *buf = (char*)calloc(CALLBACK_MSG_LEN, sizeof(char));
@@ -42,11 +40,9 @@ static void callback_with_cfg(const enum LogThreshold t, const struct Cfg * cons
 	ssmap_put_if_absent(env, "CALLBACK_MSG", buf);
 	ssmap_put_if_absent(env, "CALLBACK_LEVEL", log_threshold_name(t));
 
-	if (t_cur <= DEBUG) {
-		char *env_str = ssmap_str(env);
-		log_debug("%s", env_str);
-		free(env_str);
-	}
+	char *env_str = ssmap_str(env);
+	log_debug("%s", env_str);
+	free(env_str);
 
 	// execute callback
 	spawn_sh_cmd(cfg->callback_cmd, env);

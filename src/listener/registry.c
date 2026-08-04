@@ -40,7 +40,6 @@ static void bind_zxdg_output_manager(struct Displ *displ, struct wl_registry *wl
 
 static void bind_wl_output(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 
-	// TODO do we log warnings for these situations? Do we add debug to all listened events and here?
 	struct wl_output *wl_output = wl_registry_bind(wl_registry, name, &wl_output_interface, version);
 	if (!wl_output)
 		return;
