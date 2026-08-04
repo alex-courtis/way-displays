@@ -192,8 +192,8 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (cfg->callback_cmd) {
-		log_(t, "  Change success command:");
+	if (cfg->callback_cmd && strlen(cfg->callback_cmd) > 0) {
+		log_(t, "  Callback command:");
 		log_(t, "    %s", cfg->callback_cmd);
 	}
 
