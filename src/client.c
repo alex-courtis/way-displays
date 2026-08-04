@@ -7,7 +7,6 @@
 #include "client.h"
 
 #include "enum.h"
-#include "info/print.h"
 #include "ipc.h"
 #include "log.h"
 #include "plist.h"
@@ -71,12 +70,6 @@ int client(struct IpcRequest *ipc_request) {
 		log_fatal("way-displays not running, check $XDG_VTNR");
 		rc = EXIT_FAILURE;
 		goto end;
-	}
-
-	if (!ipc_request->yaml) {
-		log_debug(NULL);
-		log_debug("Client sending request: %s", ipc_command_name(ipc_request->command));
-		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
 	ipc_send_request(ipc_request);

@@ -28,6 +28,8 @@ static void bind_zwlr_output_manager(struct Displ *displ, struct wl_registry *wl
 	displ->zwlr_output_manager = wl_registry_bind(wl_registry, name, &zwlr_output_manager_v1_interface, displ->zwlr_output_manager_version);
 
 	zwlr_output_manager_v1_add_listener(displ->zwlr_output_manager, zwlr_output_manager_listener(), displ);
+
+	log_debug("REG: bind_zwlr_output_manager bound %p", (void*)displ->zwlr_output_manager);
 }
 
 static void bind_zxdg_output_manager(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
@@ -36,14 +38,17 @@ static void bind_zxdg_output_manager(struct Displ *displ, struct wl_registry *wl
 	displ->zxdg_output_manager_version = version;
 	displ->zxdg_output_manager_interface = strdup(interface);
 	displ->zxdg_output_manager = wl_registry_bind(wl_registry, name, &zxdg_output_manager_v1_interface, displ->zxdg_output_manager_version);
+
+	log_debug("REG: bind_zxdg_output_manager bound %p", (void*)displ->zxdg_output_manager);
 }
 
 static void bind_wl_output(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 
-	// TODO do we log warnings for these situations? Do we add debug to all listened events and here?
 	struct wl_output *wl_output = wl_registry_bind(wl_registry, name, &wl_output_interface, version);
 	if (!wl_output)
 		return;
+
+	log_debug("REG: bind_wl_output bound wl_output %p", (void*)wl_output);
 
 	const struct Output *output = output_init(wl_output, name, displ->zxdg_output_manager);
 	if (output) {
@@ -56,6 +61,7 @@ static void bind_wl_output(struct Displ *displ, struct wl_registry *wl_registry,
 // Displ data
 
 static void global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
+	log_debug("REG: global name=%u interface='%s'", name, interface);
 
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
 		bind_zwlr_output_manager(data, wl_registry, name, interface, version);
@@ -67,6 +73,8 @@ static void global(void *data, struct wl_registry *wl_registry, uint32_t name, c
 }
 
 static void global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
+	log_debug("REG: global_remove name=%u", name);
+
 	const struct Displ *displ = data;
 
 	// NOP if output not present

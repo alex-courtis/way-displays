@@ -48,6 +48,9 @@ void ipc_send_request(struct IpcRequest *request) {
 		goto end;
 	}
 
+	// --yaml sets log level to warn hence this won't be printed
+	log_debug("Client sending request YAML\n================================\n%s\n================================\n", yaml);
+
 	if ((request->socket_client = create_socket_client()) == -1) {
 		goto end;
 	}
@@ -81,6 +84,8 @@ void ipc_send_operation(struct IpcOperation *operation) {
 	ipc_operation_update_rc(operation);
 
 	char *yaml = yaml_marshal(operation, (fn_yaml_root_from_type)yaml_root_from_ipc_operation, "ipc response");
+
+	log_debug("Server sending response YAML\n--------------------------------\n%s\n--------------------------------\n", yaml);
 
 	// clear marshalled lines but keep capturing
 	plist_remove_all_free(operation->log_cap_lines);
@@ -121,6 +126,8 @@ struct IpcRequest *ipc_receive_request(int socket_server) {
 		return NULL;
 	}
 
+	log_debug("Server received request YAML\n--------------------------------\n%s\n--------------------------------\n", yaml);
+
 	request = yaml_unmarshal_str(yaml, yaml_root_to_ipc_request, "ipc request");
 	free(yaml);
 
@@ -137,6 +144,9 @@ struct Plist *ipc_receive_responses(int socket_client, char **yaml) {
 	if (!(*yaml = ipc_receive_raw(socket_client))) {
 		return NULL;
 	}
+
+	// --yaml sets log level to warn hence this won't be printed
+	log_debug("Client received response YAML\n================================\n%s\n================================\n", *yaml);
 
 	return yaml_unmarshal_str(*yaml, yaml_root_to_ipc_response_plist, "ipc response");
 }
