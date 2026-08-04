@@ -18,9 +18,6 @@
 // add a node to an existing mapping node
 void yaml_map_add_node    (struct MC *c, const char *key,       int     node,                       int mapping); // NOP on 0
 
-// add an empty scalar to an existing mapping node
-void yaml_map_add_null    (struct MC *c, const char *key,                                           int mapping); // NOP on 0 enum
-
 // add a scalar pair to an existing maping node
 void yaml_map_add_str     (struct MC *c, const char *key, const char    *str,                       int mapping); // NOP on NULL
 void yaml_map_add_int     (struct MC *c, const char *key, const int32_t val,                        int mapping);

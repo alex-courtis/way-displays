@@ -20,6 +20,7 @@
 #include "pset.h"
 #include "simap.h"
 #include "spmap.h"
+#include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal-primitives.h"

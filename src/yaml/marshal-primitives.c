@@ -19,17 +19,6 @@ void yaml_map_add_node(struct MC *c, const char *key, int node, int mapping) {
 		yaml_document_append_mapping_pair(&c->d, mapping, k, node);
 }
 
-void yaml_map_add_null(struct MC *c, const char *key, int mapping) {
-	if (!key || !mapping)
-		return;
-
-	int k = yaml_document_add_scalar(&c->d, (yaml_char_t *)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-	int v = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t*)"", 0, YAML_PLAIN_SCALAR_STYLE);
-
-	if (k && v)
-		yaml_document_append_mapping_pair(&c->d, mapping, k, v);
-}
-
 void yaml_map_add_str(struct MC *c, const char *key, const char *str, int mapping) {
 	if (!key || !mapping || !str)
 		return;
@@ -115,22 +104,25 @@ void yaml_map_add_sset(struct MC *c, const char *key, const struct Sset* const s
 	if (!key || !sset)
 		return;
 
-	if (sset_size(sset) == 0) {
-		yaml_map_add_null(c, key, mapping);
-		return;
-	}
-
 	int k = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)key, -1, YAML_PLAIN_SCALAR_STYLE);
-	int seq = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE);
-
-	if (!k || !seq)
+	if (!k)
 		return;
 
-	for (const struct SsetIt *it = sset_it(sset); it; it = sset_it_next(it)) {
-		int scalar = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)it->val, -1, YAML_PLAIN_SCALAR_STYLE);
-		if (scalar)
-			yaml_document_append_sequence_item(&c->d, seq, scalar);
+	int n = 0;
+
+	if (sset_size(sset) == 0) {
+		if (!(n = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t*)"", 0, YAML_PLAIN_SCALAR_STYLE)))
+			return;
+	} else {
+		if (!(n = yaml_document_add_sequence(&c->d, NULL, YAML_BLOCK_SEQUENCE_STYLE)))
+			return;
+
+		for (const struct SsetIt *it = sset_it(sset); it; it = sset_it_next(it)) {
+			int scalar = yaml_document_add_scalar(&c->d, NULL, (yaml_char_t *)it->val, -1, YAML_PLAIN_SCALAR_STYLE);
+			if (scalar)
+				yaml_document_append_sequence_item(&c->d, n, scalar);
+		}
 	}
 
-	yaml_document_append_mapping_pair(&c->d, mapping, k, seq);
+	yaml_document_append_mapping_pair(&c->d, mapping, k, n);
 }
