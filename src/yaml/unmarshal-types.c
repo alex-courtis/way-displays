@@ -211,9 +211,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				yaml_seq_into_name_desc_sset(c, cfg->adaptive_sync_off, node);
 				break;
 
-			case CHANGE_SUCCESS_CMD:
 			case CALLBACK_CMD:
-				free(cfg->callback_cmd); // may be both entries present, use the last
 				cfg->callback_cmd = yaml_scalar_to_string_def(c, CALLBACK_CMD_DEFAULT, node);
 				break;
 
