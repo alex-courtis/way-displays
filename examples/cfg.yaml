@@ -29,6 +29,7 @@ ALIGN: TOP
 ##
 ## 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
 
+# TODO allow empty map
 
 ## The default ORDER is simply the order in which the displays are discovered. This is nondeterministic.
 ## You are encouraged to explicitly define your order.
@@ -91,6 +92,7 @@ SCALE_ROUND_STRATEGY: NEAREST
 # - DP-2
 # - '!.*my monitor.*'
 
+# TODO v2 empty string is no callback
 
 ## Sets a /bin/sh command to be executed following most events.
 ## Obeys LOG_THRESHOLD

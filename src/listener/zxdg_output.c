@@ -3,6 +3,7 @@
 
 #include "listeners.h"
 
+#include "log.h"
 #include "output.h"
 #include "xdg-output-unstable-v1.h"
 
@@ -36,6 +37,8 @@ static void zxdg_output_done(void *data,
 static void zxdg_output_name(void *data,
 		struct zxdg_output_v1 *zxdg_output_v1,
 		const char *name) {
+	log_debug("EVENT: zxdg_output_name name zxdg_output_v1=%p name='%s'", (void*)zxdg_output_v1, name);
+
 	struct Output *output = data;
 
 	output->name = strdup(name);

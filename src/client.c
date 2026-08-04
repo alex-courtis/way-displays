@@ -7,7 +7,6 @@
 #include "client.h"
 
 #include "enum.h"
-#include "info/print.h"
 #include "ipc.h"
 #include "log.h"
 #include "plist.h"

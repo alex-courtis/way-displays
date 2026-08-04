@@ -6,6 +6,7 @@
 
 #include "displ.h"
 #include "head.h"
+#include "log.h"
 #include "mode.h"
 #include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -15,6 +16,8 @@
 static void name(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1,
 		const char *name) {
+	log_debug("EVENT: zwlr_output_head_v1_listener name %p ('%s')", (void*)zwlr_output_head_v1, name);
+
 	struct Head *head = data;
 
 	head->name = strdup(name);
@@ -52,7 +55,9 @@ static void enabled(void *data,
 		int32_t enabled) {
 	struct Head *head = data;
 
-	head->cur.enabled = enabled;
+	log_debug("EVENT: zwlr_output_head_v1_listener enabled %p ('%s') enabled=%s", (void*)zwlr_output_head_v1, head->name ? head->name : "", enabled == 0 ? "false" : "true" );
+
+	head->cur.enabled = enabled != 0;
 }
 
 static void current_mode(void *data,
@@ -119,10 +124,13 @@ static void adaptive_sync(void *data,
 	struct Head *head = data;
 
 	head->cur.adaptive_sync = state;
+
+	log_debug("EVENT: zwlr_output_head_v1_listener adaptive_sync %p ('%s') state=%s", (void*)zwlr_output_head_v1, head->name ? head->name : "", state ? "on" : "off");
 }
 
 static void finished(void *data,
 		struct zwlr_output_head_v1 *zwlr_output_head_v1) {
+	log_debug("EVENT: zwlr_output_head_v1_listener finished %p", (void*)zwlr_output_head_v1);
 
 	displ_finished_head(g_displ, zwlr_output_head_v1);
 

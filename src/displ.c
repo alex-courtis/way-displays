@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
@@ -129,6 +130,8 @@ void displ_add_head(const struct Displ *displ, struct zwlr_output_head_v1 *zhead
 	ppmap_put(displ->heads, zhead, head);
 	pset_add(displ->heads_arrived, head);
 
+	log_debug("displ_add_head added %p", (void*)head);
+
 	zwlr_output_head_v1_add_listener(zhead, zwlr_output_head_listener(), head);
 }
 
@@ -137,12 +140,16 @@ void displ_finished_head(const struct Displ *displ, const struct zwlr_output_hea
 	if (!head)
 		return;
 
+	log_debug("displ_finished_head releasing %p %s", (void*)head, head->name ? head->name : "???");
+
 	// dummy Head, just for printing
 	pset_add(displ->heads_departed, head_dummy_init(head));
 
 	pset_remove(displ->heads_arrived, head);
 	pset_remove(displ->heads_departed, head);
 
-	ppmap_remove_free(displ->heads, zhead);
+	bool released = ppmap_remove_free(displ->heads, zhead);
+
+	log_debug("displ_finished_head released %s", released ? "successfully" : "unsuccessfully");
 }
 
