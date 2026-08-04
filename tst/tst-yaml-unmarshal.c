@@ -136,10 +136,16 @@ static void yaml_root_to_cfg__scale(void **state) {
 static void yaml_root_to_cfg__mode(void **state) {
 	struct Cfg *expected = cfg_init();
 
+	struct Mode *max_overrides_max_pref = mode_whr_max(1024, 768, 85000);
+	max_overrides_max_pref->max_preferred_refresh = true;
+
 	spmap_put_many(expected->modes,
 			"width_height_hz", mode_whr(1920, 1080, 12340),
 			"max_overrides", mode_whr_max(1280, 720, 60000),
+			"max_overrides_max_pref", max_overrides_max_pref,
+			"max_pref_overrides", mode_whr_max_pref(640, 480, 30000),
 			"max_only", mode_whr_max(-1, -1, -1),
+			"max_pref_only", mode_whr_max_pref(-1, -1, -1),
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");

@@ -1,4 +1,4 @@
-# $schema: ../../../schema/ipc-request-2.0.0-SNAPSHOT.yaml
+# $schema: ../../schema/ipc-request-2.0.0-SNAPSHOT.yaml
 OP: CFG_SET
 LOG_THRESHOLD: ERROR
 CFG:
@@ -28,6 +28,8 @@ CFG:
       HEIGHT: 1440
     seventh:
       MAX: TRUE
+    tenth:
+      MAX_PREFERRED_REFRESH: TRUE
   TRANSFORM:
     twelfth: FLIPPED
   VRR_OFF:

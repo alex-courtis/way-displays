@@ -308,6 +308,11 @@ struct Mode *yaml_map_to_cfg_mode(struct UC *c, const yaml_node_t *map) {
 	if (scalar && !yaml_scalar_to_boolean(c, &mode->max, scalar))
 		goto err;
 
+	yaml_unmarshal_log_ctx_key(c, "MAX_PREFERRED_REFRESH");
+	scalar = spmap_get(m, "MAX_PREFERRED_REFRESH");
+	if (scalar && !yaml_scalar_to_boolean(c, &mode->max_preferred_refresh, scalar))
+		goto err;
+
 	goto end;
 
 err:

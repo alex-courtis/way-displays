@@ -25,6 +25,8 @@ MODE:
     HEIGHT: 1440
   seventh:
     MAX: TRUE
+  tenth:
+    MAX_PREFERRED_REFRESH: TRUE
 TRANSFORM:
   twelfth: FLIPPED
 VRR_OFF:

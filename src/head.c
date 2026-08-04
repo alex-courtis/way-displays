@@ -20,7 +20,6 @@
 #include "pset.h"
 #include "regx.h"
 #include "spmap.h"
-#include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -400,13 +399,23 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 		return NULL;
 	}
 
+	const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
+
 	const struct Mode *mode = NULL;
 
 	// maybe a cfg mode
 	struct SPmapFilter cf = { .key_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
 	struct Mode *cfg_mode = (struct Mode*)spmap_find(g_cfg->modes, cf).val;
 	if (cfg_mode) {
+
+		// match res/refresh or max
 		mode = mode_best_satisfying(cfg_mode, head->modes);
+
+		// match max_preferred
+		if (!mode && mode_pref && cfg_mode->max_preferred_refresh) {
+			mode = mode_max_refresh(mode_pref, head->modes);
+		}
+
 		if (!mode && !cfg_mode->warned_no_mode) {
 			cfg_mode->warned_no_mode = true;
 
@@ -424,29 +433,22 @@ const struct zwlr_output_mode_v1 *head_find_mode(struct Head * const head) {
 		}
 	}
 
-	// try preferred
-	if (!mode) {
-		const struct Mode *mode_pref = ppmap_get(head->modes, head->zmode_pref);
-		if (mode_pref) {
-			struct SsetFilter pf = { .val_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
-			if (sset_find(g_cfg->max_preferred_refresh, pf)) {
-				mode = mode_max_refresh(mode_pref, head->modes);
-			} else {
-				mode = mode_pref;
-			}
-		}
-		if (!mode && !head->warned_no_preferred) {
-			head->warned_no_preferred = true;
+	// maybe preferred
+	if (!mode && mode_pref) {
+		mode = mode_pref;
+	}
 
-			log_info(NULL);
-			log_info("%s: No preferred mode, falling back to maximum available", head_human(head));
+	if (!mode && !head->warned_no_preferred) {
+		head->warned_no_preferred = true;
 
-			char *human = sprintf_alloc("%s\n  No preferred mode, falling back to maximum available", head_human(head));
+		log_info(NULL);
+		log_info("%s: No preferred mode, falling back to maximum available", head_human(head));
 
-			callback(WARNING, human, NULL);
+		char *human = sprintf_alloc("%s\n  No preferred mode, falling back to maximum available", head_human(head));
 
-			free(human);
-		}
+		callback(WARNING, human, NULL);
+
+		free(human);
 	}
 
 	// maximum; we have already checked that modes are available

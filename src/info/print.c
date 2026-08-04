@@ -257,6 +257,9 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 
 	for (const struct SPmapIt *it = spmap_it(cfg->modes); it; it = spmap_it_next(it)) {
 		struct Mode *mode = (struct Mode*)it->val;
+		if (mode->max_preferred_refresh) {
+			continue;
+		}
 
 		char *msg;
 		if (mode->max) {

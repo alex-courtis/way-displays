@@ -168,7 +168,8 @@ static void print_cfg__all(void **state) {
 	spmap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
-			"seven", mode_whr_max(-1, -1, -1),
+			"seven", mode_whr_max(1, 2, 3),
+			"eight", mode_whr_max_pref(4, 5, 6),
 			NULL);
 
 	simap_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
@@ -313,6 +314,7 @@ static void print_cfg_commands__ok(void **state) {
 			"all", mode_whr(1, 2, 12340),
 			"res", mode_whr(4, 5, -1),
 			"max", mode_whr_max(7, 8, 9),
+			"max_pref", mode_whr_max_pref(10, 11, 12),
 			NULL);
 
 	simap_put(c->transforms, "seven", WL_OUTPUT_TRANSFORM_FLIPPED_90);

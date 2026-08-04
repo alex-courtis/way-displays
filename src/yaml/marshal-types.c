@@ -159,6 +159,8 @@ int yaml_map_from_cfg_modes(struct MC *c, const struct SPmap* const modes) {
 
 		if (mode->max) {
 			yaml_map_add_bool(c, "MAX", mode->max, map_in);
+		} else if (mode->max_preferred_refresh) {
+			yaml_map_add_bool(c, "MAX_PREFERRED_REFRESH", mode->max_preferred_refresh, map_in);
 		} else {
 			yaml_map_add_int(c, "WIDTH", mode->width, map_in);
 			yaml_map_add_int(c, "HEIGHT", mode->height, map_in);
