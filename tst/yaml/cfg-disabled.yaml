@@ -1,4 +1,5 @@
 # $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
+# TODO v2 test empty arrays
 DISABLED:
   unconditional:
 
@@ -48,14 +49,6 @@ DISABLED:
     IF:
     - UNPLUGGED:
       - '!(bad_pat_unplugged'
-
-  scalar_plugged:
-    IF:
-    - PLUGGED: foo
-
-  scalar_unplugged:
-    IF:
-    - UNPLUGGED: foo
 
   map_lid:
     IF:

@@ -3,8 +3,6 @@ cfg-disabled.yaml: invalid DISABLED 'empty_if' IF, expected map, got scalar
 cfg-disabled.yaml: invalid DISABLED 'bad_enum_lid' LID foo, expected enum OPEN|CLOSED|NOT_PRESENT
 cfg-disabled.yaml: invalid DISABLED 'bad_pat_plugged' PLUGGED regex '(bad_pat_plugged': Unmatched ( or \(
 cfg-disabled.yaml: invalid DISABLED 'bad_pat_unplugged' UNPLUGGED regex '(bad_pat_unplugged': Unmatched ( or \(
-cfg-disabled.yaml: invalid DISABLED 'scalar_plugged' PLUGGED, expected sequence, got scalar
-cfg-disabled.yaml: invalid DISABLED 'scalar_unplugged' UNPLUGGED, expected sequence, got scalar
 cfg-disabled.yaml: invalid DISABLED 'map_lid' LID, expected enum OPEN|CLOSED|NOT_PRESENT
 cfg-disabled.yaml: invalid DISABLED 'map_plugged' PLUGGED, expected sequence, got map
 cfg-disabled.yaml: invalid DISABLED 'map_unplugged' UNPLUGGED, expected sequence, got map

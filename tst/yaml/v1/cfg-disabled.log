@@ -5,8 +5,6 @@ cfg-disabled.yaml: invalid DISABLED 'BAD_DISABLED_IFS' UNPLUGGED regex '(unplugg
 cfg-disabled.yaml: invalid DISABLED NAME_DESC, expected string
 cfg-disabled.yaml: invalid DISABLED 'MISTYPED_IF_SCALAR' IF, expected sequence, got scalar
 cfg-disabled.yaml: invalid DISABLED 'MISTYPED_IF_MAP' IF, expected sequence, got map
-cfg-disabled.yaml: invalid DISABLED 'MISTYPED_UN_PLUGGED_SCALAR' PLUGGED, expected sequence, got scalar
-cfg-disabled.yaml: invalid DISABLED 'MISTYPED_UN_PLUGGED_SCALAR' UNPLUGGED, expected sequence, got scalar
 cfg-disabled.yaml: invalid DISABLED 'MISTYPED_UN_PLUGGED_MAP' PLUGGED, expected sequence, got map
 cfg-disabled.yaml: invalid DISABLED 'MISTYPED_UN_PLUGGED_MAP' UNPLUGGED, expected sequence, got map
 cfg-disabled.yaml: invalid DISABLED 'MISTYPED_LID_MAP' LID, expected enum OPEN|CLOSED|NOT_PRESENT

@@ -176,12 +176,10 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case SCALE:
-				if (yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE)) {
-					if (node->type == YAML_MAPPING_NODE) {
-						yaml_map_into_scales(c, cfg->scales, node);
-					} else { // v1, sequence with NAME_DESC
-						yaml_seq_into_col(c, node, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales_v1);
-					}
+				if (node->type == YAML_MAPPING_NODE) {
+					yaml_map_into_scales(c, cfg->scales, node);
+				} else if (node->type == YAML_SEQUENCE_NODE) { // v1, sequence with NAME_DESC
+					yaml_seq_into_col(c, node, cfg->scales, (fn_yaml_node_into_col)yaml_map_into_scales_v1);
 				}
 				break;
 
@@ -194,22 +192,18 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case MODE:
-				if (yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE)) {
-					if (node->type == YAML_MAPPING_NODE) {
-						yaml_map_into_cfg_modes(c, cfg->modes, node);
-					} else { // v1, sequence with NAME_DESC
-						yaml_seq_into_col(c, node, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_cfg_modes_v1);
-					}
+				if (node->type == YAML_MAPPING_NODE) {
+					yaml_map_into_cfg_modes(c, cfg->modes, node);
+				} else if (node->type == YAML_SEQUENCE_NODE) { // v1, sequence with NAME_DESC
+					yaml_seq_into_col(c, node, cfg->modes, (fn_yaml_node_into_col)yaml_map_into_cfg_modes_v1);
 				}
 				break;
 
 			case TRANSFORM:
-				if (yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE)) {
-					if (node->type == YAML_MAPPING_NODE) {
-						yaml_map_into_transforms(c, cfg->transforms, node);
-					} else { // v1, sequence with NAME_DESC
-						yaml_seq_into_col(c, node, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms_v1);
-					}
+				if (node->type == YAML_MAPPING_NODE) {
+					yaml_map_into_transforms(c, cfg->transforms, node);
+				} else if (node->type == YAML_SEQUENCE_NODE) { // v1, sequence with NAME_DESC
+					yaml_seq_into_col(c, node, cfg->transforms, (fn_yaml_node_into_col)yaml_map_into_transforms_v1);
 				}
 				break;
 
@@ -240,12 +234,10 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case DISABLED:
-				if (yaml_check_node_type(c, node, YAML_MAPPING_NODE, YAML_SEQUENCE_NODE)) {
-					if (node->type == YAML_MAPPING_NODE) {
-						yaml_map_into_disableds(c, cfg->disableds, node);
-					} else { // v1, sequence with NAME_DESC
-						yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds_v1);
-					}
+				if (node->type == YAML_MAPPING_NODE) {
+					yaml_map_into_disableds(c, cfg->disableds, node);
+				} else if (node->type == YAML_SEQUENCE_NODE) { // v1, sequence with NAME_DESC
+					yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds_v1);
 				}
 				break;
 
@@ -726,7 +718,8 @@ end:
 }
 
 void yaml_seq_into_name_desc_sset(struct UC *c, const struct Sset* const sset, const yaml_node_t *seq) {
-	if (!sset || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE, 0))
+	// SCALAR indicates empty array, acceptable
+	if (!sset || seq->type == YAML_SCALAR_NODE || !yaml_check_node_type(c, seq, YAML_SEQUENCE_NODE, 0))
 		return;
 
 	for (const yaml_node_item_t *item = seq->data.sequence.items.start; item < seq->data.sequence.items.top; item ++) {

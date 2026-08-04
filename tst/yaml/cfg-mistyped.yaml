@@ -1,11 +1,12 @@
 # $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
-# toplevel fields are mistyped
+# toplevel fields are mistyped except those that cannot be: MODE, TRANSFORM, SCALE, DISABLED
 
 ARRANGE:
   -
 ALIGN:
   -
-ORDER: FOO
+ORDER:
+  FOO: BAR
 SCALING:
   -
 AUTO_SCALE:
@@ -16,14 +17,12 @@ AUTO_SCALE_MIN:
   -
 AUTO_SCALE_MAX:
   -
-SCALE: FOO
 SCALE_ROUND_TO:
   -
 SCALE_ROUND_STRATEGY:
   -
-MODE: FOO
-TRANSFORM: FOO
-VRR_OFF: FOO
+VRR_OFF:
+  FOO: BAR
 CALLBACK_CMD:
   -
 LAPTOP_DISPLAY_PREFIX:
@@ -32,7 +31,7 @@ LAPTOP_LID_MONITOR:
   -
 LOG_THRESHOLD:
   -
-DISABLED: FOO
 CHANGE_SUCCESS_CMD:
   -
-MAX_PREFERRED_REFRESH: FOO
+MAX_PREFERRED_REFRESH:
+  FOO: BAR
