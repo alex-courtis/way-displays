@@ -18,7 +18,7 @@
 
 // true if the callback command is a non-empty string
 static bool callback_valid(const struct Cfg * const cfg) {
-	return cfg && cfg->callback_cmd && strlen(cfg->callback_cmd) >= 0;
+	return cfg && cfg->callback_cmd && strlen(cfg->callback_cmd) > 0;
 }
 
 // allows callbacks before g_cfg has been set, to cover the case of unmarshalling errors
