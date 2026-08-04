@@ -65,7 +65,7 @@ static bool mode_is_invalid(const char* const name_desc, const struct Mode* cons
 		return true;
 	}
 
-	if (!mode->max) {
+	if (!mode->max && !mode->max_preferred_refresh) {
 		if (mode->width == -1) {
 			log_warn(NULL);
 			log_warn("Ignoring invalid MODE %s missing WIDTH", name_desc);
