@@ -20,7 +20,6 @@
 #include "enum.h"
 #include "head.h"
 #include "ipmap.h"
-#include "mode.h"
 #include "output.h"
 #include "ppmap.h"
 #include "pset.h"
@@ -720,108 +719,6 @@ static void print_mode_fail__head(void **state) {
 	assert_logs_empty();
 }
 
-static void print_heads_outstanding__many(void **state) {
-	struct Displ *displ = displ_init();
-
-	const struct Mode *mode;
-
-	will_return_int(__wrap_log_get_threshold, DEBUG);
-
-	struct Head *head_reapply = head_n("re");
-	head_reapply->reapply_required = true;
-	ppmap_put(displ->heads, H0, head_reapply);
-
-	struct Head *head_mode = head_n("mo");
-	ppmap_put(head_mode->modes, M0, mode_init());
-	head_mode->des.zmode = M0;
-	ppmap_put(displ->heads, H1, head_mode);
-
-	struct Head *head_disable = head_n("di");
-	head_disable->cur.enabled = true;
-	head_disable->des.enabled = false;
-	ppmap_put(displ->heads, H2, head_disable);
-
-	struct Head *head_vrr = head_n("vr");
-	head_vrr->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	head_vrr->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	ppmap_put(displ->heads, H3, head_vrr);
-
-	struct Head *head_enable = head_n("en");
-	head_enable->cur.enabled = false;
-	head_enable->des.enabled = true;
-	ppmap_put(displ->heads, H4, head_enable);
-
-	struct Head *head_sc = head_n("sc");
-	head_sc->cur.scale = 1;
-	head_sc->des.scale = 2;
-	ppmap_put(displ->heads, H5, head_sc);
-
-	struct Head *head_x = head_n("x");
-	head_x->cur.x = 1;
-	head_x->des.x = 2;
-	ppmap_put(displ->heads, H6, head_x);
-
-	struct Head *head_y = head_n("y");
-	head_y->cur.y = 1;
-	head_y->des.y = 2;
-	ppmap_put(displ->heads, H7, head_y);
-
-	struct Head *head_transform = head_n("tr");
-	head_transform->cur.transform = WL_OUTPUT_TRANSFORM_90;
-	head_transform->des.transform = WL_OUTPUT_TRANSFORM_180;
-	ppmap_put(displ->heads, H8, head_transform);
-
-	struct Head *head_all = head_n("a");
-	mode = mode_init();
-	ppmap_put(head_all->modes, M0, mode);
-	head_all->reapply_required = true;
-	head_all->des.zmode = M0;
-	head_all->cur.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED;
-	head_all->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
-	head_all->cur.x = 1;
-	head_all->des.x = 2;
-	head_all->cur.enabled = false;
-	head_all->des.enabled = true;
-	ppmap_put(displ->heads, H9, head_all);
-
-	displ->state = IDLE;
-	print_head_queue(DEBUG, displ, "foo");
-
-	assert_log(DEBUG, "foo IDLE queue re:reapply ; a:reapply ; mo:mode ; a:mode ; vr:vrr ; a:vrr ; di:disable en:enable sc:geometry x:geometry y:geometry tr:geometry a:enable a:geometry\n");
-
-	displ_free(displ);
-
-	assert_logs_empty();
-}
-
-static void print_heads_outstanding__none(void **state) {
-	struct Displ *displ = displ_init();
-
-	will_return_int(__wrap_log_get_threshold, DEBUG);
-
-	displ->state = IDLE;
-	print_head_queue(DEBUG, displ, "foo");
-
-	assert_log(DEBUG, "foo IDLE queue\n");
-
-	displ_free(displ);
-
-	assert_logs_empty();
-}
-
-static void print_heads_outstanding__below_threshold(void **state) {
-	struct Displ *displ = displ_init();
-
-	will_return_int(__wrap_log_get_threshold, WARNING);
-
-	displ->state = IDLE;
-	print_head_queue(DEBUG, displ, "foo");
-
-	displ_free(displ);
-
-	assert_logs_empty();
-}
-
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(print_cfg__all),
@@ -867,10 +764,6 @@ int main(void) {
 
 		TEST_BA(print_mode_fail__nulls),
 		TEST_BA(print_mode_fail__head),
-
-		TEST_BA(print_heads_outstanding__many),
-		TEST_BA(print_heads_outstanding__none),
-		TEST_BA(print_heads_outstanding__below_threshold),
 	};
 
 	return RUN(tests);

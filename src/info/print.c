@@ -522,55 +522,6 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 	print_mode(t, ppmap_get(head->modes, zmode), head->zmode_pref == zmode);
 }
 
-// TODO debug this does not always seem accurate, shows changes for DP-7 when none are needed on first start
-void print_head_queue(const enum LogThreshold t, const struct Displ *displ, const char *msg) {
-	if (log_get_threshold() > DEBUG)
-		return;
-
-	char *reapply = strdup("");
-	char *mode = strdup("");
-	char *vrr = strdup("");
-	char *remainder = strdup("");
-
-	for (const struct PPmapIt *it = ppmap_it(displ->heads); it; it = ppmap_it_next(it)) {
-		const struct Head *head = it->val;
-
-		// granular reapplies first
-		if (head_reapply_required(head))
-			reapply = sprintf_append(reapply, " %s:reapply ;", head->name);
-
-		// granular mode
-		if (head_current_mode_not_desired(head))
-			mode = sprintf_append(mode, " %s:mode ;", head->name);
-
-		// granular vrr
-		if (head_current_adaptive_sync_not_desired(head))
-			vrr = sprintf_append(vrr, " %s:vrr ;", head->name);
-
-		// mass disable
-		if (head->cur.enabled && !head->des.enabled)
-			remainder = sprintf_append(remainder, " %s:disable", head->name);
-
-		// mass enable
-		if (!head->cur.enabled && head->des.enabled)
-			remainder = sprintf_append(remainder, " %s:enable", head->name);
-
-		// mass remainder
-		if (head->des.scale != head->cur.scale ||
-				head->des.x != head->cur.x ||
-				head->des.y != head->cur.y ||
-				head->des.transform != head->cur.transform )
-			remainder = sprintf_append(remainder, " %s:geometry", head->name);
-	}
-
-	log_(t, "%s %s queue%s%s%s%s", msg, displ_state_name(displ->state), reapply, mode, vrr, remainder);
-
-	free(reapply);
-	free(mode);
-	free(vrr);
-	free(remainder);
-}
-
 void print_v1_deprecation(void) {
 	log_warn("%s", v1_deprecation_log_text);
 }

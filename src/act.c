@@ -239,8 +239,6 @@ void act(void) {
 	print_head_set(INFO, DEPARTED, g_displ->heads_departed);
 	pset_remove_all_free(g_displ->heads_departed);
 
-	print_head_queue(FATAL, g_displ, "act started");
-
 	switch (g_displ->state) {
 		case SUCCEEDED:
 			act_handle_success();
@@ -271,9 +269,7 @@ void act(void) {
 	}
 
 	desire();
-	print_head_queue(FATAL, g_displ, "act desired");
 
 	act_apply();
-	print_head_queue(FATAL, g_displ, "act applied");
 }
 
