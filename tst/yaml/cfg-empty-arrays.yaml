@@ -1,4 +1,5 @@
 # $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
+# empty arrays should NOP
 ORDER:
 SCALE:
 MODE:

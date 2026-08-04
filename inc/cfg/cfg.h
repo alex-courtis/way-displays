@@ -29,9 +29,10 @@ struct Cfg {
 	const struct SPmap *modes;                    // MODE                mode_spmap_init
 	const struct SImap *transforms;               // TRANSFORM           wl_output_transform
 	const struct Sset *adaptive_sync_off;         // VRR_OFF
+	// TODO v2 remove
 	const struct Sset *max_preferred_refresh;     // MAX_PREFERRED_REFRESH
 
-	char *callback_cmd;                           // CALLBACK_CMD
+	char *callback_cmd;                           // CALLBACK_CMD        empty string means no callback
 
 	char *laptop_display_prefix;                  // LAPTOP_DISPLAY_PREFIX
 	enum OnOff laptop_lid_monitor;                // LAPTOP_LID_MONITOR

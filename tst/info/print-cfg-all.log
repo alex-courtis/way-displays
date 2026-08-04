@@ -19,6 +19,6 @@
   Disabled:
     disabled always
     disabled conditionally (conditionally)
-  Change success command:
+  Callback command:
     notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
   Laptop display prefix: lappy

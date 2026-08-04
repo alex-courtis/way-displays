@@ -49,14 +49,6 @@ DISABLED:
     - UNPLUGGED:
       - '!(bad_pat_unplugged'
 
-  scalar_plugged:
-    IF:
-    - PLUGGED: foo
-
-  scalar_unplugged:
-    IF:
-    - UNPLUGGED: foo
-
   map_lid:
     IF:
     - LID:

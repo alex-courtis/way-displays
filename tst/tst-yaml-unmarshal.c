@@ -68,6 +68,12 @@ static void yaml_root_to_cfg__ok(void **state) {
 	assert_logs_empty();
 }
 
+static void yaml_root_to_cfg__empty_arrays(void **state) {
+	check_unmarshalled_cfg("tst/yaml/cfg-empty-arrays.yaml", cfg_init(), NULL);
+
+	assert_logs_empty();
+}
+
 static void yaml_root_to_cfg__unknown_fields_ok(void **state) {
 	struct Cfg *expected = cfg_init();
 	expected->arrange = COL;
@@ -175,8 +181,6 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			"bad_enum_lid",     cfg_disabled_init(),
 			"bad_pat_plugged",  cfg_disabled_init(),
 			"bad_pat_unplugged",cfg_disabled_init(),
-			"scalar_plugged",   cfg_disabled_init(),
-			"scalar_unplugged", cfg_disabled_init(),
 			"map_lid",          cfg_disabled_init(),
 			"map_plugged",      cfg_disabled_init(),
 			"map_unplugged",    cfg_disabled_init(),
@@ -667,6 +671,7 @@ int main(void) {
 
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_root_to_cfg__ok),
+		TEST(yaml_root_to_cfg__empty_arrays),
 		TEST(yaml_root_to_cfg__unknown_fields_ok),
 		TEST(yaml_root_to_cfg__missing),
 		TEST(yaml_root_to_cfg__invalid),

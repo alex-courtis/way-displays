@@ -35,9 +35,11 @@ properties:
       ROW is arranged in order left to right.
       COLUMN is top to bottom.
       ORDER defaults to the order in which displays are discovered.
-    type: array
-    items:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+    oneOf:
+      - type: "null"
+      - type: array
+        items:
+          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
 
   SCALING:
     description: |-
@@ -93,38 +95,46 @@ properties:
   SCALE:
     description: |-
       Auto scale may be overridden for each display.
-    type: object
-    propertyNames:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
-    additionalProperties:
-      type: number
-      exclusiveMinimum: 0
+    oneOf:
+      - type: "null"
+      - type: object
+        propertyNames:
+          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+        additionalProperties:
+          type: number
+          exclusiveMinimum: 0
 
   MODE:
     description: |-
       Override the preferred mode.
       WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
-    type: object
-    propertyNames:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
-    additionalProperties:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/mode'
+    oneOf:
+      - type: "null"
+      - type: object
+        propertyNames:
+          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+        additionalProperties:
+          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/mode'
 
   TRANSFORM:
     description: |-
       Rotate or translate the display.
-    type: object
-    propertyNames:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
-    additionalProperties:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
+    oneOf:
+      - type: "null"
+      - type: object
+        propertyNames:
+          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+        additionalProperties:
+          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
 
   VRR_OFF:
     description: |-
       VRR / adaptive sync is enabled by default. Disable it per display.
-    type: array
-    items:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+    oneOf:
+      - type: "null"
+      - type: array
+        items:
+          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
 
   CALLBACK_CMD:
     description: |-
@@ -156,21 +166,23 @@ properties:
   DISABLED:
     description: |-
       Disable the specified displays with optional conditions.
-    type: object
-    propertyNames:
-      $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
-    additionalProperties:
-      anyOf:
-        - type: "null"
-        - type: object
-          properties:
-            IF:
-              description: |-
-                A list of conditions. Evaluates to true if at least one of the conditions is true.
-              type: array
-              items:
-                $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/condition'
-              minItems: 1
-          additionalProperties: false
+    oneOf:
+      - type: "null"
+      - type: object
+        propertyNames:
+          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+        additionalProperties:
+          anyOf:
+            - type: "null"
+            - type: object
+              properties:
+                IF:
+                  description: |-
+                    A list of conditions. Evaluates to true if at least one of the conditions is true.
+                  type: array
+                  items:
+                    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/condition'
+                  minItems: 1
+              additionalProperties: false
 
 additionalProperties: false
