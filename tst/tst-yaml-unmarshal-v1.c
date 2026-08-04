@@ -64,24 +64,6 @@ static void yaml_root_to_cfg__ok(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_cfg__legacy(void **state) {
-	struct Cfg *expected = cfg_init();
-
-	// CHANGE_SUCCESS_CMD -> CALLBACK_CMD
-	free(expected->callback_cmd);
-	expected->callback_cmd = strdup("foo");
-
-	// MAX_PREFERRED_REFRESH
-	sset_add_many(expected->max_preferred_refresh,
-			"fifteen",
-			"!sixteen",
-			NULL);
-
-	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-legacy.yaml", expected, NULL);
-
-	assert_logs_empty();
-}
-
 static void yaml_root_to_cfg__transform(void **state) {
 	struct Cfg *expected = cfg_init();
 	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
@@ -310,7 +292,6 @@ int main(void) {
 
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_root_to_cfg__ok),
-		TEST(yaml_root_to_cfg__legacy),
 		TEST(yaml_root_to_cfg__transform),
 		TEST(yaml_root_to_cfg__scale),
 		TEST(yaml_root_to_cfg__mode),

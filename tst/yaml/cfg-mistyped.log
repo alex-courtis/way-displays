@@ -14,4 +14,3 @@ cfg-mistyped.yaml: invalid LAPTOP_DISPLAY_PREFIX, expected string
 cfg-mistyped.yaml: invalid LAPTOP_LID_MONITOR, expected boolean, using default true
 cfg-mistyped.yaml: invalid LOG_THRESHOLD, expected enum DEBUG|INFO|WARNING|ERROR|FATAL
 cfg-mistyped.yaml: invalid CHANGE_SUCCESS_CMD, expected string, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
-cfg-mistyped.yaml: invalid MAX_PREFERRED_REFRESH, expected sequence, got map

@@ -86,7 +86,6 @@ struct Cfg *cfg_init(void) {
 
 	cfg->adaptive_sync_off     = sset_init();
 	cfg->disableds             = cfg_disabled_spmap_init();
-	cfg->max_preferred_refresh = sset_init();
 	cfg->modes                 = mode_spmap_init();
 	cfg->order_name_desc       = sset_init();
 	cfg->scales                = simap_init();
@@ -115,7 +114,6 @@ struct Cfg *cfg_clone(struct Cfg *from) {
 	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
 	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
-	to->max_preferred_refresh = sset_clone(from->max_preferred_refresh);
 	to->order_name_desc       = sset_clone(from->order_name_desc);
 	to->disableds             = spmap_clone_deep(from->disableds);
 	to->modes                 = spmap_clone_deep(from->modes);
@@ -136,7 +134,6 @@ void cfg_free(struct Cfg *cfg) {
 	simap_free(cfg->scales);
 	simap_free(cfg->transforms);
 	sset_free(cfg->adaptive_sync_off);
-	sset_free(cfg->max_preferred_refresh);
 	sset_free(cfg->order_name_desc);
 
 	free(cfg);
@@ -167,7 +164,6 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		simap_equal(a->scales, b->scales) &&
 		simap_equal(a->transforms, b->transforms) &&
 		sset_equal(a->adaptive_sync_off, b->adaptive_sync_off) &&
-		sset_equal(a->max_preferred_refresh, b->max_preferred_refresh) &&
 		sset_equal(a->order_name_desc, b->order_name_desc);
 }
 
@@ -325,7 +321,6 @@ void cfg_validate_warn(const struct Cfg * const cfg) {
 
 	warn_ambiguous_name_desc_sset(cfg->order_name_desc, ORDER);
 	warn_ambiguous_name_desc_sset(cfg->adaptive_sync_off, VRR_OFF);
-	warn_ambiguous_name_desc_sset(cfg->max_preferred_refresh, MAX_PREFERRED_REFRESH);
 
 	for (const struct SPmapIt *dit = spmap_it(cfg->disableds); dit; dit = spmap_it_next(dit)) {
 		const struct CfgDisabled *disabled = (struct CfgDisabled*)dit->val;

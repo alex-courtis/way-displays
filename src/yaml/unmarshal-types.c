@@ -225,10 +225,6 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->laptop_lid_monitor = yaml_scalar_to_on_off_def(c, LAPTOP_LID_MONITOR_DEFAULT, node);
 				break;
 
-			case MAX_PREFERRED_REFRESH:
-				yaml_seq_into_name_desc_sset(c, cfg->max_preferred_refresh, node);
-				break;
-
 			case LOG_THRESHOLD:
 				cfg->log_threshold = yaml_scalar_to_enum(c, node, log_threshold_val, log_threshold_names);
 				break;

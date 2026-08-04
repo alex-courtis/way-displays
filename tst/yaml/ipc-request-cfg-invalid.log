@@ -15,5 +15,4 @@ ipc request: invalid SCALE 'negative' -1.23, expected positive number
 ipc request: invalid MODE 'BAD_MODE_MAX' MAX BAD_MAX, expected boolean
 ipc request: invalid TRANSFORM 'badenum' foobar, expected enum 90|180|270|FLIPPED|FLIPPED-90|FLIPPED-180|FLIPPED-270
 ipc request: invalid VRR_OFF regex '(vrroff': Unmatched ( or \(
-ipc request: invalid MAX_PREFERRED_REFRESH regex '(max': Unmatched ( or \(
 ipc request: invalid DISABLED regex '(disabled': Unmatched ( or \(

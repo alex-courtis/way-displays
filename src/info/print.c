@@ -178,13 +178,6 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 		}
 	}
 
-	if (sset_size(cfg->max_preferred_refresh) > 0) {
-		log_(t, "  Max preferred refresh:");
-		for (const struct SsetIt *it = sset_it(cfg->max_preferred_refresh); it; it = sset_it_next(it)) {
-			log_(t, "    %s", it->val);
-		}
-	}
-
 	if (spmap_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
 		for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it)) {

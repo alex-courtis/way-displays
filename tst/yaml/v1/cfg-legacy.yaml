@@ -1,4 +1,0 @@
-CHANGE_SUCCESS_CMD: foo
-MAX_PREFERRED_REFRESH:
-  - fifteen
-  - '!sixteen'

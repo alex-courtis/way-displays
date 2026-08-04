@@ -174,8 +174,6 @@ static void print_cfg__all(void **state) {
 
 	simap_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
-	sset_add(c->max_preferred_refresh, "legacy");
-
 	c->laptop_display_prefix = strdup("lappy");
 
 	c->scale_round_to = 2;
