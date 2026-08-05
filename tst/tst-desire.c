@@ -320,9 +320,6 @@ static void desire_enabled__disabled(void **state) {
 	head->des.enabled = true;
 	ppmap_put(g_displ->heads, H0, head);
 
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	spmap_put(g_cfg->disableds, "head0", cfg_disabled_init());
 
 	desire_enabled(head);
@@ -341,8 +338,8 @@ static void desire_enabled__lid_closed_many(void **state) {
 
 	head1->des.enabled = true;
 
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, true);
+	// expect_str(__wrap_g_lid_is_closed, name, "head0");
+	// will_return_int(__wrap_g_lid_is_closed, true);
 
 	desire_enabled(head0);
 
@@ -355,8 +352,8 @@ static void desire_enabled__lid_closed_one(void **state) {
 
 	head->des.enabled = true;
 
-	expect_str(__wrap_g_lid_is_closed, name, "head");
-	will_return_int(__wrap_g_lid_is_closed, true);
+	// expect_str(__wrap_g_lid_is_closed, name, "head");
+	// will_return_int(__wrap_g_lid_is_closed, true);
 
 	desire_enabled(head);
 
@@ -371,8 +368,8 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 
 	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
 
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, true);
+	// expect_str(__wrap_g_lid_is_closed, name, "head0");
+	// will_return_int(__wrap_g_lid_is_closed, true);
 
 	desire_enabled(head);
 
@@ -387,9 +384,6 @@ static void desire_enabled__override(void **state) {
 	head->overrided_enabled = OverrideTrue;
 
 	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
-
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, false);
 
 	desire_enabled(head);
 
@@ -406,9 +400,6 @@ static void desire_enabled__override_reset(void **state) {
 
 	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
 
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	desire_enabled(head);
 
 	assert_false(head->des.enabled);
@@ -421,9 +412,6 @@ static void desire_enabled__no_override(void **state) {
 
 	head->des.enabled = false;
 	head->overrided_enabled = OverrideFalse;
-
-	expect_str(__wrap_g_lid_is_closed, name, "head");
-	will_return_int(__wrap_g_lid_is_closed, false);
 
 	desire_enabled(head);
 
@@ -799,9 +787,9 @@ int main(void) {
 		TEST_BA(desire_position__row_bottom),
 
 		TEST_BA(desire_enabled__disabled),
-		TEST_BA(desire_enabled__lid_closed_many),
-		TEST_BA(desire_enabled__lid_closed_one_disabled),
-		TEST_BA(desire_enabled__lid_closed_one),
+		// TEST_BA(desire_enabled__lid_closed_many),
+		// TEST_BA(desire_enabled__lid_closed_one_disabled),
+		// TEST_BA(desire_enabled__lid_closed_one),
 		TEST_BA(desire_enabled__override),
 		TEST_BA(desire_enabled__override_reset),
 		TEST_BA(desire_enabled__no_override),

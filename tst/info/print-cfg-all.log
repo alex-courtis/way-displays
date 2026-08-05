@@ -21,4 +21,3 @@
     disabled conditionally (conditionally)
   Callback command:
     notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
-  Laptop display prefix: lappy

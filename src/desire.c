@@ -45,14 +45,17 @@ void desire(void) {
 	plist_free(heads_ordered);
 }
 
+// TODO #259 cfg_disabled_applies_to_head_lid_closed
 void desire_enabled(struct Head *head) {
-	bool enabled = false;
+	// bool enabled = false;
+	//
+	// // lid closed
+	// enabled = !g_lid_is_closed(head->name);
+	//
+	// // ignore lid closed when there is only the laptop display, for smoother sleeping
+	// enabled |= ppmap_size(g_displ->heads) == 1;
 
-	// lid closed
-	enabled = !g_lid_is_closed(head->name);
-
-	// ignore lid closed when there is only the laptop display, for smoother sleeping
-	enabled |= ppmap_size(g_displ->heads) == 1;
+	bool enabled = true;
 
 	// disabled if name_desc matches and (if present) any condition is true
 	struct SPmapFilter f = { .key_val_data = (fn_pred_spp)cfg_disabled_applies_to_head, .data = head, };

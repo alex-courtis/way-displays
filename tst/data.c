@@ -74,7 +74,6 @@ struct Cfg *cfg_all(void) {
 
 	free(cfg->callback_cmd);
 	cfg->callback_cmd = strdup("cmd");
-	cfg->laptop_display_prefix = strdup("ldp");
 	cfg->laptop_lid_monitor = OFF;
 
 	sset_add_many(cfg->order_name_desc,

@@ -32,13 +32,12 @@ struct Cfg {
 
 	char *callback_cmd;                           // CALLBACK_CMD        empty string means no callback
 
-	char *laptop_display_prefix;                  // LAPTOP_DISPLAY_PREFIX
 	enum OnOff laptop_lid_monitor;                // LAPTOP_LID_MONITOR
 
 	enum LogThreshold log_threshold;              // LOG_THRESHOLD
 
 	const struct SPmap *disableds;                // DISABLED           cfg_disabled_spmap_init
-	bool disableds_empty;                         //                    marker to indicate user provided an empty DISABLED map, not part of equal
+	bool disableds_empty;                         // marker to indicate user provided an empty DISABLED map, not part of equal/clone/merge etc.
 };
 
 /*

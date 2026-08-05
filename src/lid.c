@@ -18,8 +18,6 @@
 
 struct Lid *g_lid = NULL;
 
-static const char *LAPTOP_DISPLAY_PREFIX_DEFAULT = "eDP";
-
 static bool warned_permission_fail = false;
 
 static int libinput_open_restricted(const char* const path, const int flags, const void* const data) {
@@ -244,25 +242,3 @@ void g_lid_init(void) {
 	g_lid->libinput_fd = libinput_get_fd(libinput_monitor);
 	g_lid->libinput_monitor = libinput_monitor;
 }
-
-bool g_lid_is_closed(char *name) {
-	if (!name)
-		return false;
-
-	if (!g_lid)
-		return false;
-
-	const char *laptop_display_prefix;
-	if (g_cfg->laptop_display_prefix) {
-		laptop_display_prefix = g_cfg->laptop_display_prefix;
-	} else {
-		laptop_display_prefix = LAPTOP_DISPLAY_PREFIX_DEFAULT;
-	}
-
-	if (strncasecmp(laptop_display_prefix, name, strlen(laptop_display_prefix)) == 0) {
-		return g_lid->closed;
-	} else {
-		return false;
-	}
-}
-

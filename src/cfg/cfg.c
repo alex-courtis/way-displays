@@ -103,7 +103,6 @@ struct Cfg *cfg_clone(struct Cfg *from) {
 	memcpy(to, from, sizeof(struct Cfg));
 
 	to->callback_cmd          = from->callback_cmd          ? strdup(from->callback_cmd)          : NULL;
-	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
 	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
 	to->order_name_desc       = sset_clone(from->order_name_desc);
@@ -120,7 +119,6 @@ void cfg_free(struct Cfg *cfg) {
 		return;
 
 	free(cfg->callback_cmd);
-	free(cfg->laptop_display_prefix);
 	spmap_free_vals(cfg->disableds);
 	spmap_free_vals(cfg->modes);
 	simap_free(cfg->scales);
@@ -150,7 +148,6 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		a->scale_round_to == b->scale_round_to &&
 		a->scaling == b->scaling &&
 		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
-		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
 		spmap_equal(a->disableds, b->disableds) &&
 		spmap_equal(a->modes, b->modes) &&
 		simap_equal(a->scales, b->scales) &&

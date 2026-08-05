@@ -129,13 +129,6 @@ static void cfg_equal__all(void **state) {
 	a->callback_cmd = strdup(b->callback_cmd);
 	assert_cfg_equal(a, b);
 
-	free(a->laptop_display_prefix);
-	a->laptop_display_prefix = strdup("foo");
-	assert_cfg_not_equal(a, b);
-	free(a->laptop_display_prefix);
-	a->laptop_display_prefix = strdup(b->laptop_display_prefix);
-	assert_cfg_equal(a, b);
-
 	const struct CfgDisabled *disabled = cfg_disabled_init();
 	spmap_put(a->disableds, "foo", disabled);
 	assert_cfg_not_equal(a, b);
@@ -380,10 +373,6 @@ static void cfg_merge_set__all_changes(void **state) {
 	to->auto_scale_max = from->auto_scale_max;
 	to->log_threshold = from->log_threshold;
 	to->laptop_lid_monitor = from->laptop_lid_monitor;
-	if (from->laptop_display_prefix) {
-		free(to->laptop_display_prefix);
-		to->laptop_display_prefix = strdup(from->laptop_display_prefix);
-	}
 
 	struct Cfg *merged = cfg_merge_set(to, from);
 

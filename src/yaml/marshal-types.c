@@ -132,7 +132,6 @@ int yaml_map_from_cfg(struct MC *c, const struct Cfg* const cfg) {
 	yaml_map_add_node    (c, cfg_element_name(TRANSFORM),             yaml_map_from_transforms(c, cfg->transforms),                                     map);
 	yaml_map_add_sset    (c, cfg_element_name(VRR_OFF),               cfg->adaptive_sync_off,                                                           map);
 	yaml_map_add_str     (c, cfg_element_name(CALLBACK_CMD),          cfg->callback_cmd,                                                                map);
-	yaml_map_add_str     (c, cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg->laptop_display_prefix,                                                       map);
 	yaml_map_add_enum    (c, cfg_element_name(LAPTOP_LID_MONITOR),    cfg->laptop_lid_monitor,    on_off_name,                                          map);
 	yaml_map_add_enum    (c, cfg_element_name(LOG_THRESHOLD),         cfg->log_threshold,         log_threshold_name,                                   map);
 	yaml_map_add_node    (c, cfg_element_name(DISABLED),              yaml_map_from_disableds(c, cfg->disableds),                                       map);

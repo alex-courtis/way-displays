@@ -34,6 +34,9 @@ bool cfg_disabled_applies_to_head(const char * name_desc, const struct CfgDisabl
 // fn_pred_spp: disabled has conditions and may apply to head
 bool cfg_disabled_conditionally_for_head(const char * name_desc, const struct CfgDisabled * const disabled, const struct Head * const head);
 
+// fn_pred_spp: cfg_disabled_applies_to_head via a lid closed condition
+bool cfg_disabled_applies_to_head_lid_closed(const char * name_desc, const struct CfgDisabled * const disabled, const struct Head * const head);
+
 /*
  * utility
  */

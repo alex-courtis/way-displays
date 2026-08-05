@@ -192,8 +192,6 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->laptop_lid_monitor == OFF) {
 		log_(t, "  Laptop lid monitoring disabled");
-	} else if (cfg->laptop_display_prefix) {
-		log_(t, "  Laptop display prefix: %s", cfg->laptop_display_prefix);
 	}
 }
 
@@ -335,10 +333,6 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 		} else {
 			log_(t, "    (disabled)");
 		}
-	}
-
-	if (g_lid_is_closed(head->name)) {
-		log_(t, "    (lid closed)");
 	}
 }
 

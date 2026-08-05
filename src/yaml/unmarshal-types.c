@@ -215,10 +215,6 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				cfg->callback_cmd = yaml_scalar_to_string_def(c, CALLBACK_CMD_DEFAULT, node);
 				break;
 
-			case LAPTOP_DISPLAY_PREFIX:
-				cfg->laptop_display_prefix = yaml_scalar_to_string(c, node);
-				break;
-
 			case LAPTOP_LID_MONITOR:
 				cfg->laptop_lid_monitor = yaml_scalar_to_on_off_def(c, LAPTOP_LID_MONITOR_DEFAULT, node);
 				break;
