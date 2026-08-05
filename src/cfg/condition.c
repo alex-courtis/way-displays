@@ -49,7 +49,7 @@ struct CfgCondition *cfg_condition_clone(const struct CfgCondition* const from) 
 	return to;
 }
 
-bool cfg_condition_true(const struct CfgCondition *condition) {
+bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail_lid_closed) {
 	if (!condition)
 		return false;
 
@@ -73,7 +73,7 @@ bool cfg_condition_true(const struct CfgCondition *condition) {
 
 	switch (condition->lid) {
 		case LID_CLOSED:
-			if (!g_lid || !g_lid->closed) {
+			if ((fail_lid_closed && *fail_lid_closed) || !g_lid || !g_lid->closed) {
 				return true;
 			}
 			break;

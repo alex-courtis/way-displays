@@ -126,8 +126,8 @@ void head_override_ipc_disableds(struct Head * const head, const struct IpcReque
 
 	bool override = false;
 
-	// ipc disabled request for this head, no conditions may be present
-	struct SPmapFilter f_req = { .key_val_data = (fn_pred_spp)cfg_disabled_applies_to_head, .data = head, };
+	// ipc disabled request for this head, no conditions will be present hence we match name_desc only
+	struct SPmapFilter f_req = { .key_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
 	for (const struct SPmapIt *it = spmap_filter_it(ipc_request->cfg->disableds, f_req); it; it = spmap_it_next(it)) {
 
 		// cfg conditionally disabled for this head

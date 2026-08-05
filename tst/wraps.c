@@ -10,6 +10,7 @@
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
+#include "spmap.h"
 #include "ssmap.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal.h"
@@ -142,6 +143,19 @@ const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target,
 	check_expected_ptr(modes);
 	return mock_ptr_type_checked(struct Mode*);
 }
+
+/*
+ * disabled
+ */
+
+bool __wrap_cfg_disabled_applies_to_head(const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed) {
+	check_expected_ptr(disableds);
+	check_expected_ptr(head);
+	check_expected_int(fail_lid_closed);
+
+	return mock_type(bool);
+}
+
 
 /*
  * process

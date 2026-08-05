@@ -28,18 +28,15 @@ void cfg_disabled_free(struct CfgDisabled *disabled);
  * predicates
  */
 
-// fn_pred_spp: name_desc must match, if conditions are present at least one must be true
-bool cfg_disabled_applies_to_head(const char * name_desc, const struct CfgDisabled * const disabled, const struct Head * const head);
-
 // fn_pred_spp: disabled has conditions and may apply to head
 bool cfg_disabled_conditionally_for_head(const char * name_desc, const struct CfgDisabled * const disabled, const struct Head * const head);
-
-// fn_pred_spp: cfg_disabled_applies_to_head via a lid closed condition
-bool cfg_disabled_applies_to_head_lid_closed(const char * name_desc, const struct CfgDisabled * const disabled, const struct Head * const head);
 
 /*
  * utility
  */
+
+// one of disableds applies: name_desc match, if conditions are present at least one must be true, fail_lid_closed directs to unconditionally fail lid closed conditions
+bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed);
 
 // remove any disableds with the same name as a cfg disabled
 void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds);

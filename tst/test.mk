@@ -52,7 +52,7 @@ LDFLAGS += -Wl,$\
 LDFLAGS += -Wl,$\
 		   --wrap=g_lid_init,$\
 		   --wrap=lid_free,--wrap=g_lid_destroy,$\
-		   --wrap=g_lid_is_closed,--wrap=g_lid_update
+		   --wrap=g_lid_update
 
 #
 # test specific mocks
@@ -78,7 +78,8 @@ tst/tst-act: LDFLAGS += -Wl,$\
 
 tst/tst-desire: LDFLAGS += -Wl,$\
 	--wrap=head_find_mode,$\
-	--wrap=head_auto_scale
+	--wrap=head_auto_scale,$\
+	--wrap=cfg_disabled_applies_to_head
 
 tst/tst-cfg-file-read: LDFLAGS += -Wl,$\
 	--wrap=fs_canonical_path,$\
