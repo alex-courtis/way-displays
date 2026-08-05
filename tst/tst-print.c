@@ -2,7 +2,6 @@
 
 #include "assert-log.h"
 #include "data.h"
-#include "expects.h"
 #include "util-col.h"
 #include "util-file.h"
 #include "util-init.h"

@@ -13,7 +13,6 @@
 #include "fn.h"
 #include "head.h"
 #include "ipmap.h"
-#include "lid.h"
 #include "log.h"
 #include "mode.h"
 #include "output.h"

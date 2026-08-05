@@ -13,7 +13,6 @@
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
-#include "lid.h"
 #include "mode.h"
 #include "plist.h"
 #include "ppmap.h"
