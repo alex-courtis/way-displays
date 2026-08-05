@@ -58,7 +58,7 @@ void *M10 = "M10";
 
 // cfg-all.yaml
 struct Cfg *cfg_all(void) {
-	struct Cfg *cfg = cfg_default();
+	struct Cfg *cfg = cfg_default_scalars();
 
 	cfg->arrange = COL;
 	cfg->align = BOTTOM;

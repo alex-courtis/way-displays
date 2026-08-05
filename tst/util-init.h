@@ -18,4 +18,10 @@ struct Mode *mode_whr_max(int32_t width, int32_t height, int32_t refresh_mhz);
 
 struct Mode *mode_whr_max_pref(int32_t width, int32_t height, int32_t refresh_mhz);
 
+// all defaults
+struct Cfg *cfg_default(void);
+
+// scalars only, no disabled
+struct Cfg *cfg_default_scalars(void);
+
 #endif // UTIL_INIT_H

@@ -2,6 +2,7 @@
 
 #include "assert-spmap.h"
 #include "assert-log.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdlib.h>

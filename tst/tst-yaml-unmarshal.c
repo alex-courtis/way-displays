@@ -47,6 +47,8 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 	struct Cfg *actual = yaml_unmarshal_file(yaml_path, yaml_root_to_cfg);
 	_assert_non_nul(actual, "actual", file, line);
 
+	_assert_int_equal(actual->disableds_empty, expected->disableds_empty, file, line);
+
 	_assert_cfg(actual, expected, true, "assert_cfg_equal", file, line);
 
 	if (log_path) {
@@ -69,7 +71,10 @@ static void yaml_root_to_cfg__ok(void **state) {
 }
 
 static void yaml_root_to_cfg__empty_arrays(void **state) {
-	check_unmarshalled_cfg("tst/yaml/cfg-empty-arrays.yaml", cfg_init(), NULL);
+	struct Cfg *expected = cfg_init();
+	expected->disableds_empty = true;
+
+	check_unmarshalled_cfg("tst/yaml/cfg-empty-arrays.yaml", expected, NULL);
 
 	assert_logs_empty();
 }
@@ -93,7 +98,8 @@ static void yaml_root_to_cfg__missing(void **state) {
 
 static void yaml_root_to_cfg__invalid(void **state) {
 	// all invalid have been set to default
-	struct Cfg *expected = cfg_default();
+	struct Cfg *expected = cfg_default_scalars();
+	expected->disableds_empty = true;
 
 	check_unmarshalled_cfg("tst/yaml/cfg-invalid.yaml", expected, "tst/yaml/cfg-invalid.log");
 
@@ -101,7 +107,10 @@ static void yaml_root_to_cfg__invalid(void **state) {
 }
 
 static void yaml_root_to_cfg__mistyped(void **state) {
-	check_unmarshalled_cfg("tst/yaml/cfg-mistyped.yaml", cfg_default(), "tst/yaml/cfg-mistyped.log");
+	struct Cfg *expected = cfg_default_scalars();
+	expected->disableds_empty = false;
+
+	check_unmarshalled_cfg("tst/yaml/cfg-mistyped.yaml", expected, "tst/yaml/cfg-mistyped.log");
 
 	assert_logs_empty();
 }
@@ -197,6 +206,19 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");
 
 	assert_logs_empty();
+}
+
+static void yaml_root_to_cfg__disabled__disableds_empty(void **state) {
+
+	// empty map, really empty
+	struct Cfg *expected = cfg_init();
+	expected->disableds_empty = true;
+	check_unmarshalled_cfg("tst/yaml/cfg-disabled-empty.yaml", expected, NULL);
+
+	// bad entries, also empty
+	expected = cfg_init();
+	expected->disableds_empty = true;
+	check_unmarshalled_cfg("tst/yaml/cfg-disabled-all-bad.yaml", expected, "tst/yaml/cfg-disabled-all-bad.log");
 }
 
 static void yaml_root_to_cfg__scale_round_to_invalid(void **state) {
@@ -298,7 +320,7 @@ static void yaml_root_to_ipc_request__no_op(void **state) {
 }
 
 static void yaml_root_to_ipc_request__invalid_cfg(void **state) {
-	struct Cfg *expected = cfg_default();
+	struct Cfg *expected = cfg_default_scalars();
 
 	char *yaml = read_file("tst/yaml/ipc-request-cfg-invalid.yaml");
 
@@ -687,6 +709,7 @@ int main(void) {
 		TEST(yaml_root_to_cfg__scale),
 		TEST(yaml_root_to_cfg__mode),
 		TEST(yaml_root_to_cfg__disabled),
+		TEST(yaml_root_to_cfg__disabled__disableds_empty),
 		TEST(yaml_root_to_cfg__scale_round_to_invalid),
 		TEST(yaml_root_to_cfg__scale_round_to_zero),
 

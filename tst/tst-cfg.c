@@ -9,6 +9,7 @@
 #include "util-init.h"
 
 #include <cmocka.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
@@ -221,6 +222,40 @@ static void cfg_apply_defaults__nop(void **state) {
 	struct Cfg *expected = cfg_all();
 
 	struct Cfg *actual = cfg_all();
+
+	cfg_apply_defaults(actual);
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(expected);
+	cfg_free(actual);
+
+	assert_logs_empty();
+}
+
+static void cfg_apply_defaults__lid_disableds_empty__no_disableds(void **state) {
+	struct Cfg *expected = cfg_all();
+	spmap_remove_all_free(expected->disableds);
+
+	struct Cfg *actual = cfg_all();
+	spmap_remove_all_free(actual->disableds);
+	actual->disableds_empty = true;
+
+	cfg_apply_defaults(actual);
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(expected);
+	cfg_free(actual);
+
+	assert_logs_empty();
+}
+
+static void cfg_apply_defaults__lid_disableds_empty__some_disableds(void **state) {
+	struct Cfg *expected = cfg_all();
+
+	struct Cfg *actual = cfg_all();
+	actual->disableds_empty = true;
 
 	cfg_apply_defaults(actual);
 
@@ -1172,6 +1207,8 @@ int main(void) {
 		TEST_BA(cfg_clone__all),
 
 		TEST_BA(cfg_apply_defaults__nop),
+		TEST_BA(cfg_apply_defaults__lid_disableds_empty__no_disableds),
+		TEST_BA(cfg_apply_defaults__lid_disableds_empty__some_disableds),
 
 		TEST_BA(cfg_merge__bad_op),
 		TEST_BA(cfg_merge__nop_set),

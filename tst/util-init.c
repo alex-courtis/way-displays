@@ -4,9 +4,11 @@
 
 #include "util-init.h"
 
+#include "cfg/cfg.h"
 #include "head.h"
 #include "mode.h"
 #include "output.h"
+#include "spmap.h"
 
 struct Head *head_n(const char *name) {
 	struct Head *head = head_init();
@@ -58,3 +60,22 @@ struct Mode *mode_whr_max_pref(int32_t width, int32_t height, int32_t refresh_mh
 
 	return mode;
 }
+
+struct Cfg *cfg_default(void) {
+	struct Cfg *def = cfg_init();
+
+	cfg_apply_defaults(def);
+
+	return def;
+}
+
+struct Cfg *cfg_default_scalars(void) {
+	struct Cfg *def = cfg_init();
+
+	cfg_apply_defaults(def);
+
+	spmap_remove_all_free(def->disableds);
+
+	return def;
+}
+

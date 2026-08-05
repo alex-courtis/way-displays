@@ -230,8 +230,11 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 			case DISABLED:
 				if (node->type == YAML_MAPPING_NODE) {
 					yaml_map_into_disableds(c, cfg->disableds, node);
+					cfg->disableds_empty = spmap_size(cfg->disableds) == 0;
 				} else if (node->type == YAML_SEQUENCE_NODE) { // v1, sequence with NAME_DESC
 					yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds_v1);
+				} else {
+					cfg->disableds_empty = true;
 				}
 				break;
 

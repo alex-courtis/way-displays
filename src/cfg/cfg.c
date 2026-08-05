@@ -94,14 +94,6 @@ struct Cfg *cfg_init(void) {
 	return cfg;
 }
 
-struct Cfg *cfg_default(void) {
-	struct Cfg *def = cfg_init();
-
-	cfg_apply_defaults(def);
-
-	return def;
-}
-
 struct Cfg *cfg_clone(struct Cfg *from) {
 	if (!from)
 		return NULL;
@@ -179,6 +171,10 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 	if (!cfg->auto_scale_max)       cfg->auto_scale_max       = AUTO_SCALE_MAX_DEFAULT;
 	if (!cfg->callback_cmd)         cfg->callback_cmd         = strdup(CALLBACK_CMD_DEFAULT);
 	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor   = LAPTOP_LID_MONITOR_DEFAULT;
+
+	// add the default lid condition unless the user has specified an empty map or some valid disableds
+	if (!cfg->disableds_empty && spmap_size(cfg->disableds) == 0)
+		cfg_disabled_add_lid_default(cfg->disableds);
 }
 
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {

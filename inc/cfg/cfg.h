@@ -38,6 +38,7 @@ struct Cfg {
 	enum LogThreshold log_threshold;              // LOG_THRESHOLD
 
 	const struct SPmap *disableds;                // DISABLED           cfg_disabled_spmap_init
+	bool disableds_empty;                         //                    marker to indicate user provided an empty DISABLED map, not part of equal
 };
 
 /*
@@ -45,9 +46,6 @@ struct Cfg {
  */
 
 struct Cfg *cfg_init(void);
-
-// init and cfg_apply_defaults
-struct Cfg *cfg_default(void);
 
 struct Cfg *cfg_clone(struct Cfg *from);
 
