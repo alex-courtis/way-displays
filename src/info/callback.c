@@ -15,15 +15,13 @@
 #include "ssmap.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml/unmarshal-types-v1.h"
 
 // true if the callback command is a non-empty string
 static bool callback_cmd_valid(const struct Cfg * const cfg) {
 	return cfg && cfg->callback_cmd && strlen(cfg->callback_cmd) > 0;
 }
 
-// allows callbacks before g_cfg has been set, to cover the case of unmarshalling errors
-static void callback_with_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const char * const msg1, const char * const msg2) {
+void callback_with_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const char * const msg1, const char * const msg2) {
 	if (!callback_cmd_valid(cfg)) {
 		return;
 	}
@@ -76,7 +74,7 @@ void callback_mode_fail(const enum LogThreshold t, const struct Head * const hea
 			head_human(head),
 			str);
 
-	callback(t, human, NULL);
+	callback_with_cfg(t, g_cfg, human, NULL);
 
 	free(str);
 	free(human);
@@ -97,11 +95,8 @@ void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * 
 			head_human(head),
 			head->model ? head->model : "name_desc");
 
-	callback(t, human, NULL);
+	callback_with_cfg(t, g_cfg, human, NULL);
 
 	free(human);
 }
 
-void callback_v1_deprecation(const struct Cfg * const cfg) {
-	callback_with_cfg(WARNING, cfg, v1_deprecation_callback_text, NULL);
-}

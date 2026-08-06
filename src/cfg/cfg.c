@@ -9,7 +9,6 @@
 #include "enum.h"
 #include "fn.h"
 #include "info/callback.h"
-#include "info/print.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
@@ -179,46 +178,67 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 }
 
 void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix) {
-	print_v1_deprecation();
-	callback_v1_deprecation(cfg);
+	char *log_msg = strdup(
+			"\nway-displays 2.0.0 has changed the cfg.yaml schema\n"
+			"This is a backwards compatible change.\n"
+			"See https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes\n"
+			"\n"
+			"Migrated NAME_DESC arrays to keyed maps:\n"
+			);
 
-	// note numbers
-	log_warn("Migrated NAME_DESC arrays to keyed maps:");
-
-	log_warn("  %s:", cfg_element_name(SCALE));
+	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(SCALE));
 	for (const struct SImapIt *it = simap_it(cfg->scales); it; it = simap_it_next(it))
-		log_warn("    '%s':", it->key);
+		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
 
-	log_warn("  %s:", cfg_element_name(MODE));
+	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(MODE));
 	for (const struct SPmapIt *it = spmap_it(cfg->modes); it; it = spmap_it_next(it))
-		log_warn("    '%s':", it->key);
+		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
 
-	log_warn("  %s:", cfg_element_name(TRANSFORM));
+	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(TRANSFORM));
 	for (const struct SImapIt *it = simap_it(cfg->transforms); it; it = simap_it_next(it))
-		log_warn("    '%s':", it->key);
+		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
 
-	log_warn("  %s:", cfg_element_name(DISABLED));
+	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(DISABLED));
 	for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it))
-		log_warn("    '%s':", it->key);
+		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
 
-	// always add laptop display lid closed condition
+	// always add a laptop display lid closed condition
 	if (v1_laptop_display_prefix) {
 		char *name_desc = sprintf_alloc("!^%s", v1_laptop_display_prefix);
-		log_warn("Migrated %s to lid closed condition:", cfg_element_name(LAPTOP_DISPLAY_PREFIX));
-		log_warn("  %s:", cfg_element_name(DISABLED));
-		log_warn("    '%s':", name_desc);
+		log_msg = sprintf_append(log_msg, "Migrated %s to lid closed condition:\n"
+				"  %s:\n"
+				"    '%s':\n"
+				"      IF:\n"
+				"      - LID: CLOSED\n",
+				cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg_element_name(DISABLED), name_desc);
 		cfg_disabled_add_lid_condition(cfg->disableds, name_desc);
 		free(name_desc);
 	} else {
-		log_warn("Added default lid closed condition:");
-		log_warn("  %s:", cfg_element_name(DISABLED));
-		log_warn("    '%s':", DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
 		cfg_disabled_add_lid_condition(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+		log_msg = sprintf_append(log_msg, "Added default lid closed condition:\n"
+				"  %s:\n"
+				"    '%s':\n"
+				"      IF:\n"
+				"      - LID: CLOSED\n",
+				cfg_element_name(DISABLED), DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
 	}
 
-	log_warn(NULL);
-	log_warn("Please upgrade your cfg.yaml:");
-	log_warn("  way-displays --write");
+	log_msg = sprintf_append(log_msg,
+			"\nPlease upgrade your cfg.yaml:\n"
+			"  way-displays --write");
+
+	log_warn("%s", log_msg);
+
+	free(log_msg);
+
+
+	char *callback_msg = strdup(
+			"v2 cfg.yaml schema has changed. Please upgrade:\n\n"
+			"way-displays --write\n\n"
+			"https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes\n"
+			);
+	callback_with_cfg(WARNING, cfg, callback_msg, NULL);
+	free(callback_msg);
 }
 
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {

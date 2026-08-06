@@ -4,6 +4,7 @@
 #include "assert-log.h"
 #include "asserts.h"
 #include "data.h"
+#include "expects.h"
 #include "util-col.h"
 #include "util-file.h"
 #include "util-init.h"
@@ -1196,8 +1197,10 @@ static void cfg_migrate_v1__empty(void **state) {
 	pset_add(disabled->conditions, condition);
 	spmap_put(expected->disableds, "!^eDP-[0-9]", disabled);
 
-	expect_function_call(__wrap_print_v1_deprecation);
-	expect_function_call(__wrap_callback_v1_deprecation);
+	expect_int_value(__wrap_callback_with_cfg, t, WARNING);
+	expect_ptr(__wrap_callback_with_cfg, cfg, actual);
+	expect_any(__wrap_callback_with_cfg, msg1);
+	expect_ptr(__wrap_callback_with_cfg, msg2, NULL);
 
 	cfg_migrate_v1(actual, NULL);
 
@@ -1225,8 +1228,10 @@ static void cfg_migrate_v1__laptop_display_prefix(void **state) {
 	pset_add(disabled->conditions, condition);
 	spmap_put(expected->disableds, "!^lappy", disabled);
 
-	expect_function_call(__wrap_print_v1_deprecation);
-	expect_function_call(__wrap_callback_v1_deprecation);
+	expect_int_value(__wrap_callback_with_cfg, t, WARNING);
+	expect_ptr(__wrap_callback_with_cfg, cfg, actual);
+	expect_any(__wrap_callback_with_cfg, msg1);
+	expect_ptr(__wrap_callback_with_cfg, msg2, NULL);
 
 	cfg_migrate_v1(actual, "lappy");
 
@@ -1243,21 +1248,24 @@ static void cfg_migrate_v1__laptop_display_prefix(void **state) {
 }
 
 static void cfg_migrate_v1__counts(void **state) {
-	struct Cfg *actual = cfg_init();
-	simap_put(actual->scales, "scal", 9999);
-	simap_put(actual->transforms, "tran", 9999);
-	spmap_put(actual->modes, "mode", mode_init());
-	spmap_put(actual->disableds, "disa", cfg_disabled_init());
+	struct Cfg *cfg = cfg_init();
+	simap_put(cfg->scales, "scal", 9999);
+	simap_put(cfg->transforms, "tran", 9999);
+	spmap_put(cfg->modes, "mode1", mode_init());
+	spmap_put(cfg->modes, "mode2", mode_init());
+	spmap_put(cfg->disableds, "disa", cfg_disabled_init());
 
-	expect_function_call(__wrap_print_v1_deprecation);
-	expect_function_call(__wrap_callback_v1_deprecation);
+	expect_int_value(__wrap_callback_with_cfg, t, WARNING);
+	expect_ptr(__wrap_callback_with_cfg, cfg, cfg);
+	expect_any(__wrap_callback_with_cfg, msg1);
+	expect_ptr(__wrap_callback_with_cfg, msg2, NULL);
 
-	cfg_migrate_v1(actual, "lappy");
+	cfg_migrate_v1(cfg, NULL);
 
 	char *expected_log = read_file("tst/cfg/migrate-v1-counts.log");
 	assert_log(WARNING, expected_log);
 
-	cfg_free(actual);
+	cfg_free(cfg);
 	free(expected_log);
 
 	assert_logs_empty();

@@ -8,19 +8,19 @@
 
 #define CALLBACK_MSG_LEN 1024 * 64
 
-// execute CALLBACK_CMD if enabled
+// execute CALLBACK_CMD from g_cfg, if a non-empty string
 // set CALLBACK_MSG to msg1..msg2
 // set CALLBACK_LEVEL to log name
 void callback(const enum LogThreshold t, const char * const msg1, const char * const msg2);
+
+// callback with a specific cfg
+void callback_with_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const char * const msg1, const char * const msg2);
 
 // execute CALLBACK_CMD with mode failed message, if enabled
 void callback_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zmode);
 
 // execute CALLBACK_CMD with VRR failed message, if enabled
 void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head);
-
-// execute CALLBACK_CMD with v1_deprecation_callback_text
-void callback_v1_deprecation(const struct Cfg * const cfg);
 
 #endif // CALLBACK_H
 

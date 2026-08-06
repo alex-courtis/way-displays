@@ -24,7 +24,6 @@
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml/unmarshal-types-v1.h"
 
 static void print_mode_cfg(const enum LogThreshold t, const char * name_desc, const struct Mode * const mode, const bool del) {
 	if (!mode)
@@ -509,8 +508,4 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 
 	log_(t, "  %s:", head_human(head));
 	print_mode(t, ppmap_get(head->modes, zmode), head->zmode_pref == zmode);
-}
-
-void print_v1_deprecation(void) {
-	log_warn("%s", v1_deprecation_log_text);
 }

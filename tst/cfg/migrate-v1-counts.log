@@ -1,15 +1,23 @@
+
+way-displays 2.0.0 has changed the cfg.yaml schema
+This is a backwards compatible change.
+See https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes
+
 Migrated NAME_DESC arrays to keyed maps:
   SCALE:
     'scal':
   MODE:
-    'mode':
+    'mode1':
+    'mode2':
   TRANSFORM:
     'tran':
   DISABLED:
     'disa':
-Migrated LAPTOP_DISPLAY_PREFIX to lid closed condition:
+Added default lid closed condition:
   DISABLED:
-    '!^lappy':
+    '!^eDP-[0-9]':
+      IF:
+      - LID: CLOSED
 
 Please upgrade your cfg.yaml:
   way-displays --write

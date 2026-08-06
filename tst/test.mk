@@ -77,8 +77,7 @@ tst/tst-act: LDFLAGS += -Wl,$\
 	--wrap=_zwlr_output_configuration_head_v1_set_adaptive_sync
 
 tst/tst-cfg: LDFLAGS += -Wl,$\
-	--wrap=print_v1_deprecation,$\
-	--wrap=callback_v1_deprecation
+	--wrap=callback_with_cfg
 
 tst/tst-desire: LDFLAGS += -Wl,$\
 	--wrap=head_find_mode,$\

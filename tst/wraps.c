@@ -102,16 +102,19 @@ void __wrap_print_head_set(const enum LogThreshold t, const enum InfoEvent event
 	check_expected_ptr(heads);
 }
 
-void __wrap_print_v1_deprecation(void) {
-	function_called();
-}
-
 /*
  * callback
  */
 
 void __wrap_callback(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
 	check_expected_int(t);
+	check_expected_ptr(msg1);
+	check_expected_ptr(msg2);
+}
+
+void __wrap_callback_with_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const char * const msg1, const char * const msg2) {
+	check_expected_int(t);
+	check_expected_ptr(cfg);
 	check_expected_ptr(msg1);
 	check_expected_ptr(msg2);
 }
@@ -125,10 +128,6 @@ void __wrap_callback_mode_fail(const enum LogThreshold t, const struct Head * co
 void __wrap_callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
 	check_expected_int(t);
 	check_expected_ptr(head);
-}
-
-void __wrap_callback_v1_deprecation(void) {
-	function_called();
 }
 
 /*
