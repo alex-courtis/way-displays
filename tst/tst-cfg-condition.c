@@ -1,3 +1,4 @@
+#include "asserts.h"
 #include "data.h"
 #include "tst.h"
 #include "util-col.h"
@@ -158,6 +159,58 @@ static void cfg_condition_met__complex(void **state) {
 	assert_true(cfg_condition_met(s->condition, NULL));
 }
 
+static void cfg_condition_str__empty(void **state) {
+	const struct State *s = *state;
+
+	assert_nul(cfg_condition_str(NULL));
+
+	assert_nul(cfg_condition_str(s->condition));
+}
+
+static void cfg_condition_str__all(void **state) {
+	const struct State *s = *state;
+
+	sset_add_many(s->condition->plugged, "PL-1", "PL-2", NULL);
+	sset_add_many(s->condition->unplugged, "UN-1", "UN-2", NULL);
+	s->condition->lid = LID_OPEN;
+
+	char *actual = cfg_condition_str(s->condition);
+
+	assert_str_equal(actual, "PL-1 plugged AND PL-2 plugged AND UN-1 unplugged AND UN-2 unplugged AND lid open");
+
+	free(actual);
+}
+
+static void cfg_condition_str__lid_open(void **state) {
+	const struct State *s = *state;
+
+	s->condition->lid = LID_OPEN;
+
+	char *actual = cfg_condition_str(s->condition);
+	assert_str_equal(actual, "lid open");
+	free(actual);
+}
+
+static void cfg_condition_str__lid_closed(void **state) {
+	const struct State *s = *state;
+
+	s->condition->lid = LID_CLOSED;
+
+	char *actual = cfg_condition_str(s->condition);
+	assert_str_equal(actual, "lid closed");
+	free(actual);
+}
+
+static void cfg_condition_str__lid_not_present(void **state) {
+	struct State *s = *state;
+
+	s->condition->lid = LID_NOT_PRESENT;
+
+	char *actual = cfg_condition_str(s->condition);
+	assert_str_equal(actual, "lid not present");
+	free(actual);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(cfg_condition_met__plugged),
@@ -167,6 +220,12 @@ int main(void) {
 		TEST_BA(cfg_condition_met__lid_open),
 		TEST_BA(cfg_condition_met__lid_not_present),
 		TEST_BA(cfg_condition_met__complex),
+
+		TEST_BA(cfg_condition_str__empty),
+		TEST_BA(cfg_condition_str__all),
+		TEST_BA(cfg_condition_str__lid_open),
+		TEST_BA(cfg_condition_str__lid_closed),
+		TEST_BA(cfg_condition_str__lid_not_present),
 	};
 
 	return RUN(tests);
