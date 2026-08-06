@@ -1192,7 +1192,7 @@ static void cfg_migrate_v1__empty(void **state) {
 	struct Cfg *expected = cfg_init();
 	struct CfgCondition *condition = cfg_condition_init();
 	condition->lid = LID_CLOSED;
-	struct CfgDisabled *disabled = cfg_disabled_init();
+	const struct CfgDisabled *disabled = cfg_disabled_init();
 	pset_add(disabled->conditions, condition);
 	spmap_put(expected->disableds, "!^eDP-[0-9]", disabled);
 
@@ -1221,7 +1221,7 @@ static void cfg_migrate_v1__laptop_display_prefix(void **state) {
 	// laptop display prefix
 	struct CfgCondition *condition = cfg_condition_init();
 	condition->lid = LID_CLOSED;
-	struct CfgDisabled *disabled = cfg_disabled_init();
+	const struct CfgDisabled *disabled = cfg_disabled_init();
 	pset_add(disabled->conditions, condition);
 	spmap_put(expected->disableds, "!^lappy", disabled);
 

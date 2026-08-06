@@ -174,11 +174,11 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 
 	// add the default lid condition unless the user has specified an empty map or some valid disableds
 	if (!cfg->disableds_empty && spmap_size(cfg->disableds) == 0) {
-		cfg_disabled_add_lid_default(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+		cfg_disabled_add_lid_condition(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
 	}
 }
 
-void cfg_migrate_v1(struct Cfg *cfg, const char *v1_laptop_display_prefix) {
+void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix) {
 	print_v1_deprecation();
 	callback_v1_deprecation(cfg);
 
@@ -207,13 +207,13 @@ void cfg_migrate_v1(struct Cfg *cfg, const char *v1_laptop_display_prefix) {
 		log_warn("Migrated %s to lid closed condition:", cfg_element_name(LAPTOP_DISPLAY_PREFIX));
 		log_warn("  %s:", cfg_element_name(DISABLED));
 		log_warn("    '%s':", name_desc);
-		cfg_disabled_add_lid_default(cfg->disableds, name_desc);
+		cfg_disabled_add_lid_condition(cfg->disableds, name_desc);
 		free(name_desc);
 	} else {
 		log_warn("Added default lid closed condition:");
 		log_warn("  %s:", cfg_element_name(DISABLED));
 		log_warn("    '%s':", DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
-		cfg_disabled_add_lid_default(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+		cfg_disabled_add_lid_condition(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
 	}
 
 	log_warn(NULL);

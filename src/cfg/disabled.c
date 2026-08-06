@@ -120,7 +120,7 @@ bool cfg_disabled_conditionally_for_head(const char * name_desc, const struct Cf
 	return disabled && head && pset_size(disabled->conditions) > 0 && head_matches_name_desc(head, name_desc);
 }
 
-void cfg_disabled_add_lid_default(const struct SPmap *disableds, const char *name_desc) {
+void cfg_disabled_add_lid_condition(const struct SPmap *disableds, const char *name_desc) {
 	if (!disableds || !name_desc || spmap_contains_key(disableds, name_desc))
 		return;
 

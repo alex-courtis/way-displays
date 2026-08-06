@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <wayland-client-protocol.h>
 #include <yaml.h>
 

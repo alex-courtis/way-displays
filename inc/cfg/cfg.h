@@ -67,7 +67,7 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 void cfg_apply_defaults(struct Cfg *cfg);
 
 // notify the user and migrate any legacy elements to current
-void cfg_migrate_v1(struct Cfg *cfg, const char *v1_laptop_display_prefix);
+void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix);
 
 /*
  * merge from into to for command, only Ipc settable fields are merged

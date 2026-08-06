@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <wayland-util.h>
 
+#include "cfg/cfg.h"
 #include "displ.h"
 #include "enum.h"
 #include "head.h"

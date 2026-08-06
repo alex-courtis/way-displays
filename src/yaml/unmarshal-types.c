@@ -13,8 +13,6 @@
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
-#include "info/callback.h"
-#include "info/print.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"

@@ -42,6 +42,6 @@ bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, const st
 void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds);
 
 // add a lid closed condition to name_desc or LID_DISABLED_NAME_DESC, if not present
-void cfg_disabled_add_lid_default(const struct SPmap *disableds, const char *name_desc);
+void cfg_disabled_add_lid_condition(const struct SPmap *disableds, const char *name_desc);
 
 #endif // CFG_DISABLED_H
