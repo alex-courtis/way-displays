@@ -20,6 +20,7 @@ struct UC {
 	fn_enum_names enum_names; // accepted enums
 	char def[64];             // default value
 	bool v1_present;          // warn after unmarshal if v1 elements were parsed
+	char v1_laptop_display_prefix[16]; // to be migrated to a condition
 };
 
 /*

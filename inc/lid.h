@@ -18,8 +18,6 @@ void g_lid_init(void);
 
 void g_lid_update(void);
 
-bool g_lid_is_closed(char *name);
-
 void g_lid_destroy(void);
 
 void lid_free(struct Lid *lid);

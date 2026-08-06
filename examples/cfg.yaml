@@ -98,10 +98,7 @@ VRR_OFF:
 ## a change happens. Especially likely on a (dis-)connect.
 CALLBACK_CMD: notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
 
-# TODO v2 replace LAPTOP_DISPLAY_PREFIX with a condition
-## Laptop displays usually start with eDP e.g. eDP-1. This may be overridden if
-## your laptop is different.
-# LAPTOP_DISPLAY_PREFIX: 'eDP'
+## Monitor laptop lid state via libinput
 LAPTOP_LID_MONITOR: TRUE
 
 
@@ -114,6 +111,11 @@ LOG_THRESHOLD: INFO
 ## Resulting state of a display is equal to OR of all matching conditions, so
 ## explicit disabled without `IF` will override any conditions for the display.
 DISABLED:
+  # laptop display is disabled when lid is closed
+  '!^eDP-[0-9]':
+    IF:
+    - LID: CLOSED
+
   # # HDMI-1 will always be disabled
   # 'HDMI-1':
 

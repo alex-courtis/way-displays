@@ -13,7 +13,6 @@
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
-#include "lid.h"
 #include "mode.h"
 #include "plist.h"
 #include "ppmap.h"
@@ -46,17 +45,10 @@ void desire(void) {
 }
 
 void desire_enabled(struct Head *head) {
-	bool enabled = false;
-
-	// lid closed
-	enabled = !g_lid_is_closed(head->name);
-
-	// ignore lid closed when there is only the laptop display, for smoother sleeping
-	enabled |= ppmap_size(g_displ->heads) == 1;
 
 	// disabled if name_desc matches and (if present) any condition is true
-	struct SPmapFilter f = { .key_val_data = (fn_pred_spp)cfg_disabled_applies_to_head, .data = head, };
-	enabled &= spmap_find(g_cfg->disableds, f).val == NULL;
+	// ignore lid closed when there is only the laptop display, for smoother sleeping
+	bool enabled = !cfg_disabled_applies_to_head(g_cfg->disableds, head, ppmap_size(g_displ->heads) == 1);
 
 	// reset manual override when it matches the auto-state
 	if (head->overrided_enabled != NoOverride) {

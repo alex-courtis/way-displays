@@ -4,11 +4,13 @@
 #include "assert-log.h"
 #include "asserts.h"
 #include "data.h"
+#include "expects.h"
 #include "util-col.h"
 #include "util-file.h"
 #include "util-init.h"
 
 #include <cmocka.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
@@ -128,13 +130,6 @@ static void cfg_equal__all(void **state) {
 	a->callback_cmd = strdup(b->callback_cmd);
 	assert_cfg_equal(a, b);
 
-	free(a->laptop_display_prefix);
-	a->laptop_display_prefix = strdup("foo");
-	assert_cfg_not_equal(a, b);
-	free(a->laptop_display_prefix);
-	a->laptop_display_prefix = strdup(b->laptop_display_prefix);
-	assert_cfg_equal(a, b);
-
 	const struct CfgDisabled *disabled = cfg_disabled_init();
 	spmap_put(a->disableds, "foo", disabled);
 	assert_cfg_not_equal(a, b);
@@ -221,6 +216,40 @@ static void cfg_apply_defaults__nop(void **state) {
 	struct Cfg *expected = cfg_all();
 
 	struct Cfg *actual = cfg_all();
+
+	cfg_apply_defaults(actual);
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(expected);
+	cfg_free(actual);
+
+	assert_logs_empty();
+}
+
+static void cfg_apply_defaults__lid_disableds_empty__no_disableds(void **state) {
+	struct Cfg *expected = cfg_all();
+	spmap_remove_all_free(expected->disableds);
+
+	struct Cfg *actual = cfg_all();
+	spmap_remove_all_free(actual->disableds);
+	actual->disableds_empty = true;
+
+	cfg_apply_defaults(actual);
+
+	assert_cfg_equal(actual, expected);
+
+	cfg_free(expected);
+	cfg_free(actual);
+
+	assert_logs_empty();
+}
+
+static void cfg_apply_defaults__lid_disableds_empty__some_disableds(void **state) {
+	struct Cfg *expected = cfg_all();
+
+	struct Cfg *actual = cfg_all();
+	actual->disableds_empty = true;
 
 	cfg_apply_defaults(actual);
 
@@ -345,10 +374,6 @@ static void cfg_merge_set__all_changes(void **state) {
 	to->auto_scale_max = from->auto_scale_max;
 	to->log_threshold = from->log_threshold;
 	to->laptop_lid_monitor = from->laptop_lid_monitor;
-	if (from->laptop_display_prefix) {
-		free(to->laptop_display_prefix);
-		to->laptop_display_prefix = strdup(from->laptop_display_prefix);
-	}
 
 	struct Cfg *merged = cfg_merge_set(to, from);
 
@@ -1162,6 +1187,90 @@ static void cfg_validate_warn__(void **state) {
 	assert_logs_empty();
 }
 
+static void cfg_migrate_v1__empty(void **state) {
+	struct Cfg *actual = cfg_init();
+
+	struct Cfg *expected = cfg_init();
+	struct CfgCondition *condition = cfg_condition_init();
+	condition->lid = LID_CLOSED;
+	const struct CfgDisabled *disabled = cfg_disabled_init();
+	pset_add(disabled->conditions, condition);
+	spmap_put(expected->disableds, "!^eDP-[0-9]", disabled);
+
+	expect_int_value(__wrap_callback_with_cfg, t, WARNING);
+	expect_ptr(__wrap_callback_with_cfg, cfg, actual);
+	expect_any(__wrap_callback_with_cfg, msg1);
+	expect_ptr(__wrap_callback_with_cfg, msg2, NULL);
+
+	cfg_migrate_v1(actual, NULL);
+
+	assert_cfg_equal(actual, expected);
+
+	char *expected_log = read_file("tst/cfg/migrate-v1-empty.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(actual);
+	cfg_free(expected);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void cfg_migrate_v1__laptop_display_prefix(void **state) {
+	struct Cfg *actual = cfg_init();
+
+	struct Cfg *expected = cfg_init();
+
+	// laptop display prefix
+	struct CfgCondition *condition = cfg_condition_init();
+	condition->lid = LID_CLOSED;
+	const struct CfgDisabled *disabled = cfg_disabled_init();
+	pset_add(disabled->conditions, condition);
+	spmap_put(expected->disableds, "!^lappy", disabled);
+
+	expect_int_value(__wrap_callback_with_cfg, t, WARNING);
+	expect_ptr(__wrap_callback_with_cfg, cfg, actual);
+	expect_any(__wrap_callback_with_cfg, msg1);
+	expect_ptr(__wrap_callback_with_cfg, msg2, NULL);
+
+	cfg_migrate_v1(actual, "lappy");
+
+	assert_cfg_equal(actual, expected);
+
+	char *expected_log = read_file("tst/cfg/migrate-v1-all.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(actual);
+	cfg_free(expected);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void cfg_migrate_v1__counts(void **state) {
+	struct Cfg *cfg = cfg_init();
+	simap_put(cfg->scales, "scal", 9999);
+	simap_put(cfg->transforms, "tran", 9999);
+	spmap_put(cfg->modes, "mode1", mode_init());
+	spmap_put(cfg->modes, "mode2", mode_init());
+	spmap_put(cfg->disableds, "disa", cfg_disabled_init());
+
+	expect_int_value(__wrap_callback_with_cfg, t, WARNING);
+	expect_ptr(__wrap_callback_with_cfg, cfg, cfg);
+	expect_any(__wrap_callback_with_cfg, msg1);
+	expect_ptr(__wrap_callback_with_cfg, msg2, NULL);
+
+	cfg_migrate_v1(cfg, NULL);
+
+	char *expected_log = read_file("tst/cfg/migrate-v1-counts.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(cfg);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(cfg_equal__all),
@@ -1172,6 +1281,8 @@ int main(void) {
 		TEST_BA(cfg_clone__all),
 
 		TEST_BA(cfg_apply_defaults__nop),
+		TEST_BA(cfg_apply_defaults__lid_disableds_empty__no_disableds),
+		TEST_BA(cfg_apply_defaults__lid_disableds_empty__some_disableds),
 
 		TEST_BA(cfg_merge__bad_op),
 		TEST_BA(cfg_merge__nop_set),
@@ -1223,6 +1334,10 @@ int main(void) {
 		TEST_BA(cfg_validate_fix__auto_scale_dpi),
 
 		TEST_BA(cfg_validate_warn__),
+
+		TEST_BA(cfg_migrate_v1__empty),
+		TEST_BA(cfg_migrate_v1__laptop_display_prefix),
+		TEST_BA(cfg_migrate_v1__counts),
 	};
 
 	return RUN(tests);

@@ -8,12 +8,14 @@
 #include "cfg/disabled.h"
 #include "enum.h"
 #include "fn.h"
+#include "info/callback.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
+#include "str.h"
 
 struct Cfg *g_cfg = NULL;
 
@@ -65,7 +67,7 @@ static bool mode_is_invalid(const char* const name_desc, const struct Mode* cons
 		return true;
 	}
 
-	if (!mode->max) {
+	if (!mode->max && !mode->max_preferred_refresh) {
 		if (mode->width == -1) {
 			log_warn(NULL);
 			log_warn("Ignoring invalid MODE %s missing WIDTH", name_desc);
@@ -94,14 +96,6 @@ struct Cfg *cfg_init(void) {
 	return cfg;
 }
 
-struct Cfg *cfg_default(void) {
-	struct Cfg *def = cfg_init();
-
-	cfg_apply_defaults(def);
-
-	return def;
-}
-
 struct Cfg *cfg_clone(struct Cfg *from) {
 	if (!from)
 		return NULL;
@@ -111,7 +105,6 @@ struct Cfg *cfg_clone(struct Cfg *from) {
 	memcpy(to, from, sizeof(struct Cfg));
 
 	to->callback_cmd          = from->callback_cmd          ? strdup(from->callback_cmd)          : NULL;
-	to->laptop_display_prefix = from->laptop_display_prefix ? strdup(from->laptop_display_prefix) : NULL;
 
 	to->adaptive_sync_off     = sset_clone(from->adaptive_sync_off);
 	to->order_name_desc       = sset_clone(from->order_name_desc);
@@ -128,7 +121,6 @@ void cfg_free(struct Cfg *cfg) {
 		return;
 
 	free(cfg->callback_cmd);
-	free(cfg->laptop_display_prefix);
 	spmap_free_vals(cfg->disableds);
 	spmap_free_vals(cfg->modes);
 	simap_free(cfg->scales);
@@ -158,7 +150,6 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b) {
 		a->scale_round_to == b->scale_round_to &&
 		a->scaling == b->scaling &&
 		equal_strcmp(a->callback_cmd, b->callback_cmd) &&
-		equal_strcmp(a->laptop_display_prefix, b->laptop_display_prefix) &&
 		spmap_equal(a->disableds, b->disableds) &&
 		spmap_equal(a->modes, b->modes) &&
 		simap_equal(a->scales, b->scales) &&
@@ -179,6 +170,71 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 	if (!cfg->auto_scale_max)       cfg->auto_scale_max       = AUTO_SCALE_MAX_DEFAULT;
 	if (!cfg->callback_cmd)         cfg->callback_cmd         = strdup(CALLBACK_CMD_DEFAULT);
 	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor   = LAPTOP_LID_MONITOR_DEFAULT;
+
+	// add the default lid condition unless the user has specified an empty map or some valid disableds
+	if (!cfg->disableds_empty && spmap_size(cfg->disableds) == 0) {
+		cfg_disabled_add_lid_condition(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+	}
+}
+
+void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix) {
+	char *log_msg = strdup(
+			"\nway-displays 2.0.0 has changed the cfg.yaml schema\n"
+			"This is a backwards compatible change.\n"
+			"See https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes\n"
+			"\n"
+			"Migrated NAME_DESC arrays to keyed maps:\n"
+			);
+
+	// show keys of new maps
+	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(SCALE));
+	for (const struct SImapIt *it = simap_it(cfg->scales); it; it = simap_it_next(it))
+		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
+
+	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(MODE));
+	for (const struct SPmapIt *it = spmap_it(cfg->modes); it; it = spmap_it_next(it))
+		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
+
+	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(TRANSFORM));
+	for (const struct SImapIt *it = simap_it(cfg->transforms); it; it = simap_it_next(it))
+		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
+
+	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(DISABLED));
+	for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it))
+		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
+
+	// always add a laptop display lid closed condition
+	char *name_desc;
+	if (v1_laptop_display_prefix) {
+		name_desc = sprintf_alloc("!^%s", v1_laptop_display_prefix);
+		log_msg = sprintf_append(log_msg, "Migrated %s to lid closed condition:\n", cfg_element_name(LAPTOP_DISPLAY_PREFIX));
+	} else {
+		name_desc = strdup(DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+		log_msg = sprintf_append(log_msg, "Added default lid closed condition:\n");
+	}
+	log_msg = sprintf_append(log_msg,
+			"  %s:\n"
+			"    '%s':\n"
+			"      IF:\n"
+			"      - LID: CLOSED\n",
+			cfg_element_name(DISABLED), name_desc);
+	cfg_disabled_add_lid_condition(cfg->disableds, name_desc);
+	free(name_desc);
+
+	log_msg = sprintf_append(log_msg,
+			"\nPlease upgrade your cfg.yaml:\n"
+			"  way-displays --write");
+	log_warn("%s", log_msg);
+	free(log_msg);
+
+	// brief callback message
+	char *callback_msg = strdup(
+			"v2 cfg.yaml schema has changed. Please upgrade:\n\n"
+			"way-displays --write\n\n"
+			"https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes\n"
+			);
+	callback_with_cfg(WARNING, cfg, callback_msg, NULL);
+	free(callback_msg);
 }
 
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {

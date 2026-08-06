@@ -13,7 +13,6 @@
 #include "fn.h"
 #include "head.h"
 #include "ipmap.h"
-#include "lid.h"
 #include "log.h"
 #include "mode.h"
 #include "output.h"
@@ -25,7 +24,6 @@
 #include "sset.h"
 #include "str.h"
 #include "wlr-output-management-unstable-v1.h"
-#include "yaml/unmarshal-types-v1.h"
 
 static void print_mode_cfg(const enum LogThreshold t, const char * name_desc, const struct Mode * const mode, const bool del) {
 	if (!mode)
@@ -192,8 +190,6 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (cfg->laptop_lid_monitor == OFF) {
 		log_(t, "  Laptop lid monitoring disabled");
-	} else if (cfg->laptop_display_prefix) {
-		log_(t, "  Laptop display prefix: %s", cfg->laptop_display_prefix);
 	}
 }
 
@@ -335,10 +331,6 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 		} else {
 			log_(t, "    (disabled)");
 		}
-	}
-
-	if (g_lid_is_closed(head->name)) {
-		log_(t, "    (lid closed)");
 	}
 }
 
@@ -516,8 +508,4 @@ void print_mode_fail(const enum LogThreshold t, const struct Head * const head, 
 
 	log_(t, "  %s:", head_human(head));
 	print_mode(t, ppmap_get(head->modes, zmode), head->zmode_pref == zmode);
-}
-
-void print_v1_deprecation(void) {
-	log_warn("%s", v1_deprecation_log_text);
 }

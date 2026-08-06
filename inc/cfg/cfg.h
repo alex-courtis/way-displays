@@ -32,12 +32,12 @@ struct Cfg {
 
 	char *callback_cmd;                           // CALLBACK_CMD        empty string means no callback
 
-	char *laptop_display_prefix;                  // LAPTOP_DISPLAY_PREFIX
 	enum OnOff laptop_lid_monitor;                // LAPTOP_LID_MONITOR
 
 	enum LogThreshold log_threshold;              // LOG_THRESHOLD
 
 	const struct SPmap *disableds;                // DISABLED           cfg_disabled_spmap_init
+	bool disableds_empty;                         // marker to indicate user provided an empty DISABLED map, not part of equal/clone/merge etc.
 };
 
 /*
@@ -45,9 +45,6 @@ struct Cfg {
  */
 
 struct Cfg *cfg_init(void);
-
-// init and cfg_apply_defaults
-struct Cfg *cfg_default(void);
 
 struct Cfg *cfg_clone(struct Cfg *from);
 
@@ -69,6 +66,8 @@ bool cfg_equal(const struct Cfg *a, const struct Cfg *b);
 // apply default only for unset values
 void cfg_apply_defaults(struct Cfg *cfg);
 
+// notify the user and migrate any legacy elements to current
+void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix);
 
 /*
  * merge from into to for command, only Ipc settable fields are merged

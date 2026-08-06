@@ -13,8 +13,6 @@
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
-#include "info/callback.h"
-#include "info/print.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
@@ -42,9 +40,8 @@ void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {
 
 	struct Cfg *cfg = yaml_map_to_cfg(c, root);
 
-	if (c->v1_present) {
-		print_v1_deprecation();
-		callback_v1_deprecation(cfg);
+	if (c->v1_present || *c->v1_laptop_display_prefix) {
+		cfg_migrate_v1(cfg, (*c->v1_laptop_display_prefix) ? c->v1_laptop_display_prefix : NULL);
 	}
 
 	return cfg;
@@ -216,7 +213,7 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 				break;
 
 			case LAPTOP_DISPLAY_PREFIX:
-				cfg->laptop_display_prefix = yaml_scalar_to_string(c, node);
+				yaml_scalar_into_laptop_display_prefix_v1(c, node);
 				break;
 
 			case LAPTOP_LID_MONITOR:
@@ -230,8 +227,11 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 			case DISABLED:
 				if (node->type == YAML_MAPPING_NODE) {
 					yaml_map_into_disableds(c, cfg->disableds, node);
+					cfg->disableds_empty = spmap_size(cfg->disableds) == 0;
 				} else if (node->type == YAML_SEQUENCE_NODE) { // v1, sequence with NAME_DESC
 					yaml_seq_into_col(c, node, cfg->disableds, (fn_yaml_node_into_col)yaml_node_into_disableds_v1);
+				} else {
+					cfg->disableds_empty = true;
 				}
 				break;
 

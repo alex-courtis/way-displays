@@ -16,8 +16,8 @@
   Transform:
     twelve: FLIPPED
   Disabled:
+    !^eDP-[0-9] (conditionally)
     disabled always
     disabled conditionally (conditionally)
   Callback command:
     notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
-  Laptop display prefix: lappy

@@ -4,6 +4,7 @@
 #include "asserts.h"
 #include "data.h"
 #include "util-file.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <stdio.h>

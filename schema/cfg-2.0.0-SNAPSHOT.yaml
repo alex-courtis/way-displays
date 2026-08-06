@@ -145,15 +145,9 @@ properties:
       NOTE: Depending on your compositor this could get executed multiple times when a change happens. Especially likely on a (dis-)connect.
     type: string
 
-  LAPTOP_DISPLAY_PREFIX:
-    description: |-
-      Laptop displays usually start with eDP e.g. eDP-1.
-      This may be overridden if your laptop is different.
-    type: string
-
   LAPTOP_LID_MONITOR:
     description: |-
-      Enable laptop lid detection.
+      Monitor laptop lid state via libinput
     type: boolean
     default: true
 

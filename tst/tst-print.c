@@ -2,7 +2,6 @@
 
 #include "assert-log.h"
 #include "data.h"
-#include "expects.h"
 #include "util-col.h"
 #include "util-file.h"
 #include "util-init.h"
@@ -174,8 +173,6 @@ static void print_cfg__all(void **state) {
 
 	simap_put(c->transforms, "twelve", WL_OUTPUT_TRANSFORM_FLIPPED);
 
-	c->laptop_display_prefix = strdup("lappy");
-
 	c->scale_round_to = 2;
 	c->scale_round_strategy = DOWN;
 
@@ -341,9 +338,6 @@ static void print_cfg_commands__ok(void **state) {
 static void print_head_arrived__all(void **state) {
 	const struct State *s = *state;
 
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	ipmap_put(g_displ->outputs, 888, output_n("inexistent"));
 
 	struct Output *output1 = output_n("name1");
@@ -364,9 +358,6 @@ static void print_head_arrived__all(void **state) {
 
 static void print_head_arrived__min(void **state) {
 	struct Head *head = head_init();
-
-	expect_str(__wrap_g_lid_is_closed, name, NULL);
-	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, ARRIVED, head);
 
@@ -394,9 +385,6 @@ static void print_head_departed__ok(void **state) {
 static void print_head_deltas__mode(void **state) {
 	const struct State *s = *state;
 
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-mode.log");
@@ -412,9 +400,6 @@ static void print_head_deltas__vrr(void **state) {
 	s->head1->des.adaptive_sync = ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED;
 	s->head1->des.zmode = s->head1->cur.zmode;
 
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-vrr.log");
@@ -428,9 +413,6 @@ static void print_head_deltas__other(void **state) {
 	struct State *s = *state;
 
 	s->head1->des.zmode = s->head1->cur.zmode;
-
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -446,9 +428,6 @@ static void print_head_deltas__disable(void **state) {
 
 	s->head1->des.enabled = false;
 
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-disable.log");
@@ -462,9 +441,6 @@ static void print_head_deltas__enable(void **state) {
 	struct State *s = *state;
 
 	s->head1->cur.enabled = false;
-
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head(INFO, DELTA, s->head1);
 
@@ -484,9 +460,6 @@ static void print_head_deltas__reapply(void **state) {
 	head.des.enabled = false;
 	head.reapply_required = true;
 
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	print_head(INFO, DELTA, &head);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-reapply.log");
@@ -501,9 +474,6 @@ static void print_head_current__disabled(void **state) {
 
 	struct Head head = *s->head1;
 	head.cur.enabled = false;
-
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
 
 	print_head_current(INFO, &head);
 
@@ -521,9 +491,6 @@ static void print_head_current__disabled_override(void **state) {
 	head.cur.enabled = false;
 	head.overrided_enabled = OverrideFalse;
 
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	print_head_current(INFO, &head);
 
 	char *expected_log = read_file("tst/info/print-head-current-disabled-override.log");
@@ -540,29 +507,9 @@ static void print_head_current__enabled_override(void **state) {
 	head.cur.enabled = true;
 	head.overrided_enabled = OverrideTrue;
 
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
 	print_head_current(INFO, &head);
 
 	char *expected_log = read_file("tst/info/print-head-current-enabled-override.log");
-	assert_log(INFO, expected_log);
-	free(expected_log);
-
-	assert_logs_empty();
-}
-
-static void print_head_current__lid_closed(void **state) {
-	struct State *s = *state;
-
-	struct Head head = *s->head1;
-
-	expect_str(__wrap_g_lid_is_closed, name, "name1");
-	will_return_int(__wrap_g_lid_is_closed, true);
-
-	print_head_current(INFO, &head);
-
-	char *expected_log = read_file("tst/info/print-head-current-lid-closed.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
 
@@ -745,8 +692,6 @@ int main(void) {
 		TEST_BA(print_head_current__disabled),
 		TEST_BA(print_head_current__disabled_override),
 		TEST_BA(print_head_current__enabled_override),
-
-		TEST_BA(print_head_current__lid_closed),
 
 		TEST_BA(print_head_desired__disabled),
 		TEST_BA(print_head_desired__disabled_override),

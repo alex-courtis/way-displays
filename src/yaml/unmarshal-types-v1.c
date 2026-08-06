@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <wayland-client-protocol.h>
 #include <yaml.h>
 
@@ -16,36 +17,15 @@
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"
 
-const char *v1_deprecation_log_text = "cfg.yaml deprecation:\n"
-"\n"
-"way-displays 2.0 has deprecated some arrays, replacing NAME_DESC with keyed maps.\n"
-"\n"
-"This affects: DISABLED, MODE, SCALE and TRANSFORM\n"
-"e.g.\n"
-"\n"
-"  SCALE:\n"
-"  - NAME_DESC: DP-2\n"
-"    SCALE: 1.5\n"
-"\n"
-"is now expressed as\n"
-"\n"
-"  SCALE:\n"
-"    'DP-2': 1.5\n"
-"\n"
-"This is a non-breaking change however compatibility will be removed in version 3.0\n"
-"\n"
-"See https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes for complete details.\n"
-"\n"
-"Please way-displays --write to upgrade your cfg.yaml\n"
-;
+void yaml_scalar_into_laptop_display_prefix_v1(struct UC *c, const yaml_node_t *node) {
+	char *laptop_display_prefix = yaml_scalar_to_string(c, node);
 
-const char *v1_deprecation_callback_text =
-"Deprecation: NAME_DESC arrays are replaced with keyed maps.\n"
-"\n"
-"Please way-displays --write to upgrade your cfg.yaml\n"
-"\n"
-"See logs or https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes\n"
-;
+	if (!laptop_display_prefix)
+		return;
+
+	strncpy(c->v1_laptop_display_prefix, laptop_display_prefix, sizeof(c->v1_laptop_display_prefix) - 1);
+	free(laptop_display_prefix);
+}
 
 void yaml_map_into_cfg_modes_v1(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
 	c->v1_present = true;

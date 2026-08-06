@@ -16,7 +16,6 @@
 #include <wayland-util.h>
 
 #include "cfg/cfg.h"
-#include "cfg/disabled.h"
 #include "displ.h"
 #include "enum.h"
 #include "head.h"
@@ -24,7 +23,6 @@
 #include "plist.h"
 #include "ppmap.h"
 #include "simap.h"
-#include "spmap.h"
 #include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -314,65 +312,29 @@ static void desire_position__row_bottom(void **state) {
 	plist_free(head_list);
 }
 
-static void desire_enabled__disabled(void **state) {
-	struct Head *head = head_init();
-	head->name = strdup("head0");
-	head->des.enabled = true;
+static void desire_enabled__disabled_one(void **state) {
+	struct Head *head = head_n_en("head0", true);
 	ppmap_put(g_displ->heads, H0, head);
 
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, false);
-
-	spmap_put(g_cfg->disableds, "head0", cfg_disabled_init());
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
+	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, true); // one head, fail lid closed condition
+	will_return_int(__wrap_cfg_disabled_applies_to_head, true);
 
 	desire_enabled(head);
 
 	assert_false(head->des.enabled);
 }
 
-static void desire_enabled__lid_closed_many(void **state) {
-	struct Head *head0 = head_n("head0");
-	ppmap_put(g_displ->heads, H0, head0);
-
-	head0->des.enabled = true;
-
-	struct Head *head1 = head_n("head1");
-	ppmap_put(g_displ->heads, H1, head1);
-
-	head1->des.enabled = true;
-
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, true);
-
-	desire_enabled(head0);
-
-	assert_false(head0->des.enabled);
-}
-
-static void desire_enabled__lid_closed_one(void **state) {
-	struct Head *head = head_n("head");
+static void desire_enabled__disabled_many(void **state) {
+	struct Head *head = head_n_en("head0", true);
 	ppmap_put(g_displ->heads, H0, head);
+	ppmap_put(g_displ->heads, H1, head_n_en("head1", true));
 
-	head->des.enabled = true;
-
-	expect_str(__wrap_g_lid_is_closed, name, "head");
-	will_return_int(__wrap_g_lid_is_closed, true);
-
-	desire_enabled(head);
-
-	assert_true(head->des.enabled);
-}
-
-static void desire_enabled__lid_closed_one_disabled(void **state) {
-	struct Head *head = head_n("head0");
-	ppmap_put(g_displ->heads, H0, head);
-
-	head->des.enabled = true;
-
-	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
-
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, true);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
+	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, false); // many heads, obey lid closed condition
+	will_return_int(__wrap_cfg_disabled_applies_to_head, true);
 
 	desire_enabled(head);
 
@@ -380,16 +342,15 @@ static void desire_enabled__lid_closed_one_disabled(void **state) {
 }
 
 static void desire_enabled__override(void **state) {
-	struct Head *head = head_n("head0");
+	struct Head *head = head_n_en("head0", false);
 	ppmap_put(g_displ->heads, H0, head);
 
-	head->des.enabled = false;
 	head->overrided_enabled = OverrideTrue;
 
-	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
-
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, false);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
+	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, true); // one head, obey lid closed condition
+	will_return_int(__wrap_cfg_disabled_applies_to_head, true);
 
 	desire_enabled(head);
 
@@ -398,16 +359,16 @@ static void desire_enabled__override(void **state) {
 }
 
 static void desire_enabled__override_reset(void **state) {
-	struct Head *head = head_n("head0");
+	struct Head *head = head_n_en("head0", true);
 	ppmap_put(g_displ->heads, H0, head);
 
 	head->des.enabled = true;
 	head->overrided_enabled = OverrideFalse;
 
-	spmap_put(g_cfg->disableds, "![hH]ead[0-9]", cfg_disabled_init());
-
-	expect_str(__wrap_g_lid_is_closed, name, "head0");
-	will_return_int(__wrap_g_lid_is_closed, false);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
+	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, true); // one head, obey lid closed condition
+	will_return_int(__wrap_cfg_disabled_applies_to_head, true);
 
 	desire_enabled(head);
 
@@ -416,14 +377,15 @@ static void desire_enabled__override_reset(void **state) {
 }
 
 static void desire_enabled__no_override(void **state) {
-	struct Head *head = head_n("head");
+	struct Head *head = head_n_en("head", false);
 	ppmap_put(g_displ->heads, H0, head);
 
-	head->des.enabled = false;
 	head->overrided_enabled = OverrideFalse;
 
-	expect_str(__wrap_g_lid_is_closed, name, "head");
-	will_return_int(__wrap_g_lid_is_closed, false);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
+	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, true); // one head, obey lid closed condition
+	will_return_int(__wrap_cfg_disabled_applies_to_head, false);
 
 	desire_enabled(head);
 
@@ -798,10 +760,8 @@ int main(void) {
 		TEST_BA(desire_position__row_mid),
 		TEST_BA(desire_position__row_bottom),
 
-		TEST_BA(desire_enabled__disabled),
-		TEST_BA(desire_enabled__lid_closed_many),
-		TEST_BA(desire_enabled__lid_closed_one_disabled),
-		TEST_BA(desire_enabled__lid_closed_one),
+		TEST_BA(desire_enabled__disabled_one),
+		TEST_BA(desire_enabled__disabled_many),
 		TEST_BA(desire_enabled__override),
 		TEST_BA(desire_enabled__override_reset),
 		TEST_BA(desire_enabled__no_override),

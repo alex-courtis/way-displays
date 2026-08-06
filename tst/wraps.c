@@ -4,12 +4,14 @@
 #include <sys/types.h>
 #include <wayland-util.h>
 
+#include "cfg/cfg.h"
 #include "displ.h"
 #include "enum.h"
 #include "head.h"
 #include "mode.h"
 #include "ppmap.h"
 #include "pset.h"
+#include "spmap.h"
 #include "ssmap.h"
 #include "wlr-output-management-unstable-v1.h"
 #include "yaml/marshal.h"
@@ -42,6 +44,15 @@ void __wrap_fd_wd_cfg_dir_create(void) {
 
 void __wrap_fd_wd_cfg_dir_destroy(void) {
 	function_called();
+}
+
+/*
+ * cfg
+ */
+
+void __wrap_cfg_migrate_v1(struct Cfg *cfg, const char *v1_laptop_display_prefix) {
+	check_expected_ptr(cfg);
+	check_expected_ptr(v1_laptop_display_prefix);
 }
 
 /*
@@ -91,16 +102,19 @@ void __wrap_print_head_set(const enum LogThreshold t, const enum InfoEvent event
 	check_expected_ptr(heads);
 }
 
-void __wrap_print_v1_deprecation(void) {
-	function_called();
-}
-
 /*
  * callback
  */
 
 void __wrap_callback(const enum LogThreshold t, const char * const msg1, const char * const msg2) {
 	check_expected_int(t);
+	check_expected_ptr(msg1);
+	check_expected_ptr(msg2);
+}
+
+void __wrap_callback_with_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const char * const msg1, const char * const msg2) {
+	check_expected_int(t);
+	check_expected_ptr(cfg);
 	check_expected_ptr(msg1);
 	check_expected_ptr(msg2);
 }
@@ -114,10 +128,6 @@ void __wrap_callback_mode_fail(const enum LogThreshold t, const struct Head * co
 void __wrap_callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * const head) {
 	check_expected_int(t);
 	check_expected_ptr(head);
-}
-
-void __wrap_callback_v1_deprecation(void) {
-	function_called();
 }
 
 /*
@@ -142,6 +152,19 @@ const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target,
 	check_expected_ptr(modes);
 	return mock_ptr_type_checked(struct Mode*);
 }
+
+/*
+ * disabled
+ */
+
+bool __wrap_cfg_disabled_applies_to_head(const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed) {
+	check_expected_ptr(disableds);
+	check_expected_ptr(head);
+	check_expected_int(fail_lid_closed);
+
+	return mock_type(bool);
+}
+
 
 /*
  * process

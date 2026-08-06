@@ -2,6 +2,7 @@
 
 #include "assert-log.h"
 #include "asserts.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <limits.h>

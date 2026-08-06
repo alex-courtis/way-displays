@@ -7,6 +7,7 @@
 #include "expects.h"
 #include "util-col.h"
 #include "util-file.h"
+#include "util-init.h"
 
 #include <cmocka.h>
 #include <limits.h>

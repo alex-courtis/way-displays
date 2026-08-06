@@ -52,7 +52,7 @@ LDFLAGS += -Wl,$\
 LDFLAGS += -Wl,$\
 		   --wrap=g_lid_init,$\
 		   --wrap=lid_free,--wrap=g_lid_destroy,$\
-		   --wrap=g_lid_is_closed,--wrap=g_lid_update
+		   --wrap=g_lid_update
 
 #
 # test specific mocks
@@ -76,9 +76,13 @@ tst/tst-act: LDFLAGS += -Wl,$\
 	--wrap=_zwlr_output_configuration_head_v1_set_position,$\
 	--wrap=_zwlr_output_configuration_head_v1_set_adaptive_sync
 
+tst/tst-cfg: LDFLAGS += -Wl,$\
+	--wrap=callback_with_cfg
+
 tst/tst-desire: LDFLAGS += -Wl,$\
 	--wrap=head_find_mode,$\
-	--wrap=head_auto_scale
+	--wrap=head_auto_scale,$\
+	--wrap=cfg_disabled_applies_to_head
 
 tst/tst-cfg-file-read: LDFLAGS += -Wl,$\
 	--wrap=fs_canonical_path,$\
@@ -97,9 +101,7 @@ tst/tst-yaml-marshal: LDFLAGS += -Wl,$\
 
 tst/tst-yaml-unmarshal: LDFLAGS += -Wl,$\
 	--wrap=yaml_parser_initialize,$\
-	--wrap=print_v1_deprecation,$\
-	--wrap=callback_v1_deprecation
+	--wrap=cfg_migrate_v1
 
 tst/tst-yaml-unmarshal-v1: LDFLAGS += -Wl,$\
-	--wrap=print_v1_deprecation,$\
-	--wrap=callback_v1_deprecation
+	--wrap=cfg_migrate_v1

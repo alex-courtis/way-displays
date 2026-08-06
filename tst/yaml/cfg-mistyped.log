@@ -10,6 +10,5 @@ cfg-mistyped.yaml: invalid SCALE_ROUND_TO, expected number 0.125|0.25|0.5|1, usi
 cfg-mistyped.yaml: invalid SCALE_ROUND_STRATEGY, expected enum NEAREST|UP|DOWN, using default NEAREST
 cfg-mistyped.yaml: invalid VRR_OFF, expected sequence, got map
 cfg-mistyped.yaml: invalid CALLBACK_CMD, expected string, using default notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
-cfg-mistyped.yaml: invalid LAPTOP_DISPLAY_PREFIX, expected string
 cfg-mistyped.yaml: invalid LAPTOP_LID_MONITOR, expected boolean, using default true
 cfg-mistyped.yaml: invalid LOG_THRESHOLD, expected enum DEBUG|INFO|WARNING|ERROR|FATAL

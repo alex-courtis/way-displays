@@ -58,7 +58,7 @@ void *M10 = "M10";
 
 // cfg-all.yaml
 struct Cfg *cfg_all(void) {
-	struct Cfg *cfg = cfg_default();
+	struct Cfg *cfg = cfg_default_scalars();
 
 	cfg->arrange = COL;
 	cfg->align = BOTTOM;
@@ -74,7 +74,6 @@ struct Cfg *cfg_all(void) {
 
 	free(cfg->callback_cmd);
 	cfg->callback_cmd = strdup("cmd");
-	cfg->laptop_display_prefix = strdup("ldp");
 	cfg->laptop_lid_monitor = OFF;
 
 	sset_add_many(cfg->order_name_desc,
