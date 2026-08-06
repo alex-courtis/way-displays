@@ -1,8 +1,10 @@
+#include <stdlib.h>
 #include <string.h>
 #include <wayland-util.h>
 
 #include "info/delta.h"
 
+#include "cfg/condition.h"
 #include "enum.h"
 #include "head.h"
 #include "mode.h"
@@ -20,11 +22,15 @@ char *delta_human(const struct PPmap * const heads) {
 	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
 		const struct Head * head = it->val;
 
-		// TODO v2 describe condition
-
 		// disable in own operation
 		if (head->cur.enabled && !head->des.enabled) {
-			delta = sprintf_append(delta, "%s\n  disabled\n", head_human(head));
+			if (head->disabled_condition_met) {
+				char *msg = cfg_condition_str(head->disabled_condition_met);
+				delta = sprintf_append(delta, "%s\n  disabled: %s\n", head_human(head), msg);
+				free(msg);
+			} else {
+				delta = sprintf_append(delta, "%s\n  disabled\n", head_human(head));
+			}
 			continue;
 		}
 
