@@ -46,6 +46,15 @@ void __wrap_fd_wd_cfg_dir_destroy(void) {
 }
 
 /*
+ * cfg
+ */
+
+void __wrap_cfg_migrate_v1(struct Cfg *cfg, const char *v1_laptop_display_prefix) {
+	check_expected_ptr(cfg);
+	check_expected_ptr(v1_laptop_display_prefix);
+}
+
+/*
  * head
  */
 

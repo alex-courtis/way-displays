@@ -76,6 +76,10 @@ tst/tst-act: LDFLAGS += -Wl,$\
 	--wrap=_zwlr_output_configuration_head_v1_set_position,$\
 	--wrap=_zwlr_output_configuration_head_v1_set_adaptive_sync
 
+tst/tst-cfg: LDFLAGS += -Wl,$\
+	--wrap=print_v1_deprecation,$\
+	--wrap=callback_v1_deprecation
+
 tst/tst-desire: LDFLAGS += -Wl,$\
 	--wrap=head_find_mode,$\
 	--wrap=head_auto_scale,$\
@@ -98,9 +102,7 @@ tst/tst-yaml-marshal: LDFLAGS += -Wl,$\
 
 tst/tst-yaml-unmarshal: LDFLAGS += -Wl,$\
 	--wrap=yaml_parser_initialize,$\
-	--wrap=print_v1_deprecation,$\
-	--wrap=callback_v1_deprecation
+	--wrap=cfg_migrate_v1
 
 tst/tst-yaml-unmarshal-v1: LDFLAGS += -Wl,$\
-	--wrap=print_v1_deprecation,$\
-	--wrap=callback_v1_deprecation
+	--wrap=cfg_migrate_v1

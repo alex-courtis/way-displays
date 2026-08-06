@@ -42,9 +42,8 @@ void *yaml_root_to_cfg(struct UC *c, const yaml_node_t *root) {
 
 	struct Cfg *cfg = yaml_map_to_cfg(c, root);
 
-	if (c->v1_present) {
-		print_v1_deprecation();
-		callback_v1_deprecation(cfg);
+	if (c->v1_present || *c->v1_laptop_display_prefix) {
+		cfg_migrate_v1(cfg, (*c->v1_laptop_display_prefix) ? c->v1_laptop_display_prefix : NULL);
 	}
 
 	return cfg;
@@ -213,6 +212,10 @@ struct Cfg *yaml_map_to_cfg(struct UC *c, const yaml_node_t *map) {
 
 			case CALLBACK_CMD:
 				cfg->callback_cmd = yaml_scalar_to_string_def(c, CALLBACK_CMD_DEFAULT, node);
+				break;
+
+			case LAPTOP_DISPLAY_PREFIX:
+				yaml_scalar_into_laptop_display_prefix_v1(c, node);
 				break;
 
 			case LAPTOP_LID_MONITOR:

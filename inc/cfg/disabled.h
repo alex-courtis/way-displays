@@ -6,7 +6,7 @@
 #include "head.h"
 #include "spmap.h"
 
-#define LID_DISABLED_NAME_DESC "!eDP-[0-9]"
+#define DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT "!^eDP-[0-9]"
 
 struct CfgDisabled {
 	const struct Pset *conditions;
@@ -41,7 +41,7 @@ bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, const st
 // remove any disableds with the same name as a cfg disabled
 void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds);
 
-// add a default lid LID_DISABLED_NAME_DESC if not present
-void cfg_disabled_add_lid_default(const struct SPmap *disableds);
+// add a lid closed condition to name_desc or LID_DISABLED_NAME_DESC, if not present
+void cfg_disabled_add_lid_default(const struct SPmap *disableds, const char *name_desc);
 
 #endif // CFG_DISABLED_H

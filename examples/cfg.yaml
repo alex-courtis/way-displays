@@ -112,7 +112,7 @@ LOG_THRESHOLD: INFO
 ## explicit disabled without `IF` will override any conditions for the display.
 DISABLED:
   # laptop display is disabled when lid is closed
-  '!eDP-[0-9]':
+  '!^eDP-[0-9]':
     IF:
     - LID: CLOSED
 

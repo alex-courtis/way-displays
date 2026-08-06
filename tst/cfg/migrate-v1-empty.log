@@ -1,0 +1,11 @@
+Migrated NAME_DESC arrays to keyed maps:
+  SCALE:
+  MODE:
+  TRANSFORM:
+  DISABLED:
+Added default lid closed condition:
+  DISABLED:
+    '!^eDP-[0-9]':
+
+Please upgrade your cfg.yaml:
+  way-displays --write

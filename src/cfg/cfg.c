@@ -8,12 +8,15 @@
 #include "cfg/disabled.h"
 #include "enum.h"
 #include "fn.h"
+#include "info/callback.h"
+#include "info/print.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
+#include "str.h"
 
 struct Cfg *g_cfg = NULL;
 
@@ -170,8 +173,52 @@ void cfg_apply_defaults(struct Cfg *cfg) {
 	if (!cfg->laptop_lid_monitor)   cfg->laptop_lid_monitor   = LAPTOP_LID_MONITOR_DEFAULT;
 
 	// add the default lid condition unless the user has specified an empty map or some valid disableds
-	if (!cfg->disableds_empty && spmap_size(cfg->disableds) == 0)
-		cfg_disabled_add_lid_default(cfg->disableds);
+	if (!cfg->disableds_empty && spmap_size(cfg->disableds) == 0) {
+		cfg_disabled_add_lid_default(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+	}
+}
+
+void cfg_migrate_v1(struct Cfg *cfg, const char *v1_laptop_display_prefix) {
+	print_v1_deprecation();
+	callback_v1_deprecation(cfg);
+
+	// note numbers
+	log_warn("Migrated NAME_DESC arrays to keyed maps:");
+
+	log_warn("  %s:", cfg_element_name(SCALE));
+	for (const struct SImapIt *it = simap_it(cfg->scales); it; it = simap_it_next(it))
+		log_warn("    '%s':", it->key);
+
+	log_warn("  %s:", cfg_element_name(MODE));
+	for (const struct SPmapIt *it = spmap_it(cfg->modes); it; it = spmap_it_next(it))
+		log_warn("    '%s':", it->key);
+
+	log_warn("  %s:", cfg_element_name(TRANSFORM));
+	for (const struct SImapIt *it = simap_it(cfg->transforms); it; it = simap_it_next(it))
+		log_warn("    '%s':", it->key);
+
+	log_warn("  %s:", cfg_element_name(DISABLED));
+	for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it))
+		log_warn("    '%s':", it->key);
+
+	// always add laptop display lid closed condition
+	if (v1_laptop_display_prefix) {
+		char *name_desc = sprintf_alloc("!^%s", v1_laptop_display_prefix);
+		log_warn("Migrated %s to lid closed condition:", cfg_element_name(LAPTOP_DISPLAY_PREFIX));
+		log_warn("  %s:", cfg_element_name(DISABLED));
+		log_warn("    '%s':", name_desc);
+		cfg_disabled_add_lid_default(cfg->disableds, name_desc);
+		free(name_desc);
+	} else {
+		log_warn("Added default lid closed condition:");
+		log_warn("  %s:", cfg_element_name(DISABLED));
+		log_warn("    '%s':", DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+		cfg_disabled_add_lid_default(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+	}
+
+	log_warn(NULL);
+	log_warn("Please upgrade your cfg.yaml:");
+	log_warn("  way-displays --write");
 }
 
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {

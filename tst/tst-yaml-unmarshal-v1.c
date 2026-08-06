@@ -3,6 +3,7 @@
 #include "assert-cfg.h"
 #include "assert-log.h"
 #include "asserts.h"
+#include "expects.h"
 #include "data.h"
 #include "util-col.h"
 #include "util-file.h"
@@ -55,8 +56,8 @@ static void _check_unmarshalled_cfg(const char *yaml_path, struct Cfg *expected,
 
 static void yaml_root_to_cfg__ok(void **state) {
 	// only once
-	expect_function_call(__wrap_print_v1_deprecation);
-	expect_function_call(__wrap_callback_v1_deprecation);
+	expect_any(__wrap_cfg_migrate_v1, cfg);
+	expect_str(__wrap_cfg_migrate_v1, v1_laptop_display_prefix, "ldp");
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-all.yaml", cfg_all(), NULL);
 
@@ -68,8 +69,8 @@ static void yaml_root_to_cfg__transform(void **state) {
 	simap_put(expected->transforms, "one", WL_OUTPUT_TRANSFORM_FLIPPED);
 
 	// only once
-	expect_function_call(__wrap_print_v1_deprecation);
-	expect_function_call(__wrap_callback_v1_deprecation);
+	expect_any(__wrap_cfg_migrate_v1, cfg);
+	expect_str(__wrap_cfg_migrate_v1, v1_laptop_display_prefix, NULL);
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-transform.yaml", expected, "tst/yaml/v1/cfg-transform.log");
 
@@ -81,8 +82,8 @@ static void yaml_root_to_cfg__scale(void **state) {
 	simap_put(expected->scales, "three", 3000);
 
 	// only once
-	expect_function_call(__wrap_print_v1_deprecation);
-	expect_function_call(__wrap_callback_v1_deprecation);
+	expect_any(__wrap_cfg_migrate_v1, cfg);
+	expect_str(__wrap_cfg_migrate_v1, v1_laptop_display_prefix, NULL);
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-scale.yaml", expected, "tst/yaml/v1/cfg-scale.log");
 
@@ -99,8 +100,8 @@ static void yaml_root_to_cfg__mode(void **state) {
 			NULL);
 
 	// only once
-	expect_function_call(__wrap_print_v1_deprecation);
-	expect_function_call(__wrap_callback_v1_deprecation);
+	expect_any(__wrap_cfg_migrate_v1, cfg);
+	expect_str(__wrap_cfg_migrate_v1, v1_laptop_display_prefix, NULL);
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-mode.yaml", expected, "tst/yaml/v1/cfg-mode.log");
 
@@ -148,8 +149,8 @@ static void yaml_root_to_cfg__disabled(void **state) {
 			NULL);
 
 	// only once
-	expect_function_call(__wrap_print_v1_deprecation);
-	expect_function_call(__wrap_callback_v1_deprecation);
+	expect_any(__wrap_cfg_migrate_v1, cfg);
+	expect_str(__wrap_cfg_migrate_v1, v1_laptop_display_prefix, NULL);
 
 	check_unmarshalled_cfg_v1("tst/yaml/v1/cfg-disabled.yaml", expected, "tst/yaml/v1/cfg-disabled.log");
 

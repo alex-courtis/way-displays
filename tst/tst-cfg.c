@@ -1186,6 +1186,83 @@ static void cfg_validate_warn__(void **state) {
 	assert_logs_empty();
 }
 
+static void cfg_migrate_v1__empty(void **state) {
+	struct Cfg *actual = cfg_init();
+
+	struct Cfg *expected = cfg_init();
+	struct CfgCondition *condition = cfg_condition_init();
+	condition->lid = LID_CLOSED;
+	struct CfgDisabled *disabled = cfg_disabled_init();
+	pset_add(disabled->conditions, condition);
+	spmap_put(expected->disableds, "!^eDP-[0-9]", disabled);
+
+	expect_function_call(__wrap_print_v1_deprecation);
+	expect_function_call(__wrap_callback_v1_deprecation);
+
+	cfg_migrate_v1(actual, NULL);
+
+	assert_cfg_equal(actual, expected);
+
+	char *expected_log = read_file("tst/cfg/migrate-v1-empty.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(actual);
+	cfg_free(expected);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void cfg_migrate_v1__laptop_display_prefix(void **state) {
+	struct Cfg *actual = cfg_init();
+
+	struct Cfg *expected = cfg_init();
+
+	// laptop display prefix
+	struct CfgCondition *condition = cfg_condition_init();
+	condition->lid = LID_CLOSED;
+	struct CfgDisabled *disabled = cfg_disabled_init();
+	pset_add(disabled->conditions, condition);
+	spmap_put(expected->disableds, "!^lappy", disabled);
+
+	expect_function_call(__wrap_print_v1_deprecation);
+	expect_function_call(__wrap_callback_v1_deprecation);
+
+	cfg_migrate_v1(actual, "lappy");
+
+	assert_cfg_equal(actual, expected);
+
+	char *expected_log = read_file("tst/cfg/migrate-v1-all.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(actual);
+	cfg_free(expected);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void cfg_migrate_v1__counts(void **state) {
+	struct Cfg *actual = cfg_init();
+	simap_put(actual->scales, "scal", 9999);
+	simap_put(actual->transforms, "tran", 9999);
+	spmap_put(actual->modes, "mode", mode_init());
+	spmap_put(actual->disableds, "disa", cfg_disabled_init());
+
+	expect_function_call(__wrap_print_v1_deprecation);
+	expect_function_call(__wrap_callback_v1_deprecation);
+
+	cfg_migrate_v1(actual, "lappy");
+
+	char *expected_log = read_file("tst/cfg/migrate-v1-counts.log");
+	assert_log(WARNING, expected_log);
+
+	cfg_free(actual);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(cfg_equal__all),
@@ -1249,6 +1326,10 @@ int main(void) {
 		TEST_BA(cfg_validate_fix__auto_scale_dpi),
 
 		TEST_BA(cfg_validate_warn__),
+
+		TEST_BA(cfg_migrate_v1__empty),
+		TEST_BA(cfg_migrate_v1__laptop_display_prefix),
+		TEST_BA(cfg_migrate_v1__counts),
 	};
 
 	return RUN(tests);

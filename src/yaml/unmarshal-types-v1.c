@@ -47,6 +47,16 @@ const char *v1_deprecation_callback_text =
 "See logs or https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes\n"
 ;
 
+void yaml_scalar_into_laptop_display_prefix_v1(struct UC *c, const yaml_node_t *node) {
+	char *laptop_display_prefix = yaml_scalar_to_string(c, node);
+
+	if (!laptop_display_prefix)
+		return;
+
+	strncpy(c->v1_laptop_display_prefix, laptop_display_prefix, sizeof(c->v1_laptop_display_prefix) - 1);
+	free(laptop_display_prefix);
+}
+
 void yaml_map_into_cfg_modes_v1(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
 	c->v1_present = true;
 

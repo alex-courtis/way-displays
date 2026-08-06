@@ -1,0 +1,11 @@
+Migrated NAME_DESC arrays to keyed maps:
+  SCALE:
+  MODE:
+  TRANSFORM:
+  DISABLED:
+Migrated LAPTOP_DISPLAY_PREFIX to lid closed condition:
+  DISABLED:
+    '!^lappy':
+
+Please upgrade your cfg.yaml:
+  way-displays --write
