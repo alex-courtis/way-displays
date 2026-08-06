@@ -316,6 +316,7 @@ static void desire_enabled__disabled_one(void **state) {
 	struct Head *head = head_n_en("head0", true);
 	ppmap_put(g_displ->heads, H0, head);
 
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, condition_met, &head->disabled_condition_met);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
 	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, true); // one head, fail lid closed condition
@@ -331,6 +332,7 @@ static void desire_enabled__disabled_many(void **state) {
 	ppmap_put(g_displ->heads, H0, head);
 	ppmap_put(g_displ->heads, H1, head_n_en("head1", true));
 
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, condition_met, &head->disabled_condition_met);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
 	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, false); // many heads, obey lid closed condition
@@ -347,6 +349,7 @@ static void desire_enabled__override(void **state) {
 
 	head->overrided_enabled = OverrideTrue;
 
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, condition_met, &head->disabled_condition_met);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
 	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, true); // one head, obey lid closed condition
@@ -365,6 +368,7 @@ static void desire_enabled__override_reset(void **state) {
 	head->des.enabled = true;
 	head->overrided_enabled = OverrideFalse;
 
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, condition_met, &head->disabled_condition_met);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
 	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, true); // one head, obey lid closed condition
@@ -382,6 +386,7 @@ static void desire_enabled__no_override(void **state) {
 
 	head->overrided_enabled = OverrideFalse;
 
+	expect_ptr(__wrap_cfg_disabled_applies_to_head, condition_met, &head->disabled_condition_met);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, disableds, g_cfg->disableds);
 	expect_ptr(__wrap_cfg_disabled_applies_to_head, head, head);
 	expect_int_value(__wrap_cfg_disabled_applies_to_head, fail_lid_closed, true); // one head, obey lid closed condition

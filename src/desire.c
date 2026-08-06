@@ -48,7 +48,7 @@ void desire_enabled(struct Head *head) {
 
 	// disabled if name_desc matches and (if present) any condition is true
 	// ignore lid closed when there is only the laptop display, for smoother sleeping
-	bool enabled = !cfg_disabled_applies_to_head(g_cfg->disableds, head, ppmap_size(g_displ->heads) == 1);
+	bool enabled = !cfg_disabled_applies_to_head(&head->disabled_condition_met, g_cfg->disableds, head, ppmap_size(g_displ->heads) == 1);
 
 	// reset manual override when it matches the auto-state
 	if (head->overrided_enabled != NoOverride) {

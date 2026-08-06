@@ -29,6 +29,8 @@ void cfg_condition_free(struct CfgCondition *condition);
 // fn_pred_p: true if any elements of the condition are not met, fail_lid_closed directs to unconditionally fail lid closed conditions
 bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail_lid_closed);
 
+// TODO flip failed
+bool cfg_condition_met(const struct CfgCondition *condition, const bool *fail_lid_closed);
 
 /*
  * to string

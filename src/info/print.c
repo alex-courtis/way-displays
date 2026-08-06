@@ -341,6 +341,10 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	} else {
 		if (head->overrided_enabled == OverrideFalse) {
 			log_(t, "    (manually disabled)");
+		} else if (head->disabled_condition_met) {
+			char *msg = cfg_condition_str(head->disabled_condition_met);
+			log_(t, "    (disabled if) %s", msg);
+			free(msg);
 		} else {
 			log_(t, "    (disabled)");
 		}
@@ -391,6 +395,10 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 	} else {
 		if (head->overrided_enabled == OverrideFalse) {
 			log_(t, "    (manually disabled)");
+		} else if (head->disabled_condition_met) {
+			char *msg = cfg_condition_str(head->disabled_condition_met);
+			log_(t, "    (disabled if) %s", msg);
+			free(msg);
 		} else {
 			log_(t, "    (disabled)");
 		}
@@ -508,7 +516,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 	log_(t, "  Cannot enable VRR: this display or compositor may not support it.");
 	log_(t, "  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
 	log_(t, "  VRR_OFF:");
-	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
+	log_(t, "  - '%s'", head->model ? head->model : "name_desc");
 }
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zmode) {

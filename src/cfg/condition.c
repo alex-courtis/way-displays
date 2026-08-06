@@ -106,7 +106,14 @@ bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail
 	return false;
 }
 
+bool cfg_condition_met(const struct CfgCondition *condition, const bool *fail_lid_closed) {
+	return !cfg_condition_failed(condition, fail_lid_closed);
+}
+
 char *cfg_condition_str(const struct CfgCondition *condition) {
+	if (!condition)
+		return NULL;
+
 	char *str = NULL;
 
 	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {

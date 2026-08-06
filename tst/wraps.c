@@ -157,7 +157,8 @@ const struct Mode *__wrap_mode_max_refresh(const struct Mode* const mode_target,
  * disabled
  */
 
-bool __wrap_cfg_disabled_applies_to_head(const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed) {
+bool __wrap_cfg_disabled_applies_to_head(const struct CfgCondition **condition_met, const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed) {
+	check_expected_ptr(condition_met);
 	check_expected_ptr(disableds);
 	check_expected_ptr(head);
 	check_expected_int(fail_lid_closed);

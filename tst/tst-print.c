@@ -24,6 +24,7 @@
 #include "pset.h"
 #include "simap.h"
 #include "spmap.h"
+#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/print.h"
@@ -521,6 +522,27 @@ static void print_head_current__disabled(void **state) {
 	assert_logs_empty();
 }
 
+static void print_head_current__disabled_condition(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.cur.enabled = false;
+
+	struct CfgCondition *condition = cfg_condition_init();
+	condition->lid = LID_OPEN;
+	head.disabled_condition_met = condition;
+
+	print_head_current(INFO, &head);
+
+	char *expected_log = read_file("tst/info/print-head-current-disabled-condition.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	cfg_condition_free(condition);
+
+	assert_logs_empty();
+}
+
 static void print_head_current__disabled_override(void **state) {
 	struct State *s = *state;
 
@@ -562,6 +584,26 @@ static void print_head_desired__disabled(void **state) {
 	print_head_desired(INFO, &head);
 
 	assert_log(INFO, "    (disabled)\n");
+
+	assert_logs_empty();
+}
+
+static void print_head_desired__disabled_condition(void **state) {
+	struct State *s = *state;
+
+	struct Head head = *s->head1;
+	head.des.enabled = false;
+
+	struct CfgCondition *condition = cfg_condition_init();
+	sset_add(condition->unplugged, "foobar");
+	condition->lid = LID_CLOSED;
+	head.disabled_condition_met = condition;
+
+	print_head_desired(INFO, &head);
+
+	assert_log(INFO, "    (disabled if) foobar unplugged AND lid closed\n");
+
+	cfg_condition_free(condition);
 
 	assert_logs_empty();
 }
@@ -673,7 +715,7 @@ static void print_adaptive_sync_fail__head(void **state) {
 			"  Cannot enable VRR: this display or compositor may not support it.\n"
 			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
 			"  VRR_OFF:\n"
-			"    - 'model0'\n");
+			"  - 'model0'\n");
 
 	head_free(head);
 
@@ -729,10 +771,12 @@ int main(void) {
 		TEST_BA(print_head_deltas__reapply),
 
 		TEST_BA(print_head_current__disabled),
+		TEST_BA(print_head_current__disabled_condition),
 		TEST_BA(print_head_current__disabled_override),
 		TEST_BA(print_head_current__enabled_override),
 
 		TEST_BA(print_head_desired__disabled),
+		TEST_BA(print_head_desired__disabled_condition),
 		TEST_BA(print_head_desired__disabled_override),
 		TEST_BA(print_head_desired__enabled),
 		TEST_BA(print_head_desired__enabled_override),

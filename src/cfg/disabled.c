@@ -86,6 +86,7 @@ void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds) {
 		const struct SPmapPair conditionally = spmap_find(g_cfg->disableds, f);
 		if (conditionally.val) {
 
+			// TODO v2 add condition text
 			log_info(NULL);
 			log_info("Ignoring %s for '%s' as it is conditionally %s '%s'",
 					cfg_element_name(DISABLED),
@@ -99,15 +100,23 @@ void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds) {
 	}
 }
 
-bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed) {
+bool cfg_disabled_applies_to_head(const struct CfgCondition **condition_met, const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed) {
+	*condition_met = NULL;
 
 	// name_desc must match head
 	const struct SPmapFilter f = { .key_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
 	for (const struct SPmapIt *it = spmap_filter_it(disableds, f); it; it = spmap_it_next(it)) {
-
-		// all conditions must be satisfied
 		const struct CfgDisabled *disabled = it->val;
-		if (pset_find(disabled->conditions, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_condition_failed, .data = &fail_lid_closed }) == NULL) {
+
+		// unconditionally disabled
+		if (pset_size(disabled->conditions) == 0) {
+			spmap_it_free(it);
+			return true;
+		}
+
+		// one condition must be met
+		*condition_met = pset_find(disabled->conditions, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_condition_met, .data = &fail_lid_closed });
+		if (*condition_met) {
 			spmap_it_free(it);
 			return true;
 		}
