@@ -186,6 +186,7 @@ void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix)
 			"Migrated NAME_DESC arrays to keyed maps:\n"
 			);
 
+	// show keys of new maps
 	log_msg = sprintf_append(log_msg, "  %s:\n", cfg_element_name(SCALE));
 	for (const struct SImapIt *it = simap_it(cfg->scales); it; it = simap_it_next(it))
 		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
@@ -203,35 +204,30 @@ void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix)
 		log_msg = sprintf_append(log_msg, "    '%s':\n", it->key);
 
 	// always add a laptop display lid closed condition
+	char *name_desc;
 	if (v1_laptop_display_prefix) {
-		char *name_desc = sprintf_alloc("!^%s", v1_laptop_display_prefix);
-		log_msg = sprintf_append(log_msg, "Migrated %s to lid closed condition:\n"
-				"  %s:\n"
-				"    '%s':\n"
-				"      IF:\n"
-				"      - LID: CLOSED\n",
-				cfg_element_name(LAPTOP_DISPLAY_PREFIX), cfg_element_name(DISABLED), name_desc);
-		cfg_disabled_add_lid_condition(cfg->disableds, name_desc);
-		free(name_desc);
+		name_desc = sprintf_alloc("!^%s", v1_laptop_display_prefix);
+		log_msg = sprintf_append(log_msg, "Migrated %s to lid closed condition:\n", cfg_element_name(LAPTOP_DISPLAY_PREFIX));
 	} else {
-		cfg_disabled_add_lid_condition(cfg->disableds, DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
-		log_msg = sprintf_append(log_msg, "Added default lid closed condition:\n"
-				"  %s:\n"
-				"    '%s':\n"
-				"      IF:\n"
-				"      - LID: CLOSED\n",
-				cfg_element_name(DISABLED), DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+		name_desc = strdup(DISABLED_LAPTOP_DISPLAY_NAME_DESC_DEFAULT);
+		log_msg = sprintf_append(log_msg, "Added default lid closed condition:\n");
 	}
+	log_msg = sprintf_append(log_msg,
+			"  %s:\n"
+			"    '%s':\n"
+			"      IF:\n"
+			"      - LID: CLOSED\n",
+			cfg_element_name(DISABLED), name_desc);
+	cfg_disabled_add_lid_condition(cfg->disableds, name_desc);
+	free(name_desc);
 
 	log_msg = sprintf_append(log_msg,
 			"\nPlease upgrade your cfg.yaml:\n"
 			"  way-displays --write");
-
 	log_warn("%s", log_msg);
-
 	free(log_msg);
 
-
+	// brief callback message
 	char *callback_msg = strdup(
 			"v2 cfg.yaml schema has changed. Please upgrade:\n\n"
 			"way-displays --write\n\n"
