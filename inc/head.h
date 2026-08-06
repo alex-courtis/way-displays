@@ -47,7 +47,7 @@ struct Head {
 	struct HeadState des;
 
 	enum ManualOverride overrided_enabled;
-	const struct CfgCondition *disabled_condition_met; // desire_enabled (re)sets
+	char *disabled_condition_desc;              // desire_enabled (re)sets cfg_condition_str
 
 	bool reapply_required;
 	bool adaptive_sync_failed;

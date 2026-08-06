@@ -227,13 +227,13 @@ static void delta_human__disabled(void **state) {
 
 	struct CfgCondition *condition = cfg_condition_init();
 	condition->lid = LID_OPEN;
-	s->head2->disabled_condition_met = condition;
+	s->head2->disabled_condition_desc = strdup("something true");
 
 	char *deltas = delta_human(s->heads);
 
 	assert_str_equal(deltas, ""
 			"description1\n  disabled\n"
-			"name2\n  disabled: lid open"
+			"name2\n  disabled: something true"
 			);
 
 	cfg_condition_free(condition);

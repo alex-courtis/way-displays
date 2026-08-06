@@ -24,7 +24,6 @@
 #include "pset.h"
 #include "simap.h"
 #include "spmap.h"
-#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/print.h"
@@ -492,13 +491,12 @@ static void print_head_deltas__enable(void **state) {
 static void print_head_deltas__reapply(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.des = head.cur;
-	head.cur.enabled = false;
-	head.des.enabled = false;
-	head.reapply_required = true;
+	s->head1->des = s->head1->cur;
+	s->head1->cur.enabled = false;
+	s->head1->des.enabled = false;
+	s->head1->reapply_required = true;
 
-	print_head(INFO, DELTA, &head);
+	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-reapply.log");
 	assert_log(INFO, expected_log);
@@ -510,10 +508,9 @@ static void print_head_deltas__reapply(void **state) {
 static void print_head_current__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
+	s->head1->cur.enabled = false;
 
-	print_head_current(INFO, &head);
+	print_head_current(INFO, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-current-disabled.log");
 	assert_log(INFO, expected_log);
@@ -525,20 +522,14 @@ static void print_head_current__disabled(void **state) {
 static void print_head_current__disabled_condition(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
+	s->head1->cur.enabled = false;
+	s->head1->disabled_condition_desc = strdup("because x");
 
-	struct CfgCondition *condition = cfg_condition_init();
-	condition->lid = LID_OPEN;
-	head.disabled_condition_met = condition;
-
-	print_head_current(INFO, &head);
+	print_head_current(INFO, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-current-disabled-condition.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
-
-	cfg_condition_free(condition);
 
 	assert_logs_empty();
 }
@@ -546,11 +537,10 @@ static void print_head_current__disabled_condition(void **state) {
 static void print_head_current__disabled_override(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
-	head.overrided_enabled = OverrideFalse;
+	s->head1->cur.enabled = false;
+	s->head1->overrided_enabled = OverrideFalse;
 
-	print_head_current(INFO, &head);
+	print_head_current(INFO, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-current-disabled-override.log");
 	assert_log(INFO, expected_log);
@@ -562,11 +552,10 @@ static void print_head_current__disabled_override(void **state) {
 static void print_head_current__enabled_override(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = true;
-	head.overrided_enabled = OverrideTrue;
+	s->head1->cur.enabled = true;
+	s->head1->overrided_enabled = OverrideTrue;
 
-	print_head_current(INFO, &head);
+	print_head_current(INFO, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-current-enabled-override.log");
 	assert_log(INFO, expected_log);
@@ -578,10 +567,9 @@ static void print_head_current__enabled_override(void **state) {
 static void print_head_desired__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.des.enabled = false;
+	s->head1->des.enabled = false;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    (disabled)\n");
 
@@ -591,19 +579,12 @@ static void print_head_desired__disabled(void **state) {
 static void print_head_desired__disabled_condition(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.des.enabled = false;
+	s->head1->des.enabled = false;
+	s->head1->disabled_condition_desc = strdup("because x");
 
-	struct CfgCondition *condition = cfg_condition_init();
-	sset_add(condition->unplugged, "foobar");
-	condition->lid = LID_CLOSED;
-	head.disabled_condition_met = condition;
+	print_head_desired(INFO, s->head1);
 
-	print_head_desired(INFO, &head);
-
-	assert_log(INFO, "    (disabled if) foobar unplugged AND lid closed\n");
-
-	cfg_condition_free(condition);
+	assert_log(INFO, "    (disabled if) because x\n");
 
 	assert_logs_empty();
 }
@@ -611,11 +592,10 @@ static void print_head_desired__disabled_condition(void **state) {
 static void print_head_desired__disabled_override(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.des.enabled = false;
-	head.overrided_enabled = OverrideFalse;
+	s->head1->des.enabled = false;
+	s->head1->overrided_enabled = OverrideFalse;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    (manually disabled)\n");
 
@@ -625,11 +605,10 @@ static void print_head_desired__disabled_override(void **state) {
 static void print_head_desired__enabled(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
-	head.des.enabled = true;
+	s->head1->cur.enabled = false;
+	s->head1->des.enabled = true;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (enabled)\n");
 
@@ -639,12 +618,11 @@ static void print_head_desired__enabled(void **state) {
 static void print_head_desired__enabled_override(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
-	head.des.enabled = true;
-	head.overrided_enabled = OverrideTrue;
+	s->head1->cur.enabled = false;
+	s->head1->des.enabled = true;
+	s->head1->overrided_enabled = OverrideTrue;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (manually enabled)\n");
 
@@ -654,11 +632,10 @@ static void print_head_desired__enabled_override(void **state) {
 static void print_head_desired__transform_270(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	memcpy(&head.des, &head.cur, sizeof(struct HeadState));
-	head.des.transform = WL_OUTPUT_TRANSFORM_270;
+	memcpy(&s->head1->des, &s->head1->cur, sizeof(struct HeadState));
+	s->head1->des.transform = WL_OUTPUT_TRANSFORM_270;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    transform: 270\n");
 
@@ -668,11 +645,10 @@ static void print_head_desired__transform_270(void **state) {
 static void print_head_desired__transform_none(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	memcpy(&head.des, &head.cur, sizeof(struct HeadState));
-	head.des.transform = 0;
+	memcpy(&s->head1->des, &s->head1->cur, sizeof(struct HeadState));
+	s->head1->des.transform = 0;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    transform: none\n");
 

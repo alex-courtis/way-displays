@@ -100,8 +100,10 @@ void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds) {
 	}
 }
 
-bool cfg_disabled_applies_to_head(const struct CfgCondition **condition_met, const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed) {
-	*condition_met = NULL;
+// TODO move to head
+bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, struct Head * const head, const bool fail_lid_closed) {
+	free(head->disabled_condition_desc);
+	head->disabled_condition_desc = NULL;
 
 	// name_desc must match head
 	const struct SPmapFilter f = { .key_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
@@ -115,8 +117,9 @@ bool cfg_disabled_applies_to_head(const struct CfgCondition **condition_met, con
 		}
 
 		// one condition must be met
-		*condition_met = pset_find(disabled->conditions, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_condition_met, .data = &fail_lid_closed });
-		if (*condition_met) {
+		const struct CfgCondition *condition = pset_find(disabled->conditions, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_condition_met, .data = &fail_lid_closed });
+		if (condition) {
+			head->disabled_condition_desc = cfg_condition_str(condition);
 			spmap_it_free(it);
 			return true;
 		}

@@ -341,10 +341,8 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	} else {
 		if (head->overrided_enabled == OverrideFalse) {
 			log_(t, "    (manually disabled)");
-		} else if (head->disabled_condition_met) {
-			char *msg = cfg_condition_str(head->disabled_condition_met);
-			log_(t, "    (disabled if) %s", msg);
-			free(msg);
+		} else if (head->disabled_condition_desc) {
+			log_(t, "    (disabled if) %s", head->disabled_condition_desc);
 		} else {
 			log_(t, "    (disabled)");
 		}
@@ -395,10 +393,8 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 	} else {
 		if (head->overrided_enabled == OverrideFalse) {
 			log_(t, "    (manually disabled)");
-		} else if (head->disabled_condition_met) {
-			char *msg = cfg_condition_str(head->disabled_condition_met);
-			log_(t, "    (disabled if) %s", msg);
-			free(msg);
+		} else if (head->disabled_condition_desc) {
+			log_(t, "    (disabled if) %s", head->disabled_condition_desc);
 		} else {
 			log_(t, "    (disabled)");
 		}

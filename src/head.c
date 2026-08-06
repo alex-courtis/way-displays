@@ -78,6 +78,7 @@ void head_free(struct Head *head) {
 	ppmap_free_vals(head->modes);
 	ppmap_free_vals(head->modes_failed);
 
+	free(head->disabled_condition_desc);
 	free(head->name);
 	free(head->description);
 	free(head->make);

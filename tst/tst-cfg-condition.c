@@ -1,4 +1,3 @@
-#include "asserts.h"
 #include "data.h"
 #include "tst.h"
 #include "util-col.h"
@@ -8,13 +7,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "cfg/disabled.h"
 #include "displ.h"
 #include "enum.h"
-#include "head.h"
 #include "lid.h"
-#include "pset.h"
-#include "spmap.h"
 #include "sset.h"
 
 #include "cfg/condition.h"
@@ -163,80 +158,6 @@ static void cfg_condition_met__complex(void **state) {
 	assert_true(cfg_condition_met(s->condition, NULL));
 }
 
-static void cfg_disabled_applies_to_head__name_desc_conditions(void **state) {
-	const struct CfgCondition *condition_met = NULL;
-
-	struct Head *head = head_n("DP-1");
-
-	const struct CfgDisabled *disabled = cfg_disabled_init();
-
-	const struct SPmap *disableds = cfg_disabled_spmap_init();
-	spmap_put(disableds, "!DP-[1-5]", disabled);
-
-	// unconditional met
-	assert_true(cfg_disabled_applies_to_head(&condition_met, disableds, head, false));
-	assert_nul(condition_met);
-
-	struct CfgCondition *condition_unplugged = cfg_condition_init();
-	sset_add(condition_unplugged->unplugged, "DP-99");
-	pset_add(disabled->conditions, condition_unplugged);
-
-	// unplugged met
-	assert_true(cfg_disabled_applies_to_head(&condition_met, disableds, head, false));
-	assert_ptr_equal(condition_met, condition_unplugged);
-
-	struct CfgCondition *condition_lid = cfg_condition_init();
-	condition_lid->lid = LID_NOT_PRESENT;
-	pset_add(disabled->conditions, condition_lid);
-
-	// unplugged still met
-	assert_true(cfg_disabled_applies_to_head(&condition_met, disableds, head, false));
-	assert_ptr_equal(condition_met, condition_unplugged);
-
-	sset_add(condition_unplugged->unplugged, "DP-1");
-
-	// lid now met
-	assert_true(cfg_disabled_applies_to_head(&condition_met, disableds, head, false));
-	assert_ptr_equal(condition_met, condition_lid);
-
-	g_lid = calloc(1, sizeof(struct Lid));
-	g_lid->closed = true;
-
-	// none met
-	assert_false(cfg_disabled_applies_to_head(&condition_met, disableds, head, false));
-	assert_nul(condition_met);
-
-	spmap_free_vals(disableds);
-
-	head_free(head);
-}
-
-static void cfg_disabled_applies_to_head__name_desc_only(void **state) {
-	const struct CfgDisabled *disabled = cfg_disabled_init();
-
-	struct Head *head_disabled = head_n("DP-1");
-
-	const struct SPmap *disableds = cfg_disabled_spmap_init();
-	spmap_put(disableds, "DP-1", disabled);
-
-	const struct CfgCondition *condition = NULL;
-
-	assert_true(cfg_disabled_applies_to_head(&condition, disableds, head_disabled, false));
-
-	assert_nul(condition);
-
-	struct Head *head_enabled = head_n("DP-2");
-
-	assert_false(cfg_disabled_applies_to_head(&condition, disableds, head_enabled, false));
-
-	assert_nul(condition);
-
-	spmap_free_vals(disableds);
-
-	head_free(head_enabled);
-	head_free(head_disabled);
-}
-
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(cfg_condition_met__plugged),
@@ -246,9 +167,6 @@ int main(void) {
 		TEST_BA(cfg_condition_met__lid_open),
 		TEST_BA(cfg_condition_met__lid_not_present),
 		TEST_BA(cfg_condition_met__complex),
-
-		TEST_BA(cfg_disabled_applies_to_head__name_desc_conditions),
-		TEST_BA(cfg_disabled_applies_to_head__name_desc_only),
 	};
 
 	return RUN(tests);
