@@ -61,9 +61,9 @@ void cfg_condition_free(struct CfgCondition *condition) {
 	free(condition);
 }
 
-bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail_lid_closed) {
+bool cfg_condition_met(const struct CfgCondition *condition, const bool *fail_lid_closed) {
 	if (!condition)
-		return false;
+		return true;
 
 	struct PPmapFilter f = { .val_data = (fn_pred_pp)head_matches_name_desc };
 
@@ -71,7 +71,7 @@ bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail
 		f.data = it->val;
 		if (!ppmap_find(g_displ->heads, f).val) {
 			sset_it_free(it);
-			return true;
+			return false;
 		}
 	}
 
@@ -79,35 +79,31 @@ bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail
 		f.data = it->val;
 		if (ppmap_find(g_displ->heads, f).val) {
 			sset_it_free(it);
-			return true;
+			return false;
 		}
 	}
 
 	switch (condition->lid) {
 		case LID_CLOSED:
 			if ((fail_lid_closed && *fail_lid_closed) || !g_lid || !g_lid->closed) {
-				return true;
+				return false;
 			}
 			break;
 		case LID_OPEN:
 			if (!g_lid || g_lid->closed) {
-				return true;
+				return false;
 			}
 			break;
 		case LID_NOT_PRESENT:
 			if (g_lid) {
-				return true;
+				return false;
 			}
 			break;
 		default:
 			break;
 	}
 
-	return false;
-}
-
-bool cfg_condition_met(const struct CfgCondition *condition, const bool *fail_lid_closed) {
-	return !cfg_condition_failed(condition, fail_lid_closed);
+	return true;
 }
 
 char *cfg_condition_str(const struct CfgCondition *condition) {

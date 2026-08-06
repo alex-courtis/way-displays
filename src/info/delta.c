@@ -20,6 +20,8 @@ char *delta_human(const struct PPmap * const heads) {
 	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
 		const struct Head * head = it->val;
 
+		// TODO v2 describe condition
+
 		// disable in own operation
 		if (head->cur.enabled && !head->des.enabled) {
 			delta = sprintf_append(delta, "%s\n  disabled\n", head_human(head));
