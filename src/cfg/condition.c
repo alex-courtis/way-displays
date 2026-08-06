@@ -11,6 +11,7 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "sset.h"
+#include "str.h"
 
 static bool condition_equal(const struct CfgCondition* const a, const struct CfgCondition* const b) {
 	return a && b && a->lid == b->lid &&
@@ -32,6 +33,7 @@ const struct Pset *cfg_condition_pset_init(void) {
 		.equal_val = (fn_equal)condition_equal,
 		.free_val = (fn_free)cfg_condition_free,
 		.clone_val = (fn_clone)cfg_condition_clone,
+		.str_val = (fn_str)cfg_condition_str,
 	};
 	return pset_init_with(params);
 }
@@ -47,6 +49,16 @@ struct CfgCondition *cfg_condition_clone(const struct CfgCondition* const from) 
 	to->lid = from->lid;
 
 	return to;
+}
+
+void cfg_condition_free(struct CfgCondition *condition) {
+	if (!condition)
+		return;
+
+	sset_free(condition->plugged);
+	sset_free(condition->unplugged);
+
+	free(condition);
 }
 
 bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail_lid_closed) {
@@ -94,13 +106,30 @@ bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail
 	return false;
 }
 
-void cfg_condition_free(struct CfgCondition *condition) {
-	if (!condition)
-		return;
+char *cfg_condition_str(const struct CfgCondition *condition) {
+	char *str = NULL;
 
-	sset_free(condition->plugged);
-	sset_free(condition->unplugged);
+	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
+		str = sprintf_append(str, "%s%s plugged", str ? " AND " : "", it->val);
+	}
 
-	free(condition);
+	for (const struct SsetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
+		str = sprintf_append(str, "%s%s unplugged", str ? " AND " : "", it->val);
+	}
+
+	switch(condition->lid) {
+		case LID_CLOSED:
+			str = sprintf_append(str, "%slid closed", str ? " AND " : "");
+			break;
+		case LID_OPEN:
+			str = sprintf_append(str, "%slid open", str ? " AND " : "");
+			break;
+		case LID_NOT_PRESENT:
+			str = sprintf_append(str, "%slid not present", str ? " AND " : "");
+			break;
+		default:
+			break;
+	}
+
+	return str;
 }
-

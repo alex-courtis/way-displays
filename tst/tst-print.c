@@ -24,7 +24,6 @@
 #include "pset.h"
 #include "simap.h"
 #include "spmap.h"
-#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/print.h"
@@ -158,12 +157,6 @@ static void print_cfg__all(void **state) {
 
 	spmap_put(c->disableds, "disabled always", cfg_disabled_init());
 
-	const struct CfgDisabled *disabled = cfg_disabled_init();
-	const struct CfgCondition *cond = cfg_condition_init();
-	sset_add(cond->plugged, "ONE");
-	pset_add(disabled->conditions, cond);
-	spmap_put(c->disableds, "disabled conditionally", disabled);
-
 	spmap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
@@ -268,6 +261,50 @@ static void print_cfg__lid_disabled(void **state) {
 	print_cfg(INFO, c, false);
 
 	char *expected_log = read_file("tst/info/print-cfg-lid-disabled.log");
+	assert_log(INFO, expected_log);
+
+	free(expected_log);
+	cfg_free(c);
+
+	assert_logs_empty();
+}
+
+static void print_cfg__disabled_conditions(void **state) {
+	struct Cfg *c = cfg_init();
+
+	spmap_put(c->disableds, "uncond1", cfg_disabled_init());
+
+	const struct CfgDisabled *dis = cfg_disabled_init();
+	spmap_put(c->disableds, "cond", dis);
+
+	pset_add(dis->conditions, cfg_condition_init());
+
+	struct CfgCondition *cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "pl1", NULL);
+	sset_add_many(cond->unplugged, "un1", NULL);
+	cond->lid = LID_OPEN;
+	pset_add(dis->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add_many(cond->unplugged, "un2", "un3", NULL);
+	cond->lid = LID_CLOSED;
+	pset_add(dis->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "pl2", "pl3", NULL);
+	cond->lid = LID_NOT_PRESENT;
+	pset_add(dis->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "pl5", NULL);
+	sset_add_many(cond->unplugged, "un5",  NULL);
+	pset_add(dis->conditions, cond);
+
+	spmap_put(c->disableds, "uncond2", cfg_disabled_init());
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-disabled-conditions.log");
 	assert_log(INFO, expected_log);
 
 	free(expected_log);
@@ -666,6 +703,7 @@ static void print_mode_fail__head(void **state) {
 	assert_logs_empty();
 }
 
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(print_cfg__all),
@@ -674,6 +712,7 @@ int main(void) {
 		TEST_BA(print_cfg__auto_scale_max),
 		TEST_BA(print_cfg__del),
 		TEST_BA(print_cfg__lid_disabled),
+		TEST_BA(print_cfg__disabled_conditions),
 
 		TEST_BA(print_cfg_commands__empty),
 		TEST_BA(print_cfg_commands__ok),

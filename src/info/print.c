@@ -7,6 +7,7 @@
 #include "info/print.h"
 
 #include "cfg/cfg.h"
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "displ.h"
 #include "enum.h"
@@ -65,7 +66,19 @@ static void print_disabled(const enum LogThreshold t, const char * const name_de
 	if (!disabled) return;
 
 	if (pset_size(disabled->conditions) > 0) {
-		log_(t, "    %s (conditionally)", name_desc);
+		log_(t, "    %s", name_desc);
+		log_(t, "      IF");
+		bool first = true;
+		for (const struct PsetIt *it = pset_it(disabled->conditions); it; it = pset_it_next(it)) {
+			char *msg = cfg_condition_str(it->val);
+			if (msg) {
+				if (!first)
+					log_(t, "          OR");
+				first = false;
+				log_(t, "        %s", msg);
+				free(msg);
+			}
+		}
 	} else {
 		log_(t, "    %s", name_desc);
 	}

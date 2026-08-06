@@ -16,8 +16,9 @@
   Transform:
     twelve: FLIPPED
   Disabled:
-    !^eDP-[0-9] (conditionally)
+    !^eDP-[0-9]
+      IF
+        lid closed
     disabled always
-    disabled conditionally (conditionally)
   Callback command:
     notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
