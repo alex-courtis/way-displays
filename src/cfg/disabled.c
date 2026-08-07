@@ -9,6 +9,7 @@
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
+#include "info/print.h"
 #include "log.h"
 #include "pset.h"
 #include "regx.h"
@@ -83,24 +84,18 @@ void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds) {
 
 		// current global conditionally disabled that match the name_desc
 		const struct SPmapFilter f = { .key_val_data = (fn_pred_spp)cfg_disabled_cond_with_name_desc, .data = it->key, };
-		const struct SPmapPair conditionally = spmap_find(g_cfg->disableds, f);
-		if (conditionally.val) {
+		const struct SPmapPair disabled = spmap_find(g_cfg->disableds, f);
+		if (disabled.val) {
 
-			// TODO v2 add condition text
-			log_info(NULL);
-			log_info("Ignoring %s for '%s' as it is conditionally %s '%s'",
-					cfg_element_name(DISABLED),
-					it->key,
-					cfg_element_name(DISABLED),
-					conditionally.key
-					);
+			log_warn(NULL);
+			log_warn("Ignoring %s for %s due to conditions:", cfg_element_name(DISABLED), it->key);
+			print_disabled(WARNING, disabled.key, disabled.val);
 
 			spmap_it_remove_free(it);
 		}
 	}
 }
 
-// TODO move to head
 bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, struct Head * const head, const bool fail_lid_closed) {
 	free(head->disabled_condition_desc);
 	head->disabled_condition_desc = NULL;

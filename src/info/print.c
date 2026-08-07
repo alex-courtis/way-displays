@@ -62,28 +62,6 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 	}
 }
 
-static void print_disabled(const enum LogThreshold t, const char * const name_desc, const struct CfgDisabled * const disabled) {
-	if (!disabled) return;
-
-	if (pset_size(disabled->conditions) > 0) {
-		log_(t, "    %s", name_desc);
-		log_(t, "      IF");
-		bool first = true;
-		for (const struct PsetIt *it = pset_it(disabled->conditions); it; it = pset_it_next(it)) {
-			char *msg = cfg_condition_str(it->val);
-			if (msg) {
-				if (!first)
-					log_(t, "          OR");
-				first = false;
-				log_(t, "        %s", msg);
-				free(msg);
-			}
-		}
-	} else {
-		log_(t, "    %s", name_desc);
-	}
-}
-
 static void print_modes_res_refresh(const enum LogThreshold t, const struct Head * const head) {
 	if (!head)
 		return;
@@ -302,6 +280,29 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	if (cfg->callback_cmd) {
 		log_(t, NULL);
 		log_(t, "way-displays -s CALLBACK_CMD '%s'", cfg->callback_cmd);
+	}
+}
+
+void print_disabled(const enum LogThreshold t, const char * const name_desc, const struct CfgDisabled * const disabled) {
+	if (!disabled)
+		return;
+
+	if (pset_size(disabled->conditions) > 0) {
+		log_(t, "    %s", name_desc);
+		log_(t, "      IF");
+		bool first = true;
+		for (const struct PsetIt *it = pset_it(disabled->conditions); it; it = pset_it_next(it)) {
+			char *msg = cfg_condition_str(it->val);
+			if (msg) {
+				if (!first)
+					log_(t, "          OR");
+				first = false;
+				log_(t, "        %s", msg);
+				free(msg);
+			}
+		}
+	} else {
+		log_(t, "    %s", name_desc);
 	}
 }
 

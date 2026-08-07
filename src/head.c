@@ -106,6 +106,7 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
 
 // remove a ManualOverride if present, or set one based on current head enabled state
 static void head_apply_disabled_toggle(struct Head * const head) {
+	// TODO v2 print conditions
 	if (head->overrided_enabled == NoOverride) {
 		log_info(NULL);
 		log_info("Applying %s override for %s", cfg_element_name(DISABLED), head->name);
