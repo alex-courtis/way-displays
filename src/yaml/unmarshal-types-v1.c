@@ -17,35 +17,35 @@
 #include "yaml/unmarshal-types.h"
 #include "yaml/unmarshal.h"
 
-void yaml_scalar_into_laptop_display_prefix_v1(struct UC *c, const yaml_node_t *node) {
-	char *laptop_display_prefix = yaml_scalar_to_string(c, node);
+void yaml_scalar_into_laptop_display_prefix_v1(const yaml_node_t *node) {
+	char *laptop_display_prefix = yaml_scalar_to_string(node);
 
 	if (!laptop_display_prefix)
 		return;
 
-	strncpy(c->v1_laptop_display_prefix, laptop_display_prefix, sizeof(c->v1_laptop_display_prefix) - 1);
+	strncpy(uc.v1_laptop_display_prefix, laptop_display_prefix, sizeof(uc.v1_laptop_display_prefix) - 1);
 	free(laptop_display_prefix);
 }
 
-void yaml_map_into_cfg_modes_v1(struct UC *c, const struct SPmap* const modes, const yaml_node_t *map) {
-	c->v1_present = true;
+void yaml_map_into_cfg_modes_v1(const struct SPmap* const modes, const yaml_node_t *map) {
+	uc.v1_present = true;
 
 	const struct SPmap *m;
-	if (!modes || !(m = yaml_map_to_spmap(c, map)))
+	if (!modes || !(m = yaml_map_to_spmap(map)))
 		return;
 
 	struct Mode *mode = NULL;
 
 	char *name_desc = NULL;
 
-	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
+	yaml_unmarshal_log_ctx_key("NAME_DESC");
 	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-	if (!(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+	if (!(name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto err;
 
-	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
+	yaml_unmarshal_log_ctx_name_desc(name_desc);
 
-	mode = yaml_map_to_cfg_mode(c, map);
+	mode = yaml_map_to_cfg_mode(map);
 	if (!mode)
 		goto err;
 
@@ -62,34 +62,34 @@ err:
 end:
 	free(name_desc);
 	spmap_free(m);
-	yaml_unmarshal_log_ctx_key(c, NULL);
-	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
 }
 
-void yaml_map_into_scales_v1(struct UC *c, const struct SImap* const scales, const yaml_node_t *map) {
-	c->v1_present = true;
+void yaml_map_into_scales_v1(const struct SImap* const scales, const yaml_node_t *map) {
+	uc.v1_present = true;
 
 	const struct SPmap *m;
-	if (!scales || !(m = yaml_map_to_spmap(c, map)))
+	if (!scales || !(m = yaml_map_to_spmap(map)))
 		return;
 
 	char *name_desc = NULL;
 
-	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
+	yaml_unmarshal_log_ctx_key("NAME_DESC");
 	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-	if (!(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+	if (!(name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto end;
 
-	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
+	yaml_unmarshal_log_ctx_name_desc(name_desc);
 
-	yaml_unmarshal_log_ctx_key(c, "SCALE");
+	yaml_unmarshal_log_ctx_key("SCALE");
 	scalar = spmap_get(m, "SCALE");
 	float scale;
-	if (!yaml_scalar_to_float(c, &scale, scalar))
+	if (!yaml_scalar_to_float(&scale, scalar))
 		goto end;
 
 	if (scale <= 0) {
-		yaml_unmarshal_log_invalid_value(c, scalar->data.scalar.value, "positive number");
+		yaml_unmarshal_log_invalid_value(scalar->data.scalar.value, "positive number");
 		goto end;
 	}
 
@@ -100,32 +100,32 @@ void yaml_map_into_scales_v1(struct UC *c, const struct SImap* const scales, con
 end:
 	free(name_desc);
 	spmap_free(m);
-	yaml_unmarshal_log_ctx_key(c, NULL);
-	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
 
 	return;
 }
 
-void yaml_map_into_transforms_v1(struct UC *c, const struct SImap* const transforms, const yaml_node_t *map) {
-	c->v1_present = true;
+void yaml_map_into_transforms_v1(const struct SImap* const transforms, const yaml_node_t *map) {
+	uc.v1_present = true;
 
 	const struct SPmap *m;
-	if (!transforms || !(m = yaml_map_to_spmap(c, map)))
+	if (!transforms || !(m = yaml_map_to_spmap(map)))
 		return;
 
 	char *name_desc = NULL;
 
-	yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
+	yaml_unmarshal_log_ctx_key("NAME_DESC");
 	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-	if (!(name_desc = yaml_scalar_to_name_desc(c, scalar)))
+	if (!(name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto end;
 
-	yaml_unmarshal_log_ctx_name_desc(c, name_desc);
+	yaml_unmarshal_log_ctx_name_desc(name_desc);
 
-	yaml_unmarshal_log_ctx_key(c, "TRANSFORM");
+	yaml_unmarshal_log_ctx_key("TRANSFORM");
 	scalar = spmap_get(m, "TRANSFORM");
 	enum wl_output_transform transform;
-	if (!(transform = yaml_scalar_to_enum(c, scalar, transform_val, transform_names)))
+	if (!(transform = yaml_scalar_to_enum(scalar, transform_val, transform_names)))
 		goto end;
 
 	if (simap_put_if_absent(transforms, name_desc, transform)) {
@@ -135,14 +135,14 @@ void yaml_map_into_transforms_v1(struct UC *c, const struct SImap* const transfo
 end:
 	free(name_desc);
 	spmap_free(m);
-	yaml_unmarshal_log_ctx_key(c, NULL);
-	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
 }
 
-void yaml_node_into_disableds_v1(struct UC *c, const struct SPmap* const disableds, const yaml_node_t *node) {
-	c->v1_present = true;
+void yaml_node_into_disableds_v1(const struct SPmap* const disableds, const yaml_node_t *node) {
+	uc.v1_present = true;
 
-	if (!disableds || !yaml_check_node_type(c, node, YAML_SCALAR_NODE, YAML_MAPPING_NODE))
+	if (!disableds || !yaml_check_node_type(node, YAML_SCALAR_NODE, YAML_MAPPING_NODE))
 		return;
 
 	struct CfgDisabled *disabled = NULL;
@@ -153,7 +153,7 @@ void yaml_node_into_disableds_v1(struct UC *c, const struct SPmap* const disable
 		char *name_desc = NULL;
 
 		disabled = cfg_disabled_init();
-		if (!(name_desc = yaml_scalar_to_name_desc(c, node)))
+		if (!(name_desc = yaml_scalar_to_name_desc(node)))
 			goto err;
 
 		if (spmap_put_if_absent(disableds, name_desc, disabled)) {
@@ -162,18 +162,18 @@ void yaml_node_into_disableds_v1(struct UC *c, const struct SPmap* const disable
 
 		free(name_desc);
 
-	} else if (node->type == YAML_MAPPING_NODE && (m = yaml_map_to_spmap(c, node))) {
+	} else if (node->type == YAML_MAPPING_NODE && (m = yaml_map_to_spmap(node))) {
 
 		char *name_desc = NULL;
 
-		yaml_unmarshal_log_ctx_key(c, "NAME_DESC");
+		yaml_unmarshal_log_ctx_key("NAME_DESC");
 		const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
-		if (!(name_desc = yaml_scalar_to_name_desc(c, scalar))) {
+		if (!(name_desc = yaml_scalar_to_name_desc(scalar))) {
 			free(name_desc);
 			goto err;
 		}
 
-		yaml_unmarshal_log_ctx_name_desc(c, name_desc);
+		yaml_unmarshal_log_ctx_name_desc(name_desc);
 
 		disabled = (struct CfgDisabled*)spmap_get(disableds, name_desc);
 
@@ -184,10 +184,10 @@ void yaml_node_into_disableds_v1(struct UC *c, const struct SPmap* const disable
 
 		free(name_desc);
 
-		yaml_unmarshal_log_ctx_key(c, "IF");
+		yaml_unmarshal_log_ctx_key("IF");
 		const yaml_node_t *map = spmap_get(m, "IF");
 		if (map)
-			yaml_seq_into_col(c, map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
+			yaml_seq_into_col(map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 	}
 
 	goto end;
@@ -197,7 +197,7 @@ err:
 
 end:
 	spmap_free(m);
-	yaml_unmarshal_log_ctx_key(c, NULL);
-	yaml_unmarshal_log_ctx_name_desc(c, NULL);
+	yaml_unmarshal_log_ctx_key(NULL);
+	yaml_unmarshal_log_ctx_name_desc(NULL);
 }
 
