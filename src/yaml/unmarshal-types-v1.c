@@ -34,19 +34,44 @@ void yaml_map_into_cfg_modes_v1(const struct SPmap* const modes, const yaml_node
 	if (!modes || !(m = yaml_map_to_spmap(map)))
 		return;
 
-	struct Mode *mode = NULL;
+	struct Mode *mode = mode_init();
 
 	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key("NAME_DESC");
-	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
+	const yaml_node_t *scalar = spmap_remove(m, "NAME_DESC");
 	if (!(name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto err;
 
 	yaml_unmarshal_log_ctx_name_desc(name_desc);
 
-	mode = yaml_map_to_cfg_mode(map);
-	if (!mode)
+	yaml_unmarshal_log_ctx_key("WIDTH");
+	scalar = spmap_remove(m, "WIDTH");
+	if (scalar && !yaml_scalar_to_int(&mode->width, scalar))
+		goto err;
+
+	yaml_unmarshal_log_ctx_key("HEIGHT");
+	scalar = spmap_remove(m, "HEIGHT");
+	if (scalar && !yaml_scalar_to_int(&mode->height, scalar))
+		goto err;
+
+	yaml_unmarshal_log_ctx_key("HZ");
+	scalar = spmap_remove(m, "HZ");
+	if (scalar) {
+		float hz = 0;
+		if (!yaml_scalar_to_float(&hz, scalar))
+			goto err;
+		mode->refresh_mhz = lround(hz * 1000);
+	}
+
+	yaml_unmarshal_log_ctx_key("MAX");
+	scalar = spmap_remove(m, "MAX");
+	if (scalar && !yaml_scalar_to_boolean(&mode->max, scalar))
+		goto err;
+
+	yaml_unmarshal_log_ctx_key("MAX_PREFERRED_REFRESH");
+	scalar = spmap_remove(m, "MAX_PREFERRED_REFRESH");
+	if (scalar && !yaml_scalar_to_boolean(&mode->max_preferred_refresh, scalar))
 		goto err;
 
 	if (spmap_put_if_absent(modes, name_desc, mode)) {
@@ -76,20 +101,20 @@ void yaml_map_into_scales_v1(const struct SImap* const scales, const yaml_node_t
 	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key("NAME_DESC");
-	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
+	const yaml_node_t *scalar = spmap_remove(m, "NAME_DESC");
 	if (!(name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto end;
 
 	yaml_unmarshal_log_ctx_name_desc(name_desc);
 
 	yaml_unmarshal_log_ctx_key("SCALE");
-	scalar = spmap_get(m, "SCALE");
+	scalar = spmap_remove(m, "SCALE");
 	float scale;
 	if (!yaml_scalar_to_float(&scale, scalar))
 		goto end;
 
 	if (scale <= 0) {
-		yaml_unmarshal_log_invalid_value(scalar->data.scalar.value, "positive number");
+		yaml_log_invalid_value(scalar->data.scalar.value, "positive number");
 		goto end;
 	}
 
@@ -116,14 +141,14 @@ void yaml_map_into_transforms_v1(const struct SImap* const transforms, const yam
 	char *name_desc = NULL;
 
 	yaml_unmarshal_log_ctx_key("NAME_DESC");
-	const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
+	const yaml_node_t *scalar = spmap_remove(m, "NAME_DESC");
 	if (!(name_desc = yaml_scalar_to_name_desc(scalar)))
 		goto end;
 
 	yaml_unmarshal_log_ctx_name_desc(name_desc);
 
 	yaml_unmarshal_log_ctx_key("TRANSFORM");
-	scalar = spmap_get(m, "TRANSFORM");
+	scalar = spmap_remove(m, "TRANSFORM");
 	enum wl_output_transform transform;
 	if (!(transform = yaml_scalar_to_enum(scalar, transform_val, transform_names)))
 		goto end;
@@ -167,7 +192,7 @@ void yaml_node_into_disableds_v1(const struct SPmap* const disableds, const yaml
 		char *name_desc = NULL;
 
 		yaml_unmarshal_log_ctx_key("NAME_DESC");
-		const yaml_node_t *scalar = spmap_get(m, "NAME_DESC");
+		const yaml_node_t *scalar = spmap_remove(m, "NAME_DESC");
 		if (!(name_desc = yaml_scalar_to_name_desc(scalar))) {
 			free(name_desc);
 			goto err;
@@ -185,7 +210,7 @@ void yaml_node_into_disableds_v1(const struct SPmap* const disableds, const yaml
 		free(name_desc);
 
 		yaml_unmarshal_log_ctx_key("IF");
-		const yaml_node_t *map = spmap_get(m, "IF");
+		const yaml_node_t *map = spmap_remove(m, "IF");
 		if (map)
 			yaml_seq_into_col(map, disabled->conditions, (fn_yaml_node_into_col)yaml_map_into_conditions);
 	}

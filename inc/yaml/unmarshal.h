@@ -5,6 +5,7 @@
 #include <yaml.h>
 
 #include "enum.h"
+#include "spmap.h"
 
 /*
  * Context available for the duration of marshalling
@@ -49,13 +50,16 @@ void yaml_unmarshal_log_ctx_top      (const char *top);       // root map key
 void yaml_unmarshal_log_enum_names   (fn_enum_names fn);      // all valid enum values
 
 // explicitly log a value as invalid with free-form expectation message
-void yaml_unmarshal_log_invalid_value(const yaml_char_t *value, const char *expected);
+void yaml_log_invalid_value(const yaml_char_t *value, const char *expected);
 
 // validate that the node is a scalar, return false and log a warning with free-form expected message if not
 bool yaml_check_is_scalar(const yaml_node_t *node, const char *expected);
 
 // validate actual is one of expected type, returning false and logging an expected-got warning if not
 bool yaml_check_node_type(const yaml_node_t *node_actual, const yaml_node_type_t type1, const yaml_node_type_t type2);
+
+// for keys in m, log an unexpected message
+void yaml_log_unknown_keys(const struct SPmap *m, const char *expected);
 
 // if pattern starts with '!' return false if it fails to compile, otherwise return true
 bool yaml_valid_name_desc(const char *pattern);

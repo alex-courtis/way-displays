@@ -33,6 +33,11 @@ MODE:
   '!(badpat':
     MAX: TRUE
 
+  unknown_key:
+    WIDTH: 800
+    HEIGHT: 600
+    FOO: bar
+
   empty_str:
 
   str_width:

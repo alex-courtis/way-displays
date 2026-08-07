@@ -38,7 +38,7 @@ bool yaml_scalar_to_int(int32_t *dst, const yaml_node_t *scalar) {
 	if (sscanf((char*)scalar->data.scalar.value, "%d", dst) == 1)
 		return true;
 
-	yaml_unmarshal_log_invalid_value(scalar->data.scalar.value, "integer");
+	yaml_log_invalid_value(scalar->data.scalar.value, "integer");
 	return false;
 }
 
@@ -65,7 +65,7 @@ bool yaml_scalar_to_float(float *dst, const yaml_node_t *scalar) {
 	if (sscanf((char*)scalar->data.scalar.value, "%f", dst) == 1)
 		return true;
 
-	yaml_unmarshal_log_invalid_value(scalar->data.scalar.value, "number");
+	yaml_log_invalid_value(scalar->data.scalar.value, "number");
 	return false;
 }
 
@@ -93,7 +93,7 @@ int yaml_scalar_to_enum(const yaml_node_t *scalar, fn_enum_val val, fn_enum_name
 	if (yaml_check_is_scalar(scalar, "enum")) {
 		ret = val((char*)scalar->data.scalar.value);
 		if (!ret) {
-			yaml_unmarshal_log_invalid_value(scalar->data.scalar.value, "enum");
+			yaml_log_invalid_value(scalar->data.scalar.value, "enum");
 		}
 	}
 
@@ -121,7 +121,7 @@ bool yaml_scalar_to_boolean(bool *dst, const yaml_node_t *scalar) {
 
 	int val = on_off_val((char*)scalar->data.scalar.value);
 	if (!val) {
-		yaml_unmarshal_log_invalid_value(scalar->data.scalar.value, "boolean");
+		yaml_log_invalid_value(scalar->data.scalar.value, "boolean");
 		return false;
 	}
 

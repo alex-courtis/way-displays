@@ -155,6 +155,7 @@ static void yaml_root_to_cfg__mode(void **state) {
 			"max_pref_overrides", mode_whr_max_pref(640, 480, 30000),
 			"max_only", mode_whr_max(-1, -1, -1),
 			"max_pref_only", mode_whr_max_pref(-1, -1, -1),
+			"unknown_key", mode_whr(800, 600, -1),
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-mode.yaml", expected, "tst/yaml/cfg-mode.log");
@@ -188,19 +189,24 @@ static void yaml_root_to_cfg__disabled(void **state) {
 	cond->lid = LID_NOT_PRESENT;
 	pset_add(conditionally->conditions, cond);
 
+	struct CfgDisabled *unknown_key = cfg_disabled_init();
+	cond = cfg_condition_init();
+	cond->lid = LID_OPEN;
+	pset_add(unknown_key->conditions, cond);
+
+	struct CfgDisabled *some_bad_conditions = cfg_disabled_init();
+	cond = cfg_condition_init();
+	cond->lid = LID_CLOSED;
+	pset_add(some_bad_conditions->conditions, cond);
+	cond = cfg_condition_init();
+	sset_add(cond->plugged, "ninth");
+	pset_add(some_bad_conditions->conditions, cond);
+
 	spmap_put_many(expected->disableds,
-			"unconditional",    cfg_disabled_init(),
-			"conditional",      conditionally,
-			"empty_if",         cfg_disabled_init(),
-			"unknown_if",       cfg_disabled_init(),
-			"bad_enum_lid",     cfg_disabled_init(),
-			"bad_pat_plugged",  cfg_disabled_init(),
-			"bad_pat_unplugged",cfg_disabled_init(),
-			"map_lid",          cfg_disabled_init(),
-			"map_plugged",      cfg_disabled_init(),
-			"map_unplugged",    cfg_disabled_init(),
-			"scalar_if",        cfg_disabled_init(),
-			"missing_if",       cfg_disabled_init(),
+			"unconditional",       cfg_disabled_init(),
+			"conditional",         conditionally,
+			"unknown_key",         unknown_key,
+			"some_bad_conditions", some_bad_conditions,
 			NULL);
 
 	check_unmarshalled_cfg("tst/yaml/cfg-disabled.yaml", expected, "tst/yaml/cfg-disabled.log");

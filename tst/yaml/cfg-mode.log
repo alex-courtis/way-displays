@@ -1,4 +1,5 @@
 cfg-mode.yaml: invalid MODE regex '(badpat': Unmatched ( or \(
+cfg-mode.yaml: invalid MODE 'unknown_key' FOO, expected WIDTH|HEIGHT|HZ|MAX|MAX_PREFERRED_REFRESH
 cfg-mode.yaml: invalid MODE 'empty_str', expected map, got scalar
 cfg-mode.yaml: invalid MODE 'str_width' WIDTH wid, expected integer
 cfg-mode.yaml: invalid MODE 'str_height' HEIGHT hei, expected integer

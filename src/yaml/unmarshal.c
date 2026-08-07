@@ -9,6 +9,7 @@
 #include "enum.h"
 #include "log.h"
 #include "regx.h"
+#include "spmap.h"
 #include "str.h"
 
 struct UC uc = { 0 };
@@ -169,7 +170,7 @@ void yaml_unmarshal_log_enum_names(fn_enum_names fn) {
 	uc.enum_names = fn;
 }
 
-void yaml_unmarshal_log_invalid_value(const yaml_char_t *value, const char *expected) {
+void yaml_log_invalid_value(const yaml_char_t *value, const char *expected) {
 
 	char *msg = NULL;
 
@@ -207,7 +208,7 @@ bool yaml_check_is_scalar(const yaml_node_t *node, const char *expected) {
 	if (node && node->type == YAML_SCALAR_NODE)
 		return true;
 
-	yaml_unmarshal_log_invalid_value(NULL, expected);
+	yaml_log_invalid_value(NULL, expected);
 
 	return false;
 }
@@ -221,11 +222,17 @@ bool yaml_check_node_type(const yaml_node_t *node_actual, const yaml_node_type_t
 		expected = sprintf_append(expected, " or %s", yaml_node_type_str(type2));
 	expected = sprintf_append(expected, ", got %s", yaml_node_type_str(node_actual ? node_actual->type : YAML_NO_NODE));
 
-	yaml_unmarshal_log_invalid_value(NULL, expected);
+	yaml_log_invalid_value(NULL, expected);
 
 	free(expected);
 
 	return false;
+}
+
+void yaml_log_unknown_keys(const struct SPmap *m, const char *expected) {
+	for (const struct SPmapIt *it = spmap_it(m); it; it = spmap_it_next(it)) {
+		yaml_log_invalid_value((yaml_char_t*)it->key, expected);
+	}
 }
 
 bool yaml_valid_name_desc(const char *pattern) {
@@ -236,7 +243,7 @@ bool yaml_valid_name_desc(const char *pattern) {
 
 	if (err) {
 		char *msg = sprintf_alloc("regex '%s': %s", pattern + 1, err);
-		yaml_unmarshal_log_invalid_value((yaml_char_t*)msg, NULL);
+		yaml_log_invalid_value((yaml_char_t*)msg, NULL);
 		free(msg);
 		free(err);
 		return false;

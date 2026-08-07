@@ -23,10 +23,11 @@ void *yaml_root_to_ipc_response_plist(const yaml_node_t *root); // Plist of IpcR
 
 // create a struct from a map
 
-struct Cfg  *yaml_map_to_cfg      (const yaml_node_t *map);  // Cfg
-struct Lid  *yaml_map_to_lid      (const yaml_node_t *map);  // Lid
-struct Mode *yaml_map_to_cfg_mode (const yaml_node_t *map);  // Cfg mode
-struct Mode *yaml_map_to_head_mode(const yaml_node_t *map);  // Head mode
+struct Cfg         *yaml_map_to_cfg          (const yaml_node_t *map);  // Cfg
+struct Lid         *yaml_map_to_lid          (const yaml_node_t *map);  // Lid
+struct Mode        *yaml_map_to_cfg_mode     (const yaml_node_t *map);  // Cfg mode
+struct Mode        *yaml_map_to_head_mode    (const yaml_node_t *map);  // Head mode
+struct CfgDisabled *yaml_map_to_disabled_cond(const yaml_node_t *map);  // CfgDisabled with conditions
 
 // fn_yaml_node_into_col: create a struct and add to collection
 void yaml_map_into_conditions   (const struct Pset*  const conditions,    const yaml_node_t *map);
