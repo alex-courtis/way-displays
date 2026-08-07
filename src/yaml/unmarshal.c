@@ -176,8 +176,6 @@ void yaml_log_invalid_value(const yaml_char_t *value, const char *expected) {
 
 	if (*uc.prefix)
 		msg = sprintf_append(msg, "%s:", uc.prefix);
-	else
-		msg = sprintf_append(msg, "Ignoring");
 
 	if (*uc.top)
 		msg = sprintf_append(msg, " invalid %s", uc.top);

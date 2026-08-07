@@ -79,11 +79,11 @@ static void yaml_root_to_cfg__empty_arrays(void **state) {
 	assert_logs_empty();
 }
 
-static void yaml_root_to_cfg__unknown_fields_ok(void **state) {
+static void yaml_root_to_cfg__unknown_fields_warn(void **state) {
 	struct Cfg *expected = cfg_init();
 	expected->arrange = COL;
 
-	check_unmarshalled_cfg("tst/yaml/cfg-unknown-fields-ok.yaml", expected, NULL);
+	check_unmarshalled_cfg("tst/yaml/cfg-unknown-fields.yaml", expected, "tst/yaml/cfg-unknown-fields.log");
 
 	assert_logs_empty();
 }
@@ -706,7 +706,7 @@ int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST(yaml_root_to_cfg__ok),
 		TEST(yaml_root_to_cfg__empty_arrays),
-		TEST(yaml_root_to_cfg__unknown_fields_ok),
+		TEST(yaml_root_to_cfg__unknown_fields_warn),
 		TEST(yaml_root_to_cfg__missing),
 		TEST(yaml_root_to_cfg__invalid),
 		TEST(yaml_root_to_cfg__mistyped),

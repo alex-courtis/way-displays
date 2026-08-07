@@ -1,0 +1,2 @@
+cfg-unknown-fields.yaml: invalid top level key FOO
+cfg-unknown-fields.yaml: invalid top level key PLUGGED

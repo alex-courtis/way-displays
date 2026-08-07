@@ -142,8 +142,6 @@ struct Cfg *yaml_map_to_cfg(const yaml_node_t *map) {
 			continue;
 
 		const enum CfgElement element_val = cfg_element_val(element_name);
-		if (!element_val)
-			continue;
 
 		const yaml_node_t *node = yaml_document_get_node(&uc.d, pair->value);
 		if (!node)
@@ -248,7 +246,8 @@ struct Cfg *yaml_map_to_cfg(const yaml_node_t *map) {
 				break;
 
 			default:
-				// ignore unexpected
+				yaml_unmarshal_log_ctx_top("top level key");
+				yaml_log_invalid_value(key->data.scalar.value, NULL);
 				break;
 		}
 	}
