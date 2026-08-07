@@ -24,6 +24,21 @@ DISABLED:
       - sixth
       LID: NOT_PRESENT
 
+  unknown_key:
+    IF:
+    - LID: OPEN
+    FOO:
+
+  some_bad_conditions:
+    IF:
+    - LID: CLOSED
+      PLUGGED:
+        FOO: foo
+    - UNPLUGGED:
+        BAR: bar
+      PLUGGED:
+      - ninth
+
   '!(bad_pat_key':
 
   empty_if:
