@@ -189,7 +189,7 @@ static void callback_adaptive_sync_fail__(void **state) {
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
-			"  - 'model1'",
+			"- 'model1'",
 
 			"CALLBACK_LEVEL", "WARNING",
 			NULL);

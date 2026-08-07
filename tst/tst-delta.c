@@ -10,6 +10,8 @@
 #include <string.h>
 #include <wayland-client-protocol.h>
 
+#include "cfg/condition.h"
+#include "enum.h"
 #include "head.h"
 #include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
@@ -223,13 +225,18 @@ static void delta_human__disabled(void **state) {
 	s->head2->cur.enabled = true;
 	s->head2->des.enabled = false;
 
+	struct CfgCondition *condition = cfg_condition_init();
+	condition->lid = LID_OPEN;
+	s->head2->disabled_condition_desc = strdup("something true");
+
 	char *deltas = delta_human(s->heads);
 
 	assert_str_equal(deltas, ""
 			"description1\n  disabled\n"
-			"name2\n  disabled"
+			"name2\n  disabled: something true"
 			);
 
+	cfg_condition_free(condition);
 	free(deltas);
 }
 

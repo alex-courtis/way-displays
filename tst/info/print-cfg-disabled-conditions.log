@@ -1,0 +1,12 @@
+  Disabled:
+    uncond1
+    cond
+      IF
+        pl1 plugged AND un1 unplugged AND lid open
+          OR
+        un2 unplugged AND un3 unplugged AND lid closed
+          OR
+        pl2 plugged AND pl3 plugged AND lid not present
+          OR
+        pl5 plugged AND un5 unplugged
+    uncond2

@@ -12,6 +12,7 @@
 #include "enum.h"
 #include "fn.h"
 #include "info/callback.h"
+#include "info/print.h"
 #include "ipc.h"
 #include "log.h"
 #include "mode.h"
@@ -78,6 +79,7 @@ void head_free(struct Head *head) {
 	ppmap_free_vals(head->modes);
 	ppmap_free_vals(head->modes_failed);
 
+	free(head->disabled_condition_desc);
 	free(head->name);
 	free(head->description);
 	free(head->make);
@@ -104,10 +106,11 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
 }
 
 // remove a ManualOverride if present, or set one based on current head enabled state
-static void head_apply_disabled_toggle(struct Head * const head) {
+static void head_apply_disabled_toggle(struct Head * const head, const struct SPmap * const disableds) {
 	if (head->overrided_enabled == NoOverride) {
 		log_info(NULL);
-		log_info("Applying %s override for %s", cfg_element_name(DISABLED), head->name);
+		log_info("Applying %s %s override of conditions:", head->name, cfg_element_name(DISABLED));
+		print_disableds(INFO, disableds);
 		if (head->cur.enabled) {
 			head->overrided_enabled = OverrideFalse;
 		} else {
@@ -115,49 +118,60 @@ static void head_apply_disabled_toggle(struct Head * const head) {
 		}
 	} else {
 		log_info(NULL);
-		log_info("Resetting %s override for %s", cfg_element_name(DISABLED), head->name);
+		log_info("Resetting %s %s override of conditions:", head->name, cfg_element_name(DISABLED));
+		print_disableds(INFO, disableds);
 		head->overrided_enabled = NoOverride;
 	}
 }
 
-void head_override_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request) {
+const struct SPmap *head_override_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request) {
+
+	// request disableds that have been applied as overrides
+	const struct SPmap *disableds_req = cfg_disabled_spmap_init();
+
 	if (!head || !ipc_request || !ipc_request->cfg)
-		return;
+		return disableds_req;
 
-	bool override = false;
+	// conditional disableds that are active
+	const struct SPmap *disableds_cfg = cfg_disabled_spmap_init();
 
-	// ipc disabled request for this head, no conditions will be present hence we match name_desc only
+	// ipc disabled request applies to this head, no conditions will be present hence we match name_desc only
 	struct SPmapFilter f_req = { .key_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
-	for (const struct SPmapIt *it = spmap_filter_it(ipc_request->cfg->disableds, f_req); it; it = spmap_it_next(it)) {
+	for (const struct SPmapIt *it_req = spmap_filter_it(ipc_request->cfg->disableds, f_req); it_req; it_req = spmap_it_next(it_req)) {
 
-		// cfg conditionally disabled for this head
+		// cfg conditionally disabled applies to this head
 		struct SPmapFilter f_cfg = { .key_val_data = (fn_pred_spp)cfg_disabled_conditionally_for_head, .data = head, };
-		if (spmap_find(g_cfg->disableds, f_cfg).val) {
+		for (const struct SPmapIt *it_cfg = spmap_filter_it(g_cfg->disableds, f_cfg); it_cfg; it_cfg = spmap_it_next(it_cfg)) {
 
-			// remove from the request for override now
-			spmap_it_remove_free(it);
-			override = true;
+			// note for printing of cfg
+			spmap_put(disableds_cfg, it_cfg->key, it_cfg->val);
+
+			// note for removal from req after all processing
+			spmap_put(disableds_req, it_req->key, it_req->val);
 		}
 	}
 
-	if (!override)
-		return;
-
-	switch (ipc_request->command) {
-		case CFG_TOGGLE:
-			head_apply_disabled_toggle(head);
-			break;
-		case CFG_DEL:
-			if (!head->cur.enabled)
-				head_apply_disabled_toggle(head);
-			break;
-		case CFG_SET:
-			if (head->cur.enabled)
-				head_apply_disabled_toggle(head);
-			break;
-		default:
-			break;
+	if (spmap_size(disableds_cfg) > 0) {
+		switch (ipc_request->command) {
+			case CFG_TOGGLE:
+				head_apply_disabled_toggle(head, disableds_cfg);
+				break;
+			case CFG_DEL:
+				if (!head->cur.enabled)
+					head_apply_disabled_toggle(head, disableds_cfg);
+				break;
+			case CFG_SET:
+				if (head->cur.enabled)
+					head_apply_disabled_toggle(head, disableds_cfg);
+				break;
+			default:
+				break;
+		}
 	}
+
+	spmap_free(disableds_cfg);
+
+	return disableds_req;
 }
 
 void head_set_description(struct Head * const head, const char *description) {

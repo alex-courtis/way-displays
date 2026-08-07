@@ -22,7 +22,11 @@ char *delta_human(const struct PPmap * const heads) {
 
 		// disable in own operation
 		if (head->cur.enabled && !head->des.enabled) {
-			delta = sprintf_append(delta, "%s\n  disabled\n", head_human(head));
+			if (head->disabled_condition_desc) {
+				delta = sprintf_append(delta, "%s\n  disabled: %s\n", head_human(head), head->disabled_condition_desc);
+			} else {
+				delta = sprintf_append(delta, "%s\n  disabled\n", head_human(head));
+			}
 			continue;
 		}
 

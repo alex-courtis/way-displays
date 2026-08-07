@@ -9,6 +9,7 @@
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
+#include "info/print.h"
 #include "log.h"
 #include "pset.h"
 #include "regx.h"
@@ -79,35 +80,46 @@ static bool cfg_disabled_cond_with_name_desc(const char * const a, const struct 
 }
 
 void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds) {
-	for (const struct SPmapIt *it = spmap_it(disableds); it; it = spmap_it_next(it)) {
+	for (const struct SPmapIt *it_req = spmap_it(disableds); it_req; it_req = spmap_it_next(it_req)) {
+		const struct SPmap *clashing_disableds = cfg_disabled_spmap_init();
 
 		// current global conditionally disabled that match the name_desc
-		const struct SPmapFilter f = { .key_val_data = (fn_pred_spp)cfg_disabled_cond_with_name_desc, .data = it->key, };
-		const struct SPmapPair conditionally = spmap_find(g_cfg->disableds, f);
-		if (conditionally.val) {
-
-			log_info(NULL);
-			log_info("Ignoring %s for '%s' as it is conditionally %s '%s'",
-					cfg_element_name(DISABLED),
-					it->key,
-					cfg_element_name(DISABLED),
-					conditionally.key
-					);
-
-			spmap_it_remove_free(it);
+		const struct SPmapFilter f = { .key_val_data = (fn_pred_spp)cfg_disabled_cond_with_name_desc, .data = it_req->key, };
+		for (const struct SPmapIt *it_cfg = spmap_filter_it(g_cfg->disableds, f); it_cfg; it_cfg = spmap_it_next(it_cfg)) {
+			spmap_put(clashing_disableds, it_cfg->key, it_cfg->val);
 		}
+
+		if (spmap_size(clashing_disableds) > 0) {
+			log_warn(NULL);
+			log_warn("Ignoring %s for %s due to conditions:", cfg_element_name(DISABLED), it_req->key);
+			print_disableds(WARNING, clashing_disableds);
+
+			spmap_it_remove_free(it_req);
+		}
+
+		spmap_free(clashing_disableds);
 	}
 }
 
-bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed) {
+bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, struct Head * const head, const bool fail_lid_closed) {
+	free(head->disabled_condition_desc);
+	head->disabled_condition_desc = NULL;
 
 	// name_desc must match head
 	const struct SPmapFilter f = { .key_data = (fn_pred_sp)head_name_desc_matches_head, .data = head, };
 	for (const struct SPmapIt *it = spmap_filter_it(disableds, f); it; it = spmap_it_next(it)) {
-
-		// all conditions must be satisfied
 		const struct CfgDisabled *disabled = it->val;
-		if (pset_find(disabled->conditions, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_condition_failed, .data = &fail_lid_closed }) == NULL) {
+
+		// unconditionally disabled
+		if (pset_size(disabled->conditions) == 0) {
+			spmap_it_free(it);
+			return true;
+		}
+
+		// one condition must be met
+		const struct CfgCondition *condition = pset_find(disabled->conditions, (struct PsetFilter){ .val_data = (fn_pred_pp)cfg_condition_met, .data = &fail_lid_closed });
+		if (condition) {
+			head->disabled_condition_desc = cfg_condition_str(condition);
 			spmap_it_free(it);
 			return true;
 		}

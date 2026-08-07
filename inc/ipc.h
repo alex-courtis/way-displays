@@ -44,7 +44,9 @@ struct IpcResponse *ipc_response_init(void);
 
 const struct Plist *ipc_response_plist_init(void);
 
-void ipc_operation_update_rc(struct IpcOperation *ipc_operation);
+void ipc_operation_update_rc(struct IpcOperation *operation);
+
+void ipc_request_filter(const struct IpcRequest *request);
 
 void ipc_send_request(struct IpcRequest *request);
 

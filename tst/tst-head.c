@@ -3,6 +3,7 @@
 #include "assert-log.h"
 #include "assert-mode.h"
 #include "assert-ppmap.h"
+#include "assert-spmap.h"
 #include "assert-wl.h"
 #include "asserts.h"
 #include "data.h"
@@ -723,12 +724,18 @@ static void head_process_ipc_disableds__set_disabled(void **state) {
 			"!disabled", cfg_disabled_init(),
 			NULL);
 
-	// already disabled, NOP
-	head_override_ipc_disableds(head_disabled_cond, ipc_req);
+	const struct SPmap *expected = spmap_clone(ipc_req->cfg->disableds);
+	spmap_remove(expected, "other");
 
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
+	// already disabled, NOP
+	const struct SPmap *actual = head_override_ipc_disableds(head_disabled_cond, ipc_req);
+
+	assert_spmap_equal(actual, expected);
 
 	assert_int_equal(head_disabled_cond->overrided_enabled, NoOverride);
+
+	spmap_free(actual);
+	spmap_free(expected);
 
 	assert_logs_empty();
 }
@@ -742,14 +749,25 @@ static void head_process_ipc_disableds__set_enabled(void **state) {
 			"head_enable", cfg_disabled_init(),
 			NULL);
 
+	const struct SPmap *expected = spmap_clone(ipc_req->cfg->disableds);
+	spmap_remove(expected, "other");
+
 	// enabled conditionally, override to disable
-	head_override_ipc_disableds(head_enabled_cond, ipc_req);
+	const struct SPmap *actual = head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
-	assert_log(INFO, "\nApplying DISABLED override for head_enabled_cond\n");
+	assert_log(INFO,
+			"\nApplying head_enabled_cond DISABLED override of conditions:\n"
+			"    head_enabled_cond\n"
+			"      IF\n"
+			"        lid closed\n"
+			);
 
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
+	assert_spmap_equal(actual, expected);
 
 	assert_int_equal(head_enabled_cond->overrided_enabled, OverrideFalse);
+
+	spmap_free(actual);
+	spmap_free(expected);
 
 	assert_logs_empty();
 }
@@ -764,14 +782,25 @@ static void head_process_ipc_disableds__del_disabled(void **state) {
 			"head_disable",  cfg_disabled_init(),
 			NULL);
 
+	const struct SPmap *expected = spmap_clone(ipc_req->cfg->disableds);
+	spmap_remove(expected, "other");
+
 	// disabled conditionally, override to enable
-	head_override_ipc_disableds(head_disabled_cond, ipc_req);
+	const struct SPmap *actual = head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
-	assert_log(INFO, "\nApplying DISABLED override for head_disabled_cond\n");
+	assert_log(INFO,
+			"\nApplying head_disabled_cond DISABLED override of conditions:\n"
+			"    head_disabled_cond\n"
+			"      IF\n"
+			"        lid closed\n"
+			);
 
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
+	assert_spmap_equal(actual, expected);
 
 	assert_int_equal(head_disabled_cond->overrided_enabled, OverrideTrue);
+
+	spmap_free(actual);
+	spmap_free(expected);
 
 	assert_logs_empty();
 }
@@ -786,12 +815,18 @@ static void head_process_ipc_disableds__del_enabled(void **state) {
 			"head_enable",  cfg_disabled_init(),
 			NULL);
 
-	// already enabled, NOP
-	head_override_ipc_disableds(head_enabled_cond, ipc_req);
+	const struct SPmap *expected = spmap_clone(ipc_req->cfg->disableds);
+	spmap_remove(expected, "other");
 
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
+	// already enabled, NOP
+	const struct SPmap *actual = head_override_ipc_disableds(head_enabled_cond, ipc_req);
+
+	assert_spmap_equal(actual, expected);
 
 	assert_int_equal(head_enabled_cond->overrided_enabled, NoOverride);
+
+	spmap_free(actual);
+	spmap_free(expected);
 
 	assert_logs_empty();
 }
@@ -806,15 +841,26 @@ static void head_process_ipc_disableds__toggle_reset(void **state) {
 			"head_disable",  cfg_disabled_init(),
 			NULL);
 
+	const struct SPmap *expected = spmap_clone(ipc_req->cfg->disableds);
+	spmap_remove(expected, "other");
+
 	// disabled conditionally, enable it
 	head_disabled_cond->overrided_enabled = OverrideTrue;
-	head_override_ipc_disableds(head_disabled_cond, ipc_req);
+	const struct SPmap *actual = head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
-	assert_log(INFO, "\nResetting DISABLED override for head_disabled_cond\n");
+	assert_log(INFO,
+			"\nResetting head_disabled_cond DISABLED override of conditions:\n"
+			"    head_disabled_cond\n"
+			"      IF\n"
+			"        lid closed\n"
+			);
 
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
+	assert_spmap_equal(actual, expected);
 
 	assert_int_equal(head_disabled_cond->overrided_enabled, NoOverride);
+
+	spmap_free(actual);
+	spmap_free(expected);
 
 	assert_logs_empty();
 }
@@ -829,13 +875,25 @@ static void head_process_ipc_disableds__toggle_apply_enabled(void **state) {
 			"!enable",      cfg_disabled_init(),
 			NULL);
 
+	const struct SPmap *expected = spmap_clone(ipc_req->cfg->disableds);
+	spmap_remove(expected, "other");
+
 	// enabled conditionally, (set) disabled
 	head_disabled_cond->overrided_enabled = NoOverride;
-	head_override_ipc_disableds(head_enabled_cond, ipc_req);
+	const struct SPmap *actual = head_override_ipc_disableds(head_enabled_cond, ipc_req);
 
-	assert_log(INFO, "\nApplying DISABLED override for head_enabled_cond\n");
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
+	assert_log(INFO,
+			"\nApplying head_enabled_cond DISABLED override of conditions:\n"
+			"    head_enabled_cond\n"
+			"      IF\n"
+			"        lid closed\n"
+			);
+
+	assert_spmap_equal(actual, expected);
 	assert_int_equal(head_enabled_cond->overrided_enabled, OverrideFalse);
+
+	spmap_free(actual);
+	spmap_free(expected);
 
 	assert_logs_empty();
 }
@@ -849,13 +907,25 @@ static void head_process_ipc_disableds__toggle_apply_disabled(void **state) {
 			"!disabled",     cfg_disabled_init(),
 			NULL);
 
+	const struct SPmap *expected = spmap_clone(ipc_req->cfg->disableds);
+	spmap_remove(expected, "other");
+
 	// enabled conditionally, (set) disabled
 	head_disabled_cond->overrided_enabled = NoOverride;
-	head_override_ipc_disableds(head_disabled_cond, ipc_req);
+	const struct SPmap *actual = head_override_ipc_disableds(head_disabled_cond, ipc_req);
 
-	assert_log(INFO, "\nApplying DISABLED override for head_disabled_cond\n");
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 1);
+	assert_log(INFO,
+			"\nApplying head_disabled_cond DISABLED override of conditions:\n"
+			"    head_disabled_cond\n"
+			"      IF\n"
+			"        lid closed\n"
+			);
+
+	assert_spmap_equal(actual, expected);
 	assert_int_equal(head_disabled_cond->overrided_enabled, OverrideTrue);
+
+	spmap_free(actual);
+	spmap_free(expected);
 
 	assert_logs_empty();
 }
@@ -871,15 +941,23 @@ static void head_process_ipc_disableds__nop(void **state) {
 			"!enabled",      cfg_disabled_init(),
 			NULL);
 
-	// no conditionals, NOP
-	head_override_ipc_disableds(head_disabled_nc, ipc_req);
-
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 5);
+	const struct SPmap *expected = spmap_clone(ipc_req->cfg->disableds);
+	spmap_remove(expected, "other");
 
 	// no conditionals, NOP
-	head_override_ipc_disableds(head_enabled_nc, ipc_req);
+	const struct SPmap *actual = head_override_ipc_disableds(head_disabled_nc, ipc_req);
 
-	assert_int_equal(spmap_size(ipc_req->cfg->disableds), 5);
+	assert_int_equal(spmap_size(actual), 0);
+
+	spmap_free(actual);
+
+	// no conditionals, NOP
+	actual = head_override_ipc_disableds(head_enabled_nc, ipc_req);
+
+	assert_int_equal(spmap_size(actual), 0);
+
+	spmap_free(actual);
+	spmap_free(expected);
 
 	assert_logs_empty();
 }

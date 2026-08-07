@@ -24,7 +24,6 @@
 #include "pset.h"
 #include "simap.h"
 #include "spmap.h"
-#include "sset.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "info/print.h"
@@ -158,12 +157,6 @@ static void print_cfg__all(void **state) {
 
 	spmap_put(c->disableds, "disabled always", cfg_disabled_init());
 
-	const struct CfgDisabled *disabled = cfg_disabled_init();
-	const struct CfgCondition *cond = cfg_condition_init();
-	sset_add(cond->plugged, "ONE");
-	pset_add(disabled->conditions, cond);
-	spmap_put(c->disableds, "disabled conditionally", disabled);
-
 	spmap_put_many(c->modes,
 			"five", mode_whr(1920, 1080, 12340),
 			"six", mode_whr(2560, 1440, -1),
@@ -268,6 +261,50 @@ static void print_cfg__lid_disabled(void **state) {
 	print_cfg(INFO, c, false);
 
 	char *expected_log = read_file("tst/info/print-cfg-lid-disabled.log");
+	assert_log(INFO, expected_log);
+
+	free(expected_log);
+	cfg_free(c);
+
+	assert_logs_empty();
+}
+
+static void print_cfg__disabled_conditions(void **state) {
+	struct Cfg *c = cfg_init();
+
+	spmap_put(c->disableds, "uncond1", cfg_disabled_init());
+
+	const struct CfgDisabled *dis = cfg_disabled_init();
+	spmap_put(c->disableds, "cond", dis);
+
+	pset_add(dis->conditions, cfg_condition_init());
+
+	struct CfgCondition *cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "pl1", NULL);
+	sset_add_many(cond->unplugged, "un1", NULL);
+	cond->lid = LID_OPEN;
+	pset_add(dis->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add_many(cond->unplugged, "un2", "un3", NULL);
+	cond->lid = LID_CLOSED;
+	pset_add(dis->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "pl2", "pl3", NULL);
+	cond->lid = LID_NOT_PRESENT;
+	pset_add(dis->conditions, cond);
+
+	cond = cfg_condition_init();
+	sset_add_many(cond->plugged, "pl5", NULL);
+	sset_add_many(cond->unplugged, "un5",  NULL);
+	pset_add(dis->conditions, cond);
+
+	spmap_put(c->disableds, "uncond2", cfg_disabled_init());
+
+	print_cfg(INFO, c, false);
+
+	char *expected_log = read_file("tst/info/print-cfg-disabled-conditions.log");
 	assert_log(INFO, expected_log);
 
 	free(expected_log);
@@ -454,13 +491,12 @@ static void print_head_deltas__enable(void **state) {
 static void print_head_deltas__reapply(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.des = head.cur;
-	head.cur.enabled = false;
-	head.des.enabled = false;
-	head.reapply_required = true;
+	s->head1->des = s->head1->cur;
+	s->head1->cur.enabled = false;
+	s->head1->des.enabled = false;
+	s->head1->reapply_required = true;
 
-	print_head(INFO, DELTA, &head);
+	print_head(INFO, DELTA, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-deltas-reapply.log");
 	assert_log(INFO, expected_log);
@@ -472,12 +508,26 @@ static void print_head_deltas__reapply(void **state) {
 static void print_head_current__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
+	s->head1->cur.enabled = false;
 
-	print_head_current(INFO, &head);
+	print_head_current(INFO, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-current-disabled.log");
+	assert_log(INFO, expected_log);
+	free(expected_log);
+
+	assert_logs_empty();
+}
+
+static void print_head_current__disabled_condition(void **state) {
+	struct State *s = *state;
+
+	s->head1->cur.enabled = false;
+	s->head1->disabled_condition_desc = strdup("because x");
+
+	print_head_current(INFO, s->head1);
+
+	char *expected_log = read_file("tst/info/print-head-current-disabled-condition.log");
 	assert_log(INFO, expected_log);
 	free(expected_log);
 
@@ -487,11 +537,10 @@ static void print_head_current__disabled(void **state) {
 static void print_head_current__disabled_override(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
-	head.overrided_enabled = OverrideFalse;
+	s->head1->cur.enabled = false;
+	s->head1->overrided_enabled = OverrideFalse;
 
-	print_head_current(INFO, &head);
+	print_head_current(INFO, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-current-disabled-override.log");
 	assert_log(INFO, expected_log);
@@ -503,11 +552,10 @@ static void print_head_current__disabled_override(void **state) {
 static void print_head_current__enabled_override(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = true;
-	head.overrided_enabled = OverrideTrue;
+	s->head1->cur.enabled = true;
+	s->head1->overrided_enabled = OverrideTrue;
 
-	print_head_current(INFO, &head);
+	print_head_current(INFO, s->head1);
 
 	char *expected_log = read_file("tst/info/print-head-current-enabled-override.log");
 	assert_log(INFO, expected_log);
@@ -519,12 +567,24 @@ static void print_head_current__enabled_override(void **state) {
 static void print_head_desired__disabled(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.des.enabled = false;
+	s->head1->des.enabled = false;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    (disabled)\n");
+
+	assert_logs_empty();
+}
+
+static void print_head_desired__disabled_condition(void **state) {
+	struct State *s = *state;
+
+	s->head1->des.enabled = false;
+	s->head1->disabled_condition_desc = strdup("because x");
+
+	print_head_desired(INFO, s->head1);
+
+	assert_log(INFO, "    (disabled if) because x\n");
 
 	assert_logs_empty();
 }
@@ -532,11 +592,10 @@ static void print_head_desired__disabled(void **state) {
 static void print_head_desired__disabled_override(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.des.enabled = false;
-	head.overrided_enabled = OverrideFalse;
+	s->head1->des.enabled = false;
+	s->head1->overrided_enabled = OverrideFalse;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    (manually disabled)\n");
 
@@ -546,11 +605,10 @@ static void print_head_desired__disabled_override(void **state) {
 static void print_head_desired__enabled(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
-	head.des.enabled = true;
+	s->head1->cur.enabled = false;
+	s->head1->des.enabled = true;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (enabled)\n");
 
@@ -560,12 +618,11 @@ static void print_head_desired__enabled(void **state) {
 static void print_head_desired__enabled_override(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	head.cur.enabled = false;
-	head.des.enabled = true;
-	head.overrided_enabled = OverrideTrue;
+	s->head1->cur.enabled = false;
+	s->head1->des.enabled = true;
+	s->head1->overrided_enabled = OverrideTrue;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    mode:      400x500@60Hz (60,000mHz)\n    (manually enabled)\n");
 
@@ -575,11 +632,10 @@ static void print_head_desired__enabled_override(void **state) {
 static void print_head_desired__transform_270(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	memcpy(&head.des, &head.cur, sizeof(struct HeadState));
-	head.des.transform = WL_OUTPUT_TRANSFORM_270;
+	memcpy(&s->head1->des, &s->head1->cur, sizeof(struct HeadState));
+	s->head1->des.transform = WL_OUTPUT_TRANSFORM_270;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    transform: 270\n");
 
@@ -589,11 +645,10 @@ static void print_head_desired__transform_270(void **state) {
 static void print_head_desired__transform_none(void **state) {
 	struct State *s = *state;
 
-	struct Head head = *s->head1;
-	memcpy(&head.des, &head.cur, sizeof(struct HeadState));
-	head.des.transform = 0;
+	memcpy(&s->head1->des, &s->head1->cur, sizeof(struct HeadState));
+	s->head1->des.transform = 0;
 
-	print_head_desired(INFO, &head);
+	print_head_desired(INFO, s->head1);
 
 	assert_log(INFO, "    transform: none\n");
 
@@ -636,7 +691,7 @@ static void print_adaptive_sync_fail__head(void **state) {
 			"  Cannot enable VRR: this display or compositor may not support it.\n"
 			"  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml\n"
 			"  VRR_OFF:\n"
-			"    - 'model0'\n");
+			"  - 'model0'\n");
 
 	head_free(head);
 
@@ -666,6 +721,7 @@ static void print_mode_fail__head(void **state) {
 	assert_logs_empty();
 }
 
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		TEST_BA(print_cfg__all),
@@ -674,6 +730,7 @@ int main(void) {
 		TEST_BA(print_cfg__auto_scale_max),
 		TEST_BA(print_cfg__del),
 		TEST_BA(print_cfg__lid_disabled),
+		TEST_BA(print_cfg__disabled_conditions),
 
 		TEST_BA(print_cfg_commands__empty),
 		TEST_BA(print_cfg_commands__ok),
@@ -690,10 +747,12 @@ int main(void) {
 		TEST_BA(print_head_deltas__reapply),
 
 		TEST_BA(print_head_current__disabled),
+		TEST_BA(print_head_current__disabled_condition),
 		TEST_BA(print_head_current__disabled_override),
 		TEST_BA(print_head_current__enabled_override),
 
 		TEST_BA(print_head_desired__disabled),
+		TEST_BA(print_head_desired__disabled_condition),
 		TEST_BA(print_head_desired__disabled_override),
 		TEST_BA(print_head_desired__enabled),
 		TEST_BA(print_head_desired__enabled_override),

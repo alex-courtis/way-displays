@@ -12,18 +12,15 @@
 
 #include "act.h"
 #include "cfg/cfg.h"
-#include "cfg/disabled.h"
 #include "cfg/file.h"
 #include "displ.h"
 #include "enum.h"
 #include "fds.h"
-#include "head.h"
 #include "info/print.h"
 #include "ipc.h"
 #include "lid.h"
 #include "log.h"
 #include "plist.h"
-#include "ppmap.h"
 #include "process.h"
 
 // operation in progress
@@ -101,68 +98,11 @@ static void receive_ipc_request(int server_socket) {
 		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
-	// filter out and apply any disabled requests that affect conditionally disabled heads
-	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
-		head_override_ipc_disableds((struct Head*)it->val, ipc_request);
-	}
+	// pre-process and sanitise the request
+	ipc_request_filter(ipc_request);
 
-	// filter out any disabled requests that are present as conditionals
-	if (ipc_request->cfg) {
-		cfg_disabled_filter_conditional_clashes(ipc_request->cfg->disableds);
-	}
-
-	switch (ipc_request->command) {
-		case CFG_DEL:
-		case CFG_SET:
-		case CFG_TOGGLE:
-			{
-				struct Cfg *cfg_merged = cfg_merge(g_cfg, ipc_request->cfg, ipc_request->command);
-				if (cfg_merged) {
-					// ongoing
-					ipc_operation->done = false;
-					cfg_free(g_cfg);
-					g_cfg = cfg_merged;
-					log_info(NULL);
-					log_info("New configuration:");
-					print_cfg(INFO, g_cfg, false);
-				} else {
-					// complete
-					log_info(NULL);
-					log_info("No config changes to make.");
-				}
-				break;
-			}
-		case CFG_WRITE:
-			{
-				// complete
-				g_cfg_file_write();
-				break;
-			}
-		case LIST:
-			{
-				// complete
-				print_list(INFO, g_displ->heads);
-				break;
-			}
-		case REAPPLY:
-			{
-				// ongoing
-				ipc_operation->done = false;
-				heads_reapply(g_displ->heads);
-				break;
-			}
-		case GET:
-		default:
-			{
-				// complete
-				log_info(NULL);
-				log_info("Active configuration:");
-				print_cfg(INFO, g_cfg, false);
-				print_cfg_commands(INFO, g_cfg);
-				print_head_map(INFO, NONE, g_displ->heads);
-				break;
-			}
-	}
+	// handle the entire request
+	ipc_operation->done = g_cfg_process_ipc_request(ipc_request);
 
 send:
 	notify_ipc_operation();

@@ -7,6 +7,7 @@
 #include "info/print.h"
 
 #include "cfg/cfg.h"
+#include "cfg/condition.h"
 #include "cfg/disabled.h"
 #include "displ.h"
 #include "enum.h"
@@ -58,16 +59,6 @@ static void print_modes_failed(const enum LogThreshold t, const struct Head * co
 		for (const struct PPmapIt *it = ppmap_it(head->modes_failed); it; it = ppmap_it_next(it)) {
 			print_mode(t, it->val, it->key == head->zmode_pref);
 		}
-	}
-}
-
-static void print_disabled(const enum LogThreshold t, const char * const name_desc, const struct CfgDisabled * const disabled) {
-	if (!disabled) return;
-
-	if (pset_size(disabled->conditions) > 0) {
-		log_(t, "    %s (conditionally)", name_desc);
-	} else {
-		log_(t, "    %s", name_desc);
 	}
 }
 
@@ -178,9 +169,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (spmap_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
-		for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it)) {
-			print_disabled(t, it->key, it->val);
-		}
+		print_disableds(t, cfg->disableds);
 	}
 
 	if (cfg->callback_cmd && strlen(cfg->callback_cmd) > 0) {
@@ -292,6 +281,32 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 }
 
+void print_disableds(const enum LogThreshold t, const struct SPmap * const disableds) {
+	if (!disableds)
+		return;
+
+	for (const struct SPmapIt *it_d = spmap_it(disableds); it_d; it_d = spmap_it_next(it_d)) {
+		const struct CfgDisabled *disabled = it_d->val;
+		if (pset_size(disabled->conditions) > 0) {
+			log_(t, "    %s", it_d->key);
+			log_(t, "      IF");
+			bool first = true;
+			for (const struct PsetIt *it_c = pset_it(disabled->conditions); it_c; it_c = pset_it_next(it_c)) {
+				char *msg = cfg_condition_str(it_c->val);
+				if (msg) {
+					if (!first)
+						log_(t, "          OR");
+					first = false;
+					log_(t, "        %s", msg);
+					free(msg);
+				}
+			}
+		} else {
+			log_(t, "    %s", it_d->key);
+		}
+	}
+}
+
 void print_head_current(const enum LogThreshold t, const struct Head * const head) {
 
 	if (!head)
@@ -328,6 +343,8 @@ void print_head_current(const enum LogThreshold t, const struct Head * const hea
 	} else {
 		if (head->overrided_enabled == OverrideFalse) {
 			log_(t, "    (manually disabled)");
+		} else if (head->disabled_condition_desc) {
+			log_(t, "    (disabled if) %s", head->disabled_condition_desc);
 		} else {
 			log_(t, "    (disabled)");
 		}
@@ -378,6 +395,8 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 	} else {
 		if (head->overrided_enabled == OverrideFalse) {
 			log_(t, "    (manually disabled)");
+		} else if (head->disabled_condition_desc) {
+			log_(t, "    (disabled if) %s", head->disabled_condition_desc);
 		} else {
 			log_(t, "    (disabled)");
 		}
@@ -495,7 +514,7 @@ void print_adaptive_sync_fail(const enum LogThreshold t, const struct Head * con
 	log_(t, "  Cannot enable VRR: this display or compositor may not support it.");
 	log_(t, "  To speed things up you can disable VRR for this display by adding the following or similar to your cfg.yaml");
 	log_(t, "  VRR_OFF:");
-	log_(t, "    - '%s'", head->model ? head->model : "name_desc");
+	log_(t, "  - '%s'", head->model ? head->model : "name_desc");
 }
 
 void print_mode_fail(const enum LogThreshold t, const struct Head * const head, const struct zwlr_output_mode_v1* const zmode) {

@@ -11,6 +11,7 @@
 #include "ppmap.h"
 #include "pset.h"
 #include "sset.h"
+#include "str.h"
 
 static bool condition_equal(const struct CfgCondition* const a, const struct CfgCondition* const b) {
 	return a && b && a->lid == b->lid &&
@@ -32,6 +33,7 @@ const struct Pset *cfg_condition_pset_init(void) {
 		.equal_val = (fn_equal)condition_equal,
 		.free_val = (fn_free)cfg_condition_free,
 		.clone_val = (fn_clone)cfg_condition_clone,
+		.str_val = (fn_str)cfg_condition_str,
 	};
 	return pset_init_with(params);
 }
@@ -49,51 +51,6 @@ struct CfgCondition *cfg_condition_clone(const struct CfgCondition* const from) 
 	return to;
 }
 
-bool cfg_condition_failed(const struct CfgCondition *condition, const bool *fail_lid_closed) {
-	if (!condition)
-		return false;
-
-	struct PPmapFilter f = { .val_data = (fn_pred_pp)head_matches_name_desc };
-
-	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
-		f.data = it->val;
-		if (!ppmap_find(g_displ->heads, f).val) {
-			sset_it_free(it);
-			return true;
-		}
-	}
-
-	for (const struct SsetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
-		f.data = it->val;
-		if (ppmap_find(g_displ->heads, f).val) {
-			sset_it_free(it);
-			return true;
-		}
-	}
-
-	switch (condition->lid) {
-		case LID_CLOSED:
-			if ((fail_lid_closed && *fail_lid_closed) || !g_lid || !g_lid->closed) {
-				return true;
-			}
-			break;
-		case LID_OPEN:
-			if (!g_lid || g_lid->closed) {
-				return true;
-			}
-			break;
-		case LID_NOT_PRESENT:
-			if (g_lid) {
-				return true;
-			}
-			break;
-		default:
-			break;
-	}
-
-	return false;
-}
-
 void cfg_condition_free(struct CfgCondition *condition) {
 	if (!condition)
 		return;
@@ -104,3 +61,78 @@ void cfg_condition_free(struct CfgCondition *condition) {
 	free(condition);
 }
 
+bool cfg_condition_met(const struct CfgCondition *condition, const bool *fail_lid_closed) {
+	if (!condition)
+		return true;
+
+	struct PPmapFilter f = { .val_data = (fn_pred_pp)head_matches_name_desc };
+
+	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
+		f.data = it->val;
+		if (!ppmap_find(g_displ->heads, f).val) {
+			sset_it_free(it);
+			return false;
+		}
+	}
+
+	for (const struct SsetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
+		f.data = it->val;
+		if (ppmap_find(g_displ->heads, f).val) {
+			sset_it_free(it);
+			return false;
+		}
+	}
+
+	switch (condition->lid) {
+		case LID_CLOSED:
+			if ((fail_lid_closed && *fail_lid_closed) || !g_lid || !g_lid->closed) {
+				return false;
+			}
+			break;
+		case LID_OPEN:
+			if (!g_lid || g_lid->closed) {
+				return false;
+			}
+			break;
+		case LID_NOT_PRESENT:
+			if (g_lid) {
+				return false;
+			}
+			break;
+		default:
+			break;
+	}
+
+	return true;
+}
+
+char *cfg_condition_str(const struct CfgCondition *condition) {
+	if (!condition)
+		return NULL;
+
+	char *str = NULL;
+
+	for (const struct SsetIt *it = sset_it(condition->plugged); it; it = sset_it_next(it)) {
+		str = sprintf_append(str, "%s%s plugged", str ? " AND " : "", it->val);
+	}
+
+	for (const struct SsetIt *it = sset_it(condition->unplugged); it; it = sset_it_next(it)) {
+		str = sprintf_append(str, "%s%s unplugged", str ? " AND " : "", it->val);
+	}
+
+	switch(condition->lid) {
+		case LID_CLOSED:
+			str = sprintf_append(str, "%slid closed", str ? " AND " : "");
+			break;
+		case LID_OPEN:
+			str = sprintf_append(str, "%slid open", str ? " AND " : "");
+			break;
+		case LID_NOT_PRESENT:
+			str = sprintf_append(str, "%slid not present", str ? " AND " : "");
+			break;
+		default:
+			break;
+	}
+
+	return str;
+}

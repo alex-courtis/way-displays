@@ -91,7 +91,7 @@ void callback_adaptive_sync_fail(const enum LogThreshold t, const struct Head * 
 			"  Cannot enable VRR.\n"
 			"  You can disable VRR for this display in cfg.yaml\n"
 			"VRR_OFF:\n"
-			"  - '%s'",
+			"- '%s'",
 			head_human(head),
 			head->model ? head->model : "name_desc");
 

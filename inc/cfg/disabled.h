@@ -35,13 +35,16 @@ bool cfg_disabled_conditionally_for_head(const char * name_desc, const struct Cf
  * utility
  */
 
-// one of disableds applies: name_desc match, if conditions are present at least one must be true, fail_lid_closed directs to unconditionally fail lid closed conditions
-bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, const struct Head * const head, const bool fail_lid_closed);
+// one of disableds applies:
+// name_desc must match
+// if conditions are present one must be met and head.disabled_condition_desc will be set, otherwise freed and set to NULL
+// fail_lid_closed directs to unconditionally fail lid closed conditions
+bool cfg_disabled_applies_to_head(const struct SPmap * const disableds, struct Head * const head, const bool fail_lid_closed);
 
 // remove any disableds with the same name as a cfg disabled
 void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds);
 
-// add a lid closed condition to name_desc or LID_DISABLED_NAME_DESC, if not present
+// add the default lid closed condition for name_desc, if not present
 void cfg_disabled_add_lid_condition(const struct SPmap *disableds, const char *name_desc);
 
 #endif // CFG_DISABLED_H
