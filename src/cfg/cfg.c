@@ -6,9 +6,14 @@
 
 #include "cfg/condition.h"
 #include "cfg/disabled.h"
+#include "cfg/file.h"
+#include "displ.h"
 #include "enum.h"
 #include "fn.h"
+#include "head.h"
 #include "info/callback.h"
+#include "info/print.h"
+#include "ipc.h"
 #include "log.h"
 #include "mode.h"
 #include "pset.h"
@@ -235,6 +240,65 @@ void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix)
 			);
 	callback_with_cfg(WARNING, cfg, callback_msg, NULL);
 	free(callback_msg);
+}
+
+bool g_cfg_process_ipc_request(const struct IpcRequest *ipc_request) {
+	bool done = false;
+
+	switch (ipc_request->command) {
+		case CFG_DEL:
+		case CFG_SET:
+		case CFG_TOGGLE:
+			{
+				struct Cfg *cfg_merged = cfg_merge(g_cfg, ipc_request->cfg, ipc_request->command);
+				if (cfg_merged) {
+					// ongoing
+					done = false;
+					cfg_free(g_cfg);
+					g_cfg = cfg_merged;
+					log_info(NULL);
+					log_info("New configuration:");
+					print_cfg(INFO, g_cfg, false);
+				} else {
+					// complete
+					log_info(NULL);
+					log_info("No config changes to make.");
+				}
+				break;
+			}
+		case CFG_WRITE:
+			{
+				// complete
+				g_cfg_file_write();
+				break;
+			}
+		case LIST:
+			{
+				// complete
+				print_list(INFO, g_displ->heads);
+				break;
+			}
+		case REAPPLY:
+			{
+				// ongoing
+				done = false;
+				heads_reapply(g_displ->heads);
+				break;
+			}
+		case GET:
+		default:
+			{
+				// complete
+				log_info(NULL);
+				log_info("Active configuration:");
+				print_cfg(INFO, g_cfg, false);
+				print_cfg_commands(INFO, g_cfg);
+				print_head_map(INFO, NONE, g_displ->heads);
+				break;
+			}
+	}
+
+	return done;
 }
 
 struct Cfg *cfg_merge(struct Cfg *to, const struct Cfg *from, const enum IpcCommand command) {

@@ -6,13 +6,17 @@
 #include "ipc.h"
 
 #include "cfg/cfg.h"
+#include "cfg/disabled.h"
+#include "displ.h"
 #include "enum.h"
 #include "fn.h"
 #include "head.h"
 #include "lid.h"
 #include "log.h"
 #include "plist.h"
+#include "ppmap.h"
 #include "sockets.h"
+#include "spmap.h"
 #include "yaml/marshal-types.h"
 #include "yaml/marshal.h"
 #include "yaml/unmarshal-types.h"
@@ -66,18 +70,36 @@ end:
 	}
 }
 
-void ipc_operation_update_rc(struct IpcOperation *ipc_operation) {
-	if (!ipc_operation)
+void ipc_operation_update_rc(struct IpcOperation *operation) {
+	if (!operation)
 		return;
 
-	for (const struct PlistIt *it = plist_it(ipc_operation->log_cap_lines); it; it = plist_it_next(it)) {
+	for (const struct PlistIt *it = plist_it(operation->log_cap_lines); it; it = plist_it_next(it)) {
 		const struct LogCapLine *cap_line = (struct LogCapLine*)it->val;
 
-		if (cap_line->threshold == WARNING && ipc_operation->rc < IPC_WARN)
-			ipc_operation->rc = IPC_WARN;
-		if (cap_line->threshold == ERROR && ipc_operation->rc < IPC_ERROR)
-			ipc_operation->rc = IPC_ERROR;
+		if (cap_line->threshold == WARNING && operation->rc < IPC_WARN)
+			operation->rc = IPC_WARN;
+		if (cap_line->threshold == ERROR && operation->rc < IPC_ERROR)
+			operation->rc = IPC_ERROR;
 	}
+}
+
+void ipc_request_filter(const struct IpcRequest *request) {
+	if (!request || !request->cfg)
+		return;
+
+	// filter out and apply any disabled requests that affect conditionally disabled heads
+	const struct SPmap *all_overridden = cfg_disabled_spmap_init();
+	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
+		const struct SPmap *head_overridden = head_override_ipc_disableds((struct Head*)it->val, request);
+		spmap_put_all(all_overridden, head_overridden);
+		spmap_free(head_overridden);
+	}
+	spmap_remove_in_free(request->cfg->disableds, all_overridden);
+	spmap_free(all_overridden);
+
+	// filter out any disabled requests that are present as conditionals that don't affect current heads
+	cfg_disabled_filter_conditional_clashes(request->cfg->disableds);
 }
 
 void ipc_send_operation(struct IpcOperation *operation) {

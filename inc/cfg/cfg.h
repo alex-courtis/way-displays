@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "enum.h"
+#include "ipc.h"
 
 // global singleton
 extern struct Cfg *g_cfg;
@@ -68,6 +69,11 @@ void cfg_apply_defaults(struct Cfg *cfg);
 
 // notify the user and migrate any legacy elements to current
 void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix);
+
+/*
+ * act on ipc request
+ */
+bool g_cfg_process_ipc_request(const struct IpcRequest *ipc_request);
 
 /*
  * merge from into to for command, only Ipc settable fields are merged
