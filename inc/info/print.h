@@ -4,18 +4,18 @@
 #include <stdbool.h>
 
 #include "cfg/cfg.h"
-#include "cfg/disabled.h"
 #include "enum.h"
 #include "head.h"
 #include "ppmap.h"
 #include "pset.h"
+#include "spmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
 void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bool del);
 
 void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg);
 
-void print_disabled(const enum LogThreshold t, const char * const name_desc, const struct CfgDisabled * const disabled);
+void print_disableds(const enum LogThreshold t, const struct SPmap * const disableds);
 
 void print_head(const enum LogThreshold t, const enum InfoEvent event, const struct Head * const head);
 

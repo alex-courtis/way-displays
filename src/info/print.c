@@ -169,9 +169,7 @@ void print_cfg(const enum LogThreshold t, const struct Cfg * const cfg, const bo
 
 	if (spmap_size(cfg->disableds) > 0) {
 		log_(t, "  Disabled:");
-		for (const struct SPmapIt *it = spmap_it(cfg->disableds); it; it = spmap_it_next(it)) {
-			print_disabled(t, it->key, it->val);
-		}
+		print_disableds(t, cfg->disableds);
 	}
 
 	if (cfg->callback_cmd && strlen(cfg->callback_cmd) > 0) {
@@ -283,26 +281,29 @@ void print_cfg_commands(const enum LogThreshold t, const struct Cfg * const cfg)
 	}
 }
 
-void print_disabled(const enum LogThreshold t, const char * const name_desc, const struct CfgDisabled * const disabled) {
-	if (!disabled)
+void print_disableds(const enum LogThreshold t, const struct SPmap * const disableds) {
+	if (!disableds)
 		return;
 
-	if (pset_size(disabled->conditions) > 0) {
-		log_(t, "    %s", name_desc);
-		log_(t, "      IF");
-		bool first = true;
-		for (const struct PsetIt *it = pset_it(disabled->conditions); it; it = pset_it_next(it)) {
-			char *msg = cfg_condition_str(it->val);
-			if (msg) {
-				if (!first)
-					log_(t, "          OR");
-				first = false;
-				log_(t, "        %s", msg);
-				free(msg);
+	for (const struct SPmapIt *it_d = spmap_it(disableds); it_d; it_d = spmap_it_next(it_d)) {
+		const struct CfgDisabled *disabled = it_d->val;
+		if (pset_size(disabled->conditions) > 0) {
+			log_(t, "    %s", it_d->key);
+			log_(t, "      IF");
+			bool first = true;
+			for (const struct PsetIt *it_c = pset_it(disabled->conditions); it_c; it_c = pset_it_next(it_c)) {
+				char *msg = cfg_condition_str(it_c->val);
+				if (msg) {
+					if (!first)
+						log_(t, "          OR");
+					first = false;
+					log_(t, "        %s", msg);
+					free(msg);
+				}
 			}
+		} else {
+			log_(t, "    %s", it_d->key);
 		}
-	} else {
-		log_(t, "    %s", name_desc);
 	}
 }
 

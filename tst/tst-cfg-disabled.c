@@ -80,12 +80,17 @@ static void cfg_disabled_filter_conditional_clashes__substring(void **state) {
 	spmap_put(ipc_disableds, "cond", cfg_disabled_init());
 	spmap_put(ipc_disableds, "ipc_only", cfg_disabled_init());
 
+	const struct CfgDisabled *disabled = cfg_disabled_init();
 	struct CfgCondition *condition = cfg_condition_init();
 	condition->lid = LID_OPEN;
-
-	const struct CfgDisabled *disabled = cfg_disabled_init();
 	pset_add(disabled->conditions, condition);
 	spmap_put(g_cfg->disableds, "condit", disabled);
+
+	disabled = cfg_disabled_init();
+	condition = cfg_condition_init();
+	sset_add(condition->plugged, "head_plugged");
+	pset_add(disabled->conditions, condition);
+	spmap_put(g_cfg->disableds, "condi", disabled);
 
 	const struct SPmap *expected = cfg_disabled_spmap_init();
 	spmap_put(expected, "ipc_only", cfg_disabled_init());
@@ -102,10 +107,16 @@ static void cfg_disabled_filter_conditional_clashes__substring(void **state) {
 			"    condit\n"
 			"      IF\n"
 			"        lid open\n"
+			"    condi\n"
+			"      IF\n"
+			"        head_plugged plugged\n"
 			"\nIgnoring DISABLED for cond due to conditions:\n"
 			"    condit\n"
 			"      IF\n"
 			"        lid open\n"
+			"    condi\n"
+			"      IF\n"
+			"        head_plugged plugged\n"
 			);
 
 	assert_logs_empty();

@@ -80,19 +80,24 @@ static bool cfg_disabled_cond_with_name_desc(const char * const a, const struct 
 }
 
 void cfg_disabled_filter_conditional_clashes(const struct SPmap *disableds) {
-	for (const struct SPmapIt *it = spmap_it(disableds); it; it = spmap_it_next(it)) {
+	for (const struct SPmapIt *it_req = spmap_it(disableds); it_req; it_req = spmap_it_next(it_req)) {
+		const struct SPmap *clashing_disableds = cfg_disabled_spmap_init();
 
 		// current global conditionally disabled that match the name_desc
-		const struct SPmapFilter f = { .key_val_data = (fn_pred_spp)cfg_disabled_cond_with_name_desc, .data = it->key, };
-		const struct SPmapPair disabled = spmap_find(g_cfg->disableds, f);
-		if (disabled.val) {
-
-			log_warn(NULL);
-			log_warn("Ignoring %s for %s due to conditions:", cfg_element_name(DISABLED), it->key);
-			print_disabled(WARNING, disabled.key, disabled.val);
-
-			spmap_it_remove_free(it);
+		const struct SPmapFilter f = { .key_val_data = (fn_pred_spp)cfg_disabled_cond_with_name_desc, .data = it_req->key, };
+		for (const struct SPmapIt *it_cfg = spmap_filter_it(g_cfg->disableds, f); it_cfg; it_cfg = spmap_it_next(it_cfg)) {
+			spmap_put(clashing_disableds, it_cfg->key, it_cfg->val);
 		}
+
+		if (spmap_size(clashing_disableds) > 0) {
+			log_warn(NULL);
+			log_warn("Ignoring %s for %s due to conditions:", cfg_element_name(DISABLED), it_req->key);
+			print_disableds(WARNING, clashing_disableds);
+
+			spmap_it_remove_free(it_req);
+		}
+
+		spmap_free(clashing_disableds);
 	}
 }
 
