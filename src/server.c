@@ -25,6 +25,7 @@
 #include "plist.h"
 #include "ppmap.h"
 #include "process.h"
+#include "spmap.h"
 
 // operation in progress
 struct IpcOperation *ipc_operation = NULL;
@@ -101,13 +102,18 @@ static void receive_ipc_request(int server_socket) {
 		print_cfg(DEBUG, ipc_request->cfg, ipc_request->command == CFG_DEL);
 	}
 
-	// filter out and apply any disabled requests that affect conditionally disabled heads
-	for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
-		head_override_ipc_disableds((struct Head*)it->val, ipc_request);
-	}
-
-	// filter out any disabled requests that are present as conditionals
 	if (ipc_request->cfg) {
+		// filter out and apply any disabled requests that affect conditionally disabled heads
+		const struct SPmap *all_overridden = cfg_disabled_spmap_init();
+		for (const struct PPmapIt *it = ppmap_it(g_displ->heads); it; it = ppmap_it_next(it)) {
+			const struct SPmap *head_overridden = head_override_ipc_disableds((struct Head*)it->val, ipc_request);
+			spmap_put_all(all_overridden, head_overridden);
+			spmap_free(head_overridden);
+		}
+		spmap_remove_in(ipc_request->cfg->disableds, all_overridden);
+		spmap_free(all_overridden);
+
+		// filter out any disabled requests that are present as conditionals that don't affect current heads
 		cfg_disabled_filter_conditional_clashes(ipc_request->cfg->disableds);
 	}
 

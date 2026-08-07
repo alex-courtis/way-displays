@@ -79,8 +79,8 @@ void head_release_mode(struct Head * const head, const struct zwlr_output_mode_v
  * mutation
  */
 
-// removes any disabled requests that apply to conditionally disabled heads, changing head state directly
-void head_override_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request);
+// return a new shallow map of disabled requests that apply to head if it is disabled, change head override state directly if appropriate
+const struct SPmap *head_override_ipc_disableds(struct Head * const head, const struct IpcRequest * const ipc_request);
 
 // set description, stripping any leading "(null) "
 void head_set_description(struct Head * const head, const char *description);
