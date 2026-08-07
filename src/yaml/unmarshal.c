@@ -86,6 +86,9 @@ void *yaml_unmarshal_file(const char *path, fn_yaml_root_to_type fn) {
 	yaml_document_delete(&uc.d);
 
 	yaml_parser_delete(&parser);
+
+	memset(&uc, 0, sizeof(struct UC));
+
 	fclose(input);
 
 	// false flag resulting from function pointer call
@@ -136,6 +139,8 @@ end:
 	yaml_document_delete(&uc.d);
 
 	yaml_parser_delete(&parser);
+
+	memset(&uc, 0, sizeof(struct UC));
 
 	return out;
 }

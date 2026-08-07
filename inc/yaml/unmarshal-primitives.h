@@ -6,7 +6,6 @@
 #include <yaml.h>
 
 #include "enum.h"
-#include "yaml/unmarshal.h"
 
 /*
  * Functions to extract primitives from yaml_document

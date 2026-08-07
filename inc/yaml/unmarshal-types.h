@@ -10,7 +10,6 @@
 #include "simap.h"
 #include "spmap.h"
 #include "sset.h"
-#include "yaml/unmarshal.h"
 
 /*
  * Functions to extract structs from yaml_document

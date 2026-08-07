@@ -11,6 +11,7 @@
 struct MC {
 	yaml_document_t d;
 };
+extern struct MC mc;
 
 /*
  * Unmarshal functions
@@ -18,7 +19,7 @@ struct MC {
  */
 
 // Marshal a yaml document and render it as a string, human is arbitrary and used for logging
-typedef bool (*fn_yaml_root_from_type)(struct MC *c, const void *data);
+typedef bool (*fn_yaml_root_from_type)(const void *data);
 char *yaml_marshal(const void *data, fn_yaml_root_from_type fn, const char *human);
 
 // yaml_write_handler_t

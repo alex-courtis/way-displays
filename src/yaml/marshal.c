@@ -6,6 +6,8 @@
 
 #include "log.h"
 
+struct MC mc = { 0 };
+
 int yaml_write_handler(void *data, const unsigned char* const buffer, const size_t size) {
 	if (!data)
 		return 0;
@@ -32,7 +34,7 @@ int yaml_write_handler(void *data, const unsigned char* const buffer, const size
 	return 1;
 }
 
-static char *yaml_doc_to_string(struct MC *c, const char *name) {
+static char *yaml_doc_to_string(const char *name) {
 	char *yaml = NULL;
 
 	yaml_emitter_t emitter;
@@ -50,7 +52,7 @@ static char *yaml_doc_to_string(struct MC *c, const char *name) {
 		goto err;
 	}
 
-	if (!yaml_emitter_dump(&emitter, &c->d)) {
+	if (!yaml_emitter_dump(&emitter, &mc.d)) {
 		log_error("unable to marshal %s: yaml_emitter_dump failed", name);
 		goto err;
 	}
@@ -80,20 +82,22 @@ char *yaml_marshal(const void *data, fn_yaml_root_from_type fn, const char *huma
 
 	char *yaml = NULL;
 
-	struct MC c = { 0 };
+	memset(&mc, 0, sizeof(struct MC));
 
-	if (!yaml_document_initialize(&c.d, NULL, NULL, NULL, 1, 1)) {
+	if (!yaml_document_initialize(&mc.d, NULL, NULL, NULL, 1, 1)) {
 		log_error("unable to marshal %s: yaml_document_initialize failed", human);
 		return NULL;
 	}
 
-	if (!fn(&c, data))
+	if (!fn(data))
 		goto end;
 
-	yaml = yaml_doc_to_string(&c, human);
+	yaml = yaml_doc_to_string(human);
 
 end:
-	yaml_document_delete(&c.d);
+	yaml_document_delete(&mc.d);
+
+	memset(&mc, 0, sizeof(struct MC));
 
 	return yaml;
 }
