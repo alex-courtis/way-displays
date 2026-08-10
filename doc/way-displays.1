@@ -8,9 +8,9 @@ way\-displays \- Auto Manage Your Wayland Displays
 .PP
 Server: \f[B]way\-displays\f[R] [\f[B]\-L\f[R] \f[I]level\f[R]] [\f[B]\-c\f[R] \f[I]path\f[R]]
 .PP
-Client query: \f[B]way\-displays\f[R] [\f[B]\-L\f[R] \f[I]level\f[R]] [\f[B]\-y\f[R]] <\f[B]\-g\f[R]|\f[B]\-l\f[R]>
+Query: \f[B]way\-displays\f[R] [\f[B]\-L\f[R] \f[I]level\f[R]] [\f[B]\-y\f[R]] <\f[B]\-g\f[R]|\f[B]\-l\f[R]>
 .PP
-Client update: \f[B]way\-displays\f[R] [\f[B]\-L\f[R] \f[I]level\f[R]] [\f[B]\-y\f[R]] <\f[B]\-s\f[R]|\f[B]\-d\f[R]|\f[B]\-t\f[R]|\f[B]\-w\f[R]|\f[B]\-r\f[R]> [\f[I]command options\f[R]]
+Update: \f[B]way\-displays\f[R] [\f[B]\-L\f[R] \f[I]level\f[R]] [\f[B]\-y\f[R]] <\f[B]\-s\f[R]|\f[B]\-d\f[R]|\f[B]\-t\f[R]|\f[B]\-w\f[R]|\f[B]\-r\f[R]> [\f[I]command options\f[R]]
 .SH DESCRIPTION
 .IP "1." 3
 Set resolution/refresh: preferred, highest or custom
@@ -125,7 +125,7 @@ Configuration file, falls back to defaults if not found.
 .TP
 \f[B]\-y\f[R], \f[B]\-\-y[aml]\f[R]
 Print client output as raw YAML
-.SH COMMANDS
+.SH COMMAND
 .TP
 \f[B]\-h\f[R], \f[B]\-\-h[elp]\f[R]
 Print usage and exit.
@@ -139,9 +139,22 @@ Show the state of the connected displays: description, enabled, scale, VRR and m
 \f[B]\-g\f[R], \f[B]\-\-g[et]\f[R]
 Show the active configuration, commands and current display state.
 .TP
-\f[B]\-s\f[R], \f[B]\-\-s[et]\f[R]
+\f[B]\-w\f[R], \f[B]\-\-w[rite]\f[R]
+Write active configuration to cfg.yaml; removes any whitespace or comments.
+.TP
+\f[B]\-r\f[R], \f[B]\-\-r[eapply]\f[R]
+Attempt to reapply when the displays are in an inconsistent or incorrect state.
+Disables all displays, clears current/failed mode and enables according to config.
+.TP
+\f[B]\-s\f[R], \f[B]\-\-s[et]\f[R] <\f[I]SET OPTIONS\f[R]>
 Add a new setting or modify an existing.
-.RS
+.TP
+\f[B]\-d\f[R], \f[B]\-\-d[elete]\f[R] <\f[I]DELETE OPTIONS\f[R]>
+Remove an existing setting.
+.TP
+\f[B]\-t\f[R], \f[B]\-\-t[oggle]\f[R] <\f[I]TOGGLE OPTIONS\f[R]>
+Toggle a setting.
+.SH SET OPTIONS
 .TP
 \f[B]ARRANGE_ALIGN\f[R] <\f[B]row\f[R]|\f[B]column\f[R]> <\f[B]top\f[R]|\f[B]middle\f[R]|\f[B]bottom\f[R]|\f[B]left\f[R]|\f[B]right\f[R]>
 Set vertical arrangement and the alignment.
@@ -186,11 +199,7 @@ Default: \f[CR]notify\-send \(dqway\-displays ${CALLBACK_LEVEL}\(dq \(dq${CALLBA
 .IP \(bu 2
 \f[CR]${CALLBACK_LEVEL}\f[R] \f[CR]LOG_THRESHOLD\f[R]
 .RE
-.RE
-.TP
-\f[B]\-d\f[R], \f[B]\-\-d[elete]\f[R]
-Remove an existing setting.
-.RS
+.SH DELETE OPTIONS
 .TP
 \f[B]SCALE\f[R] <\f[I]name\f[R]>
 Use auto scaling for the display, if enabled.
@@ -209,11 +218,7 @@ Enable a display.
 .TP
 \f[B]CALLBACK_CMD\f[R] <\f[I]shell command\f[R]>
 Remove command on display configuration success.
-.RE
-.TP
-\f[B]\-t\f[R], \f[B]\-\-t[oggle]\f[R]
-Toggle a setting.
-.RS
+.SH TOGGLE OPTIONS
 .TP
 \f[B]SCALING\f[R]
 Toggle scaling.
@@ -226,14 +231,6 @@ Toggle VRR for a display.
 .TP
 \f[B]DISABLED\f[R] <\f[I]name\f[R]>
 Toggle a display.
-.RE
-.TP
-\f[B]\-w\f[R], \f[B]\-\-w[rite]\f[R]
-Write active configuration to cfg.yaml; removes any whitespace or comments.
-.TP
-\f[B]\-r\f[R], \f[B]\-\-r[eapply]\f[R]
-Attempt to reapply when the displays are in an inconsistent or incorrect state.
-Disables all displays, clears current/failed mode and enables according to config.
 .SH NAMING
 Displays are matched by name or description with precedence: exact, regex, fuzzy
 .PP

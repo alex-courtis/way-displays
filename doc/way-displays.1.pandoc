@@ -12,9 +12,9 @@ way-displays - Auto Manage Your Wayland Displays
 
 Server: **way-displays** [**-L** *level*] [**-c** *path*]
 
-Client query: **way-displays** \[**-L** *level*\] \[**-y**\] <**-g**|**-l**>
+Query: **way-displays** \[**-L** *level*\] \[**-y**\] <**-g**|**-l**>
 
-Client update: **way-displays** \[**-L** *level*\] \[**-y**\] <**-s**|**-d**|**-t**|**-w**|**-r**> \[*command options*\]
+Update: **way-displays** \[**-L** *level*\] \[**-y**\] <**-s**|**-d**|**-t**|**-w**|**-r**> \[*command options*\]
 
 # DESCRIPTION
 
@@ -99,7 +99,7 @@ User should be a member of the **input** group for querying laptop lid state.
 **-y**, **\-\-y\[aml\]**
 : Print client output as raw YAML
 
-# COMMANDS
+# COMMAND
 
 **-h**, **\-\-h\[elp\]**
 : Print usage and exit.
@@ -113,87 +113,93 @@ User should be a member of the **input** group for querying laptop lid state.
 **-g**, **\-\-g\[et\]**
 : Show the active configuration, commands and current display state.
 
-**-s**, **\-\-s\[et\]**
-: Add a new setting or modify an existing.
-
-	**ARRANGE_ALIGN** <**row**|**column**> <**top**|**middle**|**bottom**|**left**|**right**>
-	: Set vertical arrangement and the alignment.
-
-	**ORDER** <**name**|**!regex**> ...
-	: Set the order of arrangement. Replaces previous order.
-
-	**SCALING** <**on**|**off**>
-	: Enable scaling, overrides AUTO_SCALE and SCALE
-
-	**AUTO_SCALE** <**on**|**off**>
-	: Enable auto scaling.
-
-	**SCALE** <*name*> <*scale*>
-	: Set the scale for a specific display.
-
-	**MODE** <*name*> <*width*> <*height*> \[*Hz*\]
-	: Specified resolution at its highest refresh. Optional refresh will choose a mode +-0.5Hz.
-
-	**MODE** <*name*> **max**
-	: Highest available resolution / refresh.
-
-	**TRANSFORM** <*name*> <**90**|**180**|**270**|**flipped**|**flipped-90**|**flipped-180**|**flipped-270**>
-	: Transform a specific display.
-
-	**VRR_OFF** <*name*>
-	: Disable VRR for a display.
-
-	**DISABLED** <*name*>
-	: Disable a display.
-
-	**CALLBACK_CMD** <*shell command*>
-	: Sets a **/bin/sh** command to be executed following most events.
-	: Obeys LOG_THRESHOLD
-	: - Default: `notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
-	: - `${CALLBACK_MSG}` contains a human readable message 
-	: - `${CALLBACK_LEVEL}` `LOG_THRESHOLD`
-
-**-d**, **\-\-d\[elete\]**
-: Remove an existing setting.
-
-	**SCALE** <*name*>
-	: Use auto scaling for the display, if enabled.
-
-	**MODE** <*name*>
-	: Use preferred or highest availble if no preferred.
-
-	**TRANSFORM** <*name*>
-	: Remove transformation for a display.
-
-	**VRR_OFF** <*name*>
-	: Enable VRR for a display.
-
-	**DISABLED** <*name*>
-	: Enable a display.
-
-	**CALLBACK_CMD** <*shell command*>
-	: Remove command on display configuration success.
-
-**-t**, **\-\-t\[oggle\]**
-: Toggle a setting.
-
-	**SCALING**
-	: Toggle scaling.
-
-	**AUTO_SCALE**
-	: Toggle auto scaling.
-
-	**VRR_OFF** <*name*>
-	: Toggle VRR for a display.
-
-	**DISABLED** <*name*>
-	: Toggle a display.
-
 **-w**, **\-\-w\[rite\]**
 : Write active configuration to cfg.yaml; removes any whitespace or comments.
 
 **-r**, **\-\-r\[eapply\]**
 : Attempt to reapply when the displays are in an inconsistent or incorrect state. Disables all displays, clears current/failed mode and enables according to config.
+
+**-s**, **\-\-s\[et\]** <*SET OPTIONS*>
+: Add a new setting or modify an existing.
+
+**-d**, **\-\-d\[elete\]** <*DELETE OPTIONS*>
+: Remove an existing setting.
+
+**-t**, **\-\-t\[oggle\]** <*TOGGLE OPTIONS*>
+: Toggle a setting.
+
+# SET OPTIONS
+
+**ARRANGE_ALIGN** <**row**|**column**> <**top**|**middle**|**bottom**|**left**|**right**>
+: Set vertical arrangement and the alignment.
+
+**ORDER** <**name**|**!regex**> ...
+: Set the order of arrangement. Replaces previous order.
+
+**SCALING** <**on**|**off**>
+: Enable scaling, overrides AUTO_SCALE and SCALE
+
+**AUTO_SCALE** <**on**|**off**>
+: Enable auto scaling.
+
+**SCALE** <*name*> <*scale*>
+: Set the scale for a specific display.
+
+**MODE** <*name*> <*width*> <*height*> \[*Hz*\]
+: Specified resolution at its highest refresh. Optional refresh will choose a mode +-0.5Hz.
+
+**MODE** <*name*> **max**
+: Highest available resolution / refresh.
+
+**TRANSFORM** <*name*> <**90**|**180**|**270**|**flipped**|**flipped-90**|**flipped-180**|**flipped-270**>
+: Transform a specific display.
+
+**VRR_OFF** <*name*>
+: Disable VRR for a display.
+
+**DISABLED** <*name*>
+: Disable a display.
+
+**CALLBACK_CMD** <*shell command*>
+: Sets a **/bin/sh** command to be executed following most events.
+: Obeys LOG_THRESHOLD
+: - Default: `notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
+: - `${CALLBACK_MSG}` contains a human readable message 
+: - `${CALLBACK_LEVEL}` `LOG_THRESHOLD`
+
+# DELETE OPTIONS
+
+**SCALE** <*name*>
+: Use auto scaling for the display, if enabled.
+
+**MODE** <*name*>
+: Use preferred or highest availble if no preferred.
+
+**TRANSFORM** <*name*>
+: Remove transformation for a display.
+
+**VRR_OFF** <*name*>
+: Enable VRR for a display.
+
+**DISABLED** <*name*>
+: Enable a display.
+
+**CALLBACK_CMD** <*shell command*>
+: Remove command on display configuration success.
+
+# TOGGLE OPTIONS
+
+**SCALING**
+: Toggle scaling.
+
+**AUTO_SCALE**
+: Toggle auto scaling.
+
+**VRR_OFF** <*name*>
+: Toggle VRR for a display.
+
+**DISABLED** <*name*>
+: Toggle a display.
 
 # NAMING
 
