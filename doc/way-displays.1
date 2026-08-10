@@ -4,13 +4,13 @@
 .SH NAME
 way\-displays \- Auto Manage Your Wayland Displays
 .SH SYNOPSIS
-\f[B]way\-displays\f[R] [\f[B]\-h\f[R]|\f[B]\-v\f[R]]
+\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-h\f[B]\f[R]|\f[B]\f[CB]\-v\f[B]\f[R]]
 .PP
-Server: \f[B]way\-displays\f[R] [\f[B]\-L\f[R] \f[I]level\f[R]] [\f[B]\-c\f[R] \f[I]path\f[R]]
+Server: \f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-L\f[B]\f[R] \f[I]level\f[R]] [\f[B]\f[CB]\-c\f[B]\f[R] \f[I]path\f[R]]
 .PP
-Query: \f[B]way\-displays\f[R] [\f[B]\-L\f[R] \f[I]level\f[R]] [\f[B]\-y\f[R]] <\f[B]\-g\f[R]|\f[B]\-l\f[R]>
+Query: \f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-L\f[B]\f[R] \f[I]level\f[R]] [\f[B]\f[CB]\-y\f[B]\f[R]] <\f[B]\f[CB]\-g\f[B]\f[R]|\f[B]\f[CB]\-l\f[B]\f[R]>
 .PP
-Update: \f[B]way\-displays\f[R] [\f[B]\-L\f[R] \f[I]level\f[R]] [\f[B]\-y\f[R]] <\f[B]\-s\f[R]|\f[B]\-d\f[R]|\f[B]\-t\f[R]|\f[B]\-w\f[R]|\f[B]\-r\f[R]> [\f[I]command options\f[R]]
+Update: \f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-L\f[B]\f[R] \f[I]level\f[R]] [\f[B]\f[CB]\-y\f[B]\f[R]] <\f[B]\f[CB]\-s\f[B]\f[R]|\f[B]\f[CB]\-d\f[B]\f[R]|\f[B]\f[CB]\-t\f[B]\f[R]|\f[B]\f[CB]\-w\f[B]\f[R]|\f[B]\f[CB]\-r\f[B]\f[R]> [\f[I]command options\f[R]]
 .SH DESCRIPTION
 .IP "1." 3
 Set resolution/refresh: preferred, highest or custom
@@ -61,7 +61,7 @@ $HOME/.config/way\-displays/cfg.yaml
 /etc/way\-displays/cfg.yaml
 .EE
 .PP
-The file may be specified via the \f[B]\(enconfig\f[R] option.
+The file may be specified via the \f[B]\f[CB]\-\-config\f[B]\f[R] option.
 .PP
 cfg.yaml will be monitored for changes, which will be immediately applied.
 .PP
@@ -73,10 +73,10 @@ Server responds to IPC requests to fetch and mutate state: https://github.com/al
 .SS cfg.yaml
 For details on individual configurable settings see:
 .IP "1." 3
-Default \f[B]cfg.yaml\f[R]
+Default \f[B]\f[CB]cfg.yaml\f[B]\f[R]
 .RS 4
 .PP
-/etc/way\-displays/cfg.yaml
+\f[CR]/etc/way\-displays/cfg.yaml\f[R]
 .PP
 https://raw.githubusercontent.com/alex\-courtis/way\-displays/refs/heads/master/examples/cfg.yaml
 .RE
@@ -114,84 +114,84 @@ Hpyrland
 way\-displays must be run as a daemon, a background server process.
 It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 .PP
-User should be a member of the \f[B]input\f[R] group for querying laptop lid state.
+User should be a member of the \f[B]\f[CB]input\f[B]\f[R] UNIX group for querying laptop lid state.
 .SH OPTIONS
 .TP
-\f[B]\-L\f[R], \f[B]\-\-l[og\-threshold]\f[R] <\f[B]debug\f[R]|\f[B]info\f[R]|\f[B]warning\f[R]|\f[B]error\f[R]|\f[B]fatal\f[R]>
-Overrides \f[B]cfg.yaml\f[R], default \f[B]info\f[R].
+\f[B]\f[CB]\-L\f[B]\f[R], \f[B]\f[CB]\-\-l[og\-threshold]\f[B]\f[R] <\f[B]debug\f[R]|\f[B]info\f[R]|\f[B]warning\f[R]|\f[B]error\f[R]|\f[B]fatal\f[R]>
+Overrides \f[CR]cfg.yaml\f[R], default \f[B]\f[CB]info\f[B]\f[R].
 .TP
-\f[B]\-c\f[R], \f[B]\-\-c[onfig]\f[R] <\f[I]path\f[R]>
+\f[B]\f[CB]\-c\f[B]\f[R], \f[B]\f[CB]\-\-c[onfig]\f[B]\f[R] <\f[I]path\f[R]>
 Configuration file, falls back to defaults if not found.
 .TP
-\f[B]\-y\f[R], \f[B]\-\-y[aml]\f[R]
+\f[B]\f[CB]\-y\f[B]\f[R], \f[B]\f[CB]\-\-y[aml]\f[B]\f[R]
 Print client output as raw YAML
 .SH COMMAND
 .TP
-\f[B]\-h\f[R], \f[B]\-\-h[elp]\f[R]
+\f[B]\f[CB]\-h\f[B]\f[R], \f[B]\f[CB]\-\-h[elp]\f[B]\f[R]
 Print usage and exit.
 .TP
-\f[B]\-v\f[R], \f[B]\-\-v[ersion]\f[R]
+\f[B]\f[CB]\-v\f[B]\f[R], \f[B]\f[CB]\-\-v[ersion]\f[B]\f[R]
 Display version information and exit.
 .TP
-\f[B]\-l\f[R], \f[B]\-\-li[st]\f[R]
+\f[B]\f[CB]\-l\f[B]\f[R], \f[B]\f[CB]\-\-li[st]\f[B]\f[R]
 Show the state of the connected displays: description, enabled, scale, VRR and mode.
 .TP
-\f[B]\-g\f[R], \f[B]\-\-g[et]\f[R]
+\f[B]\f[CB]\-g\f[B]\f[R], \f[B]\f[CB]\-\-g[et]\f[B]\f[R]
 Show the active configuration, commands and current display state.
 .TP
-\f[B]\-w\f[R], \f[B]\-\-w[rite]\f[R]
-Write active configuration to cfg.yaml; removes any whitespace or comments.
+\f[B]\f[CB]\-w\f[B]\f[R], \f[B]\f[CB]\-\-w[rite]\f[B]\f[R]
+Write active configuration to \f[CR]cfg.yaml\f[R]; removes any whitespace or comments.
 .TP
-\f[B]\-r\f[R], \f[B]\-\-r[eapply]\f[R]
+\f[B]\f[CB]\-r\f[B]\f[R], \f[B]\f[CB]\-\-r[eapply]\f[B]\f[R]
 Attempt to reapply when the displays are in an inconsistent or incorrect state.
 Disables all displays, clears current/failed mode and enables according to config.
 .TP
-\f[B]\-s\f[R], \f[B]\-\-s[et]\f[R] <\f[I]SET OPTIONS\f[R]>
+\f[B]\f[CB]\-s\f[B]\f[R], \f[B]\f[CB]\-\-s[et]\f[B]\f[R] <\f[I]\f[CI]SET OPTIONS\f[I]\f[R]>
 Add a new setting or modify an existing.
 .TP
-\f[B]\-d\f[R], \f[B]\-\-d[elete]\f[R] <\f[I]DELETE OPTIONS\f[R]>
+\f[B]\f[CB]\-d\f[B]\f[R], \f[B]\f[CB]\-\-d[elete]\f[B]\f[R] <\f[I]\f[CI]DELETE OPTIONS\f[I]\f[R]>
 Remove an existing setting.
 .TP
-\f[B]\-t\f[R], \f[B]\-\-t[oggle]\f[R] <\f[I]TOGGLE OPTIONS\f[R]>
+\f[B]\f[CB]\-t\f[B]\f[R], \f[B]\f[CB]\-\-t[oggle]\f[B]\f[R] <\f[I]\f[CI]TOGGLE OPTIONS\f[I]\f[R]>
 Toggle a setting.
 .SH SET OPTIONS
 .TP
-\f[B]ARRANGE_ALIGN\f[R] <\f[B]row\f[R]|\f[B]column\f[R]> <\f[B]top\f[R]|\f[B]middle\f[R]|\f[B]bottom\f[R]|\f[B]left\f[R]|\f[B]right\f[R]>
+\f[B]\f[CB]ARRANGE_ALIGN\f[B]\f[R] <\f[B]\f[CB]row\f[B]\f[R]|\f[B]\f[CB]column\f[B]\f[R]> <\f[B]\f[CB]top\f[B]\f[R]|\f[B]\f[CB]middle\f[B]\f[R]|\f[B]\f[CB]bottom\f[B]\f[R]|\f[B]\f[CB]left\f[B]\f[R]|\f[B]\f[CB]right\f[B]\f[R]>
 Set vertical arrangement and the alignment.
 .TP
-\f[B]ORDER\f[R] <\f[B]name\f[R]|\f[B]!regex\f[R]> \&...
+\f[B]\f[CB]ORDER\f[B]\f[R] <\f[I]name\f[R]|\f[B]\f[CB]!\f[B]\f[R] \f[I]regex\f[R]> \&...
 Set the order of arrangement.
 Replaces previous order.
 .TP
-\f[B]SCALING\f[R] <\f[B]on\f[R]|\f[B]off\f[R]>
-Enable scaling, overrides AUTO_SCALE and SCALE
+\f[B]\f[CB]SCALING\f[B]\f[R] <\f[B]\f[CB]on\f[B]\f[R]|\f[B]\f[CB]off\f[B]\f[R]>
+Enable scaling, overrides \f[CR]AUTO_SCALE\f[R] and \f[CR]SCALE\f[R]
 .TP
-\f[B]AUTO_SCALE\f[R] <\f[B]on\f[R]|\f[B]off\f[R]>
+\f[B]\f[CB]AUTO_SCALE\f[B]\f[R] <\f[B]\f[CB]on\f[B]\f[R]|\f[B]\f[CB]off\f[B]\f[R]>
 Enable auto scaling.
 .TP
-\f[B]SCALE\f[R] <\f[I]name\f[R]> <\f[I]scale\f[R]>
+\f[B]\f[CB]SCALE\f[B]\f[R] <\f[I]name\f[R]> <\f[I]scale\f[R]>
 Set the scale for a specific display.
 .TP
-\f[B]MODE\f[R] <\f[I]name\f[R]> <\f[I]width\f[R]> <\f[I]height\f[R]> [\f[I]Hz\f[R]]
+\f[B]\f[CB]MODE\f[B]\f[R] <\f[I]name\f[R]> <\f[I]width\f[R]> <\f[I]height\f[R]> [\f[I]Hz\f[R]]
 Specified resolution at its highest refresh.
 Optional refresh will choose a mode +\-0.5Hz.
 .TP
-\f[B]MODE\f[R] <\f[I]name\f[R]> \f[B]max\f[R]
+\f[B]\f[CB]MODE\f[B]\f[R] <\f[I]name\f[R]> \f[B]\f[CB]max\f[B]\f[R]
 Highest available resolution / refresh.
 .TP
-\f[B]TRANSFORM\f[R] <\f[I]name\f[R]> <\f[B]90\f[R]|\f[B]180\f[R]|\f[B]270\f[R]|\f[B]flipped\f[R]|\f[B]flipped\-90\f[R]|\f[B]flipped\-180\f[R]|\f[B]flipped\-270\f[R]>
+\f[B]\f[CB]TRANSFORM\f[B]\f[R] <\f[I]name\f[R]> <\f[B]\f[CB]90\f[B]\f[R]|\f[B]\f[CB]180\f[B]\f[R]|\f[B]\f[CB]270\f[B]\f[R]|\f[B]\f[CB]flipped\f[B]\f[R]|\f[B]\f[CB]flipped\-90\f[B]\f[R]|\f[B]\f[CB]flipped\-180\f[B]\f[R]|\f[B]\f[CB]flipped\-270\f[B]\f[R]>
 Transform a specific display.
 .TP
-\f[B]VRR_OFF\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]VRR_OFF\f[B]\f[R] <\f[I]name\f[R]>
 Disable VRR for a display.
 .TP
-\f[B]DISABLED\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]DISABLED\f[B]\f[R] <\f[I]name\f[R]>
 Disable a display.
 .TP
-\f[B]CALLBACK_CMD\f[R] <\f[I]shell command\f[R]>
-Sets a \f[B]/bin/sh\f[R] command to be executed following most events.
+\f[B]\f[CB]CALLBACK_CMD\f[B]\f[R] <\f[I]shell command\f[R]>
+Sets a \f[B]\f[CB]/bin/sh\f[B]\f[R] command to be executed following most events.
 .RS
-Obeys LOG_THRESHOLD
+Obeys \f[CR]LOG_THRESHOLD\f[R]
 .IP \(bu 2
 Default: \f[CR]notify\-send \(dqway\-displays ${CALLBACK_LEVEL}\(dq \(dq${CALLBACK_MSG}\(dq\f[R]
 .IP \(bu 2
@@ -201,35 +201,35 @@ Default: \f[CR]notify\-send \(dqway\-displays ${CALLBACK_LEVEL}\(dq \(dq${CALLBA
 .RE
 .SH DELETE OPTIONS
 .TP
-\f[B]SCALE\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]SCALE\f[B]\f[R] <\f[I]name\f[R]>
 Use auto scaling for the display, if enabled.
 .TP
-\f[B]MODE\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]MODE\f[B]\f[R] <\f[I]name\f[R]>
 Use preferred or highest availble if no preferred.
 .TP
-\f[B]TRANSFORM\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]TRANSFORM\f[B]\f[R] <\f[I]name\f[R]>
 Remove transformation for a display.
 .TP
-\f[B]VRR_OFF\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]VRR_OFF\f[B]\f[R] <\f[I]name\f[R]>
 Enable VRR for a display.
 .TP
-\f[B]DISABLED\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]DISABLED\f[B]\f[R] <\f[I]name\f[R]>
 Enable a display.
 .TP
-\f[B]CALLBACK_CMD\f[R] <\f[I]shell command\f[R]>
+\f[B]\f[CB]CALLBACK_CMD\f[B]\f[R] <\f[I]shell command\f[R]>
 Remove command on display configuration success.
 .SH TOGGLE OPTIONS
 .TP
-\f[B]SCALING\f[R]
+\f[B]\f[CB]SCALING\f[B]\f[R]
 Toggle scaling.
 .TP
-\f[B]AUTO_SCALE\f[R]
+\f[B]\f[CB]AUTO_SCALE\f[B]\f[R]
 Toggle auto scaling.
 .TP
-\f[B]VRR_OFF\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]VRR_OFF\f[B]\f[R] <\f[I]name\f[R]>
 Toggle VRR for a display.
 .TP
-\f[B]DISABLED\f[R] <\f[I]name\f[R]>
+\f[B]\f[CB]DISABLED\f[B]\f[R] <\f[I]name\f[R]>
 Toggle a display.
 .SH NAMING
 Displays are matched by name or description with precedence: exact, regex, fuzzy
