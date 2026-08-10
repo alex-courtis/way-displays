@@ -1,4 +1,4 @@
-# $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
+# $schema: ../../schema/cfg-2.0.0.yaml
 # toplevel fields are mistyped except those that cannot be: MODE, TRANSFORM, SCALE, DISABLED
 
 ARRANGE:

@@ -1,3 +1,3 @@
-# $schema: ../../schema/cfg-2.0.0-SNAPSHOT.yaml
+# $schema: ../../schema/cfg-2.0.0.yaml
 DISABLED:
   '!(bad_pat_key':

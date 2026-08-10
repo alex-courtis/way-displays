@@ -1,4 +1,4 @@
-# $schema: ../../schema/ipc-request-2.0.0-SNAPSHOT.yaml
+# $schema: ../../schema/ipc-request-2.0.0.yaml
 OP: CFG_SET
 LOG_THRESHOLD: ERROR
 TOP_LEVEL_INVALID: top_level_invalid

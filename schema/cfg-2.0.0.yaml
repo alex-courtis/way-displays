@@ -1,7 +1,7 @@
 # $schema: https://json-schema.org/draft/2020-12/schema
 
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0-SNAPSHOT.yaml
+$id: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml
 
 title: way-displays cfg
 description: |-
@@ -39,7 +39,7 @@ properties:
       - type: "null"
       - type: array
         items:
-          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+          $ref: 'types-2.0.0.yaml#/$defs/fuzzy_display_match'
 
   SCALING:
     description: |-
@@ -99,7 +99,7 @@ properties:
       - type: "null"
       - type: object
         propertyNames:
-          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+          $ref: 'types-2.0.0.yaml#/$defs/fuzzy_display_match'
         additionalProperties:
           type: number
           exclusiveMinimum: 0
@@ -112,9 +112,9 @@ properties:
       - type: "null"
       - type: object
         propertyNames:
-          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+          $ref: 'types-2.0.0.yaml#/$defs/fuzzy_display_match'
         additionalProperties:
-          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/mode'
+          $ref: 'types-2.0.0.yaml#/$defs/mode'
 
   TRANSFORM:
     description: |-
@@ -123,9 +123,9 @@ properties:
       - type: "null"
       - type: object
         propertyNames:
-          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+          $ref: 'types-2.0.0.yaml#/$defs/fuzzy_display_match'
         additionalProperties:
-          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/transform'
+          $ref: 'types-2.0.0.yaml#/$defs/transform'
 
   VRR_OFF:
     description: |-
@@ -134,7 +134,7 @@ properties:
       - type: "null"
       - type: array
         items:
-          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+          $ref: 'types-2.0.0.yaml#/$defs/fuzzy_display_match'
 
   CALLBACK_CMD:
     description: |-
@@ -154,7 +154,7 @@ properties:
   LOG_THRESHOLD:
     description: |-
       Applies to logs and callbacks.
-    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/log_threshold'
+    $ref: 'types-2.0.0.yaml#/$defs/log_threshold'
     default: INFO
 
   DISABLED:
@@ -164,7 +164,7 @@ properties:
       - type: "null"
       - type: object
         propertyNames:
-          $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/fuzzy_display_match'
+          $ref: 'types-2.0.0.yaml#/$defs/fuzzy_display_match'
         additionalProperties:
           anyOf:
             - type: "null"
@@ -175,7 +175,7 @@ properties:
                     A list of conditions. Evaluates to true if at least one of the conditions is true.
                   type: array
                   items:
-                    $ref: 'types-2.0.0-SNAPSHOT.yaml#/$defs/condition'
+                    $ref: 'types-2.0.0.yaml#/$defs/condition'
                   minItems: 1
               additionalProperties: false
 
