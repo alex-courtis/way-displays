@@ -1,3 +1,31 @@
+way-displays 2.0.0 2026-09-17
+-----------------------------
+See https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes
+Packagers: breaking change: libyaml replaces yaml-cpp
+cfg.yaml schema changes, backwards compatible:
+- way-displays --write to upgrade
+- DISABLED, MODE, SCALE and TRANSFORM arrays are replaced with NAME_DESC keyed maps
+- LAPTOP_DISPLAY_PREFIX replaced with DISABLED condition
+- MAX_PREFERRED_REFRESH moved from array MODE item
+- Compact sequence indentation used to write cfg.yaml
+feat(#31): --reapply disable and mode
+feat(#229): add CLI --list to print connected displays
+feat(#40): add SCALE_ROUND_TO and SCALE_ROUND_STRATEGY
+fix(#220): DISABLED: --toggle --set --del override conditionals, --toggle persistently applies as per --set and --del
+feat: verbose condition printing
+feat: LAPTOP_LID_MONITOR
+feat(#114): add LID condition for DISABLED
+feat(#81): AUTO_SCALE_DPI
+docs: add a note about "development" dependencies
+Coloured console logs
+chore(deps): wlroots 0.20, wayland-protocols 1.48
+fix(#243): safer logging
+chore(#212): remove diagnostic wp_fractional_scale_manager_v1_interface check
+feat(#246): print usage message when another instance running
+fix(#248): remove duplicate client messages
+feat(#253): strip all leading (null) from description
+feat(#165): disable lid query on permission failure, logging helpful message
+
 way-displays 1.15.0 2025-09-30
 ------------------------------
 #225 add warning: 'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match
