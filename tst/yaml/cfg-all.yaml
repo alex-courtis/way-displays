@@ -13,8 +13,8 @@ AUTO_SCALE_DPI: 48
 AUTO_SCALE_MIN: 0.5
 AUTO_SCALE_MAX: 2.5
 SCALE:
-  third: 3
-  fourth: 4
+  third: 3.333
+  fourth: 4.445
 MODE:
   fifth:
     WIDTH: 1920

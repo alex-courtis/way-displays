@@ -82,8 +82,8 @@ struct Cfg *cfg_all(void) {
 			"!second",
 			NULL);
 
-	simap_put(cfg->scales, "third", 3000);
-	simap_put(cfg->scales, "fourth", 4000);
+	simap_put(cfg->scales, "third", 3333);
+	simap_put(cfg->scales, "fourth", 4445);
 
 	spmap_put_many(cfg->modes,
 			"fifth", mode_whr(1920, 1080, 12340),

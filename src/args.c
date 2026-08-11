@@ -66,7 +66,7 @@ struct Cfg *args_cfg(enum IpcCommand command, enum CfgElement element, int argc,
 					break;
 				case CFG_DEL:
 					// dummy value
-					simap_put(cfg->scales, argv[optind], 1);
+					simap_put(cfg->scales, argv[optind], 1000);
 					parsed = true;
 					break;
 				default:
