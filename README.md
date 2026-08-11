@@ -1,3 +1,7 @@
+# New Release 2026-09-17: 2.0.0
+
+See [Version 2.0.0 Changes](https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes)
+
 # way-displays: Auto Manage Your Wayland Displays
 
 <img align="right" width="427" height="189" title="credit: Stephen Barratt" src="doc/layouts.png?raw=true">
@@ -10,11 +14,13 @@
 
 1. Auto scale based on DPI: 96 is a scale of 1
 
-1. Update when displays plugged/unplugged
+1. Update when displays plugged/unplugged with optionally defined conditions
 
 1. Update when laptop lid closed/opened
 
 Works out of the box: no configuration required.
+
+Communicates verbosely via logs/stdout and notifications.
 
 Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
 
@@ -32,18 +38,17 @@ way-displays must be run as a daemon, a background server process. It will respo
 
 User should be a member of the `input` group for querying laptop lid state.
 
+## Documentation
+
+[`man way-displays`](doc/way-displays.1.md) for server and CLI details.
+
+[`man 5 way-displays`](doc/way-displays.5.md) for `cfg.yaml` config file reference.
+
+[wiki: Recipes](https://github.com/alex-courtis/way-displays/wiki/Recipes)
+
+[wiki: IPC](https://github.com/alex-courtis/way-displays/wiki/IPC)
+
 ## Quick Start
-
-Start with the default config file:
-```sh
-mkdir -p ~/.config/way-displays
-cp /etc/way-displays/cfg.yaml ~/.config/way-displays/cfg.yaml
-```
-
-Add yourself to the `input` group to monitor events: 
-```sh
-sudo usermod -a -G input "${USER}"
-```
 
 Start the way-displays server:
 
@@ -81,27 +86,13 @@ mako > "/tmp/mako.${XDG_VTNR}.${USER}.log" 2>&1 &
 
 ### Configure
 
-Restart the compositor and run `way-displays -g` or look at `/tmp/way-displays.1.me.log`.
+Restart the compositor and run `way-displays -g` or look at `/tmp/way-displays.${XDG_VTNR}.${USER}.log`
 
-Tweak [cfg.yaml](https://github.com/alex-courtis/way-displays/wiki/Configuration#cfgyaml) to your liking and save it. Changes will be immediately applied.
+`way-displays` will communicate verbosely via the logs - you might want to `tail -f /tmp/way-displays.${XDG_VTNR}.${USER}.log` whilst you are tweaking.
 
-Alternatively, use the [command line](https://github.com/alex-courtis/way-displays/wiki/Configuration#command-line) to make your changes then persist them with `way-displays -w`. See `man way-displays`
+Tweak [`cfg.yaml`](examples/cfg.yaml) to your liking and save it, see [`man 5 way-displays`](doc/way-displays.5.md). Changes will be immediately applied.
 
-You might want to `tail -f /tmp/way-displays.1.me.log` whilst you are tweaking.
-
-## Usage
-
-See [Configuration](https://github.com/alex-courtis/way-displays/wiki/Configuration) for details on `cfg.yaml` and the command line.
-
-Start the `way-displays` server by running once with no arguments after your wayland compositor has been started.
-
-It will remain in the background, responding to changes, such as plugging in a display, and will terminate when you exit the compositor.
-
-It will print messages to inform you of everything that is going on.
-
-You can interact with the server via the [command line](https://github.com/alex-courtis/way-displays/wiki/Configuration#command-line)
-
-The server responds to [IPC](https://github.com/alex-courtis/way-displays/wiki/IPC) requests to fetch and mutate state.
+Alternatively, use the CLI to make your changes then persist them with `way-displays -w`, see [`man way-displays`](doc/way-displays.1.md)
 
 ## Installation
 

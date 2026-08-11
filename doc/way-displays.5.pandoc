@@ -1,0 +1,377 @@
+% WAY-DISPLAYS(5) way-displays | File Formats Manual
+% Alexander Courtis
+% 2026/08/11
+
+# NAME
+
+way-displays - **`cfg.yaml`** configuration file format.
+
+# SYNTAX
+
+way-displays' configuration file uses the YAML syntax with the schema:
+
+	https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/docs-man-5/schema/cfg-2.0.0.yaml
+
+# LOCATION
+
+Configuration is read from **`cfg.yaml`**, discovered in order:
+
+	$XDG_CONFIG_HOME/way-displays/cfg.yaml
+	$HOME/.config/way-displays/cfg.yaml
+	/usr/local/etc/way-displays/cfg.yaml
+	/etc/way-displays/cfg.yaml
+
+A default configuration file will be created if none is found.
+
+# NAMING CONVENTIONS
+
+<*name*> is matched by display name or description with precedence: exact, regex, fuzzy
+
+You can identify them via logs or **`way-displays --get`** or **`way-displays --list`** e.g.
+
+	DP-3 Arrived:
+	    name:     'DP-3'
+	    desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
+
+It is recommended to use the description rather than the nondeterministic name.
+
+Any item prefixed with a **`!`** will be interpreted as extended POSIX regex e.g. **`'!^DP-1'`**. Regex strings must be single quoted.
+
+Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
+
+`'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
+
+# **`ARRANGE, ALIGN`**
+
+The default is to arrange in a row, aligned at the top of the displays.
+
+**`ARRANGE`**
+: Enum <**`ROW`**|**`COLUMN`**>, default **`ROW`**
+
+**`ALIGN`**
+: Enum <**`TOP`**|**`MIDDLE`**|**`BOTTOM`**|**`LEFT`**|**`RIGHT`**>, default **`TOP`**
+
+**`ALIGN`** (ROW)
+: <**`TOP`**|**`MIDDLE`**|**`BOTTOM`**>
+
+**`ALIGN`** (COLUMN)
+: <**`LEFT`**|**`MIDDLE`**|**`RIGHT`**>
+
+Layout to suit you e.g. top to bottom, aligned in the centre:
+```yaml
+ARRANGE: COLUMN
+ALIGN: MIDDLE
+```
+
+# **`ORDER`**
+
+Define the order in which displays are positioned. The default is simply the order in which the displays are discovered. This is nondeterministic.
+
+Array of <*name*>
+
+You are encouraged to explicitly define your order. e.g.
+```yaml
+ORDER:
+- '!^DP-1'
+- 'Monitor Maker ABC123'
+- 'HDMI-1'
+```
+
+Regexes are encouraged, allowing for one to easily create generic rules e.g. **`'!^DP-'`**, which will often be sufficient to put external monitors at the top of a column.
+
+Some displays may be ordered last, by using a "catchall" regex e.g.
+```yaml
+ORDER:
+- '!.*Monitor Maker ABC123.*$'
+- '!.*$'
+- 'DP-5'
+```
+Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
+
+# **`SCALING*`**
+
+Control all scaling, including custom [SCALE](https://github.com/alex-courtis/way-displays/wiki/Configuration#scale)
+
+0.125 (1/8) is the minimum scaling granularity, see [FAQ: On Scale And Blurring](https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring)
+
+**`SCALING`**
+
+: Boolean, default TRUE
+
+: Enable scaling, overrides **`AUTO_SCALE`** and **`SCALE`** when disabled.
+
+**`SCALE_ROUND_TO`**
+
+: Number: <**`0.125`**|**`0.25`**|**`0.5`**|**`1`**>, default **`0.125`**
+
+: Round scales to nearest, using **`SCALE_ROUND_STRATEGY`**
+
+**`SCALE_ROUND_STRATEGY`**
+
+: Enum <**`NEAREST`**|**`UP`**|**`DOWN`**>, default **`NEAREST`**
+
+: Applies to **`SCALE_ROUND_TO`**
+
+e.g.
+```yaml
+# enable all scaling
+SCALING: true
+
+# round up to the next highest 0.25
+SCALE_ROUND_STRATEGY: UP
+SCALE_ROUND_TO: 0.25
+```
+
+# **`AUTO_SCALE*`**
+
+The default is to scale each display by DPI, 
+
+When disabled a scale 1 will always be used, unless a **`SCALE`** has been specified.
+
+**`AUTO_SCALE`**
+
+: Boolean, default TRUE
+
+**`AUTO_SCALE_DPI`**
+
+: Integer, minimum **`8`**, default **`96`**
+
+: DPI basis for auto scale calculations.
+
+**`AUTO_SCALE_MIN`**
+
+: Number, default **`1.0`**
+
+: Set minimum scale when auto scaling.
+
+**`AUTO_SCALE_MAX`**
+
+: Number, default **`-1.0`**
+
+: Set maximum scale when auto scaling, default indicates no maximum. Ignored if below **`AUTO_SCALE_MIN`**
+
+e.g.
+```yaml
+# enable auto scaling
+AUTO_SCALE: true
+
+# using the old fashioned 72 dpi
+AUTO_SCALE_DPI: 72
+
+# allow half sub-pixel scaling
+AUTO_SCALE_MIN: 0.5
+
+# cap your scales to double
+AUTO_SCALE_MAX: 2.0
+```
+
+# **`SCALE`**
+
+Auto scale may be overridden with custom scales for each display. Does not apply when **`SCALING`** FALSE
+
+Map <*name*>: Number
+
+e.g.
+```yaml
+# ABC123 will be scaled at exactly 1.75 
+SCALE:
+  'Monitor Maker ABC123': 1.75
+```
+
+# **`MODE`**
+
+Select specific modes for specific displays, overriding auto scaling.
+
+If the specified mode cannot be found or activated, way-displays will fall back to the preferred mode, then the highest available resolution / refresh.
+
+When selecting a mode, `way-displays` will use the highest refresh within +-0.5Hz that matches. There will usually be several refresh rates will match an integegral number of Hz, differing only by a few mHz. These will be tried in descending order until a working one is found.
+
+Map <*name*>:
+
+**`WIDTH`**
+
+: Integer, pixels
+
+**`HEIGHT`**
+
+: Integer, pixels 
+
+**`HZ`**
+
+: Number, refresh rate
+
+: A refresh rate +-0.5Hz will match.
+
+**`MAX`**
+
+: Boolean
+
+: Use the maximum available refresh rate at the maximum resolution.
+
+**`MAX_PREFERRED_REFRESH`**
+
+: Boolean
+
+: Use the highest available refresh for the preferred mode's resolution.
+
+e.g.
+```yaml
+MODE:
+  # highest refresh rate at 1920x1080
+  HDMI-A-1:
+    WIDTH: 1920
+    HEIGHT: 1080
+
+  # 3440x1440 at ~144Hz
+  LG27Q:
+    WIDTH: 3440
+    HEIGHT: 1440
+    HZ: 144
+
+  # maximum available resolution and refresh
+  M28U:
+    MAX: TRUE
+```
+
+**WARNING:** selecting some modes may result in an unusable (blank screen or powered off) monitor. Try this `WLR_DRM_NO_MODIFIERS=1` [workaround](https://github.com/alex-courtis/way-displays#unusable-displays-following-mode) if you experience problems.
+
+# **`TRANSFORM`**
+
+Rotate and mirror the display.
+
+Map <*name*>: Enum <**`90`**|**`180`**|**`270`**|**`FLIPPED`**|**`FLIPPED-90`**|**`FLIPPED-180`**|**`FLIPPED-270`**>
+
+e.g.
+```yaml
+TRANSFORM:
+  # mirror and rotate 180 degrees
+  LG27Q: FLIPPED-180
+```
+
+# **`VRR_OFF`**
+
+VRR / adaptive sync is enabled by default. Disable it per display.
+
+Array of <*name*>
+
+e.g.
+```yaml
+VRR_OFF:
+- '!^DP-1'
+- 'Monitor Maker ABC123'
+- 'HDMI-1'
+```
+
+# **`CALLBACK_CMD`**
+
+Sets a `/bin/sh` command to be executed following most events.
+
+Obeys `LOG_THRESHOLD`
+
+NOTE: Depending on your compositor this could get executed multiple times when a change happens. Especially likely on a (dis-)connect.
+
+Environment variables:
+- `${CALLBACK_MSG}` contains a human readable message
+- `${CALLBACK_LEVEL}` one of `FATAL` `ERROR` `WARNING` `INFO`
+
+String, Default: **`notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`**
+
+A multiline literal YAML string may be used without the `;` separators e.g.
+```yaml
+CALLBACK_CMD: |
+  notify-send way-displays "has done something"
+  bell
+  notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
+```
+
+# **`LAPTOP_LID_MONITOR`**
+
+By default, **`libinput(1)`** will be used to monitor the laptop lid switch, used by `LID` disabled conditions.
+
+Boolean, default TRUE
+
+# **`LOG_THRESHOLD`**
+
+Sets the threshold for log output as well as callbacks.
+
+Enum <**`FATAL`**|**`ERROR`**|**`WARNING`**|**`INFO`**|**`DEBUG`**>
+
+# **`DISABLED`**
+
+Display may be disabled always or via an `IF` condition.
+
+Always disabled:
+
+Map <*name*>: null
+
+e.g. these displays will always be disabled
+```yaml
+DISABLED:
+- eDP-1
+- M28U
+```
+
+To conditionally disable a display, a list of conditions is supplied via `IF`. One condition must be completely met.
+
+Map <*name*>: **`IF`**
+
+**`IF`**
+
+: Array of <*condition*>
+
+<*condition*>
+
+: At least one of:
+
+: **`PLUGGED`** Array of <*name*> that must all be plugged
+
+: **`UNPLUGGED`** Array of <*name*> that must all be unplugged
+
+: **`LID`** Enum <**`OPEN`**|**`CLOSED`**|**`NOT_PRESENT`**> when `LAPTOP_LID_MONITOR` is FALSE, `NOT_PRESENT` will evaluate
+
+e.g.
+```yaml
+# eDP-1 will be disabled when:
+#  lid is closed  OR 
+#  HDMI-2 is plugged AND lid is open  OR
+#  DP-2 is plugged AND HDMI-1 is unplugged AND lid is open
+DISABLED:
+  'eDP-1':
+    IF:
+    - LID: CLOSED
+    - PLUGGED:
+      - 'HDMI-2'
+      LID: OPEN
+    - PLUGGED:
+      - 'DP-2'
+      UNPLUGGED:
+      - 'HDMI-1'
+      LID: OPEN
+```
+
+way-displays will describe the above via logs and callbacks:
+```
+Disabled:
+  eDP-1
+    IF
+      lid closed
+        OR
+      HDMI-2 plugged AND lid open
+        OR
+      DP-2 plugged AND HDMI-1 unplugged AND lid open
+```
+
+The default condition is to disable the laptop display when the lid is closed, and will be automatically populated when creating the default `cfg.yaml` or `DISABLED` is not present:
+```yaml
+# laptop display is disabled when lid is closed
+DISABLED:
+  '!^eDP-[0-9]':
+    IF:
+    - LID: CLOSED
+```
+
+# SEE ALSO
+
+**`way-displays`**(1)
+
+[//]: # vim:ft=pandoc:noet :

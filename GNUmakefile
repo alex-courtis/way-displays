@@ -73,11 +73,27 @@ uninstall:
 	rm -rf $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 
 #
-# doc
+# man pages
 #
-man: doc/way-displays.1.pandoc
+man: man1 man5
+
+man1: doc/way-displays.1.pandoc
 	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
-	pandoc -s --wrap=none -f markdown -t man $(^) -o $(^:.pandoc= )
+	# man
+	pandoc -s --wrap=none -f markdown -t man -o $(^:.pandoc= ) $(^)
+	# gfm
+	grep -v "^% " $(^) > /tmp/$(^F)
+	pandoc -s --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) /tmp/$(^F)
+	rm /tmp/$(^F)
+
+man5: doc/way-displays.5.pandoc
+	sed -i -e "3i % `date +%Y/%m/%d`" -e "3d" $(^)
+	# man
+	pandoc -s --wrap=none -f markdown -t man -o $(^:.pandoc= ) $(^)
+	# gfm
+	grep -v "^% " $(^) > /tmp/$(^F)
+	pandoc -s --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) /tmp/$(^F)
+	rm /tmp/$(^F)
 
 #
 # iwyu

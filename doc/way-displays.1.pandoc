@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | General Commands Manual
 % Alexander Courtis
-% 2026/08/03
+% 2026/08/11
 
 # NAME
 
@@ -8,7 +8,13 @@ way-displays - Auto Manage Your Wayland Displays
 
 # SYNOPSIS
 
-way-displays [*OPTIONS*...] [*COMMAND*]
+**`way-displays`** [**`-h`**|**`-v`**]
+
+Server: **`way-displays`** [**`-L`** *level*] [**`-c`** *path*]
+
+Client Query: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-g`**|**`-l`**>
+
+Client Update: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-s`**|**`-d`**|**`-t`**|**`-w`**|**`-r`**> [*command options*]
 
 # DESCRIPTION
 
@@ -20,221 +26,265 @@ way-displays [*OPTIONS*...] [*COMMAND*]
 
 1. Auto scale based on DPI: 96 is a scale of 1
 
-1. Update when displays plugged/unplugged
+1. Update when displays plugged/unplugged with optionally defined conditions
 
 1. Update when laptop lid closed/opened
 
 Works out of the box: no configuration required.
 
-Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
-
-See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/Configuration), [Recipes](https://github.com/alex-courtis/way-displays/wiki/Recipes), [Troubleshooting](https://github.com/alex-courtis/way-displays/wiki/Troubleshooting) and more.
+Communicates verbosely via logs/stdout and notifications.
 
 ## Server
 
-Background process that performs the management. Configuration is read from a file discovered in order:
+Server is run when no commands are specified.
+
+Background process that performs the management. Configuration is read from **`cfg.yaml`**, discovered in order:
 
 	$XDG_CONFIG_HOME/way-displays/cfg.yaml
 	$HOME/.config/way-displays/cfg.yaml
 	/usr/local/etc/way-displays/cfg.yaml
 	/etc/way-displays/cfg.yaml
 
-The file may be specified via the `--config` option.
+The file may be specified via the **`--config`** option.
 
-cfg.yaml will be monitored for changes, which will be immediately applied.
+**`cfg.yaml`** will be monitored for changes, which will be immediately applied. See:
 
-See the default /etc/way-displays/cfg.yaml and https://github.com/alex-courtis/way-displays/wiki/Configuration for details on individual configurable settings.
+1. **`man 5 way-displays`**
 
-Server is run when no commands are specified.
+1. Default **`cfg.yaml`**
 
-Server responds to IPC requests to fetch and mutate state: https://github.com/alex-courtis/way-displays/wiki/IPC
+	`/etc/way-displays/cfg.yaml`
 
-## cfg.yaml
+	https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/examples/cfg.yaml
 
-For details on individual configurable settings see:
-
-1. Default `cfg.yaml`
-
-    /etc/way-displays/cfg.yaml
-
-    https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/examples/cfg.yaml
-
-2. Wiki
-
-    https://github.com/alex-courtis/way-displays/wiki/Configuration
-
+Server responds to IPC requests: https://github.com/alex-courtis/way-displays/wiki/IPC which is the protocol used by the CLI.
 
 ## Client
 
 Manages the server. The active configuration and display state may be inspected, and the configuration modified.
 
-The active configuration can be written to disk, however any comments and formatting will be lost.
+The active configuration can be written to disk via the **`--write`** command, however any comments and formatting will be lost.
 
 # REQUIREMENTS
 
-A wlroots based compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol version 4+.
 
-way-displays is blessed for the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river). It may work on others.
+way-displays is blessed for the [sway](https://swaywm.org/), [river](https://codeberg.org/river/river) and [river-classic](https://codeberg.org/river/river-classic) compositors. It may work on others; please tell me of your experiences!
 
-[Hpyrland](https://hyprland.org/) provides all way-displays functionality and you may experience issues.
+[Hpyrland](https://hyprland.org/) already provides all the features of `way-displays`. It may function, however it is explicitly not supported and you will likely experience problems. Please do not raise issues.
 
 way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 
-User should be a member of the `input` group for querying laptop lid state.
+User should be a member of the **`input`** UNIX group for querying laptop lid state.
+
+# QUICK START
+
+Start the way-displays server:
+
+**Sway**
+: Remove any `output` commands from your sway config file and add the following:
+
+```sh
+exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
+```
+
+**River**
+
+: Add the following to your [River Window Manager](https://codeberg.org/river/wiki/src/branch/main/pages/wm-list.md)'s init script or similar:
+
+```sh
+exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
+```
+
+**River Classic**
+
+: Add the following to your `${XDG_CONFIG_HOME}/river/init`:
+
+```sh
+way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
+```
+
+**Configure**
+
+Restart the compositor and run **`way-displays -g`** or look at **`/tmp/way-displays.${XDG_VTNR}.${USER}.log`**
+
+**`way-displays`** will communicate verbosely via the logs - you might want to **`tail -f /tmp/way-displays.${XDG_VTNR}.${USER}.log`** whilst you are tweaking.
+
+Tweak **`cfg.yaml`** to your liking and save it, see **`man 5 way-displays`**. Changes will be immediately applied.
+
+Alternatively, use the CLI to make your changes then persist them with **`way-displays -w`**
 
 # OPTIONS
 
-`-L`, `--l[og-threshold]` <*debug*|*info*|*warning*|*error*|*fatal*>
-: Overrides cfg.yaml. *info* is default.
+**`-L`**, **`--l[og-threshold]`** <**debug**|**info**|**warning**|**error**|**fatal**>
+: Overrides **`cfg.yaml`**, default **`info`**.
 
-`-c`, `--c[onfig]` <*path*>
+**`-c`**, **`--c[onfig]`** <*path*>
 : Configuration file, falls back to defaults if not found.
 
-`-y`, `--y[aml]`
+**`-y`**, **`--y[aml]`**
 : Print client output as raw YAML
 
 # COMMANDS
 
-`-h`, `--h[elp]`
+**`-h`**, **`--h[elp]`**
 : Print usage and exit.
 
-`-v`, `--v[ersion]`
+**`-v`**, **`--v[ersion]`**
 : Display version information and exit.
 
-`-l`, `--li[st]`
+**`-l`**, **`--li[st]`**
 : Show the state of the connected displays: description, enabled, scale, VRR and mode.
 
-`-g`, `--g[et]`
+**`-g`**, **`--g[et]`**
 : Show the active configuration, commands and current display state.
 
-`-s`, `--s[et]`
-: Add a new setting or modify an existing.
+**`-w`**, **`--w[rite]`**
+: Write active configuration to **`cfg.yaml`**; removes any whitespace or comments.
 
-	`ARRANGE_ALIGN` <*row*|*column*> <*top*|*middle*|*bottom*|*left*|*right*>
-	: Set vertical arrangement and the alignment.
-
-	`ORDER` <*name*|!*regex*> ...
-	: Set the order of arrangement. Replaces previous order.
-
-	`SCALING` <*on*|*off*>
-	: Enable scaling, overrides AUTO_SCALE and SCALE
-
-	`AUTO_SCALE` <*on*|*off*>
-	: Enable auto scaling.
-
-	`SCALE` <*name*> <*scale*>
-	: Set the scale for a specific display.
-
-	`MODE` <*name*> MAX
-	: Highest available resolution / refresh.
-
-	`MODE` <*name*> <*width*> <*height*> [<*Hz*>]
-	: Specified resolution at its highest refresh. Optional refresh will choose a mode +-0.5Hz.
-
-	`TRANSFORM` <*name*> <*90*|*180*|*270*|*flipped*|*flipped-90*|*flipped-180*|*flipped-270*>
-	: Transform a specific display.
-
-	`VRR_OFF` <*name*>
-	: Disable VRR for a display.
-
-	`DISABLED` <*name*>
-	: Disable a display.
-
-	`CALLBACK_CMD` <*shell command*>
-    : Sets a `/bin/sh` command to be executed following most events.
-    : Obeys LOG_THRESHOLD
-    : - Default: `notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
-    : - `${CALLBACK_MSG}` contains a human readable message 
-    : - `${CALLBACK_LEVEL}` `LOG_THRESHOLD`
-
-`-d`, `--d[elete]`
-: Remove an existing setting.
-
-	`SCALE` <*name*>
-	: Use auto scaling for the display, if enabled.
-
-	`MODE` <*name*>
-	: Use preferred or highest availble if no preferred.
-
-	`TRANSFORM` <*name*>
-	: Remove transformation for a display.
-
-	`VRR_OFF` <*name*>
-	: Enable VRR for a display.
-
-	`DISABLED` <*name*>
-	: Enable a display.
-
-    `CALLBACK_CMD` <*shell command*>
-    : Remove command on display configuration success.
-
-`-t`, `--t[oggle]`
-: Toggle a setting.
-
-	`SCALING`
-	: Toggle scaling.
-
-	`AUTO_SCALE`
-	: Toggle auto scaling.
-
-	`VRR_OFF` <*name*>
-	: Toggle VRR for a display.
-
-	`DISABLED` <*name*>
-	: Toggle a display.
-
-`-w`, `--w[rite]`
-: Write active configuration to cfg.yaml; removes any whitespace or comments.
-
-`-r`, `--r[eapply]`
+**`-r`**, **`--r[eapply]`**
 : Attempt to reapply when the displays are in an inconsistent or incorrect state. Disables all displays, clears current/failed mode and enables according to config.
 
-# NAMING
+**`-s`**, **`--s[et]`** <*`SET OPTIONS`*>
+: Add a new setting or modify an existing.
 
-Displays are matched by name or description with precedence: exact, regex, fuzzy
+**`-d`**, **`--d[elete]`** <*`DELETE OPTIONS`*>
+: Remove an existing setting.
 
-You can identify them via logs e.g.
+**`-t`**, **`--t[oggle]`** <*`TOGGLE OPTIONS`*>
+: Toggle a setting.
 
-    DP-3 Arrived:
-        name:     'DP-3'
-        desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
+# SET OPTIONS
+
+**`ARRANGE_ALIGN`** <**`row`**|**`column`**> <**`top`**|**`middle`**|**`bottom`**|**`left`**|**`right`**>
+: Set vertical arrangement and the alignment.
+
+**`ORDER`** <*name*|**`!`** *regex*> ...
+: Set the order of arrangement. Replaces previous order.
+
+**`SCALING`** <**`on`**|**`off`**>
+: Enable scaling, overrides `AUTO_SCALE` and `SCALE`
+
+**`AUTO_SCALE`** <**`on`**|**`off`**>
+: Enable auto scaling.
+
+**`SCALE`** <*name*> <*scale*>
+: Set the scale for a specific display.
+
+**`MODE`** <*name*> <*width*> <*height*> [*Hz*]
+: Specified resolution at its highest refresh. Optional refresh will choose a mode +-0.5Hz.
+
+**`MODE`** <*name*> **`max`**
+: Highest available resolution / refresh.
+
+**`TRANSFORM`** <*name*> <**`90`**|**`180`**|**`270`**|**`flipped`**|**`flipped-90`**|**`flipped-180`**|**`flipped-270`**>
+: Transform a specific display.
+
+**`VRR_OFF`** <*name*>
+: Disable VRR for a display.
+
+**`DISABLED`** <*name*>
+: Disable a display.
+
+**`CALLBACK_CMD`** <*shell command*>
+: Sets a **`/bin/sh`** command to be executed following most events.
+: Obeys **`LOG_THRESHOLD`**
+: - Default: **`notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`**
+: - **`${CALLBACK_MSG}`** contains a human readable message
+: - **`${CALLBACK_LEVEL}`** **`LOG_THRESHOLD`**
+
+# DELETE OPTIONS
+
+**`SCALE`** <*name*>
+: Use auto scaling for the display, if enabled.
+
+**`MODE`** <*name*>
+: Use preferred or highest availble if no preferred.
+
+**`TRANSFORM`** <*name*>
+: Remove transformation for a display.
+
+**`VRR_OFF`** <*name*>
+: Enable VRR for a display.
+
+**`DISABLED`** <*name*>
+: Enable a display.
+
+**`CALLBACK_CMD`** <*shell command*>
+: Remove command on display configuration success.
+
+# TOGGLE OPTIONS
+
+**`SCALING`**
+: Toggle scaling.
+
+**`AUTO_SCALE`**
+: Toggle auto scaling.
+
+**`VRR_OFF`** <*name*>
+: Toggle VRR for a display.
+
+**`DISABLED`** <*name*>
+: Toggle a display.
+
+# NAME
+
+<*name*> is matched by display name or description with precedence: exact, regex, fuzzy
+
+You can identify them via logs or **`way-displays --get`** or **`way-displays --list`** e.g.
+
+	DP-3 Arrived:
+	    name:     'DP-3'
+	    desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
 
 It is recommended to use the description rather than the nondeterministic name.
 
-Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. '!^DP-1'. Regex strings must be single quoted.
+Any item prefixed with a **`!`** will be interpreted as extended POSIX regex e.g. **`'!^DP-1'`**. Regex strings must be single quoted.
 
 Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
 
-'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
+`'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
 
 # EXAMPLES
 
-exec `way-displays` > /tmp/way-displays.\${XDG_VTNR}.\${USER}.log 2>&1
-: Add to your sway config to start way-displays when sway starts.
+Add to your sway config to start way-displays when sway starts:
 
-`way-displays` -g
-: Show current configuration and display state.
+	exec way-displays > /tmp/way-displays.\${XDG_VTNR}.\${USER}.log 2>&1
 
-`way-displays` -l
-: List the connected displays.
+Show current configuration and display state:
 
-`way-displays` -s `ARRANGE_ALIGN` *row* *bottom*
-: Arrange left to right, aligned at the bottom.
+	way-displays -g
 
-`way-displays` -s `ORDER` \"!^DP-[0-9]+$\" HDMI-1 \"monitor maker ABC model XYZ\" eDP-1
-: Set the order for arrangement.
+List the connected displays:
 
-`way-displays` -s `SCALE` \"eDP-1\" 3
-: Set the scale.
+	way-displays -l
 
-`way-displays` -s `MODE` HDMI-A-1 3840 2160 24
-: Use 3840x2160@24Hz
+Arrange left to right, aligned at the bottom:
 
-`way-displays` -w
-: Persist your changes to your cfg.yaml
+	way-displays -s ARRANGE_ALIGN row bottom
+
+Set the order for arrangement:
+
+	way-displays -s ORDER \"!^DP-[0-9]+$\" HDMI-1 \"monitor maker ABC model XYZ\" eDP-1
+
+Set the scale:
+
+	way-displays -s SCALE \"eDP-1\" 3
+
+Use 3840x2160@24Hz for HDMI-A-1:
+
+	way-displays -s MODE HDMI-A-1 3840 2160 24
+
+Persist your changes to your **`cfg.yaml`**:
+
+	way-displays -w
 
 # SEE ALSO
 
-https://github.com/alex-courtis/way-displays
+**`way-displays`**(5)
 
-[//]: # vim: set filetype=markdown :
+Home: https://github.com/alex-courtis/way-displays
+
+Recipes: https://github.com/alex-courtis/way-displays/wiki/Recipes
+
+[//]: # vim:ft=pandoc:noet :
