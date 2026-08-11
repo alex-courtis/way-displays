@@ -20,7 +20,7 @@ $HOME/.config/way\-displays/cfg.yaml
 .EE
 .PP
 A default configuration file will be created if none is found.
-.SH Naming
+.SH NAMING CONVENTIONS
 <\f[I]name\f[R]> is matched by display name or description with precedence: exact, regex, fuzzy
 .PP
 You can identify them via logs or \f[B]\f[CB]way\-displays \-\-get\f[B]\f[R] or \f[B]\f[CB]way\-displays \-\-list\f[B]\f[R] e.g.
@@ -40,7 +40,7 @@ Using a regex is preferred, however fuzzy case insensitive string matches of at 
 .PP
 \f[CR]\(aqDP\-1\(aq\f[R] will match \f[CR]eDP\-1\f[R] and \f[CR]DP\-1\f[R].
 Consider using regex \f[CR]\(aq!\(haDP\-1$\(aq\f[R] to exactly match.
-.SH Positioning
+.SH \f[B]\f[CB]ARRANGE, ALIGN\f[B]\f[R]
 The default is to arrange in a row, aligned at the top of the displays.
 .TP
 \f[B]\f[CB]ARRANGE\f[B]\f[R]
@@ -90,7 +90,7 @@ ORDER\f[B]:\f[R]
 .EE
 .PP
 Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
-.SH Scaling
+.SH \f[B]\f[CB]SCALING*\f[B]\f[R]
 Control all scaling, including custom \c
 .UR https://github.com/alex-courtis/way-displays/wiki/Configuration#scale
 SCALE
@@ -132,7 +132,7 @@ SCALING\f[B]:\f[R] true
 SCALE_ROUND_STRATEGY\f[B]:\f[R] UP
 SCALE_ROUND_TO\f[B]:\f[R] 0.25
 .EE
-.SH Auto Scale
+.SH \f[B]\f[CB]AUTO_SCALE*\f[B]\f[R]
 The default is to scale each display by DPI,
 .PP
 When disabled a scale 1 will always be used, unless a \f[B]\f[CB]SCALE\f[B]\f[R] has been specified.

@@ -1,11 +1,11 @@
 - [NAME](#name)
 - [SYNTAX](#syntax)
 - [LOCATION](#location)
-- [Naming](#naming)
-- [Positioning](#positioning)
+- [NAMING CONVENTIONS](#naming-conventions)
+- [**`ARRANGE, ALIGN`**](#arrange-align)
 - [**`ORDER`**](#order)
-- [Scaling](#scaling)
-- [Auto Scale](#auto-scale)
+- [**`SCALING*`**](#scaling)
+- [**`AUTO_SCALE*`**](#auto_scale)
 - [**`SCALE`**](#scale)
 - [**`MODE`**](#mode)
 - [**`TRANSFORM`**](#transform)
@@ -37,7 +37,7 @@ Configuration is read from **`cfg.yaml`**, discovered in order:
 
 A default configuration file will be created if none is found.
 
-# Naming
+# NAMING CONVENTIONS
 
 \<*name*\> is matched by display name or description with precedence: exact, regex, fuzzy
 
@@ -55,7 +55,7 @@ Using a regex is preferred, however fuzzy case insensitive string matches of at 
 
 `'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
 
-# Positioning
+# **`ARRANGE, ALIGN`**
 
 The default is to arrange in a row, aligned at the top of the displays.
 
@@ -106,7 +106,7 @@ ORDER:
 
 Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
 
-# Scaling
+# **`SCALING*`**
 
 Control all scaling, including custom [SCALE](https://github.com/alex-courtis/way-displays/wiki/Configuration#scale)
 
@@ -138,7 +138,7 @@ SCALE_ROUND_STRATEGY: UP
 SCALE_ROUND_TO: 0.25
 ```
 
-# Auto Scale
+# **`AUTO_SCALE*`**
 
 The default is to scale each display by DPI,
 
