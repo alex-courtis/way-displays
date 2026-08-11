@@ -4,6 +4,7 @@
   - [Server](#server)
   - [Client](#client)
 - [REQUIREMENTS](#requirements)
+- [QUICK START](#quick-start)
 - [OPTIONS](#options)
 - [COMMANDS](#commands)
 - [SET OPTIONS](#set-options)
@@ -43,6 +44,8 @@ Client Update: **`way-displays`** \[**`-L`** *level*\] \[**`-y`**\] \<**`-s`**\|
 
 Works out of the box: no configuration required.
 
+Communicates verbosely via logs/stdout and notifications.
+
 ## Server
 
 Server is run when no commands are specified.
@@ -66,6 +69,8 @@ The file may be specified via the **`--config`** option.
 
     https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/examples/cfg.yaml
 
+Server responds to IPC requests: https://github.com/alex-courtis/way-displays/wiki/IPC which is the protocol used by the CLI.
+
 ## Client
 
 Manages the server. The active configuration and display state may be inspected, and the configuration modified.
@@ -74,15 +79,50 @@ The active configuration can be written to disk via the **`--write`** command, h
 
 # REQUIREMENTS
 
-A wlroots based compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol version 4+.
 
-way-displays is blessed for the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river). It may work on others.
+way-displays is blessed for the [sway](https://swaywm.org/), [river](https://codeberg.org/river/river) and [river-classic](https://codeberg.org/river/river-classic) compositors. It may work on others; please tell me of your experiences!
 
-[Hpyrland](https://hyprland.org/) provides all way-displays functionality and you may experience issues.
+[Hpyrland](https://hyprland.org/) already provides all the features of `way-displays`. It may function, however it is explicitly not supported and you will likely experience problems. Please do not raise issues.
 
 way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 
 User should be a member of the **`input`** UNIX group for querying laptop lid state.
+
+# QUICK START
+
+Start the way-displays server:
+
+**Sway**  
+Remove any `output` commands from your sway config file and add the following:
+
+``` sh
+exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
+```
+
+**River**  
+Add the following to your [River Window Manager](https://codeberg.org/river/wiki/src/branch/main/pages/wm-list.md)’s init script or similar:
+
+``` sh
+exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
+```
+
+**River Classic**  
+Add the following to your `${XDG_CONFIG_HOME}/river/init`:
+
+``` sh
+way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
+```
+
+**Configure**
+
+Restart the compositor and run **`way-displays -g`** or look at **`/tmp/way-displays.${XDG_VTNR}.${USER}.log`**
+
+Tweak **`cfg.yaml`** to your liking and save it, see **`man 5 way-displays`**. Changes will be immediately applied.
+
+Alternatively, use the CLI to make your changes then persist them with `way-displays -w`.
+
+You might want to **`tail -f /tmp/way-displays.${XDG_VTNR}.${USER}.log`** whilst you are tweaking.
 
 # OPTIONS
 
@@ -260,7 +300,3 @@ Persist your changes to your **`cfg.yaml`**:
 Home: https://github.com/alex-courtis/way-displays
 
 Recipes: https://github.com/alex-courtis/way-displays/wiki/Recipes
-
-Configuration: https://github.com/alex-courtis/way-displays/wiki/Configuration
-
-IPC: https://github.com/alex-courtis/way-displays/wiki/IPC

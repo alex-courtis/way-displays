@@ -26,6 +26,8 @@ Update when displays plugged/unplugged with optionally defined conditions
 Update when laptop lid closed/opened
 .PP
 Works out of the box: no configuration required.
+.PP
+Communicates verbosely via logs/stdout and notifications.
 .SS Server
 Server is run when no commands are specified.
 .PP
@@ -53,35 +55,81 @@ Default \f[B]\f[CB]cfg.yaml\f[B]\f[R]
 .PP
 https://raw.githubusercontent.com/alex\-courtis/way\-displays/refs/heads/master/examples/cfg.yaml
 .RE
+.PP
+Server responds to IPC requests: https://github.com/alex\-courtis/way\-displays/wiki/IPC which is the protocol used by the CLI.
 .SS Client
 Manages the server.
 The active configuration and display state may be inspected, and the configuration modified.
 .PP
 The active configuration can be written to disk via the \f[B]\f[CB]\-\-write\f[B]\f[R] command, however any comments and formatting will be lost.
 .SH REQUIREMENTS
-A wlroots based compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol version 4+.
 .PP
 way\-displays is blessed for the \c
 .UR https://swaywm.org/
 sway
 .UE \c
-\ and \c
-.UR https://github.com/riverwm/river
+, \c
+.UR https://codeberg.org/river/river
 river
 .UE \c
-\&.
-It may work on others.
+\ and \c
+.UR https://codeberg.org/river/river-classic
+river\-classic
+.UE \c
+\ compositors.
+It may work on others; please tell me of your experiences!
 .PP
 \c
 .UR https://hyprland.org/
 Hpyrland
 .UE \c
-\ provides all way\-displays functionality and you may experience issues.
+\ already provides all the features of \f[CR]way\-displays\f[R].
+It may function, however it is explicitly not supported and you will likely experience problems.
+Please do not raise issues.
 .PP
 way\-displays must be run as a daemon, a background server process.
 It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 .PP
 User should be a member of the \f[B]\f[CB]input\f[B]\f[R] UNIX group for querying laptop lid state.
+.SH QUICK START
+Start the way\-displays server:
+.TP
+\f[B]Sway\f[R]
+Remove any \f[CR]output\f[R] commands from your sway config file and add the following:
+.IP
+.EX
+exec way\-displays > /tmp/way\-displays.${XDG_VTNR}.${USER}.log 2>&1
+.EE
+.TP
+\f[B]River\f[R]
+Add the following to your \c
+.UR https://codeberg.org/river/wiki/src/branch/main/pages/wm-list.md
+River Window Manager
+.UE \c
+\(cqs init script or similar:
+.IP
+.EX
+exec way\-displays > /tmp/way\-displays.${XDG_VTNR}.${USER}.log 2>&1
+.EE
+.TP
+\f[B]River Classic\f[R]
+Add the following to your \f[CR]${XDG_CONFIG_HOME}/river/init\f[R]:
+.IP
+.EX
+way\-displays > /tmp/way\-displays.${XDG_VTNR}.${USER}.log 2>&1 \f[B]&\f[R]
+.EE
+.PP
+\f[B]Configure\f[R]
+.PP
+Restart the compositor and run \f[B]\f[CB]way\-displays \-g\f[B]\f[R] or look at \f[B]\f[CB]/tmp/way\-displays.${XDG_VTNR}.${USER}.log\f[B]\f[R]
+.PP
+Tweak \f[B]\f[CB]cfg.yaml\f[B]\f[R] to your liking and save it, see \f[B]\f[CB]man 5 way\-displays\f[B]\f[R].
+Changes will be immediately applied.
+.PP
+Alternatively, use the CLI to make your changes then persist them with \f[CR]way\-displays \-w\f[R].
+.PP
+You might want to \f[B]\f[CB]tail \-f /tmp/way\-displays.${XDG_VTNR}.${USER}.log\f[B]\f[R] whilst you are tweaking.
 .SH OPTIONS
 .TP
 \f[B]\f[CB]\-L\f[B]\f[R], \f[B]\f[CB]\-\-l[og\-threshold]\f[B]\f[R] <\f[B]debug\f[R]|\f[B]info\f[R]|\f[B]warning\f[R]|\f[B]error\f[R]|\f[B]fatal\f[R]>
@@ -272,9 +320,5 @@ way\-displays \-w
 Home: https://github.com/alex\-courtis/way\-displays
 .PP
 Recipes: https://github.com/alex\-courtis/way\-displays/wiki/Recipes
-.PP
-Configuration: https://github.com/alex\-courtis/way\-displays/wiki/Configuration
-.PP
-IPC: https://github.com/alex\-courtis/way\-displays/wiki/IPC
 .SH AUTHORS
 Alexander Courtis.
