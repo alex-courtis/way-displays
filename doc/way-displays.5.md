@@ -13,6 +13,7 @@
 - [**`CALLBACK_CMD`**](#callback_cmd)
 - [**`LAPTOP_LID_MONITOR`**](#laptop_lid_monitor)
 - [**`LOG_THRESHOLD`**](#log_threshold)
+- [**`DISABLED`**](#disabled)
 - [SEE ALSO](#see-also)
 
 # NAME
@@ -305,6 +306,80 @@ Boolean, default TRUE
 Sets the threshold for log output as well as callbacks.
 
 Enum \<**`FATAL`**\|**`ERROR`**\|**`WARNING`**\|**`INFO`**\|**`DEBUG`**\>
+
+# **`DISABLED`**
+
+Display may be disabled always or via an `IF` condition.
+
+Always disabled:
+
+Map \<*name*\>: null
+
+e.g. these displays will always be disabled
+
+``` yaml
+DISABLED:
+- eDP-1
+- M28U
+```
+
+To conditionally disable a display, a list of conditions is supplied via `IF`. One condition must be completely met.
+
+Map \<*name*\>: **`IF`**
+
+**`IF`**  
+Array of \<*condition*\>
+
+\<*condition*\>  
+At least one of:
+
+**`PLUGGED`** Array of \<*name*\> that must all be plugged
+
+**`UNPLUGGED`** Array of \<*name*\> that must all be unplugged
+
+**`LID`** Enum \<**`OPEN`**\|**`CLOSED`**\|**`NOT_PRESENT`**\> when `LAPTOP_LID_MONITOR` is FALSE, `NOT_PRESENT` will evaluate
+
+e.g.
+
+``` yaml
+# eDP-1 will be disabled when:
+#  lid is closed  OR 
+#  HDMI-2 is plugged AND lid is open  OR
+#  DP-2 is plugged AND HDMI-1 is unplugged AND lid is open
+DISABLED:
+  'eDP-1':
+    IF:
+    - LID: CLOSED
+    - PLUGGED:
+      - 'HDMI-2'
+      LID: OPEN
+    - PLUGGED:
+      - 'DP-2'
+      UNPLUGGED:
+      - 'HDMI-1'
+      LID: OPEN
+```
+
+way-displays will describe the above via logs and callbacks:
+
+    Disabled:
+      eDP-1
+        IF
+          lid closed
+            OR
+          HDMI-2 plugged AND lid open
+            OR
+          DP-2 plugged AND HDMI-1 unplugged AND lid open
+
+The default condition is to disable the laptop display when the lid is closed, and will be automatically populated when creating the default `cfg.yaml` or `DISABLED` is not present:
+
+``` yaml
+# laptop display is disabled when lid is closed
+DISABLED:
+  '!^eDP-[0-9]':
+    IF:
+    - LID: CLOSED
+```
 
 # SEE ALSO
 

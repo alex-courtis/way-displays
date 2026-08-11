@@ -308,6 +308,83 @@ Boolean, default TRUE
 Sets the threshold for log output as well as callbacks.
 .PP
 Enum <\f[B]\f[CB]FATAL\f[B]\f[R]|\f[B]\f[CB]ERROR\f[B]\f[R]|\f[B]\f[CB]WARNING\f[B]\f[R]|\f[B]\f[CB]INFO\f[B]\f[R]|\f[B]\f[CB]DEBUG\f[B]\f[R]>
+.SH \f[B]\f[CB]DISABLED\f[B]\f[R]
+Display may be disabled always or via an \f[CR]IF\f[R] condition.
+.PP
+Always disabled:
+.PP
+Map <\f[I]name\f[R]>: null
+.PP
+e.g.\ these displays will always be disabled
+.IP
+.EX
+DISABLED\f[B]:\f[R]
+\f[B]\-\f[R] eDP\-1
+\f[B]\-\f[R] M28U
+.EE
+.PP
+To conditionally disable a display, a list of conditions is supplied via \f[CR]IF\f[R].
+One condition must be completely met.
+.PP
+Map <\f[I]name\f[R]>: \f[B]\f[CB]IF\f[B]\f[R]
+.TP
+\f[B]\f[CB]IF\f[B]\f[R]
+Array of <\f[I]condition\f[R]>
+.TP
+<\f[I]condition\f[R]>
+At least one of:
+.RS
+.PP
+\f[B]\f[CB]PLUGGED\f[B]\f[R] Array of <\f[I]name\f[R]> that must all be plugged
+.PP
+\f[B]\f[CB]UNPLUGGED\f[B]\f[R] Array of <\f[I]name\f[R]> that must all be unplugged
+.PP
+\f[B]\f[CB]LID\f[B]\f[R] Enum <\f[B]\f[CB]OPEN\f[B]\f[R]|\f[B]\f[CB]CLOSED\f[B]\f[R]|\f[B]\f[CB]NOT_PRESENT\f[B]\f[R]> when \f[CR]LAPTOP_LID_MONITOR\f[R] is FALSE, \f[CR]NOT_PRESENT\f[R] will evaluate
+.RE
+.PP
+e.g.
+.IP
+.EX
+\f[I]# eDP\-1 will be disabled when:\f[R]
+\f[I]#  lid is closed  OR \f[R]
+\f[I]#  HDMI\-2 is plugged AND lid is open  OR\f[R]
+\f[I]#  DP\-2 is plugged AND HDMI\-1 is unplugged AND lid is open\f[R]
+DISABLED\f[B]:\f[R]
+  \(aqeDP\-1\(aq\f[B]:\f[R]
+    IF\f[B]:\f[R]
+    \f[B]\-\f[R] LID\f[B]:\f[R] CLOSED
+    \f[B]\-\f[R] PLUGGED\f[B]:\f[R]
+      \f[B]\-\f[R] \(aqHDMI\-2\(aq
+      LID\f[B]:\f[R] OPEN
+    \f[B]\-\f[R] PLUGGED\f[B]:\f[R]
+      \f[B]\-\f[R] \(aqDP\-2\(aq
+      UNPLUGGED\f[B]:\f[R]
+      \f[B]\-\f[R] \(aqHDMI\-1\(aq
+      LID\f[B]:\f[R] OPEN
+.EE
+.PP
+way\-displays will describe the above via logs and callbacks:
+.IP
+.EX
+Disabled:
+  eDP\-1
+    IF
+      lid closed
+        OR
+      HDMI\-2 plugged AND lid open
+        OR
+      DP\-2 plugged AND HDMI\-1 unplugged AND lid open
+.EE
+.PP
+The default condition is to disable the laptop display when the lid is closed, and will be automatically populated when creating the default \f[CR]cfg.yaml\f[R] or \f[CR]DISABLED\f[R] is not present:
+.IP
+.EX
+\f[I]# laptop display is disabled when lid is closed\f[R]
+DISABLED\f[B]:\f[R]
+  \(aq!\(haeDP\-[0\-9]\(aq\f[B]:\f[R]
+    IF\f[B]:\f[R]
+    \f[B]\-\f[R] LID\f[B]:\f[R] CLOSED
+.EE
 .SH SEE ALSO
 \f[B]\f[CB]way\-displays\f[B]\f[R](1)
 .SH AUTHORS
