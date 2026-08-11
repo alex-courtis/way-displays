@@ -143,7 +143,7 @@ static void cfg_equal__all(void **state) {
 
 	simap_put(a->scales, "third", 999999);
 	assert_cfg_not_equal(a, b);
-	simap_put(a->scales, "third", 3000);
+	simap_put(a->scales, "third", 3333);
 	assert_cfg_equal(a, b);
 
 	simap_put(a->transforms, "twelfth", WL_OUTPUT_TRANSFORM_180);

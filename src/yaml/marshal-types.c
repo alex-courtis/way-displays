@@ -268,7 +268,7 @@ int yaml_map_from_scales(const struct SImap* const scales) {
 	}
 
 	for (const struct SImapIt *it = simap_it(scales); it; it = simap_it_next(it)) {
-		yaml_map_add_int(it->key, (double)it->val/1000, map);
+		yaml_map_add_float_nz(it->key, (double)it->val/1000, map);
 	}
 
 	return map;

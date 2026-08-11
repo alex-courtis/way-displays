@@ -16,9 +16,9 @@ CFG:
   AUTO_SCALE_MAX: 2.5
   SCALE:
   - NAME_DESC: third
-    SCALE: 3
+    SCALE: 3.333
   - NAME_DESC: fourth
-    SCALE: 4
+    SCALE: 4.445
   MODE:
   - NAME_DESC: fifth
     WIDTH: 1920

@@ -244,7 +244,7 @@ static void args_cfg__scale_del_ok(void **state) {
 	struct Cfg *actual = args_cfg(CFG_DEL, SCALE, 1, argv);
 
 	struct Cfg *expected = cfg_init();
-	simap_put(expected->scales, "DISPL", 1);
+	simap_put(expected->scales, "DISPL", 1000);
 
 	assert_cfg_equal(actual, expected);
 
