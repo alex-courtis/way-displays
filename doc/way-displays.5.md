@@ -37,7 +37,7 @@ Using a regex is preferred, however fuzzy case insensitive string matches of at 
 
 `'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
 
-# ARRANGE and ALIGN
+# ARRANGE, ALIGN
 
 The default is to arrange in a row, aligned at the top of the displays.
 
@@ -88,96 +88,74 @@ ORDER:
 
 Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
 
-# **`SCALING`**
+# Scaling
 
+Control all scaling, including custom [SCALE](https://github.com/alex-courtis/way-displays/wiki/Configuration#scale)
+
+**`SCALING`**  
 Boolean, default TRUE
 
 Enable scaling, overrides **`AUTO_SCALE`** and **`SCALE`** when disabled.
 
-e.g. completely disable scaling
-
-``` yaml
-SCALING: false
-```
-
-# **`SCALE_ROUND_TO`**
-
+**`SCALE_ROUND_TO`**  
 Number: \<**`0.125`**\|**`0.25`**\|**`0.5`**\|**`1`**\>, default **`0.125`**
 
 Round scales to nearest, using **`SCALE_ROUND_STRATEGY`**
 
-0.125 (1/8) is the minimum, see [FAQ: On Scale And Blurring](https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring)
-
-This applies to all scales, including custom [SCALE](https://github.com/alex-courtis/way-displays/wiki/Configuration#scale)
-
-e.g. round scales to nearest half
-
-``` yaml
-SCALE_ROUND_TO: 0.5
-```
-
-# **`SCALE_ROUND_STRATEGY`**
-
-Enum: \<**`NEAREST`**\|**`UP`**\|**`DOWN`**\>, default **`NEAREST`**
+**`SCALE_ROUND_STRATEGY`**  
+Enum \<**`NEAREST`**\|**`UP`**\|**`DOWN`**\>, default **`NEAREST`**
 
 Applies to **`SCALE_ROUND_TO`**
 
-e.g. always round up to higher 0.25
+0.125 (1/8) is the minimum scaling granularity, see [FAQ: On Scale And Blurring](https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring)
+
+e.g. enable scaling, always round up to the next highest 0.25
 
 ``` yaml
+SCALING: true
 SCALE_ROUND_STRATEGY: UP
 SCALE_ROUND_TO: 0.25
 ```
 
-# **`AUTO_SCALE`**
-
-Boolean, default TRUE
+# Auto Scale
 
 The default is to scale each display by DPI,
 
 When disabled a scale 1 will always be used, unless a **`SCALE`** has been specified.
 
-e.g. don’t auto scale
+**`AUTO_SCALE`**  
+Boolean, default TRUE
 
-``` yaml
-AUTO_SCALE: false
-```
-
-# **`AUTO_SCALE_DPI`**
-
+**`AUTO_SCALE_DPI`**  
 Integer, minimum **`8`**, default **`96`**
 
-Used to calculate **`AUTO_SCALE`** values.
+DPI basis for auto scale calculations.
 
-e.g. use the old fashioned mac 72 dpi
-
-``` yaml
-AUTO_SCALE_DPI: 72
-```
-
-# **`AUTO_SCALE_MIN`**
-
+**`AUTO_SCALE_MIN`**  
 Number, default **`1.0`**
 
 Set minimum scale when auto scaling.
 
-e.g. allow sub-pixel scaling
-
-``` yaml
-AUTO_SCALE_MIN: 0.5
-```
-
-# **`AUTO_SCALE_MAX`**
-
+**`AUTO_SCALE_MAX`**  
 Number, default **`-1.0`**
 
 Set maximum scale when auto scaling, default indicates no maximum.
 
 Ignored if below **`AUTO_SCALE_MIN`**
 
-e.g. cap your scales to double
+e.g.
 
 ``` yaml
+# enable auto scaling
+AUTO_SCALE: true
+
+# using the old fashioned 72 dpi
+AUTO_SCALE_DPI: 72
+
+# allow half sub-pixel scaling
+AUTO_SCALE_MIN: 0.5
+
+# cap your scales to double
 AUTO_SCALE_MAX: 2.0
 ```
 
@@ -185,7 +163,11 @@ AUTO_SCALE_MAX: 2.0
 
 Map \<*name*\>: Number
 
-Auto scale may be overridden with custom scales for each display e.g.
+Auto scale may be overridden with custom scales for each display
+
+Does not apply when **`SCALING`** FALSE
+
+e.g. ABC123 will be scaled at exactly 1.75
 
 ``` yaml
 SCALE:

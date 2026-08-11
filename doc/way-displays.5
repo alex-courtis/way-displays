@@ -40,7 +40,7 @@ Using a regex is preferred, however fuzzy case insensitive string matches of at 
 .PP
 \f[CR]\(aqDP\-1\(aq\f[R] will match \f[CR]eDP\-1\f[R] and \f[CR]DP\-1\f[R].
 Consider using regex \f[CR]\(aq!\(haDP\-1$\(aq\f[R] to exactly match.
-.SH ARRANGE and ALIGN
+.SH ARRANGE, ALIGN
 The default is to arrange in a row, aligned at the top of the displays.
 .TP
 \f[B]\f[CB]ARRANGE\f[B]\f[R]
@@ -89,95 +89,99 @@ ORDER\f[B]:\f[R]
 .EE
 .PP
 Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
-.SH \f[B]\f[CB]SCALING\f[B]\f[R]
+.SH Scaling
+Control all scaling, including custom \c
+.UR https://github.com/alex-courtis/way-displays/wiki/Configuration#scale
+SCALE
+.UE \c
+.TP
+\f[B]\f[CB]SCALING\f[B]\f[R]
 Boolean, default TRUE
+.RS
 .PP
 Enable scaling, overrides \f[B]\f[CB]AUTO_SCALE\f[B]\f[R] and \f[B]\f[CB]SCALE\f[B]\f[R] when disabled.
-.PP
-e.g.\ completely disable scaling
-.IP
-.EX
-SCALING\f[B]:\f[R] false
-.EE
-.SH \f[B]\f[CB]SCALE_ROUND_TO\f[B]\f[R]
+.RE
+.TP
+\f[B]\f[CB]SCALE_ROUND_TO\f[B]\f[R]
 Number: <\f[B]\f[CB]0.125\f[B]\f[R]|\f[B]\f[CB]0.25\f[B]\f[R]|\f[B]\f[CB]0.5\f[B]\f[R]|\f[B]\f[CB]1\f[B]\f[R]>, default \f[B]\f[CB]0.125\f[B]\f[R]
+.RS
 .PP
 Round scales to nearest, using \f[B]\f[CB]SCALE_ROUND_STRATEGY\f[B]\f[R]
+.RE
+.TP
+\f[B]\f[CB]SCALE_ROUND_STRATEGY\f[B]\f[R]
+Enum <\f[B]\f[CB]NEAREST\f[B]\f[R]|\f[B]\f[CB]UP\f[B]\f[R]|\f[B]\f[CB]DOWN\f[B]\f[R]>, default \f[B]\f[CB]NEAREST\f[B]\f[R]
+.RS
 .PP
-0.125 (1/8) is the minimum, see \c
+Applies to \f[B]\f[CB]SCALE_ROUND_TO\f[B]\f[R]
+.RE
+.PP
+0.125 (1/8) is the minimum scaling granularity, see \c
 .UR https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring
 FAQ: On Scale And Blurring
 .UE \c
 .PP
-This applies to all scales, including custom \c
-.UR https://github.com/alex-courtis/way-displays/wiki/Configuration#scale
-SCALE
-.UE \c
-.PP
-e.g.\ round scales to nearest half
+e.g.\ enable scaling, always round up to the next highest 0.25
 .IP
 .EX
-SCALE_ROUND_TO\f[B]:\f[R] 0.5
-.EE
-.SH \f[B]\f[CB]SCALE_ROUND_STRATEGY\f[B]\f[R]
-Enum: <\f[B]\f[CB]NEAREST\f[B]\f[R]|\f[B]\f[CB]UP\f[B]\f[R]|\f[B]\f[CB]DOWN\f[B]\f[R]>, default \f[B]\f[CB]NEAREST\f[B]\f[R]
-.PP
-Applies to \f[B]\f[CB]SCALE_ROUND_TO\f[B]\f[R]
-.PP
-e.g.\ always round up to higher 0.25
-.IP
-.EX
+SCALING\f[B]:\f[R] true
 SCALE_ROUND_STRATEGY\f[B]:\f[R] UP
 SCALE_ROUND_TO\f[B]:\f[R] 0.25
 .EE
-.SH \f[B]\f[CB]AUTO_SCALE\f[B]\f[R]
-Boolean, default TRUE
-.PP
+.SH Auto Scale
 The default is to scale each display by DPI,
 .PP
 When disabled a scale 1 will always be used, unless a \f[B]\f[CB]SCALE\f[B]\f[R] has been specified.
-.PP
-e.g.\ don\(cqt auto scale
-.IP
-.EX
-AUTO_SCALE\f[B]:\f[R] false
-.EE
-.SH \f[B]\f[CB]AUTO_SCALE_DPI\f[B]\f[R]
+.TP
+\f[B]\f[CB]AUTO_SCALE\f[B]\f[R]
+Boolean, default TRUE
+.TP
+\f[B]\f[CB]AUTO_SCALE_DPI\f[B]\f[R]
 Integer, minimum \f[B]\f[CB]8\f[B]\f[R], default \f[B]\f[CB]96\f[B]\f[R]
+.RS
 .PP
-Used to calculate \f[B]\f[CB]AUTO_SCALE\f[B]\f[R] values.
-.PP
-e.g.\ use the old fashioned mac 72 dpi
-.IP
-.EX
-AUTO_SCALE_DPI\f[B]:\f[R] 72
-.EE
-.SH \f[B]\f[CB]AUTO_SCALE_MIN\f[B]\f[R]
+DPI basis for auto scale calculations.
+.RE
+.TP
+\f[B]\f[CB]AUTO_SCALE_MIN\f[B]\f[R]
 Number, default \f[B]\f[CB]1.0\f[B]\f[R]
+.RS
 .PP
 Set minimum scale when auto scaling.
-.PP
-e.g.\ allow sub\-pixel scaling
-.IP
-.EX
-AUTO_SCALE_MIN\f[B]:\f[R] 0.5
-.EE
-.SH \f[B]\f[CB]AUTO_SCALE_MAX\f[B]\f[R]
+.RE
+.TP
+\f[B]\f[CB]AUTO_SCALE_MAX\f[B]\f[R]
 Number, default \f[B]\f[CB]\-1.0\f[B]\f[R]
+.RS
 .PP
 Set maximum scale when auto scaling, default indicates no maximum.
 .PP
 Ignored if below \f[B]\f[CB]AUTO_SCALE_MIN\f[B]\f[R]
+.RE
 .PP
-e.g.\ cap your scales to double
+e.g.
 .IP
 .EX
+\f[I]# enable auto scaling\f[R]
+AUTO_SCALE\f[B]:\f[R] true
+
+\f[I]# using the old fashioned 72 dpi\f[R]
+AUTO_SCALE_DPI\f[B]:\f[R] 72
+
+\f[I]# allow half sub\-pixel scaling\f[R]
+AUTO_SCALE_MIN\f[B]:\f[R] 0.5
+
+\f[I]# cap your scales to double\f[R]
 AUTO_SCALE_MAX\f[B]:\f[R] 2.0
 .EE
 .SH \f[B]\f[CB]SCALE\f[B]\f[R]
 Map <\f[I]name\f[R]>: Number
 .PP
-Auto scale may be overridden with custom scales for each display e.g.
+Auto scale may be overridden with custom scales for each display
+.PP
+Does not apply when \f[B]\f[CB]SCALING\f[B]\f[R] FALSE
+.PP
+e.g.\ ABC123 will be scaled at exactly 1.75
 .IP
 .EX
 SCALE\f[B]:\f[R]
