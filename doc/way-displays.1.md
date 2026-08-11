@@ -1,10 +1,3 @@
----
-author:
-- Alexander Courtis
-date: 2026/08/11
-title: WAY-DISPLAYS(1) way-displays \| General Commands Manual
----
-
 # NAME
 
 way-displays - Auto Manage Your Wayland Displays
