@@ -40,7 +40,7 @@ Using a regex is preferred, however fuzzy case insensitive string matches of at 
 .PP
 \f[CR]\(aqDP\-1\(aq\f[R] will match \f[CR]eDP\-1\f[R] and \f[CR]DP\-1\f[R].
 Consider using regex \f[CR]\(aq!\(haDP\-1$\(aq\f[R] to exactly match.
-.SH ARRANGE, ALIGN
+.SH Positioning
 The default is to arrange in a row, aligned at the top of the displays.
 .TP
 \f[B]\f[CB]ARRANGE\f[B]\f[R]
@@ -94,6 +94,11 @@ Control all scaling, including custom \c
 .UR https://github.com/alex-courtis/way-displays/wiki/Configuration#scale
 SCALE
 .UE \c
+.PP
+0.125 (1/8) is the minimum scaling granularity, see \c
+.UR https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring
+FAQ: On Scale And Blurring
+.UE \c
 .TP
 \f[B]\f[CB]SCALING\f[B]\f[R]
 Boolean, default TRUE
@@ -116,15 +121,13 @@ Enum <\f[B]\f[CB]NEAREST\f[B]\f[R]|\f[B]\f[CB]UP\f[B]\f[R]|\f[B]\f[CB]DOWN\f[B]\
 Applies to \f[B]\f[CB]SCALE_ROUND_TO\f[B]\f[R]
 .RE
 .PP
-0.125 (1/8) is the minimum scaling granularity, see \c
-.UR https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring
-FAQ: On Scale And Blurring
-.UE \c
-.PP
-e.g.\ enable scaling, always round up to the next highest 0.25
+e.g.
 .IP
 .EX
+\f[I]# enable all scaling\f[R]
 SCALING\f[B]:\f[R] true
+
+\f[I]# round up to the next highest 0.25\f[R]
 SCALE_ROUND_STRATEGY\f[B]:\f[R] UP
 SCALE_ROUND_TO\f[B]:\f[R] 0.25
 .EE
@@ -155,7 +158,6 @@ Number, default \f[B]\f[CB]\-1.0\f[B]\f[R]
 .RS
 .PP
 Set maximum scale when auto scaling, default indicates no maximum.
-.PP
 Ignored if below \f[B]\f[CB]AUTO_SCALE_MIN\f[B]\f[R]
 .RE
 .PP
@@ -181,13 +183,78 @@ Auto scale may be overridden with custom scales for each display
 .PP
 Does not apply when \f[B]\f[CB]SCALING\f[B]\f[R] FALSE
 .PP
-e.g.\ ABC123 will be scaled at exactly 1.75
+e.g.
 .IP
 .EX
+\f[I]# ABC123 will be scaled at exactly 1.75 \f[R]
 SCALE\f[B]:\f[R]
     \f[B]\-\f[R] NAME_DESC\f[B]:\f[R] \(aqMonitor Maker ABC123\(aq
       SCALE\f[B]:\f[R] 1.75
 .EE
+.SH \f[B]\f[CB]MODE\f[B]\f[R]
+Map <\f[I]name\f[R]>:
+.TP
+\f[B]\f[CB]WIDTH\f[B]\f[R]
+Integer, pixels
+.TP
+\f[B]\f[CB]HEIGHT\f[B]\f[R]
+Integer, pixels
+.TP
+\f[B]\f[CB]HZ\f[B]\f[R]
+Number, refresh rate
+.RS
+.PP
+A refresh rate +\-0.5Hz will match.
+.RE
+.TP
+\f[B]\f[CB]MAX\f[B]\f[R]
+Boolean
+.RS
+.PP
+Use the maximum available refresh rate at the maximum resolution.
+.RE
+.TP
+\f[B]\f[CB]MAX_PREFERRED_REFRESH\f[B]\f[R]
+Boolean
+.RS
+.PP
+Use the highest available refresh for the preferred mode\(cqs resolution.
+.RE
+.PP
+Select specific modes for specific displays, overriding auto scaling.
+.PP
+If the specified mode cannot be found or activated, way\-displays will fall back to the preferred mode, then the highest available resolution / refresh.
+.PP
+When selecting a mode, \f[CR]way\-displays\f[R] will use the highest refresh within +\-0.5Hz that matches.
+There will usually be several refresh rates will match an integegral number of Hz, differing only by a few mHz.
+These will be tried in descending order until a working one is found.
+.PP
+e.g.
+.IP
+.EX
+MODE\f[B]:\f[R]
+\f[I]  # highest refresh rate at 1920x1080\f[R]
+  HDMI\-A\-1\f[B]:\f[R]
+    WIDTH\f[B]:\f[R] 1920
+    HEIGHT\f[B]:\f[R] 1080
+
+\f[I]  # 3440x1440 at \(ti144Hz\f[R]
+  LG27Q\f[B]:\f[R]
+    WIDTH\f[B]:\f[R] 3440
+    HEIGHT\f[B]:\f[R] 1440
+    HZ\f[B]:\f[R] 144
+
+\f[I]  # maximum available resolution and refresh\f[R]
+  M28U\f[B]:\f[R]
+    MAX\f[B]:\f[R] TRUE
+.EE
+.PP
+\f[B]WARNING:\f[R] selecting some modes may result in an unusable (blank screen or powered off) monitor.
+Try this \f[CR]WLR_DRM_NO_MODIFIERS=1\f[R] \c
+.UR https://github.com/alex-courtis/way-displays#unusable-displays-following-mode
+workaround
+.UE \c
+\ if you experience problems.
 .SH SEE ALSO
 \f[B]\f[CB]way\-displays\f[B]\f[R](1)
 .PP

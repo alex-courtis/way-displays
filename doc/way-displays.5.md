@@ -1,3 +1,15 @@
+- [NAME](#name)
+- [SYNTAX](#syntax)
+- [LOCATION](#location)
+- [Naming](#naming)
+- [Positioning](#positioning)
+- [**`ORDER`**](#order)
+- [Scaling](#scaling)
+- [Auto Scale](#auto-scale)
+- [**`SCALE`**](#scale)
+- [**`MODE`**](#mode)
+- [SEE ALSO](#see-also)
+
 # NAME
 
 way-displays - **`cfg.yaml`** configuration file format.
@@ -37,7 +49,7 @@ Using a regex is preferred, however fuzzy case insensitive string matches of at 
 
 `'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
 
-# ARRANGE, ALIGN
+# Positioning
 
 The default is to arrange in a row, aligned at the top of the displays.
 
@@ -92,6 +104,8 @@ Note that partial matches are not possible in this configuration, and the last d
 
 Control all scaling, including custom [SCALE](https://github.com/alex-courtis/way-displays/wiki/Configuration#scale)
 
+0.125 (1/8) is the minimum scaling granularity, see [FAQ: On Scale And Blurring](https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring)
+
 **`SCALING`**  
 Boolean, default TRUE
 
@@ -107,12 +121,13 @@ Enum \<**`NEAREST`**\|**`UP`**\|**`DOWN`**\>, default **`NEAREST`**
 
 Applies to **`SCALE_ROUND_TO`**
 
-0.125 (1/8) is the minimum scaling granularity, see [FAQ: On Scale And Blurring](https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring)
-
-e.g. enable scaling, always round up to the next highest 0.25
+e.g.
 
 ``` yaml
+# enable all scaling
 SCALING: true
+
+# round up to the next highest 0.25
 SCALE_ROUND_STRATEGY: UP
 SCALE_ROUND_TO: 0.25
 ```
@@ -139,9 +154,7 @@ Set minimum scale when auto scaling.
 **`AUTO_SCALE_MAX`**  
 Number, default **`-1.0`**
 
-Set maximum scale when auto scaling, default indicates no maximum.
-
-Ignored if below **`AUTO_SCALE_MIN`**
+Set maximum scale when auto scaling, default indicates no maximum. Ignored if below **`AUTO_SCALE_MIN`**
 
 e.g.
 
@@ -167,13 +180,67 @@ Auto scale may be overridden with custom scales for each display
 
 Does not apply when **`SCALING`** FALSE
 
-e.g. ABC123 will be scaled at exactly 1.75
+e.g.
 
 ``` yaml
+# ABC123 will be scaled at exactly 1.75 
 SCALE:
     - NAME_DESC: 'Monitor Maker ABC123'
       SCALE: 1.75
 ```
+
+# **`MODE`**
+
+Map \<*name*\>:
+
+**`WIDTH`**  
+Integer, pixels
+
+**`HEIGHT`**  
+Integer, pixels
+
+**`HZ`**  
+Number, refresh rate
+
+A refresh rate +-0.5Hz will match.
+
+**`MAX`**  
+Boolean
+
+Use the maximum available refresh rate at the maximum resolution.
+
+**`MAX_PREFERRED_REFRESH`**  
+Boolean
+
+Use the highest available refresh for the preferred mode’s resolution.
+
+Select specific modes for specific displays, overriding auto scaling.
+
+If the specified mode cannot be found or activated, way-displays will fall back to the preferred mode, then the highest available resolution / refresh.
+
+When selecting a mode, `way-displays` will use the highest refresh within +-0.5Hz that matches. There will usually be several refresh rates will match an integegral number of Hz, differing only by a few mHz. These will be tried in descending order until a working one is found.
+
+e.g.
+
+``` yaml
+MODE:
+  # highest refresh rate at 1920x1080
+  HDMI-A-1:
+    WIDTH: 1920
+    HEIGHT: 1080
+
+  # 3440x1440 at ~144Hz
+  LG27Q:
+    WIDTH: 3440
+    HEIGHT: 1440
+    HZ: 144
+
+  # maximum available resolution and refresh
+  M28U:
+    MAX: TRUE
+```
+
+**WARNING:** selecting some modes may result in an unusable (blank screen or powered off) monitor. Try this `WLR_DRM_NO_MODIFIERS=1` [workaround](https://github.com/alex-courtis/way-displays#unusable-displays-following-mode) if you experience problems.
 
 # SEE ALSO
 

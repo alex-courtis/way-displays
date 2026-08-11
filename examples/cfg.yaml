@@ -65,11 +65,11 @@ SCALE:
 ## WARNING: this may result in an unusable display. See https://github.com/alex-courtis/way-displays#known-issues-with-workarounds
 ## for a possible workaround.
 MODE:
-  # # Resolution and refresh
-  # HDMI-A-1:
-  #   WIDTH: 1920
-  #   HEIGHT: 1080
-  #   HZ: 60
+  # Resolution and refresh
+  HDMI-A-1:
+    WIDTH: 1920
+    HEIGHT: 1080
+    HZ: 60
 
   # # Resolution with highest refresh
   # 'monitor description':

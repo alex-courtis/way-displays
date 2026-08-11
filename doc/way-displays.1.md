@@ -1,3 +1,18 @@
+- [NAME](#name)
+- [SYNOPSIS](#synopsis)
+- [DESCRIPTION](#description)
+  - [Server](#server)
+  - [Client](#client)
+- [REQUIREMENTS](#requirements)
+- [OPTIONS](#options)
+- [COMMANDS](#commands)
+- [SET OPTIONS](#set-options)
+- [DELETE OPTIONS](#delete-options)
+- [TOGGLE OPTIONS](#toggle-options)
+- [NAME](#name-1)
+- [EXAMPLES](#examples)
+- [SEE ALSO](#see-also)
+
 # NAME
 
 way-displays - Auto Manage Your Wayland Displays
