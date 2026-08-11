@@ -38,11 +38,9 @@ User should be a member of the `input` group for querying laptop lid state.
 
 ## Documentation
 
-[`man way-displays`](https://github.com/alex-courtis/way-displays/blob/master/doc/way-displays.1.md) for server and CLI details.
+[`man way-displays`](doc/way-displays.1.md) for server and CLI details.
 
-[`man 5 way-displays`](https://github.com/alex-courtis/way-displays/blob/master/doc/way-displays.5.md) for `cfg.yaml` config file reference.
-
-
+[`man 5 way-displays`](doc/way-displays.5.md) for `cfg.yaml` config file reference.
 
 ## Quick Start
 
