@@ -23,7 +23,7 @@ A default configuration file will be created if none is found.
 .SH Naming
 <\f[I]name\f[R]> is matched by display name or description with precedence: exact, regex, fuzzy
 .PP
-You can identify them via logs e.g.
+You can identify them via logs or \f[B]\f[CB]way\-displays \-\-get\f[B]\f[R] or \f[B]\f[CB]way\-displays \-\-list\f[B]\f[R] e.g.
 .IP
 .EX
 DP\-3 Arrived:
@@ -188,8 +188,7 @@ e.g.
 .EX
 \f[I]# ABC123 will be scaled at exactly 1.75 \f[R]
 SCALE\f[B]:\f[R]
-    \f[B]\-\f[R] NAME_DESC\f[B]:\f[R] \(aqMonitor Maker ABC123\(aq
-      SCALE\f[B]:\f[R] 1.75
+  \(aqMonitor Maker ABC123\(aq\f[B]:\f[R] 1.75
 .EE
 .SH \f[B]\f[CB]MODE\f[B]\f[R]
 Select specific modes for specific displays, overriding auto scaling.
@@ -281,11 +280,35 @@ VRR_OFF\f[B]:\f[R]
 \f[B]\-\f[R] \(aqMonitor Maker ABC123\(aq
 \f[B]\-\f[R] \(aqHDMI\-1\(aq
 .EE
+.SH \f[B]\f[CB]CALLBACK_CMD\f[B]\f[R]
+Sets a \f[CR]/bin/sh\f[R] command to be executed following most events.
+.PP
+Obeys \f[CR]LOG_THRESHOLD\f[R]
+.PP
+NOTE: Depending on your compositor this could get executed multiple times when a change happens.
+Especially likely on a (dis\-)connect.
+.PP
+Environment variables: \- \f[CR]${CALLBACK_MSG}\f[R] contains a human readable message \- \f[CR]${CALLBACK_LEVEL}\f[R] one of \f[CR]FATAL\f[R] \f[CR]ERROR\f[R] \f[CR]WARNING\f[R] \f[CR]INFO\f[R]
+.PP
+String, Default: \f[B]\f[CB]notify\-send \(dqway\-displays ${CALLBACK_LEVEL}\(dq \(dq${CALLBACK_MSG}\(dq\f[B]\f[R]
+.PP
+A multiline literal YAML string may be used without the \f[CR];\f[R] separators e.g.
+.IP
+.EX
+CALLBACK_CMD\f[B]: \f[R]|
+  notify\-send way\-displays \(dqhas done something\(dq
+  bell
+  notify\-send \(dqway\-displays ${CALLBACK_LEVEL}\(dq \(dq${CALLBACK_MSG}\(dq
+.EE
+.SH \f[B]\f[CB]LAPTOP_LID_MONITOR\f[B]\f[R]
+By default, \f[B]\f[CB]libinput(1)\f[B]\f[R] will be used to monitor the laptop lid switch, used by \f[CR]LID\f[R] disabled conditions.
+.PP
+Boolean, default TRUE
+.SH \f[B]\f[CB]LOG_THRESHOLD\f[B]\f[R]
+Sets the threshold for log output as well as callbacks.
+.PP
+Enum <\f[B]\f[CB]FATAL\f[B]\f[R]|\f[B]\f[CB]ERROR\f[B]\f[R]|\f[B]\f[CB]WARNING\f[B]\f[R]|\f[B]\f[CB]INFO\f[B]\f[R]|\f[B]\f[CB]DEBUG\f[B]\f[R]>
 .SH SEE ALSO
 \f[B]\f[CB]way\-displays\f[B]\f[R](1)
-.PP
-Home: https://github.com/alex\-courtis/way\-displays
-.PP
-Configuration: https://github.com/alex\-courtis/way\-displays/wiki/Configuration
 .SH AUTHORS
 Alexander Courtis.

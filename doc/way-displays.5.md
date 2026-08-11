@@ -10,6 +10,9 @@
 - [**`MODE`**](#mode)
 - [**`TRANSFORM`**](#transform)
 - [**`VRR_OFF`**](#vrr_off)
+- [**`CALLBACK_CMD`**](#callback_cmd)
+- [**`LAPTOP_LID_MONITOR`**](#laptop_lid_monitor)
+- [**`LOG_THRESHOLD`**](#log_threshold)
 - [SEE ALSO](#see-also)
 
 # NAME
@@ -37,7 +40,7 @@ A default configuration file will be created if none is found.
 
 \<*name*\> is matched by display name or description with precedence: exact, regex, fuzzy
 
-You can identify them via logs e.g.
+You can identify them via logs or **`way-displays --get`** or **`way-displays --list`** e.g.
 
     DP-3 Arrived:
         name:     'DP-3'
@@ -185,8 +188,7 @@ e.g.
 ``` yaml
 # ABC123 will be scaled at exactly 1.75 
 SCALE:
-    - NAME_DESC: 'Monitor Maker ABC123'
-      SCALE: 1.75
+  'Monitor Maker ABC123': 1.75
 ```
 
 # **`MODE`**
@@ -271,10 +273,39 @@ VRR_OFF:
 - 'HDMI-1'
 ```
 
+# **`CALLBACK_CMD`**
+
+Sets a `/bin/sh` command to be executed following most events.
+
+Obeys `LOG_THRESHOLD`
+
+NOTE: Depending on your compositor this could get executed multiple times when a change happens. Especially likely on a (dis-)connect.
+
+Environment variables: - `${CALLBACK_MSG}` contains a human readable message - `${CALLBACK_LEVEL}` one of `FATAL` `ERROR` `WARNING` `INFO`
+
+String, Default: **`notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`**
+
+A multiline literal YAML string may be used without the `;` separators e.g.
+
+``` yaml
+CALLBACK_CMD: |
+  notify-send way-displays "has done something"
+  bell
+  notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"
+```
+
+# **`LAPTOP_LID_MONITOR`**
+
+By default, **`libinput(1)`** will be used to monitor the laptop lid switch, used by `LID` disabled conditions.
+
+Boolean, default TRUE
+
+# **`LOG_THRESHOLD`**
+
+Sets the threshold for log output as well as callbacks.
+
+Enum \<**`FATAL`**\|**`ERROR`**\|**`WARNING`**\|**`INFO`**\|**`DEBUG`**\>
+
 # SEE ALSO
 
 **`way-displays`**(1)
-
-Home: https://github.com/alex-courtis/way-displays
-
-Configuration: https://github.com/alex-courtis/way-displays/wiki/Configuration
