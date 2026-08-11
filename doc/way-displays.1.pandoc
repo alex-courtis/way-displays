@@ -1,6 +1,6 @@
 % WAY-DISPLAYS(1) way-displays | General Commands Manual
 % Alexander Courtis
-% 2026/08/10
+% 2026/08/11
 
 # NAME
 
@@ -12,9 +12,9 @@ way-displays - Auto Manage Your Wayland Displays
 
 Server: **`way-displays`** [**`-L`** *level*] [**`-c`** *path*]
 
-Query: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-g`**|**`-l`**>
+Client Query: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-g`**|**`-l`**>
 
-Update: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-s`**|**`-d`**|**`-t`**|**`-w`**|**`-r`**> [*command options*]
+Client Update: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-s`**|**`-d`**|**`-t`**|**`-w`**|**`-r`**> [*command options*]
 
 # DESCRIPTION
 
@@ -32,13 +32,11 @@ Update: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-s`**|**`-d`**|**`-
 
 Works out of the box: no configuration required.
 
-Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
-
-See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/Configuration), [Recipes](https://github.com/alex-courtis/way-displays/wiki/Recipes), [Troubleshooting](https://github.com/alex-courtis/way-displays/wiki/Troubleshooting) and more.
-
 ## Server
 
-Background process that performs the management. Configuration is read from a file discovered in order:
+Server is run when no commands are specified.
+
+Background process that performs the management. Configuration is read from **`cfg.yaml`**, discovered in order:
 
 	$XDG_CONFIG_HOME/way-displays/cfg.yaml
 	$HOME/.config/way-displays/cfg.yaml
@@ -47,17 +45,9 @@ Background process that performs the management. Configuration is read from a fi
 
 The file may be specified via the **`--config`** option.
 
-cfg.yaml will be monitored for changes, which will be immediately applied.
+**`cfg.yaml`** will be monitored for changes, which will be immediately applied. See:
 
-See the default /etc/way-displays/cfg.yaml and https://github.com/alex-courtis/way-displays/wiki/Configuration for details on individual configurable settings.
-
-Server is run when no commands are specified.
-
-Server responds to IPC requests to fetch and mutate state: https://github.com/alex-courtis/way-displays/wiki/IPC
-
-## cfg.yaml
-
-For details on individual configurable settings see:
+1. **`man 5 way-displays`**
 
 1. Default **`cfg.yaml`**
 
@@ -65,16 +55,11 @@ For details on individual configurable settings see:
 
 	https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/examples/cfg.yaml
 
-2. Wiki
-
-	https://github.com/alex-courtis/way-displays/wiki/Configuration
-
-
 ## Client
 
 Manages the server. The active configuration and display state may be inspected, and the configuration modified.
 
-The active configuration can be written to disk, however any comments and formatting will be lost.
+The active configuration can be written to disk via the **`--write`** command, however any comments and formatting will be lost.
 
 # REQUIREMENTS
 
@@ -91,7 +76,7 @@ User should be a member of the **`input`** UNIX group for querying laptop lid st
 # OPTIONS
 
 **`-L`**, **`--l[og-threshold]`** <**debug**|**info**|**warning**|**error**|**fatal**>
-: Overrides `cfg.yaml`, default **`info`**.
+: Overrides **`cfg.yaml`**, default **`info`**.
 
 **`-c`**, **`--c[onfig]`** <*path*>
 : Configuration file, falls back to defaults if not found.
@@ -99,7 +84,7 @@ User should be a member of the **`input`** UNIX group for querying laptop lid st
 **`-y`**, **`--y[aml]`**
 : Print client output as raw YAML
 
-# COMMAND
+# COMMANDS
 
 **`-h`**, **`--h[elp]`**
 : Print usage and exit.
@@ -114,7 +99,7 @@ User should be a member of the **`input`** UNIX group for querying laptop lid st
 : Show the active configuration, commands and current display state.
 
 **`-w`**, **`--w[rite]`**
-: Write active configuration to `cfg.yaml`; removes any whitespace or comments.
+: Write active configuration to **`cfg.yaml`**; removes any whitespace or comments.
 
 **`-r`**, **`--r[eapply]`**
 : Attempt to reapply when the displays are in an inconsistent or incorrect state. Disables all displays, clears current/failed mode and enables according to config.
@@ -162,10 +147,10 @@ User should be a member of the **`input`** UNIX group for querying laptop lid st
 
 **`CALLBACK_CMD`** <*shell command*>
 : Sets a **`/bin/sh`** command to be executed following most events.
-: Obeys `LOG_THRESHOLD`
-: - Default: `notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
-: - `${CALLBACK_MSG}` contains a human readable message 
-: - `${CALLBACK_LEVEL}` `LOG_THRESHOLD`
+: Obeys **`LOG_THRESHOLD`**
+: - Default: **`notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`**
+: - **`${CALLBACK_MSG}`** contains a human readable message
+: - **`${CALLBACK_LEVEL}`** **`LOG_THRESHOLD`**
 
 # DELETE OPTIONS
 
@@ -201,9 +186,9 @@ User should be a member of the **`input`** UNIX group for querying laptop lid st
 **`DISABLED`** <*name*>
 : Toggle a display.
 
-# NAMING
+# NAME
 
-Displays are matched by name or description with precedence: exact, regex, fuzzy
+<*name*> is matched by display name or description with precedence: exact, regex, fuzzy
 
 You can identify them via logs e.g.
 
@@ -213,40 +198,56 @@ You can identify them via logs e.g.
 
 It is recommended to use the description rather than the nondeterministic name.
 
-Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. '!^DP-1'. Regex strings must be single quoted.
+Any item prefixed with a **`!`** will be interpreted as extended POSIX regex e.g. **`'!^DP-1'`**. Regex strings must be single quoted.
 
 Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
 
-'DP-1' will match eDP-1 and DP-1. Consider using regex '!^DP-1$' to exactly match.
+`'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
 
 # EXAMPLES
 
-exec way-displays > /tmp/way-displays.\${XDG_VTNR}.\${USER}.log 2>&1
-: Add to your sway config to start way-displays when sway starts.
+Add to your sway config to start way-displays when sway starts:
 
-way-displays -g
-: Show current configuration and display state.
+	exec way-displays > /tmp/way-displays.\${XDG_VTNR}.\${USER}.log 2>&1
 
-way-displays -l
-: List the connected displays.
+Show current configuration and display state:
 
-way-displays -s ARRANGE_ALIGN row bottom
-: Arrange left to right, aligned at the bottom.
+	way-displays -g
 
-way-displays -s ORDER \"!^DP-[0-9]+$\" HDMI-1 \"monitor maker ABC model XYZ\" eDP-1
-: Set the order for arrangement.
+List the connected displays:
 
-way-displays -s SCALE \"eDP-1\" 3
-: Set the scale.
+	way-displays -l
 
-way-displays -s MODE HDMI-A-1 3840 2160 24
-: Use 3840x2160@24Hz
+Arrange left to right, aligned at the bottom:
 
-way-displays -w
-: Persist your changes to your cfg.yaml
+	way-displays -s ARRANGE_ALIGN row bottom
+
+Set the order for arrangement:
+
+	way-displays -s ORDER \"!^DP-[0-9]+$\" HDMI-1 \"monitor maker ABC model XYZ\" eDP-1
+
+Set the scale:
+
+	way-displays -s SCALE \"eDP-1\" 3
+
+Use 3840x2160@24Hz for HDMI-A-1:
+
+	way-displays -s MODE HDMI-A-1 3840 2160 24
+
+Persist your changes to your **`cfg.yaml`**:
+
+	way-displays -w
 
 # SEE ALSO
 
-https://github.com/alex-courtis/way-displays
+**`way-displays`**(5)
+
+Home: https://github.com/alex-courtis/way-displays
+
+Recipes: https://github.com/alex-courtis/way-displays/wiki/Recipes
+
+Configuration: https://github.com/alex-courtis/way-displays/wiki/Configuration
+
+IPC: https://github.com/alex-courtis/way-displays/wiki/IPC
 
 [//]: # vim:ft=pandoc:noet :
