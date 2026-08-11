@@ -19,9 +19,9 @@ Configuration is read from **`cfg.yaml`**, discovered in order:
 
 A default configuration file will be created if none is found.
 
-# NAMING
+# Naming
 
-Displays are matched by name or description with precedence: exact, regex, fuzzy
+\<*name*\> is matched by display name or description with precedence: exact, regex, fuzzy
 
 You can identify them via logs e.g.
 
@@ -31,21 +31,21 @@ You can identify them via logs e.g.
 
 It is recommended to use the description rather than the nondeterministic name.
 
-Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. ‘!^DP-1’. Regex strings must be single quoted.
+Any item prefixed with a **`!`** will be interpreted as extended POSIX regex e.g. **`'!^DP-1'`**. Regex strings must be single quoted.
 
-Using a regex is preferred, however fuzzy case insensitive string matches of at least 3 characters may be used.
+Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
 
-`DP-1` will match eDP-1 and DP-1. Consider using regex `'!^DP-1$'` to exactly match.
+`'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
 
 # ARRANGE and ALIGN
 
 The default is to arrange in a row, aligned at the top of the displays.
 
 **`ARRANGE`**  
-enum \<**`ROW`**\|**`COLUMN`**\>, default **`ROW`**
+Enum \<**`ROW`**\|**`COLUMN`**\>, default **`ROW`**
 
 **`ALIGN`**  
-enum \<**`TOP`**\|**`MIDDLE`**\|**`BOTTOM`**\|**`LEFT`**\|**`RIGHT`**\>, default **`TOP`**
+Enum \<**`TOP`**\|**`MIDDLE`**\|**`BOTTOM`**\|**`LEFT`**\|**`RIGHT`**\>, default **`TOP`**
 
 **`ALIGN`** (ROW)  
 \<**`TOP`**\|**`MIDDLE`**\|**`BOTTOM`**\>
@@ -60,9 +60,9 @@ ARRANGE: COLUMN
 ALIGN: MIDDLE
 ```
 
-# ORDER
+# **`ORDER`**
 
-Array of *fuzzy_display_match*
+Array of \<*name*\>
 
 The default **`ORDER`** is simply the order in which the displays are discovered. This is nondeterministic.
 
@@ -70,9 +70,9 @@ You are encouraged to explicitly define your order. e.g.
 
 ``` yaml
 ORDER:
-  - '!^DP-1'
-  - 'Monitor Maker ABC123'
-  - 'HDMI-1'
+- '!^DP-1'
+- 'Monitor Maker ABC123'
+- 'HDMI-1'
 ```
 
 Regexes are encouraged, allowing for one to easily create generic rules e.g. **`'!^DP-'`**, which will often be sufficient to put external monitors at the top of a column.
@@ -81,12 +81,105 @@ Some displays may be ordered last, by using a “catchall” regex e.g.
 
 ``` yaml
 ORDER:
-    - '!.*Monitor Maker ABC123.*$'
-    - '!.*$'
-    - 'DP-5'
+- '!.*Monitor Maker ABC123.*$'
+- '!.*$'
+- 'DP-5'
 ```
 
 Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
+
+# **`SCALING`**
+
+Boolean, default TRUE
+
+Enable scaling, overrides **`AUTO_SCALE`** and **`SCALE`** when disabled.
+
+e.g. completely disable scaling
+
+``` yaml
+SCALING: false
+```
+
+# **`SCALE_ROUND_TO`**
+
+Number: \<**`0.125`**\|**`0.25`**\|**`0.5`**\|**`1`**\>, default **`0.125`**
+
+Round scales to nearest, using **`SCALE_ROUND_STRATEGY`**
+
+0.125 (1/8) is the minimum, see [FAQ: On Scale And Blurring](https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring)
+
+This applies to all scales, including custom [SCALE](https://github.com/alex-courtis/way-displays/wiki/Configuration#scale)
+
+e.g. round scales to nearest half
+
+``` yaml
+SCALE_ROUND_TO: 0.5
+```
+
+# **`SCALE_ROUND_STRATEGY`**
+
+Enum \<**`NEAREST`**\|**`UP`**\|**`DOWN`**\>, default **`NEAREST`**
+
+Applies to **`SCALE_ROUND_TO`**
+
+e.g. always round up to nearest 0.25
+
+``` yaml
+SCALE_ROUND_STRATEGY: UP
+SCALE_ROUND_TO: 0.25
+```
+
+# **`AUTO_SCALE`**
+
+Boolean, default TRUE
+
+The default is to scale each display by DPI,
+
+When disabled a scale 1 will always be used, unless a **`SCALE`** has been specified.
+
+e.g. always disable
+
+``` yaml
+AUTO_SCALE: false
+```
+
+# **`AUTO_SCALE_DPI`**
+
+Integer, minimum **`8`**, default **`96`**
+
+Used to calculate **`AUTO_SCALE`** values.
+
+e.g. use the old fashioned mac 72 dpi
+
+``` yaml
+AUTO_SCALE_DPI: 72
+```
+
+# **`AUTO_SCALE_MIN`**
+
+Number, default **`1.0`**
+
+Set minimum value for auto scaling.
+
+e.g. allow sub-pixel scaling
+
+``` yaml
+AUTO_SCALE_MIN: 0.5
+```
+
+# **`AUTO_SCALE_MAX`**
+
+Number, default **`-1.0`**
+
+Set maximum value for auto scaling, default indicates no maximum.
+
+Ignored if below **`AUTO_SCALE_MIN`**
+
+e.g. cap your scales at double
+
+``` yaml
+AUTO_SCALE_MAX: 2.0
+```
 
 # SEE ALSO
 
