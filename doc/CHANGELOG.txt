@@ -2,6 +2,7 @@ way-displays 2.0.0 2026-09-17
 -----------------------------
 See https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes
 Packagers: breaking change: libyaml replaces yaml-cpp
+Packagers: please add new man page: doc/way-displays.5
 cfg.yaml schema changes, backwards compatible:
 - way-displays --write to upgrade
 - DISABLED, MODE, SCALE and TRANSFORM arrays are replaced with NAME_DESC keyed maps

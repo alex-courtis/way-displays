@@ -63,11 +63,11 @@ The active configuration can be written to disk via the **`--write`** command, h
 
 # REQUIREMENTS
 
-A wlroots based compositor that supports the WLR Output Management protocol.
+A wlroots based compositor that supports the WLR Output Management protocol version 4+.
 
-way-displays is blessed for the [sway](https://swaywm.org/) and [river](https://github.com/riverwm/river). It may work on others.
+way-displays is blessed for the [sway](https://swaywm.org/), [river](https://codeberg.org/river/river) and [river-classic](https://codeberg.org/river/river-classic) compositors. It may work on others; please tell me of your experiences!
 
-[Hpyrland](https://hyprland.org/) provides all way-displays functionality and you may experience issues.
+[Hpyrland](https://hyprland.org/) already provides all the features of `way-displays`. It may function, however it is explicitly not supported and you will likely experience problems. Please do not raise issues.
 
 way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 
@@ -245,9 +245,5 @@ Persist your changes to your **`cfg.yaml`**:
 Home: https://github.com/alex-courtis/way-displays
 
 Recipes: https://github.com/alex-courtis/way-displays/wiki/Recipes
-
-Configuration: https://github.com/alex-courtis/way-displays/wiki/Configuration
-
-IPC: https://github.com/alex-courtis/way-displays/wiki/IPC
 
 [//]: # vim:ft=pandoc:noet :

@@ -1,3 +1,7 @@
+# New Release: 2.0.0
+
+See [Version 2.0.0 Changes](https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes)
+
 # way-displays: Auto Manage Your Wayland Displays
 
 <img align="right" width="427" height="189" title="credit: Stephen Barratt" src="doc/layouts.png?raw=true">
@@ -10,7 +14,7 @@
 
 1. Auto scale based on DPI: 96 is a scale of 1
 
-1. Update when displays plugged/unplugged
+1. Update when displays plugged/unplugged with optionally defined conditions
 
 1. Update when laptop lid closed/opened
 
@@ -31,6 +35,14 @@ way-displays is blessed for the [sway](https://swaywm.org/), [river](https://cod
 way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 
 User should be a member of the `input` group for querying laptop lid state.
+
+## Documentation
+
+[`man way-displays`](https://github.com/alex-courtis/way-displays/blob/master/doc/way-displays.1.md) for server and CLI details.
+
+[`man 5 way-displays`](https://github.com/alex-courtis/way-displays/blob/master/doc/way-displays.5.md) for `cfg.yaml` config file reference.
+
+
 
 ## Quick Start
 
