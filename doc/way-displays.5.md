@@ -8,6 +8,8 @@
 - [Auto Scale](#auto-scale)
 - [**`SCALE`**](#scale)
 - [**`MODE`**](#mode)
+- [**`TRANSFORM`**](#transform)
+- [**`VRR_OFF`**](#vrr_off)
 - [SEE ALSO](#see-also)
 
 # NAME
@@ -74,9 +76,9 @@ ALIGN: MIDDLE
 
 # **`ORDER`**
 
-Array of \<*name*\>
+Define the order in which displays are positioned. The default is simply the order in which the displays are discovered. This is nondeterministic.
 
-The default **`ORDER`** is simply the order in which the displays are discovered. This is nondeterministic.
+Array of \<*name*\>
 
 You are encouraged to explicitly define your order. e.g.
 
@@ -174,11 +176,9 @@ AUTO_SCALE_MAX: 2.0
 
 # **`SCALE`**
 
+Auto scale may be overridden with custom scales for each display. Does not apply when **`SCALING`** FALSE
+
 Map \<*name*\>: Number
-
-Auto scale may be overridden with custom scales for each display
-
-Does not apply when **`SCALING`** FALSE
 
 e.g.
 
@@ -190,6 +190,12 @@ SCALE:
 ```
 
 # **`MODE`**
+
+Select specific modes for specific displays, overriding auto scaling.
+
+If the specified mode cannot be found or activated, way-displays will fall back to the preferred mode, then the highest available resolution / refresh.
+
+When selecting a mode, `way-displays` will use the highest refresh within +-0.5Hz that matches. There will usually be several refresh rates will match an integegral number of Hz, differing only by a few mHz. These will be tried in descending order until a working one is found.
 
 Map \<*name*\>:
 
@@ -214,12 +220,6 @@ Boolean
 
 Use the highest available refresh for the preferred mode’s resolution.
 
-Select specific modes for specific displays, overriding auto scaling.
-
-If the specified mode cannot be found or activated, way-displays will fall back to the preferred mode, then the highest available resolution / refresh.
-
-When selecting a mode, `way-displays` will use the highest refresh within +-0.5Hz that matches. There will usually be several refresh rates will match an integegral number of Hz, differing only by a few mHz. These will be tried in descending order until a working one is found.
-
 e.g.
 
 ``` yaml
@@ -241,6 +241,35 @@ MODE:
 ```
 
 **WARNING:** selecting some modes may result in an unusable (blank screen or powered off) monitor. Try this `WLR_DRM_NO_MODIFIERS=1` [workaround](https://github.com/alex-courtis/way-displays#unusable-displays-following-mode) if you experience problems.
+
+# **`TRANSFORM`**
+
+Rotate and mirror the display.
+
+Map \<*name*\>: Enum \<**`90`**\|**`180`**\|**`270`**\|**`FLIPPED`**\|**`FLIPPED-90`**\|**`FLIPPED-180`**\|**`FLIPPED-270`**\>
+
+e.g.
+
+``` yaml
+TRANSFORM:
+  # mirror and rotate 180 degrees
+  LG27Q: FLIPPED-180
+```
+
+# **`VRR_OFF`**
+
+VRR / adaptive sync is enabled by default. Disable it per display.
+
+Array of \<*name*\>
+
+e.g.
+
+``` yaml
+VRR_OFF:
+- '!^DP-1'
+- 'Monitor Maker ABC123'
+- 'HDMI-1'
+```
 
 # SEE ALSO
 

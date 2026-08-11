@@ -62,10 +62,11 @@ ARRANGE\f[B]:\f[R] COLUMN
 ALIGN\f[B]:\f[R] MIDDLE
 .EE
 .SH \f[B]\f[CB]ORDER\f[B]\f[R]
-Array of <\f[I]name\f[R]>
-.PP
-The default \f[B]\f[CB]ORDER\f[B]\f[R] is simply the order in which the displays are discovered.
+Define the order in which displays are positioned.
+The default is simply the order in which the displays are discovered.
 This is nondeterministic.
+.PP
+Array of <\f[I]name\f[R]>
 .PP
 You are encouraged to explicitly define your order.
 e.g.
@@ -177,11 +178,10 @@ AUTO_SCALE_MIN\f[B]:\f[R] 0.5
 AUTO_SCALE_MAX\f[B]:\f[R] 2.0
 .EE
 .SH \f[B]\f[CB]SCALE\f[B]\f[R]
-Map <\f[I]name\f[R]>: Number
-.PP
-Auto scale may be overridden with custom scales for each display
-.PP
+Auto scale may be overridden with custom scales for each display.
 Does not apply when \f[B]\f[CB]SCALING\f[B]\f[R] FALSE
+.PP
+Map <\f[I]name\f[R]>: Number
 .PP
 e.g.
 .IP
@@ -192,6 +192,14 @@ SCALE\f[B]:\f[R]
       SCALE\f[B]:\f[R] 1.75
 .EE
 .SH \f[B]\f[CB]MODE\f[B]\f[R]
+Select specific modes for specific displays, overriding auto scaling.
+.PP
+If the specified mode cannot be found or activated, way\-displays will fall back to the preferred mode, then the highest available resolution / refresh.
+.PP
+When selecting a mode, \f[CR]way\-displays\f[R] will use the highest refresh within +\-0.5Hz that matches.
+There will usually be several refresh rates will match an integegral number of Hz, differing only by a few mHz.
+These will be tried in descending order until a working one is found.
+.PP
 Map <\f[I]name\f[R]>:
 .TP
 \f[B]\f[CB]WIDTH\f[B]\f[R]
@@ -221,14 +229,6 @@ Boolean
 Use the highest available refresh for the preferred mode\(cqs resolution.
 .RE
 .PP
-Select specific modes for specific displays, overriding auto scaling.
-.PP
-If the specified mode cannot be found or activated, way\-displays will fall back to the preferred mode, then the highest available resolution / refresh.
-.PP
-When selecting a mode, \f[CR]way\-displays\f[R] will use the highest refresh within +\-0.5Hz that matches.
-There will usually be several refresh rates will match an integegral number of Hz, differing only by a few mHz.
-These will be tried in descending order until a working one is found.
-.PP
 e.g.
 .IP
 .EX
@@ -255,6 +255,32 @@ Try this \f[CR]WLR_DRM_NO_MODIFIERS=1\f[R] \c
 workaround
 .UE \c
 \ if you experience problems.
+.SH \f[B]\f[CB]TRANSFORM\f[B]\f[R]
+Rotate and mirror the display.
+.PP
+Map <\f[I]name\f[R]>: Enum <\f[B]\f[CB]90\f[B]\f[R]|\f[B]\f[CB]180\f[B]\f[R]|\f[B]\f[CB]270\f[B]\f[R]|\f[B]\f[CB]FLIPPED\f[B]\f[R]|\f[B]\f[CB]FLIPPED\-90\f[B]\f[R]|\f[B]\f[CB]FLIPPED\-180\f[B]\f[R]|\f[B]\f[CB]FLIPPED\-270\f[B]\f[R]>
+.PP
+e.g.
+.IP
+.EX
+TRANSFORM\f[B]:\f[R]
+\f[I]  # mirror and rotate 180 degrees\f[R]
+  LG27Q\f[B]:\f[R] FLIPPED\-180
+.EE
+.SH \f[B]\f[CB]VRR_OFF\f[B]\f[R]
+VRR / adaptive sync is enabled by default.
+Disable it per display.
+.PP
+Array of <\f[I]name\f[R]>
+.PP
+e.g.
+.IP
+.EX
+VRR_OFF\f[B]:\f[R]
+\f[B]\-\f[R] \(aq!\(haDP\-1\(aq
+\f[B]\-\f[R] \(aqMonitor Maker ABC123\(aq
+\f[B]\-\f[R] \(aqHDMI\-1\(aq
+.EE
 .SH SEE ALSO
 \f[B]\f[CB]way\-displays\f[B]\f[R](1)
 .PP
