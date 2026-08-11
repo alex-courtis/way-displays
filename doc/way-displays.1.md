@@ -122,7 +122,7 @@ Restart the compositor and run **`way-displays -g`** or look at **`/tmp/way-disp
 
 Tweak **`cfg.yaml`** to your liking and save it, see **`man 5 way-displays`**. Changes will be immediately applied.
 
-Alternatively, use the CLI to make your changes then persist them with `way-displays -w`.
+Alternatively, use the CLI to make your changes then persist them with **`way-displays -w`**
 
 # OPTIONS
 
@@ -245,7 +245,7 @@ Toggle a display.
 
 \<*name*\> is matched by display name or description with precedence: exact, regex, fuzzy
 
-You can identify them via logs e.g.
+You can identify them via logs or **`way-displays --get`** or **`way-displays --list`** e.g.
 
     DP-3 Arrived:
         name:     'DP-3'
