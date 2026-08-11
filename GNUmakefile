@@ -83,7 +83,7 @@ man1: doc/way-displays.1.pandoc
 	pandoc -s --wrap=none -f markdown -t man -o $(^:.pandoc= ) $(^)
 	# gfm
 	grep -v "^% " $(^) > /tmp/$(^F)
-	pandoc -s --wrap=none -f markdown -t gfm --toc=true -o man.1.md /tmp/$(^F)
+	pandoc -s --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) /tmp/$(^F)
 	rm /tmp/$(^F)
 
 man5: doc/way-displays.5.pandoc
@@ -92,7 +92,7 @@ man5: doc/way-displays.5.pandoc
 	pandoc -s --wrap=none -f markdown -t man -o $(^:.pandoc= ) $(^)
 	# gfm
 	grep -v "^% " $(^) > /tmp/$(^F)
-	pandoc -s --wrap=none -f markdown -t gfm --toc=true -o man.5.md /tmp/$(^F)
+	pandoc -s --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) /tmp/$(^F)
 	rm /tmp/$(^F)
 
 #
