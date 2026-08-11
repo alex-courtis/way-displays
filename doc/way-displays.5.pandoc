@@ -41,7 +41,7 @@ Using a regex is preferred, however fuzzy case insensitive string matches of at 
 
 `'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
 
-# ARRANGE and ALIGN
+# ARRANGE, ALIGN
 
 The default is to arrange in a row, aligned at the top of the displays.
 
@@ -172,6 +172,21 @@ Ignored if below **`AUTO_SCALE_MIN`**
 e.g. cap your scales to double
 ```yaml
 AUTO_SCALE_MAX: 2.0
+```
+
+# **`SCALE`**
+
+Map <*name*>: Number
+
+Auto scale may be overridden with custom scales for each display
+
+Does not apply when **`SCALING`** FALSE
+
+e.g. ABC123 will be scaled at exactly 1.75
+```yaml
+SCALE:
+    - NAME_DESC: 'Monitor Maker ABC123'
+      SCALE: 1.75
 ```
 
 # SEE ALSO

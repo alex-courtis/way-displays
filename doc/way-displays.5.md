@@ -118,11 +118,11 @@ SCALE_ROUND_TO: 0.5
 
 # **`SCALE_ROUND_STRATEGY`**
 
-Enum \<**`NEAREST`**\|**`UP`**\|**`DOWN`**\>, default **`NEAREST`**
+Enum: \<**`NEAREST`**\|**`UP`**\|**`DOWN`**\>, default **`NEAREST`**
 
 Applies to **`SCALE_ROUND_TO`**
 
-e.g. always round up to nearest 0.25
+e.g. always round up to higher 0.25
 
 ``` yaml
 SCALE_ROUND_STRATEGY: UP
@@ -137,7 +137,7 @@ The default is to scale each display by DPI,
 
 When disabled a scale 1 will always be used, unless a **`SCALE`** has been specified.
 
-e.g. always disable
+e.g. don’t auto scale
 
 ``` yaml
 AUTO_SCALE: false
@@ -159,7 +159,7 @@ AUTO_SCALE_DPI: 72
 
 Number, default **`1.0`**
 
-Set minimum value for auto scaling.
+Set minimum scale when auto scaling.
 
 e.g. allow sub-pixel scaling
 
@@ -171,14 +171,26 @@ AUTO_SCALE_MIN: 0.5
 
 Number, default **`-1.0`**
 
-Set maximum value for auto scaling, default indicates no maximum.
+Set maximum scale when auto scaling, default indicates no maximum.
 
 Ignored if below **`AUTO_SCALE_MIN`**
 
-e.g. cap your scales at double
+e.g. cap your scales to double
 
 ``` yaml
 AUTO_SCALE_MAX: 2.0
+```
+
+# **`SCALE`**
+
+Map \<*name*\>: Number
+
+Auto scale may be overridden with custom scales for each display e.g.
+
+``` yaml
+SCALE:
+    - NAME_DESC: 'Monitor Maker ABC123'
+      SCALE: 1.75
 ```
 
 # SEE ALSO

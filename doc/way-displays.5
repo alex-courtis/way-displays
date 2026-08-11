@@ -120,11 +120,11 @@ e.g.\ round scales to nearest half
 SCALE_ROUND_TO\f[B]:\f[R] 0.5
 .EE
 .SH \f[B]\f[CB]SCALE_ROUND_STRATEGY\f[B]\f[R]
-Enum <\f[B]\f[CB]NEAREST\f[B]\f[R]|\f[B]\f[CB]UP\f[B]\f[R]|\f[B]\f[CB]DOWN\f[B]\f[R]>, default \f[B]\f[CB]NEAREST\f[B]\f[R]
+Enum: <\f[B]\f[CB]NEAREST\f[B]\f[R]|\f[B]\f[CB]UP\f[B]\f[R]|\f[B]\f[CB]DOWN\f[B]\f[R]>, default \f[B]\f[CB]NEAREST\f[B]\f[R]
 .PP
 Applies to \f[B]\f[CB]SCALE_ROUND_TO\f[B]\f[R]
 .PP
-e.g.\ always round up to nearest 0.25
+e.g.\ always round up to higher 0.25
 .IP
 .EX
 SCALE_ROUND_STRATEGY\f[B]:\f[R] UP
@@ -137,7 +137,7 @@ The default is to scale each display by DPI,
 .PP
 When disabled a scale 1 will always be used, unless a \f[B]\f[CB]SCALE\f[B]\f[R] has been specified.
 .PP
-e.g.\ always disable
+e.g.\ don\(cqt auto scale
 .IP
 .EX
 AUTO_SCALE\f[B]:\f[R] false
@@ -155,7 +155,7 @@ AUTO_SCALE_DPI\f[B]:\f[R] 72
 .SH \f[B]\f[CB]AUTO_SCALE_MIN\f[B]\f[R]
 Number, default \f[B]\f[CB]1.0\f[B]\f[R]
 .PP
-Set minimum value for auto scaling.
+Set minimum scale when auto scaling.
 .PP
 e.g.\ allow sub\-pixel scaling
 .IP
@@ -165,14 +165,24 @@ AUTO_SCALE_MIN\f[B]:\f[R] 0.5
 .SH \f[B]\f[CB]AUTO_SCALE_MAX\f[B]\f[R]
 Number, default \f[B]\f[CB]\-1.0\f[B]\f[R]
 .PP
-Set maximum value for auto scaling, default indicates no maximum.
+Set maximum scale when auto scaling, default indicates no maximum.
 .PP
 Ignored if below \f[B]\f[CB]AUTO_SCALE_MIN\f[B]\f[R]
 .PP
-e.g.\ cap your scales at double
+e.g.\ cap your scales to double
 .IP
 .EX
 AUTO_SCALE_MAX\f[B]:\f[R] 2.0
+.EE
+.SH \f[B]\f[CB]SCALE\f[B]\f[R]
+Map <\f[I]name\f[R]>: Number
+.PP
+Auto scale may be overridden with custom scales for each display e.g.
+.IP
+.EX
+SCALE\f[B]:\f[R]
+    \f[B]\-\f[R] NAME_DESC\f[B]:\f[R] \(aqMonitor Maker ABC123\(aq
+      SCALE\f[B]:\f[R] 1.75
 .EE
 .SH SEE ALSO
 \f[B]\f[CB]way\-displays\f[B]\f[R](1)
