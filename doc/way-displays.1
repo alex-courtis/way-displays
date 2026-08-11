@@ -124,12 +124,12 @@ way\-displays > /tmp/way\-displays.${XDG_VTNR}.${USER}.log 2>&1 \f[B]&\f[R]
 .PP
 Restart the compositor and run \f[B]\f[CB]way\-displays \-g\f[B]\f[R] or look at \f[B]\f[CB]/tmp/way\-displays.${XDG_VTNR}.${USER}.log\f[B]\f[R]
 .PP
+\f[B]\f[CB]way\-displays\f[B]\f[R] will communicate verbosely via the logs \- you might want to \f[B]\f[CB]tail \-f /tmp/way\-displays.${XDG_VTNR}.${USER}.log\f[B]\f[R] whilst you are tweaking.
+.PP
 Tweak \f[B]\f[CB]cfg.yaml\f[B]\f[R] to your liking and save it, see \f[B]\f[CB]man 5 way\-displays\f[B]\f[R].
 Changes will be immediately applied.
 .PP
 Alternatively, use the CLI to make your changes then persist them with \f[CR]way\-displays \-w\f[R].
-.PP
-You might want to \f[B]\f[CB]tail \-f /tmp/way\-displays.${XDG_VTNR}.${USER}.log\f[B]\f[R] whilst you are tweaking.
 .SH OPTIONS
 .TP
 \f[B]\f[CB]\-L\f[B]\f[R], \f[B]\f[CB]\-\-l[og\-threshold]\f[B]\f[R] <\f[B]debug\f[R]|\f[B]info\f[R]|\f[B]warning\f[R]|\f[B]error\f[R]|\f[B]fatal\f[R]>

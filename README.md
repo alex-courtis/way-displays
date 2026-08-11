@@ -88,11 +88,11 @@ mako > "/tmp/mako.${XDG_VTNR}.${USER}.log" 2>&1 &
 
 Restart the compositor and run `way-displays -g` or look at `/tmp/way-displays.${XDG_VTNR}.${USER}.log`
 
-Tweak `cfg.yaml` to your liking and save it, see [`man 5 way-displays`](doc/way-displays.5.md). Changes will be immediately applied.
+`way-displays` will communicate verbosely via the logs - you might want to `tail -f /tmp/way-displays.${XDG_VTNR}.${USER}.log` whilst you are tweaking.
+
+Tweak [`cfg.yaml`](examples/cfg.yaml) to your liking and save it, see [`man 5 way-displays`](doc/way-displays.5.md). Changes will be immediately applied.
 
 Alternatively, use the CLI to make your changes then persist them with `way-displays -w`, see [`man way-displays`](doc/way-displays.1.md)
-
-You might want to `tail -f /tmp/way-displays.${XDG_VTNR}.${USER}.log` whilst you are tweaking.
 
 ## Installation
 
