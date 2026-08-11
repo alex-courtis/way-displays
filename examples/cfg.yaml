@@ -32,9 +32,9 @@ ALIGN: TOP
 ## The default ORDER is simply the order in which the displays are discovered. This is nondeterministic.
 ## You are encouraged to explicitly define your order.
 ORDER:
-# - '!^DP-1'
-# - 'Monitor Maker ABC123'
-# - 'HDMI-1'
+- '!^DP-1'
+- 'Monitor Maker ABC123'
+- 'HDMI-1'
 
 
 ## Enable scaling, overrides AUTO_SCALE and SCALE

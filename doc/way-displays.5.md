@@ -1,0 +1,97 @@
+# NAME
+
+way-displays - **`cfg.yaml`** configuration file format.
+
+# SYNTAX
+
+way-displays’ configuration file uses the YAML syntax with the schema:
+
+    https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/docs-man-5/schema/cfg-2.0.0.yaml
+
+# LOCATION
+
+Configuration is read from **`cfg.yaml`**, discovered in order:
+
+    $XDG_CONFIG_HOME/way-displays/cfg.yaml
+    $HOME/.config/way-displays/cfg.yaml
+    /usr/local/etc/way-displays/cfg.yaml
+    /etc/way-displays/cfg.yaml
+
+A default configuration file will be created if none is found.
+
+# NAMING
+
+Displays are matched by name or description with precedence: exact, regex, fuzzy
+
+You can identify them via logs e.g.
+
+    DP-3 Arrived:
+        name:     'DP-3'
+        desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
+
+It is recommended to use the description rather than the nondeterministic name.
+
+Any item prefixed with a ! will be interpreted as extended POSIX regex e.g. ‘!^DP-1’. Regex strings must be single quoted.
+
+Using a regex is preferred, however fuzzy case insensitive string matches of at least 3 characters may be used.
+
+`DP-1` will match eDP-1 and DP-1. Consider using regex `'!^DP-1$'` to exactly match.
+
+# ARRANGE and ALIGN
+
+The default is to arrange in a row, aligned at the top of the displays.
+
+**`ARRANGE`**  
+enum \<**`ROW`**\|**`COLUMN`**\>, default **`ROW`**
+
+**`ALIGN`**  
+enum \<**`TOP`**\|**`MIDDLE`**\|**`BOTTOM`**\|**`LEFT`**\|**`RIGHT`**\>, default **`TOP`**
+
+**`ALIGN`** (ROW)  
+\<**`TOP`**\|**`MIDDLE`**\|**`BOTTOM`**\>
+
+**`ALIGN`** (COLUMN)  
+\<**`LEFT`**\|**`MIDDLE`**\|**`RIGHT`**\>
+
+Layout to suit you e.g. top to bottom, aligned in the centre:
+
+``` yaml
+ARRANGE: COLUMN
+ALIGN: MIDDLE
+```
+
+# ORDER
+
+Array of *fuzzy_display_match*
+
+The default **`ORDER`** is simply the order in which the displays are discovered. This is nondeterministic.
+
+You are encouraged to explicitly define your order. e.g.
+
+``` yaml
+ORDER:
+  - '!^DP-1'
+  - 'Monitor Maker ABC123'
+  - 'HDMI-1'
+```
+
+Regexes are encouraged, allowing for one to easily create generic rules e.g. **`'!^DP-'`**, which will often be sufficient to put external monitors at the top of a column.
+
+Some displays may be ordered last, by using a “catchall” regex e.g.
+
+``` yaml
+ORDER:
+    - '!.*Monitor Maker ABC123.*$'
+    - '!.*$'
+    - 'DP-5'
+```
+
+Note that partial matches are not possible in this configuration, and the last displays must be exactly specified.
+
+# SEE ALSO
+
+**`way-displays`**(1)
+
+Home: https://github.com/alex-courtis/way-displays
+
+Configuration: https://github.com/alex-courtis/way-displays/wiki/Configuration
