@@ -56,13 +56,16 @@ $(PRO_C): $(PRO_X) $(PRO_H)
 #
 # deploy
 #
-install: way-displays doc/way-displays.1 examples/cfg.yaml
+install: way-displays doc/way-displays.1 doc/way-displays.5 examples/cfg.yaml
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f way-displays $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/way-displays
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
 	cp -f doc/way-displays.1 $(DESTDIR)$(PREFIX)/share/man/man1
 	chmod 644 $(DESTDIR)$(PREFIX)/share/man/man1/way-displays.1
+	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man5
+	cp -f doc/way-displays.5 $(DESTDIR)$(PREFIX)/share/man/man5
+	chmod 644 $(DESTDIR)$(PREFIX)/share/man/man5/way-displays.5
 	mkdir -p $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 	cp -f examples/cfg.yaml $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 	chmod 644 $(DESTDIR)$(PREFIX_ETC)/etc/way-displays/cfg.yaml
@@ -70,6 +73,7 @@ install: way-displays doc/way-displays.1 examples/cfg.yaml
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/way-displays
 	rm -f $(DESTDIR)$(PREFIX)/share/man/man1/way-displays.1
+	rm -f $(DESTDIR)$(PREFIX)/share/man/man5/way-displays.5
 	rm -rf $(DESTDIR)$(PREFIX_ETC)/etc/way-displays
 
 #
