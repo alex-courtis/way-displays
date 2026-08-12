@@ -38,7 +38,7 @@ Set CC when invoking make:
 
 `make test`
 
-[cmocka](https://cmocka.org/) is used for unit testing. Individual tests with `--wrap` definitions are defined in `tst/GNUmakefile`.
+[cmocka](https://cmocka.org/) is used for unit testing. Individual tests with `--wrap` definitions are defined in `tst/test.mk`.
 
 Please add tests when defining new functionality.
 
