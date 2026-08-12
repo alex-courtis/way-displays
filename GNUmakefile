@@ -81,13 +81,10 @@ uninstall:
 #
 man: man1 man5
 
-man1: doc/way-displays.1.pandoc
-	pandoc -s -M "date=`date +%Y/%m/%d`" --wrap=none -f markdown -t man            -o $(^:.pandoc= )    $(^)
-	pandoc -s -M "author="               --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) $(^)
-
-man5: doc/way-displays.5.pandoc
-	pandoc -s -M "date=`date +%Y/%m/%d`" --wrap=none -f markdown -t man            -o $(^:.pandoc= )    $(^)
-	pandoc -s -M "date=`date +%Y/%m/%d`"               --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) $(^)
+PD_META="date=`date +%Y/%m/%d`"
+man%: doc/way-displays.%.pandoc
+	pandoc -s -M $(PD_META) --wrap=none -f markdown -t man            -o $(^:.pandoc= )    $(^)
+	pandoc -s -M $(PD_META) --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) $(^)
 
 #
 # iwyu
@@ -137,4 +134,4 @@ examples/%: examples/%.o $(filter-out src/main.o,$(SRC_O)) $(PRO_O) $(LIB_O)
 
 .PHONY: all clean install uninstall man cppcheck iwyu
 
-.NOTPARALLEL: iwyu test test-vg man
+.NOTPARALLEL: iwyu test test-vg

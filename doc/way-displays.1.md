@@ -1,4 +1,7 @@
 ---
+author:
+- Alexander Courtis
+date: 2026/08/12
 title: WAY-DISPLAYS(1) way-displays \| General Commands Manual
 ---
 
