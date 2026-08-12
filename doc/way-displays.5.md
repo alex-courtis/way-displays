@@ -1,3 +1,10 @@
+---
+author:
+- Alexander Courtis
+date: 2026/08/12
+title: WAY-DISPLAYS(5) way-displays \| File Formats Manual
+---
+
 - [NAME](#name)
 - [SYNTAX](#syntax)
 - [LOCATION](#location)
@@ -24,7 +31,7 @@ way-displays - **`cfg.yaml`** configuration file format.
 
 way-displays’ configuration file uses the YAML syntax with the schema:
 
-    https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/docs-man-5/schema/cfg-2.0.0.yaml
+    https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml
 
 # LOCATION
 
@@ -108,7 +115,7 @@ Note that partial matches are not possible in this configuration, and the last d
 
 # **`SCALING*`**
 
-Control all scaling, including custom [SCALE](https://github.com/alex-courtis/way-displays/wiki/Configuration#scale)
+Control all scaling, including custom **`SCALE`**
 
 0.125 (1/8) is the minimum scaling granularity, see [FAQ: On Scale And Blurring](https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring)
 
@@ -383,4 +390,4 @@ DISABLED:
 
 # SEE ALSO
 
-**`way-displays`**(1)
+[**`way-displays`**(1)](/doc/way-displays.1.md)

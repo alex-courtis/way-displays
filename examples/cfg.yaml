@@ -1,9 +1,8 @@
 # $schema: https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml
+# man 5 way-displays
 
 ## Default cfg.yaml for way-displays.
 ## Copy this to ~/.config/way-displays/cfg.yaml and edit it to your liking.
-
-## See https://github.com/alex-courtis/way-displays/wiki/Configuration
 
 
 ## Arrange displays in a ROW (default, left to right) or a COLUMN (top to bottom)

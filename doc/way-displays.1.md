@@ -1,3 +1,10 @@
+---
+author:
+- Alexander Courtis
+date: 2026/08/12
+title: WAY-DISPLAYS(1) way-displays \| General Commands Manual
+---
+
 - [NAME](#name)
 - [SYNOPSIS](#synopsis)
 - [DESCRIPTION](#description)
@@ -61,7 +68,7 @@ The file may be specified via the **`--config`** option.
 
 **`cfg.yaml`** will be monitored for changes, which will be immediately applied. See:
 
-1.  **`man 5 way-displays`**
+1.  [**`man 5 way-displays`**](/doc/way-displays.5.md)
 
 2.  Default **`cfg.yaml`**
 
@@ -120,7 +127,7 @@ Restart the compositor and run **`way-displays -g`** or look at **`/tmp/way-disp
 
 **`way-displays`** will communicate verbosely via the logs - you might want to **`tail -f /tmp/way-displays.${XDG_VTNR}.${USER}.log`** whilst you are tweaking.
 
-Tweak **`cfg.yaml`** to your liking and save it, see **`man 5 way-displays`**. Changes will be immediately applied.
+Tweak [**`cfg.yaml`**](/examples/cfg.yaml) to your liking and save it, see [**`man 5 way-displays`**](/doc/way-displays.5.md). Changes will be immediately applied.
 
 Alternatively, use the CLI to make your changes then persist them with **`way-displays -w`**
 
@@ -295,7 +302,7 @@ Persist your changes to your **`cfg.yaml`**:
 
 # SEE ALSO
 
-**`way-displays`**(5)
+[**`way-displays`**(5)](/doc/way-displays.5.md)
 
 Home: https://github.com/alex-courtis/way-displays
 
