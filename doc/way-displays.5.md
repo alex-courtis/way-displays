@@ -390,4 +390,4 @@ DISABLED:
 
 # SEE ALSO
 
-**`way-displays`**(1)
+[**`way-displays`**(1)](/doc/way-displays.1.md)
