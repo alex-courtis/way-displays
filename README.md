@@ -24,8 +24,6 @@ Communicates verbosely via logs/stdout and notifications.
 
 Wayland successor to [xlayoutdisplay](https://github.com/alex-courtis/xlayoutdisplay), inspired by [kanshi](https://sr.ht/~emersion/kanshi/).
 
-See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/Configuration), [Recipes](https://github.com/alex-courtis/way-displays/wiki/Recipes), [Troubleshooting](https://github.com/alex-courtis/way-displays/wiki/Troubleshooting) and more.
-
 ## Requirements
 
 <!-- copied from doc/way-displays.1.md -->
@@ -49,6 +47,8 @@ User should be a member of the **`input`** UNIX group for querying laptop lid st
 [wiki: Recipes](https://github.com/alex-courtis/way-displays/wiki/Recipes)
 
 [wiki: IPC](https://github.com/alex-courtis/way-displays/wiki/IPC)
+
+[wiki: Troubleshooting](https://github.com/alex-courtis/way-displays/wiki/Troubleshooting)
 
 ## Quick Start
 

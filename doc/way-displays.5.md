@@ -115,7 +115,7 @@ Note that partial matches are not possible in this configuration, and the last d
 
 # **`SCALING*`**
 
-Control all scaling, including custom [SCALE](https://github.com/alex-courtis/way-displays/wiki/Configuration#scale)
+Control all scaling, including custom **`SCALE`**
 
 0.125 (1/8) is the minimum scaling granularity, see [FAQ: On Scale And Blurring](https://github.com/alex-courtis/way-displays/wiki/FAQ#on-scale-and-blurring)
 
