@@ -24,7 +24,7 @@ way-displays - **`cfg.yaml`** configuration file format.
 
 way-displays’ configuration file uses the YAML syntax with the schema:
 
-    https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/docs-man-5/schema/cfg-2.0.0.yaml
+    https://raw.githubusercontent.com/alex-courtis/way-displays/refs/heads/master/schema/cfg-2.0.0.yaml
 
 # LOCATION
 
