@@ -1,4 +1,7 @@
 ---
+author:
+- Alexander Courtis
+date: 2026/08/12
 title: WAY-DISPLAYS(5) way-displays \| File Formats Manual
 ---
 

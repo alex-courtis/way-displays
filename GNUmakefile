@@ -87,7 +87,7 @@ man1: doc/way-displays.1.pandoc
 
 man5: doc/way-displays.5.pandoc
 	pandoc -s -M "date=`date +%Y/%m/%d`" --wrap=none -f markdown -t man            -o $(^:.pandoc= )    $(^)
-	pandoc -s -M "author="               --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) $(^)
+	pandoc -s -M "date=`date +%Y/%m/%d`"               --wrap=none -f markdown -t gfm --toc=true -o $(^:.pandoc=.md ) $(^)
 
 #
 # iwyu
