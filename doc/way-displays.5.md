@@ -1,3 +1,7 @@
+---
+title: WAY-DISPLAYS(5) way-displays \| File Formats Manual
+---
+
 - [NAME](#name)
 - [SYNTAX](#syntax)
 - [LOCATION](#location)

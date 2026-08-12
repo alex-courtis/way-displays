@@ -1,3 +1,7 @@
+---
+title: WAY-DISPLAYS(1) way-displays \| General Commands Manual
+---
+
 - [NAME](#name)
 - [SYNOPSIS](#synopsis)
 - [DESCRIPTION](#description)
