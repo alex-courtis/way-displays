@@ -243,7 +243,7 @@ void cfg_migrate_v1(const struct Cfg *cfg, const char *v1_laptop_display_prefix)
 }
 
 bool g_cfg_process_ipc_request(const struct IpcRequest *ipc_request) {
-	bool done = false;
+	bool done = true;
 
 	switch (ipc_request->command) {
 		case CFG_DEL:
