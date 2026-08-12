@@ -28,6 +28,7 @@ See wiki for [Configuration](https://github.com/alex-courtis/way-displays/wiki/C
 
 ## Requirements
 
+<!-- copied from doc/way-displays.1.md -->
 A wlroots based compositor that supports the WLR Output Management protocol version 4+.
 
 way-displays is blessed for the [sway](https://swaywm.org/), [river](https://codeberg.org/river/river) and [river-classic](https://codeberg.org/river/river-classic) compositors. It may work on others; please tell me of your experiences!
@@ -36,7 +37,8 @@ way-displays is blessed for the [sway](https://swaywm.org/), [river](https://cod
 
 way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 
-User should be a member of the `input` group for querying laptop lid state.
+User should be a member of the **`input`** UNIX group for querying laptop lid state.
+<!-- end copy -->
 
 ## Documentation
 
@@ -50,49 +52,40 @@ User should be a member of the `input` group for querying laptop lid state.
 
 ## Quick Start
 
+<!-- copied from doc/way-displays.1.md -->
 Start the way-displays server:
 
-### Sway
-
+**Sway**  
 Remove any `output` commands from your sway config file and add the following:
-```
+
+``` sh
 exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 ```
 
-### River
+**River**  
+Add the following to your [River Window Manager](https://codeberg.org/river/wiki/src/branch/main/pages/wm-list.md)’s init script or similar:
 
-Add the following to your [River Window Manager](https://codeberg.org/river/wiki/src/branch/main/pages/wm-list.md)'s init script or similar:
-```sh
+``` sh
 exec way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1
 ```
 
-### River Classic
-
+**River Classic**  
 Add the following to your `${XDG_CONFIG_HOME}/river/init`:
-```sh
+
+``` sh
 way-displays > /tmp/way-displays.${XDG_VTNR}.${USER}.log 2>&1 &
 ```
 
-### Mako Notification Daemon, Optional
+**Configure**
 
-`way-displays` will send notifications by default:
+Restart the compositor and run **`way-displays -g`** or look at **`/tmp/way-displays.${XDG_VTNR}.${USER}.log`**
 
-`CALLBACK_CMD: notify-send "way-displays ${CALLBACK_LEVEL}" "${CALLBACK_MSG}"`
+**`way-displays`** will communicate verbosely via the logs - you might want to **`tail -f /tmp/way-displays.${XDG_VTNR}.${USER}.log`** whilst you are tweaking.
 
-Add the following the above config/init:
-```sh
-mako > "/tmp/mako.${XDG_VTNR}.${USER}.log" 2>&1 &
-```
+Tweak **`cfg.yaml`** to your liking and save it, see [**`man 5 way-displays`**](doc/way-displays.5.md). Changes will be immediately applied.
 
-### Configure
-
-Restart the compositor and run `way-displays -g` or look at `/tmp/way-displays.${XDG_VTNR}.${USER}.log`
-
-`way-displays` will communicate verbosely via the logs - you might want to `tail -f /tmp/way-displays.${XDG_VTNR}.${USER}.log` whilst you are tweaking.
-
-Tweak [`cfg.yaml`](examples/cfg.yaml) to your liking and save it, see [`man 5 way-displays`](doc/way-displays.5.md). Changes will be immediately applied.
-
-Alternatively, use the CLI to make your changes then persist them with `way-displays -w`, see [`man way-displays`](doc/way-displays.1.md)
+Alternatively, use the CLI to make your changes then persist them with **`way-displays -w`**
+<!-- end copy -->
 
 ## Installation
 
