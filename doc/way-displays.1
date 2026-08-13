@@ -4,13 +4,23 @@
 .SH NAME
 way\-displays \- Auto Manage Your Wayland Displays
 .SH SYNOPSIS
-\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-h\f[B]\f[R]|\f[B]\f[CB]\-v\f[B]\f[R]]
+\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-\-help\f[B]\f[R]|\f[B]\f[CB]\-\-version\f[B]\f[R]]
+.TP
+\f[B]Server:\f[R]
+\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[I]OPTIONS\f[R]] [\f[B]\f[CB]\-\-config\f[B]\f[R] \f[I]path\f[R]]
+.TP
+\f[B]Client:\f[R]
+\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[I]OPTIONS\f[R]] <\f[B]\f[CB]\-\-get\f[B]\f[R]|\f[B]\f[CB]\-\-list\f[B]\f[R]>
+.RS
 .PP
-Server: \f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-L\f[B]\f[R] \f[I]level\f[R]] [\f[B]\f[CB]\-c\f[B]\f[R] \f[I]path\f[R]]
+\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[I]OPTIONS\f[R]] \f[B]\f[CB]\-\-set\f[B]\f[R] <\f[I]SET OPTIONS\f[R]>
 .PP
-Client Query: \f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-L\f[B]\f[R] \f[I]level\f[R]] [\f[B]\f[CB]\-y\f[B]\f[R]] <\f[B]\f[CB]\-g\f[B]\f[R]|\f[B]\f[CB]\-l\f[B]\f[R]>
+\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[I]OPTIONS\f[R]] \f[B]\f[CB]\-\-toggle\f[B]\f[R] <\f[I]TOGGLE OPTIONS\f[R]>
 .PP
-Client Update: \f[B]\f[CB]way\-displays\f[B]\f[R] [\f[B]\f[CB]\-L\f[B]\f[R] \f[I]level\f[R]] [\f[B]\f[CB]\-y\f[B]\f[R]] <\f[B]\f[CB]\-s\f[B]\f[R]|\f[B]\f[CB]\-d\f[B]\f[R]|\f[B]\f[CB]\-t\f[B]\f[R]|\f[B]\f[CB]\-w\f[B]\f[R]|\f[B]\f[CB]\-r\f[B]\f[R]> [\f[I]command options\f[R]]
+\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[I]OPTIONS\f[R]] \f[B]\f[CB]\-\-delete\f[B]\f[R] <\f[I]DELETE OPTIONS\f[R]>
+.PP
+\f[B]\f[CB]way\-displays\f[B]\f[R] [\f[I]OPTIONS\f[R]] <\f[B]\f[CB]\-\-write\f[B]\f[R]|\f[B]\f[CB]\-\-reapply\f[B]\f[R]>
+.RE
 .SH DESCRIPTION
 .IP "1." 3
 Set resolution/refresh: preferred, highest or custom
@@ -28,40 +38,6 @@ Update when laptop lid closed/opened
 Works out of the box: no configuration required.
 .PP
 Communicates verbosely via logs/stdout and notifications.
-.SS Server
-Server is run when no commands are specified.
-.PP
-Background process that performs the management.
-Configuration is read from \f[B]\f[CB]cfg.yaml\f[B]\f[R], discovered in order:
-.IP
-.EX
-$XDG_CONFIG_HOME/way\-displays/cfg.yaml
-$HOME/.config/way\-displays/cfg.yaml
-/usr/local/etc/way\-displays/cfg.yaml
-/etc/way\-displays/cfg.yaml
-.EE
-.PP
-The file may be specified via the \f[B]\f[CB]\-\-config\f[B]\f[R] option.
-.PP
-\f[B]\f[CB]cfg.yaml\f[B]\f[R] will be monitored for changes, which will be immediately applied.
-See:
-.IP "1." 3
-\f[B]\f[CB]man 5 way\-displays\f[B]\f[R]
-.IP "2." 3
-Default \f[B]\f[CB]cfg.yaml\f[B]\f[R]
-.RS 4
-.PP
-\f[CR]/etc/way\-displays/cfg.yaml\f[R]
-.PP
-https://raw.githubusercontent.com/alex\-courtis/way\-displays/refs/heads/master/examples/cfg.yaml
-.RE
-.PP
-Server responds to IPC requests: https://github.com/alex\-courtis/way\-displays/wiki/IPC which is the protocol used by the CLI.
-.SS Client
-Manages the server.
-The active configuration and display state may be inspected, and the configuration modified.
-.PP
-The active configuration can be written to disk via the \f[B]\f[CB]\-\-write\f[B]\f[R] command, however any comments and formatting will be lost.
 .SH REQUIREMENTS
 A wlroots based compositor that supports the WLR Output Management protocol version 4+.
 .PP
@@ -92,6 +68,40 @@ way\-displays must be run as a daemon, a background server process.
 It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
 .PP
 User should be a member of the \f[B]\f[CB]input\f[B]\f[R] UNIX group for querying laptop lid state.
+.SH SERVER
+Server is run when no commands are specified.
+.PP
+Background process that performs the management.
+Configuration is read from \f[B]\f[CB]cfg.yaml\f[B]\f[R], discovered in order:
+.IP
+.EX
+$XDG_CONFIG_HOME/way\-displays/cfg.yaml
+$HOME/.config/way\-displays/cfg.yaml
+/usr/local/etc/way\-displays/cfg.yaml
+/etc/way\-displays/cfg.yaml
+.EE
+.PP
+The file may be specified via the \f[B]\f[CB]\-\-config\f[B]\f[R] option.
+.PP
+\f[B]\f[CB]cfg.yaml\f[B]\f[R] will be monitored for changes, which will be immediately applied.
+See:
+.IP "1." 3
+\f[B]\f[CB]man 5 way\-displays\f[B]\f[R]
+.IP "2." 3
+Default \f[B]\f[CB]cfg.yaml\f[B]\f[R]
+.RS 4
+.PP
+\f[CR]/etc/way\-displays/cfg.yaml\f[R]
+.PP
+https://raw.githubusercontent.com/alex\-courtis/way\-displays/refs/heads/master/examples/cfg.yaml
+.RE
+.PP
+Server responds to IPC requests: https://github.com/alex\-courtis/way\-displays/wiki/IPC which is the protocol used by the CLI.
+.SH CLIENT
+Manages the server.
+The active configuration and display state may be inspected, and the configuration modified.
+.PP
+The active configuration can be written to disk via the \f[B]\f[CB]\-\-write\f[B]\f[R] command, however any comments and formatting will be lost.
 .SH QUICK START
 Start the way\-displays server:
 .TP
@@ -130,13 +140,33 @@ Tweak \f[B]\f[CB]cfg.yaml\f[B]\f[R] to your liking and save it, see \f[B]\f[CB]m
 Changes will be immediately applied.
 .PP
 Alternatively, use the CLI to make your changes then persist them with \f[B]\f[CB]way\-displays \-w\f[B]\f[R]
+.SH NAMING CONVENTIONS
+<\f[I]name\f[R]> is matched by display name or description with precedence: exact, regex, fuzzy
+.PP
+You can identify them via logs or \f[B]\f[CB]way\-displays \-\-get\f[B]\f[R] or \f[B]\f[CB]way\-displays \-\-list\f[B]\f[R] e.g.
+.IP
+.EX
+DP\-3 Arrived:
+    name:     \(aqDP\-3\(aq
+    desc:     \(aqUnknown Monitor Maker ABC123 (DP\-3 via HDMI)\(aq
+.EE
+.PP
+It is recommended to use the description rather than the nondeterministic name.
+.PP
+Any item prefixed with a \f[B]\f[CB]!\f[B]\f[R] will be interpreted as extended POSIX regex e.g.\ \f[B]\f[CB]\(aq!\(haDP\-1\(aq\f[B]\f[R].
+Regex strings must be single quoted.
+.PP
+Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
+.PP
+\f[CR]\(aqDP\-1\(aq\f[R] will match \f[CR]eDP\-1\f[R] and \f[CR]DP\-1\f[R].
+Consider using regex \f[CR]\(aq!\(haDP\-1$\(aq\f[R] to exactly match.
 .SH OPTIONS
 .TP
 \f[B]\f[CB]\-L\f[B]\f[R], \f[B]\f[CB]\-\-l[og\-threshold]\f[B]\f[R] <\f[B]debug\f[R]|\f[B]info\f[R]|\f[B]warning\f[R]|\f[B]error\f[R]|\f[B]fatal\f[R]>
 Overrides \f[B]\f[CB]cfg.yaml\f[B]\f[R], default \f[B]\f[CB]info\f[B]\f[R].
 .TP
 \f[B]\f[CB]\-c\f[B]\f[R], \f[B]\f[CB]\-\-c[onfig]\f[B]\f[R] <\f[I]path\f[R]>
-Configuration file, falls back to defaults if not found.
+Server configuration file, falls back to defaults if not found.
 .TP
 \f[B]\f[CB]\-y\f[B]\f[R], \f[B]\f[CB]\-\-y[aml]\f[B]\f[R]
 Print client output as raw YAML
@@ -174,7 +204,7 @@ Toggle a setting.
 \f[B]\f[CB]ARRANGE_ALIGN\f[B]\f[R] <\f[B]\f[CB]row\f[B]\f[R]|\f[B]\f[CB]column\f[B]\f[R]> <\f[B]\f[CB]top\f[B]\f[R]|\f[B]\f[CB]middle\f[B]\f[R]|\f[B]\f[CB]bottom\f[B]\f[R]|\f[B]\f[CB]left\f[B]\f[R]|\f[B]\f[CB]right\f[B]\f[R]>
 Set vertical arrangement and the alignment.
 .TP
-\f[B]\f[CB]ORDER\f[B]\f[R] <\f[I]name\f[R]|\f[B]\f[CB]!\f[B]\f[R] \f[I]regex\f[R]> \&...
+\f[B]\f[CB]ORDER\f[B]\f[R] <\f[I]name\f[R]>...
 Set the order of arrangement.
 Replaces previous order.
 .TP
@@ -246,74 +276,6 @@ Toggle VRR for a display.
 .TP
 \f[B]\f[CB]DISABLED\f[B]\f[R] <\f[I]name\f[R]>
 Toggle a display.
-.SH NAME
-<\f[I]name\f[R]> is matched by display name or description with precedence: exact, regex, fuzzy
-.PP
-You can identify them via logs or \f[B]\f[CB]way\-displays \-\-get\f[B]\f[R] or \f[B]\f[CB]way\-displays \-\-list\f[B]\f[R] e.g.
-.IP
-.EX
-DP\-3 Arrived:
-    name:     \(aqDP\-3\(aq
-    desc:     \(aqUnknown Monitor Maker ABC123 (DP\-3 via HDMI)\(aq
-.EE
-.PP
-It is recommended to use the description rather than the nondeterministic name.
-.PP
-Any item prefixed with a \f[B]\f[CB]!\f[B]\f[R] will be interpreted as extended POSIX regex e.g.\ \f[B]\f[CB]\(aq!\(haDP\-1\(aq\f[B]\f[R].
-Regex strings must be single quoted.
-.PP
-Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
-.PP
-\f[CR]\(aqDP\-1\(aq\f[R] will match \f[CR]eDP\-1\f[R] and \f[CR]DP\-1\f[R].
-Consider using regex \f[CR]\(aq!\(haDP\-1$\(aq\f[R] to exactly match.
-.SH EXAMPLES
-Add to your sway config to start way\-displays when sway starts:
-.IP
-.EX
-exec way\-displays > /tmp/way\-displays.\(rs${XDG_VTNR}.\(rs${USER}.log 2>&1
-.EE
-.PP
-Show current configuration and display state:
-.IP
-.EX
-way\-displays \-g
-.EE
-.PP
-List the connected displays:
-.IP
-.EX
-way\-displays \-l
-.EE
-.PP
-Arrange left to right, aligned at the bottom:
-.IP
-.EX
-way\-displays \-s ARRANGE_ALIGN row bottom
-.EE
-.PP
-Set the order for arrangement:
-.IP
-.EX
-way\-displays \-s ORDER \(rs\(dq!\(haDP\-[0\-9]+$\(rs\(dq HDMI\-1 \(rs\(dqmonitor maker ABC model XYZ\(rs\(dq eDP\-1
-.EE
-.PP
-Set the scale:
-.IP
-.EX
-way\-displays \-s SCALE \(rs\(dqeDP\-1\(rs\(dq 3
-.EE
-.PP
-Use 3840x2160\(at24Hz for HDMI\-A\-1:
-.IP
-.EX
-way\-displays \-s MODE HDMI\-A\-1 3840 2160 24
-.EE
-.PP
-Persist your changes to your \f[B]\f[CB]cfg.yaml\f[B]\f[R]:
-.IP
-.EX
-way\-displays \-w
-.EE
 .SH SEE ALSO
 \f[B]\f[CB]way\-displays\f[B]\f[R](5)
 .PP
