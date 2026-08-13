@@ -101,7 +101,6 @@ void cli_parse(int argc, char **argv, struct IpcRequest **ipc_request, char **cf
 				wd_exit(EXIT_SUCCESS);
 				break;
 			case 'y':
-				threshold = WARNING;
 				yaml = true;
 				break;
 			case 'l':
