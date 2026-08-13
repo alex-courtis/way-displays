@@ -384,7 +384,7 @@ struct Cfg *cfg_merge_del(struct Cfg *to, const struct Cfg *from) {
 	// any string means no callback
 	if (from->callback_cmd) {
 		free(merged->callback_cmd);
-		merged->callback_cmd = NULL;
+		merged->callback_cmd = strdup("");
 	}
 
 	return merged;

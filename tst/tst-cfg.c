@@ -677,7 +677,7 @@ static void cfg_merge_del__all_deletes(void **state) {
 	simap_remove_all(expected->transforms);
 	sset_remove_all(expected->adaptive_sync_off);
 	free(expected->callback_cmd);
-	expected->callback_cmd = NULL;
+	expected->callback_cmd = strdup("");
 
 	struct Cfg *merged = cfg_merge_del(to, from);
 
@@ -819,7 +819,7 @@ static void cfg_merge_del__callback_cmd_any(void **state) {
 	s->from->callback_cmd = strdup("");
 
 	free(s->expected->callback_cmd);
-	s->expected->callback_cmd = NULL;
+	s->expected->callback_cmd = strdup("");
 
 	struct Cfg *merged = cfg_merge_del(s->to, s->from);
 
