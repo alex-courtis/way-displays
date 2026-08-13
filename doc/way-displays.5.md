@@ -46,6 +46,8 @@ A default configuration file will be created if none is found.
 
 # NAMING CONVENTIONS
 
+<!-- copied from doc/way-displays.1.pandoc -->
+
 \<*name*\> is matched by display name or description with precedence: exact, regex, fuzzy
 
 You can identify them via logs or **`way-displays --get`** or **`way-displays --list`** e.g.
@@ -61,6 +63,8 @@ Any item prefixed with a **`!`** will be interpreted as extended POSIX regex e.g
 Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
 
 `'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
+
+<!-- end copy-->
 
 # **`ARRANGE, ALIGN`**
 

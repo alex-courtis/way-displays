@@ -23,6 +23,7 @@ Configuration is read from **`cfg.yaml`**, discovered in order:
 A default configuration file will be created if none is found.
 
 # NAMING CONVENTIONS
+<!-- copied from doc/way-displays.1.pandoc -->
 
 <*name*> is matched by display name or description with precedence: exact, regex, fuzzy
 
@@ -40,6 +41,7 @@ Using a regex is preferred, however fuzzy case insensitive string matches of at 
 
 `'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
 
+<!-- end copy-->
 # **`ARRANGE, ALIGN`**
 
 The default is to arrange in a row, aligned at the top of the displays.

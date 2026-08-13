@@ -7,13 +7,23 @@ way-displays - Auto Manage Your Wayland Displays
 
 # SYNOPSIS
 
-**`way-displays`** [**`-h`**|**`-v`**]
+**`way-displays`** [**`--help`**|**`--version`**]
 
-Server: **`way-displays`** [**`-L`** *level*] [**`-c`** *path*]
+**Server:**
 
-Client Query: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-g`**|**`-l`**>
+: **`way-displays`** [*OPTIONS*] [**`--config`** *path*]
 
-Client Update: **`way-displays`** [**`-L`** *level*] [**`-y`**] <**`-s`**|**`-d`**|**`-t`**|**`-w`**|**`-r`**> [*command options*]
+**Client:**
+
+: **`way-displays`** [*OPTIONS*] <**`--get`**|**`--list`**>
+
+: **`way-displays`** [*OPTIONS*] **`--set`** <*SET OPTIONS*>
+
+: **`way-displays`** [*OPTIONS*] **`--toggle`** <*TOGGLE OPTIONS*>
+
+: **`way-displays`** [*OPTIONS*] **`--delete`** <*DELETE OPTIONS*>
+
+: **`way-displays`** [*OPTIONS*] <**`--write`**|**`--reapply`**>
 
 # DESCRIPTION
 
@@ -33,7 +43,19 @@ Works out of the box: no configuration required.
 
 Communicates verbosely via logs/stdout and notifications.
 
-## Server
+# REQUIREMENTS
+
+A wlroots based compositor that supports the WLR Output Management protocol version 4+.
+
+way-displays is blessed for the [sway](https://swaywm.org/), [river](https://codeberg.org/river/river) and [river-classic](https://codeberg.org/river/river-classic) compositors. It may work on others; please tell me of your experiences!
+
+[Hpyrland](https://hyprland.org/) already provides all the features of `way-displays`. It may function, however it is explicitly not supported and you will likely experience problems. Please do not raise issues.
+
+way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
+
+User should be a member of the **`input`** UNIX group for querying laptop lid state.
+
+# SERVER
 
 Server is run when no commands are specified.
 
@@ -58,23 +80,11 @@ The file may be specified via the **`--config`** option.
 
 Server responds to IPC requests: https://github.com/alex-courtis/way-displays/wiki/IPC which is the protocol used by the CLI.
 
-## Client
+# CLIENT
 
 Manages the server. The active configuration and display state may be inspected, and the configuration modified.
 
 The active configuration can be written to disk via the **`--write`** command, however any comments and formatting will be lost.
-
-# REQUIREMENTS
-
-A wlroots based compositor that supports the WLR Output Management protocol version 4+.
-
-way-displays is blessed for the [sway](https://swaywm.org/), [river](https://codeberg.org/river/river) and [river-classic](https://codeberg.org/river/river-classic) compositors. It may work on others; please tell me of your experiences!
-
-[Hpyrland](https://hyprland.org/) already provides all the features of `way-displays`. It may function, however it is explicitly not supported and you will likely experience problems. Please do not raise issues.
-
-way-displays must be run as a daemon, a background server process. It will respond to your configuration changes as well as state changes such as plugging in a monitor or closing the lid.
-
-User should be a member of the **`input`** UNIX group for querying laptop lid state.
 
 # QUICK START
 
@@ -113,13 +123,31 @@ Tweak [**`cfg.yaml`**](/examples/cfg.yaml) to your liking and save it, see [**`m
 
 Alternatively, use the CLI to make your changes then persist them with **`way-displays -w`**
 
+# NAMING CONVENTIONS
+
+<*name*> is matched by display name or description with precedence: exact, regex, fuzzy
+
+You can identify them via logs or **`way-displays --get`** or **`way-displays --list`** e.g.
+
+	DP-3 Arrived:
+	    name:     'DP-3'
+	    desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
+
+It is recommended to use the description rather than the nondeterministic name.
+
+Any item prefixed with a **`!`** will be interpreted as extended POSIX regex e.g. **`'!^DP-1'`**. Regex strings must be single quoted.
+
+Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
+
+`'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
+
 # OPTIONS
 
 **`-L`**, **`--l[og-threshold]`** <**debug**|**info**|**warning**|**error**|**fatal**>
 : Overrides **`cfg.yaml`**, default **`info`**.
 
 **`-c`**, **`--c[onfig]`** <*path*>
-: Configuration file, falls back to defaults if not found.
+: Server configuration file, falls back to defaults if not found.
 
 **`-y`**, **`--y[aml]`**
 : Print client output as raw YAML
@@ -158,7 +186,7 @@ Alternatively, use the CLI to make your changes then persist them with **`way-di
 **`ARRANGE_ALIGN`** <**`row`**|**`column`**> <**`top`**|**`middle`**|**`bottom`**|**`left`**|**`right`**>
 : Set vertical arrangement and the alignment.
 
-**`ORDER`** <*name*|**`!`** *regex*> ...
+**`ORDER`** <*name*>\.\.\.
 : Set the order of arrangement. Replaces previous order.
 
 **`SCALING`** <**`on`**|**`off`**>
@@ -225,58 +253,6 @@ Alternatively, use the CLI to make your changes then persist them with **`way-di
 
 **`DISABLED`** <*name*>
 : Toggle a display.
-
-# NAME
-
-<*name*> is matched by display name or description with precedence: exact, regex, fuzzy
-
-You can identify them via logs or **`way-displays --get`** or **`way-displays --list`** e.g.
-
-	DP-3 Arrived:
-	    name:     'DP-3'
-	    desc:     'Unknown Monitor Maker ABC123 (DP-3 via HDMI)'
-
-It is recommended to use the description rather than the nondeterministic name.
-
-Any item prefixed with a **`!`** will be interpreted as extended POSIX regex e.g. **`'!^DP-1'`**. Regex strings must be single quoted.
-
-Using a regex is preferred, however fuzzy case insensitive string matches of at least 4 characters may be used.
-
-`'DP-1'` will match `eDP-1` and `DP-1`. Consider using regex `'!^DP-1$'` to exactly match.
-
-# EXAMPLES
-
-Add to your sway config to start way-displays when sway starts:
-
-	exec way-displays > /tmp/way-displays.\${XDG_VTNR}.\${USER}.log 2>&1
-
-Show current configuration and display state:
-
-	way-displays -g
-
-List the connected displays:
-
-	way-displays -l
-
-Arrange left to right, aligned at the bottom:
-
-	way-displays -s ARRANGE_ALIGN row bottom
-
-Set the order for arrangement:
-
-	way-displays -s ORDER \"!^DP-[0-9]+$\" HDMI-1 \"monitor maker ABC model XYZ\" eDP-1
-
-Set the scale:
-
-	way-displays -s SCALE \"eDP-1\" 3
-
-Use 3840x2160@24Hz for HDMI-A-1:
-
-	way-displays -s MODE HDMI-A-1 3840 2160 24
-
-Persist your changes to your **`cfg.yaml`**:
-
-	way-displays -w
 
 # SEE ALSO
 
