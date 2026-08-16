@@ -2,6 +2,8 @@
 
 See [Version 2.0.0 Changes](https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes)
 
+Packagers: libyaml dependency replaces yaml-cpp
+
 # way-displays: Auto Manage Your Wayland Displays
 
 <img align="right" width="427" height="189" title="credit: Stephen Barratt" src="doc/layouts.png?raw=true">
