@@ -1,4 +1,4 @@
-# New Release 2026-09-17: 2.0.0
+# New Release 2026-08-17: 2.0.0
 
 See [Version 2.0.0 Changes](https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes)
 
