@@ -12,7 +12,6 @@ Please raise an [issue](https://github.com/alex-courtis/way-displays/issues), fo
 * gcc or clang
 * wayland
 * wayland-protocols
-* wlroots
 * libinput
 * libyaml
 
