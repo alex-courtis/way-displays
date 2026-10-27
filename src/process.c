@@ -47,14 +47,6 @@ void pid_file_create(void) {
 	char pid_path[PATH_MAX];
 	pid_path_generate(pid_path);
 
-	pid_t pid = pid_active_server(pid_path);
-	if (pid) {
-		log_fatal("another instance %d is running, exiting\n", pid);
-		cli_usage(stderr);
-		wd_exit(EXIT_FAILURE);
-		return;
-	}
-
 	// attempt to use existing, regardless of owner
 	int fd = open(pid_path, O_RDWR | O_CLOEXEC);
 	if (fd == -1 && errno != ENOENT) {
@@ -77,8 +69,20 @@ void pid_file_create(void) {
 		}
 	}
 
-	// lock it forever
+	// A stale PID may belong to an unrelated process, so only trust the lock.
 	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
+		int lock_errno = errno;
+		if (lock_errno == EWOULDBLOCK) {
+			pid_t pid = pid_active_server(pid_path);
+			if (pid) {
+				log_fatal("another instance %d is running, exiting\n", pid);
+				cli_usage(stderr);
+				wd_exit(EXIT_FAILURE);
+				return;
+			}
+		}
+
+		errno = lock_errno;
 		log_fatal(NULL);
 		log_fatal_errno("unable to lock pid file %s, exiting", pid_path);
 		wd_exit_message(EXIT_FAILURE);

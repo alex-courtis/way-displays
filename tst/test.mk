@@ -57,6 +57,9 @@ LDFLAGS += -Wl,$\
 #
 # test specific mocks
 #
+tst/tst-process: LDFLAGS += -Wl,$\
+	--wrap=flock,--wrap=exit,--wrap=cli_usage
+
 tst/tst-head: LDFLAGS += -Wl,$\
 	--wrap=mode_dpi,$\
 	--wrap=mode_best_satisfying,$\
