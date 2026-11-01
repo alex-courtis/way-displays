@@ -9,7 +9,7 @@
 
 #include <cmocka.h>
 #include <stdbool.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 #include "fn.h"
 #include "ppmap.h"
