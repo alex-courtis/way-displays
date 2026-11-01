@@ -1,3 +1,9 @@
+way-displays 2.0.1 2026-11-02
+-----------------------------
+fix: ignore stale pid files when starting the server
+fix(#228): add missing libgen.h include in src/yaml/unmarshal.c
+ci: include-what-you-use 0.26->0.27
+
 way-displays 2.0.0 2026-08-17
 -----------------------------
 See https://github.com/alex-courtis/way-displays/wiki/Version-2.0.0-Changes
