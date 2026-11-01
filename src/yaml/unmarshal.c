@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <yaml.h>
+#include <libgen.h>
 
 #include "yaml/unmarshal.h"
 
