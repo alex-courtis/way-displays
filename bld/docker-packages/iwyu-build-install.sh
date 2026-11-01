@@ -3,7 +3,7 @@
 # Not for running locally.
 #
 
-VERSION="0.26"
+VERSION="0.27"
 
 # speed up builds a bit
 export MAKEFLAGS=-j8
