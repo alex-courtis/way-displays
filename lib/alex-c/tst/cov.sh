@@ -2,7 +2,7 @@
 
 set -e
 
-HI_LIMIT=85
+HI_LIMIT=100
 MED_LIMIT=60
 
 INFO_PATH="/tmp/coverage.info" 

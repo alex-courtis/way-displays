@@ -17,7 +17,7 @@ struct Slist; // IWYU pragma: keep
  */
 struct SlistItState; // IWYU pragma: keep
 struct SlistIt {
-	const void* val;
+	const char* val;
 	struct SlistItState *st;
 };
 
