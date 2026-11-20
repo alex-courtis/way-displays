@@ -44,6 +44,7 @@ void desire(void) {
 	plist_free(heads_ordered);
 }
 
+// TODO #291 add power state
 void desire_enabled(struct Head *head) {
 
 	// disabled if name_desc matches and (if present) any condition is true

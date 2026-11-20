@@ -403,6 +403,7 @@ void print_head_desired(const enum LogThreshold t, const struct Head * const hea
 	}
 }
 
+// TODO #291 add power state
 void print_head(const enum LogThreshold t, const enum InfoEvent event, const struct Head * const head) {
 	if (!head)
 		return;

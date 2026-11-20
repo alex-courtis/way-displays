@@ -112,6 +112,8 @@ void g_displ_destroy(void) {
 	if (g_displ->zxdg_output_manager)
 		zxdg_output_manager_v1_destroy(g_displ->zxdg_output_manager);
 
+	// TODO #291 destroy output_power_manager
+
 	wl_registry_destroy(g_displ->registry);
 
 	wl_display_disconnect(g_displ->display);

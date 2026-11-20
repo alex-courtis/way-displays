@@ -29,6 +29,13 @@ struct Displ {
 	char *zwlr_output_manager_interface;
 	uint32_t zwlr_output_manager_serial;
 
+	// wlroots output power
+	struct zwlr_output_power_manager_v1 *zwlr_output_power_manager;
+	uint32_t zwlr_output_power_manager_name;
+	uint32_t zwlr_output_power_manager_version;
+	char *zwlr_output_power_manager_interface;
+	uint32_t zwlr_output_power_manager_serial;
+
 	const struct PPmap *heads;          // head_ppmap_init - Heads by zwlr_output_head_v1
 	const struct Pset *heads_arrived;   // head_pset_init  - pointers to heads
 	const struct Pset *heads_departed;  // head_pset_init  - dummy heads for printing

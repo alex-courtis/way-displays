@@ -12,6 +12,7 @@
 #include "output.h"
 #include "process.h"
 #include "wlr-output-management-unstable-v1.h"
+#include "wlr-output-power-management-unstable-v1.h"
 #include "xdg-output-unstable-v1.h"
 
 static void bind_zwlr_output_manager(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
@@ -32,6 +33,16 @@ static void bind_zwlr_output_manager(struct Displ *displ, struct wl_registry *wl
 	log_debug("REG: bind_zwlr_output_manager bound %p", (void*)displ->zwlr_output_manager);
 }
 
+static void bind_zwlr_output_power_manager(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
+
+	displ->zwlr_output_power_manager_name = name;
+	displ->zwlr_output_power_manager_version = version;
+	displ->zwlr_output_power_manager_interface = strdup(interface);
+	displ->zwlr_output_power_manager = wl_registry_bind(wl_registry, name, &zwlr_output_power_manager_v1_interface, displ->zwlr_output_power_manager_version);
+
+	log_debug("REG: bind_zwlr_output_power_manager bound %p", (void*)displ->zwlr_output_power_manager);
+}
+
 static void bind_zxdg_output_manager(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 
 	displ->zxdg_output_manager_name = name;
@@ -42,7 +53,7 @@ static void bind_zxdg_output_manager(struct Displ *displ, struct wl_registry *wl
 	log_debug("REG: bind_zxdg_output_manager bound %p", (void*)displ->zxdg_output_manager);
 }
 
-static void bind_wl_output(struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
+static void bind_wl_output(const struct Displ *displ, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 
 	struct wl_output *wl_output = wl_registry_bind(wl_registry, name, &wl_output_interface, version);
 	if (!wl_output)
@@ -50,7 +61,7 @@ static void bind_wl_output(struct Displ *displ, struct wl_registry *wl_registry,
 
 	log_debug("REG: bind_wl_output bound wl_output %p", (void*)wl_output);
 
-	const struct Output *output = output_init(wl_output, name, displ->zxdg_output_manager);
+	const struct Output *output = output_init(wl_output, name, displ);
 	if (output) {
 		ipmap_put_free(displ->outputs, name, output);
 	} else {
@@ -65,6 +76,8 @@ static void global(void *data, struct wl_registry *wl_registry, uint32_t name, c
 
 	if (strcmp(interface, zwlr_output_manager_v1_interface.name) == 0) {
 		bind_zwlr_output_manager(data, wl_registry, name, interface, version);
+	} else if (strcmp(interface, zwlr_output_power_manager_v1_interface.name) == 0) {
+		bind_zwlr_output_power_manager(data, wl_registry, name, interface, version);
 	} else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
 		bind_zxdg_output_manager(data, wl_registry, name, interface, version);
 	} else if (strcmp(interface, wl_output_interface.name) == 0) {
