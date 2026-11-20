@@ -5,13 +5,15 @@
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 
-#include "xdg-output-unstable-v1.h"
+#include "displ.h"
 
 struct Output {
 	struct wl_output *wl_output;
 	uint32_t wl_output_name;
 
 	struct zxdg_output_v1 *zxdg_output;
+
+	struct zwlr_output_power_v1 *zwlr_output_power;
 
 	// wlr-output-management-unstable-v1.xml states that the names and descriptions must match hence we can map them
 	char *name;
@@ -23,9 +25,10 @@ struct Output {
 	int32_t logical_height;
 };
 
+// TODO #291 update comment
 // instantiate a new output and create an xdg output listener, appending to outputs
 // NULL on missing wl_output or failure to retrieve xdg output
-struct Output *output_init(struct wl_output *wl_output, const uint32_t name, struct zxdg_output_manager_v1 *zxdg_output_manager);
+struct Output *output_init(struct wl_output *wl_output, const uint32_t name, const struct Displ *displ);
 
 const struct IPmap *output_ipmap_init(void);
 

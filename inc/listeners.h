@@ -10,6 +10,8 @@ const struct zwlr_output_head_v1_listener *zwlr_output_head_listener(void);
 const struct zwlr_output_head_v1_listener *zwlr_output_head_listener_min(void);
 const struct zwlr_output_mode_v1_listener *zwlr_output_mode_listener(void);
 
+const struct zwlr_output_power_v1_listener *zwlr_output_power_listener(void);
+
 const struct zwlr_output_configuration_v1_listener *zwlr_output_configuration_listener(void);
 
 const struct zxdg_output_v1_listener *zxdg_output_listener(void);
