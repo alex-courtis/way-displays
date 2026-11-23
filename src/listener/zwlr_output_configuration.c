@@ -5,6 +5,7 @@
 #include "displ.h"
 #include "enum.h"
 #include "head.h"
+#include "log.h"
 #include "ppmap.h"
 #include "wlr-output-management-unstable-v1.h"
 
@@ -29,16 +30,19 @@ static void cleanup(struct Displ *displ,
 
 static void succeeded(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
+	log_warn("EVENT: zwlr_output_configuration_v1 succeeded zwlr_output_manager_serial %u (%u)", g_displ->zwlr_output_manager_serial, g_displ->zwlr_output_manager_serial_prev);
 	cleanup(data, zwlr_output_configuration_v1, SUCCEEDED);
 }
 
 static void failed(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
+	log_warn("EVENT: zwlr_output_configuration_v1 failed zwlr_output_manager_serial %u (%u)", g_displ->zwlr_output_manager_serial, g_displ->zwlr_output_manager_serial_prev);
 	cleanup(data, zwlr_output_configuration_v1, FAILED);
 }
 
 static void cancelled(void *data,
 		struct zwlr_output_configuration_v1 *zwlr_output_configuration_v1) {
+	log_warn("EVENT: zwlr_output_configuration_v1 cancelled zwlr_output_manager_serial %u (%u)", g_displ->zwlr_output_manager_serial, g_displ->zwlr_output_manager_serial_prev);
 	cleanup(data, zwlr_output_configuration_v1, CANCELLED);
 }
 

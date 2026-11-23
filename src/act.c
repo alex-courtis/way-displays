@@ -139,6 +139,13 @@ void act_apply(void) {
 	}
 
 	// create and start the listener
+	if (g_displ->zwlr_output_manager_serial == g_displ->zwlr_output_manager_serial_prev) {
+		g_displ->zwlr_output_manager_serial++;
+		log_warn("act_apply zwlr_output_manager_serial unchanged, incremented %u (%u)", g_displ->zwlr_output_manager_serial, g_displ->zwlr_output_manager_serial_prev);
+	} else {
+		log_warn("act_apply zwlr_output_manager_serial %u (%u)", g_displ->zwlr_output_manager_serial, g_displ->zwlr_output_manager_serial_prev);
+	}
+	g_displ->zwlr_output_manager_serial_prev = g_displ->zwlr_output_manager_serial;
 	struct zwlr_output_configuration_v1 *zconfig = create_zwlr_output_config_listener(g_displ);
 
 	struct PPmapPair p;

@@ -27,6 +27,7 @@ struct Displ {
 	uint32_t zwlr_output_manager_name;
 	uint32_t zwlr_output_manager_version;
 	char *zwlr_output_manager_interface;
+	uint32_t zwlr_output_manager_serial_prev;
 	uint32_t zwlr_output_manager_serial;
 
 	const struct PPmap *heads;          // head_ppmap_init - Heads by zwlr_output_head_v1

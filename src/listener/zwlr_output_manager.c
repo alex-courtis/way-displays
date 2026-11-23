@@ -22,7 +22,11 @@ static void done(void *data,
 		uint32_t serial) {
 	struct Displ *displ = data;
 
-	log_debug("EVENT: zwlr_output_manager_v1_listener done serial=%u", serial);
+	log_warn("EVENT: zwlr_output_manager_v1_listener done serial=%u zwlr_output_manager_serial %u (%u) -> %u (%u)",
+			serial,
+			displ->zwlr_output_manager_serial, displ->zwlr_output_manager_serial_prev,
+			serial, displ->zwlr_output_manager_serial
+			);
 
 	displ->zwlr_output_manager_serial = serial;
 }
