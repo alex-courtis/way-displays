@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "act.h"
 
@@ -120,6 +121,51 @@ void act_handle_failure(void) {
 	displ_delta_destroy(g_displ);
 }
 
+static char *heads_fingerprint(const struct PPmap * const heads) {
+	char *fingerprint = NULL;
+
+	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
+		const struct Head *head = it->val;
+		fingerprint = sprintf_append(fingerprint, "%p %d %d%d %p%p %d %d %d,%d %d,%d %d%d %d%d;",
+				it->key,
+				head->reapply_required,
+				head->cur.enabled, head->des.enabled,
+				(void*)head->cur.zmode, (void*)head->des.zmode,
+				head->cur.scale, head->des.scale,
+				head->cur.x, head->cur.y, head->des.x, head->des.y,
+				head->cur.transform, head->des.transform,
+				head->cur.adaptive_sync, head->des.adaptive_sync);
+	}
+
+	return fingerprint;
+}
+
+// compositor may report success without actually changing anything (see #291),
+// so we should guard against sending the same change twice for the same serial
+static bool repeating_unchanged(const struct PPmap * const heads_changing) {
+	char *fingerprint = heads_fingerprint(heads_changing);
+
+	if (g_displ->applied_fingerprint &&
+			g_displ->applied_serial == g_displ->zwlr_output_manager_serial &&
+			strcmp(fingerprint, g_displ->applied_fingerprint) == 0) {
+		free(fingerprint);
+
+		if (!g_displ->applied_unchanged_warned) {
+			log_warn(NULL);
+			log_warn("Changes were not applied by the compositor, waiting for display state to change");
+			g_displ->applied_unchanged_warned = true;
+		}
+		return true;
+	}
+
+	free(g_displ->applied_fingerprint);
+	g_displ->applied_fingerprint = fingerprint;
+	g_displ->applied_serial = g_displ->zwlr_output_manager_serial;
+	g_displ->applied_unchanged_warned = false;
+
+	return false;
+}
+
 void act_apply(void) {
 	const struct PPmap *heads_changing = head_ppmap_init();
 
@@ -133,7 +179,7 @@ void act_apply(void) {
 		ppmap_put(heads_changing, it->key, it->val);
 	}
 
-	if (ppmap_size(heads_changing) == 0) {
+	if (ppmap_size(heads_changing) == 0 || repeating_unchanged(heads_changing)) {
 		ppmap_free(heads_changing);
 		return;
 	}

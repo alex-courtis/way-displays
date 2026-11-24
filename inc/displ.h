@@ -1,6 +1,7 @@
 #ifndef DISPL_H
 #define DISPL_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "enum.h"
@@ -43,6 +44,11 @@ struct Displ {
 
 	enum DisplState state;
 	struct DisplDelta delta;
+
+	// last applied configuration
+	uint32_t applied_serial;
+	char *applied_fingerprint;
+	bool applied_unchanged_warned;
 };
 
 struct Displ *displ_init(void);
