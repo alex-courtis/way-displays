@@ -126,7 +126,7 @@ static char *heads_fingerprint(const struct PPmap * const heads) {
 
 	for (const struct PPmapIt *it = ppmap_it(heads); it; it = ppmap_it_next(it)) {
 		const struct Head *head = it->val;
-		fingerprint = sprintf_append(fingerprint, "%p %d %d%d %p%p %d %d %d,%d %d,%d %d%d %d%d;",
+		fingerprint = sprintf_append(fingerprint, "%p %d %d/%d %p/%p %d/%d %d,%d/%d,%d %d/%d %d/%d;",
 				it->key,
 				head->reapply_required,
 				head->cur.enabled, head->des.enabled,
@@ -145,9 +145,18 @@ static char *heads_fingerprint(const struct PPmap * const heads) {
 static bool repeating_unchanged(const struct PPmap * const heads_changing) {
 	char *fingerprint = heads_fingerprint(heads_changing);
 
-	if (g_displ->applied_fingerprint &&
-			g_displ->applied_serial == g_displ->zwlr_output_manager_serial &&
-			strcmp(fingerprint, g_displ->applied_fingerprint) == 0) {
+	const bool unchanged = fingerprint && g_displ->applied_fingerprint &&
+		g_displ->applied_serial == g_displ->zwlr_output_manager_serial &&
+		strcmp(fingerprint, g_displ->applied_fingerprint) == 0;
+
+	log_debug(NULL);
+	log_debug("Checking for repeated change:");
+	log_debug("  Serial:      applied %u, current %u", g_displ->applied_serial, g_displ->zwlr_output_manager_serial);
+	log_debug("  Fingerprint: applied %s", g_displ->applied_fingerprint ? g_displ->applied_fingerprint : "(none)");
+	log_debug("               current %s", fingerprint ? fingerprint : "(none)");
+	log_debug("  %s", unchanged ? "Unchanged, skipping" : "Applying");
+
+	if (unchanged) {
 		free(fingerprint);
 
 		if (!g_displ->applied_unchanged_warned) {
