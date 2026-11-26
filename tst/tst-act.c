@@ -10,6 +10,7 @@
 
 #include <cmocka.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-client-protocol.h>
@@ -20,6 +21,7 @@
 #include "head.h"
 #include "mode.h"
 #include "ppmap.h"
+#include "str.h"
 #include "wlr-output-management-unstable-v1.h"
 
 #include "act.h"
@@ -40,6 +42,23 @@ static int after_each(void **state) {
 	g_cfg_destroy();
 
 	return 0;
+}
+
+static void assert_log_repeat_check(uint32_t applied_serial, const char *applied, const char *current, bool unchanged) {
+	char *expected = sprintf_alloc(
+			"\nChecking for repeated change:\n"
+			"  Serial:      applied %u, current %u\n"
+			"  Fingerprint: applied %s\n"
+			"               current %s\n"
+			"  %s\n",
+			applied_serial, g_displ->zwlr_output_manager_serial,
+			applied ? applied : "(none)",
+			current,
+			unchanged ? "Unchanged, skipping" : "Applying");
+
+	assert_log(DEBUG, expected);
+
+	free(expected);
 }
 
 static void act_apply__no_heads(void **state) {
@@ -83,6 +102,10 @@ static void act_apply__reapply(void **state) {
 
 	act_apply();
 
+	char *fp = sprintf_alloc("%p 1 0/0 %p/%p 0/0 0,0/0,0 0/0 0/0;", H0, NULL, NULL);
+	assert_log_repeat_check(0, NULL, fp, false);
+	free(fp);
+
 	assert_int_equal(g_displ->delta.element, 0);
 	assert_ptr_equal(g_displ->delta.head, head);
 	assert_nul(g_displ->delta.zmode);
@@ -122,6 +145,10 @@ static void act_apply__mode(void **state) {
 
 	act_apply();
 
+	char *fp = sprintf_alloc("%p 0 0/0 %p/%p 0/0 0,0/0,0 0/0 0/0;", H0, NULL, MD);
+	assert_log_repeat_check(0, NULL, fp, false);
+	free(fp);
+
 	assert_int_equal(g_displ->delta.element, MODE);
 	assert_ptr_equal(g_displ->delta.head, head);
 	assert_ptr_equal(g_displ->delta.zmode, MD);
@@ -159,6 +186,10 @@ static void act_apply__vrr(void **state) {
 
 	act_apply();
 
+	char *fp = sprintf_alloc("%p 0 0/0 %p/%p 0/0 0,0/0,0 0/0 0/1;", H0, NULL, NULL);
+	assert_log_repeat_check(0, NULL, fp, false);
+	free(fp);
+
 	assert_int_equal(g_displ->delta.element, VRR_OFF);
 	assert_ptr_equal(g_displ->delta.head, head);
 	assert_nul(g_displ->delta.zmode);
@@ -191,6 +222,10 @@ static void act_apply__disable(void **state) {
 	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zconfig);
 
 	act_apply();
+
+	char *fp = sprintf_alloc("%p 0 1/0 %p/%p 0/0 0,0/0,0 0/0 0/0;", H0, NULL, NULL);
+	assert_log_repeat_check(0, NULL, fp, false);
+	free(fp);
 
 	assert_int_equal(g_displ->delta.element, 0);
 	assert_nul(g_displ->delta.head);
@@ -241,6 +276,10 @@ static void act_apply__remainder(void **state) {
 
 	act_apply();
 
+	char *fp = sprintf_alloc("%p 0 1/1 %p/%p 0/1 0,0/2,3 0/1 0/0;", H0, NULL, NULL);
+	assert_log_repeat_check(0, NULL, fp, false);
+	free(fp);
+
 	assert_int_equal(g_displ->delta.element, 0);
 	assert_nul(g_displ->delta.head);
 	assert_nul(g_displ->delta.zmode);
@@ -250,6 +289,124 @@ static void act_apply__remainder(void **state) {
 	displ_delta_destroy(g_displ);
 
 	assert_logs_empty();
+}
+
+static struct Head *head_enable_changing(void) {
+	struct Head *head = head_init();
+	head->cur.enabled = false;
+	head->des.enabled = true;
+	head->des.scale = 1;
+	ppmap_put(g_displ->heads, H0, head);
+	return head;
+}
+
+static void expect_apply_enable(void) {
+	struct zwlr_output_configuration_v1 *zconfig = (struct zwlr_output_configuration_v1*)"dummy5";
+	struct zwlr_output_configuration_head_v1 *zconfig_head = (struct zwlr_output_configuration_head_v1*)"dummy6";
+
+	expect_ptr(__wrap_create_zwlr_output_config_listener, displ, g_displ);
+	will_return_ptr_type(__wrap_create_zwlr_output_config_listener, zconfig, struct zwlr_output_configuration_v1*);
+
+	expect_int_value(__wrap_print_head_map, t, INFO);
+	expect_int_value(__wrap_print_head_map, event, DELTA);
+	expect_ppmap(__wrap_print_head_map, heads, g_displ->heads);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, zwlr_output_configuration_v1, zconfig);
+	expect_ptr(__wrap__zwlr_output_configuration_v1_enable_head, head, H0);
+	will_return_ptr_type(__wrap__zwlr_output_configuration_v1_enable_head, zconfig_head, struct zwlr_output_configuration_head_v1*);
+
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_transform, zwlr_output_configuration_head_v1, zconfig_head);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_transform, transform, WL_OUTPUT_TRANSFORM_NORMAL);
+
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_scale, zwlr_output_configuration_head_v1, zconfig_head);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_scale, scale, 1);
+
+	expect_ptr(__wrap__zwlr_output_configuration_head_v1_set_position, zwlr_output_configuration_head_v1, zconfig_head);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_position, x, 0);
+	expect_int_value(__wrap__zwlr_output_configuration_head_v1_set_position, y, 0);
+
+	expect_ptr(__wrap__zwlr_output_configuration_v1_apply, zwlr_output_configuration_v1, zconfig);
+}
+
+static char *fp_enable_changing(void) {
+	return sprintf_alloc("%p 0 0/1 %p/%p 0/1 0,0/0,0 0/0 0/0;", H0, NULL, NULL);
+}
+
+static void act_apply__repeat_same_serial(void **state) {
+	char *fp = fp_enable_changing();
+
+	head_enable_changing();
+
+	expect_apply_enable();
+	act_apply();
+	assert_int_equal(g_displ->state, OUTSTANDING);
+	assert_log_repeat_check(0, NULL, fp, false);
+
+	g_displ->state = IDLE;
+
+	act_apply();
+	assert_int_equal(g_displ->state, IDLE);
+	assert_log_repeat_check(0, fp, fp, true);
+	assert_log(WARNING, "\nChanges were not applied by the compositor, waiting for display state to change\n");
+
+	act_apply();
+	assert_int_equal(g_displ->state, IDLE);
+	assert_log_repeat_check(0, fp, fp, true);
+	assert_logs_empty();
+
+	free(fp);
+}
+
+static void act_apply__repeat_new_serial(void **state) {
+	char *fp = fp_enable_changing();
+
+	head_enable_changing();
+
+	expect_apply_enable();
+	act_apply();
+	assert_log_repeat_check(0, NULL, fp, false);
+
+	g_displ->state = IDLE;
+
+	g_displ->zwlr_output_manager_serial++;
+
+	expect_apply_enable();
+	act_apply();
+	assert_int_equal(g_displ->state, OUTSTANDING);
+	assert_log_repeat_check(0, fp, fp, false);
+
+	displ_delta_destroy(g_displ);
+
+	assert_logs_empty();
+
+	free(fp);
+}
+
+static void act_apply__repeat_different(void **state) {
+	char *fp = fp_enable_changing();
+	char *fp_scaled = sprintf_alloc("%p 0 0/1 %p/%p 2/1 0,0/0,0 0/0 0/0;", H0, NULL, NULL);
+
+	struct Head *head = head_enable_changing();
+
+	expect_apply_enable();
+	act_apply();
+	assert_log_repeat_check(0, NULL, fp, false);
+
+	g_displ->state = IDLE;
+
+	head->cur.scale = 2;
+
+	expect_apply_enable();
+	act_apply();
+	assert_int_equal(g_displ->state, OUTSTANDING);
+	assert_log_repeat_check(0, fp, fp_scaled, false);
+
+	displ_delta_destroy(g_displ);
+
+	assert_logs_empty();
+
+	free(fp);
+	free(fp_scaled);
 }
 
 static void act_handle_success__head_changing_adaptive_sync(void **state) {
@@ -465,6 +622,9 @@ int main(void) {
 		TEST_BA(act_apply__vrr),
 		TEST_BA(act_apply__disable),
 		TEST_BA(act_apply__remainder),
+		TEST_BA(act_apply__repeat_same_serial),
+		TEST_BA(act_apply__repeat_new_serial),
+		TEST_BA(act_apply__repeat_different),
 
 		TEST_BA(act_handle_success__head_changing_adaptive_sync),
 		TEST_BA(act_handle_success__head_changing_adaptive_sync_fail),
