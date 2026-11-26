@@ -1,4 +1,4 @@
-VERSION ?= "2.0.2-SNAPSHOT"
+VERSION ?= "2.0.2"
 ifneq (,$(findstring -SNAPSHOT,$(VERSION)))
 	COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null)
 endif

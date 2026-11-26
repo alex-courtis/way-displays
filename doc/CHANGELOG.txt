@@ -1,3 +1,7 @@
+way-displays 2.0.2 2026-11-27
+-----------------------------
+fix(#291): don't send same change twice when applied state is unchanged by @mrsobakin in #294
+
 way-displays 2.0.1 2026-11-02
 -----------------------------
 fix: ignore stale pid files when starting the server
