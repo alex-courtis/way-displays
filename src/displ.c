@@ -77,6 +77,8 @@ void displ_free(struct Displ *displ) {
 
 	free(displ->zxdg_output_manager_interface);
 
+	free(displ->applied_fingerprint);
+
 	free(displ);
 }
 
